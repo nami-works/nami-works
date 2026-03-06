@@ -1,0 +1,296 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
+// enough when changing adapters.
+// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+model GoalsConfig {
+  id        String   @id @default(cuid())
+  shop      String   @unique
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GoalsRun {
+  id         String   @id @default(cuid())
+  shop       String
+  rangeKey   String
+  configHash String
+  data       Json
+  createdAt  DateTime @default(now())
+
+  @@index([shop, createdAt])
+  @@index([shop, rangeKey, configHash])
+}
+
+model SalesGoalsConfig {
+  id        String   @id @default(cuid())
+  shop      String   @unique
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SalesGoalsLocationConfig {
+  id         String   @id @default(cuid())
+  shop       String
+  locationId String
+  data       Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([shop, locationId])
+}
+
+model BenchmarkLaunch {
+  id           String   @id @default(cuid())
+  shop         String
+  productId    String
+  productTitle String?
+  firstSoldAt  DateTime?
+  computedAt   DateTime @default(now())
+
+  @@unique([shop, productId])
+  @@index([shop, computedAt])
+}
+
+model LalamoveLocationConfig {
+  id         String   @id @default(cuid())
+  shop       String
+  locationId String
+  data       Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([shop, locationId])
+  @@index([shop])
+}
+
+model LalamoveShopCredential {
+  id               String   @id @default(cuid())
+  shop             String   @unique
+  apiKeyCiphertext String
+  apiSecretCiphertext String
+  keyVersion       Int      @default(1)
+  lastValidatedAt  DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([shop])
+}
+
+model CarrierServiceRegistration {
+  id                String   @id @default(cuid())
+  shop              String   @unique
+  carrierServiceId  String
+  callbackUrl       String
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([shop])
+}
+
+model CarrierServiceConfig {
+  id        String   @id @default(cuid())
+  shop      String   @unique
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shop])
+}
+
+model CarrierRateSample {
+  id                 String   @id @default(cuid())
+  shop               String
+  locationId         String
+  provider           String
+  quadrantNorthIndex Int
+  quadrantEastIndex  Int
+  priceSubunits      Int
+  currency           String
+  fetchedAt          DateTime @default(now())
+
+  @@unique([shop, locationId, provider, quadrantNorthIndex, quadrantEastIndex])
+  @@index([shop, locationId])
+}
+
+model LalamoveDispatchJob {
+  id                String   @id @default(cuid())
+  shop              String
+  routeId           String
+  locationId        String
+  status            String
+  quotationId       String?
+  lalamoveOrderId   String?
+  market            String?
+  serviceType       String?
+  requestedBy       String?
+  requestedAt       DateTime @default(now())
+  priorityFeeLevel  Int      @default(0)   // 0=none applied, 1=first fee, 2=second fee, 3=third fee
+  quotationTotal    String?               // snapshot of priceBreakdown.total at dispatch time
+  quotationCurrency String?               // snapshot of priceBreakdown.currency at dispatch time
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([shop, routeId])
+  @@index([shop, status])
+}
+
+model LalamoveDispatchOrderMap {
+  id                String   @id @default(cuid())
+  shop              String
+  dispatchJobId     String
+  shopifyOrderId    String
+  lalamoveOrderId   String?
+  currentStatus     String?
+  failureReason     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([shop, dispatchJobId, shopifyOrderId])
+  @@index([shop, shopifyOrderId])
+  @@index([shop, lalamoveOrderId])
+}
+
+model PendingDeliveryRoute {
+  id         String   @id @default(cuid())
+  shop       String
+  locationId String
+  routeId    String   @unique @default(cuid())
+  /// "open" | "dispatched" | "cancelled"
+  status     String
+  /// Array<{ shopifyOrderId: string; lat: number; lng: number; address: string; name: string; phone: string }>
+  ordersData Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([shop, status])
+  @@index([shop, locationId, status])
+}
+
+model AutoAssignLog {
+  id          String    @id @default(cuid())
+  shop        String
+  orderId     String
+  orderName   String?
+  /// Fulfillment location GID when known; null for skips before location is determined
+  locationId   String?
+  /// "assigned" | "skipped" | "error"
+  status      String
+  reason      String?
+  /// Debug details: { soloPrice, jointPrice, routeId, deliveryMethod, error, etc. }
+  details     Json?
+  createdAt   DateTime  @default(now())
+
+  @@index([shop, createdAt])
+  @@index([shop, locationId, createdAt])
+}
+
+model LalamoveDispatchEvent {
+  id                String   @id @default(cuid())
+  shop              String
+  dispatchJobId     String?
+  shopifyOrderId    String?
+  lalamoveOrderId   String?
+  eventType         String
+  externalStatus    String?
+  payload           Json?
+  processedAt       DateTime @default(now())
+  createdAt         DateTime @default(now())
+
+  @@index([shop, lalamoveOrderId])
+  @@index([shop, shopifyOrderId])
+  @@index([shop, eventType])
+}
+
+model RetailCurrentLocations {
+  shop       String   @unique
+  locations  Json     @default("[]")
+  updatedAt  DateTime @updatedAt
+}
+
+model RetailLocationSet {
+  id         String   @id @default(cuid())
+  shop       String
+  name       String
+  locations  Json
+  createdAt  String
+  updatedAt  DateTime @updatedAt
+
+  @@index([shop])
+}
+
+model RetailAnalyticsCache {
+  shop       String   @unique
+  customers  Json     @default("[]")
+  orders     Json     @default("[]")
+  updatedAt  DateTime @updatedAt
+}
+
+model BrandSettings {
+  id                    String   @id @default(cuid())
+  shop                  String   @unique
+  about                 String?
+  toneOfVoice           String?
+  brandName             String?
+  blogUrl               String?
+  preferredLanguage     String?
+  contentLanguage       String?
+  benchmarks            String?
+  brandCategory         String?
+  editorialGuidelines   String?
+  formatRecommendations String?
+  contentStrategyJson   String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model BlogPostJob {
+  id        String   @id @default(cuid())
+  shop      String
+  jobId     String
+  status    String
+  createdAt DateTime @default(now())
+}
+
+model BlogPostPreferences {
+  id         String   @id @default(cuid())
+  shop       String   @unique
+  blogHandle String?
+  blogTitle  String?
+  author     String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

@@ -1,0 +1,32 @@
+/* Tab bar — browser-tab shape, matches visibility pattern */
+.tabsRow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.tabItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 18px;
+  border-radius: 10px 18px 0 0;
+  text-decoration: none;
+  color: #111111;
+  background: transparent;
+  font-weight: 400;
+}
+.tabItem:not(.tabActive):hover { background: #d4d7da; }
+.tabActive { background: #dfe3e8; }
+.tabContent { display: inline-flex; align-items: center; gap: 6px; }
+.tabIcon { color: #8c9196; display: inline-flex; }
+.tabIconActive { color: #008060; }
+
+/* CLI-style readonly input */
+.cliInput {
+  width: 100%;
+  font-family: monospace;
+  font-size: 13px;
+  padding: 12px 16px;
+  background: #f6f6f7;
+  color: #111111;
+  border: 1px solid #e1e3e5;
+  border-radius: 0;
+  outline: none;
+  cursor: default;
+}

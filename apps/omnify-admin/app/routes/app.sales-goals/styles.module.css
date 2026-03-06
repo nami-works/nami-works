@@ -1,0 +1,243 @@
+.tabsWrapper {
+  padding-inline: 8pt;
+}
+
+.tabsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-left: 0;
+}
+
+.tabItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4pt 18px;
+  border: 1px solid #e1e3e5;
+  border-radius: 10px 18px 0 0;
+  color: #111111;
+  background: #dfe3e8;
+  font-weight: 400;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.tabItem:not(.tabActive):hover {
+  background: #d4d7da;
+}
+
+.tabActive {
+  background: #fff;
+}
+
+.locationSettingsBlock {
+  padding-inline: 6pt;
+  margin-bottom: 24px;
+}
+
+.blockCard {
+  background: #fff;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.subSectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 16px 0 8px 0;
+}
+
+.subSectionTitle:first-of-type {
+  margin-top: 0;
+}
+
+.statCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statLabel {
+  font-weight: 600;
+  display: block;
+}
+
+.sectionHeader {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.summaryGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin-bottom: 16px;
+}
+
+.summaryGrid s-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  display: block;
+}
+
+.formGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: 16px;
+}
+
+.calculatorRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.calculatorPanel {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.actionsRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.table {
+  margin-top: 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.tableHeader {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  font-weight: 600;
+  color: #5b5b5b;
+}
+
+.tableRow {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.table3Col .tableHeader,
+.table3Col .tableRow {
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+}
+
+.table4Col .tableHeader,
+.table4Col .tableRow {
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+}
+
+.table5Col .tableHeader,
+.table5Col .tableRow {
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+}
+
+/* ── Settings tab ─────────────────────────────────────────────────────────── */
+
+.settingsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.locationCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  padding: 20px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.locationCardTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #202223;
+  margin: 0;
+}
+
+.toggleLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.paramDivider {
+  border: none;
+  border-top: 1px solid #e1e3e5;
+  margin: 0;
+}
+
+.paramSectionLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 12px;
+}
+
+.paramGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.paramBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.paramToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paramLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #202223;
+}
+
+.settingsSaveRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 960px) {
+  .paramGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

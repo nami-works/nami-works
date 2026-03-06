@@ -1,0 +1,18 @@
+/* Tab bar — browser-tab shape, matches location-settings pattern */
+.tabsRow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.tabItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 18px;
+  border-radius: 10px 18px 0 0;
+  text-decoration: none;
+  color: #111111;
+  background: transparent;
+  font-weight: 400;
+}
+.tabItem:not(.tabActive):hover { background: #d4d7da; }
+.tabActive { background: #dfe3e8; }
+.tabContent { display: inline-flex; align-items: center; gap: 6px; }
+.tabIcon { color: #8c9196; display: inline-flex; }
+.tabIconActive { color: #008060; }

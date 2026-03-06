@@ -1,0 +1,791 @@
+.mapContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mapCanvas {
+  position: relative;
+  height: 600px;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  background-color: #f6f6f7;
+  background-image: linear-gradient(#e5e5e5 1px, transparent 1px),
+    linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
+  background-size: 40px 40px;
+  overflow: hidden;
+}
+
+.mapCanvasWrap {
+  position: relative;
+}
+
+.mapOverlayButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fullscreenMapActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.mapBlockFooterRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.mapMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.mapLegendOutside {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mapPoint {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.mapPointLocation {
+  background-color: #008060;
+  box-shadow: 0 0 0 3px rgba(0, 128, 96, 0.2);
+}
+
+.mapPointOrder {
+  background-color: #95bf47;
+  box-shadow: 0 0 0 3px rgba(149, 191, 71, 0.2);
+}
+
+.mapLegend {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  color: #6d7175;
+  font-size: 12px;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.mapFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.mapFooterActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mapFooterLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.warningLink {
+  color: #b98900;
+  font-weight: 600;
+}
+
+.asideSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.startDateRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.startDateFieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.asideButtonRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+.asideButtonRowActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.carrierStatusBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.carrierStatusExpanded {
+  padding: 12px;
+  background: var(--s-color-bg-surface-secondary, #f6f6f7);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.carrierStatusLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: ui-monospace, monospace;
+}
+
+.carrierStatusVar {
+  font-size: 12px;
+  color: var(--s-color-text-subdued, #6d7175);
+}
+
+.carrierStatusValue {
+  font-size: 12px;
+  color: var(--s-color-text, #202223);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.carrierStatusOk {
+  color: #008060;
+  font-weight: 600;
+}
+
+.carrierStatusFail {
+  color: #d72c0d;
+  font-weight: 600;
+}
+
+.carrierStatusResult {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--s-color-border-secondary, #e1e3e5);
+}
+
+.rowEqualItem,
+.row40Item,
+.row60Item {
+  display: flex;
+  min-width: 0;
+}
+
+.rowEqualItem {
+  flex: 1 1 0;
+}
+
+.autoAssignSpinnerWrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.row40Item {
+  flex: 0 0 40%;
+}
+
+.row60Item {
+  flex: 1 1 60%;
+}
+
+.rowEqualItem :global(s-button),
+.row40Item :global(s-button),
+.row60Item :global(s-button) {
+  width: 100%;
+}
+
+.mainBlocks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.unassignedSectionWrap {
+  margin-top: 12px;
+}
+
+.unassignedActionsTopRight {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.unassignedHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.unassignedBucketsScroll {
+  max-height: min(56vh, 640px);
+  overflow: auto;
+  padding-top: 8px;
+  padding-right: 4px;
+  padding-left: 4px;
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+  box-shadow: inset 0 -10px 12px -12px rgba(0, 0, 0, 0.45);
+}
+
+.fullscreenOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #f6f6f7;
+  padding: 16px;
+}
+
+.fullscreenContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: calc(100vh - 32px);
+}
+
+.fullscreenHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fullscreenScroll {
+  flex: 1;
+  overflow: hidden;
+  padding-bottom: 8px;
+}
+
+.fullscreenSplitLayout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(320px, 1fr);
+  gap: 12px;
+  overflow: hidden;
+}
+
+.fullscreenMapPane {
+  min-width: 0;
+  overflow: auto;
+  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fullscreenAssignedPane {
+  min-width: 0;
+  overflow: auto;
+  padding-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mapCanvasFullscreen {
+  height: clamp(320px, calc(100vh - 120px), 720px);
+}
+
+.dueGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+}
+
+.dueGroupWithDivider {
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.dueGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #ffffff;
+  padding: 12px 0 8px;
+}
+
+.dueOrdersTable {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.dueOrdersHeader,
+.dueOrdersRow {
+  display: grid;
+  grid-template-columns: 24px minmax(106px, 0.67fr) minmax(140px, 1fr) minmax(180px, 2fr);
+  gap: 12px;
+  padding: 8px 12px;
+  align-items: center;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.dueOrdersHeader > span:not(:first-child),
+.dueOrdersRow > span:not(:first-child) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dueOrdersHeader {
+  background: #f6f6f7;
+  font-weight: 600;
+  color: #3a3a3a;
+}
+
+.dueOrdersHeader > span:first-child,
+.dueOrdersRow > span:first-child {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dueOrdersRow {
+  border-top: 1px solid #eceeef;
+}
+
+.mapFooterBadge {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mapHeaderGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.mapSelectBox {
+  width: 40%;
+  max-width: 40%;
+}
+
+.mapHeaderActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.mapHeaderLeft {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex: 1 1 auto;
+}
+
+.manageOrdersButtonWrap {
+  padding: 0 4px;
+}
+
+.mapHeaderRow {
+  margin-bottom: 8px;
+}
+
+.legendSwatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.pendingRoutesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 16px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.autoAssignLogList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.autoAssignLogItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.autoAssignLogItem:last-child {
+  border-bottom: none;
+}
+
+.autoAssignLogLink {
+  cursor: pointer;
+  text-decoration: underline;
+  color: #2c6ecb;
+}
+
+.autoAssignLogLink:hover {
+  color: #1a4d8f;
+}
+
+.autoAssignLogDetails {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  overflow-x: auto;
+}
+
+.assignedRoutesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.assignedRoutesHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.routeManagerHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.assignedRoutesTopActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.routeCard {
+  padding-top: 24px;
+}
+
+.routeCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: -12px -12px 12px -12px;
+  padding: 16px 12px;
+  border-radius: 12px 12px 0 0;
+}
+
+.routeCardHeaderText :global(s-text) {
+  color: #24324a;
+}
+
+.routeCardHeaderText {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.routeCardOrderStats {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.routeCardOrderStats :global(s-text) {
+  color: #24324a;
+}
+
+.routeCardStatus {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.routeBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  background-color: var(--badge-bg, #e7ecf4);
+  color: var(--badge-text, #24324a);
+}
+
+.pageActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.settingsSpanFull {
+  grid-column: 1 / -1;
+}
+
+.settingsPickupInstructionsWrap {
+  min-height: 160px;
+}
+
+.settingsPickupInstructionsWrap s-text-area {
+  min-height: 160px;
+  display: block;
+}
+
+.settingsHidden {
+  display: none;
+}
+
+.assignedRoutesList {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.assignedRoutesPanel {
+  position: sticky;
+  top: 16px;
+  align-self: start;
+  padding: 12px;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  background-color: #ffffff;
+}
+
+.assignModalGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.manageRouteLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  height: min(72vh, 760px);
+}
+
+.manageRouteTableRow {
+  display: block;
+  overflow: auto;
+}
+
+.manageRouteMapCanvas {
+  height: 100%;
+}
+
+.assignModalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.narrowModalContent {
+  width: min(100%, 360px);
+  margin: 0 auto;
+}
+
+.mapStyleModalContent {
+  width: min(100%, 480px);
+  margin: 0 auto;
+}
+
+.mapStyleModalColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.placeAutocompleteField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.placeAutocompleteLabel {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.placeAutocompleteHost {
+  width: 100%;
+}
+
+.ordersTable {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(140px, 1fr) minmax(80px, auto) minmax(80px, auto);
+  gap: 8px 16px;
+  font-size: 14px;
+  align-items: center;
+}
+
+.ordersTableHeader {
+  display: contents;
+}
+
+.ordersTableHeader span {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  color: #1f2933;
+}
+
+.ordersTableRow {
+  display: contents;
+}
+
+.ordersTableRow span {
+  display: flex;
+  align-items: center;
+  color: #414f59;
+}
+
+.ordersHeaderOrder {
+  justify-content: flex-start !important;
+  text-align: left;
+}
+
+.ordersHeaderCustomer,
+.ordersHeaderRemove,
+.ordersHeaderDetails {
+  justify-content: center;
+  text-align: center;
+}
+
+.ordersCellOrder {
+  justify-content: flex-start !important;
+  text-align: left;
+}
+
+.ordersCellCustomer {
+  justify-content: flex-start !important;
+  text-align: left;
+}
+
+.ordersCellRemove,
+.ordersCellDetails {
+  justify-content: center;
+  text-align: center;
+}
+
+
+.routeColorSwatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid #d0d5dd;
+}
+
+@media (max-width: 960px) {
+  .mapHeaderGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mapSelectBox {
+    max-width: 100%;
+  }
+  .assignedRoutesList {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settingsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.mapLabelContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.mapLabelText {
+  color: #1f2933;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: sans-serif;
+  line-height: 1.2;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.mapLabelEmoji {
+  font-size: 16px;
+}
+
+.mapLabelOrder {
+  font-size: 14px;
+}
+
+.mapLabelBadge {
+  border: 1.5px solid #111111;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background-color: #ffffff;
+}
+
+
+.orderListDivider {
+  padding-top: 4px;
+}

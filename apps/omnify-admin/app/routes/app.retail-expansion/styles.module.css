@@ -1,0 +1,428 @@
+.mapCanvas {
+  height: 360px;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.mapCanvasLarge {
+  height: 520px;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.mapCanvasWrap {
+  position: relative;
+}
+
+.mapCanvasExpanded {
+  height: min(760px, calc(100vh - 220px));
+}
+
+.fullscreenOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #f6f6f7;
+  padding: 16px;
+}
+
+.fullscreenContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: calc(100vh - 32px);
+}
+
+.fullscreenScroll {
+  flex: 1;
+  overflow: auto;
+  padding-bottom: 8px;
+}
+
+.fullscreenSplitLayout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(280px, 1fr);
+  gap: 12px;
+  overflow: hidden;
+}
+
+.fullscreenMapPane {
+  min-width: 0;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.fullscreenAssignedPane {
+  min-width: 0;
+  overflow: auto;
+  padding-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mapCanvasFullscreen {
+  height: clamp(360px, calc(100vh - 240px), 760px);
+}
+
+.mapOverlayButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+}
+
+.mapResetButton {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+
+.mapLabel {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 6px 8px;
+  border: 1px solid #dfe3e8;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1f2933;
+}
+
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chartRow {
+  display: grid;
+  grid-template-columns: 140px 1fr 120px;
+  gap: 12px;
+  align-items: center;
+}
+
+.chartLabel {
+  font-size: 12px;
+  color: #1f2933;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chartBarTrack {
+  background: #f1f2f3;
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.chartBar {
+  background: #008060;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.chartValue {
+  text-align: right;
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.rankFooter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.rankTable {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rankTableHeader,
+.rankTableRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.rankTableHeader {
+  font-size: 12px;
+  color: #6d7175;
+  font-weight: 600;
+}
+
+.rankName {
+  font-size: 12px;
+  color: #1f2933;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rankValue {
+  font-size: 12px;
+  color: #1f2933;
+  text-align: right;
+}
+
+.asideColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.asideRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.asideRowRight {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.asideRowSpace {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tagItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 16px;
+  border: 1px solid #dfe3e8;
+  background: #f6f6f7;
+  color: #1f2933;
+  font-size: 12px;
+}
+
+.tagRemove {
+  border: none;
+  background: transparent;
+  color: #5c5f62;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  font-size: 14px;
+}
+
+.tagRemove:hover {
+  color: #1f2933;
+}
+
+.projectsHeaderRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.projectsSelect {
+  flex: 1;
+  min-width: 220px;
+}
+
+.projectsHeaderActions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.projectsEmptyState {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+}
+
+.projectsEmptyActions {
+  margin-top: 8px;
+}
+
+.projectsLoadedHeader {
+  font-size: 14px;
+}
+
+.projectsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.projectsFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.projectsTableWrap {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.projectsSectionSpacing {
+  margin-top: 8px;
+}
+
+.projectsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.projectsTable th,
+.projectsTable td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.projectsTable th {
+  font-weight: 600;
+  color: #6d7175;
+}
+
+.projectsTable tbody tr:hover {
+  background: #f6f6f7;
+}
+
+.placeAutocompleteField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.placeAutocompleteHost {
+  width: 100%;
+}
+
+.dateRangeModal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dateRangePresetList {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dateRangeContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dateRangeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.datePickerField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dateRangeFooter {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.dateRangeTrigger {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dateRangeToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.projectsControlRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.projectsControlBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 220px;
+}
+
+.mainChartsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.heatmapHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.heatmapHeaderControls {
+  width: min(240px, 100%);
+}
+
+.heatmapLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+@media (max-width: 1080px) {
+  .heatmapLayout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.topCitiesHeaderRow {
+  display: flex;
+  justify-content: stretch;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.topCitiesHeaderControls {
+  width: 100%;
+}

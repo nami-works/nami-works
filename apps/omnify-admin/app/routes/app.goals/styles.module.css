@@ -1,0 +1,221 @@
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.goalGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 12px 0 16px;
+}
+
+.goalStack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 12px 0 16px;
+}
+
+.goalGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.goalColumns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 12px 0 16px;
+}
+
+.goalColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.goalRows {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 12px 0 16px;
+}
+
+.goalRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.goalRowFields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.goalsHeader {
+  margin-top: 24px;
+}
+
+.benchmarksEmpty {
+  margin-top: 8px;
+}
+
+.benchmarksBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dateField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 16px 0 8px;
+}
+
+.benchmarkActions {
+  display: flex;
+  justify-content: flex-end;
+  margin: 8px 0 12px;
+}
+
+.listStack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.listRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.actionsRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.metricCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.benchmarksTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.benchmarksTable th {
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #6d7175;
+  padding: 8px 12px;
+}
+
+.benchmarksTable td {
+  padding: 10px 12px;
+  border-top: 1px solid #e1e3e5;
+}
+
+.benchmarksProductCell {
+  white-space: normal;
+  word-break: break-word;
+  max-width: 220px;
+}
+
+.benchmarksActionCell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.actionPopover {
+  min-width: 200px;
+}
+
+.tableHeader,
+.tableRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  align-items: center;
+}
+
+.tableHeader {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #6d7175;
+}
+
+.tableRow {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.exportLink {
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.exportLink:hover {
+  text-decoration: underline;
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.productList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

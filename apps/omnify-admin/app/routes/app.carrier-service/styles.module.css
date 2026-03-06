@@ -1,0 +1,286 @@
+.section {
+  margin-bottom: 24px;
+}
+
+.locationSettingsBlock {
+  padding-inline: 6pt;
+  margin-bottom: 24px;
+}
+
+.stackBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stackInline {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.primaryAction {
+  margin-left: auto;
+}
+
+.zoneList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.zoneItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: #fff;
+}
+
+.zoneItemLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.zoneItemRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.addZoneBtn {
+  margin-top: 8px;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  max-width: 480px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 24px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 20px;
+  line-height: 1;
+  color: #6d7175;
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.vehicleGrid {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 12px;
+  align-items: end;
+}
+
+.subSectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 16px 0 8px 0;
+}
+
+.subSectionTitle:first-of-type {
+  margin-top: 0;
+}
+
+.tabsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-left: 8pt;
+}
+
+.tabItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4pt 18px;
+  border: 1px solid #e1e3e5;
+  border-radius: 10px 18px 0 0;
+  text-decoration: none;
+  color: #000000;
+  background: #dfe3e8;
+  font-weight: 400;
+}
+
+.tabItem:not(.tabActive):hover {
+  background: #d4d7da;
+}
+
+.tabActive {
+  background: #fff;
+}
+
+.tabContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tabIcon {
+  color: #8c9196;
+  display: inline-flex;
+}
+
+.tabIconActive {
+  color: #008060;
+}
+
+.timePhraseRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.explanatoryText {
+  font-size: 13px;
+  color: #6d7175;
+  margin-top: 8px;
+}
+
+.deliveryPriceRadioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.deliveryPriceRadioRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dilateRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.providerTable {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.providerTableHeader,
+.providerTableRow {
+  display: grid;
+  grid-template-columns: 24px 1fr 1fr 1fr 1fr;
+  gap: 12px;
+  padding: 8px 12px;
+  align-items: center;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.providerTableHeader > span:not(:first-child),
+.providerTableRow > span:not(:first-child) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.providerTableHeader {
+  background: #f6f6f7;
+  font-weight: 600;
+  color: #3a3a3a;
+}
+
+.providerTableHeader > span:first-child,
+.providerTableRow > span:first-child {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.providerTableRow {
+  border-top: 1px solid #eceeef;
+}
+
+.providerStatusCell {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.providerStatusOk {
+  color: #008060;
+  font-weight: 600;
+}
+
+.providerStatusFail {
+  color: #d72c0d;
+  font-weight: 600;
+}
+
+.providerComingSoon {
+  font-size: 12px;
+  color: #8c9196;
+}
+
+.lalamoveStatusRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.statusText {
+  font-size: 13px;
+  color: #6d7175;
+  margin: 4px 0 0;
+}
+
