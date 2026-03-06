@@ -241,6 +241,12 @@ export default function LocationSettings() {
       href: "/app/carrier-service?tab=providers",
       icon: <span aria-hidden="true">🛵</span>,
     },
+    {
+      id: "carriers",
+      label: "Carriers",
+      href: "/app/carrier-service?tab=carriers",
+      icon: <span aria-hidden="true">🚚</span>,
+    },
   ];
 
   useEffect(() => {

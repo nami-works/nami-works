@@ -58,7 +58,11 @@ export default function App() {
       )}
       <s-app-nav>
         <s-link href="/app/local-delivery">Local delivery</s-link>
+        <s-link href="/app/sales-goals">Sales goals</s-link>
+        <s-link href="/app/retail-expansion">Retail expansion</s-link>
+        <s-link href="/app/visibility">Visibility</s-link>
         <s-link href="/app/settings">Settings</s-link>
+        <s-link href="/app">Extras</s-link>
       </s-app-nav>
       <Outlet />
     </AppProvider>
