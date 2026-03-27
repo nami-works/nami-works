@@ -1,0 +1,53 @@
+{
+  "heading": "Merchandising",
+  "sections": {
+    "icons": "Icons",
+    "announcements": "Announcements",
+    "header": "Header announcements"
+  },
+  "icons": {
+    "selectType": "Metaobject type",
+    "selectTypePlaceholder": "Choose a type…",
+    "noTypes": "No metaobject types found in this store.",
+    "entries": "Entries",
+    "noEntries": "No entries for this type.",
+    "addSelected": "Add selected",
+    "noneSelected": "No entries selected yet. Choose a metaobject type in the sidebar and select entries to manage.",
+    "editEntry": "Edit entry",
+    "deleteEntry": "Delete entry",
+    "deleteConfirm": "Are you sure you want to delete this entry? This cannot be undone.",
+    "createEntry": "Create entry",
+    "fieldLabel": "Label",
+    "fieldImage": "Image",
+    "saved": "Entry saved successfully.",
+    "created": "Entry created successfully.",
+    "deleted": "Entry deleted successfully.",
+    "saveFailed": "Failed to save entry.",
+    "createFailed": "Failed to create entry.",
+    "deleteFailed": "Failed to delete entry.",
+    "apiError": "Failed to load metaobject data. The app may need to be re-authenticated — open the app install link to refresh permissions."
+  },
+  "announcements": {
+    "scanning": "Scanning storefront for promotional fields…",
+    "scanComplete": "Found {{count}} promotional fields.",
+    "rescan": "Re-scan",
+    "noFields": "No promotional fields detected.",
+    "editInTheme": "Edit in Theme",
+    "conflict": "Potential conflict",
+    "conflictDetail": "Inconsistent values detected:",
+    "storefrontFetchFailed": "Could not fetch storefront content. The store may be password-protected.",
+    "scopeError": "Theme access unavailable. The read_themes scope needs to be deployed and accepted by the store. Run 'shopify app deploy' and reinstall the app."
+  },
+  "recommendations": {
+    "title": "Recommendations",
+    "openThemeEditor": "Open theme editor",
+    "openDiscounts": "View discounts",
+    "activeDiscounts": "Active discounts",
+    "noRecommendations": "No recommendations. Your storefront looks well-configured.",
+    "dismissed": "Dismissed"
+  },
+  "header": {
+    "scanning": "Scanning header announcements…",
+    "noFields": "No header announcement fields detected."
+  }
+}
