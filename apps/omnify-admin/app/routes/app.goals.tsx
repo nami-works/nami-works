@@ -7,6 +7,7 @@ import type {
 import { useFetcher, useLoaderData } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import { useTranslation } from "react-i18next";
 import { createHash } from "node:crypto";
 import prisma from "../db.server";
 import { authenticate } from "../shopify.server";
@@ -117,6 +118,17 @@ export default function GoalsPage() {
   const runFetcher = useFetcher<typeof action>();
   const benchmarkFetcher = useFetcher<typeof action>();
   const shopify = useAppBridge();
+  const { t } = useTranslation("goals");
+
+  const rangeOptions = [
+    { value: "since_launch", label: t("dataRange.sinceLaunch") },
+    { value: "last_7", label: t("dataRange.last7") },
+    { value: "last_30", label: t("dataRange.last30") },
+    { value: "last_90", label: t("dataRange.last90") },
+    { value: "this_month", label: t("dataRange.thisMonth") },
+    { value: "last_month", label: t("dataRange.lastMonth") },
+    { value: "custom", label: t("dataRange.customRange") },
+  ];
   const [config, setConfig] = useState<GoalsConfig>(
     loaderConfig ?? DEFAULT_CONFIG,
   );
@@ -186,9 +198,6 @@ export default function GoalsPage() {
     }
     const productIds = benchmarkProducts.map((product) => product.id);
     const productTitles = benchmarkProducts.map((product) => product.title);
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a8ed7416-6dce-4419-b2b3-cd6fbfab9bed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H1',location:'app.goals.tsx:addBenchmark',message:'Submitting benchmark launch request',data:{count:benchmarkProducts.length,productIds},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     const formData = new FormData();
     formData.append("intent", "resolve-benchmark-launch");
     formData.append("productIds", JSON.stringify(productIds));
@@ -217,9 +226,6 @@ export default function GoalsPage() {
       multiple: true,
     });
     const picked = selection?.selection ?? [];
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a8ed7416-6dce-4419-b2b3-cd6fbfab9bed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H6',location:'app.goals.tsx:openBenchmarkProductPicker',message:'Benchmark picker selection',data:{count:picked.length},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     const mapped = picked
       .filter((product) => product?.id && product?.title)
       .map((product) => ({ id: product.id, title: product.title }));
@@ -314,13 +320,7 @@ export default function GoalsPage() {
       }>;
       error?: string;
     };
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a8ed7416-6dce-4419-b2b3-cd6fbfab9bed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H2',location:'app.goals.tsx:benchmarkFetcher',message:'Benchmark fetcher response',data:{ok:response.ok,launchDate:response.launchDate || '',error:response.error || ''},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     if (response.ok) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a8ed7416-6dce-4419-b2b3-cd6fbfab9bed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H7',location:'app.goals.tsx:benchmarkFetcher',message:'Adding benchmark to config',data:{count:response.results?.length ?? 0},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       const results = response.results ?? [];
       if (response.results) {
         setConfig((current) => ({
@@ -399,42 +399,35 @@ export default function GoalsPage() {
 
   useEffect(() => {
     const latestBenchmark = config.benchmarks[config.benchmarks.length - 1];
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a8ed7416-6dce-4419-b2b3-cd6fbfab9bed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H8',location:'app.goals.tsx:configBenchmarks',message:'Benchmarks state updated',data:{count:config.benchmarks.length,latestName:latestBenchmark?.name || '',latestProductId:latestBenchmark?.productId || ''},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
   }, [config.benchmarks]);
 
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a8ed7416-6dce-4419-b2b3-cd6fbfab9bed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H9',location:'app.goals.tsx:benchmarkDraft',message:'Benchmark products updated',data:{count:benchmarkProducts.length},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
   }, [benchmarkProducts]);
 
   return (
-    <s-page heading="Goals">
+    <s-page heading={t("pageHeading")}>
       {saveFetcher.data?.error ? (
-        <s-banner tone="critical" heading="Unable to save configuration">
+        <s-banner tone="critical" heading={t("banners.unableToSave")}>
           {saveFetcher.data.error}
         </s-banner>
       ) : null}
       {runFetcher.data?.error ? (
-        <s-banner tone="critical" heading="Unable to load data">
+        <s-banner tone="critical" heading={t("banners.unableToLoad")}>
           {runFetcher.data.error}
         </s-banner>
       ) : null}
       {benchmarkFetcher.data?.error ? (
-        <s-banner tone="critical" heading="Unable to add benchmark">
+        <s-banner tone="critical" heading={t("banners.unableToAddBenchmark")}>
           {benchmarkFetcher.data.error}
         </s-banner>
       ) : null}
 
-      <s-section heading="Product launch setup">
+      <s-section heading={t("setup.heading")}>
         <div className={styles.formGrid}>
           <s-text-field
-            label="Target product"
+            label={t("setup.targetProduct")}
             value={config.targetProduct}
-            type="search"
-            placeholder="Start typing a product name..."
+            placeholder={t("setup.targetProductPlaceholder")}
             onFocus={openTargetProductPicker}
             onChange={(event: Event) =>
               setConfig((current) => ({
@@ -444,13 +437,13 @@ export default function GoalsPage() {
             }
           />
           <div className={styles.dateField}>
-            <s-text type="strong">Launch date</s-text>
+            <s-text type="strong">{t("setup.launchDate")}</s-text>
             <s-button
               variant="secondary"
               commandFor="launch-date-popover"
               command="--toggle"
             >
-              Select launch date
+              {t("setup.selectLaunchDate")}
             </s-button>
             <s-popover id="launch-date-popover">
               <s-date-picker
@@ -467,19 +460,19 @@ export default function GoalsPage() {
           </div>
         </div>
         <div className={styles.benchmarksBlock}>
-          <s-text type="strong">Benchmarks</s-text>
+          <s-text type="strong">{t("setup.benchmarks")}</s-text>
           {config.benchmarks.length === 0 ? (
-            <s-text color="subdued" className={styles.benchmarksEmpty}>
-              No benchmarks added.
-            </s-text>
+            <span className={styles.benchmarksEmpty}><s-text color="subdued">
+              {t("setup.noBenchmarks")}
+            </s-text></span>
           ) : (
             <table className={styles.benchmarksTable}>
               <thead>
                 <tr>
-                  <th>Product</th>
-                  <th>Launch date</th>
-                  <th>Launch revenue (30d)</th>
-                  <th>Launch units sold (30d)</th>
+                  <th>{t("setup.tableProduct")}</th>
+                  <th>{t("setup.tableLaunchDate")}</th>
+                  <th>{t("setup.tableLaunchRevenue")}</th>
+                  <th>{t("setup.tableLaunchUnits")}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -504,30 +497,31 @@ export default function GoalsPage() {
                         <s-button
                           variant="secondary"
                           icon="menu-horizontal"
-                          accessibilityLabel="More actions"
+                          accessibilityLabel={t("setup.moreActions")}
                           commandFor={popoverId}
                           command="--toggle"
                         ></s-button>
-                        <s-popover id={popoverId} className={styles.actionPopover}>
-                          <s-menu accessibilityLabel="Benchmark actions">
+                        <div className={styles.actionPopover}><s-popover id={popoverId}>
+                          <s-menu accessibilityLabel={t("setup.benchmarkActions")}>
                             <s-button
                               variant="secondary"
                               commandFor={popoverId}
                               command="--hide"
                               onClick={() => openBenchmarkEditModal(index)}
                             >
-                              Edit launch date
+                              {t("setup.editLaunchDate")}
                             </s-button>
                             <s-button
-                              variant="critical"
+                              variant="tertiary"
+                              tone="critical"
                               commandFor={popoverId}
                               command="--hide"
                               onClick={() => removeBenchmark(index)}
                             >
-                              Remove
+                              {t("setup.remove")}
                             </s-button>
                           </s-menu>
-                        </s-popover>
+                        </s-popover></div>
                       </td>
                     </tr>
                   );
@@ -542,18 +536,18 @@ export default function GoalsPage() {
             commandFor="benchmark-modal"
             command="--show"
           >
-            Add benchmark
+            {t("setup.addBenchmark")}
           </s-button>
         </div>
-        <s-text type="strong" className={styles.goalsHeader}>
-          Goals
-        </s-text>
+        <span className={styles.goalsHeader}><s-text type="strong">
+          {t("goals.header")}
+        </s-text></span>
         <div className={styles.goalRows}>
           <div className={styles.goalRow}>
-            <s-text type="strong">Launch day</s-text>
+            <s-text type="strong">{t("goals.launchDay")}</s-text>
             <div className={styles.goalRowFields}>
               <s-text-field
-                label="Revenue"
+                label={t("goals.revenue")}
                 value={config.goals.day1Revenue}
                 onChange={(event: Event) =>
                   updateGoalField(
@@ -563,7 +557,7 @@ export default function GoalsPage() {
                 }
               />
               <s-text-field
-                label="Units sold"
+                label={t("goals.unitsSold")}
                 value={config.goals.day1Units}
                 onChange={(event: Event) =>
                   updateGoalField(
@@ -575,10 +569,10 @@ export default function GoalsPage() {
             </div>
           </div>
           <div className={styles.goalRow}>
-            <s-text type="strong">Launch week</s-text>
+            <s-text type="strong">{t("goals.launchWeek")}</s-text>
             <div className={styles.goalRowFields}>
               <s-text-field
-                label="Revenue"
+                label={t("goals.revenue")}
                 value={config.goals.week1Revenue}
                 onChange={(event: Event) =>
                   updateGoalField(
@@ -588,7 +582,7 @@ export default function GoalsPage() {
                 }
               />
               <s-text-field
-                label="Units sold"
+                label={t("goals.unitsSold")}
                 value={config.goals.week1Units}
                 onChange={(event: Event) =>
                   updateGoalField(
@@ -600,10 +594,10 @@ export default function GoalsPage() {
             </div>
           </div>
           <div className={styles.goalRow}>
-            <s-text type="strong">Launch month</s-text>
+            <s-text type="strong">{t("goals.launchMonth")}</s-text>
             <div className={styles.goalRowFields}>
               <s-text-field
-                label="Revenue"
+                label={t("goals.revenue")}
                 value={config.goals.month1Revenue}
                 onChange={(event: Event) =>
                   updateGoalField(
@@ -613,7 +607,7 @@ export default function GoalsPage() {
                 }
               />
               <s-text-field
-                label="Units sold"
+                label={t("goals.unitsSold")}
                 value={config.goals.month1Units}
                 onChange={(event: Event) =>
                   updateGoalField(
@@ -631,30 +625,30 @@ export default function GoalsPage() {
             onClick={saveConfig}
             disabled={saveFetcher.state === "submitting"}
           >
-            Setup launch
+            {t("setup.setupLaunch")}
           </s-button>
         </div>
       </s-section>
       <s-modal
         id="benchmark-modal"
-        heading={`Benchmark #${config.benchmarks.length + 1}`}
+        heading={t("modals.benchmarkHeading", { number: config.benchmarks.length + 1 })}
       >
         <div className={styles.modalBody}>
-          <s-text-field
-            label="Product"
-            value={benchmarkProducts.map((product) => product.title).join(", ")}
-            type="search"
-            placeholder="Select a product"
-            readonly
-            onClick={openBenchmarkProductPicker}
-            onFocus={openBenchmarkProductPicker}
-          />
+          <div onClick={openBenchmarkProductPicker}>
+            <s-text-field
+              label={t("modals.selectProductField")}
+              value={benchmarkProducts.map((product) => product.title).join(", ")}
+              placeholder={t("modals.selectProductPlaceholder")}
+              readOnly
+              onFocus={openBenchmarkProductPicker}
+            />
+          </div>
           <s-button
             variant="secondary"
             commandFor="add-product-modal"
             command="--show"
           >
-            Add product
+            {t("modals.addProduct")}
           </s-button>
           <div className={styles.modalActions}>
             <s-button
@@ -662,7 +656,7 @@ export default function GoalsPage() {
               commandFor="benchmark-modal"
               command="--hide"
             >
-              Close
+              {t("common:button.close")}
             </s-button>
             <s-button
               variant="primary"
@@ -672,16 +666,16 @@ export default function GoalsPage() {
               }
               onClick={addBenchmark}
             >
-              Add benchmark(s)
+              {t("setup.addBenchmarks")}
             </s-button>
           </div>
         </div>
       </s-modal>
-      <s-modal id="add-product-modal" heading="Add product">
+      <s-modal id="add-product-modal" heading={t("modals.addProduct")}>
         <div className={styles.modalBody}>
-          <s-text type="strong">Selected products</s-text>
+          <s-text type="strong">{t("modals.selectedProducts")}</s-text>
           {benchmarkProducts.length === 0 ? (
-            <s-text color="subdued">No products selected.</s-text>
+            <s-text color="subdued">{t("modals.noProductsSelected")}</s-text>
           ) : (
             <div className={styles.productList}>
               {benchmarkProducts.map((product) => (
@@ -694,21 +688,21 @@ export default function GoalsPage() {
               variant="secondary"
               onClick={openBenchmarkProductPicker}
             >
-              Select products
+              {t("modals.selectProducts")}
             </s-button>
             <s-button
               variant="primary"
               commandFor="add-product-modal"
               command="--hide"
             >
-              Add
+              {t("modals.add")}
             </s-button>
           </div>
         </div>
       </s-modal>
-      <s-modal id="benchmark-success-modal" heading="Benchmark(s) added">
+      <s-modal id="benchmark-success-modal" heading={t("modals.benchmarkAdded")}>
         <div className={styles.modalBody}>
-          <s-text>Benchmark(s) added</s-text>
+          <s-text>{t("modals.benchmarkAdded")}</s-text>
           <div className={styles.modalActions}>
             <s-button
               variant="secondary"
@@ -719,7 +713,7 @@ export default function GoalsPage() {
                 reopenBenchmarkModal();
               }}
             >
-              Add more benchmarks
+              {t("setup.addMoreBenchmarks")}
             </s-button>
             <s-button
               variant="primary"
@@ -727,19 +721,19 @@ export default function GoalsPage() {
               command="--hide"
               onClick={closeBenchmarkSuccessModal}
             >
-              Close
+              {t("common:button.close")}
             </s-button>
           </div>
         </div>
       </s-modal>
-      <s-modal id="benchmark-edit-modal" heading="Edit launch date">
+      <s-modal id="benchmark-edit-modal" heading={t("modals.editLaunchDate")}>
         <div className={styles.modalBody}>
           <s-button
             variant="secondary"
             commandFor="benchmark-edit-date-popover"
             command="--toggle"
           >
-            Override launch date
+            {t("setup.overrideLaunchDate")}
           </s-button>
           <s-popover id="benchmark-edit-date-popover">
             <s-date-picker
@@ -759,14 +753,14 @@ export default function GoalsPage() {
               command="--hide"
               onClick={closeBenchmarkEditModal}
             >
-              Cancel
+              {t("common:button.cancel")}
             </s-button>
             <s-button
               variant="primary"
               disabled={!editingBenchmarkDate}
               onClick={submitBenchmarkOverride}
             >
-              Save
+              {t("common:button.save")}
             </s-button>
           </div>
         </div>
@@ -774,10 +768,10 @@ export default function GoalsPage() {
 
       <s-section heading="[More content here]" slot="aside"></s-section>
 
-      <s-section heading="Data range">
+      <s-section heading={t("dataRange.heading")}>
         <div className={styles.formGrid}>
           <s-select
-            label="Date range"
+            label={t("dataRange.label")}
             value={rangeType}
             onChange={(event: Event) =>
               setRangeType(
@@ -785,7 +779,7 @@ export default function GoalsPage() {
               )
             }
           >
-            {RANGE_OPTIONS.map((option) => (
+            {rangeOptions.map((option) => (
               <s-option key={option.value} value={option.value}>
                 {option.label}
               </s-option>
@@ -794,13 +788,13 @@ export default function GoalsPage() {
           {rangeType === "custom" ? (
             <>
               <div className={styles.dateField}>
-                <s-text type="strong">Start date</s-text>
+                <s-text type="strong">{t("dataRange.startDate")}</s-text>
                 <s-button
                   variant="secondary"
                   commandFor="custom-start-date-popover"
                   command="--toggle"
                 >
-                  Select start date
+                  {t("dataRange.selectStartDate")}
                 </s-button>
                 <s-popover id="custom-start-date-popover">
                   <s-date-picker
@@ -815,13 +809,13 @@ export default function GoalsPage() {
                 </s-popover>
               </div>
               <div className={styles.dateField}>
-                <s-text type="strong">End date</s-text>
+                <s-text type="strong">{t("dataRange.endDate")}</s-text>
                 <s-button
                   variant="secondary"
                   commandFor="custom-end-date-popover"
                   command="--toggle"
                 >
-                  Select end date
+                  {t("dataRange.selectEndDate")}
                 </s-button>
                 <s-popover id="custom-end-date-popover">
                   <s-date-picker
@@ -844,35 +838,35 @@ export default function GoalsPage() {
             onClick={runReport}
             disabled={!isConfigSaved || runFetcher.state === "submitting"}
           >
-            Update data
+            {t("dataRange.updateData")}
           </s-button>
         </div>
       </s-section>
 
-      <s-section heading="Summary">
+      <s-section heading={t("summary.heading")}>
         {!runData ? (
           <s-text color="subdued">
-            Run a data load to see KPI summary, charts, and tables.
+            {t("summary.noData")}
           </s-text>
         ) : (
           <div className={styles.summaryGrid}>
             <div className={styles.metricCard}>
-              <s-text type="strong">Revenue</s-text>
+              <s-text type="strong">{t("summary.revenue")}</s-text>
               <s-text>{formatCurrency(summary!.revenue, currencyCode)}</s-text>
               <s-text color="subdued">{runData.range.label}</s-text>
             </div>
             <div className={styles.metricCard}>
-              <s-text type="strong">Orders</s-text>
+              <s-text type="strong">{t("summary.orders")}</s-text>
               <s-text>{summary!.orders}</s-text>
               <s-text color="subdued">{runData.range.label}</s-text>
             </div>
             <div className={styles.metricCard}>
-              <s-text type="strong">Units</s-text>
+              <s-text type="strong">{t("summary.units")}</s-text>
               <s-text>{summary!.units}</s-text>
               <s-text color="subdued">{runData.range.label}</s-text>
             </div>
             <div className={styles.metricCard}>
-              <s-text type="strong">AOV</s-text>
+              <s-text type="strong">{t("summary.aov")}</s-text>
               <s-text>{formatCurrency(summary!.aov, currencyCode)}</s-text>
               <s-text color="subdued">{runData.range.label}</s-text>
             </div>
@@ -880,51 +874,51 @@ export default function GoalsPage() {
         )}
       </s-section>
 
-      <s-section heading="Launch progress">
+      <s-section heading={t("launchProgress.heading")}>
         {!runData?.launch ? (
-          <s-text color="subdued">Launch date not configured.</s-text>
+          <s-text color="subdued">{t("launchProgress.noLaunchDate")}</s-text>
         ) : (
           <div className={styles.summaryGrid}>
             <div className={styles.metricCard}>
-              <s-text type="strong">Day 1 revenue</s-text>
+              <s-text type="strong">{t("launchProgress.day1Revenue")}</s-text>
               <s-text>
                 {formatCurrency(runData.launch.day1.revenue, currencyCode)}
               </s-text>
               <s-text color="subdued">
-                Goal: {config.goals.day1Revenue || "--"}
+                {t("launchProgress.goalLabel", { goal: config.goals.day1Revenue || "--" })}
               </s-text>
             </div>
             <div className={styles.metricCard}>
-              <s-text type="strong">Week 1 revenue</s-text>
+              <s-text type="strong">{t("launchProgress.week1Revenue")}</s-text>
               <s-text>
                 {formatCurrency(runData.launch.week1.revenue, currencyCode)}
               </s-text>
               <s-text color="subdued">
-                Goal: {config.goals.week1Revenue || "--"}
+                {t("launchProgress.goalLabel", { goal: config.goals.week1Revenue || "--" })}
               </s-text>
             </div>
             <div className={styles.metricCard}>
-              <s-text type="strong">Month 1 revenue</s-text>
+              <s-text type="strong">{t("launchProgress.month1Revenue")}</s-text>
               <s-text>
                 {formatCurrency(runData.launch.month1.revenue, currencyCode)}
               </s-text>
               <s-text color="subdued">
-                Goal: {config.goals.month1Revenue || "--"}
+                {t("launchProgress.goalLabel", { goal: config.goals.month1Revenue || "--" })}
               </s-text>
             </div>
           </div>
         )}
       </s-section>
 
-      <s-section heading="Top products">
+      <s-section heading={t("topProducts.heading")}>
         {!runData?.topProducts?.length ? (
-          <s-text color="subdued">No product data available.</s-text>
+          <s-text color="subdued">{t("topProducts.noData")}</s-text>
         ) : (
           <div className={styles.table}>
             <div className={styles.tableHeader}>
-              <span>Product</span>
-              <span>Revenue</span>
-              <span>Units</span>
+              <span>{t("topProducts.product")}</span>
+              <span>{t("topProducts.revenue")}</span>
+              <span>{t("topProducts.units")}</span>
             </div>
             {runData.topProducts.map((product) => (
               <div key={product.title} className={styles.tableRow}>
@@ -939,16 +933,16 @@ export default function GoalsPage() {
         )}
       </s-section>
 
-      <s-section heading="Benchmark comparison">
+      <s-section heading={t("benchmarkComparison.heading")}>
         {!runData?.benchmarks?.length ? (
-          <s-text color="subdued">No benchmark data available.</s-text>
+          <s-text color="subdued">{t("benchmarkComparison.noData")}</s-text>
         ) : (
           <div className={styles.table}>
             <div className={styles.tableHeader}>
-              <span>Product</span>
-              <span>Revenue</span>
-              <span>Units</span>
-              <span>Orders</span>
+              <span>{t("benchmarkComparison.product")}</span>
+              <span>{t("benchmarkComparison.revenue")}</span>
+              <span>{t("benchmarkComparison.units")}</span>
+              <span>{t("benchmarkComparison.orders")}</span>
             </div>
             {runData.benchmarks.map((benchmark) => (
               <div key={benchmark.name} className={styles.tableRow}>
@@ -964,16 +958,16 @@ export default function GoalsPage() {
         )}
       </s-section>
 
-      <s-section heading="Segment goals">
+      <s-section heading={t("segments.heading")}>
         {!runData?.segments?.length ? (
-          <s-text color="subdued">No segment data available.</s-text>
+          <s-text color="subdued">{t("segments.noData")}</s-text>
         ) : (
           <div className={styles.table}>
             <div className={styles.tableHeader}>
-              <span>Segment</span>
-              <span>Revenue</span>
-              <span>Units</span>
-              <span>Goals</span>
+              <span>{t("segments.segmentCol")}</span>
+              <span>{t("summary.revenue")}</span>
+              <span>{t("summary.units")}</span>
+              <span>{t("segments.goalsCol")}</span>
             </div>
             {runData.segments.map((segment) => (
               <div key={segment.label} className={styles.tableRow}>
@@ -994,16 +988,16 @@ export default function GoalsPage() {
         )}
       </s-section>
 
-      <s-section heading="Recent orders">
+      <s-section heading={t("recentOrders.heading")}>
         {!runData?.recentOrders?.length ? (
-          <s-text color="subdued">No recent orders found.</s-text>
+          <s-text color="subdued">{t("recentOrders.noData")}</s-text>
         ) : (
           <div className={styles.table}>
             <div className={styles.tableHeader}>
-              <span>Order</span>
-              <span>Date</span>
-              <span>Customer</span>
-              <span>Total</span>
+              <span>{t("recentOrders.order")}</span>
+              <span>{t("recentOrders.date")}</span>
+              <span>{t("recentOrders.customer")}</span>
+              <span>{t("recentOrders.total")}</span>
             </div>
             {runData.recentOrders.map((order) => (
               <div key={order.name} className={styles.tableRow}>
@@ -1020,7 +1014,7 @@ export default function GoalsPage() {
         {exportCsvUrl ? (
           <div className={styles.actionsRow}>
             <a className={styles.exportLink} href={exportCsvUrl} download>
-              Export data (CSV)
+              {t("exportCsv")}
             </a>
           </div>
         ) : null}
@@ -1046,303 +1040,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   };
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const { admin, session } = await authenticate.admin(request);
-  const shop = session.shop;
-  const formData = await request.formData();
-  const intent = formData.get("intent");
-
-  if (intent === "resolve-benchmark-launch") {
-    const productIdsPayload = formData.get("productIds");
-    const productTitlesPayload = formData.get("productTitles");
-    const productId = formData.get("productId");
-    const productTitle = formData.get("productTitle");
-    const productIds =
-      typeof productIdsPayload === "string"
-        ? (JSON.parse(productIdsPayload) as string[])
-        : typeof productId === "string" && productId
-          ? [productId]
-          : [];
-    const productTitles =
-      typeof productTitlesPayload === "string"
-        ? (JSON.parse(productTitlesPayload) as string[])
-        : typeof productTitle === "string" && productTitle
-          ? [productTitle]
-          : [];
-    if (!productIds.length) {
-      return { ok: false, error: "Benchmark product is missing." };
-    }
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a8ed7416-6dce-4419-b2b3-cd6fbfab9bed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H3',location:'app.goals.tsx:resolve-benchmark-launch',message:'Resolve benchmark launch start',data:{count:productIds.length},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-    let cachedLaunch: { firstSoldAt: Date | null } | null = null;
-    let cacheAvailable = true;
-    try {
-      const results: Array<{
-        productId: string;
-        productTitle: string;
-        launchDate: string;
-      }> = [];
-
-      for (const [index, id] of productIds.entries()) {
-        const title = productTitles[index] ?? "";
-        let cached = null as { firstSoldAt: Date | null } | null;
-        try {
-          cached = await prisma.benchmarkLaunch.findUnique({
-            where: { shop_productId: { shop, productId: id } },
-          });
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : "unknown error";
-          cacheAvailable =
-            !errorMessage.includes("BenchmarkLaunch") &&
-            !errorMessage.includes("does not exist");
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/a8ed7416-6dce-4419-b2b3-cd6fbfab9bed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H3',location:'app.goals.tsx:resolve-benchmark-launch',message:'Benchmark cache lookup failed',data:{cacheAvailable,error:errorMessage},timestamp:Date.now()})}).catch(()=>{});
-          // #endregion
-          if (cacheAvailable) {
-            return {
-              ok: false,
-              error: "Unable to read benchmark cache. Please try again.",
-            };
-          }
-        }
-
-        if (cached) {
-          results.push({
-            productId: id,
-            productTitle: title,
-            launchDate: cached.firstSoldAt ? formatDateOnly(cached.firstSoldAt) : "",
-          });
-          continue;
-        }
-
-        const response = await admin.graphql(
-          `#graphql
-          query BenchmarkProduct($id: ID!) {
-            product(id: $id) {
-              id
-              title
-              createdAt
-            }
-          }`,
-          { variables: { id } },
-        );
-        const json = await response.json();
-        if (json.errors || !json.data?.product) {
-          return { ok: false, error: "Unable to load benchmark product." };
-        }
-        const product = json.data.product as {
-          id: string;
-          title: string;
-          createdAt?: string;
-        };
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a8ed7416-6dce-4419-b2b3-cd6fbfab9bed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H4',location:'app.goals.tsx:resolve-benchmark-launch',message:'Loaded product metadata',data:{productId:product.id,createdAt:product.createdAt || ""},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
-        const firstSoldAt = await findFirstSoldAtForProduct(
-          admin,
-          product.id,
-          product.createdAt ?? null,
-        );
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a8ed7416-6dce-4419-b2b3-cd6fbfab9bed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H4',location:'app.goals.tsx:resolve-benchmark-launch',message:'Computed first sold at',data:{firstSoldAt:firstSoldAt ? formatDateOnly(firstSoldAt) : ""},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
-        let savedDate = firstSoldAt;
-        if (cacheAvailable) {
-          const saved = await prisma.benchmarkLaunch.upsert({
-            where: { shop_productId: { shop, productId: id } },
-            update: {
-              firstSoldAt,
-              productTitle: title || product.title,
-              computedAt: new Date(),
-            },
-            create: {
-              shop,
-              productId: id,
-              productTitle: title || product.title,
-              firstSoldAt,
-              computedAt: new Date(),
-            },
-          });
-          savedDate = saved.firstSoldAt;
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/a8ed7416-6dce-4419-b2b3-cd6fbfab9bed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H5',location:'app.goals.tsx:resolve-benchmark-launch',message:'Persisted benchmark launch',data:{savedId:saved.id,hasDate:Boolean(saved.firstSoldAt)},timestamp:Date.now()})}).catch(()=>{});
-          // #endregion
-        } else {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/a8ed7416-6dce-4419-b2b3-cd6fbfab9bed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H5',location:'app.goals.tsx:resolve-benchmark-launch',message:'Skipped cache persistence (table missing)',data:{hasDate:Boolean(firstSoldAt)},timestamp:Date.now()})}).catch(()=>{});
-          // #endregion
-        }
-
-        results.push({
-          productId: id,
-          productTitle: title || product.title,
-          launchDate: savedDate ? formatDateOnly(savedDate) : "",
-        });
-      }
-
-      return { ok: true, results };
-    } catch (error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a8ed7416-6dce-4419-b2b3-cd6fbfab9bed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H5',location:'app.goals.tsx:resolve-benchmark-launch',message:'Resolve benchmark launch failed',data:{error: error instanceof Error ? error.message : "unknown"},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
-      return {
-        ok: false,
-        error: error instanceof Error ? error.message : "Unknown error.",
-      };
-    }
-  }
-
-  if (intent === "save-config") {
-    const configJson = formData.get("configJson");
-    if (typeof configJson !== "string") {
-      return { ok: false, error: "Configuration payload missing." };
-    }
-    let parsedConfig: GoalsConfig;
-    try {
-      parsedConfig = JSON.parse(configJson) as GoalsConfig;
-    } catch {
-      return { ok: false, error: "Configuration payload invalid." };
-    }
-    const savedConfig = await prisma.goalsConfig.upsert({
-      where: { shop },
-      update: { data: parsedConfig },
-      create: { shop, data: parsedConfig },
-    });
-    return { ok: true, config: savedConfig.data };
-  }
-
-  if (intent === "override-benchmark-launch") {
-    const productId = formData.get("productId");
-    const productTitle = formData.get("productTitle");
-    const launchDate = formData.get("launchDate");
-    if (typeof productId !== "string" || !productId) {
-      return { ok: false, error: "Benchmark product is missing." };
-    }
-    if (typeof launchDate !== "string" || !launchDate) {
-      return { ok: false, error: "Launch date is required." };
-    }
-    const startDate = new Date(launchDate);
-    if (Number.isNaN(startDate.getTime())) {
-      return { ok: false, error: "Launch date is invalid." };
-    }
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + 30);
-    const formattedStart = formatDateOnly(startDate);
-    const formattedEnd = formatDateOnly(endDate);
-    try {
-      const orders = await fetchOrders(admin, formattedStart, formattedEnd);
-      const { launchRevenue, launchUnits } = buildBenchmarkOverrideMetrics(
-        orders,
-        productId,
-      );
-      let cacheAvailable = true;
-      try {
-        await prisma.benchmarkLaunch.upsert({
-          where: { shop_productId: { shop, productId } },
-          update: {
-            firstSoldAt: startDate,
-            productTitle:
-              typeof productTitle === "string" && productTitle.trim().length > 0
-                ? productTitle.trim()
-                : undefined,
-            computedAt: new Date(),
-          },
-          create: {
-            shop,
-            productId,
-            productTitle:
-              typeof productTitle === "string" && productTitle.trim().length > 0
-                ? productTitle.trim()
-                : undefined,
-            firstSoldAt: startDate,
-            computedAt: new Date(),
-          },
-        });
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "unknown error";
-        cacheAvailable =
-          !errorMessage.includes("BenchmarkLaunch") &&
-          !errorMessage.includes("does not exist");
-        if (cacheAvailable) {
-          return {
-            ok: false,
-            error: "Unable to update benchmark cache. Please try again.",
-          };
-        }
-      }
-      return {
-        ok: true,
-        productId,
-        launchDate: formattedStart,
-        launchRevenue,
-        launchUnits,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        error: error instanceof Error ? error.message : "Unknown error.",
-      };
-    }
-  }
-
-  if (intent === "run-report") {
-    const configRecord = await prisma.goalsConfig.findUnique({
-      where: { shop },
-    });
-    if (!configRecord?.data) {
-      return { ok: false, error: "Please save a configuration first." };
-    }
-    const config = configRecord.data as GoalsConfig;
-    const rangeType = String(formData.get("rangeType") ?? "last_30");
-    const customStart = String(formData.get("customStart") ?? "");
-    const customEnd = String(formData.get("customEnd") ?? "");
-
-    const range = getDateRange(rangeType, config.launchDate, customStart, customEnd);
-    if (!range) {
-      return { ok: false, error: "Invalid date range." };
-    }
-
-    const rangeKey = `${range.startDate}:${range.endDate}:${range.label}`;
-    const configHash = createHash("sha256")
-      .update(JSON.stringify(config))
-      .digest("hex");
-    const cachedRun = await prisma.goalsRun.findFirst({
-      where: { shop, rangeKey, configHash },
-      orderBy: { createdAt: "desc" },
-    });
-    if (cachedRun?.data) {
-      return { ok: true, run: cachedRun.data };
-    }
-
-    try {
-      const orders = await fetchOrders(admin, range.startDate, range.endDate);
-      const runData = buildRunData(orders, config, range);
-      const savedRun = await prisma.goalsRun.create({
-        data: {
-          shop,
-          rangeKey,
-          configHash,
-          data: runData,
-        },
-      });
-      return { ok: true, run: savedRun.data };
-    } catch (error) {
-      return {
-        ok: false,
-        error: error instanceof Error ? error.message : "Unknown error.",
-      };
-    }
-  }
-
-  return { ok: false, error: "Unsupported request." };
-};
-
-export const headers: HeadersFunction = (headersArgs) => {
-  return boundary.headers(headersArgs);
-};
+// ---------------------------------------------------------------------------
+// Helper types & functions (must be declared before action)
+// ---------------------------------------------------------------------------
 
 type OrderLineItem = {
   title: string;
@@ -1373,7 +1073,7 @@ const fetchOrders = async (admin: any, startDate: string, endDate: string) => {
   const query = `created_at:>=${startDate} created_at:<=${endDate}`;
 
   while (hasNextPage) {
-    const response = await admin.graphql(
+    const response: Response = await admin.graphql(
       `#graphql
       query OrdersForGoals($first: Int!, $after: String, $query: String) {
         orders(first: $first, after: $after, query: $query) {
@@ -1424,11 +1124,11 @@ const fetchOrders = async (admin: any, startDate: string, endDate: string) => {
       }`,
       { variables: { first: 100, after, query } },
     );
-    const json = await response.json();
+    const json: any = await response.json();
     if (json.errors) {
       throw new Error("Shopify returned errors while loading orders.");
     }
-    const payload = json.data.orders;
+    const payload: any = json.data.orders;
     payload.nodes.forEach((order: any) => {
       const totalMoney = order.currentTotalPriceSet?.shopMoney;
       const currencyCode = totalMoney?.currencyCode ?? "USD";
@@ -1474,7 +1174,7 @@ const findFirstSoldAtForProduct = async (
   const query = createdAtDate ? `created_at:>=${createdAtDate}` : undefined;
 
   while (hasNextPage && pageCount < 20) {
-    const response = await admin.graphql(
+    const response: Response = await admin.graphql(
       `#graphql
       query OrdersForBenchmark($first: Int!, $after: String, $query: String) {
         orders(
@@ -1509,11 +1209,11 @@ const findFirstSoldAtForProduct = async (
       }`,
       { variables: { first: 50, after, query } },
     );
-    const json = await response.json();
+    const json: any = await response.json();
     if (json.errors) {
       throw new Error("Shopify returned errors while loading benchmark orders.");
     }
-    const payload = json.data.orders;
+    const payload: any = json.data.orders;
     for (const order of payload.nodes) {
       let matchedRevenue = 0;
       order.lineItems.nodes.forEach((item: any) => {
@@ -1914,3 +1614,281 @@ const formatCurrency = (amount: number, currencyCode: string) => {
     maximumFractionDigits: 2,
   }).format(amount);
 };
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const { admin, session } = await authenticate.admin(request);
+  const shop = session.shop;
+  const formData = await request.formData();
+  const intent = formData.get("intent");
+
+  if (intent === "resolve-benchmark-launch") {
+    const productIdsPayload = formData.get("productIds");
+    const productTitlesPayload = formData.get("productTitles");
+    const productId = formData.get("productId");
+    const productTitle = formData.get("productTitle");
+    const productIds =
+      typeof productIdsPayload === "string"
+        ? (JSON.parse(productIdsPayload) as string[])
+        : typeof productId === "string" && productId
+          ? [productId]
+          : [];
+    const productTitles =
+      typeof productTitlesPayload === "string"
+        ? (JSON.parse(productTitlesPayload) as string[])
+        : typeof productTitle === "string" && productTitle
+          ? [productTitle]
+          : [];
+    if (!productIds.length) {
+      return { ok: false, error: "Benchmark product is missing." };
+    }
+    let cachedLaunch: { firstSoldAt: Date | null } | null = null;
+    let cacheAvailable = true;
+    try {
+      const results: Array<{
+        productId: string;
+        productTitle: string;
+        launchDate: string;
+      }> = [];
+
+      for (const [index, id] of productIds.entries()) {
+        const title = productTitles[index] ?? "";
+        let cached = null as { firstSoldAt: Date | null } | null;
+        try {
+          cached = await prisma.benchmarkLaunch.findUnique({
+            where: { shop_productId: { shop, productId: id } },
+          });
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : "unknown error";
+          cacheAvailable =
+            !errorMessage.includes("BenchmarkLaunch") &&
+            !errorMessage.includes("does not exist");
+          if (cacheAvailable) {
+            return {
+              ok: false,
+              error: "Unable to read benchmark cache. Please try again.",
+            };
+          }
+        }
+
+        if (cached) {
+          results.push({
+            productId: id,
+            productTitle: title,
+            launchDate: cached.firstSoldAt ? formatDateOnly(cached.firstSoldAt) : "",
+          });
+          continue;
+        }
+
+        const response = await admin.graphql(
+          `#graphql
+          query BenchmarkProduct($id: ID!) {
+            product(id: $id) {
+              id
+              title
+              createdAt
+            }
+          }`,
+          { variables: { id } },
+        );
+        const json = await response.json();
+        if ((json as any).errors || !json.data?.product) {
+          return { ok: false, error: "Unable to load benchmark product." };
+        }
+        const product = json.data.product as {
+          id: string;
+          title: string;
+          createdAt?: string;
+        };
+        const firstSoldAt = await findFirstSoldAtForProduct(
+          admin,
+          product.id,
+          product.createdAt ?? null,
+        );
+        let savedDate = firstSoldAt;
+        if (cacheAvailable) {
+          const saved = await prisma.benchmarkLaunch.upsert({
+            where: { shop_productId: { shop, productId: id } },
+            update: {
+              firstSoldAt,
+              productTitle: title || product.title,
+              computedAt: new Date(),
+            },
+            create: {
+              shop,
+              productId: id,
+              productTitle: title || product.title,
+              firstSoldAt,
+              computedAt: new Date(),
+            },
+          });
+          savedDate = saved.firstSoldAt;
+        } else {
+        }
+
+        results.push({
+          productId: id,
+          productTitle: title || product.title,
+          launchDate: savedDate ? formatDateOnly(savedDate) : "",
+        });
+      }
+
+      return { ok: true, results };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : "Unknown error.",
+      };
+    }
+  }
+
+  if (intent === "save-config") {
+    const configJson = formData.get("configJson");
+    if (typeof configJson !== "string") {
+      return { ok: false, error: "Configuration payload missing." };
+    }
+    let parsedConfig: GoalsConfig;
+    try {
+      parsedConfig = JSON.parse(configJson) as GoalsConfig;
+    } catch {
+      return { ok: false, error: "Configuration payload invalid." };
+    }
+    const savedConfig = await prisma.goalsConfig.upsert({
+      where: { shop },
+      update: { data: parsedConfig },
+      create: { shop, data: parsedConfig },
+    });
+    return { ok: true, config: savedConfig.data };
+  }
+
+  if (intent === "override-benchmark-launch") {
+    const productId = formData.get("productId");
+    const productTitle = formData.get("productTitle");
+    const launchDate = formData.get("launchDate");
+    if (typeof productId !== "string" || !productId) {
+      return { ok: false, error: "Benchmark product is missing." };
+    }
+    if (typeof launchDate !== "string" || !launchDate) {
+      return { ok: false, error: "Launch date is required." };
+    }
+    const startDate = new Date(launchDate);
+    if (Number.isNaN(startDate.getTime())) {
+      return { ok: false, error: "Launch date is invalid." };
+    }
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 30);
+    const formattedStart = formatDateOnly(startDate);
+    const formattedEnd = formatDateOnly(endDate);
+    try {
+      const orders = await fetchOrders(admin, formattedStart, formattedEnd);
+      const { launchRevenue, launchUnits } = buildBenchmarkOverrideMetrics(
+        orders,
+        productId,
+      );
+      let cacheAvailable = true;
+      try {
+        await prisma.benchmarkLaunch.upsert({
+          where: { shop_productId: { shop, productId } },
+          update: {
+            firstSoldAt: startDate,
+            productTitle:
+              typeof productTitle === "string" && productTitle.trim().length > 0
+                ? productTitle.trim()
+                : undefined,
+            computedAt: new Date(),
+          },
+          create: {
+            shop,
+            productId,
+            productTitle:
+              typeof productTitle === "string" && productTitle.trim().length > 0
+                ? productTitle.trim()
+                : undefined,
+            firstSoldAt: startDate,
+            computedAt: new Date(),
+          },
+        });
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "unknown error";
+        cacheAvailable =
+          !errorMessage.includes("BenchmarkLaunch") &&
+          !errorMessage.includes("does not exist");
+        if (cacheAvailable) {
+          return {
+            ok: false,
+            error: "Unable to update benchmark cache. Please try again.",
+          };
+        }
+      }
+      return {
+        ok: true,
+        productId,
+        launchDate: formattedStart,
+        launchRevenue,
+        launchUnits,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : "Unknown error.",
+      };
+    }
+  }
+
+  if (intent === "run-report") {
+    const configRecord = await prisma.goalsConfig.findUnique({
+      where: { shop },
+    });
+    if (!configRecord?.data) {
+      return { ok: false, error: "Please save a configuration first." };
+    }
+    const config = configRecord.data as GoalsConfig;
+    const rangeType = String(formData.get("rangeType") ?? "last_30");
+    const customStart = String(formData.get("customStart") ?? "");
+    const customEnd = String(formData.get("customEnd") ?? "");
+
+    const range = getDateRange(rangeType, config.launchDate, customStart, customEnd);
+    if (!range) {
+      return { ok: false, error: "Invalid date range." };
+    }
+
+    const rangeKey = `${range.startDate}:${range.endDate}:${range.label}`;
+    const configHash = createHash("sha256")
+      .update(JSON.stringify(config))
+      .digest("hex");
+    const cachedRun = await prisma.goalsRun.findFirst({
+      where: { shop, rangeKey, configHash },
+      orderBy: { createdAt: "desc" },
+    });
+    if (cachedRun?.data) {
+      return { ok: true, run: cachedRun.data };
+    }
+
+    try {
+      const orders = await fetchOrders(admin, range.startDate, range.endDate);
+      const runData = buildRunData(orders, config, range);
+      const savedRun = await prisma.goalsRun.create({
+        data: {
+          shop,
+          rangeKey,
+          configHash,
+          data: runData,
+        },
+      });
+      return { ok: true, run: savedRun.data };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : "Unknown error.",
+      };
+    }
+  }
+
+  return { ok: false, error: "Unsupported request." };
+};
+
+export const headers: HeadersFunction = (headersArgs) => {
+  return boundary.headers(headersArgs);
+};
+

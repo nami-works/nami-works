@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import type {
   ActionFunctionArgs,
   HeadersFunction,
@@ -8,8 +10,11 @@ import { useFetcher, useLoaderData, useRevalidator, useSubmit } from "react-rout
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
 import {
+  buildLalamoveRecipientRemarks,
   createLalamoveQuotation,
+  cancelLalamoveOrder,
   getLalamoveOrderDetails,
+  getLalamoveCityInfo,
   placeLalamoveOrder,
   sanitizeLalamoveErrorMessage,
 } from "../services/lalamove.server";
@@ -34,7 +39,6 @@ import {
   getFailedDeliveryTag,
 } from "../services/lalamove-sync.server";
 import { runCarrierQuotationForOrderId } from "../services/auto-routing.server";
-import { normalizeShippingAddress } from "../services/carrier/geocode.server";
 import {
   checkAndApplyEscalations,
   type EscalationResult,
@@ -60,8 +64,61 @@ const toAdminStoreHandle = (shop: string) => shop.replace(/\.myshopify\.com$/i, 
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-const getDayIndexInTimeZone = (date: Date, timeZone: string) => {
-  const formatter = new Intl.DateTimeFormat("en-CA", {
+const getStartOfDay = (): Date => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+// Detects wait-time special request sub-options by their description (e.g. "Até 30min", "Até 1h")
+const WAIT_TIME_PATTERN = /\d+\s*(min|h\b|hora)/i;
+
+/** Map Lalamove external status to internal status key (matches webhooks.lalamove.tsx) */
+const mapLalamoveStatusToInternal = (status: string): string => {
+  const normalized = status.trim().toUpperCase();
+  switch (normalized) {
+    case "ASSIGNING_DRIVER": return "assigning";
+    case "ON_GOING": return "heading_to_pickup";
+    case "PICKED_UP": return "in_progress";
+    case "COMPLETED": return "delivered";
+    case "CANCELED": return "failed";
+    case "REJECTED": return "rejected";
+    case "EXPIRED": return "expired";
+    default: return "requested";
+  }
+};
+
+/** Map internal status to Polaris badge tone */
+type BadgeTone = "info" | "warning" | "success" | "critical" | "auto" | "neutral" | "caution";
+const getStatusBadgeTone = (status: string): BadgeTone => {
+  switch (status) {
+    case "assigning":
+    case "heading_to_pickup":
+      return "info";
+    case "in_progress":
+      return "warning";
+    case "delivered":
+    case "requested":
+      return "success";
+    case "failed":
+    case "rejected":
+      return "critical";
+    case "expired":
+      return "caution";
+    default:
+      return "info";
+  }
+};
+
+const TERMINAL_DISPATCH_STATUSES = new Set(["failed", "rejected", "expired"]);
+
+const getDayIndexInTimeZone = (
+  date: Date,
+  timeZone: string,
+  userLocale: string,
+) => {
+  const locale = userLocale?.replace("_", "-") || "en-US";
+  const formatter = new Intl.DateTimeFormat(locale, {
     timeZone,
     year: "numeric",
     month: "2-digit",
@@ -109,7 +166,7 @@ const toDeliveryPromiseDays = (value: string | null) => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return DEFAULT_DELIVERY_PROMISE_DAYS;
   const normalized = Math.trunc(parsed);
-  if (![1, 2, 3, 4].includes(normalized)) return DEFAULT_DELIVERY_PROMISE_DAYS;
+  if (![0, 1, 2, 3, 4].includes(normalized)) return DEFAULT_DELIVERY_PROMISE_DAYS;
   return normalized;
 };
 
@@ -130,20 +187,22 @@ export default function Index() {
     ordersError,
     mapsApiKey,
     mapsMapId,
-    shipmentRequestWarning,
+    shipmentRequestOrders,
     routeStats,
     precomputedRoutes,
     lalamoveConfigs,
     credentialStatus,
     pendingRoutes,
-    autoAssignLogs,
+    returnPickupRequests,
     shop,
     userLocale,
     availablePresaleTags,
     hasUnfulfilledPresaleOrders,
     failedDeliveryCount,
+    activeDispatchData,
   } =
     useLoaderData<typeof loader>();
+  const { t } = useTranslation("local-delivery");
   const lalamoveFetcher = useFetcher<typeof action>();
   const lalamoveSettingsFetcher = useFetcher<typeof action>();
   const optimizeFetcher = useFetcher<typeof action>();
@@ -152,6 +211,8 @@ export default function Index() {
   const refreshStatsFetcher = useFetcher<typeof action>();
   const pendingRouteFetcher = useFetcher<typeof action>();
   const revalidator = useRevalidator();
+  const trackingFetcher = useFetcher<typeof action>();
+  const trackingRouteRef = useRef<string | null>(null);
   const submit = useSubmit();
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(
     () => new Set(),
@@ -161,6 +222,8 @@ export default function Index() {
   const [deliveryPromiseDays, setDeliveryPromiseDays] = useState(
     filters.deliveryPromiseDays,
   );
+  const [sameDayHour, setSameDayHour] = useState(12);
+  const [sameDayMinute, setSameDayMinute] = useState(0);
   const [selectedPresaleTags, setSelectedPresaleTags] = useState<string[]>(
     filters.selectedPresaleTags,
   );
@@ -169,6 +232,19 @@ export default function Index() {
     filters.selectedPresaleTags,
   );
   const [isAddressErrorsModalOpen, setIsAddressErrorsModalOpen] = useState(false);
+  const [isShipmentRequestsModalOpen, setIsShipmentRequestsModalOpen] = useState(false);
+  const [isReturnPickupsModalOpen, setIsReturnPickupsModalOpen] = useState(false);
+  const [selectedReturnIds, setSelectedReturnIds] = useState<Set<string>>(() => new Set());
+  const [returnInstructions, setReturnInstructions] = useState("");
+  const [returnQuotePreview, setReturnQuotePreview] = useState<{
+    quotationId: string;
+    total: string | null;
+    currency: string | null;
+    stopIds: string[];
+    requestIds: string[];
+    locationId: string;
+  } | null>(null);
+  const returnPickupFetcher = useFetcher<typeof action>();
   const [isMapStyleModalOpen, setIsMapStyleModalOpen] = useState(false);
   const [editableRoutes, setEditableRoutes] = useState<PrecomputedRoute[]>(() =>
     precomputedRoutes.map((route) => ({ ...route, orderIds: [] })),
@@ -181,18 +257,6 @@ export default function Index() {
   const [activeTab, setActiveTab] = useState<"routes" | "settings">("routes");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isRouteManagerVisible, setIsRouteManagerVisible] = useState(false);
-  const [isCarrierStatusExpanded, setIsCarrierStatusExpanded] = useState(false);
-  const [selectedAutoAssignLog, setSelectedAutoAssignLog] = useState<{
-    id: string;
-    orderId: string;
-    orderName: string | null;
-    locationId: string | null;
-    status: string;
-    reason: string | null;
-    details: unknown;
-    createdAt: Date;
-  } | null>(null);
-  const [isAutoAssignLogModalOpen, setIsAutoAssignLogModalOpen] = useState(false);
   const [settingsLocationId, setSettingsLocationId] = useState<string>("");
   const [lalamoveSettings, setLalamoveSettings] = useState<LalamoveConfig>(() => {
     return (
@@ -212,13 +276,68 @@ export default function Index() {
   const [lalamoveConfigMap, setLalamoveConfigMap] =
     useState<Record<string, LalamoveConfig>>(lalamoveConfigs);
   const [lalamoveStatus, setLalamoveStatus] = useState<
-    Record<string, { message: string; tone?: "success" | "critical" }>
+    Record<string, { message: string; tone?: "success" | "critical"; errorDetails?: string }>
   >({});
   const lalamoveStatusTimeoutsRef = useRef<Record<string, number>>({});
-  // Tracks routes where a driver has been successfully requested (session-only)
+  // Tracks routes where a driver has been successfully requested (hydrated from DB)
   const [dispatchedRoutes, setDispatchedRoutes] = useState<
-    Record<string, { shareLink?: string }>
-  >({});
+    Record<string, { shareLink?: string; status?: string; lalamoveOrderId?: string; market?: string }>
+  >(() => {
+    const initial: Record<string, { shareLink?: string; status?: string; lalamoveOrderId?: string; market?: string }> = {};
+    (activeDispatchData ?? []).forEach((d) => {
+      initial[d.routeId] = {
+        shareLink: d.shareLink ?? undefined,
+        status: d.status ?? undefined,
+        lalamoveOrderId: d.lalamoveOrderId ?? undefined,
+        market: d.market ?? undefined,
+      };
+    });
+    return initial;
+  });
+  const [driverErrorModal, setDriverErrorModal] = useState<{
+    routeId: string;
+    message: string;
+    errorDetails: string;
+  } | null>(null);
+  const [cancelConfirmRouteId, setCancelConfirmRouteId] = useState<string | null>(null);
+  const [integrationLogRouteId, setIntegrationLogRouteId] = useState<string | null>(null);
+  const [integrationLogEvents, setIntegrationLogEvents] = useState<Array<{
+    id: string;
+    eventType: string;
+    externalStatus: string | null;
+    processedAt: string;
+    payload: any;
+  }>>([]);
+  const integrationLogFetcher = useFetcher();
+  const cancelFetcher = useFetcher();
+  const specialRequestsFetcher = useFetcher<{ ok: boolean; specialRequests?: Array<{ name: string; description: string }> }>();
+  const [specialRequestsRoute, setSpecialRequestsRoute] = useState<PrecomputedRoute | null>(null);
+  const [availableSpecialRequests, setAvailableSpecialRequests] = useState<Array<{ name: string; description: string }>>([]);
+  const [selectedSpecialRequests, setSelectedSpecialRequests] = useState<Set<string>>(new Set());
+  const [specialRequestsLoading, setSpecialRequestsLoading] = useState(false);
+  const [waitTimeExpanded, setWaitTimeExpanded] = useState(false);
+  const [selectedWaitTime, setSelectedWaitTime] = useState<string | null>(null);
+  const resetWaitTimeState = () => {
+    setWaitTimeExpanded(false);
+    setSelectedWaitTime(null);
+  };
+  // Classify special requests: time-pattern items grouped under wait-time toggle;
+  // single time-option falls into standaloneReqs (no need for a group of one)
+  const { waitTimeOpts, standaloneReqs } = useMemo(() => {
+    const sanitized = availableSpecialRequests.filter((sr) => sr?.name);
+    const timeItems = sanitized.filter((sr) => WAIT_TIME_PATTERN.test(sr.description ?? ""));
+    const nonTimeItems = sanitized.filter((sr) => !WAIT_TIME_PATTERN.test(sr.description ?? ""));
+    // Only group as expandable when there are 2+ sub-options; a lone time-item renders inline
+    return timeItems.length > 1
+      ? { waitTimeOpts: timeItems, standaloneReqs: nonTimeItems }
+      : { waitTimeOpts: [], standaloneReqs: sanitized };
+  }, [availableSpecialRequests]);
+  const [addressWarnRoute, setAddressWarnRoute] = useState<PrecomputedRoute | null>(null);
+  const [addressWarnPendingRecheck, setAddressWarnPendingRecheck] = useState(false);
+  const [addressVerifyRoute, setAddressVerifyRoute] = useState<PrecomputedRoute | null>(null);
+  const [addressVerifyEdits, setAddressVerifyEdits] = useState<Record<string, string>>({});
+  const addressVerifyRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const addressVerifyAutocompletes = useRef<Record<string, any>>({});
   // Tracks routes that were automatically re-requested at 60 min (routeId → time string)
   const [reorderedRoutes, setReorderedRoutes] = useState<Record<string, string>>({});
   const escalationFetcher = useFetcher<{ ok: boolean; intent: string; results: EscalationResult[] }>();
@@ -260,6 +379,7 @@ export default function Index() {
     currency?: string;
     stopIds: string[];
     orderIds: string[];
+    deliveryAssignments: LalamoveDeliveryAssignment[];
     locationId: string;
   } | null>(null);
   const [routeQuoteTotals, setRouteQuoteTotals] = useState<
@@ -279,7 +399,18 @@ export default function Index() {
     routeIndex: number;
     orderIds: string[];
   } | null>(null);
+  const [routeOptimizeQueue, setRouteOptimizeQueue] = useState<Array<{
+    routeIndex: number;
+    orderIds: string[];
+  }>>([]);
+  const [autoAssignLocked, setAutoAssignLocked] = useState(false);
+  const autoAssignActiveRef = useRef(false);
+  const prevUnassignedCountRef = useRef(0);
+  const autoAssignCandidateMapRef = useRef<Map<string, string>>(new Map());
   const [assignmentSuccessMessage, setAssignmentSuccessMessage] = useState<
+    string | null
+  >(null);
+  const [assignmentWarningMessage, setAssignmentWarningMessage] = useState<
     string | null
   >(null);
   const settingsHref = "/app/settings";
@@ -407,9 +538,14 @@ export default function Index() {
       const precomputedIds = new Set(precomputedRoutes.map((r) => r.id));
       const fromPrecomputed = precomputedRoutes.map((route) => {
         const existing = currentById.get(route.id);
-        const orderIds = existing
-          ? existing.orderIds.filter((orderId) => ordersSet.has(orderId))
-          : (route.orderIds ?? []).filter((orderId) => ordersSet.has(orderId));
+        const serverOrderIds = (route.orderIds ?? []).filter((orderId) => ordersSet.has(orderId));
+        if (!existing) {
+          return { ...route, orderIds: serverOrderIds };
+        }
+        const clientOrderIds = existing.orderIds.filter((orderId) => ordersSet.has(orderId));
+        // If client state is empty but server has orders (e.g. after compaction),
+        // trust the server to avoid stale merge conflicts.
+        const orderIds = clientOrderIds.length === 0 ? serverOrderIds : clientOrderIds;
         return { ...route, orderIds };
       });
       const synthetic = current.filter((route) => !precomputedIds.has(route.id));
@@ -451,22 +587,26 @@ export default function Index() {
   useEffect(() => {
     const data = lalamoveFetcher.data;
     if (!data) return;
-    if ("error" in data && data.routeId) {
-      const routeId = data.routeId as string;
-      const existingTimeout = lalamoveStatusTimeoutsRef.current[routeId];
-      if (existingTimeout) window.clearTimeout(existingTimeout);
-      setLalamoveStatus((current) => ({
-        ...current,
-        [routeId]: { message: "Request failed", tone: "critical" },
-      }));
-      lalamoveStatusTimeoutsRef.current[routeId] = window.setTimeout(() => {
-        setLalamoveStatus((current) => {
-          const next = { ...current };
-          delete next[routeId];
-          return next;
-        });
-        delete lalamoveStatusTimeoutsRef.current[routeId];
-      }, 3000);
+    if ("error" in data) {
+      const routeId = (data as any).routeId as string | undefined;
+      const errorDetails = typeof data.error === "string" ? data.error : JSON.stringify(data.error);
+      if (routeId) {
+        const existingTimeout = lalamoveStatusTimeoutsRef.current[routeId];
+        if (existingTimeout) window.clearTimeout(existingTimeout);
+        setLalamoveStatus((current) => ({
+          ...current,
+          [routeId]: {
+            message: t("driverRequest.requestFailed"),
+            tone: "critical",
+            errorDetails,
+          },
+        }));
+      }
+      setDriverErrorModal({
+        routeId: routeId ?? "",
+        message: t("driverRequest.requestFailed"),
+        errorDetails,
+      });
       return;
     }
     if ("quotation" in data && data.routeId) {
@@ -489,12 +629,13 @@ export default function Index() {
         currency,
         stopIds: (quote.stops ?? []).map((stop) => stop.stopId).filter(Boolean) as string[],
         orderIds: data.orderIds ?? [],
+        deliveryAssignments: data.deliveryAssignments ?? [],
         locationId: data.locationId ?? "",
       });
-      setIsRequestDriverModalOpen(true);
+      // Quote fetched — card button will change to "Request driver"; no modal needed
       setLalamoveStatus((current) => ({
         ...current,
-        [routeId]: { message: "Ready for delivery", tone: "success" },
+        [routeId]: { message: t("driverRequest.readyForDelivery"), tone: "success" },
       }));
       return;
     }
@@ -502,14 +643,19 @@ export default function Index() {
       const routeId = data.routeId as string;
       const existingTimeout = lalamoveStatusTimeoutsRef.current[routeId];
       if (existingTimeout) window.clearTimeout(existingTimeout);
-      // Mark route as dispatched and store share link (if returned by Lalamove)
+      // Mark route as dispatched and store share link + order details
       setDispatchedRoutes((prev) => ({
         ...prev,
-        [routeId]: { shareLink: (data as any).shareLink ?? undefined },
+        [routeId]: {
+          shareLink: (data as any).shareLink ?? undefined,
+          status: "requested",
+          lalamoveOrderId: (data as any).placedOrderId ?? undefined,
+          market: (data as any).market ?? undefined,
+        },
       }));
       setLalamoveStatus((current) => ({
         ...current,
-        [routeId]: { message: "Driver requested", tone: "success" },
+        [routeId]: { message: t("routeManager.driverRequested"), tone: "success" },
       }));
       lalamoveStatusTimeoutsRef.current[routeId] = window.setTimeout(() => {
         setLalamoveStatus((current) => {
@@ -523,6 +669,67 @@ export default function Index() {
       setIsRequestDriverModalOpen(false);
     }
   }, [lalamoveFetcher.data]);
+
+  // Watch tracking fetcher — open shareLink when fetched on demand
+  useEffect(() => {
+    if (trackingFetcher.state !== "idle" || !trackingFetcher.data) return;
+    const data = trackingFetcher.data as any;
+    const routeId = trackingRouteRef.current;
+    if (!routeId || !data?.ok || !data?.details?.shareLink) return;
+    setDispatchedRoutes((prev) => ({
+      ...prev,
+      [routeId]: { ...prev[routeId], shareLink: data.details.shareLink },
+    }));
+    window.open(data.details.shareLink, "_blank");
+    trackingRouteRef.current = null;
+  }, [trackingFetcher.data, trackingFetcher.state]);
+
+  // Auto-refresh dispatched routes every 2 minutes to get status updates
+  const hasActiveDispatches = Object.keys(dispatchedRoutes).length > 0;
+  useEffect(() => {
+    if (!hasActiveDispatches) return;
+    const interval = setInterval(() => {
+      revalidator.revalidate();
+    }, 120_000);
+    return () => clearInterval(interval);
+  }, [hasActiveDispatches]);
+
+  // Sync dispatchedRoutes with loader data on revalidation (status + shareLink updates)
+  useEffect(() => {
+    if (!activeDispatchData?.length) return;
+    setDispatchedRoutes((prev) => {
+      const next = { ...prev };
+      for (const d of activeDispatchData) {
+        if (next[d.routeId]) {
+          next[d.routeId] = {
+            ...next[d.routeId],
+            status: d.status ?? next[d.routeId].status,
+            shareLink: d.shareLink ?? next[d.routeId].shareLink,
+          };
+        }
+      }
+      return next;
+    });
+  }, [activeDispatchData]);
+
+  // Watch return pickup fetcher results
+  useEffect(() => {
+    const data = returnPickupFetcher.data as Record<string, unknown> | undefined;
+    if (!data) return;
+    if ("returnQuotation" in data && data.returnQuotation) {
+      setReturnQuotePreview(data.returnQuotation as typeof returnQuotePreview);
+    }
+    if ("returnPlacedOrderId" in data) {
+      setReturnQuotePreview(null);
+      setSelectedReturnIds(new Set());
+      setReturnInstructions("");
+      setIsReturnPickupsModalOpen(false);
+      const el = document.getElementById("return-pickups-modal");
+      if (el && "hideOverlay" in el) (el as any).hideOverlay();
+      else if (el && "hide" in el) (el as any).hide();
+      revalidator.revalidate();
+    }
+  }, [returnPickupFetcher.data]);
 
   // Watch escalation results and record any re-orders for the UI indicator
   useEffect(() => {
@@ -604,9 +811,31 @@ export default function Index() {
     if (optimizeFetcher.data.summary) {
       setOptimizerSummary(optimizeFetcher.data.summary);
     }
+    // B4: Queue each updated route with ≥2 orders for Google Maps waypoint optimization
+    const routesToOptimize = optimizedRoutes.filter((r) => r.orderIds.length >= 2);
+    if (routesToOptimize.length > 0) {
+      const [first, ...rest] = routesToOptimize.map((r) => ({ routeIndex: r.routeIndex, orderIds: r.orderIds }));
+      setPendingRouteOptimize(first!);
+      if (rest.length > 0) setRouteOptimizeQueue(rest);
+    }
     setAssignmentSuccessMessage(
       `Optimization applied: ${optimizeFetcher.data.summary?.routeCount ?? 0} routes`,
     );
+    const assignedIds = new Set(optimizedRoutes.flatMap((r) => r.orderIds));
+    const unassignedEntries = [...autoAssignCandidateMapRef.current.entries()].filter(
+      ([id]) => !assignedIds.has(id),
+    );
+    if (unassignedEntries.length === 1) {
+      setAssignmentWarningMessage(
+        `Order ${unassignedEntries[0]![1]} not assigned: not in delivery area`,
+      );
+    } else if (unassignedEntries.length > 1) {
+      setAssignmentWarningMessage(
+        `${unassignedEntries.length} orders not assigned: not in delivery area`,
+      );
+    } else {
+      setAssignmentWarningMessage(null);
+    }
     const routesWithOrders = optimizedRoutes.filter((r) => r.orderIds.length > 0);
     if (routesWithOrders.length > 0) {
       const routesPayload = JSON.stringify(
@@ -622,6 +851,7 @@ export default function Index() {
       refreshStatsFetcher.submit(fd, { method: "post" });
     }
   }, [optimizeFetcher.data]);
+
 
   useEffect(() => {
     if (!lalamoveSettingsFetcher.data) return;
@@ -734,7 +964,7 @@ export default function Index() {
       .catch((error) => {
         console.error("Failed to load Google Maps Places", error);
         setMapsLoadError(
-          "Google Maps Places failed to load. Check your API key and billing setup.",
+          t("map.errors.placesLoadFailed"),
         );
       });
 
@@ -756,15 +986,23 @@ export default function Index() {
   // Re-fit map viewport when the user expands or collapses the map canvas.
   // Google Maps doesn't auto-resize when the CSS container changes; we must
   // trigger a "resize" event and re-run fitBounds after the animation settles.
+  // Also filters by current locationId so only relevant orders are in view.
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const gMaps = window.google?.maps;
       if (!mapRef.current || !gMaps) return;
       gMaps.event.trigger(mapRef.current, "resize");
-      const allPoints = [
-        ...[...mapData.locations.values()],
-        ...mapData.orders,
-      ];
+      // Filter points by current location if set
+      const filteredOrders = mapData.orders.filter((point) => {
+        if (locationId === DEFAULT_LOCATION_ID) return true;
+        const order = ordersById.get(point.id);
+        return order?.fulfillmentLocation?.id === locationId;
+      });
+      const filteredLocations = mapData.locations.filter((point) => {
+        if (locationId === DEFAULT_LOCATION_ID) return true;
+        return point.id === locationId;
+      });
+      const allPoints = [...filteredLocations, ...filteredOrders];
       if (allPoints.length === 0) return;
       const bounds = new gMaps.LatLngBounds();
       allPoints.forEach((p) =>
@@ -856,23 +1094,58 @@ export default function Index() {
     return map;
   }, [orders]);
 
+  const pendingReturnPickups = useMemo(
+    () =>
+      locationId === DEFAULT_LOCATION_ID
+        ? returnPickupRequests
+        : returnPickupRequests.filter((r) => r.locationId === locationId),
+    [returnPickupRequests, locationId],
+  );
+
   const unassignedOrders = useMemo(
     () => orders.filter((order) => !assignedOrderIds.has(order.id)),
     [orders, assignedOrderIds],
   );
 
+  // B5: Loop auto-assign until all orders assigned or no progress
+  useEffect(() => {
+    if (!autoAssignActiveRef.current) return;
+    if (optimizeFetcher.state !== "idle") return;
+    const currentUnassigned = unassignedOrders.length;
+    if (currentUnassigned === 0) {
+      // All assigned — lock the button
+      autoAssignActiveRef.current = false;
+      setAutoAssignLocked(true);
+      return;
+    }
+    const madeProgress = currentUnassigned < prevUnassignedCountRef.current;
+    if (!madeProgress) {
+      // No progress — stop looping to avoid infinite loop
+      autoAssignActiveRef.current = false;
+      return;
+    }
+    // Progress made, more orders remain — re-submit
+    prevUnassignedCountRef.current = currentUnassigned;
+    handleOptimizeFleet();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unassignedOrders.length, optimizeFetcher.state]);
+
   const dueBucketByOrderId = useMemo(() => {
     const now = new Date();
-    const todayDayIndex = getDayIndexInTimeZone(now, browserTimeZone);
+    const todayDayIndex = getDayIndexInTimeZone(now, browserTimeZone, userLocale);
     const map = new Map<string, "today" | "tomorrow" | "later">();
-    unassignedOrders.forEach((order) => {
+    orders.forEach((order) => {
       const processedAt = order.processedAt ? new Date(order.processedAt) : null;
       if (!processedAt || Number.isNaN(processedAt.getTime())) {
         // Unknown placement time → treat as due today (safest for operations)
         map.set(order.id, "today");
         return;
       }
-      const orderDayIndex = getDayIndexInTimeZone(processedAt, browserTimeZone);
+      const orderDayIndex = getDayIndexInTimeZone(
+        processedAt,
+        browserTimeZone,
+        userLocale,
+      );
       const orderHour = getHourInTimeZone(processedAt, browserTimeZone);
       // 1 PM cutoff: orders placed before 13:00 count from that day's cycle;
       // at/after 13:00 they count from the next day's cycle.
@@ -888,7 +1161,7 @@ export default function Index() {
       }
     });
     return map;
-  }, [unassignedOrders, deliveryPromiseDays, browserTimeZone]);
+  }, [orders, deliveryPromiseDays, browserTimeZone]);
 
   const dueBuckets = useMemo(() => {
     const today = unassignedOrders.filter(
@@ -907,24 +1180,24 @@ export default function Index() {
       [
         {
           key: "today",
-          title: "Orders due today",
-          selectAllLabel: "Select all orders due today",
+          title: t("dueBuckets.today"),
+          selectAllLabel: t("dueBuckets.todaySelectAll"),
           orders: dueBuckets.today,
         },
         {
           key: "tomorrow",
-          title: "Orders due tomorrow",
-          selectAllLabel: "Select all orders due tomorrow",
+          title: t("dueBuckets.tomorrow"),
+          selectAllLabel: t("dueBuckets.tomorrowSelectAll"),
           orders: dueBuckets.tomorrow,
         },
         {
           key: "later",
-          title: "Orders due later",
-          selectAllLabel: "Select all orders due later",
+          title: t("dueBuckets.later"),
+          selectAllLabel: t("dueBuckets.laterSelectAll"),
           orders: dueBuckets.later,
         },
       ].filter((bucket) => bucket.orders.length > 0),
-    [dueBuckets],
+    [dueBuckets, t],
   );
 
   const isBucketFullySelected = (bucketOrders: LoaderOrder[]) =>
@@ -954,7 +1227,10 @@ export default function Index() {
     if (unassignedOrders.length > 0 && assignmentSuccessMessage) {
       setAssignmentSuccessMessage(null);
     }
-  }, [unassignedOrders.length, assignmentSuccessMessage]);
+    if (unassignedOrders.length === 0 && assignmentWarningMessage) {
+      setAssignmentWarningMessage(null);
+    }
+  }, [unassignedOrders.length, assignmentSuccessMessage, assignmentWarningMessage]);
 
   useEffect(() => {
     if (!pendingRouteOptimize) return;
@@ -1011,6 +1287,14 @@ export default function Index() {
       },
       (result: unknown, status: unknown) => {
         setPendingRouteOptimize(null);
+        setRouteOptimizeQueue((q) => {
+          if (q.length > 0) {
+            const [next, ...rest] = q;
+            setPendingRouteOptimize(next!);
+            return rest;
+          }
+          return q;
+        });
         if (status !== googleMaps.DirectionsStatus.OK) return;
         const res = result as { routes?: Array<{ waypoint_order?: number[] }> };
         if (!res?.routes?.[0]?.waypoint_order) return;
@@ -1061,7 +1345,7 @@ export default function Index() {
         if (!mapElement || !mapElement.isConnected) return;
         const googleMaps = window.google?.maps;
         if (!googleMaps) {
-          setMapsLoadError("Google Maps SDK not available.");
+          setMapsLoadError(t("map.errors.sdkNotAvailable"));
           return;
         }
         setMapsLoadError(null);
@@ -1074,19 +1358,19 @@ export default function Index() {
           : { AdvancedMarkerElement: googleMaps.marker?.AdvancedMarkerElement };
         if (!AdvancedMarkerElement) {
           setMapsLoadError(
-            "Google Maps Advanced Markers are unavailable. Check map ID and API setup.",
+            t("map.errors.advancedMarkersUnavailable"),
           );
           return;
         }
 
         if (!mapRef.current) {
           const styledMapTypes = {
-            light: new googleMaps.StyledMapType(null, { name: "Light" }),
+            light: new googleMaps.StyledMapType(null, { name: t("map.styles.light") }),
             grayscale: new googleMaps.StyledMapType(GRAYSCALE_MAP_STYLES, {
-              name: "Grayscale",
+              name: t("map.styles.grayscale"),
             }),
             dark: new googleMaps.StyledMapType(DARK_MAP_STYLES, {
-              name: "Dark",
+              name: t("map.styles.dark"),
             }),
           };
           mapRef.current = new Map(mapElement, {
@@ -1175,10 +1459,12 @@ export default function Index() {
             point.kind === "order" ? getRouteDefinitionForOrder(point.id) : null;
           const dueBucket =
             point.kind === "order" ? dueBucketByOrderId.get(point.id) : undefined;
+          const orderData = point.kind === "order" ? ordersById.get(point.id) : null;
+          const hasAddressError = orderData ? !orderData.addressValidation.isValid : false;
           const emoji =
             point.kind === "order"
-              ? assignedRoute
-                ? null
+              ? hasAddressError
+                ? "🟡"
                 : dueBucket === "today"
                   ? "📦"
                   : dueBucket === "tomorrow"
@@ -1216,7 +1502,7 @@ export default function Index() {
               const orderDetails = ordersById.get(point.id);
               if (!orderDetails) return;
               infoWindowRef.current?.setContent(
-                getOrderInfoContent(orderDetails),
+                getOrderInfoContent(orderDetails, t("customer.guest"), t("customer.noShippingAddress")),
               );
               infoWindowRef.current?.open({
                 map: mapRef.current!,
@@ -1228,7 +1514,7 @@ export default function Index() {
               const orderDetails = ordersById.get(point.id);
               if (!orderDetails) return;
               infoWindowRef.current?.setContent(
-                getOrderInfoContent(orderDetails),
+                getOrderInfoContent(orderDetails, t("customer.guest"), t("customer.noShippingAddress")),
               );
               infoWindowRef.current?.open({
                 map: mapRef.current!,
@@ -1251,11 +1537,9 @@ export default function Index() {
               )}`;
               infoWindowRef.current?.setContent(`
                 <div style="display:flex;flex-direction:column;gap:8px;min-width:220px;">
-                  <span style="font-weight:600;">Order assigned to Route ${
-                    routeNumber ?? "?"
-                  }</span>
+                  <span style="font-weight:600;">${t("infoWindow.assignedTo", { number: routeNumber ?? "?" })}</span>
                   <button id="${buttonId}" style="background:#d82c0d;color:#fff;border:0;border-radius:6px;padding:8px 10px;cursor:pointer;">
-                    Unassign
+                    ${t("infoWindow.unassign")}
                   </button>
                 </div>
               `);
@@ -1264,14 +1548,16 @@ export default function Index() {
                 anchor: advancedMarker,
                 shouldFocus: false,
               });
-              if (googleMaps.event?.addListenerOnce) {
-                googleMaps.event.addListenerOnce(infoWindowRef.current!, "domready", () => {
-                  const button = document.getElementById(buttonId);
-                  button?.addEventListener("click", () => {
-                    unassignSingleOrderFromRoute(point.id, assignedRoute);
-                    infoWindowRef.current?.close();
-                  });
+              const attachUnassignHandler = () => {
+                document.getElementById(buttonId)?.addEventListener("click", () => {
+                  unassignSingleOrderFromRoute(point.id, assignedRoute);
+                  infoWindowRef.current?.close();
                 });
+              };
+              if (googleMaps.event?.addListenerOnce) {
+                googleMaps.event.addListenerOnce(infoWindowRef.current!, "domready", attachUnassignHandler);
+              } else {
+                setTimeout(attachUnassignHandler, 100);
               }
             });
           }
@@ -1295,65 +1581,67 @@ export default function Index() {
           mapRef.current.setCenter({ lat: 0, lng: 0 });
           mapRef.current.setZoom(2);
         }
-        const directionsService = new googleMaps.DirectionsService();
-        editableRoutes.forEach((route) => {
-          const routeOrderPoints = route.orderIds
-            .map((orderId) => ordersById.get(orderId))
-            .filter(
-              (order): order is LoaderOrder =>
-                Boolean(order?.shippingCoordinates),
-            )
-            .map((order) => ({
-              order,
-              coordinates: order.shippingCoordinates!,
-            }));
-          if (routeOrderPoints.length === 0) return;
-          const origin = route.orderIds
-            .map((orderId) => ordersById.get(orderId))
-            .find((order) => order?.fulfillmentLocation?.coordinates)
-            ?.fulfillmentLocation?.coordinates;
-          if (!origin) return;
+        if (locationId !== DEFAULT_LOCATION_ID) {
+          const directionsService = new googleMaps.DirectionsService();
+          editableRoutes.forEach((route) => {
+            const routeOrderPoints = route.orderIds
+              .map((orderId) => ordersById.get(orderId))
+              .filter(
+                (order): order is LoaderOrder =>
+                  Boolean(order?.shippingCoordinates),
+              )
+              .map((order) => ({
+                order,
+                coordinates: order.shippingCoordinates!,
+              }));
+            if (routeOrderPoints.length === 0) return;
+            const origin = route.orderIds
+              .map((orderId) => ordersById.get(orderId))
+              .find((order) => order?.fulfillmentLocation?.coordinates)
+              ?.fulfillmentLocation?.coordinates;
+            if (!origin) return;
 
-          const renderer = new googleMaps.DirectionsRenderer({
-            suppressMarkers: true,
-            preserveViewport: true,
-            polylineOptions: {
-              strokeColor: route.color,
-              strokeOpacity: 0.85,
-              strokeWeight: 4,
-            },
-          });
-          renderer.setMap(mapRef.current);
-          assignedRouteRenderersRef.current.push(renderer);
-
-          directionsService.route(
-            {
-              origin: { lat: origin.latitude, lng: origin.longitude },
-              destination: {
-                lat: routeOrderPoints[routeOrderPoints.length - 1]!.coordinates
-                  .latitude,
-                lng: routeOrderPoints[routeOrderPoints.length - 1]!.coordinates
-                  .longitude,
+            const renderer = new googleMaps.DirectionsRenderer({
+              suppressMarkers: true,
+              preserveViewport: true,
+              polylineOptions: {
+                strokeColor: route.color,
+                strokeOpacity: 0.85,
+                strokeWeight: 4,
               },
-              waypoints: routeOrderPoints.slice(0, -1).map((point) => ({
-                location: {
-                  lat: point.coordinates.latitude,
-                  lng: point.coordinates.longitude,
+            });
+            renderer.setMap(mapRef.current);
+            assignedRouteRenderersRef.current.push(renderer);
+
+            directionsService.route(
+              {
+                origin: { lat: origin.latitude, lng: origin.longitude },
+                destination: {
+                  lat: routeOrderPoints[routeOrderPoints.length - 1]!.coordinates
+                    .latitude,
+                  lng: routeOrderPoints[routeOrderPoints.length - 1]!.coordinates
+                    .longitude,
                 },
-                stopover: true,
-              })),
-              optimizeWaypoints: true,
-              travelMode: googleMaps.TravelMode.DRIVING,
-            },
-            (result: any, status: any) => {
-              if (status === googleMaps.DirectionsStatus.OK) {
-                renderer.setDirections(result);
-              } else {
-                renderer.setDirections({ routes: [] });
-              }
-            },
-          );
-        });
+                waypoints: routeOrderPoints.slice(0, -1).map((point) => ({
+                  location: {
+                    lat: point.coordinates.latitude,
+                    lng: point.coordinates.longitude,
+                  },
+                  stopover: true,
+                })),
+                optimizeWaypoints: true,
+                travelMode: googleMaps.TravelMode.DRIVING,
+              },
+              (result: any, status: any) => {
+                if (status === googleMaps.DirectionsStatus.OK) {
+                  renderer.setDirections(result);
+                } else {
+                  renderer.setDirections({ routes: [] });
+                }
+              },
+            );
+          });
+        }
 
         selectedRouteRenderersRef.current.forEach((renderer) =>
           renderer.setMap(null),
@@ -1369,10 +1657,10 @@ export default function Index() {
                   order?.fulfillmentLocation?.coordinates,
               ),
           );
-        const selectedByLocation = new Map<
+        const selectedByLocation: Map<
           string,
           { origin: { latitude: number; longitude: number }; orders: LoaderOrder[] }
-        >();
+        > = new Map();
         selectedOrders.forEach((order) => {
           const origin = order.fulfillmentLocation?.coordinates;
           if (!origin) return;
@@ -1387,9 +1675,10 @@ export default function Index() {
           }
         });
 
-        selectedByLocation.forEach((group) => {
+        const selectedDirectionsService = new googleMaps.DirectionsService();
+        selectedByLocation.forEach((group: { origin: { latitude: number; longitude: number }; orders: LoaderOrder[] }) => {
           if (group.orders.length === 0) return;
-          const ordered = group.orders.filter((order) => order.shippingCoordinates);
+          const ordered = group.orders.filter((order: LoaderOrder) => order.shippingCoordinates);
           if (ordered.length === 0) return;
           const destinationOrder = ordered[ordered.length - 1]!;
           const intermediates = ordered.slice(0, -1);
@@ -1404,7 +1693,7 @@ export default function Index() {
           });
           renderer.setMap(mapRef.current);
           selectedRouteRenderersRef.current.push(renderer);
-          directionsService.route(
+          selectedDirectionsService.route(
             {
               origin: {
                 lat: group.origin.latitude,
@@ -1414,7 +1703,7 @@ export default function Index() {
                 lat: destinationOrder.shippingCoordinates!.latitude,
                 lng: destinationOrder.shippingCoordinates!.longitude,
               },
-              waypoints: intermediates.map((order) => ({
+              waypoints: intermediates.map((order: LoaderOrder) => ({
                 location: {
                   lat: order.shippingCoordinates!.latitude,
                   lng: order.shippingCoordinates!.longitude,
@@ -1438,7 +1727,7 @@ export default function Index() {
         if (!isMounted) return;
         console.error("Failed to load Google Maps", error);
         setMapsLoadError(
-          "Google Maps failed to load. Check your API key and billing setup.",
+          t("map.errors.mapsLoadFailed"),
         );
       });
 
@@ -1491,12 +1780,12 @@ export default function Index() {
 
         if (!manageRouteMapInstance.current) {
           const styledMapTypes = {
-            light: new googleMaps.StyledMapType(null, { name: "Light" }),
+            light: new googleMaps.StyledMapType(null, { name: t("map.styles.light") }),
             grayscale: new googleMaps.StyledMapType(GRAYSCALE_MAP_STYLES, {
-              name: "Grayscale",
+              name: t("map.styles.grayscale"),
             }),
             dark: new googleMaps.StyledMapType(DARK_MAP_STYLES, {
-              name: "Dark",
+              name: t("map.styles.dark"),
             }),
           };
           manageRouteMapInstance.current = new Map(manageRouteMapRef.current!, {
@@ -1577,8 +1866,8 @@ export default function Index() {
           const originMarker = new AdvancedMarkerElement({
             map: manageRouteMapInstance.current,
             position: { lat: origin.latitude, lng: origin.longitude },
-            title: "Fulfillment location",
-            content: buildLabel("Fulfillment", "🏬"),
+            title: t("map.fulfillmentLocation"),
+            content: buildLabel(t("map.fulfillmentLabel"), "🏬"),
           });
           manageRouteMarkersRef.current.push({ type: "advanced", marker: originMarker });
           bounds.extend({ lat: origin.latitude, lng: origin.longitude });
@@ -1587,13 +1876,21 @@ export default function Index() {
         routePoints.forEach((order) => {
           const coords = order.shippingCoordinates!;
           const badgeColors = deriveBadgeColors(managedRoute.color);
+          const dueBucket = dueBucketByOrderId.get(order.id);
+          const routeOrderEmoji = !order.addressValidation.isValid
+            ? "🟡"
+            : dueBucket === "today"
+              ? "📦"
+              : dueBucket === "tomorrow"
+                ? "⏰"
+                : "🕒";
           const marker = new AdvancedMarkerElement({
             map: manageRouteMapInstance.current,
             position: { lat: coords.latitude, lng: coords.longitude },
             title: order.name,
             content: buildLabel(
               order.name,
-              null,
+              routeOrderEmoji,
               { backgroundColor: badgeColors.bg, borderColor: "#111111" },
             ),
           });
@@ -1661,6 +1958,7 @@ export default function Index() {
     ordersById,
     locationsById,
     mapStyle,
+    dueBucketByOrderId,
   ]);
 
   const toggleSelection = (orderId: string) => {
@@ -1742,7 +2040,25 @@ export default function Index() {
       | { showOverlay?: () => void }
       | null;
     modal?.showOverlay?.();
+    // Reset immediately so the next click can re-trigger the effect
+    setIsAddressErrorsModalOpen(false);
   }, [isAddressErrorsModalOpen]);
+
+  useEffect(() => {
+    if (!isShipmentRequestsModalOpen) return;
+    const modal = document.getElementById("shipment-requests-modal") as
+      | { showOverlay?: () => void }
+      | null;
+    modal?.showOverlay?.();
+  }, [isShipmentRequestsModalOpen]);
+
+  useEffect(() => {
+    if (!isReturnPickupsModalOpen) return;
+    const modal = document.getElementById("return-pickups-modal") as
+      | { showOverlay?: () => void }
+      | null;
+    modal?.showOverlay?.();
+  }, [isReturnPickupsModalOpen]);
 
   useEffect(() => {
     if (!isMapStyleModalOpen) return;
@@ -1761,12 +2077,171 @@ export default function Index() {
   }, [isRequestDriverModalOpen]);
 
   useEffect(() => {
-    if (!isAutoAssignLogModalOpen) return;
-    const modal = document.getElementById("auto-assign-log-modal") as
+    if (!driverErrorModal) return;
+    const modal = document.getElementById("driver-error-modal") as
       | { showOverlay?: () => void }
       | null;
     modal?.showOverlay?.();
-  }, [isAutoAssignLogModalOpen]);
+  }, [driverErrorModal]);
+  // Cancel delivery response handler
+  useEffect(() => {
+    if (cancelFetcher.state !== "idle") return;
+    const raw = cancelFetcher.data;
+    if (raw == null || typeof raw !== "object") return;
+    // Handle both direct { ok, routeId } and wrapped { data: { ok, routeId } } responses
+    const data = ("data" in raw && raw.data != null && typeof raw.data === "object"
+      ? raw.data
+      : raw) as { ok?: boolean; error?: string; routeId?: string };
+    const routeId = data?.routeId;
+    if (!routeId) return;
+    try {
+      if (data.ok) {
+        setLalamoveStatus((current) => ({
+          ...current,
+          [routeId]: { message: t("routeManager.deliveryCancelled"), tone: "success" },
+        }));
+        setDispatchedRoutes((prev) => {
+          const next = { ...prev };
+          delete next[routeId];
+          return next;
+        });
+      } else {
+        setLalamoveStatus((current) => ({
+          ...current,
+          [routeId]: { message: data.error ?? t("driverRequest.cancelFailed"), tone: "critical" },
+        }));
+      }
+    } catch (err) {
+      console.warn("Cancel response handler error:", err);
+    }
+  }, [cancelFetcher.data, cancelFetcher.state, t]);
+
+  // Process special requests fetch result
+  useEffect(() => {
+    if (!specialRequestsFetcher.data || specialRequestsFetcher.state !== "idle") return;
+    const data = specialRequestsFetcher.data;
+    if (data.ok && data.specialRequests) {
+      setAvailableSpecialRequests(data.specialRequests);
+    } else {
+      setAvailableSpecialRequests([]);
+    }
+    setSpecialRequestsLoading(false);
+  }, [specialRequestsFetcher.data, specialRequestsFetcher.state]);
+
+  // Show address-warn modal when a route with errors is set
+  useEffect(() => {
+    if (addressWarnRoute) {
+      const el = document.getElementById("address-warn-modal") as { showOverlay?: () => void } | null;
+      el?.showOverlay?.();
+    }
+  }, [addressWarnRoute]);
+
+  // After revalidation triggered by "Problem fixed", re-check and auto-proceed if clean
+  useEffect(() => {
+    if (!addressWarnPendingRecheck || revalidator.state !== "idle" || !addressWarnRoute) return;
+    setAddressWarnPendingRecheck(false);
+    const routeOrders = addressWarnRoute.orderIds
+      .map((id) => ordersById.get(id))
+      .filter(Boolean) as LoaderOrder[];
+    const stillHasErrors = routeOrders.some((o) => !o.addressValidation.isValid);
+    if (!stillHasErrors) {
+      hideModal("address-warn-modal");
+      setAddressWarnRoute(null);
+      // Proceed with the normal driver request flow
+      proceedWithDriverRequest(addressWarnRoute);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addressWarnPendingRecheck, revalidator.state]);
+
+  // Show address verification modal
+  useEffect(() => {
+    if (addressVerifyRoute) {
+      const el = document.getElementById("address-verify-modal") as
+        | { showOverlay?: () => void }
+        | null;
+      el?.showOverlay?.();
+    }
+  }, [addressVerifyRoute]);
+
+  // Set up Google Places Autocomplete on address verification inputs
+  useEffect(() => {
+    if (!addressVerifyRoute) {
+      // Clean up autocompletes when modal closes
+      addressVerifyAutocompletes.current = {};
+      return;
+    }
+    // Ensure Google Places dropdown renders above s-modal overlay
+    const styleId = "pac-container-zindex";
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = ".pac-container { z-index: 100000 !important; }";
+      document.head.appendChild(style);
+    }
+    const setupPlaces = async () => {
+      const googleMaps = window.google?.maps;
+      if (!googleMaps) return;
+      const { Autocomplete } = googleMaps.importLibrary
+        ? await googleMaps.importLibrary("places")
+        : { Autocomplete: googleMaps.places?.Autocomplete };
+      if (!Autocomplete) return;
+      for (const [orderId, ref] of Object.entries(addressVerifyRefs.current)) {
+        if (!ref || addressVerifyAutocompletes.current[orderId]) continue;
+        const input = ref.querySelector("input");
+        if (!input) continue;
+        const ac = new Autocomplete(input, {
+          fields: ["formatted_address", "geometry"],
+        });
+        ac.addListener("place_changed", () => {
+          const place = ac.getPlace?.();
+          if (place?.formatted_address) {
+            setAddressVerifyEdits((prev) => ({
+              ...prev,
+              [orderId]: place.formatted_address,
+            }));
+          }
+        });
+        addressVerifyAutocompletes.current[orderId] = ac;
+      }
+    };
+    // Delay to ensure refs are attached
+    const timer = window.setTimeout(setupPlaces, 200);
+    return () => window.clearTimeout(timer);
+  }, [addressVerifyRoute]);
+
+  // Show/hide special requests modal
+  useEffect(() => {
+    if (specialRequestsRoute) {
+      const el = document.getElementById("special-requests-modal") as
+        | { showOverlay?: () => void }
+        | null;
+      el?.showOverlay?.();
+    }
+  }, [specialRequestsRoute]);
+  useEffect(() => {
+    if (!cancelConfirmRouteId) return;
+    const modal = document.getElementById("cancel-delivery-modal") as
+      | { showOverlay?: () => void }
+      | null;
+    modal?.showOverlay?.();
+  }, [cancelConfirmRouteId]);
+
+
+
+  // Integration log response handler
+  useEffect(() => {
+    if (!integrationLogFetcher.data || integrationLogFetcher.state !== "idle") return;
+    const data = integrationLogFetcher.data as { ok?: boolean; events?: any[] };
+    if (data.ok && data.events) {
+      setIntegrationLogEvents(data.events);
+      const modal = document.getElementById("integration-log-modal") as
+        | { showOverlay?: () => void }
+        | null;
+      modal?.showOverlay?.();
+    }
+  }, [integrationLogFetcher.data, integrationLogFetcher.state]);
+
+
 
   // Revalidate after a pending route action (dismiss / load) succeeds
   useEffect(() => {
@@ -1854,7 +2329,7 @@ export default function Index() {
     if (!target) return;
     const nextValue = target.value ?? DEFAULT_LOCATION_ID;
     lastFittedLocationIdRef.current = "";
-    setIsRouteManagerVisible(false);
+    setIsRouteManagerVisible(nextValue !== DEFAULT_LOCATION_ID);
     setLocationId(nextValue);
     setSelectedPresaleTags([]);
     setDraftPresaleTags([]);
@@ -1901,13 +2376,13 @@ export default function Index() {
 
   const daysAgoText = useMemo(() => {
     const parsed = new Date(startDate);
-    if (Number.isNaN(parsed.getTime())) return "0 days ago";
+    if (Number.isNaN(parsed.getTime())) return t("filters.daysAgo", { count: 0 });
     const now = new Date();
     const diffDays = Math.max(
       0,
       Math.floor((now.getTime() - parsed.getTime()) / (1000 * 60 * 60 * 24)),
     );
-    return `${diffDays} days ago`;
+    return t("filters.daysAgo", { count: diffDays });
   }, [startDate]);
 
   const handleManageOrdersClick = () => {
@@ -2042,7 +2517,7 @@ export default function Index() {
     });
     if (assigningAllRemainingAtLocation) {
       setAssignmentSuccessMessage(
-        `All ${projectedAssignedOrdersInScope} orders successfully assigned to ${projectedRoutesWithOrdersInScope} routes`,
+        t("routeManager.assignmentSuccess", { assigned: projectedAssignedOrdersInScope, routes: projectedRoutesWithOrdersInScope }),
       );
     } else {
       setAssignmentSuccessMessage(null);
@@ -2320,9 +2795,15 @@ export default function Index() {
         processedAt: order.processedAt ?? null,
       }));
     if (candidates.length === 0) {
-      setAssignmentSuccessMessage("No unassigned orders with coordinates to optimize.");
+      setAssignmentSuccessMessage(t("routeManager.noUnassigned"));
       return;
     }
+    autoAssignActiveRef.current = true;
+    prevUnassignedCountRef.current = unassignedOrders.length;
+    autoAssignCandidateMapRef.current = new Map(
+      candidates.map((c) => [c.orderId, ordersById.get(c.orderId)?.name ?? c.orderId]),
+    );
+    setAssignmentWarningMessage(null);
     const formData = new FormData();
     formData.append("intent", "optimize-fleet");
     formData.append("ordersPayload", JSON.stringify(candidates));
@@ -2330,7 +2811,73 @@ export default function Index() {
     optimizeFetcher.submit(formData, { method: "post" });
   };
 
-  const handleRequestDriver = (route: PrecomputedRoute) => {
+  const handleAddToBestRoute = () => {
+    const unassigned = unassignedOrders
+      .filter((order) => selectedOrderIds.has(order.id))
+      .filter((order) =>
+        locationId === DEFAULT_LOCATION_ID
+          ? true
+          : order.fulfillmentLocation.id === locationId,
+      )
+      .filter(
+        (order) =>
+          Boolean(order.shippingCoordinates) &&
+          Boolean(order.fulfillmentLocation.coordinates),
+      )
+      .map((order) => ({
+        orderId: order.id,
+        locationId: order.fulfillmentLocation.id,
+        shippingCoordinates: order.shippingCoordinates!,
+        locationCoordinates: order.fulfillmentLocation.coordinates!,
+        mustAssign: dueBucketByOrderId.get(order.id) === "today",
+        processedAt: order.processedAt ?? null,
+      }));
+    const routes = editableRoutes
+      .map((r, index) => ({ routeIndex: index, locationId: r.locationId, orderIds: r.orderIds }))
+      .filter((r) => r.orderIds.length > 0);
+    if (unassigned.length === 0 || routes.length === 0) return;
+    autoAssignActiveRef.current = false;
+    const formData = new FormData();
+    formData.append("intent", "add-to-best-route");
+    formData.append("unassignedPayload", JSON.stringify(unassigned));
+    formData.append("routesPayload", JSON.stringify(routes));
+    formData.append("routingLogic", routingLogic);
+    optimizeFetcher.submit(formData, { method: "post" });
+  };
+
+    const handleCancelDelivery = (routeId: string) => {
+    const formData = new FormData();
+    formData.append("intent", "lalamove-cancel-order");
+    formData.append("routeId", routeId);
+    setLalamoveStatus((current) => ({
+      ...current,
+      [routeId]: { message: t("driverRequest.cancelling") },
+    }));
+    cancelFetcher.submit(formData, { method: "post" });
+    setCancelConfirmRouteId(null);
+  };
+
+  const handleFetchTracking = (routeId: string) => {
+    const dispatch = dispatchedRoutes[routeId];
+    if (!dispatch?.lalamoveOrderId || !dispatch?.market) return;
+    const formData = new FormData();
+    formData.append("intent", "lalamove-reconcile-status");
+    formData.append("lalamoveOrderId", dispatch.lalamoveOrderId);
+    formData.append("market", dispatch.market);
+    trackingFetcher.submit(formData, { method: "post" });
+    trackingRouteRef.current = routeId;
+  };
+
+  const handleOpenIntegrationLog = (routeId: string) => {
+    setIntegrationLogRouteId(routeId);
+    const formData = new FormData();
+    formData.append("intent", "fetch-integration-log");
+    formData.append("routeId", routeId);
+    integrationLogFetcher.submit(formData, { method: "post" });
+  };
+
+  const proceedWithDriverRequest = (route: PrecomputedRoute) => {
+    // Submit quote directly — no address verification modal
     const formData = new FormData();
     formData.append("intent", "lalamove-quote");
     formData.append("routeId", route.id);
@@ -2338,16 +2885,159 @@ export default function Index() {
     route.orderIds.forEach((orderId) => formData.append("orderIds", orderId));
     setLalamoveStatus((current) => ({
       ...current,
-      [route.id]: { message: "Creating quotation..." },
+      [route.id]: { message: t("driverRequest.creatingQuotation") },
     }));
     lalamoveFetcher.submit(formData, { method: "post" });
+  };
+
+  const handleRequestDriver = (route: PrecomputedRoute) => {
+    const routeOrders = route.orderIds
+      .map((id) => ordersById.get(id))
+      .filter(Boolean) as LoaderOrder[];
+    const hasAddressErrors = routeOrders.some((o) => !o.addressValidation.isValid);
+    if (hasAddressErrors) {
+      setAddressWarnRoute(route);
+      return;
+    }
+    proceedWithDriverRequest(route);
+  };
+
+  const hideModal = (id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    // Polaris s-modal supports hideOverlay() or the --hide command
+    if ("hideOverlay" in el) {
+      (el as any).hideOverlay();
+    } else if ("hide" in el) {
+      (el as any).hide();
+    }
+  };
+
+  const handleAddressVerifyConfirm = () => {
+    if (!addressVerifyRoute) return;
+    const route = addressVerifyRoute;
+    // Explicitly close address-verify modal before proceeding
+    hideModal("address-verify-modal");
+    setAddressVerifyRoute(null);
+    // Skip special requests — submit quote directly
+    const formData = new FormData();
+    formData.append("intent", "lalamove-quote");
+    formData.append("routeId", route.id);
+    formData.append("locationId", route.locationId);
+    route.orderIds.forEach((orderId) => formData.append("orderIds", orderId));
+    // Pass any edited addresses from address verification
+    if (Object.keys(addressVerifyEdits).length > 0) {
+      formData.append("addressEdits", JSON.stringify(addressVerifyEdits));
+    }
+    setLalamoveStatus((current) => ({
+      ...current,
+      [route.id]: { message: t("driverRequest.creatingQuotation") },
+    }));
+    lalamoveFetcher.submit(formData, { method: "post" });
+  };
+
+  const handleSubmitQuoteWithSpecialRequests = () => {
+    if (!specialRequestsRoute) return;
+    const route = specialRequestsRoute;
+    // Explicitly close special-requests modal before submitting
+    hideModal("special-requests-modal");
+    const formData = new FormData();
+    formData.append("intent", "lalamove-quote");
+    formData.append("routeId", route.id);
+    formData.append("locationId", route.locationId);
+    route.orderIds.forEach((orderId) => formData.append("orderIds", orderId));
+    // Pass selected special requests
+    const selected = Array.from(selectedSpecialRequests);
+    if (selected.length > 0) {
+      selected.forEach((sr) => formData.append("specialRequests", sr));
+    }
+    // Pass selected wait-time option (only if parent toggle is checked and selection is valid)
+    if (waitTimeExpanded && selectedWaitTime) {
+      formData.append("specialRequests", selectedWaitTime);
+    }
+    // Pass any edited addresses from address verification
+    if (Object.keys(addressVerifyEdits).length > 0) {
+      formData.append("addressEdits", JSON.stringify(addressVerifyEdits));
+    }
+    setLalamoveStatus((current) => ({
+      ...current,
+      [route.id]: { message: t("driverRequest.creatingQuotation") },
+    }));
+    lalamoveFetcher.submit(formData, { method: "post" });
+    setSpecialRequestsRoute(null);
+    resetWaitTimeState();
+  };
+
+  const handlePlaceOrderFromCard = (route: PrecomputedRoute, routeIndex: number) => {
+    if (!quotePreview || quotePreview.routeId !== route.id) return;
+    const formData = new FormData();
+    formData.append("intent", "lalamove-place-order");
+    formData.append("routeId", quotePreview.routeId);
+    formData.append("locationId", quotePreview.locationId);
+    formData.append("quotationId", quotePreview.quotationId);
+    formData.append("quotationTotal", quotePreview.total ?? "");
+    formData.append("quotationCurrency", quotePreview.currency ?? "");
+    quotePreview.stopIds.forEach((stopId) => formData.append("stopIds", stopId));
+    quotePreview.orderIds.forEach((orderId) => formData.append("orderIds", orderId));
+    formData.append("deliveryAssignments", JSON.stringify(quotePreview.deliveryAssignments));
+    const confirmedRouteTag = ROUTE_TAG_DEFINITIONS[routeIndex]?.tag ?? null;
+    if (confirmedRouteTag) formData.append("routeTag", confirmedRouteTag);
+    lalamoveFetcher.submit(formData, { method: "post" });
+  };
+
+  const handleCollectReturns = () => {
+    if (selectedReturnIds.size === 0) return;
+    const formData = new FormData();
+    formData.append("intent", "return-pickup-quote");
+    formData.append("locationId", locationId);
+    formData.append("returnInstructions", returnInstructions);
+    selectedReturnIds.forEach((id) => formData.append("returnRequestIds", id));
+    returnPickupFetcher.submit(formData, { method: "post" });
+  };
+
+  const handleConfirmReturnPickup = () => {
+    if (!returnQuotePreview) return;
+    const formData = new FormData();
+    formData.append("intent", "return-pickup-place-order");
+    formData.append("locationId", returnQuotePreview.locationId);
+    formData.append("quotationId", returnQuotePreview.quotationId);
+    formData.append("returnInstructions", returnInstructions);
+    returnQuotePreview.stopIds.forEach((id) => formData.append("stopIds", id));
+    returnQuotePreview.requestIds.forEach((id) => formData.append("returnRequestIds", id));
+    returnPickupFetcher.submit(formData, { method: "post" });
+  };
+
+  const toggleReturnSelection = (id: string) => {
+    setSelectedReturnIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+    setReturnQuotePreview(null);
+  };
+
+  const toggleAllReturnSelection = (checked: boolean) => {
+    if (checked) {
+      setSelectedReturnIds(new Set(pendingReturnPickups.map((r) => r.id)));
+    } else {
+      setSelectedReturnIds(new Set());
+    }
+    setReturnQuotePreview(null);
+  };
+
+  const getRouteLabel = (_route: PrecomputedRoute, routeIndex?: number): string => {
+    if (routeIndex != null && ROUTE_TAG_DEFINITIONS[routeIndex]) {
+      return ROUTE_TAG_DEFINITIONS[routeIndex].label;
+    }
+    return t("routeManager.route", { number: String((routeIndex ?? 0) + 1).padStart(2, "0") });
   };
 
   const formatDurationSummary = (seconds: number) => {
     const safe = Math.max(0, Math.trunc(seconds));
     const hours = Math.floor(safe / 3600);
     const mins = Math.floor((safe % 3600) / 60);
-    return `${hours}h ${mins}m`;
+    return t("routeManager.durationFormat", { hours, mins });
   };
 
   const openManageRouteModal = (route: PrecomputedRoute, routeIndex: number) => {
@@ -2383,28 +3073,45 @@ export default function Index() {
       closeEditRoute();
       return;
     }
+    const routeIndex = editableRoutes.findIndex((r) => r.id === activeRouteId);
+    const tag = routeIndex >= 0 ? ROUTE_TAG_DEFINITIONS[routeIndex]?.tag : undefined;
+    const route = routeIndex >= 0 ? editableRoutes[routeIndex] : undefined;
+    const idsToRemove = Array.from(removeFromRouteOrderIds);
+
     setEditableRoutes((current) =>
-      current.map((route) =>
-        route.id === activeRouteId
+      current.map((r) =>
+        r.id === activeRouteId
           ? {
-              ...route,
-              orderIds: route.orderIds.filter(
+              ...r,
+              orderIds: r.orderIds.filter(
                 (orderId) => !removeFromRouteOrderIds.has(orderId),
               ),
             }
-          : route,
+          : r,
       ),
     );
+    setSelectedOrderIds((current) => {
+      const next = new Set(current);
+      idsToRemove.forEach((id) => next.delete(id));
+      return next;
+    });
     closeEditRoute();
+
+    if (tag && route) {
+      const formData = new FormData();
+      formData.append("intent", "unassign");
+      formData.append("routeTag", tag);
+      formData.append("locationId", route.locationId);
+      idsToRemove.forEach((id) => formData.append("orderIds", id));
+      unassignFetcher.submit(formData, { method: "post" });
+    }
   };
 
   return (
-    <s-page heading="Local delivery" inlineSize="base">
+    <s-page heading={t("pageHeading")} inlineSize="base">
       <s-modal
         id="manage-route-modal"
-        heading={`Route ${
-          activeRouteIndex != null ? activeRouteIndex + 1 : ""
-        }`.trim()}
+        heading={activeRouteIndex != null ? getRouteLabel(editableRoutes[activeRouteIndex] ?? { id: "", locationId: "", polyline: "", color: "", orderIds: [] }, activeRouteIndex) : ""}
       >
         <s-stack direction="block" gap="base">
           <div className={styles.manageRouteLayout}>
@@ -2420,7 +3127,7 @@ export default function Index() {
                   <div className={styles.dueOrdersHeader}>
                     <span>
                       <s-checkbox
-                        accessibilityLabel="Select all orders in route"
+                        accessibilityLabel={t("routeManager.selectAllInRoute")}
                         checked={isManageRouteFullySelected}
                         onChange={(event) => {
                           const target = event.currentTarget as
@@ -2430,15 +3137,15 @@ export default function Index() {
                         }}
                       />
                     </span>
-                    <span>Order</span>
-                    <span>Customer</span>
-                    <span>Address</span>
+                    <span>{t("routeManager.table.order")}</span>
+                    <span>{t("routeManager.table.customer")}</span>
+                    <span>{t("routeManager.table.address")}</span>
                   </div>
                   {activeManagedRouteOrders.map((order) => (
                     <div key={order.id} className={styles.dueOrdersRow}>
                       <span>
                         <s-checkbox
-                          accessibilityLabel={`Remove ${order.name} from route`}
+                          accessibilityLabel={t("routeManager.removeFromRoute", { name: order.name })}
                           checked={removeFromRouteOrderIds.has(order.id)}
                           onChange={() => toggleRemoveRouteOrder(order.id)}
                         />
@@ -2446,13 +3153,13 @@ export default function Index() {
                       <s-link href={order.adminOrderUrl} target="_blank">
                         {order.name}
                       </s-link>
-                      <span>{formatCustomerShort(order.customerName)}</span>
-                      <span>{order.address1 ?? "No address line 1"}</span>
+                      <span>{formatCustomerShort(order.customerName, t("customer.guest"))}</span>
+                      <span>{order.address1 ?? t("routeManager.noAddressLine1")}</span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <s-text color="subdued">No orders in this route.</s-text>
+                <s-text color="subdued">{t("modals.routeDetails.noOrders")}</s-text>
               )}
             </div>
           </div>
@@ -2463,7 +3170,7 @@ export default function Index() {
               command="--hide"
               onClick={closeEditRoute}
             >
-              Cancel
+              {t("modals.unassignConfirm.cancel")}
             </s-button>
             <s-button
               variant="primary"
@@ -2473,18 +3180,18 @@ export default function Index() {
               command="--hide"
               onClick={saveRouteEdits}
             >
-              Unassign orders
+              {t("routeManager.unassignOrders")}
             </s-button>
           </div>
         </s-stack>
       </s-modal>
       {unassignConfirmRoute ? (
-        <s-modal id="unassign-confirm-modal" heading="Warning">
+        <s-modal id="unassign-confirm-modal" heading={t("modals.unassignConfirm.heading")}>
           <s-stack direction="block" gap="base">
             <s-text>
-              All orders will be unassigned from route.
+              {t("modals.unassignConfirm.message")}
             </s-text>
-            <s-text>Do you wish to proceed?</s-text>
+            <s-text>{t("modals.unassignConfirm.proceed")}</s-text>
             <div className={styles.assignModalFooter}>
               <s-button
                 variant="secondary"
@@ -2492,7 +3199,7 @@ export default function Index() {
                 command="--hide"
                 onClick={() => setUnassignConfirmRoute(null)}
               >
-                Cancel
+                {t("modals.unassignConfirm.cancel")}
               </s-button>
               <s-button
                 variant="primary"
@@ -2506,19 +3213,19 @@ export default function Index() {
                   );
                 }}
               >
-                Confirm
+                {t("modals.unassignConfirm.confirm")}
               </s-button>
             </div>
           </s-stack>
         </s-modal>
       ) : null}
       {clearAllConfirmOpen ? (
-        <s-modal id="clear-all-confirm-modal" heading="Warning">
+        <s-modal id="clear-all-confirm-modal" heading={t("modals.clearAllConfirm.heading")}>
           <s-stack direction="block" gap="base">
             <s-text>
-              All orders will be unassigned.
+              {t("modals.clearAllConfirm.message")}
             </s-text>
-            <s-text>Do you wish to proceed?</s-text>
+            <s-text>{t("modals.clearAllConfirm.proceed")}</s-text>
             <div className={styles.assignModalFooter}>
               <s-button
                 variant="secondary"
@@ -2526,7 +3233,7 @@ export default function Index() {
                 command="--hide"
                 onClick={() => setClearAllConfirmOpen(false)}
               >
-                Cancel
+                {t("modals.clearAllConfirm.cancel")}
               </s-button>
               <s-button
                 variant="primary"
@@ -2535,26 +3242,175 @@ export default function Index() {
                 command="--hide"
                 onClick={performClearAllRoutes}
               >
-                Confirm
+                {t("modals.clearAllConfirm.confirm")}
               </s-button>
             </div>
           </s-stack>
         </s-modal>
       ) : null}
-      {quotePreview ? (
-        <s-modal id="request-driver-modal" heading="Request driver">
+      <s-modal id="address-verify-modal" heading={t("modals.addressVerify.heading")}>
+          <s-stack direction="block" gap="base">
+            <s-text color="subdued">{t("modals.addressVerify.description")}</s-text>
+            <div className={styles.addressVerifyScrollArea}>
+              {(addressVerifyRoute?.orderIds ?? []).map((orderId, idx) => {
+                const order = ordersById.get(orderId);
+                if (!order) return null;
+                return (
+                  <div key={orderId}>
+                    {idx > 0 ? <div className={styles.addressVerifyDivider} /> : null}
+                    <div className={styles.addressVerifyItem}>
+                      {/* Header: Order number | Customer name */}
+                      <div className={styles.addressVerifyHeader}>
+                        <span className={styles.addressVerifyOrderName}>{order.name}</span>
+                        {order.customerName ? (
+                          <>
+                            <span className={styles.addressVerifyHeaderSep}>{" | "}</span>
+                            <span className={styles.addressVerifyCustomerName}>{order.customerName}</span>
+                          </>
+                        ) : null}
+                      </div>
+                      {/* Original address (read-only) */}
+                      <div className={styles.addressVerifyOriginal}>
+                        {order.shippingSummary || "—"}
+                      </div>
+                      {/* Editable address with Google Places */}
+                      <div
+                        ref={(el) => { addressVerifyRefs.current[orderId] = el; }}
+                        className={styles.addressVerifyInputWrap}
+                      >
+                        <input
+                          type="text"
+                          value={addressVerifyEdits[orderId] ?? ""}
+                          onChange={(e) => {
+                            const val = (e.target as HTMLInputElement).value;
+                            setAddressVerifyEdits((prev) => ({ ...prev, [orderId]: val }));
+                          }}
+                          className={styles.addressVerifyInput}
+                          placeholder={t("modals.addressVerify.addressPlaceholder")}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className={styles.assignModalFooter}>
+              <s-button
+                variant="secondary"
+                onClick={() => {
+                  hideModal("address-verify-modal");
+                  setAddressVerifyRoute(null);
+                }}
+              >
+                {t("modals.addressVerify.cancel")}
+              </s-button>
+              <s-button
+                variant="primary"
+                onClick={() => handleAddressVerifyConfirm()}
+              >
+                {t("modals.addressVerify.confirm")}
+              </s-button>
+            </div>
+          </s-stack>
+        </s-modal>
+      <s-modal id="special-requests-modal" heading={t("modals.specialRequests.heading")}>
+          <s-stack direction="block" gap="base">
+            {specialRequestsLoading ? (
+              <s-text color="subdued">{t("modals.specialRequests.loading")}</s-text>
+            ) : availableSpecialRequests.length === 0 ? (
+              <s-text color="subdued">{t("modals.specialRequests.noOptions")}</s-text>
+            ) : (
+              <>
+                <s-text color="subdued">{t("modals.specialRequests.description")}</s-text>
+                {standaloneReqs.map((sr) => (
+                  <label
+                    key={sr.name}
+                    style={{ display: "flex", gap: 8, alignItems: "flex-start", cursor: "pointer", marginBottom: 8 }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedSpecialRequests.has(sr.name)}
+                      onChange={(e) => {
+                        const checked = (e.target as HTMLInputElement).checked;
+                        setSelectedSpecialRequests((prev) => {
+                          const next = new Set(prev);
+                          if (checked) next.add(sr.name);
+                          else next.delete(sr.name);
+                          return next;
+                        });
+                      }}
+                    />
+                    <span style={{ fontSize: 13 }}>{sr.description || sr.name}</span>
+                  </label>
+                ))}
+                {waitTimeOpts.length > 0 && (
+                  <>
+                    <label style={{ display: "flex", gap: 8, alignItems: "flex-start", cursor: "pointer", marginBottom: 4 }}>
+                      <input
+                        type="checkbox"
+                        checked={waitTimeExpanded}
+                        onChange={(e) => {
+                          const checked = (e.target as HTMLInputElement).checked;
+                          setWaitTimeExpanded(checked);
+                          if (!checked) setSelectedWaitTime(null);
+                        }}
+                      />
+                      <span style={{ fontSize: 13, fontWeight: 500 }}>{t("modals.specialRequests.waitTimeLabel")}</span>
+                    </label>
+                    {waitTimeExpanded && (
+                      <div style={{ marginLeft: 24, display: "flex", flexDirection: "column", gap: 6 }}>
+                        {waitTimeOpts.map((sr) => (
+                          <label key={sr.name} style={{ display: "flex", gap: 8, alignItems: "center", cursor: "pointer" }}>
+                            <input
+                              type="radio"
+                              name="waitTimeOption"
+                              value={sr.name}
+                              checked={selectedWaitTime === sr.name}
+                              onChange={() => setSelectedWaitTime(sr.name)}
+                            />
+                            <span style={{ fontSize: 13 }}>{sr.description || sr.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+            <div className={styles.assignModalFooter}>
+              <s-button
+                variant="secondary"
+                onClick={() => {
+                  hideModal("special-requests-modal");
+                  setSpecialRequestsRoute(null);
+                  resetWaitTimeState();
+                }}
+              >
+                {t("modals.specialRequests.cancel")}
+              </s-button>
+              <s-button
+                variant="primary"
+                onClick={() => handleSubmitQuoteWithSpecialRequests()}
+              >
+                {t("modals.specialRequests.confirm")}
+              </s-button>
+            </div>
+          </s-stack>
+        </s-modal>
+            {quotePreview ? (
+        <s-modal id="request-driver-modal" heading={t("modals.requestDriver.heading")}>
           <s-stack direction="block" gap="base">
             <s-text>
-              Quote #{quotePreview.quotationId}
+              {t("modals.requestDriver.quoteId", { quotationId: quotePreview.quotationId })}
             </s-text>
             <s-text color="subdued">
-              Expires at: {new Date(quotePreview.expiresAt).toLocaleString()}
+              {t("modals.requestDriver.expiresAt", { time: new Date(quotePreview.expiresAt).toLocaleString() })}
             </s-text>
             <s-text color="subdued">
-              Estimated total: {quotePreview.total ?? "--"} {quotePreview.currency ?? ""}
+              {t("modals.requestDriver.estimatedTotal", { amount: `${quotePreview.total ?? "--"} ${quotePreview.currency ?? ""}`.trim() })}
             </s-text>
             <s-text color="subdued">
-              Orders in route: {quotePreview.orderIds.length}
+              {t("modals.requestDriver.ordersInRoute", { count: quotePreview.orderIds.length })}
             </s-text>
             <div className={styles.assignModalFooter}>
               <s-button
@@ -2566,7 +3422,7 @@ export default function Index() {
                   setQuotePreview(null);
                 }}
               >
-                Cancel
+                {t("modals.requestDriver.cancel")}
               </s-button>
               <s-button
                 variant="primary"
@@ -2587,10 +3443,17 @@ export default function Index() {
                   quotePreview.orderIds.forEach((orderId) =>
                     formData.append("orderIds", orderId),
                   );
+                  formData.append(
+                    "deliveryAssignments",
+                    JSON.stringify(quotePreview.deliveryAssignments),
+                  );
+                  const confirmedRouteIdx = editableRoutes.findIndex((r) => r.id === quotePreview.routeId);
+                  const confirmedRouteTag = confirmedRouteIdx >= 0 ? (ROUTE_TAG_DEFINITIONS[confirmedRouteIdx]?.tag ?? null) : null;
+                  if (confirmedRouteTag) formData.append("routeTag", confirmedRouteTag);
                   lalamoveFetcher.submit(formData, { method: "post" });
                 }}
               >
-                Confirm request
+                {t("modals.requestDriver.confirm")}
               </s-button>
             </div>
           </s-stack>
@@ -2598,25 +3461,24 @@ export default function Index() {
       ) : null}
       <s-modal
         id="presale-tags-modal"
-        heading="Select which tags to include in routes:"
+        heading={t("modals.tagFilter.heading")}
       >
         <s-stack direction="block" gap="base">
           {availablePresaleTags.length === 0 ? (
-            <s-text color="subdued">No pre-sale tags found.</s-text>
+            <s-text color="subdued">{t("modals.tagFilter.noTags")}</s-text>
           ) : (
             availablePresaleTags.map((tag) => (
               <s-checkbox
                 key={tag}
+                label={tag}
                 checked={draftPresaleTags.includes(tag)}
                 onChange={(event: Event) =>
                   toggleDraftPresaleTag(
                     tag,
-                    (event.currentTarget as HTMLInputElement).checked,
+                    (event.currentTarget as unknown as HTMLInputElement).checked,
                   )
                 }
-              >
-                {tag}
-              </s-checkbox>
+              />
             ))
           )}
           <div className={styles.assignModalFooter}>
@@ -2626,7 +3488,7 @@ export default function Index() {
               command="--hide"
               onClick={() => setIsPresaleModalOpen(false)}
             >
-              Cancel
+              {t("modals.tagFilter.cancel")}
             </s-button>
             <s-button
               variant="primary"
@@ -2634,17 +3496,17 @@ export default function Index() {
               command="--hide"
               onClick={confirmPresaleTags}
             >
-              Confirm
+              {t("modals.tagFilter.confirm")}
             </s-button>
           </div>
         </s-stack>
       </s-modal>
-      <s-modal id="map-style-modal" heading="Map style">
+      <s-modal id="map-style-modal" heading={t("modals.mapStyle.heading")}>
         <div className={styles.mapStyleModalContent}>
         <s-stack direction="block" gap="base">
           <div className={styles.mapStyleModalColumns}>
             <div>
-              <s-text type="strong">Map style</s-text>
+              <s-text type="strong">{t("modals.mapStyle.mapStyleLabel")}</s-text>
               <s-choice-list
                 label=""
                 values={[draftMapStyle]}
@@ -2656,13 +3518,13 @@ export default function Index() {
                   }
                 }}
               >
-                <s-choice value="dark">Dark</s-choice>
-                <s-choice value="grayscale">Greyscale</s-choice>
-                <s-choice value="light">Light</s-choice>
+                <s-choice value="dark">{t("modals.mapStyle.dark")}</s-choice>
+                <s-choice value="grayscale">{t("modals.mapStyle.greyscale")}</s-choice>
+                <s-choice value="light">{t("modals.mapStyle.light")}</s-choice>
               </s-choice-list>
             </div>
             <div>
-              <s-text type="strong">Routing logic</s-text>
+              <s-text type="strong">{t("modals.mapStyle.routingLogic")}</s-text>
               <s-choice-list
                 label=""
                 values={[draftRoutingLogic]}
@@ -2679,10 +3541,10 @@ export default function Index() {
                   }
                 }}
               >
-                <s-choice value="distance">Distance-first</s-choice>
-                <s-choice value="topological">Topological</s-choice>
-                <s-choice value="inward">Inward-matrix</s-choice>
-                <s-choice value="carrier-quotation">Carrier quotation</s-choice>
+                <s-choice value="distance">{t("modals.mapStyle.distanceFirst")}</s-choice>
+                <s-choice value="topological">{t("modals.mapStyle.topological")}</s-choice>
+                <s-choice value="inward">{t("modals.mapStyle.inwardMatrix")}</s-choice>
+                <s-choice value="carrier-quotation">{t("modals.mapStyle.carrierQuotation")}</s-choice>
               </s-choice-list>
             </div>
           </div>
@@ -2697,7 +3559,7 @@ export default function Index() {
                 setIsMapStyleModalOpen(false);
               }}
             >
-              Cancel
+              {t("modals.mapStyle.cancel")}
             </s-button>
             <s-button
               variant="primary"
@@ -2705,16 +3567,16 @@ export default function Index() {
               command="--hide"
               onClick={confirmMapStyle}
             >
-              Confirm
+              {t("modals.mapStyle.confirm")}
             </s-button>
           </div>
         </s-stack>
         </div>
       </s-modal>
-      <s-modal id="address-errors-modal" heading="Potential address errors">
+      <s-modal id="address-errors-modal" heading={t("modals.addressErrors.heading")}>
         <s-stack direction="block" gap="base">
           {addressErrorOrders.length === 0 ? (
-            <s-text color="subdued">No potential address errors found.</s-text>
+            <s-text color="subdued">{t("modals.addressErrors.noErrors")}</s-text>
           ) : (
             addressErrorOrders.map((order) => (
               <s-box
@@ -2724,24 +3586,37 @@ export default function Index() {
                 borderRadius="base"
               >
                 <s-stack direction="block" gap="small">
-                  <s-text type="strong">{order.name}</s-text>
+                  <s-text type="strong">
+                    {order.name}{order.customerName ? ` • ${order.customerName}` : ""}
+                  </s-text>
                   <s-text color="subdued">
                     {order.addressValidation.issueType === "apartment_in_address1"
-                      ? "Apartment/unit details likely in address line 1."
+                      ? t("modals.addressErrors.apartmentInAddress")
                       : order.addressValidation.issueType === "duplicate_number"
-                        ? "Potential duplicate number across address lines."
-                        : "Address review needed."}
+                        ? t("modals.addressErrors.duplicateNumber")
+                        : order.addressValidation.issueType === "multiple_numbers_in_address1"
+                          ? t("modals.addressErrors.multipleNumbers")
+                          : t("modals.addressErrors.reviewNeeded")}
                   </s-text>
+                  {(order.address1 || order.address2) && (
+                    <div style={{ fontSize: 13, color: "#303030" }}>
+                      {order.address1 && (
+                        <div>{renderAddressHighlighted(order.address1, order.addressValidation.highlightPatterns)}</div>
+                      )}
+                      {order.address2 && (
+                        <div>{renderAddressHighlighted(order.address2, order.addressValidation.highlightPatterns)}</div>
+                      )}
+                    </div>
+                  )}
                   <s-link href={order.adminOrderUrl} target="_blank">
-                    Fix address in Shopify
+                    {t("modals.addressErrors.fixAddress")}
                   </s-link>
                 </s-stack>
               </s-box>
             ))
           )}
           <s-text color="subdued">
-            Open the order, then use Customer {" > "} ... {" > "} Edit shipping
-            address.
+            {t("modals.addressErrors.instruction")}
           </s-text>
           <div className={styles.assignModalFooter}>
             <s-button
@@ -2750,125 +3625,381 @@ export default function Index() {
               command="--hide"
               onClick={() => setIsAddressErrorsModalOpen(false)}
             >
-              Close
+              {t("modals.addressErrors.close")}
             </s-button>
           </div>
         </s-stack>
       </s-modal>
-      <s-modal
-        id="auto-assign-log-modal"
-        heading={selectedAutoAssignLog ? `Auto-assign: ${selectedAutoAssignLog.orderName ?? selectedAutoAssignLog.orderId}` : "Auto-assign log"}
-      >
-        {selectedAutoAssignLog ? (
-          <s-stack direction="block" gap="base">
-            <s-box padding="base" borderWidth="base" borderRadius="base">
-              <s-stack direction="block" gap="small">
-                <s-text type="strong">
-                  {selectedAutoAssignLog.status === "assigned"
-                    ? "Successful"
-                    : selectedAutoAssignLog.status === "skipped"
-                      ? "Skipped"
-                      : "Error"}
-                </s-text>
-                <s-text color="subdued">{selectedAutoAssignLog.reason ?? "—"}</s-text>
-                <s-text color="subdued">
-                  {new Date(selectedAutoAssignLog.createdAt).toLocaleString()}
-                </s-text>
-                {selectedAutoAssignLog.locationId ? (
-                  <s-text color="subdued">
-                    Location: {lalamoveConfigMap[selectedAutoAssignLog.locationId]?.locationName ?? selectedAutoAssignLog.locationId}
-                  </s-text>
-                ) : null}
-              </s-stack>
-            </s-box>
-            {selectedAutoAssignLog.details &&
-            typeof selectedAutoAssignLog.details === "object" &&
-            Object.keys(selectedAutoAssignLog.details as object).length > 0 ? (
-              <s-box padding="base" borderWidth="base" borderRadius="base">
-                <s-text type="strong">Debug details</s-text>
-                <pre
-                  className={styles.autoAssignLogDetails}
-                  style={{ margin: "8px 0 0", whiteSpace: "pre-wrap", fontSize: "12px" }}
+      <s-modal id="return-pickups-modal" heading={t("modals.returnPickups.heading")}>
+        <s-stack direction="block" gap="base">
+          <s-text-field
+            label={t("modals.returnPickups.instructionsLabel")}
+            value={returnInstructions}
+            placeholder={t("modals.returnPickups.instructionsPlaceholder")}
+            onChange={(e: Event) => setReturnInstructions((e.currentTarget as HTMLInputElement).value)}
+          />
+          {pendingReturnPickups.length === 0 ? (
+            <s-text color="subdued">{t("modals.returnPickups.noRequests")}</s-text>
+          ) : (
+            <div className={styles.dueOrdersTable}>
+              <div className={styles.dueOrdersHeader}>
+                <span>
+                  <s-checkbox
+                    accessibilityLabel={t("modals.returnPickups.selectAll")}
+                    checked={pendingReturnPickups.length > 0 && selectedReturnIds.size === pendingReturnPickups.length}
+                    onChange={(event: Event) => {
+                      const target = event.currentTarget as { checked?: boolean } | null;
+                      toggleAllReturnSelection(Boolean(target?.checked));
+                    }}
+                  />
+                </span>
+                <span>{t("modals.returnPickups.table.order")}</span>
+                <span>{t("modals.returnPickups.table.customer")}</span>
+                <span>{t("modals.returnPickups.table.address")}</span>
+              </div>
+              {pendingReturnPickups.map((req) => (
+                <div key={req.id} className={styles.dueOrdersRow}>
+                  <span>
+                    <s-checkbox
+                      accessibilityLabel={req.shopifyOrderName ?? req.id}
+                      checked={selectedReturnIds.has(req.id)}
+                      onChange={() => toggleReturnSelection(req.id)}
+                    />
+                  </span>
+                  <span>{req.shopifyOrderName ?? "—"}</span>
+                  <span>{req.customerName ?? "—"}</span>
+                  <span>{req.customerAddress ?? "—"}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {returnQuotePreview ? (
+            <div className={styles.returnQuoteRow}>
+              <s-text type="strong">
+                {t("modals.returnPickups.cost", {
+                  amount: returnQuotePreview.total ?? "--",
+                  currency: returnQuotePreview.currency ?? "",
+                })}
+              </s-text>
+              {returnPickupFetcher.state !== "idle" ? (
+                <s-button key="confirming-return" loading disabled>
+                  {t("modals.returnPickups.confirming")}
+                </s-button>
+              ) : (
+                <s-button key="confirm-return" variant="primary" onClick={handleConfirmReturnPickup}>
+                  {t("modals.returnPickups.confirmRequest")}
+                </s-button>
+              )}
+            </div>
+          ) : null}
+          <div className={styles.assignModalFooter}>
+            <s-button
+              variant="secondary"
+              commandFor="return-pickups-modal"
+              command="--hide"
+              onClick={() => setIsReturnPickupsModalOpen(false)}
+            >
+              {t("modals.returnPickups.cancel")}
+            </s-button>
+            {!returnQuotePreview ? (
+              returnPickupFetcher.state !== "idle" ? (
+                <s-button key="collecting-returns" loading disabled>
+                  {t("modals.returnPickups.collecting")}
+                </s-button>
+              ) : (
+                <s-button
+                  key="collect-returns"
+                  variant="primary"
+                  disabled={selectedReturnIds.size === 0}
+                  onClick={handleCollectReturns}
                 >
-                  {JSON.stringify(selectedAutoAssignLog.details, null, 2)}
+                  {t("modals.returnPickups.collectReturns")}
+                </s-button>
+              )
+            ) : null}
+          </div>
+        </s-stack>
+      </s-modal>
+      {addressWarnRoute ? (
+        <s-modal id="address-warn-modal" heading={t("modals.addressWarn.heading")}>
+          <s-stack direction="block" gap="base">
+            <s-text color="subdued">{t("modals.addressWarn.description")}</s-text>
+            {addressWarnRoute.orderIds
+              .map((id) => ordersById.get(id))
+              .filter((o): o is LoaderOrder => o !== undefined && !o.addressValidation.isValid)
+              .map((order) => (
+                <s-box key={order.id} padding="base" borderWidth="base" borderRadius="base">
+                  <s-stack direction="block" gap="small">
+                    <s-text type="strong">
+                      {order.name}{order.customerName ? ` • ${order.customerName}` : ""}
+                    </s-text>
+                    <s-text color="subdued">
+                      {order.addressValidation.issueType === "apartment_in_address1"
+                        ? t("modals.addressErrors.apartmentInAddress")
+                        : order.addressValidation.issueType === "duplicate_number"
+                          ? t("modals.addressErrors.duplicateNumber")
+                          : order.addressValidation.issueType === "multiple_numbers_in_address1"
+                            ? t("modals.addressErrors.multipleNumbers")
+                            : t("modals.addressErrors.reviewNeeded")}
+                    </s-text>
+                    {(order.address1 || order.address2) && (
+                      <div style={{ fontSize: 13, color: "#303030" }}>
+                        {order.address1 && (
+                          <div>{renderAddressHighlighted(order.address1, order.addressValidation.highlightPatterns)}</div>
+                        )}
+                        {order.address2 && (
+                          <div>{renderAddressHighlighted(order.address2, order.addressValidation.highlightPatterns)}</div>
+                        )}
+                      </div>
+                    )}
+                    <s-link href={order.adminOrderUrl} target="_blank">
+                      {t("modals.addressErrors.fixAddress")}
+                    </s-link>
+                  </s-stack>
+                </s-box>
+              ))}
+            <div className={styles.assignModalFooter}>
+              <s-button
+                variant="secondary"
+                onClick={() => {
+                  setAddressWarnPendingRecheck(true);
+                  revalidator.revalidate();
+                }}
+                disabled={revalidator.state !== "idle"}
+              >
+                {revalidator.state !== "idle" ? (
+                  <s-spinner size="base" accessibilityLabel="" />
+                ) : null}
+                {t("modals.addressWarn.problemFixed")}
+              </s-button>
+              <s-button
+                variant="primary"
+                tone="critical"
+                onClick={() => {
+                  hideModal("address-warn-modal");
+                  setAddressWarnRoute(null);
+                  proceedWithDriverRequest(addressWarnRoute);
+                }}
+              >
+                {t("modals.addressWarn.proceedAnyway")}
+              </s-button>
+            </div>
+          </s-stack>
+        </s-modal>
+      ) : null}
+      {cancelConfirmRouteId ? (
+        <s-modal id="cancel-delivery-modal" heading={t("routeManager.cancelDeliveryHeading")}>
+          <s-stack direction="block" gap="base">
+            <s-text>{t("routeManager.cancelDeliveryConfirm")}</s-text>
+            <div className={styles.cancelWarningBox}>
+              <s-text type="strong">{t("routeManager.cancelDeliveryWarning")}</s-text>
+            </div>
+            <div className={styles.assignModalFooter}>
+              <s-button
+                variant="secondary"
+                onClick={() => setCancelConfirmRouteId(null)}
+              >
+                {t("routeManager.cancelNo")}
+              </s-button>
+              <s-button
+                variant="primary"
+                tone="critical"
+                onClick={() => handleCancelDelivery(cancelConfirmRouteId)}
+              >
+                {t("routeManager.cancelYes")}
+              </s-button>
+            </div>
+          </s-stack>
+        </s-modal>
+      ) : null}
+      <s-modal id="integration-log-modal" heading={t("routeManager.integrationLogHeading")}>
+        <s-stack direction="block" gap="base">
+          {integrationLogEvents.length === 0 ? (
+            <s-text color="subdued">{t("routeManager.noLogEvents")}</s-text>
+          ) : (
+            integrationLogEvents.map((event) => (
+              <s-box key={event.id} padding="base" borderWidth="base" borderRadius="base">
+                <s-stack direction="block" gap="small">
+                  <div className={styles.integrationLogEventHeader}>
+                    <s-badge tone={event.eventType === "SHOPIFY_SYNC" ? "info" : undefined}>
+                      {event.eventType}
+                    </s-badge>
+                    <s-text color="subdued">
+                      {new Date(event.processedAt).toLocaleString()}
+                    </s-text>
+                  </div>
+                  {event.externalStatus ? (
+                    <s-text type="strong">{event.externalStatus}</s-text>
+                  ) : null}
+                </s-stack>
+              </s-box>
+            ))
+          )}
+          <div className={styles.assignModalFooter}>
+            <s-button
+              variant="secondary"
+              commandFor="integration-log-modal"
+              command="--hide"
+              onClick={() => setIntegrationLogRouteId(null)}
+            >
+              {t("modals.driverError.close")}
+            </s-button>
+          </div>
+        </s-stack>
+      </s-modal>
+      {driverErrorModal ? (
+        <s-modal id="driver-error-modal" heading={t("modals.driverError.headingFailed")}>
+          <s-stack direction="block" gap="base">
+            {/* Carrier readiness diagnostic — shown first */}
+            <s-box padding="base" borderWidth="base" borderRadius="base">
+              <s-text type="strong">{t("modals.driverError.carrierDiagnostic")}</s-text>
+              {locationId === DEFAULT_LOCATION_ID ? (
+                <div className={styles.carrierDiagnosticSpacing}>
+                  <s-text color="subdued">
+                    {t("routeManager.selectLocationForCarrier")}
+                  </s-text>
+                </div>
+              ) : (
+                <div className={styles.carrierDiagnosticSpacing}>
+                  {(() => {
+                    const lalamoveConfig = lalamoveConfigMap[locationId];
+                    const checks = [
+                      { ok: !!credentialStatus.configured, label: t("modals.driverError.apiCredentials") },
+                      { ok: !!lalamoveConfig?.market, label: t("modals.driverError.market") },
+                      { ok: !!lalamoveConfig?.preferredServiceType, label: t("modals.driverError.vehicleType") },
+                      { ok: !!lalamoveConfig?.locationName, label: t("modals.driverError.locationName") },
+                      { ok: !!lalamoveConfig?.locationPhone, label: t("modals.driverError.locationPhone") },
+                      { ok: !!lalamoveConfig?.locationAddress, label: t("modals.driverError.locationAddress") },
+                    ];
+                    return checks.map(({ ok, label }) => (
+                      <div key={label} className={styles.carrierDiagnosticCheckRow}>
+                        <span className={styles.carrierDiagnosticSymbol} style={{ color: ok ? "#008060" : "#D72C0D" }}>
+                          {ok ? "✓" : "✗"}
+                        </span>
+                        <span className={styles.carrierDiagnosticLabel} style={{ color: ok ? undefined : "#D72C0D" }}>{label}</span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              )}
+            </s-box>
+            {/* Error details — shown second */}
+            {driverErrorModal.errorDetails ? (
+              <s-box padding="base" borderWidth="base" borderRadius="base">
+                <s-text type="strong">{t("modals.driverError.errorDetails")}</s-text>
+                <pre className={styles.driverErrorDetails}>
+                  {driverErrorModal.errorDetails}
                 </pre>
               </s-box>
             ) : null}
             <div className={styles.assignModalFooter}>
-              <s-link
-                href={`https://admin.shopify.com/store/${toAdminStoreHandle(shop)}/orders/${selectedAutoAssignLog.orderId}`}
-                target="_blank"
-              >
-                Open order in Shopify
-              </s-link>
               <s-button
                 variant="secondary"
-                commandFor="auto-assign-log-modal"
+                commandFor="driver-error-modal"
                 command="--hide"
-                onClick={() => {
-                  setSelectedAutoAssignLog(null);
-                  setIsAutoAssignLogModalOpen(false);
-                }}
+                onClick={() => setDriverErrorModal(null)}
               >
-                Close
+                {t("modals.driverError.close")}
               </s-button>
             </div>
           </s-stack>
-        ) : (
-          <s-text color="subdued">No log selected.</s-text>
-        )}
+        </s-modal>
+      ) : null}
+      <s-modal id="shipment-requests-modal" heading={t("modals.shipmentRequests.heading")}>
+        <s-stack direction="block" gap="base">
+          {shipmentRequestOrders.length === 0 ? (
+            <s-text color="subdued">{t("modals.shipmentRequests.noIssues")}</s-text>
+          ) : (
+            shipmentRequestOrders.map((order) => (
+              <s-box
+                key={order.id}
+                padding="base"
+                borderWidth="base"
+                borderRadius="base"
+              >
+                <s-stack direction="block" gap="small">
+                  <s-text type="strong">{order.name}</s-text>
+                  <s-text color="subdued">
+                    {t("modals.shipmentRequests.statusPrefix", { status: order.displayFulfillmentStatus })}
+                  </s-text>
+                  <s-text color="subdued">
+                    {t("modals.shipmentRequests.deliveryMethodPrefix", { method: order.deliveryMethodTypes.join(", ") })}
+                  </s-text>
+                  <s-link href={order.adminOrderUrl} target="_blank">
+                    {t("modals.addressErrors.openInShopify")}
+                  </s-link>
+                </s-stack>
+              </s-box>
+            ))
+          )}
+          <s-text color="subdued">
+            {t("modals.shipmentRequests.instruction")}
+          </s-text>
+          <div className={styles.assignModalFooter}>
+            <s-button
+              variant="secondary"
+              commandFor="shipment-requests-modal"
+              command="--hide"
+              onClick={() => setIsShipmentRequestsModalOpen(false)}
+            >
+              {t("modals.shipmentRequests.close")}
+            </s-button>
+          </div>
+        </s-stack>
       </s-modal>
       {!mapsApiKey ? (
-        <s-banner tone="warning" heading="Google Maps API key missing">
-          Set GOOGLE_MAPS_API_KEY in your environment and restart the dev server
-          to enable the map.
+        <s-banner tone="warning" heading={t("banners.mapsKeyMissing")}>
+          {t("banners.mapsKeyDescription")}
         </s-banner>
       ) : null}
       {!mapsMapId ? (
-        <s-banner tone="warning" heading="Google Maps Map ID missing">
-          Set GOOGLE_MAPS_MAP_ID in your environment to use Advanced Markers.
+        <s-banner tone="warning" heading={t("banners.mapsMapIdMissing")}>
+          {t("banners.mapsMapIdAdvancedMarkers")}
         </s-banner>
       ) : null}
       {ordersError ? (
-        <s-banner tone="critical" heading="Orders access requires approval">
+        <s-banner tone="critical" heading={t("banners.ordersAccessRequired")}>
           {ordersError}
         </s-banner>
       ) : null}
       {debugLocalDelivery ? (
-        <s-banner tone="info" heading="Local Delivery debug mode">
+        <s-banner tone="info" heading={t("banners.debugMode")}>
           <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
             {JSON.stringify(debugLocalDelivery, null, 2)}
           </pre>
         </s-banner>
       ) : null}
-      {shipmentRequestWarning ? (
-        <s-banner
-          tone="warning"
-          heading="There are shipment requests to be processed"
-        />
-      ) : null}
-      {assignmentSuccessMessage ? (
-        <s-banner tone="success" heading={assignmentSuccessMessage} />
-      ) : null}
-      <s-section slot="aside">
+      <div
+        slot="aside"
+        className={`${styles.collapsibleSectionWrap}${!isRouteManagerVisible ? ` ${styles.collapsed}` : ""}`}
+        onClick={(e: React.MouseEvent) => {
+          if ((e.target as HTMLElement).closest?.('button, [role="button"], s-button, s-link, s-select, a, input, select, s-date-field')) return;
+          setIsRouteManagerVisible((prev) => !prev);
+        }}
+      >
+      <s-section heading={t("filters.fulfillmentDetails")}>
         <s-stack direction="block" gap="base">
-          <s-select
-            label="Fulfillment location"
-            name="locationId"
-            value={locationId}
-            onChange={handleLocationChange}
-          >
-            <s-option value={DEFAULT_LOCATION_ID}>All locations</s-option>
-            {locations.map((location) => (
-              <s-option key={location.id} value={location.id}>
-                {location.name}
-              </s-option>
-            ))}
-          </s-select>
+          <div className={styles.locationSelectRow}>
+            <div className={styles.locationSelectFlex}>
+              <s-select
+                label={t("filters.fulfillmentLocation")}
+                name="locationId"
+                value={locationId}
+                onChange={handleLocationChange}
+              >
+                <s-option value={DEFAULT_LOCATION_ID}>{t("filters.allLocations")}</s-option>
+                {locations.map((location) => (
+                  <s-option key={location.id} value={location.id}>
+                    {location.name}
+                  </s-option>
+                ))}
+              </s-select>
+            </div>
+          </div>
           {!isRouteManagerVisible ? (
             <div className={styles.startDateFieldGroup}>
               <s-date-field
-                label="Start date"
+                label={t("filters.startDate")}
                 value={startDate}
                 onChange={handleStartDateChange}
               />
@@ -2877,193 +4008,94 @@ export default function Index() {
           ) : null}
           {!isRouteManagerVisible ? (
             <s-select
-              label="Delivery promisse"
+              label={t("filters.deliveryPromise")}
               value={`${deliveryPromiseDays}`}
               onChange={handleDeliveryPromiseChange}
             >
-              <s-option value="1">Next day</s-option>
-              <s-option value="2">Day +2</s-option>
-              <s-option value="3">Day +3</s-option>
-              <s-option value="4">Day +4</s-option>
+              <s-option value="0">{t("filters.sameDay")}</s-option>
+              <s-option value="1">{t("filters.nextDay")}</s-option>
+              <s-option value="2">{t("filters.dayPlus2")}</s-option>
+              <s-option value="3">{t("filters.dayPlus3")}</s-option>
+              <s-option value="4">{t("filters.dayPlus4")}</s-option>
             </s-select>
           ) : null}
-          <div className={styles.asideSummaryRow}>
-            <s-badge>📦 Orders to deliver: {mapData.orders.length}</s-badge>
-          </div>
-          {failedDeliveryCount > 0 ? (
-            <div className={styles.warningLink}>
-              <s-text>⚠️ Failed delivery ({failedDeliveryCount})</s-text>
-            </div>
-          ) : null}
-          {hasUnfulfilledPresaleOrders ? (
-            <s-link
-              className={styles.warningLink}
-              onClick={() => setIsPresaleModalOpen(true)}
-            >
-              ⚠️ There are unfulfilled pre-sale orders
-            </s-link>
-          ) : null}
-          {addressErrorOrders.length > 0 ? (
-            <s-link
-              className={styles.warningLink}
-              onClick={() => setIsAddressErrorsModalOpen(true)}
-            >
-              ⚠️ Potential address errors ({addressErrorOrders.length})
-            </s-link>
-          ) : null}
-          <div className={styles.asideButtonRow}>
-            <div className={styles.asideButtonRowActions}>
-              <s-button
-                variant="secondary"
-                onClick={() => {
-                  autoAssignSelection();
-                  handleOptimizeFleet();
-                }}
-                disabled={
-                  locationId === DEFAULT_LOCATION_ID ||
-                  orders.length === 0 ||
-                  optimizeFetcher.state !== "idle" ||
-                  unassignedOrders.length === 0
-                }
-              >
-                Auto-assign orders
-              </s-button>
-              <s-button variant="primary" onClick={handleManageOrdersClick}>
-                Manage orders
-              </s-button>
-            </div>
-          </div>
-          {optimizeFetcher.state !== "idle" ? (
-            <div className={styles.autoAssignSpinnerWrap}>
-              <s-stack direction="inline" gap="small">
-                <s-spinner size="base" accessibilityLabel="Auto-assigning orders" />
-                <s-text color="subdued">Auto-assignment in progress</s-text>
-              </s-stack>
-            </div>
-          ) : null}
-          {isRouteManagerVisible ? (
-            <div className={styles.mapBlockFooterRight}>
-              <s-link onClick={() => setIsRouteManagerVisible(false)}>
-                Change settings
-              </s-link>
-            </div>
-          ) : null}
-          <div className={styles.carrierStatusBlock}>
-            <s-link
-              onClick={() =>
-                setIsCarrierStatusExpanded((s) => !s)
-              }
-            >
-              Carrier status
-            </s-link>
-            {isCarrierStatusExpanded ? (
-              <div className={styles.carrierStatusExpanded}>
-                {locationId === DEFAULT_LOCATION_ID ? (
-                  <s-text color="subdued">
-                    Select a fulfillment location to see carrier status.
-                  </s-text>
-                ) : (
-                  <s-stack direction="block" gap="small">
-                    {(() => {
-                      const lalamoveConfig =
-                        lalamoveConfigMap[locationId];
-                      const isLalamoveReady =
-                        credentialStatus.configured &&
-                        lalamoveConfig &&
-                        lalamoveConfig.market &&
-                        lalamoveConfig.preferredServiceType &&
-                        lalamoveConfig.locationName &&
-                        lalamoveConfig.locationPhone &&
-                        lalamoveConfig.locationAddress;
-                      const statusLine = (
-                        ok: boolean,
-                        label: string,
-                        value?: string,
-                      ) => (
-                        <div
-                          key={label}
-                          className={styles.carrierStatusLine}
-                        >
-                          <span
-                            className={
-                              ok
-                                ? styles.carrierStatusOk
-                                : styles.carrierStatusFail
-                            }
-                          >
-                            {ok ? "✓" : "✗"}
-                          </span>
-                          <code className={styles.carrierStatusVar}>
-                            {label}
-                          </code>
-                          {value !== undefined ? (
-                            <span className={styles.carrierStatusValue}>
-                              {value || "(empty)"}
-                            </span>
-                          ) : null}
-                        </div>
-                      );
-                      return (
-                        <>
-                          {statusLine(
-                            !!credentialStatus.configured,
-                            "credentialStatus.configured",
-                          )}
-                          {statusLine(
-                            !!lalamoveConfig,
-                            "lalamoveConfig",
-                          )}
-                          {statusLine(
-                            !!lalamoveConfig?.market,
-                            "lalamoveConfig.market",
-                            lalamoveConfig?.market,
-                          )}
-                          {statusLine(
-                            !!lalamoveConfig?.preferredServiceType,
-                            "lalamoveConfig.preferredServiceType",
-                            lalamoveConfig?.preferredServiceType,
-                          )}
-                          {statusLine(
-                            !!lalamoveConfig?.locationName,
-                            "lalamoveConfig.locationName",
-                            lalamoveConfig?.locationName,
-                          )}
-                          {statusLine(
-                            !!lalamoveConfig?.locationPhone,
-                            "lalamoveConfig.locationPhone",
-                            lalamoveConfig?.locationPhone,
-                          )}
-                          {statusLine(
-                            !!lalamoveConfig?.locationAddress,
-                            "lalamoveConfig.locationAddress",
-                            lalamoveConfig?.locationAddress,
-                          )}
-                          <div
-                            className={`${styles.carrierStatusLine} ${styles.carrierStatusResult}`}
-                          >
-                            <span
-                              className={
-                                isLalamoveReady
-                                  ? styles.carrierStatusOk
-                                  : styles.carrierStatusFail
-                              }
-                            >
-                              {isLalamoveReady ? "✓" : "✗"}
-                            </span>
-                            <code className={styles.carrierStatusVar}>
-                              isLalamoveReady
-                            </code>
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </s-stack>
-                )}
+          {!isRouteManagerVisible && deliveryPromiseDays === 0 ? (
+            <div className={styles.sameDayTimeLimitRow}>
+              <span className={styles.sameDayTimeLimitLabel}>{t("filters.sameDayTimeLimit")}</span>
+              <div className={styles.sameDayTimeSelects}>
+                <s-select
+                  label="Hour"
+                  value={`${sameDayHour}`}
+                  onChange={(e: Event) => {
+                    const v = (e.currentTarget as { value?: string } | null)?.value;
+                    if (v !== undefined) setSameDayHour(Number(v));
+                  }}
+                >
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <s-option key={i} value={`${i}`}>{String(i).padStart(2, "0")}h</s-option>
+                  ))}
+                </s-select>
+                <s-select
+                  label="Min"
+                  value={`${sameDayMinute}`}
+                  onChange={(e: Event) => {
+                    const v = (e.currentTarget as { value?: string } | null)?.value;
+                    if (v !== undefined) setSameDayMinute(Number(v));
+                  }}
+                >
+                  {[0, 15, 30, 45].map((m) => (
+                    <s-option key={m} value={`${m}`}>{String(m).padStart(2, "0")}m</s-option>
+                  ))}
+                </s-select>
               </div>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
+          {/* Orders badge */}
+          <s-badge>{t("filters.ordersToDeliver", { count: mapData.orders.length })}</s-badge>
+          {locationId !== DEFAULT_LOCATION_ID && isRouteManagerVisible ? (
+            <>
+              {failedDeliveryCount > 0 ? (
+                <div className={styles.warningLink}>
+                  <s-text>{t("filters.failedDelivery", { count: failedDeliveryCount })}</s-text>
+                </div>
+              ) : null}
+              {hasUnfulfilledPresaleOrders ? (
+                <span className={styles.warningLink}>
+                <s-link
+                  onClick={() => setIsPresaleModalOpen(true)}
+                >
+                  {t("filters.presaleWarning")}
+                </s-link></span>
+              ) : null}
+              {addressErrorOrders.length > 0 ? (
+                <span style={{ cursor: "pointer" }} onClick={() => setIsAddressErrorsModalOpen(true)}>
+                  <s-badge tone="warning">
+                    <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M11.251 3.25a1.412 1.412 0 0 0-2.502 0L1.91 16.244A1.29 1.29 0 0 0 3.062 18h13.876a1.29 1.29 0 0 0 1.153-1.756L11.25 3.25Zm-1.25 4a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75Zm1 7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" fill="currentColor" /></svg>
+                    {t("warnings.addressErrors", { count: addressErrorOrders.length })}
+                  </s-badge>
+                </span>
+              ) : null}
+              {shipmentRequestOrders.length > 0 ? (
+                <span style={{ cursor: "pointer" }} onClick={() => setIsShipmentRequestsModalOpen(true)}>
+                  <s-badge tone="warning">
+                    <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M11.251 3.25a1.412 1.412 0 0 0-2.502 0L1.91 16.244A1.29 1.29 0 0 0 3.062 18h13.876a1.29 1.29 0 0 0 1.153-1.756L11.25 3.25Zm-1.25 4a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75Zm1 7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" fill="currentColor" /></svg>
+                    {t("warnings.shipmentRequests", { count: shipmentRequestOrders.length })}
+                  </s-badge>
+                </span>
+              ) : null}
+              {pendingReturnPickups.length > 0 ? (
+                <span style={{ cursor: "pointer" }} onClick={() => setIsReturnPickupsModalOpen(true)}>
+                  <s-badge tone="warning">
+                    <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M17 8.5A8.5 8.5 0 1 1 8.5 0H9v4.1A4.5 4.5 0 1 0 13 8.5h-1.5l3-4 3 4H16a7 7 0 1 1-7-7V0a8.5 8.5 0 0 1 8 8.5Z" fill="currentColor" /></svg>
+                    {t("warnings.returnPickups", { count: pendingReturnPickups.length })}
+                  </s-badge>
+                </span>
+              ) : null}
+            </>
+          ) : null}
         </s-stack>
       </s-section>
+      </div>
       <div className={styles.mainBlocks}>
         <div className={isFullscreen ? styles.fullscreenOverlay : undefined}>
           <div className={isFullscreen ? styles.fullscreenContent : undefined}>
@@ -3079,12 +4111,12 @@ export default function Index() {
                     <s-button
                       variant="secondary"
                       accessibilityLabel={
-                        isFullscreen ? "Collapse map" : "Expand map"
+                        isFullscreen ? t("map.collapseMap") : t("map.expandMap")
                       }
                       aria-expanded={isFullscreen}
                       onClick={() => setIsFullscreen((current) => !current)}
                     >
-                      {isFullscreen ? "[-] Collapse" : "[+] Expand"}
+                      {isFullscreen ? t("map.collapse") : t("map.expand")}
                     </s-button>
                   </div>
                   <div
@@ -3096,14 +4128,27 @@ export default function Index() {
                 </div>
                 {mapData.locations.length === 0 && mapData.orders.length === 0 ? (
                   <s-text color="subdued">
-                    No coordinates available for the selected filters.
+                    {t("map.noCoordinates")}
                   </s-text>
                 ) : null}
                 <div className={styles.mapMetaRow}>
                   <div className={styles.mapLegendOutside}>
-                    <s-text>📦 Due today</s-text>
-                    <s-text>⏰ Due tomorrow</s-text>
-                    <s-text>🕒 Due later</s-text>
+                    <span className={styles.legendPill}>
+                      <span className={styles.legendPillEmoji}>{t("map.legend.dueTodayEmoji")}</span>
+                      <span className={styles.legendPillText}>{t("map.legend.dueToday")}</span>
+                    </span>
+                    <span className={styles.legendPill}>
+                      <span className={styles.legendPillEmoji}>{t("map.legend.dueTomorrowEmoji")}</span>
+                      <span className={styles.legendPillText}>{t("map.legend.dueTomorrow")}</span>
+                    </span>
+                    <span className={styles.legendPill}>
+                      <span className={styles.legendPillEmoji}>{t("map.legend.dueLaterEmoji")}</span>
+                      <span className={styles.legendPillText}>{t("map.legend.dueLater")}</span>
+                    </span>
+                    <span className={styles.legendPill}>
+                      <span className={styles.legendPillEmoji}>{t("map.legend.addressErrorEmoji")}</span>
+                      <span className={styles.legendPillText}>{t("map.legend.addressError")}</span>
+                    </span>
                   </div>
                   <div className={styles.mapBlockFooterRight}>
                     <s-link
@@ -3115,7 +4160,7 @@ export default function Index() {
                         setIsMapStyleModalOpen(true);
                       }}
                     >
-                      Map style
+                      {t("map.mapStyleButton")}
                     </s-link>
                     {locationId !== DEFAULT_LOCATION_ID ? (
                       <>
@@ -3124,7 +4169,7 @@ export default function Index() {
                           disabled={selectedOrderIds.size === 0}
                           onClick={clearSelection}
                         >
-                          Clear selection
+                          {t("map.clearSelection")}
                         </s-button>
                         <s-button
                           variant="primary"
@@ -3134,7 +4179,7 @@ export default function Index() {
                           }
                           onClick={handleAssignToNewRoute}
                         >
-                          Assign to new route
+                          {t("map.assignToNewRoute")}
                         </s-button>
                       </>
                     ) : null}
@@ -3146,12 +4191,12 @@ export default function Index() {
                     <s-stack direction="block" gap="base">
                       <div className={styles.unassignedHeaderRow}>
                         <s-text type="strong">
-                          Unassigned orders ({unassignedOrders.length})
+                          {t("routeManager.unassignedOrders", { count: unassignedOrders.length })}
                         </s-text>
                       </div>
                       {unassignedOrders.length === 0 ? (
                         <s-text color="subdued">
-                          No unassigned orders for current filters.
+                          {t("routeManager.noUnassigned")}
                         </s-text>
                       ) : visibleDueBuckets.length === 0 ? null : (
                         <div className={styles.unassignedBucketsScroll}>
@@ -3187,9 +4232,9 @@ export default function Index() {
                                       }}
                                     />
                                   </span>
-                                  <span>Order</span>
-                                  <span>Customer</span>
-                                  <span>Address</span>
+                                  <span>{t("routeManager.table.order")}</span>
+                                  <span>{t("routeManager.table.customer")}</span>
+                                  <span>{t("routeManager.table.address")}</span>
                                 </div>
                                 {bucket.orders.map((order) => {
                                   const isSelected = selectedOrderIds.has(order.id);
@@ -3197,7 +4242,7 @@ export default function Index() {
                                     <div key={order.id} className={styles.dueOrdersRow}>
                                       <span>
                                         <s-checkbox
-                                          accessibilityLabel={`Select ${order.name}`}
+                                          accessibilityLabel={t("routeManager.selectOrder", { name: order.name })}
                                           checked={isSelected}
                                           onChange={(event) =>
                                             handleOrderToggle(event, order.id)
@@ -3205,8 +4250,8 @@ export default function Index() {
                                         />
                                       </span>
                                       <span>{order.name}</span>
-                                      <span>{formatCustomerShort(order.customerName)}</span>
-                                      <span>{order.address1 ?? "No address line 1"}</span>
+                                      <span>{formatCustomerShort(order.customerName, t("customer.guest"))}</span>
+                                      <span>{order.address1 ?? t("routeManager.noAddressLine1")}</span>
                                     </div>
                                   );
                                 })}
@@ -3223,23 +4268,41 @@ export default function Index() {
                 <div className={styles.fullscreenAssignedPane}>
                   <s-section>
                     <s-stack direction="block" gap="base">
-                      <s-select
-                        label="Fulfillment location"
-                        name="locationId"
-                        value={locationId}
-                        onChange={handleLocationChange}
-                      >
-                        <s-option value={DEFAULT_LOCATION_ID}>All locations</s-option>
-                        {locations.map((location) => (
-                          <s-option key={location.id} value={location.id}>
-                            {location.name}
-                          </s-option>
-                        ))}
-                      </s-select>
+                      <div className={styles.locationSelectRow}>
+                        <div className={styles.locationSelectFlex}>
+                          <s-select
+                            label={t("filters.fulfillmentLocation")}
+                            name="locationId"
+                            value={locationId}
+                            onChange={handleLocationChange}
+                          >
+                            <s-option value={DEFAULT_LOCATION_ID}>{t("filters.allLocations")}</s-option>
+                            {locations.map((location) => (
+                              <s-option key={location.id} value={location.id}>
+                                {location.name}
+                              </s-option>
+                            ))}
+                          </s-select>
+                        </div>
+                        <button
+                          type="button"
+                          className={styles.collapseToggle}
+                          onClick={() => setIsRouteManagerVisible((prev) => !prev)}
+                          aria-label={isRouteManagerVisible ? t("map.collapse") : t("map.expand")}
+                        >
+                          <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            {isRouteManagerVisible ? (
+                              <polyline points="5 8 10 13 15 8" />
+                            ) : (
+                              <polyline points="5 13 10 8 15 13" />
+                            )}
+                          </svg>
+                        </button>
+                      </div>
                       {!isRouteManagerVisible ? (
                         <div className={styles.startDateFieldGroup}>
                           <s-date-field
-                            label="Start date"
+                            label={t("filters.startDate")}
                             value={startDate}
                             onChange={handleStartDateChange}
                           />
@@ -3248,81 +4311,148 @@ export default function Index() {
                       ) : null}
                       {!isRouteManagerVisible ? (
                         <s-select
-                          label="Delivery promisse"
+                          label={t("filters.deliveryPromise")}
                           value={`${deliveryPromiseDays}`}
                           onChange={handleDeliveryPromiseChange}
                         >
-                          <s-option value="1">Next day</s-option>
-                          <s-option value="2">Day +2</s-option>
-                          <s-option value="3">Day +3</s-option>
-                          <s-option value="4">Day +4</s-option>
+                          <s-option value="0">{t("filters.sameDay")}</s-option>
+                          <s-option value="1">{t("filters.nextDay")}</s-option>
+                          <s-option value="2">{t("filters.dayPlus2")}</s-option>
+                          <s-option value="3">{t("filters.dayPlus3")}</s-option>
+                          <s-option value="4">{t("filters.dayPlus4")}</s-option>
                         </s-select>
                       ) : null}
-                      <div className={styles.asideSummaryRow}>
-                        <s-badge>📦 Orders to deliver: {mapData.orders.length}</s-badge>
-                      </div>
-                      {failedDeliveryCount > 0 ? (
-                        <div className={styles.warningLink}>
-                          <s-text>⚠️ Failed delivery ({failedDeliveryCount})</s-text>
+                      {!isRouteManagerVisible && deliveryPromiseDays === 0 ? (
+                        <div className={styles.sameDayTimeLimitRow}>
+                          <span className={styles.sameDayTimeLimitLabel}>{t("filters.sameDayTimeLimit")}</span>
+                          <div className={styles.sameDayTimeSelects}>
+                            <s-select
+                              label="Hour"
+                              value={`${sameDayHour}`}
+                              onChange={(e: Event) => {
+                                const v = (e.currentTarget as { value?: string } | null)?.value;
+                                if (v !== undefined) setSameDayHour(Number(v));
+                              }}
+                            >
+                              {Array.from({ length: 24 }, (_, i) => (
+                                <s-option key={i} value={`${i}`}>{String(i).padStart(2, "0")}h</s-option>
+                              ))}
+                            </s-select>
+                            <s-select
+                              label="Min"
+                              value={`${sameDayMinute}`}
+                              onChange={(e: Event) => {
+                                const v = (e.currentTarget as { value?: string } | null)?.value;
+                                if (v !== undefined) setSameDayMinute(Number(v));
+                              }}
+                            >
+                              {[0, 15, 30, 45].map((m) => (
+                                <s-option key={m} value={`${m}`}>{String(m).padStart(2, "0")}m</s-option>
+                              ))}
+                            </s-select>
+                          </div>
                         </div>
                       ) : null}
-                      {hasUnfulfilledPresaleOrders ? (
-                        <s-link onClick={() => setIsPresaleModalOpen(true)}>
-                          ⚠️ There are unfulfilled pre-sale orders
-                        </s-link>
-                      ) : null}
-                      {addressErrorOrders.length > 0 ? (
-                        <s-link onClick={() => setIsAddressErrorsModalOpen(true)}>
-                          ⚠️ Potential address errors ({addressErrorOrders.length})
-                        </s-link>
-                      ) : null}
-                      <div className={styles.asideButtonRow}>
-                        <div className={styles.asideButtonRowActions}>
-                          <s-button
-                            variant="secondary"
-                            onClick={() => {
-                              autoAssignSelection();
-                              handleOptimizeFleet();
-                            }}
-                            disabled={
-                              locationId === DEFAULT_LOCATION_ID ||
-                              orders.length === 0 ||
-                              optimizeFetcher.state !== "idle" ||
-                              unassignedOrders.length === 0
-                            }
-                          >
-                            Auto-assign orders
-                          </s-button>
-                          <s-button variant="primary" onClick={handleManageOrdersClick}>
-                            Manage orders
-                          </s-button>
-                        </div>
-                      </div>
-                      {optimizeFetcher.state !== "idle" ? (
-                        <div className={styles.autoAssignSpinnerWrap}>
-                          <s-stack direction="inline" gap="small">
-                            <s-spinner size="base" accessibilityLabel="Auto-assigning orders" />
-                            <s-text color="subdued">Auto-assignment in progress</s-text>
-                          </s-stack>
-                        </div>
-                      ) : null}
-                      {isRouteManagerVisible ? (
-                        <div className={styles.mapBlockFooterRight}>
-                          <s-link onClick={() => setIsRouteManagerVisible(false)}>
-                            Change settings
-                          </s-link>
-                        </div>
+                      {/* Orders badge */}
+                      <s-badge>{t("filters.ordersToDeliver", { count: mapData.orders.length })}</s-badge>
+                      {locationId !== DEFAULT_LOCATION_ID && isRouteManagerVisible ? (
+                        <>
+                          {failedDeliveryCount > 0 ? (
+                            <div className={styles.warningLink}>
+                              <s-text>{t("filters.failedDelivery", { count: failedDeliveryCount })}</s-text>
+                            </div>
+                          ) : null}
+                          {hasUnfulfilledPresaleOrders ? (
+                            <s-link onClick={() => setIsPresaleModalOpen(true)}>
+                              {t("filters.presaleWarning")}
+                            </s-link>
+                          ) : null}
+                          {addressErrorOrders.length > 0 ? (
+                            <span style={{ cursor: "pointer" }} onClick={() => setIsAddressErrorsModalOpen(true)}>
+                              <s-badge tone="warning">
+                                <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M11.251 3.25a1.412 1.412 0 0 0-2.502 0L1.91 16.244A1.29 1.29 0 0 0 3.062 18h13.876a1.29 1.29 0 0 0 1.153-1.756L11.25 3.25Zm-1.25 4a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75Zm1 7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" fill="currentColor" /></svg>
+                                {t("warnings.addressErrors", { count: addressErrorOrders.length })}
+                              </s-badge>
+                            </span>
+                          ) : null}
+                          {shipmentRequestOrders.length > 0 ? (
+                            <span style={{ cursor: "pointer" }} onClick={() => setIsShipmentRequestsModalOpen(true)}>
+                              <s-badge tone="warning">
+                                <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M11.251 3.25a1.412 1.412 0 0 0-2.502 0L1.91 16.244A1.29 1.29 0 0 0 3.062 18h13.876a1.29 1.29 0 0 0 1.153-1.756L11.25 3.25Zm-1.25 4a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75Zm1 7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" fill="currentColor" /></svg>
+                                {t("warnings.shipmentRequests", { count: shipmentRequestOrders.length })}
+                              </s-badge>
+                            </span>
+                          ) : null}
+                          {pendingReturnPickups.length > 0 ? (
+                            <span style={{ cursor: "pointer" }} onClick={() => setIsReturnPickupsModalOpen(true)}>
+                              <s-badge tone="warning">
+                                <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M17 8.5A8.5 8.5 0 1 1 8.5 0H9v4.1A4.5 4.5 0 1 0 13 8.5h-1.5l3-4 3 4H16a7 7 0 1 1-7-7V0a8.5 8.5 0 0 1 8 8.5Z" fill="currentColor" /></svg>
+                                {t("warnings.returnPickups", { count: pendingReturnPickups.length })}
+                              </s-badge>
+                            </span>
+                          ) : null}
+                        </>
                       ) : null}
                     </s-stack>
                   </s-section>
                   {isRouteManagerVisible ? (
-                  <s-section heading="Route manager">
-                    {locationId !== DEFAULT_LOCATION_ID && hasAssignedRoutes ? (
-                      <div className={styles.routeManagerHeaderRow}>
-                        <span />
-                        <s-link onClick={() => setClearAllConfirmOpen(true)}>
-                          Clear all routes
-                        </s-link>
+                  <s-section heading={t("routeManager.heading")}>
+                    {/* "No assigned routes" — badge, same style as "Orders to deliver" */}
+                    {locationId !== DEFAULT_LOCATION_ID && !hasAssignedRoutes && optimizeFetcher.state === "idle" ? (
+                      <div className={styles.asideSummaryRow}>
+                        <s-badge>{t("routeManager.noRoutesForLocation")}</s-badge>
+                      </div>
+                    ) : null}
+                    {locationId !== DEFAULT_LOCATION_ID ? (() => {
+                      const selectedUnassignedCount = unassignedOrders.filter(
+                        (o) => selectedOrderIds.has(o.id),
+                      ).length;
+                      return (
+                      <div className={styles.routeManagerTopRow}>
+                        <span>
+                          {hasAssignedRoutes && selectedUnassignedCount > 0 ? (
+                            <s-button
+                              variant="secondary"
+                              onClick={handleAddToBestRoute}
+                              disabled={optimizeFetcher.state !== "idle"}
+                            >
+                              {t("routeManager.addToBestRoute")}
+                            </s-button>
+                          ) : null}
+                        </span>
+                        {unassignedOrders.length > 0 ? (
+                          <span>
+                            {optimizeFetcher.state !== "idle" ? (
+                              <s-button key="auto-assign-loading" variant="primary" loading disabled>
+                                {t("routeManager.autoAssign")}
+                              </s-button>
+                            ) : (
+                              <s-button
+                                key="auto-assign-idle"
+                                variant="primary"
+                                onClick={() => {
+                                  setAutoAssignLocked(false);
+                                  autoAssignSelection();
+                                  handleOptimizeFleet();
+                                }}
+                                disabled={autoAssignLocked || orders.length === 0}
+                              >
+                                {t("routeManager.autoAssign")}
+                              </s-button>
+                            )}
+                          </span>
+                        ) : null}
+                      </div>
+                      );
+                    })() : null}
+                    {assignmentSuccessMessage ? (
+                      <div className={styles.successBadgeRow}>
+                        <s-badge tone="success">{assignmentSuccessMessage}</s-badge>
+                      </div>
+                    ) : null}
+                    {assignmentWarningMessage ? (
+                      <div className={styles.successBadgeRow}>
+                        <s-badge tone="caution">{assignmentWarningMessage}</s-badge>
                       </div>
                     ) : null}
                     {locationId !== DEFAULT_LOCATION_ID && hasAssignedRoutes ? (
@@ -3354,13 +4484,14 @@ export default function Index() {
                                 shippingAmounts.length === 0
                                   ? "--"
                                   : hasMultipleCurrencies
-                                    ? "Multiple currencies"
+                                    ? t("routeManager.multipleCurrencies")
                                     : formatCurrency(
                                         shippingTotal,
                                         shippingAmounts[0]!.currencyCode,
+                                        userLocale,
                                       );
-                              const label = `Route ${routeIndex + 1}`;
-                              const metaLine1 = `${orderCount} orders • Shipping charges: ${formattedShippingTotal}`;
+                              const label = getRouteLabel(route, routeIndex);
+                              const metaLine1 = t("routeManager.ordersMeta", { count: orderCount, shipping: formattedShippingTotal });
                               const hasDistance =
                                 route.totalDistanceMeters != null &&
                                 Number.isFinite(route.totalDistanceMeters);
@@ -3375,8 +4506,8 @@ export default function Index() {
                                 : "--";
                               const quoteTotal = routeQuoteTotals[route.id];
                               const costStr = quoteTotal
-                                ? `Cost: ${quoteTotal.total}${quoteTotal.currency ? ` ${quoteTotal.currency}` : ""}`
-                                : "Cost: --";
+                                ? t("routeManager.costLabel", { cost: `${quoteTotal.total}${quoteTotal.currency ? ` ${quoteTotal.currency}` : ""}` })
+                                : t("routeManager.costPlaceholder");
                               const metaLine2 = `${distanceStr} • ${durationStr} • ${costStr}`;
                               const lalamoveConfig = lalamoveConfigMap[route.locationId];
                               const isLalamoveReady =
@@ -3393,12 +4524,11 @@ export default function Index() {
                                 (candidate) => candidate.id === route.id,
                               );
                               return (
+                                <div key={route.id} className={styles.routeCard}>
                                 <s-box
-                                  key={route.id}
                                   padding="base"
                                   borderWidth="base"
                                   borderRadius="base"
-                                  className={styles.routeCard}
                                 >
                                   <div className={styles.routeCardHeader}>
                                     <div className={styles.routeCardHeaderText}>
@@ -3408,24 +4538,27 @@ export default function Index() {
                                           {
                                             "--badge-bg": badgeColors.bg,
                                             "--badge-text": badgeColors.text,
-                                          } as React.CSSProperties
+                                        } as CSSProperties
                                         }
                                       >
                                         {label}
                                       </span>
                                     </div>
-                                    <s-button
-                                      variant="secondary"
-                                      tone="critical"
-                                      onClick={() =>
-                                        setUnassignConfirmRoute({
-                                          route,
-                                          index: routeIndex,
-                                        })
-                                      }
-                                    >
-                                      Clear route
-                                    </s-button>
+                                    <span title={dispatchedRoutes[route.id] ? t("routeManager.clearRouteDisabledTooltip") : undefined}>
+                                      <s-button
+                                        variant="secondary"
+                                        tone="critical"
+                                        disabled={!!dispatchedRoutes[route.id]}
+                                        onClick={() =>
+                                          setUnassignConfirmRoute({
+                                            route,
+                                            index: routeIndex,
+                                          })
+                                        }
+                                      >
+                                        {t("routeManager.clearRoute")}
+                                      </s-button>
+                                    </span>
                                   </div>
                                   <div className={styles.routeCardOrderStats}>
                                     <s-stack direction="block" gap="small">
@@ -3440,45 +4573,102 @@ export default function Index() {
                                         disabled={!canAddToRoute}
                                         onClick={() => handleAddSelectedToRoute(routeIndex)}
                                       >
-                                        Add to route
+                                        {t("routeManager.addToRoute")}
                                       </s-button>
                                     </div>
+                                  ) : dispatchedRoutes[route.id] && !TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") ? (
+                                    <div className={styles.dispatchedBlock}>
+                                      <div className={styles.deliveryStatusRow}>
+                                        <s-badge tone={getStatusBadgeTone(dispatchedRoutes[route.id]?.status ?? "requested")}>
+                                          {t(`routeManager.status.${dispatchedRoutes[route.id]?.status ?? "requested"}`)}
+                                        </s-badge>
+                                        <s-button variant="primary" tone="critical" onClick={() => setCancelConfirmRouteId(route.id)}>
+                                          {t("routeManager.cancelDelivery")}
+                                        </s-button>
+                                      </div>
+                                    </div>
                                   ) : (
-                                    <s-stack
-                                      direction="inline"
-                                      gap="base"
-                                      justifyContent="space-between"
-                                    >
-                                      <div />
-                                      <s-stack direction="inline" gap="base">
-                                        <s-button
-                                          variant="secondary"
-                                          onClick={() =>
-                                            openManageRouteModal(route, routeIndex)
-                                          }
-                                        >
-                                          Manage
-                                        </s-button>
-                                        <s-button
-                                          variant="primary"
-                                          disabled={!isLalamoveReady || !!dispatchedRoutes[route.id]}
-                                          onClick={() => handleRequestDriver(route)}
-                                        >
-                                          {dispatchedRoutes[route.id] ? "Driver requested" : "Request driver"}
-                                        </s-button>
+                                    <>
+                                      {dispatchedRoutes[route.id]?.status && TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id].status!) ? (
+                                        <div className={styles.routeCardStatus}>
+                                          <s-badge tone={getStatusBadgeTone(dispatchedRoutes[route.id].status!)}>
+                                            {t(`routeManager.status.${dispatchedRoutes[route.id].status}`)}
+                                          </s-badge>
+                                        </div>
+                                      ) : null}
+                                      <s-stack
+                                        direction="inline"
+                                        gap="base"
+                                        justifyContent="space-between"
+                                      >
+                                        <div />
+                                        <s-stack direction="inline" gap="base">
+                                          <s-button
+                                            variant="secondary"
+                                            onClick={() =>
+                                              openManageRouteModal(route, routeIndex)
+                                            }
+                                          >
+                                            {t("routeManager.manage")}
+                                          </s-button>
+                                          {quotePreview?.routeId === route.id ? (
+                                            lalamoveFetcher.state !== "idle" ? (
+                                              <s-button
+                                                key="requesting-driver"
+                                                variant="primary"
+                                                loading
+                                                disabled
+                                              >
+                                                {t("routeManager.requestingDriver")}
+                                              </s-button>
+                                            ) : (
+                                              <s-button
+                                                key="request-driver"
+                                                variant="primary"
+                                                onClick={() => handlePlaceOrderFromCard(route, routeIndex)}
+                                              >
+                                                {t("routeManager.requestDriver")}
+                                              </s-button>
+                                            )
+                                          ) : lalamoveStatus[route.id] && lalamoveFetcher.state !== "idle" ? (
+                                            <s-button
+                                              key="requesting-quote"
+                                              variant="secondary"
+                                              loading
+                                              disabled
+                                            >
+                                              {t("routeManager.requestingQuote")}
+                                            </s-button>
+                                          ) : (
+                                            <s-button
+                                              key="request-quote"
+                                              variant="secondary"
+                                              disabled={!isLalamoveReady}
+                                              onClick={() => handleRequestDriver(route)}
+                                            >
+                                              {t("routeManager.requestQuote")}
+                                            </s-button>
+                                          )}
+                                        </s-stack>
                                       </s-stack>
-                                    </s-stack>
+                                    </>
                                   )}
-                                  {lalamoveStatus[route.id] ? (
+                                  {lalamoveStatus[route.id] && !dispatchedRoutes[route.id] ? (
                                     <div className={styles.routeCardStatus}>
                                       {lalamoveStatus[route.id].tone === "success" ? (
                                         <s-badge tone="success">
                                           {lalamoveStatus[route.id].message}
                                         </s-badge>
                                       ) : lalamoveStatus[route.id].tone === "critical" ? (
-                                        <s-badge tone="critical">
-                                          {lalamoveStatus[route.id].message}
-                                        </s-badge>
+                                        <s-link onClick={() => setDriverErrorModal({
+                                          routeId: route.id,
+                                          message: lalamoveStatus[route.id].message,
+                                          errorDetails: lalamoveStatus[route.id].errorDetails ?? "",
+                                        })}>
+                                          <s-badge tone="critical">
+                                            {lalamoveStatus[route.id].message}
+                                          </s-badge>
+                                        </s-link>
                                       ) : (
                                         <s-text color="subdued">
                                           {lalamoveStatus[route.id].message}
@@ -3486,32 +4676,32 @@ export default function Index() {
                                       )}
                                     </div>
                                   ) : null}
-                                  {dispatchedRoutes[route.id]?.shareLink ? (
-                                    <div className={styles.routeCardStatus}>
-                                      <s-link url={dispatchedRoutes[route.id].shareLink} target="_blank">
-                                        Track delivery →
-                                      </s-link>
-                                    </div>
-                                  ) : null}
                                   {reorderedRoutes[route.id] ? (
                                     <div className={styles.routeCardStatus}>
                                       <s-badge tone="warning">
-                                        Re-requested at {reorderedRoutes[route.id]}
+                                        {t("routeManager.reRequestedAt", { time: reorderedRoutes[route.id] })}
                                       </s-badge>
                                     </div>
                                   ) : null}
                                 </s-box>
+                                </div>
                               );
                             })}
                         </div>
                       </div>
-                    ) : (
-                      <s-text color="subdued">
-                        {locationId === DEFAULT_LOCATION_ID
-                          ? "Select a fulfillment location to view assigned routes."
-                          : "No assigned routes for this location."}
-                      </s-text>
-                    )}
+                    ) : null}
+                    {/* Clear all routes — bottom, right-aligned, critical */}
+                    {hasAssignedRoutes ? (
+                      <div className={styles.clearAllRoutesBottom}>
+                        <s-button
+                          variant="primary"
+                          tone="critical"
+                          onClick={() => setClearAllConfirmOpen(true)}
+                        >
+                          {t("routeManager.clearAllRoutes")}
+                        </s-button>
+                      </div>
+                    ) : null}
                   </s-section>
                   ) : null}
                 </div>
@@ -3522,7 +4712,7 @@ export default function Index() {
       </div>
 
       {!isFullscreen && isRouteManagerVisible ? (
-      <s-section heading="Route manager" slot="aside">
+      <s-section heading={t("routeManager.heading")} slot="aside">
           {/* ── Auto-assigned pending routes ── */}
           {(() => {
             const visiblePending = locationId === DEFAULT_LOCATION_ID
@@ -3533,8 +4723,11 @@ export default function Index() {
             return (
               <div className={styles.pendingRoutesSection}>
                 <s-text type="strong">
-                  Auto-assigned ({visiblePending.length}{" "}
-                  {visiblePending.length === 1 ? "route" : "routes"})
+                  {t("routeManager.autoAssignedResult", {
+                    count: visiblePending.length,
+                    routeCount: visiblePending.length,
+                    routeWord: visiblePending.length === 1 ? t("routeManager.routeWord") : t("routeManager.routeWordPlural"),
+                  })}
                 </s-text>
                 <div className={styles.assignedRoutesList}>
                   {visiblePending.map((pr) => {
@@ -3554,23 +4747,21 @@ export default function Index() {
                       lalamoveConfigMap[pr.locationId]?.locationName ??
                       pr.locationId;
                     return (
+                      <div key={pr.id} className={styles.routeCard}>
                       <s-box
-                        key={pr.id}
                         padding="base"
                         borderWidth="base"
                         borderRadius="base"
-                        className={styles.routeCard}
                       >
                         <div className={styles.routeCardHeader}>
                           <div className={styles.routeCardHeaderText}>
-                            <s-badge tone="info">Auto-routed</s-badge>
+                            <s-badge tone="info">{t("routeManager.autoRouted")}</s-badge>
                           </div>
                         </div>
                         <div className={styles.routeCardOrderStats}>
                           <s-stack direction="block" gap="small">
                             <s-text type="strong">
-                              {stopCount}{" "}
-                              {stopCount === 1 ? "stop" : "stops"}
+                              {t("routeManager.stops", { count: stopCount })}
                               {locationId === DEFAULT_LOCATION_ID
                                 ? ` · ${locName}`
                                 : ""}
@@ -3584,13 +4775,12 @@ export default function Index() {
                             ))}
                             {stopCount > 2 ? (
                               <s-text color="subdued">
-                                +{stopCount - 2} more…
+                                {t("routeManager.moreOrders", { count: stopCount - 2 })}
                               </s-text>
                             ) : null}
                             {matchedCount < stopCount ? (
                               <s-text color="subdued">
-                                {matchedCount}/{stopCount} orders visible in
-                                current filters
+                                {t("routeManager.ordersVisible", { count: matchedCount })}
                               </s-text>
                             ) : null}
                           </s-stack>
@@ -3606,30 +4796,81 @@ export default function Index() {
                             disabled={isDismissing}
                             onClick={() => handleDismissPendingRoute(pr.id)}
                           >
-                            Dismiss
+                            {t("routeManager.dismiss")}
                           </s-button>
                           <s-button
                             variant="primary"
                             disabled={!canLoad || isDismissing}
                             onClick={() => handleLoadPendingRoute(pr)}
                           >
-                            Load to planner
+                            {t("routeManager.loadToPlanner")}
                           </s-button>
                         </s-stack>
                       </s-box>
+                      </div>
                     );
                   })}
                 </div>
               </div>
             );
           })()}
-          {/* ── Manually assigned routes ── */}
-          {locationId !== DEFAULT_LOCATION_ID && hasAssignedRoutes ? (
-            <div className={styles.routeManagerHeaderRow}>
-              <span />
-              <s-link onClick={() => setClearAllConfirmOpen(true)}>
-                Clear all routes
-              </s-link>
+          {/* "No assigned routes" — badge, same style as "Orders to deliver" */}
+          {locationId !== DEFAULT_LOCATION_ID && !hasAssignedRoutes && optimizeFetcher.state === "idle" ? (
+            <div className={styles.asideSummaryRow}>
+              <s-badge>{t("routeManager.noRoutesForLocation")}</s-badge>
+            </div>
+          ) : null}
+          {/* ── Manually assigned routes header ── */}
+          {locationId !== DEFAULT_LOCATION_ID ? (() => {
+            const selectedUnassignedCount = unassignedOrders.filter(
+              (o) => selectedOrderIds.has(o.id),
+            ).length;
+            return (
+            <div className={styles.routeManagerTopRow}>
+              <span>
+                {hasAssignedRoutes && selectedUnassignedCount > 0 ? (
+                  <s-button
+                    variant="secondary"
+                    onClick={handleAddToBestRoute}
+                    disabled={optimizeFetcher.state !== "idle"}
+                  >
+                    {t("routeManager.addToBestRoute")}
+                  </s-button>
+                ) : null}
+              </span>
+              {unassignedOrders.length > 0 ? (
+                <span>
+                  {optimizeFetcher.state !== "idle" ? (
+                    <s-button key="auto-assign-loading" variant="primary" loading disabled>
+                      {t("routeManager.autoAssign")}
+                    </s-button>
+                  ) : (
+                    <s-button
+                      key="auto-assign-idle"
+                      variant="primary"
+                      onClick={() => {
+                        setAutoAssignLocked(false);
+                        autoAssignSelection();
+                        handleOptimizeFleet();
+                      }}
+                      disabled={autoAssignLocked || orders.length === 0}
+                    >
+                      {t("routeManager.autoAssign")}
+                    </s-button>
+                  )}
+                </span>
+              ) : null}
+            </div>
+            );
+          })() : null}
+          {assignmentSuccessMessage ? (
+            <div className={styles.successBadgeRow}>
+              <s-badge tone="success">{assignmentSuccessMessage}</s-badge>
+            </div>
+          ) : null}
+          {assignmentWarningMessage ? (
+            <div className={styles.successBadgeRow}>
+              <s-badge tone="caution">{assignmentWarningMessage}</s-badge>
             </div>
           ) : null}
           {locationId !== DEFAULT_LOCATION_ID && hasAssignedRoutes ? (
@@ -3661,13 +4902,14 @@ export default function Index() {
                       shippingAmounts.length === 0
                         ? "--"
                         : hasMultipleCurrencies
-                          ? "Multiple currencies"
+                          ? t("routeManager.multipleCurrencies")
                           : formatCurrency(
                               shippingTotal,
                               shippingAmounts[0]!.currencyCode,
+                              userLocale,
                             );
-                    const label = `Route ${routeIndex + 1}`;
-                    const metaLine1 = `${orderCount} orders • Shipping charges: ${formattedShippingTotal}`;
+                    const label = getRouteLabel(route, routeIndex);
+                    const metaLine1 = t("routeManager.ordersMeta", { count: orderCount, shipping: formattedShippingTotal });
                     const hasDistance =
                       route.totalDistanceMeters != null &&
                       Number.isFinite(route.totalDistanceMeters);
@@ -3682,8 +4924,8 @@ export default function Index() {
                       : "--";
                     const quoteTotal = routeQuoteTotals[route.id];
                     const costStr = quoteTotal
-                      ? `Cost: ${quoteTotal.total}${quoteTotal.currency ? ` ${quoteTotal.currency}` : ""}`
-                      : "Cost: --";
+                      ? t("routeManager.costLabel", { cost: `${quoteTotal.total}${quoteTotal.currency ? ` ${quoteTotal.currency}` : ""}` })
+                      : t("routeManager.costPlaceholder");
                     const metaLine2 = `${distanceStr} • ${durationStr} • ${costStr}`;
                     const lalamoveConfig = lalamoveConfigMap[route.locationId];
                     const isLalamoveReady =
@@ -3700,12 +4942,11 @@ export default function Index() {
                       (candidate) => candidate.id === route.id,
                     );
                     return (
+                      <div key={route.id} className={styles.routeCard}>
                       <s-box
-                        key={route.id}
                         padding="base"
                         borderWidth="base"
                         borderRadius="base"
-                        className={styles.routeCard}
                       >
                         <div className={styles.routeCardHeader}>
                           <div className={styles.routeCardHeaderText}>
@@ -3715,21 +4956,24 @@ export default function Index() {
                                 {
                                   "--badge-bg": badgeColors.bg,
                                   "--badge-text": badgeColors.text,
-                                } as React.CSSProperties
+                              } as CSSProperties
                               }
                             >
                               {label}
                             </span>
                           </div>
-                          <s-button
-                            variant="secondary"
-                            tone="critical"
-                            onClick={() =>
-                              setUnassignConfirmRoute({ route, index: routeIndex })
-                            }
-                          >
-                            Clear route
-                          </s-button>
+                          <span title={dispatchedRoutes[route.id] ? t("routeManager.clearRouteDisabledTooltip") : undefined}>
+                            <s-button
+                              variant="secondary"
+                              tone="critical"
+                              disabled={!!dispatchedRoutes[route.id]}
+                              onClick={() =>
+                                setUnassignConfirmRoute({ route, index: routeIndex })
+                              }
+                            >
+                              {t("routeManager.clearRoute")}
+                            </s-button>
+                          </span>
                         </div>
                         <div className={styles.routeCardOrderStats}>
                           <s-stack direction="block" gap="small">
@@ -3744,43 +4988,100 @@ export default function Index() {
                               disabled={!canAddToRoute}
                               onClick={() => handleAddSelectedToRoute(routeIndex)}
                             >
-                              Add to route
+                              {t("routeManager.addToRoute")}
                             </s-button>
                           </div>
+                        ) : dispatchedRoutes[route.id] && !TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") ? (
+                          <div className={styles.dispatchedBlock}>
+                            <div className={styles.deliveryStatusRow}>
+                              <s-badge tone={getStatusBadgeTone(dispatchedRoutes[route.id]?.status ?? "requested")}>
+                                {t(`routeManager.status.${dispatchedRoutes[route.id]?.status ?? "requested"}`)}
+                              </s-badge>
+                              <s-button variant="primary" tone="critical" onClick={() => setCancelConfirmRouteId(route.id)}>
+                                {t("routeManager.cancelDelivery")}
+                              </s-button>
+                            </div>
+                          </div>
                         ) : (
-                          <s-stack
-                            direction="inline"
-                            gap="base"
-                            justifyContent="space-between"
-                          >
-                            <div />
-                            <s-stack direction="inline" gap="base">
-                              <s-button
-                                variant="secondary"
-                                onClick={() => openManageRouteModal(route, routeIndex)}
-                              >
-                                Manage
-                              </s-button>
-                              <s-button
-                                variant="primary"
-                                disabled={!isLalamoveReady || !!dispatchedRoutes[route.id]}
-                                onClick={() => handleRequestDriver(route)}
-                              >
-                                {dispatchedRoutes[route.id] ? "Driver requested" : "Request driver"}
-                              </s-button>
+                          <>
+                            {dispatchedRoutes[route.id]?.status && TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id].status!) ? (
+                              <div className={styles.routeCardStatus}>
+                                <s-badge tone={getStatusBadgeTone(dispatchedRoutes[route.id].status!)}>
+                                  {t(`routeManager.status.${dispatchedRoutes[route.id].status}`)}
+                                </s-badge>
+                              </div>
+                            ) : null}
+                            <s-stack
+                              direction="inline"
+                              gap="base"
+                              justifyContent="space-between"
+                            >
+                              <div />
+                              <s-stack direction="inline" gap="base">
+                                <s-button
+                                  variant="secondary"
+                                  onClick={() => openManageRouteModal(route, routeIndex)}
+                                >
+                                  {t("routeManager.manage")}
+                                </s-button>
+                                {quotePreview?.routeId === route.id ? (
+                                  lalamoveFetcher.state !== "idle" ? (
+                                    <s-button
+                                      key="requesting-driver"
+                                      variant="primary"
+                                      loading
+                                      disabled
+                                    >
+                                      {t("routeManager.requestingDriver")}
+                                    </s-button>
+                                  ) : (
+                                    <s-button
+                                      key="request-driver"
+                                      variant="primary"
+                                      onClick={() => handlePlaceOrderFromCard(route, routeIndex)}
+                                    >
+                                      {t("routeManager.requestDriver")}
+                                    </s-button>
+                                  )
+                                ) : lalamoveStatus[route.id] && lalamoveFetcher.state !== "idle" ? (
+                                  <s-button
+                                    key="requesting-quote"
+                                    variant="secondary"
+                                    loading
+                                    disabled
+                                  >
+                                    {t("routeManager.requestingQuote")}
+                                  </s-button>
+                                ) : (
+                                  <s-button
+                                    key="request-quote"
+                                    variant="secondary"
+                                    disabled={!isLalamoveReady}
+                                    onClick={() => handleRequestDriver(route)}
+                                  >
+                                    {t("routeManager.requestQuote")}
+                                  </s-button>
+                                )}
+                              </s-stack>
                             </s-stack>
-                          </s-stack>
+                          </>
                         )}
-                        {lalamoveStatus[route.id] ? (
+                        {lalamoveStatus[route.id] && !dispatchedRoutes[route.id] ? (
                           <div className={styles.routeCardStatus}>
                             {lalamoveStatus[route.id].tone === "success" ? (
                               <s-badge tone="success">
                                 {lalamoveStatus[route.id].message}
                               </s-badge>
                             ) : lalamoveStatus[route.id].tone === "critical" ? (
-                              <s-badge tone="critical">
-                                {lalamoveStatus[route.id].message}
-                              </s-badge>
+                              <s-link onClick={() => setDriverErrorModal({
+                                routeId: route.id,
+                                message: lalamoveStatus[route.id].message,
+                                errorDetails: lalamoveStatus[route.id].errorDetails ?? "",
+                              })}>
+                                <s-badge tone="critical">
+                                  {lalamoveStatus[route.id].message}
+                                </s-badge>
+                              </s-link>
                             ) : (
                               <s-text color="subdued">
                                 {lalamoveStatus[route.id].message}
@@ -3788,32 +5089,20 @@ export default function Index() {
                             )}
                           </div>
                         ) : null}
-                        {dispatchedRoutes[route.id]?.shareLink ? (
-                          <div className={styles.routeCardStatus}>
-                            <s-link url={dispatchedRoutes[route.id].shareLink} target="_blank">
-                              Track delivery →
-                            </s-link>
-                          </div>
-                        ) : null}
                         {reorderedRoutes[route.id] ? (
                           <div className={styles.routeCardStatus}>
                             <s-badge tone="warning">
-                              Re-requested at {reorderedRoutes[route.id]}
+                              {t("routeManager.reRequestedAt", { time: reorderedRoutes[route.id] })}
                             </s-badge>
                           </div>
                         ) : null}
                       </s-box>
+                      </div>
                     );
                   })}
               </div>
             </div>
-          ) : (
-            <s-text color="subdued">
-              {locationId === DEFAULT_LOCATION_ID
-                ? "Select a fulfillment location to view assigned routes."
-                : "No assigned routes for this location."}
-            </s-text>
-          )}
+          ) : null}
           {locationId !== DEFAULT_LOCATION_ID &&
           (() => {
             const config = lalamoveConfigMap[locationId];
@@ -3827,68 +5116,27 @@ export default function Index() {
               <div className={styles.mapFooterBadge}>
                 <s-link href={settingsHref}>
                   <s-badge tone="critical">
-                    Add location details to enable Lalamove.
+                    {t("routeManager.lalamoveDisabled")}
                   </s-badge>
                 </s-link>
               </div>
             ) : null;
           })()}
+          {/* Clear all routes — bottom, right-aligned, critical */}
+          {hasAssignedRoutes ? (
+            <div className={styles.clearAllRoutesBottom}>
+              <s-button
+                variant="primary"
+                tone="critical"
+                onClick={() => setClearAllConfirmOpen(true)}
+              >
+                {t("routeManager.clearAllRoutes")}
+              </s-button>
+            </div>
+          ) : null}
       </s-section>
       ) : null}
 
-      {!isFullscreen && isRouteManagerVisible ? (
-        <s-section heading="Auto-assign log" slot="aside">
-          {(() => {
-            const filteredLogs =
-              locationId === DEFAULT_LOCATION_ID
-                ? autoAssignLogs
-                : autoAssignLogs.filter(
-                    (log) => log.locationId === locationId,
-                  );
-            if (filteredLogs.length === 0) {
-              return (
-                <s-text color="subdued">
-                  {locationId === DEFAULT_LOCATION_ID
-                    ? "No auto-assign runs yet."
-                    : "No auto-assign runs for this location."}
-                </s-text>
-              );
-            }
-            return (
-              <ul className={styles.autoAssignLogList}>
-                {filteredLogs.map((log) => (
-                  <li key={log.id} className={styles.autoAssignLogItem}>
-                    <span className={styles.autoAssignLogLink}>
-                      <s-link
-                        onClick={() => {
-                          setSelectedAutoAssignLog(log);
-                          setIsAutoAssignLogModalOpen(true);
-                        }}
-                      >
-                        {log.orderName ?? `#${log.orderId}`}
-                      </s-link>
-                    </span>
-                    <s-badge
-                      tone={
-                        log.status === "assigned"
-                          ? "success"
-                          : log.status === "skipped"
-                            ? "caution"
-                            : "critical"
-                      }
-                    >
-                      {log.status}
-                    </s-badge>
-                    <s-text color="subdued">
-                      {new Date(log.createdAt).toLocaleString()}
-                    </s-text>
-                  </li>
-                ))}
-              </ul>
-            );
-          })()}
-        </s-section>
-      ) : null}
 
       {!isFullscreen ? (
       <div className={`${styles.mainBlocks} ${styles.unassignedSectionWrap}`}>
@@ -3896,11 +5144,11 @@ export default function Index() {
           <s-stack direction="block" gap="base">
             <div className={styles.unassignedHeaderRow}>
               <s-text type="strong">
-                Unassigned orders ({unassignedOrders.length})
+                {t("routeManager.unassignedOrders", { count: unassignedOrders.length })}
               </s-text>
             </div>
             {unassignedOrders.length === 0 ? (
-              <s-text color="subdued">No unassigned orders for current filters.</s-text>
+              <s-text color="subdued">{t("routeManager.noUnassigned")}</s-text>
             ) : visibleDueBuckets.length === 0 ? null : (
               <div className={styles.unassignedBucketsScroll}>
                 {visibleDueBuckets.map((bucket, index) => (
@@ -3932,9 +5180,9 @@ export default function Index() {
                             }}
                           />
                         </span>
-                        <span>Order</span>
-                        <span>Customer</span>
-                        <span>Address</span>
+                        <span>{t("routeManager.table.order")}</span>
+                        <span>{t("routeManager.table.customer")}</span>
+                        <span>{t("routeManager.table.address")}</span>
                       </div>
                       {bucket.orders.map((order) => {
                         const isSelected = selectedOrderIds.has(order.id);
@@ -3942,14 +5190,14 @@ export default function Index() {
                           <div key={order.id} className={styles.dueOrdersRow}>
                             <span>
                               <s-checkbox
-                                accessibilityLabel={`Select ${order.name}`}
+                                accessibilityLabel={t("routeManager.selectOrder", { name: order.name })}
                                 checked={isSelected}
                                 onChange={(event) => handleOrderToggle(event, order.id)}
                               />
                             </span>
                             <span>{order.name}</span>
-                            <span>{formatCustomerShort(order.customerName)}</span>
-                            <span>{order.address1 ?? "No address line 1"}</span>
+                            <span>{formatCustomerShort(order.customerName, t("customer.guest"))}</span>
+                            <span>{order.address1 ?? t("routeManager.noAddressLine1")}</span>
                           </div>
                         );
                       })}
@@ -4017,15 +5265,158 @@ type LalamoveConfig = {
   pickupInstructions: string;
 };
 
+type LalamoveDeliveryAssignment = {
+  stopId: string;
+  orderId: string;
+};
+
+type DeliveryOrderPoint = {
+  orderId: string;
+  latitude: number;
+  longitude: number;
+};
+
+const MAX_STOP_MATCH_DISTANCE = 0.0003;
+
+const coordKey = (lat: number | string, lng: number | string): string => {
+  const latitude = typeof lat === "string" ? parseFloat(lat) : lat;
+  const longitude = typeof lng === "string" ? parseFloat(lng) : lng;
+  return `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+};
+
+const tryParseNumber = (value: string | number | null | undefined) => {
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string" && value.trim().length > 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+};
+
+const reconcileDeliveryAssignments = (
+  responseDeliveryStops: Array<{
+    stopId?: string;
+    coordinates?: { lat?: string; lng?: string };
+  }>,
+  orderPoints: DeliveryOrderPoint[],
+) => {
+  const queueByCoord = new Map<string, string[]>();
+  const pointByOrderId = new Map<string, { latitude: number; longitude: number }>();
+  for (const point of orderPoints) {
+    pointByOrderId.set(point.orderId, {
+      latitude: point.latitude,
+      longitude: point.longitude,
+    });
+    const key = coordKey(point.latitude, point.longitude);
+    const list = queueByCoord.get(key) ?? [];
+    list.push(point.orderId);
+    queueByCoord.set(key, list);
+  }
+
+  const remainingOrderIds = new Set(orderPoints.map((point) => point.orderId));
+  const assignments: LalamoveDeliveryAssignment[] = [];
+  let exactMatches = 0;
+  let nearestMatches = 0;
+
+  for (const stop of responseDeliveryStops) {
+    const stopId = stop.stopId;
+    const stopLat = tryParseNumber(stop.coordinates?.lat);
+    const stopLng = tryParseNumber(stop.coordinates?.lng);
+    if (!stopId || stopLat == null || stopLng == null) {
+      return {
+        ok: false as const,
+        error:
+          "Lalamove returned an optimized stop without valid stopId/coordinates.",
+      };
+    }
+
+    const key = coordKey(stopLat, stopLng);
+    const queued = queueByCoord.get(key);
+    let matchedOrderId: string | undefined;
+    while (queued && queued.length > 0) {
+      const candidate = queued.shift();
+      if (candidate && remainingOrderIds.has(candidate)) {
+        matchedOrderId = candidate;
+        break;
+      }
+    }
+
+    if (matchedOrderId) {
+      exactMatches += 1;
+    } else {
+      let best: { orderId: string; distance: number } | null = null;
+      let secondBest: { orderId: string; distance: number } | null = null;
+      for (const orderId of remainingOrderIds) {
+        const point = pointByOrderId.get(orderId);
+        if (!point) continue;
+        const distance = Math.hypot(
+          stopLat - point.latitude,
+          stopLng - point.longitude,
+        );
+        if (!best || distance < best.distance) {
+          secondBest = best;
+          best = { orderId, distance };
+        } else if (!secondBest || distance < secondBest.distance) {
+          secondBest = { orderId, distance };
+        }
+      }
+
+      if (!best || best.distance > MAX_STOP_MATCH_DISTANCE) {
+        return {
+          ok: false as const,
+          error:
+            "Unable to map optimized Lalamove stops back to Shopify orders safely.",
+        };
+      }
+
+      // Reject tie-like matches to avoid assigning remarks to the wrong order.
+      if (
+        secondBest &&
+        Math.abs(secondBest.distance - best.distance) <= 1e-8
+      ) {
+        return {
+          ok: false as const,
+          error:
+            "Ambiguous optimized stop mapping detected for nearby delivery addresses.",
+        };
+      }
+
+      matchedOrderId = best.orderId;
+      nearestMatches += 1;
+    }
+
+    remainingOrderIds.delete(matchedOrderId);
+    assignments.push({ stopId, orderId: matchedOrderId });
+  }
+
+  if (assignments.length !== responseDeliveryStops.length) {
+    return {
+      ok: false as const,
+      error: "Failed to reconcile all optimized stops to order IDs.",
+    };
+  }
+
+  return {
+    ok: true as const,
+    assignments,
+    stats: {
+      totalStops: responseDeliveryStops.length,
+      exactMatches,
+      nearestMatches,
+      unmatched: remainingOrderIds.size,
+    },
+  };
+};
+
 const toQueryValue = (value: string | null, fallback: string) =>
   value && value.length > 0 ? value : fallback;
 
 const toDeliveryMethodType = (value: string) =>
   value.replace("-", "_").toUpperCase();
 
-const getOrderInfoContent = (order: LoaderOrder) => {
-  const customer = order.customerName ?? "Guest";
-  const address = order.shippingSummary ?? "No shipping address";
+const getOrderInfoContent = (order: LoaderOrder, guestFallback: string, noAddressFallback: string) => {
+  const customer = order.customerName ?? guestFallback;
+  const address = order.shippingSummary ?? noAddressFallback;
   return `
     <div style="display:flex;flex-direction:column;gap:4px;">
       <strong>${order.name}</strong>
@@ -4209,11 +5600,32 @@ const loadGoogleMaps = (apiKey: string) => {
 const formatAddress = (parts: Array<string | null | undefined>) =>
   parts.filter(Boolean).join(", ");
 
+const formatDeliveryStopAddress = (
+  address1: string | null | undefined,
+  address2: string | null | undefined,
+) => {
+  const line1 = (address1 ?? "").trim();
+  const line2 = (address2 ?? "").trim();
+  if (line1 && line2) return `${line2} , ${line1}`;
+  return line2 || line1;
+};
+
+const formatFulfillmentStopAddress = (
+  locationName: string | null | undefined,
+  locationAddress: string | null | undefined,
+  locationDetails: string | null | undefined,
+) => {
+  const name = (locationName ?? "").trim();
+  const address = (locationAddress ?? "").trim();
+  const details = (locationDetails ?? "").trim();
+  return [name, address, details].filter(Boolean).join(" • ");
+};
+
 const formatMoney = (amount: string, currencyCode: string) =>
   `${currencyCode} ${Number(amount).toFixed(2)}`;
 
-const formatCurrency = (amount: number, currencyCode: string) => {
-  const locale = currencyCode === "BRL" ? "pt-BR" : "en-US";
+const formatCurrency = (amount: number, currencyCode: string, userLocale: string) => {
+  const locale = userLocale.replace("_", "-");
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: currencyCode,
@@ -4230,8 +5642,8 @@ const chunkArray = <T,>(items: T[], size: number) => {
   return chunks;
 };
 
-const formatCustomerShort = (name: string | null) => {
-  if (!name) return "Guest";
+const formatCustomerShort = (name: string | null, guestFallback = "Guest") => {
+  if (!name) return guestFallback;
   const words = name
     .trim()
     .split(/\s+/)
@@ -4241,7 +5653,7 @@ const formatCustomerShort = (name: string | null) => {
         word.charAt(0).toLocaleUpperCase() +
         word.slice(1).toLocaleLowerCase(),
     );
-  if (words.length === 0) return "Guest";
+  if (words.length === 0) return guestFallback;
   if (words.length === 1) return words[0]!;
   if (words.length === 2) return `${words[0]} ${words[1]}`;
   const first = words[0]!;
@@ -4276,10 +5688,28 @@ const extractPresaleTagsFromOrders = (
 
 type AddressValidationResult = {
   isValid: boolean;
-  issueType: "apartment_in_address1" | "duplicate_number" | null;
+  issueType: "apartment_in_address1" | "duplicate_number" | "multiple_numbers_in_address1" | null;
   suggestedAddress1: string | null;
   suggestedAddress2: string | null;
+  highlightPatterns: string[]; // substrings to bold in address display
 };
+
+function renderAddressHighlighted(text: string | null | undefined, patterns: string[]): React.ReactNode {
+  if (!text) return null;
+  if (patterns.length === 0) return text;
+  const escaped = [...patterns].sort((a, b) => b.length - a.length).map((p) =>
+    p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+  );
+  const regex = new RegExp(`(${escaped.join("|")})`, "g");
+  const parts = text.split(regex);
+  return (
+    <>
+      {parts.map((part, i) =>
+        patterns.includes(part) ? <strong key={i}>{part}</strong> : part,
+      )}
+    </>
+  );
+}
 
 const validateAddressFormat = (
   address1: string | null | undefined,
@@ -4293,6 +5723,7 @@ const validateAddressFormat = (
       issueType: null,
       suggestedAddress1: line1 || null,
       suggestedAddress2: line2 || null,
+      highlightPatterns: [],
     };
   }
 
@@ -4308,12 +5739,25 @@ const validateAddressFormat = (
       issueType: "apartment_in_address1",
       suggestedAddress1: cleanedLine1 || line1,
       suggestedAddress2: nextLine2 || aptPart,
+      highlightPatterns: [aptPart],
     };
   }
 
   const numberRegex = /\b\d+\b/g;
   const line1Numbers = line1.match(numberRegex) ?? [];
-  const line2Numbers = line2.match(numberRegex) ?? [];
+  const line2Numbers: string[] = line2.match(numberRegex) ?? [];
+
+  // Flag if address1 alone has 2+ separate numeric tokens (e.g. "Rua Catuana 902 60")
+  if (line1Numbers.length >= 2) {
+    return {
+      isValid: false,
+      issueType: "multiple_numbers_in_address1",
+      suggestedAddress1: line1,
+      suggestedAddress2: line2 || null,
+      highlightPatterns: line1Numbers,
+    };
+  }
+
   const duplicated = line1Numbers.find((num) => line2Numbers.includes(num));
   if (duplicated) {
     const nextLine2 = line2
@@ -4326,6 +5770,7 @@ const validateAddressFormat = (
       issueType: "duplicate_number",
       suggestedAddress1: line1,
       suggestedAddress2: nextLine2 || null,
+      highlightPatterns: [duplicated],
     };
   }
 
@@ -4334,15 +5779,238 @@ const validateAddressFormat = (
     issueType: null,
     suggestedAddress1: line1 || null,
     suggestedAddress2: line2 || null,
+    highlightPatterns: [],
   };
+};
+
+// ---------------------------------------------------------------------------
+// Route precompute constants & helpers (must be before loader)
+// ---------------------------------------------------------------------------
+
+const ROUTE_PRECOMPUTE_COLORS = [
+  "#2C6ECB",
+  "#008060",
+  "#B98900",
+  "#D82C0D",
+  "#6D47C7",
+  "#FFD400",
+  "#955251",
+  "#8B5E3C",
+  "#6D7175",
+  "#FF7A00",
+  "#00A3A3",
+  "#C2185B",
+  "#5E35B1",
+  "#2E7D32",
+  "#3949AB",
+];
+
+const ROUTE_EMOJIS = [
+  "🔴", "🟠", "🟢", "🔵", "🟣", "🟤", "⚫", "⚪",
+  "🔴", "🟠", "🟢", "🔵", "🟣", "🟤", "⚫", "⚪",
+  "🔴", "🟠", "🟢",
+];
+
+const ROUTE_TAG_DEFINITIONS = Array.from({ length: 20 }, (_, i) => {
+  const n = i + 1;
+  const label = `Route ${String(n).padStart(2, "0")}`;
+  const tag = `ld_rota-${String(n).padStart(2, "0")}`;
+  return {
+    label,
+    tag,
+    emoji: ROUTE_EMOJIS[i] ?? "📦",
+    color: ROUTE_PRECOMPUTE_COLORS[i % ROUTE_PRECOMPUTE_COLORS.length]!,
+  };
+});
+
+const ROUTE_TAGS = new Map<string, string>(
+  ROUTE_TAG_DEFINITIONS.map((def, i) => [`rota-${i + 1}`, def.tag]),
+);
+
+const MAX_ROUTE_WAYPOINTS = 10;
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
+
+const hexToRgb = (hex: string) => {
+  const normalized = hex.replace("#", "").trim();
+  if (normalized.length !== 6) return null;
+  const r = Number.parseInt(normalized.slice(0, 2), 16);
+  const g = Number.parseInt(normalized.slice(2, 4), 16);
+  const b = Number.parseInt(normalized.slice(4, 6), 16);
+  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) return null;
+  return { r, g, b };
+};
+
+const toRgbString = (rgb: { r: number; g: number; b: number }) =>
+  `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+
+const mix = (value: number, target: number, ratio: number) =>
+  Math.round(value + (target - value) * ratio);
+
+const deriveBadgeColors = (hexColor: string) => {
+  const rgb = hexToRgb(hexColor);
+  if (!rgb) {
+    return {
+      bg: "rgb(235, 239, 246)",
+      text: "rgb(44, 58, 76)",
+    };
+  }
+  const bg = {
+    r: mix(rgb.r, 255, 0.78),
+    g: mix(rgb.g, 255, 0.78),
+    b: mix(rgb.b, 255, 0.78),
+  };
+  const text = {
+    r: mix(rgb.r, 0, 0.35),
+    g: mix(rgb.g, 0, 0.35),
+    b: mix(rgb.b, 0, 0.35),
+  };
+  return {
+    bg: toRgbString({
+      r: clamp(bg.r, 0, 255),
+      g: clamp(bg.g, 0, 255),
+      b: clamp(bg.b, 0, 255),
+    }),
+    text: toRgbString({
+      r: clamp(text.r, 0, 255),
+      g: clamp(text.g, 0, 255),
+      b: clamp(text.b, 0, 255),
+    }),
+  };
+};
+const LALAMOVE_SERVICE_TYPES = [
+  { value: "CAR", label: "CAR" },
+  { value: "CARFOURH", label: "CARFOURH" },
+  { value: "HATCHBACK", label: "HATCHBACK" },
+  { value: "HATCHFOURH", label: "HATCHFOURH" },
+  { value: "LALAGO", label: "LALAGO" },
+  { value: "LALAGOFOUR", label: "LALAGOFOUR" },
+  { value: "LALAPRO", label: "LALAPRO" },
+  { value: "TRUCK330", label: "TRUCK330" },
+  { value: "TRUCK3_5T", label: "TRUCK3_5T" },
+  { value: "TRUCK_6H", label: "TRUCK_6H" },
+  { value: "UV_4H", label: "UV_4H" },
+  { value: "UV_FIORINO", label: "UV_FIORINO" },
+  { value: "VAN", label: "VAN" },
+  { value: "VANFOURH", label: "VANFOURH" },
+];
+
+type PrecomputedRoute = {
+  id: string;
+  locationId: string;
+  polyline: string;
+  color: string;
+  orderIds: string[];
+  totalDistanceMeters?: number;
+  totalDurationSeconds?: number;
+};
+
+const computePrecomputedRoutes = async (
+  apiKey: string,
+  orders: LoaderOrder[],
+): Promise<PrecomputedRoute[]> => {
+  const ordersByLocation = new Map<
+    string,
+    { location: LoaderOrder["fulfillmentLocation"]; orders: LoaderOrder[] }
+  >();
+
+  orders.forEach((order) => {
+    if (!order.shippingCoordinates) return;
+    if (!order.fulfillmentLocation.coordinates) return;
+    const existing = ordersByLocation.get(order.fulfillmentLocation.id);
+    if (existing) {
+      existing.orders.push(order);
+    } else {
+      ordersByLocation.set(order.fulfillmentLocation.id, {
+        location: order.fulfillmentLocation,
+        orders: [order],
+      });
+    }
+  });
+
+  const results: PrecomputedRoute[] = [];
+  const locationEntries = Array.from(ordersByLocation.entries());
+
+  for (let index = 0; index < locationEntries.length; index += 1) {
+    const [locationId, group] = locationEntries[index]!;
+    const color =
+      ROUTE_PRECOMPUTE_COLORS[index % ROUTE_PRECOMPUTE_COLORS.length]!;
+    const chunks = chunkArray(group.orders, MAX_ROUTE_WAYPOINTS);
+
+    for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
+      const chunk = chunks[chunkIndex]!;
+      const destinationOrder = chunk[chunk.length - 1]!;
+      const intermediates = chunk.slice(0, -1);
+      const response = await fetch(
+        "https://routes.googleapis.com/directions/v2:computeRoutes",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": apiKey,
+            "X-Goog-FieldMask":
+              "routes.polyline,routes.optimizedIntermediateWaypointIndex",
+          },
+          body: JSON.stringify({
+            origin: {
+              location: {
+                latLng: {
+                  latitude: group.location.coordinates!.latitude,
+                  longitude: group.location.coordinates!.longitude,
+                },
+              },
+            },
+            destination: {
+              location: {
+                latLng: {
+                  latitude: destinationOrder.shippingCoordinates!.latitude,
+                  longitude: destinationOrder.shippingCoordinates!.longitude,
+                },
+              },
+            },
+            intermediates: intermediates.map((order) => ({
+              location: {
+                latLng: {
+                  latitude: order.shippingCoordinates!.latitude,
+                  longitude: order.shippingCoordinates!.longitude,
+                },
+              },
+            })),
+            travelMode: "DRIVE",
+            routingPreference: "TRAFFIC_AWARE",
+            optimizeWaypointOrder: true,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const json = await response.json();
+      const encodedPolyline = json.routes?.[0]?.polyline?.encodedPolyline;
+      if (!encodedPolyline) continue;
+
+      results.push({
+        id: `${locationId}-${chunkIndex}`,
+        locationId,
+        polyline: encodedPolyline,
+        color,
+        orderIds: chunk.map((order) => order.id),
+      });
+    }
+  }
+
+  return results;
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin, session } = await authenticate.admin(request);
   const shop = session.shop;
   const userLocale =
-    typeof session.locale === "string" && session.locale.length > 0
-      ? session.locale
+    typeof (session as any).locale === "string" && (session as any).locale.length > 0
+      ? (session as any).locale
       : "pt_BR";
   const url = new URL(request.url);
   const debugEnabled = url.searchParams.get("debugLocalDelivery") === "1";
@@ -4390,7 +6058,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   const locationsJson = await locationsResponse.json();
-  const locations = locationsJson.data.locations.nodes as Array<{
+  const locations = (locationsJson?.data?.locations?.nodes ?? []) as Array<{
     id: string;
     name: string;
     address: {
@@ -4406,7 +6074,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     } | null;
   }>;
 
-  const [lalamoveConfigRows, credentialStatus, pendingRoutes, autoAssignLogs] = await Promise.all([
+  const [lalamoveConfigRows, credentialStatus, pendingRoutes, returnPickupRequests] = await Promise.all([
     prisma.lalamoveLocationConfig.findMany({ where: { shop } }),
     hasShopCredentials(shop),
     (prisma as any).pendingDeliveryRoute.findMany({
@@ -4427,10 +6095,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }>;
       createdAt: Date;
     }>>,
-    prisma.autoAssignLog.findMany({
-      where: { shop },
-      orderBy: { createdAt: "desc" },
-      take: 100,
+    prisma.returnPickupRequest.findMany({
+      where: { shop, status: { in: ["pending", "quoted"] } },
+      orderBy: { createdAt: "asc" },
     }),
   ]);
   const lalamoveConfigs = lalamoveConfigRows.reduce<
@@ -4466,13 +6133,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
               profileLocationGroups {
                 locationGroup {
                   locations {
-                    id
+                    nodes {
+                      id
+                    }
                   }
                 }
-                locationGroupZones {
-                  zone {
-                    methodDefinitions {
-                      name
+                locationGroupZones(first: 20) {
+                  nodes {
+                    methodDefinitions(first: 20) {
+                      nodes {
+                        name
+                      }
                     }
                   }
                 }
@@ -4486,31 +6157,30 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       deliveryProfilesJson.data?.deliveryProfiles?.nodes?.flatMap(
         (profile: {
           profileLocationGroups: Array<{
-            locationGroup: { locations: Array<{ id: string }> };
-            locationGroupZones: Array<{
-              zone: { methodDefinitions: Array<{ name: string | null }> };
-            }>;
+            locationGroup: { locations: { nodes: Array<{ id: string }> } };
+            locationGroupZones: {
+              nodes: Array<{
+                methodDefinitions: { nodes: Array<{ name: string | null }> };
+              }>;
+            };
           }>;
         }) => profile.profileLocationGroups,
       ) ?? [];
     const localIds = new Set<string>();
-    profileGroups.forEach((group) => {
-      const hasLocalDelivery = group.locationGroupZones.some((zone) =>
-        zone.zone.methodDefinitions.some((method) =>
+    profileGroups.forEach((group: any) => {
+      const hasLocalDelivery = group.locationGroupZones.nodes.some((zone: any) =>
+        zone.methodDefinitions.nodes.some((method: any) =>
           (method.name ?? "").toLowerCase().includes("local"),
         ),
       );
       if (!hasLocalDelivery) return;
-      group.locationGroup.locations.forEach((location) =>
+      group.locationGroup.locations.nodes.forEach((location: any) =>
         localIds.add(location.id),
       );
     });
     localDeliveryLocationIds = localIds;
   } catch (error) {
-    console.warn(
-      "Failed to load delivery profiles for local delivery filtering.",
-      error,
-    );
+    console.warn("[local-delivery] loader: failed to load delivery profiles for filtering", error);
   }
 
   const effectiveLocationId =
@@ -4584,6 +6254,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     fulfillments?: Array<{ displayStatus: string }>;
   }> = [];
   let warningOrders: Array<{
+    id: string;
+    name: string;
     displayFulfillmentStatus: string;
     tags: string[];
     fulfillmentOrders: {
@@ -4597,7 +6269,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     let hasNextPage = true;
     let after: string | null = null;
     while (hasNextPage) {
-      const ordersResponse = await admin.graphql(
+      const ordersResponse: Response = await admin.graphql(
         `#graphql
         query OrdersMapView($first: Int!, $after: String, $query: String) {
           orders(first: $first, after: $after, query: $query) {
@@ -4672,8 +6344,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         { variables: { first: 100, after, query } },
       );
 
-      const ordersJson = await ordersResponse.json();
-      const payload = ordersJson?.data?.orders;
+      const ordersJson: any = await ordersResponse.json();
+      const payload: any = ordersJson?.data?.orders;
       const nodes = Array.isArray(payload?.nodes) ? payload.nodes : [];
       orders.push(...nodes);
       hasNextPage = Boolean(payload?.pageInfo?.hasNextPage);
@@ -4685,6 +6357,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         query OrdersWarningView($first: Int!, $query: String) {
           orders(first: $first, query: $query) {
             nodes {
+              id
+              name
               displayFulfillmentStatus
               tags
               fulfillmentOrders(first: 10) {
@@ -4707,7 +6381,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     );
 
     const warningJson = await warningResponse.json();
-    warningOrders = warningJson.data.orders.nodes;
+    warningOrders = warningJson?.data?.orders?.nodes ?? [];
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown error loading orders.";
@@ -4732,19 +6406,29 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }
     : null;
 
-  const shipmentRequestWarning = warningOrders.some((order) => {
-    if (
-      order.displayFulfillmentStatus === "DELIVERED" ||
-      order.displayFulfillmentStatus === "CANCELLED"
-    ) {
-      return false;
-    }
-    if (!order.tags?.some((tag) => tag.toUpperCase() === "LOCAL")) return false;
-    return order.fulfillmentOrders.nodes.some((fulfillment) => {
-      const methodType = fulfillment.deliveryMethod?.methodType;
-      return methodType != null && methodType !== "LOCAL";
-    });
-  });
+  const shipmentRequestOrders = warningOrders
+    .filter((order) => {
+      if (
+        order.displayFulfillmentStatus === "DELIVERED" ||
+        order.displayFulfillmentStatus === "CANCELLED"
+      ) {
+        return false;
+      }
+      if (!order.tags?.some((tag) => tag.toUpperCase() === "LOCAL")) return false;
+      return order.fulfillmentOrders.nodes.some((fulfillment) => {
+        const methodType = fulfillment.deliveryMethod?.methodType;
+        return methodType != null && methodType !== "LOCAL";
+      });
+    })
+    .map((order) => ({
+      id: order.id,
+      name: order.name,
+      displayFulfillmentStatus: order.displayFulfillmentStatus,
+      deliveryMethodTypes: order.fulfillmentOrders.nodes
+        .map((fo) => fo.deliveryMethod?.methodType)
+        .filter(Boolean) as string[],
+      adminOrderUrl: `https://admin.shopify.com/store/${toAdminStoreHandle(shop)}/orders/${toLegacyLocationId(order.id)}`,
+    }));
 
   const availablePresaleTags = extractPresaleTagsFromOrders(orders);
   const selectedPresaleTagSet = new Set(selectedPresaleTags);
@@ -4977,6 +6661,66 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }
     : null;
 
+  // Load active Lalamove dispatch jobs to prevent duplicate requests after page reload
+  // Also reconcile dispatch status with Lalamove API and capture shareLink + status
+  let activeDispatchData: Array<{ routeId: string; shareLink: string | null; status: string; lalamoveOrderId: string; market: string }> = [];
+  try {
+    const startOfToday = getStartOfDay();
+    const activeDispatches = await (prisma as any).lalamoveDispatchJob.findMany({
+      where: {
+        shop,
+        status: { notIn: ["cancelled", "CANCELLED", "CANCELED", "COMPLETED", "completed", "failed", "FAILED", "REJECTED", "rejected", "EXPIRED", "expired"] },
+        requestedAt: { gte: startOfToday },
+      },
+      select: { id: true, routeId: true, lalamoveOrderId: true, market: true, status: true },
+    });
+
+    // Reconcile with Lalamove API — check if any "active" dispatches have actually completed or failed
+    // Also capture shareLink and current status for the UI
+    const dispatchDetails = new Map<string, { shareLink: string | null; apiStatus: string | null }>();
+    const credentials = await getRuntimeCredentialsForShop(shop);
+    if (credentials && activeDispatches.length > 0) {
+      const terminalStatuses = ["COMPLETED", "CANCELED", "REJECTED", "EXPIRED"];
+      await Promise.allSettled(
+        activeDispatches.map((dispatch: any) =>
+          getLalamoveOrderDetails(
+            dispatch.market ?? "BR_SAO",
+            dispatch.lalamoveOrderId,
+            credentials,
+          ).then(async (details: any) => {
+            const apiStatus = details?.status;
+            dispatchDetails.set(dispatch.routeId, {
+              shareLink: details?.shareLink ?? null,
+              apiStatus: apiStatus ?? null,
+            });
+            if (apiStatus && terminalStatuses.includes(apiStatus) && dispatch.status !== apiStatus) {
+              await (prisma as any).lalamoveDispatchJob.update({
+                where: { id: dispatch.id },
+                data: { status: apiStatus },
+              });
+              dispatch.status = apiStatus;
+            }
+          }),
+        ),
+      );
+      // Silently ignore individual failures — keep existing status
+    }
+
+    // Only include routes with truly active dispatches
+    const terminalSet = new Set(["COMPLETED", "completed", "CANCELED", "cancelled", "CANCELLED", "REJECTED", "EXPIRED", "failed", "FAILED"]);
+    activeDispatchData = activeDispatches
+      .filter((d: any) => !terminalSet.has(d.status))
+      .map((d: any) => ({
+        routeId: d.routeId as string,
+        shareLink: dispatchDetails.get(d.routeId)?.shareLink ?? null,
+        status: mapLalamoveStatusToInternal(dispatchDetails.get(d.routeId)?.apiStatus ?? d.status),
+        lalamoveOrderId: d.lalamoveOrderId as string,
+        market: (d.market ?? "BR_SAO") as string,
+      }));
+  } catch {
+    // Silently ignore if table is unavailable
+  }
+
   return {
     orders: filteredOrders,
     locations: localDeliveryLocations,
@@ -4990,239 +6734,23 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     ordersError,
     mapsApiKey,
     mapsMapId: process.env.GOOGLE_MAPS_MAP_ID?.trim() || "",
-    shipmentRequestWarning,
+    shipmentRequestOrders,
     routeStats,
     precomputedRoutes,
     lalamoveConfigs,
     credentialStatus,
     pendingRoutes,
-    autoAssignLogs,
+    returnPickupRequests,
     shop,
     userLocale,
     debugLocalDelivery,
     availablePresaleTags,
     hasUnfulfilledPresaleOrders: availablePresaleTags.length > 0,
     failedDeliveryCount,
+    activeDispatchData,
   };
 };
 
-const ROUTE_PRECOMPUTE_COLORS = [
-  "#2C6ECB",
-  "#008060",
-  "#B98900",
-  "#D82C0D",
-  "#6D47C7",
-  "#FFD400",
-  "#955251",
-  "#8B5E3C",
-  "#6D7175",
-  "#FF7A00",
-  "#00A3A3",
-  "#C2185B",
-  "#5E35B1",
-  "#2E7D32",
-  "#3949AB",
-];
-
-const ROUTE_EMOJIS = [
-  "🔴", "🟠", "🟢", "🔵", "🟣", "🟤", "⚫", "⚪",
-  "🔴", "🟠", "🟢", "🔵", "🟣", "🟤", "⚫", "⚪",
-  "🔴", "🟠", "🟢",
-];
-
-const ROUTE_TAG_DEFINITIONS = Array.from({ length: 20 }, (_, i) => {
-  const n = i + 1;
-  const label = `Route ${String(n).padStart(2, "0")}`;
-  const tag = `ld_rota-${String(n).padStart(2, "0")}`;
-  return {
-    label,
-    tag,
-    emoji: ROUTE_EMOJIS[i] ?? "📦",
-    color: ROUTE_PRECOMPUTE_COLORS[i % ROUTE_PRECOMPUTE_COLORS.length]!,
-  };
-});
-
-const ROUTE_TAGS = new Map<string, string>(
-  ROUTE_TAG_DEFINITIONS.map((def, i) => [`rota-${i + 1}`, def.tag]),
-);
-
-const MAX_ROUTE_WAYPOINTS = 10;
-
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(Math.max(value, min), max);
-
-const hexToRgb = (hex: string) => {
-  const normalized = hex.replace("#", "").trim();
-  if (normalized.length !== 6) return null;
-  const r = Number.parseInt(normalized.slice(0, 2), 16);
-  const g = Number.parseInt(normalized.slice(2, 4), 16);
-  const b = Number.parseInt(normalized.slice(4, 6), 16);
-  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) return null;
-  return { r, g, b };
-};
-
-const toRgbString = (rgb: { r: number; g: number; b: number }) =>
-  `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-
-const mix = (value: number, target: number, ratio: number) =>
-  Math.round(value + (target - value) * ratio);
-
-const deriveBadgeColors = (hexColor: string) => {
-  const rgb = hexToRgb(hexColor);
-  if (!rgb) {
-    return {
-      bg: "rgb(235, 239, 246)",
-      text: "rgb(44, 58, 76)",
-    };
-  }
-  const bg = {
-    r: mix(rgb.r, 255, 0.78),
-    g: mix(rgb.g, 255, 0.78),
-    b: mix(rgb.b, 255, 0.78),
-  };
-  const text = {
-    r: mix(rgb.r, 0, 0.35),
-    g: mix(rgb.g, 0, 0.35),
-    b: mix(rgb.b, 0, 0.35),
-  };
-  return {
-    bg: toRgbString({
-      r: clamp(bg.r, 0, 255),
-      g: clamp(bg.g, 0, 255),
-      b: clamp(bg.b, 0, 255),
-    }),
-    text: toRgbString({
-      r: clamp(text.r, 0, 255),
-      g: clamp(text.g, 0, 255),
-      b: clamp(text.b, 0, 255),
-    }),
-  };
-};
-const LALAMOVE_SERVICE_TYPES = [
-  { value: "CAR", label: "CAR" },
-  { value: "CARFOURH", label: "CARFOURH" },
-  { value: "HATCHBACK", label: "HATCHBACK" },
-  { value: "HATCHFOURH", label: "HATCHFOURH" },
-  { value: "LALAGO", label: "LALAGO" },
-  { value: "LALAGOFOUR", label: "LALAGOFOUR" },
-  { value: "LALAPRO", label: "LALAPRO" },
-  { value: "TRUCK330", label: "TRUCK330" },
-  { value: "TRUCK3_5T", label: "TRUCK3_5T" },
-  { value: "TRUCK_6H", label: "TRUCK_6H" },
-  { value: "UV_4H", label: "UV_4H" },
-  { value: "UV_FIORINO", label: "UV_FIORINO" },
-  { value: "VAN", label: "VAN" },
-  { value: "VANFOURH", label: "VANFOURH" },
-];
-
-type PrecomputedRoute = {
-  id: string;
-  locationId: string;
-  polyline: string;
-  color: string;
-  orderIds: string[];
-  totalDistanceMeters?: number;
-  totalDurationSeconds?: number;
-};
-
-const computePrecomputedRoutes = async (
-  apiKey: string,
-  orders: LoaderOrder[],
-): Promise<PrecomputedRoute[]> => {
-  const ordersByLocation = new Map<
-    string,
-    { location: LoaderOrder["fulfillmentLocation"]; orders: LoaderOrder[] }
-  >();
-
-  orders.forEach((order) => {
-    if (!order.shippingCoordinates) return;
-    if (!order.fulfillmentLocation.coordinates) return;
-    const existing = ordersByLocation.get(order.fulfillmentLocation.id);
-    if (existing) {
-      existing.orders.push(order);
-    } else {
-      ordersByLocation.set(order.fulfillmentLocation.id, {
-        location: order.fulfillmentLocation,
-        orders: [order],
-      });
-    }
-  });
-
-  const results: PrecomputedRoute[] = [];
-  const locationEntries = Array.from(ordersByLocation.entries());
-
-  for (let index = 0; index < locationEntries.length; index += 1) {
-    const [locationId, group] = locationEntries[index]!;
-    const color =
-      ROUTE_PRECOMPUTE_COLORS[index % ROUTE_PRECOMPUTE_COLORS.length]!;
-    const chunks = chunkArray(group.orders, MAX_ROUTE_WAYPOINTS);
-
-    for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
-      const chunk = chunks[chunkIndex]!;
-      const destinationOrder = chunk[chunk.length - 1]!;
-      const intermediates = chunk.slice(0, -1);
-      const response = await fetch(
-        "https://routes.googleapis.com/directions/v2:computeRoutes",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": apiKey,
-            "X-Goog-FieldMask":
-              "routes.polyline,routes.optimizedIntermediateWaypointIndex",
-          },
-          body: JSON.stringify({
-            origin: {
-              location: {
-                latLng: {
-                  latitude: group.location.coordinates!.latitude,
-                  longitude: group.location.coordinates!.longitude,
-                },
-              },
-            },
-            destination: {
-              location: {
-                latLng: {
-                  latitude: destinationOrder.shippingCoordinates!.latitude,
-                  longitude: destinationOrder.shippingCoordinates!.longitude,
-                },
-              },
-            },
-            intermediates: intermediates.map((order) => ({
-              location: {
-                latLng: {
-                  latitude: order.shippingCoordinates!.latitude,
-                  longitude: order.shippingCoordinates!.longitude,
-                },
-              },
-            })),
-            travelMode: "DRIVE",
-            routingPreference: "TRAFFIC_AWARE",
-            optimizeWaypointOrder: true,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        continue;
-      }
-
-      const json = await response.json();
-      const encodedPolyline = json.routes?.[0]?.polyline?.encodedPolyline;
-      if (!encodedPolyline) continue;
-
-      results.push({
-        id: `${locationId}-${chunkIndex}`,
-        locationId,
-        polyline: encodedPolyline,
-        color,
-        orderIds: chunk.map((order) => order.id),
-      });
-    }
-  }
-
-  return results;
-};
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { admin, session } = await authenticate.admin(request);
@@ -5232,11 +6760,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const route = formData.get("route");
   const orderIds = formData.getAll("orderIds");
 
+  /** Process items in sequential batches to avoid Shopify rate limits / gateway timeouts. */
+  async function batchProcess<T>(items: T[], batchSize: number, fn: (item: T) => Promise<unknown>) {
+    for (let i = 0; i < items.length; i += batchSize) {
+      await Promise.all(items.slice(i, i + batchSize).map(fn));
+    }
+  }
+  const GQL_BATCH_SIZE = 10;
+
   if (intent === "save-lalamove-settings") {
     const locationId = formData.get("locationId");
     if (typeof locationId !== "string" || !locationId) {
       return { ok: false, error: "Location not provided." };
     }
+    console.info(`[local-delivery] save-lalamove-settings shop=${shop} location=${locationId}`);
     const existing = await prisma.lalamoveLocationConfig.findUnique({
       where: { shop_locationId: { shop, locationId } },
     });
@@ -5274,7 +6811,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         maxRadiusKm,
         "BRL",
         { googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY?.trim() },
-      ).catch((e) => console.warn("Sample rate build failed:", e));
+      ).catch((e) => console.warn(`[local-delivery] save-lalamove-settings sample-rate build failed location=${locationId}`, e));
     }
     return { ok: true };
   }
@@ -5284,6 +6821,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (intent === "unassign-all") {
     const allRouteTags = ROUTE_TAG_DEFINITIONS.map((d) => d.tag);
     const orderIdsToClear = ids.length > 0 ? ids : [];
+    console.info(`[local-delivery] unassign-all shop=${shop} orders=${orderIdsToClear.length}`);
     await Promise.all(
       orderIdsToClear.map((id) =>
         admin.graphql(
@@ -5327,6 +6865,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
 
     const routingLogic = (formData.get("routingLogic") as RoutingLogic | null) ?? "distance";
+    console.info(`[local-delivery] optimize-fleet START shop=${shop} orders=${validOrders.length} logic=${routingLogic}`);
 
     if (routingLogic === "carrier-quotation") {
       // Load carrier config for vehicle preferences + max orders per route
@@ -5378,42 +6917,37 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         return { ok: false, error: result.error };
       }
 
-      // Apply order tags (same pattern as distance-based branch)
+      // Apply order tags in batches to avoid Shopify rate limits / gateway timeouts
       const allRouteTags = ROUTE_TAG_DEFINITIONS.map((d) => d.tag);
       const allOptimizedIds = result.routes.flatMap((r) => r.orderIds);
-      await Promise.all(
-        allOptimizedIds.map(async (orderId) => {
-          await admin.graphql(
-            `#graphql
-              mutation RemoveOrderTag($id: ID!, $tags: [String!]!) {
-                tagsRemove(id: $id, tags: $tags) {
-                  userErrors { message }
-                }
-              }`,
-            { variables: { id: orderId, tags: allRouteTags } },
-          );
-        }),
+      await batchProcess(allOptimizedIds, GQL_BATCH_SIZE, (orderId) =>
+        admin.graphql(
+          `#graphql
+            mutation RemoveOrderTag($id: ID!, $tags: [String!]!) {
+              tagsRemove(id: $id, tags: $tags) {
+                userErrors { message }
+              }
+            }`,
+          { variables: { id: orderId, tags: allRouteTags } },
+        ),
       );
-      await Promise.all(
-        result.routes.map(async (route) => {
-          const tag = ROUTE_TAG_DEFINITIONS[route.routeIndex]?.tag;
-          if (!tag) return;
-          await Promise.all(
-            route.orderIds.map((orderId) =>
-              admin.graphql(
-                `#graphql
-                  mutation AddOrderTag($id: ID!, $tags: [String!]!) {
-                    tagsAdd(id: $id, tags: $tags) {
-                      userErrors { message }
-                    }
-                  }`,
-                { variables: { id: orderId, tags: [tag] } },
-              ),
-            ),
-          );
-        }),
+      const tagAssignments = result.routes.flatMap((route) => {
+        const tag = ROUTE_TAG_DEFINITIONS[route.routeIndex]?.tag;
+        return tag ? route.orderIds.map((orderId) => ({ orderId, tag })) : [];
+      });
+      await batchProcess(tagAssignments, GQL_BATCH_SIZE, ({ orderId, tag }) =>
+        admin.graphql(
+          `#graphql
+            mutation AddOrderTag($id: ID!, $tags: [String!]!) {
+              tagsAdd(id: $id, tags: $tags) {
+                userErrors { message }
+              }
+            }`,
+          { variables: { id: orderId, tags: [tag] } },
+        ),
       );
 
+      console.info(`[local-delivery] optimize-fleet OK (carrier-quotation) routes=${result.summary.routeCount} orders=${result.summary.totalOrders}`);
       return {
         ok: true,
         optimizedRoutes: result.routes.map((r) => ({
@@ -5475,39 +7009,34 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     const allRouteTags = ROUTE_TAG_DEFINITIONS.map((d) => d.tag);
 
-    await Promise.all(
-      optimizedOrderIds.map(async (orderId) => {
-        await admin.graphql(
-          `#graphql
-            mutation RemoveOrderTag($id: ID!, $tags: [String!]!) {
-              tagsRemove(id: $id, tags: $tags) {
-                userErrors { message }
-              }
-            }`,
-          { variables: { id: orderId, tags: allRouteTags } },
-        );
-      }),
+    await batchProcess(optimizedOrderIds, GQL_BATCH_SIZE, (orderId) =>
+      admin.graphql(
+        `#graphql
+          mutation RemoveOrderTag($id: ID!, $tags: [String!]!) {
+            tagsRemove(id: $id, tags: $tags) {
+              userErrors { message }
+            }
+          }`,
+        { variables: { id: orderId, tags: allRouteTags } },
+      ),
     );
-    await Promise.all(
-      routesInCapacity.map(async (route) => {
-        const tag = ROUTE_TAG_DEFINITIONS[route.routeIndex]?.tag;
-        if (!tag) return;
-        await Promise.all(
-          route.orderIds.map((orderId) =>
-            admin.graphql(
-              `#graphql
-                mutation AddOrderTag($id: ID!, $tags: [String!]!) {
-                  tagsAdd(id: $id, tags: $tags) {
-                    userErrors { message }
-                  }
-                }`,
-              { variables: { id: orderId, tags: [tag] } },
-            ),
-          ),
-        );
-      }),
+    const distanceTagAssignments = routesInCapacity.flatMap((route) => {
+      const tag = ROUTE_TAG_DEFINITIONS[route.routeIndex]?.tag;
+      return tag ? route.orderIds.map((orderId) => ({ orderId, tag })) : [];
+    });
+    await batchProcess(distanceTagAssignments, GQL_BATCH_SIZE, ({ orderId, tag }) =>
+      admin.graphql(
+        `#graphql
+          mutation AddOrderTag($id: ID!, $tags: [String!]!) {
+            tagsAdd(id: $id, tags: $tags) {
+              userErrors { message }
+            }
+          }`,
+        { variables: { id: orderId, tags: [tag] } },
+      ),
     );
 
+    console.info(`[local-delivery] optimize-fleet OK (${routingLogic}) routes=${routesInCapacity.length} orders=${optimizedOrderIds.length}`);
     return {
       ok: true,
       optimizedRoutes: routesInCapacity.map((route) => {
@@ -5522,6 +7051,126 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         };
       }),
       summary: optimized.summary,
+    };
+  }
+
+  if (intent === "add-to-best-route") {
+    console.info(`[local-delivery] add-to-best-route START shop=${shop}`);
+    const unassignedPayload = formData.get("unassignedPayload");
+    const routesPayload = formData.get("routesPayload");
+    if (typeof unassignedPayload !== "string" || !unassignedPayload.trim() ||
+        typeof routesPayload !== "string" || !routesPayload.trim()) {
+      return { ok: false, error: "Missing payload for add-to-best-route." };
+    }
+    let unassignedOrders: OptimizerOrderInput[] = [];
+    let existingRoutes: Array<{ routeIndex: number; locationId: string; orderIds: string[] }> = [];
+    try {
+      unassignedOrders = JSON.parse(unassignedPayload) as OptimizerOrderInput[];
+      existingRoutes = JSON.parse(routesPayload) as Array<{ routeIndex: number; locationId: string; orderIds: string[] }>;
+    } catch {
+      return { ok: false, error: "Invalid payload for add-to-best-route." };
+    }
+    const validUnassigned = unassignedOrders.filter(
+      (o) =>
+        o?.orderId &&
+        o?.locationId &&
+        Number.isFinite(o?.shippingCoordinates?.latitude) &&
+        Number.isFinite(o?.shippingCoordinates?.longitude) &&
+        Number.isFinite(o?.locationCoordinates?.latitude) &&
+        Number.isFinite(o?.locationCoordinates?.longitude),
+    );
+    if (validUnassigned.length === 0) {
+      return { ok: false, error: "No valid unassigned orders." };
+    }
+
+    const allOrdersById = new Map<string, OptimizerOrderInput>(
+      validUnassigned.map((o) => [o.orderId, o]),
+    );
+
+    const primaryLocationId = validUnassigned[0]?.locationId;
+    if (!primaryLocationId) {
+      return { ok: false, error: "No valid location for add-to-best-route." };
+    }
+    const locConfigRow = await prisma.lalamoveLocationConfig.findUnique({
+      where: { shop_locationId: { shop, locationId: primaryLocationId } },
+    });
+    if (!locConfigRow) {
+      return { ok: false, error: "Missing Lalamove location settings." };
+    }
+    const llmConfig = locConfigRow.data as import("../services/carrier/lalamove-adapter.server").LalamoveConfig;
+
+    const credentials = await getRuntimeCredentialsForShop(shop);
+    if (!credentials) {
+      return { ok: false, error: "Missing Lalamove credentials." };
+    }
+
+    const carrierConfigRow = await prisma.carrierServiceConfig.findUnique({ where: { shop } });
+    const carrierConfig = carrierConfigRow?.data as CarrierServiceConfigData | undefined;
+    const primaryVehicle = carrierConfig?.lalamovePreferredServiceType || llmConfig.preferredServiceType || "LALAGO";
+    const secondaryVehicle = carrierConfig?.lalamoveSecondaryServiceType || undefined;
+
+    const { addToExistingRoutesByCarrierQuotation } = await import(
+      "../services/carrier-quotation-optimizer.server"
+    );
+    const result = await addToExistingRoutesByCarrierQuotation(
+      existingRoutes,
+      validUnassigned,
+      allOrdersById,
+      llmConfig,
+      credentials,
+      { primary: primaryVehicle, secondary: secondaryVehicle },
+    );
+    if (!result.ok) {
+      return { ok: false, error: result.error };
+    }
+
+    const allRouteTags = ROUTE_TAG_DEFINITIONS.map((d) => d.tag);
+    const newlyAssignedIds = validUnassigned.map((o) => o.orderId);
+    await batchProcess(newlyAssignedIds, GQL_BATCH_SIZE, (orderId) =>
+      admin.graphql(
+        `#graphql
+          mutation RemoveOrderTag($id: ID!, $tags: [String!]!) {
+            tagsRemove(id: $id, tags: $tags) {
+              userErrors { message }
+            }
+          }`,
+        { variables: { id: orderId, tags: allRouteTags } },
+      ),
+    );
+    const tagAssignments = result.routes.flatMap((route) => {
+      const tag = ROUTE_TAG_DEFINITIONS[route.routeIndex]?.tag;
+      const newOrderIds = newlyAssignedIds.filter((id) => route.orderIds.includes(id));
+      return tag ? newOrderIds.map((orderId) => ({ orderId, tag })) : [];
+    });
+    await batchProcess(tagAssignments, GQL_BATCH_SIZE, ({ orderId, tag }) =>
+      admin.graphql(
+        `#graphql
+          mutation AddOrderTag($id: ID!, $tags: [String!]!) {
+            tagsAdd(id: $id, tags: $tags) {
+              userErrors { message }
+            }
+          }`,
+        { variables: { id: orderId, tags: [tag] } },
+      ),
+    );
+
+    return {
+      ok: true,
+      optimizedRoutes: result.routes.map((r) => ({
+        routeIndex: r.routeIndex,
+        locationId: r.locationId,
+        orderIds: r.orderIds,
+        polyline: "",
+        totalDistanceMeters: 0,
+        totalDurationSeconds: 0,
+      })),
+      summary: {
+        routeCount: result.summary.routeCount,
+        totalDistanceMeters: 0,
+        totalDurationSeconds: 0,
+        costTotal: result.summary.totalCost,
+        costCurrency: result.summary.costCurrency,
+      },
     };
   }
 
@@ -5633,22 +7282,40 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           .filter((o) => o?.shippingAddress && o.shippingAddress.latitude != null && o.shippingAddress.longitude != null)
           .map((o) => ({
             coordinates: { lat: String(o.shippingAddress!.latitude), lng: String(o.shippingAddress!.longitude) },
-            address: formatAddress([o.shippingAddress!.address1, o.shippingAddress!.address2, o.shippingAddress!.city, o.shippingAddress!.province, o.shippingAddress!.zip, o.shippingAddress!.country]),
+            address: formatDeliveryStopAddress(
+              o.shippingAddress!.address1,
+              o.shippingAddress!.address2,
+            ),
+            sourceAddress2: o.shippingAddress!.address2 ?? null,
           }));
+        const fulfillmentStopAddress = formatFulfillmentStopAddress(
+          config.locationName,
+          config.locationAddress,
+          config.locationDetails,
+        );
         const stops = [
           {
             coordinates: { lat: String(pickupAddress?.latitude ?? 0), lng: String(pickupAddress?.longitude ?? 0) },
-            address: formatAddress([pickupAddress?.address1, pickupAddress?.city, pickupAddress?.province, pickupAddress?.country]),
+            address:
+              fulfillmentStopAddress ||
+              formatAddress([
+                pickupAddress?.address1,
+                pickupAddress?.city,
+                pickupAddress?.province,
+                pickupAddress?.country,
+              ]),
           },
           ...deliveryStops,
         ];
         try {
+          const specialRequests = carrierConfig?.lalamoveSpecialRequests?.[config.market] ?? [];
           const quotation = await createLalamoveQuotation({
             market: config.market,
             language: config.language,
             serviceType: effectiveServiceType,
             stops,
             isRouteOptimized: true,
+            ...(specialRequests.length ? { specialRequests } : {}),
           }, credentials ?? undefined);
           costTotal = quotation.priceBreakdown?.total;
           costCurrency = quotation.priceBreakdown?.currency;
@@ -5673,11 +7340,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const routeId = formData.get("routeId");
     const locationId = formData.get("locationId");
     if (typeof routeId !== "string" || typeof locationId !== "string") {
-      return { ok: false, error: "Route information missing." };
+      return { ok: false, error: "Route information missing.", routeId: typeof routeId === "string" ? routeId : undefined };
     }
     if (ids.length === 0) {
       return { ok: false, error: "No orders selected.", routeId };
     }
+    console.info(`[local-delivery] lalamove-quote START shop=${shop} route=${routeId} orders=${ids.length}`);
     const credentials = await getRuntimeCredentialsForShop(shop);
     if (!credentials) {
       return {
@@ -5691,7 +7359,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       where: { shop_locationId: { shop, locationId } },
     });
     if (!configRow) {
-      console.warn("Lalamove settings missing.", { shop, locationId, routeId });
+      console.warn(`[local-delivery] lalamove-quote SKIP settings missing shop=${shop} location=${locationId} route=${routeId}`);
       return { ok: false, error: "Missing Lalamove settings.", routeId };
     }
     const config = configRow.data as LalamoveConfig;
@@ -5723,7 +7391,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       { variables: { ids } },
     );
     const ordersJson = await ordersResponse.json();
-    const orderNodes = ordersJson.data.nodes as Array<{
+    const orderNodes = (ordersJson?.data?.nodes ?? []) as Array<{
       id: string;
       shippingAddress: {
         address1: string | null;
@@ -5792,40 +7460,52 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       locationDetails: (pickupAddress.address2 ?? "").trim() || config.locationDetails || "",
     };
 
-    const googleApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() ?? "";
+    // Parse address edits from address verification modal
+    const addressEditsRaw = formData.get("addressEdits");
+    const addressEdits: Record<string, string> = addressEditsRaw
+      ? (JSON.parse(String(addressEditsRaw)) as Record<string, string>)
+      : {};
 
     const deliveryStopsRaw = await Promise.all(
       orderNodes.map(async (order) => {
         const address = order.shippingAddress;
         if (!address) return null;
         if (address.latitude == null || address.longitude == null) return null;
+        // Use edited address from verification modal if available
+        const editedAddress = addressEdits[order.id];
+        const defaultDeliveryAddress = formatDeliveryStopAddress(
+          address.address1,
+          address.address2,
+        );
+        const resolvedAddress = editedAddress
+          ? editedAddress
+          : defaultDeliveryAddress;
         return {
           coordinates: {
             lat: String(address.latitude),
             lng: String(address.longitude),
           },
-          address: googleApiKey
-            ? await normalizeShippingAddress(address, googleApiKey)
-            : formatAddress([
-                address.address1,
-                address.address2,
-                address.city,
-                address.province,
-                address.zip,
-                address.country,
-              ]),
+          address: resolvedAddress,
+          sourceAddress2: address.address2 ?? null,
         };
       }),
     );
     const deliveryStops = deliveryStopsRaw.filter(
       Boolean,
     ) as Array<{ coordinates: { lat: string; lng: string }; address: string }>;
+    const deliveryOrderPoints: DeliveryOrderPoint[] = [];
+    for (let i = 0; i < orderNodes.length && i < ids.length; i++) {
+      const addr = orderNodes[i]?.shippingAddress;
+      if (addr?.latitude != null && addr?.longitude != null) {
+        deliveryOrderPoints.push({
+          orderId: ids[i]!,
+          latitude: addr.latitude,
+          longitude: addr.longitude,
+        });
+      }
+    }
     if (deliveryStops.length === 0) {
-      console.warn("Lalamove quotation missing coordinates.", {
-        shop,
-        routeId,
-        orderCount: orderNodes.length,
-      });
+      console.warn(`[local-delivery] lalamove-quote SKIP missing coordinates shop=${shop} route=${routeId} orderCount=${orderNodes.length}`);
       return { ok: false, error: "Orders missing coordinates.", routeId };
     }
     const shopifyFormattedAddress = formatAddress([
@@ -5837,16 +7517,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       pickupAddress.country,
     ]);
     const pickupAddressBase =
-      (configWithLocation.locationAddress?.trim() || shopifyFormattedAddress) +
-      (config.locationDetails?.trim()
-        ? `, ${config.locationDetails.trim()}`
-        : "");
-
-    // Add 30-minute wait time to each delivery stop for routes with 3+ addresses
-    const shouldAddWaitTime = deliveryStops.length >= 3;
-    const deliveryStopsWithWait = shouldAddWaitTime
-      ? deliveryStops.map((stop) => ({ ...stop, waitTime: 1800 }))
-      : deliveryStops;
+      formatFulfillmentStopAddress(
+        config.locationName,
+        config.locationAddress,
+        config.locationDetails,
+      ) || shopifyFormattedAddress;
 
     const stops = [
       {
@@ -5856,48 +7531,309 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         },
         address: pickupAddressBase,
       },
-      ...deliveryStopsWithWait,
+      ...deliveryStops,
     ];
     try {
+      // Read special requests from form data (from pre-quote modal), falling back to saved config
+      const formSpecialRequests = formData.getAll("specialRequests") as string[];
+      let specialRequests = formSpecialRequests.length > 0
+        ? formSpecialRequests
+        : (carrierConfig?.lalamoveSpecialRequests?.[configWithLocation.market] ?? []);
+
+      // Validate special requests against the specific city+service available options.
+      // Special requests are saved per market, but availability varies per city within the
+      // same market (e.g. São Paulo supports RETURN_TRIP, Recife does not).
+      if (specialRequests.length > 0 && credentials) {
+        try {
+          const cities = await getLalamoveCityInfo(configWithLocation.market, credentials);
+          const availableNames = new Set<string>();
+          const locationCity = ((config as any).city as string | undefined)?.trim().toLowerCase();
+          console.info(`[local-delivery] special-request validation: market=${configWithLocation.market} locationCity=${locationCity ?? "?"} cities=[${cities.map((c) => `${c.locode}/${c.name}`).join(", ")}]`);
+          const serviceType = configWithLocation.preferredServiceType;
+          for (const city of cities) {
+            // Filter by city when known — prevents cross-city leaks (e.g. SP options sent for Recife)
+            if (locationCity) {
+              const matchesLocode = city.locode?.toLowerCase() === locationCity;
+              const matchesName = city.name?.trim().toLowerCase() === locationCity;
+              if (!matchesLocode && !matchesName) continue;
+            }
+            for (const service of city.services ?? []) {
+              if (serviceType && service.key !== serviceType) continue;
+              for (const sr of service.specialRequests ?? []) {
+                availableNames.add(sr.name);
+              }
+            }
+          }
+          const filtered = specialRequests.filter((sr) => availableNames.has(sr));
+          if (filtered.length !== specialRequests.length) {
+            console.warn(`[local-delivery] filtered invalid special requests for ${configWithLocation.market} city=${locationCity ?? "?"} service=${serviceType}: ${specialRequests.filter((sr) => !availableNames.has(sr)).join(", ")}`);
+          }
+          specialRequests = filtered;
+        } catch {
+          // If city info fetch fails, proceed with original requests
+        }
+      }
+
       const quotation = await createLalamoveQuotation({
         market: configWithLocation.market,
         language: configWithLocation.language,
         serviceType: configWithLocation.preferredServiceType,
         stops,
         isRouteOptimized: stops.length >= 3,
+        ...(specialRequests.length ? { specialRequests } : {}),
       }, credentials);
-      return { ok: true, routeId, locationId, quotation, orderIds: ids };
+      // quotation.stops[0] is the pickup; stops[1..n] are deliveries in optimized order.
+      const responseDeliveryStops = (quotation.stops ?? []).slice(1);
+      if (responseDeliveryStops.length !== deliveryStops.length) {
+        console.error(`[local-delivery] lalamove-quote FAILED stop count mismatch route=${routeId} expected=${deliveryStops.length} got=${responseDeliveryStops.length}`);
+        return {
+          ok: false,
+          error:
+            "Lalamove returned a different number of optimized delivery stops. Please request a new quote.",
+          routeId,
+        };
+      }
+      const reconciliation = reconcileDeliveryAssignments(
+        responseDeliveryStops,
+        deliveryOrderPoints,
+      );
+      if (!reconciliation.ok) {
+        console.error(`[local-delivery] lalamove-quote FAILED reconciliation route=${routeId} stops=${responseDeliveryStops.length} orders=${deliveryOrderPoints.length} error=${reconciliation.error}`);
+        return {
+          ok: false,
+          error:
+            "Could not map optimized route stops to orders reliably. Please retry the quote.",
+          routeId,
+        };
+      }
+      console.info(`[local-delivery] lalamove-quote OK route=${routeId} location=${locationId}`, reconciliation.stats);
+      const finalOrderIds = reconciliation.assignments.map(
+        (assignment) => assignment.orderId,
+      );
+      return {
+        ok: true,
+        routeId,
+        locationId,
+        quotation,
+        orderIds: finalOrderIds,
+        deliveryAssignments: reconciliation.assignments,
+      };
     } catch (error) {
       const rawMessage =
         error instanceof Error ? error.message : "Lalamove quote failed.";
       const message = sanitizeLalamoveErrorMessage(rawMessage);
-      console.error("Lalamove quotation failed.", {
-        shop,
-        routeId,
-        locationId,
-        message,
-      });
+      console.error(`[local-delivery] lalamove-quote FAILED shop=${shop} route=${routeId} location=${locationId} error=${message}`);
       return { ok: false, error: message, routeId };
     }
   }
 
-  if (intent === "lalamove-place-order") {
+  
+  if (intent === "fetch-special-requests") {
+    const market = String(formData.get("market") ?? "").trim();
+    const serviceType = String(formData.get("serviceType") ?? "").trim();
+    if (!market) return { ok: false, error: "Market not provided." };
+    const credentials = await getRuntimeCredentialsForShop(shop);
+    if (!credentials) return { ok: false, error: "Missing credentials." };
+    try {
+      const cities = await getLalamoveCityInfo(market, credentials);
+      const srs: Array<{ name: string; description: string }> = [];
+      for (const city of cities) {
+        for (const service of city.services ?? []) {
+          if (!serviceType || service.key === serviceType) {
+            for (const sr of service.specialRequests ?? []) {
+              if (!srs.some((x) => x.name === sr.name)) srs.push(sr);
+            }
+          }
+        }
+      }
+      return { ok: true, specialRequests: srs };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to fetch special requests.";
+      return { ok: false, error: msg, specialRequests: [] };
+    }
+  }
+
+        if (intent === "lalamove-cancel-order") {
+      const routeId = String(formData.get("routeId") ?? "").trim();
+      if (!routeId) return { ok: false, error: "Missing routeId.", routeId: "" };
+      console.info(`[local-delivery] lalamove-cancel-order START shop=${shop} route=${routeId}`);
+
+      const credentials = await getRuntimeCredentialsForShop(shop);
+      if (!credentials) {
+        return { ok: false, error: "Missing Lalamove API credentials.", routeId };
+      }
+
+      const prismaAny = prisma as any;
+      const dispatchJob = await prismaAny.lalamoveDispatchJob.findFirst({
+        where: { shop, routeId, status: { notIn: ["COMPLETED", "CANCELED", "REJECTED", "EXPIRED"] } },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (!dispatchJob?.lalamoveOrderId) {
+        return { ok: false, error: "No active dispatch found for this route.", routeId };
+      }
+
+      try {
+        await cancelLalamoveOrder(dispatchJob.market, dispatchJob.lalamoveOrderId, credentials);
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : "Cancel failed.";
+        return { ok: false, error: sanitizeLalamoveErrorMessage(msg), routeId };
+      }
+
+      // Update DB status + Shopify state + log event
+      try {
+        await prismaAny.lalamoveDispatchJob.update({
+          where: { id: dispatchJob.id },
+          data: { status: "CANCELED" },
+        });
+        await prismaAny.lalamoveDispatchOrderMap.updateMany({
+          where: { dispatchJobId: dispatchJob.id },
+          data: { currentStatus: "CANCELED" },
+        });
+
+        // Apply Shopify state
+        const orderMaps = await prismaAny.lalamoveDispatchOrderMap.findMany({
+          where: { dispatchJobId: dispatchJob.id },
+          select: { shopifyOrderId: true },
+        });
+        const orderIds = orderMaps.map((m: { shopifyOrderId: string }) => m.shopifyOrderId);
+        if (orderIds.length > 0) {
+          await applyLalamoveDeliveryState(admin, {
+            orderIds,
+            state: "failed",
+            reason: "Delivery cancelled by merchant.",
+            existingFulfillmentId: dispatchJob.shopifyFulfillmentId,
+          });
+        }
+
+        // Log event
+        await prismaAny.lalamoveDispatchEvent.create({
+          data: {
+            shop,
+            dispatchJobId: dispatchJob.id,
+            lalamoveOrderId: dispatchJob.lalamoveOrderId,
+            eventType: "MANUAL_CANCEL",
+            externalStatus: "CANCELED",
+          },
+        });
+      } catch (dbError) {
+        console.error(`[local-delivery] lalamove-cancel-order FAILED DB/Shopify update shop=${shop} route=${routeId} job=${dispatchJob.id}`, dbError);
+      }
+
+      console.info(`[local-delivery] lalamove-cancel-order OK shop=${shop} route=${routeId} orderId=${dispatchJob.lalamoveOrderId}`);
+      return { ok: true, routeId };
+    }
+
+
+    if (intent === "fetch-integration-log") {
+      const routeId = String(formData.get("routeId") ?? "").trim();
+      if (!routeId) return { ok: false, error: "Missing routeId." };
+
+      try {
+        const prismaAny = prisma as any;
+        const dispatchJob = await prismaAny.lalamoveDispatchJob.findFirst({
+          where: { shop, routeId },
+          orderBy: { createdAt: "desc" },
+        });
+
+        if (!dispatchJob) {
+          return { ok: true, events: [] };
+        }
+
+        const events = await prismaAny.lalamoveDispatchEvent.findMany({
+          where: {
+            shop,
+            OR: [
+              { dispatchJobId: dispatchJob.id },
+              { lalamoveOrderId: dispatchJob.lalamoveOrderId },
+            ],
+          },
+          orderBy: { processedAt: "desc" },
+          take: 50,
+        });
+
+        return {
+          ok: true,
+          events: events.map((e: any) => ({
+            id: e.id,
+            eventType: e.eventType,
+            externalStatus: e.externalStatus,
+            processedAt: e.processedAt?.toISOString?.() ?? e.processedAt,
+            payload: e.payload,
+          })),
+        };
+      } catch (dbError) {
+        console.error(`[local-delivery] fetch-integration-log FAILED shop=${shop} route=${routeId}`, dbError);
+        return { ok: false, error: "Failed to load integration log." };
+      }
+    }
+
+if (intent === "lalamove-place-order") {
     const routeId = formData.get("routeId");
     const locationId = formData.get("locationId");
     const quotationId = formData.get("quotationId");
+    console.info(`[local-delivery] lalamove-place-order START shop=${shop} route=${routeId} quotation=${quotationId}`);
+
+    // Check for existing active dispatch today (shop + location + route + date) to prevent duplicates
+    if (typeof routeId === "string" && typeof locationId === "string") {
+      try {
+        const startOfToday = getStartOfDay();
+        const existingDispatch = await (prisma as any).lalamoveDispatchJob.findFirst({
+          where: {
+            shop,
+            locationId,
+            routeId,
+            requestedAt: { gte: startOfToday },
+            status: { notIn: ["cancelled", "CANCELLED", "CANCELED", "failed", "FAILED", "COMPLETED", "completed", "REJECTED", "rejected", "EXPIRED", "expired"] },
+          },
+        });
+        if (existingDispatch) {
+          return {
+            ok: false,
+            error: "A driver has already been requested for this route. Refresh the page to see the current status.",
+            routeId,
+          };
+        }
+      } catch {
+        // Continue if table unavailable
+      }
+    }
     const quotationTotal = String(formData.get("quotationTotal") ?? "").trim() || null;
     const quotationCurrency = String(formData.get("quotationCurrency") ?? "").trim() || null;
     const stopIds = formData
       .getAll("stopIds")
       .filter((value): value is string => typeof value === "string");
+    const deliveryAssignmentsRaw = formData.get("deliveryAssignments");
+    let deliveryAssignments: LalamoveDeliveryAssignment[] = [];
+    if (typeof deliveryAssignmentsRaw === "string" && deliveryAssignmentsRaw.trim()) {
+      try {
+        const parsed = JSON.parse(deliveryAssignmentsRaw) as Array<{
+          stopId?: unknown;
+          orderId?: unknown;
+        }>;
+        deliveryAssignments = Array.isArray(parsed)
+          ? parsed
+              .filter(
+                (item): item is { stopId: string; orderId: string } =>
+                  typeof item?.stopId === "string" &&
+                  item.stopId.length > 0 &&
+                  typeof item?.orderId === "string" &&
+                  item.orderId.length > 0,
+              )
+              .map((item) => ({ stopId: item.stopId, orderId: item.orderId }))
+          : [];
+      } catch {
+        return { ok: false, error: "Invalid delivery assignment payload.", routeId: typeof routeId === "string" ? routeId : undefined };
+      }
+    }
     if (
       typeof routeId !== "string" ||
       typeof locationId !== "string" ||
       typeof quotationId !== "string"
     ) {
-      return { ok: false, error: "Missing route or quotation data." };
+      return { ok: false, error: "Missing route or quotation data.", routeId: typeof routeId === "string" ? routeId : undefined };
     }
-    if (ids.length === 0 || stopIds.length < 2) {
+    if (stopIds.length < 2) {
       return { ok: false, error: "Invalid order/stop mapping for dispatch.", routeId };
     }
     const credentials = await getRuntimeCredentialsForShop(shop);
@@ -5951,6 +7887,37 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       locationDetails: (locationNode?.address?.address2 ?? "").trim() || config.locationDetails || "",
     };
 
+    const senderStopId = stopIds[0]!;
+    const recipientStopIds = stopIds.slice(1);
+    const assignmentByStopId = new Map(
+      deliveryAssignments.map((assignment) => [assignment.stopId, assignment.orderId]),
+    );
+    const assignmentOrderIds =
+      deliveryAssignments.length > 0
+        ? recipientStopIds.map((stopId) => assignmentByStopId.get(stopId) ?? "")
+        : ids.slice(0, recipientStopIds.length);
+    if (
+      assignmentOrderIds.length !== recipientStopIds.length ||
+      assignmentOrderIds.some((id) => !id)
+    ) {
+      return {
+        ok: false,
+        error:
+          "Invalid stop-to-order assignment for dispatch. Please request a new quote.",
+        routeId,
+      };
+    }
+    const uniqueOrderIds = Array.from(new Set(assignmentOrderIds));
+    if (uniqueOrderIds.length !== assignmentOrderIds.length) {
+      return {
+        ok: false,
+        error:
+          "Duplicate order assignment detected for optimized stops. Please request a new quote.",
+        routeId,
+      };
+    }
+    console.info(`[local-delivery] lalamove-place-order assignment resolved route=${routeId} stops=${recipientStopIds.length} source=${deliveryAssignments.length > 0 ? "deliveryAssignments" : "legacyOrderIds"}`);
+
     const ordersResponse = await admin.graphql(
       `#graphql
         query LalamoveOrderContacts($ids: [ID!]!) {
@@ -5970,7 +7937,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             }
           }
         }`,
-      { variables: { ids } },
+      { variables: { ids: assignmentOrderIds } },
     );
     const ordersJson = await ordersResponse.json();
     const orderNodes = (ordersJson?.data?.nodes ?? []) as Array<{
@@ -5983,29 +7950,38 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         defaultPhoneNumber?: { phoneNumber: string } | null;
       } | null;
     }>;
-
-    const senderStopId = stopIds[0]!;
-    const recipientStopIds = stopIds.slice(1);
-    const recipients = orderNodes
-      .slice(0, recipientStopIds.length)
-      .map((order, index) => ({
-        stopId: recipientStopIds[index]!,
+    const orderById = new Map(orderNodes.map((order) => [order.id, order]));
+    const missingAssignedOrderId = assignmentOrderIds.find(
+      (orderId) => !orderById.has(orderId),
+    );
+    if (missingAssignedOrderId) {
+      return {
+        ok: false,
+        error:
+          "Could not load one or more assigned Shopify orders for this optimized route.",
+        routeId,
+      };
+    }
+    const pickupInstructions = configWithLocation.pickupInstructions?.trim();
+    const recipients = recipientStopIds.map((stopId, index) => {
+      const orderId = assignmentOrderIds[index]!;
+      const order = orderById.get(orderId)!;
+      const remarks = buildLalamoveRecipientRemarks(
+        index,
+        pickupInstructions,
+        order.shippingAddress?.address2,
+      );
+      return {
+        stopId,
         name: order.customer?.displayName || order.name || "Customer",
         phone:
           order.customer?.defaultPhoneNumber?.phoneNumber ||
           order.shippingAddress?.phone ||
           order.customer?.phone ||
           config.locationPhone,
-        remarks:
-          index === 0
-            ? [
-                ids.length >= 3 ? "Tempo de espera incluído." : "",
-                configWithLocation.pickupInstructions?.trim() ?? "",
-              ]
-                .filter(Boolean)
-                .join(" ")
-            : (order.shippingAddress?.address2?.trim() ?? ""),
-      }));
+        ...(remarks ? { remarks } : {}),
+      };
+    });
 
     let placeResponse;
     try {
@@ -6027,57 +8003,344 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const rawMessage =
         error instanceof Error ? error.message : "Lalamove place order failed.";
       const message = sanitizeLalamoveErrorMessage(rawMessage);
-      console.error("Lalamove place order failed.", {
-        shop,
-        routeId,
-        locationId,
-        message,
-      });
+
+      // 404 recovery: Lalamove sometimes returns 404 when the order was actually created
+      const is404 = rawMessage.includes("404") || rawMessage.includes("NOT_FOUND") || rawMessage.includes("not found");
+      if (is404 && quotationId && typeof quotationId === "string") {
+        console.warn(`[local-delivery] lalamove-place-order 404 recovery check shop=${shop} route=${routeId} quotation=${quotationId}`);
+        try {
+          // Check if there is a recent dispatch job for this quotation
+          const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+          const recentJob = await (prisma as any).lalamoveDispatchJob.findFirst({
+            where: { shop, quotationId, requestedAt: { gte: fiveMinutesAgo } },
+            orderBy: { requestedAt: "desc" as const },
+          });
+          if (recentJob?.lalamoveOrderId) {
+            // Order was already recorded — return success
+            console.info(`[local-delivery] lalamove-place-order 404 recovery OK job=${recentJob.id} orderId=${recentJob.lalamoveOrderId}`);
+            return {
+              ok: true,
+              routeId,
+              placedOrderId: recentJob.lalamoveOrderId,
+              shareLink: null,
+            };
+          }
+        } catch {
+          // Fall through to error return
+        }
+      }
+
+      console.error(`[local-delivery] lalamove-place-order FAILED shop=${shop} route=${routeId} location=${locationId} error=${message}`);
       return { ok: false, error: message, routeId };
     }
 
     const prismaAny = prisma as any;
-    const dispatchJob = await prismaAny.lalamoveDispatchJob.create({
-      data: {
-        shop,
-        routeId,
-        locationId,
-        status: placeResponse.status,
-        quotationId,
-        lalamoveOrderId: placeResponse.orderId,
-        market: configWithLocation.market,
-        serviceType: configWithLocation.preferredServiceType,
-        quotationTotal,
-        quotationCurrency,
-      },
-    });
+    try {
+      const dispatchJob = await prismaAny.lalamoveDispatchJob.create({
+        data: {
+          shop,
+          routeId,
+          locationId,
+          status: placeResponse.status,
+          quotationId,
+          lalamoveOrderId: placeResponse.orderId,
+          market: configWithLocation.market,
+          serviceType: configWithLocation.preferredServiceType,
+          quotationTotal,
+          quotationCurrency,
+        },
+      });
 
-    await prismaAny.lalamoveDispatchOrderMap.createMany({
-      data: ids.map((orderId) => ({
-        shop,
-        dispatchJobId: dispatchJob.id,
-        shopifyOrderId: orderId,
-        lalamoveOrderId: placeResponse.orderId,
-        currentStatus: placeResponse.status,
-      })),
-    });
+      await prismaAny.lalamoveDispatchOrderMap.createMany({
+        data: assignmentOrderIds.map((orderId) => ({
+          shop,
+          dispatchJobId: dispatchJob.id,
+          shopifyOrderId: orderId,
+          lalamoveOrderId: placeResponse.orderId,
+          currentStatus: placeResponse.status,
+        })),
+      });
 
-    await applyLalamoveDeliveryState(admin, {
-      orderIds: ids,
-      state: "requested",
-      existingFulfillmentId: null,
-    });
+      const { fulfillmentId: shopifyFulfillmentId } = await applyLalamoveDeliveryState(admin, {
+        orderIds: assignmentOrderIds,
+        state: "requested",
+        existingFulfillmentId: null,
+      });
+      if (shopifyFulfillmentId) {
+        await prismaAny.lalamoveDispatchJob.update({
+          where: { id: dispatchJob.id },
+          data: { shopifyFulfillmentId },
+        });
+      }
+    } catch (dbError) {
+      console.error(`[local-delivery] lalamove-place-order FAILED DB write (order was placed) shop=${shop} route=${routeId} orderId=${placeResponse.orderId}`, dbError);
+    }
 
+    // B6: Add ld_rota-NN tag to dispatched orders to confirm route assignment
+    const routeTag = formData.get("routeTag");
+    if (typeof routeTag === "string" && /^ld_rota-\d+$/.test(routeTag)) {
+      await batchProcess(assignmentOrderIds, GQL_BATCH_SIZE, (id) =>
+        admin.graphql(
+          `#graphql
+            mutation AddOrderTag($id: ID!, $tags: [String!]!) {
+              tagsAdd(id: $id, tags: $tags) {
+                userErrors { message }
+              }
+            }`,
+          { variables: { id, tags: [routeTag] } },
+        ),
+      );
+    }
+
+    console.info(`[local-delivery] lalamove-place-order OK shop=${shop} route=${routeId} orderId=${placeResponse.orderId} orders=${assignmentOrderIds.length}`);
     return {
       ok: true,
       routeId,
       placedOrderId: placeResponse.orderId,
       shareLink: placeResponse.shareLink ?? null,
+      market: configWithLocation.market,
     };
   }
 
+  if (intent === "return-pickup-quote") {
+    const locationId = formData.get("locationId");
+    const returnInstructions = String(formData.get("returnInstructions") ?? "").trim();
+    const returnRequestIds = formData
+      .getAll("returnRequestIds")
+      .filter((v): v is string => typeof v === "string");
+
+    if (typeof locationId !== "string") {
+      return { ok: false, error: "Location ID missing." };
+    }
+    if (returnRequestIds.length === 0) {
+      return { ok: false, error: "No return requests selected." };
+    }
+
+    console.info(`[local-delivery] return-pickup-quote START shop=${shop} location=${locationId} requests=${returnRequestIds.length}`);
+
+    const credentials = await getRuntimeCredentialsForShop(shop);
+    if (!credentials) {
+      return { ok: false, error: "Missing Lalamove API credentials. Add your API key and secret in Settings." };
+    }
+
+    const configRow = await prisma.lalamoveLocationConfig.findUnique({
+      where: { shop_locationId: { shop, locationId } },
+    });
+    if (!configRow) {
+      return { ok: false, error: "Missing Lalamove settings for this location." };
+    }
+    const config = configRow.data as LalamoveConfig;
+
+    const returnRequests = await prisma.returnPickupRequest.findMany({
+      where: { id: { in: returnRequestIds }, shop },
+    });
+    if (returnRequests.length === 0) {
+      return { ok: false, error: "No valid return requests found." };
+    }
+
+    // Filter requests with valid coordinates
+    const validRequests = returnRequests.filter(
+      (r) => r.customerLat != null && r.customerLng != null,
+    );
+    if (validRequests.length === 0) {
+      return { ok: false, error: "Selected return requests are missing customer coordinates." };
+    }
+
+    // Get fulfillment location coordinates
+    const locResponse = await admin.graphql(
+      `#graphql
+        query ReturnPickupLocation($id: ID!) {
+          location(id: $id) {
+            name
+            address {
+              address1
+              address2
+              city
+              province
+              zip
+              country
+              latitude
+              longitude
+            }
+          }
+        }
+      `,
+      { variables: { id: locationId } },
+    );
+    const locJson = await locResponse.json();
+    const locData = locJson.data?.location;
+    const locAddress = locData?.address;
+    if (!locAddress?.latitude || !locAddress?.longitude) {
+      return { ok: false, error: "Fulfillment location coordinates are missing." };
+    }
+
+    const fulfillmentStop = {
+      coordinates: { lat: String(locAddress.latitude), lng: String(locAddress.longitude) },
+      address:
+        formatFulfillmentStopAddress(config.locationName, config.locationAddress, config.locationDetails) ||
+        formatAddress([locAddress.address1, locAddress.city, locAddress.province, locAddress.country]),
+    };
+
+    // Build customer stops — for multiple returns, pick farthest customer as start
+    const { haversineMeters } = await import("../utils/polyline.server");
+    const depot = { latitude: locAddress.latitude, longitude: locAddress.longitude };
+    const sorted = [...validRequests].sort((a, b) => {
+      const distA = haversineMeters(depot, { latitude: a.customerLat!, longitude: a.customerLng! });
+      const distB = haversineMeters(depot, { latitude: b.customerLat!, longitude: b.customerLng! });
+      return distB - distA; // farthest first
+    });
+
+    const customerStops = sorted.map((r, index) => ({
+      coordinates: { lat: String(r.customerLat!), lng: String(r.customerLng!) },
+      address: r.customerAddress ?? "Unknown address",
+      sourceAddress2: r.customerAddress2 ?? null,
+      ...(index === 0 && returnInstructions ? { remarks: returnInstructions } : {}),
+    }));
+
+    // Reversed: customers first → fulfillment location last
+    const stops = [...customerStops, fulfillmentStop];
+
+    const carrierConfigRow = await prisma.carrierServiceConfig.findUnique({ where: { shop } });
+    const carrierConfig = carrierConfigRow?.data as CarrierServiceConfigData | undefined;
+    const serviceType = config.preferredServiceType?.trim() || carrierConfig?.lalamovePreferredServiceType?.trim() || "LALAGO";
+
+    try {
+      const quotation = await createLalamoveQuotation({
+        market: config.market,
+        language: config.language,
+        serviceType,
+        stops,
+        isRouteOptimized: stops.length >= 3,
+      }, credentials);
+
+      const stopIds = (quotation.stops ?? []).map((s: { stopId?: string }) => s.stopId ?? "");
+
+      console.info(`[local-delivery] return-pickup-quote OK shop=${shop} quotationId=${quotation.quotationId} total=${quotation.priceBreakdown?.total ?? "?"}`);
+      return {
+        ok: true,
+        intent: "return-pickup-quote",
+        returnQuotation: {
+          quotationId: quotation.quotationId,
+          total: quotation.priceBreakdown?.total ?? null,
+          currency: quotation.priceBreakdown?.currency ?? null,
+          stopIds,
+          requestIds: sorted.map((r) => r.id),
+          locationId,
+        },
+      };
+    } catch (error) {
+      const rawMessage = error instanceof Error ? error.message : "Lalamove quote failed.";
+      const message = sanitizeLalamoveErrorMessage(rawMessage);
+      console.error(`[local-delivery] return-pickup-quote FAILED shop=${shop} error=${message}`);
+      return { ok: false, error: message };
+    }
+  }
+
+  if (intent === "return-pickup-place-order") {
+    const locationId = formData.get("locationId");
+    const quotationId = formData.get("quotationId");
+    const returnInstructions = String(formData.get("returnInstructions") ?? "").trim();
+    const returnRequestIds = formData
+      .getAll("returnRequestIds")
+      .filter((v): v is string => typeof v === "string");
+    const stopIds = formData
+      .getAll("stopIds")
+      .filter((v): v is string => typeof v === "string");
+
+    if (typeof locationId !== "string" || typeof quotationId !== "string") {
+      return { ok: false, error: "Missing quotation or location information." };
+    }
+    if (returnRequestIds.length === 0 || stopIds.length === 0) {
+      return { ok: false, error: "Missing return request or stop information." };
+    }
+
+    console.info(`[local-delivery] return-pickup-place-order START shop=${shop} quotation=${quotationId}`);
+
+    const credentials = await getRuntimeCredentialsForShop(shop);
+    if (!credentials) {
+      return { ok: false, error: "Missing Lalamove API credentials." };
+    }
+
+    const configRow = await prisma.lalamoveLocationConfig.findUnique({
+      where: { shop_locationId: { shop, locationId } },
+    });
+    if (!configRow) {
+      return { ok: false, error: "Missing Lalamove settings." };
+    }
+    const config = configRow.data as LalamoveConfig;
+
+    const returnRequests = await prisma.returnPickupRequest.findMany({
+      where: { id: { in: returnRequestIds }, shop },
+    });
+    if (returnRequests.length === 0) {
+      return { ok: false, error: "No valid return requests found." };
+    }
+
+    // First stop = first customer (sender), remaining = other customers + fulfillment (recipients)
+    const sender = {
+      stopId: stopIds[0]!,
+      name: returnRequests[0]?.customerName ?? "Customer",
+      phone: returnRequests[0]?.customerPhone ?? config.locationPhone ?? "",
+      ...(returnInstructions ? { remarks: returnInstructions } : {}),
+    };
+
+    const recipients = stopIds.slice(1).map((stopId, index) => {
+      // Last stopId = fulfillment location
+      const isLocation = index === stopIds.length - 2;
+      if (isLocation) {
+        return {
+          stopId,
+          name: config.locationName ?? "Store",
+          phone: config.locationPhone ?? "",
+        };
+      }
+      // Intermediate customer stops
+      const req = returnRequests[index + 1];
+      return {
+        stopId,
+        name: req?.customerName ?? "Customer",
+        phone: req?.customerPhone ?? "",
+      };
+    });
+
+    try {
+      const placeResponse = await placeLalamoveOrder({
+        market: config.market,
+        quotationId,
+        sender,
+        recipients,
+        isPODEnabled: false,
+        metadata: { shop },
+      }, credentials);
+
+      // Update all return requests to dispatched
+      await prisma.returnPickupRequest.updateMany({
+        where: { id: { in: returnRequestIds } },
+        data: {
+          status: "dispatched",
+          lalamoveOrderId: placeResponse.orderId,
+          quotationId,
+        },
+      });
+
+      console.info(`[local-delivery] return-pickup-place-order OK shop=${shop} orderId=${placeResponse.orderId}`);
+      return {
+        ok: true,
+        intent: "return-pickup-place-order",
+        returnPlacedOrderId: placeResponse.orderId,
+      };
+    } catch (error) {
+      const rawMessage = error instanceof Error ? error.message : "Lalamove order failed.";
+      const message = sanitizeLalamoveErrorMessage(rawMessage);
+      console.error(`[local-delivery] return-pickup-place-order FAILED shop=${shop} error=${message}`);
+      return { ok: false, error: message };
+    }
+  }
+
   if (intent === "lalamove-check-escalation") {
+    console.info(`[local-delivery] lalamove-check-escalation shop=${shop}`);
     const results = await checkAndApplyEscalations(shop, admin);
+    console.info(`[local-delivery] lalamove-check-escalation OK shop=${shop} results=${results.length}`);
     return { ok: true, intent: "lalamove-check-escalation", results };
   }
 
@@ -6087,6 +8350,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (typeof lalamoveOrderId !== "string" || typeof market !== "string") {
       return { ok: false, error: "Missing reconciliation payload." };
     }
+    console.info(`[local-delivery] lalamove-reconcile-status shop=${shop} orderId=${lalamoveOrderId}`);
     const credentials = await getRuntimeCredentialsForShop(shop);
     if (!credentials) {
       return {
@@ -6108,6 +8372,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (!pendingRouteId) {
       return { ok: false, error: "Pending route ID not provided." };
     }
+    console.info(`[local-delivery] dismiss-pending-route shop=${shop} id=${pendingRouteId}`);
     await (prisma as any).pendingDeliveryRoute.updateMany({
       where: { id: pendingRouteId, shop },
       data: { status: "cancelled" },
@@ -6124,6 +8389,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (typeof routeTag !== "string") {
       return { ok: false, error: "Route tag not provided." };
     }
+    console.info(`[local-delivery] unassign shop=${shop} orders=${ids.length} tag=${routeTag}`);
     const locationId = formData.get("locationId");
     const filterByLocation =
       typeof locationId === "string" && locationId !== "" && locationId !== "all";
@@ -6148,8 +8414,25 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       ),
     );
 
+    // Only compact (shift subsequent routes up) if the unassigned route is now empty.
+    // Query Shopify for remaining orders with this route tag.
     const K = ROUTE_TAG_DEFINITIONS.findIndex((d) => d.tag === routeTag);
     if (K >= 0) {
+      const remainingResponse = await admin.graphql(
+        `#graphql
+          query RemainingOrdersInRoute($first: Int!, $query: String) {
+            orders(first: $first, query: $query) {
+              nodes { id }
+            }
+          }`,
+        { variables: { first: 1, query: `tag:${routeTag}` } },
+      );
+      const remainingJson = await remainingResponse.json();
+      const remainingCount = (remainingJson.data?.orders?.nodes ?? []).length;
+      // Skip compaction if route still has orders
+      if (remainingCount > 0) {
+        return { ok: true };
+      }
       for (let i = K + 1; i < ROUTE_TAG_DEFINITIONS.length; i += 1) {
         const tagFrom = ROUTE_TAG_DEFINITIONS[i]!.tag;
         const tagTo = ROUTE_TAG_DEFINITIONS[i - 1]!.tag;

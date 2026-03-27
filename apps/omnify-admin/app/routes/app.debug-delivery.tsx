@@ -63,7 +63,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const json = await res.json();
   return {
     raw: json,
-    errors: json?.errors,
+    errors: (json as any)?.errors,
     profileCount: json?.data?.deliveryProfiles?.nodes?.length ?? 0,
   };
 };

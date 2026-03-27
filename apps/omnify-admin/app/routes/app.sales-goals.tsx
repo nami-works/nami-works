@@ -6,9 +6,15 @@ import type {
 } from "react-router";
 import { useFetcher, useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import { useTranslation } from "react-i18next";
 import prisma from "../db.server";
 import { authenticate } from "../shopify.server";
 import { MultiSelectInput } from "../components/multi-select-input";
+import {
+  formatCurrency as fmtCurrencyBase,
+  formatMonthLabel as fmtMonthBase,
+} from "../i18n/format";
+import tabStyles from "../components/tab-bar.module.css";
 import styles from "./app.sales-goals/styles.module.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -57,13 +63,7 @@ type LoaderData = {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const TAB_OPTIONS = [
-  { id: "dashboard", label: "📊 Dashboard" },
-  { id: "goals", label: "🎯 Goals" },
-  { id: "kpis", label: "📈 KPIs" },
-  { id: "ranking", label: "🏆 Ranking" },
-  { id: "settings", label: "⚙️ Settings" },
-] as const;
+const TAB_IDS = ["dashboard", "goals", "kpis", "ranking", "settings"] as const;
 
 const DEFAULT_MONTH = new Date().toISOString().slice(0, 7);
 
@@ -75,19 +75,6 @@ const DEFAULT_LOCATION_CONFIG: LocationConfig = {
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const formatCurrency = (value: number, currencyCode: string) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currencyCode,
-    maximumFractionDigits: 0,
-  }).format(value);
-
-const formatMonthLabel = (monthStr: string) => {
-  const [year, month] = monthStr.split("-");
-  const date = new Date(Number(year), Number(month) - 1);
-  return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-};
 
 const monthKey = (value: Date) =>
   `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
@@ -138,12 +125,19 @@ export default function SalesGoalsPage() {
     locationConfigs,
   } = useLoaderData<LoaderData>();
 
+  const { t, i18n } = useTranslation("sales-goals");
+  const locale = i18n.language;
+  const formatCurrency = (value: number, code: string) =>
+    fmtCurrencyBase(value, code, locale);
+  const formatMonthLabel = (monthStr: string) =>
+    fmtMonthBase(monthStr, locale);
+
   const saveFetcher = useFetcher();
   const deleteFetcher = useFetcher();
   const configFetcher = useFetcher();
 
   const [activeTab, setActiveTab] =
-    useState<(typeof TAB_OPTIONS)[number]["id"]>("dashboard");
+    useState<(typeof TAB_IDS)[number]>("dashboard");
   const [useCalculator, setUseCalculator] = useState(false);
   const [newGoal, setNewGoal] = useState<Partial<SalesGoal>>({
     locationId: locations[0]?.id ?? "",
@@ -311,20 +305,18 @@ export default function SalesGoalsPage() {
   const channelSuggestions = publications.map((p) => p.name);
 
   return (
-    <s-page heading="Sales goals" inlineSize="base">
-      <div className={styles.tabsWrapper}>
-        <div className={styles.tabsRow}>
-        {TAB_OPTIONS.map((tab) => (
+    <s-page heading={t("pageHeading")} inlineSize="base">
+      <div className={tabStyles.tabsRow}>
+        {TAB_IDS.map((tabId) => (
           <button
-            key={tab.id}
+            key={tabId}
             type="button"
-            className={`${styles.tabItem}${activeTab === tab.id ? ` ${styles.tabActive}` : ""}`}
-            onClick={() => setActiveTab(tab.id)}
+            className={`${tabStyles.tabItem}${activeTab === tabId ? ` ${tabStyles.tabActive}` : ""}`}
+            onClick={() => setActiveTab(tabId)}
           >
-            {tab.label}
+            {t(`tabs.${tabId}`)}
           </button>
         ))}
-        </div>
       </div>
 
       <s-section>
@@ -336,12 +328,12 @@ export default function SalesGoalsPage() {
             <div className={styles.blockCard}>
               <s-box padding="base" borderRadius="base">
                 <s-stack direction="block" gap="base">
-                  <h2 className={styles.modalTitle}>Sales Dashboard</h2>
+                  <h2 className={styles.modalTitle}>{t("dashboard.title")}</h2>
                 <s-text color="subdued">{formatMonthLabel(goalMonth)}</s-text>
                 <div className={styles.summaryGrid}>
                   <s-box padding="base" borderWidth="base" borderRadius="base">
                     <div className={styles.statCardContent}>
-                      <span className={styles.statLabel}>Total Sales</span>
+                      <span className={styles.statLabel}>{t("dashboard.totalSales")}</span>
                       <span className={styles.statValue}>
                         {formatCurrency(totalSales, currencyCode)}
                       </span>
@@ -349,7 +341,7 @@ export default function SalesGoalsPage() {
                   </s-box>
                   <s-box padding="base" borderWidth="base" borderRadius="base">
                     <div className={styles.statCardContent}>
-                      <span className={styles.statLabel}>Total Goal</span>
+                      <span className={styles.statLabel}>{t("dashboard.totalGoal")}</span>
                       <span className={styles.statValue}>
                         {formatCurrency(totalGoal, currencyCode)}
                       </span>
@@ -357,7 +349,7 @@ export default function SalesGoalsPage() {
                   </s-box>
                   <s-box padding="base" borderWidth="base" borderRadius="base">
                     <div className={styles.statCardContent}>
-                      <span className={styles.statLabel}>Achievement Rate</span>
+                      <span className={styles.statLabel}>{t("dashboard.achievementRate")}</span>
                       <span className={styles.statValue}>{achievementRate}%</span>
                     </div>
                   </s-box>
@@ -370,12 +362,12 @@ export default function SalesGoalsPage() {
             <div className={styles.blockCard}>
               <s-box padding="base" borderRadius="base">
                 <s-stack direction="block" gap="base">
-                  <h2 className={styles.modalTitle}>Sales Ranking by Location</h2>
+                  <h2 className={styles.modalTitle}>{t("dashboard.salesRanking")}</h2>
                 <div className={`${styles.table} ${styles.table3Col}`}>
                   <div className={styles.tableHeader}>
-                    <span>Location</span>
-                    <span>Actual Sales</span>
-                    <span>Goal</span>
+                    <span>{t("common:label.location")}</span>
+                    <span>{t("dashboard.actualSales")}</span>
+                    <span>{t("dashboard.goal")}</span>
                   </div>
                   {rankedGoals.map((goal) => (
                     <div key={goal.id} className={styles.tableRow}>
@@ -399,13 +391,13 @@ export default function SalesGoalsPage() {
             <div className={styles.blockCard}>
               <s-box padding="base" borderRadius="base">
                 <s-stack direction="block" gap="base">
-                  <h2 className={styles.modalTitle}>Monthly Goals Management</h2>
+                  <h2 className={styles.modalTitle}>{t("goals.title")}</h2>
                 <s-text color="subdued">
-                  Set sales goals for each location
+                  {t("goals.subtitle")}
                 </s-text>
                 <div className={styles.formGrid}>
               <s-select
-                label="Select location"
+                label={t("goals.selectLocation")}
                 value={newGoal.locationId}
                 onChange={(event: Event) => {
                   const value = getEventValue(event);
@@ -427,8 +419,7 @@ export default function SalesGoalsPage() {
                 ))}
               </s-select>
               <s-text-field
-                label="Reference month"
-                type="month"
+                label={t("goals.referenceMonth")}
                 value={goalMonth}
                 onChange={(event: Event) =>
                   setNewGoal((current) => ({
@@ -441,20 +432,20 @@ export default function SalesGoalsPage() {
             <div className={styles.calculatorRow}>
               <s-checkbox
                 checked={useCalculator}
-                accessibilityLabel="Enable calculator"
+                accessibilityLabel={t("goals.enableCalculator")}
                 onChange={(event: Event) =>
                   setUseCalculator(getEventChecked(event))
                 }
               />
               <s-text type="strong">
-                Calculate goal based on previous period
+                {t("goals.calculateBasedOnPrevious")}
               </s-text>
             </div>
             {useCalculator ? (
               <div className={styles.calculatorPanel}>
                 <div className={styles.formGrid}>
                   <s-select
-                    label="Base period"
+                    label={t("goals.basePeriod")}
                     value={newGoal.basePeriod}
                     onChange={(event: Event) =>
                       setNewGoal((current) => ({
@@ -463,11 +454,11 @@ export default function SalesGoalsPage() {
                       }))
                     }
                   >
-                    <s-option value="previous-month">Previous month</s-option>
-                    <s-option value="previous-year">Previous year</s-option>
+                    <s-option value="previous-month">{t("goals.previousMonth")}</s-option>
+                    <s-option value="previous-year">{t("goals.previousYear")}</s-option>
                   </s-select>
                   <s-select
-                    label="Growth type"
+                    label={t("goals.growthType")}
                     value={newGoal.growthType}
                     onChange={(event: Event) =>
                       setNewGoal((current) => ({
@@ -478,16 +469,15 @@ export default function SalesGoalsPage() {
                       }))
                     }
                   >
-                    <s-option value="percentage">Percentage (%)</s-option>
-                    <s-option value="absolute">Absolute</s-option>
+                    <s-option value="percentage">{t("goals.percentage")}</s-option>
+                    <s-option value="absolute">{t("goals.absolute")}</s-option>
                   </s-select>
                   <s-text-field
                     label={
                       newGoal.growthType === "percentage"
-                        ? "Growth (%)"
-                        : "Growth"
+                        ? t("goals.growthPercent")
+                        : t("goals.growth")
                     }
-                    type="number"
                     value={String(newGoal.growthValue ?? "")}
                     onChange={(event: Event) =>
                       setNewGoal((current) => ({
@@ -502,18 +492,18 @@ export default function SalesGoalsPage() {
                   onClick={handleCalculate}
                   disabled={!newGoal.locationId}
                 >
-                  Calculate goal
+                  {t("goals.calculateGoal")}
                 </s-button>
                 <s-box padding="base" borderWidth="base" borderRadius="base">
                   <s-text color="subdued">
-                    Base period sales:{" "}
+                    {t("goals.basePeriodSales")}{" "}
                     {formatCurrency(baseValue, currencyCode)}
                   </s-text>
                 </s-box>
               </div>
             ) : null}
             <s-text-field
-              label="Sales goal"
+              label={t("goals.salesGoal")}
               value={String(newGoal.target ?? "")}
               onChange={(event: Event) =>
                 setNewGoal((current) => ({
@@ -528,7 +518,7 @@ export default function SalesGoalsPage() {
                     onClick={submitGoal}
                     disabled={!newGoal.locationId || !newGoal.target}
                   >
-                    Save goal
+                    {t("goals.saveGoal")}
                   </s-button>
                 </div>
               </s-stack>
@@ -539,13 +529,13 @@ export default function SalesGoalsPage() {
             <div className={styles.blockCard}>
               <s-box padding="base" borderRadius="base">
                 <s-stack direction="block" gap="base">
-                  <h2 className={styles.modalTitle}>Registered goals</h2>
+                  <h2 className={styles.modalTitle}>{t("goals.registeredGoals")}</h2>
                 <div className={`${styles.table} ${styles.table5Col}`}>
               <div className={styles.tableHeader}>
-                <span>Location</span>
-                <span>Month</span>
-                <span>Base</span>
-                <span>Goal</span>
+                <span>{t("common:label.location")}</span>
+                <span>{t("goals.month")}</span>
+                <span>{t("goals.base")}</span>
+                <span>{t("dashboard.goal")}</span>
                 <span></span>
               </div>
               {goals
@@ -559,14 +549,15 @@ export default function SalesGoalsPage() {
                     <span>
                       {goal.baseValue
                         ? formatCurrency(goal.baseValue, currencyCode)
-                        : "Manual"}
+                        : t("goals.manual")}
                     </span>
                     <span>{formatCurrency(goal.target, currencyCode)}</span>
                     <s-button
-                      variant="critical"
+                      variant="tertiary"
+                      tone="critical"
                       onClick={() => removeGoal(goal.id)}
                     >
-                      Remove
+                      {t("common:button.delete")}
                     </s-button>
                   </div>
                 ))}
@@ -585,13 +576,13 @@ export default function SalesGoalsPage() {
             <div className={styles.blockCard}>
               <s-box padding="base" borderRadius="base">
                 <s-stack direction="block" gap="base">
-                  <h2 className={styles.modalTitle}>Average Order Value by Location</h2>
+                  <h2 className={styles.modalTitle}>{t("kpis.title")}</h2>
                 <s-text color="subdued">
-                  Analysis of average transaction value for each location
+                  {t("kpis.subtitle")}
                 </s-text>
                 <s-box padding="base" borderWidth="base" borderRadius="base">
                   <div className={styles.statCardContent}>
-                    <span className={styles.statLabel}>Overall Average Order Value</span>
+                    <span className={styles.statLabel}>{t("kpis.overallAov")}</span>
                     <span className={styles.statValue}>
                       {formatCurrency(
                         totalSales / Math.max(1, enabledLocations.length),
@@ -608,12 +599,12 @@ export default function SalesGoalsPage() {
             <div className={styles.blockCard}>
               <s-box padding="base" borderRadius="base">
                 <s-stack direction="block" gap="base">
-                  <h2 className={styles.modalTitle}>Breakdown by Location</h2>
+                  <h2 className={styles.modalTitle}>{t("kpis.breakdown")}</h2>
                 <div className={`${styles.table} ${styles.table3Col}`}>
                   <div className={styles.tableHeader}>
-                    <span>Location</span>
-                    <span>Total Sales</span>
-                    <span>AOV</span>
+                    <span>{t("common:label.location")}</span>
+                    <span>{t("kpis.totalSales")}</span>
+                    <span>{t("kpis.aov")}</span>
                   </div>
                   {averageTicketRows.map((row) => (
                     <div key={row.locationName} className={styles.tableRow}>
@@ -637,23 +628,23 @@ export default function SalesGoalsPage() {
             <div className={styles.blockCard}>
               <s-box padding="base" borderRadius="base">
                 <s-stack direction="block" gap="base">
-                  <h2 className={styles.modalTitle}>Goals Achievement Ranking</h2>
+                  <h2 className={styles.modalTitle}>{t("ranking.title")}</h2>
                 <s-text color="subdued">
-                  Track performance of each location against goals
+                  {t("ranking.subtitle")}
                 </s-text>
                 <div className={styles.summaryGrid}>
                   <s-box padding="base" borderWidth="base" borderRadius="base">
                     <div className={styles.statCardContent}>
-                      <span className={styles.statLabel}>Locations above goal</span>
+                      <span className={styles.statLabel}>{t("ranking.locationsAboveGoal")}</span>
                       <span className={styles.statValue}>
                         {rankedGoals.filter((goal) => goal.achievement >= 100).length}{" "}
-                        of {rankedGoals.length}
+                        {t("ranking.of")} {rankedGoals.length}
                       </span>
                     </div>
                   </s-box>
                   <s-box padding="base" borderWidth="base" borderRadius="base">
                     <div className={styles.statCardContent}>
-                      <span className={styles.statLabel}>Average achievement</span>
+                      <span className={styles.statLabel}>{t("ranking.averageAchievement")}</span>
                       <span className={styles.statValue}>
                         {rankedGoals.length
                           ? (
@@ -669,7 +660,7 @@ export default function SalesGoalsPage() {
                   </s-box>
                   <s-box padding="base" borderWidth="base" borderRadius="base">
                     <div className={styles.statCardContent}>
-                      <span className={styles.statLabel}>Best performance</span>
+                      <span className={styles.statLabel}>{t("ranking.bestPerformance")}</span>
                       <span className={styles.statValue}>
                         {rankedGoals[0]?.locationName ?? "--"}
                       </span>
@@ -684,13 +675,13 @@ export default function SalesGoalsPage() {
             <div className={styles.blockCard}>
               <s-box padding="base" borderRadius="base">
                 <s-stack direction="block" gap="base">
-                  <h2 className={styles.modalTitle}>Ranking by Achievement</h2>
+                  <h2 className={styles.modalTitle}>{t("ranking.rankingByAchievement")}</h2>
                 <div className={`${styles.table} ${styles.table4Col}`}>
                   <div className={styles.tableHeader}>
-                    <span>Location</span>
-                    <span>Goal</span>
-                    <span>Achieved</span>
-                    <span>Achievement</span>
+                    <span>{t("common:label.location")}</span>
+                    <span>{t("ranking.goal")}</span>
+                    <span>{t("ranking.achieved")}</span>
+                    <span>{t("ranking.achievement")}</span>
                   </div>
                   {rankedGoals.map((goal) => (
                     <div key={goal.id} className={styles.tableRow}>
@@ -714,10 +705,9 @@ export default function SalesGoalsPage() {
           <div className={styles.blockCard}>
             <s-box padding="base" borderRadius="base">
               <s-stack direction="block" gap="base">
-                <h2 className={styles.modalTitle}>Location Settings</h2>
+                <h2 className={styles.modalTitle}>{t("settings.title")}</h2>
               <s-text color="subdued">
-                Configure which locations participate in goals and filter historic
-                sales by channel, tag, or shipping method.
+                {t("settings.subtitle")}
               </s-text>
               <div className={styles.settingsGrid}>
             {locations.map((loc) => {
@@ -729,7 +719,7 @@ export default function SalesGoalsPage() {
                     <h3 className={styles.locationCardTitle}>{loc.name}</h3>
                     <div className={styles.toggleLabelRow}>
                       <span className={styles.paramLabel}>
-                        Manage goals for this location
+                        {t("settings.manageGoals")}
                       </span>
                       <s-checkbox
                         checked={cfg.enabled}
@@ -746,14 +736,14 @@ export default function SalesGoalsPage() {
                   {/* Historic sales parameters */}
                   <div>
                     <p className={styles.paramSectionLabel}>
-                      Historic sales parameters
+                      {t("settings.historicParams")}
                     </p>
                     <div className={styles.paramGrid}>
                       {/* Sales channels */}
                       <div className={styles.paramBlock}>
                         <div className={styles.paramToggleRow}>
                           <span className={styles.paramLabel}>
-                            Sales channels
+                            {t("settings.salesChannels")}
                           </span>
                           <s-checkbox
                             checked={cfg.salesChannels.enabled}
@@ -776,7 +766,7 @@ export default function SalesGoalsPage() {
                           disabled={
                             !cfg.enabled || !cfg.salesChannels.enabled
                           }
-                          placeholder="Search channels…"
+                          placeholder={t("settings.searchChannels")}
                           onChange={(next) =>
                             patchConfig(loc.id, (prev) => ({
                               ...prev,
@@ -792,7 +782,7 @@ export default function SalesGoalsPage() {
                       {/* Tags */}
                       <div className={styles.paramBlock}>
                         <div className={styles.paramToggleRow}>
-                          <span className={styles.paramLabel}>Tags</span>
+                          <span className={styles.paramLabel}>{t("settings.tags")}</span>
                           <s-checkbox
                             checked={cfg.tags.enabled}
                             accessibilityLabel="Enable tags filter"
@@ -812,7 +802,7 @@ export default function SalesGoalsPage() {
                           value={cfg.tags.tags}
                           suggestions={orderTags}
                           disabled={!cfg.enabled || !cfg.tags.enabled}
-                          placeholder="Search tags…"
+                          placeholder={t("settings.searchTags")}
                           onChange={(next) =>
                             patchConfig(loc.id, (prev) => ({
                               ...prev,
@@ -826,7 +816,7 @@ export default function SalesGoalsPage() {
                       <div className={styles.paramBlock}>
                         <div className={styles.paramToggleRow}>
                           <span className={styles.paramLabel}>
-                            Shipping methods
+                            {t("settings.shippingMethods")}
                           </span>
                           <s-checkbox
                             checked={cfg.shippingMethods.enabled}
@@ -849,7 +839,7 @@ export default function SalesGoalsPage() {
                           disabled={
                             !cfg.enabled || !cfg.shippingMethods.enabled
                           }
-                          placeholder="Search shipping methods…"
+                          placeholder={t("settings.searchShippingMethods")}
                           onChange={(next) =>
                             patchConfig(loc.id, (prev) => ({
                               ...prev,
@@ -871,7 +861,7 @@ export default function SalesGoalsPage() {
                       onClick={() => saveCard(loc.id)}
                       disabled={configFetcher.state !== "idle"}
                     >
-                      Save
+                      {t("common:button.save")}
                     </s-button>
                   </div>
                 </div>
@@ -894,6 +884,8 @@ export default function SalesGoalsPage() {
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin, session } = await authenticate.admin(request);
   const shop = session.shop;
+
+  console.info(`[sales-goals] loader START shop=${shop}`);
 
   const startDate = new Date();
   startDate.setMonth(startDate.getMonth() - 13);
@@ -999,6 +991,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const goals = (configRecord?.data as SalesGoal[] | null) ?? [];
 
+  console.info(
+    `[sales-goals] loader OK shop=${shop} locations=${locations.length} orders=${orders.length} goals=${goals.length} publications=${publications.length}`,
+  );
+
   return {
     locations,
     goals,
@@ -1021,6 +1017,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const shop = session.shop;
   const formData = await request.formData();
   const intent = formData.get("intent");
+  console.info(`[sales-goals] action intent=${intent ?? "?"} shop=${shop}`);
 
   if (intent === "save-goal") {
     const goalJson = formData.get("goal");
@@ -1038,6 +1035,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       update: { data: updated },
       create: { shop, data: updated },
     });
+    console.info(`[sales-goals] save-goal OK shop=${shop}`);
     return { ok: true };
   }
 
@@ -1056,6 +1054,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       update: { data: updated },
       create: { shop, data: updated },
     });
+    console.info(`[sales-goals] delete-goal OK shop=${shop}`);
     return { ok: true };
   }
 
@@ -1071,6 +1070,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       update: { data: config as any },
       create: { shop, locationId, data: config as any },
     });
+    console.info(`[sales-goals] save-location-config OK shop=${shop} locationId=${locationId}`);
     return { ok: true };
   }
 

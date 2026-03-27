@@ -8,12 +8,14 @@ import { useLoaderData, useFetcher } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import { useTranslation } from "react-i18next";
 import prisma from "../db.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
   const shop = session.shop;
 
+  console.info(`[brand-settings] loader shop=${shop}`);
   const settings = await prisma.brandSettings.findUnique({
     where: { shop },
   });
@@ -27,6 +29,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const formData = await request.formData();
   const intent = formData.get("intent");
+  console.info(`[brand-settings] action intent=${intent ?? "?"} shop=${shop}`);
 
   if (intent === "save") {
     const about = formData.get("about") as string | null;
@@ -47,6 +50,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       | string
       | null;
 
+    console.info(`[brand-settings] save START shop=${shop}`);
     await prisma.brandSettings.upsert({
       where: { shop },
       create: {
@@ -78,196 +82,157 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       },
     });
 
+    console.info(`[brand-settings] save OK shop=${shop}`);
     return { success: true };
   }
 
   return { success: false };
 };
 
-export default function SettingsPage() {
+export default function BrandSettingsPage() {
   const { settings, shop } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
   const shopify = useAppBridge();
+  const { t } = useTranslation("brand-settings");
   const isSaving =
     fetcher.state === "submitting" && fetcher.formData?.get("intent") === "save";
 
   useEffect(() => {
     if (fetcher.data?.success) {
-      shopify.toast?.show?.("Settings saved");
+      shopify.toast?.show?.(t("settingsSaved"));
     }
-  }, [fetcher.data?.success, shopify]);
+  }, [fetcher.data?.success, shopify, t]);
 
   return (
-    <s-page heading="Settings">
+    <s-page heading={t("pageHeading")}>
       <s-stack direction="inline" slot="primary-action" gap="base">
         <s-button variant="tertiary" onClick={() => window.history.back()}>
-          Back
+          {t("common:button.back")}
         </s-button>
         <s-button
           variant="primary"
           onClick={() => (document.getElementById("settings-form") as HTMLFormElement)?.requestSubmit()}
           {...(isSaving ? { loading: true } : {})}
         >
-          Save
+          {t("common:button.save")}
         </s-button>
       </s-stack>
 
-      <s-section heading="Brand configuration">
+      <s-section heading={t("brandConfig.heading")}>
         <s-paragraph>
-          Configure your brand context for Blog Posts generation. These values
-          are used as input to the content generation process.
+          {t("brandConfig.description")}
         </s-paragraph>
 
         <fetcher.Form method="POST" id="settings-form">
           <input type="hidden" name="intent" value="save" />
 
           <s-stack direction="block" gap="large">
-            <s-stack direction="block" gap="base">
-              <label htmlFor="brandName">Brand name</label>
-              <input
-                id="brandName"
-                name="brandName"
-                type="text"
-                defaultValue={settings?.brandName ?? shop.split(".")[0]}
-                placeholder="Your brand display name"
-              />
-            </s-stack>
+            <s-text-field
+              label={t("labels.brandName")}
+              name="brandName"
+              value={settings?.brandName ?? shop.split(".")[0]}
+              placeholder={t("placeholders.brandName")}
+            ></s-text-field>
 
-            <s-stack direction="block" gap="base">
-              <label htmlFor="about">About</label>
-              <textarea
-                id="about"
-                name="about"
-                rows={4}
-                defaultValue={settings?.about ?? undefined}
-                placeholder="Brand story, mission, institutional info"
-              />
-            </s-stack>
+            <s-text-area
+              label={t("labels.about")}
+              name="about"
+              value={settings?.about ?? ""}
+              placeholder={t("placeholders.about")}
+              rows={4}
+            ></s-text-area>
 
-            <s-stack direction="block" gap="base">
-              <label htmlFor="toneOfVoice">Tone of voice</label>
-              <textarea
-                id="toneOfVoice"
-                name="toneOfVoice"
-                rows={4}
-                defaultValue={settings?.toneOfVoice ?? undefined}
-                placeholder="How the brand communicates (e.g. formal, casual, inspirational). Use 'Scrape store' to auto-generate from your content."
-              />
-            </s-stack>
+            <s-text-area
+              label={t("labels.toneOfVoice")}
+              name="toneOfVoice"
+              value={settings?.toneOfVoice ?? ""}
+              placeholder={t("placeholders.toneOfVoice")}
+              rows={4}
+            ></s-text-area>
 
-            <s-stack direction="block" gap="base">
-              <label htmlFor="blogUrl">Blog URL</label>
-              <input
-                id="blogUrl"
-                name="blogUrl"
-                type="url"
-                defaultValue={settings?.blogUrl ?? undefined}
-                placeholder="https://yourstore.com/blogs/your-blog"
-              />
-            </s-stack>
+            <s-text-field
+              label={t("labels.blogUrl")}
+              name="blogUrl"
+              value={settings?.blogUrl ?? ""}
+              placeholder="https://yourstore.com/blogs/your-blog"
+            ></s-text-field>
 
             <s-stack direction="inline" gap="base">
-              <s-stack direction="block" gap="base">
-                <label htmlFor="preferredLanguage">Preferred language</label>
-                <select
-                  id="preferredLanguage"
-                  name="preferredLanguage"
-                  defaultValue={settings?.preferredLanguage ?? "en_US"}
-                >
-                  <option value="en_US">English</option>
-                  <option value="pt_BR">Portuguese (BR)</option>
-                </select>
-              </s-stack>
-              <s-stack direction="block" gap="base">
-                <label htmlFor="contentLanguage">Content language</label>
-                <select
-                  id="contentLanguage"
-                  name="contentLanguage"
-                  defaultValue={settings?.contentLanguage ?? "en_US"}
-                >
-                  <option value="en_US">English</option>
-                  <option value="pt_BR">Portuguese (BR)</option>
-                </select>
-              </s-stack>
+              <s-select
+                label={t("labels.preferredLanguage")}
+                name="preferredLanguage"
+                value={settings?.preferredLanguage ?? "en_US"}
+              >
+                <s-option value="en_US">{t("languageOptions.english")}</s-option>
+                <s-option value="pt_BR">{t("languageOptions.portugueseBr")}</s-option>
+              </s-select>
+              <s-select
+                label={t("labels.contentLanguage")}
+                name="contentLanguage"
+                value={settings?.contentLanguage ?? "en_US"}
+              >
+                <s-option value="en_US">{t("languageOptions.english")}</s-option>
+                <s-option value="pt_BR">{t("languageOptions.portugueseBr")}</s-option>
+              </s-select>
             </s-stack>
 
-            <s-stack direction="block" gap="base">
-              <label htmlFor="benchmarks">Benchmarks</label>
-              <textarea
-                id="benchmarks"
-                name="benchmarks"
-                rows={2}
-                defaultValue={settings?.benchmarks ?? undefined}
-                placeholder="Competitor or reference brands (e.g. Gisou, Glossier), one per line"
-              />
-            </s-stack>
+            <s-text-area
+              label={t("labels.benchmarks")}
+              name="benchmarks"
+              value={settings?.benchmarks ?? ""}
+              placeholder={t("placeholders.benchmarks")}
+              rows={2}
+            ></s-text-area>
 
-            <s-stack direction="block" gap="base">
-              <label htmlFor="brandCategory">Brand category</label>
-              <input
-                id="brandCategory"
-                name="brandCategory"
-                type="text"
-                defaultValue={settings?.brandCategory ?? undefined}
-                placeholder="e.g. premium hair care, skincare"
-              />
-            </s-stack>
+            <s-text-field
+              label={t("labels.brandCategory")}
+              name="brandCategory"
+              value={settings?.brandCategory ?? ""}
+              placeholder={t("placeholders.brandCategory")}
+            ></s-text-field>
 
-            <s-stack direction="block" gap="base">
-              <label htmlFor="editorialGuidelines">Editorial guidelines</label>
-              <textarea
-                id="editorialGuidelines"
-                name="editorialGuidelines"
-                rows={6}
-                defaultValue={settings?.editorialGuidelines ?? undefined}
-                placeholder="Content architecture, tone rules, structure guidelines"
-              />
-            </s-stack>
+            <s-text-area
+              label={t("labels.editorialGuidelines")}
+              name="editorialGuidelines"
+              value={settings?.editorialGuidelines ?? ""}
+              placeholder={t("placeholders.editorialGuidelines")}
+              rows={6}
+            ></s-text-area>
 
-            <s-stack direction="block" gap="base">
-              <label htmlFor="formatRecommendations">Format recommendations</label>
-              <textarea
-                id="formatRecommendations"
-                name="formatRecommendations"
-                rows={4}
-                defaultValue={settings?.formatRecommendations ?? undefined}
-                placeholder="HTML structure, summary guidelines (e.g. Resumo HTML: 150–160 chars), content length"
-              />
-            </s-stack>
+            <s-text-area
+              label={t("labels.formatRecommendations")}
+              name="formatRecommendations"
+              value={settings?.formatRecommendations ?? ""}
+              placeholder={t("placeholders.formatRecommendations")}
+              rows={4}
+            ></s-text-area>
 
-            <s-stack direction="block" gap="base">
-              <label htmlFor="contentStrategyJson">
-                Content strategy (JSON, optional)
-              </label>
-              <textarea
-                id="contentStrategyJson"
-                name="contentStrategyJson"
-                rows={2}
-                defaultValue={
-                  settings?.contentStrategyJson ??
-                  '{"minWordCount": 800, "maxWordCount": 2000}'
-                }
-                placeholder='{"minWordCount": 800, "maxWordCount": 2000}'
-              />
-            </s-stack>
+            <s-text-area
+              label={t("labels.contentStrategy")}
+              name="contentStrategyJson"
+              value={
+                settings?.contentStrategyJson ??
+                '{"minWordCount": 800, "maxWordCount": 2000}'
+              }
+              placeholder='{"minWordCount": 800, "maxWordCount": 2000}'
+              rows={2}
+            ></s-text-area>
 
             <s-stack direction="inline" gap="base">
               <s-button type="submit" variant="primary" {...(isSaving ? { loading: true } : {})}>
-                Save
+                {t("common:button.save")}
               </s-button>
             </s-stack>
           </s-stack>
         </fetcher.Form>
       </s-section>
 
-      <s-section slot="aside" heading="Scrape store">
+      <s-section slot="aside" heading={t("scrapeStore.heading")}>
         <s-paragraph>
-          Use &quot;Scrape store&quot; to analyze your shop content and
-          auto-generate tone of voice. Requires the Content Scraper API to be
-          configured.
+          {t("scrapeStore.description")}
         </s-paragraph>
         <s-button variant="secondary" disabled>
-          Scrape store (coming soon)
+          {t("scrapeStore.comingSoon")}
         </s-button>
       </s-section>
     </s-page>

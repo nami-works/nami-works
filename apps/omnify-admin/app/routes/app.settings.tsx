@@ -4,10 +4,13 @@ import type {
   LoaderFunctionArgs,
 } from "react-router";
 import { useLoaderData, useFetcher } from "react-router";
+import { useTranslation } from "react-i18next";
 import { loadGoogleMaps } from "../utils/load-google-maps.client";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
 import { TabBar } from "../components/tab-bar";
+import tabStyles from "../components/tab-bar.module.css";
+import { getAppIdentity } from "../utils/app-identity.server";
 import styles from "./app.settings/styles.module.css";
 
 type LalamoveConfig = {
@@ -66,6 +69,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       ? (session as { locale?: string }).locale
       : "pt_BR";
 
+  console.info(`[settings] loader START shop=${shop}`);
   const locationsResponse = await admin.graphql(
     `#graphql
       query LocationsForSettings {
@@ -100,11 +104,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     {},
   );
 
+  const appIdentity = getAppIdentity();
+  console.info(`[settings] loader OK shop=${shop} locations=${locations.length}`);
+
   return {
     locations,
     lalamoveConfigs,
     userLocale,
     mapsApiKey: process.env.GOOGLE_MAPS_API_KEY?.trim() ?? "",
+    appIdentity,
   };
 };
 
@@ -113,12 +121,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const shop = session.shop;
   const formData = await request.formData();
   const intent = formData.get("intent");
+  console.info(`[settings] action intent=${intent ?? "?"} shop=${shop}`);
 
   if (intent === "save-lalamove-settings") {
     const locationId = formData.get("locationId");
     if (typeof locationId !== "string" || !locationId) {
       return { ok: false, error: "Location not provided." };
     }
+    console.info(`[settings] save-lalamove-settings START shop=${shop} locationId=${locationId}`);
     const existing = await prisma.lalamoveLocationConfig.findUnique({
       where: { shop_locationId: { shop, locationId } },
     });
@@ -188,8 +198,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         maxRadiusKm,
         "BRL",
         { googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY?.trim() },
-      ).catch((e) => console.warn("Sample rate build failed:", e));
+      ).catch((e) => console.warn(`[settings] sample-rate-build FAILED shop=${shop}`, e));
     }
+    console.info(`[settings] save-lalamove-settings OK shop=${shop} locationId=${locationId} market=${data.market}`);
     return { ok: true };
   }
 
@@ -214,7 +225,9 @@ export default function LocationSettings() {
     lalamoveConfigs,
     userLocale,
     mapsApiKey,
+    appIdentity,
   } = useLoaderData<typeof loader>();
+  const { t } = useTranslation("settings");
   const lalamoveFetcher = useFetcher();
   const [settingsLocationId, setSettingsLocationId] = useState("");
   const locationAddressFieldRef = useRef<HTMLDivElement | null>(null);
@@ -228,26 +241,29 @@ export default function LocationSettings() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const tabs = [
+  const allTabs = [
     {
       id: "settings",
-      label: "Locations",
+      label: t("tabs.locations"),
       href: "/app/settings",
       icon: <span aria-hidden="true">📍</span>,
     },
     {
       id: "providers",
-      label: "Providers",
-      href: "/app/carrier-service?tab=providers",
+      label: t("tabs.providers"),
+      href: "/app/settings/providers",
       icon: <span aria-hidden="true">🛵</span>,
     },
     {
       id: "carriers",
-      label: "Carriers",
-      href: "/app/carrier-service?tab=carriers",
+      label: t("tabs.carriers"),
+      href: "/app/settings/carriers",
       icon: <span aria-hidden="true">🚚</span>,
     },
   ];
+  const tabs = appIdentity === "omnify"
+    ? allTabs.filter((tab) => tab.id !== "carriers")
+    : allTabs;
 
   useEffect(() => {
     setSaveSuccess(false);
@@ -269,7 +285,7 @@ export default function LocationSettings() {
         : "") ??
       "";
     setLalamoveSettings({
-      ...defaultConfig(userLocale),
+      ...defaultConfig(userLocale ?? "pt_BR"),
       ...config,
       market: config?.market ?? address?.countryCode ?? "",
       city: config?.city ?? address?.city ?? "",
@@ -392,16 +408,16 @@ export default function LocationSettings() {
   };
 
   return (
-    <s-page heading="Settings" inlineSize="base">
+    <s-page heading={t("pageHeading")} inlineSize="base">
       <TabBar
         tabs={tabs}
         activeId="settings"
-        className={styles.tabsRow}
-        tabClassName={styles.tabItem}
-        activeTabClassName={styles.tabActive}
-        contentClassName={styles.tabContent}
-        iconClassName={styles.tabIcon}
-        activeIconClassName={styles.tabIconActive}
+        className={tabStyles.tabsRow}
+        tabClassName={tabStyles.tabItem}
+        activeTabClassName={tabStyles.tabActive}
+        contentClassName={tabStyles.tabContent}
+        iconClassName={tabStyles.tabIcon}
+        activeIconClassName={tabStyles.tabIconActive}
       />
       <s-section>
         <s-stack direction="block" gap="base">
@@ -412,25 +428,25 @@ export default function LocationSettings() {
           )}
           {saveSuccess && (
             <s-banner tone="success" onDismiss={() => setSaveSuccess(false)}>
-              Location settings saved successfully.
+              {t("locationSettings.savedSuccess")}
             </s-banner>
           )}
           <div className={styles.locationSettingsBlock}>
             <s-box padding="base" borderRadius="base">
               <s-stack direction="block" gap="base">
-                <h2 className={styles.modalTitle}>Location settings</h2>
+                <h2 className={styles.modalTitle}>{t("locationSettings.title")}</h2>
                 <div className={styles.settingsGrid}>
             <s-select
-              label="Location"
+              label={t("labels.location")}
               name="settingsLocationId"
               value={settingsLocationId}
               onChange={(event) =>
                 setSettingsLocationId(
-                  (event.currentTarget as HTMLSelectElement).value,
+                  (event.currentTarget as unknown as HTMLSelectElement).value,
                 )
               }
             >
-              <s-option value="">-select a location-</s-option>
+              <s-option value="">{t("locationSettings.selectLocation")}</s-option>
               {locations.map((loc: { id: string; name: string }) => (
                 <s-option key={loc.id} value={loc.id}>
                   {loc.name}
@@ -438,17 +454,17 @@ export default function LocationSettings() {
               ))}
             </s-select>
             <s-select
-              label="Market"
+              label={t("labels.market")}
               name="market"
               value={lalamoveSettings.market}
               onChange={(e) =>
                 updateField(
                   "market",
-                  (e.currentTarget as HTMLSelectElement).value,
+                  (e.currentTarget as unknown as HTMLSelectElement).value,
                 )
               }
             >
-              <s-option value="">-select market-</s-option>
+              <s-option value="">{t("locationSettings.selectMarket")}</s-option>
               {LALAMOVE_MARKETS.map((opt) => (
                 <s-option key={opt.value} value={opt.value}>
                   {opt.label}
@@ -456,50 +472,50 @@ export default function LocationSettings() {
               ))}
             </s-select>
             <s-text-field
-              label="City"
+              label={t("labels.city")}
               value={lalamoveSettings.city}
               disabled
             />
             <div />
             <s-text-field
-              label="Location name"
+              label={t("labels.locationName")}
               value={lalamoveSettings.locationName}
               onChange={(e) =>
                 updateField(
                   "locationName",
-                  (e.currentTarget as HTMLInputElement).value,
+                  (e.currentTarget as unknown as HTMLInputElement).value,
                 )
               }
             />
             <s-text-field
-              label="Location phone"
+              label={t("labels.locationPhone")}
               value={lalamoveSettings.locationPhone}
               onChange={(e) =>
                 updateField(
                   "locationPhone",
-                  (e.currentTarget as HTMLInputElement).value,
+                  (e.currentTarget as unknown as HTMLInputElement).value,
                 )
               }
             />
             <div ref={locationAddressFieldRef}>
               <s-text-field
-                label="Location address"
+                label={t("labels.locationAddress")}
                 value={lalamoveSettings.locationAddress}
                 onChange={(e) =>
                   updateField(
                     "locationAddress",
-                    (e.currentTarget as HTMLInputElement).value,
+                    (e.currentTarget as unknown as HTMLInputElement).value,
                   )
                 }
               />
             </div>
             <s-text-field
-              label="Location details (store number, etc)"
+              label={t("labels.locationDetails")}
               value={lalamoveSettings.locationDetails}
               onChange={(e) =>
                 updateField(
                   "locationDetails",
-                  (e.currentTarget as HTMLInputElement).value,
+                  (e.currentTarget as unknown as HTMLInputElement).value,
                 )
               }
             />
@@ -507,12 +523,12 @@ export default function LocationSettings() {
               className={`${styles.settingsSpanFull} ${styles.settingsPickupInstructionsWrap}`}
             >
               <s-text-area
-                label="Pickup instructions"
+                label={t("labels.pickupInstructions")}
                 value={lalamoveSettings.pickupInstructions}
                 onChange={(e) =>
                   updateField(
                     "pickupInstructions",
-                    (e.currentTarget as HTMLTextAreaElement).value,
+                    (e.currentTarget as unknown as HTMLTextAreaElement).value,
                   )
                 }
                 rows={4}
@@ -520,13 +536,13 @@ export default function LocationSettings() {
             </div>
             <div className={`${styles.settingsSpanFull} ${styles.settingsHidden}`}>
               <s-select
-                label="Preferred service type"
+                label={t("labels.preferredServiceType")}
                 name="preferredServiceType"
                 value={lalamoveSettings.preferredServiceType}
                 onChange={(e) =>
                   updateField(
                     "preferredServiceType",
-                    (e.currentTarget as HTMLSelectElement).value,
+                    (e.currentTarget as unknown as HTMLSelectElement).value,
                   )
                 }
               >
@@ -545,18 +561,22 @@ export default function LocationSettings() {
           <s-stack direction="inline" gap="base" justifyContent="end">
             <s-link href="../local-delivery">
               <s-button variant="secondary">
-                {settingsSaved ? "Back" : "Cancel"}
+                {settingsSaved ? t("common:button.back") : t("common:button.cancel")}
               </s-button>
             </s-link>
-            <s-button
-              variant="primary"
-              onClick={saveLocationSettings}
-              disabled={
-                lalamoveFetcher.state !== "idle" || !settingsLocationId
-              }
-            >
-              Save settings
-            </s-button>
+            {lalamoveFetcher.state !== "idle" ? (
+              <s-button key="save-loading" variant="primary" loading disabled>
+                {t("locationSettings.saveSettings")}
+              </s-button>
+            ) : !settingsLocationId ? (
+              <s-button key="save-disabled" variant="primary" disabled>
+                {t("locationSettings.saveSettings")}
+              </s-button>
+            ) : (
+              <s-button key="save-active" variant="primary" onClick={saveLocationSettings}>
+                {t("locationSettings.saveSettings")}
+              </s-button>
+            )}
           </s-stack>
         </s-stack>
       </s-section>

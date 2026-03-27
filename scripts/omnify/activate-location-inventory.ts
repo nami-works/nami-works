@@ -101,12 +101,12 @@ const fetchAllLocations = async (): Promise<LocationNode[]> => {
   let hasNextPage = true;
 
   while (hasNextPage) {
-    const data = await shopifyGraphql<{
+    const data: {
       locations: {
         nodes: LocationNode[];
         pageInfo: { hasNextPage: boolean; endCursor: string | null };
       };
-    }>(
+    } = await shopifyGraphql(
       `#graphql
         query Locations($first: Int!, $after: String) {
           locations(first: $first, after: $after) {
@@ -141,12 +141,12 @@ const fetchAllInventoryItems = async (): Promise<InventoryItemNode[]> => {
   let hasNextPage = true;
 
   while (hasNextPage) {
-    const data = await shopifyGraphql<{
+    const data: {
       productVariants: {
         nodes: Array<{ inventoryItem: InventoryItemNode | null }>;
         pageInfo: { hasNextPage: boolean; endCursor: string | null };
       };
-    }>(
+    } = await shopifyGraphql(
       `#graphql
         query InventoryItems($first: Int!, $after: String) {
           productVariants(first: $first, after: $after) {
@@ -164,7 +164,7 @@ const fetchAllInventoryItems = async (): Promise<InventoryItemNode[]> => {
       { first: 100, after: cursor },
     );
 
-    data.productVariants.nodes.forEach((variant) => {
+    data.productVariants.nodes.forEach((variant: { inventoryItem: InventoryItemNode | null }) => {
       if (variant.inventoryItem?.id) {
         nodes.push({ id: variant.inventoryItem.id });
       }

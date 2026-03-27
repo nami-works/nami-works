@@ -1778,7 +1778,7 @@ const main = async () => {
           ? await createCustomerFromAddress({
               firstName: shippingAddressBase.firstName,
               lastName: shippingAddressBase.lastName,
-              company: shippingAddressBase.company,
+              company: (shippingAddressBase as any).company,
               address1:
                 shippingAddressBase.address1 || billingAddressBase.address1,
               address2:
@@ -1797,7 +1797,7 @@ const main = async () => {
             })
           : null;
 
-      const lineItems = [];
+      const lineItems: Array<{ variantId?: string; title?: string; quantity: number; originalUnitPrice?: string }> = [];
       for (const item of orderSeed.lineitems) {
         if (!item.name) continue;
         let variantId = null;
@@ -1872,7 +1872,7 @@ const main = async () => {
         continue;
       }
 
-      let data;
+      let data: any;
       const createDraft = async (cpfOverride?: string) =>
         shopifyGraphql<{
           draftOrderCreate: {
@@ -1896,14 +1896,14 @@ const main = async () => {
           { draft: buildDraftInput(cpfOverride) },
         );
 
-      const getUserErrors = (payload: typeof data) =>
+      const getUserErrors = (payload: any) =>
         payload.draftOrderCreate.userErrors
-          .map((error) => error.message)
+          .map((error: { message: string }) => error.message)
           .join(", ");
 
       try {
         data = await createDraft();
-      } catch (error) {
+      } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
         if (message.includes("CPF/CNPJ")) {
           console.warn(

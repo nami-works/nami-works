@@ -1,11 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { useLoaderData, useFetcher, useMatches, useSearchParams } from "react-router";
+import {
+  useLoaderData,
+  useFetcher,
+  useLocation,
+  useMatches,
+  useSearchParams,
+  useRevalidator,
+} from "react-router";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
 import {
   deleteShopCredentials,
   getApiKeyDisplayMask,
+  getRuntimeCredentialsForShop,
   hasShopCredentials,
   markCredentialsValidated,
   saveShopCredentials,
@@ -28,6 +37,7 @@ import type {
   TimeRule,
 } from "../services/carrier/types";
 import { TabBar } from "../components/tab-bar";
+import tabStyles from "../components/tab-bar.module.css";
 import styles from "./app.carrier-service/styles.module.css";
 
 const TIME_OPTIONS = Array.from({ length: 24 }, (_, i) => {
@@ -76,6 +86,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
   const shop = session.shop;
 
+  console.info(`[carrier-service] loader START shop=${shop}`);
+
   const registration = await getCarrierRegistration(shop);
   const configRow = await prisma.carrierServiceConfig.findUnique({
     where: { shop },
@@ -85,6 +97,19 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     hasShopCredentials(shop),
     getApiKeyDisplayMask(shop),
   ]);
+
+  // Load configured markets from location settings for special requests discovery
+  const locationConfigs = await prisma.lalamoveLocationConfig.findMany({
+    where: { shop },
+    select: { data: true },
+  });
+  const configuredMarkets = [
+    ...new Set(
+      locationConfigs
+        .map((lc) => (lc.data as { market?: string })?.market)
+        .filter((m): m is string => Boolean(m)),
+    ),
+  ];
 
   return {
     shop,
@@ -98,6 +123,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     config: config ?? undefined,
     credentialStatus,
     apiKeyDisplayMask,
+    configuredMarkets,
   };
 };
 
@@ -120,7 +146,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         const config = configRow?.data as CarrierServiceConfigData | undefined;
         buildAllSampleRatesForShop(admin, shop, config ?? null, {
           googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY?.trim(),
-        }).catch((e) => console.warn("Sample rate build failed:", e));
+        }).catch((e) => console.warn("[local-delivery] sample-rate build failed:", e));
       }
       return result.ok
         ? { ok: true, error: null }
@@ -181,33 +207,29 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       });
       buildAllSampleRatesForShop(admin, shop, data, {
         googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY?.trim(),
-      }).catch((e) => console.warn("Sample rate build failed:", e));
+      }).catch((e) => console.warn("[local-delivery] sample-rate build failed:", e));
       return { ok: true, error: null };
     }
 
     if (intent === "save-lalamove-credentials") {
-      const validated = validateCredentialInput(
-        formData.get("apiKey"),
-        formData.get("apiSecret"),
-      );
-      if (!validated.ok) {
-        return { ok: false, error: validated.error };
+      const rawApiKey = String(formData.get("apiKey") ?? "").trim();
+      const rawApiSecret = String(formData.get("apiSecret") ?? "").trim();
+      const hasExisting = await hasShopCredentials(shop);
+
+      // If user provided new credentials, validate and save them
+      if (rawApiKey && rawApiSecret) {
+        const validated = validateCredentialInput(rawApiKey, rawApiSecret);
+        if (!validated.ok) {
+          return { ok: false, error: validated.error };
+        }
+        await saveShopCredentials(shop, validated.apiKey, validated.apiSecret);
+      } else if (!hasExisting.configured) {
+        // No existing credentials and none provided — error
+        return { ok: false, error: "API key and secret are required." };
       }
-      await saveShopCredentials(shop, validated.apiKey, validated.apiSecret);
-      const preferredServiceType =
-        String(formData.get("preferredServiceType") ?? "").trim() || "LALAGO";
+      // Save market to config
       const market =
         String(formData.get("market") ?? "").trim().toUpperCase() || "BR";
-      const secondaryServiceType =
-        String(formData.get("secondaryServiceType") ?? "").trim() || undefined;
-      const maxOrdersPerRoute = Math.min(
-        15,
-        Math.max(1, parseInt(String(formData.get("maxOrdersPerRoute") ?? "10"), 10) || 10),
-      );
-      const secondaryMaxOrdersPerRoute = Math.min(
-        15,
-        Math.max(1, parseInt(String(formData.get("secondaryMaxOrdersPerRoute") ?? "10"), 10) || 10),
-      );
       const configRow = await prisma.carrierServiceConfig.findUnique({
         where: { shop },
       });
@@ -215,11 +237,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const data: CarrierServiceConfigData = {
         ...existing,
         enabledProviders: existing.enabledProviders ?? ["lalamove"],
-        lalamovePreferredServiceType: preferredServiceType,
         lalamoveDefaultMarket: market,
-        lalamoveSecondaryServiceType: secondaryServiceType,
-        lalamoveMaxOrdersPerRoute: maxOrdersPerRoute,
-        lalamoveSecondaryMaxOrdersPerRoute: secondaryMaxOrdersPerRoute,
       };
       await prisma.carrierServiceConfig.upsert({
         where: { shop },
@@ -230,6 +248,90 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         ok: true,
         credentialStatus: await hasShopCredentials(shop),
       };
+    }
+
+    if (intent === "save-lalamove-preferences") {
+      const preferredServiceType =
+        String(formData.get("preferredServiceType") ?? "").trim() || "LALAGO";
+      const secondaryServiceType =
+        String(formData.get("secondaryServiceType") ?? "").trim() || undefined;
+      const maxOrdersPerRoute = Math.min(
+        15,
+        Math.max(1, parseInt(String(formData.get("maxOrdersPerRoute") ?? "10"), 10) || 10),
+      );
+      const secondaryMaxOrdersPerRoute = Math.min(
+        15,
+        Math.max(1, parseInt(String(formData.get("secondaryMaxOrdersPerRoute") ?? "10"), 10) || 10),
+      );
+      const lalamoveSpecialRequestsRaw = formData.get("lalamoveSpecialRequests");
+      const incomingSpecialRequests = lalamoveSpecialRequestsRaw
+        ? (JSON.parse(String(lalamoveSpecialRequestsRaw)) as Record<string, string[]>)
+        : undefined;
+      const configRow = await prisma.carrierServiceConfig.findUnique({
+        where: { shop },
+      });
+      const existing = (configRow?.data ?? {}) as CarrierServiceConfigData;
+      const data: CarrierServiceConfigData = {
+        ...existing,
+        lalamovePreferredServiceType: preferredServiceType,
+        lalamoveSecondaryServiceType: secondaryServiceType,
+        lalamoveMaxOrdersPerRoute: maxOrdersPerRoute,
+        lalamoveSecondaryMaxOrdersPerRoute: secondaryMaxOrdersPerRoute,
+        lalamoveSpecialRequests: incomingSpecialRequests ?? existing.lalamoveSpecialRequests,
+      };
+      await prisma.carrierServiceConfig.upsert({
+        where: { shop },
+        create: { shop, data },
+        update: { data },
+      });
+      return { ok: true, intent };
+    }
+
+    if (intent === "fetch-special-requests") {
+      const markets = formData.getAll("market") as string[];
+      const serviceType = String(formData.get("serviceType") ?? "").trim();
+      if (!markets.length) return { ok: false, error: "Market not provided.", intent };
+      const credentials = await getRuntimeCredentialsForShop(shop);
+      if (!credentials) return { ok: false, error: "Missing credentials.", intent };
+      try {
+        const { getLalamoveCityInfo } = await import("../services/lalamove.server");
+        const specialRequestsByMarket: Record<string, Array<{ name: string; description: string }>> = {};
+        for (const market of markets) {
+          const cities = await getLalamoveCityInfo(market, credentials);
+          const srs: Array<{ name: string; description: string }> = [];
+          for (const city of cities) {
+            for (const service of city.services ?? []) {
+              if (!serviceType || service.key === serviceType) {
+                for (const sr of service.specialRequests ?? []) {
+                  if (!srs.some((x) => x.name === sr.name)) srs.push(sr);
+                }
+              }
+            }
+          }
+          specialRequestsByMarket[market] = srs;
+        }
+        return { ok: true, intent, specialRequestsByMarket };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Failed to fetch city info.";
+        return { ok: false, error: msg, intent, specialRequestsByMarket: {} };
+      }
+    }
+
+    if (intent === "save-special-requests") {
+      const market = String(formData.get("market") ?? "").trim();
+      const selectedKeys = formData.getAll("selectedKeys") as string[];
+      if (!market) return { ok: false, error: "Market not provided." };
+      const configRow = await prisma.carrierServiceConfig.findUnique({ where: { shop } });
+      const existing = (configRow?.data ?? {}) as CarrierServiceConfigData;
+      const currentMap: Record<string, string[]> = { ...(existing.lalamoveSpecialRequests ?? {}) };
+      currentMap[market] = selectedKeys;
+      const data: CarrierServiceConfigData = { ...existing, lalamoveSpecialRequests: currentMap };
+      await prisma.carrierServiceConfig.upsert({
+        where: { shop },
+        create: { shop, data },
+        update: { data },
+      });
+      return { ok: true, intent };
     }
 
     if (intent === "delete-lalamove-credentials") {
@@ -294,7 +396,8 @@ function formatTimeLabel(value: string): string {
 function getExplanatoryTimeText(
   timeLimit: string,
   transitTime: TimeRule["transitTime"],
-  customDays?: number,
+  customDays: number | undefined,
+  t: (key: string, opts?: any) => string,
 ): string {
   const today = new Date();
   const limitLabel = formatTimeLabel(timeLimit);
@@ -322,31 +425,31 @@ function getExplanatoryTimeText(
     default:
       byDate = today;
   }
-  const dateStr = byDate.toLocaleDateString("en-US", {
+  const dateStr = byDate.toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
-  return `Orders placed on ${dateStr} before ${limitLabel} will be promised for delivery by ${dateStr}.`;
+  return t("parameters.explanatoryTime.text", { date: dateStr, time: limitLabel });
 }
 
-function zoneSummary(zone: DistanceZone, unit: "km" | "mi"): string {
+function zoneSummary(zone: DistanceZone, unit: "km" | "mi", t: (key: string, opts?: any) => string): string {
   const u = unit === "km" ? "km" : "mi";
   const r = zone.radiusKm ?? (zone.radiusMiles ? zone.radiusMiles + " " + u : "");
   const radiusStr =
-    typeof r === "number" ? `Up to ${r} ${u}` : (zone.radiusMiles ? `Up to ${zone.radiusMiles} ${u}` : "—");
-  if (zone.useCarrierQuote) return `${radiusStr} • Carrier default quotes`;
+    typeof r === "number" ? t("zoneSummary.upTo", { value: r, unit: u }) : (zone.radiusMiles ? t("zoneSummary.upTo", { value: zone.radiusMiles, unit: u }) : "—");
+  if (zone.useCarrierQuote) return `${radiusStr} • ${t("zoneSummary.carrierDefault")}`;
   const price =
     zone.customPriceSubunits != null
       ? (zone.customPriceSubunits / 100).toFixed(2)
       : "—";
-  let s = `${radiusStr} • Custom price = ${price}`;
+  let s = `${radiusStr} • ${t("zoneSummary.customPrice", { price })}`;
   if (
     zone.dilateTimeValue != null &&
     zone.dilateTimeValue > 0 &&
     zone.dilateTimeDimension
   ) {
-    s += ` • Delivery time dilated by ${zone.dilateTimeValue} ${zone.dilateTimeDimension}`;
+    s += ` • ${t("zoneSummary.timeDilated", { value: zone.dilateTimeValue, dimension: zone.dilateTimeDimension })}`;
   }
   return s;
 }
@@ -357,11 +460,31 @@ const defaultZone = (): DistanceZone => ({
   useCarrierQuote: true,
 });
 
+const WAIT_TIME_PATTERN = /\d+\s*(min|h\b|hora)/i;
+const THERMAL_BAG_PATTERN = /thermal.?bag/i;
+const RETURN_TRIP_PATTERN = /return.?trip/i;
+
 export default function CarrierService() {
-  const { shop, registration, config, credentialStatus, apiKeyDisplayMask } =
+  const { shop, registration, config, credentialStatus, apiKeyDisplayMask, configuredMarkets } =
     useLoaderData<typeof loader>();
   const fetcher = useFetcher();
   const credentialFetcher = useFetcher<typeof action>();
+  const prefFetcher = useFetcher<typeof action>();
+  const specialRequestsFetcher = useFetcher<typeof action>();
+  const revalidator = useRevalidator();
+  const [specialRequestsByMarket, setSpecialRequestsByMarket] = useState<
+    Record<string, Array<{ name: string; description: string }>>
+  >({});
+  const [selectedSpecialRequests, setSelectedSpecialRequests] = useState<Record<string, Set<string>>>(
+    () => {
+      const saved = config?.lalamoveSpecialRequests ?? {};
+      const result: Record<string, Set<string>> = {};
+      for (const [m, keys] of Object.entries(saved)) {
+        result[m] = new Set(keys);
+      }
+      return result;
+    },
+  );
   const [enabled, setEnabled] = useState(!!registration?.active);
   const [enabledProviders, setEnabledProviders] = useState<string[]>(
     config?.enabledProviders ?? ["lalamove"],
@@ -396,6 +519,22 @@ export default function CarrierService() {
   const [zoneDeliveryInfo, setZoneDeliveryInfo] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
   const [apiModalOpen, setApiModalOpen] = useState(false);
+  const [prefModalOpen, setPrefModalOpen] = useState(false);
+  const moreRef = useRef<HTMLSpanElement>(null);
+  const [moreExpanded, setMoreExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!moreExpanded) return;
+    const handler = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setMoreExpanded(false);
+      }
+    };
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, [moreExpanded]);
+  const [credentialsUnlocked, setCredentialsUnlocked] = useState(false);
+  const [prefMessage, setPrefMessage] = useState<string | null>(null);
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [apiSecretInput, setApiSecretInput] = useState("");
   const [marketInput, setMarketInput] = useState(
@@ -417,30 +556,52 @@ export default function CarrierService() {
     credentialStatus,
   );
   const [credentialMessage, setCredentialMessage] = useState<string | null>(null);
+  const { t } = useTranslation("carrier-service");
   const [searchParams] = useSearchParams();
-  const carrierTab = (searchParams.get("tab") === "providers" ? "providers" : "carriers") as "providers" | "carriers";
+  const location = useLocation();
+  const tabParam = searchParams.get("tab");
+  const isProvidersPath = location.pathname.includes("/app/settings/providers");
+  const isCarriersPath = location.pathname.includes("/app/settings/carriers");
+  const carrierTab = (tabParam === "providers"
+    ? "providers"
+    : tabParam === "carriers"
+      ? "carriers"
+      : isProvidersPath
+        ? "providers"
+        : isCarriersPath
+          ? "carriers"
+          : "carriers") as "providers" | "carriers";
   const matches = useMatches();
   const basePath =
     (matches.find((m) => (m as { data?: { basePath?: string } }).data?.basePath !== undefined)
       ?.data as { basePath?: string })?.basePath ?? "";
   const path = (p: string) => `${basePath}${p}`.replace(/\/+/g, "/") || "/";
+
+  const transitKeyMap: Record<TimeRule["transitTime"], string> = {
+    same_day: "parameters.onTheSameDay",
+    next_day: "parameters.onTheNextDay",
+    "2_days": "parameters.in2Days",
+    "3_days": "parameters.in3Days",
+    custom: "parameters.custom",
+  };
+
   const tabs = [
     {
       id: "settings",
-      label: "Locations",
+      label: t("tabs.locations"),
       href: "/app/settings",
       icon: <span aria-hidden="true">📍</span>,
     },
     {
       id: "providers",
-      label: "Providers",
-      href: "/app/carrier-service?tab=providers",
+      label: t("tabs.providers"),
+      href: "/app/settings/providers",
       icon: <span aria-hidden="true">🛵</span>,
     },
     {
       id: "carriers",
-      label: "Carriers",
-      href: "/app/carrier-service?tab=carriers",
+      label: t("tabs.carriers"),
+      href: "/app/settings/carriers",
       icon: <span aria-hidden="true">🚚</span>,
     },
   ];
@@ -452,7 +613,7 @@ export default function CarrierService() {
   useEffect(() => {
     if (!fetcher.data || fetcher.state !== "idle") return;
     const data = fetcher.data as { ok?: boolean; error?: string };
-    const currentIntent = fetcher.formData?.get("intent");
+    const currentIntent = (fetcher.formData as FormData | undefined)?.get("intent");
     if (data.ok) {
       setActionError(null);
       if (currentIntent === "enable-carrier") setEnabled(true);
@@ -481,12 +642,15 @@ export default function CarrierService() {
       setCredentialStatusState((prev) => data.credentialStatus ?? prev);
       const warning =
         data.details && "warning" in data.details ? data.details.warning : "";
-      setCredentialMessage(warning || "Credentials processed successfully.");
-      // Auto-close modal and clear sensitive inputs on successful save
-      if (credentialFetcher.formData?.get("intent") === "save-lalamove-credentials") {
-        setApiModalOpen(false);
-        setApiKeyInput("");
-        setApiSecretInput("");
+      setCredentialMessage(warning || t("lalamoveModal.credentialsSaved"));
+      // Auto-close modal with delay after showing success message
+      if ((credentialFetcher.formData as FormData | undefined)?.get("intent") === "save-lalamove-credentials") {
+        setTimeout(() => {
+          setApiModalOpen(false);
+          setCredentialMessage(null);
+          setApiKeyInput("");
+          setApiSecretInput("");
+        }, 2000);
       }
       return;
     }
@@ -494,6 +658,43 @@ export default function CarrierService() {
       setCredentialMessage(data.error);
     }
   }, [credentialFetcher.data, credentialFetcher.state, credentialStatus]);
+
+  useEffect(() => {
+    if (!specialRequestsFetcher.data || specialRequestsFetcher.state !== "idle") return;
+    const data = specialRequestsFetcher.data as {
+      ok?: boolean;
+      intent?: string;
+      specialRequestsByMarket?: Record<string, Array<{ name: string; description: string }>>;
+    };
+    if (data.intent === "fetch-special-requests" && data.ok && data.specialRequestsByMarket) {
+      setSpecialRequestsByMarket(data.specialRequestsByMarket);
+    }
+  }, [specialRequestsFetcher.data, specialRequestsFetcher.state]);
+
+  useEffect(() => {
+    if (!prefFetcher.data || prefFetcher.state !== "idle") return;
+    const data = prefFetcher.data as { ok?: boolean; error?: string; intent?: string };
+    if (data.intent === "save-lalamove-preferences") {
+      if (data.ok) {
+        setPrefMessage(null);
+        setPrefModalOpen(false);
+        revalidator.revalidate();
+      } else if (data.error) {
+        setPrefMessage(data.error);
+      }
+    }
+  }, [prefFetcher.data, prefFetcher.state]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const modalOpen = apiModalOpen || prefModalOpen;
+    if (!modalOpen || !credentialStatusState.configured || configuredMarkets.length === 0) return;
+    const formData = new FormData();
+    formData.append("intent", "fetch-special-requests");
+    configuredMarkets.forEach((m) => formData.append("market", m));
+    formData.append("serviceType", preferredServiceTypeInput);
+    specialRequestsFetcher.submit(formData, { method: "post" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiModalOpen, prefModalOpen]);
 
   const openAddZone = (index: number | null) => {
     setEditingZoneIndex(index);
@@ -634,24 +835,29 @@ export default function CarrierService() {
     setCredentialMessage(null);
     const formData = new FormData();
     formData.append("intent", "save-lalamove-credentials");
-    formData.append("apiKey", apiKeyInput);
-    formData.append("apiSecret", apiSecretInput);
+    formData.append("apiKey", credentialsUnlocked ? apiKeyInput : "");
+    formData.append("apiSecret", credentialsUnlocked ? apiSecretInput : "");
+    formData.append("market", marketInput);
+    credentialFetcher.submit(formData, { method: "post" });
+  };
+
+  const savePreferences = () => {
+    setPrefMessage(null);
+    const formData = new FormData();
+    formData.append("intent", "save-lalamove-preferences");
     formData.append("preferredServiceType", preferredServiceTypeInput);
     formData.append("secondaryServiceType", secondaryServiceTypeInput);
     formData.append("maxOrdersPerRoute", maxOrdersPerRouteInput);
     formData.append("secondaryMaxOrdersPerRoute", secondaryMaxOrdersInput);
-    credentialFetcher.submit(formData, { method: "post" });
+    const specialRequestsToSave: Record<string, string[]> = {};
+    for (const [m, selected] of Object.entries(selectedSpecialRequests)) {
+      specialRequestsToSave[m] = Array.from(selected);
+    }
+    formData.append("lalamoveSpecialRequests", JSON.stringify(specialRequestsToSave));
+    prefFetcher.submit(formData, { method: "post" });
   };
 
-  const testCredentials = () => {
-    setCredentialMessage(null);
-    const formData = new FormData();
-    formData.append("intent", "test-lalamove-credentials");
-    formData.append("apiKey", apiKeyInput);
-    formData.append("apiSecret", apiSecretInput);
-    formData.append("market", marketInput);
-    credentialFetcher.submit(formData, { method: "post" });
-  };
+
 
   const deleteCredentials = () => {
     setCredentialMessage(null);
@@ -670,16 +876,16 @@ export default function CarrierService() {
     credentialFetcher.data.ok;
 
   return (
-    <s-page heading="Settings" inlineSize="base">
+    <s-page heading={t("pageHeading")} inlineSize="base">
       <TabBar
         tabs={tabs}
         activeId={carrierTab}
-        className={styles.tabsRow}
-        tabClassName={styles.tabItem}
-        activeTabClassName={styles.tabActive}
-        contentClassName={styles.tabContent}
-        iconClassName={styles.tabIcon}
-        activeIconClassName={styles.tabIconActive}
+        className={tabStyles.tabsRow}
+        tabClassName={tabStyles.tabItem}
+        activeTabClassName={tabStyles.tabActive}
+        contentClassName={tabStyles.tabContent}
+        iconClassName={tabStyles.tabIcon}
+        activeIconClassName={tabStyles.tabIconActive}
       />
       <s-section>
         <s-stack direction="block" gap="base">
@@ -694,34 +900,33 @@ export default function CarrierService() {
           <div className={styles.locationSettingsBlock}>
             <s-box padding="base" borderRadius="base">
               <s-stack direction="block" gap="base">
-                <h2 className={styles.modalTitle}>Carrier service</h2>
+                <h2 className={styles.modalTitle}>{t("carrier.title")}</h2>
                 <p>
                   {enabled
-                    ? "Carrier service is active. Shopify will request shipping rates from your callback when customers reach checkout."
-                    : "Enable the carrier service to offer local delivery rates (Lalamove, Loggi, Uber, Rappi) at checkout."}
+                    ? t("carrier.activeDescription")
+                    : t("carrier.inactiveDescription")}
                 </p>
                 {enabled && (
                   <s-stack direction="block" gap="base">
                     <p style={{ fontSize: "13px", fontWeight: 600 }}>
-                      Add Omnify to your delivery profile:
+                      {t("carrier.addToProfile")}
                     </p>
                     <ol style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: "#6d7175" }}>
-                      <li>Go to Settings &gt; Delivery and pick-up</li>
-                      <li>Edit the relevant profile and zone</li>
-                      <li>Add rate &gt; Get rates from app &gt; select Omnify Local Delivery</li>
+                      <li>{t("carrier.step1")}</li>
+                      <li>{t("carrier.step2")}</li>
+                      <li>{t("carrier.step3")}</li>
                     </ol>
                     <s-link
                       href={`https://${shop}/admin/settings/shipping`}
                       target="_blank"
-                      rel="noopener noreferrer"
                     >
-                      Open Delivery settings
+                      {t("carrier.openSettings")}
                     </s-link>
                   </s-stack>
                 )}
                 {registration?.callbackUrl && (
                   <p style={{ fontSize: "13px", color: "#6d7175" }}>
-                    Callback URL: {registration.callbackUrl}
+                    {t("carrier.callbackUrl")} {registration.callbackUrl}
                   </p>
                 )}
                 <s-stack direction="inline" gap="base">
@@ -731,7 +936,7 @@ export default function CarrierService() {
                       onClick={disableCarrier}
                       disabled={fetcher.state !== "idle"}
                     >
-                      Disable carrier service
+                      {t("carrier.disableCarrier")}
                     </s-button>
                   ) : (
                     <s-button
@@ -739,7 +944,7 @@ export default function CarrierService() {
                       onClick={enableCarrier}
                       disabled={fetcher.state !== "idle"}
                     >
-                      Enable carrier service
+                      {t("carrier.enableCarrier")}
                     </s-button>
                   )}
                 </s-stack>
@@ -750,10 +955,10 @@ export default function CarrierService() {
           <div className={styles.locationSettingsBlock}>
             <s-box padding="base" borderRadius="base">
               <s-stack direction="block" gap="base">
-                <h2 className={styles.modalTitle}>Parameters</h2>
-            <h3 className={styles.subSectionTitle}>Time of the day</h3>
+                <h2 className={styles.modalTitle}>{t("parameters.title")}</h2>
+            <h3 className={styles.subSectionTitle}>{t("parameters.timeOfDay")}</h3>
             <div className={styles.timePhraseRow}>
-              <span>Orders placed before</span>
+              <span>{t("parameters.ordersPlacedBefore")}</span>
               <s-select
                 value={timeLimit}
                 onChange={(e) =>
@@ -766,7 +971,7 @@ export default function CarrierService() {
                   </s-option>
                 ))}
               </s-select>
-              <span>will be delivered</span>
+              <span>{t("parameters.willBeDelivered")}</span>
               <s-select
                 value={transitTime}
                 onChange={(e) =>
@@ -777,27 +982,25 @@ export default function CarrierService() {
               >
                 {TRANSIT_OPTIONS.map((opt) => (
                   <s-option key={opt.value} value={opt.value}>
-                    {opt.label}
+                    {t(transitKeyMap[opt.value])}
                   </s-option>
                 ))}
               </s-select>
               {transitTime === "custom" && (
                 <s-text-field
-                  type="number"
                   value={String(customDays)}
                   onChange={(e) =>
                     setCustomDays(
                       parseInt((e.target as HTMLInputElement).value, 10) || 0,
                     )
                   }
-                  min={1}
                 />
               )}
             </div>
             <p className={styles.explanatoryText}>
-              {getExplanatoryTimeText(timeLimit, transitTime, customDays)}
+              {getExplanatoryTimeText(timeLimit, transitTime, customDays, t)}
             </p>
-            <h3 className={styles.subSectionTitle}>Delivery zones</h3>
+            <h3 className={styles.subSectionTitle}>{t("parameters.deliveryZones")}</h3>
             <div className={styles.stackBlock}>
               <div className={styles.stackInline}>
                 <label>
@@ -807,7 +1010,7 @@ export default function CarrierService() {
                     checked={distanceMethod === "postal_codes"}
                     onChange={() => setDistanceMethod("postal_codes")}
                   />
-                  Use postal codes
+                  {t("parameters.usePostalCodes")}
                 </label>
                 <label>
                   <input
@@ -816,12 +1019,12 @@ export default function CarrierService() {
                     checked={distanceMethod === "radius"}
                     onChange={() => setDistanceMethod("radius")}
                   />
-                  Set a delivery radius
+                  {t("parameters.setRadius")}
                 </label>
               </div>
               {distanceMethod === "radius" && (
                 <div className={styles.stackInline}>
-                  <span>Measure radius in</span>
+                  <span>{t("parameters.measureRadiusIn")}</span>
                   <label>
                     <input
                       type="radio"
@@ -829,7 +1032,7 @@ export default function CarrierService() {
                       checked={distanceUnit === "km"}
                       onChange={() => setDistanceUnit("km")}
                     />
-                    km
+                    {t("distanceMethod.kmLabel")}
                   </label>
                   <label>
                     <input
@@ -838,7 +1041,7 @@ export default function CarrierService() {
                       checked={distanceUnit === "mi"}
                       onChange={() => setDistanceUnit("mi")}
                     />
-                    mi
+                    {t("distanceMethod.miLabel")}
                   </label>
                 </div>
               )}
@@ -846,11 +1049,11 @@ export default function CarrierService() {
                 {zones.map((zone, i) => (
                   <li key={i} className={styles.zoneItem}>
                     <div className={styles.zoneItemLeft}>
-                      <span>{zoneSummary(zone, distanceUnit)}</span>
+                      <span>{zoneSummary(zone, distanceUnit, t)}</span>
                       {zone.minOrderPriceSubunits != null &&
                         zone.minOrderPriceSubunits > 0 && (
                           <span style={{ fontSize: "13px", color: "#6d7175" }}>
-                            Min. order: {(zone.minOrderPriceSubunits / 100).toFixed(2)}
+                            {t("parameters.minOrder")} {(zone.minOrderPriceSubunits / 100).toFixed(2)}
                           </span>
                         )}
                     </div>
@@ -859,26 +1062,27 @@ export default function CarrierService() {
                         variant="secondary"
                         onClick={() => openAddZone(i)}
                       >
-                        Edit
+                        {t("edit")}
                       </s-button>
                       <s-button
                         variant="secondary"
                         onClick={() => removeZone(i)}
                         disabled={zones.length <= 1}
                       >
-                        Remove
+                        {t("remove")}
                       </s-button>
                     </div>
                   </li>
                 ))}
               </ul>
+              <span className={styles.addZoneBtn}>
               <s-button
                 variant="secondary"
-                className={styles.addZoneBtn}
                 onClick={() => openAddZone(zones.length)}
               >
-                + Add zone
+                {t("parameters.addZone")}
               </s-button>
+              </span>
             </div>
               </s-stack>
             </s-box>
@@ -891,8 +1095,9 @@ export default function CarrierService() {
           <div className={styles.locationSettingsBlock}>
             <s-box padding="base" borderRadius="base">
               <s-stack direction="block" gap="base">
-                <h2 className={styles.modalTitle}>Delivery providers</h2>
-            <p>Choose which delivery platforms to request quotes from. The cheapest rate is shown at checkout.</p>
+                <h2 className={styles.modalTitle}>{t("providers.title")}</h2>
+            <s-banner>{t("providers.description")}</s-banner>
+            <div className={styles.providerTableWrap}>
             <div className={styles.providerTable}>
               <div className={styles.providerTableHeader}>
                 <span>
@@ -901,24 +1106,32 @@ export default function CarrierService() {
                     checked={allConfiguredChecked}
                     onChange={toggleAllConfigured}
                     disabled={configuredProviderIds.length === 0}
-                    aria-label="Select all configured providers"
+                    aria-label={t("providers.selectAll")}
                   />
                 </span>
-                <span>Provider</span>
-                <span>Status</span>
-                <span>API key</span>
-                <span>{/* no header for Configure column */}</span>
+                <span>{t("providers.tableProvider")}</span>
+                <span style={{ textAlign: "center" }}>{t("providers.tableStatus")}</span>
+                <span style={{ textAlign: "center" }}>{t("providers.tableCredentials")}</span>
+                <span>{t("providers.tablePreferences")}</span>
+                <span></span>
               </div>
               {PROVIDERS.map(({ id, label, available }) => {
                 const isConfigured =
                   id === "lalamove" && credentialStatusState.configured;
                 const statusOk = available && isConfigured;
-                const apiKeyDisplay =
-                  id === "lalamove"
-                    ? isConfigured
-                      ? apiKeyDisplayMask || "Configured"
-                      : "—"
-                    : "—";
+                const hasPrefs = Boolean(config?.lalamovePreferredServiceType);
+                const moreParts: string[] = [];
+                if (id === "lalamove") {
+                  if (config?.lalamoveSecondaryServiceType) {
+                    moreParts.push(`Vehicle 2nd option: ${config.lalamoveSecondaryServiceType}`);
+                  }
+                  if (config?.lalamoveSecondaryMaxOrdersPerRoute) {
+                    moreParts.push(`Max orders/route: ${config.lalamoveSecondaryMaxOrdersPerRoute}`);
+                  }
+                  const srKeys = Object.values(config?.lalamoveSpecialRequests ?? {}).flat();
+                  if (srKeys.length > 0) moreParts.push(srKeys.join(" · "));
+                }
+                const moreLabel = moreParts.join(" | ");
                 return (
                   <div key={id} className={styles.providerTableRow}>
                     <span>
@@ -926,43 +1139,99 @@ export default function CarrierService() {
                         type="checkbox"
                         checked={enabledProviders.includes(id)}
                         onChange={() => toggleProvider(id)}
-                        aria-label={`Enable ${label}`}
+                        disabled={!available || !isConfigured}
+                        aria-label={t("providers.enableProvider", { label })}
                       />
                     </span>
                     <span>{label}</span>
                     <span className={styles.providerStatusCell}>
-                      <span
-                        className={
-                          statusOk
-                            ? styles.providerStatusOk
-                            : styles.providerStatusFail
-                        }
-                      >
-                        {statusOk ? "✓" : "✗"}
-                      </span>
+                      {!available ? (
+                        <span className={styles.providerComingSoon}>
+                          {t("providers.comingSoon")}
+                        </span>
+                      ) : statusOk ? (
+                        <span className={styles.providerStatusOk}>✓</span>
+                      ) : (
+                        <span className={styles.providerStatusUnknown}>?</span>
+                      )}
                     </span>
-                    <span>{apiKeyDisplay}</span>
-                    {available ? (
-                      <span>
+                    <span className={styles.providerCredentialsCell}>
+                      {!available ? (
+                        <span>—</span>
+                      ) : isConfigured ? (
                         <s-link
                           onClick={() => {
                             setCredentialMessage(null);
+                            setCredentialsUnlocked(false);
+                            setApiKeyInput("");
+                            setApiSecretInput("");
                             setApiModalOpen(true);
                           }}
                         >
-                          {isConfigured
-                            ? "Update provider"
-                            : "Configure provider"}
+                          {apiKeyDisplayMask || "****"}
                         </s-link>
-                      </span>
-                    ) : (
-                      <span className={styles.providerComingSoon}>
-                        Coming soon
-                      </span>
-                    )}
+                      ) : (
+                        <s-link
+                          onClick={() => {
+                            setCredentialMessage(null);
+                            setCredentialsUnlocked(true);
+                            setApiKeyInput("");
+                            setApiSecretInput("");
+                            setApiModalOpen(true);
+                          }}
+                        >
+                          {t("providers.addCredentials")}
+                        </s-link>
+                      )}
+                    </span>
+                    <span className={styles.providerPreferencesCell}>
+                      {id === "lalamove" && available ? (
+                        <>
+                          {config?.lalamovePreferredServiceType && (
+                            <s-badge tone="neutral">
+                              {`Vehicle: ${config.lalamovePreferredServiceType}`}
+                            </s-badge>
+                          )}
+                          {config?.lalamoveMaxOrdersPerRoute && (
+                            <s-badge tone="neutral">
+                              {`Max orders/route: ${config.lalamoveMaxOrdersPerRoute}`}
+                            </s-badge>
+                          )}
+                          {moreLabel && (
+                            <span
+                              ref={moreRef}
+                              className={`${styles.prefMoreWrapper} ${moreExpanded ? styles.prefMoreExpanded : ""}`}
+                              onClick={() => setMoreExpanded((v) => !v)}
+                            >
+                              <span className={styles.prefMoreDots}>…</span>
+                              <span className={styles.prefMoreTooltip}>{moreLabel}</span>
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span>—</span>
+                      )}
+                    </span>
+                    <span className={styles.providerActionCell}>
+                      {id === "lalamove" && available && (
+                        <span
+                          className={styles.providerCogButton}
+                          onClick={() => {
+                            setPrefMessage(null);
+                            setPrefModalOpen(true);
+                          }}
+                          title={hasPrefs
+                            ? t("providers.updatePreferences")
+                            : t("providers.definePreferences")}
+                        >
+                          ⚙️
+                        </span>
+                      )}
+                    </span>
                   </div>
                 );
               })}
+            </div>
             </div>
               </s-stack>
             </s-box>
@@ -976,7 +1245,7 @@ export default function CarrierService() {
               onClick={saveConfig}
               disabled={fetcher.state !== "idle"}
             >
-              Save
+              {t("save")}
             </s-button>
           </s-stack>
         </s-stack>
@@ -988,21 +1257,21 @@ export default function CarrierService() {
             <div className={styles.modalHeader}>
               <h3 className={styles.modalTitle}>
                 {editingZoneIndex != null && editingZoneIndex < zones.length
-                  ? "Edit zone"
-                  : "Add zone"}
+                  ? t("zoneModal.editZone")
+                  : t("zoneModal.addZone")}
               </h3>
               <button
                 type="button"
                 className={styles.modalClose}
                 onClick={() => setModalOpen(false)}
-                aria-label="Close"
+                aria-label={t("close")}
               >
                 &times;
               </button>
             </div>
             <div className={styles.modalBody}>
               <s-text-field
-                label="Zone name"
+                label={t("zoneModal.zoneName")}
                 value={zoneName}
                 onChange={(e) =>
                   setZoneName((e.target as HTMLInputElement).value)
@@ -1011,7 +1280,7 @@ export default function CarrierService() {
               {distanceMethod === "radius" && (
                 <>
                   <s-text-field
-                    label={`Delivery radius up to (${distanceUnit})`}
+                    label={t("zoneModal.radiusLabel", { unit: distanceUnit })}
                     value={zoneRadius}
                     onChange={(e) =>
                       setZoneRadius((e.target as HTMLInputElement).value)
@@ -1020,7 +1289,7 @@ export default function CarrierService() {
                 </>
               )}
               <s-text-field
-                label="Minimum order price"
+                label={t("zoneModal.minOrderPrice")}
                 value={zoneMinOrder}
                 onChange={(e) =>
                   setZoneMinOrder((e.target as HTMLInputElement).value)
@@ -1028,7 +1297,7 @@ export default function CarrierService() {
               />
               <div>
                 <span style={{ display: "block", marginBottom: 8 }}>
-                  Delivery price
+                  {t("zoneModal.deliveryPrice")}
                 </span>
                 <div className={styles.deliveryPriceRadioGroup}>
                   <label className={styles.deliveryPriceRadioRow}>
@@ -1038,7 +1307,7 @@ export default function CarrierService() {
                       checked={zoneUseCarrierQuote}
                       onChange={() => setZoneUseCarrierQuote(true)}
                     />
-                    Use carrier quote
+                    {t("zoneModal.useCarrierQuote")}
                   </label>
                   <label className={styles.deliveryPriceRadioRow}>
                     <input
@@ -1047,11 +1316,11 @@ export default function CarrierService() {
                       checked={!zoneUseCarrierQuote}
                       onChange={() => setZoneUseCarrierQuote(false)}
                     />
-                    Custom price
+                    {t("zoneModal.customPrice")}
                   </label>
                   {!zoneUseCarrierQuote && (
                     <s-text-field
-                      label="Custom price"
+                      label={t("zoneModal.customPrice")}
                       value={zoneCustomPrice}
                       onChange={(e) =>
                         setZoneCustomPrice((e.target as HTMLInputElement).value)
@@ -1070,35 +1339,33 @@ export default function CarrierService() {
                         if (!e.target.checked) setZoneDilateValue("");
                       }}
                     />
-                    Dilate default delivery time by:
+                    {t("zoneModal.dilateLabel")}
                   </label>
                   <s-text-field
-                    type="number"
                     value={zoneDilateValue}
                     onChange={(e) =>
-                      setZoneDilateValue((e.target as HTMLInputElement).value)
+                      setZoneDilateValue((e.currentTarget as unknown as HTMLInputElement).value)
                     }
-                    min={0}
                   />
                   <s-select
                     value={zoneDilateDimension}
                     onChange={(e) =>
                       setZoneDilateDimension(
-                        (e.target as HTMLSelectElement).value as
+                        (e.currentTarget as unknown as HTMLSelectElement).value as
                           | "minutes"
                           | "hours"
                           | "days",
                       )
                     }
                   >
-                    <s-option value="minutes">minutes</s-option>
-                    <s-option value="hours">hours</s-option>
-                    <s-option value="days">days</s-option>
+                    <s-option value="minutes">{t("zoneModal.dilateMinutes")}</s-option>
+                    <s-option value="hours">{t("zoneModal.dilateHours")}</s-option>
+                    <s-option value="days">{t("zoneModal.dilateDays")}</s-option>
                   </s-select>
                 </div>
               )}
               <s-text-area
-                label="Delivery information"
+                label={t("zoneModal.deliveryInfo")}
                 value={zoneDeliveryInfo}
                 onChange={(e) =>
                   setZoneDeliveryInfo((e.target as HTMLTextAreaElement).value)
@@ -1108,10 +1375,10 @@ export default function CarrierService() {
             </div>
             <div className={styles.modalFooter}>
               <s-button variant="secondary" onClick={() => setModalOpen(false)}>
-                Cancel
+                {t("zoneModal.cancel")}
               </s-button>
               <s-button variant="primary" onClick={saveZone}>
-                Save
+                {t("zoneModal.save")}
               </s-button>
             </div>
           </div>
@@ -1122,111 +1389,67 @@ export default function CarrierService() {
         <div className={styles.modalOverlay} role="dialog" aria-modal="true">
           <div className={styles.modal}>
             <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Lalamove preferences</h3>
+              <h3 className={styles.modalTitle}>{t("lalamoveModal.credentialsTitle")}</h3>
               <button
                 type="button"
                 className={styles.modalClose}
                 onClick={() => {
                   setApiModalOpen(false);
                   setCredentialMessage(null);
+                  setCredentialsUnlocked(false);
                   setApiKeyInput("");
                   setApiSecretInput("");
-                  setMarketInput("BR");
                 }}
-                aria-label="Close"
+                aria-label={t("close")}
               >
                 &times;
               </button>
             </div>
             <div className={styles.modalBody}>
-              <p className={styles.statusText}>
-                Secrets are encrypted at rest and never returned to the UI after saving.
-              </p>
+              {credentialStatusState.configured && !credentialsUnlocked ? (
+                <>
+                  <s-text-field
+                    label={t("lalamoveModal.apiKey")}
+                    value={apiKeyDisplayMask || "****"}
+                    disabled
+                  />
+                  <s-text-field
+                    label={t("lalamoveModal.apiSecret")}
+                    value="***********"
+                    disabled
+                  />
+                </>
+              ) : (
+                <>
+                  <s-text-field
+                    label={t("lalamoveModal.apiKey")}
+                    value={apiKeyInput}
+                    onChange={(e) =>
+                      setApiKeyInput((e.currentTarget as unknown as HTMLInputElement).value)
+                    }
+                  />
+                  <s-text-field
+                    label={t("lalamoveModal.apiSecret")}
+                    value={apiSecretInput}
+                    onChange={(e) =>
+                      setApiSecretInput((e.currentTarget as unknown as HTMLInputElement).value)
+                    }
+                    autocomplete="off"
+                  />
+                </>
+              )}
               <s-text-field
-                label="Lalamove API key"
-                value={apiKeyInput}
-                onChange={(e) =>
-                  setApiKeyInput((e.currentTarget as HTMLInputElement).value)
-                }
-              />
-              <s-text-field
-                label="Lalamove API secret"
-                type="password"
-                value={apiSecretInput}
-                onChange={(e) =>
-                  setApiSecretInput((e.currentTarget as HTMLInputElement).value)
-                }
-                autoComplete="off"
-              />
-              <s-text-field
-                label="Market"
+                label={t("lalamoveModal.market")}
                 value={marketInput}
                 onChange={(e) =>
                   setMarketInput(
-                    ((e.currentTarget as HTMLInputElement).value as string)
+                    ((e.currentTarget as unknown as HTMLInputElement).value as string)
                       .toUpperCase()
                       .trim()
                       .slice(0, 4),
                   )
                 }
               />
-              <div className={styles.vehicleGrid}>
-                <s-select
-                  label="Preferred vehicle"
-                  value={preferredServiceTypeInput}
-                  onChange={(e) =>
-                    setPreferredServiceTypeInput(
-                      (e.currentTarget as HTMLSelectElement).value,
-                    )
-                  }
-                >
-                  {LALAMOVE_SERVICE_TYPES.map((opt) => (
-                    <s-option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </s-option>
-                  ))}
-                </s-select>
-                <s-text-field
-                  label="Max orders/route"
-                  type="number"
-                  min="1"
-                  max="15"
-                  value={maxOrdersPerRouteInput}
-                  onChange={(e) =>
-                    setMaxOrdersPerRouteInput(
-                      (e.currentTarget as HTMLInputElement).value,
-                    )
-                  }
-                />
-                <s-select
-                  label="2nd best option"
-                  value={secondaryServiceTypeInput}
-                  onChange={(e) =>
-                    setSecondaryServiceTypeInput(
-                      (e.currentTarget as HTMLSelectElement).value,
-                    )
-                  }
-                >
-                  <s-option value="">— none —</s-option>
-                  {LALAMOVE_SERVICE_TYPES.map((opt) => (
-                    <s-option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </s-option>
-                  ))}
-                </s-select>
-                <s-text-field
-                  label="Max orders/route"
-                  type="number"
-                  min="1"
-                  max="15"
-                  value={secondaryMaxOrdersInput}
-                  onChange={(e) =>
-                    setSecondaryMaxOrdersInput(
-                      (e.currentTarget as HTMLInputElement).value,
-                    )
-                  }
-                />
-              </div>
               {credentialMessage ? (
                 <s-banner
                   tone={credentialActionOk ? "info" : "critical"}
@@ -1242,35 +1465,261 @@ export default function CarrierService() {
                 onClick={() => {
                   setApiModalOpen(false);
                   setCredentialMessage(null);
+                  setCredentialsUnlocked(false);
                   setApiKeyInput("");
                   setApiSecretInput("");
-                  setMarketInput("BR");
                 }}
                 disabled={credentialFetcher.state !== "idle"}
               >
-                Cancel
+                {t("lalamoveModal.cancel")}
               </s-button>
-              <s-button
-                variant="secondary"
-                tone="critical"
-                onClick={deleteCredentials}
-                disabled={credentialFetcher.state !== "idle"}
-              >
-                Remove
-              </s-button>
+              {credentialStatusState.configured && !credentialsUnlocked && (
+                <s-button
+                  variant="secondary"
+                  onClick={() => {
+                    setCredentialsUnlocked(true);
+                    setApiKeyInput("");
+                    setApiSecretInput("");
+                  }}
+                  disabled={credentialFetcher.state !== "idle"}
+                >
+                  {t("lalamoveModal.editCredentials")}
+                </s-button>
+              )}
+              {credentialStatusState.configured && (
+                <s-button
+                  variant="secondary"
+                  tone="critical"
+                  onClick={deleteCredentials}
+                  disabled={credentialFetcher.state !== "idle"}
+                >
+                  {t("lalamoveModal.remove")}
+                </s-button>
+              )}
               <s-button
                 variant="primary"
                 onClick={saveCredentials}
-                disabled={credentialFetcher.state !== "idle"}
+                disabled={
+                  credentialFetcher.state !== "idle" ||
+                  (credentialsUnlocked && (!apiKeyInput.trim() || !apiSecretInput.trim()))
+                }
               >
-                Save
+                {t("lalamoveModal.save")}
               </s-button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {prefModalOpen && (
+        <div className={styles.modalOverlay} role="dialog" aria-modal="true">
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>{t("lalamoveModal.preferencesTitle")}</h3>
+              <button
+                type="button"
+                className={styles.modalClose}
+                onClick={() => {
+                  setPrefModalOpen(false);
+                  setPrefMessage(null);
+                }}
+                aria-label={t("close")}
+              >
+                &times;
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.vehicleGrid}>
+                <s-select
+                  label={t("lalamoveModal.preferredVehicle")}
+                  value={preferredServiceTypeInput}
+                  onChange={(e) =>
+                    setPreferredServiceTypeInput(
+                      (e.currentTarget as unknown as HTMLSelectElement).value,
+                    )
+                  }
+                >
+                  {LALAMOVE_SERVICE_TYPES.map((opt) => (
+                    <s-option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </s-option>
+                  ))}
+                </s-select>
+                <s-text-field
+                  label={t("lalamoveModal.maxOrdersRoute")}
+                  value={maxOrdersPerRouteInput}
+                  onChange={(e) =>
+                    setMaxOrdersPerRouteInput(
+                      (e.currentTarget as unknown as HTMLInputElement).value,
+                    )
+                  }
+                />
+                <s-select
+                  label={t("lalamoveModal.secondBestOption")}
+                  value={secondaryServiceTypeInput}
+                  onChange={(e) =>
+                    setSecondaryServiceTypeInput(
+                      (e.currentTarget as unknown as HTMLSelectElement).value,
+                    )
+                  }
+                >
+                  <s-option value="">{t("lalamoveModal.none")}</s-option>
+                  {LALAMOVE_SERVICE_TYPES.map((opt) => (
+                    <s-option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </s-option>
+                  ))}
+                </s-select>
+                <s-text-field
+                  label={t("lalamoveModal.maxOrdersRoute")}
+                  value={secondaryMaxOrdersInput}
+                  onChange={(e) =>
+                    setSecondaryMaxOrdersInput(
+                      (e.currentTarget as unknown as HTMLInputElement).value,
+                    )
+                  }
+                />
+              </div>
+              {configuredMarkets.length > 0 && credentialStatusState.configured && (
+                <div style={{ marginTop: 16 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
+                    {t("lalamoveModal.specialRequestsHeading")}
+                  </p>
+                  {specialRequestsFetcher.state !== "idle" ? (
+                    <p style={{ fontSize: 13, color: "#6d7175" }}>{t("lalamoveModal.specialRequestsLoading")}</p>
+                  ) : (
+                    configuredMarkets.map((market) => {
+                      const requests = specialRequestsByMarket[market] ?? [];
+                      if (!requests.length) return null;
+                      const thermalBagReqs = requests.filter((sr) =>
+                        THERMAL_BAG_PATTERN.test(sr.description || sr.name),
+                      );
+                      const waitTimeReqs = requests.filter((sr) =>
+                        WAIT_TIME_PATTERN.test(sr.description || sr.name),
+                      );
+                      const returnTripReqs = requests.filter((sr) =>
+                        RETURN_TRIP_PATTERN.test(sr.description || sr.name),
+                      );
+                      const otherReqs = requests.filter(
+                        (sr) =>
+                          !THERMAL_BAG_PATTERN.test(sr.description || sr.name) &&
+                          !WAIT_TIME_PATTERN.test(sr.description || sr.name) &&
+                          !RETURN_TRIP_PATTERN.test(sr.description || sr.name),
+                      );
+                      const waitTimeEnabled = waitTimeReqs.some(
+                        (sr) => selectedSpecialRequests[market]?.has(sr.name),
+                      );
+                      const toggleSR = (srName: string, checked: boolean) => {
+                        setSelectedSpecialRequests((prev) => {
+                          const next = { ...prev };
+                          const set = new Set(prev[market] ?? []);
+                          if (checked) set.add(srName);
+                          else set.delete(srName);
+                          next[market] = set;
+                          return next;
+                        });
+                      };
+                      const toggleWaitTime = (checked: boolean) => {
+                        setSelectedSpecialRequests((prev) => {
+                          const next = { ...prev };
+                          const set = new Set(prev[market] ?? []);
+                          if (!checked) {
+                            waitTimeReqs.forEach((sr) => set.delete(sr.name));
+                          }
+                          next[market] = set;
+                          return next;
+                        });
+                      };
+                      return (
+                        <div key={market}>
+                          {configuredMarkets.length > 1 && (
+                            <p style={{ fontSize: 12, color: "#6d7175", marginBottom: 4 }}>{market}</p>
+                          )}
+                          {thermalBagReqs.map((sr) => (
+                            <label key={sr.name} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, cursor: "pointer" }}>
+                              <input
+                                type="checkbox"
+                                checked={selectedSpecialRequests[market]?.has(sr.name) ?? false}
+                                onChange={(e) => toggleSR(sr.name, e.target.checked)}
+                              />
+                              <span style={{ fontSize: 13 }}>{sr.description || sr.name}</span>
+                            </label>
+                          ))}
+                          {waitTimeReqs.length > 0 && (
+                            <div>
+                              <label style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4, cursor: "pointer" }}>
+                                <input
+                                  type="checkbox"
+                                  checked={waitTimeEnabled}
+                                  onChange={(e) => toggleWaitTime(e.target.checked)}
+                                />
+                                <span style={{ fontSize: 13 }}>{t("lalamoveModal.waitTime")}</span>
+                              </label>
+                              {waitTimeEnabled && (
+                                <div style={{ paddingLeft: 24, marginBottom: 6 }}>
+                                  {waitTimeReqs.map((sr) => (
+                                    <label key={sr.name} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4, cursor: "pointer" }}>
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedSpecialRequests[market]?.has(sr.name) ?? false}
+                                        onChange={(e) => toggleSR(sr.name, e.target.checked)}
+                                      />
+                                      <span style={{ fontSize: 13 }}>{sr.description || sr.name}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {returnTripReqs.map((sr) => (
+                            <label key={sr.name} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, cursor: "pointer" }}>
+                              <input
+                                type="checkbox"
+                                checked={selectedSpecialRequests[market]?.has(sr.name) ?? false}
+                                onChange={(e) => toggleSR(sr.name, e.target.checked)}
+                              />
+                              <span style={{ fontSize: 13 }}>{sr.description || sr.name}</span>
+                            </label>
+                          ))}
+                          {otherReqs.map((sr) => (
+                            <label key={sr.name} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, cursor: "pointer" }}>
+                              <input
+                                type="checkbox"
+                                checked={selectedSpecialRequests[market]?.has(sr.name) ?? false}
+                                onChange={(e) => toggleSR(sr.name, e.target.checked)}
+                              />
+                              <span style={{ fontSize: 13 }}>{sr.description || sr.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+              {prefMessage ? (
+                <s-banner tone="critical" onDismiss={() => setPrefMessage(null)}>
+                  {prefMessage}
+                </s-banner>
+              ) : null}
+            </div>
+            <div className={styles.modalFooter}>
               <s-button
                 variant="secondary"
-                onClick={testCredentials}
-                disabled={credentialFetcher.state !== "idle"}
+                onClick={() => {
+                  setPrefModalOpen(false);
+                  setPrefMessage(null);
+                }}
+                disabled={prefFetcher.state !== "idle"}
               >
-                Verify
+                {t("lalamoveModal.cancel")}
+              </s-button>
+              <s-button
+                variant="primary"
+                onClick={savePreferences}
+                disabled={prefFetcher.state !== "idle"}
+              >
+                {t("lalamoveModal.save")}
               </s-button>
             </div>
           </div>
