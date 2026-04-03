@@ -159,8 +159,11 @@ model LalamoveDispatchJob {
   requestedBy       String?
   requestedAt       DateTime @default(now())
   priorityFeeLevel  Int      @default(0)   // 0=none applied, 1=first fee, 2=second fee, 3=third fee
-  quotationTotal    String?               // snapshot of priceBreakdown.total at dispatch time
-  quotationCurrency String?               // snapshot of priceBreakdown.currency at dispatch time
+  quotationTotal       String?               // snapshot of priceBreakdown.total at dispatch time
+  quotationCurrency    String?               // snapshot of priceBreakdown.currency at dispatch time
+  shopifyFulfillmentId String?               // Shopify fulfillment GID created at dispatch time
+  retryCount        Int      @default(0)     // number of auto-retry attempts
+  lastRetryAt       DateTime?                // timestamp of last auto-retry
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -259,6 +262,90 @@ model RetailAnalyticsCache {
   updatedAt  DateTime @updatedAt
 }
 
+model RetailAnalyticsSyncStatus {
+  shop               String    @unique
+  status             String    @default("idle")
+  errorMessage       String?
+  phase              String?
+  progressCount      Int?
+  startedAt          DateTime?
+  lastCustomersTotal Int?
+  lastOrdersTotal    Int?
+  updatedAt          DateTime  @updatedAt
+}
+
+
+model RetailLocationProposal {
+  id            String   @id @default(cuid())
+  shop          String
+  locationSetId String
+  locationId    String
+  leasingValue  Float?
+  currency      String?
+  notes         String?
+  fileName      String?
+  fileType      String?
+  fileSize      Int?
+  fileData      Bytes?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([shop, locationSetId])
+  @@index([shop, locationId])
+}
+
+model RetailStatsConfig {
+  id        String   @id @default(cuid())
+  shop      String
+  setId     String?
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shop, setId])
+  @@index([shop])
+}
+
+model PriceTagConfig {
+  id                      String   @id @default(cuid())
+  shop                    String   @unique
+  discountMode            String   @default("highest")
+  dollarThreshold         Float?
+  metaobjectType          String   @default("")
+  metafieldNamespace      String   @default("")
+  metafieldKey            String   @default("")
+  displayNameKey          String   @default("")
+  metaobjectFieldDefaults String   @default("{}")
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+model PriceTagTierRule {
+  id                 String   @id @default(cuid())
+  shop               String
+  discountType       String   @default("percent")
+  startingAt         Float
+  metaobjectHandles  String   @default("[]")
+  metaobjectGids     String   @default("[]")
+  sortOrder          Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([shop])
+}
+
+model PriceTagProductLog {
+  id               String   @id @default(cuid())
+  shop             String
+  productGid       String
+  metafieldSet     Boolean  @default(false)
+  lastTierHandle   String?
+  lastProcessedAt  DateTime @default(now())
+
+  @@unique([shop, productGid])
+  @@index([shop])
+}
+
 model BrandSettings {
   id                    String   @id @default(cuid())
   shop                  String   @unique
@@ -293,4 +380,178 @@ model BlogPostPreferences {
   author     String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model ReturnPickupRequest {
+  id                 String   @id @default(cuid())
+  shop               String
+  shopifyOrderId     String
+  shopifyOrderName   String?
+  locationId         String
+  customerName       String?
+  customerPhone      String?
+  customerAddress    String?
+  customerAddress2   String?
+  customerLat        Float?
+  customerLng        Float?
+  status             String   @default("pending")
+  returnInstructions String?
+  quotationId        String?
+  lalamoveOrderId    String?
+  quotationTotal     String?
+  quotationCurrency  String?
+  requestedBy        String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([shop, shopifyOrderId])
+  @@index([shop, status])
+  @@index([shop, locationId, status])
+}
+
+// ─── Retail Footprint: Normalized analytics tables ────────────────────────────
+
+model RetailOrder {
+  id           String    @id
+  shop         String
+  customerId   String?
+  city         String?
+  cityNorm     String?
+  latitude     Float?
+  longitude    Float?
+  totalAmount  Float?
+  currencyCode String?
+  orderDate    DateTime?
+  syncedAt     DateTime  @default(now())
+
+  @@index([shop, orderDate])
+  @@index([shop, cityNorm])
+  @@index([shop, latitude, longitude])
+}
+
+model RetailCustomer {
+  id           String    @id
+  shop         String
+  city         String?
+  cityNorm     String?
+  latitude     Float?
+  longitude    Float?
+  customerDate DateTime?
+  syncedAt     DateTime  @default(now())
+
+  @@index([shop, customerDate])
+  @@index([shop, cityNorm])
+}
+
+model RetailCityMonthly {
+  id              String @id @default(cuid())
+  shop            String
+  cityNorm        String
+  cityDisplay     String
+  month           String
+  orderCount      Int    @default(0)
+  revenue         Float  @default(0)
+  uniqueCustomers Int    @default(0)
+  currencyCode    String?
+  latitudeSum     Float  @default(0)
+  longitudeSum    Float  @default(0)
+  geocodedCount   Int    @default(0)
+
+  @@unique([shop, cityNorm, month])
+  @@index([shop, month])
+}
+
+model RetailHeatmapBucket {
+  id            String @id @default(cuid())
+  shop          String
+  lat3          Float
+  lng3          Float
+  orderCount    Int    @default(0)
+  revenueSum    Float  @default(0)
+  customerCount Int    @default(0)
+
+  @@unique([shop, lat3, lng3])
+  @@index([shop])
+}
+
+model RetailSyncMeta {
+  shop             String    @unique
+  status           String    @default("idle")
+  errorMessage     String?
+  phase            String?
+  progressCount    Int?
+  startedAt        DateTime?
+  lastSyncedAt     DateTime?
+  lastOrderDate    DateTime?
+  lastCustomerDate DateTime?
+  totalOrders      Int?
+  totalCustomers   Int?
+  updatedAt        DateTime  @updatedAt
+}
+
+model GeocodeCacheEntry {
+  id        String   @id @default(cuid())
+  queryKey  String   @unique
+  lat       Float
+  lng       Float
+  route     String?
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+model RoutePolylineCache {
+  id             String   @id @default(cuid())
+  shop           String
+  locationId     String
+  orderIdsKey    String   // sorted order IDs joined by "|"
+  encodedPolyline String
+  createdAt      DateTime @default(now())
+
+  @@unique([shop, locationId, orderIdsKey])
+  @@index([shop, locationId])
+}
+
+model BulkPriceCampaign {
+  id              String    @id @default(cuid())
+  shop            String
+  name            String
+  status          String    @default("draft")
+  discountType    String    @default("percentage")
+  discountValue   Float
+  filterType      String    @default("product_types")
+  filterValues    String    @default("[]")
+  excludeEnabled  Boolean   @default(false)
+  excludeType     String    @default("tags")
+  excludeValues   String    @default("[]")
+  startAt         DateTime
+  endAt           DateTime?
+  activatedAt     DateTime?
+  deactivatedAt   DateTime?
+  productCount    Int       @default(0)
+  variantCount    Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  items BulkPriceCampaignItem[]
+
+  @@index([shop])
+  @@index([shop, status])
+}
+
+model BulkPriceCampaignItem {
+  id                     String   @id @default(cuid())
+  campaignId             String
+  shop                   String
+  productGid             String
+  variantGid             String
+  originalPrice          Float
+  originalCompareAtPrice Float?
+  appliedPrice           Float
+  appliedCompareAtPrice  Float
+  createdAt              DateTime @default(now())
+
+  campaign BulkPriceCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([shop, variantGid])
 }
