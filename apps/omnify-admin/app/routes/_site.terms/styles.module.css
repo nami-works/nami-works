@@ -7,14 +7,6 @@
   --legal-link: #0969da;
 }
 
-.page {
-  color: var(--legal-heading);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: var(--legal-bg);
-}
-
 .content {
   max-width: 720px;
   margin: 0 auto;
@@ -57,18 +49,6 @@
 
 .sectionTitle {
   font-size: 18px;
-  font-weight: 600;
-  margin: 0;
-  color: var(--legal-heading);
-}
-
-.subsection {
-  display: grid;
-  gap: 8px;
-}
-
-.subsectionTitle {
-  font-size: 16px;
   font-weight: 600;
   margin: 0;
   color: var(--legal-heading);

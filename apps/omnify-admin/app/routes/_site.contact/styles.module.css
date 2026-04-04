@@ -1,0 +1,94 @@
+.page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 48px 16px 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.headline {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--site-text);
+  margin: 0 0 32px;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
+.card {
+  background: var(--site-surface);
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 480px;
+  width: 100%;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 0;
+}
+
+.item:first-child {
+  padding-top: 0;
+}
+
+.item:last-child {
+  padding-bottom: 0;
+}
+
+.itemBorder {
+  border-bottom: 1px solid var(--site-border);
+}
+
+.iconWrap {
+  flex-shrink: 0;
+  color: var(--site-text-secondary);
+  margin-top: 2px;
+}
+
+.itemContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--site-text-secondary);
+}
+
+.value {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  color: var(--site-text);
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+a.value:hover {
+  opacity: 0.7;
+}
+
+/* ─── Desktop ─── */
+@media (min-width: 769px) {
+  .page {
+    padding: 80px 24px 120px;
+  }
+
+  .headline {
+    font-size: 48px;
+    margin-bottom: 48px;
+  }
+
+  .card {
+    padding: 40px;
+  }
+}

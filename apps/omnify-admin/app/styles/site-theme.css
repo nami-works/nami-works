@@ -1,0 +1,27 @@
+:root,
+[data-theme="light"] {
+  --site-bg: #ffffff;
+  --site-surface: #f8f8fa;
+  --site-text: #1d1d1f;
+  --site-text-secondary: #6e6e73;
+  --site-border: #d2d2d7;
+  --site-nav-bg: rgba(255, 255, 255, 0.72);
+  --site-holo-gradient: linear-gradient(
+    135deg,
+    #5ecece,
+    #b09fda,
+    #d4a8d4,
+    #5ecece
+  );
+  --site-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+}
+
+[data-theme="dark"] {
+  --site-bg: #000000;
+  --site-surface: #111113;
+  --site-text: #f5f5f7;
+  --site-text-secondary: #a1a1a6;
+  --site-border: #38383a;
+  --site-nav-bg: rgba(0, 0, 0, 0.72);
+}
