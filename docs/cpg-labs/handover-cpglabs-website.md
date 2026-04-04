@@ -1,5 +1,51 @@
 # Session Handover — 2026-04-04
 
+## How the agent team worked (methodology for next session)
+
+This session pioneered a **multi-agent product development workflow** combining research agents, build agents, and a Figma-to-code design loop. Here's what worked, what didn't, and how to improve.
+
+### What worked brilliantly
+
+**1. Parallel research agents (Wave 1)**
+Two agents launched simultaneously — Compliance Auditor + Competitive Intel. Each took ~2-3 minutes. Their output fed the Product Architect with real data instead of guesses. This pattern is ideal for any project that needs domain research before design.
+
+**2. Plan mode for design feedback**
+Using Plan mode with ASCII mockups let the user give precise, inline comments on specific sections. The plan file became a living design doc that both parties iterated on. The user could approve/reject individual elements before any code was written.
+
+**3. Parallel build agents (Wave 3)**
+4 agents built simultaneously in isolated worktrees: Layout+Theme, Home Page, Legal Pages, Pricing/About/Contact. Total build time ~3 minutes for 7 complete pages. The merge was clean because each agent had non-overlapping file ownership.
+
+**4. Figma as the design iteration surface**
+The Figma MCP + Playwright at 375px created a true visual feedback loop: code -> preview HTML -> Figma capture -> user edits in Figma -> sync back to code. The user could directly edit text and see the result without waiting for code changes.
+
+### What didn't work well
+
+**1. Figma text editability**
+Captured HTML-to-Design frames produce read-only text nodes. The workaround (load fonts + re-write characters) works but is fragile and needs to be run after every recapture. **Next session should automate this** — create a utility function that runs after every Figma capture.
+
+**2. Preview HTML drift**
+The static preview HTML files quickly fell out of sync with the React component code. Every text change required updating both the `.tsx` file AND the `preview-*.html` file. **Next session should consider** either:
+- Auto-generating preview HTMLs from the component code
+- Or abandoning preview HTMLs entirely if `shopify app dev` can be made to work for public routes
+
+**3. Figma recapture overhead**
+Each Figma recapture cycle (generate ID -> navigate Playwright -> wait -> poll -> swap frame -> make text editable) takes ~45 seconds and produces massive tool output that fills the context window. This was the primary driver of context pressure. **Next session should**:
+- Only recapture pages that actually changed (not all 5 every time)
+- Batch text changes and recapture once at the end, not after every small edit
+- Consider using `use_figma` (Plugin API) for text-only changes instead of recapturing
+
+**4. Worktree conflicts**
+Git worktree creation failed intermittently (`EEXIST` errors). One agent had to run directly on the main repo instead of in isolation. **Next session should** clean up `.claude/worktrees/` at the start.
+
+### Recommended approach for next session
+
+1. **Start with the handover** — read `docs/handover-cpglabs-website.md` and `memory/project_cpglabs_website.md`
+2. **Use Plan mode** for any architectural decisions (deployment strategy, email capture approach)
+3. **Deploy agents in parallel** for independent build tasks — assign each agent specific, non-overlapping files
+4. **Minimize Figma recaptures** — batch visual changes, recapture only changed pages
+5. **For text-only changes**, use `mcp__figma__use_figma` Plugin API to edit text directly instead of recapturing
+6. **Commit incrementally** — don't let all changes pile up uncommitted
+
 ## What was done
 
 ### Research (Wave 1)
