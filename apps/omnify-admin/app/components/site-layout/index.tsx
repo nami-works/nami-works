@@ -106,7 +106,7 @@ export function SiteNav() {
       >
         <Link to="/" className={styles.navLogo}>
           <img
-            src="/omnify_sticker.png"
+            src="/astro-helmet.png"
             alt="Omnify"
             className={styles.navLogoImg}
           />
@@ -200,7 +200,7 @@ export function SiteFooter() {
         <span className={styles.footerBrandText}>
           Omnify is a product of{" "}
           <img
-            src="/delivery-box_holographic.png"
+            src="/cpg-labs_box.png"
             alt="CPG Labs"
             className={styles.footerLogoImg}
           />{" "}
