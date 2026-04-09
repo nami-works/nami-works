@@ -143,11 +143,13 @@
   text-transform: uppercase;
   color: #6d7175;
   padding: 8px 12px;
+  background: #f6f6f7;
+  font-weight: 600;
 }
 
 .benchmarksTable td {
   padding: 10px 12px;
-  border-top: 1px solid #e1e3e5;
+  border-top: 1px solid #f1f1f1;
 }
 
 .benchmarksProductCell {
@@ -209,7 +211,7 @@
 
 .modalActions {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
   margin-top: 8px;
 }

@@ -1,0 +1,61 @@
+{
+  "nav": {
+    "localDelivery": "Entrega local",
+    "salesGoals": "Metas de vendas",
+    "retailExpansion": "Expansão de varejo",
+    "merchandising": "Merchandising",
+    "priceTags": "Etiquetas de preco",
+    "storytelling": "Story-telling",
+    "settings": "Configurações",
+    "extras": "Extras"
+  },
+  "button": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "back": "Voltar",
+    "confirm": "Confirmar",
+    "delete": "Excluir",
+    "remove": "Remover",
+    "generate": "Gerar"
+  },
+  "status": {
+    "loading": "Carregando...",
+    "saving": "Salvando...",
+    "saved": "Salvo com sucesso"
+  },
+  "label": {
+    "location": "Localização",
+    "date": "Data",
+    "search": "Buscar"
+  },
+  "error": {
+    "unknown": "Ocorreu um erro inesperado.",
+    "locationNotProvided": "Localização não fornecida.",
+    "unknownIntent": "Ação desconhecida.",
+    "goalPayloadMissing": "Dados da meta não encontrados.",
+    "goalIdMissing": "ID da meta não encontrado.",
+    "locationConfigMissing": "Dados de configuração de localização ausentes.",
+    "unsupportedRequest": "Solicitação não suportada.",
+    "missingFieldsPublish": "Campos obrigatórios para publicação não preenchidos.",
+    "failedCreateArticle": "Falha ao criar artigo.",
+    "unknownAction": "Ação desconhecida.",
+    "briefDataRequired": "Dados do briefing são obrigatórios.",
+    "invalidBriefJson": "JSON do briefing inválido.",
+    "blogGenNotConfigured": "API de geração de blog não configurada. Defina CONTENT_GEN_API_URL e CONTENT_GEN_API_KEY.",
+    "failedStartGeneration": "Falha ao iniciar geração.",
+    "pollFailed": "Falha na consulta",
+    "lalamoveRateLimit": "Limite de requisições do Lalamove atingido. Aguarde e tente novamente.",
+    "lalamoveTimeout": "Requisição ao Lalamove expirou. Tente novamente.",
+    "lalamoveGeneric": "Erro no Lalamove. Tente novamente mais tarde.",
+    "credentialsMissing": "Credenciais do Lalamove não configuradas.",
+    "credentialsInvalid": "Credenciais do Lalamove inválidas.",
+    "apiKeyRequired": "Chave de API é obrigatória.",
+    "apiSecretRequired": "Segredo de API é obrigatório.",
+    "carrierAlreadyRegistered": "Serviço de transportadora já registrado.",
+    "carrierNotRegistered": "Nenhum serviço de transportadora registrado.",
+    "failedRegisterCarrier": "Falha ao registrar serviço de transportadora.",
+    "failedUnregisterCarrier": "Falha ao cancelar registro do serviço de transportadora.",
+    "configSaveFailed": "Falha ao salvar configuração."
+  }
+}

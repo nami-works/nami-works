@@ -15,7 +15,10 @@ import {
   cancelLalamoveOrder,
   getLalamoveOrderDetails,
   getLalamoveCityInfo,
+  LalamoveApiError,
+  normalizePhoneForMarket,
   placeLalamoveOrder,
+  resolveSpecialRequestsForCity,
   sanitizeLalamoveErrorMessage,
 } from "../services/lalamove.server";
 import {
@@ -27,15 +30,8 @@ import {
   buildSampleRatesForLocationWithOrders,
   getMaxZoneRadiusKm,
 } from "../services/carrier/sample-rate-db.server";
+import type { OptimizerOrderInput } from "../services/google-routes-shared.server";
 import {
-  computeRouteMetrics,
-  optimizeFleetRoutesDispatcher,
-  type OptimizerOrderInput,
-  type RoutingLogic,
-} from "../services/google-routes-optimizer.server";
-import { MAX_ORDERS_PER_ROUTE } from "../services/google-routes-shared.server";
-import {
-  applyLalamoveDeliveryState,
   getFailedDeliveryTag,
 } from "../services/lalamove-sync.server";
 import { runCarrierQuotationForOrderId } from "../services/auto-routing.server";
@@ -51,7 +47,6 @@ const DEFAULT_LOCATION_ID = "all";
 const DEFAULT_START_DATE_DAYS = 30;
 const DEFAULT_DELIVERY_PROMISE_DAYS = 1;
 const MAP_STYLE_STORAGE_KEY = "omnify.localDelivery.mapStyle";
-const ROUTING_LOGIC_STORAGE_KEY = "omnify.localDelivery.routingLogic";
 
 const toLegacyLocationId = (gid: string) => {
   if (!gid) return "";
@@ -72,6 +67,9 @@ const getStartOfDay = (): Date => {
 
 // Detects wait-time special request sub-options by their description (e.g. "Até 30min", "Até 1h")
 const WAIT_TIME_PATTERN = /\d+\s*(min|h\b|hora)/i;
+
+// Strips diacritical marks for accent-insensitive city name comparison (e.g. "São Paulo" → "sao paulo")
+const stripAccents = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
 /** Map Lalamove external status to internal status key (matches webhooks.lalamove.tsx) */
 const mapLalamoveStatusToInternal = (status: string): string => {
@@ -110,7 +108,7 @@ const getStatusBadgeTone = (status: string): BadgeTone => {
   }
 };
 
-const TERMINAL_DISPATCH_STATUSES = new Set(["failed", "rejected", "expired"]);
+const TERMINAL_DISPATCH_STATUSES = new Set(["failed", "rejected", "expired", "delivered"]);
 
 const getDayIndexInTimeZone = (
   date: Date,
@@ -143,6 +141,16 @@ const getHourInTimeZone = (date: Date, timeZone: string): number => {
   const parts = formatter.formatToParts(date);
   const hourPart = parts.find((p) => p.type === "hour");
   return hourPart ? Number(hourPart.value) : date.getUTCHours();
+};
+
+const getMinuteInTimeZone = (date: Date, timeZone: string): number => {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    minute: "numeric",
+  });
+  const parts = formatter.formatToParts(date);
+  const minutePart = parts.find((p) => p.type === "minute");
+  return minutePart ? Number(minutePart.value) : date.getUTCMinutes();
 };
 
 const toDateKey = (date: Date) => date.toISOString().slice(0, 10);
@@ -200,16 +208,18 @@ export default function Index() {
     hasUnfulfilledPresaleOrders,
     failedDeliveryCount,
     activeDispatchData,
+    optimizerAccuracy,
   } =
     useLoaderData<typeof loader>();
-  const { t } = useTranslation("local-delivery");
+  const { t, i18n } = useTranslation("local-delivery");
   const lalamoveFetcher = useFetcher<typeof action>();
   const lalamoveSettingsFetcher = useFetcher<typeof action>();
   const optimizeFetcher = useFetcher<typeof action>();
   const assignFetcher = useFetcher();
   const unassignFetcher = useFetcher();
-  const refreshStatsFetcher = useFetcher<typeof action>();
   const pendingRouteFetcher = useFetcher<typeof action>();
+  const updateRoutesFetcher = useFetcher<typeof action>();
+  const splitRoutesFetcher = useFetcher<typeof action>();
   const revalidator = useRevalidator();
   const trackingFetcher = useFetcher<typeof action>();
   const trackingRouteRef = useRef<string | null>(null);
@@ -245,18 +255,23 @@ export default function Index() {
     locationId: string;
   } | null>(null);
   const returnPickupFetcher = useFetcher<typeof action>();
+  const [returnPickupError, setReturnPickupError] = useState<string | null>(null);
   const [isMapStyleModalOpen, setIsMapStyleModalOpen] = useState(false);
   const [editableRoutes, setEditableRoutes] = useState<PrecomputedRoute[]>(() =>
     precomputedRoutes.map((route) => ({ ...route, orderIds: [] })),
   );
+  const [dirtyRouteIds, setDirtyRouteIds] = useState<Set<string>>(new Set());
   const [activeRouteId, setActiveRouteId] = useState<string | null>(null);
   const [activeRouteIndex, setActiveRouteIndex] = useState<number | null>(null);
+  const [activeModalType, setActiveModalType] = useState<"manage" | "details" | null>(null);
   const [removeFromRouteOrderIds, setRemoveFromRouteOrderIds] = useState<Set<string>>(
     () => new Set(),
   );
   const [activeTab, setActiveTab] = useState<"routes" | "settings">("routes");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isRouteManagerVisible, setIsRouteManagerVisible] = useState(false);
+  const [isAccuracyCollapsed, setIsAccuracyCollapsed] = useState(false);
+  const [hasSplitCandidates, setHasSplitCandidates] = useState(false);
   const [settingsLocationId, setSettingsLocationId] = useState<string>("");
   const [lalamoveSettings, setLalamoveSettings] = useState<LalamoveConfig>(() => {
     return (
@@ -334,6 +349,15 @@ export default function Index() {
   }, [availableSpecialRequests]);
   const [addressWarnRoute, setAddressWarnRoute] = useState<PrecomputedRoute | null>(null);
   const [addressWarnPendingRecheck, setAddressWarnPendingRecheck] = useState(false);
+  const [foreignPhoneWarning, setForeignPhoneWarning] = useState<{
+    routeId: string;
+    affectedOrders: Array<{
+      id: string;
+      name: string;
+      customerName: string;
+      phone: string;
+    }>;
+  } | null>(null);
   const [addressVerifyRoute, setAddressVerifyRoute] = useState<PrecomputedRoute | null>(null);
   const [addressVerifyEdits, setAddressVerifyEdits] = useState<Record<string, string>>({});
   const addressVerifyRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -350,6 +374,12 @@ export default function Index() {
     [],
   );
   const manageRouteRenderersRef = useRef<any[]>([]);
+  const detailsRouteMapRef = useRef<HTMLDivElement | null>(null);
+  const detailsRouteMapInstance = useRef<any>(null);
+  const detailsRouteMarkersRef = useRef<Array<{ type: "marker" | "advanced"; marker: any }>>(
+    [],
+  );
+  const detailsRouteRenderersRef = useRef<any[]>([]);
   const markersRef = useRef<Array<{ type: "marker" | "advanced"; marker: any }>>(
     [],
   );
@@ -369,6 +399,10 @@ export default function Index() {
     routeCount: number;
     totalDistanceMeters: number;
     totalDurationSeconds: number;
+    costTotal?: string;
+    costCurrency?: string;
+    totalLalamoveCost?: string;
+    totalWaitSurcharge?: string;
   } | null>(null);
   const [isRequestDriverModalOpen, setIsRequestDriverModalOpen] = useState(false);
   const [quotePreview, setQuotePreview] = useState<{
@@ -387,23 +421,12 @@ export default function Index() {
   >({});
   const [mapStyle, setMapStyle] = useState<"dark" | "grayscale" | "light">("dark");
   const [draftMapStyle, setDraftMapStyle] = useState<"dark" | "grayscale" | "light">("dark");
-  const [routingLogic, setRoutingLogic] = useState<RoutingLogic>("distance");
-  const [draftRoutingLogic, setDraftRoutingLogic] = useState<RoutingLogic>("distance");
   const [unassignConfirmRoute, setUnassignConfirmRoute] = useState<{
     route: PrecomputedRoute;
     index: number;
   } | null>(null);
   const [clearAllConfirmOpen, setClearAllConfirmOpen] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
-  const [pendingRouteOptimize, setPendingRouteOptimize] = useState<{
-    routeIndex: number;
-    orderIds: string[];
-  } | null>(null);
-  const [routeOptimizeQueue, setRouteOptimizeQueue] = useState<Array<{
-    routeIndex: number;
-    orderIds: string[];
-  }>>([]);
-  const [autoAssignLocked, setAutoAssignLocked] = useState(false);
   const autoAssignActiveRef = useRef(false);
   const prevUnassignedCountRef = useRef(0);
   const autoAssignCandidateMapRef = useRef<Map<string, string>>(new Map());
@@ -433,16 +456,6 @@ export default function Index() {
     if (stored === "dark" || stored === "grayscale" || stored === "light") {
       setMapStyle(stored);
       setDraftMapStyle(stored);
-    }
-    const storedLogic = window.localStorage.getItem(ROUTING_LOGIC_STORAGE_KEY);
-    if (
-      storedLogic === "distance" ||
-      storedLogic === "topological" ||
-      storedLogic === "inward" ||
-      storedLogic === "carrier-quotation"
-    ) {
-      setRoutingLogic(storedLogic);
-      setDraftRoutingLogic(storedLogic);
     }
   }, []);
 
@@ -555,20 +568,32 @@ export default function Index() {
 
   useEffect(() => {
     if (locationId === DEFAULT_LOCATION_ID) return;
+    console.info("[local-delivery:routeStats-sync] FIRED locationId=%s routeStats.length=%d", locationId, routeStats.length);
     setEditableRoutes((current) => {
       const next = ROUTE_TAG_DEFINITIONS.map((_, i) => {
         const fromServer = routeStats[i];
         const orderIds =
           fromServer?.orders?.map((o) => o.orderId).filter(Boolean) ?? [];
         const prev = current[i];
+        const prevSet = prev ? new Set(prev.orderIds) : null;
         const sameOrderIds =
           prev &&
-          prev.orderIds.length === orderIds.length &&
-          prev.orderIds.every((id, j) => id === orderIds[j]);
+          prevSet!.size === orderIds.length &&
+          orderIds.every((id) => prevSet!.has(id));
+        const routeKey = `${locationId}-${i}`;
+        const precomputedPolyline = precomputedRoutes.find(r => r.id === routeKey)?.polyline ?? "";
+        // Keep prev polyline only if it belongs to the same route (same location);
+        // otherwise fall back to the cached polyline from the loader.
+        const keptPolyline = (prev?.id === routeKey && prev?.polyline) ? prev.polyline : precomputedPolyline;
+        const prevPolylineLen = prev?.polyline?.length ?? 0;
+        console.info(
+          "[local-delivery:routeStats-sync] route[%d] id=%s prevOrders=%d serverOrders=%d sameOrderIds=%s prevPolylineLen=%d precomputedPolylineLen=%d resultPolylineLen=%d",
+          i, routeKey, prev?.orderIds?.length ?? 0, orderIds.length, String(sameOrderIds), prevPolylineLen, precomputedPolyline.length, keptPolyline.length,
+        );
         return {
-          id: `${locationId}-${i}`,
+          id: routeKey,
           locationId,
-          polyline: sameOrderIds && prev?.polyline ? prev.polyline : "",
+          polyline: keptPolyline,
           color:
             ROUTE_PRECOMPUTE_COLORS[i % ROUTE_PRECOMPUTE_COLORS.length] ?? "#2C6ECB",
           orderIds,
@@ -582,14 +607,25 @@ export default function Index() {
       });
       return next;
     });
-  }, [locationId, routeStats]);
+  }, [locationId, routeStats, precomputedRoutes]);
 
   useEffect(() => {
     const data = lalamoveFetcher.data;
     if (!data) return;
     if ("error" in data) {
       const routeId = (data as any).routeId as string | undefined;
+      const outOfAreaIds = (data as any).outOfAreaOrderIds as string[] | undefined;
       const errorDetails = typeof data.error === "string" ? data.error : JSON.stringify(data.error);
+      // If out-of-area orders were identified, include their names in the error
+      let enrichedDetails = errorDetails;
+      if (outOfAreaIds?.length) {
+        const names = outOfAreaIds
+          .map((id) => ordersById.get(id))
+          .filter(Boolean)
+          .map((o) => `${o!.name}${o!.customerName ? ` (${o!.customerName})` : ""}`)
+          .join(", ");
+        enrichedDetails = `${t("driverRequest.outOfAreaOrders")}: ${names}\n\n${errorDetails}`;
+      }
       if (routeId) {
         const existingTimeout = lalamoveStatusTimeoutsRef.current[routeId];
         if (existingTimeout) window.clearTimeout(existingTimeout);
@@ -598,14 +634,22 @@ export default function Index() {
           [routeId]: {
             message: t("driverRequest.requestFailed"),
             tone: "critical",
-            errorDetails,
+            errorDetails: enrichedDetails,
           },
         }));
       }
       setDriverErrorModal({
         routeId: routeId ?? "",
         message: t("driverRequest.requestFailed"),
-        errorDetails,
+        errorDetails: enrichedDetails,
+      });
+      return;
+    }
+    if ("foreignPhoneWarning" in data && (data as any).foreignPhoneWarning) {
+      const d = data as any;
+      setForeignPhoneWarning({
+        routeId: d.routeId ?? "",
+        affectedOrders: d.affectedOrders ?? [],
       });
       return;
     }
@@ -620,6 +664,39 @@ export default function Index() {
           ...prev,
           [routeId]: { total, currency },
         }));
+      }
+      // If out-of-area orders were auto-removed, update route and show banner
+      const outOfAreaIds = (data as any).outOfAreaOrderIds as string[] | undefined;
+      if (outOfAreaIds?.length) {
+        setEditableRoutes((current) =>
+          current.map((r) =>
+            r.id === routeId
+              ? { ...r, orderIds: r.orderIds.filter((id) => !outOfAreaIds.includes(id)) }
+              : r,
+          ),
+        );
+        const names = outOfAreaIds
+          .map((id) => ordersById.get(id))
+          .filter(Boolean)
+          .map((o) => `${o!.name}${o!.customerName ? ` (${o!.customerName})` : ""}`)
+          .join(", ");
+        // Unassign out-of-area orders from route tag on server
+        const routeIndex = editableRoutes.findIndex((r) => r.id === routeId);
+        const tag = routeIndex >= 0 ? ROUTE_TAG_DEFINITIONS[routeIndex]?.tag : undefined;
+        const route = routeIndex >= 0 ? editableRoutes[routeIndex] : undefined;
+        if (tag && route) {
+          const unassignForm = new FormData();
+          unassignForm.append("intent", "unassign");
+          unassignForm.append("routeTag", tag);
+          unassignForm.append("locationId", route.locationId);
+          outOfAreaIds.forEach((id) => unassignForm.append("orderIds", id));
+          unassignFetcher.submit(unassignForm, { method: "post" });
+        }
+        setDriverErrorModal({
+          routeId,
+          message: t("driverRequest.outOfAreaRemoved"),
+          errorDetails: `${t("driverRequest.outOfAreaOrders")}: ${names}\n\n${t("driverRequest.outOfAreaContinued")}`,
+        });
       }
       setQuotePreview({
         routeId,
@@ -700,13 +777,13 @@ export default function Index() {
     setDispatchedRoutes((prev) => {
       const next = { ...prev };
       for (const d of activeDispatchData) {
-        if (next[d.routeId]) {
-          next[d.routeId] = {
-            ...next[d.routeId],
-            status: d.status ?? next[d.routeId].status,
-            shareLink: d.shareLink ?? next[d.routeId].shareLink,
-          };
-        }
+        next[d.routeId] = {
+          ...next[d.routeId],
+          status: d.status ?? next[d.routeId]?.status,
+          shareLink: d.shareLink ?? next[d.routeId]?.shareLink,
+          lalamoveOrderId: d.lalamoveOrderId ?? next[d.routeId]?.lalamoveOrderId,
+          market: d.market ?? next[d.routeId]?.market,
+        };
       }
       return next;
     });
@@ -716,6 +793,11 @@ export default function Index() {
   useEffect(() => {
     const data = returnPickupFetcher.data as Record<string, unknown> | undefined;
     if (!data) return;
+    if (data.ok === false && typeof data.error === "string") {
+      setReturnPickupError(data.error);
+      return;
+    }
+    setReturnPickupError(null);
     if ("returnQuotation" in data && data.returnQuotation) {
       setReturnQuotePreview(data.returnQuotation as typeof returnQuotePreview);
     }
@@ -771,6 +853,87 @@ export default function Index() {
     }
   }, [assignFetcher.data, revalidator]);
 
+  // Handle update-routes response
+  useEffect(() => {
+    console.info("[local-delivery:update-routes-effect] CHECK state=%s hasData=%s", updateRoutesFetcher.state, String(!!updateRoutesFetcher.data));
+    if (updateRoutesFetcher.state !== "idle") return;
+    const raw = updateRoutesFetcher.data;
+    if (!raw || typeof raw !== "object") {
+      console.info("[local-delivery:update-routes-effect] SKIP raw is null/not-object");
+      return;
+    }
+    if (!("intent" in raw) || raw.intent !== "update-routes") {
+      console.info("[local-delivery:update-routes-effect] SKIP intent mismatch, raw keys=%s", Object.keys(raw).join(","));
+      return;
+    }
+    const data = raw as {
+      ok: boolean;
+      results?: Array<{
+        routeId: string;
+        routeIndex: number;
+        polyline: string;
+        totalDistanceMeters: number;
+        totalDurationSeconds: number;
+        orderedIds: string[];
+        error?: string;
+      }>;
+      error?: string;
+    };
+    console.info("[local-delivery:update-routes-effect] RECEIVED ok=%s resultCount=%d error=%s",
+      String(data.ok), data.results?.length ?? 0, data.error ?? "none");
+    if (data.results) {
+      for (const r of data.results) {
+        console.info("[local-delivery:update-routes-effect] result routeId=%s polylineLen=%d distM=%d durS=%d orderedIds=%d error=%s",
+          r.routeId, r.polyline?.length ?? 0, r.totalDistanceMeters, r.totalDurationSeconds, r.orderedIds?.length ?? 0, r.error ?? "none");
+      }
+    }
+    if (!data.ok || !data.results) return;
+
+    setEditableRoutes((current) => {
+      const next = [...current];
+      console.info("[local-delivery:update-routes-effect] setEditableRoutes BEFORE routes=%s",
+        current.map((r) => `${r.id}:orders=${r.orderIds.length}:polyLen=${r.polyline?.length ?? 0}`).join(" | "));
+      for (const result of data.results!) {
+        if (result.error) continue;
+        const idx = next.findIndex((r) => r.id === result.routeId);
+        if (idx < 0) {
+          console.warn("[local-delivery:update-routes-effect] routeId=%s NOT FOUND in editableRoutes (ids: %s)", result.routeId, current.map((r) => r.id).join(","));
+          continue;
+        }
+        console.info("[local-delivery:update-routes-effect] APPLYING routeId=%s idx=%d newPolylineLen=%d prevPolylineLen=%d",
+          result.routeId, idx, result.polyline?.length ?? 0, next[idx]!.polyline?.length ?? 0);
+        next[idx] = {
+          ...next[idx]!,
+          polyline: result.polyline,
+          totalDistanceMeters: result.totalDistanceMeters,
+          totalDurationSeconds: result.totalDurationSeconds,
+          orderIds: result.orderedIds.length > 0 ? result.orderedIds : next[idx]!.orderIds,
+        };
+      }
+      console.info("[local-delivery:update-routes-effect] setEditableRoutes AFTER routes=%s",
+        next.map((r) => `${r.id}:orders=${r.orderIds.length}:polyLen=${r.polyline?.length ?? 0}`).join(" | "));
+      return next;
+    });
+
+    // Clear dirty state for successfully updated routes
+    setDirtyRouteIds((prev) => {
+      const next = new Set(prev);
+      for (const result of data.results!) {
+        if (!result.error) next.delete(result.routeId);
+      }
+      return next;
+    });
+
+    // Clear stale quote totals for updated routes
+    setRouteQuoteTotals((prev) => {
+      const next = { ...prev };
+      for (const result of data.results!) {
+        if (!result.error) delete next[result.routeId];
+      }
+      return next;
+    });
+  }, [updateRoutesFetcher.data, updateRoutesFetcher.state]);
+
   useEffect(() => {
     if (!optimizeFetcher.data) return;
     if ("error" in optimizeFetcher.data) {
@@ -792,11 +955,14 @@ export default function Index() {
     ) {
       return;
     }
+    console.info("[local-delivery:optimize-response] Applying %d optimizedRoutes polylines: %s",
+      optimizedRoutes.length,
+      optimizedRoutes.map((r) => `idx=${r.routeIndex}:orders=${r.orderIds.length}:polyLen=${r.polyline?.length ?? 0}`).join(" | "));
     setEditableRoutes((current) =>
       current.map((route, index) => {
         const optimized = optimizedRoutes.find((item) => item.routeIndex === index);
         if (!optimized) {
-          return { ...route, orderIds: [], polyline: "" };
+          return { ...route, orderIds: [] };
         }
         return {
           ...route,
@@ -808,19 +974,29 @@ export default function Index() {
         };
       }),
     );
+    // Extract summary with cost breakdown (carrier-quotation mode includes these)
+    const summary = optimizeFetcher.data.summary as {
+      routeCount?: number;
+      costTotal?: string;
+      costCurrency?: string;
+      totalLalamoveCost?: string;
+      totalWaitSurcharge?: string;
+    } | undefined;
+
     if (optimizeFetcher.data.summary) {
-      setOptimizerSummary(optimizeFetcher.data.summary);
+      setOptimizerSummary(optimizeFetcher.data.summary as typeof optimizerSummary);
     }
-    // B4: Queue each updated route with ≥2 orders for Google Maps waypoint optimization
-    const routesToOptimize = optimizedRoutes.filter((r) => r.orderIds.length >= 2);
-    if (routesToOptimize.length > 0) {
-      const [first, ...rest] = routesToOptimize.map((r) => ({ routeIndex: r.routeIndex, orderIds: r.orderIds }));
-      setPendingRouteOptimize(first!);
-      if (rest.length > 0) setRouteOptimizeQueue(rest);
+    if ("hasSplitCandidates" in optimizeFetcher.data) {
+      setHasSplitCandidates(Boolean(optimizeFetcher.data.hasSplitCandidates));
     }
-    setAssignmentSuccessMessage(
-      `Optimization applied: ${optimizeFetcher.data.summary?.routeCount ?? 0} routes`,
-    );
+    const routeCountMsg = `${summary?.routeCount ?? 0} routes`;
+    const costMsg = summary?.costTotal
+      ? ` · ${summary.costCurrency ?? "BRL"} ${summary.costTotal}`
+        + (summary.totalLalamoveCost && summary.totalWaitSurcharge
+          ? ` (delivery ${summary.totalLalamoveCost} + wait ${summary.totalWaitSurcharge})`
+          : "")
+      : "";
+    setAssignmentSuccessMessage(`Optimization applied: ${routeCountMsg}${costMsg}`);
     const assignedIds = new Set(optimizedRoutes.flatMap((r) => r.orderIds));
     const unassignedEntries = [...autoAssignCandidateMapRef.current.entries()].filter(
       ([id]) => !assignedIds.has(id),
@@ -836,21 +1012,60 @@ export default function Index() {
     } else {
       setAssignmentWarningMessage(null);
     }
-    const routesWithOrders = optimizedRoutes.filter((r) => r.orderIds.length > 0);
-    if (routesWithOrders.length > 0) {
-      const routesPayload = JSON.stringify(
-        routesWithOrders.map((r) => ({
-          routeId: `${r.locationId}-${r.routeIndex}`,
-          locationId: r.locationId,
-          orderIds: r.orderIds,
-        })),
-      );
-      const fd = new FormData();
-      fd.append("intent", "refresh-route-stats");
-      fd.append("routesPayload", routesPayload);
-      refreshStatsFetcher.submit(fd, { method: "post" });
+    // Populate per-route quote totals from optimizer results
+    if (summary?.costTotal != null) {
+      const perRouteCosts = optimizedRoutes as Array<{
+        routeIndex: number;
+        locationId: string;
+        costTotal?: string;
+        costCurrency?: string;
+      }>;
+      setRouteQuoteTotals((prev) => {
+        const next = { ...prev };
+        perRouteCosts.forEach((r) => {
+          if (r.costTotal != null) {
+            const routeId = `${r.locationId}-${r.routeIndex}`;
+            next[routeId] = { total: r.costTotal, currency: r.costCurrency };
+          }
+        });
+        return next;
+      });
     }
   }, [optimizeFetcher.data]);
+
+  // ── Split routes result ──
+  useEffect(() => {
+    if (!splitRoutesFetcher.data) return;
+    if ("error" in splitRoutesFetcher.data && !("splitRoutes" in splitRoutesFetcher.data)) {
+      setAssignmentSuccessMessage(String((splitRoutesFetcher.data as any).error ?? "Split failed"));
+      return;
+    }
+    if (!("splitRoutes" in splitRoutesFetcher.data)) return;
+    const splitRoutes = (splitRoutesFetcher.data as any).splitRoutes as Array<{
+      routeIndex: number;
+      locationId: string;
+      orderIds: string[];
+      polyline: string;
+    }>;
+    if (!splitRoutes?.length) return;
+
+    setEditableRoutes((current) =>
+      current.map((route, index) => {
+        const split = splitRoutes.find((item) => item.routeIndex === index);
+        if (!split) return { ...route, orderIds: [] };
+        return {
+          ...route,
+          locationId: split.locationId,
+          orderIds: split.orderIds,
+          polyline: split.polyline,
+        };
+      }),
+    );
+
+    setHasSplitCandidates(false);
+    const activeCount = splitRoutes.filter((r) => r.orderIds.length > 0).length;
+    setAssignmentSuccessMessage(`Routes split: ${activeCount} routes`);
+  }, [splitRoutesFetcher.data]);
 
 
   useEffect(() => {
@@ -864,38 +1079,6 @@ export default function Index() {
     }
   }, [lalamoveSettingsFetcher.data, lalamoveSettings, settingsLocationId]);
 
-  useEffect(() => {
-    const data = refreshStatsFetcher.data;
-    if (!data || !("routeStats" in data) || !Array.isArray(data.routeStats)) return;
-    const stats = data.routeStats as Array<{
-      routeId: string;
-      totalDistanceMeters: number;
-      totalDurationSeconds: number;
-      costTotal?: string;
-      costCurrency?: string;
-    }>;
-    const byRouteId = new Map(stats.map((s) => [s.routeId, s]));
-    setEditableRoutes((current) =>
-      current.map((route) => {
-        const s = byRouteId.get(route.id);
-        if (!s) return route;
-        return {
-          ...route,
-          totalDistanceMeters: s.totalDistanceMeters,
-          totalDurationSeconds: s.totalDurationSeconds,
-        };
-      }),
-    );
-    setRouteQuoteTotals((prev) => {
-      const next = { ...prev };
-      stats.forEach((s) => {
-        if (s.costTotal != null) {
-          next[s.routeId] = { total: s.costTotal, currency: s.costCurrency };
-        }
-      });
-      return next;
-    });
-  }, [refreshStatsFetcher.data]);
 
   useEffect(() => {
     if (!mapsApiKey) return;
@@ -1113,9 +1296,8 @@ export default function Index() {
     if (optimizeFetcher.state !== "idle") return;
     const currentUnassigned = unassignedOrders.length;
     if (currentUnassigned === 0) {
-      // All assigned — lock the button
+      // All assigned — stop looping
       autoAssignActiveRef.current = false;
-      setAutoAssignLocked(true);
       return;
     }
     const madeProgress = currentUnassigned < prevUnassignedCountRef.current;
@@ -1147,9 +1329,14 @@ export default function Index() {
         userLocale,
       );
       const orderHour = getHourInTimeZone(processedAt, browserTimeZone);
-      // 1 PM cutoff: orders placed before 13:00 count from that day's cycle;
-      // at/after 13:00 they count from the next day's cycle.
-      const cycleDayIndex = orderHour < 13 ? orderDayIndex : orderDayIndex + 1;
+      const orderMinute = getMinuteInTimeZone(processedAt, browserTimeZone);
+      // Cutoff driven by sameDayHour:sameDayMinute (user-configurable).
+      // Orders placed before cutoff count from that day's cycle;
+      // at/after cutoff they count from the next day's cycle.
+      const pastCutoff =
+        orderHour > sameDayHour ||
+        (orderHour === sameDayHour && orderMinute >= sameDayMinute);
+      const cycleDayIndex = pastCutoff ? orderDayIndex + 1 : orderDayIndex;
       // Due day = cycle day + (deliveryPromiseDays - 1)
       const dueDayIndex = cycleDayIndex + (deliveryPromiseDays - 1);
       if (dueDayIndex <= todayDayIndex) {
@@ -1161,7 +1348,7 @@ export default function Index() {
       }
     });
     return map;
-  }, [orders, deliveryPromiseDays, browserTimeZone]);
+  }, [orders, deliveryPromiseDays, sameDayHour, sameDayMinute, browserTimeZone]);
 
   const dueBuckets = useMemo(() => {
     const today = unassignedOrders.filter(
@@ -1219,8 +1406,8 @@ export default function Index() {
   };
 
   const addressErrorOrders = useMemo(
-    () => unassignedOrders.filter((order) => !order.addressValidation.isValid),
-    [unassignedOrders],
+    () => orders.filter((order) => !order.addressValidation.isValid),
+    [orders],
   );
 
   useEffect(() => {
@@ -1232,91 +1419,6 @@ export default function Index() {
     }
   }, [unassignedOrders.length, assignmentSuccessMessage, assignmentWarningMessage]);
 
-  useEffect(() => {
-    if (!pendingRouteOptimize) return;
-    const { routeIndex, orderIds } = pendingRouteOptimize;
-    const googleMaps = typeof window !== "undefined" ? window.google?.maps : null;
-    if (!googleMaps) {
-      setPendingRouteOptimize(null);
-      return;
-    }
-    const route = editableRoutes[routeIndex];
-    if (!route || orderIds.length < 2) {
-      setPendingRouteOptimize(null);
-      return;
-    }
-    const routeOrders = orderIds
-      .map((id) => ordersById.get(id))
-      .filter(
-        (order): order is LoaderOrder =>
-          Boolean(order?.shippingCoordinates),
-      );
-    if (routeOrders.length < 2) {
-      setPendingRouteOptimize(null);
-      return;
-    }
-    const origin =
-      locationsById.get(route.locationId)?.coordinates ??
-      routeOrders[0]?.fulfillmentLocation?.coordinates;
-    if (!origin) {
-      setPendingRouteOptimize(null);
-      return;
-    }
-    const destinationOrder = routeOrders[routeOrders.length - 1]!;
-    const waypointOrders = routeOrders.slice(0, -1);
-    const waypointOrderIds = orderIds.slice(0, -1);
-    const destinationOrderId = orderIds[orderIds.length - 1]!;
-
-    const directionsService = new googleMaps.DirectionsService();
-    directionsService.route(
-      {
-        origin: { lat: origin.latitude, lng: origin.longitude },
-        destination: {
-          lat: destinationOrder.shippingCoordinates!.latitude,
-          lng: destinationOrder.shippingCoordinates!.longitude,
-        },
-        waypoints: waypointOrders.map((order) => ({
-          location: {
-            lat: order.shippingCoordinates!.latitude,
-            lng: order.shippingCoordinates!.longitude,
-          },
-          stopover: true,
-        })),
-        optimizeWaypoints: true,
-        travelMode: googleMaps.TravelMode.DRIVING,
-      },
-      (result: unknown, status: unknown) => {
-        setPendingRouteOptimize(null);
-        setRouteOptimizeQueue((q) => {
-          if (q.length > 0) {
-            const [next, ...rest] = q;
-            setPendingRouteOptimize(next!);
-            return rest;
-          }
-          return q;
-        });
-        if (status !== googleMaps.DirectionsStatus.OK) return;
-        const res = result as { routes?: Array<{ waypoint_order?: number[] }> };
-        if (!res?.routes?.[0]?.waypoint_order) return;
-        const waypointOrder = res.routes[0].waypoint_order;
-        if (waypointOrder.length !== waypointOrderIds.length) return;
-        const optimizedOrderIds = [
-          ...waypointOrder.map((i: number) => waypointOrderIds[i]!),
-          destinationOrderId,
-        ];
-        setEditableRoutes((current) =>
-          current.map((r, i) =>
-            i === routeIndex ? { ...r, orderIds: optimizedOrderIds } : r,
-          ),
-        );
-      },
-    );
-  }, [
-    pendingRouteOptimize,
-    editableRoutes,
-    ordersById,
-    locationsById,
-  ]);
 
   useEffect(() => {
     setSelectedOrderIds((current) => {
@@ -1489,10 +1591,13 @@ export default function Index() {
           }
           const content = buildLabel(labelText, emoji, badgeStyle);
 
+          const markerTitle = point.kind === "order" && orderData?.customerName
+            ? `${point.name} \u2022 ${orderData.customerName}`
+            : point.name;
           const advancedMarker = new AdvancedMarkerElement({
             map: mapRef.current!,
             position,
-            title: point.name,
+            title: markerTitle,
             content,
           });
 
@@ -1526,40 +1631,74 @@ export default function Index() {
               infoWindowRef.current?.close();
             });
           } else if (point.kind === "order" && assignedRoute) {
+            // Left-click: toggle multiselection (same as unassigned orders)
             advancedMarker.addListener("click", () => {
-              const routeIndex = editableRoutes.findIndex(
-                (candidate) => candidate.id === assignedRoute.id,
+              toggleSelection(point.id);
+              const orderDetails = ordersById.get(point.id);
+              if (!orderDetails) return;
+              infoWindowRef.current?.setContent(
+                getOrderInfoContent(orderDetails, t("customer.guest"), t("customer.noShippingAddress")),
               );
-              const routeNumber = routeIndex >= 0 ? routeIndex + 1 : null;
-              const buttonId = `map-unassign-${point.id.replace(
-                /[^a-zA-Z0-9_-]/g,
-                "_",
-              )}`;
-              infoWindowRef.current?.setContent(`
-                <div style="display:flex;flex-direction:column;gap:8px;min-width:220px;">
-                  <span style="font-weight:600;">${t("infoWindow.assignedTo", { number: routeNumber ?? "?" })}</span>
-                  <button id="${buttonId}" style="background:#d82c0d;color:#fff;border:0;border-radius:6px;padding:8px 10px;cursor:pointer;">
-                    ${t("infoWindow.unassign")}
-                  </button>
-                </div>
-              `);
               infoWindowRef.current?.open({
                 map: mapRef.current!,
                 anchor: advancedMarker,
                 shouldFocus: false,
               });
-              const attachUnassignHandler = () => {
-                document.getElementById(buttonId)?.addEventListener("click", () => {
-                  unassignSingleOrderFromRoute(point.id, assignedRoute);
-                  infoWindowRef.current?.close();
-                });
-              };
-              if (googleMaps.event?.addListenerOnce) {
-                googleMaps.event.addListenerOnce(infoWindowRef.current!, "domready", attachUnassignHandler);
-              } else {
-                setTimeout(attachUnassignHandler, 100);
-              }
             });
+            // Hover preview (same as unassigned orders)
+            advancedMarker.addListener("mouseover", () => {
+              const orderDetails = ordersById.get(point.id);
+              if (!orderDetails) return;
+              infoWindowRef.current?.setContent(
+                getOrderInfoContent(orderDetails, t("customer.guest"), t("customer.noShippingAddress")),
+              );
+              infoWindowRef.current?.open({
+                map: mapRef.current!,
+                anchor: advancedMarker,
+                shouldFocus: false,
+              });
+            });
+            advancedMarker.addListener("mouseout", () => {
+              infoWindowRef.current?.close();
+            });
+            // Right-click: show unassign balloon
+            if (advancedMarker.element) {
+              advancedMarker.element.addEventListener("contextmenu", (e: Event) => {
+                e.preventDefault();
+                const routeIndex = editableRoutes.findIndex(
+                  (candidate) => candidate.id === assignedRoute.id,
+                );
+                const routeNumber = routeIndex >= 0 ? routeIndex + 1 : null;
+                const buttonId = `map-unassign-${point.id.replace(
+                  /[^a-zA-Z0-9_-]/g,
+                  "_",
+                )}`;
+                infoWindowRef.current?.setContent(`
+                  <div style="display:flex;flex-direction:column;gap:8px;min-width:220px;">
+                    <span style="font-weight:600;">${t("infoWindow.assignedTo", { number: routeNumber ?? "?" })}</span>
+                    <button id="${buttonId}" style="background:#d82c0d;color:#fff;border:0;border-radius:6px;padding:8px 10px;cursor:pointer;">
+                      ${t("infoWindow.unassign")}
+                    </button>
+                  </div>
+                `);
+                infoWindowRef.current?.open({
+                  map: mapRef.current!,
+                  anchor: advancedMarker,
+                  shouldFocus: false,
+                });
+                const attachUnassignHandler = () => {
+                  document.getElementById(buttonId)?.addEventListener("click", () => {
+                    unassignSingleOrderFromRoute(point.id, assignedRoute);
+                    infoWindowRef.current?.close();
+                  });
+                };
+                if (googleMaps.event?.addListenerOnce) {
+                  googleMaps.event.addListenerOnce(infoWindowRef.current!, "domready", attachUnassignHandler);
+                } else {
+                  setTimeout(attachUnassignHandler, 100);
+                }
+              });
+            }
           }
 
           markersRef.current.push({ type: "advanced", marker: advancedMarker });
@@ -1582,8 +1721,8 @@ export default function Index() {
           mapRef.current.setZoom(2);
         }
         if (locationId !== DEFAULT_LOCATION_ID) {
-          const directionsService = new googleMaps.DirectionsService();
-          editableRoutes.forEach((route) => {
+          console.info("[local-delivery:map-render] Drawing polylines for %d editableRoutes", editableRoutes.length);
+          editableRoutes.forEach((route, routeIdx) => {
             const routeOrderPoints = route.orderIds
               .map((orderId) => ordersById.get(orderId))
               .filter(
@@ -1594,52 +1733,60 @@ export default function Index() {
                 order,
                 coordinates: order.shippingCoordinates!,
               }));
-            if (routeOrderPoints.length === 0) return;
+            if (routeOrderPoints.length === 0) {
+              console.info("[local-delivery:map-render] route[%d] id=%s SKIP (0 order points)", routeIdx, route.id);
+              return;
+            }
             const origin = route.orderIds
               .map((orderId) => ordersById.get(orderId))
               .find((order) => order?.fulfillmentLocation?.coordinates)
               ?.fulfillmentLocation?.coordinates;
-            if (!origin) return;
+            if (!origin) {
+              console.info("[local-delivery:map-render] route[%d] id=%s SKIP (no origin)", routeIdx, route.id);
+              return;
+            }
 
-            const renderer = new googleMaps.DirectionsRenderer({
-              suppressMarkers: true,
-              preserveViewport: true,
-              polylineOptions: {
-                strokeColor: route.color,
-                strokeOpacity: 0.85,
-                strokeWeight: 4,
-              },
+            // Skip polyline rendering if no polyline data — markers only
+            if (!route.polyline) {
+              console.info("[local-delivery:map-render] route[%d] id=%s SKIP (no polyline) orders=%d color=%s", routeIdx, route.id, route.orderIds.length, route.color);
+              return;
+            }
+            console.info("[local-delivery:map-render] route[%d] id=%s DRAWING polylineLen=%d orders=%d color=%s", routeIdx, route.id, route.polyline.length, route.orderIds.length, route.color);
+
+            const encoded = route.polyline;
+            const path: Array<{ lat: number; lng: number }> = [];
+            let index = 0;
+            let lat = 0;
+            let lng = 0;
+            while (index < encoded.length) {
+              let shift = 0;
+              let result = 0;
+              let byte: number;
+              do {
+                byte = encoded.charCodeAt(index++) - 63;
+                result |= (byte & 0x1f) << shift;
+                shift += 5;
+              } while (byte >= 0x20);
+              lat += result & 1 ? ~(result >> 1) : result >> 1;
+              shift = 0;
+              result = 0;
+              do {
+                byte = encoded.charCodeAt(index++) - 63;
+                result |= (byte & 0x1f) << shift;
+                shift += 5;
+              } while (byte >= 0x20);
+              lng += result & 1 ? ~(result >> 1) : result >> 1;
+              path.push({ lat: lat / 1e5, lng: lng / 1e5 });
+            }
+
+            const polyline = new googleMaps.Polyline({
+              path,
+              strokeColor: route.color,
+              strokeOpacity: 0.85,
+              strokeWeight: 4,
+              map: mapRef.current,
             });
-            renderer.setMap(mapRef.current);
-            assignedRouteRenderersRef.current.push(renderer);
-
-            directionsService.route(
-              {
-                origin: { lat: origin.latitude, lng: origin.longitude },
-                destination: {
-                  lat: routeOrderPoints[routeOrderPoints.length - 1]!.coordinates
-                    .latitude,
-                  lng: routeOrderPoints[routeOrderPoints.length - 1]!.coordinates
-                    .longitude,
-                },
-                waypoints: routeOrderPoints.slice(0, -1).map((point) => ({
-                  location: {
-                    lat: point.coordinates.latitude,
-                    lng: point.coordinates.longitude,
-                  },
-                  stopover: true,
-                })),
-                optimizeWaypoints: true,
-                travelMode: googleMaps.TravelMode.DRIVING,
-              },
-              (result: any, status: any) => {
-                if (status === googleMaps.DirectionsStatus.OK) {
-                  renderer.setDirections(result);
-                } else {
-                  renderer.setDirections({ routes: [] });
-                }
-              },
-            );
+            precomputedRoutePolylinesRef.current.push(polyline);
           });
         }
 
@@ -1675,52 +1822,27 @@ export default function Index() {
           }
         });
 
-        const selectedDirectionsService = new googleMaps.DirectionsService();
         selectedByLocation.forEach((group: { origin: { latitude: number; longitude: number }; orders: LoaderOrder[] }) => {
           if (group.orders.length === 0) return;
           const ordered = group.orders.filter((order: LoaderOrder) => order.shippingCoordinates);
           if (ordered.length === 0) return;
-          const destinationOrder = ordered[ordered.length - 1]!;
-          const intermediates = ordered.slice(0, -1);
-          const renderer = new googleMaps.DirectionsRenderer({
-            suppressMarkers: true,
-            preserveViewport: true,
-            polylineOptions: {
-              strokeColor: "#ff7a00",
-              strokeOpacity: 0.85,
-              strokeWeight: 4,
-            },
+
+          // Straight-line connectors for selected orders (free, no API call)
+          const path = [
+            { lat: group.origin.latitude, lng: group.origin.longitude },
+            ...ordered.map((order: LoaderOrder) => ({
+              lat: order.shippingCoordinates!.latitude,
+              lng: order.shippingCoordinates!.longitude,
+            })),
+          ];
+          const polyline = new googleMaps.Polyline({
+            path,
+            strokeColor: "#ff7a00",
+            strokeOpacity: 0.85,
+            strokeWeight: 4,
+            map: mapRef.current,
           });
-          renderer.setMap(mapRef.current);
-          selectedRouteRenderersRef.current.push(renderer);
-          selectedDirectionsService.route(
-            {
-              origin: {
-                lat: group.origin.latitude,
-                lng: group.origin.longitude,
-              },
-              destination: {
-                lat: destinationOrder.shippingCoordinates!.latitude,
-                lng: destinationOrder.shippingCoordinates!.longitude,
-              },
-              waypoints: intermediates.map((order: LoaderOrder) => ({
-                location: {
-                  lat: order.shippingCoordinates!.latitude,
-                  lng: order.shippingCoordinates!.longitude,
-                },
-                stopover: true,
-              })),
-              optimizeWaypoints: true,
-              travelMode: googleMaps.TravelMode.DRIVING,
-            },
-            (result: any, status: any) => {
-              if (status === googleMaps.DirectionsStatus.OK) {
-                renderer.setDirections(result);
-              } else {
-                renderer.setDirections({ routes: [] });
-              }
-            },
-          );
+          selectedRouteRenderersRef.current.push(polyline);
         });
       })
       .catch((error) => {
@@ -1742,7 +1864,6 @@ export default function Index() {
     mapStyle,
     ordersById,
     editableRoutes,
-    precomputedRoutes,
     assignedOrderIds,
     dueBucketByOrderId,
     selectedOrderIds,
@@ -1757,6 +1878,7 @@ export default function Index() {
   }, [isFullscreen]);
 
   useEffect(() => {
+    if (activeModalType !== "manage") return;
     if (!mapsApiKey || !mapsMapId) return;
     if (!activeRouteId || !manageRouteMapRef.current) return;
     const managedRoute =
@@ -1887,7 +2009,7 @@ export default function Index() {
           const marker = new AdvancedMarkerElement({
             map: manageRouteMapInstance.current,
             position: { lat: coords.latitude, lng: coords.longitude },
-            title: order.name,
+            title: order.customerName ? `${order.name} \u2022 ${order.customerName}` : order.name,
             content: buildLabel(
               order.name,
               routeOrderEmoji,
@@ -1898,44 +2020,44 @@ export default function Index() {
           bounds.extend({ lat: coords.latitude, lng: coords.longitude });
         });
 
-        const directionsService = new googleMaps.DirectionsService();
         if (origin && routePoints.length > 0) {
-          const routeRenderer = new googleMaps.DirectionsRenderer({
-            suppressMarkers: true,
-            preserveViewport: true,
-            polylineOptions: {
+          // Use corridor polyline if available, otherwise straight-line connectors
+          // Only render polyline if polyline data exists — markers only otherwise
+          if (managedRoute.polyline) {
+            const encoded = managedRoute.polyline;
+            const path: Array<{ lat: number; lng: number }> = [];
+            let idx = 0;
+            let dlat = 0;
+            let dlng = 0;
+            while (idx < encoded.length) {
+              let shift = 0;
+              let result = 0;
+              let byte: number;
+              do {
+                byte = encoded.charCodeAt(idx++) - 63;
+                result |= (byte & 0x1f) << shift;
+                shift += 5;
+              } while (byte >= 0x20);
+              dlat += result & 1 ? ~(result >> 1) : result >> 1;
+              shift = 0;
+              result = 0;
+              do {
+                byte = encoded.charCodeAt(idx++) - 63;
+                result |= (byte & 0x1f) << shift;
+                shift += 5;
+              } while (byte >= 0x20);
+              dlng += result & 1 ? ~(result >> 1) : result >> 1;
+              path.push({ lat: dlat / 1e5, lng: dlng / 1e5 });
+            }
+            const routePolyline = new googleMaps.Polyline({
+              path,
               strokeColor: managedRoute.color,
               strokeOpacity: 0.85,
               strokeWeight: 4,
-            },
-          });
-          routeRenderer.setMap(manageRouteMapInstance.current);
-          manageRouteRenderersRef.current.push(routeRenderer);
-          directionsService.route(
-            {
-              origin: { lat: origin.latitude, lng: origin.longitude },
-              destination: {
-                lat: routePoints[routePoints.length - 1]!.shippingCoordinates!.latitude,
-                lng: routePoints[routePoints.length - 1]!.shippingCoordinates!.longitude,
-              },
-              waypoints: routePoints.slice(0, -1).map((order) => ({
-                location: {
-                  lat: order.shippingCoordinates!.latitude,
-                  lng: order.shippingCoordinates!.longitude,
-                },
-                stopover: true,
-              })),
-              optimizeWaypoints: true,
-              travelMode: googleMaps.TravelMode.DRIVING,
-            },
-            (result: any, status: any) => {
-              if (status === googleMaps.DirectionsStatus.OK) {
-                routeRenderer.setDirections(result);
-              } else {
-                routeRenderer.setDirections({ routes: [] });
-              }
-            },
-          );
+              map: manageRouteMapInstance.current,
+            });
+            manageRouteRenderersRef.current.push(routePolyline);
+          }
         }
 
         if (!bounds.isEmpty()) {
@@ -1950,6 +2072,213 @@ export default function Index() {
       isMounted = false;
     };
   }, [
+    activeModalType,
+    activeRouteId,
+    activeRouteIndex,
+    editableRoutes,
+    mapsApiKey,
+    mapsMapId,
+    ordersById,
+    locationsById,
+    mapStyle,
+    dueBucketByOrderId,
+  ]);
+
+  // ── Details route modal map ──────────────────────────────────────────────
+  useEffect(() => {
+    if (activeModalType !== "details") return;
+    if (!mapsApiKey || !mapsMapId) return;
+    if (!activeRouteId || !detailsRouteMapRef.current) return;
+    const managedRoute =
+      editableRoutes.find((route) => route.id === activeRouteId) ?? null;
+    if (!managedRoute) return;
+
+    let isMounted = true;
+
+    loadGoogleMaps(mapsApiKey)
+      .then(async () => {
+        if (!isMounted) return;
+        const googleMaps = window.google?.maps;
+        if (!googleMaps) return;
+        const { Map } = googleMaps.importLibrary
+          ? await googleMaps.importLibrary("maps")
+          : { Map: googleMaps.Map };
+        const { AdvancedMarkerElement } = googleMaps.importLibrary
+          ? await googleMaps.importLibrary("marker")
+          : { AdvancedMarkerElement: googleMaps.marker?.AdvancedMarkerElement };
+        if (!AdvancedMarkerElement) return;
+
+        if (!detailsRouteMapInstance.current) {
+          const styledMapTypes = {
+            light: new googleMaps.StyledMapType(null, { name: t("map.styles.light") }),
+            grayscale: new googleMaps.StyledMapType(GRAYSCALE_MAP_STYLES, {
+              name: t("map.styles.grayscale"),
+            }),
+            dark: new googleMaps.StyledMapType(DARK_MAP_STYLES, {
+              name: t("map.styles.dark"),
+            }),
+          };
+          detailsRouteMapInstance.current = new Map(detailsRouteMapRef.current!, {
+            center: { lat: 0, lng: 0 },
+            zoom: 3,
+            mapId: mapsMapId,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+            gestureHandling: "greedy",
+            mapTypeId: mapStyle,
+          });
+          detailsRouteMapInstance.current.mapTypes.set("light", styledMapTypes.light);
+          detailsRouteMapInstance.current.mapTypes.set(
+            "grayscale",
+            styledMapTypes.grayscale,
+          );
+          detailsRouteMapInstance.current.mapTypes.set("dark", styledMapTypes.dark);
+        } else {
+          detailsRouteMapInstance.current.setOptions({
+            mapTypeControl: false,
+            mapTypeId: mapStyle,
+          });
+        }
+
+        detailsRouteMarkersRef.current.forEach(({ type, marker }) => {
+          if (type === "advanced") {
+            marker.map = null;
+          } else {
+            marker.setMap(null);
+          }
+        });
+        detailsRouteMarkersRef.current = [];
+        detailsRouteRenderersRef.current.forEach((renderer) => renderer.setMap(null));
+        detailsRouteRenderersRef.current = [];
+
+        const routePoints = managedRoute.orderIds
+          .map((orderId) => ordersById.get(orderId))
+          .filter(
+            (order): order is LoaderOrder =>
+              Boolean(order?.shippingCoordinates),
+          );
+        const origin = locationsById.get(managedRoute.locationId)?.coordinates;
+        const bounds = new googleMaps.LatLngBounds();
+
+        const buildLabel = (
+          text: string,
+          emoji: string | null,
+          badgeStyle?: Partial<CSSStyleDeclaration>,
+        ) => {
+          const wrapper = document.createElement("div");
+          wrapper.className = styles.mapLabelContainer;
+
+          const label = document.createElement("div");
+          label.className = styles.mapLabelText;
+          label.classList.add(styles.mapLabelBadge);
+
+          const textLine = document.createElement("div");
+          textLine.className = styles.mapLabelOrder;
+          textLine.textContent = text;
+
+          if (emoji) {
+            const emojiLine = document.createElement("div");
+            emojiLine.className = styles.mapLabelEmoji;
+            emojiLine.textContent = emoji;
+            label.appendChild(emojiLine);
+          }
+          label.appendChild(textLine);
+          if (badgeStyle) {
+            Object.assign(label.style, badgeStyle);
+          }
+
+          wrapper.appendChild(label);
+          return wrapper;
+        };
+
+        if (origin) {
+          const originMarker = new AdvancedMarkerElement({
+            map: detailsRouteMapInstance.current,
+            position: { lat: origin.latitude, lng: origin.longitude },
+            title: t("map.fulfillmentLocation"),
+            content: buildLabel(t("map.fulfillmentLabel"), "🏬"),
+          });
+          detailsRouteMarkersRef.current.push({ type: "advanced", marker: originMarker });
+          bounds.extend({ lat: origin.latitude, lng: origin.longitude });
+        }
+
+        routePoints.forEach((order) => {
+          const coords = order.shippingCoordinates!;
+          const badgeColors = deriveBadgeColors(managedRoute.color);
+          const dueBucket = dueBucketByOrderId.get(order.id);
+          const routeOrderEmoji = !order.addressValidation.isValid
+            ? "🟡"
+            : dueBucket === "today"
+              ? "📦"
+              : dueBucket === "tomorrow"
+                ? "⏰"
+                : "🕒";
+          const marker = new AdvancedMarkerElement({
+            map: detailsRouteMapInstance.current,
+            position: { lat: coords.latitude, lng: coords.longitude },
+            title: order.customerName ? `${order.name} \u2022 ${order.customerName}` : order.name,
+            content: buildLabel(
+              order.name,
+              routeOrderEmoji,
+              { backgroundColor: badgeColors.bg, borderColor: "#111111" },
+            ),
+          });
+          detailsRouteMarkersRef.current.push({ type: "advanced", marker });
+          bounds.extend({ lat: coords.latitude, lng: coords.longitude });
+        });
+
+        if (origin && routePoints.length > 0) {
+          if (managedRoute.polyline) {
+            const encoded = managedRoute.polyline;
+            const path: Array<{ lat: number; lng: number }> = [];
+            let idx = 0;
+            let dlat = 0;
+            let dlng = 0;
+            while (idx < encoded.length) {
+              let shift = 0;
+              let result = 0;
+              let byte: number;
+              do {
+                byte = encoded.charCodeAt(idx++) - 63;
+                result |= (byte & 0x1f) << shift;
+                shift += 5;
+              } while (byte >= 0x20);
+              dlat += result & 1 ? ~(result >> 1) : result >> 1;
+              shift = 0;
+              result = 0;
+              do {
+                byte = encoded.charCodeAt(idx++) - 63;
+                result |= (byte & 0x1f) << shift;
+                shift += 5;
+              } while (byte >= 0x20);
+              dlng += result & 1 ? ~(result >> 1) : result >> 1;
+              path.push({ lat: dlat / 1e5, lng: dlng / 1e5 });
+            }
+            const routePolyline = new googleMaps.Polyline({
+              path,
+              strokeColor: managedRoute.color,
+              strokeOpacity: 0.85,
+              strokeWeight: 4,
+              map: detailsRouteMapInstance.current,
+            });
+            detailsRouteRenderersRef.current.push(routePolyline);
+          }
+        }
+
+        if (!bounds.isEmpty()) {
+          detailsRouteMapInstance.current.fitBounds(bounds);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to initialize details route map", error);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    activeModalType,
     activeRouteId,
     activeRouteIndex,
     editableRoutes,
@@ -1993,21 +2322,6 @@ export default function Index() {
       }
       return next;
     });
-  };
-
-  const handleUnassignRoute = (route: (typeof routeStats)[number]) => {
-    if (route.orders.length === 0) return;
-    const orderIds = route.orders.map((order) => order.orderId);
-    const formData = new FormData();
-    formData.append("intent", "unassign");
-    formData.append("routeTag", route.tag);
-    orderIds.forEach((orderId) => formData.append("orderIds", orderId));
-    setSelectedOrderIds((current) => {
-      const next = new Set(current);
-      orderIds.forEach((orderId) => next.delete(orderId));
-      return next;
-    });
-    unassignFetcher.submit(formData, { method: "post" });
   };
 
   useEffect(() => {
@@ -2098,17 +2412,33 @@ export default function Index() {
       if (data.ok) {
         setLalamoveStatus((current) => ({
           ...current,
-          [routeId]: { message: t("routeManager.deliveryCancelled"), tone: "success" },
+          [routeId]: { message: t("routeManager.deliveryCancelled"), tone: "critical" },
         }));
         setDispatchedRoutes((prev) => {
           const next = { ...prev };
           delete next[routeId];
           return next;
         });
+        // Auto-clear the cancel success badge after 5 seconds
+        const existingTimeout = lalamoveStatusTimeoutsRef.current[routeId];
+        if (existingTimeout) window.clearTimeout(existingTimeout);
+        lalamoveStatusTimeoutsRef.current[routeId] = window.setTimeout(() => {
+          setLalamoveStatus((current) => {
+            if (current[routeId]?.message !== t("routeManager.deliveryCancelled")) return current;
+            const next = { ...current };
+            delete next[routeId];
+            return next;
+          });
+          delete lalamoveStatusTimeoutsRef.current[routeId];
+        }, 5000);
       } else {
         setLalamoveStatus((current) => ({
           ...current,
-          [routeId]: { message: data.error ?? t("driverRequest.cancelFailed"), tone: "critical" },
+          [routeId]: {
+            message: t("driverRequest.cancelCouldNotBeCancelled"),
+            tone: "critical",
+            errorDetails: data.error ?? t("driverRequest.cancelFailed"),
+          },
         }));
       }
     } catch (err) {
@@ -2135,6 +2465,14 @@ export default function Index() {
       el?.showOverlay?.();
     }
   }, [addressWarnRoute]);
+
+  // Show foreign-phone-warn modal when foreign phone warning is set
+  useEffect(() => {
+    if (foreignPhoneWarning) {
+      const el = document.getElementById("foreign-phone-modal") as { showOverlay?: () => void } | null;
+      el?.showOverlay?.();
+    }
+  }, [foreignPhoneWarning]);
 
   // After revalidation triggered by "Problem fixed", re-check and auto-proceed if clean
   useEffect(() => {
@@ -2272,9 +2610,17 @@ export default function Index() {
     });
     setEditableRoutes((current) =>
       current.map((r, i) =>
-        i === routeIndex ? { ...r, orderIds: [] } : r,
+        i === routeIndex
+          ? { ...r, orderIds: [] }
+          : r,
       ),
     );
+    setRouteQuoteTotals((prev) => {
+      const next = { ...prev };
+      delete next[route.id];
+      return next;
+    });
+    setDirtyRouteIds((prev) => new Set(prev).add(route.id));
     setUnassignConfirmRoute(null);
     unassignFetcher.submit(formData, { method: "post" });
   };
@@ -2294,9 +2640,12 @@ export default function Index() {
     setEditableRoutes((current) =>
       current.map((r) => ({ ...r, orderIds: [] })),
     );
+    setRouteQuoteTotals({});
+    setDirtyRouteIds(new Set());
     setClearAllConfirmOpen(false);
     unassignFetcher.submit(formData, { method: "post" });
   };
+
 
   const applyFilters = ({
     nextLocationId,
@@ -2515,18 +2864,40 @@ export default function Index() {
       });
       return next;
     });
+    setRouteQuoteTotals((prev) => {
+      const next = { ...prev };
+      editableRoutes.forEach((route, index) => {
+        const withoutSelected = route.orderIds.filter(
+          (orderId) => !selectedSet.has(orderId),
+        );
+        if (index === routeIndex || withoutSelected.length !== route.orderIds.length) {
+          delete next[route.id];
+        }
+      });
+      return next;
+    });
+    setDirtyRouteIds((prev) => {
+      const next = new Set(prev);
+      editableRoutes.forEach((route, index) => {
+        const withoutSelected = route.orderIds.filter(
+          (orderId) => !selectedSet.has(orderId),
+        );
+        if (index === routeIndex || withoutSelected.length !== route.orderIds.length) {
+          next.add(route.id);
+        }
+      });
+      // Also mark newly created route if applicable
+      if (routeIndex >= editableRoutes.length) {
+        next.add(`${locationId}-${editableRoutes.length}`);
+      }
+      return next;
+    });
     if (assigningAllRemainingAtLocation) {
       setAssignmentSuccessMessage(
         t("routeManager.assignmentSuccess", { assigned: projectedAssignedOrdersInScope, routes: projectedRoutesWithOrdersInScope }),
       );
     } else {
       setAssignmentSuccessMessage(null);
-    }
-    const toOptimize = pendingOptimize as
-      | { routeIndex: number; orderIds: string[] }
-      | null;
-    if (toOptimize && toOptimize.orderIds.length >= 2) {
-      setPendingRouteOptimize(toOptimize);
     }
     clearSelection();
     const formData = new FormData();
@@ -2535,20 +2906,6 @@ export default function Index() {
       formData.append("orderIds", orderId),
     );
     assignFetcher.submit(formData, { method: "post" });
-    const routesToRefresh = projectedRoutes.filter((r) => r.orderIds.length > 0);
-    if (routesToRefresh.length > 0) {
-      const routesPayload = JSON.stringify(
-        routesToRefresh.map((r) => ({
-          routeId: r.id,
-          locationId: r.locationId,
-          orderIds: r.orderIds,
-        })),
-      );
-      const refreshFd = new FormData();
-      refreshFd.append("intent", "refresh-route-stats");
-      refreshFd.append("routesPayload", routesPayload);
-      refreshStatsFetcher.submit(refreshFd, { method: "post" });
-    }
   };
 
   const routesWithOrdersCount = useMemo(
@@ -2556,6 +2913,10 @@ export default function Index() {
       editableRoutes.filter((route) => route.orderIds.length > 0).length,
     [editableRoutes],
   );
+
+  // True when auto-assign or route-update fetchers are in flight — used to
+  // disable buttons that could cause conflicts during routing operations.
+  const isRoutingBusy = optimizeFetcher.state !== "idle" || updateRoutesFetcher.state !== "idle" || splitRoutesFetcher.state !== "idle";
 
   const selectedOrderLocationIds = useMemo(() => {
     const ids = new Set<string>();
@@ -2630,10 +2991,8 @@ export default function Index() {
 
   const confirmMapStyle = () => {
     setMapStyle(draftMapStyle);
-    setRoutingLogic(draftRoutingLogic);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(MAP_STYLE_STORAGE_KEY, draftMapStyle);
-      window.localStorage.setItem(ROUTING_LOGIC_STORAGE_KEY, draftRoutingLogic);
     }
     setIsMapStyleModalOpen(false);
   };
@@ -2746,6 +3105,12 @@ export default function Index() {
           : candidate,
       ),
     );
+    setRouteQuoteTotals((prev) => {
+      const next = { ...prev };
+      delete next[`${route.locationId}-${routeIndex}`];
+      return next;
+    });
+    setDirtyRouteIds((prev) => new Set(prev).add(route.id));
     unassignFetcher.submit(formData, { method: "post" });
   };
 
@@ -2807,8 +3172,74 @@ export default function Index() {
     const formData = new FormData();
     formData.append("intent", "optimize-fleet");
     formData.append("ordersPayload", JSON.stringify(candidates));
-    formData.append("routingLogic", routingLogic);
     optimizeFetcher.submit(formData, { method: "post" });
+  };
+
+  const handleUpdateRoutes = () => {
+    if (dirtyRouteIds.size === 0) return;
+    const dirtyRoutes = editableRoutes
+      .filter((route) => dirtyRouteIds.has(route.id) && route.orderIds.length > 0);
+    console.info("[local-delivery:handleUpdateRoutes] dirtyRouteIds=%s dirtyRoutesWithOrders=%d allEditableRoutes=%s",
+      Array.from(dirtyRouteIds).join(","), dirtyRoutes.length,
+      editableRoutes.map((r) => `${r.id}:orders=${r.orderIds.length}:polyLen=${r.polyline?.length ?? 0}`).join(" | "));
+    if (dirtyRoutes.length === 0) {
+      setDirtyRouteIds(new Set());
+      return;
+    }
+    const routesPayload = dirtyRoutes.map((route, _) => {
+      const routeIndex = editableRoutes.findIndex((r) => r.id === route.id);
+      return {
+        routeId: route.id,
+        routeIndex,
+        locationId: route.locationId,
+        orderIds: route.orderIds,
+      };
+    });
+    console.info("[local-delivery:handleUpdateRoutes] SUBMITTING %d routes: %s",
+      routesPayload.length, routesPayload.map((r) => `${r.routeId}:idx=${r.routeIndex}:orders=${r.orderIds.length}`).join(" | "));
+    const formData = new FormData();
+    formData.append("intent", "update-routes");
+    formData.append("routesPayload", JSON.stringify(routesPayload));
+    formData.append("locationId", locationId);
+    updateRoutesFetcher.submit(formData, { method: "post" });
+  };
+
+  const handleSplitRoutes = () => {
+    const routesWithOrders = editableRoutes
+      .map((r, index) => ({
+        routeIndex: index,
+        locationId: r.locationId,
+        orderIds: r.orderIds,
+      }))
+      .filter((r) => r.orderIds.length > 0);
+    if (routesWithOrders.length === 0) return;
+
+    const assignedOrders: Array<{
+      orderId: string;
+      locationId: string;
+      shippingCoordinates: { latitude: number; longitude: number };
+      locationCoordinates: { latitude: number; longitude: number };
+    }> = [];
+    for (const route of routesWithOrders) {
+      for (const orderId of route.orderIds) {
+        const order = ordersById.get(orderId);
+        if (order?.shippingCoordinates && order?.fulfillmentLocation?.coordinates) {
+          assignedOrders.push({
+            orderId: order.id,
+            locationId: order.fulfillmentLocation.id,
+            shippingCoordinates: order.shippingCoordinates,
+            locationCoordinates: order.fulfillmentLocation.coordinates,
+          });
+        }
+      }
+    }
+    if (assignedOrders.length === 0) return;
+
+    const formData = new FormData();
+    formData.append("intent", "split-routes");
+    formData.append("ordersPayload", JSON.stringify(assignedOrders));
+    formData.append("routesPayload", JSON.stringify(routesWithOrders));
+    splitRoutesFetcher.submit(formData, { method: "post" });
   };
 
   const handleAddToBestRoute = () => {
@@ -2841,7 +3272,6 @@ export default function Index() {
     formData.append("intent", "add-to-best-route");
     formData.append("unassignedPayload", JSON.stringify(unassigned));
     formData.append("routesPayload", JSON.stringify(routes));
-    formData.append("routingLogic", routingLogic);
     optimizeFetcher.submit(formData, { method: "post" });
   };
 
@@ -3015,6 +3445,7 @@ export default function Index() {
       return next;
     });
     setReturnQuotePreview(null);
+    setReturnPickupError(null);
   };
 
   const toggleAllReturnSelection = (checked: boolean) => {
@@ -3024,6 +3455,7 @@ export default function Index() {
       setSelectedReturnIds(new Set());
     }
     setReturnQuotePreview(null);
+    setReturnPickupError(null);
   };
 
   const getRouteLabel = (_route: PrecomputedRoute, routeIndex?: number): string => {
@@ -3043,15 +3475,26 @@ export default function Index() {
   const openManageRouteModal = (route: PrecomputedRoute, routeIndex: number) => {
     setActiveRouteId(route.id);
     setActiveRouteIndex(routeIndex);
+    setActiveModalType("manage");
     setRemoveFromRouteOrderIds(new Set());
     type ModalEl = { showOverlay?: () => void };
     const modal = document.getElementById("manage-route-modal") as ModalEl | null;
     modal?.showOverlay?.();
   };
 
+  const openDetailsRouteModal = (route: PrecomputedRoute, routeIndex: number) => {
+    setActiveRouteId(route.id);
+    setActiveRouteIndex(routeIndex);
+    setActiveModalType("details");
+    type ModalEl = { showOverlay?: () => void };
+    const modal = document.getElementById("details-route-modal") as ModalEl | null;
+    modal?.showOverlay?.();
+  };
+
   const closeEditRoute = () => {
     setActiveRouteId(null);
     setActiveRouteIndex(null);
+    setActiveModalType(null);
     setRemoveFromRouteOrderIds(new Set());
   };
 
@@ -3095,6 +3538,38 @@ export default function Index() {
       idsToRemove.forEach((id) => next.delete(id));
       return next;
     });
+
+    // Clear stale Lalamove state when route composition changes
+    setLalamoveStatus((current) => {
+      const next = { ...current };
+      delete next[activeRouteId];
+      return next;
+    });
+    setRouteQuoteTotals((current) => {
+      const next = { ...current };
+      delete next[activeRouteId];
+      return next;
+    });
+    setDirtyRouteIds((prev) => new Set(prev).add(activeRouteId));
+    if (quotePreview?.routeId === activeRouteId) {
+      setQuotePreview(null);
+    }
+    const existingTimeout = lalamoveStatusTimeoutsRef.current[activeRouteId];
+    if (existingTimeout) {
+      window.clearTimeout(existingTimeout);
+      delete lalamoveStatusTimeoutsRef.current[activeRouteId];
+    }
+    // Allow fresh dispatch attempt if previous one failed
+    setDispatchedRoutes((current) => {
+      const existing = current[activeRouteId];
+      if (existing && TERMINAL_DISPATCH_STATUSES.has(existing.status ?? "")) {
+        const next = { ...current };
+        delete next[activeRouteId];
+        return next;
+      }
+      return current;
+    });
+
     closeEditRoute();
 
     if (tag && route) {
@@ -3181,6 +3656,55 @@ export default function Index() {
               onClick={saveRouteEdits}
             >
               {t("routeManager.unassignOrders")}
+            </s-button>
+          </div>
+        </s-stack>
+      </s-modal>
+      <s-modal
+        id="details-route-modal"
+        heading={activeRouteIndex != null ? t("modals.routeDetails.heading", { number: activeRouteIndex + 1 }) : ""}
+      >
+        <s-stack direction="block" gap="base">
+          <div className={styles.manageRouteLayout}>
+            <div className={styles.mapCanvasWrap}>
+              <div
+                ref={detailsRouteMapRef}
+                className={`${styles.mapCanvas} ${styles.manageRouteMapCanvas}`}
+              />
+            </div>
+            <div className={styles.manageRouteTableRow}>
+              {activeManagedRouteOrders.length > 0 ? (
+                <div className={styles.dueOrdersTable}>
+                  <div className={styles.dueOrdersHeader}>
+                    <span />
+                    <span>{t("routeManager.table.order")}</span>
+                    <span>{t("routeManager.table.customer")}</span>
+                    <span>{t("routeManager.table.address")}</span>
+                  </div>
+                  {activeManagedRouteOrders.map((order) => (
+                    <div key={order.id} className={styles.dueOrdersRow}>
+                      <span />
+                      <s-link href={order.adminOrderUrl} target="_blank">
+                        {order.name}
+                      </s-link>
+                      <span>{formatCustomerShort(order.customerName, t("customer.guest"))}</span>
+                      <span>{order.address1 ?? t("routeManager.noAddressLine1")}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <s-text color="subdued">{t("modals.routeDetails.noOrders")}</s-text>
+              )}
+            </div>
+          </div>
+          <div className={styles.assignModalFooter}>
+            <s-button
+              variant="secondary"
+              commandFor="details-route-modal"
+              command="--hide"
+              onClick={closeEditRoute}
+            >
+              {t("routeManager.close")}
             </s-button>
           </div>
         </s-stack>
@@ -3523,30 +4047,6 @@ export default function Index() {
                 <s-choice value="light">{t("modals.mapStyle.light")}</s-choice>
               </s-choice-list>
             </div>
-            <div>
-              <s-text type="strong">{t("modals.mapStyle.routingLogic")}</s-text>
-              <s-choice-list
-                label=""
-                values={[draftRoutingLogic]}
-                onChange={(event: Event) => {
-                  const target = event.currentTarget as { values?: string[] } | null;
-                  const value = target?.values?.[0];
-                  if (
-                    value === "distance" ||
-                    value === "topological" ||
-                    value === "inward" ||
-                    value === "carrier-quotation"
-                  ) {
-                    setDraftRoutingLogic(value);
-                  }
-                }}
-              >
-                <s-choice value="distance">{t("modals.mapStyle.distanceFirst")}</s-choice>
-                <s-choice value="topological">{t("modals.mapStyle.topological")}</s-choice>
-                <s-choice value="inward">{t("modals.mapStyle.inwardMatrix")}</s-choice>
-                <s-choice value="carrier-quotation">{t("modals.mapStyle.carrierQuotation")}</s-choice>
-              </s-choice-list>
-            </div>
           </div>
           <div className={styles.assignModalFooter}>
             <s-button
@@ -3555,7 +4055,6 @@ export default function Index() {
               command="--hide"
               onClick={() => {
                 setDraftMapStyle(mapStyle);
-                setDraftRoutingLogic(routingLogic);
                 setIsMapStyleModalOpen(false);
               }}
             >
@@ -3632,6 +4131,11 @@ export default function Index() {
       </s-modal>
       <s-modal id="return-pickups-modal" heading={t("modals.returnPickups.heading")}>
         <s-stack direction="block" gap="base">
+          {returnPickupError ? (
+            <s-banner tone="critical" dismissible onDismiss={() => setReturnPickupError(null)}>
+              {returnPickupError}
+            </s-banner>
+          ) : null}
           <s-text-field
             label={t("modals.returnPickups.instructionsLabel")}
             value={returnInstructions}
@@ -3782,6 +4286,64 @@ export default function Index() {
                 }}
               >
                 {t("modals.addressWarn.proceedAnyway")}
+              </s-button>
+            </div>
+          </s-stack>
+        </s-modal>
+      ) : null}
+      {foreignPhoneWarning ? (
+        <s-modal id="foreign-phone-modal" heading={t("modals.foreignPhone.heading")}>
+          <s-stack direction="block" gap="base">
+            <s-text color="subdued">{t("modals.foreignPhone.description")}</s-text>
+            {foreignPhoneWarning.affectedOrders.map((order) => (
+              <s-box key={order.id} padding="base" borderWidth="base" borderRadius="base">
+                <s-stack direction="block" gap="small">
+                  <s-text type="strong">
+                    {order.name}{order.customerName ? ` • ${order.customerName}` : ""}
+                  </s-text>
+                  {order.phone ? (
+                    <s-text color="subdued">{t("modals.foreignPhone.orderPhone", { phone: order.phone })}</s-text>
+                  ) : null}
+                </s-stack>
+              </s-box>
+            ))}
+            <div className={styles.assignModalFooter}>
+              <s-button
+                variant="secondary"
+                onClick={() => {
+                  hideModal("foreign-phone-modal");
+                  setForeignPhoneWarning(null);
+                }}
+              >
+                {t("modals.foreignPhone.cancel")}
+              </s-button>
+              <s-button
+                variant="primary"
+                onClick={() => {
+                  if (!quotePreview || quotePreview.routeId !== foreignPhoneWarning.routeId) {
+                    setForeignPhoneWarning(null);
+                    return;
+                  }
+                  const formData = new FormData();
+                  formData.append("intent", "lalamove-place-order");
+                  formData.append("routeId", quotePreview.routeId);
+                  formData.append("locationId", quotePreview.locationId);
+                  formData.append("quotationId", quotePreview.quotationId);
+                  formData.append("quotationTotal", quotePreview.total ?? "");
+                  formData.append("quotationCurrency", quotePreview.currency ?? "");
+                  quotePreview.stopIds.forEach((stopId) => formData.append("stopIds", stopId));
+                  quotePreview.orderIds.forEach((orderId) => formData.append("orderIds", orderId));
+                  formData.append("deliveryAssignments", JSON.stringify(quotePreview.deliveryAssignments));
+                  const routeIdx = editableRoutes.findIndex((r) => r.id === quotePreview.routeId);
+                  const routeTag = routeIdx >= 0 ? (ROUTE_TAG_DEFINITIONS[routeIdx]?.tag ?? null) : null;
+                  if (routeTag) formData.append("routeTag", routeTag);
+                  formData.append("skipPhoneWarning", "true");
+                  lalamoveFetcher.submit(formData, { method: "post" });
+                  hideModal("foreign-phone-modal");
+                  setForeignPhoneWarning(null);
+                }}
+              >
+                {t("modals.foreignPhone.proceed")}
               </s-button>
             </div>
           </s-stack>
@@ -3971,18 +4533,14 @@ export default function Index() {
       ) : null}
       <div
         slot="aside"
-        className={`${styles.collapsibleSectionWrap}${!isRouteManagerVisible ? ` ${styles.collapsed}` : ""}`}
-        onClick={(e: React.MouseEvent) => {
-          if ((e.target as HTMLElement).closest?.('button, [role="button"], s-button, s-link, s-select, a, input, select, s-date-field')) return;
-          setIsRouteManagerVisible((prev) => !prev);
-        }}
+        className={styles.collapsibleSectionWrap}
       >
       <s-section heading={t("filters.fulfillmentDetails")}>
         <s-stack direction="block" gap="base">
           <div className={styles.locationSelectRow}>
             <div className={styles.locationSelectFlex}>
               <s-select
-                label={t("filters.fulfillmentLocation")}
+                label=""
                 name="locationId"
                 value={locationId}
                 onChange={handleLocationChange}
@@ -4001,6 +4559,7 @@ export default function Index() {
               <s-date-field
                 label={t("filters.startDate")}
                 value={startDate}
+                {...{ lang: i18n.language } as Record<string, string>}
                 onChange={handleStartDateChange}
               />
               <s-text color="subdued">{daysAgoText}</s-text>
@@ -4019,39 +4578,20 @@ export default function Index() {
               <s-option value="4">{t("filters.dayPlus4")}</s-option>
             </s-select>
           ) : null}
-          {!isRouteManagerVisible && deliveryPromiseDays === 0 ? (
-            <div className={styles.sameDayTimeLimitRow}>
-              <span className={styles.sameDayTimeLimitLabel}>{t("filters.sameDayTimeLimit")}</span>
-              <div className={styles.sameDayTimeSelects}>
-                <s-select
-                  label="Hour"
-                  value={`${sameDayHour}`}
-                  onChange={(e: Event) => {
-                    const v = (e.currentTarget as { value?: string } | null)?.value;
-                    if (v !== undefined) setSameDayHour(Number(v));
-                  }}
-                >
-                  {Array.from({ length: 24 }, (_, i) => (
-                    <s-option key={i} value={`${i}`}>{String(i).padStart(2, "0")}h</s-option>
-                  ))}
-                </s-select>
-                <s-select
-                  label="Min"
-                  value={`${sameDayMinute}`}
-                  onChange={(e: Event) => {
-                    const v = (e.currentTarget as { value?: string } | null)?.value;
-                    if (v !== undefined) setSameDayMinute(Number(v));
-                  }}
-                >
-                  {[0, 15, 30, 45].map((m) => (
-                    <s-option key={m} value={`${m}`}>{String(m).padStart(2, "0")}m</s-option>
-                  ))}
-                </s-select>
-              </div>
-            </div>
+          {!isRouteManagerVisible ? (
+            <s-text-field
+              label={t("filters.sameDayTimeLimit")}
+              {...{ type: "time" } as Record<string, string>}
+              value={`${String(sameDayHour).padStart(2, "0")}:${String(sameDayMinute).padStart(2, "0")}`}
+              onChange={(e: Event) => {
+                const val = (e.currentTarget as HTMLInputElement).value;
+                if (!val) return;
+                const [h, m] = val.split(":").map(Number);
+                if (!isNaN(h)) setSameDayHour(h);
+                if (!isNaN(m)) setSameDayMinute(m);
+              }}
+            ></s-text-field>
           ) : null}
-          {/* Orders badge */}
-          <s-badge>{t("filters.ordersToDeliver", { count: mapData.orders.length })}</s-badge>
           {locationId !== DEFAULT_LOCATION_ID && isRouteManagerVisible ? (
             <>
               {failedDeliveryCount > 0 ? (
@@ -4094,6 +4634,14 @@ export default function Index() {
             </>
           ) : null}
         </s-stack>
+        <div
+          className={`${styles.collapseChevron}${isRouteManagerVisible ? ` ${styles.collapsed}` : ""}`}
+          onClick={() => setIsRouteManagerVisible((prev) => !prev)}
+          role="button"
+          aria-label={isRouteManagerVisible ? t("map.expand") : t("map.collapse")}
+        >
+          <span className={styles.chevronIcon}>›</span>
+        </div>
       </s-section>
       </div>
       <div className={styles.mainBlocks}>
@@ -4156,7 +4704,6 @@ export default function Index() {
                       command="--show"
                       onClick={() => {
                         setDraftMapStyle(mapStyle);
-                        setDraftRoutingLogic(routingLogic);
                         setIsMapStyleModalOpen(true);
                       }}
                     >
@@ -4166,7 +4713,7 @@ export default function Index() {
                       <>
                         <s-button
                           variant="secondary"
-                          disabled={selectedOrderIds.size === 0}
+                          disabled={selectedOrderIds.size === 0 || isRoutingBusy}
                           onClick={clearSelection}
                         >
                           {t("map.clearSelection")}
@@ -4175,8 +4722,10 @@ export default function Index() {
                           variant="primary"
                           disabled={
                             selectedOrderIds.size === 0 ||
-                            routesWithOrdersCount >= ROUTE_TAGS.size
+                            routesWithOrdersCount >= ROUTE_TAGS.size ||
+                            isRoutingBusy
                           }
+                          loading={isRoutingBusy}
                           onClick={handleAssignToNewRoute}
                         >
                           {t("map.assignToNewRoute")}
@@ -4249,7 +4798,7 @@ export default function Index() {
                                           }
                                         />
                                       </span>
-                                      <span>{order.name}</span>
+                                      <s-link href={order.adminOrderUrl} target="_blank">{order.name}</s-link>
                                       <span>{formatCustomerShort(order.customerName, t("customer.guest"))}</span>
                                       <span>{order.address1 ?? t("routeManager.noAddressLine1")}</span>
                                     </div>
@@ -4266,12 +4815,12 @@ export default function Index() {
               </div>
               {isFullscreen ? (
                 <div className={styles.fullscreenAssignedPane}>
-                  <s-section>
+                  <s-section heading={t("filters.fulfillmentDetails")}>
                     <s-stack direction="block" gap="base">
                       <div className={styles.locationSelectRow}>
                         <div className={styles.locationSelectFlex}>
                           <s-select
-                            label={t("filters.fulfillmentLocation")}
+                            label=""
                             name="locationId"
                             value={locationId}
                             onChange={handleLocationChange}
@@ -4284,26 +4833,13 @@ export default function Index() {
                             ))}
                           </s-select>
                         </div>
-                        <button
-                          type="button"
-                          className={styles.collapseToggle}
-                          onClick={() => setIsRouteManagerVisible((prev) => !prev)}
-                          aria-label={isRouteManagerVisible ? t("map.collapse") : t("map.expand")}
-                        >
-                          <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                            {isRouteManagerVisible ? (
-                              <polyline points="5 8 10 13 15 8" />
-                            ) : (
-                              <polyline points="5 13 10 8 15 13" />
-                            )}
-                          </svg>
-                        </button>
                       </div>
                       {!isRouteManagerVisible ? (
                         <div className={styles.startDateFieldGroup}>
                           <s-date-field
                             label={t("filters.startDate")}
                             value={startDate}
+                            {...{ lang: i18n.language } as Record<string, string>}
                             onChange={handleStartDateChange}
                           />
                           <s-text color="subdued">{daysAgoText}</s-text>
@@ -4322,39 +4858,20 @@ export default function Index() {
                           <s-option value="4">{t("filters.dayPlus4")}</s-option>
                         </s-select>
                       ) : null}
-                      {!isRouteManagerVisible && deliveryPromiseDays === 0 ? (
-                        <div className={styles.sameDayTimeLimitRow}>
-                          <span className={styles.sameDayTimeLimitLabel}>{t("filters.sameDayTimeLimit")}</span>
-                          <div className={styles.sameDayTimeSelects}>
-                            <s-select
-                              label="Hour"
-                              value={`${sameDayHour}`}
-                              onChange={(e: Event) => {
-                                const v = (e.currentTarget as { value?: string } | null)?.value;
-                                if (v !== undefined) setSameDayHour(Number(v));
-                              }}
-                            >
-                              {Array.from({ length: 24 }, (_, i) => (
-                                <s-option key={i} value={`${i}`}>{String(i).padStart(2, "0")}h</s-option>
-                              ))}
-                            </s-select>
-                            <s-select
-                              label="Min"
-                              value={`${sameDayMinute}`}
-                              onChange={(e: Event) => {
-                                const v = (e.currentTarget as { value?: string } | null)?.value;
-                                if (v !== undefined) setSameDayMinute(Number(v));
-                              }}
-                            >
-                              {[0, 15, 30, 45].map((m) => (
-                                <s-option key={m} value={`${m}`}>{String(m).padStart(2, "0")}m</s-option>
-                              ))}
-                            </s-select>
-                          </div>
-                        </div>
+                      {!isRouteManagerVisible ? (
+                        <s-text-field
+                          label={t("filters.sameDayTimeLimit")}
+                          {...{ type: "time" } as Record<string, string>}
+                          value={`${String(sameDayHour).padStart(2, "0")}:${String(sameDayMinute).padStart(2, "0")}`}
+                          onChange={(e: Event) => {
+                            const val = (e.currentTarget as HTMLInputElement).value;
+                            if (!val) return;
+                            const [h, m] = val.split(":").map(Number);
+                            if (!isNaN(h)) setSameDayHour(h);
+                            if (!isNaN(m)) setSameDayMinute(m);
+                          }}
+                        ></s-text-field>
                       ) : null}
-                      {/* Orders badge */}
-                      <s-badge>{t("filters.ordersToDeliver", { count: mapData.orders.length })}</s-badge>
                       {locationId !== DEFAULT_LOCATION_ID && isRouteManagerVisible ? (
                         <>
                           {failedDeliveryCount > 0 ? (
@@ -4394,56 +4911,94 @@ export default function Index() {
                         </>
                       ) : null}
                     </s-stack>
+                    <div
+                      className={`${styles.collapseChevron}${isRouteManagerVisible ? ` ${styles.collapsed}` : ""}`}
+                      onClick={() => setIsRouteManagerVisible((prev) => !prev)}
+                      role="button"
+                      aria-label={isRouteManagerVisible ? t("map.expand") : t("map.collapse")}
+                    >
+                      <span className={styles.chevronIcon}>›</span>
+                    </div>
                   </s-section>
                   {isRouteManagerVisible ? (
                   <s-section heading={t("routeManager.heading")}>
-                    {/* "No assigned routes" — badge, same style as "Orders to deliver" */}
-                    {locationId !== DEFAULT_LOCATION_ID && !hasAssignedRoutes && optimizeFetcher.state === "idle" ? (
-                      <div className={styles.asideSummaryRow}>
-                        <s-badge>{t("routeManager.noRoutesForLocation")}</s-badge>
-                      </div>
-                    ) : null}
+                    {/* Orders badge + actions menu */}
+                    <div className={styles.routeManagerStatusRow}>
+                      <s-badge>{t("filters.ordersToDeliver", { count: mapData.orders.length })}</s-badge>
+                      {locationId !== DEFAULT_LOCATION_ID ? (
+                        optimizeFetcher.state !== "idle" || updateRoutesFetcher.state !== "idle" ? (
+                          <s-spinner size="base" accessibilityLabel={t("routeManager.autoAssign")}></s-spinner>
+                        ) : (
+                          <div className={styles.routeManagerActionsMenu}>
+                            <s-button
+                              variant="tertiary"
+                              icon="menu-horizontal"
+                              accessibilityLabel={t("routeManager.actions")}
+                              commandFor="route-manager-actions-main"
+                            ></s-button>
+                            <s-menu id="route-manager-actions-main" accessibilityLabel={t("routeManager.actions")}>
+                              {unassignedOrders.length > 0 ? (
+                                <s-button
+                                  variant="tertiary"
+                                  icon="transfer"
+                                  disabled={orders.length === 0}
+                                  onClick={() => {
+                                    autoAssignSelection();
+                                    handleOptimizeFleet();
+                                  }}
+                                >
+                                  {t("routeManager.autoAssign")}
+                                </s-button>
+                              ) : null}
+                              <s-button
+                                variant="tertiary"
+                                disabled={!hasSplitCandidates || isRoutingBusy}
+                                onClick={handleSplitRoutes}
+                              >
+                                {t("routeManager.splitRoutes")}
+                              </s-button>
+                              <s-button
+                                variant="tertiary"
+                                icon="refresh"
+                                disabled={dirtyRouteIds.size === 0 || isRoutingBusy}
+                                onClick={handleUpdateRoutes}
+                              >
+                                {t("routeManager.updateRoutes")}
+                              </s-button>
+                              {hasAssignedRoutes ? (
+                                <>
+                                  <s-divider></s-divider>
+                                  <s-button
+                                    variant="tertiary"
+                                    tone="critical"
+                                    icon="delete"
+                                    disabled={isRoutingBusy}
+                                    onClick={() => setClearAllConfirmOpen(true)}
+                                  >
+                                    {t("routeManager.clearAllRoutes")}
+                                  </s-button>
+                                </>
+                              ) : null}
+                            </s-menu>
+                          </div>
+                        )
+                      ) : null}
+                    </div>
                     {locationId !== DEFAULT_LOCATION_ID ? (() => {
                       const selectedUnassignedCount = unassignedOrders.filter(
                         (o) => selectedOrderIds.has(o.id),
                       ).length;
-                      return (
+                      return selectedUnassignedCount > 0 && hasAssignedRoutes ? (
                       <div className={styles.routeManagerTopRow}>
-                        <span>
-                          {hasAssignedRoutes && selectedUnassignedCount > 0 ? (
-                            <s-button
-                              variant="secondary"
-                              onClick={handleAddToBestRoute}
-                              disabled={optimizeFetcher.state !== "idle"}
-                            >
-                              {t("routeManager.addToBestRoute")}
-                            </s-button>
-                          ) : null}
-                        </span>
-                        {unassignedOrders.length > 0 ? (
-                          <span>
-                            {optimizeFetcher.state !== "idle" ? (
-                              <s-button key="auto-assign-loading" variant="primary" loading disabled>
-                                {t("routeManager.autoAssign")}
-                              </s-button>
-                            ) : (
-                              <s-button
-                                key="auto-assign-idle"
-                                variant="primary"
-                                onClick={() => {
-                                  setAutoAssignLocked(false);
-                                  autoAssignSelection();
-                                  handleOptimizeFleet();
-                                }}
-                                disabled={autoAssignLocked || orders.length === 0}
-                              >
-                                {t("routeManager.autoAssign")}
-                              </s-button>
-                            )}
-                          </span>
-                        ) : null}
+                        <s-button
+                          variant="secondary"
+                          onClick={handleAddToBestRoute}
+                          disabled={optimizeFetcher.state !== "idle"}
+                        >
+                          {t("routeManager.addToBestRoute")}
+                        </s-button>
                       </div>
-                      );
+                      ) : null;
                     })() : null}
                     {assignmentSuccessMessage ? (
                       <div className={styles.successBadgeRow}>
@@ -4455,8 +5010,39 @@ export default function Index() {
                         <s-badge tone="caution">{assignmentWarningMessage}</s-badge>
                       </div>
                     ) : null}
-                    {locationId !== DEFAULT_LOCATION_ID && hasAssignedRoutes ? (
+                    {hasAssignedRoutes ? (
                       <div className={styles.assignedRoutesSection}>
+                        {locationId === DEFAULT_LOCATION_ID ? (
+                          // Grouped by location when "All locations" selected
+                          [...new Set(editableRoutes.filter((r) => r.orderIds.length > 0).map((r) => r.locationId))].map((locId) => (
+                            <div key={locId} className={styles.locationGroup}>
+                              <s-text type="strong">{locationsById.get(locId)?.name ?? locId}</s-text>
+                              <div className={styles.assignedRoutesList}>
+                                {editableRoutes
+                                  .map((route, index) => ({ route, index }))
+                                  .filter(({ route }) => route.orderIds.length > 0 && route.locationId === locId)
+                                  .map(({ route, index: routeIndex }) => {
+                                    const routeOrders = route.orderIds.map((orderId) => ordersById.get(orderId)).filter((order): order is LoaderOrder => Boolean(order));
+                                    const orderCount = routeOrders.length;
+                                    const label = getRouteLabel(route, routeIndex);
+                                    const badgeColors = deriveBadgeColors(route.color);
+                                    return (
+                                      <div key={route.id} className={styles.routeCard}>
+                                        <s-box padding="base" borderWidth="base" borderRadius="base">
+                                          <div className={styles.routeCardHeader}>
+                                            <span className={styles.routeBadge} style={{ "--badge-bg": badgeColors.bg, "--badge-text": badgeColors.text } as CSSProperties}>
+                                              {label}
+                                            </span>
+                                          </div>
+                                          <s-text color="subdued">{t("routeManager.ordersMeta", { count: orderCount, shipping: "--" })}</s-text>
+                                        </s-box>
+                                      </div>
+                                    );
+                                  })}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
                         <div className={styles.assignedRoutesList}>
                           {editableRoutes
                             .map((route, index) => ({ route, index }))
@@ -4544,21 +5130,30 @@ export default function Index() {
                                         {label}
                                       </span>
                                     </div>
-                                    <span title={dispatchedRoutes[route.id] ? t("routeManager.clearRouteDisabledTooltip") : undefined}>
+                                    {dispatchedRoutes[route.id] && !TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") ? (
                                       <s-button
                                         variant="secondary"
-                                        tone="critical"
-                                        disabled={!!dispatchedRoutes[route.id]}
-                                        onClick={() =>
-                                          setUnassignConfirmRoute({
-                                            route,
-                                            index: routeIndex,
-                                          })
-                                        }
+                                        onClick={() => openDetailsRouteModal(route, routeIndex)}
                                       >
-                                        {t("routeManager.clearRoute")}
+                                        {t("routeManager.details")}
                                       </s-button>
-                                    </span>
+                                    ) : (
+                                      <span title={dispatchedRoutes[route.id] ? t("routeManager.clearRouteDisabledTooltip") : undefined}>
+                                        <s-button
+                                          variant="secondary"
+                                          tone="critical"
+                                          disabled={!!dispatchedRoutes[route.id] || isRoutingBusy}
+                                          onClick={() =>
+                                            setUnassignConfirmRoute({
+                                              route,
+                                              index: routeIndex,
+                                            })
+                                          }
+                                        >
+                                          {t("routeManager.clearRoute")}
+                                        </s-button>
+                                      </span>
+                                    )}
                                   </div>
                                   <div className={styles.routeCardOrderStats}>
                                     <s-stack direction="block" gap="small">
@@ -4570,11 +5165,19 @@ export default function Index() {
                                     <div className={styles.assignedRoutesTopActions}>
                                       <s-button
                                         variant="primary"
-                                        disabled={!canAddToRoute}
+                                        disabled={!canAddToRoute || isRoutingBusy}
                                         onClick={() => handleAddSelectedToRoute(routeIndex)}
                                       >
                                         {t("routeManager.addToRoute")}
                                       </s-button>
+                                    </div>
+                                  ) : dispatchedRoutes[route.id]?.status === "delivered" ? (
+                                    <div className={styles.dispatchedBlock}>
+                                      <div className={styles.deliveryStatusRow}>
+                                        <s-badge tone="success">
+                                          {t("routeManager.status.delivered")}
+                                        </s-badge>
+                                      </div>
                                     </div>
                                   ) : dispatchedRoutes[route.id] && !TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") ? (
                                     <div className={styles.dispatchedBlock}>
@@ -4586,6 +5189,21 @@ export default function Index() {
                                           {t("routeManager.cancelDelivery")}
                                         </s-button>
                                       </div>
+                                      {lalamoveStatus[route.id]?.tone === "critical" ? (
+                                        <div className={styles.cancelErrorBlock}>
+                                          <s-badge tone="critical">
+                                            {lalamoveStatus[route.id].message}
+                                          </s-badge>
+                                          <a
+                                            href="https://web.lalamove.com/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={styles.goToLalamoveLink}
+                                          >
+                                            {t("driverRequest.goToLalamove")}
+                                          </a>
+                                        </div>
+                                      ) : null}
                                     </div>
                                   ) : (
                                     <>
@@ -4605,6 +5223,7 @@ export default function Index() {
                                         <s-stack direction="inline" gap="base">
                                           <s-button
                                             variant="secondary"
+                                            disabled={isRoutingBusy}
                                             onClick={() =>
                                               openManageRouteModal(route, routeIndex)
                                             }
@@ -4643,7 +5262,7 @@ export default function Index() {
                                             <s-button
                                               key="request-quote"
                                               variant="secondary"
-                                              disabled={!isLalamoveReady}
+                                              disabled={!isLalamoveReady || isRoutingBusy}
                                               onClick={() => handleRequestDriver(route)}
                                             >
                                               {t("routeManager.requestQuote")}
@@ -4659,7 +5278,7 @@ export default function Index() {
                                         <s-badge tone="success">
                                           {lalamoveStatus[route.id].message}
                                         </s-badge>
-                                      ) : lalamoveStatus[route.id].tone === "critical" ? (
+                                      ) : lalamoveStatus[route.id].tone === "critical" && lalamoveStatus[route.id].errorDetails ? (
                                         <s-link onClick={() => setDriverErrorModal({
                                           routeId: route.id,
                                           message: lalamoveStatus[route.id].message,
@@ -4669,6 +5288,10 @@ export default function Index() {
                                             {lalamoveStatus[route.id].message}
                                           </s-badge>
                                         </s-link>
+                                      ) : lalamoveStatus[route.id].tone === "critical" ? (
+                                        <s-badge tone="critical">
+                                          {lalamoveStatus[route.id].message}
+                                        </s-badge>
                                       ) : (
                                         <s-text color="subdued">
                                           {lalamoveStatus[route.id].message}
@@ -4688,18 +5311,7 @@ export default function Index() {
                               );
                             })}
                         </div>
-                      </div>
-                    ) : null}
-                    {/* Clear all routes — bottom, right-aligned, critical */}
-                    {hasAssignedRoutes ? (
-                      <div className={styles.clearAllRoutesBottom}>
-                        <s-button
-                          variant="primary"
-                          tone="critical"
-                          onClick={() => setClearAllConfirmOpen(true)}
-                        >
-                          {t("routeManager.clearAllRoutes")}
-                        </s-button>
+                        )}
                       </div>
                     ) : null}
                   </s-section>
@@ -4713,6 +5325,68 @@ export default function Index() {
 
       {!isFullscreen && isRouteManagerVisible ? (
       <s-section heading={t("routeManager.heading")} slot="aside">
+          {/* Orders badge + actions menu */}
+          <div className={styles.routeManagerStatusRow}>
+            <s-badge>{t("filters.ordersToDeliver", { count: mapData.orders.length })}</s-badge>
+            {locationId !== DEFAULT_LOCATION_ID ? (
+              optimizeFetcher.state !== "idle" || updateRoutesFetcher.state !== "idle" ? (
+                <s-spinner size="base" accessibilityLabel={t("routeManager.autoAssign")}></s-spinner>
+              ) : (
+                <div className={styles.routeManagerActionsMenu}>
+                  <s-button
+                    variant="tertiary"
+                    icon="menu-horizontal"
+                    accessibilityLabel={t("routeManager.actions")}
+                    commandFor="route-manager-actions-aside"
+                  ></s-button>
+                  <s-menu id="route-manager-actions-aside" accessibilityLabel={t("routeManager.actions")}>
+                    {unassignedOrders.length > 0 ? (
+                      <s-button
+                        variant="tertiary"
+                        icon="transfer"
+                        disabled={orders.length === 0}
+                        onClick={() => {
+                          autoAssignSelection();
+                          handleOptimizeFleet();
+                        }}
+                      >
+                        {t("routeManager.autoAssign")}
+                      </s-button>
+                    ) : null}
+                    <s-button
+                      variant="tertiary"
+                      disabled={!hasSplitCandidates || isRoutingBusy}
+                      onClick={handleSplitRoutes}
+                    >
+                      {t("routeManager.splitRoutes")}
+                    </s-button>
+                    <s-button
+                      variant="tertiary"
+                      icon="refresh"
+                      disabled={dirtyRouteIds.size === 0 || isRoutingBusy}
+                      onClick={handleUpdateRoutes}
+                    >
+                      {t("routeManager.updateRoutes")}
+                    </s-button>
+                    {hasAssignedRoutes ? (
+                      <>
+                        <s-divider></s-divider>
+                        <s-button
+                          variant="tertiary"
+                          tone="critical"
+                          icon="delete"
+                          disabled={isRoutingBusy}
+                          onClick={() => setClearAllConfirmOpen(true)}
+                        >
+                          {t("routeManager.clearAllRoutes")}
+                        </s-button>
+                      </>
+                    ) : null}
+                  </s-menu>
+                </div>
+              )
+            ) : null}
+          </div>
           {/* ── Auto-assigned pending routes ── */}
           {(() => {
             const visiblePending = locationId === DEFAULT_LOCATION_ID
@@ -4800,7 +5474,7 @@ export default function Index() {
                           </s-button>
                           <s-button
                             variant="primary"
-                            disabled={!canLoad || isDismissing}
+                            disabled={!canLoad || isDismissing || isRoutingBusy}
                             onClick={() => handleLoadPendingRoute(pr)}
                           >
                             {t("routeManager.loadToPlanner")}
@@ -4814,54 +5488,22 @@ export default function Index() {
               </div>
             );
           })()}
-          {/* "No assigned routes" — badge, same style as "Orders to deliver" */}
-          {locationId !== DEFAULT_LOCATION_ID && !hasAssignedRoutes && optimizeFetcher.state === "idle" ? (
-            <div className={styles.asideSummaryRow}>
-              <s-badge>{t("routeManager.noRoutesForLocation")}</s-badge>
-            </div>
-          ) : null}
-          {/* ── Manually assigned routes header ── */}
+          {/* ── Add to best route (contextual to selection) ── */}
           {locationId !== DEFAULT_LOCATION_ID ? (() => {
             const selectedUnassignedCount = unassignedOrders.filter(
               (o) => selectedOrderIds.has(o.id),
             ).length;
-            return (
+            return selectedUnassignedCount > 0 && hasAssignedRoutes ? (
             <div className={styles.routeManagerTopRow}>
-              <span>
-                {hasAssignedRoutes && selectedUnassignedCount > 0 ? (
-                  <s-button
-                    variant="secondary"
-                    onClick={handleAddToBestRoute}
-                    disabled={optimizeFetcher.state !== "idle"}
-                  >
-                    {t("routeManager.addToBestRoute")}
-                  </s-button>
-                ) : null}
-              </span>
-              {unassignedOrders.length > 0 ? (
-                <span>
-                  {optimizeFetcher.state !== "idle" ? (
-                    <s-button key="auto-assign-loading" variant="primary" loading disabled>
-                      {t("routeManager.autoAssign")}
-                    </s-button>
-                  ) : (
-                    <s-button
-                      key="auto-assign-idle"
-                      variant="primary"
-                      onClick={() => {
-                        setAutoAssignLocked(false);
-                        autoAssignSelection();
-                        handleOptimizeFleet();
-                      }}
-                      disabled={autoAssignLocked || orders.length === 0}
-                    >
-                      {t("routeManager.autoAssign")}
-                    </s-button>
-                  )}
-                </span>
-              ) : null}
+              <s-button
+                variant="secondary"
+                onClick={handleAddToBestRoute}
+                disabled={optimizeFetcher.state !== "idle"}
+              >
+                {t("routeManager.addToBestRoute")}
+              </s-button>
             </div>
-            );
+            ) : null;
           })() : null}
           {assignmentSuccessMessage ? (
             <div className={styles.successBadgeRow}>
@@ -4873,8 +5515,39 @@ export default function Index() {
               <s-badge tone="caution">{assignmentWarningMessage}</s-badge>
             </div>
           ) : null}
-          {locationId !== DEFAULT_LOCATION_ID && hasAssignedRoutes ? (
+          {hasAssignedRoutes ? (
             <div className={styles.assignedRoutesSection}>
+              {locationId === DEFAULT_LOCATION_ID ? (
+                // Grouped by location when "All locations" selected
+                [...new Set(editableRoutes.filter((r) => r.orderIds.length > 0).map((r) => r.locationId))].map((locId) => (
+                  <div key={locId} className={styles.locationGroup}>
+                    <s-text type="strong">{locationsById.get(locId)?.name ?? locId}</s-text>
+                    <div className={styles.assignedRoutesList}>
+                      {editableRoutes
+                        .map((route, index) => ({ route, index }))
+                        .filter(({ route }) => route.orderIds.length > 0 && route.locationId === locId)
+                        .map(({ route, index: routeIndex }) => {
+                          const routeOrders = route.orderIds.map((orderId) => ordersById.get(orderId)).filter((order): order is LoaderOrder => Boolean(order));
+                          const orderCount = routeOrders.length;
+                          const label = getRouteLabel(route, routeIndex);
+                          const badgeColors = deriveBadgeColors(route.color);
+                          return (
+                            <div key={route.id} className={styles.routeCard}>
+                              <s-box padding="base" borderWidth="base" borderRadius="base">
+                                <div className={styles.routeCardHeader}>
+                                  <span className={styles.routeBadge} style={{ "--badge-bg": badgeColors.bg, "--badge-text": badgeColors.text } as CSSProperties}>
+                                    {label}
+                                  </span>
+                                </div>
+                                <s-text color="subdued">{t("routeManager.ordersMeta", { count: orderCount, shipping: "--" })}</s-text>
+                              </s-box>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                ))
+              ) : (
               <div className={styles.assignedRoutesList}>
                 {editableRoutes
                   .map((route, index) => ({ route, index }))
@@ -4962,18 +5635,27 @@ export default function Index() {
                               {label}
                             </span>
                           </div>
-                          <span title={dispatchedRoutes[route.id] ? t("routeManager.clearRouteDisabledTooltip") : undefined}>
+                          {dispatchedRoutes[route.id] && !TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") ? (
                             <s-button
                               variant="secondary"
-                              tone="critical"
-                              disabled={!!dispatchedRoutes[route.id]}
-                              onClick={() =>
-                                setUnassignConfirmRoute({ route, index: routeIndex })
-                              }
+                              onClick={() => openDetailsRouteModal(route, routeIndex)}
                             >
-                              {t("routeManager.clearRoute")}
+                              {t("routeManager.details")}
                             </s-button>
-                          </span>
+                          ) : (
+                            <span title={dispatchedRoutes[route.id] ? t("routeManager.clearRouteDisabledTooltip") : undefined}>
+                              <s-button
+                                variant="secondary"
+                                tone="critical"
+                                disabled={!!dispatchedRoutes[route.id] || isRoutingBusy}
+                                onClick={() =>
+                                  setUnassignConfirmRoute({ route, index: routeIndex })
+                                }
+                              >
+                                {t("routeManager.clearRoute")}
+                              </s-button>
+                            </span>
+                          )}
                         </div>
                         <div className={styles.routeCardOrderStats}>
                           <s-stack direction="block" gap="small">
@@ -4985,11 +5667,19 @@ export default function Index() {
                           <div className={styles.assignedRoutesTopActions}>
                             <s-button
                               variant="primary"
-                              disabled={!canAddToRoute}
+                              disabled={!canAddToRoute || isRoutingBusy}
                               onClick={() => handleAddSelectedToRoute(routeIndex)}
                             >
                               {t("routeManager.addToRoute")}
                             </s-button>
+                          </div>
+                        ) : dispatchedRoutes[route.id]?.status === "delivered" ? (
+                          <div className={styles.dispatchedBlock}>
+                            <div className={styles.deliveryStatusRow}>
+                              <s-badge tone="success">
+                                {t("routeManager.status.delivered")}
+                              </s-badge>
+                            </div>
                           </div>
                         ) : dispatchedRoutes[route.id] && !TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") ? (
                           <div className={styles.dispatchedBlock}>
@@ -5001,6 +5691,21 @@ export default function Index() {
                                 {t("routeManager.cancelDelivery")}
                               </s-button>
                             </div>
+                            {lalamoveStatus[route.id]?.tone === "critical" ? (
+                              <div className={styles.cancelErrorBlock}>
+                                <s-badge tone="critical">
+                                  {lalamoveStatus[route.id].message}
+                                </s-badge>
+                                <a
+                                  href="https://web.lalamove.com/"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={styles.goToLalamoveLink}
+                                >
+                                  {t("driverRequest.goToLalamove")}
+                                </a>
+                              </div>
+                            ) : null}
                           </div>
                         ) : (
                           <>
@@ -5020,6 +5725,7 @@ export default function Index() {
                               <s-stack direction="inline" gap="base">
                                 <s-button
                                   variant="secondary"
+                                  disabled={isRoutingBusy}
                                   onClick={() => openManageRouteModal(route, routeIndex)}
                                 >
                                   {t("routeManager.manage")}
@@ -5056,7 +5762,7 @@ export default function Index() {
                                   <s-button
                                     key="request-quote"
                                     variant="secondary"
-                                    disabled={!isLalamoveReady}
+                                    disabled={!isLalamoveReady || isRoutingBusy}
                                     onClick={() => handleRequestDriver(route)}
                                   >
                                     {t("routeManager.requestQuote")}
@@ -5072,7 +5778,7 @@ export default function Index() {
                               <s-badge tone="success">
                                 {lalamoveStatus[route.id].message}
                               </s-badge>
-                            ) : lalamoveStatus[route.id].tone === "critical" ? (
+                            ) : lalamoveStatus[route.id].tone === "critical" && lalamoveStatus[route.id].errorDetails ? (
                               <s-link onClick={() => setDriverErrorModal({
                                 routeId: route.id,
                                 message: lalamoveStatus[route.id].message,
@@ -5082,6 +5788,10 @@ export default function Index() {
                                   {lalamoveStatus[route.id].message}
                                 </s-badge>
                               </s-link>
+                            ) : lalamoveStatus[route.id].tone === "critical" ? (
+                              <s-badge tone="critical">
+                                {lalamoveStatus[route.id].message}
+                              </s-badge>
                             ) : (
                               <s-text color="subdued">
                                 {lalamoveStatus[route.id].message}
@@ -5101,6 +5811,7 @@ export default function Index() {
                     );
                   })}
               </div>
+              )}
             </div>
           ) : null}
           {locationId !== DEFAULT_LOCATION_ID &&
@@ -5122,21 +5833,49 @@ export default function Index() {
               </div>
             ) : null;
           })()}
-          {/* Clear all routes — bottom, right-aligned, critical */}
-          {hasAssignedRoutes ? (
-            <div className={styles.clearAllRoutesBottom}>
-              <s-button
-                variant="primary"
-                tone="critical"
-                onClick={() => setClearAllConfirmOpen(true)}
-              >
-                {t("routeManager.clearAllRoutes")}
-              </s-button>
-            </div>
-          ) : null}
       </s-section>
       ) : null}
 
+      {/* ── Auto-assign accuracy (standalone aside, always visible) ── */}
+      {optimizerAccuracy && optimizerAccuracy.optimizations > 0 ? (
+        <div className={styles.collapsibleSectionWrap} slot="aside">
+          <s-section heading={t("routeManager.autoAssignAccuracy")}>
+            {!isAccuracyCollapsed ? (() => {
+              const accurate = optimizerAccuracy.totalDispatched - optimizerAccuracy.totalReassigned;
+              const pct = optimizerAccuracy.totalDispatched > 0
+                ? Math.round((accurate / optimizerAccuracy.totalDispatched) * 100)
+                : 0;
+              return (
+                <div className={styles.accuracyContent}>
+                  <div className={styles.accuracyBarWrap}>
+                    <div
+                      className={styles.accuracyBarFill}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <div className={styles.accuracyStats}>
+                    <span className={styles.accuracyPct}>{pct}%</span>
+                    <span className={styles.accuracyDetail}>
+                      {t("routeManager.accurateOf", { accurate, total: optimizerAccuracy.totalDispatched })}
+                    </span>
+                  </div>
+                  <span className={styles.accuracyPeriod}>
+                    {t("routeManager.last30Days", { count: optimizerAccuracy.optimizations })}
+                  </span>
+                </div>
+              );
+            })() : null}
+            <div
+              className={`${styles.collapseChevron}${isAccuracyCollapsed ? ` ${styles.collapsed}` : ""}`}
+              onClick={() => setIsAccuracyCollapsed((prev) => !prev)}
+              role="button"
+              aria-label="Toggle section"
+            >
+              <span className={styles.chevronIcon}>›</span>
+            </div>
+          </s-section>
+        </div>
+      ) : null}
 
       {!isFullscreen ? (
       <div className={`${styles.mainBlocks} ${styles.unassignedSectionWrap}`}>
@@ -5195,7 +5934,7 @@ export default function Index() {
                                 onChange={(event) => handleOrderToggle(event, order.id)}
                               />
                             </span>
-                            <span>{order.name}</span>
+                            <s-link href={order.adminOrderUrl} target="_blank">{order.name}</s-link>
                             <span>{formatCustomerShort(order.customerName, t("customer.guest"))}</span>
                             <span>{order.address1 ?? t("routeManager.noAddressLine1")}</span>
                           </div>
@@ -5633,15 +6372,6 @@ const formatCurrency = (amount: number, currencyCode: string, userLocale: string
   }).format(amount);
 };
 
-const chunkArray = <T,>(items: T[], size: number) => {
-  if (size <= 0) return [items];
-  const chunks: T[][] = [];
-  for (let i = 0; i < items.length; i += size) {
-    chunks.push(items.slice(i, i + size));
-  }
-  return chunks;
-};
-
 const formatCustomerShort = (name: string | null, guestFallback = "Guest") => {
   if (!name) return guestFallback;
   const words = name
@@ -5827,7 +6557,6 @@ const ROUTE_TAGS = new Map<string, string>(
   ROUTE_TAG_DEFINITIONS.map((def, i) => [`rota-${i + 1}`, def.tag]),
 );
 
-const MAX_ROUTE_WAYPOINTS = 10;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
@@ -5906,104 +6635,6 @@ type PrecomputedRoute = {
   totalDurationSeconds?: number;
 };
 
-const computePrecomputedRoutes = async (
-  apiKey: string,
-  orders: LoaderOrder[],
-): Promise<PrecomputedRoute[]> => {
-  const ordersByLocation = new Map<
-    string,
-    { location: LoaderOrder["fulfillmentLocation"]; orders: LoaderOrder[] }
-  >();
-
-  orders.forEach((order) => {
-    if (!order.shippingCoordinates) return;
-    if (!order.fulfillmentLocation.coordinates) return;
-    const existing = ordersByLocation.get(order.fulfillmentLocation.id);
-    if (existing) {
-      existing.orders.push(order);
-    } else {
-      ordersByLocation.set(order.fulfillmentLocation.id, {
-        location: order.fulfillmentLocation,
-        orders: [order],
-      });
-    }
-  });
-
-  const results: PrecomputedRoute[] = [];
-  const locationEntries = Array.from(ordersByLocation.entries());
-
-  for (let index = 0; index < locationEntries.length; index += 1) {
-    const [locationId, group] = locationEntries[index]!;
-    const color =
-      ROUTE_PRECOMPUTE_COLORS[index % ROUTE_PRECOMPUTE_COLORS.length]!;
-    const chunks = chunkArray(group.orders, MAX_ROUTE_WAYPOINTS);
-
-    for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
-      const chunk = chunks[chunkIndex]!;
-      const destinationOrder = chunk[chunk.length - 1]!;
-      const intermediates = chunk.slice(0, -1);
-      const response = await fetch(
-        "https://routes.googleapis.com/directions/v2:computeRoutes",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": apiKey,
-            "X-Goog-FieldMask":
-              "routes.polyline,routes.optimizedIntermediateWaypointIndex",
-          },
-          body: JSON.stringify({
-            origin: {
-              location: {
-                latLng: {
-                  latitude: group.location.coordinates!.latitude,
-                  longitude: group.location.coordinates!.longitude,
-                },
-              },
-            },
-            destination: {
-              location: {
-                latLng: {
-                  latitude: destinationOrder.shippingCoordinates!.latitude,
-                  longitude: destinationOrder.shippingCoordinates!.longitude,
-                },
-              },
-            },
-            intermediates: intermediates.map((order) => ({
-              location: {
-                latLng: {
-                  latitude: order.shippingCoordinates!.latitude,
-                  longitude: order.shippingCoordinates!.longitude,
-                },
-              },
-            })),
-            travelMode: "DRIVE",
-            routingPreference: "TRAFFIC_AWARE",
-            optimizeWaypointOrder: true,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        continue;
-      }
-
-      const json = await response.json();
-      const encodedPolyline = json.routes?.[0]?.polyline?.encodedPolyline;
-      if (!encodedPolyline) continue;
-
-      results.push({
-        id: `${locationId}-${chunkIndex}`,
-        locationId,
-        polyline: encodedPolyline,
-        color,
-        orderIds: chunk.map((order) => order.id),
-      });
-    }
-  }
-
-  return results;
-};
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin, session } = await authenticate.admin(request);
@@ -6038,6 +6669,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             nodes {
               id
               name
+              localPickupSettingsV2 { instructions }
               address {
                 address1
                 address2
@@ -6058,9 +6690,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   const locationsJson = await locationsResponse.json();
-  const locations = (locationsJson?.data?.locations?.nodes ?? []) as Array<{
+  const allLocations = (locationsJson?.data?.locations?.nodes ?? []) as Array<{
     id: string;
     name: string;
+    localPickupSettingsV2: { instructions: string } | null;
     address: {
       address1: string | null;
       address2: string | null;
@@ -6073,6 +6706,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       longitude: number | null;
     } | null;
   }>;
+
+  // Filter to stores only (pickup enabled = physical store, null = warehouse/DC)
+  const locations = allLocations.filter((loc) => loc.localPickupSettingsV2 != null);
 
   const [lalamoveConfigRows, credentialStatus, pendingRoutes, returnPickupRequests] = await Promise.all([
     prisma.lalamoveLocationConfig.findMany({ where: { shop } }),
@@ -6132,7 +6768,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             nodes {
               profileLocationGroups {
                 locationGroup {
-                  locations {
+                  locations(first: 20) {
                     nodes {
                       id
                     }
@@ -6178,7 +6814,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         localIds.add(location.id),
       );
     });
-    localDeliveryLocationIds = localIds;
+    localDeliveryLocationIds = localIds.size > 0 ? localIds : null;
   } catch (error) {
     console.warn("[local-delivery] loader: failed to load delivery profiles for filtering", error);
   }
@@ -6574,10 +7210,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     })
     .filter((order): order is LoaderOrder => Boolean(order));
 
-  const precomputedRoutes = mapsApiKey
-    ? await computePrecomputedRoutes(mapsApiKey, filteredOrders)
-    : [];
-
   const routeStats = ROUTE_TAG_DEFINITIONS.map((route) => {
     const routeOrders = filteredOrders.filter((order) =>
       order.tags.includes(route.tag),
@@ -6603,6 +7235,31 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       })),
     };
   });
+
+  // Look up cached corridor polylines from DB (zero Google API calls)
+  const routesForCacheLookup = routeStats
+    .map((r, i) => ({
+      id: `${effectiveLocationId}-${i}`,
+      locationId: effectiveLocationId,
+      orderIds: r.orders.map((o) => o.orderId),
+    }))
+    .filter((r) => r.orderIds.length > 0);
+
+  let cachedPolylines = new Map<string, string>();
+  if (routesForCacheLookup.length > 0) {
+    const { lookupCachedPolylines } = await import(
+      "../services/carrier-quotation-optimizer.server"
+    );
+    cachedPolylines = await lookupCachedPolylines(shop, routesForCacheLookup);
+  }
+
+  const precomputedRoutes: PrecomputedRoute[] = routeStats.map((r, i) => ({
+    id: `${effectiveLocationId}-${i}`,
+    locationId: effectiveLocationId,
+    polyline: cachedPolylines.get(`${effectiveLocationId}-${i}`) ?? "",
+    color: ROUTE_PRECOMPUTE_COLORS[i % ROUTE_PRECOMPUTE_COLORS.length] ?? "#2C6ECB",
+    orderIds: r.orders.map((o) => o.orderId),
+  }));
   const failedDeliveryCount = filteredOrders.filter((order) =>
     order.tags.includes(getFailedDeliveryTag()),
   ).length;
@@ -6661,22 +7318,67 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }
     : null;
 
-  // Load active Lalamove dispatch jobs to prevent duplicate requests after page reload
-  // Also reconcile dispatch status with Lalamove API and capture shareLink + status
+  // Load Lalamove dispatch jobs for routes that still have tagged orders.
+  // Tags are the source of truth: present = needs action, removed = fulfilled.
+  // No date filter — dispatch records are fetched by routeId, not by time window.
   let activeDispatchData: Array<{ routeId: string; shareLink: string | null; status: string; lalamoveOrderId: string; market: string }> = [];
   try {
-    const startOfToday = getStartOfDay();
-    const activeDispatches = await (prisma as any).lalamoveDispatchJob.findMany({
-      where: {
-        shop,
-        status: { notIn: ["cancelled", "CANCELLED", "CANCELED", "COMPLETED", "completed", "failed", "FAILED", "REJECTED", "rejected", "EXPIRED", "expired"] },
-        requestedAt: { gte: startOfToday },
-      },
-      select: { id: true, routeId: true, lalamoveOrderId: true, market: true, status: true },
-    });
+    const activeRouteIds = routeStats
+      .map((r, i) => ({ routeId: `${effectiveLocationId}-${i}`, hasOrders: r.orders.length > 0 }))
+      .filter((r) => r.hasOrders)
+      .map((r) => r.routeId);
 
-    // Reconcile with Lalamove API — check if any "active" dispatches have actually completed or failed
-    // Also capture shareLink and current status for the UI
+    // Single query: all non-terminal dispatches (including COMPLETED) for active routes.
+    // COMPLETED dispatches are filtered below by order overlap, not by date.
+    const terminalExclude = ["cancelled", "CANCELLED", "CANCELED", "failed", "FAILED", "REJECTED", "rejected", "EXPIRED", "expired", "FULFILLED"];
+    const allDispatches = activeRouteIds.length > 0
+      ? await (prisma as any).lalamoveDispatchJob.findMany({
+          where: {
+            shop,
+            routeId: { in: activeRouteIds },
+            status: { notIn: terminalExclude },
+          },
+          select: { id: true, routeId: true, lalamoveOrderId: true, market: true, status: true },
+          orderBy: { createdAt: "desc" },
+        })
+      : [];
+
+    // Deduplicate: keep only the latest dispatch per routeId
+    const latestByRoute = new Map<string, (typeof allDispatches)[0]>();
+    for (const d of allDispatches) {
+      if (!latestByRoute.has(d.routeId)) latestByRoute.set(d.routeId, d);
+    }
+
+    // Order-overlap filter for COMPLETED dispatches.
+    // Active dispatches (driver en route) always show. COMPLETED dispatches only
+    // show if their orders overlap with the current route's orders — this prevents
+    // stale dispatches from previous days (whose route ID was reused) from blocking.
+    const deduped = Array.from(latestByRoute.values());
+    const completedIds = deduped
+      .filter((d: any) => ["COMPLETED", "completed"].includes(d.status))
+      .map((d: any) => d.id as string);
+
+    let overlappingCompleted = new Set<string>();
+    if (completedIds.length > 0) {
+      const currentRouteOrderIds = new Set<string>();
+      routeStats.forEach((r) => r.orders.forEach((o) => currentRouteOrderIds.add(o.orderId)));
+
+      const orderMaps = await (prisma as any).lalamoveDispatchOrderMap.findMany({
+        where: { shop, dispatchJobId: { in: completedIds } },
+        select: { dispatchJobId: true, shopifyOrderId: true },
+      });
+      for (const m of orderMaps) {
+        if (currentRouteOrderIds.has(m.shopifyOrderId)) {
+          overlappingCompleted.add(m.dispatchJobId);
+        }
+      }
+    }
+
+    const activeDispatches = deduped.filter((d: any) =>
+      ["COMPLETED", "completed"].includes(d.status) ? overlappingCompleted.has(d.id) : true,
+    );
+
+    // Reconcile with Lalamove API — check current status and capture shareLink
     const dispatchDetails = new Map<string, { shareLink: string | null; apiStatus: string | null }>();
     const credentials = await getRuntimeCredentialsForShop(shop);
     if (credentials && activeDispatches.length > 0) {
@@ -6703,22 +7405,41 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           }),
         ),
       );
-      // Silently ignore individual failures — keep existing status
     }
 
-    // Only include routes with truly active dispatches
-    const terminalSet = new Set(["COMPLETED", "completed", "CANCELED", "cancelled", "CANCELLED", "REJECTED", "EXPIRED", "failed", "FAILED"]);
-    activeDispatchData = activeDispatches
-      .filter((d: any) => !terminalSet.has(d.status))
-      .map((d: any) => ({
-        routeId: d.routeId as string,
-        shareLink: dispatchDetails.get(d.routeId)?.shareLink ?? null,
-        status: mapLalamoveStatusToInternal(dispatchDetails.get(d.routeId)?.apiStatus ?? d.status),
-        lalamoveOrderId: d.lalamoveOrderId as string,
-        market: (d.market ?? "BR_SAO") as string,
-      }));
+    activeDispatchData = activeDispatches.map((d: any) => ({
+      routeId: d.routeId as string,
+      shareLink: dispatchDetails.get(d.routeId)?.shareLink ?? null,
+      status: mapLalamoveStatusToInternal(dispatchDetails.get(d.routeId)?.apiStatus ?? d.status),
+      lalamoveOrderId: d.lalamoveOrderId as string,
+      market: (d.market ?? "BR_SAO") as string,
+    }));
   } catch {
     // Silently ignore if table is unavailable
+  }
+
+  // ── Optimizer accuracy stats (last 30 days) ──
+  let optimizerAccuracy: { optimizations: number; modified: number; totalDispatched: number; totalReassigned: number } | null = null;
+  try {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const corrections = await (prisma as any).routeCorrection.findMany({
+      where: { shop, dispatchedAt: { gte: thirtyDaysAgo } },
+      select: { snapshotId: true, wasModified: true, ordersDispatched: true, ordersReassigned: true },
+    });
+    if (corrections.length > 0) {
+      const uniqueSnapshots = new Set(corrections.map((c: any) => c.snapshotId));
+      const modifiedSnapshots = new Set(
+        corrections.filter((c: any) => c.wasModified).map((c: any) => c.snapshotId),
+      );
+      optimizerAccuracy = {
+        optimizations: uniqueSnapshots.size,
+        modified: modifiedSnapshots.size,
+        totalDispatched: corrections.reduce((sum: number, c: any) => sum + (c.ordersDispatched ?? 0), 0),
+        totalReassigned: corrections.reduce((sum: number, c: any) => sum + (c.ordersReassigned ?? 0), 0),
+      };
+    }
+  } catch {
+    // Non-blocking
   }
 
   return {
@@ -6748,6 +7469,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     hasUnfulfilledPresaleOrders: availablePresaleTags.length > 0,
     failedDeliveryCount,
     activeDispatchData,
+    optimizerAccuracy,
   };
 };
 
@@ -6757,6 +7479,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const shop = session.shop;
   const formData = await request.formData();
   const intent = formData.get("intent");
+  try {
+
   const route = formData.get("route");
   const orderIds = formData.getAll("orderIds");
 
@@ -6864,152 +7588,75 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return { ok: false, error: "No valid orders to optimize." };
     }
 
-    const routingLogic = (formData.get("routingLogic") as RoutingLogic | null) ?? "distance";
-    console.info(`[local-delivery] optimize-fleet START shop=${shop} orders=${validOrders.length} logic=${routingLogic}`);
+    console.info(`[local-delivery] optimize-fleet START shop=${shop} orders=${validOrders.length}`);
 
-    if (routingLogic === "carrier-quotation") {
-      // Load carrier config for vehicle preferences + max orders per route
-      const carrierConfigRow = await prisma.carrierServiceConfig.findUnique({
-        where: { shop },
-      });
-      const carrierConfig = carrierConfigRow?.data as CarrierServiceConfigData | undefined;
+    // Load carrier config for vehicle preferences + max orders per route
+    const carrierConfigRow = await prisma.carrierServiceConfig.findUnique({
+      where: { shop },
+    });
+    const carrierConfig = carrierConfigRow?.data as CarrierServiceConfigData | undefined;
 
-      // Load location config for pickup coordinates
-      const primaryLocationId = validOrders[0]?.locationId;
-      if (!primaryLocationId) {
-        return { ok: false, error: "No valid location for carrier quotation." };
-      }
-      const locConfigRow = await prisma.lalamoveLocationConfig.findUnique({
-        where: { shop_locationId: { shop, locationId: primaryLocationId } },
-      });
-      if (!locConfigRow) {
-        return { ok: false, error: "Missing Lalamove location settings." };
-      }
-      const llmConfig = locConfigRow.data as import("../services/carrier/lalamove-adapter.server").LalamoveConfig;
+    // Load location config for pickup coordinates
+    const primaryLocationId = validOrders[0]?.locationId;
+    if (!primaryLocationId) {
+      return { ok: false, error: "No valid location for optimization." };
+    }
+    const locConfigRow = await prisma.lalamoveLocationConfig.findUnique({
+      where: { shop_locationId: { shop, locationId: primaryLocationId } },
+    });
+    if (!locConfigRow) {
+      return { ok: false, error: "Missing Lalamove location settings." };
+    }
+    const llmConfig = locConfigRow.data as import("../services/carrier/lalamove-adapter.server").LalamoveConfig;
 
-      // Load credentials
-      const credentials = await getRuntimeCredentialsForShop(shop);
-      if (!credentials) {
-        return { ok: false, error: "Missing Lalamove credentials." };
-      }
-
-      // Run carrier quotation optimizer
-      const { optimizeByCarrierQuotation } = await import(
-        "../services/carrier-quotation-optimizer.server"
-      );
-      const primaryVehicle =
-        carrierConfig?.lalamovePreferredServiceType ||
-        llmConfig.preferredServiceType ||
-        "LALAGO";
-      const secondaryVehicle =
-        carrierConfig?.lalamoveSecondaryServiceType || undefined;
-      const maxPerRoute = carrierConfig?.lalamoveMaxOrdersPerRoute ?? 10;
-
-      const result = await optimizeByCarrierQuotation(
-        validOrders,
-        llmConfig,
-        credentials,
-        ROUTE_TAG_DEFINITIONS.length,
-        { primary: primaryVehicle, secondary: secondaryVehicle },
-        maxPerRoute,
-      );
-      if (!result.ok) {
-        return { ok: false, error: result.error };
-      }
-
-      // Apply order tags in batches to avoid Shopify rate limits / gateway timeouts
-      const allRouteTags = ROUTE_TAG_DEFINITIONS.map((d) => d.tag);
-      const allOptimizedIds = result.routes.flatMap((r) => r.orderIds);
-      await batchProcess(allOptimizedIds, GQL_BATCH_SIZE, (orderId) =>
-        admin.graphql(
-          `#graphql
-            mutation RemoveOrderTag($id: ID!, $tags: [String!]!) {
-              tagsRemove(id: $id, tags: $tags) {
-                userErrors { message }
-              }
-            }`,
-          { variables: { id: orderId, tags: allRouteTags } },
-        ),
-      );
-      const tagAssignments = result.routes.flatMap((route) => {
-        const tag = ROUTE_TAG_DEFINITIONS[route.routeIndex]?.tag;
-        return tag ? route.orderIds.map((orderId) => ({ orderId, tag })) : [];
-      });
-      await batchProcess(tagAssignments, GQL_BATCH_SIZE, ({ orderId, tag }) =>
-        admin.graphql(
-          `#graphql
-            mutation AddOrderTag($id: ID!, $tags: [String!]!) {
-              tagsAdd(id: $id, tags: $tags) {
-                userErrors { message }
-              }
-            }`,
-          { variables: { id: orderId, tags: [tag] } },
-        ),
-      );
-
-      console.info(`[local-delivery] optimize-fleet OK (carrier-quotation) routes=${result.summary.routeCount} orders=${result.summary.totalOrders}`);
-      return {
-        ok: true,
-        optimizedRoutes: result.routes.map((r) => ({
-          routeIndex: r.routeIndex,
-          locationId: r.locationId,
-          orderIds: r.orderIds,
-          polyline: "",
-          totalDistanceMeters: 0,
-          totalDurationSeconds: 0,
-        })),
-        summary: {
-          routeCount: result.summary.routeCount,
-          totalDistanceMeters: 0,
-          totalDurationSeconds: 0,
-          totalOrders: result.summary.totalOrders,
-        },
-      };
+    // Load credentials
+    const credentials = await getRuntimeCredentialsForShop(shop);
+    if (!credentials) {
+      return { ok: false, error: "Missing Lalamove credentials." };
     }
 
     const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() || "";
     if (!mapsApiKey) {
       return { ok: false, error: "GOOGLE_MAPS_API_KEY is missing." };
     }
-    const optimized = await optimizeFleetRoutesDispatcher(
-      mapsApiKey,
+
+    // Run VRP optimizer (Clarke-Wright savings + Google Distance Matrix)
+    const { optimizeByVRP } = await import(
+      "../services/carrier-quotation-optimizer.server"
+    );
+    const primaryVehicle =
+      carrierConfig?.lalamovePreferredServiceType ||
+      llmConfig.preferredServiceType ||
+      "LALAGO";
+    const secondaryVehicle =
+      carrierConfig?.lalamoveSecondaryServiceType || undefined;
+    const maxPerRoute = carrierConfig?.lalamoveMaxOrdersPerRoute ?? 10;
+
+    // Resolve special requests for this city (filters out unavailable ones)
+    const savedSpecialRequests = carrierConfig?.lalamoveSpecialRequests?.[llmConfig.market] ?? [];
+    const resolvedSpecialRequests = await resolveSpecialRequestsForCity(
+      savedSpecialRequests, llmConfig, credentials,
+    );
+
+    const result = await optimizeByVRP(
       validOrders,
-      routingLogic,
+      llmConfig,
+      credentials,
+      mapsApiKey,
+      shop,
+      ROUTE_TAG_DEFINITIONS.length,
+      { primary: primaryVehicle, secondary: secondaryVehicle },
+      maxPerRoute,
+      resolvedSpecialRequests,
     );
-    let routesInCapacity = optimized.routes.slice(0, ROUTE_TAG_DEFINITIONS.length);
-    const byOrderId = new Map(validOrders.map((order) => [order.orderId, order]));
-    let optimizedOrderIds = routesInCapacity.flatMap((route) => route.orderIds);
-
-    const unassignedFromOptimizer = validOrders.filter(
-      (o) => !optimizedOrderIds.includes(o.orderId),
-    );
-    for (const order of unassignedFromOptimizer) {
-      const candidates = routesInCapacity
-        .filter(
-          (r) =>
-            r.locationId === order.locationId &&
-            r.orderIds.length < MAX_ORDERS_PER_ROUTE,
-        )
-        .sort((a, b) => a.orderIds.length - b.orderIds.length);
-      if (candidates.length > 0) {
-        const route = candidates[0]!;
-        route.orderIds.push(order.orderId);
-      } else {
-        routesInCapacity.push({
-          routeIndex: routesInCapacity.length,
-          locationId: order.locationId,
-          orderIds: [order.orderId],
-          polyline: "",
-          totalDistanceMeters: 0,
-          totalDurationSeconds: 0,
-        });
-      }
+    if (!result.ok) {
+      return { ok: false, error: result.error };
     }
-    optimizedOrderIds = routesInCapacity.flatMap((route) => route.orderIds);
 
+    // Apply order tags in batches to avoid Shopify rate limits / gateway timeouts
     const allRouteTags = ROUTE_TAG_DEFINITIONS.map((d) => d.tag);
-
-    await batchProcess(optimizedOrderIds, GQL_BATCH_SIZE, (orderId) =>
+    const allOptimizedIds = result.routes.flatMap((r) => r.orderIds);
+    await batchProcess(allOptimizedIds, GQL_BATCH_SIZE, (orderId) =>
       admin.graphql(
         `#graphql
           mutation RemoveOrderTag($id: ID!, $tags: [String!]!) {
@@ -7020,11 +7667,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         { variables: { id: orderId, tags: allRouteTags } },
       ),
     );
-    const distanceTagAssignments = routesInCapacity.flatMap((route) => {
+    const tagAssignments = result.routes.flatMap((route) => {
       const tag = ROUTE_TAG_DEFINITIONS[route.routeIndex]?.tag;
       return tag ? route.orderIds.map((orderId) => ({ orderId, tag })) : [];
     });
-    await batchProcess(distanceTagAssignments, GQL_BATCH_SIZE, ({ orderId, tag }) =>
+    await batchProcess(tagAssignments, GQL_BATCH_SIZE, ({ orderId, tag }) =>
       admin.graphql(
         `#graphql
           mutation AddOrderTag($id: ID!, $tags: [String!]!) {
@@ -7036,21 +7683,182 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       ),
     );
 
-    console.info(`[local-delivery] optimize-fleet OK (${routingLogic}) routes=${routesInCapacity.length} orders=${optimizedOrderIds.length}`);
+    // ── Persist optimization snapshot for correction tracking ──
+    try {
+      const proposedRoutes = result.routes.map((r) => ({
+        routeIndex: r.routeIndex,
+        orderIds: r.orderIds,
+        serviceType: r.serviceType,
+        costSubunits: r.costSubunits,
+      }));
+      const orderCoordinates = validOrders.map((o) => ({
+        orderId: o.orderId,
+        lat: o.shippingCoordinates.latitude,
+        lng: o.shippingCoordinates.longitude,
+      }));
+      await (prisma as any).routeOptimizationSnapshot.create({
+        data: {
+          shop,
+          locationId: primaryLocationId,
+          proposedRoutes,
+          orderCoordinates,
+          orderCount: validOrders.length,
+          routeCount: result.routes.length,
+        },
+      });
+      console.info(`[local-delivery] optimize-fleet snapshot saved shop=${shop} routes=${result.routes.length} orders=${validOrders.length}`);
+    } catch (snapshotErr) {
+      console.warn("[local-delivery] optimize-fleet snapshot FAILED", snapshotErr);
+    }
+
+    console.info(`[local-delivery] optimize-fleet OK routes=${result.summary.routeCount} orders=${result.summary.totalOrders}`);
     return {
       ok: true,
-      optimizedRoutes: routesInCapacity.map((route) => {
-        const firstOrder = byOrderId.get(route.orderIds[0] ?? "");
-        return {
-          routeIndex: route.routeIndex,
-          locationId: route.locationId || firstOrder?.locationId || "",
-          orderIds: route.orderIds,
-          polyline: route.polyline,
-          totalDistanceMeters: route.totalDistanceMeters,
-          totalDurationSeconds: route.totalDurationSeconds,
-        };
-      }),
-      summary: optimized.summary,
+      hasSplitCandidates: result.hasSplitCandidates,
+      optimizedRoutes: result.routes.map((r) => ({
+        routeIndex: r.routeIndex,
+        locationId: r.locationId,
+        orderIds: r.orderIds,
+        polyline: r.corridorPolyline,
+        totalDistanceMeters: 0,
+        totalDurationSeconds: 0,
+      })),
+      summary: {
+        routeCount: result.summary.routeCount,
+        totalDistanceMeters: 0,
+        totalDurationSeconds: 0,
+        totalOrders: result.summary.totalOrders,
+        costTotal: result.summary.totalCost,
+        costCurrency: result.summary.costCurrency,
+        totalLalamoveCost: result.summary.totalLalamoveCost,
+        totalWaitSurcharge: result.summary.totalWaitSurcharge,
+      },
+    };
+  }
+
+  if (intent === "split-routes") {
+    console.info(`[local-delivery] split-routes START shop=${shop}`);
+    const ordersPayload = formData.get("ordersPayload");
+    const routesPayload = formData.get("routesPayload");
+    if (typeof ordersPayload !== "string" || !ordersPayload.trim() ||
+        typeof routesPayload !== "string" || !routesPayload.trim()) {
+      return { ok: false, error: "Missing payload for split-routes." };
+    }
+
+    let ordersInput: OptimizerOrderInput[] = [];
+    let currentRoutes: Array<{ routeIndex: number; locationId: string; orderIds: string[] }> = [];
+    try {
+      ordersInput = JSON.parse(ordersPayload) as OptimizerOrderInput[];
+      currentRoutes = JSON.parse(routesPayload) as Array<{ routeIndex: number; locationId: string; orderIds: string[] }>;
+    } catch {
+      return { ok: false, error: "Invalid split-routes payload." };
+    }
+
+    const validOrders = ordersInput.filter(
+      (o) =>
+        o?.orderId &&
+        o?.locationId &&
+        Number.isFinite(o?.shippingCoordinates?.latitude) &&
+        Number.isFinite(o?.shippingCoordinates?.longitude) &&
+        Number.isFinite(o?.locationCoordinates?.latitude) &&
+        Number.isFinite(o?.locationCoordinates?.longitude),
+    );
+    if (validOrders.length === 0) {
+      return { ok: false, error: "No valid orders for splitting." };
+    }
+
+    const primaryLocationId = validOrders[0]?.locationId;
+    if (!primaryLocationId) {
+      return { ok: false, error: "No valid location for split-routes." };
+    }
+
+    const locConfigRow = await prisma.lalamoveLocationConfig.findUnique({
+      where: { shop_locationId: { shop, locationId: primaryLocationId } },
+    });
+    if (!locConfigRow) {
+      return { ok: false, error: "Missing Lalamove location settings." };
+    }
+    const llmConfig = locConfigRow.data as import("../services/carrier/lalamove-adapter.server").LalamoveConfig;
+
+    const credentials = await getRuntimeCredentialsForShop(shop);
+    if (!credentials) {
+      return { ok: false, error: "Missing Lalamove credentials." };
+    }
+
+    const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() || "";
+    if (!mapsApiKey) {
+      return { ok: false, error: "GOOGLE_MAPS_API_KEY is missing." };
+    }
+
+    const carrierConfigRow = await prisma.carrierServiceConfig.findUnique({ where: { shop } });
+    const carrierConfig = carrierConfigRow?.data as CarrierServiceConfigData | undefined;
+    const primaryVehicle = carrierConfig?.lalamovePreferredServiceType || llmConfig.preferredServiceType || "LALAGO";
+    const secondaryVehicle = carrierConfig?.lalamoveSecondaryServiceType || undefined;
+
+    const { splitRoutesByDepotDistance } = await import(
+      "../services/carrier-quotation-optimizer.server"
+    );
+
+    // Resolve special requests for this city
+    const savedSplitRequests = carrierConfig?.lalamoveSpecialRequests?.[llmConfig.market] ?? [];
+    const resolvedSplitRequests = await resolveSpecialRequestsForCity(
+      savedSplitRequests, llmConfig, credentials,
+    );
+
+    const result = await splitRoutesByDepotDistance(
+      validOrders,
+      currentRoutes,
+      llmConfig,
+      credentials,
+      mapsApiKey,
+      shop,
+      { primary: primaryVehicle, secondary: secondaryVehicle },
+      resolvedSplitRequests,
+    );
+    if (!result.ok) {
+      return { ok: false, error: result.error };
+    }
+
+    // Re-tag orders with new route assignments
+    const allRouteTags = ROUTE_TAG_DEFINITIONS.map((d) => d.tag);
+    const allOrderIds = result.routes.flatMap((r) => r.orderIds);
+    await batchProcess(allOrderIds, GQL_BATCH_SIZE, (orderId) =>
+      admin.graphql(
+        `#graphql
+          mutation RemoveOrderTag($id: ID!, $tags: [String!]!) {
+            tagsRemove(id: $id, tags: $tags) {
+              userErrors { message }
+            }
+          }`,
+        { variables: { id: orderId, tags: allRouteTags } },
+      ),
+    );
+    const tagAssignments = result.routes.flatMap((route) => {
+      const tag = ROUTE_TAG_DEFINITIONS[route.routeIndex]?.tag;
+      return tag ? route.orderIds.map((orderId) => ({ orderId, tag })) : [];
+    });
+    await batchProcess(tagAssignments, GQL_BATCH_SIZE, ({ orderId, tag }) =>
+      admin.graphql(
+        `#graphql
+          mutation AddOrderTag($id: ID!, $tags: [String!]!) {
+            tagsAdd(id: $id, tags: $tags) {
+              userErrors { message }
+            }
+          }`,
+        { variables: { id: orderId, tags: [tag] } },
+      ),
+    );
+
+    console.info(`[local-delivery] split-routes OK routes=${result.summary.routeCount} orders=${result.summary.totalOrders}`);
+    return {
+      ok: true,
+      splitRoutes: result.routes.map((r) => ({
+        routeIndex: r.routeIndex,
+        locationId: r.locationId,
+        orderIds: r.orderIds,
+        polyline: r.corridorPolyline,
+      })),
+      summary: result.summary,
     };
   }
 
@@ -7112,6 +7920,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const { addToExistingRoutesByCarrierQuotation } = await import(
       "../services/carrier-quotation-optimizer.server"
     );
+
+    // Resolve special requests for this city
+    const savedAddRequests = carrierConfig?.lalamoveSpecialRequests?.[llmConfig.market] ?? [];
+    const resolvedAddRequests = await resolveSpecialRequestsForCity(
+      savedAddRequests, llmConfig, credentials,
+    );
+
     const result = await addToExistingRoutesByCarrierQuotation(
       existingRoutes,
       validUnassigned,
@@ -7119,6 +7934,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       llmConfig,
       credentials,
       { primary: primaryVehicle, secondary: secondaryVehicle },
+      resolvedAddRequests,
     );
     if (!result.ok) {
       return { ok: false, error: result.error };
@@ -7160,9 +7976,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         routeIndex: r.routeIndex,
         locationId: r.locationId,
         orderIds: r.orderIds,
-        polyline: "",
+        polyline: (r as { corridorPolyline?: string }).corridorPolyline ?? "",
         totalDistanceMeters: 0,
         totalDurationSeconds: 0,
+        costTotal: r.costTotal,
+        costCurrency: r.costCurrency,
       })),
       summary: {
         routeCount: result.summary.routeCount,
@@ -7170,170 +7988,216 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         totalDurationSeconds: 0,
         costTotal: result.summary.totalCost,
         costCurrency: result.summary.costCurrency,
+        totalLalamoveCost: result.summary.totalLalamoveCost,
+        totalWaitSurcharge: result.summary.totalWaitSurcharge,
       },
     };
   }
 
-  if (intent === "refresh-route-stats") {
-    const credentials = await getRuntimeCredentialsForShop(shop);
-    const routesPayload = formData.get("routesPayload");
-    if (typeof routesPayload !== "string" || !routesPayload.trim()) {
-      return { ok: false, error: "No routes payload." };
+
+  if (intent === "update-routes") {
+    const payload = formData.get("routesPayload");
+    const requestLocationId = formData.get("locationId");
+    if (typeof payload !== "string" || !payload.trim()) {
+      return { ok: false, error: "No routes provided for update." };
     }
-    let routes: Array<{ routeId: string; locationId: string; orderIds: string[] }>;
+    let routesInput: Array<{ routeId: string; routeIndex: number; locationId: string; orderIds: string[] }>;
     try {
-      const parsed = JSON.parse(routesPayload) as Array<{
-        routeId: string;
-        locationId: string;
-        orderIds: string[];
-      }>;
-      routes = Array.isArray(parsed) ? parsed.filter((r) => r?.routeId && r?.locationId && Array.isArray(r?.orderIds) && r.orderIds.length > 0) : [];
+      routesInput = JSON.parse(payload);
     } catch {
-      return { ok: false, error: "Invalid routes payload." };
+      return { ok: false, error: "Invalid update-routes payload." };
     }
-    if (routes.length === 0) return { ok: true, routeStats: [] };
-
+    if (!Array.isArray(routesInput) || routesInput.length === 0) {
+      return { ok: false, error: "No routes to update." };
+    }
     const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() || "";
-    const routeStats: Array<{
-      routeId: string;
-      totalDistanceMeters: number;
-      totalDurationSeconds: number;
-      costTotal?: string;
-      costCurrency?: string;
-    }> = [];
+    if (!mapsApiKey) {
+      return { ok: false, error: "GOOGLE_MAPS_API_KEY is missing." };
+    }
+    console.info(`[local-delivery] update-routes START shop=${shop} routes=${routesInput.length}`);
 
-    const carrierConfigRow = await prisma.carrierServiceConfig.findUnique({
-      where: { shop },
-    });
-    const carrierConfig = carrierConfigRow?.data as CarrierServiceConfigData | undefined;
-
-    for (const { routeId, locationId, orderIds: routeOrderIds } of routes) {
-      let totalDistanceMeters = 0;
-      let totalDurationSeconds = 0;
-      let costTotal: string | undefined;
-      let costCurrency: string | undefined;
-
-      const locRes = await admin.graphql(
+    // Fetch shipping coordinates for all orders across all dirty routes
+    const allOrderIds = [...new Set(routesInput.flatMap((r) => r.orderIds))];
+    console.info(`[local-delivery] update-routes fetching ${allOrderIds.length} orders`);
+    let orderCoordsJson: any;
+    try {
+      const orderCoordsResponse = await admin.graphql(
         `#graphql
-          query RefreshRouteLocation($id: ID!) {
-            location(id: $id) {
-              address { latitude longitude }
-            }
-          }`,
-        { variables: { id: locationId } },
-      );
-      const locJson = await locRes.json();
-      const locAddress = locJson?.data?.location?.address as { latitude?: number | null; longitude?: number | null } | null;
-      const locationCoordinates =
-        locAddress?.latitude != null && locAddress?.longitude != null
-          ? { latitude: locAddress.latitude, longitude: locAddress.longitude }
-          : null;
-
-      const ordersRes = await admin.graphql(
-        `#graphql
-          query RefreshRouteOrders($ids: [ID!]!) {
+          query UpdateRoutesOrders($ids: [ID!]!) {
             nodes(ids: $ids) {
               ... on Order {
                 id
-                shippingAddress { latitude longitude address1 address2 city province zip country }
+                shippingAddress { latitude longitude }
               }
             }
           }`,
-        { variables: { ids: routeOrderIds } },
+        { variables: { ids: allOrderIds } },
       );
-      const ordersJson = await ordersRes.json();
-      const orderNodes = (ordersJson?.data?.nodes ?? []) as Array<{
-        id: string;
-        shippingAddress?: { latitude?: number | null; longitude?: number | null; address1?: string | null; address2?: string | null; city?: string | null; province?: string | null; zip?: string | null; country?: string | null } | null;
-      }>;
-
-      const ordersWithCoords = orderNodes
-        .filter((o) => o?.shippingAddress && o.shippingAddress.latitude != null && o.shippingAddress.longitude != null)
-        .map((o) => ({
-          orderId: o.id,
-          shippingCoordinates: {
-            latitude: o.shippingAddress!.latitude!,
-            longitude: o.shippingAddress!.longitude!,
-          },
-        }));
-
-      if (locationCoordinates && ordersWithCoords.length > 0 && mapsApiKey) {
-        const metrics = await computeRouteMetrics(
-          mapsApiKey,
-          locationCoordinates,
-          locationId,
-          ordersWithCoords,
-        );
-        totalDistanceMeters = metrics.totalDistanceMeters;
-        totalDurationSeconds = metrics.totalDurationSeconds;
+      orderCoordsJson = await orderCoordsResponse.json();
+    } catch (gqlErr) {
+      console.error("[local-delivery] update-routes GraphQL FAILED", gqlErr instanceof Error ? gqlErr.message : String(gqlErr));
+      return { ok: false, intent: "update-routes", error: "Failed to fetch order coordinates." };
+    }
+    const orderNodes = (orderCoordsJson?.data?.nodes ?? []) as Array<{
+      id: string;
+      shippingAddress?: { latitude?: number | null; longitude?: number | null } | null;
+    }>;
+    const shippingCoordsMap = new Map<string, { latitude: number; longitude: number }>();
+    for (const node of orderNodes) {
+      if (node?.id && node.shippingAddress?.latitude != null && node.shippingAddress?.longitude != null) {
+        shippingCoordsMap.set(node.id, {
+          latitude: node.shippingAddress.latitude,
+          longitude: node.shippingAddress.longitude,
+        });
       }
+    }
+    console.info(`[local-delivery] update-routes ordersWithCoords=${shippingCoordsMap.size}/${allOrderIds.length}`);
 
-      const configRow = await prisma.lalamoveLocationConfig.findUnique({
-        where: { shop_locationId: { shop, locationId } },
-      });
-      const config = configRow?.data as LalamoveConfig | undefined;
-      const effectiveServiceType =
-        config?.preferredServiceType?.trim() ||
-        carrierConfig?.lalamovePreferredServiceType?.trim() ||
-        "LALAGO";
-      if (config?.market && config?.language && effectiveServiceType && locationCoordinates && orderNodes.length > 0) {
-        const pickupAddress = locJson?.data?.location?.address as { latitude?: number; longitude?: number; address1?: string; city?: string; province?: string; country?: string } | null;
-        const deliveryStops = orderNodes
-          .filter((o) => o?.shippingAddress && o.shippingAddress.latitude != null && o.shippingAddress.longitude != null)
-          .map((o) => ({
-            coordinates: { lat: String(o.shippingAddress!.latitude), lng: String(o.shippingAddress!.longitude) },
-            address: formatDeliveryStopAddress(
-              o.shippingAddress!.address1,
-              o.shippingAddress!.address2,
-            ),
-            sourceAddress2: o.shippingAddress!.address2 ?? null,
-          }));
-        const fulfillmentStopAddress = formatFulfillmentStopAddress(
-          config.locationName,
-          config.locationAddress,
-          config.locationDetails,
+    // Fetch fulfillment location coordinates (origin for polyline computation)
+    const uniqueLocationIds = [...new Set(routesInput.map((r) => r.locationId))];
+    const locationCoordsMap = new Map<string, { latitude: number; longitude: number }>();
+    for (const locId of uniqueLocationIds) {
+      try {
+        const locResponse = await admin.graphql(
+          `#graphql
+            query UpdateRoutesLocation($id: ID!) {
+              location(id: $id) {
+                id
+                address { latitude longitude }
+              }
+            }`,
+          { variables: { id: locId } },
         );
-        const stops = [
-          {
-            coordinates: { lat: String(pickupAddress?.latitude ?? 0), lng: String(pickupAddress?.longitude ?? 0) },
-            address:
-              fulfillmentStopAddress ||
-              formatAddress([
-                pickupAddress?.address1,
-                pickupAddress?.city,
-                pickupAddress?.province,
-                pickupAddress?.country,
-              ]),
-          },
-          ...deliveryStops,
-        ];
-        try {
-          const specialRequests = carrierConfig?.lalamoveSpecialRequests?.[config.market] ?? [];
-          const quotation = await createLalamoveQuotation({
-            market: config.market,
-            language: config.language,
-            serviceType: effectiveServiceType,
-            stops,
-            isRouteOptimized: true,
-            ...(specialRequests.length ? { specialRequests } : {}),
-          }, credentials ?? undefined);
-          costTotal = quotation.priceBreakdown?.total;
-          costCurrency = quotation.priceBreakdown?.currency;
-        } catch (_) {
-          // leave cost as undefined on Lalamove failure
+        const locJson = await locResponse.json();
+        const addr = locJson?.data?.location?.address;
+        if (addr?.latitude != null && addr?.longitude != null) {
+          locationCoordsMap.set(locId, { latitude: addr.latitude, longitude: addr.longitude });
+          console.info(`[local-delivery] update-routes location OK id=${locId} lat=${addr.latitude} lng=${addr.longitude}`);
+        } else {
+          console.warn(`[local-delivery] update-routes location SKIP id=${locId} (no coords)`);
         }
+      } catch (locErr) {
+        console.error(`[local-delivery] update-routes location FAILED id=${locId}`, locErr instanceof Error ? locErr.message : String(locErr));
       }
-
-      routeStats.push({
-        routeId,
-        totalDistanceMeters,
-        totalDurationSeconds,
-        costTotal,
-        costCurrency,
-      });
     }
 
-    return { ok: true, routeStats };
+    const { computeRoutePolyline } = await import("../services/google-routes-shared.server");
+
+    const results: Array<{
+      routeId: string;
+      routeIndex: number;
+      polyline: string;
+      totalDistanceMeters: number;
+      totalDurationSeconds: number;
+      orderedIds: string[];
+      error?: string;
+    }> = [];
+
+    for (const route of routesInput) {
+      const locationCoords = locationCoordsMap.get(route.locationId);
+      if (!locationCoords) {
+        console.warn(`[local-delivery] update-routes SKIP route=${route.routeId} (no location coords for ${route.locationId})`);
+        results.push({
+          routeId: route.routeId,
+          routeIndex: route.routeIndex,
+          polyline: "",
+          totalDistanceMeters: 0,
+          totalDurationSeconds: 0,
+          orderedIds: [],
+          error: "Fulfillment location coordinates missing.",
+        });
+        continue;
+      }
+      const routeOrders: OptimizerOrderInput[] = route.orderIds
+        .map((orderId) => {
+          const shipping = shippingCoordsMap.get(orderId);
+          if (!shipping) return null;
+          return {
+            orderId,
+            locationId: route.locationId,
+            shippingCoordinates: shipping,
+            locationCoordinates: locationCoords,
+          };
+        })
+        .filter((o): o is OptimizerOrderInput => o != null);
+
+      if (routeOrders.length === 0) {
+        console.warn(`[local-delivery] update-routes SKIP route=${route.routeId} (0 orders with coords out of ${route.orderIds.length})`);
+        results.push({
+          routeId: route.routeId,
+          routeIndex: route.routeIndex,
+          polyline: "",
+          totalDistanceMeters: 0,
+          totalDurationSeconds: 0,
+          orderedIds: [],
+          error: "No valid order coordinates.",
+        });
+        continue;
+      }
+      console.info(`[local-delivery] update-routes computing polyline route=${route.routeId} orders=${routeOrders.length}`);
+
+      try {
+        const polylineResult = await computeRoutePolyline(
+          mapsApiKey,
+          locationCoords,
+          routeOrders,
+        );
+        // Cache the new polyline
+        try {
+          const orderIdsKey = [...route.orderIds].sort().join("|");
+          await prisma.routePolylineCache.upsert({
+            where: { shop_locationId_orderIdsKey: { shop, locationId: route.locationId, orderIdsKey } },
+            update: { encodedPolyline: polylineResult.polyline },
+            create: { shop, locationId: route.locationId, orderIdsKey, encodedPolyline: polylineResult.polyline },
+          });
+        } catch (cacheErr) {
+          console.warn("[local-delivery] update-routes cache FAILED", cacheErr instanceof Error ? cacheErr.message : String(cacheErr));
+        }
+
+        results.push({
+          routeId: route.routeId,
+          routeIndex: route.routeIndex,
+          polyline: polylineResult.polyline,
+          totalDistanceMeters: polylineResult.distanceMeters,
+          totalDurationSeconds: polylineResult.durationSeconds,
+          orderedIds: polylineResult.ordered.map((o) => o.orderId),
+        });
+        console.info(`[local-delivery] update-routes polyline OK route=${route.routeId} distance=${polylineResult.distanceMeters}m`);
+      } catch (err) {
+        console.error(`[local-delivery] update-routes polyline FAILED route=${route.routeId}`, err);
+        results.push({
+          routeId: route.routeId,
+          routeIndex: route.routeIndex,
+          polyline: "",
+          totalDistanceMeters: 0,
+          totalDurationSeconds: 0,
+          orderedIds: route.orderIds,
+          error: err instanceof Error ? err.message : "Polyline computation failed.",
+        });
+      }
+    }
+
+    // Now re-quote each route with Lalamove
+    const credentials = await getRuntimeCredentialsForShop(shop);
+    const effectiveLocationId = typeof requestLocationId === "string" ? requestLocationId : routesInput[0]?.locationId ?? "";
+    const configRow = effectiveLocationId
+      ? await prisma.lalamoveLocationConfig.findUnique({
+          where: { shop_locationId: { shop, locationId: effectiveLocationId } },
+        })
+      : null;
+
+    if (credentials && configRow) {
+      const config = configRow.data as LalamoveConfig;
+      for (const routeResult of results) {
+        if (routeResult.error || routeResult.orderedIds.length === 0) continue;
+        // Submit a Lalamove quote by reusing the lalamove-quote logic via internal call
+        // For now, we leave quotation to the user via the existing "Request quote" button per route.
+        // The polyline + distance/duration update is the primary deliverable of update-routes.
+      }
+    }
+
+    console.info(`[local-delivery] update-routes OK shop=${shop} updated=${results.filter((r) => !r.error).length}/${results.length}`);
+    return { ok: true, intent: "update-routes", results };
   }
 
   if (intent === "lalamove-quote") {
@@ -7533,45 +8397,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       },
       ...deliveryStops,
     ];
+    // Read special requests from form data (from pre-quote modal), falling back to saved config
+    const formSpecialRequests = formData.getAll("specialRequests") as string[];
+    let specialRequests = formSpecialRequests.length > 0
+      ? formSpecialRequests
+      : (carrierConfig?.lalamoveSpecialRequests?.[configWithLocation.market] ?? []);
     try {
-      // Read special requests from form data (from pre-quote modal), falling back to saved config
-      const formSpecialRequests = formData.getAll("specialRequests") as string[];
-      let specialRequests = formSpecialRequests.length > 0
-        ? formSpecialRequests
-        : (carrierConfig?.lalamoveSpecialRequests?.[configWithLocation.market] ?? []);
 
       // Validate special requests against the specific city+service available options.
-      // Special requests are saved per market, but availability varies per city within the
-      // same market (e.g. São Paulo supports RETURN_TRIP, Recife does not).
       if (specialRequests.length > 0 && credentials) {
-        try {
-          const cities = await getLalamoveCityInfo(configWithLocation.market, credentials);
-          const availableNames = new Set<string>();
-          const locationCity = ((config as any).city as string | undefined)?.trim().toLowerCase();
-          console.info(`[local-delivery] special-request validation: market=${configWithLocation.market} locationCity=${locationCity ?? "?"} cities=[${cities.map((c) => `${c.locode}/${c.name}`).join(", ")}]`);
-          const serviceType = configWithLocation.preferredServiceType;
-          for (const city of cities) {
-            // Filter by city when known — prevents cross-city leaks (e.g. SP options sent for Recife)
-            if (locationCity) {
-              const matchesLocode = city.locode?.toLowerCase() === locationCity;
-              const matchesName = city.name?.trim().toLowerCase() === locationCity;
-              if (!matchesLocode && !matchesName) continue;
-            }
-            for (const service of city.services ?? []) {
-              if (serviceType && service.key !== serviceType) continue;
-              for (const sr of service.specialRequests ?? []) {
-                availableNames.add(sr.name);
-              }
-            }
-          }
-          const filtered = specialRequests.filter((sr) => availableNames.has(sr));
-          if (filtered.length !== specialRequests.length) {
-            console.warn(`[local-delivery] filtered invalid special requests for ${configWithLocation.market} city=${locationCity ?? "?"} service=${serviceType}: ${specialRequests.filter((sr) => !availableNames.has(sr)).join(", ")}`);
-          }
-          specialRequests = filtered;
-        } catch {
-          // If city info fetch fails, proceed with original requests
-        }
+        specialRequests = await resolveSpecialRequestsForCity(
+          specialRequests, configWithLocation, credentials,
+        );
       }
 
       const quotation = await createLalamoveQuotation({
@@ -7622,12 +8459,121 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const rawMessage =
         error instanceof Error ? error.message : "Lalamove quote failed.";
       const message = sanitizeLalamoveErrorMessage(rawMessage);
+
+      // ── Out-of-service-area recovery ────────────────────────────────────
+      // Lalamove returns 422 "out of service area" but doesn't say WHICH stop.
+      // Probe each delivery stop individually to identify the bad ones, remove
+      // them, and retry with the rest.
+      const isOutOfArea =
+        rawMessage.includes("out of service area") ||
+        rawMessage.includes("service_area");
+      if (isOutOfArea && deliveryStops.length > 1 && credentials) {
+        console.info(
+          `[local-delivery] lalamove-quote out-of-area recovery START route=${routeId} probing ${deliveryStops.length} stops`,
+        );
+        const pickupStop = stops[0]!;
+        const outOfAreaIndices: number[] = [];
+        // Probe each delivery stop individually (Lalamove API is free)
+        for (let i = 0; i < deliveryStops.length; i++) {
+          try {
+            await createLalamoveQuotation(
+              {
+                market: configWithLocation.market,
+                language: configWithLocation.language,
+                serviceType: configWithLocation.preferredServiceType,
+                stops: [pickupStop, deliveryStops[i]!],
+                isRouteOptimized: false,
+              },
+              credentials,
+            );
+          } catch (probeErr) {
+            const probeMsg =
+              probeErr instanceof Error ? probeErr.message : "";
+            if (
+              probeMsg.includes("out of service area") ||
+              probeMsg.includes("service_area")
+            ) {
+              outOfAreaIndices.push(i);
+            }
+          }
+        }
+
+        if (outOfAreaIndices.length > 0 && outOfAreaIndices.length < deliveryStops.length) {
+          const outOfAreaOrderIds = outOfAreaIndices
+            .map((idx) => deliveryOrderPoints[idx]?.orderId)
+            .filter(Boolean) as string[];
+          const validStops = deliveryStops.filter(
+            (_, idx) => !outOfAreaIndices.includes(idx),
+          );
+          const validOrderPoints = deliveryOrderPoints.filter(
+            (_, idx) => !outOfAreaIndices.includes(idx),
+          );
+
+          console.info(
+            `[local-delivery] lalamove-quote out-of-area found=${outOfAreaOrderIds.length} remaining=${validStops.length} route=${routeId}`,
+          );
+
+          // Retry with valid stops only
+          if (validStops.length > 0) {
+            try {
+              const retryStops = [pickupStop, ...validStops];
+              const retryQuotation = await createLalamoveQuotation(
+                {
+                  market: configWithLocation.market,
+                  language: configWithLocation.language,
+                  serviceType: configWithLocation.preferredServiceType,
+                  stops: retryStops,
+                  isRouteOptimized: retryStops.length >= 3,
+                  ...(specialRequests.length ? { specialRequests } : {}),
+                },
+                credentials,
+              );
+              const retryDeliveryStops = (retryQuotation.stops ?? []).slice(1);
+              const retryReconciliation = reconcileDeliveryAssignments(
+                retryDeliveryStops,
+                validOrderPoints,
+              );
+              if (retryReconciliation.ok) {
+                console.info(
+                  `[local-delivery] lalamove-quote out-of-area recovery OK route=${routeId} removed=${outOfAreaOrderIds.length}`,
+                );
+                const finalOrderIds = retryReconciliation.assignments.map(
+                  (a) => a.orderId,
+                );
+                return {
+                  ok: true,
+                  routeId,
+                  locationId,
+                  quotation: retryQuotation,
+                  orderIds: finalOrderIds,
+                  deliveryAssignments: retryReconciliation.assignments,
+                  outOfAreaOrderIds,
+                };
+              }
+            } catch (retryErr) {
+              console.error(
+                `[local-delivery] lalamove-quote out-of-area retry FAILED route=${routeId}`,
+                retryErr,
+              );
+            }
+          }
+
+          // If retry failed but we know which orders are bad, still report them
+          return {
+            ok: false,
+            error: message,
+            routeId,
+            outOfAreaOrderIds,
+          };
+        }
+      }
+
       console.error(`[local-delivery] lalamove-quote FAILED shop=${shop} route=${routeId} location=${locationId} error=${message}`);
       return { ok: false, error: message, routeId };
     }
   }
 
-  
+
   if (intent === "fetch-special-requests") {
     const market = String(formData.get("market") ?? "").trim();
     const serviceType = String(formData.get("serviceType") ?? "").trim();
@@ -7650,6 +8596,48 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to fetch special requests.";
       return { ok: false, error: msg, specialRequests: [] };
+    }
+  }
+
+  // mark-fulfilled intent removed — fulfillment is now handled automatically
+  // by the webhook (tag rename on COMPLETED, dispatch marked FULFILLED).
+
+  if (intent === "fix-address") {
+    const orderId = String(formData.get("orderId") ?? "").trim();
+    const address1 = String(formData.get("address1") ?? "").trim();
+    const address2 = String(formData.get("address2") ?? "").trim();
+    if (!orderId) return { ok: false, error: "Missing order ID." };
+    console.info(`[local-delivery] fix-address START shop=${shop} order=${orderId}`);
+    try {
+      await admin.graphql(
+        `#graphql
+          mutation UpdateOrderAddress($input: OrderInput!) {
+            orderUpdate(input: $input) {
+              order { id }
+              userErrors { message }
+            }
+          }`,
+        {
+          variables: {
+            input: {
+              id: orderId,
+              shippingAddress: {
+                address1: address1 || undefined,
+                address2: address2 || undefined,
+              },
+            },
+          },
+        },
+      );
+      // Remove address review tag
+      const { removeTags } = await import("../services/lalamove-sync.server");
+      await removeTags(admin, orderId, ["ld_address_review"]);
+      console.info(`[local-delivery] fix-address OK shop=${shop} order=${orderId}`);
+      return { ok: true };
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Address update failed.";
+      console.error(`[local-delivery] fix-address FAILED shop=${shop} order=${orderId}`, error);
+      return { ok: false, error: msg };
     }
   }
 
@@ -7690,21 +8678,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           where: { dispatchJobId: dispatchJob.id },
           data: { currentStatus: "CANCELED" },
         });
-
-        // Apply Shopify state
-        const orderMaps = await prismaAny.lalamoveDispatchOrderMap.findMany({
-          where: { dispatchJobId: dispatchJob.id },
-          select: { shopifyOrderId: true },
-        });
-        const orderIds = orderMaps.map((m: { shopifyOrderId: string }) => m.shopifyOrderId);
-        if (orderIds.length > 0) {
-          await applyLalamoveDeliveryState(admin, {
-            orderIds,
-            state: "failed",
-            reason: "Delivery cancelled by merchant.",
-            existingFulfillmentId: dispatchJob.shopifyFulfillmentId,
-          });
-        }
 
         // Log event
         await prismaAny.lalamoveDispatchEvent.create({
@@ -7962,6 +8935,49 @@ if (intent === "lalamove-place-order") {
         routeId,
       };
     }
+    // ── Foreign phone warning ───────────────────────────────────────────────
+    const skipPhoneWarning = formData.get("skipPhoneWarning") === "true";
+    if (!skipPhoneWarning) {
+      const foreignPhoneOrders: Array<{
+        id: string;
+        name: string;
+        customerName: string;
+        phone: string;
+      }> = [];
+      for (const orderId of assignmentOrderIds) {
+        const order = orderById.get(orderId)!;
+        const phoneCandidates = [
+          order.customer?.defaultPhoneNumber?.phoneNumber,
+          order.shippingAddress?.phone,
+          order.customer?.phone,
+        ];
+        const hasValidPhone = phoneCandidates.some(
+          (p) => !!normalizePhoneForMarket(p, configWithLocation.market),
+        );
+        if (!hasValidPhone) {
+          const bestRaw =
+            phoneCandidates.find((p) => p?.trim()) ?? "";
+          foreignPhoneOrders.push({
+            id: orderId,
+            name: order.name,
+            customerName: order.customer?.displayName ?? "",
+            phone: bestRaw?.trim() ?? "",
+          });
+        }
+      }
+      if (foreignPhoneOrders.length > 0) {
+        console.info(
+          `[local-delivery] lalamove-place-order PHONE_WARNING shop=${shop} route=${routeId} affected=${foreignPhoneOrders.length}`,
+        );
+        return {
+          ok: false,
+          foreignPhoneWarning: true,
+          affectedOrders: foreignPhoneOrders,
+          routeId,
+        };
+      }
+    }
+
     const pickupInstructions = configWithLocation.pickupInstructions?.trim();
     const recipients = recipientStopIds.map((stopId, index) => {
       const orderId = assignmentOrderIds[index]!;
@@ -7974,11 +8990,21 @@ if (intent === "lalamove-place-order") {
       return {
         stopId,
         name: order.customer?.displayName || order.name || "Customer",
-        phone:
-          order.customer?.defaultPhoneNumber?.phoneNumber ||
-          order.shippingAddress?.phone ||
-          order.customer?.phone ||
-          config.locationPhone,
+        phone: (() => {
+          const candidates = [
+            order.customer?.defaultPhoneNumber?.phoneNumber,
+            order.shippingAddress?.phone,
+            order.customer?.phone,
+          ];
+          for (const candidate of candidates) {
+            const normalized = normalizePhoneForMarket(
+              candidate,
+              configWithLocation.market,
+            );
+            if (normalized) return normalized;
+          }
+          return config.locationPhone || "";
+        })(),
         ...(remarks ? { remarks } : {}),
       };
     });
@@ -8030,8 +9056,28 @@ if (intent === "lalamove-place-order") {
         }
       }
 
-      console.error(`[local-delivery] lalamove-place-order FAILED shop=${shop} route=${routeId} location=${locationId} error=${message}`);
-      return { ok: false, error: message, routeId };
+      // Payload recovery: Lalamove returned non-ok but may have included the orderId
+      if (error instanceof LalamoveApiError && error.payload?.data?.orderId) {
+        const recoveredOrderId = error.payload.data.orderId as string;
+        console.warn(`[local-delivery] lalamove-place-order payload-recovery: HTTP ${error.status} but orderId=${recoveredOrderId} — verifying shop=${shop} route=${routeId}`);
+        try {
+          const verified = await getLalamoveOrderDetails(configWithLocation.market, recoveredOrderId, credentials);
+          placeResponse = {
+            orderId: verified.orderId ?? recoveredOrderId,
+            quotationId: verified.quotationId ?? quotationId,
+            status: verified.status ?? "ASSIGNING_DRIVER",
+            shareLink: verified.shareLink,
+          };
+          console.info(`[local-delivery] lalamove-place-order payload-recovery OK orderId=${placeResponse.orderId} status=${placeResponse.status}`);
+        } catch (verifyErr) {
+          console.error(`[local-delivery] lalamove-place-order payload-recovery FAILED orderId=${recoveredOrderId}`, verifyErr);
+        }
+      }
+
+      if (!placeResponse) {
+        console.error(`[local-delivery] lalamove-place-order FAILED shop=${shop} route=${routeId} location=${locationId} error=${message}`);
+        return { ok: false, error: message, routeId };
+      }
     }
 
     const prismaAny = prisma as any;
@@ -8061,17 +9107,66 @@ if (intent === "lalamove-place-order") {
         })),
       });
 
-      const { fulfillmentId: shopifyFulfillmentId } = await applyLalamoveDeliveryState(admin, {
-        orderIds: assignmentOrderIds,
-        state: "requested",
-        existingFulfillmentId: null,
-      });
-      if (shopifyFulfillmentId) {
-        await prismaAny.lalamoveDispatchJob.update({
-          where: { id: dispatchJob.id },
-          data: { shopifyFulfillmentId },
-        });
+      // ── Correction tracking: compare vs optimizer proposal ──
+      try {
+        if (typeof locationId === "string") {
+          const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
+          const snapshot = await (prisma as any).routeOptimizationSnapshot.findFirst({
+            where: { shop, locationId, proposedAt: { gte: fourHoursAgo } },
+            orderBy: { proposedAt: "desc" },
+          });
+          if (snapshot) {
+            const proposed = snapshot.proposedRoutes as Array<{ routeIndex: number; orderIds: string[] }>;
+            const coordsMap = new Map(
+              (snapshot.orderCoordinates as Array<{ orderId: string; lat: number; lng: number }>)
+                .map((c: { orderId: string; lat: number; lng: number }) => [c.orderId, { lat: c.lat, lng: c.lng }]),
+            );
+            const proposedRouteByOrder = new Map<string, number>();
+            for (const route of proposed) {
+              for (const oid of route.orderIds) proposedRouteByOrder.set(oid, route.routeIndex);
+            }
+            const routeIndexStr = typeof routeId === "string" ? routeId.split("-").pop() : null;
+            const actualRouteIndex = routeIndexStr != null ? Number(routeIndexStr) : null;
+
+            const corrections: Array<{ orderId: string; fromRoute: number | null; toRoute: number | null; lat: number | null; lng: number | null }> = [];
+
+            for (const orderId of assignmentOrderIds) {
+              const proposedRoute = proposedRouteByOrder.get(orderId) ?? null;
+              if (proposedRoute !== actualRouteIndex) {
+                const coords = coordsMap.get(orderId);
+                corrections.push({ orderId, fromRoute: proposedRoute, toRoute: actualRouteIndex, lat: coords?.lat ?? null, lng: coords?.lng ?? null });
+              }
+            }
+            if (actualRouteIndex != null) {
+              const proposedForThis = proposed.find((r) => r.routeIndex === actualRouteIndex);
+              if (proposedForThis) {
+                const dispatchedSet = new Set(assignmentOrderIds);
+                for (const oid of proposedForThis.orderIds) {
+                  if (!dispatchedSet.has(oid)) {
+                    const coords = coordsMap.get(oid);
+                    corrections.push({ orderId: oid, fromRoute: actualRouteIndex, toRoute: null, lat: coords?.lat ?? null, lng: coords?.lng ?? null });
+                  }
+                }
+              }
+            }
+
+            await (prisma as any).routeCorrection.create({
+              data: {
+                shop,
+                snapshotId: snapshot.id,
+                dispatchedRouteIndex: actualRouteIndex,
+                corrections,
+                wasModified: corrections.length > 0,
+                ordersReassigned: corrections.length,
+                ordersDispatched: assignmentOrderIds.length,
+              },
+            });
+          }
+        }
+      } catch (correctionErr) {
+        console.warn("[local-delivery] correction tracking FAILED", correctionErr);
       }
+
     } catch (dbError) {
       console.error(`[local-delivery] lalamove-place-order FAILED DB write (order was placed) shop=${shop} route=${routeId} orderId=${placeResponse.orderId}`, dbError);
     }
@@ -8323,6 +9418,18 @@ if (intent === "lalamove-place-order") {
         },
       });
 
+      // Audit trail for return pickup dispatch
+      const prismaAny = prisma as any;
+      await prismaAny.lalamoveDispatchEvent.create({
+        data: {
+          shop,
+          lalamoveOrderId: placeResponse.orderId,
+          eventType: "RETURN_PICKUP_DISPATCHED",
+          externalStatus: "ASSIGNING_DRIVER",
+          payload: { returnRequestIds, quotationId } as object,
+        },
+      });
+
       console.info(`[local-delivery] return-pickup-place-order OK shop=${shop} orderId=${placeResponse.orderId}`);
       return {
         ok: true,
@@ -8550,4 +9657,14 @@ if (intent === "lalamove-place-order") {
   );
 
   return { ok: true };
+
+  } catch (err) {
+    console.error("[local-delivery:action] Unhandled error", {
+      shop,
+      intent: String(intent ?? "unknown"),
+      error: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    });
+    return { ok: false, error: "An unexpected error occurred. Check server logs." };
+  }
 };

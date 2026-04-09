@@ -1,0 +1,39 @@
+{
+  "pageHeading": "Configurações",
+  "brandConfig": {
+    "heading": "Configuração da marca",
+    "description": "Configure o contexto da sua marca para geração de posts de blog. Estes valores são usados como entrada no processo de geração de conteúdo."
+  },
+  "labels": {
+    "brandName": "Nome da marca",
+    "about": "Sobre",
+    "toneOfVoice": "Tom de voz",
+    "blogUrl": "URL do blog",
+    "preferredLanguage": "Idioma preferido",
+    "contentLanguage": "Idioma do conteúdo",
+    "benchmarks": "Benchmarks",
+    "brandCategory": "Categoria da marca",
+    "editorialGuidelines": "Diretrizes editoriais",
+    "formatRecommendations": "Recomendações de formato",
+    "contentStrategy": "Estratégia de conteúdo (JSON, opcional)"
+  },
+  "placeholders": {
+    "brandName": "Nome de exibição da sua marca",
+    "about": "História da marca, missão, informações institucionais",
+    "toneOfVoice": "Como a marca se comunica (ex.: formal, casual, inspiradora). Use 'Analisar loja' para gerar automaticamente a partir do seu conteúdo.",
+    "benchmarks": "Marcas concorrentes ou de referência (ex.: Gisou, Glossier), uma por linha",
+    "brandCategory": "ex.: cuidados capilares premium, skincare",
+    "editorialGuidelines": "Arquitetura de conteúdo, regras de tom, diretrizes de estrutura",
+    "formatRecommendations": "Estrutura HTML, diretrizes de resumo (ex.: Resumo HTML: 150–160 chars), tamanho do conteúdo"
+  },
+  "languageOptions": {
+    "english": "Inglês",
+    "portugueseBr": "Português (BR)"
+  },
+  "scrapeStore": {
+    "heading": "Analisar loja",
+    "description": "Use \"Analisar loja\" para analisar o conteúdo da sua loja e gerar automaticamente o tom de voz. Requer a API Content Scraper configurada.",
+    "comingSoon": "Analisar loja (em breve)"
+  },
+  "settingsSaved": "Configurações salvas"
+}

@@ -3,15 +3,20 @@ import type { AdminApiContext } from "@shopify/shopify-app-react-router/server";
 /**
  * Internal delivery state machine for Lalamove orders.
  *
- * State → Shopify fulfillment event mapping:
- *   requested         → IN_TRANSIT      (order placed with Lalamove, awaiting driver)
- *   assigning         → CONFIRMED       (Lalamove ASSIGNING_DRIVER: looking for driver)
- *   heading_to_pickup → IN_TRANSIT      (Lalamove ON_GOING: driver heading to pickup)
- *   in_progress       → OUT_FOR_DELIVERY (Lalamove PICKED_UP: package with driver)
- *   delivered         → DELIVERED       (Lalamove COMPLETED)
- *   failed            → FAILURE         (Lalamove CANCELED)
- *   rejected          → FAILURE + tag "Delivery rejected"  (Lalamove REJECTED: no driver)
- *   expired           → FAILURE + tag "Delivery expired"   (Lalamove EXPIRED: timed out)
+ * After the auto-delivery refactor, this module handles TAG OPERATIONS ONLY.
+ * No Shopify fulfillment mutations (create, event, cancel) are performed.
+ * Orders stay "Unfulfilled" in Shopify admin; delivery status lives in the
+ * app DB (LalamoveDispatchJob) and order tags.
+ *
+ * State → tag mapping:
+ *   requested         → remove "Failed delivery" tag (if present)
+ *   assigning         → no-op
+ *   heading_to_pickup → no-op
+ *   in_progress       → no-op
+ *   delivered         → handled by renameRouteTagsToArchive (called from webhook)
+ *   failed            → add "Failed delivery"
+ *   rejected          → add "Failed delivery" + "Delivery rejected"
+ *   expired           → add "Failed delivery" + "Delivery expired"
  */
 type DeliveryState =
   | "requested"
@@ -24,12 +29,13 @@ type DeliveryState =
   | "expired";
 
 const FAILED_DELIVERY_TAG = "Failed delivery";
-const LALAMOVE_ACTIVE_TAG = "Lalamove active";
 const DELIVERY_REJECTED_TAG = "Delivery rejected";
 const DELIVERY_EXPIRED_TAG = "Delivery expired";
 
-const addTags = async (
-  admin: AdminApiContext["admin"],
+// ── Tag helpers (exported for use by webhook, escalation, cron) ─────────────
+
+export const addTags = async (
+  admin: AdminApiContext,
   orderId: string,
   tags: string[],
 ) => {
@@ -45,8 +51,8 @@ const addTags = async (
   );
 };
 
-const removeTags = async (
-  admin: AdminApiContext["admin"],
+export const removeTags = async (
+  admin: AdminApiContext,
   orderId: string,
   tags: string[],
 ) => {
@@ -62,206 +68,94 @@ const removeTags = async (
   );
 };
 
-const fetchFulfillmentOrderIds = async (
-  admin: AdminApiContext["admin"],
-  orderIds: string[],
+// ── Route tag operations ────────────────────────────────────────────────────
+
+export const removeRouteTags = async (
+  admin: AdminApiContext,
+  orderId: string,
 ) => {
-  if (orderIds.length === 0) return [] as string[];
   const response = await admin.graphql(
     `#graphql
-      query FulfillmentOrderIds($ids: [ID!]!) {
-        nodes(ids: $ids) {
-          ... on Order {
-            id
-            fulfillmentOrders(first: 20) {
-              nodes {
-                id
-                status
-              }
-            }
-          }
-        }
+      query OrderTags($id: ID!) {
+        order(id: $id) { tags }
       }`,
-    { variables: { ids: orderIds } },
+    { variables: { id: orderId } },
   );
   const json = await response.json();
-  const nodes = (json?.data?.nodes ?? []) as Array<{
-    fulfillmentOrders?: { nodes?: Array<{ id: string; status?: string }> };
-  }>;
-  return nodes.flatMap((node) =>
-    (node.fulfillmentOrders?.nodes ?? [])
-      .filter((fo) => (fo.status ?? "").toUpperCase() !== "CLOSED")
-      .map((fo) => fo.id),
-  );
+  const tags: string[] = (json as any)?.data?.order?.tags ?? [];
+  const routeTags = tags.filter((t: string) => /^ld_rota-\d+$/i.test(t));
+  if (routeTags.length > 0) {
+    await removeTags(admin, orderId, routeTags);
+  }
 };
 
-const createFulfillmentForOrders = async (
-  admin: AdminApiContext["admin"],
-  orderIds: string[],
+/**
+ * Archive route tags by renaming ld_rota-## → ld_rota-##_YY.MM.DD.
+ * Called by the Lalamove webhook on COMPLETED status.
+ */
+export const renameRouteTagsToArchive = async (
+  admin: AdminApiContext,
+  orderId: string,
+  dateStr: string, // "YY.MM.DD" format, e.g. "26.04.08"
 ) => {
-  const fulfillmentOrderIds = await fetchFulfillmentOrderIds(admin, orderIds);
-  if (fulfillmentOrderIds.length === 0) return null;
   const response = await admin.graphql(
     `#graphql
-      mutation CreateFulfillment($fulfillment: FulfillmentV2Input!) {
-        fulfillmentCreateV2(fulfillment: $fulfillment) {
-          fulfillment {
-            id
-          }
-          userErrors {
-            message
-          }
-        }
+      query OrderTags($id: ID!) {
+        order(id: $id) { tags }
       }`,
-    {
-      variables: {
-        fulfillment: {
-          lineItemsByFulfillmentOrder: fulfillmentOrderIds.map((id) => ({
-            fulfillmentOrderId: id,
-          })),
-          notifyCustomer: true,
-        },
-      },
-    },
+    { variables: { id: orderId } },
   );
   const json = await response.json();
-  return json?.data?.fulfillmentCreateV2?.fulfillment?.id as string | null;
+  const tags: string[] = (json as any)?.data?.order?.tags ?? [];
+  const routeTags = tags.filter((t: string) => /^ld_rota-\d+$/i.test(t));
+  if (routeTags.length === 0) return;
+
+  // Remove old tags and add archived versions
+  await removeTags(admin, orderId, routeTags);
+  const archivedTags = routeTags.map((t) => `${t}_${dateStr}`);
+  await addTags(admin, orderId, archivedTags);
+  console.info(`[lalamove-sync] renameRouteTagsToArchive order=${orderId} ${routeTags.join(",")} → ${archivedTags.join(",")}`);
 };
 
-const createFulfillmentEvent = async (
-  admin: AdminApiContext["admin"],
-  fulfillmentId: string,
-  status: "CONFIRMED" | "IN_TRANSIT" | "OUT_FOR_DELIVERY" | "DELIVERED" | "FAILURE",
-  message?: string,
-) => {
-  await admin.graphql(
-    `#graphql
-      mutation FulfillmentEvent($fulfillmentEvent: FulfillmentEventInput!) {
-        fulfillmentEventCreate(fulfillmentEvent: $fulfillmentEvent) {
-          userErrors { message }
-        }
-      }`,
-    {
-      variables: {
-        fulfillmentEvent: {
-          fulfillmentId,
-          status,
-          message: message ?? null,
-          notifyCustomer: true,
-        },
-      },
-    },
-  );
-};
-
-const cancelFulfillment = async (
-  admin: AdminApiContext["admin"],
-  fulfillmentId: string,
-) => {
-  await admin.graphql(
-    `#graphql
-      mutation CancelFulfillment($id: ID!) {
-        fulfillmentCancel(id: $id) {
-          userErrors { message }
-        }
-      }`,
-    { variables: { id: fulfillmentId } },
-  );
-};
+// ── Delivery state machine (tag-only) ───────────────────────────────────────
 
 export const applyLalamoveDeliveryState = async (
-  admin: AdminApiContext["admin"],
+  admin: AdminApiContext,
   params: {
     orderIds: string[];
     state: DeliveryState;
     reason?: string;
-    existingFulfillmentId?: string | null;
   },
 ) => {
-  const { orderIds, state, reason, existingFulfillmentId } = params;
-  if (orderIds.length === 0) return { fulfillmentId: existingFulfillmentId ?? null };
+  const { orderIds, state } = params;
+  console.info(`[lalamove-sync] applyState orders=${orderIds.length} state=${state}`);
+  if (orderIds.length === 0) return;
 
-  // ── requested: order placed with Lalamove ──────────────────────────────────
   if (state === "requested") {
-    const fulfillmentId = existingFulfillmentId ?? (await createFulfillmentForOrders(admin, orderIds));
-    if (fulfillmentId) {
-      await createFulfillmentEvent(admin, fulfillmentId, "IN_TRANSIT");
-    }
+    // Remove stale failure tags when a new request is placed
     await Promise.all(
-      orderIds.map(async (orderId) => {
-        await removeTags(admin, orderId, [FAILED_DELIVERY_TAG]);
-        await addTags(admin, orderId, [LALAMOVE_ACTIVE_TAG]);
-      }),
+      orderIds.map((id) => removeTags(admin, id, [FAILED_DELIVERY_TAG, DELIVERY_REJECTED_TAG, DELIVERY_EXPIRED_TAG])),
     );
-    return { fulfillmentId };
+    return;
   }
 
-  const fulfillmentId = existingFulfillmentId ?? (await createFulfillmentForOrders(admin, orderIds));
-  if (!fulfillmentId) return { fulfillmentId: null };
-
-  // ── assigning: Lalamove searching for a driver ─────────────────────────────
-  if (state === "assigning") {
-    await createFulfillmentEvent(admin, fulfillmentId, "CONFIRMED", "Looking for a driver");
-    return { fulfillmentId };
-  }
-
-  // ── heading_to_pickup: driver accepted, heading to pickup location ──────────
-  if (state === "heading_to_pickup") {
-    await createFulfillmentEvent(admin, fulfillmentId, "IN_TRANSIT", "Driver heading to pickup");
-    return { fulfillmentId };
-  }
-
-  // ── in_progress: driver picked up package, heading to customer ─────────────
-  if (state === "in_progress") {
-    await createFulfillmentEvent(admin, fulfillmentId, "OUT_FOR_DELIVERY");
-    return { fulfillmentId };
-  }
-
-  // ── delivered: delivery completed ──────────────────────────────────────────
-  if (state === "delivered") {
-    await createFulfillmentEvent(admin, fulfillmentId, "DELIVERED");
-    await Promise.all(orderIds.map((orderId) => removeTags(admin, orderId, [LALAMOVE_ACTIVE_TAG])));
-    return { fulfillmentId };
-  }
-
-  // ── rejected: no driver accepted the order — merchant must re-dispatch ──────
+  // Failure states: add appropriate failure tags
   if (state === "rejected") {
-    const msg = reason ?? "No driver accepted the order. Please re-request a driver.";
-    await createFulfillmentEvent(admin, fulfillmentId, "FAILURE", msg);
-    await cancelFulfillment(admin, fulfillmentId);
     await Promise.all(
-      orderIds.map(async (orderId) => {
-        await removeTags(admin, orderId, [LALAMOVE_ACTIVE_TAG]);
-        await addTags(admin, orderId, [FAILED_DELIVERY_TAG, DELIVERY_REJECTED_TAG]);
-      }),
+      orderIds.map((id) => addTags(admin, id, [FAILED_DELIVERY_TAG, DELIVERY_REJECTED_TAG])),
     );
-    return { fulfillmentId };
+  } else if (state === "expired") {
+    await Promise.all(
+      orderIds.map((id) => addTags(admin, id, [FAILED_DELIVERY_TAG, DELIVERY_EXPIRED_TAG])),
+    );
+  } else if (state === "failed") {
+    await Promise.all(
+      orderIds.map((id) => addTags(admin, id, [FAILED_DELIVERY_TAG])),
+    );
   }
 
-  // ── expired: order timed out without assignment — merchant must re-dispatch ─
-  if (state === "expired") {
-    const msg = reason ?? "Driver request expired. Please re-request a driver.";
-    await createFulfillmentEvent(admin, fulfillmentId, "FAILURE", msg);
-    await cancelFulfillment(admin, fulfillmentId);
-    await Promise.all(
-      orderIds.map(async (orderId) => {
-        await removeTags(admin, orderId, [LALAMOVE_ACTIVE_TAG]);
-        await addTags(admin, orderId, [FAILED_DELIVERY_TAG, DELIVERY_EXPIRED_TAG]);
-      }),
-    );
-    return { fulfillmentId };
-  }
-
-  // ── failed: cancelled by merchant or system ────────────────────────────────
-  await createFulfillmentEvent(admin, fulfillmentId, "FAILURE", reason ?? "Delivery unsuccessful");
-  await cancelFulfillment(admin, fulfillmentId);
-  await Promise.all(
-    orderIds.map(async (orderId) => {
-      await removeTags(admin, orderId, [LALAMOVE_ACTIVE_TAG]);
-      await addTags(admin, orderId, [FAILED_DELIVERY_TAG]);
-    }),
-  );
-  return { fulfillmentId };
+  // assigning, heading_to_pickup, in_progress, delivered → no-op
+  // (delivered tag rename is handled by renameRouteTagsToArchive from webhook)
 };
 
 export const getFailedDeliveryTag = () => FAILED_DELIVERY_TAG;

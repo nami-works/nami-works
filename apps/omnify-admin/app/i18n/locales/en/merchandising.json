@@ -6,7 +6,8 @@
     "discounts": "Discount Health",
     "pricing": "Pricing",
     "collections": "Collections",
-    "campaigns": "Campaigns"
+    "campaigns": "Campaigns",
+    "sales": "Sales"
   },
   "sidebar": {
     "title": "Metaobjects",
@@ -221,7 +222,30 @@
     "variants": "variants",
     "calculateItemsCount": "Calculate items count",
     "priceRuleAndClearance": "Price rule and clearance sale",
-    "off": "off"
+    "off": "off",
+    "specificCollections": "Specific collections",
+    "searchCollections": "Search collections",
+    "appliesToCollections": "Applies to specific collections",
+    "colTags": "Tags",
+    "tagsOn": "On",
+    "tagsOff": "Off",
+    "priceTags": "Price tags",
+    "addPriceTags": "Add price tags",
+    "metaobjectDefinition": "Metaobject definition",
+    "selectDefinition": "Select metaobject definition",
+    "metaobjectParameters": "Metaobject parameters",
+    "displayNameHint": "Tags will be created in the '{{field}}' field",
+    "priceTagPreview": "Price tag preview",
+    "quickApplyTags": "Quick apply tags",
+    "quickApplyHeading": "Apply price tags",
+    "quickApplyDescription": "Auto-assign discount labels to products based on compareAtPrice vs price.",
+    "keepTagsInSync": "Keep tags in sync",
+    "keepTagsInSyncHint": "When enabled, price tags are automatically updated whenever a product's price changes. When disabled, tags are only applied when you click Apply.",
+    "backToSales": "Back to Sales",
+    "applyPriceTags": "Apply price tags",
+    "applying": "Applying tags...",
+    "createSale": "Create sale",
+    "noSales": "No sales yet. Create your first sale to start managing bulk pricing and price tags."
   },
   "stats": {
     "title": "Discount performance",

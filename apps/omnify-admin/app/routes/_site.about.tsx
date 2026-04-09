@@ -39,7 +39,8 @@ export default function About() {
             className={styles.productLogo}
           />
           <p className={styles.productSubtitle}>
-            Location management for online and physical store merchants.
+            Omnify is a location management technology developed and operated by
+            CPG Labs.
           </p>
           <p className={styles.productDescription}>
             Google Business Profile sync, local delivery planning, sales goals,

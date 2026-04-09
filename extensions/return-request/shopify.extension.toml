@@ -1,0 +1,11 @@
+api_version = "2025-04"
+
+[[extensions]]
+name = "Request return"
+handle = "return-request"
+uid = "644c429d-0b09-900e-ff22-21dc0bd2129362bfcc55"
+type = "ui_extension"
+
+  [[extensions.targeting]]
+  module = "./src/ActionExtension.tsx"
+  target = "admin.order-details.action.render"

@@ -1,0 +1,37 @@
+{
+  "pageHeading": "Settings",
+  "tabs": {
+    "locations": "Locations",
+    "providers": "Providers",
+    "carriers": "Carriers"
+  },
+  "locationSettings": {
+    "title": "Location settings",
+    "savedSuccess": "Location settings saved successfully.",
+    "selectLocation": "-select a location-",
+    "selectMarket": "-select market-",
+    "saveSettings": "Save settings"
+  },
+  "labels": {
+    "location": "Location",
+    "market": "Market",
+    "city": "City",
+    "locationName": "Location name",
+    "locationPhone": "Location phone",
+    "locationAddress": "Location address",
+    "locationDetails": "Location details (store number, etc)",
+    "pickupInstructions": "Pickup instructions",
+    "preferredServiceType": "Preferred service type",
+    "autoDeliveryEnabled": "Enable automatic delivery",
+    "deliveryPromiseDays": "Delivery promise",
+    "sameDay": "Same day",
+    "nextDay": "Next day",
+    "dayPlus2": "D+2",
+    "dayPlus3": "D+3",
+    "orderCutoffTime": "Order cutoff time",
+    "timezone": "Timezone",
+    "autoAssignDelayMinutes": "Assign delay (minutes after cutoff)",
+    "autoDispatchTime": "Auto-dispatch time",
+    "retryCutoffTime": "Stop retries at"
+  }
+}

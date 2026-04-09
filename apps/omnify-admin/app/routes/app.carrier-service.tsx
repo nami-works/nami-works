@@ -5,7 +5,6 @@ import {
   useLoaderData,
   useFetcher,
   useLocation,
-  useMatches,
   useSearchParams,
   useRevalidator,
 } from "react-router";
@@ -36,8 +35,6 @@ import type {
   DistanceZone,
   TimeRule,
 } from "../services/carrier/types";
-import { TabBar } from "../components/tab-bar";
-import tabStyles from "../components/tab-bar.module.css";
 import styles from "./app.carrier-service/styles.module.css";
 
 const TIME_OPTIONS = Array.from({ length: 24 }, (_, i) => {
@@ -464,9 +461,27 @@ const WAIT_TIME_PATTERN = /\d+\s*(min|h\b|hora)/i;
 const THERMAL_BAG_PATTERN = /thermal.?bag/i;
 const RETURN_TRIP_PATTERN = /return.?trip/i;
 
-export default function CarrierService() {
-  const { shop, registration, config, credentialStatus, apiKeyDisplayMask, configuredMarkets } =
-    useLoaderData<typeof loader>();
+export type CarrierServiceLoaderData = {
+  shop: string;
+  registration: {
+    active: boolean;
+    carrierServiceId: string;
+    callbackUrl: string;
+  } | null;
+  config: CarrierServiceConfigData | undefined;
+  credentialStatus: { configured: boolean; lastValidatedAt: string | null };
+  apiKeyDisplayMask: string;
+  configuredMarkets: string[];
+};
+
+export function CarrierServiceContent({
+  data,
+  activeTab: carrierTabProp,
+}: {
+  data: CarrierServiceLoaderData;
+  activeTab: "providers" | "carriers";
+}) {
+  const { shop, registration, config, credentialStatus, apiKeyDisplayMask, configuredMarkets } = data;
   const fetcher = useFetcher();
   const credentialFetcher = useFetcher<typeof action>();
   const prefFetcher = useFetcher<typeof action>();
@@ -557,25 +572,7 @@ export default function CarrierService() {
   );
   const [credentialMessage, setCredentialMessage] = useState<string | null>(null);
   const { t } = useTranslation("carrier-service");
-  const [searchParams] = useSearchParams();
-  const location = useLocation();
-  const tabParam = searchParams.get("tab");
-  const isProvidersPath = location.pathname.includes("/app/settings/providers");
-  const isCarriersPath = location.pathname.includes("/app/settings/carriers");
-  const carrierTab = (tabParam === "providers"
-    ? "providers"
-    : tabParam === "carriers"
-      ? "carriers"
-      : isProvidersPath
-        ? "providers"
-        : isCarriersPath
-          ? "carriers"
-          : "carriers") as "providers" | "carriers";
-  const matches = useMatches();
-  const basePath =
-    (matches.find((m) => (m as { data?: { basePath?: string } }).data?.basePath !== undefined)
-      ?.data as { basePath?: string })?.basePath ?? "";
-  const path = (p: string) => `${basePath}${p}`.replace(/\/+/g, "/") || "/";
+  const carrierTab = carrierTabProp;
 
   const transitKeyMap: Record<TimeRule["transitTime"], string> = {
     same_day: "parameters.onTheSameDay",
@@ -584,27 +581,6 @@ export default function CarrierService() {
     "3_days": "parameters.in3Days",
     custom: "parameters.custom",
   };
-
-  const tabs = [
-    {
-      id: "settings",
-      label: t("tabs.locations"),
-      href: "/app/settings",
-      icon: <span aria-hidden="true">📍</span>,
-    },
-    {
-      id: "providers",
-      label: t("tabs.providers"),
-      href: "/app/settings/providers",
-      icon: <span aria-hidden="true">🛵</span>,
-    },
-    {
-      id: "carriers",
-      label: t("tabs.carriers"),
-      href: "/app/settings/carriers",
-      icon: <span aria-hidden="true">🚚</span>,
-    },
-  ];
 
   useEffect(() => {
     if (registration?.active !== undefined) setEnabled(!!registration.active);
@@ -876,18 +852,7 @@ export default function CarrierService() {
     credentialFetcher.data.ok;
 
   return (
-    <s-page heading={t("pageHeading")} inlineSize="base">
-      <TabBar
-        tabs={tabs}
-        activeId={carrierTab}
-        className={tabStyles.tabsRow}
-        tabClassName={tabStyles.tabItem}
-        activeTabClassName={tabStyles.tabActive}
-        contentClassName={tabStyles.tabContent}
-        iconClassName={tabStyles.tabIcon}
-        activeIconClassName={tabStyles.tabIconActive}
-      />
-      <s-section>
+    <>
         <s-stack direction="block" gap="base">
           {actionError && (
             <s-banner tone="critical" onDismiss={() => setActionError(null)}>
@@ -1249,7 +1214,6 @@ export default function CarrierService() {
             </s-button>
           </s-stack>
         </s-stack>
-      </s-section>
 
       {modalOpen && (
         <div className={styles.modalOverlay} role="dialog" aria-modal="true">
@@ -1725,6 +1689,25 @@ export default function CarrierService() {
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+export default function CarrierServiceRoute() {
+  const data = useLoaderData<typeof loader>() as CarrierServiceLoaderData;
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const isProvidersPath = location.pathname.includes("/providers");
+  const activeTab = (tabParam === "providers" || isProvidersPath
+    ? "providers"
+    : "carriers") as "providers" | "carriers";
+
+  return (
+    <s-page heading="Carrier Service" inlineSize="base">
+      <s-section>
+        <CarrierServiceContent data={data} activeTab={activeTab} />
+      </s-section>
     </s-page>
   );
 }

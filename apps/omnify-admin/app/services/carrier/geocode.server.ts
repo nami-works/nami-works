@@ -1,4 +1,9 @@
+import prisma from "../../db.server";
+
 const GEOCODE_CACHE = new Map<string, { lat: number; lng: number }>();
+
+/** Cache expiry: 90 days. */
+const CACHE_TTL_MS = 90 * 24 * 60 * 60 * 1000;
 
 function cacheKey(address: string): string {
   return address.trim().toLowerCase().replace(/\s+/g, " ");
@@ -6,7 +11,8 @@ function cacheKey(address: string): string {
 
 /**
  * Geocode a single address string to lat/lng using Google Maps Geocoding API.
- * Returns null if key missing, request fails, or no result. Results are cached in memory.
+ * Returns null if key missing, request fails, or no result.
+ * Results are cached in memory AND persisted to DB (survives server restarts).
  */
 export async function geocodeAddress(
   address: string,
@@ -14,9 +20,26 @@ export async function geocodeAddress(
 ): Promise<{ lat: number; lng: number } | null> {
   if (!address?.trim() || !apiKey?.trim()) return null;
   const key = cacheKey(address);
-  const cached = GEOCODE_CACHE.get(key);
-  if (cached) return cached;
 
+  // 1. Check in-memory cache
+  const memCached = GEOCODE_CACHE.get(key);
+  if (memCached) return memCached;
+
+  // 2. Check persistent DB cache
+  try {
+    const dbEntry = await prisma.geocodeCacheEntry.findUnique({
+      where: { queryKey: key },
+    });
+    if (dbEntry && dbEntry.expiresAt > new Date()) {
+      const result = { lat: dbEntry.lat, lng: dbEntry.lng };
+      GEOCODE_CACHE.set(key, result);
+      return result;
+    }
+  } catch {
+    // DB unavailable — continue to Google API
+  }
+
+  // 3. Call Google Geocoding API
   const url = new URL("https://maps.googleapis.com/maps/api/geocode/json");
   url.searchParams.set("address", address);
   url.searchParams.set("key", apiKey);
@@ -34,7 +57,19 @@ export async function geocodeAddress(
     }
     const { lat, lng } = data.results[0].geometry.location;
     const result = { lat, lng };
+
+    // Populate both caches
     GEOCODE_CACHE.set(key, result);
+    try {
+      await prisma.geocodeCacheEntry.upsert({
+        where: { queryKey: key },
+        update: { lat, lng, expiresAt: new Date(Date.now() + CACHE_TTL_MS) },
+        create: { queryKey: key, lat, lng, expiresAt: new Date(Date.now() + CACHE_TTL_MS) },
+      });
+    } catch {
+      // DB write failure is non-fatal
+    }
+
     return result;
   } catch {
     return null;
@@ -98,7 +133,7 @@ const COMPONENTS_CACHE = new Map<string, GeocodedComponents | null>();
 
 /**
  * Geocodes a query string and returns lat/lng plus parsed address_components.
- * Returns null on failure. Results are cached by query string.
+ * Returns null on failure. Results are cached by query string (memory + DB).
  */
 async function geocodeAddressComponents(
   query: string,
@@ -107,6 +142,24 @@ async function geocodeAddressComponents(
   if (!query?.trim() || !apiKey?.trim()) return null;
   const key = query.trim().toLowerCase().replace(/\s+/g, " ");
   if (COMPONENTS_CACHE.has(key)) return COMPONENTS_CACHE.get(key) ?? null;
+
+  // Check persistent DB cache (includes route field)
+  try {
+    const dbEntry = await prisma.geocodeCacheEntry.findUnique({
+      where: { queryKey: key },
+    });
+    if (dbEntry && dbEntry.expiresAt > new Date()) {
+      const result: GeocodedComponents = {
+        lat: dbEntry.lat,
+        lng: dbEntry.lng,
+        route: dbEntry.route ?? undefined,
+      };
+      COMPONENTS_CACHE.set(key, result);
+      return result;
+    }
+  } catch {
+    // DB unavailable — continue to Google API
+  }
 
   const url = new URL("https://maps.googleapis.com/maps/api/geocode/json");
   url.searchParams.set("address", query);
@@ -141,6 +194,18 @@ async function geocodeAddressComponents(
     };
 
     COMPONENTS_CACHE.set(key, result);
+
+    // Persist to DB (include route for address normalization)
+    try {
+      await prisma.geocodeCacheEntry.upsert({
+        where: { queryKey: key },
+        update: { lat, lng, route: result.route ?? null, expiresAt: new Date(Date.now() + CACHE_TTL_MS) },
+        create: { queryKey: key, lat, lng, route: result.route ?? null, expiresAt: new Date(Date.now() + CACHE_TTL_MS) },
+      });
+    } catch {
+      // DB write failure is non-fatal
+    }
+
     return result;
   } catch {
     COMPONENTS_CACHE.set(key, null);

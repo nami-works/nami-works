@@ -1,0 +1,53 @@
+{
+  "pageHeading": "Story-telling",
+  "tabs": {
+    "blogPosts": "Blog posts",
+    "altText": "Alt Text",
+    "places": "Places"
+  },
+  "index": {
+    "seoSection": "Generate SEO blog posts",
+    "seoDescription": "Create structured briefs and generate SEO-optimized blog content using AI. Review drafts and publish to your Shopify blog.",
+    "createBrief": "Create brief",
+    "configureBrand": "Configure brand settings",
+    "getStarted": "Get started",
+    "stepBrand": "(about, tone of voice, editorial guidelines)",
+    "stepBrief": "with themes, keywords, and product mapping",
+    "stepGenerate": "Generate content and review before publishing"
+  },
+  "brief": {
+    "pageHeading": "Create brief",
+    "briefConfig": "Brief configuration",
+    "configureBrandFirst": "Configure your brand in",
+    "beforeGenerating": "before generating.",
+    "generationStarted": "Generation started.",
+    "viewProgress": "View progress",
+    "goToReview": "Go to review",
+    "defineThemes": "Define your themes, product mapping, and keywords. Use valid product handles from your catalog.",
+    "availableProducts": "Available products",
+    "productCount": "{{count}} product(s). Handles:",
+    "briefJson": "Brief (JSON)",
+    "briefStructure": "Brief structure",
+    "requiredKeys": "Required keys: macro_name, themes, seo_themes, brief_summary, products, keywords. Products map theme_key to array of product handles."
+  },
+  "review": {
+    "pageHeading": "Review posts",
+    "generatedContent": "Generated content",
+    "noJobId": "No job ID. Create a brief and generate content from",
+    "status": "Status:",
+    "jobId": "Job ID:",
+    "publish": "Publish",
+    "blogs": "Blogs",
+    "noBlogsFound": "No blogs found. Create a blog in Shopify first.",
+    "publishingTo": "Publishing to: {{blogs}}",
+    "articleCreatedDraft": "Article created as draft"
+  },
+  "altText": {
+    "pageHeading": "Alt Text",
+    "comingSoon": "Alt text features coming soon..."
+  },
+  "places": {
+    "pageHeading": "Places",
+    "comingSoon": "Places features coming soon..."
+  }
+}

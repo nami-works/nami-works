@@ -28,9 +28,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   let admin: Awaited<ReturnType<typeof authenticate.admin>>["admin"];
+  let shop = "unknown";
   try {
     const auth = await authenticate.admin(request);
     admin = auth.admin;
+    shop = auth.session.shop;
   } catch {
     return jsonResponse({ error: "Unauthorized" }, 401);
   }
@@ -57,6 +59,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   monthsIncluded.forEach((m) => {
     monthlyBuckets[m] = 0;
   });
+
+  console.info(`[kpi] loader START shop=${shop} kpi=${kpi} start=${startStr} end=${endStr}`);
 
   if (kpi === "orders") {
     const orders: Array<{ createdAt: string | null }> = [];
@@ -86,6 +90,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       nodes.forEach((n: { createdAt: string | null }) =>
         orders.push({ createdAt: n.createdAt }),
       );
+      console.info(`[kpi] graphql page kpi=orders cursor=${cursor ?? "start"} pageNodes=${nodes.length} runningTotal=${orders.length} hasNextPage=${pageInfo.hasNextPage}`);
       if (!pageInfo.hasNextPage) break;
       cursor = pageInfo.endCursor;
     }
@@ -107,7 +112,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const query = `created_at:>=${startQuery} created_at:<=${endQuery}`;
 
     while (true) {
-      const res = await admin.graphql(
+      const res: Response = await admin.graphql(
         `#graphql
         query CustomersForKpi($first: Int!, $after: String, $query: String) {
           customers(first: $first, after: $after, query: $query) {
@@ -123,12 +128,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           },
         },
       );
-      const json = await res.json();
+      const json: any = await res.json();
       const nodes = json?.data?.customers?.nodes ?? [];
-      const pageInfo = json?.data?.customers?.pageInfo ?? {};
+      const pageInfo: any = json?.data?.customers?.pageInfo ?? {};
       nodes.forEach((n: { createdAt: string | null }) =>
         customers.push({ createdAt: n.createdAt }),
       );
+      console.info(`[kpi] graphql page kpi=customers cursor=${cursor ?? "start"} pageNodes=${nodes.length} runningTotal=${customers.length} hasNextPage=${pageInfo.hasNextPage}`);
       if (!pageInfo.hasNextPage) break;
       cursor = pageInfo.endCursor;
     }
@@ -154,7 +160,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const query = `created_at:>=${startQuery} created_at:<=${endQuery}`;
 
     while (true) {
-      const res = await admin.graphql(
+      const res: Response = await admin.graphql(
         `#graphql
         query OrdersNetSales($first: Int!, $after: String, $query: String) {
           orders(first: $first, after: $after, query: $query) {
@@ -169,9 +175,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           variables: { first: PAGE_SIZE, after: cursor, query },
         },
       );
-      const json = await res.json();
+      const json: any = await res.json();
       const nodes = json?.data?.orders?.nodes ?? [];
-      const pageInfo = json?.data?.orders?.pageInfo ?? {};
+      const pageInfo: any = json?.data?.orders?.pageInfo ?? {};
       nodes.forEach(
         (n: {
           createdAt: string | null;
@@ -182,6 +188,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           orders.push({ createdAt: n.createdAt, total });
         },
       );
+      console.info(`[kpi] graphql page kpi=net_sales cursor=${cursor ?? "start"} pageNodes=${nodes.length} runningTotal=${orders.length} hasNextPage=${pageInfo.hasNextPage}`);
       if (!pageInfo.hasNextPage) break;
       cursor = pageInfo.endCursor;
     }
@@ -198,6 +205,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   const monthlyAverage = monthlyAverageFromBuckets(monthlyBuckets, monthsIncluded);
+  console.info(`[kpi] loader OK shop=${shop} kpi=${kpi} monthlyAverage=${monthlyAverage}`);
 
   const body: Record<string, unknown> = {
     kpi: kpi as KpiType,

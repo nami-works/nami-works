@@ -1,16 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { createPrismaClient } from "@cpg-labs/shared-db";
 
-declare global {
-  // eslint-disable-next-line no-var
-  var prismaGlobal: PrismaClient;
-}
-
-if (process.env.NODE_ENV !== "production") {
-  if (!global.prismaGlobal) {
-    global.prismaGlobal = new PrismaClient();
-  }
-}
-
-const prisma = global.prismaGlobal ?? new PrismaClient();
+const prisma = createPrismaClient();
 
 export default prisma;

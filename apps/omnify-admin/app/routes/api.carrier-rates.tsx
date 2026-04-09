@@ -59,14 +59,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   });
   const config = configRow?.data as CarrierServiceConfigData | undefined;
 
-  const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim();
-  if (!googleMapsApiKey) {
-    return new Response(JSON.stringify({ rates: [] }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
   if (!config?.distanceZones?.length || !config?.enabledProviders?.includes("lalamove")) {
     return new Response(JSON.stringify({ rates: [] }), {
       status: 200,
@@ -74,13 +66,30 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     });
   }
 
-  const originAddr = formatAddressForGeocode({
-    address1: body.rate?.origin?.address1,
+  // Use stored location coordinates for origin (no geocoding needed)
+  const locationId = await getLocationIdForOrigin(shop, {
+    address: body.rate?.origin?.address1,
     city: body.rate?.origin?.city,
     province: body.rate?.origin?.province,
     country: body.rate?.origin?.country,
     postalCode: body.rate?.origin?.postal_code,
   });
+  if (!locationId) {
+    return new Response(JSON.stringify({ rates: [] }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+  const locConfig = await prisma.lalamoveLocationConfig.findUnique({
+    where: { shop_locationId: { shop, locationId } },
+  });
+  const locData = locConfig?.data as { pickupLat?: number; pickupLng?: number } | undefined;
+  const originCoords = locData?.pickupLat != null && locData?.pickupLng != null
+    ? { lat: locData.pickupLat, lng: locData.pickupLng }
+    : null;
+
+  // Geocode destination only as fallback (Shopify doesn't send lat/lng in rate callback)
+  const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim();
   const destAddr = formatAddressForGeocode({
     address1: body.rate?.destination?.address1,
     city: body.rate?.destination?.city,
@@ -88,11 +97,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     country: body.rate?.destination?.country,
     postalCode: body.rate?.destination?.postal_code,
   });
-
-  const [originCoords, destCoords] = await Promise.all([
-    geocodeAddress(originAddr, googleMapsApiKey),
-    geocodeAddress(destAddr, googleMapsApiKey),
-  ]);
+  const destCoords = googleMapsApiKey
+    ? await geocodeAddress(destAddr, googleMapsApiKey)
+    : null;
 
   if (!originCoords || !destCoords) {
     return new Response(JSON.stringify({ rates: [] }), {
@@ -114,21 +121,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   );
 
   if (!matchedZone) {
-    return new Response(JSON.stringify({ rates: [] }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  const locationId = await getLocationIdForOrigin(shop, {
-    address: body.rate?.origin?.address1,
-    city: body.rate?.origin?.city,
-    province: body.rate?.origin?.province,
-    country: body.rate?.origin?.country,
-    postalCode: body.rate?.origin?.postal_code,
-  });
-
-  if (!locationId) {
     return new Response(JSON.stringify({ rates: [] }), {
       status: 200,
       headers: { "Content-Type": "application/json" },

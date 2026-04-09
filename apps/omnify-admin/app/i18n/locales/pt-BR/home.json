@@ -1,0 +1,42 @@
+{
+  "pageHeading": "Início",
+  "sections": {
+    "functions": "Funcionalidades",
+    "ideasAndHelpers": "Ideias e auxiliares"
+  },
+  "cards": {
+    "localDelivery": {
+      "title": "Entrega local",
+      "description": "Planeje e atribua rotas de entrega local. Visualize pedidos no mapa, associe-os a rotas e organize zonas de entrega eficientes para seus clientes."
+    },
+    "salesGoals": {
+      "title": "Metas de vendas",
+      "description": "Defina metas mensais de vendas por localização e acompanhe o desempenho real. Monitore KPIs, rankings e cumprimento de metas em todas as suas lojas."
+    },
+    "retailExpansion": {
+      "title": "Expansão de varejo",
+      "description": "Identifique as melhores localizações para expandir o varejo. Classifique pontos potenciais por proximidade do cliente e impacto estimado na receita."
+    },
+    "priceTags": {
+      "title": "Etiquetas de preço",
+      "description": "Atribua automaticamente etiquetas de desconto aos produtos com base em reduções de preço. Configure tags baseadas em metaobjetos e faixas de desconto."
+    },
+    "storytelling": {
+      "title": "Story-telling",
+      "description": "Gere conteúdo de blog otimizado para SEO usando IA. Crie briefings de conteúdo, revise rascunhos da IA e publique diretamente no seu blog Shopify."
+    },
+    "settings": {
+      "title": "Configurações",
+      "description": "Configure locais de entrega, configurações de despacho Lalamove, serviços de transportadora e tarifas de frete para sua loja."
+    },
+    "productLaunches": {
+      "title": "Lançamentos de produtos",
+      "description": "Acompanhe metas de receita e unidades para lançamentos de novos produtos. Compare resultados com benchmarks e segmente por tag, localização ou canal."
+    },
+    "uiElements": {
+      "title": "Elementos de UI",
+      "description": "Navegue por exemplos interativos de componentes web Polaris usados neste app. Útil para referência de desenvolvimento e testes."
+    }
+  },
+  "goTo": "Ir para {{title}}"
+}

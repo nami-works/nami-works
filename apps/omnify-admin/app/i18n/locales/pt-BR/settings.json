@@ -1,0 +1,26 @@
+{
+  "pageHeading": "Configurações",
+  "tabs": {
+    "locations": "Localizações",
+    "providers": "Provedores",
+    "carriers": "Transportadoras"
+  },
+  "locationSettings": {
+    "title": "Configurações de localização",
+    "savedSuccess": "Configurações de localização salvas com sucesso.",
+    "selectLocation": "-selecione uma localização-",
+    "selectMarket": "-selecione o mercado-",
+    "saveSettings": "Salvar configurações"
+  },
+  "labels": {
+    "location": "Localização",
+    "market": "Mercado",
+    "city": "Cidade",
+    "locationName": "Nome da localização",
+    "locationPhone": "Telefone da localização",
+    "locationAddress": "Endereço da localização",
+    "locationDetails": "Detalhes da localização (número da loja, etc)",
+    "pickupInstructions": "Instruções de coleta",
+    "preferredServiceType": "Tipo de serviço preferido"
+  }
+}

@@ -35,6 +35,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     ...currentShops.map((r) => r.shop),
   ]);
 
+  console.info(`[retail-analytics-cron] triggered shops=${shops.size}`);
+
   return new Response(
     JSON.stringify({
       ok: true,

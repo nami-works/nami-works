@@ -48,6 +48,11 @@ import type {
   LocationWithStats,
   SyncMeta,
 } from "../retail-footprint/analytics-queries.server";
+import {
+  classifyLocations,
+  computeOverviewStats,
+} from "../retail-footprint/overview-stats.server";
+import type { OverviewStats } from "../retail-footprint/overview-stats.server";
 
 /** Client-safe copy — avoids importing the .server module into client code. */
 const KM_PER_MI = 1.60934;
@@ -78,6 +83,7 @@ type LoaderData = {
   cityRankings: CityRanking[];
   syncStatus: "idle" | "running" | "failed";
   syncError: string | null;
+  syncWarning: string | null;
   syncPhase: string | null;
   syncProgressCount: number | null;
   syncStartedAt: string | null;
@@ -481,6 +487,13 @@ const fetchAllOrders = async (admin: any, shop: string, since?: string) => {
                 provinceCode
                 countryCode
               }
+              fulfillmentOrders(first: 1) {
+                nodes {
+                  assignedLocation {
+                    location { id }
+                  }
+                }
+              }
             }
             pageInfo {
               hasNextPage
@@ -505,11 +518,20 @@ const fetchAllOrders = async (admin: any, shop: string, since?: string) => {
         provinceCode: string | null;
         countryCode: string | null;
       } | null;
+      fulfillmentOrders?: {
+        nodes: Array<{
+          assignedLocation: {
+            location: { id: string } | null;
+          };
+        }>;
+      } | null;
     }>;
 
     const pageBatch: typeof orders = [];
     nodes.forEach((node) => {
       if (!node.shippingAddress?.city?.trim()) return;
+      const fulfillmentLocationId = node.fulfillmentOrders?.nodes?.[0]
+        ?.assignedLocation?.location?.id ?? null;
       pageBatch.push({
         id: node.id,
         name: node.name,
@@ -525,6 +547,7 @@ const fetchAllOrders = async (admin: any, shop: string, since?: string) => {
           : null,
         currencyCode: node.currentTotalPriceSet?.shopMoney.currencyCode ?? null,
         createdAt: node.createdAt ?? null,
+        fulfillmentLocationId,
       });
     });
     orders.push(...pageBatch);
@@ -543,6 +566,7 @@ const fetchAllOrders = async (admin: any, shop: string, since?: string) => {
           totalAmount: o.totalAmount,
           currencyCode: o.currencyCode,
           createdAt: o.createdAt,
+          fulfillmentLocationId: o.fulfillmentLocationId,
         })),
       ).catch((err) => {
         console.warn(`[retail-footprint:sync] upsertRetailOrders page SKIP shop=${shop} page=${pageCount}`, err);
@@ -624,15 +648,21 @@ export const loader = async ({
   const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() || "";
   const mapsMapId = process.env.GOOGLE_MAPS_MAP_ID?.trim() || "";
 
-  console.info(`[retail-footprint] loader shop=${shop} syncStatus=${syncMeta.status} heatmapBuckets=${heatmapBuckets.length} cityRankings=${cityRankings.length} lastSynced=${syncMeta.lastSyncedAt ?? "?"}`);
+  // If sync failed but existing data is available, downgrade to idle so the UI stays functional
+  const hasExistingData = heatmapBuckets.length > 0 || (syncMeta.totalOrders != null && syncMeta.totalOrders > 0);
+  const effectiveStatus = syncMeta.status === "failed" && hasExistingData ? "idle" : syncMeta.status;
+  const syncWarning = syncMeta.status === "failed" && hasExistingData ? (syncMeta.errorMessage ?? null) : null;
+
+  console.info(`[retail-footprint] loader shop=${shop} syncStatus=${syncMeta.status}→${effectiveStatus} heatmapBuckets=${heatmapBuckets.length} cityRankings=${cityRankings.length} lastSynced=${syncMeta.lastSyncedAt ?? "?"}`);
 
   return {
     locations,
     locationSets,
     heatmapBuckets,
     cityRankings,
-    syncStatus: syncMeta.status,
-    syncError: syncMeta.status === "failed" ? (syncMeta.errorMessage ?? null) : null,
+    syncStatus: effectiveStatus,
+    syncError: effectiveStatus === "failed" ? (syncMeta.errorMessage ?? null) : null,
+    syncWarning,
     syncPhase: syncMeta.phase,
     syncProgressCount: syncMeta.progressCount,
     syncStartedAt: syncMeta.startedAt,
@@ -706,8 +736,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       locationsToSave = await readLocations(shop);
     }
     const sets = await readLocationSets(shop);
+    const clientSetId = String(formData.get("setId") || "").trim();
     const nextSet: LocationSet = {
-      id: `set-${Date.now()}`,
+      id: clientSetId || `set-${Date.now()}`,
       name: setName,
       locations: locationsToSave,
       createdAt: new Date().toISOString(),
@@ -830,13 +861,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       dateRange = { start, end: endDate };
     }
     console.info(`[retail-footprint] load-project-stats shop=${shop} setId=${setId} locations=${set.locations.length} radii=${radii.join(",")}`);
-    const projectStats = await getProjectRadiusStats(
-      shop,
-      set.locations.map((loc) => ({ id: loc.id, name: loc.name, latitude: loc.latitude, longitude: loc.longitude })),
-      radii,
-      dateRange,
-    );
-    return { ok: true, intent: "load-project-stats", projectStats };
+    const [projectStats, projectStatsConfig] = await Promise.all([
+      getProjectRadiusStats(
+        shop,
+        set.locations.map((loc) => ({ id: loc.id, name: loc.name, latitude: loc.latitude, longitude: loc.longitude })),
+        radii,
+        dateRange,
+      ),
+      readStatsConfig(shop, setId),
+    ]);
+    return { ok: true, intent: "load-project-stats", projectStats, projectStatsConfig };
   }
 
   const contentType = request.headers.get("content-type") ?? "";
@@ -909,6 +943,36 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return { ok: true };
   }
 
+  if (intent === "fetch-overview-stats") {
+    const period = parseInt(String(formData.get("period") || "365"), 10);
+    try {
+      const locationsResponse = await admin.graphql(
+        `#graphql
+        query LocationsForOverview {
+          locations(first: 50) {
+            nodes {
+              id
+              name
+              address { city }
+              localPickupSettingsV2 { instructions }
+            }
+          }
+        }`,
+      );
+      const locationsJson = await locationsResponse.json();
+      const rawLocations = locationsJson.data?.locations?.nodes ?? [];
+
+      const classified = classifyLocations(rawLocations);
+      const overviewStats = await computeOverviewStats(shop, period, classified);
+
+      console.info(`[retail-footprint:overview] stats OK shop=${shop} period=${period}d`);
+      return { ok: true, intent: "fetch-overview-stats", overviewStats };
+    } catch (err) {
+      console.error("[retail-footprint:overview] stats FAILED", err);
+      return { ok: false, intent: "fetch-overview-stats", error: "Failed to compute overview stats" };
+    }
+  }
+
   return { ok: false, error: "Unknown action." };
 };
 
@@ -920,6 +984,7 @@ export default function RetailLocatorRoute() {
     cityRankings: loaderCityRankings,
     syncStatus,
     syncError,
+    syncWarning,
     syncPhase,
     syncProgressCount,
     syncStartedAt,
@@ -954,6 +1019,18 @@ export default function RetailLocatorRoute() {
     }, 5000);
     return () => clearInterval(timer);
   }, [syncStatus]);
+
+  // Auto-incremental sync: if data is stale (> 6h), trigger background sync on mount
+  const STALE_THRESHOLD_MS = 6 * 60 * 60 * 1000; // 6 hours
+  useEffect(() => {
+    if (syncStatus !== "idle") return;
+    if (!syncLastSyncedAt) return; // no previous sync — don't auto-trigger (user should do first sync manually)
+    const elapsed = Date.now() - new Date(syncLastSyncedAt).getTime();
+    if (elapsed > STALE_THRESHOLD_MS) {
+      console.info(`[retail-footprint] auto-sync: data stale (${Math.round(elapsed / 3600000)}h), triggering incremental sync`);
+      fetcher.submit({ intent: "sync-analytics" }, { method: "post" });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [localLocationSets, setLocalLocationSets] = useState<LocationSet[]>(loaderLocationSets);
   useEffect(() => { setLocalLocationSets(loaderLocationSets); }, [loaderLocationSets]);
   const [statsConfigApplied, setStatsConfigApplied] = useState<StatsConfig>(loaderStatsConfig);
@@ -966,6 +1043,7 @@ export default function RetailLocatorRoute() {
     latitude: number;
     longitude: number;
     city?: string | null;
+    province?: string | null;
     neighborhood?: string | null;
   } | null>(null);
   const newProjectAutocompleteContainerRef = useRef<HTMLDivElement | null>(null);
@@ -991,7 +1069,7 @@ export default function RetailLocatorRoute() {
   const overviewZoomListener = useRef<any>(null);
   const overviewIdleListener = useRef<any>(null);
   const overviewIdleDebounce = useRef<number | null>(null);
-  const handleAddLocationRef = useRef<(n: string, p: { latitude: number; longitude: number; city: string | null; neighborhood: string | null }) => void>(() => {});
+  const handleAddLocationRef = useRef<(n: string, p: { latitude: number; longitude: number; city: string | null; province?: string | null; neighborhood: string | null }) => void>(() => {});
   const [mapsLoadError, setMapsLoadError] = useState<string | null>(null);
   const [setName, setSetName] = useState("");
   const [showSelectionMap, setShowSelectionMap] = useState(false);
@@ -1005,7 +1083,59 @@ export default function RetailLocatorRoute() {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [pendingLocations, setPendingLocations] = useState<RetailLocation[]>([]);
   const [showNationalViewReset, setShowNationalViewReset] = useState(false);
-  const [storedCityName, setStoredCityName] = useState<string | null>(null);
+
+  // ── Overview stats strip ──────────────────────────────────────────────────
+  const overviewFetcher = useFetcher();
+  const [overviewPeriod, setOverviewPeriod] = useState(365);
+  const [overviewStats, setOverviewStats] = useState<OverviewStats | null>(null);
+  const isLoadingOverview = overviewFetcher.state !== "idle";
+
+  useEffect(() => {
+    if (syncStatus === "idle" && syncTotalOrders && syncTotalOrders > 0) {
+      overviewFetcher.submit(
+        { intent: "fetch-overview-stats", period: String(overviewPeriod) },
+        { method: "POST" },
+      );
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const data = overviewFetcher.data as { ok: boolean; intent?: string; overviewStats?: OverviewStats } | undefined;
+    if (data?.ok && data?.intent === "fetch-overview-stats" && data?.overviewStats) {
+      setOverviewStats(data.overviewStats);
+    }
+  }, [overviewFetcher.data]);
+
+  const [row1DrillDown, setRow1DrillDown] = useState<"revenue" | "orders" | "customers" | null>(null);
+  const [row3DrillDown, setRow3DrillDown] = useState<"pareto" | "channel" | "projection" | null>(null);
+  const [monthlyAvg, setMonthlyAvg] = useState(false);
+
+  const monthsInPeriod = Math.max(1, Math.round(overviewPeriod / 30));
+  const applyAvg = (value: number) => monthlyAvg ? Math.round(value / monthsInPeriod) : value;
+
+  const handleRow1CardClick = (metric: "revenue" | "orders" | "customers") => {
+    setRow1DrillDown((prev) => (prev === metric ? null : metric));
+    setRow3DrillDown(null);
+  };
+  const handleRow3CardClick = (card: "pareto" | "channel" | "projection") => {
+    setRow3DrillDown((prev) => (prev === card ? null : card));
+    setRow1DrillDown(null);
+  };
+
+  const handleOverviewPeriodChange = (newPeriod: number) => {
+    setOverviewPeriod(newPeriod);
+    overviewFetcher.submit(
+      { intent: "fetch-overview-stats", period: String(newPeriod) },
+      { method: "POST" },
+    );
+  };
+
+  const formatNumberCompact = (n: number): string => {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+    if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+    return String(n);
+  };
+
   const [deleteConfirmSetId, setDeleteConfirmSetId] = useState<string | null>(null);
   const [editingSetId, setEditingSetId] = useState<string | null>(null);
   const [editingSetName, setEditingSetName] = useState("");
@@ -1114,6 +1244,22 @@ export default function RetailLocatorRoute() {
   const rankingsFetcher = useFetcher();
   const [cityRankings, setCityRankings] = useState<CityRanking[]>(loaderCityRankings);
   useEffect(() => { setCityRankings(loaderCityRankings); }, [loaderCityRankings]);
+
+  // Build canonical city name lookup from cityRankings (same source as legacy bar chart)
+  const cityNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const r of cityRankings) {
+      map.set(r.cityNorm, r.city);
+    }
+    return map;
+  }, [cityRankings]);
+  const canonCity = (cityDisplay: string, cityNorm?: string): string => {
+    if (cityNorm && cityNameMap.has(cityNorm)) return cityNameMap.get(cityNorm)!;
+    for (const [, display] of cityNameMap) {
+      if (display.toLowerCase() === cityDisplay.toLowerCase()) return display;
+    }
+    return cityDisplay;
+  };
   useEffect(() => {
     if (rankingsFetcher.state === "idle" && (rankingsFetcher.data as any)?.intent === "refresh-rankings") {
       setCityRankings((rankingsFetcher.data as any).cityRankings ?? []);
@@ -1126,6 +1272,12 @@ export default function RetailLocatorRoute() {
   useEffect(() => {
     if (projectStatsFetcher.state === "idle" && (projectStatsFetcher.data as any)?.intent === "load-project-stats") {
       setProjectStats((projectStatsFetcher.data as any).projectStats ?? []);
+      // Apply per-project stats config if available
+      const cfg = (projectStatsFetcher.data as any).projectStatsConfig as StatsConfig | undefined;
+      if (cfg) {
+        setStatsConfigApplied(cfg);
+        setStatsConfigDraft(cfg);
+      }
     }
   }, [projectStatsFetcher.state, projectStatsFetcher.data]);
 
@@ -1464,7 +1616,7 @@ export default function RetailLocatorRoute() {
         overviewMarkers.current.forEach((marker) => (marker.map = null));
         overviewMarkers.current = [];
 
-        // If a project is loaded, show only that project's locations with sort-based medals
+        // Show markers only for loaded project locations (standalone locations are not rendered)
         const markersSource = loadedProjectId && sortedLoadedMetrics.length > 0
           ? sortedLoadedMetrics.map((loc, idx) => ({
               name: loc.name,
@@ -1472,12 +1624,7 @@ export default function RetailLocatorRoute() {
               longitude: loc.longitude,
               medal: idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "📍",
             }))
-          : locations.map((loc, idx) => ({
-              name: loc.name,
-              latitude: loc.latitude,
-              longitude: loc.longitude,
-              medal: idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "📍",
-            }));
+          : [];
 
         markersSource.forEach((location) => {
           if (!AdvancedMarkerElement) return;
@@ -1549,17 +1696,6 @@ export default function RetailLocatorRoute() {
             });
             overviewMapInstance.current.fitBounds(bounds, { top: 48, right: 48, bottom: 48, left: 48 });
           }
-        } else if (locations.length > 0) {
-          const bounds = new googleMaps.LatLngBounds();
-          locations.forEach((location) => {
-            bounds.extend({ lat: location.latitude, lng: location.longitude });
-          });
-          overviewMapInstance.current.fitBounds(bounds, {
-            top: 48,
-            right: 48,
-            bottom: 48,
-            left: 48,
-          });
         }
       })
       .catch((error) => {
@@ -1575,7 +1711,6 @@ export default function RetailLocatorRoute() {
   }, [
     mapsApiKey,
     mapsMapId,
-    locations,
     showSelectionMap,
     heatmapPoints,
     localScalingApplied,
@@ -1620,12 +1755,16 @@ export default function RetailLocatorRoute() {
           (c: any) => c.types?.includes("locality") || c.types?.includes("administrative_area_level_2"),
         );
         const city = cityComponent?.longText ?? cityComponent?.shortText ?? null;
+        const provinceComponent = (place.addressComponents as any[])?.find(
+          (c: any) => c.types?.includes("administrative_area_level_1"),
+        );
+        const province = provinceComponent?.longText ?? provinceComponent?.shortText ?? null;
         const neighborhoodComponent = (place.addressComponents as any[])?.find(
           (c: any) => c.types?.includes("sublocality") || c.types?.includes("sublocality_level_1") || c.types?.includes("neighborhood"),
         );
         const neighborhood = neighborhoodComponent?.longText ?? neighborhoodComponent?.shortText ?? null;
-        setSelectedPoint({ latitude: lat, longitude: lng, city, neighborhood });
-        handleAddLocationRef.current(displayName, { latitude: lat, longitude: lng, city, neighborhood });
+        setSelectedPoint({ latitude: lat, longitude: lng, city, province, neighborhood });
+        handleAddLocationRef.current(displayName, { latitude: lat, longitude: lng, city, province, neighborhood });
         if (selectionMapInstance.current && selectionMarker.current) {
           selectionMarker.current.position = { lat, lng };
         } else if (
@@ -1723,7 +1862,7 @@ export default function RetailLocatorRoute() {
 
   const handleAddLocation = (
     overrideName?: string,
-    overridePoint?: { latitude: number; longitude: number; city: string | null; neighborhood: string | null },
+    overridePoint?: { latitude: number; longitude: number; city: string | null; province?: string | null; neighborhood: string | null },
   ) => {
     const name = overrideName ?? locationName;
     const point = overridePoint ?? selectedPoint;
@@ -1734,6 +1873,7 @@ export default function RetailLocatorRoute() {
       latitude: point.latitude,
       longitude: point.longitude,
       city: point.city ?? null,
+      province: point.province ?? null,
       neighborhood: point.neighborhood ?? null,
       createdAt: new Date().toISOString(),
     };
@@ -1760,6 +1900,7 @@ export default function RetailLocatorRoute() {
       latitude: selectedPoint.latitude,
       longitude: selectedPoint.longitude,
       city: selectedPoint.city ?? null,
+      province: selectedPoint.province ?? null,
       neighborhood: selectedPoint.neighborhood ?? null,
       createdAt: new Date().toISOString(),
     };
@@ -1795,15 +1936,34 @@ export default function RetailLocatorRoute() {
   };
 
   const handleSaveCustomizeStats = () => {
-    const next = { ...statsConfigDraft };
-    setStatsConfigApplied(next);
+    // Sort radii by value ascending so columns display in order
+    const sorted = { ...statsConfigDraft, radii: [...statsConfigDraft.radii].sort((a, b) => a.value - b.value) };
+    setStatsConfigApplied(sorted);
+    setStatsConfigDraft(sorted);
     const fd = new FormData();
     fd.append("intent", "save-stats-config");
     fd.append("setId", loadedProjectId ?? "");
-    fd.append("config", JSON.stringify(next));
+    fd.append("config", JSON.stringify(sorted));
     fetcher.submit(fd, { method: "post" });
     const modal = document.getElementById("customize-stats-modal") as HTMLElement | null;
     modal?.removeAttribute("open");
+    // Re-fetch project stats with updated radii
+    if (loadedProjectId) {
+      // Use sorted radii for the fetch (loadedRadii memo hasn't updated yet)
+      const radii = sorted.radii.filter((r) => r.enabled).map((r) => r.value);
+      if (sorted.customRadiusKm != null && !radii.includes(sorted.customRadiusKm)) {
+        radii.push(sorted.customRadiusKm);
+      }
+      radii.sort((a, b) => a - b);
+      const { startMonth, endMonth } = getMonthRange(dateRangeApplied);
+      const statsFd = new FormData();
+      statsFd.append("intent", "load-project-stats");
+      statsFd.append("setId", loadedProjectId);
+      statsFd.append("radii", JSON.stringify(radii));
+      if (startMonth) statsFd.append("startMonth", startMonth);
+      if (endMonth) statsFd.append("endMonth", endMonth);
+      projectStatsFetcher.submit(statsFd, { method: "post" });
+    }
   };
 
   const handleResetCustomizeStats = () => {
@@ -1857,11 +2017,27 @@ export default function RetailLocatorRoute() {
 
   const handleSaveSet = () => {
     if (!setName.trim() || pendingLocations.length === 0) return;
+    const newSetId = `set-${Date.now()}`;
+    const newSet: LocationSet = {
+      id: newSetId,
+      name: setName.trim(),
+      locations: [...pendingLocations],
+      createdAt: new Date().toISOString(),
+    };
     const formData = new FormData();
     formData.append("intent", "save-location-set");
+    formData.append("setId", newSetId);
     formData.append("setName", setName.trim());
     formData.append("locations", JSON.stringify(pendingLocations));
     fetcher.submit(formData, { method: "post" });
+    // Optimistically add to sidebar
+    setLocalLocationSets((prev) => [...prev, newSet]);
+    // Auto-load the newly created project in focused layout
+    setLoadedProjectId(newSetId);
+    fetchProjectStats(newSetId);
+    setIsHeatmapExpanded(true);
+    setCitiesCollapsed(true);
+    setProjectsCollapsed(true);
     setSetName("");
     setPendingLocations([]);
   };
@@ -2198,8 +2374,15 @@ export default function RetailLocatorRoute() {
                 commandFor="save-project-modal"
                 command="--show"
                 onClick={() => {
-                  if (storedCityName?.trim()) {
-                    setSetName(storedCityName.trim());
+                  // Smart pre-fill: single city → city, multi-city single province → province, else city1 x city2 x ...
+                  const cities = [...new Set(pendingLocations.map((l) => l.city).filter(Boolean))] as string[];
+                  const provinces = [...new Set(pendingLocations.map((l) => l.province).filter(Boolean))] as string[];
+                  if (cities.length === 1) {
+                    setSetName(cities[0]);
+                  } else if (cities.length > 1 && provinces.length === 1) {
+                    setSetName(provinces[0]);
+                  } else if (cities.length > 1) {
+                    setSetName(cities.join(" x "));
                   }
                 }}
               >
@@ -2385,19 +2568,17 @@ export default function RetailLocatorRoute() {
             {/* Column 1: Radii */}
             <div>
               <s-stack direction="block" gap="base">
-                <div className={styles.radiiHeaderRow}>
-                  <s-text type="strong">{t("projects.radiiHeader")}</s-text>
-                  <s-select
-                    value={statsConfigDraft.radiusUnit ?? "km"}
-                    onChange={(e: Event) => {
-                      const unit = (e.currentTarget as HTMLSelectElement).value as "km" | "mi";
-                      setStatsConfigDraft((prev) => ({ ...prev, radiusUnit: unit }));
-                    }}
-                  >
-                    <s-option value="km">km</s-option>
-                    <s-option value="mi">mi</s-option>
-                  </s-select>
-                </div>
+                <s-text type="strong">{t("projects.radiiHeader")}</s-text>
+                <s-select
+                  value={statsConfigDraft.radiusUnit ?? "km"}
+                  onChange={(e: Event) => {
+                    const unit = (e.currentTarget as HTMLSelectElement).value as "km" | "mi";
+                    setStatsConfigDraft((prev) => ({ ...prev, radiusUnit: unit }));
+                  }}
+                >
+                  <s-option value="km">km</s-option>
+                  <s-option value="mi">mi</s-option>
+                </s-select>
                 {(() => {
                   const unit = statsConfigDraft.radiusUnit ?? "km";
                   const toDisplay = (km: number) => unit === "mi" ? +(km / KM_PER_MI).toFixed(2) : km;
@@ -2419,7 +2600,6 @@ export default function RetailLocatorRoute() {
                             }));
                           }}
                         />
-                        <span className={styles.radiusLabel}>{t("projects.radiusN", { n: i + 1 })}</span>
                         <div className={styles.radiusInputWrap}>
                           <button
                             type="button"
@@ -2862,6 +3042,14 @@ export default function RetailLocatorRoute() {
       })() : syncStatus === "failed" ? (
         <s-banner tone="critical" heading={t("banners.analyticsIssue")}>
           {syncError}
+          <div style={{ marginTop: 8 }}>
+            <s-button
+              variant="secondary"
+              onClick={() => fetcher.submit({ intent: "sync-analytics" }, { method: "post" })}
+            >
+              Retry sync
+            </s-button>
+          </div>
         </s-banner>
       ) : null}
       {syncStatus === "idle" && loaderHeatmapBuckets.length === 0 && cityRankings.length === 0 && !syncTotalOrders ? (
@@ -2869,6 +3057,382 @@ export default function RetailLocatorRoute() {
           {t("banners.noGeocodedDescription")}
         </s-banner>
       ) : null}
+
+      {/* Sync warning (non-blocking — last sync failed but data exists) */}
+      {syncWarning && syncStatus === "idle" && (
+        <s-banner tone="warning" heading="Last sync encountered an issue" dismissible>
+          {syncWarning}. Data shown may be slightly outdated.
+        </s-banner>
+      )}
+
+      {/* ── Overview Stats Strip ── */}
+      {syncStatus === "idle" && syncTotalOrders && syncTotalOrders > 0 && !isHeatmapExpanded && (
+        <div className={styles.overviewStrip}>
+          <div className={styles.overviewHeader}>
+            <h2 className={styles.overviewHeading}>{t("overview.heading")}</h2>
+            <div className={styles.overviewControls}>
+              <label className={styles.overviewToggle}>
+                <s-checkbox
+                  checked={monthlyAvg || undefined}
+                  onChange={() => setMonthlyAvg((prev) => !prev)}
+                />
+                <span>{t("overview.monthlyAvg")}</span>
+              </label>
+            <select
+              className={styles.overviewPeriodSelect}
+              value={String(overviewPeriod)}
+              disabled={isLoadingOverview}
+              onChange={(e) => handleOverviewPeriodChange(Number(e.target.value))}
+            >
+              <option value="30">{t("overview.last30")}</option>
+              <option value="90">{t("overview.last90")}</option>
+              <option value="365">{t("overview.last12m")}</option>
+              <option value="730">{t("overview.last24m")}</option>
+            </select>
+            </div>
+          </div>
+          <div className={styles.overviewSyncRow}>
+            <span className={styles.overviewSyncText}>
+              {syncLastSyncedAt
+                ? t("top15.lastUpdated", { date: new Date(syncLastSyncedAt).toLocaleDateString(userLocale) })
+                : ""}
+            </span>
+            <span
+              className={styles.overviewSyncLink}
+              role="button"
+              tabIndex={0}
+              onClick={() => fetcher.submit({ intent: "sync-analytics" }, { method: "post" })}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fetcher.submit({ intent: "sync-analytics" }, { method: "post" }); }}
+            >
+              Sync
+            </span>
+          </div>
+
+          {/* ── Row 1: Online reach (3 clickable cards) ── */}
+          <div className={`${styles.overviewRowLabel} ${styles.overviewRowLabelFirst}`}>
+            {overviewStats
+              ? t("overview.onlineReach", { cities: overviewStats.citiesReached })
+              : t("overview.onlineReachDefault")}
+          </div>
+          <div className={styles.overviewGrid}>
+            {/* Card 1: Revenue */}
+            <div
+              className={`${styles.overviewBox} ${styles.overviewBoxClickable}${row1DrillDown === "revenue" ? ` ${styles.overviewBoxActive}` : ""}${isLoadingOverview ? ` ${styles.overviewBoxLoading}` : ""}`}
+              role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleRow1CardClick("revenue"); }}
+              onClick={() => handleRow1CardClick("revenue")}
+            >
+              <div className={styles.overviewIconRow}>
+                <span className={styles.overviewIcon}>
+                  <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm.5 4.75a.75.75 0 0 0-1.5 0v.38a2.25 2.25 0 0 0 .25 4.48h1.5a.75.75 0 0 1 0 1.5h-2.25a.75.75 0 0 0 0 1.5h1v.62a.75.75 0 0 0 1.5 0v-.38a2.25 2.25 0 0 0-.25-4.48h-1.5a.75.75 0 0 1 0-1.5h2.25a.75.75 0 0 0 0-1.5h-1v-.62Z" />
+                  </svg>
+                </span>
+              </div>
+              <span className={styles.overviewPrimary}>
+                {overviewStats ? formatCurrencyAbbrev(applyAvg(overviewStats.totalRevenue), overviewStats.currencyCode) : "--"}
+              </span>
+              <span className={styles.overviewLabel}>{t("overview.revenue")}</span>
+            </div>
+
+            {/* Card 2: Orders (with AOV) */}
+            <div
+              className={`${styles.overviewBox} ${styles.overviewBoxClickable}${row1DrillDown === "orders" ? ` ${styles.overviewBoxActive}` : ""}${isLoadingOverview ? ` ${styles.overviewBoxLoading}` : ""}`}
+              role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleRow1CardClick("orders"); }}
+              onClick={() => handleRow1CardClick("orders")}
+            >
+              <div className={styles.overviewIconRow}>
+                <span className={styles.overviewIcon}>
+                  <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M6 2a1 1 0 0 0-1 1v1h-1.5a1.5 1.5 0 0 0-1.5 1.5v11a1.5 1.5 0 0 0 1.5 1.5h13a1.5 1.5 0 0 0 1.5-1.5v-11a1.5 1.5 0 0 0-1.5-1.5h-1.5v-1a1 1 0 0 0-1-1h-8Zm8 2h-8v1h8v-1Zm-8 4.5a.5.5 0 0 0 0 1h8a.5.5 0 0 0 0-1h-8Zm0 3a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5Z" />
+                  </svg>
+                </span>
+              </div>
+              <span className={styles.overviewPrimary}>
+                {overviewStats ? applyAvg(overviewStats.totalOrders).toLocaleString("pt-BR") : "--"}
+              </span>
+              <span className={styles.overviewLabel}>
+                {overviewStats && overviewStats.totalOrders > 0
+                  ? t("overview.ordersAov", { aov: formatCurrencyAbbrev(Math.round(overviewStats.totalRevenue / overviewStats.totalOrders), overviewStats.currencyCode) })
+                  : t("overview.ordersAov", { aov: "--" })}
+              </span>
+            </div>
+
+            {/* Card 3: Customers */}
+            <div
+              className={`${styles.overviewBox} ${styles.overviewBoxClickable}${row1DrillDown === "customers" ? ` ${styles.overviewBoxActive}` : ""}${isLoadingOverview ? ` ${styles.overviewBoxLoading}` : ""}`}
+              role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleRow1CardClick("customers"); }}
+              onClick={() => handleRow1CardClick("customers")}
+            >
+              <div className={styles.overviewIconRow}>
+                <span className={styles.overviewIcon}>
+                  <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor" aria-hidden="true">
+                    <path d="M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-6 6.5a6 6 0 0 1 12 0 .5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5Z" />
+                  </svg>
+                </span>
+              </div>
+              <span className={styles.overviewPrimary}>
+                {overviewStats ? overviewStats.totalCustomers.toLocaleString("pt-BR") : "--"}
+              </span>
+              <span className={styles.overviewLabel}>{t("overview.customers")}</span>
+            </div>
+          </div>
+
+          {/* ── Row 2: Vertical bar chart drill-down (hidden by default) ── */}
+          {row1DrillDown && overviewStats?.topCities && overviewStats.topCities.length > 0 && (() => {
+            const sortedCities = [...overviewStats.topCities].sort((a, b) => b[row1DrillDown] - a[row1DrillDown]);
+            const maxRaw = sortedCities[0][row1DrillDown];
+            const maxValue = row1DrillDown === "customers" ? maxRaw : applyAvg(maxRaw);
+            return (
+            <div className={styles.drillDown}>
+              <div className={styles.vbarChart}>
+                {sortedCities.map((city, idx) => {
+                  const raw = city[row1DrillDown];
+                  const value = row1DrillDown === "customers" ? raw : applyAvg(raw);
+                  const pct = maxValue > 0 ? (value / maxValue) * 100 : 0;
+                  const label = row1DrillDown === "revenue"
+                    ? formatCurrencyAbbrev(value, overviewStats.currencyCode)
+                    : formatNumberCompact(value);
+                  return (
+                    <div key={city.cityDisplay} className={styles.vbarColumn} style={{ order: idx }}>
+                      <div className={styles.vbarBarArea}>
+                        <span className={styles.vbarValue}>{label}</span>
+                        <div className={styles.vbarBar} style={{ height: `${pct}%` }} />
+                      </div>
+                      <span className={styles.vbarLabel}>{canonCity(city.cityDisplay, city.cityNorm)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            );
+          })()}
+
+          {/* ── Row 3: Footprint breakdown (3 clickable cards) ── */}
+          <div className={styles.overviewRowLabel}>
+            {t("overview.footprintBreakdown")}
+          </div>
+          <div className={styles.overviewGrid}>
+            {/* Card 1: Pareto / Top cities */}
+            <div
+              className={`${styles.overviewBox} ${styles.overviewBoxClickable}${row3DrillDown === "pareto" ? ` ${styles.overviewBoxActive}` : ""}${isLoadingOverview ? ` ${styles.overviewBoxLoading}` : ""}`}
+              role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleRow3CardClick("pareto"); }}
+              onClick={() => handleRow3CardClick("pareto")}
+            >
+              <span className={styles.overviewPrimary}>
+                {overviewStats ? t("overview.paretoTitle", { count: overviewStats.pareto.cityCount }) : "--"}
+              </span>
+              <span className={styles.overviewLabel}>
+                {overviewStats ? t("overview.paretoSubtitle", { revPct: overviewStats.pareto.revenuePercent, custPct: overviewStats.pareto.customerPercent }) : ""}
+              </span>
+            </div>
+
+            {/* Card 2: Channel Mix */}
+            <div
+              className={`${styles.overviewBox} ${styles.overviewBoxClickable}${row3DrillDown === "channel" ? ` ${styles.overviewBoxActive}` : ""}${isLoadingOverview ? ` ${styles.overviewBoxLoading}` : ""}`}
+              role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleRow3CardClick("channel"); }}
+              onClick={() => handleRow3CardClick("channel")}
+            >
+              {overviewStats?.channelMix ? (
+                <>
+                  <span className={styles.overviewPrimary}>{overviewStats.channelMix.storePercent}%</span>
+                  <span className={styles.overviewLabel}>{t("overview.channelStore")}</span>
+                </>
+              ) : (
+                <>
+                  <span className={styles.overviewPrimary}>--</span>
+                  <span className={styles.overviewSecondary}>{t("overview.channelNoData")}</span>
+                </>
+              )}
+            </div>
+
+            {/* Card 3: Projection / Untapped growth */}
+            <div
+              className={`${styles.overviewBox} ${styles.overviewBoxClickable}${row3DrillDown === "projection" ? ` ${styles.overviewBoxActive}` : ""}${isLoadingOverview ? ` ${styles.overviewBoxLoading}` : ""}`}
+              role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleRow3CardClick("projection"); }}
+              onClick={() => handleRow3CardClick("projection")}
+            >
+              {overviewStats?.projection ? (
+                <>
+                  <span className={styles.overviewPrimary}>
+                    {formatCurrencyAbbrev(overviewStats.projection.estimatedRevenue, overviewStats.currencyCode)}
+                  </span>
+                  <span className={styles.overviewLabel}>{t("overview.projectionLabel")}</span>
+                  <span className={styles.overviewSecondary}>
+                    {overviewStats.expansionGap
+                      ? t("overview.projectionSubtitle", { customers: formatNumberCompact(overviewStats.expansionGap.customersWithoutAccess) })
+                      : ""}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className={styles.overviewPrimary}>--</span>
+                  <span className={styles.overviewLabel}>{t("overview.projectionLabel")}</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* ── Row 4.1: Stacked bar chart (Pareto drill-down) ── */}
+          {row3DrillDown === "pareto" && overviewStats?.cityRevenueSplit && overviewStats.cityRevenueSplit.length > 0 && (
+            <div className={styles.drillDown}>
+              <div className={styles.vbarChart}>
+                {overviewStats.cityRevenueSplit.map((city) => {
+                  const adjTotal = applyAvg(city.totalRevenue);
+                  const adjStore = applyAvg(city.storeRevenue);
+                  const adjOnline = adjTotal - adjStore;
+                  const maxVal = applyAvg(overviewStats.cityRevenueSplit![0].totalRevenue);
+                  const totalPct = maxVal > 0 ? (adjTotal / maxVal) * 100 : 0;
+                  const storeFraction = adjTotal > 0 ? adjStore / adjTotal : 0;
+                  const onlineFraction = 1 - storeFraction;
+                  // Estimate pixel height per pile (bar area = 160px)
+                  const barPx = totalPct / 100 * 160;
+                  const storePx = barPx * storeFraction;
+                  const onlinePx = barPx * onlineFraction;
+                  const MIN_LABEL_PX = 24;
+                  return (
+                    <div key={city.cityDisplay} className={styles.vbarColumn}>
+                      <div className={styles.vbarBarArea}>
+                        {/* External labels for piles too small to contain text — rendered ABOVE the bar */}
+                        {storeFraction > 0 && storePx < MIN_LABEL_PX && (
+                          <span className={styles.vbarPileLabelExternal}>{formatCurrencyAbbrev(adjStore, overviewStats.currencyCode)}</span>
+                        )}
+                        {onlinePx < MIN_LABEL_PX && (
+                          <span className={styles.vbarPileLabelExternal}>{formatCurrencyAbbrev(adjOnline, overviewStats.currencyCode)}</span>
+                        )}
+                        <div className={styles.vbarStacked} style={{ height: `${totalPct}%` }}>
+                          {storeFraction > 0 && (
+                            <div className={styles.vbarStackStore} style={{ height: `${storeFraction * 100}%` }}>
+                              {storePx >= MIN_LABEL_PX ? (
+                                <>
+                                  <span className={styles.vbarPileLabel}>{formatCurrencyAbbrev(adjStore, overviewStats.currencyCode)}</span>
+                                  <span className={styles.vbarPileHover}>{city.storePct}%</span>
+                                </>
+                              ) : null}
+                            </div>
+                          )}
+                          <div className={styles.vbarStackOnline} style={{ height: `${onlineFraction * 100}%` }}>
+                            {onlinePx >= MIN_LABEL_PX ? (
+                              <>
+                                <span className={styles.vbarPileLabel}>{formatCurrencyAbbrev(adjOnline, overviewStats.currencyCode)}</span>
+                                <span className={styles.vbarPileHover}>{100 - city.storePct}%</span>
+                              </>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                      <span className={styles.vbarLabel}>{canonCity(city.cityDisplay, city.cityNorm)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className={styles.chartLegend}>
+                <span><span className={styles.legendDot} style={{ background: "#5ecece" }} />Warehouse</span>
+                <span><span className={styles.legendDot} style={{ background: "#d4a8d4" }} />Store</span>
+              </div>
+            </div>
+          )}
+
+          {/* ── Row 4.2: Donut charts (Channel mix drill-down) ── */}
+          {row3DrillDown === "channel" && overviewStats?.cityFulfillmentSplit && overviewStats.cityFulfillmentSplit.length > 0 && (
+            <div className={styles.drillDown}>
+              <div className={`${styles.donutContainer}${overviewStats.cityFulfillmentSplit.length > 3 ? ` ${styles.donutContainerScrollable}` : ""}`}>
+                {overviewStats.cityFulfillmentSplit.map((city) => {
+                  const circumference = 2 * Math.PI * 40;
+                  const storeArc = (city.storePct / 100) * circumference;
+                  const whPct = 100 - city.storePct;
+                  return (
+                    <div key={city.cityDisplay} className={styles.donutCard}>
+                      <span className={styles.donutLabel}>{canonCity(city.cityDisplay, city.cityNorm)}</span>
+                      <div className={styles.donutSvgWrap}>
+                        <svg className={styles.donutSvg} viewBox="0 0 100 100">
+                          <circle className={styles.donutSlice} cx="50" cy="50" r="40" fill="none" strokeWidth="18" stroke="#5ecece"
+                            onMouseEnter={(e) => {
+                              const wrap = (e.currentTarget.parentElement?.parentElement as HTMLElement);
+                              wrap?.querySelector(`.${styles.donutBadgeWarehouse}`)?.classList.add(styles.donutBadgeVisible);
+                            }}
+                            onMouseLeave={(e) => {
+                              const wrap = (e.currentTarget.parentElement?.parentElement as HTMLElement);
+                              wrap?.querySelector(`.${styles.donutBadgeWarehouse}`)?.classList.remove(styles.donutBadgeVisible);
+                            }}
+                          />
+                          <circle className={styles.donutSlice} cx="50" cy="50" r="40" fill="none" strokeWidth="18" stroke="#d4a8d4"
+                            strokeDasharray={`${storeArc} ${circumference}`}
+                            onMouseEnter={(e) => {
+                              const wrap = (e.currentTarget.parentElement?.parentElement as HTMLElement);
+                              wrap?.querySelector(`.${styles.donutBadgeStore}`)?.classList.add(styles.donutBadgeVisible);
+                            }}
+                            onMouseLeave={(e) => {
+                              const wrap = (e.currentTarget.parentElement?.parentElement as HTMLElement);
+                              wrap?.querySelector(`.${styles.donutBadgeStore}`)?.classList.remove(styles.donutBadgeVisible);
+                            }}
+                          />
+                        </svg>
+                        {/* Default labels: percentages (always visible) */}
+                        <span className={`${styles.donutBadgeDefault} ${styles.donutBadgeStore}`}>
+                          {city.storePct}%
+                        </span>
+                        <span className={`${styles.donutBadgeDefault} ${styles.donutBadgeWarehouse}`}>
+                          {whPct}%
+                        </span>
+                        {/* Hover labels: order counts (hidden by default) */}
+                        <span className={`${styles.donutBadge} ${styles.donutBadgeStore}`}>
+                          {formatNumberCompact(city.storeOrders)} orders
+                        </span>
+                        <span className={`${styles.donutBadge} ${styles.donutBadgeWarehouse}`}>
+                          {formatNumberCompact(city.warehouseOrders)} orders
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className={styles.chartLegend}>
+                <span><span className={styles.legendDot} style={{ background: "#d4a8d4" }} />Store</span>
+                <span><span className={styles.legendDot} style={{ background: "#5ecece" }} />Warehouse</span>
+              </div>
+            </div>
+          )}
+
+          {/* ── Row 4.3: Gap cities table (Projection drill-down) ── */}
+          {row3DrillDown === "projection" && overviewStats?.gapCityDetails && overviewStats.gapCityDetails.length > 0 && (
+            <div className={styles.drillDown}>
+              <table className={styles.gapTable}>
+                <thead>
+                  <tr>
+                    <th>{t("overview.tableCity")}</th>
+                    <th>{t("overview.tableRevenue")}</th>
+                    <th>{t("overview.tableCustomers")}</th>
+                    <th>{t("overview.tableOrders")}</th>
+                    <th>{t("overview.tableMalls")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {overviewStats.gapCityDetails.map((city) => {
+                    const maxRev = overviewStats.gapCityDetails![0].revenue;
+                    const barPct = maxRev > 0 ? (city.revenue / maxRev) * 100 : 0;
+                    return (
+                      <tr key={city.cityDisplay}>
+                        <td>{canonCity(city.cityDisplay, city.cityNorm)}</td>
+                        <td className={styles.gapRevenueCell}>
+                          <div className={styles.gapRevenueBar} style={{ width: `${barPct}%` }} />
+                          <span className={styles.gapRevenueText}>
+                            {formatCurrencyAbbrev(city.revenue, overviewStats.currencyCode)}
+                          </span>
+                        </td>
+                        <td>{formatNumberCompact(city.customers)}</td>
+                        <td>{formatNumberCompact(city.orders)}</td>
+                        <td style={{ color: "#8c9196", fontStyle: "italic" }}>
+                          {t("overview.mallsPlaceholder")}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Map + Aside layout (single map DOM, CSS-toggled fullscreen) ── */}
       <div className={isHeatmapExpanded ? styles.fullscreenOverlay : undefined}>
@@ -2905,14 +3469,6 @@ export default function RetailLocatorRoute() {
                   >
                     {t("map.heatmapOptions")}
                   </s-link>
-                  <s-button
-                    variant="primary"
-                    commandFor="new-project-modal"
-                    command="--show"
-                    onClick={handleStartNewProject}
-                  >
-                    {t("projects.newProject")}
-                  </s-button>
                 </div>
               </s-section>
               {/* ── Loaded project table (in main column, below heatmap) ── */}
@@ -2920,6 +3476,7 @@ export default function RetailLocatorRoute() {
                 const loadedRow = projectTableData.find((r) => r.id === loadedProjectId);
                 const loadedSet = locationSets.find((s) => s.id === loadedProjectId);
                 if (!loadedRow || !loadedSet) return null;
+                const isLoadingStats = projectStatsFetcher.state !== "idle";
                 const hasAnyNeighborhood = statsConfigApplied.showNeighborhood && loadedSet.locations.some((loc) => !!loc.neighborhood);
                 const handleSort = (colKey: string) => {
                   if (sortColumn === colKey) {
@@ -2946,10 +3503,31 @@ export default function RetailLocatorRoute() {
                         >
                           {t("projects.customizeStats")}
                         </s-link>
+                        <button
+                          className={styles.closeProjectButton}
+                          onClick={() => {
+                            setLoadedProjectId(null);
+                            setIsHeatmapExpanded(false);
+                            setCitiesCollapsed(false);
+                            setProjectsCollapsed(false);
+                            setProjectStats([]);
+                            resetToNationalView();
+                          }}
+                          aria-label={t("overview.closeProject")}
+                        >
+                          <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" aria-hidden="true">
+                            <path d="M6.707 5.293a1 1 0 0 0-1.414 1.414l3.293 3.293-3.293 3.293a1 1 0 1 0 1.414 1.414l3.293-3.293 3.293 3.293a1 1 0 0 0 1.414-1.414l-3.293-3.293 3.293-3.293a1 1 0 0 0-1.414-1.414l-3.293 3.293-3.293-3.293Z" />
+                          </svg>
+                        </button>
                       </div>
                     </div>
-                    <div className={styles.locationTableWrap}>
-                      <table className={styles.locationTable}>
+                    <div className={styles.locationTableWrap} style={{ position: "relative" }}>
+                      {isLoadingStats && (
+                        <div className={styles.statsSpinnerOverlay}>
+                          <s-spinner size="large" />
+                        </div>
+                      )}
+                      <table className={styles.locationTable} style={isLoadingStats ? { opacity: 0.4, pointerEvents: "none" } : undefined}>
                         <thead>
                           <tr>
                             <th rowSpan={2}>{t("projects.locationName")}</th>
@@ -3089,123 +3667,10 @@ export default function RetailLocatorRoute() {
                 );
               })() : null}
             </div>
-            <div className={isHeatmapExpanded ? styles.fullscreenAssignedPane : styles.campaignAside}>
-                {/* Cities ranking (collapsible) — click heading to toggle, city click collapses */}
-                <div
-                  className={`${styles.collapsibleSectionWrap}${citiesCollapsed ? ` ${styles.collapsed}` : ""}`}
-                  onClick={(e: React.MouseEvent) => {
-                    if ((e.target as HTMLElement).closest?.('button, [role="button"], s-button, s-link, s-select, a, input, select')) return;
-                    setCitiesCollapsed((prev) => !prev);
-                  }}
-                >
-                <s-section heading={t("top15.citiesRanking")}>
-                  {!citiesCollapsed && (
-                    <>
-                      <div className={styles.topCitiesHeaderRow}>
-                        <div className={styles.topCitiesHeaderControls}>
-                          <s-select
-                            label={t("top15.label")}
-                            value={heatmapWeightApplied}
-                            aria-label={t("top15.ariaLabel")}
-                            onChange={(event: Event) => {
-                              const value = (event.currentTarget as HTMLSelectElement).value as HeatmapWeighting;
-                              setHeatmapWeightApplied(value);
-                              if (typeof window !== "undefined") {
-                                window.localStorage.setItem(heatmapOptionsStorageKey, value);
-                              }
-                            }}
-                          >
-                            <s-option value="revenue">{t("top15.revenue")}</s-option>
-                            <s-option value="orders">{t("top15.orders")}</s-option>
-                            <s-option value="customers">{t("top15.customers")}</s-option>
-                          </s-select>
-                        </div>
-                      </div>
-                      <s-box padding="base" borderWidth="base" borderRadius="base">
-                        <s-stack direction="block" gap="small">
-                          <div className={styles.chart}>
-                            {topCitiesByMetric.map((item) => {
-                              const maxVal = topCitiesByMetric[0]
-                                ? (heatmapWeightApplied === "revenue"
-                                    ? topCitiesByMetric[0].revenueMonthlyAverage
-                                    : heatmapWeightApplied === "customers"
-                                      ? topCitiesByMetric[0].customersMonthlyAverage
-                                      : topCitiesByMetric[0].ordersMonthlyAverage)
-                                : 1;
-                              const val =
-                                heatmapWeightApplied === "revenue"
-                                  ? item.revenueMonthlyAverage
-                                  : heatmapWeightApplied === "customers"
-                                    ? item.customersMonthlyAverage
-                                    : item.ordersMonthlyAverage;
-                              const barPct = maxVal > 0 ? (val / maxVal) * 100 : 0;
-                              const displayVal =
-                                heatmapWeightApplied === "revenue"
-                                  ? formatCurrencyCompact(item.revenueMonthlyAverage, item.currencyCode, userLocale)
-                                  : heatmapWeightApplied === "customers"
-                                    ? item.customersMonthlyAverage.toFixed(1)
-                                    : item.ordersMonthlyAverage.toFixed(1);
-                              return (
-                                <div key={item.city} className={styles.chartRow}>
-                                  <span className={styles.chartLabel} title={item.city}>
-                                    {item.latitude != null && item.longitude != null ? (
-                                      <s-link
-                                        onClick={() => {
-                                          setStoredCityName(item.city);
-                                          if (item.latitude != null && item.longitude != null) {
-                                            setLastClickedCity({ lat: item.latitude, lng: item.longitude, city: item.city });
-                                          }
-                                          focusCity(item.latitude, item.longitude);
-                                          setCitiesCollapsed(true);
-                                        }}
-                                      >
-                                        {item.city}
-                                      </s-link>
-                                    ) : (
-                                      item.city
-                                    )}
-                                  </span>
-                                  <div className={styles.chartBarTrack}>
-                                    <div className={styles.chartBar} style={{ width: `${barPct}%` }} />
-                                  </div>
-                                  <span className={styles.chartValue}>{displayVal}</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <div className={styles.rankFooter}>
-                            <s-text color="subdued">{t("top15.monthlyAverage")}</s-text>
-                          </div>
-                          <div className={styles.updateRow}>
-                            <s-text color="subdued">
-                              {syncStatus === "running"
-                                ? t("top15.syncing")
-                                : syncLastSyncedAt
-                                  ? t("top15.lastUpdated", { date: new Date(syncLastSyncedAt).toLocaleDateString(userLocale) })
-                                  : t("top15.noData")}
-                            </s-text>
-                            <s-link
-                              onClick={() => {
-                                fetcher.submit({ intent: "sync-analytics" }, { method: "post" });
-                              }}
-                            >
-                              {syncStatus === "running" ? "Restart sync" : t("top15.update")}
-                            </s-link>
-                          </div>
-                        </s-stack>
-                      </s-box>
-                    </>
-                  )}
-                </s-section>
-                </div>
-                {/* Projects cards — click heading to toggle, Load/badge click collapses */}
-                <div
-                  className={`${styles.collapsibleSectionWrap}${projectsCollapsed ? ` ${styles.collapsed}` : ""}`}
-                  onClick={(e: React.MouseEvent) => {
-                    if ((e.target as HTMLElement).closest?.('button, [role="button"], s-button, s-link, s-select, a, input, select')) return;
-                    setProjectsCollapsed((prev) => !prev);
-                  }}
-                >
+            {/* Aside only shown in fullscreen expanded mode */}
+            {isHeatmapExpanded && (
+              <div className={styles.fullscreenAssignedPane}>
+                <div className={styles.collapsibleSectionWrap}>
                 <s-section heading={t("projects.heading")}>
                   {projectTableData.length === 0 ? (
                     <s-text color="subdued">{t("projects.noProjectsCreate")}</s-text>
@@ -3231,12 +3696,6 @@ export default function RetailLocatorRoute() {
                               <s-text color="subdued">
                                 {row.locationCount} {t("projects.locations")}
                               </s-text>
-                              <s-text color="subdued">
-                                {t("top15.revenue")}: {formatCurrencyAbbrev(row.revenueMonthlyAverage, row.currencyCode)}/{t("dateRange.units.month")}
-                              </s-text>
-                              <s-text color="subdued">
-                                {row.customersMonthlyAverage.toFixed(0)} {t("top15.customers")} · {row.ordersMonthlyAverage.toFixed(0)} {t("top15.orders")}/{t("dateRange.units.month")}
-                              </s-text>
                             </div>
                             <div className={styles.cardActions}>
                               <s-button
@@ -3258,6 +3717,16 @@ export default function RetailLocatorRoute() {
                     </>
                   ) : (
                     <s-stack direction="block" gap="large">
+                      <div className={styles.asideRowRight}>
+                        <s-button
+                          variant="primary"
+                          commandFor="new-project-modal"
+                          command="--show"
+                          onClick={handleStartNewProject}
+                        >
+                          {t("projects.newProject")}
+                        </s-button>
+                      </div>
                       {projectTableData.map((row) => {
                         const set = locationSets.find((s) => s.id === row.id);
                         return (
@@ -3275,12 +3744,6 @@ export default function RetailLocatorRoute() {
                             <div className={styles.cardInfo}>
                               <s-text color="subdued">
                                 {row.locationCount} {t("projects.locations")}
-                              </s-text>
-                              <s-text color="subdued">
-                                {t("top15.revenue")}: {formatCurrencyAbbrev(row.revenueMonthlyAverage, row.currencyCode)}/{t("dateRange.units.month")}
-                              </s-text>
-                              <s-text color="subdued">
-                                {row.customersMonthlyAverage.toFixed(0)} {t("top15.customers")} · {row.ordersMonthlyAverage.toFixed(0)} {t("top15.orders")}/{t("dateRange.units.month")}
                               </s-text>
                             </div>
                             <div className={styles.cardActions}>
@@ -3316,12 +3779,97 @@ export default function RetailLocatorRoute() {
                       })}
                     </s-stack>
                   )}
+                  <div
+                    className={`${styles.collapseChevron}${projectsCollapsed ? ` ${styles.collapsed}` : ""}`}
+                    onClick={() => setProjectsCollapsed((prev) => !prev)}
+                    role="button"
+                    aria-label="Toggle expansion projects"
+                  >
+                    <span className={styles.chevronIcon}>›</span>
+                  </div>
                 </s-section>
                 </div>
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* ── Expansion Projects (full-width below heatmap) ── */}
+      {!isHeatmapExpanded && (
+        <div className={styles.projectsFullWidth}>
+          <s-section heading={t("projects.heading")}>
+            {projectTableData.length === 0 ? (
+              <s-text color="subdued">{t("projects.noProjectsCreate")}</s-text>
+            ) : (
+              <>
+                <div className={styles.projectsGridHeader}>
+                  <s-button
+                    variant="primary"
+                    commandFor="new-project-modal"
+                    command="--show"
+                    onClick={handleStartNewProject}
+                  >
+                    {t("projects.newProject")}
+                  </s-button>
+                </div>
+                <div className={styles.projectsGrid}>
+                  {projectTableData.map((row) => {
+                    const set = locationSets.find((s) => s.id === row.id);
+                    return (
+                      <s-box key={row.id} padding="base" borderWidth="base" borderRadius="base">
+                        <div className={styles.cardHeader}>
+                          <span className={styles.cardBadge}>{row.name}</span>
+                          <s-button
+                            variant="secondary"
+                            tone="critical"
+                            onClick={() => setDeleteConfirmSetId(row.id)}
+                          >
+                            {t("modals.deleteProject")}
+                          </s-button>
+                        </div>
+                        <div className={styles.cardInfo}>
+                          <s-text color="subdued">
+                            {row.locationCount} {t("projects.locations")}
+                          </s-text>
+                        </div>
+                        <div className={styles.cardActions}>
+                          <s-button
+                            variant="secondary"
+                            commandFor="edit-project-modal"
+                            command="--show"
+                            onClick={() => {
+                              if (set) {
+                                setEditingSetId(set.id);
+                                setEditingSetName(set.name);
+                                setEditingSetLocations([...set.locations]);
+                              }
+                            }}
+                          >
+                            {t("projects.edit")}
+                          </s-button>
+                          <s-button
+                            variant="primary"
+                            onClick={() => {
+                              setLoadedProjectId(row.id);
+                              fetchProjectStats(row.id);
+                              setIsHeatmapExpanded(true);
+                              setCitiesCollapsed(true);
+                              setProjectsCollapsed(true);
+                            }}
+                          >
+                            {t("projects.load")}
+                          </s-button>
+                        </div>
+                      </s-box>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </s-section>
+        </div>
+      )}
     </s-page>
   );
 }

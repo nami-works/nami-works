@@ -1,4 +1,15 @@
-import type { PrismaClient, BulkPriceCampaign } from "@prisma/client";
+import type { PrismaClient, BulkPriceCampaign, BulkPriceCampaignItem } from "@prisma/client";
+import { computeSmartBadge } from "../price-tags/discount.server";
+import {
+  fetchMetaobjectEntries,
+  buildHandleGidMap,
+  ensureMetaobjectEntry,
+} from "../price-tags/metaobject.server";
+import { findProductMetafieldForMetaobjectType } from "../price-tags/metafield.server";
+import {
+  setProductMetafieldValue,
+  clearDiscountLabels,
+} from "../price-tags/webhook-handler.server";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -144,6 +155,8 @@ export async function resolveProducts(
 
   if (campaign.filterType === "product_types") {
     variants = await fetchByProductTypes(admin, filterValues);
+  } else if (campaign.filterType === "collections") {
+    variants = await fetchByCollections(admin, filterValues);
   } else {
     variants = await fetchByProductIds(admin, filterValues);
   }
@@ -244,6 +257,52 @@ async function fetchByProductIds(
   }
 
   return variants;
+}
+
+const COLLECTION_PRODUCTS_QUERY = `#graphql
+  query CollectionProducts($id: ID!, $cursor: String) {
+    collection(id: $id) {
+      products(first: 100, after: $cursor) {
+        edges { node { id } }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  }
+`;
+
+async function fetchByCollections(
+  admin: AdminClient,
+  collectionGids: string[],
+): Promise<ResolvedVariant[]> {
+  const productGids = new Set<string>();
+
+  for (const collectionId of collectionGids) {
+    let cursor: string | null = null;
+    let page = 0;
+    while (page < 20) {
+      page++;
+      const response = await admin.graphql(COLLECTION_PRODUCTS_QUERY, {
+        variables: { id: collectionId, cursor },
+      });
+      const json = await response.json();
+      const data = json.data?.collection?.products;
+      if (!data) break;
+
+      for (const edge of data.edges ?? []) {
+        productGids.add(edge.node.id);
+      }
+
+      console.info(
+        `[bulk-price] fetchByCollections collection=${collectionId} page=${page} products=${productGids.size}`,
+      );
+
+      if (!data.pageInfo?.hasNextPage) break;
+      cursor = data.pageInfo.endCursor;
+    }
+  }
+
+  if (productGids.size === 0) return [];
+  return fetchByProductIds(admin, [...productGids]);
 }
 
 // ---------------------------------------------------------------------------
@@ -410,6 +469,16 @@ export async function activateCampaign(
 
   const result = await bulkUpdatePrices(admin, updateItems);
 
+  // Apply price tags if enabled
+  if (campaign.priceTagsEnabled && campaign.priceTagMetaobjectType) {
+    try {
+      await applyPriceTags(admin, campaign, computed);
+    } catch (err) {
+      console.error(`[bulk-price:tags] applyPriceTags FAILED campaign=${campaign.name}`, err);
+      result.errors.push(`Price tags failed: ${String(err)}`);
+    }
+  }
+
   // Count unique products
   const productGids = new Set(computed.map((c) => c.productGid));
 
@@ -477,6 +546,16 @@ export async function deactivateCampaign(
 
   const result = await bulkUpdatePrices(admin, revertItems);
 
+  // Clear price tags if they were enabled
+  if (campaign.priceTagsEnabled && campaign.priceTagMetaobjectType) {
+    try {
+      await clearPriceTags(admin, campaign, items);
+    } catch (err) {
+      console.error(`[bulk-price:tags] clearPriceTags FAILED campaign=${campaign.name}`, err);
+      result.errors.push(`Price tag cleanup failed: ${String(err)}`);
+    }
+  }
+
   // Update campaign status
   await prismaClient.bulkPriceCampaign.update({
     where: { id: campaignId },
@@ -543,5 +622,158 @@ export async function searchProducts(
       compareAtPrice: e.node.variants?.edges?.[0]?.node?.compareAtPrice ?? null,
       variantCount: e.node.totalVariants ?? 1,
     }),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Search collections for the browse modal
+// ---------------------------------------------------------------------------
+
+const SEARCH_COLLECTIONS_QUERY = `#graphql
+  query SearchCollections($query: String!) {
+    collections(first: 25, query: $query, sortKey: UPDATED_AT, reverse: true) {
+      edges {
+        node {
+          id
+          title
+          image { url }
+          productsCount { count }
+        }
+      }
+    }
+  }
+`;
+
+export async function searchCollections(
+  admin: AdminClient,
+  query: string,
+): Promise<
+  Array<{
+    id: string;
+    title: string;
+    image: string | null;
+    productCount: number;
+  }>
+> {
+  const response = await admin.graphql(SEARCH_COLLECTIONS_QUERY, {
+    variables: { query: query ? `title:*${query}*` : "" },
+  });
+  const json = await response.json();
+  const edges = json.data?.collections?.edges ?? [];
+
+  return edges.map(
+    (e: {
+      node: {
+        id: string;
+        title: string;
+        image?: { url?: string } | null;
+        productsCount?: { count?: number };
+      };
+    }) => ({
+      id: e.node.id,
+      title: e.node.title,
+      image: e.node.image?.url ?? null,
+      productCount: e.node.productsCount?.count ?? 0,
+    }),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Apply price tags to campaign products
+// ---------------------------------------------------------------------------
+
+async function applyPriceTags(
+  admin: AdminClient,
+  campaign: BulkPriceCampaign,
+  computed: ComputedPrice[],
+): Promise<void> {
+  const fieldDefaults: Record<string, string> = JSON.parse(
+    campaign.priceTagFieldDefaults || "{}",
+  );
+  const metaobjectType = campaign.priceTagMetaobjectType!;
+  const displayNameKey = campaign.priceTagDisplayNameKey || "";
+
+  // Auto-detect metafield ns/key
+  const mfDef = await findProductMetafieldForMetaobjectType(admin, metaobjectType);
+  const ns = mfDef?.namespace ?? campaign.priceTagMetafieldNamespace ?? "";
+  const key = mfDef?.key ?? campaign.priceTagMetafieldKey ?? "";
+  const mfType = mfDef?.type ?? "list.metaobject_reference";
+
+  // Cache existing metaobject entries
+  const allEntries = await fetchMetaobjectEntries(admin, metaobjectType);
+  const handleToGid = buildHandleGidMap(allEntries);
+
+  // Group by product — use max originalPrice variant for badge computation
+  const productPrices = new Map<string, number>();
+  for (const item of computed) {
+    const existing = productPrices.get(item.productGid) ?? 0;
+    if (item.originalPrice > existing) {
+      productPrices.set(item.productGid, item.originalPrice);
+    }
+  }
+
+  for (const [productGid, originalPrice] of productPrices) {
+    const badge = computeSmartBadge(
+      campaign.discountType as "percentage" | "fixed",
+      campaign.discountValue,
+      originalPrice,
+    );
+    if (!badge) continue;
+
+    const { gid: labelGid } = await ensureMetaobjectEntry(
+      admin,
+      metaobjectType,
+      badge.handle,
+      badge.text,
+      handleToGid,
+      fieldDefaults,
+      displayNameKey,
+    );
+
+    await setProductMetafieldValue(admin, productGid, ns, key, [labelGid], mfType);
+  }
+
+  console.info(
+    `[bulk-price:tags] applied price tags products=${productPrices.size}`,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Clear price tags from campaign products
+// ---------------------------------------------------------------------------
+
+async function clearPriceTags(
+  admin: AdminClient,
+  campaign: BulkPriceCampaign,
+  items: BulkPriceCampaignItem[],
+): Promise<void> {
+  const metaobjectType = campaign.priceTagMetaobjectType!;
+  const mfDef = await findProductMetafieldForMetaobjectType(admin, metaobjectType);
+  const ns = mfDef?.namespace ?? campaign.priceTagMetafieldNamespace ?? "";
+  const key = mfDef?.key ?? campaign.priceTagMetafieldKey ?? "";
+  const mfType = mfDef?.type ?? "list.metaobject_reference";
+
+  // Build gidToHandle map for clearDiscountLabels
+  const allEntries = await fetchMetaobjectEntries(admin, metaobjectType);
+  const gidToHandle = new Map<string, string>();
+  for (const entry of allEntries) {
+    gidToHandle.set(entry.gid, entry.handle);
+  }
+
+  const uniqueProducts = new Set(items.map((i) => i.productGid));
+  for (const productGid of uniqueProducts) {
+    await clearDiscountLabels(
+      admin,
+      campaign.shop,
+      productGid,
+      ns,
+      key,
+      gidToHandle,
+      mfType,
+    );
+  }
+
+  console.info(
+    `[bulk-price:tags] cleared price tags products=${uniqueProducts.size}`,
   );
 }

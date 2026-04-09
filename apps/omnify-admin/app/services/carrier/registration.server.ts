@@ -22,7 +22,7 @@ export function buildCarrierCallbackUrl(baseUrl: string, shop: string): string {
  * Requires write_shipping scope. Caller must ensure scope is granted.
  */
 export async function createCarrierService(
-  admin: AdminApiContext["admin"],
+  admin: AdminApiContext,
   shop: string,
   callbackUrl: string,
 ): Promise<CarrierRegistrationResult> {
@@ -77,7 +77,7 @@ export async function createCarrierService(
  * Update carrier service active state.
  */
 export async function updateCarrierServiceActive(
-  admin: AdminApiContext["admin"],
+  admin: AdminApiContext,
   shop: string,
   active: boolean,
 ): Promise<CarrierRegistrationResult> {
@@ -125,7 +125,7 @@ export async function updateCarrierServiceActive(
  * Delete the carrier service for the shop and remove registration.
  */
 export async function deleteCarrierService(
-  admin: AdminApiContext["admin"],
+  admin: AdminApiContext,
   shop: string,
 ): Promise<CarrierRegistrationResult> {
   const row = await prisma.carrierServiceRegistration.findUnique({

@@ -8,9 +8,29 @@ import { useTranslation } from "react-i18next";
 import { loadGoogleMaps } from "../utils/load-google-maps.client";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
-import { TabBar } from "../components/tab-bar";
-import tabStyles from "../components/tab-bar.module.css";
 import { getAppIdentity } from "../utils/app-identity.server";
+import {
+  deleteShopCredentials,
+  getApiKeyDisplayMask,
+  hasShopCredentials,
+  saveShopCredentials,
+  validateCredentialInput,
+  markCredentialsValidated,
+  getRuntimeCredentialsForShop,
+} from "../services/lalamove-credentials.server";
+import { probeLalamoveCredentials } from "../services/lalamove.server";
+import {
+  buildCarrierCallbackUrl,
+  createCarrierService,
+  deleteCarrierService,
+  getCarrierRegistration,
+} from "../services/carrier/registration.server";
+import { buildAllSampleRatesForShop } from "../services/carrier/sample-rate-db.server";
+import type { CarrierServiceConfigData } from "../services/carrier/types";
+import {
+  CarrierServiceContent,
+  type CarrierServiceLoaderData,
+} from "./app.carrier-service";
 import styles from "./app.settings/styles.module.css";
 
 type LalamoveConfig = {
@@ -27,6 +47,15 @@ type LalamoveConfig = {
   pickupLat?: number | null;
   /** Pickup location longitude — stored for auto-routing background service. */
   pickupLng?: number | null;
+  // Fulfillment details
+  deliveryPromiseDays?: number | null;
+  orderCutoffTime?: string | null;
+  timezone?: string | null;
+  // Auto-delivery schedule
+  autoDeliveryEnabled?: boolean | null;
+  autoAssignDelayMinutes?: number | null;
+  autoDispatchTime?: string | null;
+  retryCutoffTime?: string | null;
 };
 
 const LALAMOVE_MARKETS = [
@@ -105,6 +134,25 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   );
 
   const appIdentity = getAppIdentity();
+
+  // Carrier service data
+  const registration = await getCarrierRegistration(shop);
+  const configRow = await prisma.carrierServiceConfig.findUnique({
+    where: { shop },
+  });
+  const carrierConfig = configRow?.data as CarrierServiceConfigData | undefined;
+  const [credentialStatus, apiKeyDisplayMask] = await Promise.all([
+    hasShopCredentials(shop),
+    getApiKeyDisplayMask(shop),
+  ]);
+  const configuredMarkets = [
+    ...new Set(
+      rows
+        .map((lc) => (lc.data as { market?: string })?.market)
+        .filter((m): m is string => Boolean(m)),
+    ),
+  ];
+
   console.info(`[settings] loader OK shop=${shop} locations=${locations.length}`);
 
   return {
@@ -113,6 +161,20 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     userLocale,
     mapsApiKey: process.env.GOOGLE_MAPS_API_KEY?.trim() ?? "",
     appIdentity,
+    carrierServiceData: {
+      shop,
+      registration: registration
+        ? {
+            active: registration.active,
+            carrierServiceId: registration.carrierServiceId,
+            callbackUrl: registration.callbackUrl,
+          }
+        : null,
+      config: carrierConfig ?? undefined,
+      credentialStatus,
+      apiKeyDisplayMask,
+      configuredMarkets,
+    } satisfies CarrierServiceLoaderData,
   };
 };
 
@@ -170,6 +232,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       pickupInstructions: String(formData.get("pickupInstructions") ?? ""),
       pickupLat,
       pickupLng,
+      // Fulfillment details
+      deliveryPromiseDays: parseInt(String(formData.get("deliveryPromiseDays") ?? ""), 10) || null,
+      orderCutoffTime: String(formData.get("orderCutoffTime") ?? "").trim() || null,
+      timezone: String(formData.get("timezone") ?? "").trim() || null,
+      // Auto-delivery schedule
+      autoDeliveryEnabled: formData.get("autoDeliveryEnabled") === "true",
+      autoAssignDelayMinutes: parseInt(String(formData.get("autoAssignDelayMinutes") ?? "15"), 10) || 15,
+      autoDispatchTime: String(formData.get("autoDispatchTime") ?? "").trim() || null,
+      retryCutoffTime: String(formData.get("retryCutoffTime") ?? "").trim() || null,
     };
     await prisma.lalamoveLocationConfig.upsert({
       where: { shop_locationId: { shop, locationId } },
@@ -204,6 +275,142 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return { ok: true };
   }
 
+  // --- Carrier service intents ---
+
+  if (intent === "enable-carrier") {
+    const appUrl = process.env.SHOPIFY_APP_URL || new URL(request.url).origin;
+    const callbackUrl = buildCarrierCallbackUrl(appUrl, shop);
+    const result = await createCarrierService(admin, shop, callbackUrl);
+    if (result.ok) {
+      const cfgRow = await prisma.carrierServiceConfig.findUnique({ where: { shop } });
+      const cfg = cfgRow?.data as CarrierServiceConfigData | undefined;
+      buildAllSampleRatesForShop(admin, shop, cfg ?? null, {
+        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY?.trim(),
+      }).catch((e) => console.warn("[settings] sample-rate build failed:", e));
+    }
+    return result.ok ? { ok: true, error: null } : { ok: false, error: result.error };
+  }
+
+  if (intent === "disable-carrier") {
+    const result = await deleteCarrierService(admin, shop);
+    return result.ok ? { ok: true, error: null } : { ok: false, error: result.error };
+  }
+
+  if (intent === "save-config") {
+    const enabledProvidersRaw = formData.get("enabledProviders");
+    const enabledProviders = enabledProvidersRaw
+      ? (JSON.parse(String(enabledProvidersRaw)) as CarrierServiceConfigData["enabledProviders"])
+      : (["lalamove"] as CarrierServiceConfigData["enabledProviders"]);
+    const timeLimit = formData.get("timeLimit") as string | null;
+    const transitTime = formData.get("transitTime") as string | null;
+    const customDaysRaw = formData.get("customDays");
+    const customDays = customDaysRaw ? parseInt(String(customDaysRaw), 10) : undefined;
+    const distanceZonesRaw = formData.get("distanceZones");
+    const distanceZones = distanceZonesRaw ? JSON.parse(String(distanceZonesRaw)) : [];
+    const distanceMethod = (formData.get("distanceMethod") as "postal_codes" | "radius") ?? "radius";
+    const distanceUnit = (formData.get("distanceUnit") as "km" | "mi") ?? "km";
+    const cfgRow = await prisma.carrierServiceConfig.findUnique({ where: { shop } });
+    const existing = (cfgRow?.data ?? {}) as CarrierServiceConfigData;
+    const data: CarrierServiceConfigData = {
+      ...existing,
+      enabledProviders,
+      timeRule: timeLimit && transitTime ? { timeLimit, transitTime: transitTime as any, ...(transitTime === "custom" && Number.isInteger(customDays) ? { customDays } : {}) } : undefined,
+      distanceZones: distanceZones.length ? distanceZones : undefined,
+      distanceMethod,
+      distanceUnit,
+    };
+    await prisma.carrierServiceConfig.upsert({ where: { shop }, create: { shop, data }, update: { data } });
+    buildAllSampleRatesForShop(admin, shop, data, {
+      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY?.trim(),
+    }).catch((e) => console.warn("[settings] sample-rate build failed:", e));
+    return { ok: true, error: null };
+  }
+
+  if (intent === "save-lalamove-credentials") {
+    const rawApiKey = String(formData.get("apiKey") ?? "").trim();
+    const rawApiSecret = String(formData.get("apiSecret") ?? "").trim();
+    const hasExisting = await hasShopCredentials(shop);
+    if (rawApiKey && rawApiSecret) {
+      const validated = validateCredentialInput(rawApiKey, rawApiSecret);
+      if (!validated.ok) return { ok: false, error: validated.error };
+      await saveShopCredentials(shop, validated.apiKey, validated.apiSecret);
+    } else if (!hasExisting.configured) {
+      return { ok: false, error: "API key and secret are required." };
+    }
+    const market = String(formData.get("market") ?? "").trim().toUpperCase() || "BR";
+    const cfgRow = await prisma.carrierServiceConfig.findUnique({ where: { shop } });
+    const existing = (cfgRow?.data ?? {}) as CarrierServiceConfigData;
+    const data: CarrierServiceConfigData = { ...existing, enabledProviders: existing.enabledProviders ?? ["lalamove"], lalamoveDefaultMarket: market };
+    await prisma.carrierServiceConfig.upsert({ where: { shop }, create: { shop, data }, update: { data } });
+    return { ok: true, credentialStatus: await hasShopCredentials(shop) };
+  }
+
+  if (intent === "save-lalamove-preferences") {
+    const preferredServiceType = String(formData.get("preferredServiceType") ?? "").trim() || "LALAGO";
+    const secondaryServiceType = String(formData.get("secondaryServiceType") ?? "").trim() || undefined;
+    const maxOrdersPerRoute = Math.min(15, Math.max(1, parseInt(String(formData.get("maxOrdersPerRoute") ?? "10"), 10) || 10));
+    const secondaryMaxOrdersPerRoute = Math.min(15, Math.max(1, parseInt(String(formData.get("secondaryMaxOrdersPerRoute") ?? "10"), 10) || 10));
+    const lalamoveSpecialRequestsRaw = formData.get("lalamoveSpecialRequests");
+    const incomingSpecialRequests = lalamoveSpecialRequestsRaw ? JSON.parse(String(lalamoveSpecialRequestsRaw)) : undefined;
+    const cfgRow = await prisma.carrierServiceConfig.findUnique({ where: { shop } });
+    const existing = (cfgRow?.data ?? {}) as CarrierServiceConfigData;
+    const data: CarrierServiceConfigData = {
+      ...existing,
+      lalamovePreferredServiceType: preferredServiceType,
+      lalamoveSecondaryServiceType: secondaryServiceType,
+      lalamoveMaxOrdersPerRoute: maxOrdersPerRoute,
+      lalamoveSecondaryMaxOrdersPerRoute: secondaryMaxOrdersPerRoute,
+      lalamoveSpecialRequests: incomingSpecialRequests ?? existing.lalamoveSpecialRequests,
+    };
+    await prisma.carrierServiceConfig.upsert({ where: { shop }, create: { shop, data }, update: { data } });
+    return { ok: true, intent };
+  }
+
+  if (intent === "fetch-special-requests") {
+    const markets = formData.getAll("market") as string[];
+    const serviceType = String(formData.get("serviceType") ?? "").trim();
+    if (!markets.length) return { ok: false, error: "Market not provided.", intent };
+    const credentials = await getRuntimeCredentialsForShop(shop);
+    if (!credentials) return { ok: false, error: "Missing credentials.", intent };
+    try {
+      const { getLalamoveCityInfo } = await import("../services/lalamove.server");
+      const specialRequestsByMarket: Record<string, Array<{ name: string; description: string }>> = {};
+      for (const market of markets) {
+        const cities = await getLalamoveCityInfo(market, credentials);
+        const srs: Array<{ name: string; description: string }> = [];
+        for (const city of cities) {
+          for (const service of city.services ?? []) {
+            if (!serviceType || service.key === serviceType) {
+              for (const sr of service.specialRequests ?? []) {
+                if (!srs.some((x) => x.name === sr.name)) srs.push(sr);
+              }
+            }
+          }
+        }
+        specialRequestsByMarket[market] = srs;
+      }
+      return { ok: true, intent, specialRequestsByMarket };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to fetch city info.";
+      return { ok: false, error: msg, intent, specialRequestsByMarket: {} };
+    }
+  }
+
+  if (intent === "delete-lalamove-credentials") {
+    await deleteShopCredentials(shop);
+    return { ok: true, credentialStatus: await hasShopCredentials(shop) };
+  }
+
+  if (intent === "test-lalamove-credentials") {
+    const validated = validateCredentialInput(formData.get("apiKey"), formData.get("apiSecret"));
+    if (!validated.ok) return { ok: false, error: validated.error };
+    const market = String(formData.get("market") ?? "").trim().toUpperCase() || "BR";
+    const probe = await probeLalamoveCredentials(market, { apiKey: validated.apiKey, apiSecret: validated.apiSecret });
+    if (!probe.ok) return { ok: false, error: probe.error, details: probe.details ?? null };
+    await markCredentialsValidated(shop);
+    return { ok: true, details: probe.details ?? null, credentialStatus: await hasShopCredentials(shop) };
+  }
+
   return { ok: false, error: "Unknown intent." };
 };
 
@@ -217,7 +424,17 @@ const defaultConfig = (userLocale: string): LalamoveConfig => ({
   locationAddress: "",
   locationDetails: "",
   pickupInstructions: "",
+  // Auto-delivery defaults
+  deliveryPromiseDays: 0,
+  orderCutoffTime: "12:00",
+  timezone: "",
+  autoDeliveryEnabled: false,
+  autoAssignDelayMinutes: 15,
+  autoDispatchTime: "14:30",
+  retryCutoffTime: "17:30",
 });
+
+type SettingsTab = "settings" | "providers" | "carriers";
 
 export default function LocationSettings() {
   const {
@@ -226,7 +443,9 @@ export default function LocationSettings() {
     userLocale,
     mapsApiKey,
     appIdentity,
+    carrierServiceData,
   } = useLoaderData<typeof loader>();
+  const [activeTab, setActiveTab] = useState<SettingsTab>("settings");
   const { t } = useTranslation("settings");
   const lalamoveFetcher = useFetcher();
   const [settingsLocationId, setSettingsLocationId] = useState("");
@@ -241,25 +460,10 @@ export default function LocationSettings() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const allTabs = [
-    {
-      id: "settings",
-      label: t("tabs.locations"),
-      href: "/app/settings",
-      icon: <span aria-hidden="true">📍</span>,
-    },
-    {
-      id: "providers",
-      label: t("tabs.providers"),
-      href: "/app/settings/providers",
-      icon: <span aria-hidden="true">🛵</span>,
-    },
-    {
-      id: "carriers",
-      label: t("tabs.carriers"),
-      href: "/app/settings/carriers",
-      icon: <span aria-hidden="true">🚚</span>,
-    },
+  const allTabs: { id: SettingsTab; label: string }[] = [
+    { id: "settings", label: t("tabs.locations") },
+    { id: "providers", label: t("tabs.providers") },
+    { id: "carriers", label: t("tabs.carriers") },
   ];
   const tabs = appIdentity === "omnify"
     ? allTabs.filter((tab) => tab.id !== "carriers")
@@ -381,7 +585,7 @@ export default function LocationSettings() {
     };
   }, [mapsApiKey, lalamoveSettings.locationAddress]);
 
-  const updateField = (field: keyof LalamoveConfig, value: string) => {
+  const updateField = (field: keyof LalamoveConfig, value: string | boolean | number) => {
     setSettingsSaved(false);
     setSaveSuccess(false);
     setLalamoveSettings((c) => ({ ...c, [field]: value }));
@@ -404,22 +608,33 @@ export default function LocationSettings() {
     formData.append("locationAddress", lalamoveSettings.locationAddress);
     formData.append("locationDetails", lalamoveSettings.locationDetails);
     formData.append("pickupInstructions", lalamoveSettings.pickupInstructions);
+    // Auto-delivery schedule
+    formData.append("deliveryPromiseDays", String(lalamoveSettings.deliveryPromiseDays ?? ""));
+    formData.append("orderCutoffTime", lalamoveSettings.orderCutoffTime ?? "");
+    formData.append("timezone", lalamoveSettings.timezone ?? "");
+    formData.append("autoDeliveryEnabled", String(lalamoveSettings.autoDeliveryEnabled ?? false));
+    formData.append("autoAssignDelayMinutes", String(lalamoveSettings.autoAssignDelayMinutes ?? 15));
+    formData.append("autoDispatchTime", lalamoveSettings.autoDispatchTime ?? "");
+    formData.append("retryCutoffTime", lalamoveSettings.retryCutoffTime ?? "");
     lalamoveFetcher.submit(formData, { method: "post" });
   };
 
   return (
     <s-page heading={t("pageHeading")} inlineSize="base">
-      <TabBar
-        tabs={tabs}
-        activeId="settings"
-        className={tabStyles.tabsRow}
-        tabClassName={tabStyles.tabItem}
-        activeTabClassName={tabStyles.tabActive}
-        contentClassName={tabStyles.tabContent}
-        iconClassName={tabStyles.tabIcon}
-        activeIconClassName={tabStyles.tabIconActive}
-      />
       <s-section>
+        <div className={styles.settingsTabsRow}>
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={`${styles.settingsTab}${tab.id === activeTab ? ` ${styles.settingsTabActive}` : ""}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        {activeTab === "settings" && (
         <s-stack direction="block" gap="base">
           {saveError && (
             <s-banner tone="critical" onDismiss={() => setSaveError(null)}>
@@ -553,6 +768,90 @@ export default function LocationSettings() {
                 ))}
               </s-select>
             </div>
+
+            {/* ── Auto-Delivery Schedule ──────────────────────────────── */}
+            <div className={styles.settingsSpanFull} style={{ borderTop: "1px solid #e1e3e5", paddingTop: 16, marginTop: 8 }}>
+              <s-stack direction="block" gap="base">
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <s-checkbox
+                    checked={lalamoveSettings.autoDeliveryEnabled ?? false}
+                    onChange={(e) =>
+                      updateField(
+                        "autoDeliveryEnabled",
+                        (e.currentTarget as unknown as HTMLInputElement).checked,
+                      )
+                    }
+                  />
+                  <s-text type="strong">{t("labels.autoDeliveryEnabled")}</s-text>
+                </div>
+
+                <div className={styles.settingsGrid}>
+                  <s-select
+                    label={t("labels.deliveryPromiseDays")}
+                    value={String(lalamoveSettings.deliveryPromiseDays ?? 0)}
+                    onChange={(e) =>
+                      updateField(
+                        "deliveryPromiseDays",
+                        parseInt((e.currentTarget as unknown as HTMLSelectElement).value, 10),
+                      )
+                    }
+                  >
+                    <s-option value="0">{t("labels.sameDay")}</s-option>
+                    <s-option value="1">{t("labels.nextDay")}</s-option>
+                    <s-option value="2">{t("labels.dayPlus2")}</s-option>
+                    <s-option value="3">{t("labels.dayPlus3")}</s-option>
+                  </s-select>
+                  <s-text-field
+                    label={t("labels.orderCutoffTime")}
+                    {...{ type: "time" } as Record<string, string>}
+                    value={lalamoveSettings.orderCutoffTime ?? "12:00"}
+                    onChange={(e) =>
+                      updateField("orderCutoffTime", (e.currentTarget as unknown as HTMLInputElement).value)
+                    }
+                  />
+                  <s-text-field
+                    label={t("labels.timezone")}
+                    value={lalamoveSettings.timezone ?? ""}
+                    {...{ placeholder: Intl.DateTimeFormat().resolvedOptions().timeZone } as Record<string, string>}
+                    onChange={(e) =>
+                      updateField("timezone", (e.currentTarget as unknown as HTMLInputElement).value)
+                    }
+                  />
+                </div>
+
+                {lalamoveSettings.autoDeliveryEnabled ? (
+                  <div className={styles.settingsGrid}>
+                    <s-text-field
+                      label={t("labels.autoAssignDelayMinutes")}
+                      {...{ type: "number", min: "0", max: "120" } as Record<string, string>}
+                      value={String(lalamoveSettings.autoAssignDelayMinutes ?? 15)}
+                      onChange={(e) =>
+                        updateField(
+                          "autoAssignDelayMinutes",
+                          parseInt((e.currentTarget as unknown as HTMLInputElement).value, 10) || 15,
+                        )
+                      }
+                    />
+                    <s-text-field
+                      label={t("labels.autoDispatchTime")}
+                      {...{ type: "time" } as Record<string, string>}
+                      value={lalamoveSettings.autoDispatchTime ?? "14:30"}
+                      onChange={(e) =>
+                        updateField("autoDispatchTime", (e.currentTarget as unknown as HTMLInputElement).value)
+                      }
+                    />
+                    <s-text-field
+                      label={t("labels.retryCutoffTime")}
+                      {...{ type: "time" } as Record<string, string>}
+                      value={lalamoveSettings.retryCutoffTime ?? "17:30"}
+                      onChange={(e) =>
+                        updateField("retryCutoffTime", (e.currentTarget as unknown as HTMLInputElement).value)
+                      }
+                    />
+                  </div>
+                ) : null}
+              </s-stack>
+            </div>
                 </div>
               </s-stack>
             </s-box>
@@ -579,6 +878,14 @@ export default function LocationSettings() {
             )}
           </s-stack>
         </s-stack>
+        )}
+
+        {(activeTab === "providers" || activeTab === "carriers") && (
+          <CarrierServiceContent
+            data={carrierServiceData}
+            activeTab={activeTab}
+          />
+        )}
       </s-section>
     </s-page>
   );

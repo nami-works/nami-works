@@ -1,0 +1,42 @@
+{
+  "pageHeading": "Home",
+  "sections": {
+    "functions": "Functions",
+    "ideasAndHelpers": "Ideas and helpers"
+  },
+  "cards": {
+    "localDelivery": {
+      "title": "Local delivery",
+      "description": "Plan and assign local delivery routes. Visualize orders on a map, tag them to routes, and organize efficient delivery zones for your customers."
+    },
+    "salesGoals": {
+      "title": "Sales goals",
+      "description": "Set monthly sales targets by location and track actual performance. Monitor KPIs, rankings, and goal completion across all your stores."
+    },
+    "retailExpansion": {
+      "title": "Retail footprint",
+      "description": "Identify the best retail locations to expand into. Rank potential spots by customer proximity and estimated revenue impact."
+    },
+    "priceTags": {
+      "title": "Price tags",
+      "description": "Automatically assign discount labels to products based on price reductions. Configure metaobject-based tags and discount tiers."
+    },
+    "storytelling": {
+      "title": "Story-telling",
+      "description": "Generate SEO-optimized blog content using AI. Create content briefs, review AI drafts, and publish directly to your Shopify blog."
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Configure delivery locations, Lalamove dispatch settings, carrier services, and shipping rates for your store."
+    },
+    "productLaunches": {
+      "title": "Product launches",
+      "description": "Track revenue and unit goals for new product launches. Compare results against benchmarks and segment by tag, location, or channel."
+    },
+    "uiElements": {
+      "title": "UI elements",
+      "description": "Browse interactive examples of Polaris web components used throughout this app. Useful for development reference and testing."
+    }
+  },
+  "goTo": "Go to {{title}}"
+}

@@ -1,0 +1,75 @@
+{
+  "pageHeading": "Metas de vendas",
+  "tabs": {
+    "dashboard": "📊 Painel",
+    "goals": "🎯 Metas",
+    "kpis": "📈 KPIs",
+    "ranking": "🏆 Ranking",
+    "settings": "⚙️ Configurações"
+  },
+  "dashboard": {
+    "title": "Painel de Vendas",
+    "totalSales": "Vendas Totais",
+    "totalGoal": "Meta Total",
+    "achievementRate": "Taxa de Atingimento",
+    "salesRanking": "Ranking de Vendas por Localização",
+    "actualSales": "Vendas Reais",
+    "goal": "Meta"
+  },
+  "goals": {
+    "title": "Gestão de Metas Mensais",
+    "subtitle": "Defina metas de vendas para cada localização",
+    "selectLocation": "Selecionar localização",
+    "referenceMonth": "Mês de referência",
+    "enableCalculator": "Ativar calculadora",
+    "calculateBasedOnPrevious": "Calcular meta com base no período anterior",
+    "basePeriod": "Período base",
+    "growthType": "Tipo de crescimento",
+    "previousMonth": "Mês anterior",
+    "previousYear": "Ano anterior",
+    "percentage": "Porcentagem (%)",
+    "absolute": "Absoluto",
+    "growthPercent": "Crescimento (%)",
+    "growth": "Crescimento",
+    "calculateGoal": "Calcular meta",
+    "basePeriodSales": "Vendas do período base:",
+    "salesGoal": "Meta de vendas",
+    "saveGoal": "Salvar meta",
+    "registeredGoals": "Metas registradas",
+    "month": "Mês",
+    "base": "Base",
+    "manual": "Manual"
+  },
+  "kpis": {
+    "title": "Ticket Médio por Localização",
+    "subtitle": "Análise do valor médio de transação para cada localização",
+    "overallAov": "Ticket Médio Geral",
+    "breakdown": "Detalhamento por Localização",
+    "totalSales": "Vendas Totais",
+    "aov": "Ticket Médio"
+  },
+  "ranking": {
+    "title": "Ranking de Atingimento de Metas",
+    "subtitle": "Acompanhe o desempenho de cada localização em relação às metas",
+    "locationsAboveGoal": "Localizações acima da meta",
+    "of": "de",
+    "averageAchievement": "Atingimento médio",
+    "bestPerformance": "Melhor desempenho",
+    "rankingByAchievement": "Ranking por Atingimento",
+    "goal": "Meta",
+    "achieved": "Atingido",
+    "achievement": "Atingimento"
+  },
+  "settings": {
+    "title": "Configurações de Localização",
+    "subtitle": "Configure quais localizações participam das metas e filtre vendas históricas por canal, tag ou método de envio.",
+    "manageGoals": "Gerenciar metas para esta localização",
+    "historicParams": "Parâmetros de vendas históricas",
+    "salesChannels": "Canais de venda",
+    "searchChannels": "Buscar canais…",
+    "tags": "Tags",
+    "searchTags": "Buscar tags…",
+    "shippingMethods": "Métodos de envio",
+    "searchShippingMethods": "Buscar métodos de envio…"
+  }
+}

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import type { LoaderFunctionArgs } from "react-router";
-import { redirect, Link } from "react-router";
+import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
+import { redirect, Link, Form, useActionData } from "react-router";
+
+import prisma from "../../db.server";
 
 import { SiteNav, SiteFooter } from "../../components/site-layout";
 
@@ -14,6 +16,27 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   return {};
+};
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+  const email = String(formData.get("email") || "").trim().toLowerCase();
+
+  if (!email || !email.includes("@")) {
+    return { error: "Please enter a valid email address." };
+  }
+
+  try {
+    await prisma.waitlistSubscriber.upsert({
+      where: { email },
+      create: { email, source: "gbp-health-check" },
+      update: {},
+    });
+    return { success: true };
+  } catch (e) {
+    console.error("[waitlist] subscribe FAILED", e);
+    return { error: "Something went wrong. Please try again." };
+  }
 };
 
 // ── Rotating placeholder animation ──
@@ -135,6 +158,7 @@ const GBP_CHECKS = [
 
 export default function HomePage() {
   const placeholder = useRotatingPlaceholder();
+  const actionData = useActionData<typeof action>();
   const [showNotify, setShowNotify] = useState(false);
 
   return (
@@ -247,17 +271,32 @@ export default function HomePage() {
           </>
         ) : (
           <div className={styles.notifyWrap}>
-            <p className={styles.notifyText}>
-              We&apos;re launching soon. Enter your email to get notified.
-            </p>
-            <div className={styles.notifyRow}>
-              <input
-                className={styles.notifyInput}
-                type="email"
-                placeholder="you@example.com"
-              />
-              <button className={styles.notifyBtn}>Notify Me</button>
-            </div>
+            {actionData?.success ? (
+              <p className={styles.notifyText}>
+                You&apos;re on the list! We&apos;ll notify you when the scanner is live.
+              </p>
+            ) : (
+              <>
+                <p className={styles.notifyText}>
+                  We&apos;re launching soon. Enter your email to get notified.
+                </p>
+                <Form method="post">
+                  <div className={styles.notifyRow}>
+                    <input
+                      className={styles.notifyInput}
+                      type="email"
+                      name="email"
+                      placeholder="you@example.com"
+                      required
+                    />
+                    <button type="submit" className={styles.notifyBtn}>Notify Me</button>
+                  </div>
+                </Form>
+                {actionData?.error && (
+                  <p className={styles.notifyError}>{actionData.error}</p>
+                )}
+              </>
+            )}
           </div>
         )}
       </section>

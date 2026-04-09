@@ -261,6 +261,13 @@
   white-space: nowrap;
 }
 
+.notifyError {
+  color: #d72c0d;
+  font-size: 13px;
+  margin-top: 8px;
+  text-align: center;
+}
+
 /* ─── Built On ─── */
 .builtOn {
   padding: 48px 24px;

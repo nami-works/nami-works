@@ -1,0 +1,19 @@
+## Regras de recomendação
+
+**Produtos disponíveis:** Máscara Condicionadora, Leave-in Pluma, Máscara Mayday
+
+**Regras:**
+- A **Máscara Condicionadora** é sempre obrigatória — base universal de nutrição e reparação.
+- Adicionar **Leave-in Pluma** quando:
+  - Fios finos (película protetora ultraleve)
+  - Processos químicos (repara e repõe lipídios)
+  - Fios grossos (força e selagem)
+  - (Question: dor principal) = frizz intenso, ressecamento, quebra ou opacidade
+- Adicionar **Máscara Mayday** quando:
+  - Dano severo: descoloração, química sobreposta ou quebra severa
+  - É tratamento de reconstrução profunda (uso 1x a cada 15 dias)
+  - Não substitui a Máscara Condicionadora no dia a dia
+
+**Prioridade de decisão:** dor principal → processos químicos → tipo de cabelo → espessura
+
+**Tom da justificativa:** técnico e acolhedor, focando em nutrição, reparação e efeito sensorial.

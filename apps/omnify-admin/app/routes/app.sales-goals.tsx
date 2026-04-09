@@ -14,7 +14,6 @@ import {
   formatCurrency as fmtCurrencyBase,
   formatMonthLabel as fmtMonthBase,
 } from "../i18n/format";
-import tabStyles from "../components/tab-bar.module.css";
 import styles from "./app.sales-goals/styles.module.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -306,20 +305,19 @@ export default function SalesGoalsPage() {
 
   return (
     <s-page heading={t("pageHeading")} inlineSize="base">
-      <div className={tabStyles.tabsRow}>
-        {TAB_IDS.map((tabId) => (
-          <button
-            key={tabId}
-            type="button"
-            className={`${tabStyles.tabItem}${activeTab === tabId ? ` ${tabStyles.tabActive}` : ""}`}
-            onClick={() => setActiveTab(tabId)}
-          >
-            {t(`tabs.${tabId}`)}
-          </button>
-        ))}
-      </div>
-
       <s-section>
+        <div className={styles.tabsRow}>
+          {TAB_IDS.map((tabId) => (
+            <button
+              key={tabId}
+              type="button"
+              className={`${styles.tab}${activeTab === tabId ? ` ${styles.tabActive}` : ""}`}
+              onClick={() => setActiveTab(tabId)}
+            >
+              {t(`tabs.${tabId}`)}
+            </button>
+          ))}
+        </div>
         <s-stack direction="block" gap="base">
       {/* ── Dashboard ─────────────────────────────────────────────────────── */}
       {activeTab === "dashboard" ? (

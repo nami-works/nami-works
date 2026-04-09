@@ -1,0 +1,53 @@
+{
+  "pageHeading": "Story-telling",
+  "tabs": {
+    "blogPosts": "Posts de blog",
+    "altText": "Texto Alt",
+    "places": "Lugares"
+  },
+  "index": {
+    "seoSection": "Gerar posts de blog SEO",
+    "seoDescription": "Crie briefings estruturados e gere conteúdo de blog otimizado para SEO usando IA. Revise rascunhos e publique diretamente no seu blog Shopify.",
+    "createBrief": "Criar briefing",
+    "configureBrand": "Configurar marca",
+    "getStarted": "Começar",
+    "stepBrand": "(sobre, tom de voz, diretrizes editoriais)",
+    "stepBrief": "com temas, palavras-chave e mapeamento de produtos",
+    "stepGenerate": "Gere conteúdo e revise antes de publicar"
+  },
+  "brief": {
+    "pageHeading": "Criar briefing",
+    "briefConfig": "Configuração do briefing",
+    "configureBrandFirst": "Configure sua marca em",
+    "beforeGenerating": "antes de gerar.",
+    "generationStarted": "Geração iniciada.",
+    "viewProgress": "Ver progresso",
+    "goToReview": "Ir para revisão",
+    "defineThemes": "Defina seus temas, mapeamento de produtos e palavras-chave. Use handles de produtos válidos do seu catálogo.",
+    "availableProducts": "Produtos disponíveis",
+    "productCount": "{{count}} produto(s). Handles:",
+    "briefJson": "Briefing (JSON)",
+    "briefStructure": "Estrutura do briefing",
+    "requiredKeys": "Chaves obrigatórias: macro_name, themes, seo_themes, brief_summary, products, keywords. Products mapeia theme_key para array de handles de produtos."
+  },
+  "review": {
+    "pageHeading": "Revisar posts",
+    "generatedContent": "Conteúdo gerado",
+    "noJobId": "Sem ID de job. Crie um briefing e gere conteúdo a partir de",
+    "status": "Status:",
+    "jobId": "ID do Job:",
+    "publish": "Publicar",
+    "blogs": "Blogs",
+    "noBlogsFound": "Nenhum blog encontrado. Crie um blog no Shopify primeiro.",
+    "publishingTo": "Publicando em: {{blogs}}",
+    "articleCreatedDraft": "Artigo criado como rascunho"
+  },
+  "altText": {
+    "pageHeading": "Texto Alt",
+    "comingSoon": "Funcionalidades de texto alternativo em breve..."
+  },
+  "places": {
+    "pageHeading": "Lugares",
+    "comingSoon": "Funcionalidades de lugares em breve..."
+  }
+}

@@ -97,6 +97,8 @@ export type CarrierServiceConfigData = {
   lalamoveMaxOrdersPerRoute?: number;
   /** Max orders per route for secondary vehicle. 1-15, default 10. */
   lalamoveSecondaryMaxOrdersPerRoute?: number;
+  /** Selected Lalamove special request keys per market, e.g. { "BR_SAO": ["DOOR_TO_DOOR"] } */
+  lalamoveSpecialRequests?: Record<string, string[]>;
 };
 
 /**

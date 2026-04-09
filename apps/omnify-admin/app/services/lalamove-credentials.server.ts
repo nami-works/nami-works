@@ -37,6 +37,7 @@ export const saveShopCredentials = async (
   apiKey: string,
   apiSecret: string,
 ) => {
+  console.info(`[lalamove-credentials] saveShopCredentials START shop=${shop}`);
   const keyEncrypted = encryptSecret(apiKey);
   const secretEncrypted = encryptSecret(apiSecret);
   const keyVersion = Math.max(keyEncrypted.keyVersion, secretEncrypted.keyVersion);
@@ -54,6 +55,7 @@ export const saveShopCredentials = async (
       keyVersion,
     },
   });
+  console.info(`[lalamove-credentials] saveShopCredentials OK shop=${shop}`);
 };
 
 export const getShopCredentials = async (
@@ -62,7 +64,11 @@ export const getShopCredentials = async (
   const row = await prisma.lalamoveShopCredential.findUnique({
     where: { shop },
   });
-  if (!row) return null;
+  if (!row) {
+    console.info(`[lalamove-credentials] getShopCredentials shop=${shop} found=false`);
+    return null;
+  }
+  console.info(`[lalamove-credentials] getShopCredentials shop=${shop} found=true`);
   return {
     apiKey: decryptSecret(row.apiKeyCiphertext),
     apiSecret: decryptSecret(row.apiSecretCiphertext),
@@ -86,6 +92,7 @@ export const hasShopCredentials = async (shop: string) => {
 };
 
 export const markCredentialsValidated = async (shop: string) => {
+  console.info(`[lalamove-credentials] markCredentialsValidated shop=${shop}`);
   await prisma.lalamoveShopCredential.updateMany({
     where: { shop },
     data: { lastValidatedAt: new Date() },
@@ -104,9 +111,13 @@ export const getRuntimeCredentialsForShop = async (
 ): Promise<LalamoveRuntimeCredentials | null> => {
   // Prefer per-shop credentials from DB when available (persistent across sessions)
   const fromDb = await getShopCredentials(shop);
-  if (fromDb) return fromDb;
-  // Fallback to env vars when no per-shop credentials are saved
-  return getEnvCredentials();
+  if (fromDb) {
+    console.info(`[lalamove-credentials] getRuntimeCredentialsForShop shop=${shop} source=db`);
+    return fromDb;
+  }
+  const fromEnv = getEnvCredentials();
+  console.info(`[lalamove-credentials] getRuntimeCredentialsForShop shop=${shop} source=${fromEnv ? "env" : "none"}`);
+  return fromEnv;
 };
 
 export const redactSecret = (value: string | null | undefined) => {

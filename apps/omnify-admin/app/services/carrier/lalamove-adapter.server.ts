@@ -10,6 +10,8 @@ export type LalamoveConfig = {
   market: string;
   language: string;
   preferredServiceType: string;
+  /** City name from Shopify location address (e.g. "São Paulo", "Recife"). */
+  city?: string | null;
   locationAddress?: string | null;
   /** Injected from Shopify location; used as sender name on place order */
   locationName?: string | null;
@@ -21,6 +23,24 @@ export type LalamoveConfig = {
   pickupLat?: number | null;
   /** Pickup location longitude — stored for auto-routing background service. */
   pickupLng?: number | null;
+
+  // ── Fulfillment details (persisted — previously client-only URL params) ──
+  /** 0=same-day, 1=next-day, 2=D+2, etc. */
+  deliveryPromiseDays?: number | null;
+  /** Order cutoff time "HH:mm" e.g. "12:00" — orders after this shift to next cycle. */
+  orderCutoffTime?: string | null;
+  /** IANA timezone e.g. "America/Sao_Paulo" */
+  timezone?: string | null;
+
+  // ── Auto-delivery schedule ────────────────────────────────────────────────
+  /** Master toggle for automatic route assignment and dispatch. */
+  autoDeliveryEnabled?: boolean | null;
+  /** Minutes after cutoff to trigger auto-assignment, e.g. 15. */
+  autoAssignDelayMinutes?: number | null;
+  /** Time to auto-dispatch "HH:mm" e.g. "14:30". */
+  autoDispatchTime?: string | null;
+  /** No new retries after this time "HH:mm" e.g. "17:30". */
+  retryCutoffTime?: string | null;
 };
 
 function normalizeForMatch(s: string): string {

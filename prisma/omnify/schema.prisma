@@ -316,6 +316,7 @@ model PriceTagConfig {
   metafieldKey            String   @default("")
   displayNameKey          String   @default("")
   metaobjectFieldDefaults String   @default("{}")
+  webhookSyncEnabled      Boolean  @default(false)
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 }
@@ -419,14 +420,16 @@ model RetailOrder {
   cityNorm     String?
   latitude     Float?
   longitude    Float?
-  totalAmount  Float?
-  currencyCode String?
-  orderDate    DateTime?
-  syncedAt     DateTime  @default(now())
+  totalAmount            Float?
+  currencyCode           String?
+  fulfillmentLocationId  String?
+  orderDate              DateTime?
+  syncedAt               DateTime  @default(now())
 
   @@index([shop, orderDate])
   @@index([shop, cityNorm])
   @@index([shop, latitude, longitude])
+  @@index([shop, fulfillmentLocationId])
 }
 
 model RetailCustomer {
@@ -532,6 +535,13 @@ model BulkPriceCampaign {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
+  priceTagsEnabled           Boolean  @default(false)
+  priceTagMetaobjectType     String?
+  priceTagDisplayNameKey     String?
+  priceTagFieldDefaults      String?
+  priceTagMetafieldNamespace String?
+  priceTagMetafieldKey       String?
+
   items BulkPriceCampaignItem[]
 
   @@index([shop])
@@ -554,4 +564,42 @@ model BulkPriceCampaignItem {
 
   @@index([campaignId])
   @@index([shop, variantGid])
+}
+
+model RouteOptimizationSnapshot {
+  id               String   @id @default(cuid())
+  shop             String
+  locationId       String
+  proposedAt       DateTime @default(now())
+  /// Array<{ routeIndex, orderIds, serviceType, costSubunits }>
+  proposedRoutes   Json
+  /// Array<{ orderId, lat, lng }> for geographic analysis
+  orderCoordinates Json
+  orderCount       Int
+  routeCount       Int
+
+  @@index([shop, locationId, proposedAt])
+}
+
+model RouteCorrection {
+  id                   String   @id @default(cuid())
+  shop                 String
+  snapshotId           String
+  dispatchedAt         DateTime @default(now())
+  dispatchedRouteIndex Int?
+  /// Array<{ orderId, fromRoute, toRoute, lat, lng }>
+  corrections          Json
+  wasModified          Boolean
+  ordersReassigned     Int
+  ordersDispatched     Int
+
+  @@index([shop, dispatchedAt])
+  @@index([snapshotId])
+}
+
+model WaitlistSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String   @default("gbp-health-check")
+  createdAt DateTime @default(now())
 }

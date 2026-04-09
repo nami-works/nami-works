@@ -3,7 +3,8 @@ import crypto from "crypto";
 export type LalamoveStop = {
   coordinates: { lat: string; lng: string };
   address: string;
-  waitTime?: number; // optional per-stop wait time in seconds (Lalamove v3 API)
+  remarks?: string;
+  sourceAddress2?: string | null;
 };
 
 export type LalamoveQuotationRequest = {
@@ -12,6 +13,12 @@ export type LalamoveQuotationRequest = {
   serviceType: string;
   stops: LalamoveStop[];
   isRouteOptimized?: boolean;
+  specialRequests?: string[];
+};
+
+export type LalamoveSpecialRequest = {
+  name: string;
+  description: string;
 };
 
 export type LalamoveQuotationResponse = {
@@ -81,6 +88,17 @@ export type LalamoveCredentials = {
 };
 
 export type LalamoveEnvironment = "sandbox" | "production";
+
+export class LalamoveApiError extends Error {
+  public readonly status: number;
+  public readonly payload: any;
+  constructor(status: number, message: string, payload: any) {
+    super(`${status}: ${message}`);
+    this.name = "LalamoveApiError";
+    this.status = status;
+    this.payload = payload;
+  }
+}
 
 export type LalamoveErrorDetails = {
   status: number | null;
@@ -190,6 +208,28 @@ export const sanitizeLalamoveErrorMessage = (message: string) => {
   return value;
 };
 
+const enrichStopAddressWithAddress2 = (
+  value: string,
+  address2?: string | null,
+) => {
+  const normalizedValue = value.trim();
+  const normalizedAddress2 = (address2 ?? "").trim();
+  if (!normalizedAddress2) return normalizedValue;
+  return `${normalizedValue} • ${normalizedAddress2}`;
+};
+
+export const buildLalamoveRecipientRemarks = (
+  index: number,
+  pickupInstructions: string | null | undefined,
+  _deliveryAddress2: string | null | undefined,
+) => {
+  const normalizedPickup = pickupInstructions?.trim() ?? "";
+  if (index === 0) {
+    return normalizedPickup.length > 0 ? normalizedPickup : undefined;
+  }
+  return undefined;
+};
+
 export const detectLalamoveEnvironmentFromBaseUrl = (
   rawBaseUrl: string | null | undefined,
 ): LalamoveEnvironment => {
@@ -238,26 +278,35 @@ export const LALAMOVE_MARKET_COUNTRY_CODE: Record<string, string> = {
 /**
  * Normalize a phone number to E.164 format for Lalamove API submission.
  *
- * When `market` is provided and maps to a known country code, the function
- * ensures the digit string starts with the correct country dialing prefix.
- * Numbers that already carry the correct prefix are left unchanged.
- * Numbers missing the prefix have it prepended.
+ * If the phone already starts with "+", it is assumed to be a valid
+ * international number and is returned as-is (only non-digit characters
+ * other than the leading "+" are stripped). This avoids mangling foreign
+ * numbers (e.g. a Portuguese +353 number in a BR market).
  *
- * When `market` is absent or unknown, legacy behavior applies: strip
- * non-digit characters and prepend `+`.
+ * When the phone does NOT start with "+" and `market` is provided, the
+ * market's country dialing prefix is prepended to the local number.
  *
  * Examples (market = "BR", country code = "55"):
- *   "11966208929"     -> "+5511966208929"   (missing prefix, added)
- *   "+5511966208929"  -> "+5511966208929"   (correct prefix, unchanged)
- *   "5511966208929"   -> "+5511966208929"   (correct digits without +)
- *   "+21994683997"    -> "+5521994683997"   (wrong prefix, corrected)
+ *   "11966208929"     -> "+5511966208929"   (local number, prefix added)
+ *   "+5511966208929"  -> "+5511966208929"   (already international, unchanged)
+ *   "5511966208929"   -> "+5511966208929"   (digits with country code, prefix added)
+ *   "+35312345678"    -> "+35312345678"     (foreign number, preserved as-is)
  */
 export function normalizePhoneToE164(
   phone: string | null | undefined,
   market?: string | null,
 ): string {
   if (phone == null || typeof phone !== "string") return "";
-  const digitsOnly = phone.replace(/\D/g, "");
+  const trimmed = phone.trim();
+  if (trimmed.length === 0) return "";
+
+  // If the phone already has a "+" prefix, trust it as an international number.
+  if (trimmed.startsWith("+")) {
+    const cleaned = "+" + trimmed.slice(1).replace(/\D/g, "");
+    return cleaned.length > 1 ? cleaned : "";
+  }
+
+  const digitsOnly = trimmed.replace(/\D/g, "");
   if (digitsOnly.length === 0) return "";
 
   if (market) {
@@ -271,6 +320,44 @@ export function normalizePhoneToE164(
   }
 
   return `+${digitsOnly}`;
+}
+
+/**
+ * Check whether an E.164 phone number belongs to the expected market.
+ * Returns true when the phone's country calling code matches the market's
+ * code, or when the market has no known code (permissive fallback).
+ */
+export function isPhoneValidForMarket(
+  e164Phone: string,
+  market: string | null | undefined,
+): boolean {
+  if (!e164Phone || !market) return true;
+  const expectedCode =
+    LALAMOVE_MARKET_COUNTRY_CODE[market.trim().toUpperCase()];
+  if (!expectedCode) return true;
+  const digits = e164Phone.replace(/^\+/, "");
+  return digits.startsWith(expectedCode);
+}
+
+/**
+ * Normalize a phone for a specific Lalamove market.
+ * If the phone is valid E.164 but belongs to a DIFFERENT country than the
+ * market expects (e.g. US +1 phone in BR market), returns empty string so
+ * callers can fall back to the store's location phone.
+ */
+export function normalizePhoneForMarket(
+  phone: string | null | undefined,
+  market?: string | null,
+): string {
+  const normalized = normalizePhoneToE164(phone, market);
+  if (!normalized || !market) return normalized;
+  if (!isPhoneValidForMarket(normalized, market)) {
+    console.warn(
+      `[lalamove] phone rejected for market mismatch: phone=${normalized.slice(0, 4)}*** market=${market}`,
+    );
+    return "";
+  }
+  return normalized;
 }
 
 const lalamoveRequest = async <TResponse>(
@@ -291,6 +378,7 @@ const lalamoveRequest = async <TResponse>(
   const signature = toSignature(apiSecret, timestamp, method, path, body);
   const token = `${apiKey}:${timestamp}:${signature}`;
 
+  console.log(`[lalamove] ${method} ${path} market=${market}`);
   const response = await fetch(`${getBaseUrl()}${path}`, {
     method,
     headers: {
@@ -309,32 +397,47 @@ const lalamoveRequest = async <TResponse>(
     payload = null;
   }
   if (!response.ok) {
-    throw new Error(
-      `${response.status}: ${readErrorMessage(
-        payload,
-        `Lalamove ${method} ${path} failed.`,
-      )}`,
-    );
+    const errMsg = readErrorMessage(payload, `Lalamove ${method} ${path} failed.`);
+    console.error(`[lalamove] ${method} ${path} → ${response.status}: ${errMsg}`);
+    throw new LalamoveApiError(response.status, errMsg, payload);
   }
-  return payload.data as TResponse;
+  console.log(`[lalamove] ${method} ${path} → ${response.status} ok`);
+  return (payload?.data ?? null) as TResponse;
 };
 
 export const createLalamoveQuotation = async (
   request: LalamoveQuotationRequest,
   credentials?: LalamoveCredentials,
 ) => {
-  return lalamoveRequest<LalamoveQuotationResponse>(
+  const stops = request.stops.map((stop, index) => ({
+    coordinates: {
+      lat: stop.coordinates.lat,
+      lng: stop.coordinates.lng,
+    },
+    address: enrichStopAddressWithAddress2(stop.address, stop.sourceAddress2),
+    ...(stop.remarks?.trim()
+      ? {
+          remarks: stop.remarks.trim(),
+        }
+      : {}),
+  }));
+  const result = await lalamoveRequest<LalamoveQuotationResponse>(
     "POST",
     request.market,
     "/v3/quotations",
     {
       language: request.language,
       serviceType: request.serviceType,
-      stops: request.stops,
+      stops,
       isRouteOptimized: Boolean(request.isRouteOptimized),
+      ...(request.specialRequests?.length
+        ? { specialRequests: request.specialRequests }
+        : {}),
     },
     credentials,
   );
+  console.info(`[lalamove] quotation → id=${result.quotationId} total=${result.priceBreakdown?.total ?? "?"} ${result.priceBreakdown?.currency ?? ""} stops=${stops.length}`);
+  return result;
 };
 
 export const placeLalamoveOrder = async (
@@ -345,17 +448,24 @@ export const placeLalamoveOrder = async (
   const sender = {
     stopId: request.sender.stopId,
     name: request.sender.name,
-    phone:
-      normalizePhoneToE164(request.sender.phone, market) ||
-      request.sender.phone,
+    phone: normalizePhoneForMarket(request.sender.phone, market) || request.sender.phone,
+    ...(request.sender.remarks?.trim()
+      ? {
+          remarks: request.sender.remarks.trim(),
+        }
+      : {}),
   };
-  const recipients = request.recipients.map((r) => ({
+  const recipients = request.recipients.map((r, index) => ({
     stopId: r.stopId,
     name: r.name,
-    phone: normalizePhoneToE164(r.phone, market) || r.phone,
-    ...(r.remarks?.trim() ? { remarks: r.remarks.trim() } : {}),
+    phone: normalizePhoneForMarket(r.phone, market) || r.phone,
+    ...(r.remarks?.trim()
+      ? {
+          remarks: r.remarks.trim(),
+        }
+      : {}),
   }));
-  return lalamoveRequest<LalamovePlaceOrderResponse>(
+  const result = await lalamoveRequest<LalamovePlaceOrderResponse>(
     "POST",
     request.market,
     "/v3/orders",
@@ -369,6 +479,8 @@ export const placeLalamoveOrder = async (
     },
     credentials,
   );
+  console.info(`[lalamove] order placed → id=${result.orderId} status=${result.status}`);
+  return result;
 };
 
 export const getLalamoveOrderDetails = async (
@@ -399,6 +511,7 @@ export const cancelLalamoveOrder = async (
     undefined,
     credentials,
   );
+  console.info(`[lalamove] order cancelled → ${orderId}`);
 };
 
 export const addLalamovePriorityFee = async (
@@ -470,6 +583,7 @@ export const probeLalamoveCredentials = async (
     }
   }
 
+  console.warn(`[lalamove] credential probe failed → status=${lastFailure?.status ?? "unknown"} code=${lastFailure?.code ?? "unknown"}`);
   if (lastFailure?.status === 401 || lastFailure?.status === 403) {
     return {
       ok: false,
@@ -503,4 +617,89 @@ export const probeLalamoveCredentials = async (
     error: "Unable to validate credentials.",
     details: { status: null, retryable: false, message: "Unknown error" },
   };
+};
+
+// ─── City Info (special requests per market) ────────────────────────────────
+
+export type LalamoveCityService = {
+  key: string;
+  description?: string;
+  specialRequests?: LalamoveSpecialRequest[];
+};
+
+export type LalamoveCityInfo = {
+  locode: string;
+  name?: string;
+  services: LalamoveCityService[];
+};
+
+export const getLalamoveCityInfo = async (
+  market: string,
+  credentials?: LalamoveCredentials,
+): Promise<LalamoveCityInfo[]> => {
+  return lalamoveRequest<LalamoveCityInfo[]>(
+    "GET",
+    market,
+    "/v3/cities",
+    undefined,
+    credentials,
+  );
+};
+
+const stripAccents = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+/**
+ * Validate special requests against the specific city+service available options
+ * from the /v3/cities endpoint. Filters out requests not available for the
+ * location's city, so e.g. Recife won't attempt wait-time (only supported in
+ * Rio/SP for LALAGO).
+ */
+export const resolveSpecialRequestsForCity = async (
+  allRequests: string[],
+  config: { market: string; city?: string | null; preferredServiceType?: string },
+  credentials: LalamoveCredentials,
+): Promise<string[]> => {
+  if (allRequests.length === 0) return [];
+
+  try {
+    const cities = await getLalamoveCityInfo(config.market, credentials);
+    const availableNames = new Set<string>();
+    const locationCity = stripAccents(
+      (config.city ?? "").trim().toLowerCase(),
+    );
+    const serviceType = config.preferredServiceType;
+
+    console.info(
+      `[lalamove] resolveSpecialRequests: market=${config.market} city=${locationCity || "?"} service=${serviceType ?? "?"} input=[${allRequests.join(", ")}]`,
+    );
+
+    for (const city of cities) {
+      if (locationCity) {
+        const matchesLocode =
+          stripAccents(city.locode?.toLowerCase() ?? "") === locationCity;
+        const matchesName =
+          stripAccents(city.name?.trim().toLowerCase() ?? "") === locationCity;
+        if (!matchesLocode && !matchesName) continue;
+      }
+      for (const service of city.services ?? []) {
+        if (serviceType && service.key !== serviceType) continue;
+        for (const sr of service.specialRequests ?? []) {
+          availableNames.add(sr.name);
+        }
+      }
+    }
+
+    const filtered = allRequests.filter((sr) => availableNames.has(sr));
+    if (filtered.length !== allRequests.length) {
+      const removed = allRequests.filter((sr) => !availableNames.has(sr));
+      console.warn(
+        `[lalamove] resolveSpecialRequests: filtered out [${removed.join(", ")}] for city=${locationCity || "?"} service=${serviceType ?? "?"}`,
+      );
+    }
+
+    return filtered;
+  } catch (err) {
+    console.warn("[lalamove] resolveSpecialRequests: city info fetch failed, proceeding with all requests", err);
+    return allRequests;
+  }
 };

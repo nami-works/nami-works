@@ -224,6 +224,9 @@
   }
 
   .footer {
-    padding: 60px 24px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 60px 48px;
   }
 }

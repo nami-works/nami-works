@@ -1,0 +1,329 @@
+{
+  "pageHeading": "Entrega local",
+  "filters": {
+    "fulfillmentDetails": "Detalhes de fulfillment",
+    "fulfillmentLocation": "Local de fulfillment",
+    "allLocations": "Todas as localizações",
+    "startDate": "Data inicial",
+    "deliveryPromise": "Promessa de entrega",
+    "all": "Todos",
+    "daysAgo": "{{count}} dia(s) atrás",
+    "ordersToDeliver": "📦 Pedidos para entregar: {{count}}",
+    "failedDelivery": "⚠️ Entrega falhada ({{count}})",
+    "sameDay": "Mesmo dia",
+    "sameDayTimeLimit": "Horário limite para mesmo dia",
+    "nextDay": "Próximo dia",
+    "dayPlus2": "Dia +2",
+    "dayPlus3": "Dia +3",
+    "dayPlus4": "Dia +4",
+    "presaleWarning": "⚠️ Há pedidos de pré-venda não cumpridos"
+  },
+  "map": {
+    "legend": {
+      "dueToday": "Para hoje",
+      "dueTomorrow": "Para amanhã",
+      "dueLater": "Para depois",
+      "dueTodayEmoji": "📦",
+      "dueTomorrowEmoji": "⏰",
+      "dueLaterEmoji": "🕒",
+      "addressErrorEmoji": "🟡",
+      "addressError": "Problema no endereço"
+    },
+    "noMapAvailable": "Mapa não disponível.",
+    "selectLocationToShowRoutes": "Selecione uma localização específica para exibir rotas no mapa.",
+    "noCoordinates": "Nenhuma coordenada disponível para os filtros selecionados.",
+    "mapStyleButton": "Estilo do mapa",
+    "collapse": "[-] Recolher",
+    "expand": "[+] Expandir",
+    "collapseMap": "Recolher mapa",
+    "expandMap": "Expandir mapa",
+    "clearSelection": "Limpar seleção",
+    "assignToNewRoute": "Atribuir a nova rota",
+    "errors": {
+      "placesLoadFailed": "O Google Maps Places não carregou. Verifique sua chave de API e configuração de cobrança.",
+      "sdkNotAvailable": "Google Maps SDK não disponível.",
+      "advancedMarkersUnavailable": "Marcadores avançados do Google Maps indisponíveis. Verifique o Map ID e configuração da API.",
+      "mapsLoadFailed": "O Google Maps não carregou. Verifique sua chave de API e configuração de cobrança."
+    },
+    "fulfillmentLocation": "Local de fulfillment",
+    "fulfillmentLabel": "Fulfillment",
+    "styles": {
+      "light": "Claro",
+      "grayscale": "Escala de cinza",
+      "dark": "Escuro"
+    }
+  },
+  "routeManager": {
+    "clearRouteDisabledTooltip": "Não é possível limpar a rota com solicitação de motorista ativa",
+    "deliveryCancelled": "Entrega cancelada.",
+    "noLogEvents": "Nenhum evento registrado ainda.",
+    "integrationLogHeading": "Log de integração",
+    "integrationLog": "Log de integração",
+    "cancelYes": "Sim, cancelar",
+    "cancelNo": "Não",
+    "cancelDeliveryWarning": "Esta ação não pode ser desfeita.",
+    "cancelDeliveryConfirm": "Tem certeza que deseja cancelar esta entrega?",
+    "cancelDeliveryHeading": "Cancelar entrega",
+    "cancelDelivery": "Cancelar",
+    "heading": "Gerenciador de rotas",
+    "actions": "Ações",
+    "clearAllRoutes": "Limpar todas as rotas",
+    "noRoutes": "Nenhuma rota criada ainda. Selecione pedidos no mapa e atribua-os a rotas.",
+    "unassignedOrders": "Pedidos não atribuídos ({{count}})",
+    "noUnassigned": "Nenhum pedido não atribuído para os filtros atuais.",
+    "autoRouted": "Auto-roteado",
+    "autoAssignmentInProgress": "Atribuição automática em andamento",
+    "requestDriver": "Solicitar motorista",
+    "requestingDriver": "Solicitando…",
+    "requestQuote": "Solicitar cotação",
+    "requestingQuote": "Solicitando…",
+    "assignToRoute": "Atribuir à rota",
+    "newRoute": "Nova rota",
+    "route": "Rota {{number}}",
+    "stops": "{{count}} parada(s)",
+    "distance": "{{km}} km",
+    "duration": "{{min}} min",
+    "selectLocation": "Selecione uma localização de fulfillment para ver as rotas atribuídas.",
+    "noRoutesForLocation": "Nenhuma rota atribuída para esta localização.",
+    "table": {
+      "order": "Pedido",
+      "customer": "Cliente",
+      "address": "Endereço"
+    },
+    "noAddressLine1": "Sem linha 1 do endereço",
+    "moreOrders": "+{{count}} mais…",
+    "ordersVisible": "{{count}} pedidos visíveis nos filtros atuais",
+    "multipleCurrencies": "Múltiplas moedas",
+    "trackDelivery": "Rastrear entrega →",
+    "lalamoveDisabled": "Adicione detalhes da localização para habilitar o Lalamove.",
+    "clearRoute": "Limpar rota",
+    "addToRoute": "Adicionar à rota",
+    "manage": "Gerenciar",
+    "driverRequested": "Motorista solicitado",
+    "status": {
+      "requested": "Motorista solicitado",
+      "assigning": "Procurando motorista",
+      "heading_to_pickup": "Motorista a caminho",
+      "in_progress": "Saiu para entrega",
+      "delivered": "Entregue",
+      "failed": "Cancelado",
+      "rejected": "Nenhum motorista disponível",
+      "expired": "Solicitação expirada"
+    },
+    "manageOrders": "Gerenciar pedidos",
+    "autoAssignOrders": "Atribuir pedidos automaticamente",
+    "autoAssign": "Auto-atribuir",
+    "updateRoutes": "Atualizar rotas",
+    "addressCorrection": "Correção de endereço",
+    "changeSettings": "Alterar configurações",
+    "actions": "Ações",
+    "carrierStatus": "Status do transportador",
+    "selectLocationForCarrier": "Selecione uma localização de fulfillment para ver o status do transportador.",
+    "loadToPlanner": "Carregar no planejador",
+    "dismiss": "Dispensar",
+    "selectAllInRoute": "Selecionar todos os pedidos da rota",
+    "removeFromRoute": "Remover {{name}} da rota",
+    "selectOrder": "Selecionar {{name}}",
+    "unassignOrders": "Remover atribuição",
+    "close": "Fechar",
+    "autoAssignedResult": "Atribuído automaticamente {{count}} ({{routeCount}} {{routeWord}}",
+    "routeWord": "rota",
+    "routeWordPlural": "rotas",
+    "addToBestRoute": "Adicionar à melhor rota",
+    "resetAutoAssign": "Reativar atribuição automática",
+    "assignmentSuccess": "Todos os {{assigned}} pedidos atribuídos com sucesso a {{routes}} rotas",
+    "optimizeApplied": "Otimização aplicada: {{count}} rotas",
+    "reRequestedAt": "Re-solicitado às {{time}}",
+    "ordersMeta": "{{count}} pedidos • Taxas de envio: {{shipping}}",
+    "costLabel": "Custo: {{cost}}",
+    "costPlaceholder": "Custo: --",
+    "durationFormat": "{{hours}}h {{mins}}m"
+  },
+  "modals": {
+    "routeDetails": {
+      "heading": "Rota {{number}} – Detalhes",
+      "noOrders": "Nenhum pedido nesta rota."
+    },
+    "unassignConfirm": {
+      "heading": "Aviso",
+      "message": "Isso removerá todos os pedidos desta rota.",
+      "proceed": "Deseja continuar?",
+      "confirm": "Sim, remover",
+      "cancel": "Cancelar"
+    },
+    "clearAllConfirm": {
+      "heading": "Aviso",
+      "message": "Isso limpará todas as atribuições de rota.",
+      "proceed": "Deseja continuar?",
+      "confirm": "Sim, limpar tudo",
+      "cancel": "Cancelar"
+    },
+    "requestDriver": {
+      "heading": "Solicitar motorista",
+      "confirmMessage": "Isso solicitará um motorista Lalamove para esta rota.",
+      "stops": "Paradas:",
+      "estimatedDistance": "Distância estimada:",
+      "estimatedDuration": "Duração estimada:",
+      "confirm": "Confirmar solicitação",
+      "cancel": "Cancelar",
+      "quoteId": "Cotação #{{quotationId}}",
+      "expiresAt": "Expira em: {{time}}",
+      "estimatedTotal": "Total estimado: {{amount}}",
+      "ordersInRoute": "Pedidos na rota: {{count}}",
+      "close": "Fechar"
+    },
+    "tagFilter": {
+      "heading": "Selecione quais tags incluir nas rotas:",
+      "noTags": "Nenhuma tag de pré-venda encontrada.",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar"
+    },
+    "mapStyle": {
+      "heading": "Estilo do mapa",
+      "mapStyleLabel": "Estilo do mapa",
+      "dark": "Escuro",
+      "greyscale": "Escala de cinza",
+      "light": "Claro",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar"
+    },
+    "addressErrors": {
+      "heading": "Possíveis erros de endereço",
+      "noErrors": "Nenhum erro de endereço potencial encontrado.",
+      "footer": "Estes pedidos podem ter endereços de entrega incompletos ou inválidos.",
+      "fixAddress": "Corrigir endereço no Shopify",
+      "openInShopify": "Abrir no Shopify",
+      "close": "Fechar",
+      "apartmentInAddress": "Detalhes de apartamento/unidade provavelmente na linha 1 do endereço.",
+      "duplicateNumber": "Possível número duplicado entre as linhas do endereço.",
+      "multipleNumbers": "Múltiplos números encontrados na linha 1 do endereço — possível erro de formatação.",
+      "reviewNeeded": "Revisão de endereço necessária.",
+      "instruction": "Abra o pedido, depois use Cliente > ... > Editar endereço de entrega."
+    },
+    "addressWarn": {
+      "heading": "Possíveis erros de endereço nesta rota",
+      "description": "Os pedidos abaixo podem ter problemas de endereço. Corrija-os no Shopify antes de solicitar um motorista, ou prossiga mesmo assim.",
+      "problemFixed": "Problema corrigido",
+      "proceedAnyway": "Prosseguir mesmo assim"
+    },
+    "foreignPhone": {
+      "heading": "Telefones estrangeiros detectados",
+      "description": "Os pedidos abaixo possuem telefones de um país diferente do mercado de entrega. O telefone da loja será usado como contato para a entrega.",
+      "orderPhone": "Telefone: {{phone}}",
+      "proceed": "Prosseguir com telefone da loja",
+      "cancel": "Cancelar"
+    },
+    "driverError": {
+      "carrierDiagnostic": "Diagnóstico da transportadora",
+      "heading": "Erro na solicitação de motorista",
+      "headingFailed": "Solicitação falhou",
+      "errorDetails": "Detalhes do erro",
+      "close": "Fechar",
+      "apiCredentials": "Credenciais de API",
+      "market": "Mercado",
+      "vehicleType": "Tipo de veículo",
+      "locationName": "Nome da localização",
+      "locationPhone": "Telefone da localização",
+      "locationAddress": "Endereço da localização"
+    },
+    "shipmentRequests": {
+      "heading": "Solicitações de envio para processar",
+      "noIssues": "Nenhum problema de solicitação de envio encontrado.",
+      "footer": "Estes pedidos podem precisar de processamento manual antes da atribuição de entrega.",
+      "close": "Fechar",
+      "statusPrefix": "Status: {{status}}",
+      "deliveryMethodPrefix": "Método de entrega: {{method}}",
+      "instruction": "Estes pedidos estão marcados como LOCAL mas possuem métodos de entrega não locais. Abra cada pedido, depois use Cliente > ... > Editar endereço de entrega para corrigir."
+    },
+    "specialRequests": {
+      "heading": "Solicitações especiais",
+      "description": "Selecione solicitações especiais para esta entrega:",
+      "loading": "Carregando opções disponíveis...",
+      "noOptions": "Nenhuma opção de solicitação especial disponível para este mercado.",
+      "cancel": "Cancelar",
+      "confirm": "Solicitar cotação",
+      "waitTimeLabel": "Tempo de Espera"
+    },
+    "addressVerify": {
+      "heading": "Verificar endereços de entrega",
+      "description": "Revise e corrija os endereços de entrega antes de solicitar um motorista. Use o campo de busca para encontrar o endereço correto.",
+      "addressPlaceholder": "Buscar endereço...",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar e solicitar"
+    },
+    "returnPickups": {
+      "heading": "Solicitações de Devolução",
+      "instructionsLabel": "Instruções de devolução",
+      "instructionsPlaceholder": "Ex.: Tocar campainha, pedir o pacote...",
+      "table": {
+        "order": "Pedido",
+        "customer": "Cliente",
+        "address": "Endereço"
+      },
+      "selectAll": "Selecionar todos",
+      "collectReturns": "Coletar Devoluções",
+      "collecting": "Obtendo cotação...",
+      "cost": "Custo: {{amount}} {{currency}}",
+      "confirmRequest": "Confirmar solicitação",
+      "confirming": "Confirmando...",
+      "cancel": "Cancelar",
+      "noRequests": "Nenhuma solicitação de devolução pendente."
+    }
+  },
+  "warnings": {
+    "addressErrors": "Possíveis erros de endereço ({{count}})",
+    "shipmentRequests": "Solicitações de envio para processar ({{count}})",
+    "returnPickups": "Devoluções pendentes ({{count}})"
+  },
+  "banners": {
+    "mapsKeyMissing": "Chave da API do Google Maps ausente",
+    "mapsKeyDescription": "Adicione GOOGLE_MAPS_API_KEY ao seu ambiente para habilitar o mapa de entregas.",
+    "mapsMapIdMissing": "Map ID do Google Maps ausente",
+    "mapsMapIdDescription": "Adicione GOOGLE_MAPS_MAP_ID ao seu ambiente para recursos avançados do mapa.",
+    "ordersAccessRequired": "Acesso a pedidos requer aprovação",
+    "ordersAccessDescription": "O app precisa do escopo read_orders. Aprove no admin do Shopify.",
+    "debugMode": "Modo de debug de Entrega Local",
+    "debugDescription": "O modo de debug está ativo. Algumas funcionalidades podem se comportar diferentemente.",
+    "mapsMapIdAdvancedMarkers": "Defina GOOGLE_MAPS_MAP_ID no seu ambiente para usar Marcadores Avançados."
+  },
+  "status": {
+    "requested": "Solicitado",
+    "matched": "Atribuído",
+    "onGoing": "Em andamento",
+    "pickedUp": "Coletado",
+    "completed": "Concluído",
+    "cancelled": "Cancelado",
+    "rejected": "Rejeitado",
+    "expired": "Expirado",
+    "failed": "Falhado"
+  },
+  "driverRequest": {
+    "viewDetails": "Ver detalhes",
+    "requestFailed": "Solicitação falhou",
+    "readyForDelivery": "Pronto para entrega",
+    "outOfAreaOrders": "Pedidos fora da área de serviço",
+    "outOfAreaRemoved": "Pedidos fora da área de serviço foram removidos",
+    "outOfAreaContinued": "A cotação foi criada com os pedidos restantes. Os pedidos listados acima foram removidos automaticamente da rota.",
+    "cancelling": "Cancelando...",
+    "creatingQuotation": "Criando cotação...",
+    "cancelFailed": "Falha ao cancelar",
+    "cancelCouldNotBeCancelled": "Solicitação não pôde ser cancelada",
+    "goToLalamove": "Ir para Lalamove"
+  },
+  "infoWindow": {
+    "assignedTo": "Pedido atribuído à Rota {{number}}",
+    "unassign": "Remover atribuição"
+  },
+  "dueBuckets": {
+    "today": "Pedidos para hoje",
+    "todaySelectAll": "Selecionar todos os pedidos para hoje",
+    "tomorrow": "Pedidos para amanhã",
+    "tomorrowSelectAll": "Selecionar todos os pedidos para amanhã",
+    "later": "Pedidos para depois",
+    "laterSelectAll": "Selecionar todos os pedidos para depois"
+  },
+  "customer": {
+    "guest": "Visitante",
+    "noShippingAddress": "Sem endereço de entrega"
+  }
+}

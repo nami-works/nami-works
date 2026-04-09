@@ -55,6 +55,7 @@ export async function computeRoutePolyline(
   }
   const destination = orders[orders.length - 1]!;
   const intermediates = orders.slice(0, -1).slice(0, MAX_WAYPOINTS_PER_ROUTE);
+  console.info(`[google-routes] computeRoutePolyline START waypoints=${orders.length}`);
   const response = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
     method: "POST",
     headers: {
@@ -93,7 +94,9 @@ export async function computeRoutePolyline(
       optimizeWaypointOrder: true,
     }),
   });
+  console.info(`[google-routes] computeRoutePolyline status=${response.status}`);
   if (!response.ok) {
+    console.error(`[google-routes] computeRoutePolyline FAILED status=${response.status}`);
     return { polyline: "", distanceMeters: 0, durationSeconds: 0, ordered: orders };
   }
   const json = await response.json();
@@ -110,3 +113,5 @@ export async function computeRoutePolyline(
     ordered,
   };
 }
+
+

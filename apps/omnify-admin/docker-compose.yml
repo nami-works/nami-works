@@ -1,0 +1,21 @@
+# Local development PostgreSQL.
+# Usage:
+#   docker compose up -d      ← start Postgres in background
+#   docker compose down       ← stop (data persists in volume)
+#   docker compose down -v    ← stop + wipe data
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: omnify
+      POSTGRES_PASSWORD: omnify
+      POSTGRES_DB: omnify
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

@@ -63,7 +63,7 @@ export type OrderWithCoords = {
 /**
  * Fetch orders from last 12 months with shipping coordinates.
  * Requires admin GraphQL client. Note: Shopify defaults to 60 days; request read_all_orders
- * scope in shopify.app.toml for full 12-month access.
+ * scope in the relevant shopify.app.*.toml for full 12-month access.
  */
 export async function fetchOrdersForSampleBuild(
   admin: { graphql: (q: string, v?: { variables?: Record<string, unknown> }) => Promise<Response> },

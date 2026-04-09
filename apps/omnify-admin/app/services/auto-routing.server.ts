@@ -3,27 +3,24 @@
  *
  * Called fire-and-forget from the orders/create webhook. For each confirmed
  * LOCAL delivery order, fetches fulfillment location via GraphQL, then
- * re-optimizes ALL open pending routes for that location using the Google
- * Distance Matrix (via optimizeFleetRoutesInward). The optimizer replaces
- * all existing open routes with the globally optimal grouping.
+ * re-clusters ALL open pending orders for that location using haversine
+ * k-means (zero external API calls). The clustering enforces a minimum of
+ * 3 orders per route and respects directional coherence.
  *
- * No Lalamove quotations are made here — routing decisions use Google Maps
- * distances. Lalamove quotations happen only when the merchant explicitly
- * requests a driver via the UI.
+ * No Lalamove quotations or Google Maps API calls are made here — routing
+ * decisions use pure haversine geometry. Full cost optimization (Lalamove
+ * quotes + R$14 surcharge model) happens when the merchant clicks
+ * "Optimize fleet" in the UI.
  *
  * Deduplication: if the order is already present in any open pending route
  * for this location, the webhook is ignored (idempotent).
- *
- * Fallback: if GOOGLE_MAPS_API_KEY is not set or the optimizer errors, a
- * solo route is created for the new order without touching existing routes.
  */
 
 import prisma from "../db.server";
 import { getRuntimeCredentialsForShop } from "./lalamove-credentials.server";
 import type { LalamoveConfig } from "./carrier/lalamove-adapter.server";
-import { optimizeFleetRoutesInward } from "./google-routes-optimizer-inward.server";
 import type { OptimizerOrderInput } from "./google-routes-shared.server";
-import { normalizeShippingAddress } from "./carrier/geocode.server";
+import { clusterOrders } from "./carrier-quotation-optimizer.server";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -108,7 +105,7 @@ async function writeLog(
         locationId: locationId ?? null,
         status,
         reason,
-        details: details ? (details as object) : null,
+        details: details ? (details as any) : null,
       },
     });
   } catch (err) {
@@ -239,8 +236,8 @@ export async function runCarrierQuotationForOrderId(
 
 /**
  * Assigns a newly confirmed LOCAL delivery order to the optimal delivery routes.
- * Uses Google Distance Matrix to re-solve all pending orders globally. Designed
- * to be called fire-and-forget (don't await in webhook handler). Never throws.
+ * Uses haversine k-means clustering (no external API calls) to re-cluster all
+ * pending orders globally. Designed to be called fire-and-forget. Never throws.
  */
 export async function autoAssignOrderToRoute(
   shop: string,
@@ -379,27 +376,13 @@ async function _autoAssignOrderToRoute(
     return;
   }
 
-  // 5. Build new order stop (address normalized via Google Maps if key is available)
-  const googleApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() ?? "";
-
+  // 5. Build new order stop (use raw Shopify address — Lalamove normalizes internally)
   const customerName = [payload.customer?.first_name, payload.customer?.last_name]
     .filter(Boolean)
     .join(" ")
     .trim() || "Customer";
 
-  const normalizedAddress = googleApiKey
-    ? await normalizeShippingAddress(
-        {
-          address1: addr.address1,
-          address2: addr.address2,
-          city: addr.city,
-          province: addr.province,
-          zip: addr.zip,
-          country: addr.country,
-        },
-        googleApiKey,
-      )
-    : joinAddress([addr.address1, addr.address2, addr.city, addr.province, addr.zip, addr.country]);
+  const normalizedAddress = joinAddress([addr.address1, addr.address2, addr.city, addr.province, addr.zip, addr.country]);
 
   const newStop: OrderStop = {
     shopifyOrderId,
@@ -429,10 +412,16 @@ async function _autoAssignOrderToRoute(
   const existingStops: OrderStop[] = openRoutes.flatMap((r) => r.ordersData as OrderStop[]);
   const allStops = [...existingStops, newStop];
 
-  // 8. Re-optimize all pending orders using Google Distance Matrix
-  const canOptimize = !!googleApiKey && allStops.length > 1;
+  // 8. Re-cluster all pending orders using haversine k-means (no external API calls)
+  const carrierConfigRow = await prisma.carrierServiceConfig.findUnique({
+    where: { shop },
+  });
+  const maxPerRoute = Math.min(
+    15, // Lalamove hard cap
+    (carrierConfigRow?.data as { lalamoveMaxOrdersPerRoute?: number } | undefined)?.lalamoveMaxOrdersPerRoute ?? 10,
+  );
 
-  if (canOptimize) {
+  if (allStops.length > 1) {
     const inputs: OptimizerOrderInput[] = allStops.map((s) => ({
       orderId: s.shopifyOrderId,
       locationId,
@@ -440,15 +429,16 @@ async function _autoAssignOrderToRoute(
       locationCoordinates: { latitude: config.pickupLat!, longitude: config.pickupLng! },
     }));
 
-    try {
-      const result = await optimizeFleetRoutesInward(googleApiKey, inputs);
-      const routeGroups: OrderStop[][] = result.routes.map((r) =>
-        r.orderIds.map((id) => allStops.find((s) => s.shopifyOrderId === id)!),
+    const routeCount = Math.max(1, Math.ceil(inputs.length / maxPerRoute));
+    const clusters = clusterOrders(inputs, routeCount, maxPerRoute);
+
+    const routeGroups: OrderStop[][] = clusters
+      .filter((c) => c.length > 0)
+      .map((cluster) =>
+        cluster.map((o) => allStops.find((s) => s.shopifyOrderId === o.orderId)!),
       );
 
-      if (routeGroups.length === 0) throw new Error("Optimizer returned empty routes");
-
-      // Atomically delete all open routes and create the new optimal groupings
+    if (routeGroups.length > 0) {
       await (prisma as any).$transaction([
         (prisma as any).pendingDeliveryRoute.deleteMany({
           where: { shop, locationId, status: "open" },
@@ -460,29 +450,26 @@ async function _autoAssignOrderToRoute(
         ),
       ]);
 
-      await writeLog(shop, orderId, orderName, "assigned", "Globally re-optimized routes", locationId, {
+      await writeLog(shop, orderId, orderName, "assigned", "Haversine-clustered routes (no Google API)", locationId, {
         openRoutesCount: openRoutes.length,
         routeGroupsCount: routeGroups.length,
       });
-      console.info("[auto-routing] Re-optimized routes.", {
+      console.info("[auto-routing] Haversine-clustered routes.", {
         shop,
         shopifyOrderId,
         totalOrders: allStops.length,
         routeCount: routeGroups.length,
       });
       return;
-    } catch (err) {
-      console.warn("[auto-routing] Optimizer failed, falling back to solo route:", { shop, locationId, err });
-      // Fall through to solo route fallback — existing routes are NOT modified
     }
   }
 
-  // 9. Fallback: create a solo route for the new order (existing routes untouched)
+  // 9. Fallback: create a solo route for the new order (single order or clustering failed)
   await (prisma as any).pendingDeliveryRoute.create({
     data: { shop, locationId, status: "open", ordersData: [newStop] },
   });
-  await writeLog(shop, orderId, orderName, "assigned", canOptimize ? "Optimizer failed: solo fallback" : "Solo route (GOOGLE_MAPS_API_KEY not set)", locationId, {
+  await writeLog(shop, orderId, orderName, "assigned", "Solo route (single order)", locationId, {
     openRoutesCount: openRoutes.length,
   });
-  console.info("[auto-routing] Assigned to solo route (fallback).", { shop, shopifyOrderId });
+  console.info("[auto-routing] Assigned to solo route.", { shop, shopifyOrderId });
 }

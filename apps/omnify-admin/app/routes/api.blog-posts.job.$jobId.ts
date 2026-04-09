@@ -9,12 +9,12 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     return Response.json({ error: "Missing job ID" }, { status: 400 });
   }
 
-  const apiUrl = process.env.BLOG_GEN_API_URL;
-  const apiKey = process.env.BLOG_GEN_API_KEY;
+  const apiUrl = process.env.CONTENT_GEN_API_URL;
+  const apiKey = process.env.CONTENT_GEN_API_KEY;
 
   if (!apiUrl || !apiKey) {
     return Response.json(
-      { error: "Blog Gen API not configured", status: "unavailable" },
+      { error: "Content Gen API not configured", status: "unavailable" },
       { status: 503 },
     );
   }

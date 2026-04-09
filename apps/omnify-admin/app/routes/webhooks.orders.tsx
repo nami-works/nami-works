@@ -1,11 +1,12 @@
 import type { ActionFunctionArgs } from "react-router";
 import { normalizeWebhookTopic, verifyWebhookRequest } from "../webhooks.server";
 import {
-  readAnalyticsCache,
-  writeAnalyticsCache,
-  type OrderGeo,
-} from "../retail-expansion/storage.server";
+  upsertRetailOrders,
+  normalizeCityKey,
+} from "../retail-footprint/analytics-queries.server";
+import prisma from "../db.server";
 import { autoAssignOrderToRoute } from "../services/auto-routing.server";
+import { getAppIdentity } from "../utils/app-identity.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const verified = await verifyWebhookRequest(request);
@@ -16,56 +17,58 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (!["ORDERS_CREATE", "ORDERS_UPDATE", "ORDERS_DELETE"].includes(normalizedTopic)) {
     return new Response("Unsupported webhook topic.", { status: 400 });
   }
-  const cache = await readAnalyticsCache(shop);
 
-  if (normalizedTopic === "ORDERS_DELETE") {
-    const orderId = String(payload?.id ?? "");
-    cache.orders = cache.orders.filter((order) => order.id !== orderId);
-  } else {
-    const next = toOrderGeo(payload);
-    if (next) {
-      const index = cache.orders.findIndex((item) => item.id === next.id);
-      if (index >= 0) {
-        cache.orders[index] = next;
-      } else {
-        cache.orders.push(next);
+  const identity = getAppIdentity();
+  const runAnalytics = identity === "cpg-labs" || identity === "omnify";
+  const runAutoRouting = identity === "cpg-labs" || identity === "omnify";
+
+  // Analytics: upsert/delete in normalized RetailOrder table
+  if (runAnalytics) {
+    if (normalizedTopic === "ORDERS_DELETE") {
+      const orderId = String(payload?.admin_graphql_api_id ?? payload?.id ?? "");
+      if (orderId) {
+        await prisma.retailOrder.deleteMany({ where: { id: orderId, shop } }).catch(() => {});
+        console.info(`[webhooks:orders] delete order OK shop=${shop} orderId=${orderId}`);
+      }
+    } else {
+      const order = toOrderRow(payload, shop);
+      if (order) {
+        await upsertRetailOrders(shop, [order]).catch((err) => {
+          console.warn(`[webhooks:orders] upsertRetailOrders SKIP shop=${shop}`, err);
+        });
+        console.info(`[webhooks:orders] upsert order OK shop=${shop} orderId=${order.id} topic=${normalizedTopic}`);
       }
     }
   }
 
-  cache.updatedAt = new Date().toISOString();
-  await writeAnalyticsCache(cache, shop);
-
-  // Fire-and-forget auto-routing on new LOCAL delivery orders — must not block the webhook response
-  if (normalizedTopic === "ORDERS_CREATE") {
+  // Fire-and-forget auto-routing on new LOCAL delivery orders (omnify + cpg-labs)
+  if (runAutoRouting && normalizedTopic === "ORDERS_CREATE") {
+    console.info(`[local-delivery:webhook] orders/create auto-routing triggered shop=${shop} orderId=${payload?.id}`);
     const { admin } = verified.result;
     autoAssignOrderToRoute(shop, payload as any, admin).catch((err) =>
-      console.error("[webhooks.orders] Auto-routing fire-and-forget error:", err),
+      console.error(`[local-delivery:webhook] auto-routing fire-and-forget error shop=${shop} orderId=${payload?.id}`, err),
     );
   }
 
   return new Response();
 };
 
-const toOrderGeo = (payload: any): OrderGeo | null => {
+const toOrderRow = (payload: any, shop: string) => {
   const address = payload?.shipping_address ?? null;
-  const latitude = address?.latitude;
-  const longitude = address?.longitude;
+  const city = typeof address?.city === "string" ? address.city.trim() : null;
+  if (!city) return null;
   return {
-    id: String(payload.id),
-    name: payload?.name ?? String(payload?.order_number ?? ""),
-    customerId: payload?.customer?.id ? String(payload.customer.id) : null,
-    customerName: payload?.customer?.first_name
-      ? `${payload.customer.first_name} ${payload.customer.last_name ?? ""}`.trim()
-      : null,
-    city: typeof address?.city === "string" ? address.city : null,
-    latitude: latitude == null ? null : Number(latitude),
-    longitude: longitude == null ? null : Number(longitude),
-    totalAmount: payload?.current_total_price
-      ? Number(payload.current_total_price)
-      : null,
+    id: String(payload.admin_graphql_api_id ?? payload.id),
+    customerId: payload?.customer?.admin_graphql_api_id
+      ? String(payload.customer.admin_graphql_api_id)
+      : payload?.customer?.id
+        ? String(payload.customer.id)
+        : null,
+    city,
+    latitude: address?.latitude != null ? Number(address.latitude) : null,
+    longitude: address?.longitude != null ? Number(address.longitude) : null,
+    totalAmount: payload?.current_total_price ? Number(payload.current_total_price) : null,
     currencyCode: payload?.currency ?? null,
-    createdAt:
-      typeof payload?.created_at === "string" ? payload.created_at : null,
+    createdAt: typeof payload?.created_at === "string" ? payload.created_at : null,
   };
 };

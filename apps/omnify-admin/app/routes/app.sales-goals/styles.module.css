@@ -1,36 +1,41 @@
-.tabsWrapper {
-  padding-inline: 8pt;
-}
+/* --- Flat/underline tabs ----------------------------------------- */
 
 .tabsRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding-left: 0;
+  gap: 7px;
+  border-bottom: 1px solid #e1e3e5;
+  margin: -4px -20px 12px;
+  padding: 0 20px;
 }
 
-.tabItem {
+.tab {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 4pt 18px;
-  border: 1px solid #e1e3e5;
-  border-radius: 10px 18px 0 0;
-  color: #111111;
-  background: #dfe3e8;
+  padding: 8px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  text-decoration: none;
+  color: #6d7175;
+  background: none;
   font-weight: 400;
   cursor: pointer;
-  font-size: inherit;
+  font-size: 13px;
   font-family: inherit;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  margin-bottom: -1px;
 }
 
-.tabItem:not(.tabActive):hover {
-  background: #d4d7da;
+.tab:hover {
+  color: #303030;
+  border-bottom-color: #8c9196;
 }
 
 .tabActive {
-  background: #fff;
+  color: #303030;
+  font-weight: 500;
+  border-bottom-color: #303030;
 }
 
 .locationSettingsBlock {
@@ -135,7 +140,7 @@
   gap: 8px;
   grid-template-columns: repeat(4, minmax(120px, 1fr));
   font-weight: 600;
-  color: #5b5b5b;
+  color: #6d7175;
 }
 
 .tableRow {
@@ -143,7 +148,7 @@
   gap: 8px;
   grid-template-columns: repeat(4, minmax(120px, 1fr));
   padding: 8px 0;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid #f1f1f1;
 }
 
 .table3Col .tableHeader,
@@ -236,7 +241,7 @@
   justify-content: flex-end;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 768px) {
   .paramGrid {
     grid-template-columns: minmax(0, 1fr);
   }

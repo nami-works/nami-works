@@ -5,41 +5,84 @@
  * Lalamove dispatch jobs that are stuck in ASSIGNING_DRIVER status.
  *
  * Escalation schedule (minutes since requestedAt):
- *   20 min → add 10% priority fee (level 0 → 1)
- *   30 min → add another 10% priority fee (level 1 → 2)
- *   45 min → add another 10% priority fee (level 2 → 3)
- *   60 min → cancel order + re-request from scratch (level resets to 0)
+ *   10 min → add 10% priority fee (level 0 → 1)
+ *   20 min → add 15% priority fee (level 1 → 2)
+ *   30 min → add 20% priority fee (level 2 → 3)
+ *   40 min → cancel order + re-request from scratch (level resets to 0)
  */
 
 import type { AdminApiContext } from "@shopify/shopify-app-react-router/server";
 import prisma from "../db.server";
 import {
   addLalamovePriorityFee,
+  buildLalamoveRecipientRemarks,
   cancelLalamoveOrder,
   createLalamoveQuotation,
+  normalizePhoneForMarket,
   placeLalamoveOrder,
 } from "./lalamove.server";
 import { getRuntimeCredentialsForShop } from "./lalamove-credentials.server";
-import { applyLalamoveDeliveryState } from "./lalamove-sync.server";
+
 
 // ── Escalation thresholds (minutes) ─────────────────────────────────────────
 
-const LEVEL_1_MINUTES = 20;
-const LEVEL_2_MINUTES = 30;
-const LEVEL_3_MINUTES = 45;
-const REORDER_MINUTES = 60;
+const LEVEL_1_MINUTES = 10;
+const LEVEL_2_MINUTES = 20;
+const LEVEL_3_MINUTES = 30;
+const REORDER_MINUTES = 40;
 
 // ── Priority fee calculation ─────────────────────────────────────────────────
 
 const MIN_FEE_AMOUNT = "1.00"; // fallback when quotation total is unavailable
 
-function computeFeeAmount(quotationTotal: string | null): string {
+const FEE_PERCENTAGES: Record<number, number> = {
+  1: 0.10, // 10%
+  2: 0.15, // +15%
+  3: 0.20, // +20%
+};
+
+function computeFeeAmount(quotationTotal: string | null, level: 1 | 2 | 3): string {
   const total = parseFloat(quotationTotal ?? "0");
   if (!total || isNaN(total)) return MIN_FEE_AMOUNT;
-  const tenPercent = (total * 0.1).toFixed(2);
-  return parseFloat(tenPercent) >= parseFloat(MIN_FEE_AMOUNT)
-    ? tenPercent
+  const percentage = FEE_PERCENTAGES[level] ?? 0.10;
+  const fee = (total * percentage).toFixed(2);
+  return parseFloat(fee) >= parseFloat(MIN_FEE_AMOUNT)
+    ? fee
     : MIN_FEE_AMOUNT;
+}
+
+// ── Priority fee helper ──────────────────────────────────────────────────
+
+/**
+ * Try to apply a priority fee via the Lalamove API. If the API call fails with
+ * a transient error, still advance the DB level so the next cron tick moves
+ * forward instead of retrying the same level indefinitely.
+ */
+async function applyPriorityFeeWithFallback(
+  job: { id: string; market: string; lalamoveOrderId: string },
+  targetLevel: 1 | 2 | 3,
+  feeAmount: string,
+  credentials: { apiKey: string; apiSecret: string },
+  prismaAny: any,
+): Promise<void> {
+  try {
+    await addLalamovePriorityFee(job.market, job.lalamoveOrderId, feeAmount, credentials);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    // Terminal errors (order already moved past ASSIGNING_DRIVER) must propagate
+    // so the caller's catch block can mark the job stale.
+    const isTerminal =
+      (message.includes("422:") && message.includes("beyond allowable order status")) ||
+      message.startsWith("404:");
+    if (isTerminal) throw err;
+
+    // Transient failure — log but still advance the level so we don't get stuck
+    console.warn(`[escalation] priority fee API failed (advancing level anyway) job=${job.id} level=${targetLevel} error=${message}`);
+  }
+  await prismaAny.lalamoveDispatchJob.update({
+    where: { id: job.id },
+    data: { priorityFeeLevel: targetLevel },
+  });
 }
 
 // ── Public types ─────────────────────────────────────────────────────────────
@@ -64,7 +107,7 @@ export type EscalationResult = {
  */
 export async function checkAndApplyEscalations(
   shop: string,
-  admin: AdminApiContext["admin"],
+  admin: AdminApiContext,
 ): Promise<EscalationResult[]> {
   const prismaAny = prisma as any;
 
@@ -89,45 +132,52 @@ export async function checkAndApplyEscalations(
     const level = job.priorityFeeLevel ?? 0;
 
     try {
-      if (level >= 3 && elapsedMinutes >= REORDER_MINUTES) {
-        // ── 60 min: cancel + re-request ───────────────────────────────────
+      if (elapsedMinutes >= REORDER_MINUTES) {
+        // ── 60+ min: cancel + re-request regardless of fee level ──────────
+        // Previously gated on level >= 3, which meant missed cron ticks or
+        // failed priority fees could block reorder indefinitely.
+        console.info(`[escalation] reorder triggered job=${job.id} elapsed=${elapsedMinutes.toFixed(1)}min level=${level}`);
         const reorderResult = await reorderJob(job, shop, admin, credentials, prismaAny);
+        if (!reorderResult.success) {
+          console.error(`[escalation] reorder result FAILED job=${job.id} error=${reorderResult.error ?? "?"}`);
+        }
         results.push(reorderResult);
-      } else if (level === 2 && elapsedMinutes >= LEVEL_3_MINUTES) {
-        // ── 45 min: third priority fee ────────────────────────────────────
-        const fee = computeFeeAmount(job.quotationTotal);
-        await addLalamovePriorityFee(job.market, job.lalamoveOrderId, fee, credentials);
-        await prismaAny.lalamoveDispatchJob.update({
-          where: { id: job.id },
-          data: { priorityFeeLevel: 3 },
-        });
+      } else if (level < 3 && elapsedMinutes >= LEVEL_3_MINUTES) {
+        // ── 30 min: +20% priority fee (catch up from any level) ──────────
+        const fee = computeFeeAmount(job.quotationTotal, 3);
+        await applyPriorityFeeWithFallback(job, 3, fee, credentials, prismaAny);
         results.push({ jobId: job.id, routeId: job.routeId, action: { type: "priority_fee", level: 3 }, success: true });
-      } else if (level === 1 && elapsedMinutes >= LEVEL_2_MINUTES) {
-        // ── 30 min: second priority fee ───────────────────────────────────
-        const fee = computeFeeAmount(job.quotationTotal);
-        await addLalamovePriorityFee(job.market, job.lalamoveOrderId, fee, credentials);
-        await prismaAny.lalamoveDispatchJob.update({
-          where: { id: job.id },
-          data: { priorityFeeLevel: 2 },
-        });
+      } else if (level < 2 && elapsedMinutes >= LEVEL_2_MINUTES) {
+        // ── 20 min: +15% priority fee (catch up from level 0) ───────────
+        const fee = computeFeeAmount(job.quotationTotal, 2);
+        await applyPriorityFeeWithFallback(job, 2, fee, credentials, prismaAny);
         results.push({ jobId: job.id, routeId: job.routeId, action: { type: "priority_fee", level: 2 }, success: true });
-      } else if (level === 0 && elapsedMinutes >= LEVEL_1_MINUTES) {
-        // ── 20 min: first priority fee ────────────────────────────────────
-        const fee = computeFeeAmount(job.quotationTotal);
-        await addLalamovePriorityFee(job.market, job.lalamoveOrderId, fee, credentials);
-        await prismaAny.lalamoveDispatchJob.update({
-          where: { id: job.id },
-          data: { priorityFeeLevel: 1 },
-        });
+      } else if (level < 1 && elapsedMinutes >= LEVEL_1_MINUTES) {
+        // ── 10 min: +10% priority fee ────────────────────────────────────
+        const fee = computeFeeAmount(job.quotationTotal, 1);
+        await applyPriorityFeeWithFallback(job, 1, fee, credentials, prismaAny);
         results.push({ jobId: job.id, routeId: job.routeId, action: { type: "priority_fee", level: 1 }, success: true });
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error("[escalation] Action failed for job", job.id, message);
+      console.error(`[escalation] Action failed job=${job.id} level=${level} elapsed=${elapsedMinutes.toFixed(1)}min error=${message}`);
+
+      // If Lalamove says the order is no longer eligible (422/404),
+      // the order has moved past ASSIGNING_DRIVER on their side. Mark it so we stop retrying.
+      const isTerminal =
+        message.includes("422") || message.startsWith("404:");
+      if (isTerminal) {
+        console.warn("[escalation] Marking job as stale (Lalamove order no longer eligible):", job.id);
+        await prismaAny.lalamoveDispatchJob.update({
+          where: { id: job.id },
+          data: { status: "COMPLETED" },
+        }).catch((e: unknown) => console.error("[escalation] Failed to mark job stale", job.id, e));
+      }
+
       results.push({
         jobId: job.id,
         routeId: job.routeId,
-        action: level >= 3 && elapsedMinutes >= REORDER_MINUTES
+        action: elapsedMinutes >= REORDER_MINUTES
           ? { type: "reorder" }
           : { type: "priority_fee", level: Math.min(level + 1, 3) as 1 | 2 | 3 },
         success: false,
@@ -150,12 +200,30 @@ type OrderStop = {
   phone: string;
 };
 
+const MAX_STOP_MATCH_DISTANCE = 0.0003;
+
+const coordKey = (lat: number | string, lng: number | string) => {
+  const latitude = typeof lat === "string" ? parseFloat(lat) : lat;
+  const longitude = typeof lng === "string" ? parseFloat(lng) : lng;
+  return `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+};
+
+const parseCoord = (value: string | number | null | undefined) => {
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string" && value.trim().length > 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+};
+
 async function reorderJob(
   job: any,
   shop: string,
-  admin: AdminApiContext["admin"],
+  admin: AdminApiContext,
   credentials: { apiKey: string; apiSecret: string },
   prismaAny: any,
+  options?: { skipCancel?: boolean },
 ): Promise<EscalationResult> {
   const result: EscalationResult = {
     jobId: job.id,
@@ -164,15 +232,36 @@ async function reorderJob(
     success: false,
   };
 
-  // 1. Cancel the existing Lalamove order
-  try {
-    await cancelLalamoveOrder(job.market, job.lalamoveOrderId, credentials);
-  } catch (err) {
-    // If cancel fails (already cancelled, accepted, etc.) log and skip re-request
-    const message = err instanceof Error ? err.message : String(err);
-    console.error("[escalation] Cancel failed for job", job.id, message);
-    result.error = `Cancel failed: ${message}`;
-    return result;
+  // 1. Cancel the existing Lalamove order (skip if already terminal)
+  if (!options?.skipCancel) {
+    try {
+      await cancelLalamoveOrder(job.market, job.lalamoveOrderId, credentials);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const isTerminal =
+        message.includes("422") || message.startsWith("404:");
+      if (isTerminal) {
+        // Order already moved past ASSIGNING_DRIVER on Lalamove's side.
+        // Mark it so we stop retrying every cron tick.
+        console.warn(
+          `[escalation] cancel terminal → marking stale job=${job.id} error=${message}`,
+        );
+        await prismaAny.lalamoveDispatchJob.update({
+          where: { id: job.id },
+          data: { status: "CANCELED" },
+        }).catch((e: unknown) =>
+          console.error("[escalation] failed to mark stale", job.id, e),
+        );
+        result.error = `Cancel failed (terminal, marked stale): ${message}`;
+        return result;
+      }
+      // Transient failure — log and skip re-request
+      console.error(
+        `[escalation] cancel transient FAILED job=${job.id} error=${message}`,
+      );
+      result.error = `Cancel failed: ${message}`;
+      return result;
+    }
   }
 
   // 2. Get route stops from PendingDeliveryRoute
@@ -181,6 +270,7 @@ async function reorderJob(
   });
   if (!routeRecord) {
     result.error = "PendingDeliveryRoute not found for routeId: " + job.routeId;
+    console.error(`[escalation] reorder FAILED job=${job.id} error=${result.error}`);
     return result;
   }
   const ordersData = routeRecord.ordersData as OrderStop[];
@@ -191,6 +281,7 @@ async function reorderJob(
   });
   if (!configRow) {
     result.error = "LalamoveLocationConfig not found for locationId: " + job.locationId;
+    console.error(`[escalation] reorder FAILED job=${job.id} error=${result.error}`);
     return result;
   }
   const config = configRow.data as {
@@ -240,12 +331,14 @@ async function reorderJob(
       }
     } catch (err) {
       result.error = "Failed to fetch pickup location coordinates.";
+      console.error(`[escalation] reorder FAILED job=${job.id} error=${result.error}`);
       return result;
     }
   }
 
   if (pickupLat == null || pickupLng == null) {
     result.error = "Missing pickup coordinates for re-request.";
+    console.error(`[escalation] reorder FAILED job=${job.id} error=${result.error}`);
     return result;
   }
 
@@ -279,6 +372,7 @@ async function reorderJob(
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     result.error = `Quotation failed: ${message}`;
+    console.error(`[escalation] reorder FAILED job=${job.id} error=${result.error}`);
     return result;
   }
 
@@ -287,22 +381,138 @@ async function reorderJob(
     .filter(Boolean) as string[];
   if (stopIds.length < 2) {
     result.error = "New quotation returned insufficient stopIds.";
+    console.error(`[escalation] reorder FAILED job=${job.id} error=${result.error}`);
     return result;
   }
 
   const senderStopId = stopIds[0]!;
   const recipientStopIds = stopIds.slice(1);
+  const responseDeliveryStops = (newQuotation.stops ?? []).slice(1);
+  if (responseDeliveryStops.length !== recipientStopIds.length) {
+    result.error = "Optimized stop count mismatch in escalation re-request.";
+    console.error(`[escalation] reorder FAILED job=${job.id} error=${result.error}`);
+    return result;
+  }
 
-  // 7. Build recipients from ordersData
-  const recipients = ordersData.slice(0, recipientStopIds.length).map((stop, index) => ({
-    stopId: recipientStopIds[index]!,
-    name: stop.name || "Customer",
-    phone: stop.phone || config.locationPhone || "",
-    // remarks omitted for re-request (apartment numbers embedded in address field)
-    ...(index === 0 && config.pickupInstructions?.trim()
-      ? { remarks: `Tempo de espera incluído. ${config.pickupInstructions.trim()}` }
-      : {}),
-  }));
+  const queueByCoord = new Map<string, string[]>();
+  const pointByOrderId = new Map<string, { lat: number; lng: number }>();
+  for (const stop of ordersData) {
+    pointByOrderId.set(stop.shopifyOrderId, { lat: stop.lat, lng: stop.lng });
+    const key = coordKey(stop.lat, stop.lng);
+    const list = queueByCoord.get(key) ?? [];
+    list.push(stop.shopifyOrderId);
+    queueByCoord.set(key, list);
+  }
+  const remainingOrderIds = new Set(ordersData.map((stop) => stop.shopifyOrderId));
+  const assignmentOrderIds: string[] = [];
+  for (const stop of responseDeliveryStops) {
+    const lat = parseCoord(stop.coordinates?.lat);
+    const lng = parseCoord(stop.coordinates?.lng);
+    if (lat == null || lng == null) {
+      result.error = "Optimized stop missing coordinates in escalation re-request.";
+      console.error(`[escalation] reorder FAILED job=${job.id} error=${result.error}`);
+      return result;
+    }
+
+    let matchedOrderId: string | undefined;
+    const exactQueue = queueByCoord.get(coordKey(lat, lng));
+    while (exactQueue && exactQueue.length > 0) {
+      const candidate = exactQueue.shift();
+      if (candidate && remainingOrderIds.has(candidate)) {
+        matchedOrderId = candidate;
+        break;
+      }
+    }
+    if (!matchedOrderId) {
+      let best: { orderId: string; distance: number } | null = null;
+      for (const orderId of remainingOrderIds) {
+        const point = pointByOrderId.get(orderId);
+        if (!point) continue;
+        const distance = Math.hypot(lat - point.lat, lng - point.lng);
+        if (!best || distance < best.distance) {
+          best = { orderId, distance };
+        }
+      }
+      if (!best || best.distance > MAX_STOP_MATCH_DISTANCE) {
+        result.error =
+          "Unable to map optimized stops to orders during escalation re-request.";
+        console.error(`[escalation] reorder FAILED job=${job.id} error=${result.error}`);
+        return result;
+      }
+      matchedOrderId = best.orderId;
+    }
+    remainingOrderIds.delete(matchedOrderId);
+    assignmentOrderIds.push(matchedOrderId);
+  }
+
+  const orderContactsRes = await admin.graphql(
+    `#graphql
+      query EscalationOrderContacts($ids: [ID!]!) {
+        nodes(ids: $ids) {
+          ... on Order {
+            id
+            name
+            shippingAddress {
+              address2
+              phone
+            }
+            customer {
+              displayName
+              phone
+              defaultPhoneNumber { phoneNumber }
+            }
+          }
+        }
+      }`,
+    { variables: { ids: assignmentOrderIds } },
+  );
+  const orderContactsJson = await orderContactsRes.json();
+  const orderNodes = (orderContactsJson?.data?.nodes ?? []) as Array<{
+    id: string;
+    name: string;
+    shippingAddress?: { address2?: string | null; phone?: string | null } | null;
+    customer?: {
+      displayName?: string | null;
+      phone?: string | null;
+      defaultPhoneNumber?: { phoneNumber: string } | null;
+    } | null;
+  }>;
+  const orderById = new Map(orderNodes.map((order) => [order.id, order]));
+  const missingOrderId = assignmentOrderIds.find((orderId) => !orderById.has(orderId));
+  if (missingOrderId) {
+    result.error = `Missing Shopify order data during escalation re-request: ${missingOrderId}`;
+    console.error(`[escalation] reorder FAILED job=${job.id} error=${result.error}`);
+    return result;
+  }
+
+  // 7. Build recipients from explicit assignment order
+  const pickupInstructions = config.pickupInstructions?.trim();
+  const recipients = recipientStopIds.map((stopId, index) => {
+    const orderId = assignmentOrderIds[index]!;
+    const order = orderById.get(orderId)!;
+    const remarks = buildLalamoveRecipientRemarks(
+      index,
+      pickupInstructions,
+      order.shippingAddress?.address2,
+    );
+    return {
+      stopId,
+      name: order.customer?.displayName || order.name || "Customer",
+      phone: (() => {
+        const candidates = [
+          order.customer?.defaultPhoneNumber?.phoneNumber,
+          order.shippingAddress?.phone,
+          order.customer?.phone,
+        ];
+        for (const candidate of candidates) {
+          const normalized = normalizePhoneForMarket(candidate, job.market);
+          if (normalized) return normalized;
+        }
+        return config.locationPhone || "";
+      })(),
+      ...(remarks ? { remarks } : {}),
+    };
+  });
 
   // 8. Place new order
   let newOrderResponse;
@@ -325,6 +535,7 @@ async function reorderJob(
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     result.error = `Place order failed: ${message}`;
+    console.error(`[escalation] reorder FAILED job=${job.id} error=${result.error}`);
     return result;
   }
 
@@ -348,28 +559,92 @@ async function reorderJob(
     },
   });
 
-  // 10. Re-create fulfillment tracking event
-  const orderIds: string[] = (
-    await prismaAny.lalamoveDispatchOrderMap.findMany({
-      where: { shop, dispatchJobId: job.id },
-      select: { shopifyOrderId: true },
-    })
-  ).map((r: any) => r.shopifyOrderId as string);
-
-  if (orderIds.length > 0) {
-    try {
-      await applyLalamoveDeliveryState(admin, {
-        orderIds,
-        state: "requested",
-        existingFulfillmentId: null,
-      });
-    } catch (err) {
-      // Non-fatal — fulfillment event failure shouldn't block the re-request
-      console.warn("[escalation] Fulfillment event failed after re-request:", err);
-    }
-  }
-
   result.success = true;
   console.info("[escalation] Re-requested job", job.id, "→ new order", newOrderResponse.orderId);
+  return result;
+}
+
+// ── Auto-retry for webhook-triggered failures ───────────────────────────────
+
+const MAX_AUTO_RETRIES = 2;
+
+/**
+ * Attempt to re-request a Lalamove delivery for a failed dispatch job.
+ * Used by both the webhook auto-retry and the watchdog cron.
+ *
+ * Returns an EscalationResult. Increments retryCount in DB.
+ * Refuses to retry if retryCount >= MAX_AUTO_RETRIES.
+ */
+export async function autoRetryDispatchJob(
+  job: {
+    id: string;
+    routeId: string;
+    locationId: string;
+    market: string;
+    lalamoveOrderId: string;
+    retryCount?: number;
+    shop?: string;
+  },
+  shop: string,
+  admin: AdminApiContext,
+): Promise<EscalationResult> {
+  const prismaAny = prisma as any;
+  const currentRetryCount = job.retryCount ?? 0;
+
+  if (currentRetryCount >= MAX_AUTO_RETRIES) {
+    console.warn(
+      `[escalation] auto-retry SKIP max retries reached job=${job.id} retries=${currentRetryCount}`,
+    );
+    return {
+      jobId: job.id,
+      routeId: job.routeId,
+      action: { type: "reorder" },
+      success: false,
+      error: `Max auto-retry limit (${MAX_AUTO_RETRIES}) reached.`,
+    };
+  }
+
+  const credentials = await getRuntimeCredentialsForShop(shop);
+  if (!credentials) {
+    console.warn(`[escalation] auto-retry SKIP no credentials shop=${shop}`);
+    return {
+      jobId: job.id,
+      routeId: job.routeId,
+      action: { type: "reorder" },
+      success: false,
+      error: "No Lalamove credentials configured.",
+    };
+  }
+
+  // Increment retry count BEFORE attempting (prevents concurrent retries)
+  await prismaAny.lalamoveDispatchJob.update({
+    where: { id: job.id },
+    data: { retryCount: currentRetryCount + 1, lastRetryAt: new Date() },
+  });
+
+  const result = await reorderJob(
+    job,
+    shop,
+    admin,
+    credentials,
+    prismaAny,
+    { skipCancel: true },
+  );
+
+  if (!result.success) {
+    console.error(
+      `[escalation] auto-retry FAILED job=${job.id} attempt=${currentRetryCount + 1} error=${result.error ?? "?"}`,
+    );
+  } else {
+    console.info(
+      `[escalation] auto-retry OK job=${job.id} attempt=${currentRetryCount + 1}`,
+    );
+    // Reset retry count on success (new order starts fresh)
+    await prismaAny.lalamoveDispatchJob.update({
+      where: { id: job.id },
+      data: { retryCount: 0 },
+    });
+  }
+
   return result;
 }

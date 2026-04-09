@@ -1,0 +1,598 @@
+/* Campaign layout — two columns, aside on right (desktop) */
+.campaignLayout {
+  display: flex;
+  gap: 20px;
+}
+
+.campaignMain {
+  flex: 2;
+  min-width: 0;
+}
+
+.campaignAside {
+  flex: 1;
+  min-width: 280px;
+}
+
+@media (max-width: 768px) {
+  .campaignLayout {
+    flex-direction: column;
+  }
+  .campaignAside {
+    min-width: unset;
+    order: -1; /* aside renders FIRST on mobile */
+  }
+}
+
+/* Aside select row with collapse toggle */
+.asideSelectRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.asideSelectField {
+  flex: 1;
+  min-width: 0;
+}
+
+.collapseToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #c9ccd0;
+  border-radius: 8px;
+  background: #fff;
+  color: #6d7175;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.collapseToggle:hover {
+  background: #f6f6f7;
+  border-color: #8c9196;
+  color: #303030;
+}
+
+/* Aside fields */
+.asideFields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.displayNameHint {
+  font-size: 13px;
+  color: #6d7175;
+  margin: 0;
+  font-style: italic;
+}
+
+.subSectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 4px 0 0;
+}
+
+.colorFieldRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.colorFieldLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: #303030;
+}
+
+.colorFieldInputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.colorSwatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: background-color 0.15s;
+}
+
+.colorTextWrap {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  border: 1px solid #8c9196;
+  border-radius: 8px;
+  background: #fff;
+  transition: border-color 0.1s;
+}
+
+.colorTextWrap:focus-within {
+  border-color: #005bd3;
+  box-shadow: 0 0 0 1px #005bd3;
+}
+
+.colorHash {
+  padding-left: 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #6d7175;
+  user-select: none;
+}
+
+.colorText {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 6px 10px 6px 2px;
+  font-size: 13px;
+  font-family: inherit;
+  background: transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.boolFieldRow {
+  font-size: 13px;
+  color: #303030;
+}
+
+.boolFieldRow input[type="checkbox"] {
+  accent-color: #008060;
+}
+
+.asideSaveRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.asideSavedLabel {
+  font-size: 13px;
+  color: #008060;
+  font-weight: 500;
+}
+
+/* Search row */
+.searchRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.searchField {
+  flex: 1;
+  position: relative;
+}
+
+.searchInputWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #8c9196;
+  border-radius: 8px;
+  background: #fff;
+  transition: border-color 0.1s;
+}
+
+.searchInputWrap:focus-within {
+  border-color: #005bd3;
+  box-shadow: 0 0 0 1px #005bd3;
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  font-family: inherit;
+  background: transparent;
+  padding: 2px 0;
+  line-height: 1.4;
+}
+
+.searchInput::placeholder {
+  color: #8c9196;
+}
+
+/* Modal results list */
+.searchResults {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.searchResultItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f1f1;
+  transition: background 0.1s;
+}
+
+.searchResultItem:last-child {
+  border-bottom: none;
+}
+
+.searchResultItem:hover {
+  background: #f6f6f7;
+}
+
+.searchResultSelected {
+  background: #e8f5e9;
+}
+
+.searchResultSelected:hover {
+  background: #d7eed9;
+}
+
+.resultCheckbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #008060;
+  flex-shrink: 0;
+}
+
+.productThumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #f1f1f1;
+  flex-shrink: 0;
+}
+
+.productThumbPlaceholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  background: #e1e3e5;
+  flex-shrink: 0;
+}
+
+.productInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.productTitle {
+  font-weight: 500;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.productVariants {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+/* Selected items badges (Polaris-style) */
+.badgeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #e4e5e7;
+  font-size: 12px;
+  font-weight: 450;
+  color: #303030;
+  line-height: 1.6;
+}
+
+.badgeLabel {
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badgeRemove {
+  cursor: pointer;
+  color: #6d7175;
+  font-size: 14px;
+  line-height: 1;
+  margin-left: 2px;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badgeRemove:hover {
+  background: #c9ccd0;
+  color: #303030;
+}
+
+/* Selection footer: badges (left) + apply button (right, bottom-aligned) */
+.selectionFooter {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.selectionFooter .badgeList {
+  flex: 1;
+  margin-top: 0;
+}
+
+.applyButtonWrap {
+  flex-shrink: 0;
+}
+
+/* Results section — full width below two-column layout */
+.resultsSection {
+  margin-top: 20px;
+}
+
+/* Results table (bulk-edit style) */
+.bulkTable {
+  overflow-x: auto;
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+}
+
+.resultsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.resultsTable thead {
+  background: #f6f6f7;
+}
+
+.resultsTable th {
+  text-align: left;
+  padding: 10px 14px;
+  font-weight: 500;
+  color: #6d7175;
+  white-space: nowrap;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.resultsTable td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f1f1f1;
+  vertical-align: middle;
+}
+
+.resultsTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.resultsTable tbody tr:hover {
+  background: #fafafa;
+}
+
+.thTitle {
+  min-width: 200px;
+}
+
+.thNum {
+  text-align: right !important;
+}
+
+.tdTitle {
+  font-weight: 500;
+  max-width: 300px;
+}
+
+.productLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.productLink:hover span {
+  text-decoration: underline;
+}
+
+.resultThumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid #e1e3e5;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.resultThumbPlaceholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid #e1e3e5;
+  background: #f6f6f7;
+  flex-shrink: 0;
+}
+
+.tdNum {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Status badge */
+.statusBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.statusActive {
+  background: #aee9d1;
+  color: #0d5e37;
+}
+
+.statusOther {
+  background: #e4e5e7;
+  color: #616161;
+}
+
+/* Tag status badges */
+.tagBadgeSuccess {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #aee9d1;
+  color: #0d5e37;
+}
+
+.tagBadgeNeutral {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #e4e5e7;
+  color: #616161;
+}
+
+.tagBadgeError {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #fed3d1;
+  color: #b81c1c;
+  cursor: help;
+}
+
+.tagBadgeWarning {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #ffea8a;
+  color: #7a5b00;
+}
+
+/* Modal search */
+.modalSearchWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 16px 12px;
+  padding: 8px 12px;
+  border: 1px solid #8c9196;
+  border-radius: 8px;
+  background: #fff;
+  transition: border-color 0.1s;
+}
+
+.modalSearchWrap:focus-within {
+  border-color: #005bd3;
+  box-shadow: 0 0 0 1px #005bd3;
+}
+
+.modalSearchIcon {
+  flex-shrink: 0;
+  color: #8c9196;
+  display: inline-flex;
+  align-items: center;
+}
+
+.modalSearchInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  font-family: inherit;
+  background: transparent;
+  padding: 2px 0;
+  line-height: 1.4;
+}
+
+.modalSearchInput::placeholder {
+  color: #8c9196;
+}
+
+.modalLoading {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #6d7175;
+}
+
+/* Modal footer */
+.modalFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.modalCount {
+  font-size: 13px;
+  color: #6d7175;
+}
+
+.modalActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Collapsible section wrapper */
+.collapsibleSectionWrap {
+  position: relative;
+}
+
+/* Clickable chevron toggle at bottom-right */
+.collapseChevron {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.chevronIcon {
+  font-size: 18px;
+  font-weight: 600;
+  color: #8c9196;
+  transition: transform 0.15s ease, color 0.15s ease;
+  transform: rotate(270deg);
+  display: inline-block;
+}
+
+.collapseChevron.collapsed .chevronIcon {
+  transform: rotate(90deg);
+}
+
+.collapseChevron:hover .chevronIcon {
+  color: #303030;
+}

@@ -1,0 +1,39 @@
+{
+  "pageHeading": "Settings",
+  "brandConfig": {
+    "heading": "Brand configuration",
+    "description": "Configure your brand context for Blog Posts generation. These values are used as input to the content generation process."
+  },
+  "labels": {
+    "brandName": "Brand name",
+    "about": "About",
+    "toneOfVoice": "Tone of voice",
+    "blogUrl": "Blog URL",
+    "preferredLanguage": "Preferred language",
+    "contentLanguage": "Content language",
+    "benchmarks": "Benchmarks",
+    "brandCategory": "Brand category",
+    "editorialGuidelines": "Editorial guidelines",
+    "formatRecommendations": "Format recommendations",
+    "contentStrategy": "Content strategy (JSON, optional)"
+  },
+  "placeholders": {
+    "brandName": "Your brand display name",
+    "about": "Brand story, mission, institutional info",
+    "toneOfVoice": "How the brand communicates (e.g. formal, casual, inspirational). Use 'Scrape store' to auto-generate from your content.",
+    "benchmarks": "Competitor or reference brands (e.g. Gisou, Glossier), one per line",
+    "brandCategory": "e.g. premium hair care, skincare",
+    "editorialGuidelines": "Content architecture, tone rules, structure guidelines",
+    "formatRecommendations": "HTML structure, summary guidelines (e.g. Resumo HTML: 150–160 chars), content length"
+  },
+  "languageOptions": {
+    "english": "English",
+    "portugueseBr": "Portuguese (BR)"
+  },
+  "scrapeStore": {
+    "heading": "Scrape store",
+    "description": "Use \"Scrape store\" to analyze your shop content and auto-generate tone of voice. Requires the Content Scraper API to be configured.",
+    "comingSoon": "Scrape store (coming soon)"
+  },
+  "settingsSaved": "Settings saved"
+}

@@ -1,0 +1,61 @@
+{
+  "nav": {
+    "localDelivery": "Local delivery",
+    "salesGoals": "Sales goals",
+    "retailExpansion": "Retail footprint",
+    "merchandising": "Merchandising",
+    "priceTags": "Price tags",
+    "storytelling": "Story-telling",
+    "settings": "Settings",
+    "extras": "Extras"
+  },
+  "button": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "remove": "Remove",
+    "generate": "Generate"
+  },
+  "status": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "saved": "Saved successfully"
+  },
+  "label": {
+    "location": "Location",
+    "date": "Date",
+    "search": "Search"
+  },
+  "error": {
+    "unknown": "An unexpected error occurred.",
+    "locationNotProvided": "Location not provided.",
+    "unknownIntent": "Unknown intent.",
+    "goalPayloadMissing": "Goal payload missing.",
+    "goalIdMissing": "Goal id missing.",
+    "locationConfigMissing": "Location config payload missing.",
+    "unsupportedRequest": "Unsupported request.",
+    "missingFieldsPublish": "Missing required fields for publish.",
+    "failedCreateArticle": "Failed to create article.",
+    "unknownAction": "Unknown action.",
+    "briefDataRequired": "Brief data is required.",
+    "invalidBriefJson": "Invalid brief JSON.",
+    "blogGenNotConfigured": "Content Gen API not configured. Set CONTENT_GEN_API_URL and CONTENT_GEN_API_KEY.",
+    "failedStartGeneration": "Failed to start generation.",
+    "pollFailed": "Poll failed",
+    "lalamoveRateLimit": "Lalamove rate limit reached. Please wait and try again.",
+    "lalamoveTimeout": "Lalamove request timed out. Please try again.",
+    "lalamoveGeneric": "Lalamove error. Please try again later.",
+    "credentialsMissing": "Lalamove credentials not configured.",
+    "credentialsInvalid": "Invalid Lalamove credentials.",
+    "apiKeyRequired": "API key is required.",
+    "apiSecretRequired": "API secret is required.",
+    "carrierAlreadyRegistered": "Carrier service is already registered.",
+    "carrierNotRegistered": "No carrier service registered.",
+    "failedRegisterCarrier": "Failed to register carrier service.",
+    "failedUnregisterCarrier": "Failed to unregister carrier service.",
+    "configSaveFailed": "Failed to save configuration."
+  }
+}

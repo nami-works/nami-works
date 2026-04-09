@@ -1,0 +1,728 @@
+{
+    "ret": 0,
+    "msg": "Sucesso",
+    "data": {
+        "order_detail_info": {
+            "price_id": "100260304005843080210010042069656",
+            "biz_line": "DELIVERY",
+            "business_line_str": "Entrega",
+            "order_status": 0,
+            "uuid": "100260304005843080210010042069656",
+            "order_time": 1772557720,
+            "create_time": 1772557123,
+            "order_vehicle_id": 120765,
+            "is_favorite": 0,
+            "interest_id": 0,
+            "remark": "Tell me where to find this field?",
+            "order_uuid": "100260304005843080210010042069656",
+            "vehicle_type_name": "LalaGo",
+            "is_enterprise_order": 0,
+            "collection_fen": 0,
+            "order_display_id": 3443187061992149523,
+            "order_display_id_str": "3443187061992149523",
+            "loaded_time": "",
+            "complete_time": "",
+            "driver_id": 0,
+            "ref": "",
+            "transaction_id": "",
+            "order_type": "1",
+            "is_incidentally": 0,
+            "coupon_id": 0,
+            "can_rate": 1,
+            "client_type": 3,
+            "user_lang": "pt_br",
+            "driver_lang": "",
+            "is_proof_of_delivery_required": 1,
+            "ep_id": 783643146,
+            "edit_clone_status": 0,
+            "original_create_time": 1772557123,
+            "is_multiple_price": 1,
+            "addr_op_mode": 0,
+            "total_distance": 59625,
+            "reject_type": 0,
+            "mandatory_delivery_status": 0,
+            "bundle_order_type": 0,
+            "price_breakdown": {
+                "tax_str_in_total": "",
+                "categories": [
+                    {
+                        "key": "PAID_ONLINE",
+                        "title": "Pago online",
+                        "remark": "",
+                        "subtotal": 5753,
+                        "display_subtotal": "R$57,53",
+                        "items": [
+                            {
+                                "name": "Taxa de entrega",
+                                "key": "deliveryFee",
+                                "value_fen": 5198,
+                                "display_value": "R$51,98"
+                            },
+                            {
+                                "name": "Taxa de parada adicional",
+                                "key": "additionalStopFee",
+                                "value_fen": 555,
+                                "display_value": "R$5,55"
+                            }
+                        ]
+                    }
+                ],
+                "total_price": 5753,
+                "display_total_price": "R$57,53",
+                "final_price": 5753,
+                "display_final_price": "R$57,53",
+                "is_paying": 0,
+                "should_apply_coupon": false
+            },
+            "addr_info": [
+                {
+                    "lat_lon": {
+                        "lat": -23.5646316,
+                        "lon": -46.669088
+                    },
+                    "lat_lon_gcj": [],
+                    "name": "Rua Haddock Lobo, 1626 - Jardins, São Paulo - SP, 01414-002, Brasil",
+                    "addr": "Rua Haddock Lobo, 1626 - Jardins, São Paulo - SP, 01414-002, Brasil",
+                    "city_id": 21001,
+                    "city_name": "",
+                    "district_name": "",
+                    "house_number": "GE Beauty | 2º Piso Próximo ao salão Wanderley Nunes",
+                    "contacts_name": "GE Beauty",
+                    "contacts_phone_no": "11966208929",
+                    "virtual_contacts_phone_no": "",
+                    "place_id": "ChIJf41jx9lZzpQRWm2K21AcsUk",
+                    "name_hlang": [
+                        {
+                            "lang": "pt_br",
+                            "value": "Rua Haddock Lobo, 1626 - Jardins, São Paulo - SP, 01414-002, Brasil"
+                        }
+                    ],
+                    "addr_hlang": [
+                        {
+                            "lang": "pt_br",
+                            "value": "Rua Haddock Lobo, 1626 - Jardins, São Paulo - SP, 01414-002, Brasil"
+                        }
+                    ],
+                    "area_name_hlang": [],
+                    "area_id": 0,
+                    "district_name_hlang": [
+                        {
+                            "lang": "en_br",
+                            "value": "JARDIM PAULISTA"
+                        },
+                        {
+                            "lang": "pt_br",
+                            "value": "JARDIM PAULISTA"
+                        }
+                    ],
+                    "node": 1,
+                    "stop_id": "",
+                    "is_cash_payment_stop": 0,
+                    "lbs_ext": "",
+                    "address_type": 0,
+                    "address_id": "",
+                    "proof_of_delivery": {
+                        "proof_of_delivery_status": 4,
+                        "signed_by": "",
+                        "image_urls": [],
+                        "remarks": "",
+                        "create_time": 0
+                    },
+                    "delivery_code": {
+                        "status": "Not Applicable",
+                        "value": ""
+                    }
+                },
+                {
+                    "lat_lon": {
+                        "lat": -23.5985937,
+                        "lon": -46.7021381
+                    },
+                    "lat_lon_gcj": [],
+                    "name": "Praça Renzo Pagliari, 238",
+                    "addr": "Praça Renzo Pagliari, 238 - Cidade Jardim, São Paulo - SP, Brasil",
+                    "city_id": 21001,
+                    "city_name": "",
+                    "district_name": "",
+                    "house_number": "Casa 5, ⁠Cidade Jardim",
+                    "contacts_name": "Camilla Guzzardi",
+                    "contacts_phone_no": "11999533122",
+                    "virtual_contacts_phone_no": "",
+                    "place_id": "ChIJDfntpiVXzpQRh02veHd6vwQ",
+                    "name_hlang": [
+                        {
+                            "lang": "pt_br",
+                            "value": "Praça Renzo Pagliari, 238"
+                        }
+                    ],
+                    "addr_hlang": [
+                        {
+                            "lang": "pt_br",
+                            "value": "Praça Renzo Pagliari, 238 - Cidade Jardim, São Paulo - SP, Brasil"
+                        }
+                    ],
+                    "area_name_hlang": [],
+                    "area_id": 0,
+                    "district_name_hlang": [
+                        {
+                            "lang": "en_br",
+                            "value": "MORUMBI"
+                        },
+                        {
+                            "lang": "pt_br",
+                            "value": "MORUMBI"
+                        }
+                    ],
+                    "node": 2,
+                    "stop_id": "",
+                    "is_cash_payment_stop": 0,
+                    "lbs_ext": "",
+                    "address_type": 0,
+                    "address_id": "",
+                    "proof_of_delivery": {
+                        "proof_of_delivery_status": 0,
+                        "signed_by": "",
+                        "image_urls": [],
+                        "remarks": "",
+                        "create_time": 0
+                    },
+                    "delivery_code": {
+                        "status": "Not Applicable",
+                        "value": ""
+                    }
+                },
+                {
+                    "lat_lon": {
+                        "lat": -23.5985937,
+                        "lon": -46.7021381
+                    },
+                    "lat_lon_gcj": [],
+                    "name": "Praça Renzo Pagliari, 238",
+                    "addr": "Praça Renzo Pagliari, 238 - Cidade Jardim, São Paulo - SP, Brasil",
+                    "city_id": 21001,
+                    "city_name": "",
+                    "district_name": "",
+                    "house_number": "Casa 5, ⁠Cidade Jardim",
+                    "contacts_name": "Camilla Guzzardi",
+                    "contacts_phone_no": "11999533122",
+                    "virtual_contacts_phone_no": "",
+                    "place_id": "ChIJDfntpiVXzpQRh02veHd6vwQ",
+                    "name_hlang": [
+                        {
+                            "lang": "pt_br",
+                            "value": "Praça Renzo Pagliari, 238"
+                        }
+                    ],
+                    "addr_hlang": [
+                        {
+                            "lang": "pt_br",
+                            "value": "Praça Renzo Pagliari, 238 - Cidade Jardim, São Paulo - SP, Brasil"
+                        }
+                    ],
+                    "area_name_hlang": [],
+                    "area_id": 0,
+                    "district_name_hlang": [
+                        {
+                            "lang": "en_br",
+                            "value": "MORUMBI"
+                        },
+                        {
+                            "lang": "pt_br",
+                            "value": "MORUMBI"
+                        }
+                    ],
+                    "node": 3,
+                    "stop_id": "",
+                    "is_cash_payment_stop": 0,
+                    "lbs_ext": "",
+                    "address_type": 0,
+                    "address_id": "",
+                    "proof_of_delivery": {
+                        "proof_of_delivery_status": 0,
+                        "signed_by": "",
+                        "image_urls": [],
+                        "remarks": "",
+                        "create_time": 0
+                    },
+                    "delivery_code": {
+                        "status": "Not Applicable",
+                        "value": ""
+                    }
+                },
+                {
+                    "lat_lon": {
+                        "lat": -23.5730798,
+                        "lon": -46.6900285
+                    },
+                    "lat_lon_gcj": [],
+                    "name": "Avenida Brigadeiro Faria Lima, 1768",
+                    "addr": "Avenida Brigadeiro Faria Lima, 1768 - Jardim Paulistano, São Paulo - SP, Brasil",
+                    "city_id": 21001,
+                    "city_name": "",
+                    "district_name": "",
+                    "house_number": "3C/3D",
+                    "contacts_name": "Lucas Guimarães",
+                    "contacts_phone_no": "11972776427",
+                    "virtual_contacts_phone_no": "",
+                    "place_id": "ChIJu1vqtAxXzpQRMavNtsz8PmI",
+                    "name_hlang": [
+                        {
+                            "lang": "pt_br",
+                            "value": "Avenida Brigadeiro Faria Lima, 1768"
+                        }
+                    ],
+                    "addr_hlang": [
+                        {
+                            "lang": "pt_br",
+                            "value": "Avenida Brigadeiro Faria Lima, 1768 - Jardim Paulistano, São Paulo - SP, Brasil"
+                        }
+                    ],
+                    "area_name_hlang": [],
+                    "area_id": 0,
+                    "district_name_hlang": [
+                        {
+                            "lang": "en_br",
+                            "value": "PINHEIROS"
+                        },
+                        {
+                            "lang": "pt_br",
+                            "value": "PINHEIROS"
+                        }
+                    ],
+                    "node": 4,
+                    "stop_id": "",
+                    "is_cash_payment_stop": 0,
+                    "lbs_ext": "",
+                    "address_type": 0,
+                    "address_id": "",
+                    "proof_of_delivery": {
+                        "proof_of_delivery_status": 0,
+                        "signed_by": "",
+                        "image_urls": [],
+                        "remarks": "",
+                        "create_time": 0
+                    },
+                    "delivery_code": {
+                        "status": "Not Applicable",
+                        "value": ""
+                    }
+                },
+                {
+                    "lat_lon": {
+                        "lat": -23.5127033,
+                        "lon": -46.7908304
+                    },
+                    "lat_lon_gcj": [],
+                    "name": "Av. João Del Papa, 245",
+                    "addr": "Av. João Del Papa, 245 - Iapi, Osasco - SP, Brasil",
+                    "city_id": 21001,
+                    "city_name": "",
+                    "district_name": "",
+                    "house_number": "Apt 11 Bl 19, ⁠IAPI",
+                    "contacts_name": "Camila Harumi",
+                    "contacts_phone_no": "11972657198",
+                    "virtual_contacts_phone_no": "",
+                    "place_id": "ChIJEUTwZ1n-zpQRMmpD6NT1BZU",
+                    "name_hlang": [
+                        {
+                            "lang": "pt_br",
+                            "value": "Av. João Del Papa, 245"
+                        }
+                    ],
+                    "addr_hlang": [
+                        {
+                            "lang": "pt_br",
+                            "value": "Av. João Del Papa, 245 - Iapi, Osasco - SP, Brasil"
+                        }
+                    ],
+                    "area_name_hlang": [],
+                    "area_id": 0,
+                    "district_name_hlang": [
+                        {
+                            "lang": "en_br",
+                            "value": "Osasco"
+                        },
+                        {
+                            "lang": "pt_br",
+                            "value": "Osasco"
+                        }
+                    ],
+                    "node": 5,
+                    "stop_id": "",
+                    "is_cash_payment_stop": 0,
+                    "lbs_ext": "",
+                    "address_type": 0,
+                    "address_id": "",
+                    "proof_of_delivery": {
+                        "proof_of_delivery_status": 0,
+                        "signed_by": "",
+                        "image_urls": [],
+                        "remarks": "",
+                        "create_time": 0
+                    },
+                    "delivery_code": {
+                        "status": "Not Applicable",
+                        "value": ""
+                    }
+                },
+                {
+                    "lat_lon": {
+                        "lat": -23.5452998,
+                        "lon": -46.7944909
+                    },
+                    "lat_lon_gcj": [],
+                    "name": "Rua Formosa",
+                    "addr": "Rua Formosa - Vila Yolanda, Osasco - SP, Brasil",
+                    "city_id": 21001,
+                    "city_name": "",
+                    "district_name": "",
+                    "house_number": "Casa 6B",
+                    "contacts_name": "Katia Sato",
+                    "contacts_phone_no": "11990130420",
+                    "virtual_contacts_phone_no": "",
+                    "place_id": "Ei9SdWEgRm9ybW9zYSAtIFZpbGEgWW9sYW5kYSwgT3Nhc2NvIC0gU1AsIEJyYXNpbCIuKiwKFAoSCW8WlZei_86UERTQvl2ctSBGEhQKEgnNiO1CmP_OlBGe1jmFtlJM8Q",
+                    "name_hlang": [
+                        {
+                            "lang": "pt_br",
+                            "value": "Rua Formosa"
+                        }
+                    ],
+                    "addr_hlang": [
+                        {
+                            "lang": "pt_br",
+                            "value": "Rua Formosa - Vila Yolanda, Osasco - SP, Brasil"
+                        }
+                    ],
+                    "area_name_hlang": [],
+                    "area_id": 0,
+                    "district_name_hlang": [
+                        {
+                            "lang": "en_br",
+                            "value": "Osasco"
+                        },
+                        {
+                            "lang": "pt_br",
+                            "value": "Osasco"
+                        }
+                    ],
+                    "node": 6,
+                    "stop_id": "",
+                    "is_cash_payment_stop": 0,
+                    "lbs_ext": "",
+                    "address_type": 0,
+                    "address_id": "",
+                    "proof_of_delivery": {
+                        "proof_of_delivery_status": 0,
+                        "signed_by": "",
+                        "image_urls": [],
+                        "remarks": "",
+                        "create_time": 0
+                    },
+                    "delivery_code": {
+                        "status": "Not Applicable",
+                        "value": ""
+                    }
+                },
+                {
+                    "lat_lon": {
+                        "lat": -23.6240042,
+                        "lon": -46.57903779999999
+                    },
+                    "lat_lon_gcj": [],
+                    "name": "R. São Jorge, 604",
+                    "addr": "R. São Jorge, 604 - Cerâmica, São Caetano do Sul - SP, 09530-250, Brazil",
+                    "city_id": 21001,
+                    "city_name": "",
+                    "district_name": "",
+                    "house_number": "Ap61B, Santo Antônio",
+                    "contacts_name": "Fabiana Cabral Ribeiro",
+                    "contacts_phone_no": "",
+                    "virtual_contacts_phone_no": "",
+                    "place_id": "ElFSLiBTw6NvIEpvcmdlLCA2MDQgLSBDZXLDom1pY2EsIFPDo28gQ2FldGFubyBkbyBTdWwgLSBTdGF0ZSBvZiBTw6NvIFBhdWxvLCBCcmF6aWwiMRIvChQKEgkfEGT-lVzOlBHP4P5e641PFxDcBCoUChIJx1WIJpRczpQRLr-Ei97zHdU",
+                    "name_hlang": [
+                        {
+                            "lang": "pt_br",
+                            "value": "R. São Jorge, 604"
+                        }
+                    ],
+                    "addr_hlang": [
+                        {
+                            "lang": "pt_br",
+                            "value": "R. São Jorge, 604 - Cerâmica, São Caetano do Sul - SP, 09530-250, Brazil"
+                        }
+                    ],
+                    "area_name_hlang": [],
+                    "area_id": 0,
+                    "district_name_hlang": [
+                        {
+                            "lang": "en_br",
+                            "value": "Cerâmica"
+                        },
+                        {
+                            "lang": "pt_br",
+                            "value": "Cerâmica"
+                        }
+                    ],
+                    "node": 7,
+                    "stop_id": "",
+                    "is_cash_payment_stop": 0,
+                    "lbs_ext": "",
+                    "address_type": 0,
+                    "address_id": "",
+                    "proof_of_delivery": {
+                        "proof_of_delivery_status": 0,
+                        "signed_by": "",
+                        "image_urls": [],
+                        "remarks": "",
+                        "create_time": 0
+                    },
+                    "delivery_code": {
+                        "status": "Not Applicable",
+                        "value": ""
+                    }
+                }
+            ],
+            "is_delivery_code_required": 0,
+            "order_plan_type": 0,
+            "order_time_hts": 1772557720000,
+            "create_time_hts": 1772557123000,
+            "daylight_type": 0,
+            "price_item": [
+                {
+                    "type": 1,
+                    "value_fen": 730,
+                    "bill_type_name": "",
+                    "img_url": "",
+                    "pay_status": 1,
+                    "rear_pay": 1,
+                    "pay_type": 32,
+                    "bill_pay_status": 102
+                },
+                {
+                    "type": 2,
+                    "value_fen": 6155,
+                    "bill_type_name": "",
+                    "img_url": "",
+                    "pay_status": 1,
+                    "rear_pay": 1,
+                    "pay_type": 32,
+                    "bill_pay_status": 102
+                },
+                {
+                    "type": 27,
+                    "value_fen": 555,
+                    "bill_type_name": "",
+                    "img_url": "",
+                    "pay_status": 1,
+                    "rear_pay": 1,
+                    "pay_type": 32,
+                    "bill_pay_status": 102
+                },
+                {
+                    "type": 51,
+                    "value_fen": -1687,
+                    "bill_type_name": "",
+                    "img_url": "",
+                    "pay_status": 1,
+                    "rear_pay": 1,
+                    "pay_type": 32,
+                    "bill_pay_status": 102
+                }
+            ],
+            "rear_pay_remark": "",
+            "subset": 0,
+            "fleet_end_at": 0,
+            "send_type": 0,
+            "time_diff": 1,
+            "can_complaint": 0,
+            "order_complete_ts": 0,
+            "price_cash_fee_fen": 0,
+            "vehicle_id": 0,
+            "porterage_type": 0,
+            "sms_tel": "+5511972776427",
+            "is_ban": 0,
+            "waiting_fee_open": 0,
+            "receipt_url": [],
+            "in_node": 0,
+            "order_cancel_ts": 0,
+            "show_appeal": 0,
+            "bill_user_pay_type": 0,
+            "bill_user_pay_status": 0,
+            "is_skip_rating": 0,
+            "cancelled_by": 0,
+            "send_bill_remark": "",
+            "is_immediate": 1,
+            "post_order_flow_ppo_enabled": false,
+            "pay_channel_id": 2501,
+            "fleet_end_new_at": 0,
+            "deduct_cancellation_fee": 0,
+            "user_vat_rate": 0,
+            "metadata": null,
+            "api_options": "",
+            "chain_id": 0,
+            "clone_id": 0,
+            "order_edit_driver_confirm_status": 0,
+            "order_edit_unconfirmed_user_push_times": 0,
+            "order_pricing_model": 2,
+            "pricing_model": "DISTANCE",
+            "partner_name": "",
+            "rating_comment": {},
+            "lbs": {
+                "path_id": 3443194642970136783,
+                "tactics": 0
+            },
+            "od_info": {
+                "od_flag_sensor": 0,
+                "empty": false
+            },
+            "bill_price_item": [],
+            "channel_info_items": [],
+            "order_complete_ts_hts": 0,
+            "driver_info": {},
+            "order_loaded_time_ts": 0,
+            "order_loaded_time_hts": 0,
+            "order_loaded_image_urls": [],
+            "user_name": "Lucas",
+            "user_tel": "11972776427",
+            "pay_status": 1,
+            "exceed_distance": 58700,
+            "price_pay_fee_fen": 5753,
+            "use_virtual_phone": 0,
+            "pay_type": 32,
+            "plan_type": 2,
+            "order_loaded_ts": 0,
+            "toll_path_id": "",
+            "is_toll_up_to_driver": false,
+            "porterage_price_item": [],
+            "spec_req_type": [],
+            "step_node": [
+                3,
+                4
+            ],
+            "std_tag": [],
+            "std_tag_ids": [],
+            "spec_req_price_item": [],
+            "vehicle_std_price_item": [],
+            "surcharge_price_item": [],
+            "act_items": [],
+            "order_item_info": [],
+            "delivery_time": "",
+            "delivery_start_time": 0,
+            "delivery_end_time": 0,
+            "order_hash": "7dc6fb3679c71052bedcf6425be73b6e",
+            "order_edit": {
+                "is_edited": false,
+                "can_edit": false,
+                "is_visible": true,
+                "is_edit_later": true,
+                "is_enabled_delivery_item_info": false,
+                "abtest_group": "",
+                "driver_confirm_status": 0,
+                "driver_unconfirmed_user_push_times": 0,
+                "order_time_min_delay_time": "300",
+                "order_time_delay_base_time": "1800",
+                "order_time_max_delay_time": "14400"
+            },
+            "driver_grace_period": {
+                "chat_type_ts": 0,
+                "call_type_ts": 0
+            },
+            "rating_by_user": 0,
+            "rating_details": {},
+            "is_intercity_order": 0,
+            "appeal_status": 0,
+            "appeal_hotline": null,
+            "appeal_handle_info": {},
+            "appeal_note_msg": "",
+            "bill_type_list": [],
+            "act_item": [],
+            "raw_bills": [
+                {
+                    "type": 1,
+                    "pay_status": 1,
+                    "value_fen": 730
+                },
+                {
+                    "type": 2,
+                    "pay_status": 1,
+                    "value_fen": 6155
+                },
+                {
+                    "type": 27,
+                    "pay_status": 1,
+                    "value_fen": 555
+                },
+                {
+                    "type": 51,
+                    "pay_status": 1,
+                    "value_fen": -1687
+                }
+            ],
+            "local_phone_no": "",
+            "call_to": "",
+            "call_to_type": 0,
+            "customer_service_tel": "",
+            "im_enable": 1,
+            "can_add_ban": 0,
+            "can_rear_pay": 0,
+            "rear_pay_enable": 1,
+            "addon_fee_flow_flag": 0,
+            "share_order_type": 0,
+            "redpacket_enable": 0,
+            "show_questionnaire": 0,
+            "get_status_time": 15000,
+            "tips_option": [
+                300,
+                520,
+                780
+            ],
+            "tips_max": 4000,
+            "tips_min": 300,
+            "tips_price_fen": 0,
+            "priority_fee_enable": true,
+            "saver_priority_description": "Adicione uma taxa prioritária para encontrar um motorista mais rápido para este pedido desconto.",
+            "sign": "055cdd9f3e2e9c22998a1f24cc4f4477",
+            "share_link": "https://share.lalamove.com/?BR100260304005843080210010042069656&lang=pt_BR&sign=055cdd9f3e2e9c22998a1f24cc4f4477&source=web",
+            "user_fid": "Dm4WKe4N",
+            "coupon_id_str": "0",
+            "module_category": 1,
+            "redpkt_status": 0,
+            "show_safe_center": 2,
+            "pay_option": [
+                {
+                    "id": 1,
+                    "desc": ""
+                },
+                {
+                    "id": 2,
+                    "desc": ""
+                },
+                {
+                    "id": 3,
+                    "desc": ""
+                }
+            ],
+            "allow_change_driver": 0,
+            "price_quote_type": 100,
+            "insurance_tag": 0,
+            "phone_number_masking": {
+                "enabled": false,
+                "show_reminder": false
+            },
+            "post_delivery_payment_action": {
+                "review_with_cs_btn": {
+                    "is_visible": false,
+                    "is_enabled": false,
+                    "display_text": "Revisar com CS"
+                },
+                "pay_btn": {
+                    "is_visible": false,
+                    "is_enabled": false,
+                    "display_text": "Pagar"
+                }
+            },
+            "order_status_2_time_ts": 0,
+            "c_payer_id": ""
+        }
+    }
+}
