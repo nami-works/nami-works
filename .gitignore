@@ -43,3 +43,12 @@ z_playground/
 # Large files (GitHub limit)
 infra/terraform/.terraform/
 public/screencast.mp4
+
+# Terraform state & secrets
+infra/terraform/terraform.tfstate
+infra/terraform/terraform.tfstate.backup
+infra/terraform/terraform.tfvars
+
+# Scripts with hardcoded tokens
+scripts/webhook-listen.ps1
+gebeauty-workspace/scripts/update_beautyback_combines.py
