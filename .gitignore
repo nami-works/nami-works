@@ -39,3 +39,7 @@ tmp-*.json
 .playwright-mcp/
 storage/
 z_playground/
+
+# Large files (GitHub limit)
+infra/terraform/.terraform/
+public/screencast.mp4
