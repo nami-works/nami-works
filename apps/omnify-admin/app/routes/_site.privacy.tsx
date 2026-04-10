@@ -1,6 +1,5 @@
 import type { MetaFunction } from "react-router";
-import { SiteNav, SiteFooter } from "../components/site-layout";
-import styles from "./privacy/styles.module.css";
+import styles from "./_site.privacy/styles.module.css";
 
 export const meta: MetaFunction = () => [
   { title: "Omnify | Privacy Policy" },
@@ -20,7 +19,6 @@ export const meta: MetaFunction = () => [
 export default function Privacy() {
   return (
     <div className={styles.page}>
-      <SiteNav />
       <main className={styles.content}>
         <h1 className={styles.title}>Privacy Policy</h1>
         <div className={styles.meta}>
@@ -416,7 +414,6 @@ export default function Privacy() {
           </p>
         </section>
       </main>
-      <SiteFooter />
     </div>
   );
 }
