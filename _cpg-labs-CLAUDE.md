@@ -63,6 +63,7 @@ npx prisma migrate dev  # Create/apply migrations
 ## Hard Rules
 
 - **Always confirm before writing to the live store.** Any Shopify API mutation (product updates, metafield changes, discount edits, theme writes) must be explicitly approved by the user before execution. Present the proposed changes, wait for confirmation, then apply.
+- **Production and `main` must stay in sync.** Anything deployed to production must also be committed to `main`. If a session deploys changes (via `scripts/deploy-*.ps1`, `shopify app deploy`, or any infra/website push), the corresponding code changes must be committed in the same session — no "I'll commit it later." Conversely, if uncommitted work exists on disk that's already running in production, treat committing it as part of the current task before moving on.
 - Keep the app embedded and aligned with Shopify Admin UX.
 - Prefer Polaris web components for page and form structure.
 - **One top-level `<s-page>` per route.** No extra wrappers.
@@ -103,7 +104,22 @@ When the user says **"backlog"** at the start of a session, enter backlog-buildi
 7. **In the final reply:** call out behavioral risks and manual test steps.
 
 ### Keeping docs/project-brief.md Updated
-When a session introduces **new features, renames existing ones, changes the multi-app identity mapping, or shifts priorities**, update `docs/project-brief.md` to reflect the change. This file is used as external context (e.g. Claude mobile app) and must stay in sync with the codebase.
+`docs/project-brief.md` is external context used by Claude in planning and ideation conversations (mobile app, Claude Projects, anyone unfamiliar with the code). It must stay in sync with the codebase — stale content misleads planning.
+
+**Update whenever a session:**
+- Introduces a new feature or renames an existing one
+- Changes the multi-app identity mapping or scoped navigation
+- **Starts a new initiative** → add to "In progress"
+- **Lands an initiative** → move from "In progress" to "Recently shipped" with an absolute date, or delete if superseded
+- **Shifts priorities** → reorder entries within their bucket
+- Adds or removes a "Planned / not yet started" item
+
+**The "Current Initiatives" section has three buckets:**
+- **Recently shipped** — landed within the last ~3 weeks, kept as context for what just changed. Always tag with an absolute date (e.g. *(2026-04-08)*) so entries age cleanly. Prune anything older than ~3 weeks unless it is still load-bearing context.
+- **In progress** — actively being built. Each entry should explain what, why, and where it stands (partially landed, planned, blocked).
+- **Planned / not yet started** — acknowledged but not scheduled. One-line bullets are fine here.
+
+When in doubt about whether something belongs in the brief, ask: "would a planning conversation be misled if this were missing?" If yes, add it. If the brief drifts from reality, fix it in the same session rather than deferring.
 
 ### Definition of Done
 - Code follows route layout conventions used elsewhere in the repo.
@@ -262,6 +278,17 @@ Cards inside aside panels (e.g. Route Manager in Local Delivery, Expansion Proje
 - **Slots don't work from child routes.** `<s-page>` only sees direct children for slot assignment. A `<div slot="aside">` rendered inside `<Outlet>` (child route) will be ignored. If only one tab needs a sidebar, render the content inline within the main area instead.
 - **Use `<s-checkbox>` instead of native `<input type="checkbox">`.** Native checkboxes render with browser-default blue; `<s-checkbox>` renders in Shopify's standard dark style.
 - **`<s-checkbox>` does not accept children.** Place the label text outside as a sibling: `<s-checkbox checked={...} onChange={...} /> Label text`. Wrapping text inside `<s-checkbox>children</s-checkbox>` causes a TypeScript error (`Property 'children' does not exist`).
+- **`<s-checkbox>` + label text toggle pattern.** HTML `<label>` wrapping does not auto-toggle `<s-checkbox>` (web component). Use a container `<div>` with `onClick` that toggles state, `role="button"`, and `user-select: none` in CSS:
+  ```tsx
+  <div className={styles.checkboxToggle} onClick={() => setState(prev => !prev)} role="button">
+    <s-checkbox checked={value || undefined} onChange={() => setState(prev => !prev)} />
+    Label text
+  </div>
+  ```
+  ```css
+  .checkboxToggle { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+  ```
+  This is the system-wide standard for all `<s-checkbox>` + label combinations.
 
 ### Mobile
 - All pages must be mobile-friendly. Main breakpoint: `768px`.

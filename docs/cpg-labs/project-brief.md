@@ -200,18 +200,44 @@ Each identity has its own Shopify app credentials, deploy script, and scoped nav
 
 ---
 
-## Current Priorities & In-Progress Work
+## Current Initiatives
 
-### Local Delivery (active)
-- Route manager card restyling (cancel button → secondary/critical)
-- "Driver requested" state: disable "Clear route" when delivery is active
-- "Track delivery" button linking to Lalamove tracking URL
-- Lalamove status labels (incremental UI feedback for each state)
-- Recife 422 error investigation (special request payload mismatch)
+This section tracks work that is actively in progress or recently landed. Keep it current — stale initiatives mislead planning conversations. See "Keeping docs/project-brief.md Updated" in `CLAUDE.md` for the update protocol.
 
-### Platform
-- CPG Labs URL change: moving from `omnify.cpg-labs.io/full` to a dedicated URL (pending)
-- Multi-provider carrier service (Loggi, Uber, Rappi — planned, not started)
+### Recently shipped
+
+**Auto-delivery pipeline** *(2026-04-08)*
+Local Delivery refactored from manual to fully automatic. A cron auto-assigns orders to routes after a configurable cutoff + delay, auto-dispatches Lalamove orders at a configured time, archives route tags on completion (e.g. `ld_rota-03` → `ld_rota-03_26.04.08`), and has a watchdog that clears stuck tags after a retry cutoff so orders re-enter the pool next day. Opt-in per location via `autoDeliveryEnabled`. The app no longer creates Shopify fulfillments — delivery status is tracked only via order tags and the app database.
+
+**Route optimizer tuning** *(2026-04-09)*
+12km max-spread constraint added to the VRP optimizer in `carrier-quotation-optimizer.server.ts`. Routes exceeding 12km haversine spread between any two orders now get split via 2-means bisection, enforced at four pipeline stages. Solo routes are allowed for geographically isolated orders. Derived from correction data showing 70% of dispatches were being manually split by the user.
+
+**Retail Footprint analytics — Phase 2** *(normalized tables)*
+Migrated the Retail Footprint data layer from a monolithic JSON blob to normalized Prisma tables (`RetailOrder`, `RetailCustomer`, `RetailCityMonthly`, `RetailHeatmapBucket`, `RetailSyncMeta`). Dual-write sync uses bulk `INSERT ... ON CONFLICT DO UPDATE` via raw SQL (~100x faster than per-row upserts). Required because the pilot store has 110k combined records and the old JSON approach caused OOM on write.
+
+**cpg-labs.io marketing website**
+Public marketing site built as unauthenticated routes inside the main React Router app (`_site.*` route group). Seven pages (Home, Pricing, Privacy, Terms, Security, About, Contact), mobile-first design, light/dark theme toggle, and a Google Business Profile Health Check tool. Built to unblock Google GBP API agency approval and to serve as the marketing surface for Omnify. Backend wiring (email capture, GBP tool, domain deploy) still pending.
+
+### In progress
+
+**Retail Footprint analytics — Phase 3** *(switch reads)*
+Restructure the loader to read directly from the normalized tables via `getHeatmapBuckets()` and `getCityRankings()` instead of the old JSON cache. Remove ~400 lines of client-side `useMemo` filter chains. Date range changes move from instant client-side filtering to a debounced server fetcher. Project stats become an on-demand `getProjectRadiusStats()` action. Until Phase 3 lands, the page shows "No geocoded records" because it still reads the empty JSON cache.
+
+**Sales merge** *(Campaigns + Price Tags → unified Sales tab)*
+Merging "Merchandising > Campaigns" and the standalone "Price Tags" feature into a single "Sales" tab under Merchandising. Price tags become an opt-in toggle per campaign. Smart badge logic compares absolute percentage vs absolute dollar discount and displays the larger. Product filter combines collections + products (from Price Tags) and product types (from Campaigns). A Quick Apply Tags action remains as a standalone secondary flow for products with existing `compareAtPrice`. Webhook handlers skip campaign-managed products to avoid fighting active campaigns. Routes have been renamed (`app.merchandising.sales.*` → `app.merchandising.sale.*`), the old Price Tags routes are deleted, but the change is not yet committed to main.
+
+**VRP routing** *(replacing the corridor approach)*
+Rebuilding route optimization around a real driving distance matrix (Google Distance Matrix API) feeding a VRP solver (OR-Tools or Clarke-Wright savings), replacing the previous haversine-corridor heuristic. The corridor approach fails in cities with complex geography — Rio de Janeiro (mountains, tunnels, Guanabara Bay) exposed that haversine distance can be 5x shorter than actual road distance, causing orders to mix between routes that physically cross the city. The existing cost-reduction patterns (no DirectionsService, no loader precomputation, persistent geocode cache, polyline DB cache) must be preserved regardless of the optimizer approach.
+
+**Affiliates feature** *(early stage, not yet in main)*
+New `/app/affiliates` route tracking affiliate profiles and attributing orders to them via a BixGrow CSV import + order backfill sync. Supporting services live under `app/affiliates/` (storage, sync, analytics queries, overview stats). Scope, positioning, and whether it becomes a standalone app identity are still open questions — this is a candidate topic for ideation sessions.
+
+### Planned / not yet started
+
+- **CPG Labs URL change** — moving off `omnify.cpg-labs.io/full` to a dedicated URL. Pending, no date set.
+- **Multi-provider carrier service** — Loggi, Uber, and Rappi currently exist as placeholder providers. No implementation work scheduled.
+- **Local Delivery polish backlog** — Recife 422 error (special request payload mismatch against the city-specific Lalamove config), driver-requested state UI refinements, Lalamove tracking URL button, per-state status labels.
+- **Per-city route-spread thresholds** — the current 12km max-spread was tuned on São Paulo correction data. Rio (water barriers) and Recife (narrower urban footprint) may warrant different thresholds once more correction data accumulates.
 
 ---
 
