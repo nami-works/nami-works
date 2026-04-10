@@ -270,6 +270,7 @@ export default function Index() {
   const [ordersFilter, setOrdersFilter] = useState<"all" | "unassigned" | "assigned">("all");
   const [ordersSearch, setOrdersSearch] = useState("");
   const ordersSectionRef = useRef<HTMLDivElement | null>(null);
+  const [lalamoveBusyRouteId, setLalamoveBusyRouteId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isRouteManagerVisible, setIsRouteManagerVisible] = useState(false);
   const [isAccuracyCollapsed, setIsAccuracyCollapsed] = useState(false);
@@ -476,6 +477,12 @@ export default function Index() {
   useEffect(() => {
     setLalamoveConfigMap(lalamoveConfigs);
   }, [lalamoveConfigs]);
+
+  useEffect(() => {
+    if (lalamoveFetcher.state === "idle" && cancelFetcher.state === "idle") {
+      setLalamoveBusyRouteId(null);
+    }
+  }, [lalamoveFetcher.state, cancelFetcher.state]);
 
   useEffect(() => {
     setSettingsSaved(false);
@@ -3160,39 +3167,113 @@ export default function Index() {
     );
   };
 
+  const renderRouteNotification = (route: PrecomputedRoute) => {
+    const dispatch = dispatchedRoutes[route.id];
+    const status = dispatch?.status ?? null;
+    const lalamove = lalamoveStatus[route.id];
+
+    if (dispatch && lalamove?.tone === "critical" && lalamove.errorDetails) {
+      return (
+        <>
+          <s-link
+            onClick={() =>
+              setDriverErrorModal({
+                routeId: route.id,
+                message: lalamove.message,
+                errorDetails: lalamove.errorDetails ?? "",
+              })
+            }
+          >
+            <s-badge tone="critical">{lalamove.message}</s-badge>
+          </s-link>
+          <a
+            href="https://web.lalamove.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.goToLalamoveLink}
+          >
+            {t("driverRequest.goToLalamove")}
+          </a>
+        </>
+      );
+    }
+
+    if (status && TERMINAL_DISPATCH_STATUSES.has(status)) {
+      return (
+        <s-badge tone={getStatusBadgeTone(status)}>
+          {t(`routeManager.status.${status}`)}
+        </s-badge>
+      );
+    }
+
+    if (dispatch && status) {
+      return (
+        <s-badge tone={getStatusBadgeTone(status)}>
+          {t(`routeManager.status.${status}`)}
+        </s-badge>
+      );
+    }
+
+    if (lalamove && !dispatch) {
+      if (lalamove.tone === "success") {
+        return <s-badge tone="success">{lalamove.message}</s-badge>;
+      }
+      if (lalamove.tone === "critical" && lalamove.errorDetails) {
+        return (
+          <s-link
+            onClick={() =>
+              setDriverErrorModal({
+                routeId: route.id,
+                message: lalamove.message,
+                errorDetails: lalamove.errorDetails ?? "",
+              })
+            }
+          >
+            <s-badge tone="critical">{lalamove.message}</s-badge>
+          </s-link>
+        );
+      }
+      if (lalamove.tone === "critical") {
+        return <s-badge tone="critical">{lalamove.message}</s-badge>;
+      }
+      return <s-text color="subdued">{lalamove.message}</s-text>;
+    }
+
+    if (reorderedRoutes[route.id]) {
+      return (
+        <s-badge tone="warning">
+          {t("routeManager.reRequestedAt", { time: reorderedRoutes[route.id] })}
+        </s-badge>
+      );
+    }
+
+    return null;
+  };
+
   const renderOrdersSection = () => (
     <div ref={ordersSectionRef} className={styles.ordersSectionWrap}>
       <s-section>
         <s-stack direction="block" gap="base">
-          <div className={styles.ordersHeaderRow}>
+          <s-stack
+            direction="inline"
+            gap="base"
+            justifyContent="space-between"
+          >
             <s-text type="strong">
               {t("routeManager.allOrders", { count: allOrderRows.length })}
             </s-text>
-            <div className={styles.ordersSearchBox}>
-              <svg
-                className={styles.ordersSearchIcon}
-                viewBox="0 0 20 20"
-                width="16"
-                height="16"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M9 3.5a5.5 5.5 0 1 0 3.916 9.385l3.6 3.6a1 1 0 0 0 1.414-1.415l-3.6-3.6A5.5 5.5 0 0 0 9 3.5Zm-3.5 5.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0Z"
-                  fill="currentColor"
-                />
-              </svg>
-              <input
-                type="search"
-                className={styles.ordersSearchInput}
-                placeholder={t("routeManager.searchPlaceholder")}
-                value={ordersSearch}
-                onChange={(e) => setOrdersSearch(e.currentTarget.value)}
-              />
-            </div>
-          </div>
+            <s-text-field
+              label={t("routeManager.searchPlaceholder")}
+              labelAccessibilityVisibility="exclusive"
+              placeholder={t("routeManager.searchPlaceholder")}
+              value={ordersSearch}
+              onChange={(e: Event) =>
+                setOrdersSearch((e.currentTarget as HTMLInputElement).value)
+              }
+            ></s-text-field>
+          </s-stack>
 
-          <div className={styles.ordersFilterPills}>
+          <s-stack direction="inline" gap="small">
             {(["all", "unassigned", "assigned"] as const).map((key) => {
               const count =
                 key === "all"
@@ -3219,7 +3300,7 @@ export default function Index() {
                 </button>
               );
             })}
-          </div>
+          </s-stack>
 
           {filteredOrderRows.length === 0 ? (
             <s-text color="subdued">
@@ -3255,6 +3336,9 @@ export default function Index() {
               </div>
               {filteredOrderRows.map((row) => {
                 const isSelected = selectedOrderIds.has(row.id);
+                const routeBadgeColors = row.route
+                  ? deriveBadgeColors(row.route.color)
+                  : null;
                 return (
                   <div key={row.id} className={styles.dueOrdersRow}>
                     <span>
@@ -3270,12 +3354,13 @@ export default function Index() {
                     <span>{formatOrderDateShort(row.processedAt)}</span>
                     <span>{formatCustomerShort(row.customerName, t("customer.guest"))}</span>
                     <span>
-                      {row.route && row.routeIndex !== null ? (
+                      {row.route && row.routeIndex !== null && routeBadgeColors ? (
                         <span
                           className={styles.routeBadge}
                           style={
                             {
-                              "--route-color": row.route.color,
+                              "--badge-bg": routeBadgeColors.bg,
+                              "--badge-text": routeBadgeColors.text,
                             } as CSSProperties
                           }
                         >
@@ -3443,6 +3528,7 @@ export default function Index() {
       ...current,
       [routeId]: { message: t("driverRequest.cancelling") },
     }));
+    setLalamoveBusyRouteId(routeId);
     cancelFetcher.submit(formData, { method: "post" });
     setCancelConfirmRouteId(null);
   };
@@ -3477,6 +3563,7 @@ export default function Index() {
       ...current,
       [route.id]: { message: t("driverRequest.creatingQuotation") },
     }));
+    setLalamoveBusyRouteId(route.id);
     lalamoveFetcher.submit(formData, { method: "post" });
   };
 
@@ -3523,6 +3610,7 @@ export default function Index() {
       ...current,
       [route.id]: { message: t("driverRequest.creatingQuotation") },
     }));
+    setLalamoveBusyRouteId(route.id);
     lalamoveFetcher.submit(formData, { method: "post" });
   };
 
@@ -3553,6 +3641,7 @@ export default function Index() {
       ...current,
       [route.id]: { message: t("driverRequest.creatingQuotation") },
     }));
+    setLalamoveBusyRouteId(route.id);
     lalamoveFetcher.submit(formData, { method: "post" });
     setSpecialRequestsRoute(null);
     resetWaitTimeState();
@@ -3572,6 +3661,7 @@ export default function Index() {
     formData.append("deliveryAssignments", JSON.stringify(quotePreview.deliveryAssignments));
     const confirmedRouteTag = ROUTE_TAG_DEFINITIONS[routeIndex]?.tag ?? null;
     if (confirmedRouteTag) formData.append("routeTag", confirmedRouteTag);
+    setLalamoveBusyRouteId(route.id);
     lalamoveFetcher.submit(formData, { method: "post" });
   };
 
@@ -5183,8 +5273,15 @@ export default function Index() {
                               const canAddToRoute = assignableExistingRoutes.some(
                                 (candidate) => candidate.id === route.id,
                               );
+                              const isThisRouteBusy = lalamoveBusyRouteId === route.id;
+                              const isAnyRouteBusy = lalamoveBusyRouteId !== null;
+                              const isOtherRouteBusy = isAnyRouteBusy && !isThisRouteBusy;
+                              const notification = renderRouteNotification(route);
                               return (
-                                <div key={route.id} className={styles.routeCard}>
+                                <div
+                                  key={route.id}
+                                  className={`${styles.routeCard}${isOtherRouteBusy ? ` ${styles.routeCardSubdued}` : ""}`}
+                                >
                                 <s-box
                                   padding="base"
                                   borderWidth="base"
@@ -5207,6 +5304,7 @@ export default function Index() {
                                     {dispatchedRoutes[route.id] && !TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") ? (
                                       <s-button
                                         variant="secondary"
+                                        disabled={isOtherRouteBusy}
                                         onClick={() => openDetailsRouteModal(route, routeIndex)}
                                       >
                                         {t("routeManager.details")}
@@ -5216,7 +5314,7 @@ export default function Index() {
                                         <s-button
                                           variant="secondary"
                                           tone="critical"
-                                          disabled={!!dispatchedRoutes[route.id] || isRoutingBusy}
+                                          disabled={!!dispatchedRoutes[route.id] || isRoutingBusy || isOtherRouteBusy}
                                           onClick={() =>
                                             setUnassignConfirmRoute({
                                               route,
@@ -5239,145 +5337,87 @@ export default function Index() {
                                     <div className={styles.assignedRoutesTopActions}>
                                       <s-button
                                         variant="primary"
-                                        disabled={!canAddToRoute || isRoutingBusy}
+                                        disabled={!canAddToRoute || isRoutingBusy || isOtherRouteBusy}
                                         onClick={() => handleAddSelectedToRoute(routeIndex)}
                                       >
                                         {t("routeManager.addToRoute")}
                                       </s-button>
                                     </div>
-                                  ) : dispatchedRoutes[route.id]?.status === "delivered" ? (
-                                    <div className={styles.dispatchedBlock}>
-                                      <div className={styles.deliveryStatusRow}>
-                                        <s-badge tone="success">
-                                          {t("routeManager.status.delivered")}
-                                        </s-badge>
-                                      </div>
-                                    </div>
                                   ) : dispatchedRoutes[route.id] && !TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") ? (
                                     <div className={styles.dispatchedBlock}>
                                       <div className={styles.deliveryStatusRow}>
-                                        <s-badge tone={getStatusBadgeTone(dispatchedRoutes[route.id]?.status ?? "requested")}>
-                                          {t(`routeManager.status.${dispatchedRoutes[route.id]?.status ?? "requested"}`)}
-                                        </s-badge>
-                                        <s-button variant="primary" tone="critical" onClick={() => setCancelConfirmRouteId(route.id)}>
+                                        <s-button
+                                          variant="primary"
+                                          tone="critical"
+                                          disabled={isOtherRouteBusy}
+                                          onClick={() => setCancelConfirmRouteId(route.id)}
+                                        >
                                           {t("routeManager.cancelDelivery")}
                                         </s-button>
                                       </div>
-                                      {lalamoveStatus[route.id]?.tone === "critical" ? (
-                                        <div className={styles.cancelErrorBlock}>
-                                          <s-badge tone="critical">
-                                            {lalamoveStatus[route.id].message}
-                                          </s-badge>
-                                          <a
-                                            href="https://web.lalamove.com/"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={styles.goToLalamoveLink}
-                                          >
-                                            {t("driverRequest.goToLalamove")}
-                                          </a>
-                                        </div>
-                                      ) : null}
                                     </div>
-                                  ) : (
-                                    <>
-                                      {dispatchedRoutes[route.id]?.status && TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id].status!) ? (
-                                        <div className={styles.routeCardStatus}>
-                                          <s-badge tone={getStatusBadgeTone(dispatchedRoutes[route.id].status!)}>
-                                            {t(`routeManager.status.${dispatchedRoutes[route.id].status}`)}
-                                          </s-badge>
-                                        </div>
-                                      ) : null}
-                                      <s-stack
-                                        direction="inline"
-                                        gap="base"
-                                        justifyContent="space-between"
-                                      >
-                                        <div />
-                                        <s-stack direction="inline" gap="base">
-                                          <s-button
-                                            variant="secondary"
-                                            disabled={isRoutingBusy}
-                                            onClick={() =>
-                                              openManageRouteModal(route, routeIndex)
-                                            }
-                                          >
-                                            {t("routeManager.manage")}
-                                          </s-button>
-                                          {quotePreview?.routeId === route.id ? (
-                                            lalamoveFetcher.state !== "idle" ? (
-                                              <s-button
-                                                key="requesting-driver"
-                                                variant="primary"
-                                                loading
-                                                disabled
-                                              >
-                                                {t("routeManager.requestingDriver")}
-                                              </s-button>
-                                            ) : (
-                                              <s-button
-                                                key="request-driver"
-                                                variant="primary"
-                                                onClick={() => handlePlaceOrderFromCard(route, routeIndex)}
-                                              >
-                                                {t("routeManager.requestDriver")}
-                                              </s-button>
-                                            )
-                                          ) : lalamoveStatus[route.id] && lalamoveFetcher.state !== "idle" ? (
+                                  ) : dispatchedRoutes[route.id]?.status && TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id].status!) ? null : (
+                                    <s-stack
+                                      direction="inline"
+                                      gap="base"
+                                      justifyContent="space-between"
+                                    >
+                                      <div />
+                                      <s-stack direction="inline" gap="base">
+                                        <s-button
+                                          variant="secondary"
+                                          disabled={isRoutingBusy || isOtherRouteBusy}
+                                          onClick={() =>
+                                            openManageRouteModal(route, routeIndex)
+                                          }
+                                        >
+                                          {t("routeManager.manage")}
+                                        </s-button>
+                                        {quotePreview?.routeId === route.id ? (
+                                          isThisRouteBusy ? (
                                             <s-button
-                                              key="requesting-quote"
-                                              variant="secondary"
+                                              key="requesting-driver"
+                                              variant="primary"
                                               loading
                                               disabled
                                             >
-                                              {t("routeManager.requestingQuote")}
+                                              {t("routeManager.requestingDriver")}
                                             </s-button>
                                           ) : (
                                             <s-button
-                                              key="request-quote"
-                                              variant="secondary"
-                                              disabled={!isLalamoveReady || isRoutingBusy}
-                                              onClick={() => handleRequestDriver(route)}
+                                              key="request-driver"
+                                              variant="primary"
+                                              disabled={isOtherRouteBusy}
+                                              onClick={() => handlePlaceOrderFromCard(route, routeIndex)}
                                             >
-                                              {t("routeManager.requestQuote")}
+                                              {t("routeManager.requestDriver")}
                                             </s-button>
-                                          )}
-                                        </s-stack>
+                                          )
+                                        ) : isThisRouteBusy ? (
+                                          <s-button
+                                            key="requesting-quote"
+                                            variant="secondary"
+                                            loading
+                                            disabled
+                                          >
+                                            {t("routeManager.requestingQuote")}
+                                          </s-button>
+                                        ) : (
+                                          <s-button
+                                            key="request-quote"
+                                            variant="secondary"
+                                            disabled={!isLalamoveReady || isRoutingBusy || isOtherRouteBusy}
+                                            onClick={() => handleRequestDriver(route)}
+                                          >
+                                            {t("routeManager.requestQuote")}
+                                          </s-button>
+                                        )}
                                       </s-stack>
-                                    </>
+                                    </s-stack>
                                   )}
-                                  {lalamoveStatus[route.id] && !dispatchedRoutes[route.id] ? (
-                                    <div className={styles.routeCardStatus}>
-                                      {lalamoveStatus[route.id].tone === "success" ? (
-                                        <s-badge tone="success">
-                                          {lalamoveStatus[route.id].message}
-                                        </s-badge>
-                                      ) : lalamoveStatus[route.id].tone === "critical" && lalamoveStatus[route.id].errorDetails ? (
-                                        <s-link onClick={() => setDriverErrorModal({
-                                          routeId: route.id,
-                                          message: lalamoveStatus[route.id].message,
-                                          errorDetails: lalamoveStatus[route.id].errorDetails ?? "",
-                                        })}>
-                                          <s-badge tone="critical">
-                                            {lalamoveStatus[route.id].message}
-                                          </s-badge>
-                                        </s-link>
-                                      ) : lalamoveStatus[route.id].tone === "critical" ? (
-                                        <s-badge tone="critical">
-                                          {lalamoveStatus[route.id].message}
-                                        </s-badge>
-                                      ) : (
-                                        <s-text color="subdued">
-                                          {lalamoveStatus[route.id].message}
-                                        </s-text>
-                                      )}
-                                    </div>
-                                  ) : null}
-                                  {reorderedRoutes[route.id] ? (
-                                    <div className={styles.routeCardStatus}>
-                                      <s-badge tone="warning">
-                                        {t("routeManager.reRequestedAt", { time: reorderedRoutes[route.id] })}
-                                      </s-badge>
+                                  {notification ? (
+                                    <div className={styles.routeCardNotifications}>
+                                      {notification}
                                     </div>
                                   ) : null}
                                 </s-box>
@@ -5678,8 +5718,15 @@ export default function Index() {
                     const canAddToRoute = assignableExistingRoutes.some(
                       (candidate) => candidate.id === route.id,
                     );
+                    const isThisRouteBusy = lalamoveBusyRouteId === route.id;
+                    const isAnyRouteBusy = lalamoveBusyRouteId !== null;
+                    const isOtherRouteBusy = isAnyRouteBusy && !isThisRouteBusy;
+                    const notification = renderRouteNotification(route);
                     return (
-                      <div key={route.id} className={styles.routeCard}>
+                      <div
+                        key={route.id}
+                        className={`${styles.routeCard}${isOtherRouteBusy ? ` ${styles.routeCardSubdued}` : ""}`}
+                      >
                       <s-box
                         padding="base"
                         borderWidth="base"
@@ -5702,6 +5749,7 @@ export default function Index() {
                           {dispatchedRoutes[route.id] && !TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") ? (
                             <s-button
                               variant="secondary"
+                              disabled={isOtherRouteBusy}
                               onClick={() => openDetailsRouteModal(route, routeIndex)}
                             >
                               {t("routeManager.details")}
@@ -5711,7 +5759,7 @@ export default function Index() {
                               <s-button
                                 variant="secondary"
                                 tone="critical"
-                                disabled={!!dispatchedRoutes[route.id] || isRoutingBusy}
+                                disabled={!!dispatchedRoutes[route.id] || isRoutingBusy || isOtherRouteBusy}
                                 onClick={() =>
                                   setUnassignConfirmRoute({ route, index: routeIndex })
                                 }
@@ -5731,143 +5779,85 @@ export default function Index() {
                           <div className={styles.assignedRoutesTopActions}>
                             <s-button
                               variant="primary"
-                              disabled={!canAddToRoute || isRoutingBusy}
+                              disabled={!canAddToRoute || isRoutingBusy || isOtherRouteBusy}
                               onClick={() => handleAddSelectedToRoute(routeIndex)}
                             >
                               {t("routeManager.addToRoute")}
                             </s-button>
                           </div>
-                        ) : dispatchedRoutes[route.id]?.status === "delivered" ? (
-                          <div className={styles.dispatchedBlock}>
-                            <div className={styles.deliveryStatusRow}>
-                              <s-badge tone="success">
-                                {t("routeManager.status.delivered")}
-                              </s-badge>
-                            </div>
-                          </div>
                         ) : dispatchedRoutes[route.id] && !TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") ? (
                           <div className={styles.dispatchedBlock}>
                             <div className={styles.deliveryStatusRow}>
-                              <s-badge tone={getStatusBadgeTone(dispatchedRoutes[route.id]?.status ?? "requested")}>
-                                {t(`routeManager.status.${dispatchedRoutes[route.id]?.status ?? "requested"}`)}
-                              </s-badge>
-                              <s-button variant="primary" tone="critical" onClick={() => setCancelConfirmRouteId(route.id)}>
+                              <s-button
+                                variant="primary"
+                                tone="critical"
+                                disabled={isOtherRouteBusy}
+                                onClick={() => setCancelConfirmRouteId(route.id)}
+                              >
                                 {t("routeManager.cancelDelivery")}
                               </s-button>
                             </div>
-                            {lalamoveStatus[route.id]?.tone === "critical" ? (
-                              <div className={styles.cancelErrorBlock}>
-                                <s-badge tone="critical">
-                                  {lalamoveStatus[route.id].message}
-                                </s-badge>
-                                <a
-                                  href="https://web.lalamove.com/"
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className={styles.goToLalamoveLink}
-                                >
-                                  {t("driverRequest.goToLalamove")}
-                                </a>
-                              </div>
-                            ) : null}
                           </div>
-                        ) : (
-                          <>
-                            {dispatchedRoutes[route.id]?.status && TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id].status!) ? (
-                              <div className={styles.routeCardStatus}>
-                                <s-badge tone={getStatusBadgeTone(dispatchedRoutes[route.id].status!)}>
-                                  {t(`routeManager.status.${dispatchedRoutes[route.id].status}`)}
-                                </s-badge>
-                              </div>
-                            ) : null}
-                            <s-stack
-                              direction="inline"
-                              gap="base"
-                              justifyContent="space-between"
-                            >
-                              <div />
-                              <s-stack direction="inline" gap="base">
-                                <s-button
-                                  variant="secondary"
-                                  disabled={isRoutingBusy}
-                                  onClick={() => openManageRouteModal(route, routeIndex)}
-                                >
-                                  {t("routeManager.manage")}
-                                </s-button>
-                                {quotePreview?.routeId === route.id ? (
-                                  lalamoveFetcher.state !== "idle" ? (
-                                    <s-button
-                                      key="requesting-driver"
-                                      variant="primary"
-                                      loading
-                                      disabled
-                                    >
-                                      {t("routeManager.requestingDriver")}
-                                    </s-button>
-                                  ) : (
-                                    <s-button
-                                      key="request-driver"
-                                      variant="primary"
-                                      onClick={() => handlePlaceOrderFromCard(route, routeIndex)}
-                                    >
-                                      {t("routeManager.requestDriver")}
-                                    </s-button>
-                                  )
-                                ) : lalamoveStatus[route.id] && lalamoveFetcher.state !== "idle" ? (
+                        ) : dispatchedRoutes[route.id]?.status && TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id].status!) ? null : (
+                          <s-stack
+                            direction="inline"
+                            gap="base"
+                            justifyContent="space-between"
+                          >
+                            <div />
+                            <s-stack direction="inline" gap="base">
+                              <s-button
+                                variant="secondary"
+                                disabled={isRoutingBusy || isOtherRouteBusy}
+                                onClick={() => openManageRouteModal(route, routeIndex)}
+                              >
+                                {t("routeManager.manage")}
+                              </s-button>
+                              {quotePreview?.routeId === route.id ? (
+                                isThisRouteBusy ? (
                                   <s-button
-                                    key="requesting-quote"
-                                    variant="secondary"
+                                    key="requesting-driver"
+                                    variant="primary"
                                     loading
                                     disabled
                                   >
-                                    {t("routeManager.requestingQuote")}
+                                    {t("routeManager.requestingDriver")}
                                   </s-button>
                                 ) : (
                                   <s-button
-                                    key="request-quote"
-                                    variant="secondary"
-                                    disabled={!isLalamoveReady || isRoutingBusy}
-                                    onClick={() => handleRequestDriver(route)}
+                                    key="request-driver"
+                                    variant="primary"
+                                    disabled={isOtherRouteBusy}
+                                    onClick={() => handlePlaceOrderFromCard(route, routeIndex)}
                                   >
-                                    {t("routeManager.requestQuote")}
+                                    {t("routeManager.requestDriver")}
                                   </s-button>
-                                )}
-                              </s-stack>
+                                )
+                              ) : isThisRouteBusy ? (
+                                <s-button
+                                  key="requesting-quote"
+                                  variant="secondary"
+                                  loading
+                                  disabled
+                                >
+                                  {t("routeManager.requestingQuote")}
+                                </s-button>
+                              ) : (
+                                <s-button
+                                  key="request-quote"
+                                  variant="secondary"
+                                  disabled={!isLalamoveReady || isRoutingBusy || isOtherRouteBusy}
+                                  onClick={() => handleRequestDriver(route)}
+                                >
+                                  {t("routeManager.requestQuote")}
+                                </s-button>
+                              )}
                             </s-stack>
-                          </>
+                          </s-stack>
                         )}
-                        {lalamoveStatus[route.id] && !dispatchedRoutes[route.id] ? (
-                          <div className={styles.routeCardStatus}>
-                            {lalamoveStatus[route.id].tone === "success" ? (
-                              <s-badge tone="success">
-                                {lalamoveStatus[route.id].message}
-                              </s-badge>
-                            ) : lalamoveStatus[route.id].tone === "critical" && lalamoveStatus[route.id].errorDetails ? (
-                              <s-link onClick={() => setDriverErrorModal({
-                                routeId: route.id,
-                                message: lalamoveStatus[route.id].message,
-                                errorDetails: lalamoveStatus[route.id].errorDetails ?? "",
-                              })}>
-                                <s-badge tone="critical">
-                                  {lalamoveStatus[route.id].message}
-                                </s-badge>
-                              </s-link>
-                            ) : lalamoveStatus[route.id].tone === "critical" ? (
-                              <s-badge tone="critical">
-                                {lalamoveStatus[route.id].message}
-                              </s-badge>
-                            ) : (
-                              <s-text color="subdued">
-                                {lalamoveStatus[route.id].message}
-                              </s-text>
-                            )}
-                          </div>
-                        ) : null}
-                        {reorderedRoutes[route.id] ? (
-                          <div className={styles.routeCardStatus}>
-                            <s-badge tone="warning">
-                              {t("routeManager.reRequestedAt", { time: reorderedRoutes[route.id] })}
-                            </s-badge>
+                        {notification ? (
+                          <div className={styles.routeCardNotifications}>
+                            {notification}
                           </div>
                         ) : null}
                       </s-box>

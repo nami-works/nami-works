@@ -384,25 +384,27 @@
 .dueOrdersRow {
   display: grid;
   grid-template-columns:
-    24px
-    minmax(96px, 0.7fr)
-    minmax(120px, 0.9fr)
-    minmax(130px, 1fr)
-    minmax(96px, 0.75fr)
-    minmax(104px, 0.75fr)
-    minmax(180px, 1.6fr)
-    minmax(120px, auto);
+    32px
+    88px
+    148px
+    minmax(140px, 1.3fr)
+    100px
+    116px
+    minmax(180px, 1fr)
+    148px;
   gap: 12px;
-  padding: 8px 12px;
+  padding: 10px 16px;
   align-items: center;
-  font-size: 12px;
-  white-space: nowrap;
+  font-size: 13px;
 }
 
 .dueOrdersHeader > span:not(:first-child),
-.dueOrdersRow > span:not(:first-child) {
+.dueOrdersRow > span:not(:first-child),
+.dueOrdersRow > s-link {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .dueOrdersHeader {
@@ -1085,44 +1087,6 @@
   scroll-margin-top: 30vh;
 }
 
-.ordersHeaderRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.ordersSearchBox {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border: 1px solid #e1e3e5;
-  border-radius: 8px;
-  background: #ffffff;
-  min-width: 240px;
-}
-
-.ordersSearchIcon {
-  color: #6d7175;
-  flex-shrink: 0;
-}
-
-.ordersSearchInput {
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 13px;
-  width: 100%;
-}
-
-.ordersFilterPills {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
 .ordersFilterPill {
   padding: 4px 12px;
   border: 1px solid #e1e3e5;
@@ -1141,15 +1105,6 @@
   background: #303030;
   color: #ffffff;
   border-color: #303030;
-}
-
-.routeBadge {
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #ffffff;
-  background: var(--route-color, #303030);
 }
 
 .unassignedBadge {
@@ -1189,6 +1144,22 @@
 .rowActionCell {
   display: flex;
   justify-content: flex-end;
+  width: 100%;
+}
+
+.routeCardNotifications {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.routeCardSubdued {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
 }
 
 @media (max-width: 768px) {
@@ -1197,6 +1168,6 @@
   }
   .dueOrdersHeader,
   .dueOrdersRow {
-    min-width: 1000px;
+    min-width: 1060px;
   }
 }
