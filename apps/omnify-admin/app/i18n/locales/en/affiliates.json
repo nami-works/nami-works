@@ -1,0 +1,118 @@
+{
+  "page": {
+    "title": "Affiliates",
+    "syncButton": "Sync Orders",
+    "importButton": "Import BixGrow CSV"
+  },
+  "sync": {
+    "running": "Syncing orders...",
+    "error": "Sync failed",
+    "warning": "Previous sync had issues",
+    "idle": "Ready",
+    "lastSynced": "Last synced",
+    "totalOrders": "orders",
+    "affiliateOrders": "affiliate",
+    "processed": "processed"
+  },
+  "period": {
+    "last7d": "Last 7 days",
+    "last30d": "Last 30 days",
+    "lastMonth": "Last month",
+    "last3Months": "Last 3 months",
+    "custom": "Custom",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "apply": "Apply"
+  },
+  "comparison": {
+    "none": "No comparison",
+    "prevPeriod": "Previous period",
+    "prevYear": "Previous year"
+  },
+  "filter": {
+    "allAffiliates": "All affiliates"
+  },
+  "row1": {
+    "title": "Acquisition & Economics"
+  },
+  "row2": {
+    "title": "Customer Quality"
+  },
+  "row3": {
+    "title": "Program Performance"
+  },
+  "card": {
+    "affiliateRevenue": "Affiliate revenue",
+    "affiliateMargin": "Affiliate margin",
+    "cac": "Customer acquisition cost",
+    "ltv": "Affiliate LTV",
+    "repeatRate": "Repeat rate",
+    "aov": "Average order value",
+    "leaderboard": "Leaderboard",
+    "productMix": "Product mix",
+    "roas": "ROAS",
+    "organic": "Organic",
+    "share": "Share",
+    "totalSpent": "Total spent",
+    "newCustomers": "New",
+    "affCustomers": "Customers",
+    "topAffiliate": "Top",
+    "topProduct": "Top",
+    "affiliatesActive": "affiliates",
+    "products": "products",
+    "revenue": "Revenue",
+    "orders": "Orders",
+    "commission": "Commission",
+    "customers": "Customers",
+    "affiliate": "Affiliate",
+    "quantity": "Qty",
+    "product": "Product",
+    "cost": "Cost"
+  },
+  "drill": {
+    "revenueLeaderboard": "Revenue Leaderboard",
+    "revenueTrend": "Monthly Trend",
+    "costBreakdown": "Cost Breakdown",
+    "marginComparison": "Margin Comparison",
+    "affiliateDiscount": "Affiliate discounts",
+    "siteDiscount": "Site discounts",
+    "commission": "Commission",
+    "affiliateMargin": "Affiliate margin",
+    "organicMargin": "Organic margin",
+    "cacByAffiliate": "CAC by Affiliate",
+    "ltvComparison": "LTV Comparison",
+    "repeatComparison": "Repeat Rate Comparison",
+    "aovComparison": "AOV Comparison",
+    "roasBreakdown": "ROAS Breakdown"
+  },
+  "legend": {
+    "affiliate": "Affiliate",
+    "organic": "Organic"
+  },
+  "empty": {
+    "title": "No affiliate data yet",
+    "description": "Import your affiliates via BixGrow CSV, then sync orders to see analytics."
+  },
+  "import": {
+    "title": "Import BixGrow Affiliates",
+    "description": "Upload your BixGrow affiliate export CSV. Affiliates will be matched by their coupon code.",
+    "button": "Import",
+    "success": "Imported {{count}} affiliates, skipped {{skipped}}",
+    "error": "Import failed"
+  },
+  "profiles": {
+    "title": "Affiliate Profiles"
+  },
+  "profile": {
+    "code": "Code",
+    "name": "Name",
+    "commission": "Commission %",
+    "tier": "Tier",
+    "status": "Status",
+    "actions": "Actions",
+    "edit": "Edit",
+    "editTitle": "Edit Affiliate",
+    "delete": "Delete",
+    "notes": "Notes"
+  }
+}

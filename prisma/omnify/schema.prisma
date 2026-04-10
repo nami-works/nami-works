@@ -492,6 +492,115 @@ model RetailSyncMeta {
   updatedAt        DateTime  @updatedAt
 }
 
+// ─── Affiliates: Normalized analytics tables ─────────────────────────────────
+
+model AffiliateProfile {
+  id              String   @id @default(cuid())
+  shop            String
+  code            String
+  email           String?
+  firstName       String?
+  lastName        String?
+  affiliateName   String
+  instagram       String?
+  tiktok          String?
+  city            String?
+  state           String?
+  program         String?
+  referralCode    String?
+  commissionPct   Float    @default(10)
+  tier            String   @default("baseline")
+  status          String   @default("active")
+  paymentMethod   String?
+  paymentInfo     String?
+  bixgrowCreatedAt DateTime?
+  lastLogin       DateTime?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([shop, code])
+  @@index([shop, status])
+}
+
+model AffiliateOrder {
+  id               String    @id
+  shop             String
+  orderName        String?
+  customerId       String?
+  affiliateCode    String
+  discountAmount   Float     @default(0)
+  affiliateDiscount Float    @default(0)
+  siteDiscount     Float     @default(0)
+  totalAmount      Float     @default(0)
+  subtotalAmount   Float     @default(0)
+  currencyCode     String?
+  isFirstOrder     Boolean   @default(false)
+  itemCount        Int       @default(0)
+  lineItemsJson    String?
+  orderDate        DateTime?
+  syncedAt         DateTime  @default(now())
+
+  @@index([shop, orderDate])
+  @@index([shop, affiliateCode])
+  @@index([shop, customerId])
+  @@index([shop, affiliateCode, orderDate])
+}
+
+model AffiliateOrganicAgg {
+  id              String @id @default(cuid())
+  shop            String
+  month           String
+  orderCount      Int    @default(0)
+  revenue         Float  @default(0)
+  subtotal        Float  @default(0)
+  siteDiscountTotal Float @default(0)
+  uniqueCustomers Int    @default(0)
+  newCustomers    Int    @default(0)
+  repeatCustomers Int    @default(0)
+  avgOrderValue   Float  @default(0)
+  currencyCode    String?
+
+  @@unique([shop, month])
+  @@index([shop])
+}
+
+model AffiliateMonthly {
+  id              String @id @default(cuid())
+  shop            String
+  affiliateCode   String
+  month           String
+  orderCount      Int    @default(0)
+  revenue         Float  @default(0)
+  subtotal        Float  @default(0)
+  affiliateDiscountTotal Float @default(0)
+  siteDiscountTotal      Float @default(0)
+  commissionTotal Float  @default(0)
+  uniqueCustomers Int    @default(0)
+  newCustomers    Int    @default(0)
+  repeatCustomers Int    @default(0)
+  avgOrderValue   Float  @default(0)
+  currencyCode    String?
+
+  @@unique([shop, affiliateCode, month])
+  @@index([shop, month])
+  @@index([shop, affiliateCode])
+}
+
+model AffiliateSyncMeta {
+  shop                 String    @unique
+  status               String    @default("idle")
+  errorMessage         String?
+  phase                String?
+  progressCount        Int?
+  startedAt            DateTime?
+  lastSyncedAt         DateTime?
+  lastOrderCursor      String?
+  totalOrders          Int?
+  totalAffiliateOrders Int?
+  updatedAt            DateTime  @updatedAt
+}
+
 model GeocodeCacheEntry {
   id        String   @id @default(cuid())
   queryKey  String   @unique

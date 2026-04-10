@@ -1,0 +1,118 @@
+{
+  "page": {
+    "title": "Afiliados",
+    "syncButton": "Sincronizar Pedidos",
+    "importButton": "Importar CSV BixGrow"
+  },
+  "sync": {
+    "running": "Sincronizando pedidos...",
+    "error": "Sincronizacao falhou",
+    "warning": "A sincronizacao anterior teve problemas",
+    "idle": "Pronto",
+    "lastSynced": "Ultima sincronizacao",
+    "totalOrders": "pedidos",
+    "affiliateOrders": "afiliados",
+    "processed": "processados"
+  },
+  "period": {
+    "last7d": "Ultimos 7 dias",
+    "last30d": "Ultimos 30 dias",
+    "lastMonth": "Mes passado",
+    "last3Months": "Ultimos 3 meses",
+    "custom": "Personalizado",
+    "startDate": "Data inicial",
+    "endDate": "Data final",
+    "apply": "Aplicar"
+  },
+  "comparison": {
+    "none": "Sem comparacao",
+    "prevPeriod": "Periodo anterior",
+    "prevYear": "Ano anterior"
+  },
+  "filter": {
+    "allAffiliates": "Todos os afiliados"
+  },
+  "row1": {
+    "title": "Aquisicao e Economia"
+  },
+  "row2": {
+    "title": "Qualidade do Cliente"
+  },
+  "row3": {
+    "title": "Desempenho do Programa"
+  },
+  "card": {
+    "affiliateRevenue": "Receita de afiliados",
+    "affiliateMargin": "Margem de afiliados",
+    "cac": "Custo de aquisicao de clientes",
+    "ltv": "LTV de afiliados",
+    "repeatRate": "Taxa de recompra",
+    "aov": "Valor medio do pedido",
+    "leaderboard": "Ranking",
+    "productMix": "Mix de produtos",
+    "roas": "ROAS",
+    "organic": "Organico",
+    "share": "Participacao",
+    "totalSpent": "Total gasto",
+    "newCustomers": "Novos",
+    "affCustomers": "Clientes",
+    "topAffiliate": "Top",
+    "topProduct": "Top",
+    "affiliatesActive": "afiliados",
+    "products": "produtos",
+    "revenue": "Receita",
+    "orders": "Pedidos",
+    "commission": "Comissao",
+    "customers": "Clientes",
+    "affiliate": "Afiliado",
+    "quantity": "Qtd",
+    "product": "Produto",
+    "cost": "Custo"
+  },
+  "drill": {
+    "revenueLeaderboard": "Ranking de Receita",
+    "revenueTrend": "Tendencia Mensal",
+    "costBreakdown": "Detalhamento de Custos",
+    "marginComparison": "Comparacao de Margem",
+    "affiliateDiscount": "Descontos de afiliados",
+    "siteDiscount": "Descontos do site",
+    "commission": "Comissao",
+    "affiliateMargin": "Margem de afiliados",
+    "organicMargin": "Margem organica",
+    "cacByAffiliate": "CAC por Afiliado",
+    "ltvComparison": "Comparacao de LTV",
+    "repeatComparison": "Comparacao de Taxa de Recompra",
+    "aovComparison": "Comparacao de AOV",
+    "roasBreakdown": "Detalhamento de ROAS"
+  },
+  "legend": {
+    "affiliate": "Afiliado",
+    "organic": "Organico"
+  },
+  "empty": {
+    "title": "Sem dados de afiliados",
+    "description": "Importe seus afiliados via CSV do BixGrow e sincronize os pedidos para ver as analises."
+  },
+  "import": {
+    "title": "Importar Afiliados do BixGrow",
+    "description": "Envie o CSV de exportacao do BixGrow. Os afiliados serao identificados pelo codigo do cupom.",
+    "button": "Importar",
+    "success": "Importados {{count}} afiliados, {{skipped}} ignorados",
+    "error": "Falha na importacao"
+  },
+  "profiles": {
+    "title": "Perfis de Afiliados"
+  },
+  "profile": {
+    "code": "Codigo",
+    "name": "Nome",
+    "commission": "Comissao %",
+    "tier": "Nivel",
+    "status": "Status",
+    "actions": "Acoes",
+    "edit": "Editar",
+    "editTitle": "Editar Afiliado",
+    "delete": "Excluir",
+    "notes": "Notas"
+  }
+}
