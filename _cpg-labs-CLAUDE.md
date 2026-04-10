@@ -62,7 +62,7 @@ npx prisma migrate dev  # Create/apply migrations
 
 ## Hard Rules
 
-- **Always confirm before writing to the live store.** Any Shopify API mutation (product updates, metafield changes, discount edits, theme writes) must be explicitly approved by the user before execution. Present the proposed changes, wait for confirmation, then apply.
+- **Auto-deploy production app changes.** When a session lands code changes to the CPG Labs / Omnify React Router app (anything under `app/`, `prisma/`, `extensions/`, `infra/`, `scripts/`), Claude should run the relevant `scripts/deploy-*.ps1` script at the end of the session without waiting for explicit confirmation. Deploys are cheap to re-run and delaying them creates drift between `main` and production. The only exceptions are when the user explicitly says "don't deploy", when the changes are work-in-progress behind an incomplete flow, or when an infra/secrets/migration step needs manual setup first.
 - **Production and `main` must stay in sync.** Anything deployed to production must also be committed to `main`. If a session deploys changes (via `scripts/deploy-*.ps1`, `shopify app deploy`, or any infra/website push), the corresponding code changes must be committed in the same session — no "I'll commit it later." Conversely, if uncommitted work exists on disk that's already running in production, treat committing it as part of the current task before moving on.
 - Keep the app embedded and aligned with Shopify Admin UX.
 - Prefer Polaris web components for page and form structure.
