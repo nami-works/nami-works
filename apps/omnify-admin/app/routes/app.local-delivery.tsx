@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type {
@@ -267,6 +267,9 @@ export default function Index() {
     () => new Set(),
   );
   const [activeTab, setActiveTab] = useState<"routes" | "settings">("routes");
+  const [ordersFilter, setOrdersFilter] = useState<"all" | "unassigned" | "assigned">("all");
+  const [ordersSearch, setOrdersSearch] = useState("");
+  const ordersSectionRef = useRef<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isRouteManagerVisible, setIsRouteManagerVisible] = useState(false);
   const [isAccuracyCollapsed, setIsAccuracyCollapsed] = useState(false);
@@ -3074,6 +3077,241 @@ export default function Index() {
     unassignFetcher.submit(formData, { method: "post" });
   };
 
+  type DisplayOrderRow = LoaderOrder & {
+    route: PrecomputedRoute | null;
+    routeIndex: number | null;
+  };
+
+  const allOrderRows = useMemo<DisplayOrderRow[]>(() => {
+    return orders.map((order) => {
+      const route = orderRouteMap.get(order.id) ?? null;
+      const routeIndex = route
+        ? editableRoutes.findIndex((r) => r.id === route.id)
+        : -1;
+      return {
+        ...order,
+        route,
+        routeIndex: routeIndex >= 0 ? routeIndex : null,
+      };
+    });
+  }, [orders, orderRouteMap, editableRoutes]);
+
+  const filteredOrderRows = useMemo(() => {
+    const term = ordersSearch.trim().toLowerCase();
+    return allOrderRows
+      .filter((row) => {
+        if (ordersFilter === "assigned" && !row.route) return false;
+        if (ordersFilter === "unassigned" && row.route) return false;
+        if (!term) return true;
+        const hay = `${row.name} ${row.customerName ?? ""} ${row.address1 ?? ""}`.toLowerCase();
+        return hay.includes(term);
+      })
+      .sort((a, b) => {
+        const ta = a.processedAt ? new Date(a.processedAt).getTime() : 0;
+        const tb = b.processedAt ? new Date(b.processedAt).getTime() : 0;
+        return tb - ta;
+      });
+  }, [allOrderRows, ordersFilter, ordersSearch]);
+
+  const unassignedCountAll = useMemo(
+    () => allOrderRows.filter((r) => !r.route).length,
+    [allOrderRows],
+  );
+  const assignedCountAll = allOrderRows.length - unassignedCountAll;
+
+  const scrollToOrdersSection = useCallback(() => {
+    ordersSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  const areAllVisibleSelected = (rows: DisplayOrderRow[]) =>
+    rows.length > 0 && rows.every((r) => selectedOrderIds.has(r.id));
+
+  const toggleAllVisibleSelection = (rows: DisplayOrderRow[], select: boolean) => {
+    setSelectedOrderIds((prev) => {
+      const next = new Set(prev);
+      for (const r of rows) {
+        if (select) next.add(r.id);
+        else next.delete(r.id);
+      }
+      return next;
+    });
+  };
+
+  const renderDueBadge = (orderId: string) => {
+    const bucket = dueBucketByOrderId.get(orderId);
+    if (bucket === "today") {
+      return (
+        <span className={`${styles.dueBadge} ${styles.dueBadgeToday}`}>
+          {t("map.legend.dueTodayEmoji")} {t("map.legend.dueToday")}
+        </span>
+      );
+    }
+    if (bucket === "tomorrow") {
+      return (
+        <span className={`${styles.dueBadge} ${styles.dueBadgeTomorrow}`}>
+          {t("map.legend.dueTomorrowEmoji")} {t("map.legend.dueTomorrow")}
+        </span>
+      );
+    }
+    return (
+      <span className={`${styles.dueBadge} ${styles.dueBadgeLater}`}>
+        {t("map.legend.dueLaterEmoji")} {t("map.legend.dueLater")}
+      </span>
+    );
+  };
+
+  const renderOrdersSection = () => (
+    <div ref={ordersSectionRef} className={styles.ordersSectionWrap}>
+      <s-section>
+        <s-stack direction="block" gap="base">
+          <div className={styles.ordersHeaderRow}>
+            <s-text type="strong">
+              {t("routeManager.allOrders", { count: allOrderRows.length })}
+            </s-text>
+            <div className={styles.ordersSearchBox}>
+              <svg
+                className={styles.ordersSearchIcon}
+                viewBox="0 0 20 20"
+                width="16"
+                height="16"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M9 3.5a5.5 5.5 0 1 0 3.916 9.385l3.6 3.6a1 1 0 0 0 1.414-1.415l-3.6-3.6A5.5 5.5 0 0 0 9 3.5Zm-3.5 5.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0Z"
+                  fill="currentColor"
+                />
+              </svg>
+              <input
+                type="search"
+                className={styles.ordersSearchInput}
+                placeholder={t("routeManager.searchPlaceholder")}
+                value={ordersSearch}
+                onChange={(e) => setOrdersSearch(e.currentTarget.value)}
+              />
+            </div>
+          </div>
+
+          <div className={styles.ordersFilterPills}>
+            {(["all", "unassigned", "assigned"] as const).map((key) => {
+              const count =
+                key === "all"
+                  ? allOrderRows.length
+                  : key === "unassigned"
+                  ? unassignedCountAll
+                  : assignedCountAll;
+              const label =
+                key === "all"
+                  ? t("routeManager.filterAll")
+                  : key === "unassigned"
+                  ? t("routeManager.filterUnassigned")
+                  : t("routeManager.filterAssigned");
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  className={`${styles.ordersFilterPill}${
+                    ordersFilter === key ? ` ${styles.ordersFilterPillActive}` : ""
+                  }`}
+                  onClick={() => setOrdersFilter(key)}
+                >
+                  {label} ({count})
+                </button>
+              );
+            })}
+          </div>
+
+          {filteredOrderRows.length === 0 ? (
+            <s-text color="subdued">
+              {ordersSearch || ordersFilter !== "all"
+                ? t("routeManager.noMatchingOrders")
+                : t("routeManager.noUnassigned")}
+            </s-text>
+          ) : (
+            <div className={styles.dueOrdersTable}>
+              <div className={styles.dueOrdersHeader}>
+                <span>
+                  <s-checkbox
+                    accessibilityLabel={t("routeManager.selectAll")}
+                    checked={areAllVisibleSelected(filteredOrderRows)}
+                    onChange={(event) => {
+                      const target = event.currentTarget as
+                        | { checked?: boolean }
+                        | null;
+                      toggleAllVisibleSelection(
+                        filteredOrderRows,
+                        Boolean(target?.checked),
+                      );
+                    }}
+                  />
+                </span>
+                <span>{t("routeManager.table.order")}</span>
+                <span>{t("routeManager.table.date")}</span>
+                <span>{t("routeManager.table.customer")}</span>
+                <span>{t("routeManager.table.route")}</span>
+                <span>{t("routeManager.table.due")}</span>
+                <span>{t("routeManager.table.address")}</span>
+                <span aria-hidden="true" />
+              </div>
+              {filteredOrderRows.map((row) => {
+                const isSelected = selectedOrderIds.has(row.id);
+                return (
+                  <div key={row.id} className={styles.dueOrdersRow}>
+                    <span>
+                      <s-checkbox
+                        accessibilityLabel={t("routeManager.selectOrder", { name: row.name })}
+                        checked={isSelected}
+                        onChange={(event) => handleOrderToggle(event, row.id)}
+                      />
+                    </span>
+                    <s-link href={row.adminOrderUrl} target="_blank">
+                      {row.name}
+                    </s-link>
+                    <span>{formatOrderDateShort(row.processedAt)}</span>
+                    <span>{formatCustomerShort(row.customerName, t("customer.guest"))}</span>
+                    <span>
+                      {row.route && row.routeIndex !== null ? (
+                        <span
+                          className={styles.routeBadge}
+                          style={
+                            {
+                              "--route-color": row.route.color,
+                            } as CSSProperties
+                          }
+                        >
+                          {t("routeManager.routeLabel", {
+                            number: String(row.routeIndex + 1).padStart(2, "0"),
+                          })}
+                        </span>
+                      ) : (
+                        <span className={styles.unassignedBadge}>
+                          {t("routeManager.filterUnassigned")}
+                        </span>
+                      )}
+                    </span>
+                    <span>{renderDueBadge(row.id)}</span>
+                    <span>{row.address1 ?? t("routeManager.noAddressLine1")}</span>
+                    <span className={styles.rowActionCell}>
+                      {row.route ? (
+                        <s-button
+                          variant="secondary"
+                          tone="critical"
+                          onClick={() => unassignSingleOrderFromRoute(row.id, row.route!)}
+                        >
+                          {t("routeManager.rowAction.removeFromRoute")}
+                        </s-button>
+                      ) : null}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </s-stack>
+      </s-section>
+    </div>
+  );
+
   const updateLalamoveField = (field: keyof LalamoveConfig, value: string) => {
     setSettingsSaved(false);
     setLalamoveSettings((current) => ({ ...current, [field]: value }));
@@ -4657,83 +4895,7 @@ export default function Index() {
                   </div>
                 </div>
                 </s-section>
-                {isFullscreen ? (
-                  <s-section>
-                    <s-stack direction="block" gap="base">
-                      <div className={styles.unassignedHeaderRow}>
-                        <s-text type="strong">
-                          {t("routeManager.unassignedOrders", { count: unassignedOrders.length })}
-                        </s-text>
-                      </div>
-                      {unassignedOrders.length === 0 ? (
-                        <s-text color="subdued">
-                          {t("routeManager.noUnassigned")}
-                        </s-text>
-                      ) : visibleDueBuckets.length === 0 ? null : (
-                        <div className={styles.unassignedBucketsScroll}>
-                          {visibleDueBuckets.map((bucket, index) => (
-                            <div
-                              key={bucket.key}
-                              className={`${styles.dueGroup} ${
-                                visibleDueBuckets.length > 1 &&
-                                index < visibleDueBuckets.length - 1
-                                  ? styles.dueGroupWithDivider
-                                  : ""
-                              }`}
-                            >
-                              <div className={styles.dueGroupHeader}>
-                                <s-text type="strong">
-                                  {bucket.title} ({bucket.orders.length})
-                                </s-text>
-                              </div>
-                              <div className={styles.dueOrdersTable}>
-                                <div className={styles.dueOrdersHeader}>
-                                  <span>
-                                    <s-checkbox
-                                      accessibilityLabel={bucket.selectAllLabel}
-                                      checked={isBucketFullySelected(bucket.orders)}
-                                      onChange={(event) => {
-                                        const target = event.currentTarget as
-                                          | { checked?: boolean }
-                                          | null;
-                                        toggleBucketSelection(
-                                          bucket.orders,
-                                          Boolean(target?.checked),
-                                        );
-                                      }}
-                                    />
-                                  </span>
-                                  <span>{t("routeManager.table.order")}</span>
-                                  <span>{t("routeManager.table.customer")}</span>
-                                  <span>{t("routeManager.table.address")}</span>
-                                </div>
-                                {bucket.orders.map((order) => {
-                                  const isSelected = selectedOrderIds.has(order.id);
-                                  return (
-                                    <div key={order.id} className={styles.dueOrdersRow}>
-                                      <span>
-                                        <s-checkbox
-                                          accessibilityLabel={t("routeManager.selectOrder", { name: order.name })}
-                                          checked={isSelected}
-                                          onChange={(event) =>
-                                            handleOrderToggle(event, order.id)
-                                          }
-                                        />
-                                      </span>
-                                      <s-link href={order.adminOrderUrl} target="_blank">{order.name}</s-link>
-                                      <span>{formatCustomerShort(order.customerName, t("customer.guest"))}</span>
-                                      <span>{order.address1 ?? t("routeManager.noAddressLine1")}</span>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </s-stack>
-                  </s-section>
-                ) : null}
+                {isFullscreen ? renderOrdersSection() : null}
               </div>
               {isFullscreen ? (
                 <div className={styles.fullscreenAssignedPane}>
@@ -4859,6 +5021,9 @@ export default function Index() {
                               commandFor="route-manager-actions-main"
                             ></s-button>
                             <s-menu id="route-manager-actions-main" accessibilityLabel={t("routeManager.actions")}>
+                              <s-button icon="view" onClick={scrollToOrdersSection}>
+                                {t("routeManager.seeOrders")}
+                              </s-button>
                               {unassignedOrders.length > 0 ? (
                                 <s-button
                                   icon="transfer"
@@ -5249,6 +5414,9 @@ export default function Index() {
                     commandFor="route-manager-actions-aside"
                   ></s-button>
                   <s-menu id="route-manager-actions-aside" accessibilityLabel={t("routeManager.actions")}>
+                    <s-button icon="view" onClick={scrollToOrdersSection}>
+                      {t("routeManager.seeOrders")}
+                    </s-button>
                     {unassignedOrders.length > 0 ? (
                       <s-button
                         icon="transfer"
@@ -5773,78 +5941,7 @@ export default function Index() {
         </div>
       ) : null}
 
-      {!isFullscreen ? (
-      <div className={`${styles.mainBlocks} ${styles.unassignedSectionWrap}`}>
-        <s-section>
-          <s-stack direction="block" gap="base">
-            <div className={styles.unassignedHeaderRow}>
-              <s-text type="strong">
-                {t("routeManager.unassignedOrders", { count: unassignedOrders.length })}
-              </s-text>
-            </div>
-            {unassignedOrders.length === 0 ? (
-              <s-text color="subdued">{t("routeManager.noUnassigned")}</s-text>
-            ) : visibleDueBuckets.length === 0 ? null : (
-              <div className={styles.unassignedBucketsScroll}>
-                {visibleDueBuckets.map((bucket, index) => (
-                  <div
-                    key={bucket.key}
-                    className={`${styles.dueGroup} ${
-                      visibleDueBuckets.length > 1 &&
-                      index < visibleDueBuckets.length - 1
-                        ? styles.dueGroupWithDivider
-                        : ""
-                    }`}
-                  >
-                    <div className={styles.dueGroupHeader}>
-                      <s-text type="strong">
-                        {bucket.title} ({bucket.orders.length})
-                      </s-text>
-                    </div>
-                    <div className={styles.dueOrdersTable}>
-                      <div className={styles.dueOrdersHeader}>
-                        <span>
-                          <s-checkbox
-                            accessibilityLabel={bucket.selectAllLabel}
-                            checked={isBucketFullySelected(bucket.orders)}
-                            onChange={(event) => {
-                              const target = event.currentTarget as
-                                | { checked?: boolean }
-                                | null;
-                              toggleBucketSelection(bucket.orders, Boolean(target?.checked));
-                            }}
-                          />
-                        </span>
-                        <span>{t("routeManager.table.order")}</span>
-                        <span>{t("routeManager.table.customer")}</span>
-                        <span>{t("routeManager.table.address")}</span>
-                      </div>
-                      {bucket.orders.map((order) => {
-                        const isSelected = selectedOrderIds.has(order.id);
-                        return (
-                          <div key={order.id} className={styles.dueOrdersRow}>
-                            <span>
-                              <s-checkbox
-                                accessibilityLabel={t("routeManager.selectOrder", { name: order.name })}
-                                checked={isSelected}
-                                onChange={(event) => handleOrderToggle(event, order.id)}
-                              />
-                            </span>
-                            <s-link href={order.adminOrderUrl} target="_blank">{order.name}</s-link>
-                            <span>{formatCustomerShort(order.customerName, t("customer.guest"))}</span>
-                            <span>{order.address1 ?? t("routeManager.noAddressLine1")}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </s-stack>
-        </s-section>
-      </div>
-      ) : null}
+      {!isFullscreen ? renderOrdersSection() : null}
     </s-page>
   );
 }
@@ -6267,6 +6364,32 @@ const formatCurrency = (amount: number, currencyCode: string, userLocale: string
     minimumFractionDigits: 2,
   }).format(amount);
 };
+
+function formatOrderDateShort(iso: string | null): string {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "—";
+  const now = new Date();
+  const startOfDay = (d: Date) =>
+    new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const diffDays = Math.round((startOfDay(now) - startOfDay(date)) / 86_400_000);
+  const time = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  })
+    .format(date)
+    .replace(" AM", " am")
+    .replace(" PM", " pm");
+  if (diffDays === 0) return `Today at ${time}`;
+  if (diffDays === 1) return `Yesterday at ${time}`;
+  if (diffDays > 1 && diffDays < 7) {
+    const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(date);
+    return `${weekday} at ${time}`;
+  }
+  const md = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date);
+  return `${md} at ${time}`;
+}
 
 const formatCustomerShort = (name: string | null, guestFallback = "Guest") => {
   if (!name) return guestFallback;

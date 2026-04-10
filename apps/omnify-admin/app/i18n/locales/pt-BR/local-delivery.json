@@ -88,7 +88,24 @@
     "table": {
       "order": "Pedido",
       "customer": "Cliente",
-      "address": "Endereço"
+      "address": "Endereço",
+      "date": "Data",
+      "route": "Rota",
+      "due": "Prazo",
+      "actions": "Ações"
+    },
+    "allOrders": "Todos os pedidos ({{count}})",
+    "filterAll": "Todos",
+    "filterUnassigned": "Não atribuídos",
+    "filterAssigned": "Atribuídos",
+    "searchPlaceholder": "Buscar por nº do pedido ou cliente",
+    "noMatchingOrders": "Nenhum pedido corresponde ao filtro",
+    "seeOrders": "Ver pedidos",
+    "selectAll": "Selecionar todos os pedidos visíveis",
+    "routeLabel": "Rota {{number}}",
+    "rowAction": {
+      "removeFromRoute": "Remover da rota",
+      "openInShopify": "Abrir no Shopify"
     },
     "noAddressLine1": "Sem linha 1 do endereço",
     "moreOrders": "+{{count}} mais…",

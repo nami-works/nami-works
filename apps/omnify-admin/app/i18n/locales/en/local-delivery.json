@@ -91,7 +91,24 @@
     "table": {
       "order": "Order",
       "customer": "Customer",
-      "address": "Address"
+      "address": "Address",
+      "date": "Date",
+      "route": "Route",
+      "due": "Due",
+      "actions": "Actions"
+    },
+    "allOrders": "All orders ({{count}})",
+    "filterAll": "All",
+    "filterUnassigned": "Unassigned",
+    "filterAssigned": "Assigned",
+    "searchPlaceholder": "Search by order # or customer",
+    "noMatchingOrders": "No orders match your filter",
+    "seeOrders": "See orders",
+    "selectAll": "Select all visible orders",
+    "routeLabel": "Route {{number}}",
+    "rowAction": {
+      "removeFromRoute": "Remove from route",
+      "openInShopify": "Open in Shopify"
     },
     "noAddressLine1": "No address line 1",
     "moreOrders": "+{{count}} more…",
