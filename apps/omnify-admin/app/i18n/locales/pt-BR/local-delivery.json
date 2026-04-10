@@ -271,7 +271,7 @@
     }
   },
   "warnings": {
-    "addressErrors": "Possíveis erros de endereço ({{count}})",
+    "addressErrors": "Possíveis erros de endereço: {{count}}",
     "shipmentRequests": "Solicitações de envio para processar ({{count}})",
     "returnPickups": "Devoluções pendentes ({{count}})"
   },

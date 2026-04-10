@@ -3071,13 +3071,13 @@ export default function RetailLocatorRoute() {
           <div className={styles.overviewHeader}>
             <h2 className={styles.overviewHeading}>{t("overview.heading")}</h2>
             <div className={styles.overviewControls}>
-              <label className={styles.overviewToggle}>
+              <div className={styles.overviewToggle} onClick={() => setMonthlyAvg((prev) => !prev)} role="button">
                 <s-checkbox
                   checked={monthlyAvg || undefined}
                   onChange={() => setMonthlyAvg((prev) => !prev)}
                 />
                 <span>{t("overview.monthlyAvg")}</span>
-              </label>
+              </div>
             <select
               className={styles.overviewPeriodSelect}
               value={String(overviewPeriod)}
@@ -3288,7 +3288,7 @@ export default function RetailLocatorRoute() {
                   const barPx = totalPct / 100 * 160;
                   const storePx = barPx * storeFraction;
                   const onlinePx = barPx * onlineFraction;
-                  const MIN_LABEL_PX = 24;
+                  const MIN_LABEL_PX = 14;
                   return (
                     <div key={city.cityDisplay} className={styles.vbarColumn}>
                       <div className={styles.vbarBarArea}>

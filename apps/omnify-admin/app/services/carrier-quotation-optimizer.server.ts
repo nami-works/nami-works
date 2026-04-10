@@ -12,6 +12,7 @@
 
 import type { Coordinate, OptimizerOrderInput } from "./google-routes-shared.server";
 import { computeRoutePolyline } from "./google-routes-shared.server";
+import { distanceToPolyline } from "../utils/polyline.server";
 import {
   createLalamoveQuotation,
   type LalamoveCredentials,
@@ -84,6 +85,14 @@ const GAP_SPLIT_MULTIPLIER = 5.0;
 
 /** Maximum delivery stops per route (hard cap applied after depot-distance splitting). */
 const MAX_STOPS_PER_ROUTE = 7;
+
+/** Polyline proximity refinement: move an order to another route's path when
+ *  the absolute distance improvement exceeds this threshold (meters).
+ *  300m ≈ 3 city blocks — meaningful enough to justify a swap. */
+const POLYLINE_MIN_GAIN_METERS = 300;
+
+/** Maximum iterations for the polyline proximity refinement loop. */
+const POLYLINE_REFINEMENT_MAX_ITERATIONS = 2;
 
 /** Maximum haversine spread (meters) between any two orders in a route.
  *  Routes exceeding this are split into tighter geographic clusters.
@@ -241,6 +250,9 @@ const enforceMinOrdersPerRoute = (
         const sourceCluster = result[candidate.fromIdx]!;
         const alreadyStolen = usedIndices.get(candidate.fromIdx)?.size ?? 0;
         if (sourceCluster.length - alreadyStolen <= MIN_ORDERS_PER_ROUTE) continue;
+        // Skip if stealing this order would make the orphan cluster exceed spread
+        const trialCluster = [...cluster, sourceCluster[candidate.orderIdx]!];
+        if (clusterSpread(trialCluster) > MAX_ROUTE_SPREAD_METERS) continue;
         if (!usedIndices.has(candidate.fromIdx)) usedIndices.set(candidate.fromIdx, new Set());
         usedIndices.get(candidate.fromIdx)!.add(candidate.orderIdx);
         stolen += 1;
@@ -275,6 +287,12 @@ const enforceMinOrdersPerRoute = (
       );
 
       if (nearest) {
+        // Check if merging would exceed geographic spread threshold
+        const mergedCluster = [...result[nearest.idx]!, ...cluster];
+        if (clusterSpread(mergedCluster) > MAX_ROUTE_SPREAD_METERS) {
+          continue; // keep solo — better alone than in a geographically bad pairing
+        }
+
         if (nearest.dist <= PROXIMITY_MERGE_METERS) {
           // Within 1 km → always merge regardless of angle
           result[nearest.idx]!.push(...cluster);
@@ -1980,6 +1998,146 @@ export async function optimizeByVRP(
       waitSurchargeSubunits: WAIT_SURCHARGE_SUBUNITS,
       corridorPolyline: renderPolyline,
     });
+  }
+
+  // ── Phase 5b: Polyline-proximity refinement ──────────────────────────────
+  // Check if any order sits closer to a different route's driving path than
+  // its own.  If so, relocate it and re-render only the affected polylines.
+  if (routes.length >= 2) {
+    for (let pIter = 0; pIter < POLYLINE_REFINEMENT_MAX_ITERATIONS; pIter += 1) {
+      // Build order → route lookup and collect polylines
+      const orderRouteIdx = new Map<string, number>();
+      for (let ri = 0; ri < routes.length; ri += 1) {
+        for (const oid of routes[ri]!.orderIds) orderRouteIdx.set(oid, ri);
+      }
+
+      type PolylineCandidate = {
+        orderId: string;
+        fromRoute: number;
+        toRoute: number;
+        ownDist: number;
+        betterDist: number;
+      };
+      const candidates: PolylineCandidate[] = [];
+
+      for (let ri = 0; ri < routes.length; ri += 1) {
+        const ownPoly = routes[ri]!.corridorPolyline;
+        if (!ownPoly) continue;
+
+        for (const oid of routes[ri]!.orderIds) {
+          // Skip routes with minimum orders — can't remove from them
+          if (routes[ri]!.orderIds.length <= MIN_ORDERS_PER_ROUTE) continue;
+
+          const order = phase1Orders.find((o) => o.orderId === oid)
+            ?? phase2Orders.find((o) => o.orderId === oid);
+          if (!order) continue;
+
+          const ownDist = distanceToPolyline(order.shippingCoordinates, ownPoly);
+
+          // Compare against all other routes' polylines
+          for (let rj = 0; rj < routes.length; rj += 1) {
+            if (rj === ri) continue;
+            const otherPoly = routes[rj]!.corridorPolyline;
+            if (!otherPoly) continue;
+            if (routes[rj]!.orderIds.length >= maxPerRoute) continue;
+
+            const otherDist = distanceToPolyline(order.shippingCoordinates, otherPoly);
+
+            // Move if the order is at least 300m closer to the other route's path
+            if (ownDist - otherDist >= POLYLINE_MIN_GAIN_METERS) {
+              // Check spread constraint on the receiving route
+              const receivingOrders = routes[rj]!.orderIds
+                .map((id) => phase1Orders.find((o) => o.orderId === id) ?? phase2Orders.find((o) => o.orderId === id))
+                .filter(Boolean) as OptimizerOrderInput[];
+              const trialCluster = [...receivingOrders, order];
+              if (clusterSpread(trialCluster) > MAX_ROUTE_SPREAD_METERS) continue;
+
+              candidates.push({
+                orderId: oid,
+                fromRoute: ri,
+                toRoute: rj,
+                ownDist,
+                betterDist: otherDist,
+              });
+            }
+          }
+        }
+      }
+
+      if (candidates.length === 0) {
+        console.info(`[vrp-optimizer] Phase 5b: polyline refinement iter=${pIter} — no candidates`);
+        break;
+      }
+
+      // Sort by improvement ratio (biggest improvement first)
+      candidates.sort((a, b) => (a.betterDist / a.ownDist) - (b.betterDist / b.ownDist));
+
+      // Greedily apply non-conflicting moves
+      const touchedRoutes = new Set<number>();
+      const movedIds = new Set<string>();
+      let movesApplied = 0;
+
+      for (const cand of candidates) {
+        if (movedIds.has(cand.orderId)) continue;
+        if (touchedRoutes.has(cand.fromRoute) || touchedRoutes.has(cand.toRoute)) continue;
+
+        // Re-check sizes after previous moves
+        const srcRoute = routes[cand.fromRoute]!;
+        const dstRoute = routes[cand.toRoute]!;
+        if (srcRoute.orderIds.length <= MIN_ORDERS_PER_ROUTE) continue;
+        if (dstRoute.orderIds.length >= maxPerRoute) continue;
+
+        // Apply the move
+        srcRoute.orderIds = srcRoute.orderIds.filter((id) => id !== cand.orderId);
+        dstRoute.orderIds.push(cand.orderId);
+        touchedRoutes.add(cand.fromRoute);
+        touchedRoutes.add(cand.toRoute);
+        movedIds.add(cand.orderId);
+        movesApplied += 1;
+
+        console.info(
+          `[vrp-optimizer] Phase 5b: polyline relocate ${cand.orderId.split("/").pop()} route ${cand.fromRoute}→${cand.toRoute} (pathDist ${Math.round(cand.ownDist)}m→${Math.round(cand.betterDist)}m)`,
+        );
+      }
+
+      if (movesApplied === 0) break;
+
+      // Re-render polylines and re-quote only for touched routes
+      for (const ri of touchedRoutes) {
+        const route = routes[ri]!;
+        const routeOrders = route.orderIds
+          .map((id) => phase1Orders.find((o) => o.orderId === id) ?? phase2Orders.find((o) => o.orderId === id))
+          .filter(Boolean) as OptimizerOrderInput[];
+
+        if (routeOrders.length >= 1 && googleApiKey) {
+          try {
+            const result = await computeRoutePolyline(googleApiKey, depot, routeOrders);
+            route.corridorPolyline = result.polyline;
+          } catch {
+            console.warn(`[vrp-optimizer] Phase 5b: polyline re-render failed route ${ri}`);
+          }
+        }
+
+        // Re-quote with Lalamove
+        let bestQuote: { costSubunits: number; costTotal: string; costCurrency: string; serviceType: string } | null = null;
+        for (const serviceType of vehicleTypes) {
+          const q = await quoteCluster(routeOrders, config, serviceType, credentials, rateLimiter, specialRequests);
+          if (q && (bestQuote === null || q.costSubunits < bestQuote.costSubunits)) {
+            bestQuote = { ...q, serviceType };
+          }
+        }
+        if (bestQuote) {
+          route.costSubunits = bestQuote.costSubunits;
+          route.costTotal = bestQuote.costTotal;
+          route.costCurrency = bestQuote.costCurrency;
+          route.serviceType = bestQuote.serviceType;
+        }
+      }
+
+      console.info(
+        `[vrp-optimizer] Phase 5b: polyline refinement iter=${pIter} moves=${movesApplied} reRendered=${touchedRoutes.size}`,
+      );
+    }
   }
 
   // Cache polylines to DB

@@ -504,7 +504,6 @@ export default function GoalsPage() {
                         <div className={styles.actionPopover}><s-popover id={popoverId}>
                           <s-menu accessibilityLabel={t("setup.benchmarkActions")}>
                             <s-button
-                              variant="secondary"
                               commandFor={popoverId}
                               command="--hide"
                               onClick={() => openBenchmarkEditModal(index)}
@@ -512,7 +511,6 @@ export default function GoalsPage() {
                               {t("setup.editLaunchDate")}
                             </s-button>
                             <s-button
-                              variant="tertiary"
                               tone="critical"
                               commandFor={popoverId}
                               command="--hide"

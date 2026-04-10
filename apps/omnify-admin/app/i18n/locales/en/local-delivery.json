@@ -280,7 +280,7 @@
     }
   },
   "warnings": {
-    "addressErrors": "Potential address errors ({{count}})",
+    "addressErrors": "Potential address errors: {{count}}",
     "shipmentRequests": "Shipment requests to process ({{count}})",
     "returnPickups": "Return pickups ({{count}})"
   },

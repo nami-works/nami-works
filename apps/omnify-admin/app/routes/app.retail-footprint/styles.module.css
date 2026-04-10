@@ -994,6 +994,7 @@
   color: #6d7175;
   cursor: pointer;
   white-space: nowrap;
+  user-select: none;
 }
 
 .overviewPeriodSelect {

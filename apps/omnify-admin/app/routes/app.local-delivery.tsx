@@ -4939,7 +4939,6 @@ export default function Index() {
                             <s-menu id="route-manager-actions-main" accessibilityLabel={t("routeManager.actions")}>
                               {unassignedOrders.length > 0 ? (
                                 <s-button
-                                  variant="tertiary"
                                   icon="transfer"
                                   disabled={orders.length === 0}
                                   onClick={() => {
@@ -4951,14 +4950,12 @@ export default function Index() {
                                 </s-button>
                               ) : null}
                               <s-button
-                                variant="tertiary"
                                 disabled={!hasSplitCandidates || isRoutingBusy}
                                 onClick={handleSplitRoutes}
                               >
                                 {t("routeManager.splitRoutes")}
                               </s-button>
                               <s-button
-                                variant="tertiary"
                                 icon="refresh"
                                 disabled={dirtyRouteIds.size === 0 || isRoutingBusy}
                                 onClick={handleUpdateRoutes}
@@ -4966,18 +4963,14 @@ export default function Index() {
                                 {t("routeManager.updateRoutes")}
                               </s-button>
                               {hasAssignedRoutes ? (
-                                <>
-                                  <s-divider></s-divider>
-                                  <s-button
-                                    variant="tertiary"
-                                    tone="critical"
-                                    icon="delete"
-                                    disabled={isRoutingBusy}
-                                    onClick={() => setClearAllConfirmOpen(true)}
-                                  >
-                                    {t("routeManager.clearAllRoutes")}
-                                  </s-button>
-                                </>
+                                <s-button
+                                  tone="critical"
+                                  icon="delete"
+                                  disabled={isRoutingBusy}
+                                  onClick={() => setClearAllConfirmOpen(true)}
+                                >
+                                  {t("routeManager.clearAllRoutes")}
+                                </s-button>
                               ) : null}
                             </s-menu>
                           </div>
@@ -5342,7 +5335,6 @@ export default function Index() {
                   <s-menu id="route-manager-actions-aside" accessibilityLabel={t("routeManager.actions")}>
                     {unassignedOrders.length > 0 ? (
                       <s-button
-                        variant="tertiary"
                         icon="transfer"
                         disabled={orders.length === 0}
                         onClick={() => {
@@ -5354,14 +5346,12 @@ export default function Index() {
                       </s-button>
                     ) : null}
                     <s-button
-                      variant="tertiary"
                       disabled={!hasSplitCandidates || isRoutingBusy}
                       onClick={handleSplitRoutes}
                     >
                       {t("routeManager.splitRoutes")}
                     </s-button>
                     <s-button
-                      variant="tertiary"
                       icon="refresh"
                       disabled={dirtyRouteIds.size === 0 || isRoutingBusy}
                       onClick={handleUpdateRoutes}
@@ -5369,18 +5359,14 @@ export default function Index() {
                       {t("routeManager.updateRoutes")}
                     </s-button>
                     {hasAssignedRoutes ? (
-                      <>
-                        <s-divider></s-divider>
-                        <s-button
-                          variant="tertiary"
-                          tone="critical"
-                          icon="delete"
-                          disabled={isRoutingBusy}
-                          onClick={() => setClearAllConfirmOpen(true)}
-                        >
-                          {t("routeManager.clearAllRoutes")}
-                        </s-button>
-                      </>
+                      <s-button
+                        tone="critical"
+                        icon="delete"
+                        disabled={isRoutingBusy}
+                        onClick={() => setClearAllConfirmOpen(true)}
+                      >
+                        {t("routeManager.clearAllRoutes")}
+                      </s-button>
                     ) : null}
                   </s-menu>
                 </div>

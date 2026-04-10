@@ -28,7 +28,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export default function App() {
   const { apiKey, locale, navItems, basePath } = useLoaderData<typeof loader>();
-  const logoSrc = `${basePath}/delivery-box_holographic.png`.replace(/\/+/g, "/");
+  const logoSrc = `${basePath}/cpg-labs_box.png`.replace(/\/+/g, "/");
   const navigation = useNavigation();
   const isPageNavigation = navigation.state === "loading" && !!navigation.location;
   const [showOverlay, setShowOverlay] = useState(false);
@@ -78,7 +78,7 @@ export default function App() {
             <img
               src={logoSrc}
               alt="Loading"
-              style={{ width: 88, height: "auto" }}
+              style={{ width: "clamp(64px, 20vw, 120px)", height: "auto" }}
             />
             <div
               style={{

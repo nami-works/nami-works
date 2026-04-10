@@ -343,43 +343,30 @@ export async function rebuildCityAggregates(shop: string): Promise<void> {
     }
   }
 
-  // Collect current bucket keys to delete stale rows afterward
-  const bucketKeys = new Set<string>();
-
-  // Bulk upsert — INSERT ... ON CONFLICT DO UPDATE (idempotent, safe under concurrency)
+  // Atomic delete + bulk insert inside a transaction (safe under concurrency)
   const data = [...buckets.values()];
-  if (data.length > 0) {
-    const BATCH_SIZE = 500;
-    for (let i = 0; i < data.length; i += BATCH_SIZE) {
-      const batch = data.slice(i, i + BATCH_SIZE);
-      const values = batch.map((b) => {
-        bucketKeys.add(`${b.cityNorm}::${b.month}`);
-        const cn = b.cityNorm.replace(/'/g, "''");
-        const cd = b.cityDisplay.replace(/'/g, "''");
-        const mo = b.month.replace(/'/g, "''");
-        const sh = shop.replace(/'/g, "''");
-        const cc = b.currencyCode ? `'${b.currencyCode.replace(/'/g, "''")}'` : "NULL";
-        return `(gen_random_uuid(), '${sh}', '${cn}', '${cd}', '${mo}', ${b.orderCount}, ${b.revenue}, ${b.customerIds.size}, ${cc}, ${b.latitudeSum}, ${b.longitudeSum}, ${b.geocodedCount})`;
-      });
-      await prisma.$executeRawUnsafe(`
-        INSERT INTO "RetailCityMonthly" ("id", "shop", "cityNorm", "cityDisplay", "month", "orderCount", "revenue", "uniqueCustomers", "currencyCode", "latitudeSum", "longitudeSum", "geocodedCount")
-        VALUES ${values.join(",\n")}
-        ON CONFLICT ("shop", "cityNorm", "month") DO UPDATE SET
-          "cityDisplay" = EXCLUDED."cityDisplay",
-          "orderCount" = EXCLUDED."orderCount",
-          "revenue" = EXCLUDED."revenue",
-          "uniqueCustomers" = EXCLUDED."uniqueCustomers",
-          "currencyCode" = EXCLUDED."currencyCode",
-          "latitudeSum" = EXCLUDED."latitudeSum",
-          "longitudeSum" = EXCLUDED."longitudeSum",
-          "geocodedCount" = EXCLUDED."geocodedCount"
-      `);
-    }
-  }
+  const sh = shop.replace(/'/g, "''");
 
-  // Remove stale rows that no longer have matching orders
-  await prisma.retailCityMonthly.deleteMany({
-    where: { shop, NOT: { cityNorm: { in: [...new Set(data.map((b) => b.cityNorm))] } } },
+  await prisma.$transaction(async (tx) => {
+    await tx.retailCityMonthly.deleteMany({ where: { shop } });
+
+    if (data.length > 0) {
+      const BATCH_SIZE = 500;
+      for (let i = 0; i < data.length; i += BATCH_SIZE) {
+        const batch = data.slice(i, i + BATCH_SIZE);
+        const values = batch.map((b) => {
+          const cn = b.cityNorm.replace(/'/g, "''");
+          const cd = b.cityDisplay.replace(/'/g, "''");
+          const mo = b.month.replace(/'/g, "''");
+          const cc = b.currencyCode ? `'${b.currencyCode.replace(/'/g, "''")}'` : "NULL";
+          return `(gen_random_uuid(), '${sh}', '${cn}', '${cd}', '${mo}', ${b.orderCount}, ${b.revenue}, ${b.customerIds.size}, ${cc}, ${b.latitudeSum}, ${b.longitudeSum}, ${b.geocodedCount})`;
+        });
+        await tx.$executeRawUnsafe(`
+          INSERT INTO "RetailCityMonthly" ("id", "shop", "cityNorm", "cityDisplay", "month", "orderCount", "revenue", "uniqueCustomers", "currencyCode", "latitudeSum", "longitudeSum", "geocodedCount")
+          VALUES ${values.join(",\n")}
+        `);
+      }
+    }
   });
 
   console.info(`[retail-footprint:aggregates] rebuildCityAggregates OK shop=${shop} buckets=${data.length}`);
@@ -417,37 +404,26 @@ export async function rebuildHeatmapBuckets(shop: string): Promise<void> {
 
   const data = [...cells.values()];
 
-  // Bulk upsert — INSERT ... ON CONFLICT DO UPDATE (idempotent, safe under concurrency)
-  if (data.length > 0) {
-    const BATCH_SIZE = 500;
-    const sh = shop.replace(/'/g, "''");
-    for (let i = 0; i < data.length; i += BATCH_SIZE) {
-      const batch = data.slice(i, i + BATCH_SIZE);
-      const values = batch.map((c) =>
-        `(gen_random_uuid(), '${sh}', ${c.lat3}, ${c.lng3}, ${c.orderCount}, ${c.revenueSum}, ${c.customerIds.size})`
-      );
-      await prisma.$executeRawUnsafe(`
-        INSERT INTO "RetailHeatmapBucket" ("id", "shop", "lat3", "lng3", "orderCount", "revenueSum", "customerCount")
-        VALUES ${values.join(",\n")}
-        ON CONFLICT ("shop", "lat3", "lng3") DO UPDATE SET
-          "orderCount" = EXCLUDED."orderCount",
-          "revenueSum" = EXCLUDED."revenueSum",
-          "customerCount" = EXCLUDED."customerCount"
-      `);
-    }
-  }
+  // Atomic delete + bulk insert inside a transaction (safe under concurrency)
+  const sh = shop.replace(/'/g, "''");
 
-  // Remove stale cells that no longer have matching orders
-  if (data.length > 0) {
-    const keepKeys = data.map((c) => `(${c.lat3}, ${c.lng3})`).join(",");
-    await prisma.$executeRawUnsafe(`
-      DELETE FROM "RetailHeatmapBucket"
-      WHERE "shop" = '${shop.replace(/'/g, "''")}'
-      AND ("lat3", "lng3") NOT IN (${keepKeys})
-    `);
-  } else {
-    await prisma.retailHeatmapBucket.deleteMany({ where: { shop } });
-  }
+  await prisma.$transaction(async (tx) => {
+    await tx.retailHeatmapBucket.deleteMany({ where: { shop } });
+
+    if (data.length > 0) {
+      const BATCH_SIZE = 500;
+      for (let i = 0; i < data.length; i += BATCH_SIZE) {
+        const batch = data.slice(i, i + BATCH_SIZE);
+        const values = batch.map((c) =>
+          `(gen_random_uuid(), '${sh}', ${c.lat3}, ${c.lng3}, ${c.orderCount}, ${c.revenueSum}, ${c.customerIds.size})`
+        );
+        await tx.$executeRawUnsafe(`
+          INSERT INTO "RetailHeatmapBucket" ("id", "shop", "lat3", "lng3", "orderCount", "revenueSum", "customerCount")
+          VALUES ${values.join(",\n")}
+        `);
+      }
+    }
+  });
 
   console.info(`[retail-footprint:aggregates] rebuildHeatmapBuckets OK shop=${shop} cells=${data.length}`);
 }
