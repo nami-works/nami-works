@@ -90,6 +90,20 @@ const DETOUR_MIN_GAIN_METERS = 300;
 /** Maximum iterations for the detour refinement loop. */
 const DETOUR_REFINEMENT_MAX_ITERATIONS = 3;
 
+/** Solo-route dissolution reward (meters). When moving the only order from a
+ *  size-1 route to another route, the move empties the source route and saves
+ *  the R$14 base fee. Expressed as a detour-distance equivalent: 5000m
+ *  ≈ R$14 at ~R$2.80/km effective Lalamove rate in BR_SAO. */
+const BASE_FEE_METERS_EQUIVALENT = 5000;
+
+/** Max spread relaxation factor for solo-dissolution moves.
+ *  When absorbing a geographically isolated solo route, the receiving route
+ *  can temporarily exceed MAX_ROUTE_SPREAD_METERS by up to this factor —
+ *  the assumption being that fewer dispatches is worth a wider driver path.
+ *  Derived from observed manual corrections where users accepted ~17km spread
+ *  to absorb solo orders. */
+const SOLO_DISSOLUTION_SPREAD_FACTOR = 1.75;
+
 /** Maximum haversine spread (meters) between any two orders in a route.
  *  Routes exceeding this are split into tighter geographic clusters.
  *  Derived from correction data: routes with >15km spread are consistently overridden. */
@@ -1730,8 +1744,11 @@ export async function optimizeByVRP(
 
       for (let ri = 0; ri < routes.length; ri += 1) {
         const src = routes[ri]!;
-        // Skip routes at/below minimum size — can't remove orders
-        if (src.orderIds.length <= MIN_ORDERS_PER_ROUTE) continue;
+        // Size-1 (solo) routes are allowed as sources: removing their only
+        // order dissolves the route entirely and saves the base fee.
+        // Size-2 routes are skipped because removing one would leave a new solo.
+        // Size-3+ routes are always allowed.
+        if (src.orderIds.length >= 2 && src.orderIds.length <= MIN_ORDERS_PER_ROUTE) continue;
 
         for (const oid of src.orderIds) {
           const order = allOrdersById.get(oid);
@@ -1751,19 +1768,29 @@ export async function optimizeByVRP(
             const dst = routes[rj]!;
             if (dst.orderIds.length >= maxPerRoute) continue;
 
-            // Check spread constraint on the receiving route
+            // Spread constraint on the receiving route.
+            // Solo dissolution moves get a relaxed spread limit since the
+            // alternative (keeping the solo) has a fixed R$14 cost.
             const dstOrders = dst.orderIds
               .map((id) => allOrdersById.get(id))
               .filter(Boolean) as OptimizerOrderInput[];
             const trialCluster = [...dstOrders, order];
-            if (clusterSpread(trialCluster) > MAX_ROUTE_SPREAD_METERS) continue;
+            const isSoloDissolution = src.orderIds.length === 1;
+            const spreadLimit = isSoloDissolution
+              ? MAX_ROUTE_SPREAD_METERS * SOLO_DISSOLUTION_SPREAD_FACTOR
+              : MAX_ROUTE_SPREAD_METERS;
+            if (clusterSpread(trialCluster) > spreadLimit) continue;
 
             // Insertion cost: distance added by inserting this order into dst
             const dstStopsWith = [...dstOrders.map((o) => o.shippingCoordinates), order.shippingCoordinates];
             const dstTotalWith = estimateRouteTotalDistance(depot, dstStopsWith);
             const insertionCost = dstTotalWith - routeTotals[rj]!;
 
-            const netGain = removalSaving - insertionCost;
+            // Solo dissolution reward: if removing this order empties the
+            // source route, the move saves the R$14 base fee.
+            const soloReward = src.orderIds.length === 1 ? BASE_FEE_METERS_EQUIVALENT : 0;
+
+            const netGain = removalSaving - insertionCost + soloReward;
             if (netGain >= DETOUR_MIN_GAIN_METERS) {
               candidates.push({ orderId: oid, fromRoute: ri, toRoute: rj, netGain });
             }
@@ -1790,7 +1817,9 @@ export async function optimizeByVRP(
 
         const srcRoute = routes[cand.fromRoute]!;
         const dstRoute = routes[cand.toRoute]!;
-        if (srcRoute.orderIds.length <= MIN_ORDERS_PER_ROUTE) continue;
+        // Same source-size rule as candidate generation: allow size-1 (dissolve),
+        // block size-2 (would leave a new solo), allow size-3+.
+        if (srcRoute.orderIds.length >= 2 && srcRoute.orderIds.length <= MIN_ORDERS_PER_ROUTE) continue;
         if (dstRoute.orderIds.length >= maxPerRoute) continue;
 
         srcRoute.orderIds = srcRoute.orderIds.filter((id) => id !== cand.orderId);
@@ -1800,16 +1829,18 @@ export async function optimizeByVRP(
         movedIds.add(cand.orderId);
         movesApplied += 1;
 
+        const dissolvedTag = srcRoute.orderIds.length === 0 ? " [dissolved source]" : "";
         console.info(
-          `[vrp-optimizer] Phase 5b: detour relocate ${cand.orderId.split("/").pop()} route ${cand.fromRoute}→${cand.toRoute} (gain=${Math.round(cand.netGain)}m)`,
+          `[vrp-optimizer] Phase 5b: detour relocate ${cand.orderId.split("/").pop()} route ${cand.fromRoute}→${cand.toRoute} (gain=${Math.round(cand.netGain)}m)${dissolvedTag}`,
         );
       }
 
       if (movesApplied === 0) break;
 
-      // Re-render polylines and re-quote only for touched routes
+      // Re-render polylines and re-quote only for touched non-empty routes
       for (const ri of touchedRoutes) {
         const route = routes[ri]!;
+        if (route.orderIds.length === 0) continue; // will be removed below
         const routeOrders = route.orderIds
           .map((id) => allOrdersById.get(id))
           .filter(Boolean) as OptimizerOrderInput[];
@@ -1837,6 +1868,17 @@ export async function optimizeByVRP(
           route.costCurrency = bestQuote.costCurrency;
           route.serviceType = bestQuote.serviceType;
         }
+      }
+
+      // Remove any routes that were emptied by dissolution moves, then
+      // reindex so routeIndex still matches the array position.
+      const dissolvedCount = routes.filter((r) => r.orderIds.length === 0).length;
+      if (dissolvedCount > 0) {
+        for (let k = routes.length - 1; k >= 0; k -= 1) {
+          if (routes[k]!.orderIds.length === 0) routes.splice(k, 1);
+        }
+        routes.forEach((r, idx) => { r.routeIndex = idx; });
+        console.info(`[vrp-optimizer] Phase 5b: dissolved ${dissolvedCount} empty route(s), now ${routes.length} routes`);
       }
 
       console.info(
