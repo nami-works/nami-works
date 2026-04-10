@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useFetcher, useNavigate, redirect } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -96,6 +96,26 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     }
   }
 
+  // --- Save field defaults (price tag config) ---
+  if (intent === "saveFieldDefaults") {
+    console.info(`[bulk-price] saveFieldDefaults START shop=${shop}`);
+    const metaobjectType = formData.get("metaobjectType") as string;
+    const displayNameKey = formData.get("displayNameKey") as string;
+    const fieldDefaultsJson = formData.get("fieldDefaults") as string;
+
+    const mfDef = await findProductMetafieldForMetaobjectType(admin, metaobjectType);
+    const metafieldNamespace = mfDef?.namespace ?? "";
+    const metafieldKey = mfDef?.key ?? "";
+
+    await prisma.priceTagConfig.upsert({
+      where: { shop },
+      create: { shop, metaobjectType, metafieldNamespace, metafieldKey, displayNameKey, metaobjectFieldDefaults: fieldDefaultsJson },
+      update: { metaobjectType, metafieldNamespace, metafieldKey, displayNameKey, metaobjectFieldDefaults: fieldDefaultsJson },
+    });
+
+    return { ok: true, intent: "saveFieldDefaults", detectedMetafield: mfDef ? `${metafieldNamespace}.${metafieldKey}` : null };
+  }
+
   // --- Save ---
   if (intent === "save") {
     const name = formData.get("name") as string;
@@ -164,7 +184,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     if (params.id === "new") {
       const created = await prisma.bulkPriceCampaign.create({ data });
       console.info(`[bulk-price] campaign created id=${created.id} shop=${shop} name=${name}`);
-      return redirect(`/app/merchandising/sales/${created.id}`);
+      return redirect(`/app/merchandising/sale/${created.id}`);
     }
 
     await prisma.bulkPriceCampaign.update({
@@ -209,14 +229,14 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       },
     });
     console.info(`[bulk-price] campaign duplicated from=${params.id} to=${copy.id} shop=${shop}`);
-    return redirect(`/app/merchandising/sales/${copy.id}`);
+    return redirect(`/app/merchandising/sale/${copy.id}`);
   }
 
   // --- Delete ---
   if (intent === "delete") {
     await prisma.bulkPriceCampaign.delete({ where: { id: params.id } });
     console.info(`[bulk-price] campaign deleted id=${params.id} shop=${shop}`);
-    return redirect("/app/merchandising/sales");
+    return redirect("/app/merchandising/sale");
   }
 
   return { ok: false };
@@ -234,6 +254,7 @@ export default function CampaignDetail() {
   const searchFetcher = useFetcher<typeof action>();
   const collectionSearchFetcher = useFetcher<typeof action>();
   const fieldDefsFetcher = useFetcher<typeof action>();
+  const saveConfigFetcher = useFetcher<typeof action>();
 
   // Form state
   const [name, setName] = useState(campaign?.name ?? "");
@@ -253,17 +274,23 @@ export default function CampaignDetail() {
   const [excludeTags, setExcludeTags] = useState<string[]>(
     campaign?.excludeValues ? JSON.parse(campaign.excludeValues) : [],
   );
-  const [startAt, setStartAt] = useState(
-    campaign?.startAt
-      ? new Date(campaign.startAt).toISOString().slice(0, 16)
-      : "",
-  );
+  const [startDate, setStartDate] = useState(() => {
+    if (!campaign?.startAt) return "";
+    return new Date(campaign.startAt).toISOString().slice(0, 10);
+  });
+  const [startTime, setStartTime] = useState(() => {
+    if (!campaign?.startAt) return "";
+    return new Date(campaign.startAt).toTimeString().slice(0, 5);
+  });
   const [hasEndDate, setHasEndDate] = useState(!!campaign?.endAt);
-  const [endAt, setEndAt] = useState(
-    campaign?.endAt
-      ? new Date(campaign.endAt).toISOString().slice(0, 16)
-      : "",
-  );
+  const [endDate, setEndDate] = useState(() => {
+    if (!campaign?.endAt) return "";
+    return new Date(campaign.endAt).toISOString().slice(0, 10);
+  });
+  const [endTime, setEndTime] = useState(() => {
+    if (!campaign?.endAt) return "";
+    return new Date(campaign.endAt).toTimeString().slice(0, 5);
+  });
 
   // Price tags state
   const [priceTagsEnabled, setPriceTagsEnabled] = useState(campaign?.priceTagsEnabled ?? false);
@@ -283,6 +310,26 @@ export default function CampaignDetail() {
   const [ptMetafieldKey, setPtMetafieldKey] = useState(
     campaign?.priceTagMetafieldKey ?? priceTagDefaults?.metafieldKey ?? "",
   );
+
+  // Aside state for price tag config
+  const [ptAsideCollapsed, setPtAsideCollapsed] = useState(true);
+  const [ptAsideSaved, setPtAsideSaved] = useState(false);
+
+  useEffect(() => {
+    const data = saveConfigFetcher.data as any;
+    if (data?.intent === "saveFieldDefaults" && data.ok) {
+      setPtAsideSaved(true);
+      const timer = setTimeout(() => setPtAsideSaved(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [saveConfigFetcher.data]);
+
+  const tzOffset = useMemo(() => {
+    const offset = new Date().getTimezoneOffset();
+    const sign = offset <= 0 ? "+" : "-";
+    const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, "0");
+    return `${sign}${hours}`;
+  }, []);
 
   // Collection search
   const [collectionQuery, setCollectionQuery] = useState("");
@@ -409,8 +456,8 @@ export default function CampaignDetail() {
         filterValues,
         excludeEnabled: String(excludeEnabled),
         excludeValues: JSON.stringify(excludeTags),
-        startAt,
-        endAt: hasEndDate ? endAt : "",
+        startAt: startDate && startTime ? `${startDate}T${startTime}` : startDate ? `${startDate}T00:00` : "",
+        endAt: hasEndDate && endDate ? (endTime ? `${endDate}T${endTime}` : `${endDate}T23:59`) : "",
         priceTagsEnabled: String(priceTagsEnabled),
         priceTagMetaobjectType: ptMetaobjectType,
         priceTagDisplayNameKey: ptDisplayNameKey,
@@ -422,11 +469,24 @@ export default function CampaignDetail() {
     );
   };
 
+  const handleSavePtConfig = useCallback(() => {
+    saveConfigFetcher.submit(
+      {
+        _action: "saveFieldDefaults",
+        metaobjectType: ptMetaobjectType,
+        displayNameKey: ptDisplayNameKey,
+        fieldDefaults: JSON.stringify(ptFieldDefaults),
+      },
+      { method: "POST" },
+    );
+    setPtAsideCollapsed(true);
+  }, [saveConfigFetcher, ptMetaobjectType, ptDisplayNameKey, ptFieldDefaults]);
+
   return (
     <>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <s-button variant="tertiary" onClick={() => navigate("/app/merchandising/sales")}>
+          <s-button variant="tertiary" onClick={() => navigate("/app/merchandising/sale")}>
             ← Back
           </s-button>
           <h2 className={styles.modalTitle}>
@@ -823,15 +883,10 @@ export default function CampaignDetail() {
           {/* Excludes */}
           <div className={styles.formSection}>
             <div className={styles.formSectionTitle}>{t("campaigns.excludes")}</div>
-            <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
-              <input
-                type="checkbox"
-                checked={excludeEnabled}
-                onChange={(e) => setExcludeEnabled(e.target.checked)}
-                disabled={isActive}
-              />
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", userSelect: "none" }} onClick={() => !isActive && setExcludeEnabled(prev => !prev)} role="button">
+              <s-checkbox checked={excludeEnabled || undefined} onChange={() => setExcludeEnabled(prev => !prev)} disabled={isActive || undefined} />
               {t("campaigns.enableExcludes")}
-            </label>
+            </div>
             {excludeEnabled && (
               <>
                 <div className={styles.searchRow} style={{ marginTop: "12px" }}>
@@ -885,147 +940,62 @@ export default function CampaignDetail() {
 
           {/* Schedule */}
           <div className={styles.formSection}>
-            <div className={styles.formSectionTitle}>{t("campaigns.schedule")}</div>
-            <div className={styles.formRow}>
+            <div className={styles.formSectionTitle}>{t("campaigns.activeDates")}</div>
+            <div className={styles.dateTimeRow}>
               <div>
-                <label style={{ fontSize: "13px", color: "#6d7175", display: "block", marginBottom: "4px" }}>
-                  {t("campaigns.startDate")}
-                </label>
-                <input
-                  type="datetime-local"
-                  value={startAt}
-                  onChange={(e) => setStartAt(e.target.value)}
-                  disabled={isActive}
-                  style={{ width: "100%", padding: "8px", borderRadius: "8px", border: "1px solid #8c9196", fontSize: "13px" }}
-                />
+                <label className={styles.dateTimeLabel}>{t("campaigns.startDate")}</label>
+                <div className={styles.dateTimeInputWrap}>
+                  <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" className={styles.dateTimeIcon}>
+                    <path fill="currentColor" d="M7 2a1 1 0 0 1 1 1v1h4V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1ZM5 9v7h10V9H5Z" />
+                  </svg>
+                  <input type="date" className={styles.dateTimeInput} value={startDate} onChange={(e) => setStartDate(e.target.value)} disabled={isActive} />
+                </div>
+              </div>
+              <div>
+                <label className={styles.dateTimeLabel}>{t("campaigns.startTime")} ({tzOffset})</label>
+                <div className={styles.dateTimeInputWrap}>
+                  <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" className={styles.dateTimeIcon}>
+                    <path fill="currentColor" d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm.75 3.75v4.5l3.1 1.86a.75.75 0 1 1-.77 1.28l-3.46-2.07a.75.75 0 0 1-.37-.65V5.75a.75.75 0 0 1 1.5 0Z" />
+                  </svg>
+                  <input type="time" className={styles.dateTimeInput} value={startTime} onChange={(e) => setStartTime(e.target.value)} disabled={isActive} />
+                </div>
               </div>
             </div>
-            <label style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "12px", cursor: "pointer" }}>
-              <input
-                type="checkbox"
-                checked={hasEndDate}
-                onChange={(e) => setHasEndDate(e.target.checked)}
-                disabled={isActive}
-              />
+            <div className={styles.checkboxToggle} style={{ marginTop: "12px" }} onClick={() => !isActive && setHasEndDate(prev => !prev)} role="button">
+              <s-checkbox checked={hasEndDate || undefined} onChange={() => setHasEndDate(prev => !prev)} disabled={isActive || undefined} />
               {t("campaigns.setEndDate")}
-            </label>
+            </div>
             {hasEndDate && (
-              <div className={styles.formRow} style={{ marginTop: "12px" }}>
+              <div className={styles.dateTimeRow} style={{ marginTop: "12px" }}>
                 <div>
-                  <label style={{ fontSize: "13px", color: "#6d7175", display: "block", marginBottom: "4px" }}>
-                    {t("campaigns.endDate")}
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={endAt}
-                    onChange={(e) => setEndAt(e.target.value)}
-                    disabled={isActive}
-                    style={{ width: "100%", padding: "8px", borderRadius: "8px", border: "1px solid #8c9196", fontSize: "13px" }}
-                  />
+                  <label className={styles.dateTimeLabel}>{t("campaigns.endDate")}</label>
+                  <div className={styles.dateTimeInputWrap}>
+                    <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" className={styles.dateTimeIcon}>
+                      <path fill="currentColor" d="M7 2a1 1 0 0 1 1 1v1h4V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1ZM5 9v7h10V9H5Z" />
+                    </svg>
+                    <input type="date" className={styles.dateTimeInput} value={endDate} onChange={(e) => setEndDate(e.target.value)} disabled={isActive} />
+                  </div>
+                </div>
+                <div>
+                  <label className={styles.dateTimeLabel}>{t("campaigns.endTime")} ({tzOffset})</label>
+                  <div className={styles.dateTimeInputWrap}>
+                    <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" className={styles.dateTimeIcon}>
+                      <path fill="currentColor" d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm.75 3.75v4.5l3.1 1.86a.75.75 0 1 1-.77 1.28l-3.46-2.07a.75.75 0 0 1-.37-.65V5.75a.75.75 0 0 1 1.5 0Z" />
+                    </svg>
+                    <input type="time" className={styles.dateTimeInput} value={endTime} onChange={(e) => setEndTime(e.target.value)} disabled={isActive} />
+                  </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Price Tags */}
+          {/* Price Tags toggle */}
           <div className={styles.formSection}>
             <div className={styles.formSectionTitle}>{t("campaigns.priceTags")}</div>
-            <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
-              <s-checkbox
-                checked={priceTagsEnabled || undefined}
-                onChange={() => setPriceTagsEnabled((prev) => !prev)}
-                disabled={isActive || undefined}
-              />
+            <div className={styles.checkboxToggle} onClick={() => !isActive && setPriceTagsEnabled(prev => !prev)} role="button">
+              <s-checkbox checked={priceTagsEnabled || undefined} onChange={() => setPriceTagsEnabled(prev => !prev)} disabled={isActive || undefined} />
               {t("campaigns.addPriceTags")}
-            </label>
-
-            {priceTagsEnabled && (
-              <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "12px" }}>
-                <s-select
-                  label={t("campaigns.metaobjectDefinition")}
-                  value={ptMetaobjectType}
-                  onChange={(e: Event) =>
-                    handleMetaobjectTypeChange((e.currentTarget as HTMLSelectElement).value)
-                  }
-                  disabled={isActive}
-                >
-                  <s-option value="">{t("campaigns.selectDefinition")}</s-option>
-                  {(metaobjectTypes ?? []).map((mt: { type: string; name: string }) => (
-                    <s-option key={mt.type} value={mt.type}>{mt.name}</s-option>
-                  ))}
-                </s-select>
-
-                {ptDisplayNameKey && (
-                  <div style={{ fontSize: "12px", color: "#6d7175", fontStyle: "italic" }}>
-                    {t("campaigns.displayNameHint", { field: ptDisplayNameKey })}
-                  </div>
-                )}
-
-                {ptFieldDefs.length > 0 && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <div style={{ fontWeight: 600, fontSize: "13px" }}>{t("campaigns.metaobjectParameters")}</div>
-                    {ptFieldDefs
-                      .filter((f: any) => !f.isDisplayName)
-                      .map((field: any) => {
-                        if (field.typeName === "color") {
-                          return (
-                            <div key={field.key} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                              <span style={{ fontSize: "13px", minWidth: "100px" }}>{field.name}</span>
-                              <div
-                                style={{
-                                  width: "28px", height: "28px", borderRadius: "4px",
-                                  background: ptFieldDefaults[field.key] || "#cccccc",
-                                  border: "1px solid #e1e3e5", flexShrink: 0,
-                                }}
-                              />
-                              <input
-                                type="text"
-                                value={ptFieldDefaults[field.key] || ""}
-                                onChange={(e) =>
-                                  setPtFieldDefaults((prev) => ({ ...prev, [field.key]: e.target.value }))
-                                }
-                                disabled={isActive}
-                                style={{ flex: 1, padding: "6px 8px", borderRadius: "6px", border: "1px solid #8c9196", fontSize: "13px" }}
-                              />
-                            </div>
-                          );
-                        }
-                        if (field.typeName === "boolean") {
-                          return (
-                            <label key={field.key} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
-                              <s-checkbox
-                                checked={ptFieldDefaults[field.key] === "true" || undefined}
-                                onChange={() =>
-                                  setPtFieldDefaults((prev) => ({
-                                    ...prev,
-                                    [field.key]: prev[field.key] === "true" ? "false" : "true",
-                                  }))
-                                }
-                                disabled={isActive || undefined}
-                              />
-                              {field.name}
-                            </label>
-                          );
-                        }
-                        return (
-                          <div key={field.key}>
-                            <span style={{ fontSize: "13px" }}>{field.name}</span>
-                            <input
-                              type="text"
-                              value={ptFieldDefaults[field.key] || ""}
-                              onChange={(e) =>
-                                setPtFieldDefaults((prev) => ({ ...prev, [field.key]: e.target.value }))
-                              }
-                              disabled={isActive}
-                              style={{ width: "100%", padding: "6px 8px", borderRadius: "6px", border: "1px solid #8c9196", fontSize: "13px", marginTop: "4px" }}
-                            />
-                          </div>
-                        );
-                      })}
-                  </div>
-                )}
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Save button */}
@@ -1044,7 +1014,7 @@ export default function CampaignDetail() {
               <s-button
                 variant="primary"
                 onClick={handleSave}
-                disabled={!name || !startAt || discVal <= 0}
+                disabled={!name || !startDate || discVal <= 0}
                 loading={isSubmitting}
               >
                 {isSubmitting ? t("campaigns.saving") : t("campaigns.save")}
@@ -1103,6 +1073,134 @@ export default function CampaignDetail() {
             </div>
           </div>
 
+          {/* Price tag config aside */}
+          {priceTagsEnabled && (
+            <div className={styles.collapsibleSectionWrap}>
+              <s-section heading={t("campaigns.metaobjectDefinition")}>
+                <div className={styles.asideSelectRow}>
+                  <s-select
+                    value={ptMetaobjectType}
+                    onChange={(e: Event) => {
+                      handleMetaobjectTypeChange((e.currentTarget as HTMLSelectElement).value);
+                      setPtAsideCollapsed(false);
+                    }}
+                    disabled={isActive}
+                  >
+                    <s-option value="">{t("campaigns.selectDefinition")}</s-option>
+                    {(metaobjectTypes ?? []).map((mt: { type: string; name: string }) => (
+                      <s-option key={mt.type} value={mt.type}>{mt.name} ({mt.type})</s-option>
+                    ))}
+                  </s-select>
+                </div>
+
+                {!ptAsideCollapsed && (
+                  <>
+                    {ptDisplayNameKey && (
+                      <p className={styles.displayNameHint}>
+                        {t("campaigns.displayNameHint", { field: ptDisplayNameKey })}
+                      </p>
+                    )}
+
+                    {ptFieldDefs.length > 0 && (
+                      <div className={styles.asideFields}>
+                        {(() => {
+                          let paramLabelShown = false;
+                          return ptFieldDefs
+                            .filter((f: any) => !f.isDisplayName)
+                            .map((field: any) => {
+                              const showParamLabel = !paramLabelShown;
+                              if (showParamLabel) paramLabelShown = true;
+                              const paramLabel = showParamLabel ? <h3 className={styles.subSectionTitle}>{t("campaigns.metaobjectParameters")}</h3> : null;
+
+                              if (field.typeName === "color") {
+                                const rawVal = ptFieldDefaults[field.key] || "";
+                                const hexBody = rawVal.replace(/^#/, "");
+                                const previewColor = hexBody.length >= 3 ? `#${hexBody}` : "#000000";
+                                return (
+                                  <div key={field.key}>
+                                    {paramLabel}
+                                    <div className={styles.colorFieldRow}>
+                                      <label className={styles.colorFieldLabel}>{field.name} {field.required ? "*" : ""}</label>
+                                      <div className={styles.colorFieldInputs}>
+                                        <div className={styles.colorSwatch} style={{ backgroundColor: previewColor }} />
+                                        <div className={styles.colorTextWrap}>
+                                          <span className={styles.colorHash}>#</span>
+                                          <input
+                                            type="text"
+                                            value={hexBody.toUpperCase()}
+                                            onChange={(e) => {
+                                              const cleaned = e.target.value.replace(/[^0-9A-Fa-f]/g, "").slice(0, 6).toUpperCase();
+                                              setPtFieldDefaults((prev) => ({ ...prev, [field.key]: `#${cleaned}` }));
+                                              setPtAsideSaved(false);
+                                            }}
+                                            className={styles.colorText}
+                                            placeholder="000000"
+                                            maxLength={6}
+                                            disabled={isActive}
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              if (field.typeName === "boolean") {
+                                return (
+                                  <div key={field.key}>
+                                    {paramLabel}
+                                    <div className={styles.boolFieldRow}>
+                                      <div className={styles.checkboxToggle} onClick={() => !isActive && setPtFieldDefaults((prev) => ({ ...prev, [field.key]: prev[field.key] === "true" ? "false" : "true" }))} role="button">
+                                        <s-checkbox
+                                          checked={ptFieldDefaults[field.key] === "true" || undefined}
+                                          onChange={() => setPtFieldDefaults((prev) => ({ ...prev, [field.key]: prev[field.key] === "true" ? "false" : "true" }))}
+                                          disabled={isActive || undefined}
+                                        />
+                                        {field.name} {field.required ? "*" : ""}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              return (
+                                <div key={field.key}>
+                                  {paramLabel}
+                                  <s-text-field
+                                    label={`${field.name} ${field.required ? "*" : ""}`}
+                                    value={ptFieldDefaults[field.key] || ""}
+                                    onChange={(e: any) => {
+                                      setPtFieldDefaults((prev) => ({ ...prev, [field.key]: e.currentTarget.value }));
+                                      setPtAsideSaved(false);
+                                    }}
+                                    disabled={isActive}
+                                  />
+                                </div>
+                              );
+                            });
+                        })()}
+                      </div>
+                    )}
+
+                    <div className={styles.asideSaveRow}>
+                      {ptAsideSaved && <span className={styles.asideSavedLabel}>{t("campaigns.saved")}</span>}
+                      <s-button variant="primary" onClick={handleSavePtConfig} disabled={!ptMetaobjectType || isActive}>
+                        {t("campaigns.save")}
+                      </s-button>
+                    </div>
+                  </>
+                )}
+
+                <div
+                  className={`${styles.collapseChevron}${ptAsideCollapsed ? ` ${styles.collapsed}` : ""}`}
+                  onClick={() => setPtAsideCollapsed((prev) => !prev)}
+                  role="button"
+                  aria-label="Toggle price tag config"
+                >
+                  <span className={styles.chevronIcon}>›</span>
+                </div>
+              </s-section>
+            </div>
+          )}
+
           {/* Summary */}
           <div className={styles.formSection}>
             <h3 className={styles.modalTitle}>{t("campaigns.summary")}</h3>
@@ -1127,8 +1225,8 @@ export default function CampaignDetail() {
                 {excludeEnabled && excludeTags.length > 0 && (
                   <li>{t("campaigns.excludesProductTags")}</li>
                 )}
-                {startAt && <li>Start: {new Date(startAt).toLocaleString()}</li>}
-                {hasEndDate && endAt && <li>End: {new Date(endAt).toLocaleString()}</li>}
+                {startDate && <li>Start: {startDate}{startTime ? ` ${startTime}` : ""}</li>}
+                {hasEndDate && endDate && <li>End: {endDate}{endTime ? ` ${endTime}` : ""}</li>}
                 <li>Price tags: {priceTagsEnabled ? t("campaigns.tagsOn") : t("campaigns.tagsOff")}</li>
               </ul>
             </div>

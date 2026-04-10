@@ -10,7 +10,7 @@ import {
   type MetaobjectFieldDef,
 } from "../services/price-tags/metaobject.server";
 import { findProductMetafieldForMetaobjectType } from "../services/price-tags/metafield.server";
-import styles from "./app.price-tags/styles.module.css";
+import styles from "./app.merchandising/styles.module.css";
 
 type ProductHit = {
   id: string;
@@ -467,7 +467,7 @@ export default function QuickApplyTags() {
   return (
     <>
       <div style={{ marginBottom: "16px" }}>
-        <s-button variant="tertiary" onClick={() => navigate("/app/merchandising/sales")}>
+        <s-button variant="tertiary" onClick={() => navigate("/app/merchandising/sale")}>
           ← Back to Sales
         </s-button>
       </div>

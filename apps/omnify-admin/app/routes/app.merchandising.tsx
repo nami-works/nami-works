@@ -14,7 +14,7 @@ export default function MerchandisingLayout() {
     { id: "discounts", label: t("tabs.discounts"), href: "/app/merchandising/discounts" },
     { id: "pricing", label: t("tabs.pricing"), href: "/app/merchandising/pricing" },
     { id: "collections", label: t("tabs.collections"), href: "/app/merchandising/collections" },
-    { id: "sales", label: t("tabs.sales"), href: "/app/merchandising/sales" },
+    { id: "sale", label: t("tabs.sale"), href: "/app/merchandising/sale" },
   ];
 
   const activeId =
@@ -22,7 +22,7 @@ export default function MerchandisingLayout() {
     : location.pathname.includes("/discounts") ? "discounts"
     : location.pathname.includes("/pricing") ? "pricing"
     : location.pathname.includes("/collections") ? "collections"
-    : location.pathname.includes("/sales") ? "sales"
+    : location.pathname.includes("/sale") ? "sale"
     : "overview";
 
   return (

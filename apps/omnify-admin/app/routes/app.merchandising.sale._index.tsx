@@ -73,13 +73,13 @@ export default function CampaignsList() {
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginBottom: "16px" }}>
           <s-button
             variant="secondary"
-            onClick={() => navigate("/app/merchandising/sales/quick-apply")}
+            onClick={() => navigate("/app/merchandising/sale/quick-apply")}
           >
             {t("campaigns.quickApplyTags")}
           </s-button>
           <s-button
             variant="primary"
-            onClick={() => navigate("/app/merchandising/sales/new")}
+            onClick={() => navigate("/app/merchandising/sale/new")}
           >
             {t("campaigns.createSale")}
           </s-button>
@@ -119,7 +119,7 @@ export default function CampaignsList() {
                   <tr
                     key={campaign.id}
                     className={`${styles.tableRow} ${styles.campaignRow}`}
-                    onClick={() => navigate(`/app/merchandising/sales/${campaign.id}`)}
+                    onClick={() => navigate(`/app/merchandising/sale/${campaign.id}`)}
                   >
                     <td className={styles.tableCell}>
                       <div>{campaign.name}</div>
