@@ -12,7 +12,6 @@
 
 import type { Coordinate, OptimizerOrderInput } from "./google-routes-shared.server";
 import { computeRoutePolyline } from "./google-routes-shared.server";
-import { distanceToPolyline } from "../utils/polyline.server";
 import {
   createLalamoveQuotation,
   type LalamoveCredentials,
@@ -83,13 +82,13 @@ const TWO_OPT_MAX_ITERATIONS = 100;
 /** Maximum delivery stops per route (hard cap applied after depot-distance splitting). */
 const MAX_STOPS_PER_ROUTE = 7;
 
-/** Polyline proximity refinement: move an order to another route's path when
- *  the absolute distance improvement exceeds this threshold (meters).
+/** Detour-based refinement: move an order between routes when
+ *  (removal_saving_from_src - insertion_cost_to_dst) exceeds this threshold.
  *  300m ≈ 3 city blocks — meaningful enough to justify a swap. */
-const POLYLINE_MIN_GAIN_METERS = 300;
+const DETOUR_MIN_GAIN_METERS = 300;
 
-/** Maximum iterations for the polyline proximity refinement loop. */
-const POLYLINE_REFINEMENT_MAX_ITERATIONS = 2;
+/** Maximum iterations for the detour refinement loop. */
+const DETOUR_REFINEMENT_MAX_ITERATIONS = 3;
 
 /** Maximum haversine spread (meters) between any two orders in a route.
  *  Routes exceeding this are split into tighter geographic clusters.
@@ -1699,79 +1698,88 @@ export async function optimizeByVRP(
     });
   }
 
-  // ── Phase 5b: Polyline-proximity refinement ──────────────────────────────
-  // Check if any order sits closer to a different route's driving path than
-  // its own.  If so, relocate it and re-render only the affected polylines.
+  // ── Phase 5b: Detour-cost refinement ─────────────────────────────────────
+  // For each order in a non-minimum-size route, compute the distance saved by
+  // removing it from its current route vs. the distance added by inserting it
+  // into another route. If the net gain exceeds DETOUR_MIN_GAIN_METERS, move
+  // the order. This catches orders that are detours in their current route but
+  // sit naturally on the path of another route (e.g. routes that visually
+  // cross each other on the map).
   if (routes.length >= 2) {
-    for (let pIter = 0; pIter < POLYLINE_REFINEMENT_MAX_ITERATIONS; pIter += 1) {
-      // Build order → route lookup and collect polylines
-      const orderRouteIdx = new Map<string, number>();
-      for (let ri = 0; ri < routes.length; ri += 1) {
-        for (const oid of routes[ri]!.orderIds) orderRouteIdx.set(oid, ri);
-      }
+    // Build orderId → OptimizerOrderInput lookup once
+    const allOrdersById = new Map<string, OptimizerOrderInput>();
+    for (const o of phase1Orders) allOrdersById.set(o.orderId, o);
+    for (const o of phase2Orders) allOrdersById.set(o.orderId, o);
 
-      type PolylineCandidate = {
+    for (let pIter = 0; pIter < DETOUR_REFINEMENT_MAX_ITERATIONS; pIter += 1) {
+      // Pre-compute each route's current TSP total (nearest-neighbor estimate)
+      const routeTotals: number[] = routes.map((r) => {
+        const stops = r.orderIds
+          .map((id) => allOrdersById.get(id)?.shippingCoordinates)
+          .filter(Boolean) as Coordinate[];
+        return estimateRouteTotalDistance(depot, stops);
+      });
+
+      type DetourCandidate = {
         orderId: string;
         fromRoute: number;
         toRoute: number;
-        ownDist: number;
-        betterDist: number;
+        netGain: number;
       };
-      const candidates: PolylineCandidate[] = [];
+      const candidates: DetourCandidate[] = [];
 
       for (let ri = 0; ri < routes.length; ri += 1) {
-        const ownPoly = routes[ri]!.corridorPolyline;
-        if (!ownPoly) continue;
+        const src = routes[ri]!;
+        // Skip routes at/below minimum size — can't remove orders
+        if (src.orderIds.length <= MIN_ORDERS_PER_ROUTE) continue;
 
-        for (const oid of routes[ri]!.orderIds) {
-          // Skip routes with minimum orders — can't remove from them
-          if (routes[ri]!.orderIds.length <= MIN_ORDERS_PER_ROUTE) continue;
-
-          const order = phase1Orders.find((o) => o.orderId === oid)
-            ?? phase2Orders.find((o) => o.orderId === oid);
+        for (const oid of src.orderIds) {
+          const order = allOrdersById.get(oid);
           if (!order) continue;
 
-          const ownDist = distanceToPolyline(order.shippingCoordinates, ownPoly);
+          // Removal saving: distance shrunk by removing this order from src
+          const srcStopsWithout = src.orderIds
+            .filter((id) => id !== oid)
+            .map((id) => allOrdersById.get(id)?.shippingCoordinates)
+            .filter(Boolean) as Coordinate[];
+          const srcTotalWithout = estimateRouteTotalDistance(depot, srcStopsWithout);
+          const removalSaving = routeTotals[ri]! - srcTotalWithout;
 
-          // Compare against all other routes' polylines
+          // Evaluate each possible destination route
           for (let rj = 0; rj < routes.length; rj += 1) {
             if (rj === ri) continue;
-            const otherPoly = routes[rj]!.corridorPolyline;
-            if (!otherPoly) continue;
-            if (routes[rj]!.orderIds.length >= maxPerRoute) continue;
+            const dst = routes[rj]!;
+            if (dst.orderIds.length >= maxPerRoute) continue;
 
-            const otherDist = distanceToPolyline(order.shippingCoordinates, otherPoly);
+            // Check spread constraint on the receiving route
+            const dstOrders = dst.orderIds
+              .map((id) => allOrdersById.get(id))
+              .filter(Boolean) as OptimizerOrderInput[];
+            const trialCluster = [...dstOrders, order];
+            if (clusterSpread(trialCluster) > MAX_ROUTE_SPREAD_METERS) continue;
 
-            // Move if the order is at least 300m closer to the other route's path
-            if (ownDist - otherDist >= POLYLINE_MIN_GAIN_METERS) {
-              // Check spread constraint on the receiving route
-              const receivingOrders = routes[rj]!.orderIds
-                .map((id) => phase1Orders.find((o) => o.orderId === id) ?? phase2Orders.find((o) => o.orderId === id))
-                .filter(Boolean) as OptimizerOrderInput[];
-              const trialCluster = [...receivingOrders, order];
-              if (clusterSpread(trialCluster) > MAX_ROUTE_SPREAD_METERS) continue;
+            // Insertion cost: distance added by inserting this order into dst
+            const dstStopsWith = [...dstOrders.map((o) => o.shippingCoordinates), order.shippingCoordinates];
+            const dstTotalWith = estimateRouteTotalDistance(depot, dstStopsWith);
+            const insertionCost = dstTotalWith - routeTotals[rj]!;
 
-              candidates.push({
-                orderId: oid,
-                fromRoute: ri,
-                toRoute: rj,
-                ownDist,
-                betterDist: otherDist,
-              });
+            const netGain = removalSaving - insertionCost;
+            if (netGain >= DETOUR_MIN_GAIN_METERS) {
+              candidates.push({ orderId: oid, fromRoute: ri, toRoute: rj, netGain });
             }
           }
         }
       }
 
       if (candidates.length === 0) {
-        console.info(`[vrp-optimizer] Phase 5b: polyline refinement iter=${pIter} — no candidates`);
+        console.info(`[vrp-optimizer] Phase 5b: detour refinement iter=${pIter} — no candidates`);
         break;
       }
 
-      // Sort by improvement ratio (biggest improvement first)
-      candidates.sort((a, b) => (a.betterDist / a.ownDist) - (b.betterDist / b.ownDist));
+      // Sort by biggest gain first
+      candidates.sort((a, b) => b.netGain - a.netGain);
 
-      // Greedily apply non-conflicting moves
+      // Greedily apply non-conflicting moves (only one move per route per iter)
       const touchedRoutes = new Set<number>();
       const movedIds = new Set<string>();
       let movesApplied = 0;
@@ -1780,13 +1788,11 @@ export async function optimizeByVRP(
         if (movedIds.has(cand.orderId)) continue;
         if (touchedRoutes.has(cand.fromRoute) || touchedRoutes.has(cand.toRoute)) continue;
 
-        // Re-check sizes after previous moves
         const srcRoute = routes[cand.fromRoute]!;
         const dstRoute = routes[cand.toRoute]!;
         if (srcRoute.orderIds.length <= MIN_ORDERS_PER_ROUTE) continue;
         if (dstRoute.orderIds.length >= maxPerRoute) continue;
 
-        // Apply the move
         srcRoute.orderIds = srcRoute.orderIds.filter((id) => id !== cand.orderId);
         dstRoute.orderIds.push(cand.orderId);
         touchedRoutes.add(cand.fromRoute);
@@ -1795,7 +1801,7 @@ export async function optimizeByVRP(
         movesApplied += 1;
 
         console.info(
-          `[vrp-optimizer] Phase 5b: polyline relocate ${cand.orderId.split("/").pop()} route ${cand.fromRoute}→${cand.toRoute} (pathDist ${Math.round(cand.ownDist)}m→${Math.round(cand.betterDist)}m)`,
+          `[vrp-optimizer] Phase 5b: detour relocate ${cand.orderId.split("/").pop()} route ${cand.fromRoute}→${cand.toRoute} (gain=${Math.round(cand.netGain)}m)`,
         );
       }
 
@@ -1805,7 +1811,7 @@ export async function optimizeByVRP(
       for (const ri of touchedRoutes) {
         const route = routes[ri]!;
         const routeOrders = route.orderIds
-          .map((id) => phase1Orders.find((o) => o.orderId === id) ?? phase2Orders.find((o) => o.orderId === id))
+          .map((id) => allOrdersById.get(id))
           .filter(Boolean) as OptimizerOrderInput[];
 
         if (routeOrders.length >= 1 && googleApiKey) {
@@ -1834,7 +1840,7 @@ export async function optimizeByVRP(
       }
 
       console.info(
-        `[vrp-optimizer] Phase 5b: polyline refinement iter=${pIter} moves=${movesApplied} reRendered=${touchedRoutes.size}`,
+        `[vrp-optimizer] Phase 5b: detour refinement iter=${pIter} moves=${movesApplied} reRendered=${touchedRoutes.size}`,
       );
     }
   }
