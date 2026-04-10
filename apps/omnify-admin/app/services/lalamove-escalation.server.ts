@@ -18,10 +18,13 @@ import {
   buildLalamoveRecipientRemarks,
   cancelLalamoveOrder,
   createLalamoveQuotation,
+  getLalamoveOrderDetails,
   normalizePhoneForMarket,
   placeLalamoveOrder,
 } from "./lalamove.server";
 import { getRuntimeCredentialsForShop } from "./lalamove-credentials.server";
+import { applyLalamoveDeliveryState } from "./lalamove-sync.server";
+import { resolveConfiguredSpecialRequests } from "./lalamove-special-requests.server";
 
 
 // ── Escalation thresholds (minutes) ─────────────────────────────────────────
@@ -33,7 +36,7 @@ const REORDER_MINUTES = 40;
 
 // ── Priority fee calculation ─────────────────────────────────────────────────
 
-const MIN_FEE_AMOUNT = "1.00"; // fallback when quotation total is unavailable
+const MIN_FEE_AMOUNT = "4.00"; // Lalamove BR rejects anything below ~R$4; keep as a flat floor.
 
 const FEE_PERCENTAGES: Record<number, number> = {
   1: 0.10, // 10%
@@ -99,6 +102,178 @@ export type EscalationResult = {
   error?: string;
 };
 
+// ── Terminal error handler (status-driven branching) ────────────────────────
+
+const TERMINAL_ORDER_STATUS_HINT = "beyond allowable order status";
+const MIN_FEE_ERROR_HINT = "amount you attempted to add does not reach the minimum";
+
+type LalamoveLiveStatus =
+  | "ASSIGNING_DRIVER"
+  | "ON_GOING"
+  | "PICKED_UP"
+  | "COMPLETED"
+  | "CANCELED"
+  | "REJECTED"
+  | "EXPIRED";
+
+const mapStatusToDeliveryState = (
+  status: string,
+):
+  | "assigning"
+  | "heading_to_pickup"
+  | "in_progress"
+  | "delivered"
+  | "failed"
+  | "rejected"
+  | "expired"
+  | null => {
+  const normalized = status.trim().toUpperCase();
+  if (normalized === "ASSIGNING_DRIVER") return "assigning";
+  if (normalized === "ON_GOING") return "heading_to_pickup";
+  if (normalized === "PICKED_UP") return "in_progress";
+  if (normalized === "COMPLETED") return "delivered";
+  if (normalized === "CANCELED") return "failed";
+  if (normalized === "REJECTED") return "rejected";
+  if (normalized === "EXPIRED") return "expired";
+  return null;
+};
+
+/**
+ * When escalation hits a "beyond allowable order status" 422 (or 404), the
+ * Lalamove-side state has advanced past ASSIGNING_DRIVER. We don't know what
+ * it became — it could be a happy-path progression (driver picked up while we
+ * were mid-escalation) OR a failure (cancelled by Lalamove). Fetch the live
+ * status and branch:
+ *
+ *   ON_GOING / PICKED_UP / COMPLETED → sync our DB + Shopify tags; stop escalating.
+ *   CANCELED / REJECTED / EXPIRED    → invoke autoRetryDispatchJob to re-request.
+ *   ASSIGNING_DRIVER (rare)          → leave job alone, let next tick try again.
+ *   Unknown status                   → log and leave alone.
+ *
+ * Never writes `status: "COMPLETED"` unless that is actually the live Lalamove
+ * state. This replaces the old "mark stale and forget" behaviour that abandoned
+ * jobs that should have been retried.
+ */
+async function handleTerminalEscalationError(params: {
+  job: any;
+  shop: string;
+  admin: AdminApiContext;
+  credentials: { apiKey: string; apiSecret: string };
+  prismaAny: any;
+  originalError: string;
+  elapsedMinutes: number;
+}): Promise<EscalationResult> {
+  const { job, shop, admin, credentials, prismaAny, originalError, elapsedMinutes } =
+    params;
+
+  const result: EscalationResult = {
+    jobId: job.id,
+    routeId: job.routeId,
+    action: elapsedMinutes >= REORDER_MINUTES
+      ? { type: "reorder" }
+      : { type: "priority_fee", level: Math.min((job.priorityFeeLevel ?? 0) + 1, 3) as 1 | 2 | 3 },
+    success: false,
+    error: originalError,
+  };
+
+  // Fetch live Lalamove status. 404 here means the order is truly gone → retry.
+  let liveStatus: string | null = null;
+  try {
+    const details = await getLalamoveOrderDetails(
+      job.market,
+      job.lalamoveOrderId,
+      credentials,
+    );
+    liveStatus = details?.status?.trim().toUpperCase() ?? null;
+    console.info(
+      `[escalation] terminal-handler job=${job.id} shop=${shop} lalamoveOrderId=${job.lalamoveOrderId} liveStatus=${liveStatus ?? "?"}`,
+    );
+  } catch (fetchErr) {
+    const fetchMsg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
+    if (fetchMsg.startsWith("404:")) {
+      console.warn(
+        `[escalation] terminal-handler job=${job.id} shop=${shop} fetch 404 → retrying as CANCELED`,
+      );
+      const retryResult = await autoRetryDispatchJob(job, shop, admin);
+      return retryResult;
+    }
+    console.error(
+      `[escalation] terminal-handler fetch FAILED job=${job.id} shop=${shop} error=${fetchMsg} — leaving job untouched`,
+    );
+    return result;
+  }
+
+  if (!liveStatus) {
+    console.warn(
+      `[escalation] terminal-handler job=${job.id} shop=${shop} missing liveStatus — leaving untouched`,
+    );
+    return result;
+  }
+
+  const happyPath: LalamoveLiveStatus[] = ["ON_GOING", "PICKED_UP", "COMPLETED"];
+  const failurePath: LalamoveLiveStatus[] = ["CANCELED", "REJECTED", "EXPIRED"];
+
+  if (happyPath.includes(liveStatus as LalamoveLiveStatus)) {
+    // Happy path — a webhook was missed. Sync DB and Shopify tags, stop escalating.
+    console.info(
+      `[escalation] terminal-handler job=${job.id} shop=${shop} liveStatus=${liveStatus} → syncing DB + tags, stop escalating`,
+    );
+    await prismaAny.lalamoveDispatchJob
+      .update({ where: { id: job.id }, data: { status: liveStatus } })
+      .catch((e: unknown) =>
+        console.error(`[escalation] terminal-handler job=${job.id} status update failed`, e),
+      );
+    try {
+      const orderMaps = await prismaAny.lalamoveDispatchOrderMap.findMany({
+        where: { shop, dispatchJobId: job.id },
+        select: { shopifyOrderId: true },
+      });
+      const shopifyOrderIds = orderMaps.map(
+        (m: { shopifyOrderId: string }) => m.shopifyOrderId,
+      );
+      const deliveryState = mapStatusToDeliveryState(liveStatus);
+      if (deliveryState && shopifyOrderIds.length > 0) {
+        await applyLalamoveDeliveryState(admin, {
+          orderIds: shopifyOrderIds,
+          state: deliveryState,
+          reason: `Recovered from terminal escalation error (${originalError})`,
+        });
+      }
+      await prismaAny.lalamoveDispatchOrderMap.updateMany({
+        where: { shop, dispatchJobId: job.id },
+        data: { currentStatus: liveStatus },
+      });
+    } catch (syncErr) {
+      console.error(
+        `[escalation] terminal-handler job=${job.id} Shopify sync FAILED`,
+        syncErr,
+      );
+    }
+    result.success = true;
+    result.error = `Recovered — liveStatus=${liveStatus}`;
+    return result;
+  }
+
+  if (failurePath.includes(liveStatus as LalamoveLiveStatus)) {
+    console.info(
+      `[escalation] terminal-handler job=${job.id} shop=${shop} liveStatus=${liveStatus} → invoking autoRetryDispatchJob`,
+    );
+    return autoRetryDispatchJob(job, shop, admin);
+  }
+
+  if (liveStatus === "ASSIGNING_DRIVER") {
+    console.warn(
+      `[escalation] terminal-handler job=${job.id} shop=${shop} unexpected liveStatus=ASSIGNING_DRIVER after 422 — leaving untouched`,
+    );
+    return result;
+  }
+
+  console.warn(
+    `[escalation] terminal-handler job=${job.id} shop=${shop} unmapped liveStatus=${liveStatus} — leaving untouched`,
+  );
+  return result;
+}
+
 // ── Main function ────────────────────────────────────────────────────────────
 
 /**
@@ -160,20 +335,45 @@ export async function checkAndApplyEscalations(
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error(`[escalation] Action failed job=${job.id} level=${level} elapsed=${elapsedMinutes.toFixed(1)}min error=${message}`);
+      console.error(`[escalation] Action failed job=${job.id} shop=${shop} lalamoveOrderId=${job.lalamoveOrderId ?? "?"} level=${level} elapsed=${elapsedMinutes.toFixed(1)}min error=${message}`);
 
-      // If Lalamove says the order is no longer eligible (422/404),
-      // the order has moved past ASSIGNING_DRIVER on their side. Mark it so we stop retrying.
-      const isTerminal =
-        message.includes("422") || message.startsWith("404:");
-      if (isTerminal) {
-        console.warn("[escalation] Marking job as stale (Lalamove order no longer eligible):", job.id);
-        await prismaAny.lalamoveDispatchJob.update({
-          where: { id: job.id },
-          data: { status: "COMPLETED" },
-        }).catch((e: unknown) => console.error("[escalation] Failed to mark job stale", job.id, e));
+      // "Amount does not reach the minimum" is a transient fee-sizing error —
+      // applyPriorityFeeWithFallback already handles it (warn + advance level),
+      // so it should never reach this catch. Defensive no-op in case it does.
+      if (message.includes(MIN_FEE_ERROR_HINT)) {
+        console.warn(`[escalation] min-fee error surfaced to outer catch job=${job.id} — ignoring, next tick will retry`);
+        results.push({
+          jobId: job.id,
+          routeId: job.routeId,
+          action: { type: "priority_fee", level: Math.min(level + 1, 3) as 1 | 2 | 3 },
+          success: false,
+          error: message,
+        });
+        continue;
       }
 
+      const isTerminal =
+        (message.includes("422") && message.includes(TERMINAL_ORDER_STATUS_HINT)) ||
+        message.startsWith("404:");
+      if (isTerminal) {
+        // Don't mark COMPLETED — fetch live status and branch. If the order
+        // actually failed, autoRetryDispatchJob will be invoked. If it
+        // actually progressed past ASSIGNING_DRIVER (missed webhook), sync
+        // the DB + Shopify tags.
+        const handled = await handleTerminalEscalationError({
+          job,
+          shop,
+          admin,
+          credentials,
+          prismaAny,
+          originalError: message,
+          elapsedMinutes,
+        });
+        results.push(handled);
+        continue;
+      }
+
+      // Other 422s (validation errors, etc.) — treat as transient, log and move on.
       results.push({
         jobId: job.id,
         routeId: job.routeId,
@@ -239,21 +439,17 @@ async function reorderJob(
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       const isTerminal =
-        message.includes("422") || message.startsWith("404:");
+        (message.includes("422") && message.includes(TERMINAL_ORDER_STATUS_HINT)) ||
+        message.startsWith("404:");
       if (isTerminal) {
-        // Order already moved past ASSIGNING_DRIVER on Lalamove's side.
-        // Mark it so we stop retrying every cron tick.
+        // Order already moved past ASSIGNING_DRIVER — re-request by delegating
+        // to autoRetryDispatchJob, which fetches the live Lalamove state and
+        // either syncs or retries. Previously this marked CANCELED and
+        // returned, leaving the watchdog safety net to eventually pick it up.
         console.warn(
-          `[escalation] cancel terminal → marking stale job=${job.id} error=${message}`,
+          `[escalation] cancel terminal job=${job.id} error=${message} → delegating to autoRetryDispatchJob`,
         );
-        await prismaAny.lalamoveDispatchJob.update({
-          where: { id: job.id },
-          data: { status: "CANCELED" },
-        }).catch((e: unknown) =>
-          console.error("[escalation] failed to mark stale", job.id, e),
-        );
-        result.error = `Cancel failed (terminal, marked stale): ${message}`;
-        return result;
+        return autoRetryDispatchJob(job, shop, admin);
       }
       // Transient failure — log and skip re-request
       console.error(
@@ -264,16 +460,26 @@ async function reorderJob(
     }
   }
 
-  // 2. Get route stops from PendingDeliveryRoute
-  const routeRecord = await prismaAny.pendingDeliveryRoute.findFirst({
-    where: { routeId: job.routeId, shop },
-  });
-  if (!routeRecord) {
-    result.error = "PendingDeliveryRoute not found for routeId: " + job.routeId;
+  // 2. Get route stops — prefer the dispatch job's own snapshot (set at create
+  // time) and fall back to PendingDeliveryRoute only for pre-migration jobs.
+  let ordersData: OrderStop[] | null = null;
+  if (Array.isArray(job.ordersData) && job.ordersData.length > 0) {
+    ordersData = job.ordersData as OrderStop[];
+  } else {
+    const routeRecord = await prismaAny.pendingDeliveryRoute.findFirst({
+      where: { routeId: job.routeId, shop },
+    });
+    if (routeRecord) {
+      ordersData = routeRecord.ordersData as OrderStop[];
+    }
+  }
+  if (!ordersData || ordersData.length === 0) {
+    result.error =
+      "No order stops available for reorder (job.ordersData empty and no PendingDeliveryRoute): " +
+      job.routeId;
     console.error(`[escalation] reorder FAILED job=${job.id} error=${result.error}`);
     return result;
   }
-  const ordersData = routeRecord.ordersData as OrderStop[];
 
   // 3. Get Lalamove config for this location
   const configRow = await prismaAny.lalamoveLocationConfig.findUnique({
@@ -294,6 +500,7 @@ async function reorderJob(
     pickupInstructions?: string;
     pickupLat?: number;
     pickupLng?: number;
+    city?: string | null;
   };
 
   // 4. Get pickup location coordinates from Shopify GraphQL
@@ -356,7 +563,19 @@ async function reorderJob(
     ...deliveryStops,
   ];
 
-  // 6. Create new quotation
+  // 6. Resolve configured special requests (e.g. WAITING_TIME_030MIN) for
+  // this shop + market + city so reorder preserves the merchant's preferences.
+  const specialRequests = await resolveConfiguredSpecialRequests(
+    shop,
+    {
+      market: job.market,
+      city: config.city ?? null,
+      preferredServiceType: config.preferredServiceType?.trim() || "LALAGO",
+    },
+    credentials,
+  );
+
+  // 7. Create new quotation
   let newQuotation;
   try {
     newQuotation = await createLalamoveQuotation(
@@ -366,6 +585,7 @@ async function reorderJob(
         serviceType: config.preferredServiceType?.trim() || "LALAGO",
         stops: quotationStops,
         isRouteOptimized: quotationStops.length >= 3,
+        ...(specialRequests.length > 0 ? { specialRequests } : {}),
       },
       credentials,
     );

@@ -400,3 +400,17 @@
   margin: 4px 0 0;
 }
 
+.checkboxToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.waitTimeOptions {
+  padding-left: 24px;
+  margin-bottom: 6px;
+}

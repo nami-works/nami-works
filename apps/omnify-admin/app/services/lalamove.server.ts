@@ -663,7 +663,6 @@ export const resolveSpecialRequestsForCity = async (
 
   try {
     const cities = await getLalamoveCityInfo(config.market, credentials);
-    const availableNames = new Set<string>();
     const locationCity = stripAccents(
       (config.city ?? "").trim().toLowerCase(),
     );
@@ -673,20 +672,41 @@ export const resolveSpecialRequestsForCity = async (
       `[lalamove] resolveSpecialRequests: market=${config.market} city=${locationCity || "?"} service=${serviceType ?? "?"} input=[${allRequests.join(", ")}]`,
     );
 
-    for (const city of cities) {
-      if (locationCity) {
-        const matchesLocode =
-          stripAccents(city.locode?.toLowerCase() ?? "") === locationCity;
-        const matchesName =
-          stripAccents(city.name?.trim().toLowerCase() ?? "") === locationCity;
-        if (!matchesLocode && !matchesName) continue;
-      }
-      for (const service of city.services ?? []) {
-        if (serviceType && service.key !== serviceType) continue;
-        for (const sr of service.specialRequests ?? []) {
-          availableNames.add(sr.name);
+    const collectAvailable = (
+      ignoreCity: boolean,
+    ): { availableNames: Set<string>; matchedCityCount: number } => {
+      const availableNames = new Set<string>();
+      let matchedCityCount = 0;
+      for (const city of cities) {
+        if (!ignoreCity && locationCity) {
+          const matchesLocode =
+            stripAccents(city.locode?.toLowerCase() ?? "") === locationCity;
+          const matchesName =
+            stripAccents(city.name?.trim().toLowerCase() ?? "") === locationCity;
+          if (!matchesLocode && !matchesName) continue;
+        }
+        matchedCityCount += 1;
+        for (const service of city.services ?? []) {
+          if (serviceType && service.key !== serviceType) continue;
+          for (const sr of service.specialRequests ?? []) {
+            availableNames.add(sr.name);
+          }
         }
       }
+      return { availableNames, matchedCityCount };
+    };
+
+    let { availableNames, matchedCityCount } = collectAvailable(false);
+
+    // Safety net: if the location's city does not match any city in /v3/cities,
+    // the first pass collects zero cities and every request would get filtered
+    // out. Treat that case the same as "no city set" — accept all requests from
+    // every city in the market. Matches the "one setting per market" intent.
+    if (locationCity && matchedCityCount === 0) {
+      console.warn(
+        `[lalamove] resolveSpecialRequests: city "${locationCity}" not found in /v3/cities response — falling back to market-wide list market=${config.market}`,
+      );
+      ({ availableNames } = collectAvailable(true));
     }
 
     const filtered = allRequests.filter((sr) => availableNames.has(sr));

@@ -39,6 +39,7 @@ import {
   checkAndApplyEscalations,
   type EscalationResult,
 } from "../services/lalamove-escalation.server";
+import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import styles from "./app.local-delivery/styles.module.css";
 
@@ -7641,10 +7642,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       carrierConfig?.lalamoveSecondaryServiceType || undefined;
     const maxPerRoute = carrierConfig?.lalamoveMaxOrdersPerRoute ?? 10;
 
-    // Resolve special requests for this city (filters out unavailable ones)
-    const savedSpecialRequests = carrierConfig?.lalamoveSpecialRequests?.[llmConfig.market] ?? [];
-    const resolvedSpecialRequests = await resolveSpecialRequestsForCity(
-      savedSpecialRequests, llmConfig, credentials,
+    // Resolve configured special requests for this shop+market+city.
+    const resolvedSpecialRequests = await resolveConfiguredSpecialRequests(
+      shop,
+      llmConfig,
+      credentials,
     );
 
     const result = await optimizeByVRP(
@@ -7803,10 +7805,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       "../services/carrier-quotation-optimizer.server"
     );
 
-    // Resolve special requests for this city
-    const savedAddRequests = carrierConfig?.lalamoveSpecialRequests?.[llmConfig.market] ?? [];
-    const resolvedAddRequests = await resolveSpecialRequestsForCity(
-      savedAddRequests, llmConfig, credentials,
+    // Resolve configured special requests for this shop+market+city.
+    const resolvedAddRequests = await resolveConfiguredSpecialRequests(
+      shop,
+      llmConfig,
+      credentials,
     );
 
     const result = await addToExistingRoutesByCarrierQuotation(
@@ -8781,7 +8784,14 @@ if (intent === "lalamove-place-order") {
               id
               name
               shippingAddress {
+                address1
                 address2
+                city
+                province
+                zip
+                country
+                latitude
+                longitude
                 phone
               }
               customer {
@@ -8798,7 +8808,17 @@ if (intent === "lalamove-place-order") {
     const orderNodes = (ordersJson?.data?.nodes ?? []) as Array<{
       id: string;
       name: string;
-      shippingAddress?: { address2?: string | null; phone?: string | null } | null;
+      shippingAddress?: {
+        address1?: string | null;
+        address2?: string | null;
+        city?: string | null;
+        province?: string | null;
+        zip?: string | null;
+        country?: string | null;
+        latitude?: number | null;
+        longitude?: number | null;
+        phone?: string | null;
+      } | null;
       customer?: {
         displayName?: string | null;
         phone?: string | null;
@@ -8962,6 +8982,59 @@ if (intent === "lalamove-place-order") {
       }
     }
 
+    // Build snapshot of order stops so escalation reorder can rebuild the
+    // quotation without depending on PendingDeliveryRoute (which manual
+    // dispatch does not write).
+    const orderedStopsSnapshot = assignmentOrderIds
+      .map((orderId) => {
+        const order = orderById.get(orderId);
+        if (!order) return null;
+        const addr = order.shippingAddress;
+        const lat = typeof addr?.latitude === "number" ? addr.latitude : null;
+        const lng = typeof addr?.longitude === "number" ? addr.longitude : null;
+        if (lat == null || lng == null) return null;
+        const composedAddress = [
+          addr?.address1,
+          addr?.city,
+          addr?.province,
+          addr?.zip,
+          addr?.country,
+        ]
+          .filter((part) => typeof part === "string" && part.trim())
+          .join(", ");
+        const phone = (() => {
+          const candidates = [
+            order.customer?.defaultPhoneNumber?.phoneNumber,
+            addr?.phone,
+            order.customer?.phone,
+          ];
+          for (const candidate of candidates) {
+            const normalized = normalizePhoneForMarket(
+              candidate,
+              configWithLocation.market,
+            );
+            if (normalized) return normalized;
+          }
+          return configWithLocation.locationPhone ?? "";
+        })();
+        return {
+          shopifyOrderId: orderId,
+          lat,
+          lng,
+          address: composedAddress,
+          name: order.customer?.displayName || order.name || "Customer",
+          phone,
+        };
+      })
+      .filter((stop): stop is {
+        shopifyOrderId: string;
+        lat: number;
+        lng: number;
+        address: string;
+        name: string;
+        phone: string;
+      } => stop !== null);
+
     const prismaAny = prisma as any;
     try {
       const dispatchJob = await prismaAny.lalamoveDispatchJob.create({
@@ -8976,6 +9049,10 @@ if (intent === "lalamove-place-order") {
           serviceType: configWithLocation.preferredServiceType,
           quotationTotal,
           quotationCurrency,
+          ordersData:
+            orderedStopsSnapshot.length === assignmentOrderIds.length
+              ? orderedStopsSnapshot
+              : null,
         },
       });
 

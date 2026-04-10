@@ -114,7 +114,16 @@
     "verify": "Verificar",
     "specialRequestsHeading": "Solicitações especiais",
     "specialRequestsLoading": "Carregando...",
-    "waitTime": "Tempo de espera"
+    "waitTime": "Tempo de espera",
+    "waitTimeOption": {
+      "15": "Até 15 minutos",
+      "30": "Até 30 minutos",
+      "45": "Até 45 minutos",
+      "60": "Até 1 hora",
+      "90": "Até 1 hora e 30 minutos",
+      "120": "Até 2 horas",
+      "generic": "Até {{minutes}} minutos"
+    }
   },
   "distanceMethod": {
     "radius": "Raio (km)",

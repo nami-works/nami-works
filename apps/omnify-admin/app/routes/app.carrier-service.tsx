@@ -457,9 +457,22 @@ const defaultZone = (): DistanceZone => ({
   useCarrierQuote: true,
 });
 
-const WAIT_TIME_PATTERN = /\d+\s*(min|h\b|hora)/i;
+const WAIT_TIME_KEY_PREFIX = "WAITING_TIME_";
 const THERMAL_BAG_PATTERN = /thermal.?bag/i;
 const RETURN_TRIP_PATTERN = /return.?trip/i;
+
+/**
+ * Parse a Lalamove wait-time special request key (e.g. "WAITING_TIME_030MIN")
+ * into its numeric duration so we can sort ascending and look up a clean i18n
+ * label instead of displaying Lalamove's mixed-language description.
+ */
+const parseWaitTimeKey = (name: string): { minutes: number } | null => {
+  const match = name.match(/^WAITING_TIME_0*(\d+)MIN$/);
+  if (!match) return null;
+  const minutes = Number(match[1]);
+  if (!Number.isFinite(minutes) || minutes <= 0) return null;
+  return { minutes };
+};
 
 export type CarrierServiceLoaderData = {
   shop: string;
@@ -1558,20 +1571,29 @@ export function CarrierServiceContent({
                       const thermalBagReqs = requests.filter((sr) =>
                         THERMAL_BAG_PATTERN.test(sr.description || sr.name),
                       );
-                      const waitTimeReqs = requests.filter((sr) =>
-                        WAIT_TIME_PATTERN.test(sr.description || sr.name),
-                      );
+                      // Group wait-time options by key prefix (not regex on the
+                      // description), so mixed-language labels like "1 hr" don't
+                      // fall through to `otherReqs`. Sort ascending by minutes.
+                      const waitTimeReqs = requests
+                        .map((sr) => {
+                          if (!sr.name.startsWith(WAIT_TIME_KEY_PREFIX)) return null;
+                          const parsed = parseWaitTimeKey(sr.name);
+                          if (!parsed) return null;
+                          return { sr, minutes: parsed.minutes };
+                        })
+                        .filter((x): x is { sr: typeof requests[number]; minutes: number } => x !== null)
+                        .sort((a, b) => a.minutes - b.minutes);
                       const returnTripReqs = requests.filter((sr) =>
                         RETURN_TRIP_PATTERN.test(sr.description || sr.name),
                       );
                       const otherReqs = requests.filter(
                         (sr) =>
                           !THERMAL_BAG_PATTERN.test(sr.description || sr.name) &&
-                          !WAIT_TIME_PATTERN.test(sr.description || sr.name) &&
+                          !sr.name.startsWith(WAIT_TIME_KEY_PREFIX) &&
                           !RETURN_TRIP_PATTERN.test(sr.description || sr.name),
                       );
                       const waitTimeEnabled = waitTimeReqs.some(
-                        (sr) => selectedSpecialRequests[market]?.has(sr.name),
+                        ({ sr }) => selectedSpecialRequests[market]?.has(sr.name),
                       );
                       const toggleSR = (srName: string, checked: boolean) => {
                         setSelectedSpecialRequests((prev) => {
@@ -1588,73 +1610,113 @@ export function CarrierServiceContent({
                           const next = { ...prev };
                           const set = new Set(prev[market] ?? []);
                           if (!checked) {
-                            waitTimeReqs.forEach((sr) => set.delete(sr.name));
+                            waitTimeReqs.forEach(({ sr }) => set.delete(sr.name));
                           }
                           next[market] = set;
                           return next;
                         });
+                      };
+                      const labelForWaitTime = (minutes: number): string => {
+                        // Try explicit i18n key first (e.g. 30 → "Até 30 minutos").
+                        // Fall back to the generic "Até X min" interpolation for
+                        // any Lalamove key we haven't listed explicitly.
+                        const key = `lalamoveModal.waitTimeOption.${minutes}`;
+                        const translated = t(key, { defaultValue: "" });
+                        if (translated) return translated;
+                        return t("lalamoveModal.waitTimeOption.generic", { minutes });
                       };
                       return (
                         <div key={market}>
                           {configuredMarkets.length > 1 && (
                             <p style={{ fontSize: 12, color: "#6d7175", marginBottom: 4 }}>{market}</p>
                           )}
-                          {thermalBagReqs.map((sr) => (
-                            <label key={sr.name} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, cursor: "pointer" }}>
-                              <input
-                                type="checkbox"
-                                checked={selectedSpecialRequests[market]?.has(sr.name) ?? false}
-                                onChange={(e) => toggleSR(sr.name, e.target.checked)}
-                              />
-                              <span style={{ fontSize: 13 }}>{sr.description || sr.name}</span>
-                            </label>
-                          ))}
+                          {thermalBagReqs.map((sr) => {
+                            const checked = selectedSpecialRequests[market]?.has(sr.name) ?? false;
+                            return (
+                              <div
+                                key={sr.name}
+                                className={styles.checkboxToggle}
+                                onClick={() => toggleSR(sr.name, !checked)}
+                                role="button"
+                              >
+                                <s-checkbox
+                                  checked={checked || undefined}
+                                  onChange={() => toggleSR(sr.name, !checked)}
+                                />
+                                {sr.description || sr.name}
+                              </div>
+                            );
+                          })}
                           {waitTimeReqs.length > 0 && (
                             <div>
-                              <label style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4, cursor: "pointer" }}>
-                                <input
-                                  type="checkbox"
-                                  checked={waitTimeEnabled}
-                                  onChange={(e) => toggleWaitTime(e.target.checked)}
+                              <div
+                                className={styles.checkboxToggle}
+                                onClick={() => toggleWaitTime(!waitTimeEnabled)}
+                                role="button"
+                              >
+                                <s-checkbox
+                                  checked={waitTimeEnabled || undefined}
+                                  onChange={() => toggleWaitTime(!waitTimeEnabled)}
                                 />
-                                <span style={{ fontSize: 13 }}>{t("lalamoveModal.waitTime")}</span>
-                              </label>
+                                {t("lalamoveModal.waitTime")}
+                              </div>
                               {waitTimeEnabled && (
-                                <div style={{ paddingLeft: 24, marginBottom: 6 }}>
-                                  {waitTimeReqs.map((sr) => (
-                                    <label key={sr.name} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4, cursor: "pointer" }}>
-                                      <input
-                                        type="checkbox"
-                                        checked={selectedSpecialRequests[market]?.has(sr.name) ?? false}
-                                        onChange={(e) => toggleSR(sr.name, e.target.checked)}
-                                      />
-                                      <span style={{ fontSize: 13 }}>{sr.description || sr.name}</span>
-                                    </label>
-                                  ))}
+                                <div className={styles.waitTimeOptions}>
+                                  {waitTimeReqs.map(({ sr, minutes }) => {
+                                    const checked = selectedSpecialRequests[market]?.has(sr.name) ?? false;
+                                    return (
+                                      <div
+                                        key={sr.name}
+                                        className={styles.checkboxToggle}
+                                        onClick={() => toggleSR(sr.name, !checked)}
+                                        role="button"
+                                      >
+                                        <s-checkbox
+                                          checked={checked || undefined}
+                                          onChange={() => toggleSR(sr.name, !checked)}
+                                        />
+                                        {labelForWaitTime(minutes)}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               )}
                             </div>
                           )}
-                          {returnTripReqs.map((sr) => (
-                            <label key={sr.name} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, cursor: "pointer" }}>
-                              <input
-                                type="checkbox"
-                                checked={selectedSpecialRequests[market]?.has(sr.name) ?? false}
-                                onChange={(e) => toggleSR(sr.name, e.target.checked)}
-                              />
-                              <span style={{ fontSize: 13 }}>{sr.description || sr.name}</span>
-                            </label>
-                          ))}
-                          {otherReqs.map((sr) => (
-                            <label key={sr.name} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, cursor: "pointer" }}>
-                              <input
-                                type="checkbox"
-                                checked={selectedSpecialRequests[market]?.has(sr.name) ?? false}
-                                onChange={(e) => toggleSR(sr.name, e.target.checked)}
-                              />
-                              <span style={{ fontSize: 13 }}>{sr.description || sr.name}</span>
-                            </label>
-                          ))}
+                          {returnTripReqs.map((sr) => {
+                            const checked = selectedSpecialRequests[market]?.has(sr.name) ?? false;
+                            return (
+                              <div
+                                key={sr.name}
+                                className={styles.checkboxToggle}
+                                onClick={() => toggleSR(sr.name, !checked)}
+                                role="button"
+                              >
+                                <s-checkbox
+                                  checked={checked || undefined}
+                                  onChange={() => toggleSR(sr.name, !checked)}
+                                />
+                                {sr.description || sr.name}
+                              </div>
+                            );
+                          })}
+                          {otherReqs.map((sr) => {
+                            const checked = selectedSpecialRequests[market]?.has(sr.name) ?? false;
+                            return (
+                              <div
+                                key={sr.name}
+                                className={styles.checkboxToggle}
+                                onClick={() => toggleSR(sr.name, !checked)}
+                                role="button"
+                              >
+                                <s-checkbox
+                                  checked={checked || undefined}
+                                  onChange={() => toggleSR(sr.name, !checked)}
+                                />
+                                {sr.description || sr.name}
+                              </div>
+                            );
+                          })}
                         </div>
                       );
                     })

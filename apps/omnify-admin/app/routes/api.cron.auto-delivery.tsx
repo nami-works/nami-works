@@ -12,6 +12,7 @@ import {
   normalizePhoneForMarket,
 } from "../services/lalamove.server";
 import { addTags } from "../services/lalamove-sync.server";
+import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
 
 const MAX_ROUTES = 20;
 const GQL_BATCH_SIZE = 10;
@@ -284,6 +285,18 @@ async function runAutoDispatch(
   const carrierConfig = carrierConfigRow?.data as { lalamovePreferredServiceType?: string } | undefined;
   const defaultServiceType = config.preferredServiceType?.trim() || carrierConfig?.lalamovePreferredServiceType?.trim() || "LALAGO";
 
+  // Resolve special requests once per shop+location so every route in this
+  // batch forwards the merchant's configured preferences (e.g. WAITING_TIME_030MIN).
+  const specialRequests = await resolveConfiguredSpecialRequests(
+    shop,
+    {
+      market: config.market,
+      city: config.city ?? null,
+      preferredServiceType: defaultServiceType,
+    },
+    credentials,
+  );
+
   let dispatchedCount = 0;
 
   for (const route of openRoutes) {
@@ -339,6 +352,7 @@ async function runAutoDispatch(
           serviceType: defaultServiceType,
           stops,
           isRouteOptimized: stops.length >= 3,
+          ...(specialRequests.length > 0 ? { specialRequests } : {}),
         },
         credentials,
       );
@@ -403,6 +417,19 @@ async function runAutoDispatch(
         credentials,
       );
 
+      // Build snapshot of order stops — reorder/escalation rebuilds the quotation from this.
+      const orderedStopsSnapshot = assignmentOrderIds.map((orderId) => {
+        const original = ordersData.find((o) => o.shopifyOrderId === orderId)!;
+        return {
+          shopifyOrderId: original.shopifyOrderId,
+          lat: original.lat,
+          lng: original.lng,
+          address: original.address,
+          name: original.name,
+          phone: original.phone,
+        };
+      });
+
       // Create DB records
       const dispatchJob = await prismaAny.lalamoveDispatchJob.create({
         data: {
@@ -417,6 +444,7 @@ async function runAutoDispatch(
           requestedBy: "auto-delivery-cron",
           quotationTotal: quotation.priceBreakdown?.total ?? null,
           quotationCurrency: quotation.priceBreakdown?.currency ?? null,
+          ordersData: orderedStopsSnapshot,
         },
       });
 

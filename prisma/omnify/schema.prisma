@@ -164,6 +164,9 @@ model LalamoveDispatchJob {
   shopifyFulfillmentId String?               // Shopify fulfillment GID created at dispatch time
   retryCount        Int      @default(0)     // number of auto-retry attempts
   lastRetryAt       DateTime?                // timestamp of last auto-retry
+  /// Snapshot of order stops at dispatch time so escalation reorder does not depend on PendingDeliveryRoute.
+  /// Shape: Array<{ shopifyOrderId: string; lat: number; lng: number; address: string; name: string; phone: string }>
+  ordersData        Json?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
