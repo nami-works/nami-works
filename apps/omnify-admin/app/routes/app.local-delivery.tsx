@@ -219,7 +219,6 @@ export default function Index() {
   const unassignFetcher = useFetcher();
   const pendingRouteFetcher = useFetcher<typeof action>();
   const updateRoutesFetcher = useFetcher<typeof action>();
-  const splitRoutesFetcher = useFetcher<typeof action>();
   const revalidator = useRevalidator();
   const trackingFetcher = useFetcher<typeof action>();
   const trackingRouteRef = useRef<string | null>(null);
@@ -271,7 +270,6 @@ export default function Index() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isRouteManagerVisible, setIsRouteManagerVisible] = useState(false);
   const [isAccuracyCollapsed, setIsAccuracyCollapsed] = useState(false);
-  const [hasSplitCandidates, setHasSplitCandidates] = useState(false);
   const [settingsLocationId, setSettingsLocationId] = useState<string>("");
   const [lalamoveSettings, setLalamoveSettings] = useState<LalamoveConfig>(() => {
     return (
@@ -986,9 +984,6 @@ export default function Index() {
     if (optimizeFetcher.data.summary) {
       setOptimizerSummary(optimizeFetcher.data.summary as typeof optimizerSummary);
     }
-    if ("hasSplitCandidates" in optimizeFetcher.data) {
-      setHasSplitCandidates(Boolean(optimizeFetcher.data.hasSplitCandidates));
-    }
     const routeCountMsg = `${summary?.routeCount ?? 0} routes`;
     const costMsg = summary?.costTotal
       ? ` · ${summary.costCurrency ?? "BRL"} ${summary.costTotal}`
@@ -1032,41 +1027,6 @@ export default function Index() {
       });
     }
   }, [optimizeFetcher.data]);
-
-  // ── Split routes result ──
-  useEffect(() => {
-    if (!splitRoutesFetcher.data) return;
-    if ("error" in splitRoutesFetcher.data && !("splitRoutes" in splitRoutesFetcher.data)) {
-      setAssignmentSuccessMessage(String((splitRoutesFetcher.data as any).error ?? "Split failed"));
-      return;
-    }
-    if (!("splitRoutes" in splitRoutesFetcher.data)) return;
-    const splitRoutes = (splitRoutesFetcher.data as any).splitRoutes as Array<{
-      routeIndex: number;
-      locationId: string;
-      orderIds: string[];
-      polyline: string;
-    }>;
-    if (!splitRoutes?.length) return;
-
-    setEditableRoutes((current) =>
-      current.map((route, index) => {
-        const split = splitRoutes.find((item) => item.routeIndex === index);
-        if (!split) return { ...route, orderIds: [] };
-        return {
-          ...route,
-          locationId: split.locationId,
-          orderIds: split.orderIds,
-          polyline: split.polyline,
-        };
-      }),
-    );
-
-    setHasSplitCandidates(false);
-    const activeCount = splitRoutes.filter((r) => r.orderIds.length > 0).length;
-    setAssignmentSuccessMessage(`Routes split: ${activeCount} routes`);
-  }, [splitRoutesFetcher.data]);
-
 
   useEffect(() => {
     if (!lalamoveSettingsFetcher.data) return;
@@ -2916,7 +2876,7 @@ export default function Index() {
 
   // True when auto-assign or route-update fetchers are in flight — used to
   // disable buttons that could cause conflicts during routing operations.
-  const isRoutingBusy = optimizeFetcher.state !== "idle" || updateRoutesFetcher.state !== "idle" || splitRoutesFetcher.state !== "idle";
+  const isRoutingBusy = optimizeFetcher.state !== "idle" || updateRoutesFetcher.state !== "idle";
 
   const selectedOrderLocationIds = useMemo(() => {
     const ids = new Set<string>();
@@ -3202,44 +3162,6 @@ export default function Index() {
     formData.append("routesPayload", JSON.stringify(routesPayload));
     formData.append("locationId", locationId);
     updateRoutesFetcher.submit(formData, { method: "post" });
-  };
-
-  const handleSplitRoutes = () => {
-    const routesWithOrders = editableRoutes
-      .map((r, index) => ({
-        routeIndex: index,
-        locationId: r.locationId,
-        orderIds: r.orderIds,
-      }))
-      .filter((r) => r.orderIds.length > 0);
-    if (routesWithOrders.length === 0) return;
-
-    const assignedOrders: Array<{
-      orderId: string;
-      locationId: string;
-      shippingCoordinates: { latitude: number; longitude: number };
-      locationCoordinates: { latitude: number; longitude: number };
-    }> = [];
-    for (const route of routesWithOrders) {
-      for (const orderId of route.orderIds) {
-        const order = ordersById.get(orderId);
-        if (order?.shippingCoordinates && order?.fulfillmentLocation?.coordinates) {
-          assignedOrders.push({
-            orderId: order.id,
-            locationId: order.fulfillmentLocation.id,
-            shippingCoordinates: order.shippingCoordinates,
-            locationCoordinates: order.fulfillmentLocation.coordinates,
-          });
-        }
-      }
-    }
-    if (assignedOrders.length === 0) return;
-
-    const formData = new FormData();
-    formData.append("intent", "split-routes");
-    formData.append("ordersPayload", JSON.stringify(assignedOrders));
-    formData.append("routesPayload", JSON.stringify(routesWithOrders));
-    splitRoutesFetcher.submit(formData, { method: "post" });
   };
 
   const handleAddToBestRoute = () => {
@@ -4950,12 +4872,6 @@ export default function Index() {
                                 </s-button>
                               ) : null}
                               <s-button
-                                disabled={!hasSplitCandidates || isRoutingBusy}
-                                onClick={handleSplitRoutes}
-                              >
-                                {t("routeManager.splitRoutes")}
-                              </s-button>
-                              <s-button
                                 icon="refresh"
                                 disabled={dirtyRouteIds.size === 0 || isRoutingBusy}
                                 onClick={handleUpdateRoutes}
@@ -5345,12 +5261,6 @@ export default function Index() {
                         {t("routeManager.autoAssign")}
                       </s-button>
                     ) : null}
-                    <s-button
-                      disabled={!hasSplitCandidates || isRoutingBusy}
-                      onClick={handleSplitRoutes}
-                    >
-                      {t("routeManager.splitRoutes")}
-                    </s-button>
                     <s-button
                       icon="refresh"
                       disabled={dirtyRouteIds.size === 0 || isRoutingBusy}
@@ -7700,7 +7610,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     console.info(`[local-delivery] optimize-fleet OK routes=${result.summary.routeCount} orders=${result.summary.totalOrders}`);
     return {
       ok: true,
-      hasSplitCandidates: result.hasSplitCandidates,
       optimizedRoutes: result.routes.map((r) => ({
         routeIndex: r.routeIndex,
         locationId: r.locationId,
@@ -7719,132 +7628,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         totalLalamoveCost: result.summary.totalLalamoveCost,
         totalWaitSurcharge: result.summary.totalWaitSurcharge,
       },
-    };
-  }
-
-  if (intent === "split-routes") {
-    console.info(`[local-delivery] split-routes START shop=${shop}`);
-    const ordersPayload = formData.get("ordersPayload");
-    const routesPayload = formData.get("routesPayload");
-    if (typeof ordersPayload !== "string" || !ordersPayload.trim() ||
-        typeof routesPayload !== "string" || !routesPayload.trim()) {
-      return { ok: false, error: "Missing payload for split-routes." };
-    }
-
-    let ordersInput: OptimizerOrderInput[] = [];
-    let currentRoutes: Array<{ routeIndex: number; locationId: string; orderIds: string[] }> = [];
-    try {
-      ordersInput = JSON.parse(ordersPayload) as OptimizerOrderInput[];
-      currentRoutes = JSON.parse(routesPayload) as Array<{ routeIndex: number; locationId: string; orderIds: string[] }>;
-    } catch {
-      return { ok: false, error: "Invalid split-routes payload." };
-    }
-
-    const validOrders = ordersInput.filter(
-      (o) =>
-        o?.orderId &&
-        o?.locationId &&
-        Number.isFinite(o?.shippingCoordinates?.latitude) &&
-        Number.isFinite(o?.shippingCoordinates?.longitude) &&
-        Number.isFinite(o?.locationCoordinates?.latitude) &&
-        Number.isFinite(o?.locationCoordinates?.longitude),
-    );
-    if (validOrders.length === 0) {
-      return { ok: false, error: "No valid orders for splitting." };
-    }
-
-    const primaryLocationId = validOrders[0]?.locationId;
-    if (!primaryLocationId) {
-      return { ok: false, error: "No valid location for split-routes." };
-    }
-
-    const locConfigRow = await prisma.lalamoveLocationConfig.findUnique({
-      where: { shop_locationId: { shop, locationId: primaryLocationId } },
-    });
-    if (!locConfigRow) {
-      return { ok: false, error: "Missing Lalamove location settings." };
-    }
-    const llmConfig = locConfigRow.data as import("../services/carrier/lalamove-adapter.server").LalamoveConfig;
-
-    const credentials = await getRuntimeCredentialsForShop(shop);
-    if (!credentials) {
-      return { ok: false, error: "Missing Lalamove credentials." };
-    }
-
-    const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() || "";
-    if (!mapsApiKey) {
-      return { ok: false, error: "GOOGLE_MAPS_API_KEY is missing." };
-    }
-
-    const carrierConfigRow = await prisma.carrierServiceConfig.findUnique({ where: { shop } });
-    const carrierConfig = carrierConfigRow?.data as CarrierServiceConfigData | undefined;
-    const primaryVehicle = carrierConfig?.lalamovePreferredServiceType || llmConfig.preferredServiceType || "LALAGO";
-    const secondaryVehicle = carrierConfig?.lalamoveSecondaryServiceType || undefined;
-
-    const { splitRoutesByDepotDistance } = await import(
-      "../services/carrier-quotation-optimizer.server"
-    );
-
-    // Resolve special requests for this city
-    const savedSplitRequests = carrierConfig?.lalamoveSpecialRequests?.[llmConfig.market] ?? [];
-    const resolvedSplitRequests = await resolveSpecialRequestsForCity(
-      savedSplitRequests, llmConfig, credentials,
-    );
-
-    const result = await splitRoutesByDepotDistance(
-      validOrders,
-      currentRoutes,
-      llmConfig,
-      credentials,
-      mapsApiKey,
-      shop,
-      { primary: primaryVehicle, secondary: secondaryVehicle },
-      resolvedSplitRequests,
-    );
-    if (!result.ok) {
-      return { ok: false, error: result.error };
-    }
-
-    // Re-tag orders with new route assignments
-    const allRouteTags = ROUTE_TAG_DEFINITIONS.map((d) => d.tag);
-    const allOrderIds = result.routes.flatMap((r) => r.orderIds);
-    await batchProcess(allOrderIds, GQL_BATCH_SIZE, (orderId) =>
-      admin.graphql(
-        `#graphql
-          mutation RemoveOrderTag($id: ID!, $tags: [String!]!) {
-            tagsRemove(id: $id, tags: $tags) {
-              userErrors { message }
-            }
-          }`,
-        { variables: { id: orderId, tags: allRouteTags } },
-      ),
-    );
-    const tagAssignments = result.routes.flatMap((route) => {
-      const tag = ROUTE_TAG_DEFINITIONS[route.routeIndex]?.tag;
-      return tag ? route.orderIds.map((orderId) => ({ orderId, tag })) : [];
-    });
-    await batchProcess(tagAssignments, GQL_BATCH_SIZE, ({ orderId, tag }) =>
-      admin.graphql(
-        `#graphql
-          mutation AddOrderTag($id: ID!, $tags: [String!]!) {
-            tagsAdd(id: $id, tags: $tags) {
-              userErrors { message }
-            }
-          }`,
-        { variables: { id: orderId, tags: [tag] } },
-      ),
-    );
-
-    console.info(`[local-delivery] split-routes OK routes=${result.summary.routeCount} orders=${result.summary.totalOrders}`);
-    return {
-      ok: true,
-      splitRoutes: result.routes.map((r) => ({
-        routeIndex: r.routeIndex,
-        locationId: r.locationId,
-        orderIds: r.orderIds,
-        polyline: r.corridorPolyline,
-      })),
-      summary: result.summary,
     };
   }
 

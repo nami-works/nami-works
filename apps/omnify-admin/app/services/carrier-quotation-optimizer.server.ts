@@ -80,9 +80,6 @@ const PROXIMITY_MERGE_METERS = 1000;
 /** 2-opt improvement: max passes before stopping (safety net; converges in <10). */
 const TWO_OPT_MAX_ITERATIONS = 100;
 
-/** Gap-based splitting: split at gaps exceeding K × median consecutive distance. */
-const GAP_SPLIT_MULTIPLIER = 5.0;
-
 /** Maximum delivery stops per route (hard cap applied after depot-distance splitting). */
 const MAX_STOPS_PER_ROUTE = 7;
 
@@ -1168,68 +1165,6 @@ function twoOptImprove(tour: number[], matrix: DistanceMatrix): number[] {
   return tour;
 }
 
-/**
- * Splits a TSP tour into route segments at disproportionate gaps.
- * Gap threshold = GAP_SPLIT_MULTIPLIER × median(consecutive distances).
- * Recursively sub-splits segments exceeding maxPerSegment at their largest gap.
- */
-function splitTourByGaps(
-  tour: number[],
-  matrix: DistanceMatrix,
-  maxPerSegment: number,
-): number[][] {
-  if (tour.length <= 1) return [tour];
-
-  // Compute consecutive gaps (between order stops, not depot)
-  const gaps: number[] = [];
-  for (let k = 0; k < tour.length - 1; k += 1) {
-    gaps.push(matrix[tour[k]!]?.[tour[k + 1]!] ?? 0);
-  }
-
-  if (gaps.length === 0) return [tour];
-
-  // Compute median
-  const sorted = [...gaps].sort((a, b) => a - b);
-  const median = sorted[Math.floor(sorted.length / 2)]!;
-  const threshold = GAP_SPLIT_MULTIPLIER * median;
-
-  // Find split points (indices in the tour where we cut AFTER tour[k])
-  const splitAfter: number[] = [];
-  for (let k = 0; k < gaps.length; k += 1) {
-    if (gaps[k]! > threshold) {
-      splitAfter.push(k);
-    }
-  }
-
-  // Build segments
-  let segments: number[][];
-  if (splitAfter.length === 0) {
-    segments = [tour];
-  } else {
-    segments = [];
-    let prev = 0;
-    for (const splitIdx of splitAfter) {
-      segments.push(tour.slice(prev, splitIdx + 1));
-      prev = splitIdx + 1;
-    }
-    if (prev < tour.length) {
-      segments.push(tour.slice(prev));
-    }
-  }
-
-  // Recursive sub-split for oversized segments
-  const result: number[][] = [];
-  for (const segment of segments) {
-    if (segment.length <= maxPerSegment) {
-      result.push(segment);
-    } else {
-      result.push(...recursiveSubSplit(segment, matrix, maxPerSegment));
-    }
-  }
-
-  return result.filter((s) => s.length > 0);
-}
-
 /** Recursively splits an oversized segment at its largest internal gap. */
 function recursiveSubSplit(
   segment: number[],
@@ -1258,239 +1193,6 @@ function recursiveSubSplit(
   ];
 }
 
-/**
- * Lightweight detection: checks if any route has a consecutive gap exceeding
- * the depot-to-next-stop distance, with both halves >= 2 stops.
- * No API calls — pure distance comparison.
- */
-function detectSplitCandidates(segments: number[][], matrix: DistanceMatrix): boolean {
-  for (const segment of segments) {
-    if (segment.length < 2 * MIN_ORDERS_PER_ROUTE) continue;
-    for (let k = 0; k < segment.length - 1; k += 1) {
-      const gap = matrix[segment[k]!]?.[segment[k + 1]!] ?? 0;
-      const depotToB = matrix[0]?.[segment[k + 1]!] ?? 0;
-      if (gap > depotToB) {
-        const leftLen = k + 1;
-        const rightLen = segment.length - k - 1;
-        if (leftLen >= MIN_ORDERS_PER_ROUTE && rightLen >= MIN_ORDERS_PER_ROUTE) return true;
-      }
-    }
-  }
-  return false;
-}
-
-// ─── Phase 1: Depot-Distance Splitting with Economic Validation ──────────────
-
-/**
- * Splits a TSP tour into segments at points where the consecutive gap exceeds
- * the depot-to-next-stop distance, validated by Lalamove cost comparison.
- *
- * For each candidate split point (gap > depot distance, both halves ≥ 2 stops),
- * quotes both scenarios (without special requests, to compare base route costs)
- * and only commits the split if it's cheaper.
- * Processes greedily: largest gap first, re-evaluating after each committed split.
- */
-async function splitTourByDepotDistance(
-  tour: number[],
-  matrix: DistanceMatrix,
-  config: LalamoveConfig,
-  credentials: LalamoveCredentials,
-  serviceType: string,
-  rateLimiter: RateLimiter,
-  phase1Orders: OptimizerOrderInput[],
-): Promise<number[][]> {
-  if (tour.length <= 1) return [tour];
-
-  let segments: number[][] = [tour];
-  let changed = true;
-
-  while (changed) {
-    changed = false;
-    const nextSegments: number[][] = [];
-
-    for (const segment of segments) {
-      const splitResult = await trySplitSegmentByDepot(
-        segment,
-        matrix,
-        config,
-        credentials,
-        serviceType,
-        rateLimiter,
-        phase1Orders,
-      );
-      if (splitResult) {
-        nextSegments.push(...splitResult);
-        changed = true;
-      } else {
-        nextSegments.push(segment);
-      }
-    }
-    segments = nextSegments;
-  }
-
-  return segments;
-}
-
-/**
- * Attempts to split a single segment at the best depot-distance candidate.
- * Returns [left, right] if a split is economically justified, or null.
- */
-async function trySplitSegmentByDepot(
-  segment: number[],
-  matrix: DistanceMatrix,
-  config: LalamoveConfig,
-  credentials: LalamoveCredentials,
-  serviceType: string,
-  rateLimiter: RateLimiter,
-  phase1Orders: OptimizerOrderInput[],
-): Promise<[number[], number[]] | null> {
-  if (segment.length < 2 * MIN_ORDERS_PER_ROUTE) return null;
-
-  // 1. Identify candidate split points
-  type Candidate = { index: number; gap: number };
-  const candidates: Candidate[] = [];
-
-  for (let k = 0; k < segment.length - 1; k += 1) {
-    const a = segment[k]!;
-    const b = segment[k + 1]!;
-    const gap = matrix[a]?.[b] ?? 0;
-    const depotToB = matrix[0]?.[b] ?? 0;
-
-    if (gap > depotToB) {
-      const leftLen = k + 1;
-      const rightLen = segment.length - k - 1;
-      if (leftLen >= MIN_ORDERS_PER_ROUTE && rightLen >= MIN_ORDERS_PER_ROUTE) {
-        candidates.push({ index: k, gap });
-      }
-    }
-  }
-
-  if (candidates.length === 0) return null;
-
-  // 2. Sort by largest gap first (greedy — try most impactful split first)
-  candidates.sort((a, b) => b.gap - a.gap);
-
-  // 3. Validate economically: quote unsplit vs. split
-  for (const candidate of candidates) {
-    const left = segment.slice(0, candidate.index + 1);
-    const right = segment.slice(candidate.index + 1);
-
-    const unsplitOrders = segment.map((idx) => phase1Orders[idx - 1]!);
-    const leftOrders = left.map((idx) => phase1Orders[idx - 1]!);
-    const rightOrders = right.map((idx) => phase1Orders[idx - 1]!);
-
-    // Quote without special requests — compare base route costs only
-    const [unsplitQuote, leftQuote, rightQuote] = await Promise.all([
-      quoteCluster(unsplitOrders, config, serviceType, credentials, rateLimiter),
-      quoteCluster(leftOrders, config, serviceType, credentials, rateLimiter),
-      quoteCluster(rightOrders, config, serviceType, credentials, rateLimiter),
-    ]);
-
-    if (!unsplitQuote || !leftQuote || !rightQuote) continue;
-
-    if (leftQuote.costSubunits + rightQuote.costSubunits < unsplitQuote.costSubunits) {
-      console.info(
-        `[vrp-optimizer] depot-split: segment(${segment.length}) → [${left.length}, ${right.length}], ` +
-          `unsplit=${unsplitQuote.costSubunits} vs split=${leftQuote.costSubunits}+${rightQuote.costSubunits} ` +
-          `saving=${unsplitQuote.costSubunits - (leftQuote.costSubunits + rightQuote.costSubunits)} subunits`,
-      );
-      return [left, right];
-    } else {
-      console.info(
-        `[vrp-optimizer] depot-split SKIP: segment(${segment.length}) at [${left.length}, ${right.length}], ` +
-          `unsplit=${unsplitQuote.costSubunits} ≤ split=${leftQuote.costSubunits}+${rightQuote.costSubunits}`,
-      );
-    }
-  }
-
-  return null;
-}
-
-// ─── Clarke-Wright Savings Algorithm (deprecated) ────────────────────────────
-
-/**
- * @deprecated Replaced by tspNearestNeighbor + twoOptImprove + splitTourByGaps.
- * Kept for one release cycle for easy rollback.
- *
- * Classic VRP heuristic: compute savings for all order pairs, then greedily merge.
- * Operates on 1-based order indices (0 = depot in the distance matrix).
- * Returns arrays of 1-based order indices grouped by route.
- */
-function clarkeWrightSavings(
-  matrix: DistanceMatrix,
-  orderCount: number,
-  maxPerRoute: number,
-): number[][] {
-  const DEPOT = 0;
-
-  // Step 1: Compute savings for all pairs
-  const savings: Array<{ i: number; j: number; saving: number }> = [];
-  for (let i = 1; i <= orderCount; i += 1) {
-    for (let j = i + 1; j <= orderCount; j += 1) {
-      const saving = matrix[DEPOT]![i]! + matrix[DEPOT]![j]! - matrix[i]![j]!;
-      if (saving > 0) {
-        savings.push({ i, j, saving });
-      }
-    }
-  }
-
-  // Step 2: Sort by savings descending
-  savings.sort((a, b) => b.saving - a.saving);
-
-  // Step 3: Initialize — each order is its own route
-  const routeOf = new Array<number>(orderCount + 1).fill(-1);
-  const routes: number[][] = [];
-  for (let i = 1; i <= orderCount; i += 1) {
-    routeOf[i] = routes.length;
-    routes.push([i]);
-  }
-
-  // Step 4: Merge greedily
-  let mergeCount = 0;
-  for (const { i, j } of savings) {
-    const ri = routeOf[i]!;
-    const rj = routeOf[j]!;
-    if (ri === rj) continue; // already same route
-
-    const routeI = routes[ri]!;
-    const routeJ = routes[rj]!;
-    if (routeI.length === 0 || routeJ.length === 0) continue; // absorbed
-    if (routeI.length + routeJ.length > maxPerRoute) continue; // capacity
-
-    // Check endpoints — only merge at route ends, not interior nodes
-    const iIsFirst = routeI[0] === i;
-    const iIsLast = routeI[routeI.length - 1] === i;
-    const jIsFirst = routeJ[0] === j;
-    const jIsLast = routeJ[routeJ.length - 1] === j;
-
-    if (!iIsFirst && !iIsLast) continue;
-    if (!jIsFirst && !jIsLast) continue;
-
-    // Determine merge orientation
-    let merged: number[];
-    if (iIsLast && jIsFirst) {
-      merged = [...routeI, ...routeJ];
-    } else if (jIsLast && iIsFirst) {
-      merged = [...routeJ, ...routeI];
-    } else if (iIsLast && jIsLast) {
-      merged = [...routeI, ...routeJ.slice().reverse()];
-    } else {
-      merged = [...routeI.slice().reverse(), ...routeJ];
-    }
-
-    // Apply merge
-    routes[ri] = merged;
-    routes[rj] = [];
-    for (const idx of merged) {
-      routeOf[idx] = ri;
-    }
-    mergeCount += 1;
-  }
-
-  console.info(`[vrp-optimizer] Clarke-Wright: ${savings.length} pairs, ${mergeCount} merges`);
-  return routes.filter((r) => r.length > 0);
-}
-
 // ─── VRP Result Types ─────────────────────────────────────────────────────────
 
 /** Result type including polylines for map rendering. */
@@ -1502,7 +1204,6 @@ export type VRPQuotationResult =
   | {
       ok: true;
       routes: VRPRouteResult[];
-      hasSplitCandidates: boolean;
       summary: {
         routeCount: number;
         totalOrders: number;
@@ -1803,22 +1504,20 @@ export async function optimizeByVRP(
   const improvedTour = twoOptImprove(rawTour, matrix);
   console.info(`[vrp-optimizer] Phase 2a: TSP tour length=${improvedTour.length}`);
 
-  // ── Phase 2b: Max-stop enforcement + split candidate detection ──────────
+  // ── Phase 2b: Max-stop enforcement ──────────────────────────────────────
   const initialRoutes: number[][] = [];
   if (improvedTour.length > MAX_STOPS_PER_ROUTE) {
     initialRoutes.push(...recursiveSubSplit(improvedTour, matrix, MAX_STOPS_PER_ROUTE));
   } else {
     initialRoutes.push(improvedTour);
   }
-  const hasSplitCandidates = detectSplitCandidates(initialRoutes, matrix);
-  const finalSplitRoutes = initialRoutes;
   console.info(
-    `[vrp-optimizer] Phase 2b: ${finalSplitRoutes.length} routes, splitCandidates=${hasSplitCandidates}`,
-    finalSplitRoutes.map((r) => r.length),
+    `[vrp-optimizer] Phase 2b: ${initialRoutes.length} routes`,
+    initialRoutes.map((r) => r.length),
   );
 
   // Convert 1-based matrix indices back to OptimizerOrderInput arrays
-  let clusters: OptimizerOrderInput[][] = finalSplitRoutes.map((route) =>
+  let clusters: OptimizerOrderInput[][] = initialRoutes.map((route) =>
     route.map((idx) => phase1Orders[idx - 1]!),
   );
 
@@ -2176,150 +1875,6 @@ export async function optimizeByVRP(
   return {
     ok: true,
     routes,
-    hasSplitCandidates,
-    summary: {
-      routeCount: routes.length,
-      totalOrders: routes.reduce((sum, r) => sum + r.orderIds.length, 0),
-      totalCost: (totalCostSubunits / 100).toFixed(2),
-      costCurrency: currency,
-      totalLalamoveCost: (rawLalamoveCostSubunits / 100).toFixed(2),
-      totalWaitSurcharge: (totalWaitSurchargeSubunits / 100).toFixed(2),
-    },
-  };
-}
-
-// ─── User-Triggered Route Splitting ────────────────────────────────────────
-
-/**
- * Performs depot-distance splitting on existing routes with economic validation.
- * Called when the user clicks "Split routes" — not during automatic optimization.
- */
-export async function splitRoutesByDepotDistance(
-  orders: OptimizerOrderInput[],
-  currentRoutes: Array<{ routeIndex: number; locationId: string; orderIds: string[] }>,
-  config: LalamoveConfig,
-  credentials: LalamoveCredentials,
-  googleApiKey: string,
-  shop: string,
-  vehicleOptions: { primary: string; secondary?: string },
-  specialRequests?: string[],
-): Promise<VRPQuotationResult> {
-  if (orders.length === 0 || currentRoutes.length === 0) {
-    return { ok: false, error: "No orders or routes to split." };
-  }
-  if (config.pickupLat == null || config.pickupLng == null) {
-    return { ok: false, error: "Pickup coordinates missing." };
-  }
-
-  const depot: Coordinate = { latitude: config.pickupLat, longitude: config.pickupLng };
-  const orderById = new Map(orders.map((o) => [o.orderId, o]));
-  const rateLimiter = new RateLimiter();
-  const vehicleTypes = [vehicleOptions.primary];
-  if (vehicleOptions.secondary && vehicleOptions.secondary !== vehicleOptions.primary) {
-    vehicleTypes.push(vehicleOptions.secondary);
-  }
-
-  // Collect all unique orders across routes
-  const allOrders: OptimizerOrderInput[] = [];
-  const seen = new Set<string>();
-  for (const route of currentRoutes) {
-    for (const id of route.orderIds) {
-      if (!seen.has(id)) {
-        const o = orderById.get(id);
-        if (o) { allOrders.push(o); seen.add(id); }
-      }
-    }
-  }
-  if (allOrders.length === 0) return { ok: false, error: "No valid orders found." };
-
-  console.info(`[vrp-optimizer:split] START orders=${allOrders.length} routes=${currentRoutes.length}`);
-
-  // Build distance matrix
-  const points: Coordinate[] = [depot, ...allOrders.map((o) => o.shippingCoordinates)];
-  let matrix: DistanceMatrix;
-  try {
-    matrix = await fetchFullDistanceMatrix(googleApiKey, points);
-  } catch {
-    matrix = points.map((_, i) => points.map((_, j) => haversineMeters(points[i]!, points[j]!)));
-  }
-
-  // Build orderId → 1-based matrix index
-  const orderIndexMap = new Map<string, number>();
-  allOrders.forEach((o, i) => orderIndexMap.set(o.orderId, i + 1));
-
-  // Split each route
-  const allSegments: number[][] = [];
-  for (const route of currentRoutes) {
-    const tour = route.orderIds.map((id) => orderIndexMap.get(id) ?? 0).filter((idx) => idx > 0);
-    if (tour.length === 0) continue;
-
-    // Run depot-distance splitting with economic validation
-    const splitResult = await splitTourByDepotDistance(
-      tour, matrix, config, credentials, vehicleTypes[0]!, rateLimiter, allOrders,
-    );
-
-    // Enforce max stops
-    for (const seg of splitResult) {
-      if (seg.length > MAX_STOPS_PER_ROUTE) {
-        allSegments.push(...recursiveSubSplit(seg, matrix, MAX_STOPS_PER_ROUTE));
-      } else {
-        allSegments.push(seg);
-      }
-    }
-  }
-
-  console.info(`[vrp-optimizer:split] ${currentRoutes.length} → ${allSegments.length} routes`);
-
-  // Quote each route, pick cheapest vehicle
-  const routes: VRPRouteResult[] = [];
-  for (let i = 0; i < allSegments.length; i += 1) {
-    const seg = allSegments[i]!;
-    const cluster = seg.map((idx) => allOrders[idx - 1]!);
-    const locationId = cluster[0]?.locationId ?? "";
-
-    let bestQuote: { costSubunits: number; costTotal: string; costCurrency: string; serviceType: string } | null = null;
-    for (const serviceType of vehicleTypes) {
-      const q = await quoteCluster(cluster, config, serviceType, credentials, rateLimiter, specialRequests);
-      if (q && (bestQuote === null || q.costSubunits < bestQuote.costSubunits)) {
-        bestQuote = { ...q, serviceType };
-      }
-    }
-
-    // Compute polyline
-    let polyline = "";
-    try {
-      const { computeRoutePolyline } = await import("./google-routes-shared.server");
-      const result = await computeRoutePolyline(googleApiKey, depot, cluster);
-      polyline = result.polyline;
-    } catch {
-      // Non-blocking
-    }
-
-    routes.push({
-      routeIndex: i,
-      locationId,
-      orderIds: cluster.map((o) => o.orderId),
-      costTotal: bestQuote?.costTotal ?? "0",
-      costCurrency: bestQuote?.costCurrency ?? "BRL",
-      serviceType: bestQuote?.serviceType ?? vehicleTypes[0]!,
-      costSubunits: bestQuote?.costSubunits ?? 0,
-      waitSurchargeSubunits: WAIT_SURCHARGE_SUBUNITS,
-      corridorPolyline: polyline,
-    });
-  }
-
-  // Build summary
-  const rawLalamoveCostSubunits = routes.reduce((sum, r) => sum + r.costSubunits, 0);
-  const totalWaitSurchargeSubunits = routes.length * WAIT_SURCHARGE_SUBUNITS;
-  const totalCostSubunits = rawLalamoveCostSubunits + totalWaitSurchargeSubunits;
-  const currency = routes[0]?.costCurrency ?? "BRL";
-
-  console.info(`[vrp-optimizer:split] OK routes=${routes.length} cost=${currency} ${(totalCostSubunits / 100).toFixed(2)}`);
-
-  return {
-    ok: true,
-    routes,
-    hasSplitCandidates: false,
     summary: {
       routeCount: routes.length,
       totalOrders: routes.reduce((sum, r) => sum + r.orderIds.length, 0),

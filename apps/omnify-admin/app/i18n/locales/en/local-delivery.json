@@ -80,7 +80,6 @@
     "assignToRoute": "Assign to route",
     "newRoute": "New route",
     "route": "Route {{number}}",
-    "splitRoutes": "Split routes",
     "autoAssignAccuracy": "Auto-assign accuracy",
     "accurateOf": "{{accurate}} of {{total}} orders accurately assigned",
     "last30Days": "Last 30 days \u00b7 {{count}} optimization(s)",
