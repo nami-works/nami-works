@@ -3,6 +3,10 @@ resource "aws_lb" "app" {
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
   subnets            = data.aws_subnets.default.ids
+  # Route optimization for 20+ orders can take up to ~90s because Phase 5b
+  # re-quotes Lalamove for each relocation. Default 60s timeout was cutting
+  # browser requests off before the backend finished. 120s gives headroom.
+  idle_timeout = 120
 }
 
 resource "aws_lb_target_group" "app" {

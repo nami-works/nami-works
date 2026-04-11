@@ -96,6 +96,15 @@ const DETOUR_REFINEMENT_MAX_ITERATIONS = 3;
  *  ≈ R$14 at ~R$2.80/km effective Lalamove rate in BR_SAO. */
 const BASE_FEE_METERS_EQUIVALENT = 5000;
 
+/** Consolidation operational tolerance (subunits).
+ *  Accept a route merger even when the merged Lalamove quote is marginally
+ *  more expensive than the separate quotes, because merging still removes one
+ *  dispatch (less driver coordination, less back-office work). R$3.00 = 300
+ *  subunits captures the real-world operational cost of managing one extra
+ *  dispatch. Observed from user corrections where routes that Lalamove
+ *  quoted within R$3 of each other were manually merged. */
+const CONSOLIDATION_OPERATIONAL_TOLERANCE_SUBUNITS = 300;
+
 /** Max spread relaxation factor for solo-dissolution moves.
  *  When absorbing a geographically isolated solo route, the receiving route
  *  can temporarily exceed MAX_ROUTE_SPREAD_METERS by up to this factor —
@@ -108,6 +117,10 @@ const SOLO_DISSOLUTION_SPREAD_FACTOR = 1.75;
  *  Routes exceeding this are split into tighter geographic clusters.
  *  Derived from correction data: routes with >15km spread are consistently overridden. */
 const MAX_ROUTE_SPREAD_METERS = 12_000;
+
+// ─── Distance Matrix Type ──────────────────────────────────────────────────────
+
+type DistanceMatrix = number[][];
 
 // ─── Haversine Geometry ────────────────────────────────────────────────────────
 
@@ -331,15 +344,39 @@ const enforceMinOrdersPerRoute = (
 // ─── Max-spread enforcement ───────────────────────────────────────────────────
 
 /**
- * Computes the maximum haversine distance between any two orders in a cluster.
- * Returns 0 for clusters with fewer than 2 orders.
+ * Computes the maximum pairwise distance between any two orders in a cluster.
+ * When a distance matrix is provided, uses the real driving distance (average
+ * of both directions, since Google's matrix is asymmetric). Falls back to
+ * haversine when the matrix isn't available or an order isn't mapped.
+ *
+ * Matrix-based spread is critical for cities with water barriers (e.g. Rio's
+ * Guanabara Bay) where haversine underestimates actual driving distance.
  */
-const clusterSpread = (cluster: OptimizerOrderInput[]): number => {
+const clusterSpread = (
+  cluster: OptimizerOrderInput[],
+  matrix?: DistanceMatrix,
+  idxMap?: Map<string, number>,
+): number => {
   if (cluster.length < 2) return 0;
+  const useMatrix = Boolean(matrix && idxMap);
   let maxDist = 0;
   for (let i = 0; i < cluster.length; i += 1) {
     for (let j = i + 1; j < cluster.length; j += 1) {
-      const d = haversineMeters(cluster[i]!.shippingCoordinates, cluster[j]!.shippingCoordinates);
+      let d: number;
+      if (useMatrix) {
+        const ii = idxMap!.get(cluster[i]!.orderId);
+        const jj = idxMap!.get(cluster[j]!.orderId);
+        if (ii != null && jj != null && matrix![ii] && matrix![jj]) {
+          // Average both directions (Google matrix is asymmetric)
+          const dij = matrix![ii]![jj] ?? 0;
+          const dji = matrix![jj]![ii] ?? 0;
+          d = (dij + dji) / 2;
+        } else {
+          d = haversineMeters(cluster[i]!.shippingCoordinates, cluster[j]!.shippingCoordinates);
+        }
+      } else {
+        d = haversineMeters(cluster[i]!.shippingCoordinates, cluster[j]!.shippingCoordinates);
+      }
       if (d > maxDist) maxDist = d;
     }
   }
@@ -350,15 +387,18 @@ const clusterSpread = (cluster: OptimizerOrderInput[]): number => {
  * Splits clusters that exceed MAX_ROUTE_SPREAD_METERS using k-means bisection.
  * Each oversized cluster is recursively split in two until all clusters are
  * within the spread threshold or cannot be split further (≤2 orders).
+ * Uses the distance matrix when available for real-driving-distance spreads.
  */
 const enforceMaxSpread = (
   clusters: OptimizerOrderInput[][],
   maxSpreadMeters: number,
+  matrix?: DistanceMatrix,
+  idxMap?: Map<string, number>,
 ): OptimizerOrderInput[][] => {
   const result: OptimizerOrderInput[][] = [];
 
   const splitCluster = (cluster: OptimizerOrderInput[]): void => {
-    if (cluster.length <= 2 || clusterSpread(cluster) <= maxSpreadMeters) {
+    if (cluster.length <= 2 || clusterSpread(cluster, matrix, idxMap) <= maxSpreadMeters) {
       result.push(cluster);
       return;
     }
@@ -1042,8 +1082,6 @@ export async function optimizeByCarrierQuotation(
 
 const MATRIX_CHUNK_SIZE = 10;
 
-type DistanceMatrix = number[][];
-
 async function fetchDistanceMatrixChunk(
   apiKey: string,
   origins: Coordinate[],
@@ -1369,7 +1407,7 @@ async function localSearchRelocate(
       const newDstCluster = [...dst.cluster, candidate.order];
 
       // Skip if destination cluster would exceed geographic spread threshold
-      if (clusterSpread(newDstCluster) > MAX_ROUTE_SPREAD_METERS) continue;
+      if (clusterSpread(newDstCluster, matrix, orderIndexMap) > MAX_ROUTE_SPREAD_METERS) continue;
 
       // Old cost with surcharges
       const oldCost =
@@ -1415,7 +1453,7 @@ async function localSearchRelocate(
         // Accept the move
         const savings = oldCost - newCost;
         console.info(
-          `[vrp-optimizer] Relocate: order ${candidate.order.orderId} route ${candidate.srcIdx}→${candidate.dstIdx}, saving ${savings} subunits`,
+          `[vrp-optimizer] Relocate: order ${candidate.order.orderId} route ${candidate.srcIdx}->${candidate.dstIdx}, saving ${savings} subunits`,
         );
 
         src.cluster = newSrcCluster;
@@ -1512,6 +1550,13 @@ export async function optimizeByVRP(
   const chunks = Math.ceil(points.length / MATRIX_CHUNK_SIZE) ** 2;
   console.info(`[vrp-optimizer] Phase 1: distance matrix built points=${points.length} chunks=${chunks} elapsed=${Date.now() - startMs}ms fallback=${matrixFallback}`);
 
+  // Pre-compute orderId -> matrix index so spread checks downstream can use
+  // real driving distance (critical for cities with water barriers like Rio).
+  const phase1IdxMap = new Map<string, number>();
+  for (let i = 0; i < phase1Orders.length; i += 1) {
+    phase1IdxMap.set(phase1Orders[i]!.orderId, i + 1); // 1-based (0 = depot)
+  }
+
   // ── Phase 2a: TSP Tour (nearest-neighbor + 2-opt) ────────────────────────
   const rawTour = tspNearestNeighbor(matrix, phase1Orders.length);
   const improvedTour = twoOptImprove(rawTour, matrix);
@@ -1536,9 +1581,9 @@ export async function optimizeByVRP(
 
   // ── Phase 2c: Max-spread enforcement ────────────────────────────────────
   const preSpreadCount = clusters.length;
-  clusters = enforceMaxSpread(clusters, MAX_ROUTE_SPREAD_METERS);
+  clusters = enforceMaxSpread(clusters, MAX_ROUTE_SPREAD_METERS, matrix, phase1IdxMap);
   if (clusters.length !== preSpreadCount) {
-    console.info(`[vrp-optimizer] Phase 2c: max-spread enforcement split ${preSpreadCount} → ${clusters.length} routes (threshold=${MAX_ROUTE_SPREAD_METERS}m)`);
+    console.info(`[vrp-optimizer] Phase 2c: max-spread enforcement split ${preSpreadCount} -> ${clusters.length} routes (threshold=${MAX_ROUTE_SPREAD_METERS}m)`);
   }
 
   // ── Phase 3: Conditional order insertion ─────────────────────────────────
@@ -1550,8 +1595,9 @@ export async function optimizeByVRP(
     for (let c = 0; c < clusters.length; c += 1) {
       if (clusters[c]!.length >= maxPerRoute) continue;
       // Check if adding this order would exceed geographic spread
+      // (phase2 orders aren't in the matrix, so this falls back to haversine)
       const trialCluster = [...clusters[c]!, conditionalOrder];
-      if (clusterSpread(trialCluster) > MAX_ROUTE_SPREAD_METERS) continue;
+      if (clusterSpread(trialCluster, matrix, phase1IdxMap) > MAX_ROUTE_SPREAD_METERS) continue;
       const origin = clusters[c]![0]!.locationCoordinates;
       const stops = clusters[c]!.map((o) => o.shippingCoordinates);
       const incremental = computeMinIncrementalDistance(origin, stops, conditionalOrder.shippingCoordinates);
@@ -1654,7 +1700,7 @@ export async function optimizeByVRP(
         const merged = [...a.cluster, ...b.cluster];
 
         // Skip merge if combined cluster would exceed geographic spread threshold
-        if (clusterSpread(merged) > MAX_ROUTE_SPREAD_METERS) continue;
+        if (clusterSpread(merged, matrix, phase1IdxMap) > MAX_ROUTE_SPREAD_METERS) continue;
 
         let bestMergedQuote: { costSubunits: number; costTotal: string; costCurrency: string; serviceType: string } | null = null;
         for (const serviceType of vehicleTypes) {
@@ -1666,8 +1712,13 @@ export async function optimizeByVRP(
         if (!bestMergedQuote) continue;
 
         const mergedCost = bestMergedQuote.costSubunits + WAIT_SURCHARGE_SUBUNITS;
-        if (mergedCost < separateCost) {
-          console.info(`[vrp-optimizer] Consolidation: merging routes ${i}+${j} (${a.cluster.length}+${b.cluster.length} orders), saving ${separateCost - mergedCost} subunits`);
+        // Accept the merge even if marginally more expensive: removing one
+        // dispatch has operational value (less driver coordination, less
+        // back-office work). Tolerance is R$3 worth of subunits.
+        if (mergedCost < separateCost + CONSOLIDATION_OPERATIONAL_TOLERANCE_SUBUNITS) {
+          const delta = separateCost - mergedCost;
+          const label = delta >= 0 ? `saving ${delta}` : `extra ${-delta} within tolerance`;
+          console.info(`[vrp-optimizer] Consolidation: merging routes ${i}+${j} (${a.cluster.length}+${b.cluster.length} orders), ${label} subunits`);
           a.cluster = merged;
           a.costSubunits = bestMergedQuote.costSubunits;
           a.costTotal = bestMergedQuote.costTotal;
@@ -1779,7 +1830,7 @@ export async function optimizeByVRP(
             const spreadLimit = isSoloDissolution
               ? MAX_ROUTE_SPREAD_METERS * SOLO_DISSOLUTION_SPREAD_FACTOR
               : MAX_ROUTE_SPREAD_METERS;
-            if (clusterSpread(trialCluster) > spreadLimit) continue;
+            if (clusterSpread(trialCluster, matrix, phase1IdxMap) > spreadLimit) continue;
 
             // Insertion cost: distance added by inserting this order into dst
             const dstStopsWith = [...dstOrders.map((o) => o.shippingCoordinates), order.shippingCoordinates];
@@ -1799,7 +1850,7 @@ export async function optimizeByVRP(
       }
 
       if (candidates.length === 0) {
-        console.info(`[vrp-optimizer] Phase 5b: detour refinement iter=${pIter} — no candidates`);
+        console.info(`[vrp-optimizer] Phase 5b: detour refinement iter=${pIter} -- no candidates`);
         break;
       }
 
@@ -1831,7 +1882,7 @@ export async function optimizeByVRP(
 
         const dissolvedTag = srcRoute.orderIds.length === 0 ? " [dissolved source]" : "";
         console.info(
-          `[vrp-optimizer] Phase 5b: detour relocate ${cand.orderId.split("/").pop()} route ${cand.fromRoute}→${cand.toRoute} (gain=${Math.round(cand.netGain)}m)${dissolvedTag}`,
+          `[vrp-optimizer] Phase 5b: detour relocate ${cand.orderId.split("/").pop()} route ${cand.fromRoute}->${cand.toRoute} (gain=${Math.round(cand.netGain)}m)${dissolvedTag}`,
         );
       }
 
