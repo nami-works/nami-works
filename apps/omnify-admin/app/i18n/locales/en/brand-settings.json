@@ -1,8 +1,8 @@
 {
-  "pageHeading": "Settings",
+  "pageHeading": "Brand Assets",
   "brandConfig": {
     "heading": "Brand configuration",
-    "description": "Configure your brand context for Blog Posts generation. These values are used as input to the content generation process."
+    "description": "Your brand bible. These values shape every AI-generated blog post, alt text, and future content \u2014 and accumulate learnings from your edits over time."
   },
   "labels": {
     "brandName": "Brand name",

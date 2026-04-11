@@ -350,7 +350,7 @@ model PriceTagProductLog {
   @@index([shop])
 }
 
-model BrandSettings {
+model BrandAssets {
   id                    String   @id @default(cuid())
   shop                  String   @unique
   about                 String?
@@ -364,8 +364,12 @@ model BrandSettings {
   editorialGuidelines   String?
   formatRecommendations String?
   contentStrategyJson   String?
+  exportVersion         Int      @default(1)
+  lastExportedAt        DateTime?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+
+  @@map("BrandSettings")
 }
 
 model BlogPostJob {
@@ -374,16 +378,6 @@ model BlogPostJob {
   jobId     String
   status    String
   createdAt DateTime @default(now())
-}
-
-model BlogPostPreferences {
-  id         String   @id @default(cuid())
-  shop       String   @unique
-  blogHandle String?
-  blogTitle  String?
-  author     String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
 }
 
 model ReturnPickupRequest {

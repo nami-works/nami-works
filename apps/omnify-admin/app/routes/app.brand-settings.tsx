@@ -15,8 +15,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
   const shop = session.shop;
 
-  console.info(`[brand-settings] loader shop=${shop}`);
-  const settings = await prisma.brandSettings.findUnique({
+  console.info(`[brand-assets] loader shop=${shop}`);
+  const settings = await prisma.brandAssets.findUnique({
     where: { shop },
   });
 
@@ -50,8 +50,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       | string
       | null;
 
-    console.info(`[brand-settings] save START shop=${shop}`);
-    await prisma.brandSettings.upsert({
+    console.info(`[brand-assets] save START shop=${shop}`);
+    await prisma.brandAssets.upsert({
       where: { shop },
       create: {
         shop,
@@ -82,7 +82,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       },
     });
 
-    console.info(`[brand-settings] save OK shop=${shop}`);
+    console.info(`[brand-assets] save OK shop=${shop}`);
     return { success: true };
   }
 

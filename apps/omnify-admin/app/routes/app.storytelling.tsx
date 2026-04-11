@@ -19,14 +19,11 @@ export default function StorytellingLayout() {
   const tabs = [
     { id: "blog-posts", label: t("tabs.blogPosts"), to: "/app/storytelling" },
     { id: "alt-text", label: t("tabs.altText"), to: "/app/storytelling/alt-text" },
-    { id: "places", label: t("tabs.places"), to: "/app/storytelling/places" },
   ];
 
   const activeId = location.pathname.includes("/alt-text")
     ? "alt-text"
-    : location.pathname.includes("/places")
-      ? "places"
-      : "blog-posts";
+    : "blog-posts";
 
   return (
     <s-page heading={t("pageHeading")}>

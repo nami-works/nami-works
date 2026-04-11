@@ -1,8 +1,8 @@
 {
-  "pageHeading": "Configurações",
+  "pageHeading": "Ativos da Marca",
   "brandConfig": {
     "heading": "Configuração da marca",
-    "description": "Configure o contexto da sua marca para geração de posts de blog. Estes valores são usados como entrada no processo de geração de conteúdo."
+    "description": "A b\u00edblia da sua marca. Estes valores moldam cada post de blog, texto alt e todo conte\u00fado gerado por IA \u2014 e acumulam aprendizados das suas edi\u00e7\u00f5es ao longo do tempo."
   },
   "labels": {
     "brandName": "Nome da marca",

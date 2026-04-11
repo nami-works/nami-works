@@ -2,8 +2,7 @@
   "pageHeading": "Story-telling",
   "tabs": {
     "blogPosts": "Blog posts",
-    "altText": "Alt Text",
-    "places": "Places"
+    "altText": "Alt Text"
   },
   "index": {
     "seoSection": "Generate SEO blog posts",
@@ -45,9 +44,5 @@
   "altText": {
     "pageHeading": "Alt Text",
     "comingSoon": "Alt text features coming soon..."
-  },
-  "places": {
-    "pageHeading": "Places",
-    "comingSoon": "Places features coming soon..."
   }
 }

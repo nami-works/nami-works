@@ -74,7 +74,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     console.error(`[storytelling:brief] loader products FAILED shop=${shop}`, err);
   }
 
-  const settings = await prisma.brandSettings.findUnique({
+  const settings = await prisma.brandAssets.findUnique({
     where: { shop },
   });
 
@@ -110,7 +110,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return { error: "Invalid brief JSON." };
   }
 
-  const settings = await prisma.brandSettings.findUnique({
+  const settings = await prisma.brandAssets.findUnique({
     where: { shop },
   });
 
