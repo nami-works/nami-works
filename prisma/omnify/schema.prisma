@@ -796,4 +796,6 @@ model WaitlistSubscriber {
   email     String   @unique
   source    String   @default("gbp-health-check")
   createdAt DateTime @default(now())
+  /// Free-form lead metadata (e.g. store_url, pain, workaround, timeline) keyed by source variant
+  metadata  Json?
 }

@@ -64,6 +64,29 @@
   color: var(--site-text);
 }
 
+.navCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--site-border);
+  background: var(--site-holo-gradient);
+  color: #1d1d1f;
+  font-family: var(--site-font);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.navCta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
 /* ── Footer ── */
 
 .footer {

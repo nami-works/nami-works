@@ -29,13 +29,13 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
       {
         name: "description",
         content:
-          "CPG Labs builds custom Shopify software tailored to your brand — not another subscription. One build, one price, zero app bloat.",
+          "Custom software for Shopify stores, priced like an app. We scope it, quote it in 48 hours, and ship it as an embedded app inside your Shopify admin.",
       },
       { property: "og:title", content: "CPG Labs" },
       {
         property: "og:description",
         content:
-          "Build-to-suit software for CPG brands on Shopify. Stop renting features. Start owning your stack.",
+          "Custom software for Shopify stores. Priced like an app.",
       },
     ];
   }
@@ -56,27 +56,110 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   ];
 };
 
+const VALID_TIMELINES = new Set([
+  "asap",
+  "this_month",
+  "this_quarter",
+  "exploring",
+]);
+
+function isValidStoreUrl(value: string): boolean {
+  if (!/^https?:\/\//i.test(value)) return false;
+  try {
+    const parsed = new URL(value);
+    return parsed.hostname.includes(".");
+  } catch {
+    return false;
+  }
+}
+
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const intent = String(formData.get("intent") || "waitlist");
   const email = String(formData.get("email") || "").trim().toLowerCase();
 
+  // ── Lead form (cpglabs-home "Describe your pain" form) ──
+  if (intent === "lead") {
+    const honeypot = String(formData.get("website") || "").trim();
+    // Silent reject if honeypot is populated — return a faux success.
+    if (honeypot) {
+      console.warn("[home] lead SKIP reason=honeypot");
+      return { success: true };
+    }
+
+    const storeUrl = String(formData.get("store_url") || "").trim();
+    const pain = String(formData.get("pain") || "").trim();
+    const workaroundRaw = String(formData.get("workaround") || "").trim();
+    const workaround = workaroundRaw.length > 0 ? workaroundRaw : null;
+    const timeline = String(formData.get("timeline") || "").trim();
+
+    if (!isValidStoreUrl(storeUrl)) {
+      return {
+        error:
+          "Add your full store URL starting with https:// so we can look it up.",
+      };
+    }
+    if (pain.length < 20) {
+      return {
+        error: "Give us a little more detail, at least a sentence or two.",
+      };
+    }
+    if (pain.length > 1000) {
+      return { error: "Trim the description to around 1000 characters." };
+    }
+    if (workaround && workaround.length > 500) {
+      return { error: "Trim the workaround to around 500 characters." };
+    }
+    if (!VALID_TIMELINES.has(timeline)) {
+      return { error: "Pick a timeline so we know how to plan the scope." };
+    }
+    if (!isValidEmail(email)) {
+      return { error: "We need an email with an @ so we can reply." };
+    }
+
+    const metadata = {
+      store_url: storeUrl,
+      pain,
+      workaround,
+      timeline,
+      submitted_at: new Date().toISOString(),
+    };
+
+    try {
+      await prisma.waitlistSubscriber.upsert({
+        where: { email },
+        create: { email, source: "cpglabs-home", metadata },
+        update: { metadata },
+      });
+      console.info(
+        `[home] lead OK email=*** source=cpglabs-home timeline=${timeline}`,
+      );
+      return { success: true };
+    } catch (e) {
+      console.error("[home] lead FAILED source=cpglabs-home", e);
+      return { error: "Something went wrong on our side. Try again in a moment." };
+    }
+  }
+
+  // ── Legacy waitlist (Omnify / gbp-health-check) ──
   if (!email || !email.includes("@")) {
     return { error: "Please enter a valid email address." };
   }
 
-  const source = intent === "lead" ? "cpglabs-home" : "gbp-health-check";
-
   try {
     await prisma.waitlistSubscriber.upsert({
       where: { email },
-      create: { email, source },
+      create: { email, source: "gbp-health-check" },
       update: {},
     });
-    console.info(`[home] ${intent} OK email=*** source=${source}`);
+    console.info(`[home] ${intent} OK email=*** source=gbp-health-check`);
     return { success: true };
   } catch (e) {
-    console.error(`[home] ${intent} FAILED source=${source}`, e);
+    console.error(`[home] ${intent} FAILED source=gbp-health-check`, e);
     return { error: "Something went wrong. Please try again." };
   }
 };

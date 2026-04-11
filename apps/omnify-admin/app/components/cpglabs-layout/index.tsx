@@ -6,9 +6,9 @@ import styles from "./styles.module.css";
 
 const NAV_ANCHORS = [
   { label: "How it works", href: "#how-it-works" },
-  { label: "Why CPG Labs", href: "#why" },
+  { label: "Example builds", href: "#examples" },
+  { label: "Pricing", href: "#pricing" },
   { label: "FAQ", href: "#faq" },
-  { label: "Contact", href: "#contact" },
 ];
 
 export function CpgLabsNav() {
@@ -40,6 +40,10 @@ export function CpgLabsNav() {
           ))}
         </ul>
 
+        <a href="#pain-form" className={styles.navCta}>
+          Describe your pain
+        </a>
+
         <ThemeToggle />
       </div>
     </nav>
@@ -51,7 +55,7 @@ export function CpgLabsFooter() {
     <footer className={styles.footer}>
       <div className={styles.footerBrand}>
         <span className={styles.footerBrandText}>
-          CPG Labs — build-to-suit software for CPG brands on Shopify.
+          Custom software for Shopify stores. Priced like an app.
         </span>
       </div>
 
@@ -73,14 +77,6 @@ export function CpgLabsFooter() {
           </a>
         </li>
         <li>
-          <a
-            href="https://omnify.cpg-labs.io/security"
-            className={styles.footerLink}
-          >
-            Security
-          </a>
-        </li>
-        <li>
           <a href="https://omnify.cpg-labs.io" className={styles.footerLink}>
             Omnify
           </a>
@@ -91,9 +87,7 @@ export function CpgLabsFooter() {
         <a href="mailto:contact@cpg-labs.io">contact@cpg-labs.io</a>
       </div>
 
-      <div className={styles.footerCopy}>
-        &copy; 2026 CPG Labs. All rights reserved.
-      </div>
+      <div className={styles.footerCopy}>&copy; 2026 CPG Labs</div>
     </footer>
   );
 }
