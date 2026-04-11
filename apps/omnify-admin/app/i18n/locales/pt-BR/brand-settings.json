@@ -32,8 +32,24 @@
   },
   "scrapeStore": {
     "heading": "Analisar loja",
-    "description": "Use \"Analisar loja\" para analisar o conteúdo da sua loja e gerar automaticamente o tom de voz. Requer a API Content Scraper configurada.",
+    "description": "Use \"Analisar loja\" para analisar o conte\u00fado da sua loja e gerar automaticamente o tom de voz. Requer a API Content Scraper configurada.",
     "comingSoon": "Analisar loja (em breve)"
   },
-  "settingsSaved": "Configurações salvas"
+  "export": {
+    "heading": "Exportar",
+    "description": "A b\u00edblia da sua marca como artefato port\u00e1til. Baixe e reutilize onde quiser.",
+    "downloadJson": "Baixar JSON",
+    "downloadMarkdown": "Baixar Markdown",
+    "lastExported": "\u00daltima exporta\u00e7\u00e3o {{when}}",
+    "neverExported": "Nunca exportado"
+  },
+  "learnings": {
+    "heading": "Aprendizados das edi\u00e7\u00f5es",
+    "empty": "Nenhum aprendizado ainda. Revise rascunhos de IA na aba Posts de blog para come\u00e7ar.",
+    "count_one": "{{count}} aceito",
+    "count_other": "{{count}} aceitos",
+    "viewAll": "Ver todos",
+    "remove": "Remover"
+  },
+  "settingsSaved": "Configura\u00e7\u00f5es salvas"
 }

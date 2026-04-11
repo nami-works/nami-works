@@ -35,5 +35,21 @@
     "description": "Use \"Scrape store\" to analyze your shop content and auto-generate tone of voice. Requires the Content Scraper API to be configured.",
     "comingSoon": "Scrape store (coming soon)"
   },
+  "export": {
+    "heading": "Export",
+    "description": "Your brand bible as a portable artifact. Download and reuse elsewhere.",
+    "downloadJson": "Download JSON",
+    "downloadMarkdown": "Download Markdown",
+    "lastExported": "Last exported {{when}}",
+    "neverExported": "Not exported yet"
+  },
+  "learnings": {
+    "heading": "Learned from edits",
+    "empty": "No learnings yet. Review AI drafts on the Blog Posts tab to start.",
+    "count_one": "{{count}} accepted",
+    "count_other": "{{count}} accepted",
+    "viewAll": "View all",
+    "remove": "Remove"
+  },
   "settingsSaved": "Settings saved"
 }

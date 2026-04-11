@@ -10,6 +10,11 @@ import { authenticate } from "../shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { useTranslation } from "react-i18next";
 import prisma from "../db.server";
+import {
+  listLearnings,
+  removeLearning,
+} from "../services/brand-assets/service.server";
+import { buildExport } from "../services/brand-assets/export.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
@@ -20,7 +25,22 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     where: { shop },
   });
 
-  return { settings, shop };
+  const learnings = await listLearnings(shop, { limit: 10 });
+  const learningsCount = await prisma.brandLearning
+    .count({ where: { shop, status: "accepted" } })
+    .catch(() => 0);
+
+  return {
+    settings,
+    shop,
+    learnings: learnings.map((l) => ({
+      id: l.id,
+      category: l.category,
+      interpretation: l.interpretation,
+      acceptedAt: l.acceptedAt.toISOString(),
+    })),
+    learningsCount,
+  };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -86,22 +106,73 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return { success: true };
   }
 
+  if (intent === "exportJson" || intent === "exportMarkdown") {
+    const data = await buildExport(shop);
+    if (!data) {
+      return { success: false, error: "No brand assets to export." };
+    }
+    const isJson = intent === "exportJson";
+    const body = isJson ? data.json : data.markdown;
+    const filename = `${data.filename}.${isJson ? "json" : "md"}`;
+    const contentType = isJson ? "application/json" : "text/markdown";
+    console.info(`[brand-assets] export OK shop=${shop} format=${isJson ? "json" : "md"}`);
+    return new Response(body, {
+      headers: {
+        "Content-Type": `${contentType}; charset=utf-8`,
+        "Content-Disposition": `attachment; filename="${filename}"`,
+      },
+    });
+  }
+
+  if (intent === "removeLearning") {
+    const learningId = formData.get("learningId") as string | null;
+    if (!learningId) {
+      return { success: false, error: "Missing learning ID." };
+    }
+    await removeLearning(shop, learningId);
+    console.info(`[brand-assets] removeLearning OK shop=${shop} id=${learningId}`);
+    return { success: true };
+  }
+
   return { success: false };
 };
 
+function formatRelative(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const then = new Date(iso).getTime();
+  const now = Date.now();
+  const diff = Math.max(0, now - then);
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
 export default function BrandSettingsPage() {
-  const { settings, shop } = useLoaderData<typeof loader>();
+  const { settings, shop, learnings, learningsCount } =
+    useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
   const shopify = useAppBridge();
   const { t } = useTranslation("brand-settings");
   const isSaving =
     fetcher.state === "submitting" && fetcher.formData?.get("intent") === "save";
+  const isExporting =
+    fetcher.state === "submitting" &&
+    (fetcher.formData?.get("intent") === "exportJson" ||
+      fetcher.formData?.get("intent") === "exportMarkdown");
 
   useEffect(() => {
-    if (fetcher.data?.success) {
+    if (fetcher.data && "success" in fetcher.data && fetcher.data.success) {
       shopify.toast?.show?.(t("settingsSaved"));
     }
-  }, [fetcher.data?.success, shopify, t]);
+  }, [fetcher.data, shopify, t]);
+
+  const lastExportedRelative = formatRelative(
+    settings?.lastExportedAt ? String(settings.lastExportedAt) : null,
+  );
 
   return (
     <s-page heading={t("pageHeading")}>
@@ -227,13 +298,69 @@ export default function BrandSettingsPage() {
         </fetcher.Form>
       </s-section>
 
-      <s-section slot="aside" heading={t("scrapeStore.heading")}>
-        <s-paragraph>
-          {t("scrapeStore.description")}
-        </s-paragraph>
-        <s-button variant="secondary" disabled>
-          {t("scrapeStore.comingSoon")}
-        </s-button>
+      <s-section slot="aside" heading={t("export.heading")}>
+        <s-paragraph>{t("export.description")}</s-paragraph>
+        <s-stack direction="block" gap="base">
+          <fetcher.Form method="POST">
+            <input type="hidden" name="intent" value="exportJson" />
+            <s-button
+              type="submit"
+              variant="primary"
+              {...(isExporting ? { loading: true } : {})}
+            >
+              {t("export.downloadJson")}
+            </s-button>
+          </fetcher.Form>
+          <fetcher.Form method="POST">
+            <input type="hidden" name="intent" value="exportMarkdown" />
+            <s-button
+              type="submit"
+              variant="secondary"
+              {...(isExporting ? { loading: true } : {})}
+            >
+              {t("export.downloadMarkdown")}
+            </s-button>
+          </fetcher.Form>
+          <s-paragraph>
+            {lastExportedRelative
+              ? t("export.lastExported", { when: lastExportedRelative })
+              : t("export.neverExported")}
+          </s-paragraph>
+        </s-stack>
+      </s-section>
+
+      <s-section slot="aside" heading={t("learnings.heading")}>
+        {learnings.length === 0 ? (
+          <s-paragraph>{t("learnings.empty")}</s-paragraph>
+        ) : (
+          <s-stack direction="block" gap="base">
+            {learnings.slice(0, 5).map((learning) => (
+              <s-box
+                key={learning.id}
+                padding="base"
+                borderWidth="base"
+                borderRadius="base"
+              >
+                <s-stack direction="block" gap="small">
+                  <s-heading>{learning.category}</s-heading>
+                  <s-paragraph>{learning.interpretation}</s-paragraph>
+                  <div style={{ marginLeft: "auto" }}>
+                    <fetcher.Form method="POST">
+                      <input type="hidden" name="intent" value="removeLearning" />
+                      <input type="hidden" name="learningId" value={learning.id} />
+                      <s-button variant="tertiary" type="submit">
+                        {t("learnings.remove")}
+                      </s-button>
+                    </fetcher.Form>
+                  </div>
+                </s-stack>
+              </s-box>
+            ))}
+            <s-paragraph>
+              {t("learnings.count", { count: learningsCount })}
+            </s-paragraph>
+          </s-stack>
+        )}
       </s-section>
     </s-page>
   );

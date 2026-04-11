@@ -5,6 +5,59 @@ export async function getBrandAssets(shop: string) {
   return prisma.brandAssets.findUnique({ where: { shop } });
 }
 
+export async function listLearnings(
+  shop: string,
+  options: { status?: string; limit?: number } = {},
+) {
+  const status = options.status ?? "accepted";
+  return prisma.brandLearning
+    .findMany({
+      where: { shop, status },
+      orderBy: { acceptedAt: "desc" },
+      take: options.limit,
+    })
+    .catch((err) => {
+      console.warn(`[brand-assets] listLearnings SKIP shop=${shop}`, err);
+      return [];
+    });
+}
+
+export async function removeLearning(shop: string, learningId: string) {
+  const existing = await prisma.brandLearning.findFirst({
+    where: { id: learningId, shop },
+  });
+  if (!existing) return null;
+  return prisma.brandLearning.delete({ where: { id: learningId } });
+}
+
+export async function acceptLearning(input: {
+  shop: string;
+  brandAssetsId: string;
+  sourceDiffId: string;
+  sourceArticleId: string | null;
+  category: string;
+  beforeSnippet: string;
+  afterSnippet: string;
+  interpretation: string;
+}) {
+  console.info(
+    `[brand-assets] acceptLearning shop=${input.shop} diff=${input.sourceDiffId} category=${input.category}`,
+  );
+  return prisma.brandLearning.create({
+    data: {
+      shop: input.shop,
+      brandAssetsId: input.brandAssetsId,
+      sourceDiffId: input.sourceDiffId,
+      sourceArticleId: input.sourceArticleId,
+      category: input.category,
+      beforeSnippet: input.beforeSnippet,
+      afterSnippet: input.afterSnippet,
+      interpretation: input.interpretation,
+      status: "accepted",
+    },
+  });
+}
+
 /**
  * Builds the brand-context blob that gets injected into every generation call
  * (Content Gen API for blog posts, Claude for alt text and diff interpretation).
@@ -33,42 +86,24 @@ export async function getBrandContextForGeneration(
     formatRecommendations: assets.formatRecommendations,
   };
 
-  // BrandLearning table is added in Phase 3 — guard the lookup so Phase 2
-  // can ship independently.
-  try {
-    const client = prisma as unknown as {
-      brandLearning?: {
-        findMany: (args: {
-          where: { shop: string; status: string };
-          orderBy: { acceptedAt: "desc" };
-          take: number;
-        }) => Promise<
-          Array<{
-            category: string;
-            beforeSnippet: string;
-            afterSnippet: string;
-            interpretation: string;
-          }>
-        >;
-      };
-    };
-    if (client.brandLearning) {
-      const learnings = await client.brandLearning.findMany({
-        where: { shop, status: "accepted" },
-        orderBy: { acceptedAt: "desc" },
-        take: 50,
-      });
-      if (learnings.length > 0) {
-        context.learnings = learnings.map((l) => ({
-          category: l.category,
-          beforeSnippet: l.beforeSnippet,
-          afterSnippet: l.afterSnippet,
-          interpretation: l.interpretation,
-        }));
-      }
-    }
-  } catch (err) {
-    console.warn(`[brand-assets] learnings lookup SKIP shop=${shop}`, err);
+  const learnings = await prisma.brandLearning
+    .findMany({
+      where: { shop, status: "accepted" },
+      orderBy: { acceptedAt: "desc" },
+      take: 50,
+    })
+    .catch((err) => {
+      console.warn(`[brand-assets] learnings lookup SKIP shop=${shop}`, err);
+      return [] as Awaited<ReturnType<typeof prisma.brandLearning.findMany>>;
+    });
+
+  if (learnings.length > 0) {
+    context.learnings = learnings.map((l) => ({
+      category: l.category,
+      beforeSnippet: l.beforeSnippet,
+      afterSnippet: l.afterSnippet,
+      interpretation: l.interpretation,
+    }));
   }
 
   return context;

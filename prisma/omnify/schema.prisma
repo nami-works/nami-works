@@ -369,7 +369,44 @@ model BrandAssets {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
+  learnings             BrandLearning[]
+
   @@map("BrandSettings")
+}
+
+model BrandLearning {
+  id              String      @id @default(cuid())
+  shop            String
+  brandAssetsId   String
+  brandAssets     BrandAssets @relation(fields: [brandAssetsId], references: [id], onDelete: Cascade)
+  sourceArticleId String?
+  sourceDiffId    String?
+  category        String
+  beforeSnippet   String
+  afterSnippet    String
+  interpretation  String
+  status          String      @default("accepted")
+  acceptedAt      DateTime    @default(now())
+  createdAt       DateTime    @default(now())
+
+  @@index([shop, status])
+  @@index([brandAssetsId])
+}
+
+model BlogPostDiff {
+  id               String    @id @default(cuid())
+  shop             String
+  draftId          String
+  shopifyArticleId String
+  detectedAt       DateTime  @default(now())
+  beforeHtml       String
+  afterHtml        String
+  hypotheses       Json
+  status           String    @default("pending_review")
+  reviewedAt       DateTime?
+
+  @@index([shop, status])
+  @@index([shopifyArticleId])
 }
 
 model BlogPostJob {
