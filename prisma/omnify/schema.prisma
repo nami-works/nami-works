@@ -373,11 +373,36 @@ model BrandAssets {
 }
 
 model BlogPostJob {
-  id        String   @id @default(cuid())
-  shop      String
-  jobId     String
-  status    String
-  createdAt DateTime @default(now())
+  id           String    @id @default(cuid())
+  shop         String
+  jobId        String    @unique
+  status       String
+  briefJson    String?
+  errorMessage String?
+  resultJson   Json?
+  lastPolledAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([shop, status])
+  @@index([shop, createdAt])
+}
+
+model BlogPostDraft {
+  id               String    @id @default(cuid())
+  shop             String
+  jobId            String
+  themeKey         String
+  title            String
+  bodyHtml         String
+  metaTitle        String?
+  metaDescription  String?
+  shopifyArticleId String?
+  publishedAt      DateTime?
+  createdAt        DateTime  @default(now())
+
+  @@unique([shop, jobId, themeKey])
+  @@index([shop, shopifyArticleId])
 }
 
 model ReturnPickupRequest {
@@ -525,6 +550,8 @@ model AffiliateOrder {
   shop             String
   orderName        String?
   customerId       String?
+  customerName     String?
+  customerEmail    String?
   affiliateCode    String
   discountAmount   Float     @default(0)
   affiliateDiscount Float    @default(0)

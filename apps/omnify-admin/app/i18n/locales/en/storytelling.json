@@ -36,10 +36,29 @@
     "status": "Status:",
     "jobId": "Job ID:",
     "publish": "Publish",
+    "publishedDraft": "Published draft",
+    "targetBlog": "Target blog",
     "blogs": "Blogs",
     "noBlogsFound": "No blogs found. Create a blog in Shopify first.",
     "publishingTo": "Publishing to: {{blogs}}",
-    "articleCreatedDraft": "Article created as draft"
+    "articleCreatedDraft": "Article created as draft",
+    "statusLabels": {
+      "idle": "Idle",
+      "pending": "Pending",
+      "running": "Running \u00b7 Generating content",
+      "completed": "Completed",
+      "failed": "Failed"
+    }
+  },
+  "recentGenerations": {
+    "heading": "Recent generations",
+    "empty": "No generations yet.",
+    "viewAll": "View all"
+  },
+  "pendingDiffs": {
+    "banner": "{{count}} published article has edits to learn from",
+    "banner_other": "{{count}} published articles have edits to learn from",
+    "review": "Review"
   },
   "altText": {
     "pageHeading": "Alt Text",

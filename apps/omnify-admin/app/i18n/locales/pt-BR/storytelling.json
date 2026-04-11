@@ -31,15 +31,34 @@
   },
   "review": {
     "pageHeading": "Revisar posts",
-    "generatedContent": "Conteúdo gerado",
-    "noJobId": "Sem ID de job. Crie um briefing e gere conteúdo a partir de",
+    "generatedContent": "Conte\u00fado gerado",
+    "noJobId": "Sem ID de job. Crie um briefing e gere conte\u00fado a partir de",
     "status": "Status:",
     "jobId": "ID do Job:",
     "publish": "Publicar",
+    "publishedDraft": "Rascunho publicado",
+    "targetBlog": "Blog de destino",
     "blogs": "Blogs",
     "noBlogsFound": "Nenhum blog encontrado. Crie um blog no Shopify primeiro.",
     "publishingTo": "Publicando em: {{blogs}}",
-    "articleCreatedDraft": "Artigo criado como rascunho"
+    "articleCreatedDraft": "Artigo criado como rascunho",
+    "statusLabels": {
+      "idle": "Ocioso",
+      "pending": "Pendente",
+      "running": "Executando \u00b7 Gerando conte\u00fado",
+      "completed": "Conclu\u00eddo",
+      "failed": "Falhou"
+    }
+  },
+  "recentGenerations": {
+    "heading": "Gera\u00e7\u00f5es recentes",
+    "empty": "Nenhuma gera\u00e7\u00e3o ainda.",
+    "viewAll": "Ver todas"
+  },
+  "pendingDiffs": {
+    "banner": "{{count}} artigo publicado tem edi\u00e7\u00f5es para aprender",
+    "banner_other": "{{count}} artigos publicados t\u00eam edi\u00e7\u00f5es para aprender",
+    "review": "Revisar"
   },
   "altText": {
     "pageHeading": "Texto Alt",
