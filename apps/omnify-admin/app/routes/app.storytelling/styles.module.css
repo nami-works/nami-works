@@ -320,3 +320,153 @@
   background: #008060;
   transition: width 0.2s ease;
 }
+
+/* --- Learnings review route -------------------------------------- */
+.diffArticleCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  background: #ffffff;
+}
+
+.diffArticleHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.diffArticleTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303030;
+  margin: 0;
+}
+
+.diffArticleMeta {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.diffSplit {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .diffSplit {
+    grid-template-columns: 1fr;
+  }
+}
+
+.diffPanel {
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  padding: 12px;
+  background: #fafbfb;
+  max-height: 240px;
+  overflow: auto;
+}
+
+.diffPanelLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #6d7175;
+  margin-bottom: 8px;
+}
+
+.diffPanelContent {
+  font-size: 13px;
+  color: #303030;
+  line-height: 1.5;
+}
+
+.diffHypothesesHeading {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303030;
+  margin: 0 0 12px;
+}
+
+.hypothesisCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  background: #ffffff;
+}
+
+.hypothesisHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.hypothesisCategoryPill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.hypothesisCategoryTone {
+  background: #fff4e5;
+  color: #b45309;
+}
+
+.hypothesisCategoryStructure {
+  background: #eaf1fb;
+  color: #2c5aa0;
+}
+
+.hypothesisCategoryVocabulary {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
+.hypothesisCategoryProduct_mentions {
+  background: #e7f5ee;
+  color: #008060;
+}
+
+.hypothesisCategoryOther {
+  background: #f1f1f1;
+  color: #6d7175;
+}
+
+.hypothesisInterpretation {
+  font-size: 13px;
+  color: #303030;
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.hypothesisActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.hypothesisAcceptedBadge {
+  font-size: 12px;
+  color: #008060;
+  font-weight: 500;
+}
+
+.diffDismissRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}

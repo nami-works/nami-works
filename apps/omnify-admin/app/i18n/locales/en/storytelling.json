@@ -58,7 +58,23 @@
   "pendingDiffs": {
     "banner": "{{count}} published article has edits to learn from",
     "banner_other": "{{count}} published articles have edits to learn from",
-    "review": "Review"
+    "review": "Review",
+    "checkForUpdates": "Check for updates"
+  },
+  "learningsRoute": {
+    "pageHeading": "Learn from your edits",
+    "empty": "No pending diffs. When you edit an AI-generated article in Shopify, it will show up here.",
+    "aiDraft": "AI draft",
+    "yourEdit": "Your edit",
+    "hypothesesHeading": "What I'm hearing",
+    "hypothesesHeading_plural": "What I'm hearing ({{count}} hypotheses)",
+    "accept": "Accept",
+    "reject": "Reject",
+    "edit": "Edit",
+    "accepted": "Accepted \u2713",
+    "dismissArticle": "Dismiss article",
+    "publishedAt": "Published {{when}}",
+    "checkForUpdates": "Check for updates"
   },
   "altText": {
     "pageHeading": "Alt Text",

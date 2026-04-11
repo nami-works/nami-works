@@ -58,7 +58,23 @@
   "pendingDiffs": {
     "banner": "{{count}} artigo publicado tem edi\u00e7\u00f5es para aprender",
     "banner_other": "{{count}} artigos publicados t\u00eam edi\u00e7\u00f5es para aprender",
-    "review": "Revisar"
+    "review": "Revisar",
+    "checkForUpdates": "Verificar atualiza\u00e7\u00f5es"
+  },
+  "learningsRoute": {
+    "pageHeading": "Aprender com suas edi\u00e7\u00f5es",
+    "empty": "Nenhum diff pendente. Quando voc\u00ea editar um artigo gerado por IA no Shopify, ele aparecer\u00e1 aqui.",
+    "aiDraft": "Rascunho da IA",
+    "yourEdit": "Sua edi\u00e7\u00e3o",
+    "hypothesesHeading": "O que estou notando",
+    "hypothesesHeading_plural": "O que estou notando ({{count}} hip\u00f3teses)",
+    "accept": "Aceitar",
+    "reject": "Rejeitar",
+    "edit": "Editar",
+    "accepted": "Aceito \u2713",
+    "dismissArticle": "Descartar artigo",
+    "publishedAt": "Publicado {{when}}",
+    "checkForUpdates": "Verificar atualiza\u00e7\u00f5es"
   },
   "altText": {
     "pageHeading": "Texto Alt",
