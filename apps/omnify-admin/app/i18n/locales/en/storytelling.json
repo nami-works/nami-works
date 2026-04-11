@@ -62,6 +62,49 @@
   },
   "altText": {
     "pageHeading": "Alt Text",
-    "comingSoon": "Alt text features coming soon..."
+    "auditHeading": "Image alt text audit",
+    "summary": "{{missing}} of {{total}} images need alt text",
+    "generateForMissing": "Generate for all missing",
+    "refreshAudit": "Refresh audit",
+    "notAuditedYet": "No audit yet. Run a refresh to scan your product images.",
+    "filters": {
+      "all": "All",
+      "missing": "Missing",
+      "weak": "Weak",
+      "approved": "Approved",
+      "queued": "Queued",
+      "applied": "Applied"
+    },
+    "row": {
+      "noAlt": "No alt text",
+      "weak": "Weak",
+      "ok": "OK",
+      "generate": "Generate",
+      "regenerate": "Regenerate",
+      "edit": "Edit suggestion",
+      "approve": "Approve",
+      "reject": "Reject",
+      "queuedAtPosition": "Queued at position {{position}}",
+      "applied": "Applied",
+      "failed": "Failed: {{message}}",
+      "retry": "Retry"
+    },
+    "cadence": {
+      "heading": "Daily drip",
+      "description": "100 images per day to avoid Google SEO churn from bulk metadata changes.",
+      "todayCount": "Today: {{applied}} / {{limit}}",
+      "inQueue": "In queue: {{count}}",
+      "eta": "ETA: {{days}} day",
+      "eta_other": "ETA: {{days}} days",
+      "nextRun": "Next drain: tomorrow"
+    },
+    "toast": {
+      "approved": "Approved and queued",
+      "rejected": "Rejected",
+      "generated": "Suggestion generated",
+      "failed": "{{message}}",
+      "auditRefreshed": "Audit refreshed",
+      "bulkStarted": "Bulk generate started. This may take a few minutes."
+    }
   }
 }

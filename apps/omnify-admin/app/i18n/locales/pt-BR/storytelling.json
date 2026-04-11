@@ -62,6 +62,49 @@
   },
   "altText": {
     "pageHeading": "Texto Alt",
-    "comingSoon": "Funcionalidades de texto alternativo em breve..."
+    "auditHeading": "Auditoria de texto alternativo",
+    "summary": "{{missing}} de {{total}} imagens precisam de texto alternativo",
+    "generateForMissing": "Gerar para todas sem texto",
+    "refreshAudit": "Atualizar auditoria",
+    "notAuditedYet": "Nenhuma auditoria ainda. Atualize para escanear as imagens dos produtos.",
+    "filters": {
+      "all": "Todas",
+      "missing": "Sem texto",
+      "weak": "Fracas",
+      "approved": "Aprovadas",
+      "queued": "Na fila",
+      "applied": "Aplicadas"
+    },
+    "row": {
+      "noAlt": "Sem texto alternativo",
+      "weak": "Fraco",
+      "ok": "OK",
+      "generate": "Gerar",
+      "regenerate": "Gerar novamente",
+      "edit": "Editar sugest\u00e3o",
+      "approve": "Aprovar",
+      "reject": "Rejeitar",
+      "queuedAtPosition": "Na fila, posi\u00e7\u00e3o {{position}}",
+      "applied": "Aplicado",
+      "failed": "Falhou: {{message}}",
+      "retry": "Tentar novamente"
+    },
+    "cadence": {
+      "heading": "Aplica\u00e7\u00e3o di\u00e1ria",
+      "description": "100 imagens por dia para evitar penalidades do Google com altera\u00e7\u00f5es em massa.",
+      "todayCount": "Hoje: {{applied}} / {{limit}}",
+      "inQueue": "Na fila: {{count}}",
+      "eta": "ETA: {{days}} dia",
+      "eta_other": "ETA: {{days}} dias",
+      "nextRun": "Pr\u00f3xima execu\u00e7\u00e3o: amanh\u00e3"
+    },
+    "toast": {
+      "approved": "Aprovado e enviado para a fila",
+      "rejected": "Rejeitado",
+      "generated": "Sugest\u00e3o gerada",
+      "failed": "{{message}}",
+      "auditRefreshed": "Auditoria atualizada",
+      "bulkStarted": "Gera\u00e7\u00e3o em lote iniciada. Pode levar alguns minutos."
+    }
   }
 }

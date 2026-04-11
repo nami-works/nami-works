@@ -409,6 +409,30 @@ model BlogPostDiff {
   @@index([shopifyArticleId])
 }
 
+model ProductImageAltSuggestion {
+  id            String    @id @default(cuid())
+  shop          String
+  productId     String
+  productTitle  String?
+  imageId       String
+  imageUrl      String
+  currentAlt    String?
+  detectedState String
+  suggestion    String?
+  status        String    @default("pending")
+  generatedAt   DateTime?
+  approvedAt    DateTime?
+  queuedAt      DateTime?
+  appliedAt     DateTime?
+  errorMessage  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([shop, imageId])
+  @@index([shop, status, queuedAt])
+  @@index([shop, productId])
+}
+
 model BlogPostJob {
   id           String    @id @default(cuid())
   shop         String
