@@ -647,6 +647,40 @@
 
 /* --- Search result items -------------------------------------------- */
 
+.inlineTypeahead {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin-top: 4px;
+  background: #ffffff;
+}
+
+.scopePreview {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  background: #f6f6f7;
+  font-size: 13px;
+}
+
+.scopePreviewCount {
+  font-weight: 600;
+  color: #303030;
+}
+
+.scopePreviewSamples {
+  margin-top: 4px;
+  color: #6d7175;
+  font-size: 12px;
+}
+
+.scopePreviewEmpty {
+  color: #6d7175;
+  font-style: italic;
+}
+
 .searchResultItem {
   display: flex;
   align-items: center;

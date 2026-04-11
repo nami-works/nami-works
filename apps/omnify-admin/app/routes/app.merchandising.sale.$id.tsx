@@ -10,6 +10,9 @@ import {
   searchCollections,
   activateCampaign,
   deactivateCampaign,
+  getProductsByIds,
+  getCollectionsByIds,
+  previewCampaignScope,
 } from "../services/bulk-price/campaign.server";
 import { fetchMetaobjectTypes, fetchMetaobjectDefinitionFields } from "../services/price-tags/metaobject.server";
 import { findProductMetafieldForMetaobjectType } from "../services/price-tags/metafield.server";
@@ -40,6 +43,9 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
       metaobjectTypes,
       priceTagDefaults,
       fieldDefinitions: null as Awaited<ReturnType<typeof fetchMetaobjectDefinitionFields>> | null,
+      initialSelectedProducts: [] as Array<{ id: string; title: string; image: string | null }>,
+      initialSelectedCollections: [] as Array<{ id: string; title: string; image: string | null; productCount: number }>,
+      isStuckActivation: false,
     };
   }
 
@@ -57,7 +63,41 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     fieldDefinitions = await fetchMetaobjectDefinitionFields(admin, campaign.priceTagMetaobjectType).catch(() => null);
   }
 
-  return { isNew: false, campaign, productTypes, metaobjectTypes, priceTagDefaults, fieldDefinitions };
+  // Hydrate selected products / collections from persisted GIDs so the
+  // editor form reflects the saved filter (C1: prevents Save-wipes-filter).
+  let initialSelectedProducts: Array<{ id: string; title: string; image: string | null }> = [];
+  let initialSelectedCollections: Array<{ id: string; title: string; image: string | null; productCount: number }> = [];
+  try {
+    const storedIds: string[] = campaign.filterValues ? JSON.parse(campaign.filterValues) : [];
+    if (campaign.filterType === "products" && storedIds.length > 0) {
+      initialSelectedProducts = await getProductsByIds(admin, storedIds);
+    } else if (campaign.filterType === "collections" && storedIds.length > 0) {
+      initialSelectedCollections = await getCollectionsByIds(admin, storedIds);
+    }
+  } catch (err) {
+    console.warn(`[bulk-price] hydrate filter values FAILED campaign=${id} shop=${shop}`, err);
+  }
+
+  // Stuck-campaign detection (W1): a draft campaign with leftover
+  // BulkPriceCampaignItem rows means the previous activation crashed
+  // between item insertion and the status flip.
+  let isStuckActivation = false;
+  if (campaign.status === "draft") {
+    const orphanCount = await prisma.bulkPriceCampaignItem.count({ where: { campaignId: campaign.id } });
+    isStuckActivation = orphanCount > 0;
+  }
+
+  return {
+    isNew: false,
+    campaign,
+    productTypes,
+    metaobjectTypes,
+    priceTagDefaults,
+    fieldDefinitions,
+    initialSelectedProducts,
+    initialSelectedCollections,
+    isStuckActivation,
+  };
 };
 
 // ---------------------------------------------------------------------------
@@ -129,7 +169,18 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     const endAtRaw = formData.get("endAt") as string;
     const endAt = endAtRaw ? new Date(endAtRaw) : null;
 
-    const status = startAt > new Date() ? "scheduled" : "draft";
+    // Preserve `active` status when saving an already-running campaign.
+    // For everything else, derive status from the start date.
+    const existing =
+      params.id && params.id !== "new"
+        ? await prisma.bulkPriceCampaign.findUnique({ where: { id: params.id } })
+        : null;
+    const status =
+      existing?.status === "active"
+        ? "active"
+        : startAt > new Date()
+          ? "scheduled"
+          : "draft";
 
     const priceTagsEnabled = formData.get("priceTagsEnabled") === "true";
     const priceTagMetaobjectType = (formData.get("priceTagMetaobjectType") as string) || null;
@@ -195,6 +246,33 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     return { intent: "save", ok: true };
   }
 
+  // --- Preview scope (dry-run of resolveProducts) ---
+  if (intent === "previewScope") {
+    const filterType = formData.get("filterType") as string;
+    const filterValues = JSON.parse((formData.get("filterValues") as string) || "[]");
+    const excludeEnabled = formData.get("excludeEnabled") === "true";
+    const excludeValues = JSON.parse((formData.get("excludeValues") as string) || "[]");
+    try {
+      const result = await previewCampaignScope(admin, {
+        filterType,
+        filterValues,
+        excludeEnabled,
+        excludeValues,
+      });
+      return { intent: "previewScope", ok: true, ...result };
+    } catch (err) {
+      console.error(`[bulk-price] previewScope FAILED shop=${shop}`, err);
+      return {
+        intent: "previewScope",
+        ok: false,
+        productCount: 0,
+        variantCount: 0,
+        sampleTitles: [] as string[],
+        error: String(err),
+      };
+    }
+  }
+
   // --- Activate ---
   if (intent === "activate") {
     const result = await activateCampaign(admin, prisma, params.id!);
@@ -226,6 +304,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         excludeValues: source.excludeValues,
         startAt: new Date(),
         endAt: null,
+        priceTagsEnabled: source.priceTagsEnabled,
+        priceTagMetaobjectType: source.priceTagMetaobjectType,
+        priceTagDisplayNameKey: source.priceTagDisplayNameKey,
+        priceTagFieldDefaults: source.priceTagFieldDefaults,
+        priceTagMetafieldNamespace: source.priceTagMetafieldNamespace,
+        priceTagMetafieldKey: source.priceTagMetafieldKey,
       },
     });
     console.info(`[bulk-price] campaign duplicated from=${params.id} to=${copy.id} shop=${shop}`);
@@ -247,14 +331,30 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 // ---------------------------------------------------------------------------
 
 export default function CampaignDetail() {
-  const { isNew, campaign, productTypes, metaobjectTypes, priceTagDefaults, fieldDefinitions } = useLoaderData<typeof loader>();
+  const {
+    isNew,
+    campaign,
+    productTypes,
+    metaobjectTypes,
+    priceTagDefaults,
+    fieldDefinitions,
+    initialSelectedProducts,
+    initialSelectedCollections,
+    isStuckActivation,
+  } = useLoaderData<typeof loader>();
   const { t } = useTranslation("merchandising");
   const navigate = useNavigate();
-  const fetcher = useFetcher<typeof action>();
+  // Per-intent fetchers so spinners/labels never overlap.
+  const saveFetcher = useFetcher<typeof action>();
+  const activateFetcher = useFetcher<typeof action>();
+  const deactivateFetcher = useFetcher<typeof action>();
+  const duplicateFetcher = useFetcher<typeof action>();
+  const deleteFetcher = useFetcher<typeof action>();
   const searchFetcher = useFetcher<typeof action>();
   const collectionSearchFetcher = useFetcher<typeof action>();
   const fieldDefsFetcher = useFetcher<typeof action>();
   const saveConfigFetcher = useFetcher<typeof action>();
+  const previewScopeFetcher = useFetcher<typeof action>();
 
   // Form state
   const [name, setName] = useState(campaign?.name ?? "");
@@ -266,10 +366,10 @@ export default function CampaignDetail() {
   );
   const [selectedProducts, setSelectedProducts] = useState<
     Array<{ id: string; title: string; image: string | null }>
-  >([]);
+  >(initialSelectedProducts ?? []);
   const [selectedCollections, setSelectedCollections] = useState<
     Array<{ id: string; title: string; image: string | null; productCount: number }>
-  >([]);
+  >(initialSelectedCollections ?? []);
   const [excludeEnabled, setExcludeEnabled] = useState(campaign?.excludeEnabled ?? false);
   const [excludeTags, setExcludeTags] = useState<string[]>(
     campaign?.excludeValues ? JSON.parse(campaign.excludeValues) : [],
@@ -315,6 +415,14 @@ export default function CampaignDetail() {
   const [ptAsideCollapsed, setPtAsideCollapsed] = useState(true);
   const [ptAsideSaved, setPtAsideSaved] = useState(false);
 
+  // Delete confirmation modal (W4)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+  // Result banner (C4) — surfaces save/activate/deactivate/duplicate outcomes.
+  const [banner, setBanner] = useState<
+    { tone: "success" | "critical" | "warning" | "info"; message: string } | null
+  >(null);
+
   useEffect(() => {
     const data = saveConfigFetcher.data as any;
     if (data?.intent === "saveFieldDefaults" && data.ok) {
@@ -323,6 +431,77 @@ export default function CampaignDetail() {
       return () => clearTimeout(timer);
     }
   }, [saveConfigFetcher.data]);
+
+  // Surface save outcome.
+  useEffect(() => {
+    const data = saveFetcher.data as any;
+    if (!data || saveFetcher.state !== "idle") return;
+    if (data.intent === "save" && data.ok) {
+      setBanner({ tone: "success", message: t("campaigns.saveSuccess") });
+    }
+  }, [saveFetcher.data, saveFetcher.state, t]);
+
+  // Surface activate outcome.
+  useEffect(() => {
+    const data = activateFetcher.data as any;
+    if (!data || activateFetcher.state !== "idle") return;
+    if (data.intent !== "activate") return;
+    const errs: string[] = Array.isArray(data.errors) ? data.errors : [];
+    if (data.ok && errs.length === 0) {
+      setBanner({
+        tone: "success",
+        message: t("campaigns.activateSuccess", {
+          products: data.productCount ?? 0,
+          variants: data.variantCount ?? 0,
+        }),
+      });
+    } else if (data.ok && errs.length > 0) {
+      setBanner({
+        tone: "warning",
+        message: t("campaigns.activatePartial", {
+          products: data.productCount ?? 0,
+          variants: data.variantCount ?? 0,
+          errors: errs.join("; "),
+        }),
+      });
+    } else {
+      setBanner({
+        tone: "critical",
+        message: t("campaigns.activateFailed", {
+          errors: errs.length > 0 ? errs.join("; ") : t("campaigns.unknownError"),
+        }),
+      });
+    }
+  }, [activateFetcher.data, activateFetcher.state, t]);
+
+  // Surface deactivate outcome.
+  useEffect(() => {
+    const data = deactivateFetcher.data as any;
+    if (!data || deactivateFetcher.state !== "idle") return;
+    if (data.intent !== "deactivate") return;
+    const errs: string[] = Array.isArray(data.errors) ? data.errors : [];
+    if (data.ok && errs.length === 0) {
+      setBanner({
+        tone: "success",
+        message: t("campaigns.deactivateSuccess", { reverted: data.reverted ?? 0 }),
+      });
+    } else if (data.ok && errs.length > 0) {
+      setBanner({
+        tone: "warning",
+        message: t("campaigns.deactivatePartial", {
+          reverted: data.reverted ?? 0,
+          errors: errs.join("; "),
+        }),
+      });
+    } else {
+      setBanner({
+        tone: "critical",
+        message: t("campaigns.deactivateFailed", {
+          errors: errs.length > 0 ? errs.join("; ") : t("campaigns.unknownError"),
+        }),
+      });
+    }
+  }, [deactivateFetcher.data, deactivateFetcher.state, t]);
 
   const tzOffset = useMemo(() => {
     const offset = new Date().getTimezoneOffset();
@@ -404,7 +583,7 @@ export default function CampaignDetail() {
       setModalQuery(query);
       if (searchTimer.current) clearTimeout(searchTimer.current);
       searchTimer.current = setTimeout(() => {
-        if (query.length >= 2) {
+        if (query.trim().length > 0) {
           searchFetcher.submit(
             { _action: "searchProducts", query },
             { method: "POST" },
@@ -421,13 +600,37 @@ export default function CampaignDetail() {
       ? (searchFetcher.data as { products: Array<{ id: string; title: string; image: string | null }> }).products
       : [];
 
+  // Sync React modal state with s-modal native close events so dismissing
+  // via escape key / backdrop click flips state back (C6).
+  useEffect(() => {
+    if (!modalOpen) return;
+    const el = document.getElementById("product-browse-modal");
+    if (!el) return;
+    const handler = () => setModalOpen(false);
+    el.addEventListener("close", handler);
+    return () => el.removeEventListener("close", handler);
+  }, [modalOpen]);
+
+  useEffect(() => {
+    if (!collectionModalOpen) return;
+    const el = document.getElementById("collection-browse-modal");
+    if (!el) return;
+    const handler = () => setCollectionModalOpen(false);
+    el.addEventListener("close", handler);
+    return () => el.removeEventListener("close", handler);
+  }, [collectionModalOpen]);
+
   // Tag input
   const [tagInput, setTagInput] = useState("");
 
   // Status
   const status = campaign?.status ?? "draft";
   const isActive = status === "active";
-  const isSubmitting = fetcher.state !== "idle";
+  const isSaving = saveFetcher.state !== "idle";
+  const isActivating = activateFetcher.state !== "idle";
+  const isDeactivating = deactivateFetcher.state !== "idle";
+  const isDuplicating = duplicateFetcher.state !== "idle";
+  const isDeleting = deleteFetcher.state !== "idle";
 
   // Preview computation
   const discVal = parseFloat(discountValue) || 0;
@@ -446,7 +649,7 @@ export default function CampaignDetail() {
         ? JSON.stringify(selectedCollections.map((c) => c.id))
         : JSON.stringify(selectedProducts.map((p) => p.id));
 
-    fetcher.submit(
+    saveFetcher.submit(
       {
         _action: "save",
         name,
@@ -469,6 +672,73 @@ export default function CampaignDetail() {
     );
   };
 
+  const handleActivate = useCallback(() => {
+    activateFetcher.submit({ _action: "activate" }, { method: "POST" });
+  }, [activateFetcher]);
+
+  const handleDeactivate = useCallback(() => {
+    deactivateFetcher.submit({ _action: "deactivate" }, { method: "POST" });
+  }, [deactivateFetcher]);
+
+  const handleDuplicate = useCallback(() => {
+    duplicateFetcher.submit({ _action: "duplicate" }, { method: "POST" });
+  }, [duplicateFetcher]);
+
+  const handleDelete = useCallback(() => {
+    deleteFetcher.submit({ _action: "delete" }, { method: "POST" });
+  }, [deleteFetcher]);
+
+  const handlePreviewScope = useCallback(() => {
+    const filterValues =
+      filterType === "product_types"
+        ? JSON.stringify(selectedTypes)
+        : filterType === "collections"
+          ? JSON.stringify(selectedCollections.map((c) => c.id))
+          : JSON.stringify(selectedProducts.map((p) => p.id));
+
+    const key = JSON.stringify({
+      filterType,
+      types: selectedTypes,
+      cols: selectedCollections.map((c) => c.id),
+      prods: selectedProducts.map((p) => p.id),
+      excludeEnabled,
+      excludeTags,
+    });
+    setLastPreviewKey(key);
+
+    previewScopeFetcher.submit(
+      {
+        _action: "previewScope",
+        filterType,
+        filterValues,
+        excludeEnabled: String(excludeEnabled),
+        excludeValues: JSON.stringify(excludeTags),
+      },
+      { method: "POST" },
+    );
+  }, [previewScopeFetcher, filterType, selectedTypes, selectedCollections, selectedProducts, excludeEnabled, excludeTags]);
+
+  // Clear the scope preview whenever the filter changes so a stale count
+  // can't be mistaken for the current filter.
+  const previewScopeKey = useMemo(
+    () =>
+      JSON.stringify({
+        filterType,
+        types: selectedTypes,
+        cols: selectedCollections.map((c) => c.id),
+        prods: selectedProducts.map((p) => p.id),
+        excludeEnabled,
+        excludeTags,
+      }),
+    [filterType, selectedTypes, selectedCollections, selectedProducts, excludeEnabled, excludeTags],
+  );
+  const [lastPreviewKey, setLastPreviewKey] = useState<string | null>(null);
+  const previewScopeData =
+    lastPreviewKey === previewScopeKey && (previewScopeFetcher.data as any)?.intent === "previewScope"
+      ? (previewScopeFetcher.data as any)
+      : null;
+  const isPreviewingScope = previewScopeFetcher.state !== "idle";
+
   const handleSavePtConfig = useCallback(() => {
     saveConfigFetcher.submit(
       {
@@ -484,6 +754,12 @@ export default function CampaignDetail() {
 
   return (
     <>
+      {banner && (
+        <s-banner tone={banner.tone} onDismiss={() => setBanner(null)}>
+          {banner.message}
+        </s-banner>
+      )}
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <s-button variant="tertiary" onClick={() => navigate("/app/merchandising/sale")}>
@@ -505,26 +781,27 @@ export default function CampaignDetail() {
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
           {!isNew && status !== "active" && (
-            <fetcher.Form method="POST">
-              <input type="hidden" name="_action" value="duplicate" />
-              <s-button variant="secondary">{t("campaigns.duplicate")}</s-button>
-            </fetcher.Form>
+            isDuplicating ? (
+              <s-button variant="secondary" loading disabled>{t("campaigns.duplicate")}</s-button>
+            ) : (
+              <s-button variant="secondary" onClick={handleDuplicate}>
+                {t("campaigns.duplicate")}
+              </s-button>
+            )
           )}
           {(status === "expired" || status === "scheduled" || status === "draft") && !isNew && (
-            <fetcher.Form method="POST">
-              <input type="hidden" name="_action" value="activate" />
-              <s-button variant="primary">
-                {isSubmitting ? t("campaigns.activating") : t("campaigns.activate")}
-              </s-button>
-            </fetcher.Form>
+            isActivating ? (
+              <s-button variant="primary" loading disabled>{t("campaigns.activating")}</s-button>
+            ) : (
+              <s-button variant="primary" onClick={handleActivate}>{t("campaigns.activate")}</s-button>
+            )
           )}
           {status === "active" && (
-            <fetcher.Form method="POST">
-              <input type="hidden" name="_action" value="deactivate" />
-              <s-button variant="primary" tone="critical">
-                {isSubmitting ? t("campaigns.deactivating") : t("campaigns.deactivate")}
-              </s-button>
-            </fetcher.Form>
+            isDeactivating ? (
+              <s-button variant="primary" tone="critical" loading disabled>{t("campaigns.deactivating")}</s-button>
+            ) : (
+              <s-button variant="primary" tone="critical" onClick={handleDeactivate}>{t("campaigns.deactivate")}</s-button>
+            )
           )}
         </div>
       </div>
@@ -532,6 +809,18 @@ export default function CampaignDetail() {
       <div className={styles.campaignLayout}>
         {/* --- Main form --- */}
         <div className={styles.campaignMain}>
+
+          {isActive && (
+            <s-banner tone="info">
+              {t("campaigns.activeEditBanner")}
+            </s-banner>
+          )}
+
+          {isStuckActivation && (
+            <s-banner tone="warning">
+              {t("campaigns.stuckRecoveryBanner")}
+            </s-banner>
+          )}
 
           {/* Campaign name */}
           <div className={styles.formSection}>
@@ -662,6 +951,12 @@ export default function CampaignDetail() {
                       placeholder={t("campaigns.searchCollections")}
                       value={collectionQuery}
                       onChange={(e) => handleCollectionSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && collectionQuery.trim()) {
+                          e.preventDefault();
+                          setCollectionModalOpen(true);
+                        }
+                      }}
                       disabled={isActive}
                     />
                   </div>
@@ -669,13 +964,44 @@ export default function CampaignDetail() {
                     variant="secondary"
                     onClick={() => {
                       setCollectionModalOpen(true);
-                      handleCollectionSearch("");
+                      // Carry any typed text into the modal so the search
+                      // results are already populated when it opens.
+                      handleCollectionSearch(collectionQuery);
                     }}
                     disabled={isActive}
                   >
                     {t("campaigns.browse")}
                   </s-button>
                 </div>
+                {collectionQuery && collectionSearchResults.length > 0 && !collectionModalOpen && !isActive && (
+                  <div className={styles.inlineTypeahead}>
+                    {collectionSearchResults.slice(0, 10).map((c: any) => {
+                      const isSelected = selectedCollections.some((sc) => sc.id === c.id);
+                      return (
+                        <div
+                          key={c.id}
+                          className={`${styles.searchResultItem} ${isSelected ? styles.searchResultSelected : ""}`}
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedCollections((prev) => prev.filter((sc) => sc.id !== c.id));
+                            } else {
+                              setSelectedCollections((prev) => [
+                                ...prev,
+                                { id: c.id, title: c.title, image: c.image, productCount: c.productCount },
+                              ]);
+                            }
+                          }}
+                        >
+                          <input type="checkbox" checked={isSelected} readOnly />
+                          <div className={styles.productInfo}>
+                            <div className={styles.productTitle}>{c.title}</div>
+                            <div style={{ fontSize: "12px", color: "#6d7175" }}>{c.productCount} products</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
                 {selectedCollections.length > 0 && (
                   <div className={styles.badgeList}>
                     {selectedCollections.map((c) => (
@@ -748,7 +1074,10 @@ export default function CampaignDetail() {
                       <div className={styles.modalActions}>
                         <s-button
                           variant="secondary"
-                          onClick={() => document.getElementById("collection-browse-modal")?.removeAttribute("open")}
+                          onClick={() => {
+                            document.getElementById("collection-browse-modal")?.removeAttribute("open");
+                            setCollectionModalOpen(false);
+                          }}
                         >
                           Done
                         </s-button>
@@ -772,17 +1101,60 @@ export default function CampaignDetail() {
                       placeholder={t("campaigns.searchProducts")}
                       value={modalQuery}
                       onChange={(e) => handleModalSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && modalQuery.trim()) {
+                          e.preventDefault();
+                          setModalOpen(true);
+                        }
+                      }}
                       disabled={isActive}
                     />
                   </div>
                   <s-button
                     variant="secondary"
-                    onClick={() => setModalOpen(true)}
+                    onClick={() => {
+                      setModalOpen(true);
+                      // Typed text already lives in modalQuery and
+                      // searchFetcher already has its results cached.
+                    }}
                     disabled={isActive}
                   >
                     {t("campaigns.browse")}
                   </s-button>
                 </div>
+                {modalQuery && searchResults.length > 0 && !modalOpen && !isActive && (
+                  <div className={styles.inlineTypeahead}>
+                    {searchResults.slice(0, 10).map((p) => {
+                      const isSelected = selectedProducts.some((sp) => sp.id === p.id);
+                      return (
+                        <div
+                          key={p.id}
+                          className={`${styles.searchResultItem} ${isSelected ? styles.searchResultSelected : ""}`}
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedProducts((prev) => prev.filter((sp) => sp.id !== p.id));
+                            } else {
+                              setSelectedProducts((prev) => [
+                                ...prev,
+                                { id: p.id, title: p.title, image: p.image },
+                              ]);
+                            }
+                          }}
+                        >
+                          <input type="checkbox" checked={isSelected} readOnly />
+                          {p.image ? (
+                            <img src={p.image} alt="" className={styles.productThumb} />
+                          ) : (
+                            <div className={styles.productThumbPlaceholder}>🖼</div>
+                          )}
+                          <div className={styles.productInfo}>
+                            <div className={styles.productTitle}>{p.title}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
                 {selectedProducts.length > 0 && (
                   <div style={{ marginTop: "12px" }}>
                     {selectedProducts.map((p) => (
@@ -868,7 +1240,10 @@ export default function CampaignDetail() {
                       <div className={styles.modalActions}>
                         <s-button
                           variant="secondary"
-                          onClick={() => document.getElementById("product-browse-modal")?.removeAttribute("open")}
+                          onClick={() => {
+                            document.getElementById("product-browse-modal")?.removeAttribute("open");
+                            setModalOpen(false);
+                          }}
                         >
                           Done
                         </s-button>
@@ -938,6 +1313,15 @@ export default function CampaignDetail() {
             )}
           </div>
 
+          {/* Price Tags toggle */}
+          <div className={styles.formSection}>
+            <div className={styles.formSectionTitle}>{t("campaigns.priceTags")}</div>
+            <div className={styles.checkboxToggle} onClick={() => !isActive && setPriceTagsEnabled(prev => !prev)} role="button">
+              <s-checkbox checked={priceTagsEnabled || undefined} onChange={() => setPriceTagsEnabled(prev => !prev)} disabled={isActive || undefined} />
+              {t("campaigns.addPriceTags")}
+            </div>
+          </div>
+
           {/* Schedule */}
           <div className={styles.formSection}>
             <div className={styles.formSectionTitle}>{t("campaigns.activeDates")}</div>
@@ -989,36 +1373,33 @@ export default function CampaignDetail() {
             )}
           </div>
 
-          {/* Price Tags toggle */}
-          <div className={styles.formSection}>
-            <div className={styles.formSectionTitle}>{t("campaigns.priceTags")}</div>
-            <div className={styles.checkboxToggle} onClick={() => !isActive && setPriceTagsEnabled(prev => !prev)} role="button">
-              <s-checkbox checked={priceTagsEnabled || undefined} onChange={() => setPriceTagsEnabled(prev => !prev)} disabled={isActive || undefined} />
-              {t("campaigns.addPriceTags")}
-            </div>
-          </div>
-
           {/* Save button */}
           {!isActive && (
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              {!isNew && (status === "draft" || status === "cancelled") && (
-                <fetcher.Form method="POST">
-                  <input type="hidden" name="_action" value="delete" />
-                  <s-button variant="secondary" tone="critical">
+              {!isNew && (status === "draft" || status === "cancelled") ? (
+                isDeleting ? (
+                  <s-button variant="secondary" tone="critical" loading disabled>
                     {t("campaigns.delete")}
                   </s-button>
-                </fetcher.Form>
+                ) : (
+                  <s-button variant="secondary" tone="critical" onClick={() => setDeleteConfirmOpen(true)}>
+                    {t("campaigns.delete")}
+                  </s-button>
+                )
+              ) : (
+                <div />
               )}
-              {!isNew && status !== "draft" && status !== "cancelled" && <div />}
-              {isNew && <div />}
-              <s-button
-                variant="primary"
-                onClick={handleSave}
-                disabled={!name || !startDate || discVal <= 0}
-                loading={isSubmitting}
-              >
-                {isSubmitting ? t("campaigns.saving") : t("campaigns.save")}
-              </s-button>
+              {isSaving ? (
+                <s-button variant="primary" loading disabled>{t("campaigns.saving")}</s-button>
+              ) : (
+                <s-button
+                  variant="primary"
+                  onClick={handleSave}
+                  disabled={!name || !startDate || discVal <= 0 || undefined}
+                >
+                  {t("campaigns.save")}
+                </s-button>
+              )}
             </div>
           )}
         </div>
@@ -1070,6 +1451,73 @@ export default function CampaignDetail() {
                   );
                 })()}
               </div>
+            </div>
+          </div>
+
+          {/* Summary */}
+          <div className={styles.formSection}>
+            <h3 className={styles.modalTitle}>{t("campaigns.summary")}</h3>
+            <div style={{ marginTop: "12px", fontSize: "13px" }}>
+              <p style={{ color: "#6d7175", marginBottom: "4px" }}>{name || "---"}</p>
+              <p style={{ fontWeight: 600, marginBottom: "8px" }}>{t("campaigns.campaignType")}</p>
+              <ul style={{ margin: "0 0 12px 16px", padding: 0, color: "#6d7175", fontSize: "13px" }}>
+                <li>{t("campaigns.priceRuleAndClearance")}</li>
+                <li>{discVal}{discountType === "percentage" ? "%" : " R$"} {t("campaigns.off")}</li>
+              </ul>
+              <p style={{ fontWeight: 600, marginBottom: "8px" }}>{t("campaigns.details")}</p>
+              <ul style={{ margin: "0 0 0 16px", padding: 0, color: "#6d7175", fontSize: "13px" }}>
+                {filterType === "product_types" && selectedTypes.length > 0 && (
+                  <li>{t("campaigns.appliesToProductTypes")}</li>
+                )}
+                {filterType === "collections" && selectedCollections.length > 0 && (
+                  <li>{t("campaigns.appliesToCollections")}</li>
+                )}
+                {filterType === "products" && selectedProducts.length > 0 && (
+                  <li>{t("campaigns.appliesToProducts")}</li>
+                )}
+                {excludeEnabled && excludeTags.length > 0 && (
+                  <li>{t("campaigns.excludesProductTags")}</li>
+                )}
+                {startDate && <li>Start: {startDate}{startTime ? ` ${startTime}` : ""}</li>}
+                {hasEndDate && endDate && <li>End: {endDate}{endTime ? ` ${endTime}` : ""}</li>}
+                <li>Price tags: {priceTagsEnabled ? t("campaigns.tagsOn") : t("campaigns.tagsOff")}</li>
+              </ul>
+
+              <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
+                {isPreviewingScope ? (
+                  <s-button variant="secondary" loading disabled>{t("campaigns.previewScopeLoading")}</s-button>
+                ) : (
+                  <s-button variant="secondary" onClick={handlePreviewScope}>
+                    {t("campaigns.previewScope")}
+                  </s-button>
+                )}
+              </div>
+
+              {previewScopeData && (
+                <div className={styles.scopePreview}>
+                  {previewScopeData.productCount > 0 ? (
+                    <>
+                      <div className={styles.scopePreviewCount}>
+                        {t("campaigns.previewScopeResult", {
+                          products: previewScopeData.productCount,
+                          variants: previewScopeData.variantCount,
+                        })}
+                      </div>
+                      {previewScopeData.sampleTitles?.length > 0 && (
+                        <div className={styles.scopePreviewSamples}>
+                          {t("campaigns.previewScopeSamples", {
+                            samples: previewScopeData.sampleTitles.join(", "),
+                          })}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className={styles.scopePreviewEmpty}>
+                      {t("campaigns.previewScopeEmpty")}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -1200,39 +1648,44 @@ export default function CampaignDetail() {
               </s-section>
             </div>
           )}
-
-          {/* Summary */}
-          <div className={styles.formSection}>
-            <h3 className={styles.modalTitle}>{t("campaigns.summary")}</h3>
-            <div style={{ marginTop: "12px", fontSize: "13px" }}>
-              <p style={{ color: "#6d7175", marginBottom: "4px" }}>{name || "---"}</p>
-              <p style={{ fontWeight: 600, marginBottom: "8px" }}>{t("campaigns.campaignType")}</p>
-              <ul style={{ margin: "0 0 12px 16px", padding: 0, color: "#6d7175", fontSize: "13px" }}>
-                <li>{t("campaigns.priceRuleAndClearance")}</li>
-                <li>{discVal}{discountType === "percentage" ? "%" : " R$"} {t("campaigns.off")}</li>
-              </ul>
-              <p style={{ fontWeight: 600, marginBottom: "8px" }}>{t("campaigns.details")}</p>
-              <ul style={{ margin: "0 0 0 16px", padding: 0, color: "#6d7175", fontSize: "13px" }}>
-                {filterType === "product_types" && selectedTypes.length > 0 && (
-                  <li>{t("campaigns.appliesToProductTypes")}</li>
-                )}
-                {filterType === "collections" && selectedCollections.length > 0 && (
-                  <li>{t("campaigns.appliesToCollections")}</li>
-                )}
-                {filterType === "products" && selectedProducts.length > 0 && (
-                  <li>{t("campaigns.appliesToProducts")}</li>
-                )}
-                {excludeEnabled && excludeTags.length > 0 && (
-                  <li>{t("campaigns.excludesProductTags")}</li>
-                )}
-                {startDate && <li>Start: {startDate}{startTime ? ` ${startTime}` : ""}</li>}
-                {hasEndDate && endDate && <li>End: {endDate}{endTime ? ` ${endTime}` : ""}</li>}
-                <li>Price tags: {priceTagsEnabled ? t("campaigns.tagsOn") : t("campaigns.tagsOff")}</li>
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
+
+      {deleteConfirmOpen && (
+        <s-modal
+          id="campaign-delete-confirm"
+          heading={t("campaigns.deleteTitle")}
+          ref={(el: HTMLElement | null) => { if (el) el.setAttribute("open", ""); }}
+        >
+          <div style={{ padding: "16px" }}>
+            {t("campaigns.deleteConfirm")}
+          </div>
+          <div slot="footer" className={styles.modalFooter}>
+            <div className={styles.modalActions} style={{ marginLeft: "auto" }}>
+              <s-button
+                variant="secondary"
+                onClick={() => {
+                  document.getElementById("campaign-delete-confirm")?.removeAttribute("open");
+                  setDeleteConfirmOpen(false);
+                }}
+              >
+                {t("campaigns.cancel")}
+              </s-button>
+              <s-button
+                variant="primary"
+                tone="critical"
+                onClick={() => {
+                  document.getElementById("campaign-delete-confirm")?.removeAttribute("open");
+                  setDeleteConfirmOpen(false);
+                  handleDelete();
+                }}
+              >
+                {t("campaigns.delete")}
+              </s-button>
+            </div>
+          </div>
+        </s-modal>
+      )}
     </>
   );
 }

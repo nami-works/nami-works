@@ -679,6 +679,114 @@ export async function searchCollections(
 }
 
 // ---------------------------------------------------------------------------
+// Resolve selected products / collections by GID for loader hydration
+// ---------------------------------------------------------------------------
+
+const PRODUCTS_DISPLAY_BY_IDS_QUERY = `#graphql
+  query ProductsDisplayByIds($ids: [ID!]!) {
+    nodes(ids: $ids) {
+      ... on Product {
+        id
+        title
+        featuredMedia { preview { image { url } } }
+      }
+    }
+  }
+`;
+
+const COLLECTIONS_DISPLAY_BY_IDS_QUERY = `#graphql
+  query CollectionsDisplayByIds($ids: [ID!]!) {
+    nodes(ids: $ids) {
+      ... on Collection {
+        id
+        title
+        image { url }
+        productsCount { count }
+      }
+    }
+  }
+`;
+
+export async function getProductsByIds(
+  admin: AdminClient,
+  ids: string[],
+): Promise<Array<{ id: string; title: string; image: string | null }>> {
+  if (ids.length === 0) return [];
+  const response = await admin.graphql(PRODUCTS_DISPLAY_BY_IDS_QUERY, {
+    variables: { ids },
+  });
+  const json = await response.json();
+  const nodes = (json.data?.nodes ?? []) as Array<{
+    id?: string;
+    title?: string;
+    featuredMedia?: { preview?: { image?: { url?: string } } };
+  } | null>;
+  return nodes
+    .filter((n): n is NonNullable<typeof n> => !!n && !!n.id)
+    .map((n) => ({
+      id: n.id!,
+      title: n.title ?? "",
+      image: n.featuredMedia?.preview?.image?.url ?? null,
+    }));
+}
+
+export async function previewCampaignScope(
+  admin: AdminClient,
+  args: {
+    filterType: string;
+    filterValues: string[];
+    excludeEnabled: boolean;
+    excludeValues: string[];
+  },
+): Promise<{ productCount: number; variantCount: number; sampleTitles: string[] }> {
+  // Reuse the real activation resolver by passing a shape-compatible object.
+  const pseudoCampaign = {
+    filterType: args.filterType,
+    filterValues: JSON.stringify(args.filterValues),
+    excludeEnabled: args.excludeEnabled,
+    excludeValues: JSON.stringify(args.excludeValues),
+  } as unknown as BulkPriceCampaign;
+
+  const variants = await resolveProducts(admin, pseudoCampaign);
+  const productGids = Array.from(new Set(variants.map((v) => v.productGid)));
+  const sampleGids = productGids.slice(0, 5);
+  const samples = sampleGids.length > 0 ? await getProductsByIds(admin, sampleGids) : [];
+
+  return {
+    productCount: productGids.length,
+    variantCount: variants.length,
+    sampleTitles: samples.map((s) => s.title).filter(Boolean),
+  };
+}
+
+export async function getCollectionsByIds(
+  admin: AdminClient,
+  ids: string[],
+): Promise<
+  Array<{ id: string; title: string; image: string | null; productCount: number }>
+> {
+  if (ids.length === 0) return [];
+  const response = await admin.graphql(COLLECTIONS_DISPLAY_BY_IDS_QUERY, {
+    variables: { ids },
+  });
+  const json = await response.json();
+  const nodes = (json.data?.nodes ?? []) as Array<{
+    id?: string;
+    title?: string;
+    image?: { url?: string } | null;
+    productsCount?: { count?: number };
+  } | null>;
+  return nodes
+    .filter((n): n is NonNullable<typeof n> => !!n && !!n.id)
+    .map((n) => ({
+      id: n.id!,
+      title: n.title ?? "",
+      image: n.image?.url ?? null,
+      productCount: n.productsCount?.count ?? 0,
+    }));
+}
+
+// ---------------------------------------------------------------------------
 // Apply price tags to campaign products
 // ---------------------------------------------------------------------------
 
