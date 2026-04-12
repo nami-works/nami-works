@@ -298,10 +298,9 @@ export function CpgLabsHome() {
               </span>
             </h1>
             <p className={styles.heroSub}>
-              Add up your last three Shopify app invoices. If it&apos;s north
-              of $150 and you&apos;re only using half the features, we write
-              the one custom feature you&apos;d rather have. $300 to $500
-              setup, $30 to $50 a month hosting.
+              If the answer is &ldquo;too much for features we half-use,&rdquo;
+              we write the exact feature you&apos;d rather have. Shipped inside
+              your Shopify admin in days.
             </p>
             <div className={styles.heroCtas}>
               <a
@@ -309,7 +308,7 @@ export function CpgLabsHome() {
                 href="#pain-form"
                 className={styles.ctaPrimary}
               >
-                Describe your pain
+                Get your tailored app
               </a>
               <a href={CALENDLY_URL} className={styles.heroSecondaryLink}>
                 or book 20 minutes to talk it through

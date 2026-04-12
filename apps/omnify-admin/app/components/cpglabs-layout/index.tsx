@@ -41,7 +41,7 @@ export function CpgLabsNav() {
         </ul>
 
         <a href="#pain-form" className={styles.navCta}>
-          Describe your pain
+          Get your tailored app
         </a>
 
         <ThemeToggle />
