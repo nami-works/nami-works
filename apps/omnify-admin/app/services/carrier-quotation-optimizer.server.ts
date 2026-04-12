@@ -84,8 +84,14 @@ const MAX_STOPS_PER_ROUTE = 7;
 
 /** Detour-based refinement: move an order between routes when
  *  (removal_saving_from_src - insertion_cost_to_dst) exceeds this threshold.
- *  300m ≈ 3 city blocks — meaningful enough to justify a swap. */
-const DETOUR_MIN_GAIN_METERS = 300;
+ *  Adaptive: for small batches (8-10 orders), routes are short and border-zone
+ *  differences are small, so a lower threshold (150m) catches more. For large
+ *  batches (20+), a higher threshold (300m) avoids trivial swaps. */
+const DETOUR_GAIN_FLOOR = 150;
+const DETOUR_GAIN_CEILING = 300;
+const DETOUR_GAIN_PER_ORDER = 15;
+const detourMinGain = (orderCount: number): number =>
+  Math.max(DETOUR_GAIN_FLOOR, Math.min(DETOUR_GAIN_CEILING, orderCount * DETOUR_GAIN_PER_ORDER));
 
 /** Maximum iterations for the detour refinement loop. */
 const DETOUR_REFINEMENT_MAX_ITERATIONS = 3;
@@ -1766,10 +1772,10 @@ export async function optimizeByVRP(
   // ── Phase 5b: Detour-cost refinement ─────────────────────────────────────
   // For each order in a non-minimum-size route, compute the distance saved by
   // removing it from its current route vs. the distance added by inserting it
-  // into another route. If the net gain exceeds DETOUR_MIN_GAIN_METERS, move
-  // the order. This catches orders that are detours in their current route but
-  // sit naturally on the path of another route (e.g. routes that visually
-  // cross each other on the map).
+  // into another route. Threshold is adaptive: lower for small batches where
+  // border-zone differences are subtle, higher for large batches to avoid
+  // trivial swaps.
+  const detourThreshold = detourMinGain(orders.length);
   if (routes.length >= 2) {
     // Build orderId → OptimizerOrderInput lookup once
     const allOrdersById = new Map<string, OptimizerOrderInput>();
@@ -1842,7 +1848,7 @@ export async function optimizeByVRP(
             const soloReward = src.orderIds.length === 1 ? BASE_FEE_METERS_EQUIVALENT : 0;
 
             const netGain = removalSaving - insertionCost + soloReward;
-            if (netGain >= DETOUR_MIN_GAIN_METERS) {
+            if (netGain >= detourThreshold) {
               candidates.push({ orderId: oid, fromRoute: ri, toRoute: rj, netGain });
             }
           }
@@ -1850,7 +1856,7 @@ export async function optimizeByVRP(
       }
 
       if (candidates.length === 0) {
-        console.info(`[vrp-optimizer] Phase 5b: detour refinement iter=${pIter} -- no candidates`);
+        console.info(`[vrp-optimizer] Phase 5b: detour refinement iter=${pIter} -- no candidates (threshold=${detourThreshold}m, orders=${orders.length})`);
         break;
       }
 
