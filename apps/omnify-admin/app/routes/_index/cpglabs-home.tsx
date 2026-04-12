@@ -29,35 +29,35 @@ const HOW_IT_WORKS = [
   {
     step: "02",
     title: "Get a scoped quote",
-    body: "Written scope, fixed setup fee, monthly hosting, in 48 hours.",
+    body: "Fixed scope and price back in 48 hours.",
   },
   {
     step: "03",
     title: "Ship in days",
-    body: "Built as an embedded app. Test on your store before you pay.",
+    body: "Test it on your store before you pay.",
   },
 ];
 
 const FAQS: Array<{ q: string; a: string }> = [
   {
-    q: "Is this actually reliable, or is it a two-hour hack?",
-    a: "Every build runs on AWS with logging, error alerts, and database backups, the same setup we would use for a production app. The two-hour number is how fast AI-assisted development lets us ship the first working version. It's reviewed, tested on your store, and monitored after launch.",
+    q: "Is this reliable or a quick hack?",
+    a: "AWS with logging, backups, and error alerts. AI ships fast. An engineer reviews every line.",
   },
   {
-    q: "Who owns the code if I stop paying?",
-    a: "You own your data forever, exported on request in standard formats. The code itself stays with us so we can maintain it across merchants, but we will never hold your store hostage. If you cancel, the service turns off cleanly and your Shopify admin goes back to exactly how it was.",
+    q: "Who owns the code if I cancel?",
+    a: "You own your data, exported on request. Cancel and the service turns off cleanly. No hostage situations.",
   },
   {
-    q: "Will this lock me into your platform?",
-    a: "The app is a standard Shopify embedded app. Uninstalling it removes it from your admin the same way any app does. We do not modify your theme files, your product data, or your checkout. Whatever we build sits alongside Shopify, not on top of it.",
+    q: "Will this lock me in?",
+    a: "Standard Shopify embedded app. Uninstall it like any other app. We never touch your theme or checkout.",
   },
   {
-    q: "What about maintenance when Shopify changes their API?",
-    a: "Hosting covers that. When Shopify deprecates an API version or ships a breaking change, we update your service before it breaks. You do not get a support ticket, you get a note that we already fixed it.",
+    q: "What about Shopify API changes?",
+    a: "Hosting covers that. When Shopify ships a breaking change, we fix it before it breaks.",
   },
   {
-    q: "How fast can you actually ship?",
-    a: "Most single-feature builds are scoped within 48 hours and shipped within 5 to 10 business days. Bigger builds take longer and we will tell you that in the scope. If we cannot ship something in a reasonable window, we say no instead of dragging it out.",
+    q: "How fast can you ship?",
+    a: "Most builds ship in 5 to 10 business days. If something takes longer, we say so upfront.",
   },
 ];
 
@@ -293,14 +293,16 @@ export function CpgLabsHome() {
             <h1 className={styles.heroHeadline}>
               How much do you spend on Shopify apps?
               <br />
+              The answer is{" "}
               <span className={styles.heroEmphasis}>
-                And how much of it do you actually use?
-              </span>
+                &ldquo;TOO MUCH!&rdquo;
+              </span>{" "}
+              (we know).
             </h1>
             <p className={styles.heroSub}>
-              If the answer is &ldquo;too much for features we half-use,&rdquo;
-              we write the exact feature you&apos;d rather have. Shipped inside
-              your Shopify admin in days.
+              We deliver the features you really will use. Shipped{" "}
+              <em>inside your Shopify</em> admin{" "}
+              <span className={styles.heroUnderline}>in days.</span>
             </p>
             <div className={styles.heroCtas}>
               <a
@@ -340,7 +342,7 @@ export function CpgLabsHome() {
       {/* ── How it works ── */}
       <section id="how-it-works" className={styles.howItWorks}>
         <h2 className={styles.sectionTitle}>
-          From pain to shipped, in three steps.
+          Remove the <em>app excess</em> in three steps.
         </h2>
         <div className={styles.stepsGrid}>
           {HOW_IT_WORKS.map((step) => (
@@ -357,7 +359,7 @@ export function CpgLabsHome() {
       <section id="examples" className={styles.examples}>
         <h2 className={styles.sectionTitle}>Example builds.</h2>
         <p className={styles.sectionSubtitle}>
-          Synthetic data. Your build is scoped to your store.
+          Scoped to your store. Replaces apps you half-use.
         </p>
 
         <div className={styles.examplesGrid}>
@@ -371,23 +373,24 @@ export function CpgLabsHome() {
               <span className={styles.examplePlaceholderText}>CPG Labs</span>
             </div>
             <h3 className={styles.exampleTitle}>
-              Inventory sync with auto-reconciliation
+              Inventory sync across channels
             </h3>
 
             <p className={styles.exampleBody}>
-              <strong>Pain.</strong> Stock drift across Shopify, Amazon, and
-              wholesale. Every Monday someone manually reconciles.
+              <strong>Pain.</strong> Stock drifts. Someone reconciles every
+              Monday.
             </p>
             <p className={styles.exampleBody}>
-              <strong>Fix.</strong> Webhook-driven sync inside your Shopify
-              admin. Emails a summary only when a human is actually needed.
+              <strong>Fix.</strong> Auto-sync inside Shopify. Alerts only when
+              a human is needed.
             </p>
             <p className={styles.exampleBody}>
-              <strong>Outcome.</strong> 4 hours of weekly reconciliation, gone.
+              <strong>Outcome.</strong> 4 hours of reconciliation per week,
+              gone.
             </p>
             <p className={styles.exampleWorksFor}>
-              <strong>Works for:</strong> food and beverage, beauty, and
-              supplements running multi-channel.
+              <strong>Works for:</strong> food/bev, beauty, supplements
+              running multi-channel.
             </p>
           </article>
 
@@ -401,24 +404,23 @@ export function CpgLabsHome() {
               <span className={styles.examplePlaceholderText}>CPG Labs</span>
             </div>
             <h3 className={styles.exampleTitle}>
-              Conditional pricing with customer-tag logic
+              One pricing app, not three
             </h3>
 
             <p className={styles.exampleBody}>
-              <strong>Pain.</strong> Wholesale tiers, subscriber discounts, and
-              bundle rules stacking 3 or 4 apps that collide at checkout.
+              <strong>Pain.</strong> Three pricing apps that collide at
+              checkout. Sound familiar?
             </p>
             <p className={styles.exampleBody}>
-              <strong>Fix.</strong> One embedded app reading customer tag,
-              order history, and cart to apply the right rule at checkout.
+              <strong>Fix.</strong> One app. Reads tag, history, and cart.
+              Right price, every time.
             </p>
             <p className={styles.exampleBody}>
-              <strong>Outcome.</strong> Zero stacked-discount incidents in
-              4 months.
+              <strong>Outcome.</strong> Zero discount collisions in 4 months.
             </p>
             <p className={styles.exampleWorksFor}>
-              <strong>Works for:</strong> food and beverage, beauty
-              subscriptions, supplements with kits and bundles.
+              <strong>Works for:</strong> wholesale tiers, subscriber
+              discounts, bundle pricing.
             </p>
           </article>
         </div>
@@ -428,9 +430,8 @@ export function CpgLabsHome() {
       <section id="how-we-build" className={styles.howWeBuild}>
         <h2 className={styles.sectionTitle}>Production code, not prototypes.</h2>
         <p className={styles.howWeBuildBody}>
-          Built on the same stack Shopify uses for its own embedded apps. Real
-          logging, real backups, real embedded apps. AI handles the boilerplate.
-          A senior engineer reviews every line that touches your store.
+          Same stack Shopify uses. AI writes the boilerplate. An engineer
+          reviews every line.
         </p>
         <div className={styles.stackRow}>
           <span className={styles.stackItem}>React Router</span>
@@ -465,7 +466,7 @@ export function CpgLabsHome() {
               <strong>$300 to $500</strong> per service, one time
             </p>
             <p className={styles.pricingCardBody}>
-              Charged after you test it on your store and sign off.
+              Billed after you sign off.
             </p>
           </div>
           <div className={styles.pricingCard}>
@@ -474,14 +475,12 @@ export function CpgLabsHome() {
               <strong>$30 to $50</strong> per month per service
             </p>
             <p className={styles.pricingCardBody}>
-              Covers AWS, monitoring, and ongoing fixes.
+              AWS, monitoring, fixes included.
             </p>
           </div>
         </div>
         <p className={styles.pricingFootnote}>
-          No per-seat, no per-order, no usage tiers. One service, one line
-          item. Cancel a service and the line item goes away. You own your
-          data. We host the code.
+          No per-seat. No per-order. Cancel anytime. You own your data.
         </p>
       </section>
 
@@ -489,8 +488,7 @@ export function CpgLabsHome() {
       <section id="ltv" className={styles.ltv}>
         <h2 className={styles.sectionTitle}>One app. Add to it over time.</h2>
         <p className={styles.ltvBody}>
-          Start with one service. Add more as new bottlenecks show up, all
-          inside the same CPG Labs app. Same login, one monthly bill.
+          Start with one. Add more over time. Same app, same bill.
         </p>
         <div className={styles.ltvTimeline}>
           {LTV_STEPS.map((step, i) => (
@@ -530,8 +528,7 @@ export function CpgLabsHome() {
             Tell us what&apos;s eating your week.
           </h2>
           <p className={styles.finalCtaBody}>
-            Five fields, no call. Fixed price and timeline back in 48 hours.
-            If it&apos;s not a fit, we say so.
+            Five fields. No call. Quote back in 48 hours.
           </p>
 
           {formSuccess ? (

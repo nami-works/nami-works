@@ -108,6 +108,12 @@
   -webkit-text-fill-color: transparent;
 }
 
+.heroUnderline {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
+}
+
 .heroSub {
   font-size: 16px;
   font-weight: 400;
