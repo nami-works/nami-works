@@ -12,7 +12,7 @@
   background: var(--site-holo-gradient);
   color: #1d1d1f;
   border: none;
-  border-radius: 12px;
+  border-radius: 999px;
   padding: 16px 28px;
   font-size: 16px;
   font-weight: 600;
@@ -163,7 +163,7 @@
 /* ── Wedge strip ── */
 
 .wedgeStrip {
-  padding: 24px 20px;
+  padding: 32px 20px;
   border-top: 1px solid var(--site-border);
   border-bottom: 1px solid var(--site-border);
   background: var(--site-surface);
@@ -181,12 +181,12 @@
 .wedgeChip {
   display: inline-flex;
   align-items: center;
-  padding: 8px 16px;
+  padding: 10px 20px;
   font-size: 14px;
   font-weight: 500;
   color: var(--site-text);
-  background: var(--site-bg);
-  border: 1px solid var(--site-border);
+  background: var(--site-surface);
+  border: 1px solid var(--site-text-secondary);
   border-radius: 999px;
   text-decoration: none;
   transition: border-color 0.15s ease, color 0.15s ease;
