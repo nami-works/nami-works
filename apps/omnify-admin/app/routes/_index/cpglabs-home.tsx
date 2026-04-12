@@ -24,17 +24,17 @@ const HOW_IT_WORKS = [
   {
     step: "01",
     title: "Describe the pain",
-    body: "Five fields. Your store URL, what's broken in your own words, what you're currently doing to cope, how soon you need it, and where to email you back.",
+    body: "Five fields. No sales call.",
   },
   {
     step: "02",
     title: "Get a scoped quote",
-    body: "Within 48 hours you get a written scope, a fixed setup fee, and a monthly hosting number. No discovery call required.",
+    body: "Written scope, fixed setup fee, monthly hosting, in 48 hours.",
   },
   {
     step: "03",
     title: "Ship in days",
-    body: "We build it as an embedded app inside your Shopify admin. You test it on your real store before you pay the full setup fee.",
+    body: "Built as an embedded app. Test on your store before you pay.",
   },
 ];
 
@@ -291,16 +291,17 @@ export function CpgLabsHome() {
         <div className={styles.heroInner}>
           <div className={styles.heroCopy}>
             <h1 className={styles.heroHeadline}>
-              You&apos;re paying $29 a month for a Shopify app you half-use.
+              How much do you spend on Shopify apps?
               <br />
               <span className={styles.heroEmphasis}>
-                We&apos;ll build the one you actually need for less.
+                And how much of it do you actually use?
               </span>
             </h1>
             <p className={styles.heroSub}>
-              Tell us the workflow that&apos;s eating your week. We scope it,
-              quote it, and ship it as a small embedded app inside your Shopify
-              admin, usually in days.
+              Add up your last three Shopify app invoices. If it&apos;s north
+              of $150 and you&apos;re only using half the features, we write
+              the one custom feature you&apos;d rather have. $300 to $500
+              setup, $30 to $50 a month hosting.
             </p>
             <div className={styles.heroCtas}>
               <a
@@ -355,11 +356,9 @@ export function CpgLabsHome() {
 
       {/* ── Example builds ── */}
       <section id="examples" className={styles.examples}>
-        <h2 className={styles.sectionTitle}>
-          Things we&apos;ve built that no app in the store does quite right.
-        </h2>
+        <h2 className={styles.sectionTitle}>Example builds.</h2>
         <p className={styles.sectionSubtitle}>
-          Synthetic examples. Your build will be scoped to your store.
+          Synthetic data. Your build is scoped to your store.
         </p>
 
         <div className={styles.examplesGrid}>
@@ -373,32 +372,23 @@ export function CpgLabsHome() {
               <span className={styles.examplePlaceholderText}>CPG Labs</span>
             </div>
             <h3 className={styles.exampleTitle}>
-              Inventory sync with automatic reconciliation
+              Inventory sync with auto-reconciliation
             </h3>
 
             <p className={styles.exampleBody}>
-              <strong>Pain.</strong> You sell on Shopify plus one or two other
-              channels (Amazon, a wholesale portal, a marketplace). Stock drift
-              happens weekly. Every Monday one of your people is manually
-              reconciling the gap. When drift compounds, you oversell and pay
-              for it in refunds and angry emails.
+              <strong>Pain.</strong> Stock drift across Shopify, Amazon, and
+              wholesale. Every Monday someone manually reconciles.
             </p>
             <p className={styles.exampleBody}>
-              <strong>Fix.</strong> One embedded app inside your Shopify admin.
-              Webhook-driven sync that catches drift in real time, reconciles
-              automatically where it can, and emails a one-line summary only
-              when something actually needs a human. No dashboards to babysit.
-              No Monday reconciliation ritual.
+              <strong>Fix.</strong> Webhook-driven sync inside your Shopify
+              admin. Emails a summary only when a human is actually needed.
             </p>
             <p className={styles.exampleBody}>
-              <strong>Example outcome.</strong> Reconciliation labor went from
-              4 hours per week to zero. Three stockouts in 6 months, all caused
-              by supplier delays, none caused by data drift.
+              <strong>Outcome.</strong> 4 hours of weekly reconciliation, gone.
             </p>
             <p className={styles.exampleWorksFor}>
-              <strong>Works for:</strong> food and beverage brands running DTC
-              plus wholesale, beauty brands running DTC plus Amazon, supplements
-              brands where drift is a compliance risk.
+              <strong>Works for:</strong> food and beverage, beauty, and
+              supplements running multi-channel.
             </p>
           </article>
 
@@ -416,32 +406,20 @@ export function CpgLabsHome() {
             </h3>
 
             <p className={styles.exampleBody}>
-              <strong>Pain.</strong> Your pricing isn&apos;t &ldquo;one price
-              for everyone.&rdquo; You have wholesale tiers for some customers,
-              subscriber discounts for others, bundle-based pricing, loyalty
-              rules, maybe a VIP code for friends and family. To pull this off
-              you&apos;re stacking 3 or 4 Shopify apps and praying they
-              don&apos;t collide at checkout. Half the time someone ends up
-              with a 90% discount they shouldn&apos;t have had, or a subscriber
-              loses their tier discount silently.
+              <strong>Pain.</strong> Wholesale tiers, subscriber discounts, and
+              bundle rules stacking 3 or 4 apps that collide at checkout.
             </p>
             <p className={styles.exampleBody}>
-              <strong>Fix.</strong> One embedded app that reads the customer
-              tag, the order history, and the cart contents, then applies
-              exactly the right pricing rule at checkout. One source of truth.
-              No overlapping discounts. No checkout bugs your accountant finds
-              first.
+              <strong>Fix.</strong> One embedded app reading customer tag,
+              order history, and cart to apply the right rule at checkout.
             </p>
             <p className={styles.exampleBody}>
-              <strong>Example outcome.</strong> Three discount apps uninstalled.
-              Zero stacked-discount incidents in 4 months. Checkout bug tickets
-              during the holiday push went from 7 per day to zero.
+              <strong>Outcome.</strong> Zero stacked-discount incidents in
+              4 months.
             </p>
             <p className={styles.exampleWorksFor}>
-              <strong>Works for:</strong> food and beverage brands that need
-              wholesale pricing parity, beauty brands running subscription
-              loyalty tiers, supplements brands pricing bundles and kits
-              differently than singles.
+              <strong>Works for:</strong> food and beverage, beauty
+              subscriptions, supplements with kits and bundles.
             </p>
           </article>
         </div>
@@ -451,13 +429,9 @@ export function CpgLabsHome() {
       <section id="how-we-build" className={styles.howWeBuild}>
         <h2 className={styles.sectionTitle}>Production code, not prototypes.</h2>
         <p className={styles.howWeBuildBody}>
-          We build on the same stack Shopify recommends for its own embedded
-          apps. React Router, TypeScript, Prisma, and the Shopify Admin API,
-          hosted on AWS with real logging and backups. Every build lives inside
-          your Shopify admin as a proper embedded app, not a Chrome extension
-          or a Zapier chain. AI-assisted development is why a two-hour feature
-          is viable at this price, but a senior engineer reviews every line
-          that touches your store.
+          Built on the same stack Shopify uses for its own embedded apps. Real
+          logging, real backups, real embedded apps. AI handles the boilerplate.
+          A senior engineer reviews every line that touches your store.
         </p>
         <div className={styles.stackRow}>
           <span className={styles.stackItem}>React Router</span>
@@ -516,11 +490,8 @@ export function CpgLabsHome() {
       <section id="ltv" className={styles.ltv}>
         <h2 className={styles.sectionTitle}>One app. Add to it over time.</h2>
         <p className={styles.ltvBody}>
-          Start with the one thing that&apos;s costing you hours this month.
-          When the next bottleneck shows up, we add it to the same embedded
-          app. Same login, same admin, one monthly bill. Over a year, most
-          stores end up with three or four services living inside one CPG Labs
-          app, replacing six or seven off-the-shelf apps they were half-using.
+          Start with one service. Add more as new bottlenecks show up, all
+          inside the same CPG Labs app. Same login, one monthly bill.
         </p>
         <div className={styles.ltvTimeline}>
           {LTV_STEPS.map((step, i) => (
@@ -542,9 +513,7 @@ export function CpgLabsHome() {
 
       {/* ── FAQ ── */}
       <section id="faq" className={styles.faq}>
-        <h2 className={styles.sectionTitle}>
-          The things merchants ask before they fill out the form.
-        </h2>
+        <h2 className={styles.sectionTitle}>Before you send the form.</h2>
         <div className={styles.faqList}>
           {FAQS.map((item) => (
             <details key={item.q} className={styles.faqItem}>
@@ -562,9 +531,8 @@ export function CpgLabsHome() {
             Tell us what&apos;s eating your week.
           </h2>
           <p className={styles.finalCtaBody}>
-            Five fields, no sales call required. We will read it, scope it, and
-            come back with a fixed price and a timeline. If it&apos;s not a
-            fit, we will say so.
+            Five fields, no call. Fixed price and timeline back in 48 hours.
+            If it&apos;s not a fit, we say so.
           </p>
 
           {formSuccess ? (
