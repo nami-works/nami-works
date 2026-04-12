@@ -4792,8 +4792,9 @@ export default function Index() {
           </pre>
         </s-banner>
       ) : null}
+      <div className={styles.pageLayout}>
+      <div className={styles.fulfillmentBlock}>
       <div
-        slot="aside"
         className={styles.collapsibleSectionWrap}
       >
       <s-section heading={t("filters.fulfillmentDetails")}>
@@ -4905,6 +4906,8 @@ export default function Index() {
         </div>
       </s-section>
       </div>
+      </div>
+      <div className={styles.mapBlock}>
       <div className={styles.mainBlocks}>
         <div className={isFullscreen ? styles.fullscreenOverlay : undefined}>
           <div className={isFullscreen ? styles.fullscreenContent : undefined}>
@@ -5447,9 +5450,11 @@ export default function Index() {
           </div>
         </div>
       </div>
+      </div>
 
+      <div className={styles.routeManagerBlock}>
       {!isFullscreen && isRouteManagerVisible ? (
-      <s-section heading={t("routeManager.heading")} slot="aside">
+      <s-section heading={t("routeManager.heading")}>
           {/* Orders badge + actions menu */}
           <div className={styles.routeManagerStatusRow}>
             <s-badge>{t("filters.ordersToDeliver", { count: mapData.orders.length })}</s-badge>
@@ -5903,7 +5908,7 @@ export default function Index() {
 
       {/* ── Auto-assign accuracy (standalone aside, always visible) ── */}
       {optimizerAccuracy && optimizerAccuracy.optimizations > 0 ? (
-        <div className={styles.collapsibleSectionWrap} slot="aside">
+        <div className={styles.collapsibleSectionWrap}>
           <s-section heading={t("routeManager.autoAssignAccuracy")}>
             {!isAccuracyCollapsed ? (() => {
               const accurate = optimizerAccuracy.totalDispatched - optimizerAccuracy.totalReassigned;
@@ -5941,8 +5946,12 @@ export default function Index() {
           </s-section>
         </div>
       ) : null}
+      </div>
 
+      <div className={styles.ordersBlock}>
       {!isFullscreen ? renderOrdersSection() : null}
+      </div>
+      </div>
     </s-page>
   );
 }
