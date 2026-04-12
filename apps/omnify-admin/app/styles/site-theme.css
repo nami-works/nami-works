@@ -25,3 +25,12 @@
   --site-border: #38383a;
   --site-nav-bg: rgba(0, 0, 0, 0.72);
 }
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--site-bg);
+  color: var(--site-text);
+  min-height: 100vh;
+}
