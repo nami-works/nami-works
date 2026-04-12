@@ -780,19 +780,29 @@ export default function Index() {
     return () => clearInterval(interval);
   }, [hasActiveDispatches]);
 
-  // Sync dispatchedRoutes with loader data on revalidation (status + shareLink updates)
+  // Sync dispatchedRoutes with loader data on revalidation.
+  // Rebuilds state from loader data so entries the loader stopped returning
+  // (e.g. previous-day terminal dispatches) are cleaned up automatically.
   useEffect(() => {
-    if (!activeDispatchData?.length) return;
     setDispatchedRoutes((prev) => {
-      const next = { ...prev };
-      for (const d of activeDispatchData) {
+      const loaderRouteIds = new Set((activeDispatchData ?? []).map((d) => d.routeId));
+      const next: typeof prev = {};
+      // Rebuild from loader data
+      for (const d of activeDispatchData ?? []) {
         next[d.routeId] = {
-          ...next[d.routeId],
-          status: d.status ?? next[d.routeId]?.status,
-          shareLink: d.shareLink ?? next[d.routeId]?.shareLink,
-          lalamoveOrderId: d.lalamoveOrderId ?? next[d.routeId]?.lalamoveOrderId,
-          market: d.market ?? next[d.routeId]?.market,
+          ...prev[d.routeId],
+          status: d.status ?? prev[d.routeId]?.status,
+          shareLink: d.shareLink ?? prev[d.routeId]?.shareLink,
+          lalamoveOrderId: d.lalamoveOrderId ?? prev[d.routeId]?.lalamoveOrderId,
+          market: d.market ?? prev[d.routeId]?.market,
         };
+      }
+      // Keep optimistic "requested" entries not yet in loader data
+      // (just-dispatched routes whose DB record hasn't been picked up yet)
+      for (const [routeId, entry] of Object.entries(prev)) {
+        if (!loaderRouteIds.has(routeId) && entry.status === "requested") {
+          next[routeId] = entry;
+        }
       }
       return next;
     });
@@ -5357,7 +5367,7 @@ export default function Index() {
                                         </s-button>
                                       </div>
                                     </div>
-                                  ) : dispatchedRoutes[route.id]?.status && TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id].status!) ? null : (
+                                  ) : (
                                     <s-stack
                                       direction="inline"
                                       gap="base"
@@ -5799,7 +5809,7 @@ export default function Index() {
                               </s-button>
                             </div>
                           </div>
-                        ) : dispatchedRoutes[route.id]?.status && TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id].status!) ? null : (
+                        ) : (
                           <s-stack
                             direction="inline"
                             gap="base"
@@ -7338,9 +7348,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       .filter((r) => r.hasOrders)
       .map((r) => r.routeId);
 
-    // Single query: all non-terminal dispatches (including COMPLETED) for active routes.
-    // COMPLETED dispatches are filtered below by order overlap, not by date.
-    const terminalExclude = ["cancelled", "CANCELLED", "CANCELED", "failed", "FAILED", "REJECTED", "rejected", "EXPIRED", "expired", "FULFILLED"];
+    // Single query: all non-terminal dispatches for active routes.
+    // Terminal statuses (completed, cancelled, failed, etc.) are excluded at query
+    // level so previous-day dispatches on reused route IDs never block new requests.
+    const terminalExclude = [
+      "cancelled", "CANCELLED", "CANCELED",
+      "failed", "FAILED",
+      "REJECTED", "rejected",
+      "EXPIRED", "expired", "EXPIRED_CUTOFF",
+      "FULFILLED",
+      "COMPLETED", "completed", "delivered", "DELIVERED",
+    ];
     const allDispatches = activeRouteIds.length > 0
       ? await (prisma as any).lalamoveDispatchJob.findMany({
           where: {
@@ -7348,7 +7366,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             routeId: { in: activeRouteIds },
             status: { notIn: terminalExclude },
           },
-          select: { id: true, routeId: true, lalamoveOrderId: true, market: true, status: true },
+          select: { id: true, routeId: true, lalamoveOrderId: true, market: true, status: true, requestedAt: true },
           orderBy: { createdAt: "desc" },
         })
       : [];
@@ -7359,34 +7377,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       if (!latestByRoute.has(d.routeId)) latestByRoute.set(d.routeId, d);
     }
 
-    // Order-overlap filter for COMPLETED dispatches.
-    // Active dispatches (driver en route) always show. COMPLETED dispatches only
-    // show if their orders overlap with the current route's orders — this prevents
-    // stale dispatches from previous days (whose route ID was reused) from blocking.
-    const deduped = Array.from(latestByRoute.values());
-    const completedIds = deduped
-      .filter((d: any) => ["COMPLETED", "completed"].includes(d.status))
-      .map((d: any) => d.id as string);
-
-    let overlappingCompleted = new Set<string>();
-    if (completedIds.length > 0) {
-      const currentRouteOrderIds = new Set<string>();
-      routeStats.forEach((r) => r.orders.forEach((o) => currentRouteOrderIds.add(o.orderId)));
-
-      const orderMaps = await (prisma as any).lalamoveDispatchOrderMap.findMany({
-        where: { shop, dispatchJobId: { in: completedIds } },
-        select: { dispatchJobId: true, shopifyOrderId: true },
-      });
-      for (const m of orderMaps) {
-        if (currentRouteOrderIds.has(m.shopifyOrderId)) {
-          overlappingCompleted.add(m.dispatchJobId);
-        }
-      }
-    }
-
-    const activeDispatches = deduped.filter((d: any) =>
-      ["COMPLETED", "completed"].includes(d.status) ? overlappingCompleted.has(d.id) : true,
-    );
+    const activeDispatches = Array.from(latestByRoute.values());
 
     // Reconcile with Lalamove API — check current status and capture shareLink
     const dispatchDetails = new Map<string, { shareLink: string | null; apiStatus: string | null }>();
@@ -7417,7 +7408,33 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       );
     }
 
-    activeDispatchData = activeDispatches.map((d: any) => ({
+    // Post-reconciliation filter: remove dispatches that became terminal during
+    // API reconciliation, or that are stale intermediates (API unreachable).
+    const STALE_THRESHOLD_MS = 18 * 60 * 60 * 1000;
+    const nowMs = Date.now();
+    const terminalRaw = new Set(["COMPLETED", "CANCELED", "REJECTED", "EXPIRED"]);
+    const finalDispatches = activeDispatches.filter((d: any) => {
+      // Reconciliation may have updated status to terminal
+      if (terminalRaw.has(String(d.status).toUpperCase())) {
+        return false;
+      }
+      // Intermediate dispatches older than 18h are stale (deliveries complete within hours)
+      const age = nowMs - new Date(d.requestedAt).getTime();
+      const isIntermediate = ["ASSIGNING_DRIVER", "ON_GOING", "PICKED_UP"].includes(
+        String(d.status).toUpperCase(),
+      );
+      if (isIntermediate && age > STALE_THRESHOLD_MS) {
+        // Mark as expired in DB so it doesn't come back
+        (prisma as any).lalamoveDispatchJob.update({
+          where: { id: d.id },
+          data: { status: "EXPIRED" },
+        }).catch(() => {});
+        return false;
+      }
+      return true;
+    });
+
+    activeDispatchData = finalDispatches.map((d: any) => ({
       routeId: d.routeId as string,
       shareLink: dispatchDetails.get(d.routeId)?.shareLink ?? null,
       status: mapLalamoveStatusToInternal(dispatchDetails.get(d.routeId)?.apiStatus ?? d.status),
@@ -8642,7 +8659,7 @@ if (intent === "lalamove-place-order") {
             locationId,
             routeId,
             requestedAt: { gte: startOfToday },
-            status: { notIn: ["cancelled", "CANCELLED", "CANCELED", "failed", "FAILED", "COMPLETED", "completed", "REJECTED", "rejected", "EXPIRED", "expired"] },
+            status: { notIn: ["cancelled", "CANCELLED", "CANCELED", "failed", "FAILED", "COMPLETED", "completed", "REJECTED", "rejected", "EXPIRED", "expired", "delivered", "DELIVERED", "FULFILLED"] },
           },
         });
         if (existingDispatch) {
