@@ -60,7 +60,7 @@
 /* ── Hero ── */
 
 .hero {
-  padding: 48px 20px 40px;
+  padding: 96px 20px 48px;
   position: relative;
   overflow: hidden;
 }
@@ -192,7 +192,7 @@
 /* ── How it works ── */
 
 .howItWorks {
-  padding: 64px 20px;
+  padding: 48px 20px;
 }
 
 .stepsGrid {
@@ -239,7 +239,7 @@
 /* ── Examples ── */
 
 .examples {
-  padding: 64px 20px;
+  padding: 48px 20px;
   background: var(--site-surface);
 }
 
@@ -317,7 +317,7 @@
 /* ── How we build ── */
 
 .howWeBuild {
-  padding: 64px 20px;
+  padding: 48px 20px;
 }
 
 .howWeBuildBody {
@@ -357,7 +357,7 @@
 /* ── Pricing ── */
 
 .pricing {
-  padding: 64px 20px;
+  padding: 48px 20px;
   background: var(--site-surface);
 }
 
@@ -422,7 +422,7 @@
 /* ── LTV expansion ── */
 
 .ltv {
-  padding: 64px 20px;
+  padding: 48px 20px;
 }
 
 .ltvBody {
@@ -494,7 +494,7 @@
 /* ── FAQ ── */
 
 .faq {
-  padding: 64px 20px;
+  padding: 48px 20px;
   background: var(--site-surface);
 }
 
@@ -557,7 +557,7 @@
 /* ── Final CTA form ── */
 
 .finalCta {
-  padding: 64px 20px 96px;
+  padding: 48px 20px 64px;
 }
 
 .finalCtaInner {
@@ -702,7 +702,7 @@
 
 @media (min-width: 768px) {
   .hero {
-    padding: 120px 40px 80px;
+    padding: 140px 40px 80px;
   }
 
   .heroInner {
@@ -751,11 +751,11 @@
   .pricing,
   .ltv,
   .faq {
-    padding: 96px 40px;
+    padding: 80px 40px;
   }
 
   .finalCta {
-    padding: 96px 40px 120px;
+    padding: 80px 40px 112px;
   }
 
   .sectionTitle {
