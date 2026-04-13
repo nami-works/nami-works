@@ -427,6 +427,31 @@ export default function Index() {
     deliveryAssignments: LalamoveDeliveryAssignment[];
     locationId: string;
   } | null>(null);
+
+  // ── Invalidate stale quotes ──
+  // Clear quotePreview when the quoted route's orders change (drag-drop,
+  // auto-assign, manual assign/unassign — all funnel through editableRoutes).
+  useEffect(() => {
+    if (!quotePreview) return;
+    const route = editableRoutes.find((r) => r.id === quotePreview.routeId);
+    if (!route) { setQuotePreview(null); return; }
+    const currentIds = new Set(route.orderIds);
+    const quotedIds = new Set(quotePreview.orderIds);
+    if (currentIds.size !== quotedIds.size || [...currentIds].some((id) => !quotedIds.has(id))) {
+      setQuotePreview(null);
+    }
+  }, [editableRoutes, quotePreview]);
+
+  // Auto-clear quote when Lalamove's expiration time passes.
+  useEffect(() => {
+    if (!quotePreview?.expiresAt) return;
+    const expiresMs = new Date(quotePreview.expiresAt).getTime() - Date.now();
+    if (expiresMs <= 0) { setQuotePreview(null); return; }
+    const id = setTimeout(() => setQuotePreview(null), expiresMs);
+    return () => clearTimeout(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quotePreview?.expiresAt]);
+
   const [routeQuoteTotals, setRouteQuoteTotals] = useState<
     Record<string, { total: string; currency?: string }>
   >({});
@@ -715,6 +740,17 @@ export default function Index() {
           errorDetails: `${t("driverRequest.outOfAreaOrders")}: ${names}\n\n${t("driverRequest.outOfAreaContinued")}`,
         });
       }
+      // Guard: if the route's orders changed while the quote was in-flight, discard
+      const quotedRoute = editableRoutes.find((r) => r.id === routeId);
+      const responseOrderIds = data.orderIds ?? [];
+      if (quotedRoute) {
+        const currentIds = new Set(quotedRoute.orderIds);
+        const responseIds = new Set(responseOrderIds);
+        if (currentIds.size !== responseIds.size || [...currentIds].some((id) => !responseIds.has(id))) {
+          setAssignmentWarningMessage("Route changed during quoting. Please request a new quote.");
+          return;
+        }
+      }
       setQuotePreview({
         routeId,
         quotationId: quote.quotationId,
@@ -722,7 +758,7 @@ export default function Index() {
         total,
         currency,
         stopIds: (quote.stops ?? []).map((stop) => stop.stopId).filter(Boolean) as string[],
-        orderIds: data.orderIds ?? [],
+        orderIds: responseOrderIds,
         deliveryAssignments: data.deliveryAssignments ?? [],
         locationId: data.locationId ?? "",
       });
