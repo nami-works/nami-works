@@ -216,6 +216,14 @@ export default function Index() {
   const lalamoveFetcher = useFetcher<typeof action>();
   const lalamoveSettingsFetcher = useFetcher<typeof action>();
   const optimizeFetcher = useFetcher<typeof action>();
+  const optimizeLocationRef = useRef("");
+  const [optimizeProgress, setOptimizeProgress] = useState<{
+    phase: string;
+    pct: number;
+    startedAt: number;
+    estimatedMs: number;
+    orderCount: number;
+  } | null>(null);
   const assignFetcher = useFetcher();
   const unassignFetcher = useFetcher();
   const pendingRouteFetcher = useFetcher<typeof action>();
@@ -1048,6 +1056,38 @@ export default function Index() {
       });
     }
   }, [optimizeFetcher.data]);
+
+  // ── Optimize progress timer ──
+  // Advances the progress bar on a 500ms interval using estimated phase durations.
+  // Caps at 95% until the actual response arrives.
+  useEffect(() => {
+    if (!optimizeProgress) return;
+    const { startedAt, estimatedMs } = optimizeProgress;
+    const tick = () => {
+      const elapsed = Date.now() - startedAt;
+      const rawPct = Math.min(95, (elapsed / estimatedMs) * 100);
+      let phase: string;
+      if (rawPct < 5) phase = "Building distance matrix...";
+      else if (rawPct < 10) phase = "Computing route assignments...";
+      else if (rawPct < 40) phase = "Quoting routes with Lalamove...";
+      else if (rawPct < 65) phase = "Rendering driving paths...";
+      else if (rawPct < 95) phase = "Fine-tuning assignments...";
+      else phase = "Finalizing...";
+      setOptimizeProgress((prev) => prev ? { ...prev, pct: rawPct, phase } : null);
+    };
+    tick();
+    const id = setInterval(tick, 500);
+    return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [optimizeProgress?.startedAt, optimizeProgress?.estimatedMs]);
+
+  // Clear progress when fetcher completes (success or error)
+  useEffect(() => {
+    if (optimizeFetcher.state === "idle" && optimizeProgress) {
+      setOptimizeProgress(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [optimizeFetcher.state]);
 
   useEffect(() => {
     if (!lalamoveSettingsFetcher.data) return;
@@ -3463,6 +3503,14 @@ export default function Index() {
       candidates.map((c) => [c.orderId, ordersById.get(c.orderId)?.name ?? c.orderId]),
     );
     setAssignmentWarningMessage(null);
+    optimizeLocationRef.current = locationId;
+    setOptimizeProgress({
+      phase: "Building distance matrix...",
+      pct: 0,
+      startedAt: Date.now(),
+      estimatedMs: Math.max(8000, candidates.length * 1600),
+      orderCount: candidates.length,
+    });
     const formData = new FormData();
     formData.append("intent", "optimize-fleet");
     formData.append("ordersPayload", JSON.stringify(candidates));
@@ -5114,8 +5162,10 @@ export default function Index() {
                     <div className={styles.routeManagerStatusRow}>
                       <s-badge>{t("filters.ordersToDeliver", { count: mapData.orders.length })}</s-badge>
                       {locationId !== DEFAULT_LOCATION_ID ? (
-                        optimizeFetcher.state !== "idle" || updateRoutesFetcher.state !== "idle" ? (
-                          <s-spinner size="base" accessibilityLabel={t("routeManager.autoAssign")}></s-spinner>
+                        optimizeProgress ? (
+                          <div style={{ flex: 1 }} />
+                        ) : updateRoutesFetcher.state !== "idle" ? (
+                          <s-spinner size="base" accessibilityLabel={t("routeManager.updateRoutes")}></s-spinner>
                         ) : (
                           <div className={styles.routeManagerActionsMenu}>
                             <s-button
@@ -5162,6 +5212,33 @@ export default function Index() {
                         )
                       ) : null}
                     </div>
+                    {optimizeProgress ? (
+                      <div className={styles.optimizeProgressWrap}>
+                        <div className={styles.optimizeProgressHeader}>
+                          <span>{optimizeProgress.phase}</span>
+                          <span>~{Math.max(0, Math.ceil((optimizeProgress.estimatedMs - (Date.now() - optimizeProgress.startedAt)) / 1000))}s remaining</span>
+                        </div>
+                        <div className={styles.optimizeProgressBar}>
+                          <div className={styles.optimizeProgressFill} style={{ width: `${optimizeProgress.pct}%` }} />
+                        </div>
+                        {optimizeProgress.estimatedMs > 20000 && (() => {
+                          const otherLoc = locations.find(
+                            (loc) => loc.id !== locationId && orders.some(
+                              (o) => o.fulfillmentLocation.id === loc.id && !assignedOrderIds.has(o.id),
+                            ),
+                          );
+                          if (!otherLoc) return null;
+                          const otherCount = orders.filter(
+                            (o) => o.fulfillmentLocation.id === otherLoc.id && !assignedOrderIds.has(o.id),
+                          ).length;
+                          return otherCount > 0 ? (
+                            <div className={styles.optimizeSuggestionBadge}>
+                              {otherLoc.name} has {otherCount} orders ready to assign
+                            </div>
+                          ) : null;
+                        })()}
+                      </div>
+                    ) : null}
                     {locationId !== DEFAULT_LOCATION_ID ? (() => {
                       const selectedUnassignedCount = unassignedOrders.filter(
                         (o) => selectedOrderIds.has(o.id),
@@ -5459,8 +5536,10 @@ export default function Index() {
           <div className={styles.routeManagerStatusRow}>
             <s-badge>{t("filters.ordersToDeliver", { count: mapData.orders.length })}</s-badge>
             {locationId !== DEFAULT_LOCATION_ID ? (
-              optimizeFetcher.state !== "idle" || updateRoutesFetcher.state !== "idle" ? (
-                <s-spinner size="base" accessibilityLabel={t("routeManager.autoAssign")}></s-spinner>
+              optimizeProgress ? (
+                <div style={{ flex: 1 }} />
+              ) : updateRoutesFetcher.state !== "idle" ? (
+                <s-spinner size="base" accessibilityLabel={t("routeManager.updateRoutes")}></s-spinner>
               ) : (
                 <div className={styles.routeManagerActionsMenu}>
                   <s-button
@@ -5507,6 +5586,33 @@ export default function Index() {
               )
             ) : null}
           </div>
+          {optimizeProgress ? (
+            <div className={styles.optimizeProgressWrap}>
+              <div className={styles.optimizeProgressHeader}>
+                <span>{optimizeProgress.phase}</span>
+                <span>~{Math.max(0, Math.ceil((optimizeProgress.estimatedMs - (Date.now() - optimizeProgress.startedAt)) / 1000))}s remaining</span>
+              </div>
+              <div className={styles.optimizeProgressBar}>
+                <div className={styles.optimizeProgressFill} style={{ width: `${optimizeProgress.pct}%` }} />
+              </div>
+              {optimizeProgress.estimatedMs > 20000 && (() => {
+                const otherLoc = locations.find(
+                  (loc) => loc.id !== locationId && orders.some(
+                    (o) => o.fulfillmentLocation.id === loc.id && !assignedOrderIds.has(o.id),
+                  ),
+                );
+                if (!otherLoc) return null;
+                const otherCount = orders.filter(
+                  (o) => o.fulfillmentLocation.id === otherLoc.id && !assignedOrderIds.has(o.id),
+                ).length;
+                return otherCount > 0 ? (
+                  <div className={styles.optimizeSuggestionBadge}>
+                    {otherLoc.name} has {otherCount} orders ready to assign
+                  </div>
+                ) : null;
+              })()}
+            </div>
+          ) : null}
           {/* ── Auto-assigned pending routes ── */}
           {(() => {
             const visiblePending = locationId === DEFAULT_LOCATION_ID
@@ -7751,6 +7857,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     console.info(`[local-delivery] optimize-fleet OK routes=${result.summary.routeCount} orders=${result.summary.totalOrders}`);
     return {
       ok: true,
+      optimizeLocationId: primaryLocationId,
       optimizedRoutes: result.routes.map((r) => ({
         routeIndex: r.routeIndex,
         locationId: r.locationId,

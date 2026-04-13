@@ -1066,7 +1066,6 @@
 }
 
 
-
 .asideOrdersRow {
   display: flex;
   align-items: center;
@@ -1207,4 +1206,47 @@
   .dueOrdersRow {
     min-width: 1060px;
   }
+}
+
+/* ─── Optimize-fleet progress bar ─────────────────────────────────────────── */
+
+.optimizeProgressWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0;
+}
+
+.optimizeProgressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #6d7175;
+}
+
+.optimizeProgressBar {
+  height: 6px;
+  background: #e1e3e5;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.optimizeProgressFill {
+  height: 100%;
+  background: #008060;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.optimizeSuggestionBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-top: 4px;
+  background: #f0f6ff;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #2c6ecb;
 }
