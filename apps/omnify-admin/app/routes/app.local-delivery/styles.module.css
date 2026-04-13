@@ -1234,8 +1234,10 @@
 
 .optimizeProgressFill {
   height: 100%;
-  background: #008060;
   border-radius: 3px;
+  background: linear-gradient(90deg, #5ecece, #b09fda, #d4a8d4, #5ecece);
+  background-size: 200% 100%;
+  animation: omnify-holo-bar 1.4s linear infinite;
   transition: width 0.5s ease;
 }
 
