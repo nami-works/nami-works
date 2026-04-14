@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { LoaderFunctionArgs } from "react-router";
 import { useFetcher, useLoaderData, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -28,15 +28,35 @@ const STATUS_CLASSES: Record<string, string> = {
   cancelled: styles.statusCancelled ?? "",
 };
 
+const BR_TZ = "America/Sao_Paulo";
+
+function pad2(n: number): string {
+  return n < 10 ? `0${n}` : String(n);
+}
+
+function toLocalDateParts(d: Date | string | null | undefined): { date: string; time: string } {
+  if (!d) return { date: "", time: "" };
+  const date = typeof d === "string" ? new Date(d) : d;
+  return {
+    date: `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`,
+    time: `${pad2(date.getHours())}:${pad2(date.getMinutes())}`,
+  };
+}
+
+function toServerIso(date: string, time: string | undefined, fallbackTime: string): string {
+  if (!date) return "";
+  const t = time && /^\d{2}:\d{2}$/.test(time) ? time : fallbackTime;
+  return `${date}T${t}:00-03:00`;
+}
+
 function formatTime(campaign: Campaign): string {
   const fmt = (d: Date | string | null) => {
     if (!d) return "";
-    const date = new Date(d);
-    return date.toLocaleDateString("en-US", {
+    return new Date(d).toLocaleString("en-US", {
+      timeZone: BR_TZ,
       month: "short",
       day: "2-digit",
       year: "numeric",
-    }) + ", " + date.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
@@ -48,15 +68,6 @@ function formatTime(campaign: Campaign): string {
     return `${start}\nEnd: ${fmt(campaign.endAt)}`;
   }
   return start;
-}
-
-function formatDateForInput(d: Date | string | null): { date: string; time: string } {
-  if (!d) return { date: "", time: "" };
-  const date = new Date(d);
-  return {
-    date: date.toISOString().slice(0, 10),
-    time: date.toTimeString().slice(0, 5),
-  };
 }
 
 export default function CampaignsList() {
@@ -71,29 +82,24 @@ export default function CampaignsList() {
   const deleteFetcher = useFetcher();
   const duplicateFetcher = useFetcher();
 
+  // Modal refs — Polaris <s-modal> uses imperative showOverlay/hideOverlay.
+  const activateModalRef = useRef<any>(null);
+  const deactivateModalRef = useRef<any>(null);
+  const deleteModalRef = useRef<any>(null);
+
   // Banner
   const [banner, setBanner] = useState<
     { tone: "success" | "critical" | "warning"; message: string } | null
   >(null);
 
-  // Activate modal (used for both draft and scheduled)
+  // Activate modal target (used for both draft and scheduled)
   const [activateTarget, setActivateTarget] = useState<Campaign | null>(null);
   const [hasEndDate, setHasEndDate] = useState(false);
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
 
-  // Deactivate confirmation
   const [deactivateTarget, setDeactivateTarget] = useState<Campaign | null>(null);
-
-  // Delete confirmation
   const [deleteTarget, setDeleteTarget] = useState<Campaign | null>(null);
-
-  const tzOffset = (() => {
-    const offset = new Date().getTimezoneOffset();
-    const sign = offset <= 0 ? "+" : "-";
-    const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, "0");
-    return `${sign}${hours}`;
-  })();
 
   // Surface activate result.
   useEffect(() => {
@@ -149,27 +155,13 @@ export default function CampaignsList() {
     }
   }, [deactivateFetcher.data, deactivateFetcher.state, t]);
 
-  // Surface delete completion (no payload — redirects).
-  useEffect(() => {
-    if (deleteFetcher.state === "idle" && deleteFetcher.data === undefined && deleteTarget === null) {
-      // No-op: nothing to surface.
-    }
-  }, [deleteFetcher.state, deleteFetcher.data, deleteTarget]);
-
   const openActivateModal = (campaign: Campaign) => {
     setActivateTarget(campaign);
-    const existing = formatDateForInput(campaign.endAt);
+    const existing = toLocalDateParts(campaign.endAt);
     setHasEndDate(!!campaign.endAt);
     setEndDate(existing.date);
     setEndTime(existing.time);
-    requestAnimationFrame(() => {
-      document.getElementById("sale-activate-modal")?.setAttribute("open", "");
-    });
-  };
-
-  const closeActivateModal = () => {
-    document.getElementById("sale-activate-modal")?.removeAttribute("open");
-    setActivateTarget(null);
+    activateModalRef.current?.showOverlay?.();
   };
 
   const submitActivate = () => {
@@ -179,26 +171,18 @@ export default function CampaignsList() {
     formData.set("_action", "activate");
     if (isScheduled) formData.set("startNow", "true");
     if (hasEndDate && endDate) {
-      const value = endTime ? `${endDate}T${endTime}` : `${endDate}T23:59`;
-      formData.set("endAt", value);
+      formData.set("endAt", toServerIso(endDate, endTime, "23:59"));
     }
     activateFetcher.submit(formData, {
       method: "POST",
       action: `/app/merchandising/sale/${activateTarget.id}`,
     });
-    closeActivateModal();
+    activateModalRef.current?.hideOverlay?.();
   };
 
   const openDeactivateModal = (campaign: Campaign) => {
     setDeactivateTarget(campaign);
-    requestAnimationFrame(() => {
-      document.getElementById("sale-deactivate-modal")?.setAttribute("open", "");
-    });
-  };
-
-  const closeDeactivateModal = () => {
-    document.getElementById("sale-deactivate-modal")?.removeAttribute("open");
-    setDeactivateTarget(null);
+    deactivateModalRef.current?.showOverlay?.();
   };
 
   const submitDeactivate = () => {
@@ -209,19 +193,12 @@ export default function CampaignsList() {
       method: "POST",
       action: `/app/merchandising/sale/${deactivateTarget.id}`,
     });
-    closeDeactivateModal();
+    deactivateModalRef.current?.hideOverlay?.();
   };
 
   const openDeleteModal = (campaign: Campaign) => {
     setDeleteTarget(campaign);
-    requestAnimationFrame(() => {
-      document.getElementById("sale-delete-modal")?.setAttribute("open", "");
-    });
-  };
-
-  const closeDeleteModal = () => {
-    document.getElementById("sale-delete-modal")?.removeAttribute("open");
-    setDeleteTarget(null);
+    deleteModalRef.current?.showOverlay?.();
   };
 
   const submitDelete = () => {
@@ -233,7 +210,7 @@ export default function CampaignsList() {
       action: `/app/merchandising/sale/${deleteTarget.id}`,
     });
     setBanner({ tone: "success", message: t("campaigns.deletedSuccess") });
-    closeDeleteModal();
+    deleteModalRef.current?.hideOverlay?.();
   };
 
   const submitDuplicate = (campaign: Campaign) => {
@@ -261,14 +238,14 @@ export default function CampaignsList() {
     if (campaign.status === "active") {
       openDeactivateModal(campaign);
     } else {
-      // draft or scheduled
       openActivateModal(campaign);
     }
   };
 
   const formatDateOnly = (d: Date | string | null) => {
     if (!d) return "";
-    return new Date(d).toLocaleDateString(undefined, {
+    return new Date(d).toLocaleString(undefined, {
+      timeZone: BR_TZ,
       year: "numeric",
       month: "short",
       day: "2-digit",
@@ -336,7 +313,7 @@ export default function CampaignsList() {
                   const isOn = campaign.status === "active";
                   const toggleDisabled =
                     campaign.status === "expired" || campaign.status === "cancelled";
-                  const popoverId = `sale-row-actions-${campaign.id}`;
+                  const menuId = `sale-row-menu-${campaign.id}`;
                   return (
                     <tr
                       key={campaign.id}
@@ -388,34 +365,20 @@ export default function CampaignsList() {
                         className={`${styles.tableCell} ${styles.rowActionsCell}`}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className={styles.rowActionsMenu}>
-                          <s-button
-                            variant="tertiary"
-                            icon="menu-horizontal"
-                            accessibilityLabel={t("campaigns.rowActions")}
-                            commandFor={popoverId}
-                            command="--toggle"
-                          />
-                          <s-popover id={popoverId}>
-                            <s-menu accessibilityLabel={t("campaigns.rowActions")}>
-                              <s-button
-                                commandFor={popoverId}
-                                command="--hide"
-                                onClick={() => submitDuplicate(campaign)}
-                              >
-                                {t("campaigns.actionDuplicate")}
-                              </s-button>
-                              <s-button
-                                tone="critical"
-                                commandFor={popoverId}
-                                command="--hide"
-                                onClick={() => openDeleteModal(campaign)}
-                              >
-                                {t("campaigns.actionDelete")}
-                              </s-button>
-                            </s-menu>
-                          </s-popover>
-                        </div>
+                        <s-button
+                          variant="tertiary"
+                          icon="menu-horizontal"
+                          accessibilityLabel={t("campaigns.rowActions")}
+                          commandFor={menuId}
+                        />
+                        <s-menu id={menuId} accessibilityLabel={t("campaigns.rowActions")}>
+                          <s-button icon="duplicate" onClick={() => submitDuplicate(campaign)}>
+                            {t("campaigns.actionDuplicate")}
+                          </s-button>
+                          <s-button icon="delete" tone="critical" onClick={() => openDeleteModal(campaign)}>
+                            {t("campaigns.actionDelete")}
+                          </s-button>
+                        </s-menu>
                       </td>
                     </tr>
                   );
@@ -427,132 +390,111 @@ export default function CampaignsList() {
       </s-section>
 
       {/* Activate modal — used for draft (simple activate) and scheduled (start now) */}
-      {activateTarget && (
-        <s-modal
-          id="sale-activate-modal"
-          heading={
-            activateTarget.status === "scheduled"
-              ? t("campaigns.startNowModalTitle")
-              : t("campaigns.activateModalTitle")
-          }
-        >
-          <div style={{ padding: "16px" }}>
-            {activateTarget.status === "scheduled" ? (
-              <div className={styles.modalBanner}>
-                {t("campaigns.startNowModalBanner", {
-                  name: activateTarget.name,
-                  date: formatDateOnly(activateTarget.startAt),
-                })}
-              </div>
-            ) : (
-              <div className={styles.modalBody}>
-                {t("campaigns.activateModalBody", { name: activateTarget.name })}
-              </div>
-            )}
+      <s-modal
+        id="sale-activate-modal"
+        ref={activateModalRef}
+        heading={
+          activateTarget?.status === "scheduled"
+            ? t("campaigns.startNowModalTitle")
+            : t("campaigns.activateModalTitle")
+        }
+      >
+        <div style={{ padding: "16px" }}>
+          {activateTarget?.status === "scheduled" ? (
+            <div className={styles.modalBanner}>
+              {t("campaigns.startNowModalBanner", {
+                name: activateTarget?.name ?? "",
+                date: formatDateOnly(activateTarget?.startAt ?? null),
+              })}
+            </div>
+          ) : (
+            <div className={styles.modalBody}>
+              {t("campaigns.activateModalBody", { name: activateTarget?.name ?? "" })}
+            </div>
+          )}
 
-            <div
-              className={styles.checkboxToggle}
-              onClick={() => setHasEndDate((prev) => !prev)}
-              role="button"
-            >
-              <s-checkbox
-                checked={hasEndDate || undefined}
-                onChange={() => setHasEndDate((prev) => !prev)}
+          <div
+            className={styles.checkboxToggle}
+            onClick={() => setHasEndDate((prev) => !prev)}
+            role="button"
+          >
+            <s-checkbox
+              checked={hasEndDate || undefined}
+              onChange={() => setHasEndDate((prev) => !prev)}
+            />
+            {t("campaigns.setEndDate")}
+          </div>
+
+          {hasEndDate && (
+            <div className={styles.dateTimeRow} style={{ marginTop: "12px" }}>
+              <s-date-field
+                label={t("campaigns.endDate")}
+                value={endDate}
+                onChange={(e: any) => setEndDate(e.currentTarget.value)}
               />
-              {t("campaigns.setEndDate")}
+              <s-text-field
+                label={`${t("campaigns.endTime")} (-03)`}
+                value={endTime}
+                onChange={(e: any) => setEndTime(e.currentTarget.value)}
+                placeholder="23:59"
+                maxLength={5}
+              />
             </div>
-
-            {hasEndDate && (
-              <div className={styles.dateTimeRow} style={{ marginTop: "12px" }}>
-                <div>
-                  <label className={styles.dateTimeLabel}>{t("campaigns.endDate")}</label>
-                  <div className={styles.dateTimeInputWrap}>
-                    <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" className={styles.dateTimeIcon}>
-                      <path fill="currentColor" d="M7 2a1 1 0 0 1 1 1v1h4V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1ZM5 9v7h10V9H5Z" />
-                    </svg>
-                    <input
-                      type="date"
-                      className={styles.dateTimeInput}
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className={styles.dateTimeLabel}>
-                    {t("campaigns.endTime")} ({tzOffset})
-                  </label>
-                  <div className={styles.dateTimeInputWrap}>
-                    <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" className={styles.dateTimeIcon}>
-                      <path fill="currentColor" d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm.75 3.75v4.5l3.1 1.86a.75.75 0 1 1-.77 1.28l-3.46-2.07a.75.75 0 0 1-.37-.65V5.75a.75.75 0 0 1 1.5 0Z" />
-                    </svg>
-                    <input
-                      type="time"
-                      className={styles.dateTimeInput}
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+          )}
+        </div>
+        <div slot="footer" className={styles.modalFooter}>
+          <div className={styles.modalActions} style={{ marginLeft: "auto" }}>
+            <s-button variant="secondary" onClick={() => activateModalRef.current?.hideOverlay?.()}>
+              {t("campaigns.cancel")}
+            </s-button>
+            <s-button variant="primary" onClick={submitActivate}>
+              {t("campaigns.activateButton")}
+            </s-button>
           </div>
-          <div slot="footer" className={styles.modalFooter}>
-            <div className={styles.modalActions} style={{ marginLeft: "auto" }}>
-              <s-button variant="secondary" onClick={closeActivateModal}>
-                {t("campaigns.cancel")}
-              </s-button>
-              <s-button variant="primary" onClick={submitActivate}>
-                {t("campaigns.activateButton")}
-              </s-button>
-            </div>
-          </div>
-        </s-modal>
-      )}
+        </div>
+      </s-modal>
 
       {/* Deactivate confirmation modal */}
-      {deactivateTarget && (
-        <s-modal
-          id="sale-deactivate-modal"
-          heading={t("campaigns.confirmDeactivateTitle")}
-        >
-          <div style={{ padding: "16px" }}>
-            {t("campaigns.confirmDeactivateBody", { name: deactivateTarget.name })}
+      <s-modal
+        id="sale-deactivate-modal"
+        ref={deactivateModalRef}
+        heading={t("campaigns.confirmDeactivateTitle")}
+      >
+        <div style={{ padding: "16px" }}>
+          {t("campaigns.confirmDeactivateBody", { name: deactivateTarget?.name ?? "" })}
+        </div>
+        <div slot="footer" className={styles.modalFooter}>
+          <div className={styles.modalActions} style={{ marginLeft: "auto" }}>
+            <s-button variant="secondary" onClick={() => deactivateModalRef.current?.hideOverlay?.()}>
+              {t("campaigns.cancel")}
+            </s-button>
+            <s-button variant="primary" tone="critical" onClick={submitDeactivate}>
+              {t("campaigns.deactivate")}
+            </s-button>
           </div>
-          <div slot="footer" className={styles.modalFooter}>
-            <div className={styles.modalActions} style={{ marginLeft: "auto" }}>
-              <s-button variant="secondary" onClick={closeDeactivateModal}>
-                {t("campaigns.cancel")}
-              </s-button>
-              <s-button variant="primary" tone="critical" onClick={submitDeactivate}>
-                {t("campaigns.deactivate")}
-              </s-button>
-            </div>
-          </div>
-        </s-modal>
-      )}
+        </div>
+      </s-modal>
 
       {/* Delete confirmation modal */}
-      {deleteTarget && (
-        <s-modal
-          id="sale-delete-modal"
-          heading={t("campaigns.deleteTitle")}
-        >
-          <div style={{ padding: "16px" }}>
-            {t("campaigns.deleteConfirm")}
+      <s-modal
+        id="sale-delete-modal"
+        ref={deleteModalRef}
+        heading={t("campaigns.deleteTitle")}
+      >
+        <div style={{ padding: "16px" }}>
+          {t("campaigns.deleteConfirm")}
+        </div>
+        <div slot="footer" className={styles.modalFooter}>
+          <div className={styles.modalActions} style={{ marginLeft: "auto" }}>
+            <s-button variant="secondary" onClick={() => deleteModalRef.current?.hideOverlay?.()}>
+              {t("campaigns.cancel")}
+            </s-button>
+            <s-button variant="primary" tone="critical" onClick={submitDelete}>
+              {t("campaigns.delete")}
+            </s-button>
           </div>
-          <div slot="footer" className={styles.modalFooter}>
-            <div className={styles.modalActions} style={{ marginLeft: "auto" }}>
-              <s-button variant="secondary" onClick={closeDeleteModal}>
-                {t("campaigns.cancel")}
-              </s-button>
-              <s-button variant="primary" tone="critical" onClick={submitDelete}>
-                {t("campaigns.delete")}
-              </s-button>
-            </div>
-          </div>
-        </s-modal>
-      )}
+        </div>
+      </s-modal>
     </>
   );
 }

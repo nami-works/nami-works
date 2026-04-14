@@ -20,6 +20,31 @@ import { computeSmartBadge } from "../services/price-tags/smart-badge";
 import styles from "./app.merchandising/styles.module.css";
 
 // ---------------------------------------------------------------------------
+// Helpers — timezone-aware date handling
+// ---------------------------------------------------------------------------
+
+const BR_TZ_OFFSET = "-03:00";
+
+function pad2(n: number): string {
+  return n < 10 ? `0${n}` : String(n);
+}
+
+function toLocalDateParts(d: Date | string | null | undefined): { date: string; time: string } {
+  if (!d) return { date: "", time: "" };
+  const date = typeof d === "string" ? new Date(d) : d;
+  return {
+    date: `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`,
+    time: `${pad2(date.getHours())}:${pad2(date.getMinutes())}`,
+  };
+}
+
+function toServerIso(date: string, time: string | undefined, fallbackTime: string): string {
+  if (!date) return "";
+  const t = time && /^\d{2}:\d{2}$/.test(time) ? time : fallbackTime;
+  return `${date}T${t}:00${BR_TZ_OFFSET}`;
+}
+
+// ---------------------------------------------------------------------------
 // Loader
 // ---------------------------------------------------------------------------
 
@@ -369,7 +394,6 @@ export default function CampaignDetail() {
   const searchFetcher = useFetcher<typeof action>();
   const collectionSearchFetcher = useFetcher<typeof action>();
   const fieldDefsFetcher = useFetcher<typeof action>();
-  const saveConfigFetcher = useFetcher<typeof action>();
   const previewScopeFetcher = useFetcher<typeof action>();
 
   // Form state
@@ -390,23 +414,17 @@ export default function CampaignDetail() {
   const [excludeTags, setExcludeTags] = useState<string[]>(
     campaign?.excludeValues ? JSON.parse(campaign.excludeValues) : [],
   );
-  const [startDate, setStartDate] = useState(() => {
-    if (!campaign?.startAt) return "";
-    return new Date(campaign.startAt).toISOString().slice(0, 10);
-  });
-  const [startTime, setStartTime] = useState(() => {
-    if (!campaign?.startAt) return "";
-    return new Date(campaign.startAt).toTimeString().slice(0, 5);
-  });
+  const initialStart = campaign?.startAt
+    ? toLocalDateParts(campaign.startAt)
+    : isNew
+      ? toLocalDateParts(new Date())
+      : { date: "", time: "" };
+  const initialEnd = toLocalDateParts(campaign?.endAt ?? null);
+  const [startDate, setStartDate] = useState(initialStart.date);
+  const [startTime, setStartTime] = useState(initialStart.time);
   const [hasEndDate, setHasEndDate] = useState(!!campaign?.endAt);
-  const [endDate, setEndDate] = useState(() => {
-    if (!campaign?.endAt) return "";
-    return new Date(campaign.endAt).toISOString().slice(0, 10);
-  });
-  const [endTime, setEndTime] = useState(() => {
-    if (!campaign?.endAt) return "";
-    return new Date(campaign.endAt).toTimeString().slice(0, 5);
-  });
+  const [endDate, setEndDate] = useState(initialEnd.date);
+  const [endTime, setEndTime] = useState(initialEnd.time);
 
   // Price tags state
   const [priceTagsEnabled, setPriceTagsEnabled] = useState(campaign?.priceTagsEnabled ?? false);
@@ -427,26 +445,10 @@ export default function CampaignDetail() {
     campaign?.priceTagMetafieldKey ?? priceTagDefaults?.metafieldKey ?? "",
   );
 
-  // Aside state for price tag config
-  const [ptAsideCollapsed, setPtAsideCollapsed] = useState(false);
-  const [ptAsideSaved, setPtAsideSaved] = useState(false);
-
-  // Delete confirmation modal (W4)
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-
   // Result banner (C4) — surfaces save/activate/deactivate/duplicate outcomes.
   const [banner, setBanner] = useState<
     { tone: "success" | "critical" | "warning" | "info"; message: string } | null
   >(null);
-
-  useEffect(() => {
-    const data = saveConfigFetcher.data as any;
-    if (data?.intent === "saveFieldDefaults" && data.ok) {
-      setPtAsideSaved(true);
-      const timer = setTimeout(() => setPtAsideSaved(false), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [saveConfigFetcher.data]);
 
   // Surface save outcome.
   useEffect(() => {
@@ -526,10 +528,14 @@ export default function CampaignDetail() {
     return `${sign}${hours}`;
   }, []);
 
+  // Modal refs — Polaris <s-modal> uses imperative showOverlay/hideOverlay.
+  const collectionModalRef = useRef<any>(null);
+  const productModalRef = useRef<any>(null);
+  const deleteModalRef = useRef<any>(null);
+
   // Collection search
   const [collectionQuery, setCollectionQuery] = useState("");
   const collectionSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [collectionModalOpen, setCollectionModalOpen] = useState(false);
 
   const handleCollectionSearch = useCallback(
     (query: string) => {
@@ -544,6 +550,14 @@ export default function CampaignDetail() {
     },
     [collectionSearchFetcher],
   );
+
+  const openCollectionModal = useCallback(() => {
+    collectionSearchFetcher.submit(
+      { _action: "searchCollections", query: collectionQuery || "" },
+      { method: "POST" },
+    );
+    collectionModalRef.current?.showOverlay?.();
+  }, [collectionSearchFetcher, collectionQuery]);
 
   const collectionSearchResults =
     (collectionSearchFetcher.data as any)?.intent === "searchCollections"
@@ -607,7 +621,6 @@ export default function CampaignDetail() {
   );
 
   // Product search modal
-  const [modalOpen, setModalOpen] = useState(false);
   const [modalQuery, setModalQuery] = useState("");
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -616,42 +629,28 @@ export default function CampaignDetail() {
       setModalQuery(query);
       if (searchTimer.current) clearTimeout(searchTimer.current);
       searchTimer.current = setTimeout(() => {
-        if (query.trim().length > 0) {
-          searchFetcher.submit(
-            { _action: "searchProducts", query },
-            { method: "POST" },
-          );
-        }
+        searchFetcher.submit(
+          { _action: "searchProducts", query: query || "" },
+          { method: "POST" },
+        );
       }, 250);
     },
     [searchFetcher],
   );
+
+  const openProductModal = useCallback(() => {
+    searchFetcher.submit(
+      { _action: "searchProducts", query: modalQuery || "" },
+      { method: "POST" },
+    );
+    productModalRef.current?.showOverlay?.();
+  }, [searchFetcher, modalQuery]);
 
   const searchResults =
     (searchFetcher.data as { intent?: string; products?: Array<{ id: string; title: string; image: string | null }> })?.intent ===
     "searchProducts"
       ? (searchFetcher.data as { products: Array<{ id: string; title: string; image: string | null }> }).products
       : [];
-
-  // Sync React modal state with s-modal native close events so dismissing
-  // via escape key / backdrop click flips state back (C6).
-  useEffect(() => {
-    if (!modalOpen) return;
-    const el = document.getElementById("product-browse-modal");
-    if (!el) return;
-    const handler = () => setModalOpen(false);
-    el.addEventListener("close", handler);
-    return () => el.removeEventListener("close", handler);
-  }, [modalOpen]);
-
-  useEffect(() => {
-    if (!collectionModalOpen) return;
-    const el = document.getElementById("collection-browse-modal");
-    if (!el) return;
-    const handler = () => setCollectionModalOpen(false);
-    el.addEventListener("close", handler);
-    return () => el.removeEventListener("close", handler);
-  }, [collectionModalOpen]);
 
   // Tag input
   const [tagInput, setTagInput] = useState("");
@@ -692,8 +691,8 @@ export default function CampaignDetail() {
         filterValues,
         excludeEnabled: String(excludeEnabled),
         excludeValues: JSON.stringify(excludeTags),
-        startAt: startDate && startTime ? `${startDate}T${startTime}` : startDate ? `${startDate}T00:00` : "",
-        endAt: hasEndDate && endDate ? (endTime ? `${endDate}T${endTime}` : `${endDate}T23:59`) : "",
+        startAt: toServerIso(startDate, startTime, "00:00"),
+        endAt: hasEndDate ? toServerIso(endDate, endTime, "23:59") : "",
         priceTagsEnabled: String(priceTagsEnabled),
         priceTagMetaobjectType: ptMetaobjectType,
         priceTagDisplayNameKey: ptDisplayNameKey,
@@ -772,19 +771,6 @@ export default function CampaignDetail() {
       : null;
   const isPreviewingScope = previewScopeFetcher.state !== "idle";
 
-  const handleSavePtConfig = useCallback(() => {
-    saveConfigFetcher.submit(
-      {
-        _action: "saveFieldDefaults",
-        metaobjectType: ptMetaobjectType,
-        displayNameKey: ptDisplayNameKey,
-        fieldDefaults: JSON.stringify(ptFieldDefaults),
-      },
-      { method: "POST" },
-    );
-    setPtAsideCollapsed(true);
-  }, [saveConfigFetcher, ptMetaobjectType, ptDisplayNameKey, ptFieldDefaults]);
-
   return (
     <>
       {banner && (
@@ -856,8 +842,7 @@ export default function CampaignDetail() {
           )}
 
           {/* Campaign name */}
-          <div className={styles.formSection}>
-            <label className={styles.formSectionTitle}>{t("campaigns.name")}</label>
+          <s-section heading={t("campaigns.name")}>
             <s-text-field
               label=""
               value={name}
@@ -866,14 +851,11 @@ export default function CampaignDetail() {
               }
               disabled={isActive}
             />
-            <div style={{ fontSize: "12px", color: "#6d7175", marginTop: "4px" }}>
-              {t("campaigns.nameHelper")}
-            </div>
-          </div>
+            <div className={styles.helperText}>{t("campaigns.nameHelper")}</div>
+          </s-section>
 
           {/* Discount */}
-          <div className={styles.formSection}>
-            <div className={styles.formSectionTitle}>{t("campaigns.discount")}</div>
+          <s-section heading={t("campaigns.discount")}>
             <div className={styles.formRow}>
               <s-select
                 label=""
@@ -896,11 +878,10 @@ export default function CampaignDetail() {
                 disabled={isActive}
               />
             </div>
-          </div>
+          </s-section>
 
           {/* Products */}
-          <div className={styles.formSection}>
-            <div className={styles.formSectionTitle}>{t("campaigns.products")}</div>
+          <s-section heading={t("campaigns.products")}>
             <s-select
               label=""
               value={filterType}
@@ -983,11 +964,11 @@ export default function CampaignDetail() {
                       type="text"
                       placeholder={t("campaigns.searchCollections")}
                       value={collectionQuery}
-                      onChange={(e) => handleCollectionSearch(e.target.value)}
+                      onChange={(e) => setCollectionQuery(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter" && collectionQuery.trim()) {
+                        if (e.key === "Enter") {
                           e.preventDefault();
-                          setCollectionModalOpen(true);
+                          openCollectionModal();
                         }
                       }}
                       disabled={isActive}
@@ -995,12 +976,7 @@ export default function CampaignDetail() {
                   </div>
                   <s-button
                     variant="secondary"
-                    onClick={() => {
-                      setCollectionModalOpen(true);
-                      // Carry any typed text into the modal so the search
-                      // results are already populated when it opens.
-                      handleCollectionSearch(collectionQuery);
-                    }}
+                    onClick={openCollectionModal}
                     disabled={isActive}
                   >
                     {t("campaigns.browse")}
@@ -1027,68 +1003,6 @@ export default function CampaignDetail() {
                     ))}
                   </div>
                 )}
-                {collectionModalOpen && (
-                  <s-modal
-                    id="collection-browse-modal"
-                    heading={t("campaigns.searchCollections")}
-                    ref={(el: HTMLElement | null) => { if (el) el.setAttribute("open", ""); }}
-                  >
-                    <div className={styles.modalSearchWrap}>
-                      <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" style={{ color: "#8c9196" }}>
-                        <path fill="currentColor" d="M8 12a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm9.707 4.293-4.82-4.82A5.968 5.968 0 0 0 14 8 6 6 0 0 0 2 8a6 6 0 0 0 6 6 5.968 5.968 0 0 0 3.473-1.113l4.82 4.82a.997.997 0 0 0 1.414 0 .999.999 0 0 0 0-1.414z" />
-                      </svg>
-                      <input
-                        className={styles.modalSearchInput}
-                        type="text"
-                        placeholder={t("campaigns.searchCollections")}
-                        value={collectionQuery}
-                        onChange={(e) => handleCollectionSearch(e.target.value)}
-                        autoFocus
-                      />
-                    </div>
-                    {collectionSearchResults.map((c: any) => {
-                      const isSelected = selectedCollections.some((sc) => sc.id === c.id);
-                      return (
-                        <div
-                          key={c.id}
-                          className={`${styles.searchResultItem} ${isSelected ? styles.searchResultSelected : ""}`}
-                          onClick={() => {
-                            if (isSelected) {
-                              setSelectedCollections((prev) =>
-                                prev.filter((sc) => sc.id !== c.id),
-                              );
-                            } else {
-                              setSelectedCollections((prev) => [
-                                ...prev,
-                                { id: c.id, title: c.title, image: c.image, productCount: c.productCount },
-                              ]);
-                            }
-                          }}
-                        >
-                          <input type="checkbox" checked={isSelected} readOnly />
-                          <div className={styles.productInfo}>
-                            <div className={styles.productTitle}>{c.title}</div>
-                            <div style={{ fontSize: "12px", color: "#6d7175" }}>{c.productCount} products</div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <div slot="footer" className={styles.modalFooter}>
-                      <span className={styles.modalCount}>{selectedCollections.length} selected</span>
-                      <div className={styles.modalActions}>
-                        <s-button
-                          variant="secondary"
-                          onClick={() => {
-                            document.getElementById("collection-browse-modal")?.removeAttribute("open");
-                            setCollectionModalOpen(false);
-                          }}
-                        >
-                          Done
-                        </s-button>
-                      </div>
-                    </div>
-                  </s-modal>
-                )}
               </>
             )}
 
@@ -1104,11 +1018,11 @@ export default function CampaignDetail() {
                       type="text"
                       placeholder={t("campaigns.searchProducts")}
                       value={modalQuery}
-                      onChange={(e) => handleModalSearch(e.target.value)}
+                      onChange={(e) => setModalQuery(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter" && modalQuery.trim()) {
+                        if (e.key === "Enter") {
                           e.preventDefault();
-                          setModalOpen(true);
+                          openProductModal();
                         }
                       }}
                       disabled={isActive}
@@ -1116,11 +1030,7 @@ export default function CampaignDetail() {
                   </div>
                   <s-button
                     variant="secondary"
-                    onClick={() => {
-                      setModalOpen(true);
-                      // Typed text already lives in modalQuery and
-                      // searchFetcher already has its results cached.
-                    }}
+                    onClick={openProductModal}
                     disabled={isActive}
                   >
                     {t("campaigns.browse")}
@@ -1154,82 +1064,13 @@ export default function CampaignDetail() {
                     ))}
                   </div>
                 )}
-                {modalOpen && (
-                  <s-modal
-                    id="product-browse-modal"
-                    heading={t("campaigns.searchProducts")}
-                    ref={(el: HTMLElement | null) => { if (el) el.setAttribute("open", ""); }}
-                  >
-                    <div className={styles.modalSearchWrap}>
-                      <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" style={{ color: "#8c9196" }}>
-                        <path fill="currentColor" d="M8 12a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm9.707 4.293-4.82-4.82A5.968 5.968 0 0 0 14 8 6 6 0 0 0 2 8a6 6 0 0 0 6 6 5.968 5.968 0 0 0 3.473-1.113l4.82 4.82a.997.997 0 0 0 1.414 0 .999.999 0 0 0 0-1.414z" />
-                      </svg>
-                      <input
-                        className={styles.modalSearchInput}
-                        type="text"
-                        placeholder={t("campaigns.searchProducts")}
-                        value={modalQuery}
-                        onChange={(e) => handleModalSearch(e.target.value)}
-                        autoFocus
-                      />
-                    </div>
-                    {searchResults.map((p) => {
-                      const isSelected = selectedProducts.some((sp) => sp.id === p.id);
-                      return (
-                        <div
-                          key={p.id}
-                          className={`${styles.searchResultItem} ${isSelected ? styles.searchResultSelected : ""}`}
-                          onClick={() => {
-                            if (isSelected) {
-                              setSelectedProducts((prev) =>
-                                prev.filter((sp) => sp.id !== p.id),
-                              );
-                            } else {
-                              setSelectedProducts((prev) => [
-                                ...prev,
-                                { id: p.id, title: p.title, image: p.image },
-                              ]);
-                            }
-                          }}
-                        >
-                          <input type="checkbox" checked={isSelected} readOnly />
-                          {p.image ? (
-                            <img src={p.image} alt="" className={styles.productThumb} />
-                          ) : (
-                            <div className={styles.productThumbPlaceholder}>🖼</div>
-                          )}
-                          <div className={styles.productInfo}>
-                            <div className={styles.productTitle}>{p.title}</div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <div slot="footer" className={styles.modalFooter}>
-                      <span className={styles.modalCount}>
-                        {selectedProducts.length} selected
-                      </span>
-                      <div className={styles.modalActions}>
-                        <s-button
-                          variant="secondary"
-                          onClick={() => {
-                            document.getElementById("product-browse-modal")?.removeAttribute("open");
-                            setModalOpen(false);
-                          }}
-                        >
-                          Done
-                        </s-button>
-                      </div>
-                    </div>
-                  </s-modal>
-                )}
               </>
             )}
-          </div>
+          </s-section>
 
           {/* Excludes */}
-          <div className={styles.formSection}>
-            <div className={styles.formSectionTitle}>{t("campaigns.excludes")}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", userSelect: "none" }} onClick={() => !isActive && setExcludeEnabled(prev => !prev)} role="button">
+          <s-section heading={t("campaigns.excludes")}>
+            <div className={styles.checkboxToggle} onClick={() => !isActive && setExcludeEnabled(prev => !prev)} role="button">
               <s-checkbox checked={excludeEnabled || undefined} onChange={() => setExcludeEnabled(prev => !prev)} disabled={isActive || undefined} />
               {t("campaigns.enableExcludes")}
             </div>
@@ -1282,39 +1123,33 @@ export default function CampaignDetail() {
                 )}
               </>
             )}
-          </div>
+          </s-section>
 
           {/* Price Tags toggle */}
-          <div className={styles.formSection}>
-            <div className={styles.formSectionTitle}>{t("campaigns.priceTags")}</div>
+          <s-section heading={t("campaigns.priceTags")}>
             <div className={styles.checkboxToggle} onClick={() => !isActive && setPriceTagsEnabled(prev => !prev)} role="button">
               <s-checkbox checked={priceTagsEnabled || undefined} onChange={() => setPriceTagsEnabled(prev => !prev)} disabled={isActive || undefined} />
               {t("campaigns.addPriceTags")}
             </div>
-          </div>
+          </s-section>
 
           {/* Schedule */}
-          <div className={styles.formSection}>
-            <div className={styles.formSectionTitle}>{t("campaigns.activeDates")}</div>
+          <s-section heading={t("campaigns.activeDates")}>
             <div className={styles.dateTimeRow}>
-              <div>
-                <label className={styles.dateTimeLabel}>{t("campaigns.startDate")}</label>
-                <div className={styles.dateTimeInputWrap}>
-                  <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" className={styles.dateTimeIcon}>
-                    <path fill="currentColor" d="M7 2a1 1 0 0 1 1 1v1h4V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1ZM5 9v7h10V9H5Z" />
-                  </svg>
-                  <input type="date" className={styles.dateTimeInput} value={startDate} onChange={(e) => setStartDate(e.target.value)} disabled={isActive} />
-                </div>
-              </div>
-              <div>
-                <label className={styles.dateTimeLabel}>{t("campaigns.startTime")} ({tzOffset})</label>
-                <div className={styles.dateTimeInputWrap}>
-                  <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" className={styles.dateTimeIcon}>
-                    <path fill="currentColor" d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm.75 3.75v4.5l3.1 1.86a.75.75 0 1 1-.77 1.28l-3.46-2.07a.75.75 0 0 1-.37-.65V5.75a.75.75 0 0 1 1.5 0Z" />
-                  </svg>
-                  <input type="time" className={styles.dateTimeInput} value={startTime} onChange={(e) => setStartTime(e.target.value)} disabled={isActive} />
-                </div>
-              </div>
+              <s-date-field
+                label={t("campaigns.startDate")}
+                value={startDate}
+                onChange={(e: any) => setStartDate(e.currentTarget.value)}
+                disabled={isActive || undefined}
+              />
+              <s-text-field
+                label={`${t("campaigns.startTime")} (-03)`}
+                value={startTime}
+                onChange={(e: any) => setStartTime(e.currentTarget.value)}
+                placeholder="09:05"
+                maxLength={5}
+                disabled={isActive || undefined}
+              />
             </div>
             <div className={styles.checkboxToggle} style={{ marginTop: "12px" }} onClick={() => !isActive && setHasEndDate(prev => !prev)} role="button">
               <s-checkbox checked={hasEndDate || undefined} onChange={() => setHasEndDate(prev => !prev)} disabled={isActive || undefined} />
@@ -1322,27 +1157,23 @@ export default function CampaignDetail() {
             </div>
             {hasEndDate && (
               <div className={styles.dateTimeRow} style={{ marginTop: "12px" }}>
-                <div>
-                  <label className={styles.dateTimeLabel}>{t("campaigns.endDate")}</label>
-                  <div className={styles.dateTimeInputWrap}>
-                    <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" className={styles.dateTimeIcon}>
-                      <path fill="currentColor" d="M7 2a1 1 0 0 1 1 1v1h4V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1ZM5 9v7h10V9H5Z" />
-                    </svg>
-                    <input type="date" className={styles.dateTimeInput} value={endDate} onChange={(e) => setEndDate(e.target.value)} disabled={isActive} />
-                  </div>
-                </div>
-                <div>
-                  <label className={styles.dateTimeLabel}>{t("campaigns.endTime")} ({tzOffset})</label>
-                  <div className={styles.dateTimeInputWrap}>
-                    <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" className={styles.dateTimeIcon}>
-                      <path fill="currentColor" d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm.75 3.75v4.5l3.1 1.86a.75.75 0 1 1-.77 1.28l-3.46-2.07a.75.75 0 0 1-.37-.65V5.75a.75.75 0 0 1 1.5 0Z" />
-                    </svg>
-                    <input type="time" className={styles.dateTimeInput} value={endTime} onChange={(e) => setEndTime(e.target.value)} disabled={isActive} />
-                  </div>
-                </div>
+                <s-date-field
+                  label={t("campaigns.endDate")}
+                  value={endDate}
+                  onChange={(e: any) => setEndDate(e.currentTarget.value)}
+                  disabled={isActive || undefined}
+                />
+                <s-text-field
+                  label={`${t("campaigns.endTime")} (-03)`}
+                  value={endTime}
+                  onChange={(e: any) => setEndTime(e.currentTarget.value)}
+                  placeholder="23:59"
+                  maxLength={5}
+                  disabled={isActive || undefined}
+                />
               </div>
             )}
-          </div>
+          </s-section>
 
           {/* Save button */}
           {!isActive && (
@@ -1353,7 +1184,7 @@ export default function CampaignDetail() {
                     {t("campaigns.delete")}
                   </s-button>
                 ) : (
-                  <s-button variant="secondary" tone="critical" onClick={() => setDeleteConfirmOpen(true)}>
+                  <s-button variant="secondary" tone="critical" onClick={() => deleteModalRef.current?.showOverlay?.()}>
                     {t("campaigns.delete")}
                   </s-button>
                 )
@@ -1379,15 +1210,11 @@ export default function CampaignDetail() {
         <div className={styles.campaignAside}>
 
           {/* Discount preview */}
-          <div className={styles.formSection}>
-            <h3 className={styles.modalTitle}>{t("campaigns.preview")}</h3>
-
-            <div className={styles.previewCard} style={{ marginTop: "12px" }}>
+          <s-section heading={t("campaigns.preview")}>
+            <div className={styles.previewCard}>
               <div className={styles.previewSection}>
                 <div className={styles.previewSectionTitle}>{t("campaigns.onProductPage")}</div>
-                <div style={{ fontSize: "12px", color: "#6d7175", marginBottom: "8px" }}>
-                  {t("campaigns.withoutCompareAt")}
-                </div>
+                <div className={styles.helperText}>{t("campaigns.withoutCompareAt")}</div>
                 <div className={styles.previewRow}>
                   <span className={styles.previewLabel}>{t("campaigns.before")}</span>
                   <span className={styles.previewPrice}>R${samplePrice.toFixed(2)}</span>
@@ -1423,20 +1250,19 @@ export default function CampaignDetail() {
                 })()}
               </div>
             </div>
-          </div>
+          </s-section>
 
           {/* Summary */}
-          <div className={styles.formSection}>
-            <h3 className={styles.modalTitle}>{t("campaigns.summary")}</h3>
-            <div style={{ marginTop: "12px", fontSize: "13px" }}>
-              <p style={{ color: "#6d7175", marginBottom: "4px" }}>{name || "---"}</p>
-              <p style={{ fontWeight: 600, marginBottom: "8px" }}>{t("campaigns.campaignType")}</p>
-              <ul style={{ margin: "0 0 12px 16px", padding: 0, color: "#6d7175", fontSize: "13px" }}>
+          <s-section heading={t("campaigns.summary")}>
+            <div className={styles.summaryBody}>
+              <div className={styles.helperText}>{name || "---"}</div>
+              <div className={styles.summaryHeading}>{t("campaigns.campaignType")}</div>
+              <ul className={styles.summaryList}>
                 <li>{t("campaigns.priceRuleAndClearance")}</li>
                 <li>{discVal}{discountType === "percentage" ? "%" : " R$"} {t("campaigns.off")}</li>
               </ul>
-              <p style={{ fontWeight: 600, marginBottom: "8px" }}>{t("campaigns.details")}</p>
-              <ul style={{ margin: "0 0 0 16px", padding: 0, color: "#6d7175", fontSize: "13px" }}>
+              <div className={styles.summaryHeading}>{t("campaigns.details")}</div>
+              <ul className={styles.summaryList}>
                 {filterType === "product_types" && selectedTypes.length > 0 && (
                   <li>{t("campaigns.appliesToProductTypes")}</li>
                 )}
@@ -1490,173 +1316,271 @@ export default function CampaignDetail() {
                 </div>
               )}
             </div>
-          </div>
+          </s-section>
 
           {/* Price tag config aside */}
           {priceTagsEnabled && (
-            <div className={styles.collapsibleSectionWrap}>
-              <s-section heading={t("campaigns.metaobjectDefinition")}>
-                <div className={styles.asideSelectRow}>
-                  <s-select
-                    value={ptMetaobjectType}
-                    onChange={(e: Event) => {
-                      handleMetaobjectTypeChange((e.currentTarget as HTMLSelectElement).value);
-                      setPtAsideCollapsed(false);
-                    }}
-                    disabled={isActive}
-                  >
-                    <s-option value="">{t("campaigns.selectDefinition")}</s-option>
-                    {(metaobjectTypes ?? []).map((mt: { type: string; name: string }) => (
-                      <s-option key={mt.type} value={mt.type}>{mt.name} ({mt.type})</s-option>
-                    ))}
-                  </s-select>
-                </div>
-
-                {!ptAsideCollapsed && (
-                  <>
-                    {ptDisplayNameKey && (
-                      <p className={styles.displayNameHint}>
-                        {t("campaigns.displayNameHint", { field: ptDisplayNameKey })}
-                      </p>
-                    )}
-
-                    {ptFieldDefs.length > 0 && (
-                      <div className={styles.asideFields}>
-                        {(() => {
-                          let paramLabelShown = false;
-                          return ptFieldDefs
-                            .filter((f: any) => !f.isDisplayName)
-                            .map((field: any) => {
-                              const showParamLabel = !paramLabelShown;
-                              if (showParamLabel) paramLabelShown = true;
-                              const paramLabel = showParamLabel ? <h3 className={styles.subSectionTitle}>{t("campaigns.metaobjectParameters")}</h3> : null;
-
-                              if (field.typeName === "color") {
-                                const rawVal = ptFieldDefaults[field.key] || "";
-                                const hexBody = rawVal.replace(/^#/, "");
-                                const previewColor = hexBody.length >= 3 ? `#${hexBody}` : "#000000";
-                                return (
-                                  <div key={field.key}>
-                                    {paramLabel}
-                                    <div className={styles.colorFieldRow}>
-                                      <label className={styles.colorFieldLabel}>{field.name} {field.required ? "*" : ""}</label>
-                                      <div className={styles.colorFieldInputs}>
-                                        <div className={styles.colorSwatch} style={{ backgroundColor: previewColor }} />
-                                        <div className={styles.colorTextWrap}>
-                                          <span className={styles.colorHash}>#</span>
-                                          <input
-                                            type="text"
-                                            value={hexBody.toUpperCase()}
-                                            onChange={(e) => {
-                                              const cleaned = e.target.value.replace(/[^0-9A-Fa-f]/g, "").slice(0, 6).toUpperCase();
-                                              setPtFieldDefaults((prev) => ({ ...prev, [field.key]: `#${cleaned}` }));
-                                              setPtAsideSaved(false);
-                                            }}
-                                            className={styles.colorText}
-                                            placeholder="000000"
-                                            maxLength={6}
-                                            disabled={isActive}
-                                          />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              }
-                              if (field.typeName === "boolean") {
-                                return (
-                                  <div key={field.key}>
-                                    {paramLabel}
-                                    <div className={styles.boolFieldRow}>
-                                      <div className={styles.checkboxToggle} onClick={() => !isActive && setPtFieldDefaults((prev) => ({ ...prev, [field.key]: prev[field.key] === "true" ? "false" : "true" }))} role="button">
-                                        <s-checkbox
-                                          checked={ptFieldDefaults[field.key] === "true" || undefined}
-                                          onChange={() => setPtFieldDefaults((prev) => ({ ...prev, [field.key]: prev[field.key] === "true" ? "false" : "true" }))}
-                                          disabled={isActive || undefined}
-                                        />
-                                        {field.name} {field.required ? "*" : ""}
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              }
-                              return (
-                                <div key={field.key}>
-                                  {paramLabel}
-                                  <s-text-field
-                                    label={`${field.name} ${field.required ? "*" : ""}`}
-                                    value={ptFieldDefaults[field.key] || ""}
-                                    onChange={(e: any) => {
-                                      setPtFieldDefaults((prev) => ({ ...prev, [field.key]: e.currentTarget.value }));
-                                      setPtAsideSaved(false);
-                                    }}
-                                    disabled={isActive}
-                                  />
-                                </div>
-                              );
-                            });
-                        })()}
-                      </div>
-                    )}
-
-                    <div className={styles.asideSaveRow}>
-                      {ptAsideSaved && <span className={styles.asideSavedLabel}>{t("campaigns.saved")}</span>}
-                      <s-button variant="primary" onClick={handleSavePtConfig} disabled={!ptMetaobjectType || isActive}>
-                        {t("campaigns.save")}
-                      </s-button>
-                    </div>
-                  </>
-                )}
-
-                <div
-                  className={`${styles.collapseChevron}${ptAsideCollapsed ? ` ${styles.collapsed}` : ""}`}
-                  onClick={() => setPtAsideCollapsed((prev) => !prev)}
-                  role="button"
-                  aria-label="Toggle price tag config"
+            <s-section heading={t("campaigns.metaobjectDefinition")}>
+              <div className={styles.asideSelectRow}>
+                <s-select
+                  value={ptMetaobjectType}
+                  onChange={(e: Event) => {
+                    handleMetaobjectTypeChange((e.currentTarget as HTMLSelectElement).value);
+                  }}
+                  disabled={isActive}
                 >
-                  <span className={styles.chevronIcon}>›</span>
+                  <s-option value="">{t("campaigns.selectDefinition")}</s-option>
+                  {(metaobjectTypes ?? []).map((mt: { type: string; name: string }) => (
+                    <s-option key={mt.type} value={mt.type}>{mt.name} ({mt.type})</s-option>
+                  ))}
+                </s-select>
+              </div>
+
+              {ptDisplayNameKey && (
+                <p className={styles.displayNameHint}>
+                  {t("campaigns.displayNameHint", { field: ptDisplayNameKey })}
+                </p>
+              )}
+
+              {ptFieldDefs.length > 0 && (
+                <div className={styles.asideFields}>
+                  {(() => {
+                    let paramLabelShown = false;
+                    return ptFieldDefs
+                      .filter((f: any) => !f.isDisplayName)
+                      .map((field: any) => {
+                        const showParamLabel = !paramLabelShown;
+                        if (showParamLabel) paramLabelShown = true;
+                        const paramLabel = showParamLabel ? <h3 className={styles.subSectionTitle}>{t("campaigns.parameters")}</h3> : null;
+
+                        if (field.typeName === "color") {
+                          const rawVal = ptFieldDefaults[field.key] || "";
+                          const hexBody = rawVal.replace(/^#/, "");
+                          const previewColor = hexBody.length >= 3 ? `#${hexBody}` : "#000000";
+                          return (
+                            <div key={field.key}>
+                              {paramLabel}
+                              <div className={styles.colorFieldRow}>
+                                <label className={styles.colorFieldLabel}>{field.name} {field.required ? "*" : ""}</label>
+                                <div className={styles.colorFieldInputs}>
+                                  <div className={styles.colorSwatch} style={{ backgroundColor: previewColor }} />
+                                  <div className={styles.colorTextWrap}>
+                                    <span className={styles.colorHash}>#</span>
+                                    <input
+                                      type="text"
+                                      value={hexBody.toUpperCase()}
+                                      onChange={(e) => {
+                                        const cleaned = e.target.value.replace(/[^0-9A-Fa-f]/g, "").slice(0, 6).toUpperCase();
+                                        setPtFieldDefaults((prev) => ({ ...prev, [field.key]: `#${cleaned}` }));
+                                      }}
+                                      className={styles.colorText}
+                                      placeholder="000000"
+                                      maxLength={6}
+                                      disabled={isActive}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }
+                        if (field.typeName === "boolean") {
+                          return (
+                            <div key={field.key}>
+                              {paramLabel}
+                              <div className={styles.boolFieldRow}>
+                                <div className={styles.checkboxToggle} onClick={() => !isActive && setPtFieldDefaults((prev) => ({ ...prev, [field.key]: prev[field.key] === "true" ? "false" : "true" }))} role="button">
+                                  <s-checkbox
+                                    checked={ptFieldDefaults[field.key] === "true" || undefined}
+                                    onChange={() => setPtFieldDefaults((prev) => ({ ...prev, [field.key]: prev[field.key] === "true" ? "false" : "true" }))}
+                                    disabled={isActive || undefined}
+                                  />
+                                  {field.name} {field.required ? "*" : ""}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div key={field.key}>
+                            {paramLabel}
+                            <s-text-field
+                              label={`${field.name} ${field.required ? "*" : ""}`}
+                              value={ptFieldDefaults[field.key] || ""}
+                              onChange={(e: any) => {
+                                setPtFieldDefaults((prev) => ({ ...prev, [field.key]: e.currentTarget.value }));
+                              }}
+                              disabled={isActive}
+                            />
+                          </div>
+                        );
+                      });
+                  })()}
                 </div>
-              </s-section>
-            </div>
+              )}
+            </s-section>
           )}
         </div>
       </div>
 
-      {deleteConfirmOpen && (
-        <s-modal
-          id="campaign-delete-confirm"
-          heading={t("campaigns.deleteTitle")}
-          ref={(el: HTMLElement | null) => { if (el) el.setAttribute("open", ""); }}
-        >
-          <div style={{ padding: "16px" }}>
-            {t("campaigns.deleteConfirm")}
-          </div>
-          <div slot="footer" className={styles.modalFooter}>
-            <div className={styles.modalActions} style={{ marginLeft: "auto" }}>
-              <s-button
-                variant="secondary"
-                onClick={() => {
-                  document.getElementById("campaign-delete-confirm")?.removeAttribute("open");
-                  setDeleteConfirmOpen(false);
-                }}
-              >
-                {t("campaigns.cancel")}
-              </s-button>
-              <s-button
-                variant="primary"
-                tone="critical"
-                onClick={() => {
-                  document.getElementById("campaign-delete-confirm")?.removeAttribute("open");
-                  setDeleteConfirmOpen(false);
-                  handleDelete();
-                }}
-              >
-                {t("campaigns.delete")}
-              </s-button>
+      {/* Collection browse modal — always mounted, opened via ref */}
+      <s-modal
+        id="collection-browse-modal"
+        ref={collectionModalRef}
+        heading={t("campaigns.searchCollections")}
+      >
+        <div className={styles.modalSearchWrap}>
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" style={{ color: "#8c9196" }}>
+            <path fill="currentColor" d="M8 12a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm9.707 4.293-4.82-4.82A5.968 5.968 0 0 0 14 8 6 6 0 0 0 2 8a6 6 0 0 0 6 6 5.968 5.968 0 0 0 3.473-1.113l4.82 4.82a.997.997 0 0 0 1.414 0 .999.999 0 0 0 0-1.414z" />
+          </svg>
+          <input
+            className={styles.modalSearchInput}
+            type="text"
+            placeholder={t("campaigns.searchCollections")}
+            value={collectionQuery}
+            onChange={(e) => handleCollectionSearch(e.target.value)}
+          />
+        </div>
+        {collectionSearchResults.map((c: any) => {
+          const isSelected = selectedCollections.some((sc) => sc.id === c.id);
+          return (
+            <div
+              key={c.id}
+              className={`${styles.searchResultItem} ${isSelected ? styles.searchResultSelected : ""}`}
+              onClick={() => {
+                if (isSelected) {
+                  setSelectedCollections((prev) => prev.filter((sc) => sc.id !== c.id));
+                } else {
+                  setSelectedCollections((prev) => [
+                    ...prev,
+                    { id: c.id, title: c.title, image: c.image, productCount: c.productCount },
+                  ]);
+                }
+              }}
+            >
+              <s-checkbox checked={isSelected || undefined} />
+              <div className={styles.productInfo}>
+                <div className={styles.productTitle}>{c.title}</div>
+                <s-text>{c.productCount} {t("campaigns.products").toLowerCase()}</s-text>
+              </div>
             </div>
+          );
+        })}
+        <div slot="footer" className={styles.modalFooter}>
+          <span className={styles.modalCount}>{selectedCollections.length} selected</span>
+          <div className={styles.modalActions}>
+            <s-button
+              variant="secondary"
+              onClick={() => collectionModalRef.current?.hideOverlay?.()}
+            >
+              {t("campaigns.cancel")}
+            </s-button>
+            <s-button
+              variant="primary"
+              onClick={() => collectionModalRef.current?.hideOverlay?.()}
+            >
+              {t("campaigns.done")}
+            </s-button>
           </div>
-        </s-modal>
-      )}
+        </div>
+      </s-modal>
+
+      {/* Product browse modal — always mounted, opened via ref */}
+      <s-modal
+        id="product-browse-modal"
+        ref={productModalRef}
+        heading={t("campaigns.searchProducts")}
+      >
+        <div className={styles.modalSearchWrap}>
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" style={{ color: "#8c9196" }}>
+            <path fill="currentColor" d="M8 12a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm9.707 4.293-4.82-4.82A5.968 5.968 0 0 0 14 8 6 6 0 0 0 2 8a6 6 0 0 0 6 6 5.968 5.968 0 0 0 3.473-1.113l4.82 4.82a.997.997 0 0 0 1.414 0 .999.999 0 0 0 0-1.414z" />
+          </svg>
+          <input
+            className={styles.modalSearchInput}
+            type="text"
+            placeholder={t("campaigns.searchProducts")}
+            value={modalQuery}
+            onChange={(e) => handleModalSearch(e.target.value)}
+          />
+        </div>
+        {searchResults.map((p) => {
+          const isSelected = selectedProducts.some((sp) => sp.id === p.id);
+          return (
+            <div
+              key={p.id}
+              className={`${styles.searchResultItem} ${isSelected ? styles.searchResultSelected : ""}`}
+              onClick={() => {
+                if (isSelected) {
+                  setSelectedProducts((prev) => prev.filter((sp) => sp.id !== p.id));
+                } else {
+                  setSelectedProducts((prev) => [
+                    ...prev,
+                    { id: p.id, title: p.title, image: p.image },
+                  ]);
+                }
+              }}
+            >
+              <s-checkbox checked={isSelected || undefined} />
+              {p.image ? (
+                <img src={p.image} alt="" className={styles.productThumb} />
+              ) : (
+                <div className={styles.productThumbPlaceholder} />
+              )}
+              <div className={styles.productInfo}>
+                <div className={styles.productTitle}>{p.title}</div>
+              </div>
+            </div>
+          );
+        })}
+        <div slot="footer" className={styles.modalFooter}>
+          <span className={styles.modalCount}>{selectedProducts.length} selected</span>
+          <div className={styles.modalActions}>
+            <s-button
+              variant="secondary"
+              onClick={() => productModalRef.current?.hideOverlay?.()}
+            >
+              {t("campaigns.cancel")}
+            </s-button>
+            <s-button
+              variant="primary"
+              onClick={() => productModalRef.current?.hideOverlay?.()}
+            >
+              {t("campaigns.done")}
+            </s-button>
+          </div>
+        </div>
+      </s-modal>
+
+      {/* Delete confirmation modal — always mounted */}
+      <s-modal
+        id="campaign-delete-confirm"
+        ref={deleteModalRef}
+        heading={t("campaigns.deleteTitle")}
+      >
+        <div style={{ padding: "16px" }}>
+          {t("campaigns.deleteConfirm")}
+        </div>
+        <div slot="footer" className={styles.modalFooter}>
+          <div className={styles.modalActions} style={{ marginLeft: "auto" }}>
+            <s-button
+              variant="secondary"
+              onClick={() => deleteModalRef.current?.hideOverlay?.()}
+            >
+              {t("campaigns.cancel")}
+            </s-button>
+            <s-button
+              variant="primary"
+              tone="critical"
+              onClick={() => {
+                deleteModalRef.current?.hideOverlay?.();
+                handleDelete();
+              }}
+            >
+              {t("campaigns.delete")}
+            </s-button>
+          </div>
+        </div>
+      </s-modal>
     </>
   );
 }

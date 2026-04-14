@@ -173,7 +173,10 @@
     "endTime": "Hora de término",
     "cancel": "Cancelar",
     "deleteTitle": "Excluir promoção",
-    "deleteConfirm": "Tem certeza de que deseja excluir esta promoção? Esta ação não pode ser desfeita."
+    "deleteConfirm": "Tem certeza de que deseja excluir esta promoção? Esta ação não pode ser desfeita.",
+    "parameters": "Parâmetros",
+    "done": "Concluído",
+    "products": "produtos"
   },
   "stats": {
     "title": "Desempenho de descontos",
