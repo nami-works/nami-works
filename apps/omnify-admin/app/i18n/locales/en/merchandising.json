@@ -263,7 +263,22 @@
     "applyPriceTags": "Apply price tags",
     "applying": "Applying tags...",
     "createSale": "Create sale",
-    "noSales": "No sales yet. Create your first sale to start managing bulk pricing and price tags."
+    "noSales": "No sales yet. Create your first sale to start managing bulk pricing and price tags.",
+    "toggleActivate": "Activate this sale",
+    "toggleDeactivate": "Deactivate this sale",
+    "rowActions": "Sale actions",
+    "actionDuplicate": "Duplicate",
+    "actionDelete": "Delete",
+    "activateModalTitle": "Activate sale",
+    "activateModalBody": "{{name}} will start now and apply discounts to the selected products.",
+    "startNowModalTitle": "Start sale now",
+    "startNowModalBanner": "{{name}} is scheduled for {{date}}. Activating now will overwrite the start date.",
+    "activateButton": "Activate",
+    "confirmDeactivateTitle": "Deactivate sale",
+    "confirmDeactivateBody": "Deactivate {{name}}? Prices will revert to their original values.",
+    "actionFailedGeneric": "Action failed. Please try again.",
+    "duplicatedSuccess": "Sale duplicated.",
+    "deletedSuccess": "Sale deleted."
   },
   "stats": {
     "title": "Discount performance",

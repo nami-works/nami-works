@@ -275,6 +275,22 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   // --- Activate ---
   if (intent === "activate") {
+    // Optional: when triggered from the summary screen, the modal can override
+    // startAt (Scheduled→Active) and/or set endAt before activating.
+    const startNow = formData.get("startNow") === "true";
+    const endAtRaw = (formData.get("endAt") as string | null) ?? "";
+    const patch: { startAt?: Date; endAt?: Date | null } = {};
+    if (startNow) patch.startAt = new Date();
+    if (endAtRaw) patch.endAt = new Date(endAtRaw);
+    if (Object.keys(patch).length > 0) {
+      await prisma.bulkPriceCampaign.update({
+        where: { id: params.id! },
+        data: patch,
+      });
+      console.info(
+        `[bulk-price] activate-patch shop=${shop} id=${params.id} startNow=${startNow} endAt=${endAtRaw || "—"}`,
+      );
+    }
     const result = await activateCampaign(admin, prisma, params.id!);
     return { intent: "activate", ...result };
   }
@@ -412,7 +428,7 @@ export default function CampaignDetail() {
   );
 
   // Aside state for price tag config
-  const [ptAsideCollapsed, setPtAsideCollapsed] = useState(true);
+  const [ptAsideCollapsed, setPtAsideCollapsed] = useState(false);
   const [ptAsideSaved, setPtAsideSaved] = useState(false);
 
   // Delete confirmation modal (W4)
@@ -564,6 +580,23 @@ export default function CampaignDetail() {
       setPtMetafieldKey(data.metafieldKey ?? "");
     }
   }
+
+  // Auto-fetch field defs when price tags are enabled but defs aren't loaded
+  // (covers new campaigns whose default type was prefilled from priceTagConfig,
+  // and existing campaigns where priceTagsEnabled was just toggled on).
+  useEffect(() => {
+    if (
+      priceTagsEnabled &&
+      ptMetaobjectType &&
+      ptFieldDefs.length === 0 &&
+      fieldDefsFetcher.state === "idle"
+    ) {
+      fieldDefsFetcher.submit(
+        { _action: "fetchFieldDefs", metaobjectType: ptMetaobjectType },
+        { method: "POST" },
+      );
+    }
+  }, [priceTagsEnabled, ptMetaobjectType, ptFieldDefs.length, fieldDefsFetcher]);
 
   // Type search
   const [typeSearch, setTypeSearch] = useState("");
@@ -973,35 +1006,6 @@ export default function CampaignDetail() {
                     {t("campaigns.browse")}
                   </s-button>
                 </div>
-                {collectionQuery && collectionSearchResults.length > 0 && !collectionModalOpen && !isActive && (
-                  <div className={styles.inlineTypeahead}>
-                    {collectionSearchResults.slice(0, 10).map((c: any) => {
-                      const isSelected = selectedCollections.some((sc) => sc.id === c.id);
-                      return (
-                        <div
-                          key={c.id}
-                          className={`${styles.searchResultItem} ${isSelected ? styles.searchResultSelected : ""}`}
-                          onClick={() => {
-                            if (isSelected) {
-                              setSelectedCollections((prev) => prev.filter((sc) => sc.id !== c.id));
-                            } else {
-                              setSelectedCollections((prev) => [
-                                ...prev,
-                                { id: c.id, title: c.title, image: c.image, productCount: c.productCount },
-                              ]);
-                            }
-                          }}
-                        >
-                          <input type="checkbox" checked={isSelected} readOnly />
-                          <div className={styles.productInfo}>
-                            <div className={styles.productTitle}>{c.title}</div>
-                            <div style={{ fontSize: "12px", color: "#6d7175" }}>{c.productCount} products</div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
                 {selectedCollections.length > 0 && (
                   <div className={styles.badgeList}>
                     {selectedCollections.map((c) => (
@@ -1122,39 +1126,6 @@ export default function CampaignDetail() {
                     {t("campaigns.browse")}
                   </s-button>
                 </div>
-                {modalQuery && searchResults.length > 0 && !modalOpen && !isActive && (
-                  <div className={styles.inlineTypeahead}>
-                    {searchResults.slice(0, 10).map((p) => {
-                      const isSelected = selectedProducts.some((sp) => sp.id === p.id);
-                      return (
-                        <div
-                          key={p.id}
-                          className={`${styles.searchResultItem} ${isSelected ? styles.searchResultSelected : ""}`}
-                          onClick={() => {
-                            if (isSelected) {
-                              setSelectedProducts((prev) => prev.filter((sp) => sp.id !== p.id));
-                            } else {
-                              setSelectedProducts((prev) => [
-                                ...prev,
-                                { id: p.id, title: p.title, image: p.image },
-                              ]);
-                            }
-                          }}
-                        >
-                          <input type="checkbox" checked={isSelected} readOnly />
-                          {p.image ? (
-                            <img src={p.image} alt="" className={styles.productThumb} />
-                          ) : (
-                            <div className={styles.productThumbPlaceholder}>🖼</div>
-                          )}
-                          <div className={styles.productInfo}>
-                            <div className={styles.productTitle}>{p.title}</div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
                 {selectedProducts.length > 0 && (
                   <div style={{ marginTop: "12px" }}>
                     {selectedProducts.map((p) => (
