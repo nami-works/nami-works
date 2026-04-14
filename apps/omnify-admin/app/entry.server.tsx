@@ -5,6 +5,9 @@ import { createReadableStreamFromReadable } from "@react-router/node";
 import { type EntryContext } from "react-router";
 import { isbot } from "isbot";
 import { addDocumentResponseHeaders } from "./shopify.server";
+// Side-effect import: starts the in-process cron scheduler (bulk-price
+// campaigns auto-flip). Module-scope, runs once per Node process.
+import "./scheduler.server";
 
 export const streamTimeout = 5000;
 

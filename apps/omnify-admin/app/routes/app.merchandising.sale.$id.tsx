@@ -44,6 +44,12 @@ function toServerIso(date: string, time: string | undefined, fallbackTime: strin
   return `${date}T${t}:00${BR_TZ_OFFSET}`;
 }
 
+function formatTimeInput(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 4);
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+}
+
 // ---------------------------------------------------------------------------
 // Loader
 // ---------------------------------------------------------------------------
@@ -301,19 +307,22 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   // --- Activate ---
   if (intent === "activate") {
     // Optional: when triggered from the summary screen, the modal can override
-    // startAt (Scheduled→Active) and/or set endAt before activating.
+    // startAt (Scheduled/Expired→Active) and explicitly set or clear endAt.
+    // The form always sends `endAt` when the key is meaningful; treat empty
+    // string as an explicit clear so expired campaigns don't re-flip.
     const startNow = formData.get("startNow") === "true";
+    const endAtKey = formData.has("endAt");
     const endAtRaw = (formData.get("endAt") as string | null) ?? "";
     const patch: { startAt?: Date; endAt?: Date | null } = {};
     if (startNow) patch.startAt = new Date();
-    if (endAtRaw) patch.endAt = new Date(endAtRaw);
+    if (endAtKey) patch.endAt = endAtRaw ? new Date(endAtRaw) : null;
     if (Object.keys(patch).length > 0) {
       await prisma.bulkPriceCampaign.update({
         where: { id: params.id! },
         data: patch,
       });
       console.info(
-        `[bulk-price] activate-patch shop=${shop} id=${params.id} startNow=${startNow} endAt=${endAtRaw || "—"}`,
+        `[bulk-price] activate-patch shop=${shop} id=${params.id} startNow=${startNow} endAt=${endAtRaw || (endAtKey ? "clear" : "—")}`,
       );
     }
     const result = await activateCampaign(admin, prisma, params.id!);
@@ -1145,9 +1154,8 @@ export default function CampaignDetail() {
               <s-text-field
                 label={`${t("campaigns.startTime")} (-03)`}
                 value={startTime}
-                onChange={(e: any) => setStartTime(e.currentTarget.value)}
+                onChange={(e: any) => setStartTime(formatTimeInput(e.currentTarget.value))}
                 placeholder="09:05"
-                maxLength={5}
                 disabled={isActive || undefined}
               />
             </div>
@@ -1166,9 +1174,8 @@ export default function CampaignDetail() {
                 <s-text-field
                   label={`${t("campaigns.endTime")} (-03)`}
                   value={endTime}
-                  onChange={(e: any) => setEndTime(e.currentTarget.value)}
+                  onChange={(e: any) => setEndTime(formatTimeInput(e.currentTarget.value))}
                   placeholder="23:59"
-                  maxLength={5}
                   disabled={isActive || undefined}
                 />
               </div>

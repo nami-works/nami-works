@@ -454,6 +454,10 @@
 .campaignLayout {
   display: flex;
   gap: 20px;
+  /* Reserve scroll space below so the <s-date-field> calendar popover
+     can render fully below the Active dates section without being clipped
+     by the Shopify Admin iframe bottom. */
+  padding-bottom: 420px;
 }
 
 .campaignMain {
@@ -632,7 +636,8 @@
 .modalFooter {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
 .modalActions {
@@ -643,6 +648,7 @@
 .modalCount {
   font-size: 13px;
   color: #6d7175;
+  margin-right: auto;
 }
 
 /* --- Search result items -------------------------------------------- */

@@ -49,6 +49,12 @@ function toServerIso(date: string, time: string | undefined, fallbackTime: strin
   return `${date}T${t}:00-03:00`;
 }
 
+function formatTimeInput(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 4);
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+}
+
 function formatTime(campaign: Campaign): string {
   const fmt = (d: Date | string | null) => {
     if (!d) return "";
@@ -157,22 +163,32 @@ export default function CampaignsList() {
 
   const openActivateModal = (campaign: Campaign) => {
     setActivateTarget(campaign);
-    const existing = toLocalDateParts(campaign.endAt);
-    setHasEndDate(!!campaign.endAt);
-    setEndDate(existing.date);
-    setEndTime(existing.time);
+    // Expired campaigns: ignore the stale past endAt — user must set a fresh one
+    // or leave it unchecked for no end date.
+    const staleEnd = campaign.status === "expired" || !campaign.endAt;
+    if (staleEnd) {
+      setHasEndDate(false);
+      setEndDate("");
+      setEndTime("");
+    } else {
+      const existing = toLocalDateParts(campaign.endAt);
+      setHasEndDate(true);
+      setEndDate(existing.date);
+      setEndTime(existing.time);
+    }
     activateModalRef.current?.showOverlay?.();
   };
 
   const submitActivate = () => {
     if (!activateTarget) return;
-    const isScheduled = activateTarget.status === "scheduled";
+    // Anything that isn't already 'active' goes through startNow so the
+    // activation backdates startAt to now (covers draft, scheduled, expired).
     const formData = new FormData();
     formData.set("_action", "activate");
-    if (isScheduled) formData.set("startNow", "true");
-    if (hasEndDate && endDate) {
-      formData.set("endAt", toServerIso(endDate, endTime, "23:59"));
-    }
+    formData.set("startNow", "true");
+    // Always send endAt so the server overwrites any stale value:
+    // empty string = clear, ISO string = set.
+    formData.set("endAt", hasEndDate && endDate ? toServerIso(endDate, endTime, "23:59") : "");
     activateFetcher.submit(formData, {
       method: "POST",
       action: `/app/merchandising/sale/${activateTarget.id}`,
@@ -234,10 +250,13 @@ export default function CampaignsList() {
   };
 
   const handleToggleClick = (campaign: Campaign) => {
-    if (campaign.status === "expired" || campaign.status === "cancelled") return;
+    if (campaign.status === "cancelled") return;
     if (campaign.status === "active") {
       openDeactivateModal(campaign);
     } else {
+      // draft, scheduled, or expired — all route through the activate modal.
+      // For expired, the modal acts like a restart: reschedules startAt = now
+      // and lets the user set a fresh end date.
       openActivateModal(campaign);
     }
   };
@@ -311,8 +330,7 @@ export default function CampaignsList() {
               <tbody>
                 {filtered.map((campaign) => {
                   const isOn = campaign.status === "active";
-                  const toggleDisabled =
-                    campaign.status === "expired" || campaign.status === "cancelled";
+                  const toggleDisabled = campaign.status === "cancelled";
                   const menuId = `sale-row-menu-${campaign.id}`;
                   return (
                     <tr
@@ -435,9 +453,8 @@ export default function CampaignsList() {
               <s-text-field
                 label={`${t("campaigns.endTime")} (-03)`}
                 value={endTime}
-                onChange={(e: any) => setEndTime(e.currentTarget.value)}
+                onChange={(e: any) => setEndTime(formatTimeInput(e.currentTarget.value))}
                 placeholder="23:59"
-                maxLength={5}
               />
             </div>
           )}
