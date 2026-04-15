@@ -19,8 +19,10 @@ const IDENTITY_ROUTES: Record<Exclude<AppIdentity, "cpg-labs">, string[]> = {
     "app.debug-delivery",
     "api.carrier-rates",
     "webhooks.lalamove",
+    "app.retail-goals",
     "app.sales-goals",
     "app.goals",
+    "app.footprint-expansion",
     "app.retail-footprint",
     "api.kpi",
     "api.cron.retail-analytics",
@@ -92,8 +94,8 @@ export type NavItem = { href: string; labelKey: string };
 
 const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/app/local-delivery", labelKey: "common:nav.localDelivery" },
-  { href: "/app/sales-goals", labelKey: "common:nav.salesGoals" },
-  { href: "/app/retail-footprint", labelKey: "common:nav.retailExpansion" },
+  { href: "/app/retail-goals", labelKey: "common:nav.retailGoals" },
+  { href: "/app/footprint-expansion", labelKey: "common:nav.footprintExpansion" },
   { href: "/app/affiliates", labelKey: "common:nav.affiliates" },
   { href: "/app/merchandising", labelKey: "common:nav.merchandising" },
   { href: "/app/storytelling", labelKey: "common:nav.storytelling" },
@@ -102,7 +104,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
 ];
 
 const IDENTITY_NAV: Record<Exclude<AppIdentity, "cpg-labs">, string[]> = {
-  omnify: ["/app/local-delivery", "/app/retail-footprint", "/app/sales-goals", "/app/settings"],
+  omnify: ["/app/local-delivery", "/app/footprint-expansion", "/app/retail-goals", "/app/settings"],
   storytelling: ["/app/storytelling"],
   storefront: ["/app/merchandising"],
 };

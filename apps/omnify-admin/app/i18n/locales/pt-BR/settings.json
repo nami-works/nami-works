@@ -2,15 +2,31 @@
   "pageHeading": "Configurações",
   "tabs": {
     "locations": "Localizações",
-    "providers": "Provedores",
+    "providers": "Provedores de entrega",
     "carriers": "Transportadoras"
   },
   "locationSettings": {
-    "title": "Configurações de localização",
-    "savedSuccess": "Configurações de localização salvas com sucesso.",
+    "title": "Detalhes de entrega",
+    "savedSuccess": "Detalhes de entrega salvos com sucesso.",
     "selectLocation": "-selecione uma localização-",
     "selectMarket": "-selecione o mercado-",
-    "saveSettings": "Salvar configurações"
+    "saveSettings": "Salvar detalhes de entrega",
+    "showDisabled": "Mostrar localizações desativadas"
+  },
+  "retailGoals": {
+    "title": "Metas de vendas",
+    "subtitle": "Configure filtros por localização para vendas históricas. Apenas lojas de varejo (com retirada habilitada) são exibidas.",
+    "includeToggleOn": "Incluída",
+    "includeToggleOff": "Não incluída",
+    "collapsedHint": "Excluída dos painéis e das metas.",
+    "orderSources": "Origens do pedido",
+    "orderSourcesHint": "Quando ativado, apenas pedidos das origens selecionadas contam para esta localização.",
+    "searchOrderSources": "Buscar origens…",
+    "tags": "Tags obrigatórias",
+    "tagsHint": "Quando ativado, um pedido precisa ter ao menos uma das tags selecionadas para contar.",
+    "searchTags": "Buscar tags…",
+    "saveRetailGoals": "Salvar metas de vendas",
+    "savedSuccess": "Metas de vendas salvas com sucesso."
   },
   "labels": {
     "location": "Localização",

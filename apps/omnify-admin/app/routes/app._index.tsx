@@ -8,8 +8,8 @@ import { getHomeRoute, getNavItems, type NavItem } from "../utils/app-identity.s
 
 const ALL_FUNCTION_CARD_KEYS = [
   { key: "localDelivery", path: "/app/local-delivery" },
-  { key: "salesGoals", path: "/app/sales-goals" },
-  { key: "retailExpansion", path: "/app/retail-footprint" },
+  { key: "retailGoals", path: "/app/retail-goals" },
+  { key: "footprintExpansion", path: "/app/footprint-expansion" },
   { key: "priceTags", path: "/app/price-tags" },
   { key: "storytelling", path: "/app/storytelling" },
   { key: "settings", path: "/app/settings" },

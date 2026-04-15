@@ -15,11 +15,11 @@ CPG Labs is an embedded Shopify app. **Production URL:** `https://omnify.cpg-lab
 
 ### Core Features & Routes
 - **Local Delivery** — `/app/local-delivery` — Route planning, map, order tags
-- **Sales Goals** — `/app/sales-goals` — Monthly sales targets by location
-- **Retail Expansion** — `/app/retail-expansion` — Location ranking with Maps + analytics
+- **Retail goals** — `/app/retail-goals` — Monthly sales targets by location (renamed from Sales Goals; old URL 302s)
+- **Footprint expansion** — `/app/footprint-expansion` — Location ranking with Maps + analytics (renamed from Retail Footprint; old URL 302s)
 - **Sales** — `/app/merchandising/sales` — Bulk price campaigns with optional price tag labeling (merged from Campaigns + Price Tags)
 - **Story-telling** — `/app/storytelling` — AI blog content generation
-- **Settings** — `/app/settings` — Delivery locations, providers, carriers
+- **Settings** — `/app/settings` — Per-location Delivery details (renamed from Location settings) + Retail goals filters (migrated from Sales Goals > Settings tab); Delivery providers + Carriers tabs
 
 ### Key Commands
 ```bash
@@ -87,13 +87,6 @@ npx prisma migrate dev  # Create/apply migrations
 ---
 
 ## Task Contract
-
-### Backlog Mode
-When the user says **"backlog"** at the start of a session, enter backlog-building mode:
-- **Do not** read files, explore code, or make any changes.
-- Only collect and organize backlog items from the user's messages.
-- Stay in backlog mode until the user says a trigger phrase like **"now plan"**, **"do the changes"**, **"start coding"**, or similar.
-- Until then, every new message is interpreted as an addition to the backlog.
 
 1. **Read** the target route and its sibling `styles.module.css` together.
 2. **Reuse** existing components and patterns before introducing new abstractions.
@@ -246,11 +239,13 @@ Cards inside aside panels (e.g. Route Manager in Local Delivery, Expansion Proje
 
 ### Tables
 - **No zebra striping.** All tables use white rows with subtle borders — this is consistent across Local Delivery, Price Tags, Carrier Service, and Retail Expansion.
-- Header rows: `background: #f6f6f7`, `font-weight: 600`, `color: #6d7175`.
+- Header rows: `background: #f6f6f7`, `font-weight: 600`, `color: #6d7175`, **text-align: center**.
 - Data row borders: `1px solid #f1f1f1` (lighter than card borders).
 - Row hover: `background: #f6f6f7`.
 - Column group separators (multi-radius tables): `border-left: 2px solid #e1e3e5` on the first sub-column of each group.
 - Wrap tables in a container with `overflow-x: auto` for mobile scroll.
+- **Sort arrow glued to the last word.** When a column header is sortable, render the arrow immediately after the label with a non-breaking space (`{"\u00A0"}`) joining them, no regular space. Wrap the arrow in a `<span>` with `display: inline-block; white-space: nowrap;`. The arrow must never wrap to its own line when the header is narrow — it sits on the same row as the last word.
+- **Currency values use compact 1-decimal format.** `R$6.5k`, `R$1.2M`, `R$950`. Always prefix with the currency symbol (`R$`, `$`, `€`), never append it as a word (`BRL`, `USD`). The suffix is lowercase `k` for thousands and uppercase `M` for millions. Values under 1,000 render via `Intl.NumberFormat` with no decimals. See `formatCurrencyCompact` in `app/routes/app.affiliates.tsx`.
 
 ### Icons
 - Never use emoji for icons in elements that intend to resemble the native Shopify Polaris experience (e.g. search fields, action buttons, nav items). Use **inline SVG** following Polaris conventions: `viewBox="0 0 20 20"`, `width="16"`, `height="16"`, `aria-hidden="true"`, `currentColor`. See `app/components/tab-icons.tsx`. Emoji is acceptable in custom UI elements like tab labels where it's used as decorative content.

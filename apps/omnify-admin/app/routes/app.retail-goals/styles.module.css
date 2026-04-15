@@ -1,0 +1,706 @@
+/* --- Flat/underline tabs ----------------------------------------- */
+
+.tabsRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-bottom: 1px solid #e1e3e5;
+  margin: -4px -20px 12px;
+  padding: 0 20px;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  text-decoration: none;
+  color: #6d7175;
+  background: none;
+  font-weight: 400;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: #303030;
+  border-bottom-color: #8c9196;
+}
+
+.tabActive {
+  color: #303030;
+  font-weight: 500;
+  border-bottom-color: #303030;
+}
+
+.locationSettingsBlock {
+  padding-inline: 6pt;
+  margin-bottom: 24px;
+}
+
+.blockCard {
+  background: #fff;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.subSectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 16px 0 8px 0;
+}
+
+.subSectionTitle:first-of-type {
+  margin-top: 0;
+}
+
+.statCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statLabel {
+  font-weight: 600;
+  display: block;
+}
+
+.sectionHeader {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.summaryGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin-bottom: 16px;
+}
+
+.summaryGrid s-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  display: block;
+}
+
+.formGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: 16px;
+}
+
+.calculatorRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.calculatorPanel {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.actionsRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.table {
+  margin-top: 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.tableHeader {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  font-weight: 600;
+  color: #6d7175;
+}
+
+.tableRow {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.table3Col .tableHeader,
+.table3Col .tableRow {
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+}
+
+.table4Col .tableHeader,
+.table4Col .tableRow {
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+}
+
+.table5Col .tableHeader,
+.table5Col .tableRow {
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+}
+
+/* ── Settings tab ─────────────────────────────────────────────────────────── */
+
+.settingsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.locationCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  padding: 20px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.locationCardTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #202223;
+  margin: 0;
+}
+
+.toggleLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.paramDivider {
+  border: none;
+  border-top: 1px solid #e1e3e5;
+  margin: 0;
+}
+
+.paramSectionLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 12px;
+}
+
+.paramGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.paramBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.paramToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paramLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #202223;
+}
+
+.settingsSaveRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .paramGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── Section title alias for the new component ────────────────────────────── */
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ── Header controls row (month picker + comparison + sync) ───────────────── */
+.controlsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 12px 0;
+  margin-bottom: 8px;
+}
+
+.controlsLeft {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.controlsRight {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.controlLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6d7175;
+}
+
+.monthInput,
+.select {
+  padding: 6px 10px;
+  border: 1px solid #c9cccf;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+  color: #202223;
+}
+
+.syncLabel {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.settingsIntro {
+  font-size: 13px;
+  color: #6d7175;
+  max-width: 600px;
+}
+
+/* ── KPI cards ────────────────────────────────────────────────────────────── */
+.kpiGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin-bottom: 16px;
+}
+
+.kpiCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kpiLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpiValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.kpiValue {
+  font-size: 22px;
+  font-weight: 700;
+  color: #202223;
+}
+
+.kpiSecondary {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.delta {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.deltaUp {
+  color: #008060;
+}
+
+.deltaDown {
+  color: #d72c0d;
+}
+
+/* ── Dashboard table ──────────────────────────────────────────────────────── */
+.tableLocations .tableHeader,
+.tableLocations .tableRow {
+  grid-template-columns:
+    minmax(140px, 2fr)
+    minmax(70px, 0.7fr)
+    minmax(110px, 1fr)
+    minmax(110px, 1fr)
+    minmax(140px, 1.3fr)
+    minmax(80px, 0.8fr)
+    minmax(110px, 1fr);
+  align-items: center;
+}
+
+.tableEmpty {
+  padding: 24px 12px;
+  color: #6d7175;
+  text-align: center;
+}
+
+.progressCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.progressLabel {
+  font-variant-numeric: tabular-nums;
+  min-width: 48px;
+}
+
+.progressBar {
+  display: inline-block;
+  width: 80px;
+  height: 6px;
+  background: #f1f1f1;
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progressFill {
+  display: block;
+  height: 100%;
+  background: #008060;
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+.sparklineSvg {
+  display: block;
+}
+
+.sparklineEmpty {
+  color: #c9cccf;
+}
+
+/* ── Goal cards ───────────────────────────────────────────────────────────── */
+.goalCardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 16px;
+}
+
+.goalCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  background: #fff;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.goalCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.goalCardTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #202223;
+  margin: 0;
+}
+
+.goalCardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.goalCardSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.goalCardSectionLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.goalCardRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #202223;
+  gap: 8px;
+}
+
+.goalCardEmpty {
+  font-size: 13px;
+  color: #6d7175;
+  font-style: italic;
+}
+
+/* ── Inline edit form ─────────────────────────────────────────────────────── */
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.editFormRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editFormLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+}
+
+.numberInput {
+  padding: 6px 10px;
+  border: 1px solid #c9cccf;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+  color: #202223;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.growthInputs {
+  display: flex;
+  gap: 8px;
+}
+
+.growthInputs .numberInput {
+  flex: 1 1 auto;
+}
+
+.growthInputs .select {
+  flex: 0 0 100px;
+}
+
+.editPreviewRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid #e1e3e5;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.editFormActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.editFormActionsRight {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.paramHint {
+  font-size: 12px;
+  color: #6d7175;
+  font-style: italic;
+}
+
+/* ── Bulk modal (light overlay) ───────────────────────────────────────────── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modalCard {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  width: min(480px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .controlsRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .controlsRight {
+    justify-content: flex-start;
+  }
+  .tableLocations .tableHeader,
+  .tableLocations .tableRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .goalCardsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── KPI clickable cards (drilldown) ──────────────────────────────────────── */
+.kpiCardClickable {
+  display: block;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.kpiCardClickable:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.kpiCardClickable:focus-visible {
+  outline: 2px solid #008060;
+  outline-offset: 2px;
+}
+
+.kpiCardActive s-box {
+  background: #f0f7f4;
+  border-color: #008060 !important;
+}
+
+.kpiGroupLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 12px 0 4px;
+}
+
+.kpiGroupLabel:first-of-type {
+  margin-top: 0;
+}
+
+/* ── Active row highlight (best performer) ────────────────────────────────── */
+.tableRowHighlight {
+  background: #f0f7f4;
+  border-radius: 4px;
+}
+
+/* ── Projection row in goal cards ─────────────────────────────────────────── */
+.projectionPair {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.projectionItem {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.projectionLabel {
+  color: #6d7175;
+  font-size: 12px;
+}
+
+.projectionDivider {
+  color: #c9cccf;
+}
+
+/* ── Settings collapsed locations ─────────────────────────────────────────── */
+.locationCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.settingsCollapsedRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #fafbfb;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+}
+
+.collapsedHint {
+  font-size: 12px;
+  color: #6d7175;
+  flex: 1 1 auto;
+  margin-left: 8px;
+}
+
+.checkboxToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  color: #202223;
+}

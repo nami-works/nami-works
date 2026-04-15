@@ -126,3 +126,147 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ── Collapsible section (chevron) ───────────────────────────────── */
+.collapsibleSectionWrap {
+  position: relative;
+}
+
+.collapseChevron {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.chevronIcon {
+  font-size: 18px;
+  font-weight: 600;
+  color: #8c9196;
+  transition: transform 0.15s ease, color 0.15s ease;
+  transform: rotate(270deg);
+  display: inline-block;
+}
+
+.collapseChevron.collapsed .chevronIcon {
+  transform: rotate(90deg);
+}
+
+.collapseChevron:hover .chevronIcon {
+  color: #303030;
+}
+
+/* ── Selector row + show-disabled toggle ─────────────────────────── */
+.selectorRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.selectorField {
+  flex: 1 1 260px;
+  min-width: 200px;
+}
+
+.showDisabledToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  padding: 8px 0;
+  color: #202223;
+  font-size: 13px;
+}
+
+.disabledOptionDim {
+  color: #8c9196;
+}
+
+/* ── Section header row (title + header-toggle for Retail goals) ─ */
+.sectionHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionHeaderTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.headerToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  color: #6d7175;
+}
+
+/* ── Per-section Save row ────────────────────────────────────────── */
+.saveRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid #f1f1f1;
+}
+
+.savedHint {
+  font-size: 12px;
+  color: #008060;
+}
+
+/* ── Retail goals filter block ───────────────────────────────────── */
+.filterBlock {
+  padding: 14px 16px;
+  border: 1px solid #f1f1f1;
+  border-radius: 8px;
+  background: #fff;
+  margin-bottom: 12px;
+}
+
+.filterHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.filterLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #202223;
+}
+
+.filterHint {
+  display: block;
+  font-size: 12px;
+  color: #6d7175;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+.checkboxToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.collapsedHint {
+  font-size: 12px;
+  color: #6d7175;
+  font-style: italic;
+  padding: 8px 0;
+}

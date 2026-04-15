@@ -41,6 +41,7 @@ import {
 } from "../services/lalamove-escalation.server";
 import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import { formatCustomerShort } from "../utils/format-name";
 import styles from "./app.local-delivery/styles.module.css";
 
 const DEFAULT_DELIVERY_METHOD = "local";
@@ -275,7 +276,6 @@ export default function Index() {
   const [removeFromRouteOrderIds, setRemoveFromRouteOrderIds] = useState<Set<string>>(
     () => new Set(),
   );
-  const [activeTab, setActiveTab] = useState<"routes" | "settings">("routes");
   const [ordersFilter, setOrdersFilter] = useState<"all" | "unassigned" | "assigned">("all");
   const [ordersSearch, setOrdersSearch] = useState("");
   const ordersSectionRef = useRef<HTMLDivElement | null>(null);
@@ -1091,6 +1091,7 @@ export default function Index() {
         return next;
       });
     }
+    setSelectedOrderIds(new Set());
   }, [optimizeFetcher.data]);
 
   // ── Optimize progress timer ──
@@ -1136,92 +1137,6 @@ export default function Index() {
     }
   }, [lalamoveSettingsFetcher.data, lalamoveSettings, settingsLocationId]);
 
-
-  useEffect(() => {
-    if (!mapsApiKey) return;
-    if (activeTab !== "settings") return;
-    let isMounted = true;
-
-    const setupAutocomplete = async () => {
-      if (!lalamoveAddressFieldRef.current) return;
-      const googleMaps = window.google?.maps;
-      if (!googleMaps) return;
-      const { Autocomplete } = googleMaps.importLibrary
-        ? await googleMaps.importLibrary("places")
-        : { Autocomplete: googleMaps.places?.Autocomplete };
-      if (!Autocomplete) return;
-
-      const input =
-        lalamoveAddressFieldRef.current.querySelector("input") ||
-        lalamoveAddressFieldRef.current.shadowRoot?.querySelector("input");
-      if (!input) return;
-
-      lalamoveAddressInputRef.current = input;
-      input.value = lalamoveSettings.locationAddress || "";
-
-      if (!lalamoveAddressInputListenerRef.current) {
-        const inputHandler = (event: Event) => {
-          const target = event.currentTarget as HTMLInputElement | null;
-          if (!target) return;
-          setLalamoveSettings((current) => ({
-            ...current,
-            locationAddress: target.value,
-          }));
-        };
-        input.addEventListener("input", inputHandler);
-        lalamoveAddressInputListenerRef.current = inputHandler;
-      }
-
-      if (!lalamoveAddressAutocompleteRef.current) {
-        lalamoveAddressAutocompleteRef.current = new Autocomplete(input, {
-          fields: ["formatted_address", "name"],
-        });
-        const placeChanged = () => {
-          const place = lalamoveAddressAutocompleteRef.current?.getPlace?.();
-          const formatted =
-            place?.formatted_address ||
-            place?.name ||
-            lalamoveSettings.locationAddress;
-          if (!formatted) return;
-          setLalamoveSettings((current) => ({
-            ...current,
-            locationAddress: formatted,
-          }));
-        };
-        lalamoveAddressAutocompleteRef.current.addListener(
-          "place_changed",
-          placeChanged,
-        );
-        lalamoveAddressPlaceListenerRef.current = placeChanged;
-      }
-    };
-
-    loadGoogleMaps(mapsApiKey)
-      .then(async () => {
-        if (!isMounted) return;
-        await setupAutocomplete();
-      })
-      .catch((error) => {
-        console.error("Failed to load Google Maps Places", error);
-        setMapsLoadError(
-          t("map.errors.placesLoadFailed"),
-        );
-      });
-
-    return () => {
-      isMounted = false;
-      if (
-        lalamoveAddressInputRef.current &&
-        lalamoveAddressInputListenerRef.current
-      ) {
-        lalamoveAddressInputRef.current.removeEventListener(
-          "input",
-          lalamoveAddressInputListenerRef.current,
-        );
-        lalamoveAddressInputListenerRef.current = null;
-      }
-    };
-  }, [mapsApiKey, lalamoveSettings.locationAddress, activeTab]);
 
   // Re-fit map viewport when the user expands or collapses the map canvas.
   // Google Maps doesn't auto-resize when the CSS container changes; we must
@@ -1481,13 +1396,13 @@ export default function Index() {
     setSelectedOrderIds((current) => {
       const next = new Set<string>();
       current.forEach((orderId) => {
-        if (ordersById.has(orderId) && !assignedOrderIds.has(orderId)) {
+        if (ordersById.has(orderId)) {
           next.add(orderId);
         }
       });
       return next;
     });
-  }, [ordersById, assignedOrderIds]);
+  }, [ordersById]);
 
   useEffect(() => {
     if (!mapsApiKey) return;
@@ -2733,6 +2648,7 @@ export default function Index() {
   const handleLocationChange = (event: Event) => {
     const target = event.currentTarget as { value?: string } | null;
     if (!target) return;
+    window.scrollTo({ top: 0 });
     const nextValue = target.value ?? DEFAULT_LOCATION_ID;
     lastFittedLocationIdRef.current = "";
     setIsRouteManagerVisible(nextValue !== DEFAULT_LOCATION_ID);
@@ -3071,6 +2987,67 @@ export default function Index() {
   const handleAddSelectedToRoute = (routeIndex: number) => {
     if (selectedOrderIds.size === 0) return;
     submitRouteAssignment(`rota-${routeIndex + 1}`);
+  };
+
+  const handleUnassignSelected = () => {
+    const toUnassign = [...selectedOrderIds].filter((id) => assignedOrderIds.has(id));
+    if (toUnassign.length === 0) return;
+
+    const byRoute = new Map<number, { tag: string; locationId: string; orderIds: string[] }>();
+    for (const orderId of toUnassign) {
+      const route = orderRouteMap.get(orderId);
+      if (!route) continue;
+      const routeIndex = editableRoutes.findIndex((r) => r.id === route.id);
+      if (routeIndex < 0) continue;
+      const tag = ROUTE_TAG_DEFINITIONS[routeIndex]?.tag;
+      if (!tag) continue;
+      let entry = byRoute.get(routeIndex);
+      if (!entry) {
+        entry = { tag, locationId: route.locationId, orderIds: [] };
+        byRoute.set(routeIndex, entry);
+      }
+      entry.orderIds.push(orderId);
+    }
+
+    const unassignSet = new Set(toUnassign);
+    setEditableRoutes((current) =>
+      current.map((route) => ({
+        ...route,
+        orderIds: route.orderIds.filter((id) => !unassignSet.has(id)),
+      })),
+    );
+    setRouteQuoteTotals((prev) => {
+      const next = { ...prev };
+      for (const orderId of toUnassign) {
+        const route = orderRouteMap.get(orderId);
+        if (route) delete next[route.id];
+      }
+      return next;
+    });
+    setDirtyRouteIds((prev) => {
+      const next = new Set(prev);
+      for (const orderId of toUnassign) {
+        const route = orderRouteMap.get(orderId);
+        if (route) next.add(route.id);
+      }
+      return next;
+    });
+    clearSelection();
+
+    const entries = [...byRoute.values()];
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i]!;
+      const formData = new FormData();
+      formData.append("intent", "unassign");
+      formData.append("routeTag", entry.tag);
+      formData.append("locationId", entry.locationId);
+      entry.orderIds.forEach((id) => formData.append("orderIds", id));
+      if (i === 0) {
+        unassignFetcher.submit(formData, { method: "post" });
+      } else {
+        submit(formData, { method: "post" });
+      }
+    }
   };
 
   /**
@@ -5066,6 +5043,16 @@ export default function Index() {
                         >
                           {t("map.clearSelection")}
                         </s-button>
+                        {[...selectedOrderIds].some((id) => assignedOrderIds.has(id)) ? (
+                          <s-button
+                            variant="secondary"
+                            tone="critical"
+                            disabled={isRoutingBusy}
+                            onClick={handleUnassignSelected}
+                          >
+                            {t("map.unassignSelected")}
+                          </s-button>
+                        ) : null}
                         <s-button
                           variant="primary"
                           disabled={
@@ -5204,46 +5191,51 @@ export default function Index() {
                           <s-spinner size="base" accessibilityLabel={t("routeManager.updateRoutes")}></s-spinner>
                         ) : (
                           <div className={styles.routeManagerActionsMenu}>
-                            <s-button
-                              variant="tertiary"
-                              icon="menu-horizontal"
-                              accessibilityLabel={t("routeManager.actions")}
-                              commandFor="route-manager-actions-main"
-                            ></s-button>
-                            <s-menu id="route-manager-actions-main" accessibilityLabel={t("routeManager.actions")}>
-                              <s-button icon="view" onClick={scrollToOrdersSection}>
-                                {t("routeManager.seeOrders")}
-                              </s-button>
-                              {unassignedOrders.length > 0 ? (
-                                <s-button
-                                  icon="transfer"
-                                  disabled={orders.length === 0}
-                                  onClick={() => {
-                                    autoAssignSelection();
-                                    handleOptimizeFleet();
-                                  }}
-                                >
-                                  {t("routeManager.autoAssign")}
-                                </s-button>
-                              ) : null}
+                            {dirtyRouteIds.size > 0 ? (
                               <s-button
-                                icon="refresh"
-                                disabled={dirtyRouteIds.size === 0 || isRoutingBusy}
+                                variant="primary"
+                                disabled={isRoutingBusy}
                                 onClick={handleUpdateRoutes}
                               >
-                                {t("routeManager.updateRoutes")}
+                                {t("routeManager.confirmChanges")}
                               </s-button>
-                              {hasAssignedRoutes ? (
+                            ) : (
+                              <>
                                 <s-button
-                                  tone="critical"
-                                  icon="delete"
-                                  disabled={isRoutingBusy}
-                                  onClick={() => setClearAllConfirmOpen(true)}
-                                >
-                                  {t("routeManager.clearAllRoutes")}
-                                </s-button>
-                              ) : null}
-                            </s-menu>
+                                  variant="tertiary"
+                                  icon="menu-horizontal"
+                                  accessibilityLabel={t("routeManager.actions")}
+                                  commandFor="route-manager-actions-main"
+                                ></s-button>
+                                <s-menu id="route-manager-actions-main" accessibilityLabel={t("routeManager.actions")}>
+                                  <s-button icon="view" onClick={scrollToOrdersSection}>
+                                    {t("routeManager.seeOrders")}
+                                  </s-button>
+                                  {unassignedOrders.length > 0 ? (
+                                    <s-button
+                                      icon="transfer"
+                                      disabled={orders.length === 0}
+                                      onClick={() => {
+                                        autoAssignSelection();
+                                        handleOptimizeFleet();
+                                      }}
+                                    >
+                                      {t("routeManager.autoAssign")}
+                                    </s-button>
+                                  ) : null}
+                                  {hasAssignedRoutes ? (
+                                    <s-button
+                                      tone="critical"
+                                      icon="delete"
+                                      disabled={isRoutingBusy}
+                                      onClick={() => setClearAllConfirmOpen(true)}
+                                    >
+                                      {t("routeManager.clearAllRoutes")}
+                                    </s-button>
+                                  ) : null}
+                                </s-menu>
+                              </>
+                            )}
                           </div>
                         )
                       ) : null}
@@ -5400,6 +5392,8 @@ export default function Index() {
                               const canAddToRoute = assignableExistingRoutes.some(
                                 (candidate) => candidate.id === route.id,
                               );
+                              const allSelectedAlreadyInRoute = hasSelectedOrders
+                                && [...selectedOrderIds].every((id) => route.orderIds.includes(id));
                               const isThisRouteBusy = lalamoveBusyRouteId === route.id;
                               const isAnyRouteBusy = lalamoveBusyRouteId !== null;
                               const isOtherRouteBusy = isAnyRouteBusy && !isThisRouteBusy;
@@ -5464,7 +5458,7 @@ export default function Index() {
                                     <div className={styles.assignedRoutesTopActions}>
                                       <s-button
                                         variant="primary"
-                                        disabled={!canAddToRoute || isRoutingBusy || isOtherRouteBusy}
+                                        disabled={!canAddToRoute || allSelectedAlreadyInRoute || isRoutingBusy || isOtherRouteBusy}
                                         onClick={() => handleAddSelectedToRoute(routeIndex)}
                                       >
                                         {t("routeManager.addToRoute")}
@@ -5578,46 +5572,51 @@ export default function Index() {
                 <s-spinner size="base" accessibilityLabel={t("routeManager.updateRoutes")}></s-spinner>
               ) : (
                 <div className={styles.routeManagerActionsMenu}>
-                  <s-button
-                    variant="tertiary"
-                    icon="menu-horizontal"
-                    accessibilityLabel={t("routeManager.actions")}
-                    commandFor="route-manager-actions-aside"
-                  ></s-button>
-                  <s-menu id="route-manager-actions-aside" accessibilityLabel={t("routeManager.actions")}>
-                    <s-button icon="view" onClick={scrollToOrdersSection}>
-                      {t("routeManager.seeOrders")}
-                    </s-button>
-                    {unassignedOrders.length > 0 ? (
-                      <s-button
-                        icon="transfer"
-                        disabled={orders.length === 0}
-                        onClick={() => {
-                          autoAssignSelection();
-                          handleOptimizeFleet();
-                        }}
-                      >
-                        {t("routeManager.autoAssign")}
-                      </s-button>
-                    ) : null}
+                  {dirtyRouteIds.size > 0 ? (
                     <s-button
-                      icon="refresh"
-                      disabled={dirtyRouteIds.size === 0 || isRoutingBusy}
+                      variant="primary"
+                      disabled={isRoutingBusy}
                       onClick={handleUpdateRoutes}
                     >
-                      {t("routeManager.updateRoutes")}
+                      {t("routeManager.confirmChanges")}
                     </s-button>
-                    {hasAssignedRoutes ? (
+                  ) : (
+                    <>
                       <s-button
-                        tone="critical"
-                        icon="delete"
-                        disabled={isRoutingBusy}
-                        onClick={() => setClearAllConfirmOpen(true)}
-                      >
-                        {t("routeManager.clearAllRoutes")}
-                      </s-button>
-                    ) : null}
-                  </s-menu>
+                        variant="tertiary"
+                        icon="menu-horizontal"
+                        accessibilityLabel={t("routeManager.actions")}
+                        commandFor="route-manager-actions-aside"
+                      ></s-button>
+                      <s-menu id="route-manager-actions-aside" accessibilityLabel={t("routeManager.actions")}>
+                        <s-button icon="view" onClick={scrollToOrdersSection}>
+                          {t("routeManager.seeOrders")}
+                        </s-button>
+                        {unassignedOrders.length > 0 ? (
+                          <s-button
+                            icon="transfer"
+                            disabled={orders.length === 0}
+                            onClick={() => {
+                              autoAssignSelection();
+                              handleOptimizeFleet();
+                            }}
+                          >
+                            {t("routeManager.autoAssign")}
+                          </s-button>
+                        ) : null}
+                        {hasAssignedRoutes ? (
+                          <s-button
+                            tone="critical"
+                            icon="delete"
+                            disabled={isRoutingBusy}
+                            onClick={() => setClearAllConfirmOpen(true)}
+                          >
+                            {t("routeManager.clearAllRoutes")}
+                          </s-button>
+                        ) : null}
+                      </s-menu>
+                    </>
+                  )}
                 </div>
               )
             ) : null}
@@ -5876,6 +5875,8 @@ export default function Index() {
                     const canAddToRoute = assignableExistingRoutes.some(
                       (candidate) => candidate.id === route.id,
                     );
+                    const allSelectedAlreadyInRoute = hasSelectedOrders
+                      && [...selectedOrderIds].every((id) => route.orderIds.includes(id));
                     const isThisRouteBusy = lalamoveBusyRouteId === route.id;
                     const isAnyRouteBusy = lalamoveBusyRouteId !== null;
                     const isOtherRouteBusy = isAnyRouteBusy && !isThisRouteBusy;
@@ -5937,7 +5938,7 @@ export default function Index() {
                           <div className={styles.assignedRoutesTopActions}>
                             <s-button
                               variant="primary"
-                              disabled={!canAddToRoute || isRoutingBusy || isOtherRouteBusy}
+                              disabled={!canAddToRoute || allSelectedAlreadyInRoute || isRoutingBusy || isOtherRouteBusy}
                               onClick={() => handleAddSelectedToRoute(routeIndex)}
                             >
                               {t("routeManager.addToRoute")}
@@ -6542,26 +6543,6 @@ function formatOrderDateShort(iso: string | null): string {
   const md = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date);
   return `${md} at ${time}`;
 }
-
-const formatCustomerShort = (name: string | null, guestFallback = "Guest") => {
-  if (!name) return guestFallback;
-  const words = name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .map(
-      (word) =>
-        word.charAt(0).toLocaleUpperCase() +
-        word.slice(1).toLocaleLowerCase(),
-    );
-  if (words.length === 0) return guestFallback;
-  if (words.length === 1) return words[0]!;
-  if (words.length === 2) return `${words[0]} ${words[1]}`;
-  const first = words[0]!;
-  const firstMiddleInitial = words[1]!.charAt(0).toLocaleUpperCase();
-  const last = words[words.length - 1]!;
-  return `${first} ${firstMiddleInitial} ${last}`;
-};
 
 const isPresaleTag = (tag: string) => {
   const lower = tag.toLowerCase();

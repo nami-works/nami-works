@@ -32,6 +32,7 @@ import {
   type CarrierServiceLoaderData,
 } from "./app.carrier-service";
 import styles from "./app.settings/styles.module.css";
+import { MultiSelectInput } from "../components/multi-select-input";
 
 type LalamoveConfig = {
   market: string;
@@ -71,6 +72,49 @@ const LALAMOVE_MARKETS = [
   { value: "TH", label: "Thailand" },
   { value: "VN", label: "Vietnam" },
 ];
+
+// Retail goals per-location configuration (mirrors shape used by /app/retail-goals
+// and the salesGoalsLocationConfig Prisma table). Writes round-trip through the
+// Retail goals route's existing `save-location-config` action intent.
+type RetailGoalsLocationConfig = {
+  enabled: boolean;
+  orderSources: { enabled: boolean; sources: string[] };
+  tags: { enabled: boolean; tags: string[] };
+};
+
+const DEFAULT_RETAIL_GOALS_CONFIG: RetailGoalsLocationConfig = {
+  enabled: true,
+  orderSources: { enabled: false, sources: [] },
+  tags: { enabled: false, tags: [] },
+};
+
+const RETAIL_GOALS_DEFAULT_ORDER_SOURCES = ["Point of Sale", "IGLU POS"];
+
+// Backward-compat with the older sales-goals schema that used `salesChannels`.
+function normalizeRetailGoalsConfig(raw: unknown): RetailGoalsLocationConfig {
+  const r = (raw ?? {}) as Record<string, unknown>;
+  const orderSources = (r.orderSources ?? r.salesChannels ?? {}) as {
+    enabled?: boolean;
+    sources?: string[];
+    channels?: string[];
+  };
+  const tags = (r.tags ?? {}) as { enabled?: boolean; tags?: string[] };
+  return {
+    enabled: r.enabled !== false,
+    orderSources: {
+      enabled: orderSources.enabled === true,
+      sources: Array.isArray(orderSources.sources)
+        ? orderSources.sources
+        : Array.isArray(orderSources.channels)
+          ? orderSources.channels
+          : [],
+    },
+    tags: {
+      enabled: tags.enabled === true,
+      tags: Array.isArray(tags.tags) ? tags.tags : [],
+    },
+  };
+}
 
 const LALAMOVE_SERVICE_TYPES = [
   { value: "CAR", label: "CAR" },
@@ -133,6 +177,23 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     {},
   );
 
+  // Retail goals per-location configs (migrated from old Sales Goals > Settings tab).
+  // Read-only here; writes route through /app/retail-goals with save-location-config intent.
+  const retailGoalsRows = await prisma.salesGoalsLocationConfig.findMany({
+    where: { shop },
+  });
+  const retailGoalsConfigs = retailGoalsRows.reduce<
+    Record<string, RetailGoalsLocationConfig>
+  >((acc, row) => {
+    acc[row.locationId] = normalizeRetailGoalsConfig(row.data);
+    return acc;
+  }, {});
+  const tagSuggestions = new Set<string>();
+  for (const row of retailGoalsRows) {
+    const cfg = normalizeRetailGoalsConfig(row.data);
+    cfg.tags.tags.forEach((t) => tagSuggestions.add(t));
+  }
+
   const appIdentity = getAppIdentity();
 
   // Carrier service data
@@ -158,6 +219,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return {
     locations,
     lalamoveConfigs,
+    retailGoalsConfigs,
+    retailGoalsTagSuggestions: Array.from(tagSuggestions).sort(),
+    retailGoalsOrderSources: RETAIL_GOALS_DEFAULT_ORDER_SOURCES,
     userLocale,
     mapsApiKey: process.env.GOOGLE_MAPS_API_KEY?.trim() ?? "",
     appIdentity,
@@ -440,6 +504,9 @@ export default function LocationSettings() {
   const {
     locations,
     lalamoveConfigs,
+    retailGoalsConfigs,
+    retailGoalsTagSuggestions,
+    retailGoalsOrderSources,
     userLocale,
     mapsApiKey,
     appIdentity,
@@ -448,7 +515,15 @@ export default function LocationSettings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("settings");
   const { t } = useTranslation("settings");
   const lalamoveFetcher = useFetcher();
+  const retailGoalsFetcher = useFetcher<{ ok: boolean; error?: string }>();
+  const retailGoalsToggleFetcher = useFetcher<{ ok: boolean }>();
   const [settingsLocationId, setSettingsLocationId] = useState("");
+  const [showDisabledLocations, setShowDisabledLocations] = useState(false);
+  const [isDeliveryDetailsCollapsed, setIsDeliveryDetailsCollapsed] =
+    useState(false);
+  const [retailGoalsDraft, setRetailGoalsDraft] =
+    useState<RetailGoalsLocationConfig>(DEFAULT_RETAIL_GOALS_CONFIG);
+  const [retailGoalsSaved, setRetailGoalsSaved] = useState(false);
   const locationAddressFieldRef = useRef<HTMLDivElement | null>(null);
   const locationAddressAutocompleteRef = useRef<any>(null);
   const locationAddressInputListenerRef = useRef<((event: Event) => void) | null
@@ -468,6 +543,24 @@ export default function LocationSettings() {
   const tabs = appIdentity === "omnify"
     ? allTabs.filter((tab) => tab.id !== "carriers")
     : allTabs;
+
+  // Sync Retail goals draft + feedback state when the selected location changes.
+  useEffect(() => {
+    setRetailGoalsSaved(false);
+    if (!settingsLocationId) {
+      setRetailGoalsDraft(DEFAULT_RETAIL_GOALS_CONFIG);
+      return;
+    }
+    setRetailGoalsDraft(
+      retailGoalsConfigs[settingsLocationId] ?? DEFAULT_RETAIL_GOALS_CONFIG,
+    );
+  }, [settingsLocationId, retailGoalsConfigs]);
+
+  // Surface Retail goals save feedback.
+  useEffect(() => {
+    if (!retailGoalsFetcher.data) return;
+    if (retailGoalsFetcher.data.ok) setRetailGoalsSaved(true);
+  }, [retailGoalsFetcher.data]);
 
   useEffect(() => {
     setSaveSuccess(false);
@@ -591,6 +684,56 @@ export default function LocationSettings() {
     setLalamoveSettings((c) => ({ ...c, [field]: value }));
   };
 
+  // ─── Retail goals helpers ─────────────────────────────────────────
+  const patchRetailGoals = (
+    patch: (prev: RetailGoalsLocationConfig) => RetailGoalsLocationConfig,
+  ) => {
+    setRetailGoalsSaved(false);
+    setRetailGoalsDraft((prev) => patch(prev));
+  };
+
+  const saveRetailGoals = () => {
+    if (!settingsLocationId) return;
+    const fd = new FormData();
+    fd.append("intent", "save-location-config");
+    fd.append("locationId", settingsLocationId);
+    fd.append("config", JSON.stringify(retailGoalsDraft));
+    retailGoalsFetcher.submit(fd, {
+      method: "post",
+      action: "/app/retail-goals",
+    });
+  };
+
+  const toggleRetailGoalsInclude = (nextEnabled: boolean) => {
+    if (!settingsLocationId) return;
+    const next: RetailGoalsLocationConfig = {
+      ...retailGoalsDraft,
+      enabled: nextEnabled,
+    };
+    setRetailGoalsDraft(next);
+    setRetailGoalsSaved(false);
+    const fd = new FormData();
+    fd.append("intent", "save-location-config");
+    fd.append("locationId", settingsLocationId);
+    fd.append("config", JSON.stringify(next));
+    retailGoalsToggleFetcher.submit(fd, {
+      method: "post",
+      action: "/app/retail-goals",
+    });
+  };
+
+  // Location list filtered by the Show disabled toggle (if off, hide locations
+  // currently excluded from Retail goals; Lalamove-only locations still show).
+  const visibleLocations = showDisabledLocations
+    ? locations
+    : locations.filter((loc: { id: string }) => {
+        const cfg = retailGoalsConfigs[loc.id];
+        // If no Retail goals config yet, the location is effectively enabled
+        // (default state). Only hide when explicitly disabled.
+        if (!cfg) return true;
+        return cfg.enabled !== false;
+      });
+
   const saveLocationSettings = () => {
     if (!settingsLocationId) return;
     const formData = new FormData();
@@ -646,28 +789,65 @@ export default function LocationSettings() {
               {t("locationSettings.savedSuccess")}
             </s-banner>
           )}
-          <div className={styles.locationSettingsBlock}>
-            <s-box padding="base" borderRadius="base">
-              <s-stack direction="block" gap="base">
-                <h2 className={styles.modalTitle}>{t("locationSettings.title")}</h2>
-                <div className={styles.settingsGrid}>
-            <s-select
-              label={t("labels.location")}
-              name="settingsLocationId"
-              value={settingsLocationId}
-              onChange={(event) =>
-                setSettingsLocationId(
-                  (event.currentTarget as unknown as HTMLSelectElement).value,
-                )
-              }
-            >
-              <s-option value="">{t("locationSettings.selectLocation")}</s-option>
-              {locations.map((loc: { id: string; name: string }) => (
-                <s-option key={loc.id} value={loc.id}>
-                  {loc.name}
+
+          {/* ── Location selector + Show disabled toggle ───────────── */}
+          <div className={styles.selectorRow}>
+            <div className={styles.selectorField}>
+              <s-select
+                label={t("labels.location")}
+                name="settingsLocationId"
+                value={settingsLocationId}
+                onChange={(event) =>
+                  setSettingsLocationId(
+                    (event.currentTarget as unknown as HTMLSelectElement).value,
+                  )
+                }
+              >
+                <s-option value="">
+                  {t("locationSettings.selectLocation")}
                 </s-option>
-              ))}
-            </s-select>
+                {visibleLocations.map((loc: { id: string; name: string }) => {
+                  const cfg = retailGoalsConfigs[loc.id];
+                  const isDisabled = cfg && cfg.enabled === false;
+                  return (
+                    <s-option key={loc.id} value={loc.id}>
+                      {isDisabled ? `${loc.name} (disabled)` : loc.name}
+                    </s-option>
+                  );
+                })}
+              </s-select>
+            </div>
+            <div
+              className={styles.showDisabledToggle}
+              onClick={() => setShowDisabledLocations((prev) => !prev)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  (e.currentTarget as HTMLElement).click();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+            >
+              <s-checkbox
+                checked={showDisabledLocations || undefined}
+                onChange={() => setShowDisabledLocations((prev) => !prev)}
+              />
+              {t("locationSettings.showDisabled")}
+            </div>
+          </div>
+
+          {/* ── Delivery details (collapsible) ──────────────────────── */}
+          <div className={styles.collapsibleSectionWrap}>
+            <s-section>
+              <div className={styles.sectionHeaderRow}>
+                <h2 className={styles.sectionHeaderTitle}>
+                  {t("locationSettings.title")}
+                </h2>
+              </div>
+              {!isDeliveryDetailsCollapsed && (
+                <s-stack direction="block" gap="base">
+                  <div className={styles.settingsGrid}>
             <s-select
               label={t("labels.market")}
               name="market"
@@ -691,6 +871,7 @@ export default function LocationSettings() {
               value={lalamoveSettings.city}
               disabled
             />
+            <div />
             <div />
             <s-text-field
               label={t("labels.locationName")}
@@ -852,31 +1033,217 @@ export default function LocationSettings() {
                 ) : null}
               </s-stack>
             </div>
-                </div>
-              </s-stack>
-            </s-box>
+                  </div>
+
+                  {/* Per-section Save: Delivery details */}
+                  <div className={styles.saveRow}>
+                    {settingsSaved && saveSuccess ? (
+                      <span className={styles.savedHint}>
+                        {t("status.saved", { ns: "common" })}
+                      </span>
+                    ) : null}
+                    {lalamoveFetcher.state !== "idle" ? (
+                      <s-button
+                        key="dd-save-loading"
+                        variant="primary"
+                        loading
+                        disabled
+                      >
+                        {t("locationSettings.saveSettings")}
+                      </s-button>
+                    ) : !settingsLocationId ? (
+                      <s-button
+                        key="dd-save-disabled"
+                        variant="primary"
+                        disabled
+                      >
+                        {t("locationSettings.saveSettings")}
+                      </s-button>
+                    ) : (
+                      <s-button
+                        key="dd-save-active"
+                        variant="primary"
+                        onClick={saveLocationSettings}
+                      >
+                        {t("locationSettings.saveSettings")}
+                      </s-button>
+                    )}
+                  </div>
+                </s-stack>
+              )}
+              <div
+                className={`${styles.collapseChevron}${isDeliveryDetailsCollapsed ? ` ${styles.collapsed}` : ""}`}
+                onClick={() => setIsDeliveryDetailsCollapsed((prev) => !prev)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setIsDeliveryDetailsCollapsed((prev) => !prev);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label="Toggle Delivery details section"
+              >
+                <span className={styles.chevronIcon}>›</span>
+              </div>
+            </s-section>
           </div>
 
-          <s-stack direction="inline" gap="base" justifyContent="end">
-            <s-link href="../local-delivery">
-              <s-button variant="secondary">
-                {settingsSaved ? t("common:button.back") : t("common:button.cancel")}
-              </s-button>
-            </s-link>
-            {lalamoveFetcher.state !== "idle" ? (
-              <s-button key="save-loading" variant="primary" loading disabled>
-                {t("locationSettings.saveSettings")}
-              </s-button>
-            ) : !settingsLocationId ? (
-              <s-button key="save-disabled" variant="primary" disabled>
-                {t("locationSettings.saveSettings")}
-              </s-button>
-            ) : (
-              <s-button key="save-active" variant="primary" onClick={saveLocationSettings}>
-                {t("locationSettings.saveSettings")}
-              </s-button>
-            )}
-          </s-stack>
+          {/* ── Retail goals (collapsible via header toggle) ───────── */}
+          {settingsLocationId ? (
+            <div className={styles.collapsibleSectionWrap}>
+              <s-section>
+                <div className={styles.sectionHeaderRow}>
+                  <h2 className={styles.sectionHeaderTitle}>
+                    {t("retailGoals.title")}
+                  </h2>
+                  <div
+                    className={styles.headerToggle}
+                    onClick={() =>
+                      toggleRetailGoalsInclude(!retailGoalsDraft.enabled)
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        (e.currentTarget as HTMLElement).click();
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <s-checkbox
+                      checked={retailGoalsDraft.enabled || undefined}
+                      onChange={() =>
+                        toggleRetailGoalsInclude(!retailGoalsDraft.enabled)
+                      }
+                    />
+                    {retailGoalsDraft.enabled
+                      ? t("retailGoals.includeToggleOn")
+                      : t("retailGoals.includeToggleOff")}
+                  </div>
+                </div>
+
+                {retailGoalsDraft.enabled ? (
+                  <s-stack direction="block" gap="base">
+                    <span className={styles.filterHint}>
+                      {t("retailGoals.subtitle")}
+                    </span>
+
+                    {/* Order sources filter block */}
+                    <div className={styles.filterBlock}>
+                      <div className={styles.filterHeaderRow}>
+                        <span className={styles.filterLabel}>
+                          {t("retailGoals.orderSources")}
+                        </span>
+                        <s-checkbox
+                          checked={
+                            retailGoalsDraft.orderSources.enabled || undefined
+                          }
+                          onChange={(e: Event) =>
+                            patchRetailGoals((prev) => ({
+                              ...prev,
+                              orderSources: {
+                                ...prev.orderSources,
+                                enabled:
+                                  (
+                                    e.currentTarget as HTMLInputElement | null
+                                  )?.checked ?? false,
+                              },
+                            }))
+                          }
+                        />
+                      </div>
+                      <MultiSelectInput
+                        value={retailGoalsDraft.orderSources.sources}
+                        suggestions={retailGoalsOrderSources}
+                        disabled={!retailGoalsDraft.orderSources.enabled}
+                        placeholder={t("retailGoals.searchOrderSources")}
+                        onChange={(next) =>
+                          patchRetailGoals((prev) => ({
+                            ...prev,
+                            orderSources: { ...prev.orderSources, sources: next },
+                          }))
+                        }
+                      />
+                      <span className={styles.filterHint}>
+                        {t("retailGoals.orderSourcesHint")}
+                      </span>
+                    </div>
+
+                    {/* Required tags filter block */}
+                    <div className={styles.filterBlock}>
+                      <div className={styles.filterHeaderRow}>
+                        <span className={styles.filterLabel}>
+                          {t("retailGoals.tags")}
+                        </span>
+                        <s-checkbox
+                          checked={retailGoalsDraft.tags.enabled || undefined}
+                          onChange={(e: Event) =>
+                            patchRetailGoals((prev) => ({
+                              ...prev,
+                              tags: {
+                                ...prev.tags,
+                                enabled:
+                                  (
+                                    e.currentTarget as HTMLInputElement | null
+                                  )?.checked ?? false,
+                              },
+                            }))
+                          }
+                        />
+                      </div>
+                      <MultiSelectInput
+                        value={retailGoalsDraft.tags.tags}
+                        suggestions={retailGoalsTagSuggestions}
+                        disabled={!retailGoalsDraft.tags.enabled}
+                        placeholder={t("retailGoals.searchTags")}
+                        onChange={(next) =>
+                          patchRetailGoals((prev) => ({
+                            ...prev,
+                            tags: { ...prev.tags, tags: next },
+                          }))
+                        }
+                      />
+                      <span className={styles.filterHint}>
+                        {t("retailGoals.tagsHint")}
+                      </span>
+                    </div>
+
+                    {/* Per-section Save: Retail goals */}
+                    <div className={styles.saveRow}>
+                      {retailGoalsSaved ? (
+                        <span className={styles.savedHint}>
+                          {t("status.saved", { ns: "common" })}
+                        </span>
+                      ) : null}
+                      {retailGoalsFetcher.state !== "idle" ? (
+                        <s-button
+                          key="rg-save-loading"
+                          variant="primary"
+                          loading
+                          disabled
+                        >
+                          {t("retailGoals.saveRetailGoals")}
+                        </s-button>
+                      ) : (
+                        <s-button
+                          key="rg-save-active"
+                          variant="primary"
+                          onClick={saveRetailGoals}
+                        >
+                          {t("retailGoals.saveRetailGoals")}
+                        </s-button>
+                      )}
+                    </div>
+                  </s-stack>
+                ) : (
+                  <span className={styles.collapsedHint}>
+                    {t("retailGoals.collapsedHint")}
+                  </span>
+                )}
+              </s-section>
+            </div>
+          ) : null}
         </s-stack>
         )}
 
