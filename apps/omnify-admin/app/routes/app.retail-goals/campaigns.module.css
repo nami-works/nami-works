@@ -1,0 +1,570 @@
+/* Campaign goals — styles.
+   Separate module so the tab can move to its own route without touching
+   the main Retail goals stylesheet. */
+
+.campaignsTab {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tabHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 32px 16px;
+  border: 1px dashed #c9cccf;
+  border-radius: 8px;
+  background: #fafbfb;
+  color: #6d7175;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Campaign card ───────────────────────────────────────────────────────── */
+.campaignCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  background: #fff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.campaignCard[data-status="draft"] {
+  border-left: 3px solid #8c9196;
+}
+
+.campaignCard[data-status="active"] {
+  border-left: 3px solid #008060;
+}
+
+.campaignCard[data-status="ended"] {
+  border-left: 3px solid #babec3;
+}
+
+.campaignCard[data-status="archived"] {
+  border-left: 3px solid #8c9196;
+  opacity: 0.7;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cardTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: #202223;
+}
+
+.cardDateRange {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.cardPace {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.cardHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardToggle {
+  border: none;
+  background: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #303030;
+  padding: 4px 8px;
+}
+
+.statusBadge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #f1f1f1;
+  color: #303030;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.status-draft {
+  background: #f1f1f1;
+  color: #6d7175;
+}
+
+.status-active {
+  background: #d4efe2;
+  color: #008060;
+}
+
+.status-ended {
+  background: #e4e5e7;
+  color: #6d7175;
+}
+
+.status-archived {
+  background: #f1f1f1;
+  color: #8c9196;
+}
+
+.cardHeadline {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cardHeadlineNumber {
+  font-size: 22px;
+  font-weight: 700;
+  color: #202223;
+}
+
+.cardHeadlineAch {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303030;
+}
+
+.cardHeadlinePace,
+.cardHeadlineAttach {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.progressBar {
+  height: 8px;
+  background: #f1f1f1;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3d5aa0 0%, #1f2d5a 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* ── Per-location table ─────────────────────────────────────────────────── */
+.perLocationTable {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.perLocationHeader,
+.perLocationRow {
+  display: grid;
+  grid-template-columns: minmax(120px, 2fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(120px, 2fr) minmax(80px, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.perLocationHeader {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #6d7175;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.perLocationRow {
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.chipUp,
+.chipDown,
+.chipNeutral {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chipUp {
+  color: #008060;
+}
+
+.chipDown {
+  color: #d72c0d;
+}
+
+.chipNeutral {
+  color: #6d7175;
+}
+
+/* ── Card footer ────────────────────────────────────────────────────────── */
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #f1f1f1;
+  flex-wrap: wrap;
+}
+
+.cardFooterNote {
+  font-size: 11px;
+  color: #8c9196;
+}
+
+.cardFooterActions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Past campaigns section ─────────────────────────────────────────────── */
+.pastSection {
+  margin-top: 12px;
+}
+
+.pastList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.pastRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  background: #fafbfb;
+}
+
+.pastName {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: #303030;
+}
+
+.pastDate {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.pastResult {
+  font-size: 12px;
+  color: #303030;
+  font-weight: 500;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+.primaryButton,
+.secondaryButton,
+.dangerButton {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.primaryButton {
+  background: #1f2d5a;
+  color: #fff;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: #2d4a8a;
+}
+
+.primaryButton:disabled {
+  background: #c9cccf;
+  cursor: not-allowed;
+}
+
+.secondaryButton {
+  background: #fff;
+  color: #303030;
+  border-color: #c9cccf;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: #f6f6f7;
+}
+
+.secondaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dangerButton {
+  background: #fff;
+  color: #d72c0d;
+  border-color: #e4b8b1;
+}
+
+.dangerButton:hover {
+  background: #fdf1f0;
+}
+
+/* ── Wizard modal ───────────────────────────────────────────────────────── */
+.wizardBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(33, 43, 54, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.wizardModal {
+  background: #fff;
+  border-radius: 12px;
+  width: min(720px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.wizardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.wizardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: #202223;
+}
+
+.closeButton {
+  border: none;
+  background: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #6d7175;
+  padding: 4px 8px;
+}
+
+.wizardSteps {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.wizardStepDot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f1f1f1;
+  color: #6d7175;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+
+.wizardStepDotActive {
+  background: #1f2d5a;
+  color: #fff;
+}
+
+.wizardBody {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.fieldLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: #303030;
+}
+
+.fieldHint {
+  font-size: 12px;
+  color: #6d7175;
+  margin: 0;
+}
+
+.textInput,
+.numberInput {
+  padding: 8px 10px;
+  border: 1px solid #c9cccf;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+  color: #202223;
+}
+
+.numberInput {
+  width: 100%;
+}
+
+.banner {
+  background: #fff4e5;
+  color: #8a6d3b;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  border: 1px solid #f5e0b0;
+}
+
+/* ── Targets table inside wizard ────────────────────────────────────────── */
+.targetsTable {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.targetsHeader,
+.targetsRow {
+  display: grid;
+  grid-template-columns: minmax(140px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.targetsHeader {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #6d7175;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.targetsRow {
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.reviewBlock h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.reviewList {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 16px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.reviewList dt {
+  color: #6d7175;
+  font-weight: 500;
+}
+
+.reviewList dd {
+  margin: 0;
+  color: #202223;
+}
+
+.wizardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-top: 1px solid #e1e3e5;
+  gap: 8px;
+}
+
+.wizardNav {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Mobile ─────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .cardHeadline {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .perLocationHeader,
+  .perLocationRow {
+    grid-template-columns: minmax(80px, 1fr) minmax(60px, 0.8fr) minmax(60px, 0.8fr) minmax(80px, 1fr) minmax(60px, 0.8fr);
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .fieldRow {
+    grid-template-columns: 1fr;
+  }
+
+  .targetsHeader,
+  .targetsRow {
+    grid-template-columns: 1fr 80px 80px;
+    gap: 6px;
+  }
+
+  .pastRow {
+    flex-wrap: wrap;
+  }
+}

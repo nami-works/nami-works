@@ -1,0 +1,63 @@
+{
+  "pageHeading": "Campanhas",
+  "emptyState": "Nenhuma campanha ainda. Crie uma para acompanhar uma ação de vendas em período definido.",
+  "pastCampaigns": "Campanhas anteriores",
+  "noBaseline": "Sem base de comparação",
+  "baselineNote": "Bases",
+  "paceInfo": "{{pct}}% decorrido",
+  "ended": "Encerrada",
+  "targetPaceLabel": "Ritmo meta:",
+  "attachLabel": "Anexo:",
+  "status": {
+    "draft": "Rascunho",
+    "active": "Ativa",
+    "ended": "Encerrada",
+    "archived": "Arquivada"
+  },
+  "col": {
+    "location": "Loja",
+    "progress": "Progresso",
+    "achievement": "Ating%",
+    "bar": " ",
+    "attach": "Anexo",
+    "baseline": "Base",
+    "target": "Meta"
+  },
+  "actions": {
+    "newCampaign": "+ Nova campanha",
+    "edit": "Editar",
+    "view": "Ver",
+    "archive": "Arquivar",
+    "cancel": "Cancelar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "save": "Salvar campanha",
+    "saving": "Salvando…"
+  },
+  "wizard": {
+    "newTitle": "Nova campanha",
+    "editTitle": "Editar campanha",
+    "nameLabel": "Nome da campanha",
+    "namePlaceholder": "Dia das Mães 2026",
+    "startDateLabel": "Data de início",
+    "endDateLabel": "Data de término",
+    "dateRangeLabel": "Período",
+    "metricHint": "Métrica da campanha: pedidos com bundle (contagem de pedidos que contêm o item). A taxa de anexo é rastreada automaticamente.",
+    "matchRuleLocked": "A regra de correspondência está bloqueada enquanto a campanha está ativa. Arquive para editar.",
+    "matchRuleTypeLabel": "Tipo de regra de correspondência",
+    "matchRuleLineItemTag": "Item — tag do produto",
+    "matchRuleLineItemSku": "Item — SKU",
+    "matchRuleLineItemProductId": "Item — ID do produto",
+    "matchRuleLineItemProperty": "Item — propriedade customizada",
+    "matchRuleOrderTag": "Tag do pedido",
+    "matchValuesLabel": "Valores (separados por vírgula)",
+    "matchValuesPlaceholder": "mothers-day-2026, mae2026",
+    "propertyKeyLabel": "Chave da propriedade",
+    "propertyValueLabel": "Valor da propriedade (opcional)",
+    "propertyValuePlaceholder": "Deixe em branco para qualquer valor desta chave",
+    "matchRuleHint": "O pedido conta se qualquer item (ou tag de pedido) corresponder. Ajuste com base no pedido injetado de amostra.",
+    "targetsHint": "Defina a meta de cada loja. Opcionalmente, informe a base do período equivalente do ano passado como referência.",
+    "totalTargetLabel": "Meta total",
+    "reviewHeading": "Revisão"
+  }
+}

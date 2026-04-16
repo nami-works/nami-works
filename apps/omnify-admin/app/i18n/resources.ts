@@ -24,6 +24,8 @@ import merchandisingEn from "./locales/en/merchandising.json";
 import merchandisingPt from "./locales/pt-BR/merchandising.json";
 import affiliatesEn from "./locales/en/affiliates.json";
 import affiliatesPt from "./locales/pt-BR/affiliates.json";
+import campaignsEn from "./locales/en/campaigns.json";
+import campaignsPt from "./locales/pt-BR/campaigns.json";
 
 const resources = {
   en: {
@@ -40,6 +42,7 @@ const resources = {
     priceTags: priceTagsEn,
     merchandising: merchandisingEn,
     affiliates: affiliatesEn,
+    campaigns: campaignsEn,
   },
   "pt-BR": {
     common: commonPt,
@@ -55,6 +58,7 @@ const resources = {
     priceTags: priceTagsPt,
     merchandising: merchandisingPt,
     affiliates: affiliatesPt,
+    campaigns: campaignsPt,
   },
 } as const;
 

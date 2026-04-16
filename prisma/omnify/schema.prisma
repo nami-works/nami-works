@@ -72,6 +72,110 @@ model SalesGoalsLocationConfig {
   @@unique([shop, locationId])
 }
 
+// Source-aware per-order facts for sales goals (POS-only)
+model SalesOrder {
+  id             String   @id            // Shopify order GID
+  shop           String
+  source         String                  // "shopify-pos" | "iglu-pos"
+  locationId     String
+  locationName   String
+  orderDate      DateTime
+  totalAmount    Float
+  discountAmount Float    @default(0)    // Shopify currentTotalDiscountsSet — powers Discount Rate KPI
+  currencyCode   String?
+  syncedAt       DateTime @default(now())
+
+  @@index([shop, locationId, orderDate])
+  @@index([shop, orderDate])
+}
+
+// Pre-computed per-(location, month) aggregates — dashboard reads this
+model SalesOrderMonthly {
+  id             String   @id @default(cuid())
+  shop           String
+  locationId     String
+  locationName   String
+  month          String                   // "YYYY-MM"
+  orderCount     Int      @default(0)
+  revenue        Float    @default(0)
+  totalDiscounts Float    @default(0)     // Sum of SalesOrder.discountAmount for the bucket
+  currencyCode   String?
+  updatedAt      DateTime @updatedAt
+
+  @@unique([shop, locationId, month])
+  @@index([shop, month])
+}
+
+model SalesGoalsSyncMeta {
+  shop          String    @unique
+  status        String    @default("idle")    // idle | syncing | error
+  phase         String?                        // "fetching" | "aggregating"
+  progressCount Int?
+  totalOrders   Int?
+  lastSyncedAt  DateTime?
+  lastOrderDate DateTime?
+  errorMessage  String?
+  startedAt     DateTime?
+  updatedAt     DateTime  @updatedAt
+}
+
+// Campaign goal: time-bounded push for a set of products/SKUs with per-location targets.
+// Example: "Mother's Day 2026" — each store chases a target count of bundle-matching orders
+// between May 5 and May 12.
+model CampaignGoal {
+  id          String   @id @default(cuid())
+  shop        String
+  name        String
+  startDate   DateTime                            // store-local calendar date (interpreted in shop timezone)
+  endDate     DateTime
+  metric      String   @default("bundle_orders") // "bundle_orders" for V1; extensible (e.g. "units")
+  matchRule   Json                                // CampaignMatchRule shape — see app/sales-goals/campaign-match.server.ts
+  status      String   @default("draft")          // draft | active | ended | archived
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  targets CampaignGoalTarget[]
+  matches CampaignOrderMatch[]
+
+  @@index([shop, status])
+  @@index([shop, startDate, endDate])
+}
+
+// Per-location target for a campaign.
+model CampaignGoalTarget {
+  id              String   @id @default(cuid())
+  campaignGoalId  String
+  locationId      String
+  locationName    String
+  targetOrders    Int                             // what each store is chasing
+  baselineOrders  Int?                            // auto-derived from Y-1 (V2); manually entered in V1
+  updatedAt       DateTime @updatedAt
+
+  campaignGoal    CampaignGoal @relation(fields: [campaignGoalId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignGoalId, locationId])
+}
+
+// Materialized match: one row per (campaign, matching order).
+// Written when a webhook (or cron reconcile) finds an order matching the campaign's rule.
+// Enables fast progress reads and idempotent recount.
+model CampaignOrderMatch {
+  id              String   @id                    // composite "{campaignId}__{orderId}"
+  campaignGoalId  String
+  orderId         String                          // Shopify order GID
+  shop            String
+  locationId      String
+  orderDate       DateTime
+  staffMemberId   String?                         // Shopify POS operator ID; null for IGLU POS
+  matchedAt       DateTime @default(now())
+
+  campaignGoal    CampaignGoal @relation(fields: [campaignGoalId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignGoalId, orderId])
+  @@index([campaignGoalId, locationId])
+  @@index([shop, orderDate])
+}
+
 model BenchmarkLaunch {
   id           String   @id @default(cuid())
   shop         String
@@ -620,7 +724,11 @@ model AffiliateOrder {
   totalAmount      Float     @default(0)
   subtotalAmount   Float     @default(0)
   currencyCode     String?
-  isFirstOrder     Boolean   @default(false)
+  // True when the customer had a prior order with the shop before this
+  // order's createdAt (organic or via another affiliate). Set at sync time
+  // from Shopify's customer.firstOrder — see sync.server.ts. Replaces
+  // the earlier isFirstOrder column whose semantics were ambiguous.
+  wasPreExistingCustomer Boolean @default(false)
   itemCount        Int       @default(0)
   lineItemsJson    String?
   orderDate        DateTime?
@@ -648,6 +756,33 @@ model AffiliateOrganicAgg {
 
   @@unique([shop, month])
   @@index([shop])
+}
+
+// Per-customer organic orders (no affiliate coupon). Enables cohort LTV
+// and future per-customer analytics for customers untouched by affiliates.
+// Populated at sync time alongside the AffiliateOrganicAgg rebuild.
+model OrganicOrder {
+  id              String    @id
+  shop            String
+  orderName       String?
+  customerId      String?
+  customerName    String?
+  customerEmail   String?
+  totalAmount     Float     @default(0)
+  subtotalAmount  Float     @default(0)
+  discountAmount  Float     @default(0)
+  currencyCode    String?
+  // Classified at sync time via customer.numberOfOrders + createdAt
+  // (same rule as AffiliateOrder.wasPreExistingCustomer). `false` means
+  // this row is the customer's first-ever purchase with the shop.
+  wasPreExistingCustomer Boolean @default(false)
+  itemCount       Int       @default(0)
+  orderDate       DateTime?
+  syncedAt        DateTime  @default(now())
+
+  @@index([shop, orderDate])
+  @@index([shop, customerId])
+  @@index([shop, customerId, orderDate])
 }
 
 model AffiliateMonthly {

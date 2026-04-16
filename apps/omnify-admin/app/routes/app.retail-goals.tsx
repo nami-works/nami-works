@@ -11,6 +11,7 @@ import prisma from "../db.server";
 import { authenticate } from "../shopify.server";
 import {
   formatCurrency as fmtCurrencyBase,
+  formatCurrencyCompact,
   formatMonthLabel as fmtMonthBase,
 } from "../i18n/format";
 import styles from "./app.retail-goals/styles.module.css";
@@ -23,13 +24,38 @@ import {
 import {
   buildMonthRange,
   computeMonthProjections,
+  countZeroRevenueDays,
   queryMonthlyAggregates,
   readSyncMeta,
   type MonthlyAggregateRow,
   type MonthProjection,
   type SyncMetaRecord,
 } from "../sales-goals/analytics-queries.server";
+import {
+  aggregateSnapshots,
+  bestVsWorst,
+  buildLocationSnapshots,
+  discountRate,
+  sameStoreYoY,
+  type AggregateKpi,
+  type LocationSnapshot,
+} from "../sales-goals/analytics-pure";
 import { runSalesGoalsSync } from "../sales-goals/sync.server";
+import {
+  archiveCampaign as archiveCampaignStore,
+  createCampaign,
+  getCampaignProgress,
+  listCampaigns,
+  sweepCampaignStatuses,
+  updateCampaign,
+} from "../campaign-goals/storage.server";
+import type {
+  CampaignGoalView,
+  CampaignMatchRule,
+  CampaignMetric,
+  CampaignProgressView,
+} from "../campaign-goals/types";
+import { CampaignsTab } from "./app.retail-goals/campaigns-tab";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -54,9 +80,19 @@ type LocationConfig = {
 type MonthlyBucket = {
   orderCount: number;
   revenue: number;
+  totalDiscounts: number;
 };
 
 type MonthlyByLocation = Record<string, Record<string, MonthlyBucket>>;
+
+type DashboardKpis = {
+  revenue: AggregateKpi;
+  aov: AggregateKpi;
+  orders: AggregateKpi;
+  sameStoreYoY: ReturnType<typeof sameStoreYoY>;
+  bestVsWorst: ReturnType<typeof bestVsWorst>;
+  discountRate: ReturnType<typeof discountRate>;
+};
 
 type LoaderData = {
   locations: RetailLocation[]; // all active non-fulfillment-service locations
@@ -65,19 +101,25 @@ type LoaderData = {
   projectionsByLocation: Record<string, Record<string, MonthProjection>>;
   months: string[]; // YYYY-MM keys, oldest → newest
   currentMonth: string;
+  pyMonth: string;
   currencyCode: string;
   orderSources: string[];
   orderTags: string[];
   locationConfigs: { locationId: string; data: LocationConfig }[];
   syncMeta: SyncMetaRecord;
+  dashboardSnapshots: LocationSnapshot[];
+  dashboardKpis: DashboardKpis;
+  storesWithGoalsCount: number;
+  campaigns: CampaignGoalView[];
+  campaignProgress: Record<string, CampaignProgressView>;
 };
 
-type TabId = "dashboard" | "goals";
+type TabId = "dashboard" | "goals" | "campaigns";
 type ComparisonMode = "none" | "prev_month" | "prev_year";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const TAB_IDS: TabId[] = ["dashboard", "goals"];
+const TAB_IDS: TabId[] = ["dashboard", "goals", "campaigns"];
 
 const MONTHS_BACK = 13; // current + 12 prior (gives full YoY)
 
@@ -173,10 +215,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const months = buildMonthRange(MONTHS_BACK);
   const currentMonth = currentMonthKey();
 
-  const [aggregates, projectionsByLocation, locationConfigRows, configRecord, syncMeta] =
+  const pyMonth = addMonthsHelper(currentMonth, -12);
+
+  const [aggregates, projectionsByLocation, zeroDaysByLocMonth, locationConfigRows, configRecord, syncMeta] =
     await Promise.all([
       queryMonthlyAggregates(shop, months, candidateIds),
       computeMonthProjections(shop, candidateIds, months),
+      // Zero-day counts for Same-Store YoY exclusion. Only current + PY months are needed.
+      countZeroRevenueDays(shop, candidateIds, [currentMonth, pyMonth]),
       prisma.salesGoalsLocationConfig.findMany({ where: { shop } }),
       prisma.salesGoalsConfig.findUnique({ where: { shop } }),
       readSyncMeta(shop),
@@ -205,6 +251,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     monthlyByLocation[row.locationId][row.month] = {
       orderCount: row.orderCount,
       revenue: row.revenue,
+      totalDiscounts: row.totalDiscounts,
     };
     if (row.currencyCode) currencyCode = row.currencyCode;
   }
@@ -217,6 +264,47 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const goals = (configRecord?.data as SalesGoal[] | null) ?? [];
 
+  // ── Server-side dashboard aggregates ────────────────────────────────
+  const goalsForCurrentMonth: Record<string, number> = {};
+  for (const g of goals) {
+    if (g.month === currentMonth) goalsForCurrentMonth[g.locationId] = g.target;
+  }
+
+  const dashboardSnapshots = buildLocationSnapshots({
+    locations: candidateLocations.map((l) => ({ id: l.id, name: l.name })),
+    aggregates,
+    projections: projectionsByLocation,
+    goals: goalsForCurrentMonth,
+    zeroDaysByLocMonth,
+    dashboardMonth: currentMonth,
+    pyMonth,
+  });
+
+  const dashboardKpis: DashboardKpis = {
+    revenue: aggregateSnapshots(dashboardSnapshots, "revenue"),
+    aov: aggregateSnapshots(dashboardSnapshots, "aov"),
+    orders: aggregateSnapshots(dashboardSnapshots, "orders"),
+    sameStoreYoY: sameStoreYoY(dashboardSnapshots),
+    bestVsWorst: bestVsWorst(dashboardSnapshots),
+    discountRate: discountRate(dashboardSnapshots, aggregates),
+  };
+
+  const storesWithGoalsCount = Object.keys(goalsForCurrentMonth).length;
+
+  // ── Campaign goals load ─────────────────────────────────────────────
+  // Sweep statuses so drafts promote + expired campaigns end before we read.
+  await sweepCampaignStatuses(shop).catch((err) =>
+    console.warn(`[retail-goals] campaign sweep SKIP shop=${shop}`, err),
+  );
+  const campaigns = await listCampaigns(shop);
+  const campaignProgress: Record<string, CampaignProgressView> = {};
+  for (const c of campaigns) {
+    // Progress is computed on-demand from CampaignOrderMatch + SalesOrder.
+    // Cost is minimal: 2 groupBy queries per campaign.
+    const progress = await getCampaignProgress(shop, c.id);
+    if (progress) campaignProgress[c.id] = progress;
+  }
+
   const result: LoaderData = {
     locations: candidateLocations,
     goals,
@@ -224,6 +312,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     projectionsByLocation,
     months,
     currentMonth,
+    pyMonth,
     currencyCode,
     orderSources: DEFAULT_ORDER_SOURCES,
     orderTags: Array.from(allTags).sort(),
@@ -234,6 +323,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         data: normalizeLocationConfig(row.data),
       })),
     syncMeta,
+    dashboardSnapshots,
+    dashboardKpis,
+    storesWithGoalsCount,
+    campaigns,
+    campaignProgress,
   };
 
   console.info(
@@ -241,6 +335,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   );
   return result;
 };
+
+// Helper mirrored from addMonths (client-side version) for the loader.
+function addMonthsHelper(month: string, delta: number): string {
+  const [y, m] = month.split("-").map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
 
 // ─── Action ───────────────────────────────────────────────────────────────────
 
@@ -356,6 +457,61 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return { ok: true };
   }
 
+  if (intent === "create-campaign" || intent === "update-campaign") {
+    const name = String(formData.get("name") ?? "").trim();
+    const startDate = String(formData.get("startDate") ?? "").trim();
+    const endDate = String(formData.get("endDate") ?? "").trim();
+    const metric = (String(formData.get("metric") ?? "bundle_orders") ||
+      "bundle_orders") as CampaignMetric;
+    const matchRuleJson = String(formData.get("matchRule") ?? "null");
+    const targetsJson = String(formData.get("targets") ?? "[]");
+    if (!name || !startDate || !endDate) {
+      return { ok: false, error: "Missing required campaign fields." };
+    }
+    let matchRule: CampaignMatchRule;
+    let targets: Array<{
+      locationId: string;
+      locationName: string;
+      targetOrders: number;
+      baselineOrders: number | null;
+    }>;
+    try {
+      matchRule = JSON.parse(matchRuleJson) as CampaignMatchRule;
+      targets = JSON.parse(targetsJson);
+    } catch {
+      return { ok: false, error: "Malformed campaign payload." };
+    }
+    if (intent === "create-campaign") {
+      await createCampaign(shop, {
+        name,
+        startDate,
+        endDate,
+        metric,
+        matchRule,
+        targets,
+      });
+    } else {
+      const id = String(formData.get("id") ?? "");
+      if (!id) return { ok: false, error: "Campaign id missing." };
+      await updateCampaign(shop, id, {
+        name,
+        startDate,
+        endDate,
+        metric,
+        matchRule,
+        targets,
+      });
+    }
+    return { ok: true };
+  }
+
+  if (intent === "archive-campaign") {
+    const id = String(formData.get("id") ?? "");
+    if (!id) return { ok: false, error: "Campaign id missing." };
+    const ok = await archiveCampaignStore(shop, id);
+    return { ok };
+  }
+
   return { ok: false, error: "Unsupported request." };
 };
 
@@ -457,6 +613,538 @@ const Sparkline = ({
   );
 };
 
+// ─── Rich KPI card (Dashboard redesign) ──────────────────────────────────────
+
+type KpiRichLine = {
+  label: string;
+  value: string;
+  delta?: number | null;
+};
+
+type KpiRichCardProps = {
+  title: string;
+  primary: string;
+  primaryDelta?: number | null;
+  primaryDeltaSuffix?: string;
+  projected?: { value: string; early?: boolean } | null;
+  lines?: KpiRichLine[];
+  tooltip?: string;
+  active?: boolean;
+  onClick?: () => void;
+};
+
+const KpiRichCard = ({
+  title,
+  primary,
+  primaryDelta,
+  primaryDeltaSuffix,
+  projected,
+  lines,
+  tooltip,
+  active,
+  onClick,
+}: KpiRichCardProps) => {
+  const clickableClass = `${styles.kpiCardClickable}${active ? ` ${styles.kpiCardActive}` : ""}`;
+  return (
+    <div
+      className={clickableClass}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (onClick && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+    >
+      <s-box padding="base" borderWidth="base" borderRadius="base">
+        <div className={styles.kpiRichCard}>
+          <div className={styles.kpiRichTitle} title={tooltip}>
+            {title}
+            {tooltip ? <span className={styles.kpiInfoIcon}>ⓘ</span> : null}
+          </div>
+          <div className={styles.kpiRichPrimary}>
+            <span className={styles.kpiValue}>{primary}</span>
+            {primaryDelta != null ? (
+              <span className={styles.kpiDeltaInline}>
+                {primaryDeltaSuffix ? `${primaryDeltaSuffix} ` : null}
+                <Delta delta={primaryDelta} />
+              </span>
+            ) : null}
+          </div>
+          {projected ? (
+            <div
+              className={
+                projected.early ? styles.kpiProjEarly : styles.kpiProj
+              }
+            >
+              {projected.value}
+            </div>
+          ) : null}
+          {lines?.map((line) => (
+            <div key={line.label} className={styles.kpiRichLine}>
+              <span>
+                {line.label}
+                {line.label && line.value ? " " : null}
+                {line.value}
+              </span>
+              {line.delta != null ? <Delta delta={line.delta} /> : null}
+            </div>
+          ))}
+        </div>
+      </s-box>
+    </div>
+  );
+};
+
+// ─── KPI drilldown bar chart ─────────────────────────────────────────────────
+
+type KpiMetric =
+  | "revenue"
+  | "aov"
+  | "orders"
+  | "sameStore"
+  | "bestWorst"
+  | "discount";
+
+type KpiDrilldownBarsProps = {
+  metric: KpiMetric;
+  snapshots: LocationSnapshot[];
+  currencyCode: string;
+  locale: string;
+  isCurrentMonthEarly: boolean;
+  isViewingCurrentMonth: boolean;
+  t: (key: string, opts?: Record<string, unknown>) => string;
+  formatCurrency: (value: number, code: string) => string;
+};
+
+type BarRow = {
+  locationId: string;
+  name: string;
+  pyValue: number;
+  currentValue: number;
+  mtdValue: number;
+  goalValue: number | null;
+  achievement: number | null;
+  yoyPercent: number | null;
+  deltaPercent: number | null; // for sameStore (signed)
+  ratePercent: number | null;   // for discount/bestWorst (0..N)
+  pyRatePercent: number | null;
+};
+
+/** Build per-location bar rows shaped for the metric under drilldown. */
+function buildBarRows(
+  metric: KpiMetric,
+  snapshots: LocationSnapshot[],
+): BarRow[] {
+  return snapshots.map((s) => {
+    if (metric === "aov") {
+      const mtdAov = s.mtdOrders > 0 ? s.mtdRevenue / s.mtdOrders : 0;
+      const pyAov = s.pyOrders > 0 ? s.pyRevenue / s.pyOrders : 0;
+      const projOrders = s.projectedOrders;
+      const projAov =
+        s.projectedRevenue != null && projOrders != null && projOrders > 0
+          ? s.projectedRevenue / projOrders
+          : mtdAov;
+      return {
+        locationId: s.locationId,
+        name: s.locationName,
+        pyValue: pyAov,
+        currentValue: projAov,
+        mtdValue: mtdAov,
+        goalValue: null,
+        achievement: null,
+        yoyPercent: pyAov > 0 ? ((projAov - pyAov) / pyAov) * 100 : null,
+        deltaPercent: null,
+        ratePercent: null,
+        pyRatePercent: null,
+      };
+    }
+    if (metric === "orders") {
+      return {
+        locationId: s.locationId,
+        name: s.locationName,
+        pyValue: s.pyOrders,
+        currentValue: s.projectedOrders ?? s.mtdOrders,
+        mtdValue: s.mtdOrders,
+        goalValue: null,
+        achievement: null,
+        yoyPercent:
+          s.pyOrders > 0 && s.projectedOrders != null
+            ? ((s.projectedOrders - s.pyOrders) / s.pyOrders) * 100
+            : null,
+        deltaPercent: null,
+        ratePercent: null,
+        pyRatePercent: null,
+      };
+    }
+    if (metric === "sameStore") {
+      const cur = s.projectedRevenue ?? s.mtdRevenue;
+      const delta =
+        s.pyRevenue > 0 ? ((cur - s.pyRevenue) / s.pyRevenue) * 100 : null;
+      return {
+        locationId: s.locationId,
+        name: s.locationName,
+        pyValue: s.pyRevenue,
+        currentValue: cur,
+        mtdValue: s.mtdRevenue,
+        goalValue: null,
+        achievement: null,
+        yoyPercent: null,
+        deltaPercent: delta,
+        ratePercent: null,
+        pyRatePercent: null,
+      };
+    }
+    if (metric === "bestWorst") {
+      const proj = s.projectedRevenue;
+      const ach =
+        s.goal != null && s.goal > 0 && proj != null
+          ? (proj / s.goal) * 100
+          : null;
+      return {
+        locationId: s.locationId,
+        name: s.locationName,
+        pyValue: 0,
+        currentValue: ach ?? 0,
+        mtdValue: 0,
+        goalValue: null,
+        achievement: ach,
+        yoyPercent: null,
+        deltaPercent: null,
+        ratePercent: ach,
+        pyRatePercent: null,
+      };
+    }
+    if (metric === "discount") {
+      const mtdGross = s.mtdRevenue + s.mtdDiscounts;
+      const pyGross = s.pyRevenue + s.pyDiscounts;
+      const curRate = mtdGross > 0 ? (s.mtdDiscounts / mtdGross) * 100 : 0;
+      const pyRate = pyGross > 0 ? (s.pyDiscounts / pyGross) * 100 : 0;
+      return {
+        locationId: s.locationId,
+        name: s.locationName,
+        pyValue: pyRate,
+        currentValue: curRate,
+        mtdValue: curRate,
+        goalValue: null,
+        achievement: null,
+        yoyPercent: null,
+        deltaPercent: null,
+        ratePercent: curRate,
+        pyRatePercent: pyRate,
+      };
+    }
+    // revenue (default)
+    const cur = s.projectedRevenue ?? s.mtdRevenue;
+    const ach =
+      s.goal != null && s.goal > 0 ? (cur / s.goal) * 100 : null;
+    return {
+      locationId: s.locationId,
+      name: s.locationName,
+      pyValue: s.pyRevenue,
+      currentValue: cur,
+      mtdValue: s.mtdRevenue,
+      goalValue: s.goal,
+      achievement: ach,
+      yoyPercent:
+        s.pyRevenue > 0 ? ((cur - s.pyRevenue) / s.pyRevenue) * 100 : null,
+      deltaPercent: null,
+      ratePercent: null,
+      pyRatePercent: null,
+    };
+  });
+}
+
+/** Sort bar rows descending by the metric's natural ranking direction. */
+function sortBarRows(metric: KpiMetric, rows: BarRow[]): BarRow[] {
+  const sorted = [...rows];
+  if (metric === "sameStore") {
+    // Only keep qualifying locations (PY revenue > 0 AND deltaPercent computable)
+    return sorted
+      .filter((r) => r.deltaPercent != null)
+      .sort((a, b) => (b.deltaPercent ?? 0) - (a.deltaPercent ?? 0));
+  }
+  if (metric === "bestWorst") {
+    return sorted
+      .filter((r) => r.achievement != null)
+      .sort((a, b) => (b.achievement ?? 0) - (a.achievement ?? 0));
+  }
+  if (metric === "discount") {
+    return sorted.sort((a, b) => b.currentValue - a.currentValue);
+  }
+  return sorted.sort((a, b) => b.currentValue - a.currentValue);
+}
+
+const KpiDrilldownBars = ({
+  metric,
+  snapshots,
+  currencyCode,
+  locale,
+  isCurrentMonthEarly,
+  isViewingCurrentMonth,
+  t,
+  formatCurrency,
+}: KpiDrilldownBarsProps) => {
+  const rows = buildBarRows(metric, snapshots);
+  const sorted = sortBarRows(metric, rows);
+
+  const maxScale = sorted.reduce((max, r) => {
+    const py = Math.abs(r.pyValue);
+    const cur = Math.abs(r.currentValue);
+    const goal = r.goalValue ?? 0;
+    return Math.max(max, py, cur, goal);
+  }, 0);
+
+  const formatValue = (value: number) => {
+    if (metric === "orders") {
+      return Math.round(value).toLocaleString(locale);
+    }
+    if (metric === "aov" || metric === "revenue" || metric === "sameStore") {
+      return formatCurrencyCompact(value, currencyCode, locale);
+    }
+    if (metric === "bestWorst" || metric === "discount") {
+      return `${value.toFixed(1)}%`;
+    }
+    return String(value);
+  };
+
+  const isSingleBar =
+    metric === "sameStore" || metric === "bestWorst";
+  const isDualNavy =
+    metric === "revenue" || metric === "aov" || metric === "orders";
+
+  const legend = (() => {
+    if (isSingleBar) {
+      if (metric === "sameStore") {
+        return (
+          <div className={styles.drilldownLegend}>
+            <span>
+              <span className={styles.legendSwatchSinglePositive} />{" "}
+              {t("dashboard.legendGrowth")}
+            </span>
+            <span>
+              <span className={styles.legendSwatchSingleNegative} />{" "}
+              {t("dashboard.legendDecline")}
+            </span>
+          </div>
+        );
+      }
+      return (
+        <div className={styles.drilldownLegend}>
+          <span>
+            <span className={styles.legendSwatchRanking} />{" "}
+            {t("dashboard.legendAchievement")}
+          </span>
+        </div>
+      );
+    }
+    if (metric === "discount") {
+      return (
+        <div className={styles.drilldownLegend}>
+          <span>
+            <span className={styles.legendSwatchPy} />{" "}
+            {t("dashboard.legendPyRate")}
+          </span>
+          <span>
+            <span className={styles.legendSwatchProj} />{" "}
+            {t("dashboard.legendCurrentRate")}
+          </span>
+        </div>
+      );
+    }
+    return (
+      <div className={styles.drilldownLegend}>
+        <span>
+          <span className={styles.legendSwatchPy} />{" "}
+          {t("dashboard.legendPy")}
+        </span>
+        <span>
+          <span className={styles.legendSwatchProj} />{" "}
+          {t("dashboard.legendProjected")}
+        </span>
+        {metric === "revenue" ? (
+          <span>
+            <span className={styles.legendSwatchGoal} />{" "}
+            {t("dashboard.legendGoal")}
+          </span>
+        ) : null}
+      </div>
+    );
+  })();
+
+  return (
+    <div className={styles.revenueDrilldown}>
+      <div className={styles.breakdownHeader}>
+        <h3 className={styles.subSectionTitle}>
+          {t(`dashboard.drilldown.${metric}`)}
+        </h3>
+      </div>
+      {legend}
+      <div className={styles.drilldownBars}>
+        {sorted.length === 0 ? (
+          <div className={styles.tableEmpty}>
+            {t("dashboard.noLocations")}
+          </div>
+        ) : (
+          sorted.map((row, idx) => {
+            const pyPct = maxScale > 0 ? (row.pyValue / maxScale) * 100 : 0;
+            const curPct =
+              maxScale > 0
+                ? (Math.abs(row.currentValue) / maxScale) * 100
+                : 0;
+            const mtdPct =
+              maxScale > 0 ? (row.mtdValue / maxScale) * 100 : 0;
+            const goalPct =
+              maxScale > 0 && row.goalValue != null
+                ? (row.goalValue / maxScale) * 100
+                : null;
+
+            return (
+              <div
+                key={row.locationId}
+                className={styles.drilldownColumn}
+                style={{ order: idx }}
+              >
+                <div className={styles.drilldownPair}>
+                  {isSingleBar ? (
+                    (() => {
+                      // sameStore: colored by sign of deltaPercent
+                      // bestWorst: color-graded by achievement %
+                      if (metric === "sameStore") {
+                        const signPositive = (row.deltaPercent ?? 0) >= 0;
+                        return (
+                          <div className={styles.drilldownBarArea}>
+                            <span className={styles.drilldownBarValue}>
+                              {row.deltaPercent != null
+                                ? `${row.deltaPercent >= 0 ? "+" : ""}${row.deltaPercent.toFixed(1)}%`
+                                : "—"}
+                            </span>
+                            <div
+                              className={`${styles.drilldownBarSingle} ${signPositive ? styles.drilldownBarSinglePositive : styles.drilldownBarSingleNegative}`}
+                              style={{ height: `${curPct}%` }}
+                            />
+                          </div>
+                        );
+                      }
+                      // bestWorst: HSL interpolation red (0°) → green (145°)
+                      const ach = row.achievement ?? 0;
+                      const hue = Math.max(0, Math.min(145, (ach / 100) * 145));
+                      const gradient = `linear-gradient(180deg, hsl(${hue}, 65%, 52%) 0%, hsl(${hue}, 65%, 36%) 100%)`;
+                      return (
+                        <div className={styles.drilldownBarArea}>
+                          <span className={styles.drilldownBarValue}>
+                            {row.achievement != null
+                              ? `${row.achievement.toFixed(0)}%`
+                              : "—"}
+                          </span>
+                          <div
+                            className={styles.drilldownBarSingle}
+                            style={{
+                              height: `${curPct}%`,
+                              background: gradient,
+                              boxShadow:
+                                "inset 0 2px 4px rgba(255, 255, 255, 0.2)",
+                            }}
+                          />
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <>
+                      {/* PY — outlined navy */}
+                      <div className={styles.drilldownBarArea}>
+                        <span className={styles.drilldownBarValue}>
+                          {formatValue(row.pyValue)}
+                        </span>
+                        <div
+                          className={styles.drilldownBarPy}
+                          style={{ height: `${pyPct}%` }}
+                        />
+                      </div>
+                      {/* Current / projected — solid navy gradient */}
+                      <div className={styles.drilldownBarArea}>
+                        <span
+                          className={`${styles.drilldownBarValue}${isCurrentMonthEarly && isDualNavy ? ` ${styles.drilldownBarValueEarly}` : ""}`}
+                        >
+                          {formatValue(row.currentValue)}
+                        </span>
+                        <div
+                          className={styles.drilldownBarProjected}
+                          style={{ height: `${curPct}%` }}
+                        >
+                          {isViewingCurrentMonth && isDualNavy && curPct > 0 ? (
+                            <div
+                              className={styles.drilldownBarMtd}
+                              style={{
+                                height: `${(mtdPct / curPct) * 100}%`,
+                              }}
+                            />
+                          ) : null}
+                        </div>
+                        {goalPct != null ? (
+                          <div
+                            className={styles.drilldownGoalTick}
+                            style={{ bottom: `${goalPct}%` }}
+                          />
+                        ) : null}
+                      </div>
+                    </>
+                  )}
+                </div>
+                <span className={styles.drilldownLabel}>{row.name}</span>
+                <div className={styles.drilldownChips}>
+                  {metric === "revenue" ||
+                  metric === "aov" ||
+                  metric === "orders" ? (
+                    <>
+                      {row.achievement != null ? (
+                        <span
+                          className={
+                            row.achievement >= 100
+                              ? styles.chipUp
+                              : styles.chipDown
+                          }
+                        >
+                          {t("dashboard.achChip")} {row.achievement.toFixed(0)}%
+                        </span>
+                      ) : null}
+                      {row.yoyPercent != null ? (
+                        <span
+                          className={
+                            row.yoyPercent >= 0
+                              ? styles.chipUp
+                              : styles.chipDown
+                          }
+                        >
+                          {t("dashboard.yoyChip")}{" "}
+                          {row.yoyPercent >= 0 ? "+" : ""}
+                          {row.yoyPercent.toFixed(0)}%
+                        </span>
+                      ) : null}
+                    </>
+                  ) : null}
+                  {metric === "bestWorst" ? (
+                    <span className={styles.drilldownRankChip}>
+                      #{idx + 1}
+                    </span>
+                  ) : null}
+                  {metric === "discount" && row.pyRatePercent != null ? (
+                    <span className={styles.chipNeutral}>
+                      {t("dashboard.pyLabel")} {row.pyRatePercent.toFixed(1)}%
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function SalesGoalsPage() {
@@ -467,9 +1155,15 @@ export default function SalesGoalsPage() {
     projectionsByLocation,
     months,
     currentMonth,
+    pyMonth,
     currencyCode,
     locationConfigs,
     syncMeta,
+    dashboardSnapshots,
+    dashboardKpis,
+    storesWithGoalsCount,
+    campaigns,
+    campaignProgress,
   } = useLoaderData<LoaderData>();
 
 
@@ -484,6 +1178,7 @@ export default function SalesGoalsPage() {
   const deleteGoalFetcher = useFetcher<{ ok: boolean }>();
   const syncFetcher = useFetcher<{ ok: boolean }>();
   const bulkFetcher = useFetcher<{ ok: boolean }>();
+  const campaignFetcher = useFetcher<{ ok: boolean }>();
 
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
   const [dashboardMonth, setDashboardMonth] = useState<string>(currentMonth);
@@ -492,14 +1187,19 @@ export default function SalesGoalsPage() {
 
   type KpiKey =
     | "revenue"
-    | "goal"
-    | "achievement"
-    | "orders"
     | "aov"
-    | "best";
+    | "orders"
+    | "sameStore"
+    | "bestWorst"
+    | "discount";
   const [activeKpi, setActiveKpi] = useState<KpiKey | null>(null);
   const toggleKpi = (key: KpiKey) =>
     setActiveKpi((prev) => (prev === key ? null : key));
+
+  // Day 1–5 of the current month: projection is noisy, italicize "proj" labels.
+  const isCurrentMonthEarly =
+    dashboardMonth === currentMonth && new Date().getDate() <= 5;
+  const isViewingCurrentMonth = dashboardMonth === currentMonth;
 
   // Per-location inline edit state for the Goals tab
   const [editingLocationId, setEditingLocationId] = useState<string | null>(null);
@@ -560,8 +1260,14 @@ export default function SalesGoalsPage() {
     locationId: string,
     month: string | null,
   ): MonthlyBucket => {
-    if (!month) return { orderCount: 0, revenue: 0 };
-    return monthlyByLocation[locationId]?.[month] ?? { orderCount: 0, revenue: 0 };
+    if (!month) return { orderCount: 0, revenue: 0, totalDiscounts: 0 };
+    return (
+      monthlyByLocation[locationId]?.[month] ?? {
+        orderCount: 0,
+        revenue: 0,
+        totalDiscounts: 0,
+      }
+    );
   };
 
   const comparisonMonth = useMemo(
@@ -574,10 +1280,12 @@ export default function SalesGoalsPage() {
     name: string;
     orders: number;
     revenue: number;
+    projectedRevenue: number | null;
     goal: number | null;
     achievement: number | null;
     yoyDelta: number | null;
     sparklineValues: number[];
+    pyRevenue: number;
   };
 
   const locationRows: LocationRow[] = useMemo(() => {
@@ -588,9 +1296,23 @@ export default function SalesGoalsPage() {
         goals.find(
           (g) => g.locationId === loc.id && g.month === dashboardMonth,
         )?.target ?? null;
+      const proj = projectionsByLocation[loc.id]?.[dashboardMonth];
+      // For past months, projected = actual; for current month, use YoY projection.
+      const projectedRevenue = proj
+        ? proj.isProjection
+          ? (proj.yoy ?? null)
+          : (proj.yoy ?? current.revenue)
+        : null;
+      // Achievement = projected / goal (not MTD / goal)
       const achievement =
-        goal != null && goal > 0 ? (current.revenue / goal) * 100 : null;
-      const yoyDelta = deltaPercent(current.revenue, prevYear.revenue);
+        goal != null && goal > 0 && projectedRevenue != null
+          ? (projectedRevenue / goal) * 100
+          : null;
+      // YoY = (projected - PY) / PY
+      const yoyDelta =
+        projectedRevenue != null
+          ? deltaPercent(projectedRevenue, prevYear.revenue)
+          : deltaPercent(current.revenue, prevYear.revenue);
       const sparklineValues = months.map(
         (m) => monthlyByLocation[loc.id]?.[m]?.revenue ?? 0,
       );
@@ -599,14 +1321,26 @@ export default function SalesGoalsPage() {
         name: loc.name,
         orders: current.orderCount,
         revenue: current.revenue,
+        projectedRevenue,
         goal,
         achievement,
         yoyDelta,
         sparklineValues,
+        pyRevenue: prevYear.revenue,
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabledLocations, goals, dashboardMonth, monthlyByLocation, months]);
+  }, [
+    enabledLocations,
+    goals,
+    dashboardMonth,
+    monthlyByLocation,
+    months,
+    projectionsByLocation,
+  ]);
+
+  // Drilldown sort + max-scale now live inside KpiDrilldownBars, since each
+  // metric has a canonical ranking direction.
 
   const totals = useMemo(() => {
     const revenue = locationRows.reduce((s, r) => s + r.revenue, 0);
@@ -658,11 +1392,12 @@ export default function SalesGoalsPage() {
       v == null || !Number.isFinite(v) ? -Infinity : v;
     switch (activeKpi) {
       case "revenue":
-        return rows.sort((a, b) => b.revenue - a.revenue);
-      case "goal":
-        return rows.sort((a, b) => nullLast(b.goal) - nullLast(a.goal));
-      case "achievement":
-      case "best":
+        return rows.sort(
+          (a, b) =>
+            (b.projectedRevenue ?? b.revenue) -
+            (a.projectedRevenue ?? a.revenue),
+        );
+      case "bestWorst":
         return rows.sort(
           (a, b) => nullLast(b.achievement) - nullLast(a.achievement),
         );
@@ -673,6 +1408,8 @@ export default function SalesGoalsPage() {
           r.orders > 0 ? r.revenue / r.orders : 0;
         return rows.sort((a, b) => aov(b) - aov(a));
       }
+      case "sameStore":
+      case "discount":
       default:
         return rows.sort((a, b) => a.name.localeCompare(b.name));
     }
@@ -786,6 +1523,22 @@ export default function SalesGoalsPage() {
   const lastSyncLabel = syncMeta.lastSyncedAt
     ? new Date(syncMeta.lastSyncedAt).toLocaleString(locale)
     : t("sync.never");
+  const hoursSinceSync = syncMeta.lastSyncedAt
+    ? (Date.now() - new Date(syncMeta.lastSyncedAt).getTime()) / 3_600_000
+    : null;
+  const syncStaleClass =
+    hoursSinceSync == null
+      ? ""
+      : hoursSinceSync > 25
+        ? styles.staleRed
+        : hoursSinceSync > 2
+          ? styles.staleAmber
+          : "";
+
+  // ── Admin-only manual sync trigger (hidden unless URL has ?admin-sync=1) ──
+  const adminSyncEnabled =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("admin-sync") === "1";
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -809,49 +1562,53 @@ export default function SalesGoalsPage() {
           {/* ── Dashboard ──────────────────────────────────────────────── */}
           {activeTab === "dashboard" ? (
             <>
-              {/* Header */}
+              {/* Single-row controls: Month + Compare with + Last synced + Goals chip */}
               <div className={styles.controlsRow}>
-                <div className={styles.controlsLeft}>
-                  <s-select
-                    label={t("dashboard.month")}
-                    value={dashboardMonth}
-                    onChange={(e: Event) => {
-                      const v = (e.currentTarget as HTMLSelectElement).value;
-                      if (v) setDashboardMonth(v);
-                    }}
-                  >
-                    {months
-                      .slice()
-                      .reverse()
-                      .map((m) => (
-                        <s-option key={m} value={m}>
-                          {formatMonthLabel(m)}
-                        </s-option>
-                      ))}
-                  </s-select>
-                  <s-select
-                    label={t("dashboard.compareWith")}
-                    value={comparisonMode}
-                    onChange={(e: Event) => {
-                      const v = (e.currentTarget as HTMLSelectElement).value;
-                      setComparisonMode(v as ComparisonMode);
-                    }}
-                  >
-                    <s-option value="none">
-                      {t("dashboard.comparison.none")}
-                    </s-option>
-                    <s-option value="prev_month">
-                      {t("dashboard.comparison.prevMonth")}
-                    </s-option>
-                    <s-option value="prev_year">
-                      {t("dashboard.comparison.prevYear")}
-                    </s-option>
-                  </s-select>
-                </div>
-                <div className={styles.controlsRight}>
-                  <span className={styles.syncLabel}>
-                    {t("sync.lastSynced")}: {lastSyncLabel}
-                  </span>
+                <s-select
+                  label={t("dashboard.month")}
+                  value={dashboardMonth}
+                  onChange={(e: Event) => {
+                    const v = (e.currentTarget as HTMLSelectElement).value;
+                    if (v) setDashboardMonth(v);
+                  }}
+                >
+                  {months
+                    .slice()
+                    .reverse()
+                    .map((m) => (
+                      <s-option key={m} value={m}>
+                        {formatMonthLabel(m)}
+                      </s-option>
+                    ))}
+                </s-select>
+                <s-select
+                  label={t("dashboard.compareWith")}
+                  value={comparisonMode}
+                  onChange={(e: Event) => {
+                    const v = (e.currentTarget as HTMLSelectElement).value;
+                    setComparisonMode(v as ComparisonMode);
+                  }}
+                >
+                  <s-option value="none">
+                    {t("dashboard.comparison.none")}
+                  </s-option>
+                  <s-option value="prev_month">
+                    {t("dashboard.comparison.prevMonth")}
+                  </s-option>
+                  <s-option value="prev_year">
+                    {t("dashboard.comparison.prevYear")}
+                  </s-option>
+                </s-select>
+                <span className={`${styles.syncLabel} ${syncStaleClass}`}>
+                  {t("sync.lastSynced")}: {lastSyncLabel}
+                </span>
+                <span className={styles.storesWithGoalsChip}>
+                  {t("dashboard.storesWithGoalsChip", {
+                    set: storesWithGoalsCount,
+                    total: enabledLocations.length,
+                  })}
+                </span>
+                {adminSyncEnabled ? (
                   <s-button
                     variant="secondary"
                     onClick={triggerSyncNow}
@@ -859,104 +1616,316 @@ export default function SalesGoalsPage() {
                   >
                     {isSyncing ? t("sync.syncing") : t("sync.syncNow")}
                   </s-button>
-                </div>
+                ) : null}
               </div>
 
-              {isSyncing ? (
-                <s-banner tone="info">
-                  {t("sync.bannerSyncing", {
-                    phase: syncMeta.phase ?? "fetching",
-                    count: syncMeta.progressCount ?? 0,
-                  })}
-                </s-banner>
-              ) : null}
-
-              {/* KPIs — Row 1: Scoreboard */}
+              {/* ─── Row 1: Scoreboard (Revenue = Orders × AOV) ─── */}
               <div className={styles.kpiGroupLabel}>
                 {t("dashboard.kpiGroupScoreboard")}
               </div>
               <div className={styles.kpiGrid}>
-                <KpiCard
-                  label={t("dashboard.totalRevenue")}
-                  primary={formatCurrency(totals.revenue, currencyCode)}
-                  secondary={
-                    comparisonTotals
-                      ? `${t("dashboard.vsCompare")}: ${formatCurrency(
-                          comparisonTotals.revenue,
-                          currencyCode,
-                        )}`
-                      : undefined
-                  }
-                  delta={revenueDelta}
-                  active={activeKpi === "revenue"}
-                  onClick={() => toggleKpi("revenue")}
-                />
-                <KpiCard
-                  label={t("dashboard.totalGoal")}
-                  primary={formatCurrency(totals.goal, currencyCode)}
-                  secondary={
-                    totals.goal === 0
-                      ? t("dashboard.noGoalsSet")
-                      : t("dashboard.sumAcrossStores", {
-                          count: locationRows.filter((r) => r.goal != null).length,
-                        })
-                  }
-                  active={activeKpi === "goal"}
-                  onClick={() => toggleKpi("goal")}
-                />
-                <KpiCard
-                  label={t("dashboard.achievement")}
-                  primary={
-                    totals.achievement != null
-                      ? `${totals.achievement.toFixed(1)}%`
-                      : "—"
-                  }
-                  secondary={
-                    totals.goal > 0
-                      ? formatCurrency(
-                          totals.revenue - totals.goal,
-                          currencyCode,
-                        )
-                      : undefined
-                  }
-                  active={activeKpi === "achievement"}
-                  onClick={() => toggleKpi("achievement")}
-                />
+                {/* Total revenue — clicking this opens the bar drilldown */}
+                {(() => {
+                  const k = dashboardKpis.revenue;
+                  const projVsGoal =
+                    k.projected != null && k.goal != null && k.goal > 0
+                      ? ((k.projected - k.goal) / k.goal) * 100
+                      : null;
+                  const goalVsProj =
+                    k.goal != null && k.projected != null && k.projected > 0
+                      ? ((k.goal - k.projected) / k.projected) * 100
+                      : null;
+                  const pyVsProj =
+                    k.py > 0 && k.projected != null
+                      ? ((k.py - k.projected) / k.projected) * 100
+                      : null;
+                  return (
+                    <KpiRichCard
+                      title={t("dashboard.totalRevenue")}
+                      primary={formatCurrency(k.mtd, currencyCode)}
+                      primaryDelta={projVsGoal}
+                      primaryDeltaSuffix={t("dashboard.vsGoal")}
+                      projected={
+                        k.projected != null
+                          ? {
+                              value: `${t("dashboard.projLabel")} ${formatCurrency(k.projected, currencyCode)}`,
+                              early: isCurrentMonthEarly,
+                            }
+                          : null
+                      }
+                      lines={[
+                        k.goal != null
+                          ? {
+                              label: t("dashboard.goalLabel"),
+                              value: formatCurrency(k.goal, currencyCode),
+                              delta: goalVsProj,
+                            }
+                          : {
+                              label: t("dashboard.goalLabel"),
+                              value: "—",
+                            },
+                        {
+                          label: t("dashboard.pyLabel"),
+                          value: formatCurrency(k.py, currencyCode),
+                          delta: pyVsProj,
+                        },
+                      ]}
+                      active={activeKpi === "revenue"}
+                      onClick={() => toggleKpi("revenue")}
+                    />
+                  );
+                })()}
+                {/* AOV */}
+                {(() => {
+                  const k = dashboardKpis.aov;
+                  const projVsGoal =
+                    k.projected != null && k.goal != null && k.goal > 0
+                      ? ((k.projected - k.goal) / k.goal) * 100
+                      : null;
+                  const goalVsProj =
+                    k.goal != null && k.projected != null && k.projected > 0
+                      ? ((k.goal - k.projected) / k.projected) * 100
+                      : null;
+                  const pyVsProj =
+                    k.py > 0 && k.projected != null
+                      ? ((k.py - k.projected) / k.projected) * 100
+                      : null;
+                  return (
+                    <KpiRichCard
+                      title={t("dashboard.aov")}
+                      primary={formatCurrency(k.mtd, currencyCode)}
+                      primaryDelta={projVsGoal}
+                      primaryDeltaSuffix={t("dashboard.vsGoal")}
+                      projected={
+                        k.projected != null
+                          ? {
+                              value: `${t("dashboard.projLabel")} ${formatCurrency(k.projected, currencyCode)}`,
+                              early: isCurrentMonthEarly,
+                            }
+                          : null
+                      }
+                      tooltip={t("dashboard.aovGoalTooltip")}
+                      lines={[
+                        k.goal != null
+                          ? {
+                              label: t("dashboard.goalLabel"),
+                              value: formatCurrency(k.goal, currencyCode),
+                              delta: goalVsProj,
+                            }
+                          : { label: t("dashboard.goalLabel"), value: "—" },
+                        {
+                          label: t("dashboard.pyLabel"),
+                          value: formatCurrency(k.py, currencyCode),
+                          delta: pyVsProj,
+                        },
+                      ]}
+                      active={activeKpi === "aov"}
+                      onClick={() => toggleKpi("aov")}
+                    />
+                  );
+                })()}
+                {/* Orders */}
+                {(() => {
+                  const k = dashboardKpis.orders;
+                  const projVsGoal =
+                    k.projected != null && k.goal != null && k.goal > 0
+                      ? ((k.projected - k.goal) / k.goal) * 100
+                      : null;
+                  const goalVsProj =
+                    k.goal != null && k.projected != null && k.projected > 0
+                      ? ((k.goal - k.projected) / k.projected) * 100
+                      : null;
+                  const pyVsProj =
+                    k.py > 0 && k.projected != null
+                      ? ((k.py - k.projected) / k.projected) * 100
+                      : null;
+                  return (
+                    <KpiRichCard
+                      title={t("dashboard.orders")}
+                      primary={k.mtd.toLocaleString(locale)}
+                      primaryDelta={projVsGoal}
+                      primaryDeltaSuffix={t("dashboard.vsGoal")}
+                      projected={
+                        k.projected != null
+                          ? {
+                              value: `${t("dashboard.projLabel")} ${k.projected.toLocaleString(locale)}`,
+                              early: isCurrentMonthEarly,
+                            }
+                          : null
+                      }
+                      tooltip={t("dashboard.ordersGoalTooltip")}
+                      lines={[
+                        k.goal != null
+                          ? {
+                              label: t("dashboard.goalLabel"),
+                              value: Math.round(k.goal).toLocaleString(locale),
+                              delta: goalVsProj,
+                            }
+                          : { label: t("dashboard.goalLabel"), value: "—" },
+                        {
+                          label: t("dashboard.pyLabel"),
+                          value: k.py.toLocaleString(locale),
+                          delta: pyVsProj,
+                        },
+                      ]}
+                      active={activeKpi === "orders"}
+                      onClick={() => toggleKpi("orders")}
+                    />
+                  );
+                })()}
               </div>
 
-              {/* KPIs — Row 2: Volume / Quality */}
+              {/* ─── Row-1 drilldown: renders below Row 1 when Revenue/AOV/Orders is active ─── */}
+              {activeKpi === "revenue" ||
+              activeKpi === "aov" ||
+              activeKpi === "orders" ? (
+                <KpiDrilldownBars
+                  metric={activeKpi}
+                  snapshots={dashboardSnapshots}
+                  currencyCode={currencyCode}
+                  locale={locale}
+                  isCurrentMonthEarly={isCurrentMonthEarly}
+                  isViewingCurrentMonth={isViewingCurrentMonth}
+                  t={t}
+                  formatCurrency={formatCurrency}
+                />
+              ) : null}
+
+              {/* ─── Row 2: Volume / quality ─── */}
               <div className={styles.kpiGroupLabel}>
                 {t("dashboard.kpiGroupVolume")}
               </div>
               <div className={styles.kpiGrid}>
-                <KpiCard
-                  label={t("dashboard.bestPerformer")}
-                  primary={bestPerformer?.name ?? "—"}
-                  secondary={
-                    bestPerformer?.achievement != null
-                      ? `${bestPerformer.achievement.toFixed(1)}%`
-                      : undefined
+                {/* Same-Store YoY */}
+                {(() => {
+                  const k = dashboardKpis.sameStoreYoY;
+                  return (
+                    <KpiRichCard
+                      title={t("dashboard.sameStoreYoY")}
+                      primary={
+                        k.deltaPercent != null
+                          ? `${k.deltaPercent >= 0 ? "+" : ""}${k.deltaPercent.toFixed(1)}%`
+                          : "—"
+                      }
+                      tooltip={t("dashboard.sameStoreYoyTooltip")}
+                      lines={
+                        k.qualifyingCount > 0
+                          ? [
+                              {
+                                label: "",
+                                value: t("dashboard.declining", {
+                                  declining: k.decliningCount,
+                                  total: k.qualifyingCount,
+                                }),
+                              },
+                            ]
+                          : []
+                      }
+                      active={activeKpi === "sameStore"}
+                      onClick={() => toggleKpi("sameStore")}
+                    />
+                  );
+                })()}
+                {/* Best vs worst */}
+                {(() => {
+                  const k = dashboardKpis.bestVsWorst;
+                  if (!k.best) {
+                    return (
+                      <KpiRichCard
+                        title={t("dashboard.bestVsWorst")}
+                        primary="—"
+                        active={activeKpi === "bestWorst"}
+                        onClick={() => toggleKpi("bestWorst")}
+                      />
+                    );
                   }
-                  active={activeKpi === "best"}
-                  onClick={() => toggleKpi("best")}
-                />
-                <KpiCard
-                  label={t("dashboard.aov")}
-                  primary={formatCurrency(totals.aov, currencyCode)}
-                  delta={aovDelta}
-                  active={activeKpi === "aov"}
-                  onClick={() => toggleKpi("aov")}
-                />
-                <KpiCard
-                  label={t("dashboard.orderCount")}
-                  primary={totals.orders.toLocaleString(locale)}
-                  delta={ordersDelta}
-                  active={activeKpi === "orders"}
-                  onClick={() => toggleKpi("orders")}
-                />
+                  const bestAchPct = k.best.achievement;
+                  const worstAchPct = k.worst?.achievement;
+                  return (
+                    <KpiRichCard
+                      title={t("dashboard.bestVsWorst")}
+                      primary={k.best.name}
+                      primaryDelta={k.gapPp}
+                      primaryDeltaSuffix={t("dashboard.aheadLabel")}
+                      lines={
+                        k.worst
+                          ? [
+                              {
+                                label: t("dashboard.bestAheadOf"),
+                                value: `${k.worst.name} ${worstAchPct != null ? `${worstAchPct.toFixed(0)}%` : ""}`,
+                              },
+                              {
+                                label: t("dashboard.bestAchLabel"),
+                                value: `${bestAchPct.toFixed(0)}%`,
+                              },
+                            ]
+                          : [
+                              {
+                                label: t("dashboard.bestAchLabel"),
+                                value: `${bestAchPct.toFixed(0)}%`,
+                              },
+                            ]
+                      }
+                      active={activeKpi === "bestWorst"}
+                      onClick={() => toggleKpi("bestWorst")}
+                    />
+                  );
+                })()}
+                {/* Discount rate */}
+                {(() => {
+                  const k = dashboardKpis.discountRate;
+                  const currentRatePct =
+                    k.currentRate != null
+                      ? (k.currentRate * 100).toFixed(1)
+                      : null;
+                  const pyRatePct =
+                    k.pyRate != null ? (k.pyRate * 100).toFixed(1) : null;
+                  return (
+                    <KpiRichCard
+                      title={t("dashboard.discountRate")}
+                      primary={currentRatePct != null ? `${currentRatePct}%` : "—"}
+                      primaryDelta={k.deltaPp}
+                      primaryDeltaSuffix={t("dashboard.vsPyPp")}
+                      lines={[
+                        pyRatePct != null
+                          ? {
+                              label: t("dashboard.pyLabel"),
+                              value: `${pyRatePct}%`,
+                            }
+                          : { label: t("dashboard.pyLabel"), value: "—" },
+                        {
+                          label: t("dashboard.thirteenMoDiscountLabel"),
+                          value: formatCurrencyCompact(
+                            k.thirteenMonthDiscountTotal,
+                            currencyCode,
+                            locale,
+                          ),
+                        },
+                      ]}
+                      active={activeKpi === "discount"}
+                      onClick={() => toggleKpi("discount")}
+                    />
+                  );
+                })()}
               </div>
 
-              {/* Per-location table */}
+              {/* ─── Row-2 drilldown: renders below Row 2 when Same-Store / Best vs Worst / Discount is active ─── */}
+              {activeKpi === "sameStore" ||
+              activeKpi === "bestWorst" ||
+              activeKpi === "discount" ? (
+                <KpiDrilldownBars
+                  metric={activeKpi}
+                  snapshots={dashboardSnapshots}
+                  currencyCode={currencyCode}
+                  locale={locale}
+                  isCurrentMonthEarly={isCurrentMonthEarly}
+                  isViewingCurrentMonth={isViewingCurrentMonth}
+                  t={t}
+                  formatCurrency={formatCurrency}
+                />
+              ) : null}
+
+              {/* ─── Breakdown table (always visible below the scoreboard) ─── */}
               <div className={styles.blockCard}>
                 <s-box padding="base" borderRadius="base">
                   <s-stack direction="block" gap="base">
@@ -966,8 +1935,8 @@ export default function SalesGoalsPage() {
                     <div className={`${styles.table} ${styles.tableLocations}`}>
                       <div className={styles.tableHeader}>
                         <span>{t("common:label.location")}</span>
-                        <span>{t("dashboard.orders")}</span>
-                        <span>{t("dashboard.revenue")}</span>
+                        <span>{t("dashboard.mtdRevenue")}</span>
+                        <span>{t("dashboard.projectedRev")}</span>
                         <span>{t("dashboard.goal")}</span>
                         <span>{t("dashboard.achievement")}</span>
                         <span>{t("dashboard.yoyDelta")}</span>
@@ -980,48 +1949,56 @@ export default function SalesGoalsPage() {
                       ) : (
                         sortedLocationRows.map((row) => {
                           const isBestHighlight =
-                            activeKpi === "best" &&
-                            bestPerformer?.id === row.id;
+                            activeKpi === "bestWorst" &&
+                            dashboardKpis.bestVsWorst.best?.locationId ===
+                              row.id;
                           return (
                             <div
                               key={row.id}
                               className={`${styles.tableRow}${isBestHighlight ? ` ${styles.tableRowHighlight}` : ""}`}
                             >
-                            <span>{row.name}</span>
-                            <span>{row.orders.toLocaleString(locale)}</span>
-                            <span>
-                              {formatCurrency(row.revenue, currencyCode)}
-                            </span>
-                            <span>
-                              {row.goal != null
-                                ? formatCurrency(row.goal, currencyCode)
-                                : "—"}
-                            </span>
-                            <span>
-                              {row.achievement != null ? (
-                                <span className={styles.progressCell}>
-                                  <span className={styles.progressLabel}>
-                                    {row.achievement.toFixed(1)}%
+                              <span>{row.name}</span>
+                              <span>
+                                {formatCurrency(row.revenue, currencyCode)}
+                              </span>
+                              <span>
+                                {row.projectedRevenue != null
+                                  ? formatCurrency(
+                                      row.projectedRevenue,
+                                      currencyCode,
+                                    )
+                                  : "—"}
+                              </span>
+                              <span>
+                                {row.goal != null
+                                  ? formatCurrency(row.goal, currencyCode)
+                                  : "—"}
+                              </span>
+                              <span>
+                                {row.achievement != null ? (
+                                  <span className={styles.progressCell}>
+                                    <span className={styles.progressLabel}>
+                                      {row.achievement.toFixed(1)}%
+                                    </span>
+                                    <span className={styles.progressBar}>
+                                      <span
+                                        className={styles.progressFill}
+                                        style={{
+                                          width: `${Math.min(100, row.achievement)}%`,
+                                        }}
+                                      />
+                                    </span>
                                   </span>
-                                  <span className={styles.progressBar}>
-                                    <span
-                                      className={styles.progressFill}
-                                      style={{
-                                        width: `${Math.min(100, row.achievement)}%`,
-                                      }}
-                                    />
-                                  </span>
-                                </span>
-                              ) : (
-                                "—"
-                              )}
-                            </span>
-                            <span>
-                              <Delta delta={row.yoyDelta} />
-                            </span>
-                            <span>
-                              <Sparkline values={row.sparklineValues} />
-                            </span>
+                                ) : (
+                                  "—"
+                                )}
+                              </span>
+                              <span>
+                                <Delta delta={row.yoyDelta} />
+                              </span>
+                              <span>
+                                <Sparkline values={row.sparklineValues} />
+                              </span>
                             </div>
                           );
                         })
@@ -1354,6 +2331,18 @@ export default function SalesGoalsPage() {
                 })}
               </div>
             </>
+          ) : null}
+
+          {/* ── Campaigns ─────────────────────────────────────────────── */}
+          {activeTab === "campaigns" ? (
+            <CampaignsTab
+              locations={enabledLocations}
+              campaigns={campaigns}
+              progressByCampaignId={campaignProgress}
+              currencyCode={currencyCode}
+              onSubmit={(fd) => campaignFetcher.submit(fd, { method: "post" })}
+              isSubmitting={campaignFetcher.state !== "idle"}
+            />
           ) : null}
 
         </s-stack>

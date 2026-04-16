@@ -254,13 +254,12 @@
   margin: 0;
 }
 
-/* ── Header controls row (month picker + comparison + sync) ───────────────── */
+/* ── Header controls row (month picker + comparison + sync + goals chip) ──── */
 .controlsRow {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  align-items: flex-end;
-  justify-content: space-between;
+  align-items: center;
   padding: 12px 0;
   margin-bottom: 8px;
 }
@@ -278,6 +277,23 @@
   align-items: center;
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.storesWithGoalsChip {
+  font-size: 12px;
+  color: #6d7175;
+  padding: 4px 10px;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+}
+
+.staleAmber {
+  color: #8a6d3b;
+}
+
+.staleRed {
+  color: #d72c0d;
+  font-weight: 600;
 }
 
 .controlLabel {
@@ -314,7 +330,8 @@
 .kpiGrid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
   margin-bottom: 16px;
 }
 
@@ -325,11 +342,70 @@
 }
 
 .kpiLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #303030;
+}
+
+/* Rich KPI card (Dashboard 6-card redesign) */
+.kpiRichCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+}
+
+.kpiRichTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #303030;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.kpiInfoIcon {
+  font-size: 11px;
+  color: #8c9196;
+  cursor: help;
+}
+
+.kpiRichPrimary {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.kpiDeltaInline {
   font-size: 12px;
-  font-weight: 500;
   color: #6d7175;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+
+.kpiProj {
+  font-size: 12px;
+  color: #303030;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.kpiProjEarly {
+  font-size: 12px;
+  color: #303030;
+  font-style: italic;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.kpiRichLine {
+  font-size: 12px;
+  color: #6d7175;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  justify-content: space-between;
 }
 
 .kpiValueRow {
@@ -368,7 +444,7 @@
 .tableLocations .tableRow {
   grid-template-columns:
     minmax(140px, 2fr)
-    minmax(70px, 0.7fr)
+    minmax(110px, 1fr)
     minmax(110px, 1fr)
     minmax(110px, 1fr)
     minmax(140px, 1.3fr)
@@ -601,6 +677,20 @@
   .goalCardsGrid {
     grid-template-columns: minmax(0, 1fr);
   }
+  .kpiGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .drilldownBars {
+    min-height: 180px;
+    overflow-x: auto;
+  }
+  .drilldownColumn {
+    flex: 0 0 auto;
+    min-width: 80px;
+  }
+  .drilldownBarArea {
+    height: 120px;
+  }
 }
 
 /* ── KPI clickable cards (drilldown) ──────────────────────────────────────── */
@@ -627,11 +717,9 @@
 }
 
 .kpiGroupLabel {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   color: #6d7175;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
   margin: 12px 0 4px;
 }
 
@@ -703,4 +791,231 @@
   user-select: none;
   font-size: 13px;
   color: #202223;
+}
+
+/* ── Revenue drilldown bar chart (two-tone navy) ──────────────────────────── */
+.revenueDrilldown {
+  padding: 16px;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  background: #fff;
+}
+
+.breakdownHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.drilldownLegend {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  color: #6d7175;
+  margin-bottom: 12px;
+}
+
+.drilldownLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendSwatchPy {
+  width: 10px;
+  height: 10px;
+  border: 2px solid #1f2d5a;
+  background: transparent;
+  display: inline-block;
+}
+
+.legendSwatchProj {
+  width: 10px;
+  height: 10px;
+  background: #1f2d5a;
+  display: inline-block;
+}
+
+.legendSwatchGoal {
+  width: 14px;
+  height: 0;
+  border-top: 2px dashed #303030;
+  display: inline-block;
+}
+
+.legendSwatchSinglePositive {
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(180deg, #4cc99a 0%, #008060 100%);
+  display: inline-block;
+  border-radius: 2px;
+}
+
+.legendSwatchSingleNegative {
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(180deg, #e85746 0%, #d72c0d 100%);
+  display: inline-block;
+  border-radius: 2px;
+}
+
+.legendSwatchRanking {
+  width: 14px;
+  height: 10px;
+  background: linear-gradient(90deg, #d72c0d 0%, #e8c268 50%, #008060 100%);
+  display: inline-block;
+  border-radius: 2px;
+}
+
+.drilldownBars {
+  display: flex;
+  gap: 8px;
+  padding: 8px 4px 0;
+  min-height: 220px;
+}
+
+.drilldownColumn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.drilldownPair {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.drilldownBarArea {
+  flex: 1;
+  height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+  max-width: 48px;
+}
+
+.drilldownBarValue {
+  font-size: 10px;
+  font-weight: 600;
+  color: #303030;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.drilldownBarValueEarly {
+  font-style: italic;
+  color: #6d7175;
+}
+
+.drilldownBarPy {
+  width: 100%;
+  max-width: 36px;
+  min-height: 2px;
+  border: 2px solid #1f2d5a;
+  background: linear-gradient(180deg, rgba(90, 122, 196, 0.12) 0%, rgba(31, 45, 90, 0.06) 100%);
+  transition: height 0.3s ease;
+}
+
+.drilldownBarProjected {
+  width: 100%;
+  max-width: 36px;
+  min-height: 2px;
+  background: linear-gradient(180deg, #5a7ac4 0%, #3d5aa0 45%, #1f2d5a 100%);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
+  border-radius: 4px 4px 0 0;
+  transition: height 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.drilldownBarMtd {
+  width: 100%;
+  background: linear-gradient(180deg, #3d5aa0 0%, #1f2d5a 100%);
+}
+
+/* Single-bar variants for ratio / ranking drilldowns */
+.drilldownBarSingle {
+  width: 100%;
+  max-width: 36px;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
+  transition: height 0.3s ease;
+}
+
+.drilldownBarSinglePositive {
+  background: linear-gradient(180deg, #4cc99a 0%, #008060 100%);
+}
+
+.drilldownBarSingleNegative {
+  background: linear-gradient(180deg, #e85746 0%, #d72c0d 100%);
+}
+
+.drilldownGoalTick {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 2px dashed #303030;
+  pointer-events: none;
+}
+
+.drilldownLabel {
+  font-size: 11px;
+  color: #303030;
+  font-weight: 500;
+  margin-top: 6px;
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drilldownChips {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.chipUp {
+  color: #008060;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.chipDown {
+  color: #d72c0d;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.chipNeutral {
+  color: #6d7175;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.drilldownRankChip {
+  color: #303030;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  background: #f1f1f1;
+  border-radius: 10px;
 }

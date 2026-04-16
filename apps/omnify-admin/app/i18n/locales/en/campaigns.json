@@ -1,0 +1,63 @@
+{
+  "pageHeading": "Campaigns",
+  "emptyState": "No campaigns yet. Create one to start tracking a time-bounded sales push.",
+  "pastCampaigns": "Past campaigns",
+  "noBaseline": "No baseline set",
+  "baselineNote": "Baselines",
+  "paceInfo": "{{pct}}% elapsed",
+  "ended": "Ended",
+  "targetPaceLabel": "Target pace:",
+  "attachLabel": "Attach:",
+  "status": {
+    "draft": "Draft",
+    "active": "Active",
+    "ended": "Ended",
+    "archived": "Archived"
+  },
+  "col": {
+    "location": "Location",
+    "progress": "Progress",
+    "achievement": "Ach%",
+    "bar": " ",
+    "attach": "Attach",
+    "baseline": "Baseline",
+    "target": "Target"
+  },
+  "actions": {
+    "newCampaign": "+ New campaign",
+    "edit": "Edit",
+    "view": "View",
+    "archive": "Archive",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next",
+    "save": "Save campaign",
+    "saving": "Saving…"
+  },
+  "wizard": {
+    "newTitle": "New campaign",
+    "editTitle": "Edit campaign",
+    "nameLabel": "Campaign name",
+    "namePlaceholder": "Mother's Day 2026",
+    "startDateLabel": "Start date",
+    "endDateLabel": "End date",
+    "dateRangeLabel": "Date range",
+    "metricHint": "Campaign metric: bundle orders (count of orders containing the matching item). Attach rate is tracked automatically.",
+    "matchRuleLocked": "Match rule is locked while the campaign is active. Archive to edit.",
+    "matchRuleTypeLabel": "Match rule type",
+    "matchRuleLineItemTag": "Line item — product tag",
+    "matchRuleLineItemSku": "Line item — SKU",
+    "matchRuleLineItemProductId": "Line item — product ID",
+    "matchRuleLineItemProperty": "Line item — custom property",
+    "matchRuleOrderTag": "Order tag",
+    "matchValuesLabel": "Match values (comma-separated)",
+    "matchValuesPlaceholder": "mothers-day-2026, mae2026",
+    "propertyKeyLabel": "Property key",
+    "propertyValueLabel": "Property value (optional)",
+    "propertyValuePlaceholder": "Leave blank to match any value for this key",
+    "matchRuleHint": "Order counts if any line item (or order-level tag) matches. Refine based on the sample injected order.",
+    "targetsHint": "Set each location's target. Optionally enter last year's equivalent-period baseline for reference.",
+    "totalTargetLabel": "Total target",
+    "reviewHeading": "Review"
+  }
+}
