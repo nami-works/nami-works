@@ -1907,8 +1907,11 @@ export async function optimizeByVRP(
             const result = await computeRoutePolyline(googleApiKey, depot, routeOrders);
             route.corridorPolyline = result.polyline;
           } catch {
-            console.warn(`[vrp-optimizer] Phase 5b: polyline re-render failed route ${ri}`);
+            console.warn(`[vrp-optimizer] Phase 5b: polyline re-render failed route ${ri} -- clearing stale polyline`);
+            route.corridorPolyline = "";
           }
+        } else {
+          route.corridorPolyline = "";
         }
 
         // Re-quote with Lalamove

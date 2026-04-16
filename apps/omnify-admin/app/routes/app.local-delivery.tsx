@@ -2648,8 +2648,17 @@ export default function Index() {
   const handleLocationChange = (event: Event) => {
     const target = event.currentTarget as { value?: string } | null;
     if (!target) return;
-    window.scrollTo({ top: 0 });
     const nextValue = target.value ?? DEFAULT_LOCATION_ID;
+    if (nextValue === locationId) return;
+    if (dirtyRouteIds.size > 0) {
+      const confirmed = window.confirm(t("routeManager.discardChangesConfirm"));
+      if (!confirmed) {
+        target.value = locationId;
+        return;
+      }
+    }
+    window.scrollTo({ top: 0 });
+    setDirtyRouteIds(new Set());
     lastFittedLocationIdRef.current = "";
     setIsRouteManagerVisible(nextValue !== DEFAULT_LOCATION_ID);
     setLocationId(nextValue);
@@ -5193,6 +5202,7 @@ export default function Index() {
                           <div className={styles.routeManagerActionsMenu}>
                             {dirtyRouteIds.size > 0 ? (
                               <s-button
+                                key="confirm-changes-main"
                                 variant="primary"
                                 disabled={isRoutingBusy}
                                 onClick={handleUpdateRoutes}
@@ -5202,6 +5212,7 @@ export default function Index() {
                             ) : (
                               <>
                                 <s-button
+                                  key="actions-trigger-main"
                                   variant="tertiary"
                                   icon="menu-horizontal"
                                   accessibilityLabel={t("routeManager.actions")}
@@ -5574,6 +5585,7 @@ export default function Index() {
                 <div className={styles.routeManagerActionsMenu}>
                   {dirtyRouteIds.size > 0 ? (
                     <s-button
+                      key="confirm-changes-aside"
                       variant="primary"
                       disabled={isRoutingBusy}
                       onClick={handleUpdateRoutes}
@@ -5583,6 +5595,7 @@ export default function Index() {
                   ) : (
                     <>
                       <s-button
+                        key="actions-trigger-aside"
                         variant="tertiary"
                         icon="menu-horizontal"
                         accessibilityLabel={t("routeManager.actions")}
@@ -7651,6 +7664,112 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
   const GQL_BATCH_SIZE = 10;
 
+  /**
+   * Shifts populated route tags down into empty earlier slots so the fulfillment team's
+   * sequential tag views (ld_rota-01, ld_rota-02, ...) have no gaps. Dispatched routes
+   * are frozen anchors — their slot index never changes, and compaction does not cross
+   * them. Compaction happens independently within each contiguous block of non-dispatched
+   * slots.
+   */
+  async function compactRouteTags(targetLocationId: string) {
+    const normalizeLoc = (locId: string | null | undefined) =>
+      locId ? (locId.startsWith("gid://") ? locId.split("/").pop() ?? locId : locId) : "";
+    const targetLocNorm = normalizeLoc(targetLocationId);
+
+    const activeDispatches = await (prisma as any).lalamoveDispatchJob.findMany({
+      where: {
+        shop,
+        routeId: { startsWith: `${targetLocationId}-` },
+        status: { notIn: ["COMPLETED", "CANCELED", "REJECTED", "EXPIRED"] },
+      },
+      select: { routeId: true },
+    });
+    const dispatchedSlots = new Set<number>();
+    for (const d of activeDispatches as Array<{ routeId: string }>) {
+      const suffix = d.routeId.slice(targetLocationId.length + 1);
+      const idx = Number.parseInt(suffix, 10);
+      if (Number.isFinite(idx) && idx >= 0 && idx < ROUTE_TAG_DEFINITIONS.length) {
+        dispatchedSlots.add(idx);
+      }
+    }
+
+    const populatedBySlot = new Map<number, string[]>();
+    for (let slot = 0; slot < ROUTE_TAG_DEFINITIONS.length; slot += 1) {
+      const tag = ROUTE_TAG_DEFINITIONS[slot]!.tag;
+      const resp = await admin.graphql(
+        `#graphql
+          query OrdersByRouteTag($first: Int!, $query: String) {
+            orders(first: $first, query: $query) {
+              nodes {
+                id
+                fulfillmentOrders(first: 10, displayable: true) {
+                  nodes { assignedLocation { location { id } } }
+                }
+              }
+            }
+          }`,
+        { variables: { first: 250, query: `tag:${tag}` } },
+      );
+      const json = await resp.json();
+      const nodes = (json.data?.orders?.nodes ?? []) as Array<{
+        id: string;
+        fulfillmentOrders: {
+          nodes: Array<{ assignedLocation?: { location?: { id: string } | null } | null }>;
+        };
+      }>;
+      const orderIds = nodes
+        .filter((o) => normalizeLoc(o.fulfillmentOrders?.nodes?.[0]?.assignedLocation?.location?.id) === targetLocNorm)
+        .map((o) => o.id);
+      if (orderIds.length > 0) populatedBySlot.set(slot, orderIds);
+    }
+
+    const sourceToTarget = new Map<number, number>();
+    let writeSlot = 0;
+    for (let slot = 0; slot < ROUTE_TAG_DEFINITIONS.length; slot += 1) {
+      if (dispatchedSlots.has(slot)) {
+        writeSlot = slot + 1;
+        continue;
+      }
+      if (!populatedBySlot.has(slot)) continue;
+      if (slot !== writeSlot) sourceToTarget.set(slot, writeSlot);
+      writeSlot += 1;
+    }
+
+    if (sourceToTarget.size === 0) {
+      console.info(`[local-delivery:compact] no gaps shop=${shop} location=${targetLocationId}`);
+      return;
+    }
+    console.info(
+      `[local-delivery:compact] START shop=${shop} location=${targetLocationId} shifts=${sourceToTarget.size} dispatched=${dispatchedSlots.size}`,
+    );
+
+    const moves: Array<{ orderId: string; fromTag: string; toTag: string }> = [];
+    for (const [source, target] of sourceToTarget.entries()) {
+      const fromTag = ROUTE_TAG_DEFINITIONS[source]!.tag;
+      const toTag = ROUTE_TAG_DEFINITIONS[target]!.tag;
+      for (const orderId of populatedBySlot.get(source) ?? []) {
+        moves.push({ orderId, fromTag, toTag });
+      }
+    }
+    await batchProcess(moves, GQL_BATCH_SIZE, async ({ orderId, fromTag, toTag }) => {
+      await admin.graphql(
+        `#graphql
+          mutation AddOrderTag($id: ID!, $tags: [String!]!) {
+            tagsAdd(id: $id, tags: $tags) { userErrors { message } }
+          }`,
+        { variables: { id: orderId, tags: [toTag] } },
+      );
+      await admin.graphql(
+        `#graphql
+          mutation RemoveOrderTag($id: ID!, $tags: [String!]!) {
+            tagsRemove(id: $id, tags: $tags) { userErrors { message } }
+          }`,
+        { variables: { id: orderId, tags: [fromTag] } },
+      );
+    });
+    console.info(`[local-delivery:compact] OK shop=${shop} location=${targetLocationId} moved=${moves.length}`);
+  }
+
   if (intent === "save-lalamove-settings") {
     const locationId = formData.get("locationId");
     if (typeof locationId !== "string" || !locationId) {
@@ -8228,6 +8347,19 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         // Submit a Lalamove quote by reusing the lalamove-quote logic via internal call
         // For now, we leave quotation to the user via the existing "Request quote" button per route.
         // The polyline + distance/duration update is the primary deliverable of update-routes.
+      }
+    }
+
+    if (effectiveLocationId && effectiveLocationId !== "all") {
+      try {
+        await compactRouteTags(effectiveLocationId);
+      } catch (compactErr) {
+        console.error(
+          "[local-delivery:compact] FAILED shop=%s location=%s",
+          shop,
+          effectiveLocationId,
+          compactErr instanceof Error ? compactErr.message : String(compactErr),
+        );
       }
     }
 
@@ -9606,9 +9738,6 @@ if (intent === "lalamove-place-order") {
       return { ok: false, error: "Route tag not provided." };
     }
     console.info(`[local-delivery] unassign shop=${shop} orders=${ids.length} tag=${routeTag}`);
-    const locationId = formData.get("locationId");
-    const filterByLocation =
-      typeof locationId === "string" && locationId !== "" && locationId !== "all";
 
     await Promise.all(
       ids.map((id) =>
@@ -9630,97 +9759,6 @@ if (intent === "lalamove-place-order") {
       ),
     );
 
-    // Only compact (shift subsequent routes up) if the unassigned route is now empty.
-    // Query Shopify for remaining orders with this route tag.
-    const K = ROUTE_TAG_DEFINITIONS.findIndex((d) => d.tag === routeTag);
-    if (K >= 0) {
-      const remainingResponse = await admin.graphql(
-        `#graphql
-          query RemainingOrdersInRoute($first: Int!, $query: String) {
-            orders(first: $first, query: $query) {
-              nodes { id }
-            }
-          }`,
-        { variables: { first: 1, query: `tag:${routeTag}` } },
-      );
-      const remainingJson = await remainingResponse.json();
-      const remainingCount = (remainingJson.data?.orders?.nodes ?? []).length;
-      // Skip compaction if route still has orders
-      if (remainingCount > 0) {
-        return { ok: true };
-      }
-      for (let i = K + 1; i < ROUTE_TAG_DEFINITIONS.length; i += 1) {
-        const tagFrom = ROUTE_TAG_DEFINITIONS[i]!.tag;
-        const tagTo = ROUTE_TAG_DEFINITIONS[i - 1]!.tag;
-        const ordersByTagResponse = await admin.graphql(
-          `#graphql
-            query OrdersByRouteTag($first: Int!, $query: String) {
-              orders(first: $first, query: $query) {
-                nodes {
-                  id
-                  fulfillmentOrders(first: 10, displayable: true) {
-                    nodes {
-                      assignedLocation {
-                        location {
-                          id
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }`,
-          {
-            variables: {
-              first: 250,
-              query: `tag:${tagFrom}`,
-            },
-          },
-        );
-        const ordersByTagJson = await ordersByTagResponse.json();
-        const orderNodes = (ordersByTagJson.data?.orders?.nodes ?? []) as Array<{
-          id: string;
-          fulfillmentOrders: {
-            nodes: Array<{
-              assignedLocation?: {
-                location?: { id: string } | null;
-              } | null;
-            }>;
-          };
-        }>;
-        const normalizeLoc = (locId: string | null | undefined) =>
-          locId ? (locId.startsWith("gid://") ? locId.split("/").pop() ?? locId : locId) : "";
-
-        const orderIdsToShift = orderNodes.filter((order) => {
-          if (!filterByLocation || typeof locationId !== "string") return true;
-          const orderLocId = order.fulfillmentOrders?.nodes?.[0]?.assignedLocation?.location?.id;
-          return normalizeLoc(orderLocId) === normalizeLoc(locationId);
-        }).map((o) => o.id);
-
-        for (const orderId of orderIdsToShift) {
-          await admin.graphql(
-            `#graphql
-              mutation AddOrderTag($id: ID!, $tags: [String!]!) {
-                tagsAdd(id: $id, tags: $tags) {
-                  node { id }
-                  userErrors { field message }
-                }
-              }`,
-            { variables: { id: orderId, tags: [tagTo] } },
-          );
-          await admin.graphql(
-            `#graphql
-              mutation RemoveOrderTag($id: ID!, $tags: [String!]!) {
-                tagsRemove(id: $id, tags: $tags) {
-                  node { id }
-                  userErrors { field message }
-                }
-              }`,
-            { variables: { id: orderId, tags: [tagFrom] } },
-          );
-        }
-      }
-    }
     return { ok: true };
   }
 

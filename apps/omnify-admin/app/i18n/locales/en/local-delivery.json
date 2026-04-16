@@ -38,6 +38,7 @@
     "collapseMap": "Collapse map",
     "expandMap": "Expand map",
     "clearSelection": "Clear selection",
+    "unassignSelected": "Unassign",
     "assignToNewRoute": "Assign to new route",
     "errors": {
       "placesLoadFailed": "Google Maps Places failed to load. Check your API key and billing setup.",
@@ -135,6 +136,8 @@
     "autoAssignOrders": "Auto-assign orders",
     "autoAssign": "Auto-assign",
     "updateRoutes": "Update routes",
+    "confirmChanges": "Confirm changes",
+    "discardChangesConfirm": "You have unsaved route changes. Switch location and discard them?",
     "addToBestRoute": "Add to best route",
     "resetAutoAssign": "Re-enable auto-assign",
     "addressCorrection": "Address correction",

@@ -38,6 +38,7 @@
     "collapseMap": "Recolher mapa",
     "expandMap": "Expandir mapa",
     "clearSelection": "Limpar seleção",
+    "unassignSelected": "Desatribuir",
     "assignToNewRoute": "Atribuir a nova rota",
     "errors": {
       "placesLoadFailed": "O Google Maps Places não carregou. Verifique sua chave de API e configuração de cobrança.",
@@ -131,6 +132,8 @@
     "autoAssignOrders": "Atribuir pedidos automaticamente",
     "autoAssign": "Auto-atribuir",
     "updateRoutes": "Atualizar rotas",
+    "confirmChanges": "Confirmar mudanças",
+    "discardChangesConfirm": "Você tem mudanças de rota não salvas. Trocar de local e descartá-las?",
     "addressCorrection": "Correção de endereço",
     "changeSettings": "Alterar configurações",
     "actions": "Ações",
