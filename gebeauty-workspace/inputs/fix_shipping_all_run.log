@@ -1,0 +1,82 @@
+[fix-shipping-combine] loaded 4093 NOT-combining records from audit
+[fix-shipping-combine] matched targets: 4093
+  all: 4093
+  by type:
+    DiscountAutomaticApp via discountAutomaticAppUpdate: 1
+    DiscountAutomaticBxgy via discountAutomaticBxgyUpdate: 1
+    DiscountCodeBasic via discountCodeBasicUpdate: 4090
+    DiscountCodeBxgy via discountCodeBxgyUpdate: 1
+
+Preview (first 20):
+  [all] LUCAS15  order=False product=False shipping=False -> True
+  [all] GE10  order=False product=False shipping=False -> True
+  [all] FIO10  order=False product=False shipping=False -> True
+  [all] BIOMA10  order=False product=False shipping=False -> True
+  [all] MYRA10  order=False product=False shipping=False -> True
+  [all] GISELLE10  order=False product=False shipping=False -> True
+  [all] NEYLE10  order=False product=False shipping=False -> True
+  [all] MARLANDEIRO  order=False product=False shipping=False -> True
+  [all] CHRIS10  order=False product=False shipping=False -> True
+  [all] VIC10  order=False product=False shipping=False -> True
+  [all] DEBORA10  order=False product=False shipping=False -> True
+  [all] CAROL10  order=False product=False shipping=False -> True
+  [all] FIORELLA10  order=False product=False shipping=False -> True
+  [all] BERTHA10  order=False product=False shipping=False -> True
+  [all] JANACOLLOR10  order=False product=False shipping=False -> True
+  [all] ISACAMARGO10  order=False product=False shipping=False -> True
+  [all] NATHALIA10  order=False product=False shipping=False -> True
+  [all] NATHIFOSS10  order=False product=False shipping=False -> True
+  [all] JEAN10  order=True product=True shipping=False -> True
+  [all] LEISE10  order=True product=True shipping=False -> True
+  ... and 4073 more
+
+[fix-shipping-combine] applying 4093 updates LIVE
+  ERROR [all] ROSA10: [{'field': ['basicCodeDiscount', 'customerGets', 'items'], 'message': "Items must be defined in 'customer get' when the 'customer get item all' is false"}]
+  progress 100/4093 ok=99 err=1 2.3/s ~1725s left
+  ERROR [all] DUDARIBEIRO: [{'field': ['basicCodeDiscount', 'customerGets', 'items'], 'message': "Items must be defined in 'customer get' when the 'customer get item all' is false"}]
+  ERROR [all] LARA10: [{'field': ['basicCodeDiscount', 'customerGets', 'items'], 'message': "Items must be defined in 'customer get' when the 'customer get item all' is false"}]
+  ERROR [all] N68S439JEAJT: [{'field': ['basicCodeDiscount', 'customerGets', 'items'], 'message': "Items must be defined in 'customer get' when the 'customer get item all' is false"}]
+  progress 200/4093 ok=196 err=4 2.4/s ~1636s left
+  progress 300/4093 ok=296 err=4 2.4/s ~1576s left
+  progress 400/4093 ok=396 err=4 2.4/s ~1518s left
+  progress 500/4093 ok=496 err=4 2.4/s ~1480s left
+  progress 600/4093 ok=596 err=4 2.4/s ~1440s left
+  progress 700/4093 ok=696 err=4 2.4/s ~1409s left
+  progress 800/4093 ok=796 err=4 2.4/s ~1377s left
+  progress 900/4093 ok=896 err=4 2.4/s ~1342s left
+  progress 1000/4093 ok=996 err=4 2.4/s ~1296s left
+  progress 1100/4093 ok=1096 err=4 2.4/s ~1254s left
+  progress 1200/4093 ok=1196 err=4 2.4/s ~1211s left
+  progress 1300/4093 ok=1296 err=4 2.4/s ~1171s left
+  progress 1400/4093 ok=1396 err=4 2.4/s ~1130s left
+  progress 1500/4093 ok=1496 err=4 2.4/s ~1089s left
+  progress 1600/4093 ok=1596 err=4 2.4/s ~1050s left
+  progress 1700/4093 ok=1696 err=4 2.3/s ~1027s left
+  progress 1800/4093 ok=1796 err=4 2.3/s ~984s left
+  progress 1900/4093 ok=1896 err=4 2.3/s ~940s left
+  progress 2000/4093 ok=1996 err=4 2.3/s ~896s left
+  progress 2100/4093 ok=2096 err=4 2.3/s ~851s left
+  progress 2200/4093 ok=2196 err=4 2.3/s ~807s left
+  progress 2300/4093 ok=2296 err=4 2.3/s ~764s left
+  progress 2400/4093 ok=2396 err=4 2.3/s ~721s left
+  progress 2500/4093 ok=2496 err=4 2.3/s ~678s left
+  progress 2600/4093 ok=2596 err=4 2.4/s ~635s left
+  progress 2700/4093 ok=2696 err=4 2.4/s ~592s left
+  progress 2800/4093 ok=2796 err=4 2.4/s ~549s left
+  progress 2900/4093 ok=2896 err=4 2.4/s ~506s left
+  progress 3000/4093 ok=2996 err=4 2.4/s ~464s left
+  progress 3100/4093 ok=3096 err=4 2.4/s ~421s left
+  progress 3200/4093 ok=3196 err=4 2.4/s ~379s left
+  progress 3300/4093 ok=3296 err=4 2.4/s ~336s left
+  progress 3400/4093 ok=3396 err=4 2.4/s ~294s left
+  progress 3500/4093 ok=3496 err=4 2.4/s ~251s left
+  progress 3600/4093 ok=3596 err=4 2.4/s ~209s left
+  progress 3700/4093 ok=3696 err=4 2.4/s ~167s left
+  progress 3800/4093 ok=3796 err=4 2.4/s ~124s left
+  progress 3900/4093 ok=3896 err=4 2.4/s ~82s left
+  progress 4000/4093 ok=3996 err=4 2.4/s ~39s left
+
+=== done ===
+  updated: 4089
+  errors:  4
+  elapsed: 1733.2s
