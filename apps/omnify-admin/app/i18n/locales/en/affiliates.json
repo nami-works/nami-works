@@ -10,9 +10,11 @@
     "warning": "Previous sync had issues",
     "idle": "Ready",
     "lastSynced": "Last synced",
+    "lastSyncShort": "Last sync",
     "totalOrders": "orders",
     "affiliateOrders": "affiliate",
-    "processed": "processed"
+    "processed": "processed",
+    "stale": "Affiliate data is {{days}} days old — run Sync Orders to refresh before drawing conclusions."
   },
   "period": {
     "last7d": "Last 7 days",
@@ -22,7 +24,8 @@
     "custom": "Custom",
     "startDate": "Start date",
     "endDate": "End date",
-    "apply": "Apply"
+    "apply": "Apply",
+    "cancel": "Cancel"
   },
   "comparison": {
     "none": "No comparison",
@@ -30,7 +33,12 @@
     "prevYear": "Previous year"
   },
   "filter": {
-    "allAffiliates": "All affiliates"
+    "allAffiliates": "All affiliates",
+    "label": "Affiliate",
+    "search": "Search affiliate",
+    "searchPlaceholder": "Search…",
+    "clear": "Clear filter",
+    "noMatches": "No matches"
   },
   "row1": {
     "title": "Acquisition & Economics"
@@ -69,22 +77,6 @@
     "product": "Product",
     "cost": "Cost"
   },
-  "drill": {
-    "revenueLeaderboard": "Revenue Leaderboard",
-    "revenueTrend": "Monthly Trend",
-    "costBreakdown": "Cost Breakdown",
-    "marginComparison": "Margin Comparison",
-    "affiliateDiscount": "Affiliate discounts",
-    "siteDiscount": "Site discounts",
-    "commission": "Commission",
-    "affiliateMargin": "Affiliate margin",
-    "organicMargin": "Organic margin",
-    "cacByAffiliate": "CAC by Affiliate",
-    "ltvComparison": "LTV Comparison",
-    "repeatComparison": "Repeat Rate Comparison",
-    "aovComparison": "AOV Comparison",
-    "roasBreakdown": "ROAS Breakdown"
-  },
   "legend": {
     "affiliate": "Affiliate",
     "organic": "Organic"
@@ -106,13 +98,102 @@
   "profile": {
     "code": "Code",
     "name": "Name",
-    "commission": "Commission %",
+    "commission": "commission",
     "tier": "Tier",
     "status": "Status",
     "actions": "Actions",
     "edit": "Edit",
     "editTitle": "Edit Affiliate",
     "delete": "Delete",
-    "notes": "Notes"
+    "notes": "Notes",
+    "back": "Back to profiles",
+    "topProduct": "Top product",
+    "exportCsv": "Export CSV",
+    "kpi": {
+      "revenue": "Revenue",
+      "customers": "Customers",
+      "products": "Products",
+      "repeatLabel": "repeat",
+      "topLabel": "top",
+      "newLabel": "new",
+      "preLabel": "pre",
+      "liftLabel": "lift",
+      "vsOrganic": "vs organic",
+      "newCustomers": "new customers",
+      "vsPreexisting": "vs. {{count}} preexisting",
+      "liftPositive": "Customers from this affiliate returned {{pct}}% more than organic",
+      "liftNegative": "Customers from this affiliate returned {{pct}}% less than organic",
+      "liftFlat": "Customers from this affiliate matched organic return rate",
+      "productsLabel": "products",
+      "avgItemsPerOrder": "avg {{n}} items per order",
+      "aovLine": "AOV {{value}}"
+    },
+    "classification": {
+      "tooltipNew": "New customer (never ordered before this affiliate's coupon). The affiliate brought a fresh customer into the store.",
+      "tooltipLift": "Was already a customer, and is now repeating through this affiliate. The coupon is pulling repeat behaviour above the organic baseline, net win if the uplift covers the discount.",
+      "tooltipLeak": "Was already a customer and would likely have repeated anyway. The coupon costs margin without changing behaviour; the discount pays for a purchase the store would have captured regardless."
+    },
+    "drill": {
+      "revenueTrend": "Monthly revenue",
+      "customers": "Customers driven by this affiliate",
+      "products": "Products this affiliate sells",
+      "productRanking": "Product ranking",
+      "classification": "Acquisition breakdown"
+    },
+    "customers": {
+      "name": "Name",
+      "email": "Email",
+      "orders": "Orders",
+      "spend": "Spend",
+      "first": "First order",
+      "last": "Last order",
+      "topProduct": "Top product",
+      "guest": "Guest",
+      "repeat": "Repeat",
+      "acquisition": "Type",
+      "badgeNew": "New",
+      "badgeLift": "Lift",
+      "badgeLeak": "Leak"
+    },
+    "products": {
+      "share": "% of affiliate rev",
+      "orderShare": "% of orders"
+    }
+  },
+  "overview": {
+    "commissionCaveat": "Margin, CAC, and ROAS estimates assume a flat 10% commission for every affiliate — BixGrow's CSV doesn't export per-affiliate commission rates, so these three cards are directional, not exact."
+  },
+  "drill": {
+    "noData": "No data",
+    "revenueLeaderboard": "Revenue Leaderboard",
+    "revenueTrend": "Monthly Trend",
+    "costBreakdown": "Cost Breakdown",
+    "marginComparison": "Margin Comparison",
+    "affiliateDiscount": "Affiliate discounts",
+    "siteDiscount": "Site disc.",
+    "commission": "Commission",
+    "affiliateMargin": "Affiliate margin",
+    "organicMargin": "Organic margin",
+    "affiliateColumn": "Affiliate",
+    "organicColumn": "Organic",
+    "paidAds": "Paid ads",
+    "grossSales": "Gross",
+    "netMargin": "Net margin",
+    "cacByAffiliate": "CAC by Affiliate",
+    "ltvComparison": "LTV Comparison",
+    "ltvCohortTitle": "LTV by cohort",
+    "ltvCohortNew": "New",
+    "ltvCohortLifted": "Lifted",
+    "ltvCohortNa": "N/A",
+    "ltvCohortSample": "Cohorts: {{new}} new · {{lifted}} lifted · {{na}} N/A",
+    "ltvCohortEmpty": "No LTV data yet, run Sync Orders to populate the cohort",
+    "ltvCohortWindowLabel": "Cohort window",
+    "ltvCohortWindow6mo": "Last 6 months",
+    "ltvCohortWindow12mo": "Last 12 months",
+    "ltvCohortWindow24mo": "Last 24 months",
+    "ltvCohortWindowAll": "All time",
+    "repeatComparison": "Repeat Rate Comparison",
+    "aovComparison": "AOV Comparison",
+    "roasBreakdown": "ROAS Breakdown"
   }
 }

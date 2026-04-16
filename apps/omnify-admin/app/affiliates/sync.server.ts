@@ -9,10 +9,7 @@ import {
   writeAffiliateSyncMeta,
   writeAffiliateSyncProgress,
 } from "./storage.server";
-import {
-  rebuildAffiliateMonthly,
-  attributeFirstOrders,
-} from "./analytics-queries.server";
+import { rebuildAffiliateMonthly } from "./analytics-queries.server";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -87,11 +84,11 @@ export const graphqlJsonWithRetry = async (
 // ─── Discount attribution helpers ───────────────────────────────────────────
 
 type DiscountApp = {
-  __typename: string;
+  __typename?: string;
   code?: string;
   title?: string;
-  value: {
-    __typename: string;
+  value?: {
+    __typename?: string;
     amount?: string;
     percentage?: number;
   };
@@ -106,18 +103,28 @@ function computeDiscountSplit(
   let siteDiscount = 0;
 
   for (const app of discountApplications) {
+    if (!app) continue;
+
     const isAffiliate =
       app.__typename === "DiscountCodeApplication" &&
-      app.code?.toLowerCase() === affiliateCode.toLowerCase();
+      typeof app.code === "string" &&
+      app.code.toLowerCase() === affiliateCode.toLowerCase();
 
+    // Defensive: value may be undefined when Shopify returns a discount
+    // application type our GraphQL fragments don't select (e.g.
+    // ManualDiscountApplication, ScriptDiscountApplication).
     let discountValue = 0;
-    if (app.value.__typename === "MoneyV2" && app.value.amount) {
-      discountValue = parseFloat(app.value.amount);
-    } else if (
-      app.value.__typename === "PricingPercentageValue" &&
-      app.value.percentage
-    ) {
-      discountValue = (app.value.percentage / 100) * subtotal;
+    const value = app.value;
+    if (value) {
+      if (value.__typename === "MoneyV2" && value.amount) {
+        const parsed = parseFloat(value.amount);
+        if (!Number.isNaN(parsed)) discountValue = parsed;
+      } else if (
+        value.__typename === "PricingPercentageValue" &&
+        typeof value.percentage === "number"
+      ) {
+        discountValue = (value.percentage / 100) * subtotal;
+      }
     }
 
     if (isAffiliate) {
@@ -193,6 +200,9 @@ export async function backfillAffiliateOrders(
       shop: string;
       orderName: string | null;
       customerId: string | null;
+      customerName: string | null;
+      customerEmail: string | null;
+      wasPreExistingCustomer: boolean;
       affiliateCode: string;
       discountAmount: number;
       affiliateDiscount: number;
@@ -206,6 +216,25 @@ export async function backfillAffiliateOrders(
     }> = [];
 
     const organicMap = new Map<string, OrganicBucket>();
+
+    // Per-organic-order rows — bulk-upserted into OrganicOrder at the end
+    // of the pagination loop. Enables cohort LTV + future per-customer
+    // analytics. Shape mirrors affiliateRows minus affiliate-only columns.
+    const organicRows: Array<{
+      id: string;
+      shop: string;
+      orderName: string | null;
+      customerId: string | null;
+      customerName: string | null;
+      customerEmail: string | null;
+      totalAmount: number;
+      subtotalAmount: number;
+      discountAmount: number;
+      currencyCode: string | null;
+      wasPreExistingCustomer: boolean;
+      itemCount: number;
+      orderDate: string | null;
+    }> = [];
 
     let hasNextPage = true;
     let cursor: string | null = null;
@@ -222,7 +251,16 @@ export async function backfillAffiliateOrders(
                 id
                 name
                 createdAt
-                customer { id }
+                customer {
+                  id
+                  displayName
+                  email
+                  numberOfOrders
+                  # createdAt = when customer record was created (first
+                  # checkout). Compared with order.createdAt to classify
+                  # pre-existing customers for the leakage detection.
+                  createdAt
+                }
                 currentTotalPriceSet { shopMoney { amount currencyCode } }
                 subtotalPriceSet { shopMoney { amount } }
                 totalDiscountsSet { shopMoney { amount } }
@@ -239,6 +277,22 @@ export async function backfillAffiliateOrders(
                       }
                     }
                     ... on AutomaticDiscountApplication {
+                      title
+                      value {
+                        __typename
+                        ... on MoneyV2 { amount }
+                        ... on PricingPercentageValue { percentage }
+                      }
+                    }
+                    ... on ManualDiscountApplication {
+                      title
+                      value {
+                        __typename
+                        ... on MoneyV2 { amount }
+                        ... on PricingPercentageValue { percentage }
+                      }
+                    }
+                    ... on ScriptDiscountApplication {
                       title
                       value {
                         __typename
@@ -307,11 +361,50 @@ export async function backfillAffiliateOrders(
             productId: li.product?.id ?? null,
           }));
 
+          // Classify: was this customer already a customer before this
+          // order? We use two signals from Shopify's Customer type:
+          //
+          //   - numberOfOrders: if === 1, this is definitively their only
+          //     order ever → truly new (not pre-existing).
+          //   - customer.createdAt vs order.createdAt: if the customer
+          //     record was created significantly before this order, they
+          //     had prior activity → pre-existing.
+          //
+          // Note: `firstOrder` does NOT exist on Shopify's Customer type.
+          // customer.createdAt + numberOfOrders is the correct approach.
+          let wasPreExistingCustomer = false;
+          if (order.customer?.id) {
+            const custOrders = order.customer.numberOfOrders ?? 0;
+            if (custOrders <= 1) {
+              // Only one order ever in Shopify → definitively new
+              wasPreExistingCustomer = false;
+            } else {
+              // Multiple orders. Compare customer.createdAt with order
+              // date: if customer was created > 1 hour before this order,
+              // they're pre-existing. (1hr grace handles same-session
+              // first purchase + immediate follow-up.)
+              const custCreated = order.customer.createdAt
+                ? new Date(order.customer.createdAt).getTime()
+                : 0;
+              const orderCreated = order.createdAt
+                ? new Date(order.createdAt).getTime()
+                : 0;
+              const ONE_HOUR = 60 * 60 * 1000;
+              wasPreExistingCustomer =
+                custCreated > 0 &&
+                orderCreated > 0 &&
+                orderCreated - custCreated > ONE_HOUR;
+            }
+          }
+
           affiliateRows.push({
             id: order.id,
             shop,
             orderName: order.name ?? null,
             customerId: order.customer?.id ?? null,
+            customerName: order.customer?.displayName ?? null,
+            customerEmail: order.customer?.email ?? null,
+            wasPreExistingCustomer,
             affiliateCode: matchedCode,
             discountAmount: discountTotal,
             affiliateDiscount,
@@ -328,6 +421,50 @@ export async function backfillAffiliateOrders(
           });
         } else {
           // Organic order
+          // Same pre-existing classification as affiliate orders — M0 for
+          // the cohort LTV chart hinges on this flag.
+          let organicWasPreExisting = false;
+          if (order.customer?.id) {
+            const custOrders = order.customer.numberOfOrders ?? 0;
+            if (custOrders <= 1) {
+              organicWasPreExisting = false;
+            } else {
+              const custCreated = order.customer.createdAt
+                ? new Date(order.customer.createdAt).getTime()
+                : 0;
+              const orderCreated = order.createdAt
+                ? new Date(order.createdAt).getTime()
+                : 0;
+              const ONE_HOUR = 60 * 60 * 1000;
+              organicWasPreExisting =
+                custCreated > 0 &&
+                orderCreated > 0 &&
+                orderCreated - custCreated > ONE_HOUR;
+            }
+          }
+
+          const organicItemCount = (order.lineItems?.nodes ?? []).reduce(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (sum: number, li: any) => sum + (li?.quantity ?? 0),
+            0,
+          );
+
+          organicRows.push({
+            id: order.id,
+            shop,
+            orderName: order.name ?? null,
+            customerId: order.customer?.id ?? null,
+            customerName: order.customer?.displayName ?? null,
+            customerEmail: order.customer?.email ?? null,
+            totalAmount: total,
+            subtotalAmount: subtotal,
+            discountAmount: discountTotal,
+            currencyCode,
+            wasPreExistingCustomer: organicWasPreExisting,
+            itemCount: organicItemCount,
+            orderDate,
+          });
+
           if (orderDate) {
             const month = toMonthKey(orderDate);
             let bucket = organicMap.get(month);
@@ -381,15 +518,18 @@ export async function backfillAffiliateOrders(
         const orderDateSql = o.orderDate
           ? `'${new Date(o.orderDate).toISOString()}'::timestamp`
           : "NULL";
-        return `(${esc(o.id)}, ${esc(o.shop)}, ${esc(o.orderName)}, ${esc(o.customerId)}, ${esc(o.affiliateCode)}, ${o.discountAmount}, ${o.affiliateDiscount}, ${o.siteDiscount}, ${o.totalAmount}, ${o.subtotalAmount}, ${esc(o.currencyCode)}, false, ${o.itemCount}, ${esc(o.lineItemsJson)}, ${orderDateSql}, NOW())`;
+        return `(${esc(o.id)}, ${esc(o.shop)}, ${esc(o.orderName)}, ${esc(o.customerId)}, ${esc(o.customerName)}, ${esc(o.customerEmail)}, ${o.wasPreExistingCustomer}, ${esc(o.affiliateCode)}, ${o.discountAmount}, ${o.affiliateDiscount}, ${o.siteDiscount}, ${o.totalAmount}, ${o.subtotalAmount}, ${esc(o.currencyCode)}, ${o.itemCount}, ${esc(o.lineItemsJson)}, ${orderDateSql}, NOW())`;
       });
 
       await prisma.$executeRawUnsafe(`
-        INSERT INTO "AffiliateOrder" ("id", "shop", "orderName", "customerId", "affiliateCode", "discountAmount", "affiliateDiscount", "siteDiscount", "totalAmount", "subtotalAmount", "currencyCode", "isFirstOrder", "itemCount", "lineItemsJson", "orderDate", "syncedAt")
+        INSERT INTO "AffiliateOrder" ("id", "shop", "orderName", "customerId", "customerName", "customerEmail", "wasPreExistingCustomer", "affiliateCode", "discountAmount", "affiliateDiscount", "siteDiscount", "totalAmount", "subtotalAmount", "currencyCode", "itemCount", "lineItemsJson", "orderDate", "syncedAt")
         VALUES ${values.join(",\n")}
         ON CONFLICT ("id") DO UPDATE SET
           "orderName" = EXCLUDED."orderName",
           "customerId" = EXCLUDED."customerId",
+          "customerName" = EXCLUDED."customerName",
+          "customerEmail" = EXCLUDED."customerEmail",
+          "wasPreExistingCustomer" = EXCLUDED."wasPreExistingCustomer",
           "affiliateCode" = EXCLUDED."affiliateCode",
           "discountAmount" = EXCLUDED."discountAmount",
           "affiliateDiscount" = EXCLUDED."affiliateDiscount",
@@ -402,6 +542,46 @@ export async function backfillAffiliateOrders(
           "orderDate" = EXCLUDED."orderDate",
           "syncedAt" = NOW()
       `);
+    }
+
+    // 3b. Bulk upsert per-organic-order rows (powers cohort LTV + future
+    // per-customer organic analytics). Same batch pattern as AffiliateOrder.
+    if (organicRows.length > 0) {
+      await writeAffiliateSyncProgress(shop, "saving organic orders", organicRows.length);
+      console.info(
+        `[affiliates:sync] upserting ${organicRows.length} organic orders shop=${shop}`,
+      );
+      for (let start = 0; start < organicRows.length; start += BATCH_SIZE) {
+        const batch = organicRows.slice(start, start + BATCH_SIZE);
+        const values = batch.map((o) => {
+          const esc = (v: string | null) =>
+            v == null ? "NULL" : `'${v.replace(/'/g, "''")}'`;
+          const orderDateSql = o.orderDate
+            ? `'${new Date(o.orderDate).toISOString()}'::timestamp`
+            : "NULL";
+          return `(${esc(o.id)}, ${esc(o.shop)}, ${esc(o.orderName)}, ${esc(o.customerId)}, ${esc(o.customerName)}, ${esc(o.customerEmail)}, ${o.totalAmount}, ${o.subtotalAmount}, ${o.discountAmount}, ${esc(o.currencyCode)}, ${o.wasPreExistingCustomer}, ${o.itemCount}, ${orderDateSql}, NOW())`;
+        });
+        await prisma.$executeRawUnsafe(`
+          INSERT INTO "OrganicOrder" ("id", "shop", "orderName", "customerId", "customerName", "customerEmail", "totalAmount", "subtotalAmount", "discountAmount", "currencyCode", "wasPreExistingCustomer", "itemCount", "orderDate", "syncedAt")
+          VALUES ${values.join(",\n")}
+          ON CONFLICT ("id") DO UPDATE SET
+            "orderName" = EXCLUDED."orderName",
+            "customerId" = EXCLUDED."customerId",
+            "customerName" = EXCLUDED."customerName",
+            "customerEmail" = EXCLUDED."customerEmail",
+            "totalAmount" = EXCLUDED."totalAmount",
+            "subtotalAmount" = EXCLUDED."subtotalAmount",
+            "discountAmount" = EXCLUDED."discountAmount",
+            "currencyCode" = EXCLUDED."currencyCode",
+            "wasPreExistingCustomer" = EXCLUDED."wasPreExistingCustomer",
+            "itemCount" = EXCLUDED."itemCount",
+            "orderDate" = EXCLUDED."orderDate",
+            "syncedAt" = NOW()
+        `);
+      }
+      console.info(
+        `[affiliates:sync] organic orders upserted N=${organicRows.length} shop=${shop}`,
+      );
     }
 
     // 4. Bulk upsert organic aggs
@@ -455,10 +635,9 @@ export async function backfillAffiliateOrders(
       });
     }
 
-    // 5. Attribute first orders and rebuild monthly aggregates
-    await writeAffiliateSyncProgress(shop, "computing first orders", 0);
-    await attributeFirstOrders(shop);
-
+    // 5. Rebuild monthly aggregates. wasPreExistingCustomer is populated
+    // at insert time from Shopify's customer.firstOrder — no post-processing
+    // attribution pass needed anymore.
     await writeAffiliateSyncProgress(shop, "rebuilding monthly", 0);
     await rebuildAffiliateMonthly(shop);
 

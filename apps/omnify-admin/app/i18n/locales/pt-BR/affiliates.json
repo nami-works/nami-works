@@ -10,9 +10,11 @@
     "warning": "A sincronizacao anterior teve problemas",
     "idle": "Pronto",
     "lastSynced": "Ultima sincronizacao",
+    "lastSyncShort": "Ultima sincronizacao",
     "totalOrders": "pedidos",
     "affiliateOrders": "afiliados",
-    "processed": "processados"
+    "processed": "processados",
+    "stale": "Dados de afiliados estao {{days}} dias desatualizados — rode Sincronizar Pedidos antes de tirar conclusoes."
   },
   "period": {
     "last7d": "Ultimos 7 dias",
@@ -22,7 +24,8 @@
     "custom": "Personalizado",
     "startDate": "Data inicial",
     "endDate": "Data final",
-    "apply": "Aplicar"
+    "apply": "Aplicar",
+    "cancel": "Cancelar"
   },
   "comparison": {
     "none": "Sem comparacao",
@@ -30,7 +33,15 @@
     "prevYear": "Ano anterior"
   },
   "filter": {
-    "allAffiliates": "Todos os afiliados"
+    "allAffiliates": "Todos os afiliados",
+    "label": "Afiliado",
+    "search": "Buscar afiliado",
+    "searchPlaceholder": "Buscar…",
+    "clear": "Limpar filtro",
+    "noMatches": "Sem resultados"
+  },
+  "overview": {
+    "commissionCaveat": "Estimativas de margem, CAC e ROAS assumem comissao fixa de 10% para todo afiliado — o CSV do BixGrow nao exporta taxas por afiliado, entao esses tres cards sao direcionais, nao exatos."
   },
   "row1": {
     "title": "Aquisicao e Economia"
@@ -70,17 +81,34 @@
     "cost": "Custo"
   },
   "drill": {
+    "noData": "Sem dados",
     "revenueLeaderboard": "Ranking de Receita",
     "revenueTrend": "Tendencia Mensal",
     "costBreakdown": "Detalhamento de Custos",
     "marginComparison": "Comparacao de Margem",
     "affiliateDiscount": "Descontos de afiliados",
-    "siteDiscount": "Descontos do site",
+    "siteDiscount": "Desc. do site",
     "commission": "Comissao",
     "affiliateMargin": "Margem de afiliados",
     "organicMargin": "Margem organica",
+    "affiliateColumn": "Afiliado",
+    "organicColumn": "Organico",
+    "paidAds": "Anuncios pagos",
+    "grossSales": "Bruto",
+    "netMargin": "Margem liquida",
     "cacByAffiliate": "CAC por Afiliado",
     "ltvComparison": "Comparacao de LTV",
+    "ltvCohortTitle": "LTV por coorte",
+    "ltvCohortNew": "Novos",
+    "ltvCohortLifted": "Influenciados",
+    "ltvCohortNa": "N/A",
+    "ltvCohortSample": "Coortes: {{new}} novos · {{lifted}} influenciados · {{na}} N/A",
+    "ltvCohortEmpty": "Sem dados de LTV, rode Sincronizar Pedidos para popular a coorte",
+    "ltvCohortWindowLabel": "Janela da coorte",
+    "ltvCohortWindow6mo": "Ultimos 6 meses",
+    "ltvCohortWindow12mo": "Ultimos 12 meses",
+    "ltvCohortWindow24mo": "Ultimos 24 meses",
+    "ltvCohortWindowAll": "Desde sempre",
     "repeatComparison": "Comparacao de Taxa de Recompra",
     "aovComparison": "Comparacao de AOV",
     "roasBreakdown": "Detalhamento de ROAS"
@@ -106,13 +134,66 @@
   "profile": {
     "code": "Codigo",
     "name": "Nome",
-    "commission": "Comissao %",
+    "commission": "comissao",
     "tier": "Nivel",
     "status": "Status",
     "actions": "Acoes",
     "edit": "Editar",
     "editTitle": "Editar Afiliado",
     "delete": "Excluir",
-    "notes": "Notas"
+    "notes": "Notas",
+    "back": "Voltar para perfis",
+    "topProduct": "Produto top",
+    "exportCsv": "Exportar CSV",
+    "kpi": {
+      "revenue": "Receita",
+      "customers": "Clientes",
+      "products": "Produtos",
+      "repeatLabel": "recorrentes",
+      "topLabel": "top",
+      "newLabel": "novos",
+      "preLabel": "antigos",
+      "liftLabel": "lift",
+      "vsOrganic": "vs organico",
+      "newCustomers": "novos clientes",
+      "vsPreexisting": "vs. {{count}} ja existentes",
+      "liftPositive": "Clientes deste afiliado voltaram {{pct}}% mais que organico",
+      "liftNegative": "Clientes deste afiliado voltaram {{pct}}% menos que organico",
+      "liftFlat": "Clientes deste afiliado igualaram a recorrencia organica",
+      "productsLabel": "produtos",
+      "avgItemsPerOrder": "media {{n}} itens por pedido",
+      "aovLine": "Ticket medio {{value}}"
+    },
+    "classification": {
+      "tooltipNew": "Cliente novo (nunca comprou antes do cupom deste afiliado). O afiliado trouxe um cliente novo para a loja.",
+      "tooltipLift": "Ja era cliente e agora esta voltando atraves deste afiliado. O cupom esta puxando a recorrencia acima da linha de base organica; ganho liquido se o lift cobrir o desconto.",
+      "tooltipLeak": "Ja era cliente e provavelmente voltaria de qualquer jeito. O cupom custa margem sem mudar comportamento; o desconto paga uma compra que a loja teria capturado."
+    },
+    "drill": {
+      "revenueTrend": "Receita mensal",
+      "customers": "Clientes trazidos por este afiliado",
+      "products": "Produtos vendidos por este afiliado",
+      "productRanking": "Ranking de produtos",
+      "classification": "Classificacao de aquisicao"
+    },
+    "customers": {
+      "name": "Nome",
+      "email": "Email",
+      "orders": "Pedidos",
+      "spend": "Total gasto",
+      "first": "Primeira compra",
+      "last": "Ultima compra",
+      "topProduct": "Produto top",
+      "guest": "Anonimo",
+      "repeat": "Recorrente",
+      "acquisition": "Tipo",
+      "badgeNew": "Novo",
+      "badgeLift": "Lift",
+      "badgeLeak": "Leak"
+    },
+    "products": {
+      "share": "% da receita do afiliado",
+      "orderShare": "% dos pedidos"
+    }
   }
 }

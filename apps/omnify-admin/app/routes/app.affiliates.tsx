@@ -9,18 +9,30 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 import { useTranslation } from "react-i18next";
 import { authenticate } from "../shopify.server";
 import { normalizeLocale } from "../i18n/config";
+import { formatCurrencyCompact, formatNumberCompact } from "../i18n/format";
 import styles from "./app.affiliates/styles.module.css";
 import {
   readAffiliateProfiles,
   readAffiliateSyncMeta,
   importBixGrowCsv,
-  upsertAffiliateProfile,
-  deleteAffiliateProfile,
 } from "../affiliates/storage.server";
 import type { AffiliateProfile } from "../affiliates/storage.server";
 import { backfillAffiliateOrders } from "../affiliates/sync.server";
-import { getAffiliateDashboardStats } from "../affiliates/analytics-queries.server";
+import {
+  getAffiliateDashboardStats,
+  getAffiliateDetailStats,
+  getLtvCohortCurve,
+  type CohortWindow,
+  type LtvCohortCurve,
+} from "../affiliates/analytics-queries.server";
+import {
+  PAID_ADS_PCT,
+  STALE_SYNC_DAYS,
+} from "../affiliates/classification-thresholds";
 import type { AffiliateOverviewStats } from "../affiliates/overview-stats.server";
+import { KpiCard, type DrillDownKey } from "./app.affiliates/kpi-card";
+import { ProfilesList } from "./app.affiliates/profiles-list";
+import { ProfileDetail } from "./app.affiliates/profile-detail";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -47,33 +59,103 @@ type PeriodPreset =
 
 type ComparisonMode = "none" | "prev_period" | "prev_year" | "custom";
 
-type DrillDownKey = string | null;
-
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function formatCurrencyCompact(
-  value: number,
-  currency: string,
-  locale: string,
-): string {
-  if (value >= 1_000_000) {
-    return `${(value / 1_000_000).toFixed(1)}M ${currency}`;
-  }
-  if (value >= 1_000) {
-    return `${(value / 1_000).toFixed(1)}K ${currency}`;
-  }
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
+/**
+ * Extracts a clean handle from a raw social field (Instagram or TikTok).
+ * Accepts any of:
+ *   - "@handle"
+ *   - "handle"
+ *   - "https://www.instagram.com/handle"
+ *   - "https://www.instagram.com/handle/"
+ *   - "https://www.instagram.com/handle?igsh=..."
+ *   - "https://www.instagram.com/handle/?hl=en"
+ *   - "instagram.com/handle"
+ * Returns null if no handle can be extracted.
+ */
+function sanitizeSocialHandle(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  let s = raw.trim();
+  if (!s) return null;
+  // Strip protocol
+  s = s.replace(/^https?:\/\//i, "");
+  // Strip www.
+  s = s.replace(/^www\./i, "");
+  // Strip known domains
+  s = s.replace(/^(instagram|tiktok)\.com\//i, "");
+  // Strip query string and hash
+  s = s.split("?")[0].split("#")[0];
+  // Strip trailing slash
+  s = s.replace(/\/+$/, "");
+  // Strip leading @ signs (one or many)
+  s = s.replace(/^@+/, "");
+  // Only take the first path segment (e.g. handle/feed → handle)
+  s = s.split("/")[0];
+  // Bail out on things that obviously aren't handles
+  if (!s || s.length > 60) return null;
+  // Valid Instagram/TikTok handles use letters, digits, underscore, dot
+  if (!/^[A-Za-z0-9._]+$/.test(s)) return null;
+  return s;
 }
 
-function formatNumberCompact(value: number): string {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-  return String(Math.round(value));
+/** Builds an Instagram profile URL from a sanitized handle. */
+function instagramUrl(handle: string): string {
+  return `https://www.instagram.com/${handle}/`;
+}
+
+/** Serializes a Date to YYYY-MM-DD using local calendar parts (not UTC). */
+function toLocalYmd(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** Parses a YYYY-MM-DD string to a local-midnight Date (avoids UTC drift). */
+function parseLocalYmd(s: string): Date {
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y!, (m ?? 1) - 1, d ?? 1);
+}
+
+/**
+ * Formats a date range in the user-friendly format
+ * "Mar 1 – Apr 10, 2026" (same year)
+ * "Dec 20, 2025 – Jan 10, 2026" (different years)
+ */
+function formatDateRangeFriendly(start: string, end: string, locale: string): string {
+  if (!start || !end) return "";
+  const s = parseLocalYmd(start);
+  const e = parseLocalYmd(end);
+  if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return "";
+
+  const fmtMonthDay = new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" });
+  const sameYear = s.getFullYear() === e.getFullYear();
+
+  if (sameYear) {
+    return `${fmtMonthDay.format(s)} – ${fmtMonthDay.format(e)}, ${e.getFullYear()}`;
+  }
+  const fmtFull = new Intl.DateTimeFormat(locale, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  return `${fmtFull.format(s)} – ${fmtFull.format(e)}`;
+}
+
+/** Shorter last-sync format: "Last sync: 4/10/2026, 1PM" */
+function formatLastSyncShort(iso: string, locale: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const date = new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+  }).format(d);
+  let hour = d.getHours();
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12;
+  if (hour === 0) hour = 12;
+  return `${date}, ${hour}${ampm}`;
 }
 
 function getPresetDates(preset: PeriodPreset): {
@@ -98,8 +180,8 @@ function getPresetDates(preset: PeriodPreset): {
       start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
       return {
-        start: start.toISOString().slice(0, 10),
-        end: lastDay.toISOString().slice(0, 10),
+        start: toLocalYmd(start),
+        end: toLocalYmd(lastDay),
       };
     }
     case "last_3_months":
@@ -112,8 +194,8 @@ function getPresetDates(preset: PeriodPreset): {
 
   start.setHours(0, 0, 0, 0);
   return {
-    start: start.toISOString().slice(0, 10),
-    end: end.toISOString().slice(0, 10),
+    start: toLocalYmd(start),
+    end: toLocalYmd(end),
   };
 }
 
@@ -123,8 +205,8 @@ function getComparisonDates(
   end: string,
 ): { compStart: string; compEnd: string } | null {
   if (mode === "none") return null;
-  const s = new Date(start);
-  const e = new Date(end);
+  const s = parseLocalYmd(start);
+  const e = parseLocalYmd(end);
   const rangeDays = Math.round(
     (e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24),
   );
@@ -135,8 +217,8 @@ function getComparisonDates(
     const compStart = new Date(compEnd);
     compStart.setDate(compStart.getDate() - rangeDays);
     return {
-      compStart: compStart.toISOString().slice(0, 10),
-      compEnd: compEnd.toISOString().slice(0, 10),
+      compStart: toLocalYmd(compStart),
+      compEnd: toLocalYmd(compEnd),
     };
   }
 
@@ -146,8 +228,8 @@ function getComparisonDates(
     const compEnd = new Date(e);
     compEnd.setFullYear(compEnd.getFullYear() - 1);
     return {
-      compStart: compStart.toISOString().slice(0, 10),
-      compEnd: compEnd.toISOString().slice(0, 10),
+      compStart: toLocalYmd(compStart),
+      compEnd: toLocalYmd(compEnd),
     };
   }
 
@@ -254,6 +336,67 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
   }
 
+  if (intent === "fetch-affiliate-detail") {
+    const affiliateCode = String(formData.get("affiliateCode") || "");
+    const startDate = String(formData.get("startDate") || "");
+    const endDate = String(formData.get("endDate") || "");
+    const compStart = formData.get("compStart")
+      ? String(formData.get("compStart"))
+      : null;
+    const compEnd = formData.get("compEnd")
+      ? String(formData.get("compEnd"))
+      : null;
+
+    if (!affiliateCode) {
+      return {
+        ok: false,
+        intent: "fetch-affiliate-detail",
+        error: "Missing affiliateCode",
+      };
+    }
+
+    try {
+      const detail = await getAffiliateDetailStats(
+        shop,
+        affiliateCode,
+        startDate,
+        endDate,
+        compStart,
+        compEnd,
+      );
+      return { ok: true, intent: "fetch-affiliate-detail", detail };
+    } catch (error) {
+      console.error(
+        `[affiliates] fetch-affiliate-detail FAILED shop=${shop} code=${affiliateCode}`,
+        error,
+      );
+      return {
+        ok: false,
+        intent: "fetch-affiliate-detail",
+        error: String((error as Error)?.message ?? "Failed to fetch detail"),
+      };
+    }
+  }
+
+  if (intent === "fetch-ltv-cohort") {
+    const windowRaw = String(formData.get("cohortWindow") || "12mo");
+    const window: CohortWindow =
+      windowRaw === "6mo" || windowRaw === "24mo" || windowRaw === "all"
+        ? (windowRaw as CohortWindow)
+        : "12mo";
+    try {
+      const cohort = await getLtvCohortCurve(shop, window);
+      return { ok: true, intent: "fetch-ltv-cohort", cohort };
+    } catch (error) {
+      console.error(`[affiliates] fetch-ltv-cohort FAILED shop=${shop}`, error);
+      return {
+        ok: false,
+        intent: "fetch-ltv-cohort",
+        error: String((error as Error)?.message ?? "Failed to fetch cohort"),
+      };
+    }
+  }
+
   if (intent === "import-bixgrow-csv") {
     const csvText = String(formData.get("csvText") || "");
     if (!csvText.trim()) {
@@ -268,49 +411,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         ok: false,
         intent: "import-bixgrow-csv",
         error: String((error as Error)?.message ?? "Import failed"),
-      };
-    }
-  }
-
-  if (intent === "update-profile") {
-    const code = String(formData.get("code") || "");
-    const affiliateName = String(formData.get("affiliateName") || code);
-    const commissionPct = Number(formData.get("commissionPct") || 10);
-    const tier = String(formData.get("tier") || "baseline");
-    const status = String(formData.get("status") || "active");
-    const notes = formData.get("notes") ? String(formData.get("notes")) : null;
-
-    try {
-      await upsertAffiliateProfile(shop, {
-        code,
-        affiliateName,
-        commissionPct,
-        tier,
-        status,
-        notes,
-      });
-      return { ok: true, intent: "update-profile" };
-    } catch (error) {
-      console.error(`[affiliates] update-profile FAILED shop=${shop}`, error);
-      return {
-        ok: false,
-        intent: "update-profile",
-        error: String((error as Error)?.message ?? "Update failed"),
-      };
-    }
-  }
-
-  if (intent === "delete-profile") {
-    const profileId = String(formData.get("profileId") || "");
-    try {
-      await deleteAffiliateProfile(shop, profileId);
-      return { ok: true, intent: "delete-profile" };
-    } catch (error) {
-      console.error(`[affiliates] delete-profile FAILED shop=${shop}`, error);
-      return {
-        ok: false,
-        intent: "delete-profile",
-        error: String((error as Error)?.message ?? "Delete failed"),
       };
     }
   }
@@ -338,24 +438,53 @@ export default function AffiliatesPage() {
   void _syncStartedAt; // reserved for future elapsed-time display
   const { t } = useTranslation("affiliates");
   const fetcher = useFetcher<typeof action>();
+  // Separate fetcher for the cohort LTV drill so its response doesn't race
+  // with dashboard fetches (they share no state and different cadences).
+  const cohortFetcher = useFetcher<typeof action>();
+
+  // Cohort-window state lives in this component so the control persists
+  // across drill open/close. Default to 12 months per the plan.
+  const [cohortWindow, setCohortWindow] = useState<CohortWindow>("12mo");
+  const [cohortCurve, setCohortCurve] = useState<LtvCohortCurve | null>(null);
   const revalidator = useRevalidator();
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ─── State ──────────────────────────────────────────────────────────
+  const [activeTab, setActiveTab] = useState<"overview" | "profiles">("overview");
   const [periodPreset, setPeriodPreset] = useState<PeriodPreset>("last_30d");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
-  const [comparisonMode, setComparisonMode] = useState<ComparisonMode>("none");
+  // Custom range uses a draft → apply flow. s-date-picker cell clicks write
+  // into draftStart/draftEnd; nothing hits the network until the user clicks
+  // Apply. Cancel discards drafts and reverts to the previous preset.
+  // customCalendarOpen controls visibility separately so Apply can collapse
+  // the calendar while keeping periodPreset === "custom".
+  const [draftStart, setDraftStart] = useState("");
+  const [draftEnd, setDraftEnd] = useState("");
+  const [customCalendarOpen, setCustomCalendarOpen] = useState(false);
+  const prevPresetRef = useRef<PeriodPreset>("last_30d");
+  // Default to prev_period: the Overview tab's delta arrows are the whole
+  // point of a monthly review; hiding them by default is a usability tax.
+  const [comparisonMode, setComparisonMode] = useState<ComparisonMode>("prev_period");
   const [selectedAffiliate, setSelectedAffiliate] = useState("all");
+  // Combobox state: typed query + dropdown open. The actual selected
+  // affiliate lives in `selectedAffiliate`; this `affiliateSearch` is the
+  // input's visible text (either the typed query or the selected name).
+  const [affiliateSearch, setAffiliateSearch] = useState("");
+  const [comboboxOpen, setComboboxOpen] = useState(false);
+  const comboboxRef = useRef<HTMLDivElement | null>(null);
+  // Profiles tab: when non-null, the Profiles tab shows the per-affiliate
+  // detail view for this code instead of the enhanced list. Clicking a row
+  // in the Overview tab's leaderboard drill sets this and switches tabs.
+  const [profileDetailCode, setProfileDetailCode] = useState<string | null>(null);
 
   const [dashboardStats, setDashboardStats] =
     useState<AffiliateOverviewStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState<string | null>(null);
 
-  const [row1DrillDown, setRow1DrillDown] = useState<DrillDownKey>(null);
-  const [row2DrillDown, setRow2DrillDown] = useState<DrillDownKey>(null);
-  const [row3DrillDown, setRow3DrillDown] = useState<DrillDownKey>(null);
+  // Single drill-down state — only one card can be expanded across all rows.
+  const [activeDrill, setActiveDrill] = useState<DrillDownKey>(null);
 
   const [csvText, setCsvText] = useState("");
   const [importResult, setImportResult] = useState<{
@@ -364,13 +493,6 @@ export default function AffiliatesPage() {
     errors: string[];
   } | null>(null);
 
-  const [editingProfile, setEditingProfile] =
-    useState<AffiliateProfile | null>(null);
-  const [editCommission, setEditCommission] = useState("10");
-  const [editTier, setEditTier] = useState("baseline");
-  const [editStatus, setEditStatus] = useState("active");
-  const [editNotes, setEditNotes] = useState("");
-  const [deleteConfirmProfileId, setDeleteConfirmProfileId] = useState<string | null>(null);
 
   // ─── Sync polling ───────────────────────────────────────────────────
   useEffect(() => {
@@ -408,22 +530,34 @@ export default function AffiliatesPage() {
         setImportResult({ imported: 0, skipped: 0, errors: [fetcher.data.error] });
       }
     }
-    if (fetcher.data?.intent === "update-profile") {
-      if (fetcher.data.ok) {
-        setEditingProfile(null);
-        document.getElementById("profile-edit-modal")?.removeAttribute("open");
-        revalidator.revalidate();
-      }
-    }
-    if (fetcher.data?.intent === "delete-profile") {
-      if (fetcher.data.ok) {
-        revalidator.revalidate();
-      }
-    }
     if (fetcher.data?.intent === "sync-orders") {
       revalidator.revalidate();
     }
   }, [fetcher.data, revalidator]);
+
+  // Cohort LTV response handler (separate fetcher).
+  useEffect(() => {
+    if (cohortFetcher.data?.intent === "fetch-ltv-cohort" && cohortFetcher.data.ok) {
+      setCohortCurve(cohortFetcher.data.cohort as LtvCohortCurve);
+    }
+  }, [cohortFetcher.data]);
+
+  // Re-fetch the cohort curve whenever the drill is open AND the window
+  // changes. The drill itself triggers the first fetch when opened.
+  const fetchCohortCurve = (w: CohortWindow) => {
+    const fd = new FormData();
+    fd.append("intent", "fetch-ltv-cohort");
+    fd.append("cohortWindow", w);
+    cohortFetcher.submit(fd, { method: "post" });
+  };
+  const lastFetchedWindowRef = useRef<CohortWindow | null>(null);
+  useEffect(() => {
+    if (activeDrill !== "ltv") return;
+    if (lastFetchedWindowRef.current === cohortWindow) return;
+    lastFetchedWindowRef.current = cohortWindow;
+    fetchCohortCurve(cohortWindow);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDrill, cohortWindow]);
 
   // ─── Auto-fetch stats on mount if data exists ───────────────────────
   const hasData = syncTotalAffiliateOrders != null && syncTotalAffiliateOrders > 0;
@@ -473,21 +607,54 @@ export default function AffiliatesPage() {
     fetcher.submit(fd, { method: "post" });
   };
 
-  // ─── Period preset click ────────────────────────────────────────────
-  const handlePresetClick = (preset: PeriodPreset) => {
-    setPeriodPreset(preset);
-    if (preset !== "custom") {
-      setTimeout(fetchStats, 0);
-    }
-  };
-
-  // Re-fetch when filters change (non-custom)
+  // Re-fetch whenever any filter changes (period, comparison, affiliate, or custom dates).
+  // Fix for stale-state bug: relying on useEffect instead of setTimeout ensures state
+  // is flushed before fetchStats reads it.
   useEffect(() => {
-    if (hasData && periodPreset !== "custom" && initialFetchDone.current) {
-      fetchStats();
+    if (!hasData || !initialFetchDone.current) return;
+    // Skip custom preset until both dates are set
+    if (periodPreset === "custom" && (!customStart || !customEnd)) return;
+    fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodPreset, comparisonMode, selectedAffiliate, customStart, customEnd]);
+
+  // Track previous preset so Cancel can revert, and pre-populate drafts
+  // from the applied values whenever Custom is entered.
+  useEffect(() => {
+    if (periodPreset === "custom") {
+      setDraftStart(customStart);
+      setDraftEnd(customEnd);
+      setCustomCalendarOpen(true);
+    } else {
+      prevPresetRef.current = periodPreset;
+      setCustomCalendarOpen(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [periodPreset, comparisonMode, selectedAffiliate]);
+  }, [periodPreset]);
+
+  const canApplyCustom =
+    Boolean(draftStart) && Boolean(draftEnd) && draftStart <= draftEnd;
+
+  const handleApplyCustom = () => {
+    if (!canApplyCustom) return;
+    setCustomStart(draftStart);
+    setCustomEnd(draftEnd);
+    setCustomCalendarOpen(false);
+  };
+
+  const handleCancelCustom = () => {
+    setDraftStart("");
+    setDraftEnd("");
+    setCustomCalendarOpen(false);
+    const target = prevPresetRef.current || "last_30d";
+    setPeriodPreset(target === "custom" ? "last_30d" : target);
+  };
+
+  const handleEditCustomDates = () => {
+    setDraftStart(customStart);
+    setDraftEnd(customEnd);
+    setCustomCalendarOpen(true);
+  };
 
   // ─── Sync handler ──────────────────────────────────────────────────
   const handleSync = () => {
@@ -496,24 +663,12 @@ export default function AffiliatesPage() {
     fetcher.submit(fd, { method: "post" });
   };
 
-  // ─── Row drill-down handlers ────────────────────────────────────────
-  const handleRow1Click = (key: string) =>
-    setRow1DrillDown((prev) => (prev === key ? null : key));
-  const handleRow2Click = (key: string) =>
-    setRow2DrillDown((prev) => (prev === key ? null : key));
-  const handleRow3Click = (key: string) =>
-    setRow3DrillDown((prev) => (prev === key ? null : key));
+  // ─── Drill-down handler (mutex across all rows) ─────────────────────
+  const handleDrillClick = (key: string) =>
+    setActiveDrill((prev) => (prev === key ? null : key));
 
-  // ─── Render delta helper ────────────────────────────────────────────
-  const renderDelta = (delta?: number) => {
-    if (delta == null) return null;
-    return (
-      <span className={delta >= 0 ? styles.deltaUp : styles.deltaDown}>
-        {delta >= 0 ? "+" : ""}
-        {delta.toFixed(1)}%
-      </span>
-    );
-  };
+  // renderDelta is now in ./app.affiliates/kpi-card (used by the
+  // extracted KpiCard component).
 
   // ─── Format helpers bound to locale ─────────────────────────────────
   const cc = dashboardStats?.currencyCode ?? "BRL";
@@ -523,14 +678,6 @@ export default function AffiliatesPage() {
 
   const stats = dashboardStats;
   const isLoading = statsLoading;
-
-  // ─── Presets ────────────────────────────────────────────────────────
-  const presets: Array<{ id: PeriodPreset; label: string }> = [
-    { id: "last_7d", label: t("period.last7d", "Last 7 days") },
-    { id: "last_30d", label: t("period.last30d", "Last 30 days") },
-    { id: "last_month", label: t("period.lastMonth", "Last month") },
-    { id: "last_3_months", label: t("period.last3Months", "Last 3 months") },
-  ];
 
   // ─── CSV file handler (input + drag+drop) ─────────────────────────
   const [csvFileName, setCsvFileName] = useState<string>("");
@@ -588,44 +735,63 @@ export default function AffiliatesPage() {
     fetcher.submit(fd, { method: "post" });
   };
 
-  // ─── Profile edit handlers ─────────────────────────────────────────
-  const openEditProfile = (p: AffiliateProfile) => {
-    setEditingProfile(p);
-    setEditCommission(String(p.commissionPct));
-    setEditTier(p.tier);
-    setEditStatus(p.status);
-    setEditNotes(p.notes ?? "");
-    const modal = document.getElementById("profile-edit-modal");
-    modal?.setAttribute("open", "");
-  };
-
-  const handleProfileSave = () => {
-    if (!editingProfile) return;
-    const fd = new FormData();
-    fd.append("intent", "update-profile");
-    fd.append("code", editingProfile.code);
-    fd.append("affiliateName", editingProfile.affiliateName);
-    fd.append("commissionPct", editCommission);
-    fd.append("tier", editTier);
-    fd.append("status", editStatus);
-    fd.append("notes", editNotes);
-    fetcher.submit(fd, { method: "post" });
-  };
-
-  const handleProfileDelete = (profileId: string) => {
-    const fd = new FormData();
-    fd.append("intent", "delete-profile");
-    fd.append("profileId", profileId);
-    fetcher.submit(fd, { method: "post" });
-  };
-
-  // ─── Custom date handlers ──────────────────────────────────────────
-  const handleApplyCustomRange = () => {
-    if (customStart && customEnd) {
-      setPeriodPreset("custom");
-      document.getElementById("custom-date-popover")?.removeAttribute("open");
-      setTimeout(fetchStats, 0);
+  // ─── Active date range for friendly format display ─────────────────
+  const activeDateRange = useMemo(() => {
+    if (periodPreset === "custom") {
+      if (!customStart || !customEnd) return null;
+      return { start: customStart, end: customEnd };
     }
+    return getPresetDates(periodPreset);
+  }, [periodPreset, customStart, customEnd]);
+
+  const activeRangeFriendly = useMemo(() => {
+    if (!activeDateRange) return "";
+    return formatDateRangeFriendly(activeDateRange.start, activeDateRange.end, userLocale);
+  }, [activeDateRange, userLocale]);
+
+  // ─── Sanitized profiles (handles cleaned up once) ───────────────────
+  const sanitizedProfiles = useMemo(() => {
+    return profiles.map((p) => ({
+      ...p,
+      handle: sanitizeSocialHandle(p.instagram) ?? sanitizeSocialHandle(p.tiktok),
+    }));
+  }, [profiles]);
+
+  // Close the affiliate combobox when the user clicks outside its wrapper.
+  useEffect(() => {
+    if (!comboboxOpen) return;
+    const onMouseDown = (e: MouseEvent) => {
+      const target = e.target as Node | null;
+      if (!comboboxRef.current || !target) return;
+      if (!comboboxRef.current.contains(target)) setComboboxOpen(false);
+    };
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
+  }, [comboboxOpen]);
+
+  // Filtered dropdown items. Empty query = full list.
+  const comboboxItems = useMemo(() => {
+    const q = affiliateSearch.trim().toLowerCase();
+    if (!q) return sanitizedProfiles.slice(0, 200);
+    return sanitizedProfiles.filter((p) => {
+      return (
+        p.affiliateName.toLowerCase().includes(q) ||
+        p.code.toLowerCase().includes(q) ||
+        (p.handle?.toLowerCase().includes(q) ?? false)
+      );
+    }).slice(0, 200);
+  }, [affiliateSearch, sanitizedProfiles]);
+
+  const pickAffiliate = (code: string, label: string) => {
+    setSelectedAffiliate(code);
+    setAffiliateSearch(label);
+    setComboboxOpen(false);
+  };
+
+  const clearAffiliate = () => {
+    setSelectedAffiliate("all");
+    setAffiliateSearch("");
+    setComboboxOpen(false);
   };
 
   // ─── Trend chart max value ──────────────────────────────────────────
@@ -657,19 +823,42 @@ export default function AffiliatesPage() {
           </thead>
           <tbody>
             {stats.leaderboard.map((row, i) => (
-              <tr key={row.code}>
+              <tr
+                key={row.code}
+                className={styles.clickableRow}
+                onClick={() => {
+                  setActiveTab("profiles");
+                  setProfileDetailCode(row.code);
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    setActiveTab("profiles");
+                    setProfileDetailCode(row.code);
+                  }
+                }}
+              >
                 <td>{i + 1}</td>
                 <td>
-                  {row.affiliateName}
-                  {(row.instagram || row.tiktok) && (
-                    <span className={styles.affiliateHandle}>
-                      {row.instagram
-                        ? `@${row.instagram}`
-                        : row.tiktok
-                          ? `@${row.tiktok}`
-                          : ""}
-                    </span>
-                  )}
+                  <div className={styles.profileName}>{row.affiliateName}</div>
+                  {(() => {
+                    const h =
+                      sanitizeSocialHandle(row.instagram) ??
+                      sanitizeSocialHandle(row.tiktok);
+                    if (!h) return null;
+                    return (
+                      <a
+                        className={styles.affiliateHandle}
+                        href={instagramUrl(h)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        @{h}
+                      </a>
+                    );
+                  })()}
                 </td>
                 <td>{fmtCurrency(row.revenue)}</td>
                 <td>{fmtNum(row.orders)}</td>
@@ -735,47 +924,411 @@ export default function AffiliatesPage() {
     );
   };
 
-  // ─── Waterfall rendering ───────────────────────────────────────────
-  const renderMarginWaterfall = () => {
-    if (!stats?.marginAnalysis) return null;
-    const m = stats.marginAnalysis;
-    const maxVal = Math.max(
-      m.affiliateDiscountTotal,
-      m.siteDiscountTotal,
-      m.commissionTotal,
-      1,
-    );
-    const bar = (label: string, value: number, color: string) => (
-      <div className={styles.waterfallBar} key={label}>
-        <span className={styles.waterfallBarLabel}>{label}</span>
-        <div
-          className={styles.waterfallBarFill}
-          style={{
-            width: `${Math.max((value / maxVal) * 100, 2)}%`,
-            background: color,
-            minWidth: "4px",
-          }}
-        />
-        <span className={styles.waterfallBarValue}>{fmtCurrency(value)}</span>
+  // ─── Revenue vertical-bar ranking (top N affiliates) ──────────────
+  const renderRevenueVerticalBars = () => {
+    if (!stats?.leaderboard?.length) {
+      return <p className={styles.noData}>No data</p>;
+    }
+    const top = stats.leaderboard.slice(0, 12);
+    const maxRev = Math.max(...top.map((r) => r.revenue), 1);
+    return (
+      <div className={styles.vbarChart}>
+        {top.map((row) => {
+          const pct = Math.max((row.revenue / maxRev) * 100, 1);
+          const handle =
+            sanitizeSocialHandle(row.instagram) ??
+            sanitizeSocialHandle(row.tiktok);
+          return (
+            <div key={row.code} className={styles.vbarColumn}>
+              <div className={styles.vbarBarArea}>
+                <div
+                  className={styles.vbarBar}
+                  style={{
+                    height: `${pct}%`,
+                    background:
+                      "linear-gradient(180deg, #5ecece 0%, #b09fda 100%)",
+                  }}
+                  title={`${row.affiliateName}: ${fmtCurrency(row.revenue)}`}
+                />
+                <span className={styles.vbarBarValue}>
+                  {fmtCurrency(row.revenue)}
+                </span>
+              </div>
+              <span className={styles.vbarLabel}>
+                {handle ? `@${handle}` : row.affiliateName}
+              </span>
+            </div>
+          );
+        })}
       </div>
     );
+  };
+
+  // ─── Cohort LTV line chart (New / Lifted / N/A) ───────────────────
+  const renderLtvCohortChart = () => {
+    const isLoading =
+      cohortFetcher.state !== "idle" || cohortCurve === null;
+    const tickPrefix = (label: LtvCohortCurve["bucketLabel"]) =>
+      label === "week"
+        ? "W"
+        : label === "month"
+          ? "M"
+          : label === "bimonth"
+            ? "2M"
+            : "Q";
+
+    // Header row: title + Cohort window select (right-aligned).
+    const header = (
+      <div className={styles.ltvCohortHeader}>
+        <div className={styles.waterfallTitle}>
+          {t("drill.ltvCohortTitle", "LTV by cohort")}
+        </div>
+        <div className={styles.ltvCohortWindowControl}>
+          <span className={styles.filterLabel}>
+            {t("drill.ltvCohortWindowLabel", "Cohort window")}
+          </span>
+          <s-select
+            label={t("drill.ltvCohortWindowLabel", "Cohort window")}
+            labelAccessibilityVisibility="exclusive"
+            value={cohortWindow}
+            onChange={(event: Event) =>
+              setCohortWindow(
+                (event.currentTarget as HTMLSelectElement).value as CohortWindow,
+              )
+            }
+          >
+            <s-option value="6mo">
+              {t("drill.ltvCohortWindow6mo", "Last 6 months")}
+            </s-option>
+            <s-option value="12mo">
+              {t("drill.ltvCohortWindow12mo", "Last 12 months")}
+            </s-option>
+            <s-option value="24mo">
+              {t("drill.ltvCohortWindow24mo", "Last 24 months")}
+            </s-option>
+            <s-option value="all">
+              {t("drill.ltvCohortWindowAll", "All time")}
+            </s-option>
+          </s-select>
+        </div>
+      </div>
+    );
+
+    if (isLoading && !cohortCurve) {
+      return (
+        <>
+          {header}
+          <div className={styles.noData}>…</div>
+        </>
+      );
+    }
+    if (!cohortCurve) return header;
+    const cc = cohortCurve;
+    const totalN = cc.totalCohortSizes.new + cc.totalCohortSizes.lifted + cc.totalCohortSizes.na;
+    if (totalN === 0) {
+      return (
+        <>
+          {header}
+          <div className={styles.noData}>
+            {t(
+              "drill.ltvCohortEmpty",
+              "No LTV data yet, run Sync Orders to populate the cohort",
+            )}
+          </div>
+        </>
+      );
+    }
+
+    // SVG canvas: 600x280. Chart area leaves room for axes + legend.
+    const W = 600;
+    const H = 280;
+    const padL = 48;
+    const padR = 64; // room for end-labels
+    const padT = 8;
+    const padB = 28;
+    const chartW = W - padL - padR;
+    const chartH = H - padT - padB;
+    const maxY = Math.max(
+      1,
+      ...cc.points.flatMap((p) => [p.new, p.lifted, p.na]),
+    ) * 1.08;
+    const n = cc.points.length;
+    const xFor = (i: number) =>
+      padL + (n <= 1 ? chartW / 2 : (i / (n - 1)) * chartW);
+    const yFor = (v: number) => padT + chartH - (v / maxY) * chartH;
+
+    const mkPath = (values: number[]) =>
+      values
+        .map((v, i) => `${i === 0 ? "M" : "L"} ${xFor(i).toFixed(1)} ${yFor(v).toFixed(1)}`)
+        .join(" ");
+
+    const newVals = cc.points.map((p) => p.new);
+    const liftedVals = cc.points.map((p) => p.lifted);
+    const naVals = cc.points.map((p) => p.na);
+
+    const tickP = tickPrefix(cc.bucketLabel);
+
+    const gridYs = [0, 0.25, 0.5, 0.75, 1].map((f) => ({
+      y: padT + chartH - f * chartH,
+      label: fmtCurrency(f * maxY),
+    }));
+
     return (
-      <div className={styles.waterfallContainer}>
-        <div className={styles.waterfallColumn}>
-          <div className={styles.waterfallTitle}>
-            {t("drill.costBreakdown", "Cost Breakdown")}
-          </div>
-          {bar(t("drill.affiliateDiscount", "Affiliate discounts"), m.affiliateDiscountTotal, "#5ecece")}
-          {bar(t("drill.siteDiscount", "Site discounts"), m.siteDiscountTotal, "#c48fd0")}
-          {bar(t("drill.commission", "Commission"), m.commissionTotal, "#f0b775")}
+      <>
+        {header}
+        <div className={styles.ltvCohortLegend}>
+          <span>
+            <span className={`${styles.legendDot} ${styles.ltvDotNew}`} />
+            {t("drill.ltvCohortNew", "New")}
+          </span>
+          <span>
+            <span className={`${styles.legendDot} ${styles.ltvDotLifted}`} />
+            {t("drill.ltvCohortLifted", "Lifted")}
+          </span>
+          <span>
+            <span className={`${styles.legendDot} ${styles.ltvDotNa}`} />
+            {t("drill.ltvCohortNa", "N/A")}
+          </span>
         </div>
-        <div className={styles.waterfallColumn}>
-          <div className={styles.waterfallTitle}>
-            {t("drill.marginComparison", "Margin Comparison")}
-          </div>
-          {bar(t("drill.affiliateMargin", "Affiliate margin"), m.affiliateMarginPct, "#5ecece")}
-          {bar(t("drill.organicMargin", "Organic margin"), m.organicMarginPct, "#c48fd0")}
+        <svg
+          className={styles.ltvCohortChart}
+          viewBox={`0 0 ${W} ${H}`}
+          preserveAspectRatio="xMidYMid meet"
+        >
+          {gridYs.map((g, i) => (
+            <g key={`g${i}`}>
+              <line x1={padL} y1={g.y} x2={W - padR} y2={g.y}
+                stroke="#e1e3e5" strokeWidth={1} />
+              <text x={padL - 6} y={g.y + 3} textAnchor="end"
+                fontSize={10} fill="#6d7175">{g.label}</text>
+            </g>
+          ))}
+          {cc.points.map((_, i) => (
+            <text key={`x${i}`} x={xFor(i)} y={H - padB / 2}
+              textAnchor="middle" fontSize={10} fill="#6d7175">
+              {tickP}{i}
+            </text>
+          ))}
+          <path d={mkPath(newVals)} fill="none" stroke="#008060" strokeWidth={2} />
+          <path d={mkPath(liftedVals)} fill="none" stroke="#00527c" strokeWidth={2} />
+          <path d={mkPath(naVals)} fill="none" stroke="#6d7175" strokeWidth={2} strokeDasharray="4 3" />
+          {cc.points.map((p, i) => (
+            <g key={`pt${i}`}>
+              <circle cx={xFor(i)} cy={yFor(p.new)} r={3} fill="#008060">
+                <title>{`${tickP}${i}: ${fmtCurrency(p.new)} · n=${p.newSampleSize}`}</title>
+              </circle>
+              <circle cx={xFor(i)} cy={yFor(p.lifted)} r={3} fill="#00527c">
+                <title>{`${tickP}${i}: ${fmtCurrency(p.lifted)} · n=${p.liftedSampleSize}`}</title>
+              </circle>
+              <circle cx={xFor(i)} cy={yFor(p.na)} r={3} fill="#6d7175">
+                <title>{`${tickP}${i}: ${fmtCurrency(p.na)} · n=${p.naSampleSize}`}</title>
+              </circle>
+            </g>
+          ))}
+          {/* End-of-line pills */}
+          <g>
+            <rect x={xFor(n - 1) + 6} y={yFor(newVals[n - 1]!) - 9}
+              width={54} height={18} rx={9} fill="#008060" />
+            <text x={xFor(n - 1) + 33} y={yFor(newVals[n - 1]!) + 4}
+              textAnchor="middle" fontSize={11} fill="#fff" fontWeight={600}>
+              {t("drill.ltvCohortNew", "New")}
+            </text>
+          </g>
+          <g>
+            <rect x={xFor(n - 1) + 6} y={yFor(liftedVals[n - 1]!) - 9}
+              width={54} height={18} rx={9} fill="#00527c" />
+            <text x={xFor(n - 1) + 33} y={yFor(liftedVals[n - 1]!) + 4}
+              textAnchor="middle" fontSize={11} fill="#fff" fontWeight={600}>
+              {t("drill.ltvCohortLifted", "Lifted")}
+            </text>
+          </g>
+          <g>
+            <rect x={xFor(n - 1) + 6} y={yFor(naVals[n - 1]!) - 9}
+              width={40} height={18} rx={9} fill="#6d7175" />
+            <text x={xFor(n - 1) + 26} y={yFor(naVals[n - 1]!) + 4}
+              textAnchor="middle" fontSize={11} fill="#fff" fontWeight={600}>
+              {t("drill.ltvCohortNa", "N/A")}
+            </text>
+          </g>
+        </svg>
+        <div className={styles.ltvCohortFootnote}>
+          {t("drill.ltvCohortSample", {
+            new: cc.totalCohortSizes.new,
+            lifted: cc.totalCohortSizes.lifted,
+            na: cc.totalCohortSizes.na,
+            defaultValue:
+              "Cohorts: {{new}} new · {{lifted}} lifted · {{na}} N/A",
+          })}
         </div>
+      </>
+    );
+  };
+
+  // ─── Dual vertical waterfall (Affiliate margin | Organic margin) ──
+  const renderMarginDualWaterfall = () => {
+    if (!stats?.marginAnalysis) return null;
+    const m = stats.marginAnalysis;
+
+    // Everything normalized to %% of that cohort's gross sales so the two
+    // columns are directly comparable on the same y-axis.
+    const affGross = m.affiliateGrossSales || 1;
+    const orgGross = m.organicGrossSales || 1;
+    const pct = (v: number, gross: number) => (v / gross) * 100;
+
+    type Step = {
+      key: string;
+      label: string;
+      pct: number;      // bar height in %% of gross
+      color: string;
+      isFinal?: boolean; // standing net-margin bar
+    };
+
+    // Affiliate: Gross → -site disc → -aff disc → -commission → Net margin
+    const affiliateSteps: Step[] = [
+      {
+        key: "site",
+        label: t("drill.siteDiscount", "Site disc."),
+        pct: pct(m.affiliateSiteDiscountTotal, affGross),
+        color: "#c48fd0",
+      },
+      {
+        key: "aff",
+        label: t("drill.affiliateDiscount", "Aff. disc."),
+        pct: pct(m.affiliateDiscountTotal, affGross),
+        color: "#b09fda",
+      },
+      {
+        key: "comm",
+        label: t("drill.commission", "Commission"),
+        pct: pct(m.commissionTotal, affGross),
+        color: "#f0b775",
+      },
+    ];
+    const affiliateNetPct = Math.max(
+      0,
+      100 - affiliateSteps.reduce((s, x) => s + x.pct, 0),
+    );
+
+    // Organic: Gross → -site disc → -paid ads (fixed 10%) → Net margin
+    const organicSteps: Step[] = [
+      {
+        key: "site",
+        label: t("drill.siteDiscount", "Site disc."),
+        pct: pct(m.organicDiscountTotal, orgGross),
+        color: "#c48fd0",
+      },
+      {
+        key: "ads",
+        label: t("drill.paidAds", "Paid ads"),
+        pct: PAID_ADS_PCT,
+        color: "#f0b775",
+      },
+    ];
+    const organicNetPct = Math.max(
+      0,
+      100 - organicSteps.reduce((s, x) => s + x.pct, 0),
+    );
+
+    const fmtPctSign = (v: number, sign: "+" | "-") =>
+      `${sign}${v.toFixed(1)}%`;
+
+    const renderColumn = (
+      title: string,
+      subtractionSteps: Step[],
+      netPct: number,
+    ) => {
+      // Running total tracks the top of each subtraction bar as a %% offset
+      // from the top of the chart area. Gross starts at top (0%); each
+      // subtraction pushes the next bar down by its height.
+      let running = 0;
+      const subtractionColumns = subtractionSteps.map((step) => {
+        const topOffsetPct = running;
+        running += step.pct;
+        return { ...step, topOffsetPct };
+      });
+
+      return (
+        <div className={styles.vwaterfallCol}>
+          <div className={styles.vwaterfallTitle}>
+            {title}{" "}
+            <span className={styles.vwaterfallPct}>
+              {netPct.toFixed(1)}%
+            </span>
+          </div>
+          <div className={styles.waterfallChart}>
+            {/* Gross: full-height reference bar at col 1 */}
+            <div className={styles.waterfallCol}>
+              <div className={styles.waterfallBarArea}>
+                <div
+                  className={`${styles.waterfallBar} ${styles.waterfallBarGross}`}
+                  style={{ height: "100%", top: 0 }}
+                  title={`${t("drill.grossSales", "Gross")}: 100%`}
+                />
+                <span className={styles.waterfallBarValue}>100%</span>
+              </div>
+              <span className={styles.waterfallBarLabel}>
+                {t("drill.grossSales", "Gross")}
+              </span>
+            </div>
+
+            {/* Subtraction bars: float at their running-total offset */}
+            {subtractionColumns.map((step) => (
+              <div key={step.key} className={styles.waterfallCol}>
+                <div className={styles.waterfallBarArea}>
+                  <div
+                    className={`${styles.waterfallBar} ${styles.waterfallBarSubtract}`}
+                    style={{
+                      top: `${step.topOffsetPct}%`,
+                      height: `${Math.max(step.pct, 1)}%`,
+                      background: step.color,
+                    }}
+                    title={`${step.label}: -${step.pct.toFixed(1)}%`}
+                  />
+                  <span className={styles.waterfallBarValue}>
+                    {fmtPctSign(step.pct, "-")}
+                  </span>
+                </div>
+                <span className={styles.waterfallBarLabel}>{step.label}</span>
+              </div>
+            ))}
+
+            {/* Net margin: standing bar from floor, height = remaining % */}
+            <div className={styles.waterfallCol}>
+              <div className={styles.waterfallBarArea}>
+                <div
+                  className={`${styles.waterfallBar} ${styles.waterfallBarNet}`}
+                  style={{
+                    height: `${Math.max(netPct, 1)}%`,
+                    bottom: 0,
+                    top: "auto",
+                  }}
+                  title={`${t("drill.netMargin", "Net margin")}: ${netPct.toFixed(1)}%`}
+                />
+                <span className={styles.waterfallBarValue}>
+                  {netPct.toFixed(1)}%
+                </span>
+              </div>
+              <span className={styles.waterfallBarLabel}>
+                {t("drill.netMargin", "Net margin")}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div className={styles.vwaterfallContainer}>
+        {renderColumn(
+          t("drill.affiliateColumn", "Affiliate"),
+          affiliateSteps,
+          affiliateNetPct,
+        )}
+        {renderColumn(
+          t("drill.organicColumn", "Organic"),
+          organicSteps,
+          organicNetPct,
+        )}
       </div>
     );
   };
@@ -807,55 +1360,173 @@ export default function AffiliatesPage() {
     );
   };
 
-  // ─── KPI Card component ────────────────────────────────────────────
-  const KpiCard = ({
-    primary,
-    label,
-    secondary,
-    delta,
-    drillKey,
-    activeDrill,
-    onClick,
-  }: {
-    primary: string;
-    label: string;
-    secondary: string;
-    delta?: number;
-    drillKey: string;
-    activeDrill: DrillDownKey;
-    onClick: (key: string) => void;
-  }) => {
-    const isActive = activeDrill === drillKey;
-    const boxClass = [
-      styles.overviewBox,
-      styles.overviewBoxClickable,
-      isActive ? styles.overviewBoxActive : "",
-      isLoading ? styles.overviewBoxLoading : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
+  // KpiCard is now imported from ./app.affiliates/kpi-card; the
+  // rendered cards below pass `isLoading` explicitly.
 
-    return (
-      <div
-        className={boxClass}
-        role="button"
-        tabIndex={0}
-        onClick={() => onClick(drillKey)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") onClick(drillKey);
-        }}
-      >
-        {isLoading && (
-          <div className={styles.overviewSpinner}>
-            <s-spinner size="base" />
+  // ─── Period controls (used by Overview + Affiliates tabs) ────────
+  // Layout stays 2:2:3 across both tabs so switching feels seamless.
+  // The third column is the affiliate search on Overview, and blank
+  // whitespace on Affiliates (where each row is already clickable).
+  const renderPeriodControls = (showSearch: boolean) => (
+    <div className={styles.periodBar}>
+      {/* Period column */}
+      <div className={styles.filterControl}>
+        <span className={styles.filterLabel}>{t("period.label", "Period")}</span>
+        <s-select
+          label={t("period.label", "Period")}
+          labelAccessibilityVisibility="exclusive"
+          value={periodPreset}
+          onChange={(event: Event) =>
+            setPeriodPreset(
+              (event.currentTarget as HTMLSelectElement).value as PeriodPreset,
+            )
+          }
+        >
+          <s-option value="last_7d">{t("period.last7d", "Last 7 days")}</s-option>
+          <s-option value="last_30d">{t("period.last30d", "Last 30 days")}</s-option>
+          <s-option value="last_month">{t("period.lastMonth", "Last month")}</s-option>
+          <s-option value="last_3_months">{t("period.last3Months", "Last 3 months")}</s-option>
+          <s-option value="custom">{t("period.custom", "Custom")}</s-option>
+        </s-select>
+      </div>
+
+      {/* Compare-with column */}
+      <div className={styles.filterControl}>
+        <span className={styles.filterLabel}>{t("comparison.label", "Compare with")}</span>
+        <s-select
+          label={t("comparison.label", "Compare with")}
+          labelAccessibilityVisibility="exclusive"
+          value={comparisonMode}
+          onChange={(event: Event) =>
+            setComparisonMode(
+              (event.currentTarget as HTMLSelectElement).value as ComparisonMode,
+            )
+          }
+        >
+          <s-option value="none">{t("comparison.none", "No comparison")}</s-option>
+          <s-option value="prev_period">{t("comparison.prevPeriod", "Previous period")}</s-option>
+          <s-option value="prev_year">{t("comparison.prevYear", "Previous year")}</s-option>
+        </s-select>
+      </div>
+
+      {/* Search column (Overview only) or blank spacer (Affiliates tab) */}
+      {showSearch ? (
+        <div className={styles.filterControl} ref={comboboxRef}>
+          <span className={styles.filterLabel}>
+            {t("filter.search", "Search affiliate")}
+          </span>
+          <div className={styles.combobox}>
+            <input
+              type="text"
+              className={styles.comboboxInput}
+              placeholder={t("filter.allAffiliates", "All affiliates")}
+              value={affiliateSearch}
+              onFocus={() => setComboboxOpen(true)}
+              onChange={(e) => {
+                setAffiliateSearch(e.target.value);
+                setComboboxOpen(true);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  clearAffiliate();
+                  (e.target as HTMLInputElement).blur();
+                }
+              }}
+            />
+            {(selectedAffiliate !== "all" || affiliateSearch) && (
+              <button
+                type="button"
+                className={styles.comboboxClear}
+                onClick={clearAffiliate}
+                aria-label={t("filter.clear", "Clear filter")}
+              >
+                ×
+              </button>
+            )}
+            {comboboxOpen && comboboxItems.length > 0 && (
+              <ul className={styles.comboboxDropdown} role="listbox">
+                {comboboxItems.map((p) => {
+                  const label = `${p.affiliateName}${p.handle ? ` (@${p.handle})` : ""}`;
+                  const isSelected =
+                    selectedAffiliate.toLowerCase() === p.code.toLowerCase();
+                  return (
+                    <li
+                      key={p.code}
+                      role="option"
+                      aria-selected={isSelected}
+                      className={`${styles.comboboxItem}${isSelected ? ` ${styles.comboboxItemActive}` : ""}`}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        pickAffiliate(p.code, label);
+                      }}
+                    >
+                      {label}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {comboboxOpen && comboboxItems.length === 0 && (
+              <ul className={styles.comboboxDropdown} role="listbox">
+                <li className={styles.comboboxEmpty}>
+                  {t("filter.noMatches", "No matches")}
+                </li>
+              </ul>
+            )}
           </div>
-        )}
-        <span className={styles.overviewPrimary}>
-          {primary}
-          {renderDelta(delta)}
-        </span>
-        <span className={styles.overviewLabel}>{label}</span>
-        <span className={styles.overviewSecondary}>{secondary}</span>
+        </div>
+      ) : (
+        <div className={styles.filterControl} aria-hidden />
+      )}
+    </div>
+  );
+
+  const renderCustomCalendar = () => {
+    if (periodPreset !== "custom" || !customCalendarOpen) return null;
+    return (
+      <div className={styles.customDateGrid}>
+        <div className={styles.customDateCol}>
+          <span className={styles.customDateLabel}>
+            {t("period.startDate", "Start date")}
+          </span>
+          <s-date-picker
+            type="single"
+            value={draftStart}
+            onChange={(event: Event) =>
+              setDraftStart(
+                (event.currentTarget as HTMLInputElement).value,
+              )
+            }
+          />
+        </div>
+        <div className={styles.customDateCol}>
+          <span className={styles.customDateLabel}>
+            {t("period.endDate", "End date")}
+          </span>
+          <s-date-picker
+            type="single"
+            value={draftEnd}
+            onChange={(event: Event) =>
+              setDraftEnd(
+                (event.currentTarget as HTMLInputElement).value,
+              )
+            }
+          />
+        </div>
+        <div className={styles.customDateActions}>
+          <s-button variant="secondary" onClick={handleCancelCustom}>
+            {t("period.cancel", "Cancel")}
+          </s-button>
+          {canApplyCustom ? (
+            <s-button variant="primary" onClick={handleApplyCustom}>
+              {t("period.apply", "Apply")}
+            </s-button>
+          ) : (
+            <s-button variant="primary" disabled>
+              {t("period.apply", "Apply")}
+            </s-button>
+          )}
+        </div>
       </div>
     );
   };
@@ -863,49 +1534,118 @@ export default function AffiliatesPage() {
   // ─── JSX ────────────────────────────────────────────────────────────
   return (
     <s-page heading={t("page.title", "Affiliates")}>
-      <div slot="primary-action">
-        {syncStatus === "running" ? (
-          <s-button variant="primary" disabled key="sync-disabled">
-            {t("sync.running", "Syncing...")}
-          </s-button>
-        ) : (
-          <s-button variant="primary" onClick={handleSync} key="sync-active">
-            {t("page.syncButton", "Sync Orders")}
-          </s-button>
-        )}
-      </div>
-      <div slot="secondary-actions">
-        <s-button
-          variant="secondary"
-          commandFor="csv-import-modal"
-          command="--show"
-        >
-          {t("page.importButton", "Import BixGrow CSV")}
-        </s-button>
-      </div>
-
       <s-section>
-        {/* ── Sync progress ─────────────────────────────────────── */}
-        {syncStatus === "running" && (
-          <div>
-            <div className={styles.syncProgressRow}>
-              <span className={styles.syncProgressPhaseLabel}>
-                {syncPhase ?? t("sync.running", "Syncing orders...")}
-              </span>
-              {syncProgressCount != null && (
-                <span className={styles.syncProgressPct}>
-                  {fmtNum(syncProgressCount)} {t("sync.processed", "processed")}
-                </span>
-              )}
-            </div>
-            <div className={styles.syncProgressBarBg}>
-              <div
-                className={styles.syncProgressBarFill}
-                style={{ width: "100%" }}
-              />
-            </div>
+        {/* ── Tabs — left-aligned, divider bleeds to section edges
+            (matches Settings page pattern). Badge + actions sit far-right
+            on the same row, pushed by margin-left: auto. ── */}
+        <div className={styles.tabsRow}>
+          <button
+            type="button"
+            className={`${styles.tab}${activeTab === "overview" ? ` ${styles.tabActive}` : ""}`}
+            onClick={() => setActiveTab("overview")}
+          >
+            {t("tab.overview", "Overview")}
+          </button>
+          <button
+            type="button"
+            className={`${styles.tab}${activeTab === "profiles" ? ` ${styles.tabActive}` : ""}`}
+            onClick={() => {
+              setActiveTab("profiles");
+              setProfileDetailCode(null);
+            }}
+          >
+            {t("tab.affiliates", "Affiliates")}
+          </button>
+
+          {/* Badge + action buttons, pushed to far right */}
+          <div className={styles.tabsRightGroup}>
+            {syncLastSyncedAt && (
+              <s-badge tone="info">
+                {t("sync.lastSyncShort", "Last sync")}: {formatLastSyncShort(syncLastSyncedAt, userLocale)}
+              </s-badge>
+            )}
+            {syncStatus === "running" ? (
+              <s-button
+                variant="secondary"
+                {...{ icon: "refresh" } as Record<string, string>}
+                disabled
+                key="sync-btn-disabled"
+              >
+                {t("sync.running", "Syncing...")}
+              </s-button>
+            ) : (
+              <s-button
+                variant="secondary"
+                {...{ icon: "refresh" } as Record<string, string>}
+                key="sync-btn-active"
+                onClick={handleSync}
+              >
+                {t("page.syncButton", "Sync Orders")}
+              </s-button>
+            )}
+            <s-button
+              variant="secondary"
+              {...{ icon: "upload" } as Record<string, string>}
+              onClick={handleCsvDropZoneClick}
+            >
+              {t("page.updateDatabase", "Update database")}
+            </s-button>
           </div>
-        )}
+        </div>
+
+        {/* ── Sync progress ─────────────────────────────────────── */}
+        {syncStatus === "running" && (() => {
+          // Real progress: use the last sync's totalOrders as a rolling
+          // estimate. If we've never synced before, fall back to a gentle
+          // animated sweep at 5% so the bar at least moves.
+          const estimate = syncTotalOrders ?? 0;
+          const progress = syncProgressCount ?? 0;
+          const pct =
+            estimate > 0
+              ? Math.min(100, Math.max(5, (progress / estimate) * 100))
+              : 5;
+          return (
+            <div>
+              <div className={styles.syncProgressRow}>
+                <span className={styles.syncProgressPhaseLabel}>
+                  {syncPhase ?? t("sync.running", "Syncing orders...")}
+                </span>
+                {syncProgressCount != null && (
+                  <span className={styles.syncProgressPct}>
+                    {fmtNum(progress)}
+                    {estimate > 0 ? ` / ~${fmtNum(estimate)}` : ""}{" "}
+                    {t("sync.processed", "processed")}
+                  </span>
+                )}
+              </div>
+              <div className={styles.syncProgressBarBg}>
+                <div
+                  className={styles.syncProgressBarFill}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ── Stale sync warning ────────────────────────────────── */}
+        {syncStatus !== "running" &&
+          syncLastSyncedAt &&
+          (() => {
+            const lastSynced = new Date(syncLastSyncedAt);
+            const ageMs = Date.now() - lastSynced.getTime();
+            const ageDays = ageMs / (1000 * 60 * 60 * 24);
+            if (ageDays < STALE_SYNC_DAYS) return null;
+            return (
+              <s-banner tone="warning">
+                {t("sync.stale", {
+                  days: Math.floor(ageDays),
+                  defaultValue:
+                    "Affiliate data is {{days}} days old — run Sync Orders to refresh before drawing conclusions.",
+                })}
+              </s-banner>
+            );
+          })()}
 
         {/* ── Error / Warning banners ──────────────────────────── */}
         {syncError && (
@@ -924,126 +1664,58 @@ export default function AffiliatesPage() {
           </s-banner>
         )}
 
-        {/* ── Sync summary ─────────────────────────────────────── */}
-        {syncLastSyncedAt && syncStatus !== "running" && (
-          <div className={styles.syncProgressMeta}>
-            <span>
-              {t("sync.lastSynced", "Last synced")}:{" "}
-              {new Date(syncLastSyncedAt).toLocaleString(userLocale)}
-            </span>
-            <span>
-              {syncTotalOrders != null && (
-                <>
-                  {fmtNum(syncTotalOrders)} {t("sync.totalOrders", "orders")}
-                  {" / "}
-                  {fmtNum(syncTotalAffiliateOrders ?? 0)}{" "}
-                  {t("sync.affiliateOrders", "affiliate")}
-                </>
-              )}
-            </span>
-          </div>
+        {/* ── Overview header strip (mirrors Retail Footprint) ── */}
+        {activeTab === "overview" && hasData && (
+          <>
+            <div className={styles.overviewStrip}>
+              <div className={styles.overviewStripHeader}>
+                <h2 className={styles.overviewStripHeading}>
+                  {t("overview.heading", "Program overview")}
+                </h2>
+                {activeRangeFriendly && (
+                  periodPreset === "custom" && !customCalendarOpen ? (
+                    <button
+                      type="button"
+                      className={`${styles.periodFriendly} ${styles.periodFriendlyEditable}`}
+                      onClick={handleEditCustomDates}
+                      title={t("period.edit", "Change dates")}
+                    >
+                      {activeRangeFriendly}
+                    </button>
+                  ) : (
+                    <span className={styles.periodFriendly}>{activeRangeFriendly}</span>
+                  )
+                )}
+              </div>
+              <div className={styles.overviewStripSubtitle}>
+                {stats
+                  ? `${fmtNum(stats.leaderboard?.length ?? 0)} ${t("overview.activeAffiliates", "active affiliates")} · ${fmtCurrency(stats.revenueImpact?.affiliateRevenue ?? 0)} ${t("overview.affiliateRevenue", "affiliate revenue")} · ${fmtPct(stats.revenueImpact?.affiliateSharePct ?? 0)} ${t("overview.ofTotal", "of total")}`
+                  : ""}
+              </div>
+            </div>
+
+            {renderPeriodControls(true)}
+            {renderCustomCalendar()}
+          </>
         )}
 
-        {/* ── Period bar ───────────────────────────────────────── */}
-        {hasData && (
-          <div className={styles.periodBar}>
-            {presets.map((p) => (
-              <s-button
-                key={p.id}
-                variant={periodPreset === p.id ? "primary" : "secondary"}
-                onClick={() => handlePresetClick(p.id)}
-              >
-                {p.label}
-              </s-button>
-            ))}
-            <s-button
-              variant={periodPreset === "custom" ? "primary" : "secondary"}
-              commandFor="custom-date-popover"
-              command="--toggle"
-            >
-              {t("period.custom", "Custom")}
-            </s-button>
-            <s-popover id="custom-date-popover">
-              <div className={styles.customDatePopover}>
-                <span className={styles.customDateLabel}>
-                  {t("period.startDate", "Start date")}
-                </span>
-                <s-date-picker
-                  type="single"
-                  value={customStart}
-                  onChange={(event: Event) =>
-                    setCustomStart(
-                      (event.currentTarget as HTMLInputElement).value,
-                    )
-                  }
-                />
-                <span className={styles.customDateLabel}>
-                  {t("period.endDate", "End date")}
-                </span>
-                <s-date-picker
-                  type="single"
-                  value={customEnd}
-                  onChange={(event: Event) =>
-                    setCustomEnd(
-                      (event.currentTarget as HTMLInputElement).value,
-                    )
-                  }
-                />
-                <div className={styles.customDateActions}>
-                  <s-button
-                    variant="primary"
-                    onClick={handleApplyCustomRange}
-                  >
-                    {t("period.apply", "Apply")}
-                  </s-button>
-                </div>
-              </div>
-            </s-popover>
-
-            <div className={styles.periodSeparator} />
-
-            <s-select
-              value={comparisonMode}
-              onChange={(event: Event) =>
-                setComparisonMode(
-                  (event.currentTarget as HTMLSelectElement)
-                    .value as ComparisonMode,
-                )
-              }
-            >
-              <s-option value="none">
-                {t("comparison.none", "No comparison")}
-              </s-option>
-              <s-option value="prev_period">
-                {t("comparison.prevPeriod", "Previous period")}
-              </s-option>
-              <s-option value="prev_year">
-                {t("comparison.prevYear", "Previous year")}
-              </s-option>
-            </s-select>
-
-            <s-select
-              value={selectedAffiliate}
-              onChange={(event: Event) =>
-                setSelectedAffiliate(
-                  (event.currentTarget as HTMLSelectElement).value,
-                )
-              }
-            >
-              <s-option value="all">
-                {t("filter.allAffiliates", "All affiliates")}
-              </s-option>
-              {profiles.map((p) => (
-                <s-option key={p.code} value={p.code}>
-                  {p.affiliateName}
-                </s-option>
-              ))}
-            </s-select>
-          </div>
+        {/* ── Commission-limitation disclosure ──────────────────
+            Margin %, CAC, and ROAS on this tab all depend on a per-affiliate
+            commission rate that BixGrow's CSV export does not provide. Until
+            that source of truth exists, these cards use a flat 10% default for
+            every affiliate. This banner discloses it once per page load so
+            the numbers are never mistaken for ground truth. */}
+        {activeTab === "overview" && hasData && (
+          <s-banner tone="info">
+            {t(
+              "overview.commissionCaveat",
+              "Margin, CAC, and ROAS estimates assume a flat 10% commission for every affiliate — BixGrow's CSV doesn't export per-affiliate commission rates, so these three cards are directional, not exact.",
+            )}
+          </s-banner>
         )}
 
         {/* ── Row 1: Acquisition & Economics ───────────────────── */}
-        {hasData && (
+        {activeTab === "overview" && hasData && (
           <>
             <div
               className={`${styles.overviewRowLabel} ${styles.overviewRowLabelFirst}`}
@@ -1065,9 +1737,25 @@ export default function AffiliatesPage() {
                 }
                 delta={stats?.revenueImpact?.delta}
                 drillKey="revenue"
-                activeDrill={row1DrillDown}
-                onClick={handleRow1Click}
+                activeDrill={activeDrill}
+                isLoading={isLoading}
+                onClick={handleDrillClick}
               />
+              {activeDrill === "revenue" && (
+                <div className={styles.drillDown}>
+                  <h3 className={styles.waterfallTitle}>
+                    {t("drill.revenueLeaderboard", "Revenue by affiliate")}
+                  </h3>
+                  {renderRevenueVerticalBars()}
+                  <h3
+                    className={`${styles.waterfallTitle} ${styles.drillSectionHeading}`}
+                  >
+                    {t("drill.revenueTrend", "Monthly Trend")}
+                  </h3>
+                  {renderTrendChart()}
+                </div>
+              )}
+
               <KpiCard
                 primary={
                   stats?.marginAnalysis
@@ -1082,9 +1770,16 @@ export default function AffiliatesPage() {
                 }
                 delta={stats?.marginAnalysis?.delta}
                 drillKey="margin"
-                activeDrill={row1DrillDown}
-                onClick={handleRow1Click}
+                activeDrill={activeDrill}
+                isLoading={isLoading}
+                onClick={handleDrillClick}
               />
+              {activeDrill === "margin" && (
+                <div className={styles.drillDown}>
+                  {renderMarginDualWaterfall()}
+                </div>
+              )}
+
               <KpiCard
                 primary={
                   stats?.cac
@@ -1099,70 +1794,50 @@ export default function AffiliatesPage() {
                 }
                 delta={stats?.cac?.delta}
                 drillKey="cac"
-                activeDrill={row1DrillDown}
-                onClick={handleRow1Click}
+                activeDrill={activeDrill}
+                isLoading={isLoading}
+                onClick={handleDrillClick}
               />
+              {activeDrill === "cac" && (
+                <div className={styles.drillDown}>
+                  <h3 className={styles.waterfallTitle}>
+                    {t("drill.cacByAffiliate", "CAC by Affiliate")}
+                  </h3>
+                  {stats?.leaderboard?.length ? (
+                    <div className={styles.tableWrap}>
+                      <table className={styles.leaderboardTable}>
+                        <thead>
+                          <tr>
+                            <th>{t("card.affiliate", "Affiliate")}</th>
+                            <th>{t("card.commission", "Commission")}</th>
+                            <th>{t("card.customers", "New customers")}</th>
+                            <th>{t("card.cac", "CAC")}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {stats.leaderboard.map((row) => {
+                            const cacVal =
+                              row.customers > 0
+                                ? row.commission / row.customers
+                                : 0;
+                            return (
+                              <tr key={row.code}>
+                                <td>{row.affiliateName}</td>
+                                <td>{fmtCurrency(row.commission)}</td>
+                                <td>{fmtNum(row.customers)}</td>
+                                <td>{fmtCurrency(cacVal)}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className={styles.noData}>No data</p>
+                  )}
+                </div>
+              )}
             </div>
-
-            {/* Row 1 drill-downs */}
-            {row1DrillDown === "revenue" && (
-              <div className={styles.drillDown}>
-                <h3 className={styles.waterfallTitle}>
-                  {t("drill.revenueLeaderboard", "Revenue Leaderboard")}
-                </h3>
-                {renderLeaderboardTable()}
-                <h3
-                  className={`${styles.waterfallTitle} ${styles.drillSectionHeading}`}
-                >
-                  {t("drill.revenueTrend", "Monthly Trend")}
-                </h3>
-                {renderTrendChart()}
-              </div>
-            )}
-            {row1DrillDown === "margin" && (
-              <div className={styles.drillDown}>
-                {renderMarginWaterfall()}
-              </div>
-            )}
-            {row1DrillDown === "cac" && (
-              <div className={styles.drillDown}>
-                <h3 className={styles.waterfallTitle}>
-                  {t("drill.cacByAffiliate", "CAC by Affiliate")}
-                </h3>
-                {stats?.leaderboard?.length ? (
-                  <div className={styles.tableWrap}>
-                    <table className={styles.leaderboardTable}>
-                      <thead>
-                        <tr>
-                          <th>{t("card.affiliate", "Affiliate")}</th>
-                          <th>{t("card.commission", "Commission")}</th>
-                          <th>{t("card.customers", "New customers")}</th>
-                          <th>{t("card.cac", "CAC")}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {stats.leaderboard.map((row) => {
-                          const cacVal =
-                            row.customers > 0
-                              ? row.commission / row.customers
-                              : 0;
-                          return (
-                            <tr key={row.code}>
-                              <td>{row.affiliateName}</td>
-                              <td>{fmtCurrency(row.commission)}</td>
-                              <td>{fmtNum(row.customers)}</td>
-                              <td>{fmtCurrency(cacVal)}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <p className={styles.noData}>No data</p>
-                )}
-              </div>
-            )}
 
             {/* ── Row 2: Customer Quality ──────────────────────── */}
             <div className={styles.overviewRowLabel}>
@@ -1183,9 +1858,16 @@ export default function AffiliatesPage() {
                 }
                 delta={stats?.ltv?.delta}
                 drillKey="ltv"
-                activeDrill={row2DrillDown}
-                onClick={handleRow2Click}
+                activeDrill={activeDrill}
+                isLoading={isLoading}
+                onClick={handleDrillClick}
               />
+              {activeDrill === "ltv" && (
+                <div className={styles.drillDown}>
+                  {renderLtvCohortChart()}
+                </div>
+              )}
+
               <KpiCard
                 primary={
                   stats?.repeatRate
@@ -1200,9 +1882,52 @@ export default function AffiliatesPage() {
                 }
                 delta={stats?.repeatRate?.delta}
                 drillKey="repeat"
-                activeDrill={row2DrillDown}
-                onClick={handleRow2Click}
+                activeDrill={activeDrill}
+                isLoading={isLoading}
+                onClick={handleDrillClick}
               />
+              {activeDrill === "repeat" && (
+                <div className={styles.drillDown}>
+                  <div className={styles.waterfallContainer}>
+                    <div className={styles.waterfallColumn}>
+                      <div className={styles.waterfallTitle}>
+                        {t("drill.repeatComparison", "Repeat Rate Comparison")}
+                      </div>
+                      <div className={styles.waterfallBar}>
+                        <span className={styles.waterfallBarLabel}>
+                          {t("card.affiliate", "Affiliate")}
+                        </span>
+                        <div
+                          className={styles.waterfallBarFill}
+                          style={{
+                            width: `${Math.max(stats?.repeatRate?.affiliateRepeatPct ?? 0, 2)}%`,
+                            background: "#5ecece",
+                          }}
+                        />
+                        <span className={styles.waterfallBarValue}>
+                          {stats?.repeatRate ? fmtPct(stats.repeatRate.affiliateRepeatPct) : "--"}
+                        </span>
+                      </div>
+                      <div className={styles.waterfallBar}>
+                        <span className={styles.waterfallBarLabel}>
+                          {t("card.organic", "Organic")}
+                        </span>
+                        <div
+                          className={styles.waterfallBarFill}
+                          style={{
+                            width: `${Math.max(stats?.repeatRate?.organicRepeatPct ?? 0, 2)}%`,
+                            background: "#c48fd0",
+                          }}
+                        />
+                        <span className={styles.waterfallBarValue}>
+                          {stats?.repeatRate ? fmtPct(stats.repeatRate.organicRepeatPct) : "--"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <KpiCard
                 primary={
                   stats?.aov
@@ -1217,179 +1942,74 @@ export default function AffiliatesPage() {
                 }
                 delta={stats?.aov?.delta}
                 drillKey="aov"
-                activeDrill={row2DrillDown}
-                onClick={handleRow2Click}
+                activeDrill={activeDrill}
+                isLoading={isLoading}
+                onClick={handleDrillClick}
               />
+              {activeDrill === "aov" && (
+                <div className={styles.drillDown}>
+                  <div className={styles.waterfallContainer}>
+                    <div className={styles.waterfallColumn}>
+                      <div className={styles.waterfallTitle}>
+                        {t("drill.aovComparison", "AOV Comparison")}
+                      </div>
+                      <div className={styles.waterfallBar}>
+                        <span className={styles.waterfallBarLabel}>
+                          {t("card.affiliate", "Affiliate")}
+                        </span>
+                        <div
+                          className={styles.waterfallBarFill}
+                          style={{
+                            width: `${Math.max(
+                              stats?.aov
+                                ? (stats.aov.affiliateAOV /
+                                    Math.max(
+                                      stats.aov.affiliateAOV,
+                                      stats.aov.organicAOV,
+                                      1,
+                                    )) *
+                                  100
+                                : 0,
+                              2,
+                            )}%`,
+                            background: "#5ecece",
+                          }}
+                        />
+                        <span className={styles.waterfallBarValue}>
+                          {stats?.aov ? fmtCurrency(stats.aov.affiliateAOV) : "--"}
+                        </span>
+                      </div>
+                      <div className={styles.waterfallBar}>
+                        <span className={styles.waterfallBarLabel}>
+                          {t("card.organic", "Organic")}
+                        </span>
+                        <div
+                          className={styles.waterfallBarFill}
+                          style={{
+                            width: `${Math.max(
+                              stats?.aov
+                                ? (stats.aov.organicAOV /
+                                    Math.max(
+                                      stats.aov.affiliateAOV,
+                                      stats.aov.organicAOV,
+                                      1,
+                                    )) *
+                                  100
+                                : 0,
+                              2,
+                            )}%`,
+                            background: "#c48fd0",
+                          }}
+                        />
+                        <span className={styles.waterfallBarValue}>
+                          {stats?.aov ? fmtCurrency(stats.aov.organicAOV) : "--"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-
-            {/* Row 2 drill-downs */}
-            {row2DrillDown === "ltv" && (
-              <div className={styles.drillDown}>
-                <div className={styles.waterfallContainer}>
-                  <div className={styles.waterfallColumn}>
-                    <div className={styles.waterfallTitle}>
-                      {t("drill.ltvComparison", "LTV Comparison")}
-                    </div>
-                    <div className={styles.waterfallBar}>
-                      <span className={styles.waterfallBarLabel}>
-                        {t("card.affiliate", "Affiliate")}
-                      </span>
-                      <div
-                        className={styles.waterfallBarFill}
-                        style={{
-                          width: `${Math.max(
-                            stats?.ltv
-                              ? (stats.ltv.affiliateLTV /
-                                  Math.max(
-                                    stats.ltv.affiliateLTV,
-                                    stats.ltv.organicLTV,
-                                    1,
-                                  )) *
-                                100
-                              : 0,
-                            2,
-                          )}%`,
-                          background: "#5ecece",
-                        }}
-                      />
-                      <span className={styles.waterfallBarValue}>
-                        {stats?.ltv ? fmtCurrency(stats.ltv.affiliateLTV) : "--"}
-                      </span>
-                    </div>
-                    <div className={styles.waterfallBar}>
-                      <span className={styles.waterfallBarLabel}>
-                        {t("card.organic", "Organic")}
-                      </span>
-                      <div
-                        className={styles.waterfallBarFill}
-                        style={{
-                          width: `${Math.max(
-                            stats?.ltv
-                              ? (stats.ltv.organicLTV /
-                                  Math.max(
-                                    stats.ltv.affiliateLTV,
-                                    stats.ltv.organicLTV,
-                                    1,
-                                  )) *
-                                100
-                              : 0,
-                            2,
-                          )}%`,
-                          background: "#c48fd0",
-                        }}
-                      />
-                      <span className={styles.waterfallBarValue}>
-                        {stats?.ltv ? fmtCurrency(stats.ltv.organicLTV) : "--"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            {row2DrillDown === "repeat" && (
-              <div className={styles.drillDown}>
-                <div className={styles.waterfallContainer}>
-                  <div className={styles.waterfallColumn}>
-                    <div className={styles.waterfallTitle}>
-                      {t("drill.repeatComparison", "Repeat Rate Comparison")}
-                    </div>
-                    <div className={styles.waterfallBar}>
-                      <span className={styles.waterfallBarLabel}>
-                        {t("card.affiliate", "Affiliate")}
-                      </span>
-                      <div
-                        className={styles.waterfallBarFill}
-                        style={{
-                          width: `${Math.max(stats?.repeatRate?.affiliateRepeatPct ?? 0, 2)}%`,
-                          background: "#5ecece",
-                        }}
-                      />
-                      <span className={styles.waterfallBarValue}>
-                        {stats?.repeatRate ? fmtPct(stats.repeatRate.affiliateRepeatPct) : "--"}
-                      </span>
-                    </div>
-                    <div className={styles.waterfallBar}>
-                      <span className={styles.waterfallBarLabel}>
-                        {t("card.organic", "Organic")}
-                      </span>
-                      <div
-                        className={styles.waterfallBarFill}
-                        style={{
-                          width: `${Math.max(stats?.repeatRate?.organicRepeatPct ?? 0, 2)}%`,
-                          background: "#c48fd0",
-                        }}
-                      />
-                      <span className={styles.waterfallBarValue}>
-                        {stats?.repeatRate ? fmtPct(stats.repeatRate.organicRepeatPct) : "--"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            {row2DrillDown === "aov" && (
-              <div className={styles.drillDown}>
-                <div className={styles.waterfallContainer}>
-                  <div className={styles.waterfallColumn}>
-                    <div className={styles.waterfallTitle}>
-                      {t("drill.aovComparison", "AOV Comparison")}
-                    </div>
-                    <div className={styles.waterfallBar}>
-                      <span className={styles.waterfallBarLabel}>
-                        {t("card.affiliate", "Affiliate")}
-                      </span>
-                      <div
-                        className={styles.waterfallBarFill}
-                        style={{
-                          width: `${Math.max(
-                            stats?.aov
-                              ? (stats.aov.affiliateAOV /
-                                  Math.max(
-                                    stats.aov.affiliateAOV,
-                                    stats.aov.organicAOV,
-                                    1,
-                                  )) *
-                                100
-                              : 0,
-                            2,
-                          )}%`,
-                          background: "#5ecece",
-                        }}
-                      />
-                      <span className={styles.waterfallBarValue}>
-                        {stats?.aov ? fmtCurrency(stats.aov.affiliateAOV) : "--"}
-                      </span>
-                    </div>
-                    <div className={styles.waterfallBar}>
-                      <span className={styles.waterfallBarLabel}>
-                        {t("card.organic", "Organic")}
-                      </span>
-                      <div
-                        className={styles.waterfallBarFill}
-                        style={{
-                          width: `${Math.max(
-                            stats?.aov
-                              ? (stats.aov.organicAOV /
-                                  Math.max(
-                                    stats.aov.affiliateAOV,
-                                    stats.aov.organicAOV,
-                                    1,
-                                  )) *
-                                100
-                              : 0,
-                            2,
-                          )}%`,
-                          background: "#c48fd0",
-                        }}
-                      />
-                      <span className={styles.waterfallBarValue}>
-                        {stats?.aov ? fmtCurrency(stats.aov.organicAOV) : "--"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* ── Row 3: Program Performance ───────────────────── */}
             <div className={styles.overviewRowLabel}>
@@ -1399,42 +2019,56 @@ export default function AffiliatesPage() {
               <KpiCard
                 primary={
                   stats?.leaderboard?.length
-                    ? `${stats.leaderboard.length} ${t("card.affiliatesActive", "affiliates")}`
+                    ? t("card.topAffiliates", "Top affiliates")
                     : "--"
                 }
                 label={t("card.leaderboard", "Leaderboard")}
                 secondary={
                   stats?.leaderboard?.length
-                    ? `${t("card.topAffiliate", "Top")}: ${stats.leaderboard[0]?.affiliateName ?? "--"}`
+                    ? `${t("card.top", "#1")}: ${stats.leaderboard[0]?.affiliateName ?? "--"}`
                     : ""
                 }
                 drillKey="leaderboard"
-                activeDrill={row3DrillDown}
-                onClick={handleRow3Click}
+                activeDrill={activeDrill}
+                isLoading={isLoading}
+                onClick={handleDrillClick}
               />
+              {activeDrill === "leaderboard" && (
+                <div className={styles.drillDown}>
+                  {renderLeaderboardTable()}
+                </div>
+              )}
+
               <KpiCard
                 primary={
                   stats?.productMix?.length
-                    ? `${stats.productMix.length} ${t("card.products", "products")}`
+                    ? t("card.topProducts", "Top products")
                     : "--"
                 }
                 label={t("card.productMix", "Product mix")}
                 secondary={
                   stats?.productMix?.length
-                    ? `${t("card.topProduct", "Top")}: ${stats.productMix[0]?.title ?? "--"}`
+                    ? `${t("card.top", "#1")}: ${stats.productMix[0]?.title ?? "--"}`
                     : ""
                 }
                 drillKey="products"
-                activeDrill={row3DrillDown}
-                onClick={handleRow3Click}
+                activeDrill={activeDrill}
+                isLoading={isLoading}
+                onClick={handleDrillClick}
               />
+              {activeDrill === "products" && (
+                <div className={styles.drillDown}>
+                  {renderProductMix()}
+                </div>
+              )}
+
               <KpiCard
                 primary={
                   stats?.roas
-                    ? `${stats.roas.affiliateROAS.toFixed(2)}x`
+                    ? `${stats.roas.affiliateROAS.toFixed(2)} ROAS`
                     : "--"
                 }
-                label={t("card.roas", "ROAS")}
+                label={t("card.roas", "Commission efficiency")}
                 secondary={
                   stats?.roas
                     ? `${t("card.revenue", "Revenue")}: ${fmtCurrency(stats.roas.totalRevenue)} / ${t("card.cost", "Cost")}: ${fmtCurrency(stats.roas.totalCost)}`
@@ -1442,90 +2076,79 @@ export default function AffiliatesPage() {
                 }
                 delta={stats?.roas?.delta}
                 drillKey="roas"
-                activeDrill={row3DrillDown}
-                onClick={handleRow3Click}
+                activeDrill={activeDrill}
+                isLoading={isLoading}
+                onClick={handleDrillClick}
               />
-            </div>
-
-            {/* Row 3 drill-downs */}
-            {row3DrillDown === "leaderboard" && (
-              <div className={styles.drillDown}>
-                {renderLeaderboardTable()}
-              </div>
-            )}
-            {row3DrillDown === "products" && (
-              <div className={styles.drillDown}>
-                {renderProductMix()}
-              </div>
-            )}
-            {row3DrillDown === "roas" && (
-              <div className={styles.drillDown}>
-                <h3 className={styles.waterfallTitle}>
-                  {t("drill.roasBreakdown", "ROAS Breakdown")}
-                </h3>
-                {stats?.roas ? (
-                  <div className={styles.waterfallContainer}>
-                    <div className={styles.waterfallColumn}>
-                      <div className={styles.waterfallBar}>
-                        <span className={styles.waterfallBarLabel}>
-                          {t("card.revenue", "Revenue")}
-                        </span>
-                        <div
-                          className={styles.waterfallBarFill}
-                          style={{
-                            width: `${Math.max(
-                              (stats.roas.totalRevenue /
-                                Math.max(
-                                  stats.roas.totalRevenue,
-                                  stats.roas.totalCost,
-                                  1,
-                                )) *
-                                100,
-                              2,
-                            )}%`,
-                            background: "#5ecece",
-                          }}
-                        />
-                        <span className={styles.waterfallBarValue}>
-                          {fmtCurrency(stats.roas.totalRevenue)}
-                        </span>
-                      </div>
-                      <div className={styles.waterfallBar}>
-                        <span className={styles.waterfallBarLabel}>
-                          {t("card.cost", "Cost")}
-                        </span>
-                        <div
-                          className={styles.waterfallBarFill}
-                          style={{
-                            width: `${Math.max(
-                              (stats.roas.totalCost /
-                                Math.max(
-                                  stats.roas.totalRevenue,
-                                  stats.roas.totalCost,
-                                  1,
-                                )) *
-                                100,
-                              2,
-                            )}%`,
-                            background: "#d72c0d",
-                          }}
-                        />
-                        <span className={styles.waterfallBarValue}>
-                          {fmtCurrency(stats.roas.totalCost)}
-                        </span>
+              {activeDrill === "roas" && (
+                <div className={styles.drillDown}>
+                  <h3 className={styles.waterfallTitle}>
+                    {t("drill.roasBreakdown", "ROAS Breakdown")}
+                  </h3>
+                  {stats?.roas ? (
+                    <div className={styles.waterfallContainer}>
+                      <div className={styles.waterfallColumn}>
+                        <div className={styles.waterfallBar}>
+                          <span className={styles.waterfallBarLabel}>
+                            {t("card.revenue", "Revenue")}
+                          </span>
+                          <div
+                            className={styles.waterfallBarFill}
+                            style={{
+                              width: `${Math.max(
+                                (stats.roas.totalRevenue /
+                                  Math.max(
+                                    stats.roas.totalRevenue,
+                                    stats.roas.totalCost,
+                                    1,
+                                  )) *
+                                  100,
+                                2,
+                              )}%`,
+                              background: "#5ecece",
+                            }}
+                          />
+                          <span className={styles.waterfallBarValue}>
+                            {fmtCurrency(stats.roas.totalRevenue)}
+                          </span>
+                        </div>
+                        <div className={styles.waterfallBar}>
+                          <span className={styles.waterfallBarLabel}>
+                            {t("card.cost", "Cost")}
+                          </span>
+                          <div
+                            className={styles.waterfallBarFill}
+                            style={{
+                              width: `${Math.max(
+                                (stats.roas.totalCost /
+                                  Math.max(
+                                    stats.roas.totalRevenue,
+                                    stats.roas.totalCost,
+                                    1,
+                                  )) *
+                                  100,
+                                2,
+                              )}%`,
+                              background: "#d72c0d",
+                            }}
+                          />
+                          <span className={styles.waterfallBarValue}>
+                            {fmtCurrency(stats.roas.totalCost)}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <p className={styles.noData}>No data</p>
-                )}
-              </div>
-            )}
+                  ) : (
+                    <p className={styles.noData}>No data</p>
+                  )}
+                </div>
+              )}
+            </div>
           </>
         )}
 
-        {/* ── Empty state: stepped onboarding ──────────────────── */}
-        {!hasData && syncStatus !== "running" && (
+        {/* ── Empty state: stepped onboarding (overview only) ──── */}
+        {activeTab === "overview" && !hasData && syncStatus !== "running" && (
           <div className={styles.onboarding}>
             <div className={styles.onboardingHeader}>
               <h2 className={styles.onboardingTitle}>
@@ -1549,7 +2172,13 @@ export default function AffiliatesPage() {
 
             <div className={styles.onboardingGrid}>
               {/* Step 1 — Import */}
-              <div className={styles.onboardingStep}>
+              <div
+                className={`${styles.onboardingStep}${csvDragActive ? ` ${styles.onboardingStepDrag}` : ""}`}
+                onDragOver={handleCsvDragOver}
+                onDragEnter={handleCsvDragOver}
+                onDragLeave={handleCsvDragLeave}
+                onDrop={handleCsvDrop}
+              >
                 <div
                   className={
                     profiles.length > 0
@@ -1562,30 +2191,111 @@ export default function AffiliatesPage() {
                 <div className={styles.onboardingStepTitle}>
                   {profiles.length > 0
                     ? t("empty.step1Done", "Affiliates imported")
-                    : t("empty.step1Title", "Import affiliates")}
+                    : csvFileName
+                      ? t("empty.step1Ready", "File selected")
+                      : t("empty.step1Title", "Import affiliates")}
                 </div>
-                <div className={styles.onboardingStepBody}>
-                  {profiles.length > 0
-                    ? t("empty.step1BodyDone", {
-                        count: profiles.length,
-                        defaultValue: "{{count}} profiles",
-                      })
-                    : t(
-                        "empty.step1Body",
-                        "Upload your BixGrow CSV export to populate affiliate profiles.",
+
+                {/* State A — profiles already imported (success) */}
+                {profiles.length > 0 && (
+                  <>
+                    <div className={styles.onboardingStepBody}>
+                      <s-badge tone="success">
+                        {t("empty.step1BodyDone", {
+                          count: profiles.length,
+                          defaultValue: "{{count}} affiliates imported",
+                        })}
+                      </s-badge>
+                    </div>
+                    <div className={styles.onboardingStepAction}>
+                      <s-button
+                        variant="secondary"
+                        onClick={handleCsvDropZoneClick}
+                      >
+                        {t("empty.step1ActionDone", "Re-import CSV")}
+                      </s-button>
+                    </div>
+                  </>
+                )}
+
+                {/* State B — file loaded, ready to import */}
+                {profiles.length === 0 && csvFileName && (
+                  <>
+                    <div className={styles.onboardingStepBody}>
+                      <div className={styles.fileStateCard}>
+                        <div className={styles.fileStateIcon}>
+                          <svg
+                            viewBox="0 0 20 20"
+                            width="20"
+                            height="20"
+                            aria-hidden="true"
+                            fill="currentColor"
+                          >
+                            <path d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7.414a2 2 0 00-.586-1.414l-3.414-3.414A2 2 0 0012.586 2H4zm8 1.5V7a1 1 0 001 1h3.5L12 3.5z" />
+                          </svg>
+                        </div>
+                        <div className={styles.fileStateName}>{csvFileName}</div>
+                      </div>
+                    </div>
+                    <div className={styles.onboardingStepAction}>
+                      <s-button
+                        variant="secondary"
+                        onClick={() => {
+                          setCsvFileName("");
+                          setCsvText("");
+                        }}
+                      >
+                        {t("empty.step1Remove", "Remove")}
+                      </s-button>
+                      {fetcher.state === "submitting" ? (
+                        <s-button
+                          variant="primary"
+                          disabled
+                          key="import-submitting"
+                        >
+                          {t("empty.step1Importing", "Importing...")}
+                        </s-button>
+                      ) : (
+                        <s-button
+                          variant="primary"
+                          onClick={handleCsvImport}
+                          key="import-ready"
+                        >
+                          {t("empty.step1ActionImport", "Import")}
+                        </s-button>
                       )}
-                </div>
-                <div className={styles.onboardingStepAction}>
-                  <s-button
-                    variant={profiles.length > 0 ? "secondary" : "primary"}
-                    commandFor="csv-import-modal"
-                    command="--show"
-                  >
-                    {profiles.length > 0
-                      ? t("empty.step1ActionDone", "Re-import CSV")
-                      : t("empty.step1Action", "Import BixGrow CSV")}
-                  </s-button>
-                </div>
+                    </div>
+                  </>
+                )}
+
+                {/* State C — idle (no file, no profiles) */}
+                {profiles.length === 0 && !csvFileName && (
+                  <>
+                    <div className={styles.onboardingStepBody}>
+                      {csvDragActive
+                        ? t("empty.step1BodyDrag", "Drop your CSV file here")
+                        : t(
+                            "empty.step1Body",
+                            "Drag and drop your BixGrow CSV export, or click to browse.",
+                          )}
+                    </div>
+                    <div className={styles.onboardingStepAction}>
+                      <s-button
+                        variant="primary"
+                        onClick={handleCsvDropZoneClick}
+                      >
+                        {t("empty.step1Action", "Select file")}
+                      </s-button>
+                    </div>
+                  </>
+                )}
+
+                {/* Error banner — import failed */}
+                {importResult && importResult.errors.length > 0 && (
+                  <s-banner tone="critical">
+                    {importResult.errors.join(", ")}
+                  </s-banner>
+                )}
               </div>
 
               {/* Step 2 — Sync */}
@@ -1635,294 +2345,100 @@ export default function AffiliatesPage() {
           </div>
         )}
 
-        {/* ── Affiliate profiles table ─────────────────────────── */}
-        {profiles.length > 0 && (
+        {/* ── Affiliates tab header strip ─────────────────────── */}
+        {activeTab === "profiles" && !profileDetailCode && (
           <>
-            <div
-              className={`${styles.overviewRowLabel} ${styles.profilesHeading}`}
-            >
-              {t("profiles.title", "Affiliate Profiles")} ({profiles.length})
+            <div className={styles.overviewStrip}>
+              <div className={styles.overviewStripHeader}>
+                <h2 className={styles.overviewStripHeading}>
+                  {t("profiles.heading", "Affiliate ranking")}
+                </h2>
+                {activeRangeFriendly && (
+                  periodPreset === "custom" && !customCalendarOpen ? (
+                    <button
+                      type="button"
+                      className={`${styles.periodFriendly} ${styles.periodFriendlyEditable}`}
+                      onClick={handleEditCustomDates}
+                      title={t("period.edit", "Change dates")}
+                    >
+                      {activeRangeFriendly}
+                    </button>
+                  ) : (
+                    <span className={styles.periodFriendly}>{activeRangeFriendly}</span>
+                  )
+                )}
+              </div>
+              <div className={styles.overviewStripSubtitle}>
+                {t("profiles.subtitle", {
+                  count: profiles.length,
+                  defaultValue: "Total affiliates: {{count}}",
+                })}
+              </div>
             </div>
-            <div className={styles.tableWrap}>
-              <table className={styles.leaderboardTable}>
-                <thead>
-                  <tr>
-                    <th>{t("profile.code", "Code")}</th>
-                    <th>{t("profile.name", "Name")}</th>
-                    <th>{t("profile.commission", "Commission")}</th>
-                    <th>{t("profile.tier", "Tier")}</th>
-                    <th>{t("profile.status", "Status")}</th>
-                    <th>{t("profile.actions", "Actions")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {profiles.map((p) => (
-                    <tr key={p.id}>
-                      <td>{p.code}</td>
-                      <td>
-                        {p.affiliateName}
-                        {p.instagram && (
-                          <span className={styles.affiliateHandle}>
-                            @{p.instagram}
-                          </span>
-                        )}
-                      </td>
-                      <td>{p.commissionPct}%</td>
-                      <td>
-                        <s-badge>{p.tier}</s-badge>
-                      </td>
-                      <td>
-                        <s-badge
-                          tone={
-                            p.status === "active"
-                              ? "success"
-                              : p.status === "paused"
-                                ? "warning"
-                                : "critical"
-                          }
-                        >
-                          {p.status}
-                        </s-badge>
-                      </td>
-                      <td>
-                        <s-button
-                          variant="secondary"
-                          onClick={() => openEditProfile(p)}
-                        >
-                          {t("profile.edit", "Edit")}
-                        </s-button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {hasData && renderPeriodControls(false)}
+            {hasData && renderCustomCalendar()}
           </>
+        )}
+
+        {/* ── Profiles tab: detail view for a single affiliate ── */}
+        {activeTab === "profiles" && profileDetailCode && activeDateRange && (
+          <ProfileDetail
+            code={profileDetailCode}
+            startDate={activeDateRange.start}
+            endDate={activeDateRange.end}
+            compStart={
+              getComparisonDates(
+                comparisonMode,
+                activeDateRange.start,
+                activeDateRange.end,
+              )?.compStart ?? null
+            }
+            compEnd={
+              getComparisonDates(
+                comparisonMode,
+                activeDateRange.start,
+                activeDateRange.end,
+              )?.compEnd ?? null
+            }
+            userLocale={userLocale}
+            onBack={() => setProfileDetailCode(null)}
+            fmtCurrency={fmtCurrency}
+            fmtNum={fmtNum}
+            fmtPct={fmtPct}
+            t={t}
+          />
+        )}
+
+        {/* ── Profiles tab: enhanced list with quartile bands ── */}
+        {activeTab === "profiles" && !profileDetailCode && profiles.length > 0 && (
+          <ProfilesList
+            leaderboard={stats?.leaderboard ?? []}
+            profiles={sanitizedProfiles}
+            onRowClick={setProfileDetailCode}
+            fmtCurrency={fmtCurrency}
+            fmtNum={fmtNum}
+            fmtPct={fmtPct}
+            t={t}
+          />
+        )}
+
+        {activeTab === "profiles" && !profileDetailCode && profiles.length === 0 && (
+          <div className={styles.noData}>
+            <s-text>
+              {t("profiles.emptyMessage", "No affiliate profiles yet. Import a BixGrow CSV to get started.")}
+            </s-text>
+          </div>
         )}
       </s-section>
 
-      {/* ── CSV Import Modal ───────────────────────────────────── */}
-      <s-modal id="csv-import-modal" heading={t("import.title", "Import BixGrow Affiliates")}>
-        <s-box padding="base">
-          <s-stack direction="block" gap="base">
-            <s-text>
-              {t(
-                "import.description",
-                "Upload your BixGrow affiliate export CSV. Affiliates will be matched by their coupon code.",
-              )}
-            </s-text>
-
-            {/* Hidden file input — triggered by the drop zone or button */}
-            <input
-              ref={csvFileInputRef}
-              type="file"
-              accept=".csv"
-              onChange={handleCsvFileChange}
-              className={styles.hiddenFileInput}
-            />
-
-            {/* Polaris-styled drop zone */}
-            <div
-              className={`${styles.dropZone}${csvDragActive ? ` ${styles.dropZoneActive}` : ""}${csvFileName ? ` ${styles.dropZoneFilled}` : ""}`}
-              onClick={handleCsvDropZoneClick}
-              onDragOver={handleCsvDragOver}
-              onDragEnter={handleCsvDragOver}
-              onDragLeave={handleCsvDragLeave}
-              onDrop={handleCsvDrop}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") handleCsvDropZoneClick();
-              }}
-            >
-              <s-box padding="base">
-                <s-stack direction="block" gap="base">
-                  {csvFileName ? (
-                    <>
-                      <s-text type="strong">{csvFileName}</s-text>
-                      <s-text color="subdued">
-                        {t("import.dropZoneReplace", "Click or drop another file to replace")}
-                      </s-text>
-                    </>
-                  ) : (
-                    <>
-                      <s-text type="strong">
-                        {csvDragActive
-                          ? t("import.dropZoneActive", "Drop CSV here")
-                          : t("import.dropZoneIdle", "Drag and drop your CSV here")}
-                      </s-text>
-                      <s-text color="subdued">
-                        {t("import.dropZoneOr", "or click to browse")}
-                      </s-text>
-                    </>
-                  )}
-                </s-stack>
-              </s-box>
-            </div>
-
-            {importResult && (
-              <s-banner
-                tone={
-                  importResult.errors.length > 0 ? "critical" : "success"
-                }
-              >
-                {importResult.errors.length > 0
-                  ? importResult.errors.join(", ")
-                  : t("import.success", "Imported {{count}} affiliates, skipped {{skipped}}", {
-                      count: importResult.imported,
-                      skipped: importResult.skipped,
-                    })}
-              </s-banner>
-            )}
-            <div className={styles.modalActions}>
-              <s-button
-                variant="primary"
-                onClick={handleCsvImport}
-                disabled={!csvText.trim() || undefined}
-              >
-                {t("import.button", "Import")}
-              </s-button>
-            </div>
-          </s-stack>
-        </s-box>
-      </s-modal>
-
-      {/* ── Profile Edit Modal ─────────────────────────────────── */}
-      <s-modal
-        id="profile-edit-modal"
-        heading={t("profile.editTitle", "Edit Affiliate")}
-      >
-        {editingProfile && (
-          <s-box padding="base">
-            <s-stack direction="block" gap="base">
-              <s-text type="strong">{editingProfile.affiliateName}</s-text>
-              <s-text>{editingProfile.code}</s-text>
-
-              <s-text-field
-                label={t("profile.commission", "Commission %")}
-                {...{ type: "number" } as Record<string, string>}
-                value={editCommission}
-                onChange={(event: Event) =>
-                  setEditCommission(
-                    (event.currentTarget as HTMLInputElement).value,
-                  )
-                }
-              />
-
-              <s-select
-                label={t("profile.tier", "Tier")}
-                value={editTier}
-                onChange={(event: Event) =>
-                  setEditTier(
-                    (event.currentTarget as HTMLSelectElement).value,
-                  )
-                }
-              >
-                <s-option value="baseline">Baseline</s-option>
-                <s-option value="silver">Silver</s-option>
-                <s-option value="gold">Gold</s-option>
-                <s-option value="platinum">Platinum</s-option>
-              </s-select>
-
-              <s-select
-                label={t("profile.status", "Status")}
-                value={editStatus}
-                onChange={(event: Event) =>
-                  setEditStatus(
-                    (event.currentTarget as HTMLSelectElement).value,
-                  )
-                }
-              >
-                <s-option value="active">Active</s-option>
-                <s-option value="paused">Paused</s-option>
-                <s-option value="archived">Archived</s-option>
-              </s-select>
-
-              <s-text-field
-                label={t("profile.notes", "Notes")}
-                value={editNotes}
-                onChange={(event: Event) =>
-                  setEditNotes(
-                    (event.currentTarget as HTMLInputElement).value,
-                  )
-                }
-                {...{ multiline: true } as Record<string, unknown>}
-              />
-
-              <div className={styles.modalActionsSpread}>
-                <s-button
-                  variant="secondary"
-                  tone="critical"
-                  onClick={() => {
-                    if (editingProfile) {
-                      setDeleteConfirmProfileId(editingProfile.id);
-                      document.getElementById("delete-confirm-modal")?.setAttribute("open", "");
-                    }
-                  }}
-                >
-                  {t("profile.delete", "Delete")}
-                </s-button>
-                <div className={styles.modalActionsRight}>
-                  <s-button
-                    variant="secondary"
-                    onClick={() => {
-                      document
-                        .getElementById("profile-edit-modal")
-                        ?.removeAttribute("open");
-                    }}
-                  >
-                    {t("common:button.cancel", "Cancel")}
-                  </s-button>
-                  <s-button variant="primary" onClick={handleProfileSave}>
-                    {t("common:button.save", "Save")}
-                  </s-button>
-                </div>
-              </div>
-            </s-stack>
-          </s-box>
-        )}
-      </s-modal>
-      {/* ── Delete Confirmation Modal ──────────────────────────── */}
-      <s-modal
-        id="delete-confirm-modal"
-        heading={t("profile.deleteConfirmTitle", "Delete Affiliate")}
-      >
-        <s-box padding="base">
-          <s-stack direction="block" gap="base">
-            <s-text>
-              {t(
-                "profile.deleteConfirmMessage",
-                "Are you sure you want to delete this affiliate profile? This action cannot be undone.",
-              )}
-            </s-text>
-            <div className={styles.modalActions}>
-              <s-button
-                variant="secondary"
-                onClick={() => {
-                  setDeleteConfirmProfileId(null);
-                  document.getElementById("delete-confirm-modal")?.removeAttribute("open");
-                }}
-              >
-                {t("common:button.cancel", "Cancel")}
-              </s-button>
-              <s-button
-                variant="primary"
-                tone="critical"
-                onClick={() => {
-                  if (deleteConfirmProfileId) {
-                    handleProfileDelete(deleteConfirmProfileId);
-                  }
-                  setDeleteConfirmProfileId(null);
-                  document.getElementById("delete-confirm-modal")?.removeAttribute("open");
-                  document.getElementById("profile-edit-modal")?.removeAttribute("open");
-                }}
-              >
-                {t("profile.delete", "Delete")}
-              </s-button>
-            </div>
-          </s-stack>
-        </s-box>
-      </s-modal>
+      {/* Hidden file input — triggered by buttons and drop zones */}
+      <input
+        ref={csvFileInputRef}
+        type="file"
+        accept=".csv"
+        onChange={handleCsvFileChange}
+        className={styles.hiddenFileInput}
+      />
     </s-page>
   );
 }
