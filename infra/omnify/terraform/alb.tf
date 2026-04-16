@@ -6,7 +6,7 @@ resource "aws_lb" "app" {
   # Route optimization for 20+ orders can take up to ~90s because Phase 5b
   # re-quotes Lalamove for each relocation. Default 60s timeout was cutting
   # browser requests off before the backend finished. 120s gives headroom.
-  idle_timeout = 120
+  idle_timeout = 90
 }
 
 resource "aws_lb_target_group" "app" {

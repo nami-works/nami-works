@@ -10,6 +10,56 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Cleanup-StaleTargets {
+  param(
+    [string]$ClusterName,
+    [string]$ServiceName,
+    [string]$RegionName
+  )
+  Write-Host "`nAuditing ALB target group for stale targets..."
+
+  $tgArn = aws ecs describe-services --cluster $ClusterName --services $ServiceName --region $RegionName --query "services[0].loadBalancers[0].targetGroupArn" --output text
+  if (-not $tgArn -or $tgArn -eq "None") {
+    Write-Host "  No target group found for $ServiceName — skipping."
+    return
+  }
+
+  $taskArnsJson = aws ecs list-tasks --cluster $ClusterName --service-name $ServiceName --region $RegionName --query "taskArns" --output json
+  $taskArns = ($taskArnsJson | ConvertFrom-Json)
+  if ($taskArns.Count -eq 0) {
+    Write-Host "  No running tasks — skipping."
+    return
+  }
+
+  $validIps = @()
+  foreach ($arn in $taskArns) {
+    $shortId = ($arn -split "/")[-1]
+    $ip = aws ecs describe-tasks --cluster $ClusterName --tasks $shortId --region $RegionName --query "tasks[0].containers[0].networkInterfaces[0].privateIpv4Address" --output text
+    if ($ip -and $ip -ne "None") { $validIps += $ip }
+  }
+  Write-Host ("  Valid task IPs: {0}" -f ($validIps -join ", "))
+
+  $healthJson = aws elbv2 describe-target-health --target-group-arn $tgArn --region $RegionName --output json
+  $targets = ($healthJson | ConvertFrom-Json).TargetHealthDescriptions
+
+  $staleCount = 0
+  foreach ($t in $targets) {
+    $tIp = $t.Target.Id
+    $tPort = $t.Target.Port
+    if ($tIp -notin $validIps) {
+      Write-Host ("  Deregistering stale target: {0}:{1} (state: {2})" -f $tIp, $tPort, $t.TargetHealth.State)
+      aws elbv2 deregister-targets --target-group-arn $tgArn --targets "Id=$tIp,Port=$tPort" --region $RegionName | Out-Null
+      $staleCount++
+    }
+  }
+
+  if ($staleCount -eq 0) {
+    Write-Host "  Target group clean — no stale targets."
+  } else {
+    Write-Host ("  Removed {0} stale target(s)." -f $staleCount)
+  }
+}
+
 function Ensure-DockerRunning {
   docker info 2>$null | Out-Null
   if ($LASTEXITCODE -eq 0) { return }
@@ -120,6 +170,8 @@ open(os.environ['OMNIFY_TMP_JSON'],'w',encoding='utf-8').write(json.dumps(td))"
   $readyStatus = aws ecs describe-services --cluster $Cluster --services $Service --region $Region --query "services[0].{rollout:deployments[0].rolloutState, running:runningCount, taskDef:taskDefinition}" --output table
   Write-Host "Deployment readiness:"
   Write-Host $readyStatus
+
+  Cleanup-StaleTargets -ClusterName $Cluster -ServiceName $Service -RegionName $Region
 } finally {
   Pop-Location
 }
