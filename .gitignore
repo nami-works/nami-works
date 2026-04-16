@@ -43,6 +43,15 @@ z_playground/
 # Large files (GitHub limit)
 infra/terraform/.terraform/
 public/screencast.mp4
+.knowledge/*.pdf
+
+# Scratch logs (local-only diagnostics)
+local-logs.txt
+opt-logs.txt
+phase-logs.txt
+vrp-logs.txt
+tmp-timing.txt
+tmp-*.txt
 
 # Terraform state & secrets
 infra/terraform/terraform.tfstate
