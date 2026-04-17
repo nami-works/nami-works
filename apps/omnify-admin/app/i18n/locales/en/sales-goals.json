@@ -2,7 +2,6 @@
   "pageHeading": "Retail sales",
   "tabs": {
     "dashboard": "Dashboard",
-    "goals": "Goals",
     "campaigns": "Campaigns"
   },
   "sync": {
@@ -133,6 +132,10 @@
     "noLocations": "No retail locations found."
   },
   "goals": {
+    "manageButton": "Manage goals",
+    "modalTitle": "Manage goals",
+    "modalSubtitle": "Goals sync across the dashboard and all KPI calculations. Changes save per card.",
+    "modalDone": "Done",
     "referenceMonth": "Month",
     "applyToAll": "Apply growth to all",
     "bulkTitle": "Apply growth to all locations",

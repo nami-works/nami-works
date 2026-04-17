@@ -138,11 +138,11 @@ type DashboardPeriodStats = {
   proratedMtdGoal: number | null;
 };
 
-type TabId = "dashboard" | "goals" | "campaigns";
+type TabId = "dashboard" | "campaigns";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const TAB_IDS: TabId[] = ["dashboard", "goals", "campaigns"];
+const TAB_IDS: TabId[] = ["dashboard", "campaigns"];
 
 const MONTHS_BACK = 13; // current + 12 prior (gives full YoY)
 
@@ -2318,28 +2318,40 @@ export default function SalesGoalsPage() {
           {/* ── Dashboard ──────────────────────────────────────────────── */}
           {activeTab === "dashboard" ? (
             <>
-              {/* Overview strip: heading + friendly range + subtitle stats. */}
+              {/* Overview strip: heading + friendly range + Manage goals button + subtitle stats. */}
               <div className={styles.overviewStrip}>
                 <div className={styles.overviewStripHeader}>
-                  <h2 className={styles.overviewStripHeading}>
-                    {t("dashboard.stripHeading", "Retail goals dashboard")}
-                  </h2>
-                  {activeRangeFriendly ? (
-                    periodPreset === "custom" && !customCalendarOpen ? (
-                      <button
-                        type="button"
-                        className={`${styles.periodFriendly} ${styles.periodFriendlyEditable}`}
-                        onClick={handleEditCustomDates}
-                        title={t("dashboard.period.edit", "Change dates")}
-                      >
-                        {activeRangeFriendly}
-                      </button>
-                    ) : (
-                      <span className={styles.periodFriendly}>
-                        {activeRangeFriendly}
-                      </span>
-                    )
-                  ) : null}
+                  <div className={styles.overviewHeaderLeft}>
+                    <h2 className={styles.overviewStripHeading}>
+                      {t("dashboard.stripHeading", "Retail goals dashboard")}
+                    </h2>
+                    {activeRangeFriendly ? (
+                      periodPreset === "custom" && !customCalendarOpen ? (
+                        <button
+                          type="button"
+                          className={`${styles.periodFriendly} ${styles.periodFriendlyEditable}`}
+                          onClick={handleEditCustomDates}
+                          title={t("dashboard.period.edit", "Change dates")}
+                        >
+                          {activeRangeFriendly}
+                        </button>
+                      ) : (
+                        <span className={styles.periodFriendly}>
+                          {activeRangeFriendly}
+                        </span>
+                      )
+                    ) : null}
+                  </div>
+                  <s-button
+                    variant="primary"
+                    commandFor="manage-goals-modal"
+                    command="--show"
+                    onClick={() => {
+                      console.info(`[sales-goals:ui] manage-goals modal opened`);
+                    }}
+                  >
+                    {t("goals.manageButton")}
+                  </s-button>
                 </div>
                 <div
                   className={`${styles.overviewStripSubtitle} ${syncStaleClass}`}
@@ -2872,42 +2884,70 @@ export default function SalesGoalsPage() {
             </>
           ) : null}
 
-          {/* ── Goals ──────────────────────────────────────────────────── */}
-          {activeTab === "goals" ? (
-            <>
-              {/* Header */}
-              <div className={styles.controlsRow}>
-                <div className={styles.controlsLeft}>
-                  <s-select
-                    label={t("goals.referenceMonth")}
-                    value={goalsMonth}
-                    onChange={(e: Event) => {
-                      const v = (e.currentTarget as HTMLSelectElement).value;
-                      if (v) setGoalsMonth(v);
-                    }}
-                  >
-                    {months
-                      .slice()
-                      .reverse()
-                      .map((m) => (
-                        <s-option key={m} value={m}>
-                          {formatMonthLabel(m)}
-                        </s-option>
-                      ))}
-                  </s-select>
-                </div>
-                <div className={styles.controlsRight}>
-                  <s-button
-                    variant="secondary"
-                    onClick={() => setBulkModalOpen(true)}
-                  >
-                    {t("goals.applyToAll")}
-                  </s-button>
-                </div>
-              </div>
+          {/* Goals tab removed — UI moved into the Manage Goals modal below. */}
 
-              {/* Per-location goal cards */}
-              <div className={styles.goalCardsGrid}>
+          {/* ── Campaigns ─────────────────────────────────────────────── */}
+          {activeTab === "campaigns" ? (
+            <CampaignsTab
+              locations={enabledLocations}
+              campaigns={campaigns}
+              progressByCampaignId={campaignProgress}
+              currencyCode={currencyCode}
+              onSubmit={(fd) => campaignFetcher.submit(fd, { method: "post" })}
+              isSubmitting={campaignFetcher.state !== "idle"}
+              matchOptionsFetcher={matchOptionsFetcher}
+              baselineFetcher={baselineFetcher}
+            />
+          ) : null}
+
+        </s-stack>
+      </s-section>
+
+      {/* ── Manage goals modal ────────────────────────────────────────────── */}
+      <s-modal
+        id="manage-goals-modal"
+        heading={t("goals.modalTitle")}
+      >
+        <s-stack direction="block" gap="base">
+          <p className={styles.modalSubtitle}>{t("goals.modalSubtitle")}</p>
+
+          {/* Month filter + Apply-to-all packed on the same row */}
+          <div className={styles.periodBar}>
+            <div className={styles.filterControl} style={{ maxWidth: 240 }}>
+              <span className={styles.filterLabel}>
+                {t("goals.referenceMonth")}
+              </span>
+              <s-select
+                label={t("goals.referenceMonth")}
+                labelAccessibilityVisibility="exclusive"
+                value={goalsMonth}
+                onChange={(e: Event) => {
+                  const v = (e.currentTarget as HTMLSelectElement).value;
+                  if (v) setGoalsMonth(v);
+                }}
+              >
+                {months
+                  .slice()
+                  .reverse()
+                  .map((m) => (
+                    <s-option key={m} value={m}>
+                      {formatMonthLabel(m)}
+                    </s-option>
+                  ))}
+              </s-select>
+            </div>
+            <div>
+              <s-button
+                variant="secondary"
+                onClick={() => setBulkModalOpen(true)}
+              >
+                {t("goals.applyToAll")}
+              </s-button>
+            </div>
+          </div>
+
+          {/* Per-location goal cards */}
+          <div className={styles.goalCardsGrid}>
                 {enabledLocations.map((loc) => {
                   const bucketCurrent = bucketFor(loc.id, goalsMonth);
                   const bucketPrevMonth = bucketFor(
@@ -3063,35 +3103,36 @@ export default function SalesGoalsPage() {
                               <span className={styles.editFormLabel}>
                                 {t("goals.basePeriod")}
                               </span>
-                              <select
-                                className={styles.select}
+                              <s-select
+                                label={t("goals.basePeriod")}
+                                labelAccessibilityVisibility="exclusive"
                                 value={editForm.basePeriod}
-                                onChange={(e) =>
+                                onChange={(e: Event) =>
                                   setEditForm((prev) => ({
                                     ...prev,
-                                    basePeriod: e.target
+                                    basePeriod: (e.currentTarget as HTMLSelectElement)
                                       .value as EditForm["basePeriod"],
                                   }))
                                 }
                               >
-                                <option value="previous-month">
+                                <s-option value="previous-month">
                                   {t("goals.previousMonth")}:{" "}
                                   {formatCurrency(
                                     bucketPrevMonth.revenue,
                                     currencyCode,
                                   )}
-                                </option>
-                                <option value="previous-year">
+                                </s-option>
+                                <s-option value="previous-year">
                                   {t("goals.sameMonthLastYear")}:{" "}
                                   {formatCurrency(
                                     bucketPrevYear.revenue,
                                     currencyCode,
                                   )}
-                                </option>
-                                <option value="custom">
+                                </s-option>
+                                <s-option value="custom">
                                   {t("goals.customBase")}
-                                </option>
-                              </select>
+                                </s-option>
+                              </s-select>
                             </div>
                             {editForm.basePeriod === "custom" ? (
                               <div className={styles.editFormRow}>
@@ -3127,21 +3168,21 @@ export default function SalesGoalsPage() {
                                     }))
                                   }
                                 />
-                                <select
-                                  className={styles.select}
+                                <s-select
+                                  label={t("goals.growth")}
+                                  labelAccessibilityVisibility="exclusive"
                                   value={editForm.growthType}
-                                  onChange={(e) =>
+                                  onChange={(e: Event) =>
                                     setEditForm((prev) => ({
                                       ...prev,
-                                      growthType: e.target.value as
-                                        | "percentage"
-                                        | "absolute",
+                                      growthType: (e.currentTarget as HTMLSelectElement)
+                                        .value as "percentage" | "absolute",
                                     }))
                                   }
                                 >
-                                  <option value="percentage">%</option>
-                                  <option value="absolute">{currencyCode}</option>
-                                </select>
+                                  <s-option value="percentage">%</s-option>
+                                  <s-option value="absolute">{currencyCode}</s-option>
+                                </s-select>
                               </div>
                             </div>
                             <div className={styles.editPreviewRow}>
@@ -3169,7 +3210,7 @@ export default function SalesGoalsPage() {
                               )}
                               <div className={styles.editFormActionsRight}>
                                 <s-button
-                                  variant="tertiary"
+                                  variant="secondary"
                                   onClick={() => setEditingLocationId(null)}
                                 >
                                   {t("common:button.cancel")}
@@ -3191,26 +3232,23 @@ export default function SalesGoalsPage() {
                     </div>
                   );
                 })}
-              </div>
-            </>
-          ) : null}
+          </div>
 
-          {/* ── Campaigns ─────────────────────────────────────────────── */}
-          {activeTab === "campaigns" ? (
-            <CampaignsTab
-              locations={enabledLocations}
-              campaigns={campaigns}
-              progressByCampaignId={campaignProgress}
-              currencyCode={currencyCode}
-              onSubmit={(fd) => campaignFetcher.submit(fd, { method: "post" })}
-              isSubmitting={campaignFetcher.state !== "idle"}
-              matchOptionsFetcher={matchOptionsFetcher}
-              baselineFetcher={baselineFetcher}
-            />
-          ) : null}
-
+          <div className={styles.modalFooterRight}>
+            <s-button
+              variant="primary"
+              onClick={() => {
+                document
+                  .getElementById("manage-goals-modal")
+                  ?.removeAttribute("open");
+                console.info(`[sales-goals:ui] manage-goals modal closed`);
+              }}
+            >
+              {t("goals.modalDone")}
+            </s-button>
+          </div>
         </s-stack>
-      </s-section>
+      </s-modal>
 
       {/* ── Bulk apply modal ──────────────────────────────────────────────── */}
       {bulkModalOpen ? (
@@ -3227,21 +3265,23 @@ export default function SalesGoalsPage() {
               <span className={styles.editFormLabel}>
                 {t("goals.basePeriod")}
               </span>
-              <select
-                className={styles.select}
+              <s-select
+                label={t("goals.basePeriod")}
+                labelAccessibilityVisibility="exclusive"
                 value={bulkForm.basePeriod}
-                onChange={(e) =>
+                onChange={(e: Event) =>
                   setBulkForm((prev) => ({
                     ...prev,
-                    basePeriod: e.target.value as EditForm["basePeriod"],
+                    basePeriod: (e.currentTarget as HTMLSelectElement)
+                      .value as EditForm["basePeriod"],
                   }))
                 }
               >
-                <option value="previous-month">{t("goals.previousMonth")}</option>
-                <option value="previous-year">
+                <s-option value="previous-month">{t("goals.previousMonth")}</s-option>
+                <s-option value="previous-year">
                   {t("goals.sameMonthLastYear")}
-                </option>
-              </select>
+                </s-option>
+              </s-select>
             </div>
             <div className={styles.editFormRow}>
               <span className={styles.editFormLabel}>{t("goals.growth")}</span>
@@ -3257,26 +3297,28 @@ export default function SalesGoalsPage() {
                     }))
                   }
                 />
-                <select
-                  className={styles.select}
+                <s-select
+                  label={t("goals.growth")}
+                  labelAccessibilityVisibility="exclusive"
                   value={bulkForm.growthType}
-                  onChange={(e) =>
+                  onChange={(e: Event) =>
                     setBulkForm((prev) => ({
                       ...prev,
-                      growthType: e.target.value as "percentage" | "absolute",
+                      growthType: (e.currentTarget as HTMLSelectElement)
+                        .value as "percentage" | "absolute",
                     }))
                   }
                 >
-                  <option value="percentage">%</option>
-                  <option value="absolute">{currencyCode}</option>
-                </select>
+                  <s-option value="percentage">%</s-option>
+                  <s-option value="absolute">{currencyCode}</s-option>
+                </s-select>
               </div>
             </div>
             <div className={styles.editFormActions}>
               <span />
               <div className={styles.editFormActionsRight}>
                 <s-button
-                  variant="tertiary"
+                  variant="secondary"
                   onClick={() => setBulkModalOpen(false)}
                 >
                   {t("common:button.cancel")}

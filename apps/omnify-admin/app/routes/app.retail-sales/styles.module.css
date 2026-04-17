@@ -271,6 +271,15 @@
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.overviewHeaderLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .overviewStripHeading {
@@ -373,31 +382,6 @@
   margin-top: 4px;
 }
 
-/* ── Header controls row (legacy — still used by the Goals tab) ──────────── */
-.controlsRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: center;
-  padding: 12px 0;
-  margin-bottom: 8px;
-}
-
-.controlsLeft {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  align-items: flex-end;
-}
-
-.controlsRight {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
 .storesWithGoalsChip {
   font-size: 12px;
   color: #6d7175;
@@ -413,6 +397,19 @@
 .staleRed {
   color: #d72c0d;
   font-weight: 600;
+}
+
+/* ── Manage goals modal subtitle + footer ─────────────────────────────────── */
+.modalSubtitle {
+  font-size: 12px;
+  color: #6d7175;
+  margin: 0 0 4px;
+}
+
+.modalFooterRight {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
 }
 
 .controlLabel {
@@ -782,13 +779,6 @@
 }
 
 @media (max-width: 768px) {
-  .controlsRow {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .controlsRight {
-    justify-content: flex-start;
-  }
   .tableLocations .tableHeader,
   .tableLocations .tableRow {
     grid-template-columns: repeat(2, minmax(0, 1fr));

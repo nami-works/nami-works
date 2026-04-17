@@ -2,7 +2,6 @@
   "pageHeading": "Vendas de varejo",
   "tabs": {
     "dashboard": "Painel",
-    "goals": "Metas",
     "campaigns": "Campanhas"
   },
   "sync": {
@@ -133,6 +132,10 @@
     "noLocations": "Nenhuma localização de varejo encontrada."
   },
   "goals": {
+    "manageButton": "Gerenciar metas",
+    "modalTitle": "Gerenciar metas",
+    "modalSubtitle": "As metas sincronizam com o painel e todos os cálculos de KPI. As alterações são salvas por card.",
+    "modalDone": "Concluir",
     "referenceMonth": "Mês",
     "applyToAll": "Aplicar crescimento a todas",
     "bulkTitle": "Aplicar crescimento a todas as localizações",
