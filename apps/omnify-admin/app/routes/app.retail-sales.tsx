@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   ActionFunctionArgs,
   HeadersFunction,
@@ -14,7 +14,7 @@ import {
   formatCurrencyCompact,
   formatMonthLabel as fmtMonthBase,
 } from "../i18n/format";
-import styles from "./app.retail-goals/styles.module.css";
+import styles from "./app.retail-sales/styles.module.css";
 import {
   filterCandidateLocations,
   monthKey,
@@ -23,23 +23,34 @@ import {
 } from "../sales-goals/classification";
 import {
   buildMonthRange,
+  computeCurrentMonthProjection,
   computeMonthProjections,
-  countZeroRevenueDays,
+  countZeroRevenueDaysInRange,
   queryMonthlyAggregates,
+  queryRangeAggregates,
   readSyncMeta,
   type MonthlyAggregateRow,
   type MonthProjection,
+  type RangeAggregateRow,
   type SyncMetaRecord,
 } from "../sales-goals/analytics-queries.server";
 import {
   aggregateSnapshots,
   bestVsWorst,
-  buildLocationSnapshots,
+  buildSnapshotsFromRange,
   discountRate,
   sameStoreYoY,
+  scaleZeroDayThreshold,
   type AggregateKpi,
   type LocationSnapshot,
 } from "../sales-goals/analytics-pure";
+import {
+  resolvePeriod,
+  parseLocalYmd,
+  type ComparisonMode,
+  type PeriodPreset,
+  type ResolvedPeriod,
+} from "../sales-goals/period-resolution";
 import { runSalesGoalsSync } from "../sales-goals/sync.server";
 import {
   archiveCampaign as archiveCampaignStore,
@@ -55,7 +66,7 @@ import type {
   CampaignMetric,
   CampaignProgressView,
 } from "../campaign-goals/types";
-import { CampaignsTab } from "./app.retail-goals/campaigns-tab";
+import { CampaignsTab } from "./app.retail-sales/campaigns-tab";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -110,12 +121,24 @@ type LoaderData = {
   dashboardSnapshots: LocationSnapshot[];
   dashboardKpis: DashboardKpis;
   storesWithGoalsCount: number;
+  locationsCount: number;
+  defaultPeriod: ResolvedPeriod;
   campaigns: CampaignGoalView[];
   campaignProgress: Record<string, CampaignProgressView>;
 };
 
+type DashboardPeriodStats = {
+  period: ResolvedPeriod;
+  snapshots: LocationSnapshot[];
+  kpis: DashboardKpis;
+  currencyCode: string;
+  storesWithGoalsCount: number;
+  locationsCount: number;
+  prevYearAggregates: RangeAggregateRow[];
+  proratedMtdGoal: number | null;
+};
+
 type TabId = "dashboard" | "goals" | "campaigns";
-type ComparisonMode = "none" | "prev_month" | "prev_year";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -138,19 +161,52 @@ const addMonths = (month: string, delta: number): string => {
   return monthKey(d);
 };
 
-const comparisonMonthFor = (
-  month: string,
-  mode: ComparisonMode,
-): string | null => {
-  if (mode === "prev_month") return addMonths(month, -1);
-  if (mode === "prev_year") return addMonths(month, -12);
-  return null;
-};
-
 const deltaPercent = (current: number, previous: number): number | null => {
   if (previous === 0) return null;
   return ((current - previous) / previous) * 100;
 };
+
+// ─── Friendly date-range label (for the overview strip) ──────────────────────
+
+/** "Mar 1 – Apr 10, 2026" (same year) / "Dec 20, 2025 – Jan 10, 2026" (cross-year). */
+function formatDateRangeFriendly(
+  start: string,
+  end: string,
+  locale: string,
+): string {
+  if (!start || !end) return "";
+  const s = parseLocalYmd(start);
+  const e = parseLocalYmd(end);
+  if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return "";
+  const fmtMonthDay = new Intl.DateTimeFormat(locale, {
+    month: "short",
+    day: "numeric",
+  });
+  if (s.getFullYear() === e.getFullYear()) {
+    return `${fmtMonthDay.format(s)} – ${fmtMonthDay.format(e)}, ${e.getFullYear()}`;
+  }
+  const fmtFull = new Intl.DateTimeFormat(locale, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  return `${fmtFull.format(s)} – ${fmtFull.format(e)}`;
+}
+
+/** "4/16, 2PM" — shorter than locale.toLocaleString for the strip subtitle. */
+function formatLastSyncShort(iso: string, locale: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const date = new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "numeric",
+  }).format(d);
+  let hour = d.getHours();
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12;
+  if (hour === 0) hour = 12;
+  return `${date}, ${hour}${ampm}`;
+}
 
 // Backward-compat: older SalesGoalsLocationConfig rows may have a `salesChannels`
 // or `shippingMethods` field from the previous schema. Normalize to the new
@@ -217,12 +273,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const pyMonth = addMonthsHelper(currentMonth, -12);
 
-  const [aggregates, projectionsByLocation, zeroDaysByLocMonth, locationConfigRows, configRecord, syncMeta] =
+  const [aggregates, projectionsByLocation, locationConfigRows, configRecord, syncMeta] =
     await Promise.all([
       queryMonthlyAggregates(shop, months, candidateIds),
       computeMonthProjections(shop, candidateIds, months),
-      // Zero-day counts for Same-Store YoY exclusion. Only current + PY months are needed.
-      countZeroRevenueDays(shop, candidateIds, [currentMonth, pyMonth]),
       prisma.salesGoalsLocationConfig.findMany({ where: { shop } }),
       prisma.salesGoalsConfig.findUnique({ where: { shop } }),
       readSyncMeta(shop),
@@ -270,31 +324,90 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     if (g.month === currentMonth) goalsForCurrentMonth[g.locationId] = g.target;
   }
 
-  const dashboardSnapshots = buildLocationSnapshots({
-    locations: candidateLocations.map((l) => ({ id: l.id, name: l.name })),
-    aggregates,
-    projections: projectionsByLocation,
-    goals: goalsForCurrentMonth,
-    zeroDaysByLocMonth,
-    dashboardMonth: currentMonth,
-    pyMonth,
+  // Compute enabled-locations via the same config path the client uses.
+  const disabledIds = new Set<string>();
+  for (const row of locationConfigRows) {
+    const cfg = normalizeLocationConfig(row.data);
+    if (cfg.enabled === false) disabledIds.add(row.locationId);
+  }
+  const enabledLocationsLoader = candidateLocations.filter(
+    (l) => !disabledIds.has(l.id),
+  );
+  const enabledIds = enabledLocationsLoader.map((l) => l.id);
+
+  // Default period = this_month + prev_year. Matches the client's first-paint
+  // state and keeps server/client in lockstep.
+  const defaultPeriod = resolvePeriod("this_month", "prev_year");
+  if (!defaultPeriod) throw new Error("Unable to resolve default period");
+
+  const [
+    defaultCurrentRows,
+    defaultCompareRows,
+    defaultZeroCurrent,
+    defaultZeroCompare,
+    defaultProjection,
+  ] = await Promise.all([
+    queryRangeAggregates(
+      shop,
+      enabledIds,
+      defaultPeriod.start,
+      defaultPeriod.end,
+    ),
+    defaultPeriod.compareStart && defaultPeriod.compareEnd
+      ? queryRangeAggregates(
+          shop,
+          enabledIds,
+          defaultPeriod.compareStart,
+          defaultPeriod.compareEnd,
+        )
+      : Promise.resolve([] as RangeAggregateRow[]),
+    countZeroRevenueDaysInRange(
+      shop,
+      enabledIds,
+      defaultPeriod.start,
+      defaultPeriod.end,
+    ),
+    defaultPeriod.compareStart && defaultPeriod.compareEnd
+      ? countZeroRevenueDaysInRange(
+          shop,
+          enabledIds,
+          defaultPeriod.compareStart,
+          defaultPeriod.compareEnd,
+        )
+      : Promise.resolve({} as Record<string, number>),
+    defaultPeriod.includesToday && defaultPeriod.isSingleMonth
+      ? computeCurrentMonthProjection(shop, enabledIds)
+      : Promise.resolve(null as Record<string, MonthProjection> | null),
+  ]);
+
+  const dashboardSnapshots = buildSnapshotsFromRange({
+    locations: enabledLocationsLoader.map((l) => ({ id: l.id, name: l.name })),
+    currentRows: defaultCurrentRows,
+    compareRows: defaultCompareRows,
+    zeroDaysCurrent: defaultZeroCurrent,
+    zeroDaysCompare: defaultZeroCompare,
+    projectionByLocation: defaultProjection,
+    goalsByLocation: goalsForCurrentMonth,
+    isSingleMonth: defaultPeriod.isSingleMonth,
   });
 
+  const defaultThreshold = scaleZeroDayThreshold(defaultPeriod.periodDays);
   const dashboardKpis: DashboardKpis = {
     revenue: aggregateSnapshots(dashboardSnapshots, "revenue"),
     aov: aggregateSnapshots(dashboardSnapshots, "aov"),
     orders: aggregateSnapshots(dashboardSnapshots, "orders"),
-    sameStoreYoY: sameStoreYoY(dashboardSnapshots),
+    sameStoreYoY: sameStoreYoY(dashboardSnapshots, defaultThreshold),
     bestVsWorst: bestVsWorst(dashboardSnapshots),
     discountRate: discountRate(dashboardSnapshots, aggregates),
   };
 
   const storesWithGoalsCount = Object.keys(goalsForCurrentMonth).length;
+  const locationsCount = enabledLocationsLoader.length;
 
   // ── Campaign goals load ─────────────────────────────────────────────
   // Sweep statuses so drafts promote + expired campaigns end before we read.
   await sweepCampaignStatuses(shop).catch((err) =>
-    console.warn(`[retail-goals] campaign sweep SKIP shop=${shop}`, err),
+    console.warn(`[retail-sales] campaign sweep SKIP shop=${shop}`, err),
   );
   const campaigns = await listCampaigns(shop);
   const campaignProgress: Record<string, CampaignProgressView> = {};
@@ -326,6 +439,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     dashboardSnapshots,
     dashboardKpis,
     storesWithGoalsCount,
+    locationsCount,
+    defaultPeriod,
     campaigns,
     campaignProgress,
   };
@@ -335,6 +450,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   );
   return result;
 };
+
+/** Shift a YYYY-MM-DD date string back by one year (local calendar). */
+function shiftDateByOneYear(ymd: string): string {
+  const d = parseLocalYmd(ymd);
+  d.setFullYear(d.getFullYear() - 1);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 
 // Helper mirrored from addMonths (client-side version) for the loader.
 function addMonthsHelper(month: string, delta: number): string {
@@ -512,6 +637,308 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return { ok };
   }
 
+  if (intent === "fetch-match-options") {
+    const ruleType = String(formData.get("ruleType") ?? "");
+    const query = String(formData.get("query") ?? "");
+    let options: Array<{ value: string; label: string }> = [];
+
+    switch (ruleType) {
+      case "lineItemTag": {
+        const res = await admin.graphql(
+          `#graphql
+          query ProductsByTag($query: String!) {
+            products(first: 50, query: $query) {
+              edges { node { tags } }
+            }
+          }`,
+          { variables: { query: query ? `tag:${query}*` : "" } },
+        );
+        const json = await res.json();
+        const allTags = new Set<string>();
+        for (const edge of json.data?.products?.edges ?? []) {
+          for (const tag of edge.node.tags ?? []) allTags.add(tag);
+        }
+        options = Array.from(allTags)
+          .sort()
+          .map((t) => ({ value: t, label: t }));
+        break;
+      }
+      case "lineItemProductType": {
+        const { fetchProductTypes } = await import(
+          "../services/bulk-price/campaign.server"
+        );
+        const types = await fetchProductTypes(admin);
+        options = types.map((t) => ({ value: t, label: t }));
+        break;
+      }
+      case "lineItemProductId": {
+        const res = await admin.graphql(
+          `#graphql
+          query SearchProducts($query: String!) {
+            products(first: 20, query: $query, sortKey: UPDATED_AT, reverse: true) {
+              edges { node { id title } }
+            }
+          }`,
+          { variables: { query: query || "" } },
+        );
+        const json = await res.json();
+        options = (json.data?.products?.edges ?? []).map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (e: any) => ({ value: e.node.id, label: e.node.title }),
+        );
+        break;
+      }
+      case "orderTag": {
+        const res = await admin.graphql(
+          `#graphql
+          query OrdersByTag($query: String!) {
+            orders(first: 50, query: $query) {
+              edges { node { tags } }
+            }
+          }`,
+          { variables: { query: query ? `tag:${query}*` : "" } },
+        );
+        const json = await res.json();
+        const allTags = new Set<string>();
+        for (const edge of json.data?.orders?.edges ?? []) {
+          for (const tag of edge.node.tags ?? []) allTags.add(tag);
+        }
+        options = Array.from(allTags)
+          .sort()
+          .map((t) => ({ value: t, label: t }));
+        break;
+      }
+    }
+    return { ok: true, intent: "fetch-match-options", options };
+  }
+
+  if (intent === "fetch-campaign-baseline") {
+    const { getBaselineData } = await import(
+      "../campaign-goals/storage.server"
+    );
+    const period = String(formData.get("period") ?? "");
+    const campaignStart = String(formData.get("campaignStart") ?? "");
+    const campaignEnd = String(formData.get("campaignEnd") ?? "");
+    if (!campaignStart || !campaignEnd) {
+      return { ok: false, error: "Campaign dates required for baseline." };
+    }
+    const start = parseLocalYmd(campaignStart);
+    const end = parseLocalYmd(campaignEnd);
+
+    let periodStart: Date;
+    let periodEnd: Date;
+    switch (period) {
+      case "last_month": {
+        periodEnd = new Date(start);
+        periodStart = new Date(start);
+        periodStart.setMonth(periodStart.getMonth() - 1);
+        break;
+      }
+      case "last_quarter": {
+        periodEnd = new Date(start);
+        periodStart = new Date(start);
+        periodStart.setMonth(periodStart.getMonth() - 3);
+        break;
+      }
+      default: {
+        periodStart = new Date(start);
+        periodStart.setFullYear(periodStart.getFullYear() - 1);
+        periodEnd = new Date(end);
+        periodEnd.setFullYear(periodEnd.getFullYear() - 1);
+        break;
+      }
+    }
+
+    const baseline = await getBaselineData(shop, periodStart, periodEnd);
+    return { ok: true, intent: "fetch-campaign-baseline", baseline };
+  }
+
+  if (intent === "fetch-dashboard-period") {
+    const preset = String(formData.get("preset") ?? "this_month") as PeriodPreset;
+    const mode = String(formData.get("compareMode") ?? "prev_year") as ComparisonMode;
+    const customStart = formData.get("customStart")
+      ? String(formData.get("customStart"))
+      : undefined;
+    const customEnd = formData.get("customEnd")
+      ? String(formData.get("customEnd"))
+      : undefined;
+
+    const resolved = resolvePeriod(preset, mode, customStart, customEnd);
+    if (!resolved) {
+      return { ok: false, error: "Invalid period selection." };
+    }
+
+    const started = Date.now();
+
+    // Re-fetch the active locations the same way the loader does, so the action
+    // stays source-of-truth-free (nothing baked into formData).
+    const locationsResponse = await admin.graphql(LOCATIONS_QUERY);
+    const locationsJson = await locationsResponse.json();
+    const rawLocations = (locationsJson.data?.locations?.nodes ?? []) as Array<{
+      id: string;
+      name: string;
+      isActive?: boolean;
+      isFulfillmentService?: boolean;
+      fulfillmentService?: { id: string } | null;
+    }>;
+    const candidateLocations = filterCandidateLocations(rawLocations);
+
+    // Pull per-location active flags from config, same as loader.
+    const locationConfigRows = await prisma.salesGoalsLocationConfig.findMany({
+      where: { shop },
+    });
+    const disabledIds = new Set<string>();
+    for (const row of locationConfigRows) {
+      const cfg = normalizeLocationConfig(row.data);
+      if (cfg.enabled === false) disabledIds.add(row.locationId);
+    }
+    const activeLocations = candidateLocations.filter(
+      (l) => !disabledIds.has(l.id),
+    );
+    const activeIds = activeLocations.map((l) => l.id);
+
+    // Period + compare aggregates.
+    const [currentRows, compareRows, zeroDaysCurrent, zeroDaysCompare] =
+      await Promise.all([
+        queryRangeAggregates(shop, activeIds, resolved.start, resolved.end),
+        resolved.compareStart && resolved.compareEnd
+          ? queryRangeAggregates(
+              shop,
+              activeIds,
+              resolved.compareStart,
+              resolved.compareEnd,
+            )
+          : Promise.resolve([] as RangeAggregateRow[]),
+        countZeroRevenueDaysInRange(
+          shop,
+          activeIds,
+          resolved.start,
+          resolved.end,
+        ),
+        resolved.compareStart && resolved.compareEnd
+          ? countZeroRevenueDaysInRange(
+              shop,
+              activeIds,
+              resolved.compareStart,
+              resolved.compareEnd,
+            )
+          : Promise.resolve({} as Record<string, number>),
+      ]);
+
+    // Current-month projection only when the period *is* the current month in progress.
+    let projectionByLocation: Record<string, MonthProjection> | null = null;
+    if (resolved.isSingleMonth && resolved.includesToday) {
+      projectionByLocation = await computeCurrentMonthProjection(
+        shop,
+        activeIds,
+      );
+    }
+
+    // Goals for the period — only loaded when the period covers a single
+    // calendar month (otherwise goals don't translate cleanly).
+    const goalsByLocation: Record<string, number> = {};
+    let storesWithGoalsCount = 0;
+    if (resolved.isSingleMonth && resolved.monthKey) {
+      const configRecord = await prisma.salesGoalsConfig.findUnique({
+        where: { shop },
+      });
+      const goals = (configRecord?.data as SalesGoal[] | null) ?? [];
+      for (const g of goals) {
+        if (g.month === resolved.monthKey) {
+          goalsByLocation[g.locationId] = g.target;
+          storesWithGoalsCount += 1;
+        }
+      }
+    }
+
+    const snapshots = buildSnapshotsFromRange({
+      locations: activeLocations.map((l) => ({ id: l.id, name: l.name })),
+      currentRows,
+      compareRows,
+      zeroDaysCurrent,
+      zeroDaysCompare,
+      projectionByLocation,
+      goalsByLocation,
+      isSingleMonth: resolved.isSingleMonth,
+    });
+
+    // 13-mo discount aggregate for the trailing-discount stat on the discount card.
+    const thirteenMonths = buildMonthRange(12);
+    const thirteenMonthAggregates = await queryMonthlyAggregates(
+      shop,
+      thirteenMonths,
+      activeIds,
+    );
+
+    const threshold = scaleZeroDayThreshold(resolved.periodDays);
+    const kpis = {
+      revenue: aggregateSnapshots(snapshots, "revenue"),
+      aov: aggregateSnapshots(snapshots, "aov"),
+      orders: aggregateSnapshots(snapshots, "orders"),
+      sameStoreYoY: sameStoreYoY(snapshots, threshold),
+      bestVsWorst: bestVsWorst(snapshots),
+      discountRate: discountRate(snapshots, thirteenMonthAggregates),
+    };
+
+    // ── Prior-year-equivalent window for literal YoY on AOV/Orders cards ───
+    // Shift the primary period back by one year. If comparison is already
+    // prev_year, reuse compareRows to avoid a duplicate query.
+    let prevYearAggregates: RangeAggregateRow[];
+    if (mode === "prev_year" && compareRows.length > 0) {
+      prevYearAggregates = compareRows;
+    } else {
+      const pyStart = shiftDateByOneYear(resolved.start);
+      const pyEnd = shiftDateByOneYear(resolved.end);
+      prevYearAggregates = await queryRangeAggregates(
+        shop,
+        activeIds,
+        pyStart,
+        pyEnd,
+      );
+    }
+
+    // ── Prorated MTD goal (single-month only) ────────────────────────────
+    let proratedMtdGoal: number | null = null;
+    if (resolved.isSingleMonth && resolved.monthKey) {
+      const totalGoal = Object.values(goalsByLocation).reduce(
+        (sum, g) => sum + g,
+        0,
+      );
+      if (totalGoal > 0) {
+        const elapsedDays = resolved.periodDays; // start to end inclusive
+        const [y, m] = resolved.monthKey.split("-").map(Number);
+        const daysInMonth = new Date(y, m, 0).getDate();
+        proratedMtdGoal = totalGoal * (elapsedDays / daysInMonth);
+      }
+    }
+
+    // Pick a currency code off any row (stores share currency per shop).
+    const currencyCode =
+      currentRows.find((r) => r.currencyCode)?.currencyCode ??
+      compareRows.find((r) => r.currencyCode)?.currencyCode ??
+      "BRL";
+
+    const elapsed = Date.now() - started;
+    console.info(
+      `[retail-sales] fetch-dashboard-period OK shop=${shop} preset=${preset} compare=${mode} locations=${activeIds.length} isSingleMonth=${resolved.isSingleMonth} durationMs=${elapsed}`,
+    );
+
+    return {
+      ok: true,
+      intent: "fetch-dashboard-period" as const,
+      stats: {
+        period: resolved,
+        snapshots,
+        kpis,
+        currencyCode,
+        storesWithGoalsCount,
+        locationsCount: activeLocations.length,
+        prevYearAggregates,
+        proratedMtdGoal,
+      },
+    };
+  }
+
   return { ok: false, error: "Unsupported request." };
 };
 
@@ -519,15 +946,6 @@ export const headers: HeadersFunction = (headersArgs) =>
   boundary.headers(headersArgs);
 
 // ─── Inline sub-components ────────────────────────────────────────────────────
-
-type KpiCardProps = {
-  label: string;
-  primary: string;
-  secondary?: string;
-  delta?: number | null;
-  active?: boolean;
-  onClick?: () => void;
-};
 
 const Delta = ({ delta }: { delta: number | null | undefined }) => {
   if (delta == null || !Number.isFinite(delta)) return null;
@@ -538,44 +956,6 @@ const Delta = ({ delta }: { delta: number | null | undefined }) => {
       {sign}
       {delta.toFixed(1)}%
     </span>
-  );
-};
-
-const KpiCard = ({
-  label,
-  primary,
-  secondary,
-  delta,
-  active,
-  onClick,
-}: KpiCardProps) => {
-  const className = `${styles.kpiCardClickable}${active ? ` ${styles.kpiCardActive}` : ""}`;
-  return (
-    <div
-      className={className}
-      onClick={onClick}
-      role={onClick ? "button" : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      onKeyDown={(e) => {
-        if (onClick && (e.key === "Enter" || e.key === " ")) {
-          e.preventDefault();
-          onClick();
-        }
-      }}
-    >
-      <s-box padding="base" borderWidth="base" borderRadius="base">
-        <div className={styles.kpiCard}>
-          <span className={styles.kpiLabel}>{label}</span>
-          <div className={styles.kpiValueRow}>
-            <span className={styles.kpiValue}>{primary}</span>
-            <Delta delta={delta} />
-          </div>
-          {secondary ? (
-            <span className={styles.kpiSecondary}>{secondary}</span>
-          ) : null}
-        </div>
-      </s-box>
-    </div>
   );
 };
 
@@ -624,6 +1004,7 @@ type KpiRichLine = {
 type KpiRichCardProps = {
   title: string;
   primary: string;
+  primaryColor?: string;
   primaryDelta?: number | null;
   primaryDeltaSuffix?: string;
   projected?: { value: string; early?: boolean } | null;
@@ -636,6 +1017,7 @@ type KpiRichCardProps = {
 const KpiRichCard = ({
   title,
   primary,
+  primaryColor,
   primaryDelta,
   primaryDeltaSuffix,
   projected,
@@ -662,10 +1044,10 @@ const KpiRichCard = ({
         <div className={styles.kpiRichCard}>
           <div className={styles.kpiRichTitle} title={tooltip}>
             {title}
-            {tooltip ? <span className={styles.kpiInfoIcon}>ⓘ</span> : null}
+            {tooltip ? <span className={styles.kpiInfoIcon}><s-icon type="info" /></span> : null}
           </div>
           <div className={styles.kpiRichPrimary}>
-            <span className={styles.kpiValue}>{primary}</span>
+            <span className={styles.kpiValue} style={primaryColor ? { color: primaryColor } : undefined}>{primary}</span>
             {primaryDelta != null ? (
               <span className={styles.kpiDeltaInline}>
                 {primaryDeltaSuffix ? `${primaryDeltaSuffix} ` : null}
@@ -716,7 +1098,6 @@ type KpiDrilldownBarsProps = {
   isCurrentMonthEarly: boolean;
   isViewingCurrentMonth: boolean;
   t: (key: string, opts?: Record<string, unknown>) => string;
-  formatCurrency: (value: number, code: string) => string;
 };
 
 type BarRow = {
@@ -877,102 +1258,348 @@ function sortBarRows(metric: KpiMetric, rows: BarRow[]): BarRow[] {
   return sorted.sort((a, b) => b.currentValue - a.currentValue);
 }
 
+// Round up to a visually pleasant scale ceiling (1, 1.25, 1.5, 2, 2.5, 5, 10).
+function niceCeil(max: number): number {
+  if (!(max > 0)) return 1;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(max)));
+  const candidates = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
+  for (const c of candidates) {
+    const nice = c * magnitude;
+    if (nice >= max) return nice;
+  }
+  return 10 * magnitude;
+}
+
+type PeriodLabels = {
+  current: string;
+  priorYear: string;
+  goalPeriod?: string;
+};
+
 const KpiDrilldownBars = ({
   metric,
   snapshots,
   currencyCode,
   locale,
-  isCurrentMonthEarly,
-  isViewingCurrentMonth,
   t,
-  formatCurrency,
 }: KpiDrilldownBarsProps) => {
   const rows = buildBarRows(metric, snapshots);
   const sorted = sortBarRows(metric, rows);
 
-  const maxScale = sorted.reduce((max, r) => {
-    const py = Math.abs(r.pyValue);
-    const cur = Math.abs(r.currentValue);
-    const goal = r.goalValue ?? 0;
-    return Math.max(max, py, cur, goal);
-  }, 0);
+  const fmtAbs = (value: number) =>
+    fmtCurrencyBase(Math.round(value), currencyCode, locale);
+  const fmtCompact = (value: number) =>
+    formatCurrencyCompact(value, currencyCode, locale, 0);
+  const fmtOrders = (value: number) => Math.round(value).toLocaleString(locale);
+  const fmtPct0 = (v: number) => `${v >= 0 ? "" : "−"}${Math.abs(v).toFixed(0)}%`;
+  const fmtPctSigned = (v: number) =>
+    `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v).toFixed(0)}%`;
+  const fmtRate1 = (v: number) => `${v.toFixed(1)}%`;
 
-  const formatValue = (value: number) => {
-    if (metric === "orders") {
-      return Math.round(value).toLocaleString(locale);
-    }
-    if (metric === "aov" || metric === "revenue" || metric === "sameStore") {
-      return formatCurrencyCompact(value, currencyCode, locale);
-    }
-    if (metric === "bestWorst" || metric === "discount") {
-      return `${value.toFixed(1)}%`;
-    }
-    return String(value);
-  };
-
-  const isSingleBar =
-    metric === "sameStore" || metric === "bestWorst";
-  const isDualNavy =
-    metric === "revenue" || metric === "aov" || metric === "orders";
-
-  const legend = (() => {
-    if (isSingleBar) {
-      if (metric === "sameStore") {
-        return (
-          <div className={styles.drilldownLegend}>
-            <span>
-              <span className={styles.legendSwatchSinglePositive} />{" "}
-              {t("dashboard.legendGrowth")}
-            </span>
-            <span>
-              <span className={styles.legendSwatchSingleNegative} />{" "}
-              {t("dashboard.legendDecline")}
-            </span>
-          </div>
-        );
-      }
-      return (
-        <div className={styles.drilldownLegend}>
-          <span>
-            <span className={styles.legendSwatchRanking} />{" "}
-            {t("dashboard.legendAchievement")}
-          </span>
-        </div>
-      );
-    }
-    if (metric === "discount") {
-      return (
-        <div className={styles.drilldownLegend}>
-          <span>
-            <span className={styles.legendSwatchPy} />{" "}
-            {t("dashboard.legendPyRate")}
-          </span>
-          <span>
-            <span className={styles.legendSwatchProj} />{" "}
-            {t("dashboard.legendCurrentRate")}
-          </span>
-        </div>
-      );
-    }
+  if (sorted.length === 0) {
     return (
-      <div className={styles.drilldownLegend}>
-        <span>
-          <span className={styles.legendSwatchPy} />{" "}
-          {t("dashboard.legendPy")}
-        </span>
-        <span>
-          <span className={styles.legendSwatchProj} />{" "}
-          {t("dashboard.legendProjected")}
-        </span>
-        {metric === "revenue" ? (
-          <span>
-            <span className={styles.legendSwatchGoal} />{" "}
-            {t("dashboard.legendGoal")}
-          </span>
-        ) : null}
+      <div className={styles.revenueDrilldown}>
+        <div className={styles.breakdownHeader}>
+          <h3 className={styles.subSectionTitle}>
+            {t(`dashboard.drilldown.${metric}`)}
+          </h3>
+        </div>
+        <div className={styles.tableEmpty}>{t("dashboard.noLocations")}</div>
       </div>
     );
-  })();
+  }
+
+  // ── Achievement ranking (formerly bestWorst) ────────────────────────────
+  if (metric === "bestWorst") {
+    return (
+      <div className={styles.revenueDrilldown}>
+        <div className={styles.breakdownHeader}>
+          <h3 className={styles.subSectionTitle}>
+            {t("dashboard.drilldown.bestWorst")}
+          </h3>
+          <div className={styles.breakdownSubtitle}>
+            {t("dashboard.rankingSubtitle")}
+          </div>
+        </div>
+        <div className={styles.rankList}>
+          {sorted.map((row, idx) => {
+            const ach = row.achievement ?? 0;
+            const tierClass =
+              ach >= 80
+                ? styles.rankFillGreen
+                : ach >= 60
+                  ? styles.rankFillYellow
+                  : styles.rankFillRed;
+            const tierPctClass =
+              ach >= 80
+                ? styles.rankPctGreen
+                : ach >= 60
+                  ? styles.rankPctYellow
+                  : styles.rankPctRed;
+            return (
+              <div key={row.locationId} className={styles.rankRow} tabIndex={0}>
+                <div className={styles.rankPos}>{idx + 1}</div>
+                <div className={styles.rankName}>{row.name}</div>
+                <div className={styles.rankTrack}>
+                  <div
+                    className={`${styles.rankFill} ${tierClass}`}
+                    style={{ width: `${Math.min(ach, 100)}%` }}
+                  />
+                </div>
+                <div className={`${styles.rankPct} ${tierPctClass}`}>
+                  {fmtPct0(ach)}
+                </div>
+                <div className={styles.barTooltip}>
+                  <strong>{row.name}</strong>
+                  <div className={styles.barTooltipRow}>
+                    <span>{t("dashboard.tooltip.projected")}</span>
+                    <span className="val">{fmtAbs(row.currentValue)}</span>
+                  </div>
+                  {row.goalValue != null ? (
+                    <div className={styles.barTooltipRow}>
+                      <span>{t("dashboard.tooltip.goal")}</span>
+                      <span className="val">{fmtAbs(row.goalValue)}</span>
+                    </div>
+                  ) : null}
+                  <div className={styles.barTooltipRow}>
+                    <span>{t("dashboard.tooltip.vsGoal")}</span>
+                    <span
+                      className={`val ${ach >= 100 ? styles.valPos : styles.valNeg}`}
+                    >
+                      {fmtPct0(ach)}
+                    </span>
+                  </div>
+                  <div className={styles.barTooltipRow}>
+                    <span>{t("dashboard.tooltip.rank")}</span>
+                    <span className="val">
+                      {t("dashboard.tooltip.rankValue", {
+                        pos: idx + 1,
+                        total: sorted.length,
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className={styles.chartLegend}>
+          <span>
+            <i className={`${styles.rankSwatch} ${styles.rankSwatchGreen}`} />{" "}
+            {t("dashboard.rankingTierGreen")}
+          </span>
+          <span>
+            <i className={`${styles.rankSwatch} ${styles.rankSwatchYellow}`} />{" "}
+            {t("dashboard.rankingTierYellow")}
+          </span>
+          <span>
+            <i className={`${styles.rankSwatch} ${styles.rankSwatchRed}`} />{" "}
+            {t("dashboard.rankingTierRed")}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Same-store YoY (dynamic baseline) ────────────────────────────────────
+  if (metric === "sameStore") {
+    const deltas = sorted.map((r) => r.deltaPercent ?? 0);
+    const hasPos = deltas.some((d) => d > 0);
+    const hasNeg = deltas.some((d) => d < 0);
+    const maxPos = hasPos ? Math.max(...deltas.filter((d) => d > 0)) : 0;
+    const maxNeg = hasNeg ? Math.max(...deltas.filter((d) => d < 0).map((d) => -d)) : 0;
+    const niceMax = hasPos ? niceCeil(maxPos) : 0;
+    const niceMin = hasNeg ? niceCeil(maxNeg) : 0; // absolute
+    const totalRange = niceMax + niceMin;
+    const baselinePct = totalRange > 0 ? (niceMax / totalRange) * 100 : 100; // from top
+
+    // 5 ticks evenly distributed, rounded to a clean step.
+    const ticks: Array<{ label: string; topPct: number }> = [];
+    if (hasPos && hasNeg) {
+      ticks.push({ label: `+${niceMax.toFixed(0)}%`, topPct: 0 });
+      ticks.push({
+        label: `+${(niceMax / 2).toFixed(0)}%`,
+        topPct: baselinePct / 2,
+      });
+      ticks.push({ label: "0%", topPct: baselinePct });
+      ticks.push({
+        label: `−${(niceMin / 2).toFixed(0)}%`,
+        topPct: baselinePct + (100 - baselinePct) / 2,
+      });
+      ticks.push({ label: `−${niceMin.toFixed(0)}%`, topPct: 100 });
+    } else if (hasPos) {
+      for (let i = 0; i < 5; i += 1) {
+        const frac = 1 - i / 4;
+        ticks.push({
+          label: `+${(niceMax * frac).toFixed(0)}%`,
+          topPct: (i / 4) * 100,
+        });
+      }
+      ticks[4] = { label: "0%", topPct: 100 };
+    } else {
+      for (let i = 0; i < 5; i += 1) {
+        const frac = i / 4;
+        ticks.push({
+          label: frac === 0 ? "0%" : `−${(niceMin * frac).toFixed(0)}%`,
+          topPct: (i / 4) * 100,
+        });
+      }
+    }
+
+    return (
+      <div className={styles.revenueDrilldown}>
+        <div className={styles.breakdownHeader}>
+          <h3 className={styles.subSectionTitle}>
+            {t("dashboard.drilldown.sameStore")}
+          </h3>
+          <div className={styles.breakdownSubtitle}>
+            {t("dashboard.sameStoreSubtitle")}
+          </div>
+        </div>
+        <div className={styles.chartFrame}>
+          <div className={styles.chartYAxis}>
+            {ticks.map((tk, i) => (
+              <div key={i} className={styles.yTick} style={{ top: `${tk.topPct}%` }}>
+                {tk.label}
+              </div>
+            ))}
+          </div>
+          <div className={styles.chartPlot}>
+            {ticks.map((tk, i) => (
+              <div
+                key={i}
+                className={`${styles.gridline}${tk.label === "0%" ? ` ${styles.gridlineZero}` : ""}`}
+                style={{ top: `${tk.topPct}%` }}
+              />
+            ))}
+            <div className={styles.chartBars}>
+              {sorted.map((row) => {
+                const delta = row.deltaPercent ?? 0;
+                const positive = delta > 0;
+                const barHeightPct = positive
+                  ? niceMax > 0
+                    ? (delta / niceMax) * baselinePct
+                    : 0
+                  : niceMin > 0
+                    ? (-delta / niceMin) * (100 - baselinePct)
+                    : 0;
+                return (
+                  <div key={row.locationId} className={styles.barGroup} tabIndex={0}>
+                    {positive ? (
+                      <>
+                        <div
+                          className={`${styles.yoyBar} ${styles.yoyBarPos}`}
+                          style={{
+                            bottom: `${100 - baselinePct}%`,
+                            height: `${barHeightPct}%`,
+                          }}
+                        />
+                        <div
+                          className={`${styles.yoyBarLabel} ${styles.yoyBarLabelPos}`}
+                          style={{
+                            bottom: `calc(${100 - baselinePct}% + ${barHeightPct}% + 4px)`,
+                          }}
+                        >
+                          {fmtPctSigned(delta)}
+                        </div>
+                      </>
+                    ) : delta < 0 ? (
+                      <>
+                        <div
+                          className={`${styles.yoyBar} ${styles.yoyBarNeg}`}
+                          style={{
+                            top: `${baselinePct}%`,
+                            height: `${barHeightPct}%`,
+                          }}
+                        />
+                        <div
+                          className={`${styles.yoyBarLabel} ${styles.yoyBarLabelNeg}`}
+                          style={{
+                            top: `calc(${baselinePct}% + ${barHeightPct}% + 4px)`,
+                          }}
+                        >
+                          {fmtPctSigned(delta)}
+                        </div>
+                      </>
+                    ) : (
+                      <div
+                        className={`${styles.yoyBarLabel} ${styles.yoyBarLabelFlat}`}
+                        style={{ top: `calc(${baselinePct}% + 4px)` }}
+                      >
+                        0%
+                      </div>
+                    )}
+                    <div className={styles.barTooltip} style={{ top: -95 }}>
+                      <strong>{row.name}</strong>
+                      <div className={styles.barTooltipRow}>
+                        <span>{t("dashboard.tooltip.currentPeriod")}</span>
+                        <span className="val">{fmtAbs(row.currentValue)}</span>
+                      </div>
+                      <div className={styles.barTooltipRow}>
+                        <span>{t("dashboard.tooltip.priorPeriod")}</span>
+                        <span className="val">{fmtAbs(row.pyValue)}</span>
+                      </div>
+                      <div className={styles.barTooltipRow}>
+                        <span>{t("dashboard.tooltip.yoy")}</span>
+                        <span
+                          className={`val ${delta > 0 ? styles.valPos : delta < 0 ? styles.valNeg : ""}`}
+                        >
+                          {fmtPctSigned(delta)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+        <div className={styles.chartXAxis}>
+          {sorted.map((row) => (
+            <div key={row.locationId} className={styles.chartXLabel}>
+              {row.name}
+            </div>
+          ))}
+        </div>
+        <div className={styles.chartLegend}>
+          <span>
+            <i className={`${styles.legendDot} ${styles.legendDotPos}`} />{" "}
+            {t("dashboard.legendGrowth")}
+          </span>
+          <span>
+            <i className={`${styles.legendDot} ${styles.legendDotNeg}`} />{" "}
+            {t("dashboard.legendDecline")}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Bar chart: revenue / orders / aov / discount ─────────────────────────
+  const hasProjectionSplit = metric === "revenue" || metric === "orders";
+  const hasGoalMark = metric === "revenue";
+  const isRate = metric === "discount";
+  const useOrdersFmt = metric === "orders";
+
+  const formatBarValue = (v: number) =>
+    isRate ? fmtRate1(v) : useOrdersFmt ? fmtOrders(v) : fmtAbs(v);
+  const formatCompactLabel = (v: number) =>
+    isRate ? fmtRate1(v) : useOrdersFmt ? fmtOrders(v) : fmtCompact(v);
+
+  const scaleMax = sorted.reduce((m, r) => {
+    const goal = hasGoalMark && r.goalValue != null ? r.goalValue : 0;
+    return Math.max(m, r.currentValue, r.pyValue, goal);
+  }, 0);
+  const niceScale = niceCeil(scaleMax);
+
+  const ticks = Array.from({ length: 5 }, (_, i) => {
+    const frac = 1 - i / 4;
+    const value = niceScale * frac;
+    return {
+      label: formatCompactLabel(value),
+      topPct: (i / 4) * 100,
+    };
+  });
 
   return (
     <div className={styles.revenueDrilldown}>
@@ -980,166 +1607,218 @@ const KpiDrilldownBars = ({
         <h3 className={styles.subSectionTitle}>
           {t(`dashboard.drilldown.${metric}`)}
         </h3>
+        <div className={styles.breakdownSubtitle}>
+          {hasGoalMark
+            ? t("dashboard.revenueSubtitle")
+            : t("dashboard.comparisonSubtitle")}
+        </div>
       </div>
-      {legend}
-      <div className={styles.drilldownBars}>
-        {sorted.length === 0 ? (
-          <div className={styles.tableEmpty}>
-            {t("dashboard.noLocations")}
-          </div>
-        ) : (
-          sorted.map((row, idx) => {
-            const pyPct = maxScale > 0 ? (row.pyValue / maxScale) * 100 : 0;
-            const curPct =
-              maxScale > 0
-                ? (Math.abs(row.currentValue) / maxScale) * 100
-                : 0;
-            const mtdPct =
-              maxScale > 0 ? (row.mtdValue / maxScale) * 100 : 0;
-            const goalPct =
-              maxScale > 0 && row.goalValue != null
-                ? (row.goalValue / maxScale) * 100
-                : null;
-
-            return (
-              <div
-                key={row.locationId}
-                className={styles.drilldownColumn}
-                style={{ order: idx }}
-              >
-                <div className={styles.drilldownPair}>
-                  {isSingleBar ? (
-                    (() => {
-                      // sameStore: colored by sign of deltaPercent
-                      // bestWorst: color-graded by achievement %
-                      if (metric === "sameStore") {
-                        const signPositive = (row.deltaPercent ?? 0) >= 0;
-                        return (
-                          <div className={styles.drilldownBarArea}>
-                            <span className={styles.drilldownBarValue}>
-                              {row.deltaPercent != null
-                                ? `${row.deltaPercent >= 0 ? "+" : ""}${row.deltaPercent.toFixed(1)}%`
-                                : "—"}
-                            </span>
-                            <div
-                              className={`${styles.drilldownBarSingle} ${signPositive ? styles.drilldownBarSinglePositive : styles.drilldownBarSingleNegative}`}
-                              style={{ height: `${curPct}%` }}
-                            />
-                          </div>
-                        );
-                      }
-                      // bestWorst: HSL interpolation red (0°) → green (145°)
-                      const ach = row.achievement ?? 0;
-                      const hue = Math.max(0, Math.min(145, (ach / 100) * 145));
-                      const gradient = `linear-gradient(180deg, hsl(${hue}, 65%, 52%) 0%, hsl(${hue}, 65%, 36%) 100%)`;
-                      return (
-                        <div className={styles.drilldownBarArea}>
-                          <span className={styles.drilldownBarValue}>
-                            {row.achievement != null
-                              ? `${row.achievement.toFixed(0)}%`
-                              : "—"}
-                          </span>
-                          <div
-                            className={styles.drilldownBarSingle}
-                            style={{
-                              height: `${curPct}%`,
-                              background: gradient,
-                              boxShadow:
-                                "inset 0 2px 4px rgba(255, 255, 255, 0.2)",
-                            }}
-                          />
-                        </div>
-                      );
-                    })()
+      <div className={styles.chartFrame}>
+        <div className={styles.chartYAxis}>
+          {ticks.map((tk, i) => (
+            <div key={i} className={styles.yTick} style={{ top: `${tk.topPct}%` }}>
+              {tk.label}
+            </div>
+          ))}
+        </div>
+        <div className={styles.chartPlot}>
+          {ticks.map((tk, i) => (
+            <div
+              key={i}
+              className={`${styles.gridline}${i === ticks.length - 1 ? ` ${styles.gridlineZero}` : ""}`}
+              style={{ top: `${tk.topPct}%` }}
+            />
+          ))}
+          <div className={styles.chartBars}>
+            {sorted.map((row) => {
+              const curPct = niceScale > 0 ? (row.currentValue / niceScale) * 100 : 0;
+              const pyPct = niceScale > 0 ? (row.pyValue / niceScale) * 100 : 0;
+              const goalPct =
+                hasGoalMark && row.goalValue != null && niceScale > 0
+                  ? (row.goalValue / niceScale) * 100
+                  : null;
+              const projRatio =
+                hasProjectionSplit && row.currentValue > 0
+                  ? Math.max(0, row.currentValue - row.mtdValue) / row.currentValue
+                  : 0;
+              return (
+                <div key={row.locationId} className={styles.barGroup} tabIndex={0}>
+                  {hasProjectionSplit ? (
+                    <div
+                      className={styles.barCurrent}
+                      style={{ height: `${curPct}%` }}
+                    >
+                      <div
+                        className={styles.barProjection}
+                        style={{ height: `${projRatio * 100}%` }}
+                      />
+                    </div>
                   ) : (
-                    <>
-                      {/* PY — outlined navy */}
-                      <div className={styles.drilldownBarArea}>
-                        <span className={styles.drilldownBarValue}>
-                          {formatValue(row.pyValue)}
-                        </span>
-                        <div
-                          className={styles.drilldownBarPy}
-                          style={{ height: `${pyPct}%` }}
-                        />
-                      </div>
-                      {/* Current / projected — solid navy gradient */}
-                      <div className={styles.drilldownBarArea}>
-                        <span
-                          className={`${styles.drilldownBarValue}${isCurrentMonthEarly && isDualNavy ? ` ${styles.drilldownBarValueEarly}` : ""}`}
-                        >
-                          {formatValue(row.currentValue)}
-                        </span>
-                        <div
-                          className={styles.drilldownBarProjected}
-                          style={{ height: `${curPct}%` }}
-                        >
-                          {isViewingCurrentMonth && isDualNavy && curPct > 0 ? (
-                            <div
-                              className={styles.drilldownBarMtd}
-                              style={{
-                                height: `${(mtdPct / curPct) * 100}%`,
-                              }}
-                            />
-                          ) : null}
-                        </div>
-                        {goalPct != null ? (
-                          <div
-                            className={styles.drilldownGoalTick}
-                            style={{ bottom: `${goalPct}%` }}
-                          />
-                        ) : null}
-                      </div>
-                    </>
+                    <div
+                      className={styles.barCurrentSolid}
+                      style={{ height: `${curPct}%` }}
+                    />
                   )}
-                </div>
-                <span className={styles.drilldownLabel}>{row.name}</span>
-                <div className={styles.drilldownChips}>
-                  {metric === "revenue" ||
-                  metric === "aov" ||
-                  metric === "orders" ? (
-                    <>
-                      {row.achievement != null ? (
+                  <div className={styles.barPy} style={{ height: `${pyPct}%` }} />
+                  {goalPct != null ? (
+                    <div
+                      className={styles.goalMark}
+                      style={{ bottom: `${Math.min(goalPct, 100)}%` }}
+                      data-label={formatCompactLabel(row.goalValue!)}
+                    />
+                  ) : null}
+                  <div className={styles.barTooltip} style={{ top: -130 }}>
+                    <strong>{row.name}</strong>
+                    {hasProjectionSplit ? (
+                      <div className={styles.barTooltipRow}>
+                        <span>{t("dashboard.tooltip.mtd")}</span>
+                        <span className="val">{formatBarValue(row.mtdValue)}</span>
+                      </div>
+                    ) : null}
+                    <div className={styles.barTooltipRow}>
+                      <span>
+                        {hasProjectionSplit
+                          ? t("dashboard.tooltip.projected")
+                          : t("dashboard.tooltip.current")}
+                      </span>
+                      <span className="val">{formatBarValue(row.currentValue)}</span>
+                    </div>
+                    {row.goalValue != null ? (
+                      <div className={styles.barTooltipRow}>
+                        <span>{t("dashboard.tooltip.goal")}</span>
+                        <span className="val">{formatBarValue(row.goalValue)}</span>
+                      </div>
+                    ) : null}
+                    {row.goalValue != null && row.achievement != null ? (
+                      <div className={styles.barTooltipRow}>
+                        <span>{t("dashboard.tooltip.vsGoal")}</span>
                         <span
-                          className={
-                            row.achievement >= 100
-                              ? styles.chipUp
-                              : styles.chipDown
-                          }
+                          className={`val ${row.achievement >= 100 ? styles.valPos : styles.valNeg}`}
                         >
-                          {t("dashboard.achChip")} {row.achievement.toFixed(0)}%
+                          {fmtPct0(row.achievement)}
                         </span>
-                      ) : null}
-                      {row.yoyPercent != null ? (
+                      </div>
+                    ) : null}
+                    <div className={styles.barTooltipRow}>
+                      <span>{t("dashboard.tooltip.priorYear")}</span>
+                      <span className="val">
+                        {isRate && row.pyRatePercent != null
+                          ? fmtRate1(row.pyRatePercent)
+                          : formatBarValue(row.pyValue)}
+                      </span>
+                    </div>
+                    {row.yoyPercent != null ? (
+                      <div className={styles.barTooltipRow}>
+                        <span>{t("dashboard.tooltip.yoy")}</span>
                         <span
-                          className={
-                            row.yoyPercent >= 0
-                              ? styles.chipUp
-                              : styles.chipDown
-                          }
+                          className={`val ${row.yoyPercent > 0 ? styles.valPos : row.yoyPercent < 0 ? styles.valNeg : ""}`}
                         >
-                          {t("dashboard.yoyChip")}{" "}
-                          {row.yoyPercent >= 0 ? "+" : ""}
-                          {row.yoyPercent.toFixed(0)}%
+                          {fmtPctSigned(row.yoyPercent)}
                         </span>
-                      ) : null}
-                    </>
-                  ) : null}
-                  {metric === "bestWorst" ? (
-                    <span className={styles.drilldownRankChip}>
-                      #{idx + 1}
-                    </span>
-                  ) : null}
-                  {metric === "discount" && row.pyRatePercent != null ? (
-                    <span className={styles.chipNeutral}>
-                      {t("dashboard.pyLabel")} {row.pyRatePercent.toFixed(1)}%
-                    </span>
-                  ) : null}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
-            );
-          })
-        )}
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      <div className={styles.chartXAxis}>
+        {sorted.map((row) => (
+          <div key={row.locationId} className={styles.chartXLabel}>
+            {row.name}
+          </div>
+        ))}
+      </div>
+      {/* Mini stats table (only for revenue): Goal% + YoY. Orders / AOV / Discount: YoY only. */}
+      {metric === "revenue" ? (
+        <div className={styles.statsTable}>
+          <div className={styles.statsRow}>
+            <div className={styles.statsLabel}>{t("dashboard.statsGoal")}</div>
+            <div className={styles.statsCells}>
+              {sorted.map((row) => {
+                const ach = row.achievement;
+                const cls =
+                  ach == null
+                    ? styles.statsCellFlat
+                    : ach >= 100
+                      ? styles.statsCellPos
+                      : styles.statsCellNeg;
+                return (
+                  <div key={row.locationId} className={`${styles.statsCell} ${cls}`}>
+                    {ach != null ? fmtPct0(ach) : "—"}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className={styles.statsRow}>
+            <div className={styles.statsLabel}>{t("dashboard.statsYoY")}</div>
+            <div className={styles.statsCells}>
+              {sorted.map((row) => {
+                const y = row.yoyPercent;
+                const cls =
+                  y == null
+                    ? styles.statsCellFlat
+                    : y > 0
+                      ? styles.statsCellPos
+                      : y < 0
+                        ? styles.statsCellNeg
+                        : styles.statsCellFlat;
+                return (
+                  <div key={row.locationId} className={`${styles.statsCell} ${cls}`}>
+                    {y != null ? fmtPctSigned(y) : "—"}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      ) : !isRate ? (
+        <div className={styles.statsTable}>
+          <div className={styles.statsRow}>
+            <div className={styles.statsLabel}>{t("dashboard.statsYoY")}</div>
+            <div className={styles.statsCells}>
+              {sorted.map((row) => {
+                const y = row.yoyPercent;
+                const cls =
+                  y == null
+                    ? styles.statsCellFlat
+                    : y > 0
+                      ? styles.statsCellPos
+                      : y < 0
+                        ? styles.statsCellNeg
+                        : styles.statsCellFlat;
+                return (
+                  <div key={row.locationId} className={`${styles.statsCell} ${cls}`}>
+                    {y != null ? fmtPctSigned(y) : "—"}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {/* Legend */}
+      <div className={styles.chartLegend}>
+        <span>
+          <i
+            className={`${styles.legendDot} ${hasProjectionSplit ? styles.legendDotCurrent : styles.legendDotCurrentSolid}`}
+          />{" "}
+          {hasProjectionSplit
+            ? t("dashboard.legendCurrentProjection")
+            : t("dashboard.legendCurrent")}
+        </span>
+        <span>
+          <i className={`${styles.legendDot} ${styles.legendDotPy}`} />{" "}
+          {t("dashboard.legendPy")}
+        </span>
+        {hasGoalMark ? (
+          <span>
+            <i className={styles.legendDash} /> {t("dashboard.legendGoal")}
+          </span>
+        ) : null}
       </div>
     </div>
   );
@@ -1155,13 +1834,13 @@ export default function SalesGoalsPage() {
     projectionsByLocation,
     months,
     currentMonth,
-    pyMonth,
-    currencyCode,
+    currencyCode: initialCurrencyCode,
     locationConfigs,
     syncMeta,
     dashboardSnapshots,
     dashboardKpis,
-    storesWithGoalsCount,
+    storesWithGoalsCount: initialStoresWithGoalsCount,
+    defaultPeriod,
     campaigns,
     campaignProgress,
   } = useLoaderData<LoaderData>();
@@ -1169,21 +1848,88 @@ export default function SalesGoalsPage() {
 
   const { t, i18n } = useTranslation("sales-goals");
   const locale = i18n.language;
-  const formatCurrency = (value: number, code: string) =>
-    fmtCurrencyBase(value, code, locale);
-  const formatMonthLabel = (monthStr: string) =>
-    fmtMonthBase(monthStr, locale);
 
   const saveGoalFetcher = useFetcher<{ ok: boolean }>();
   const deleteGoalFetcher = useFetcher<{ ok: boolean }>();
   const syncFetcher = useFetcher<{ ok: boolean }>();
   const bulkFetcher = useFetcher<{ ok: boolean }>();
   const campaignFetcher = useFetcher<{ ok: boolean }>();
+  const matchOptionsFetcher = useFetcher<{
+    ok: boolean;
+    intent?: string;
+    options?: Array<{ value: string; label: string }>;
+  }>();
+  const baselineFetcher = useFetcher<{
+    ok: boolean;
+    intent?: string;
+    baseline?: Record<string, { orderCount: number; revenue: number }>;
+  }>();
+  const periodFetcher = useFetcher<
+    | { ok: true; intent: "fetch-dashboard-period"; stats: DashboardPeriodStats }
+    | { ok: false; error: string }
+  >();
 
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
-  const [dashboardMonth, setDashboardMonth] = useState<string>(currentMonth);
-  const [comparisonMode, setComparisonMode] = useState<ComparisonMode>("prev_year");
   const [goalsMonth, setGoalsMonth] = useState<string>(currentMonth);
+
+  // ── Period state (Dashboard tab) ───────────────────────────────────────────
+  const [periodPreset, setPeriodPreset] = useState<PeriodPreset>("this_month");
+  const [comparisonMode, setComparisonMode] = useState<ComparisonMode>("prev_year");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+  const [draftStart, setDraftStart] = useState("");
+  const [draftEnd, setDraftEnd] = useState("");
+  const [customCalendarOpen, setCustomCalendarOpen] = useState(false);
+  const prevPresetRef = useRef<PeriodPreset>("this_month");
+
+  // Snapshot / KPI state — seeded from loader for first paint, replaced by
+  // the fetch-dashboard-period action response on period changes.
+  // Compute initial prevYearAggregates + proratedMtdGoal for the loader's
+  // default period (this_month + prev_year). compareRows *are* the prior year.
+  const initialPrevYearAggregates: RangeAggregateRow[] = (() => {
+    // The loader default uses prev_year comparison, so defaultCompareRows ARE
+    // the prior-year aggregates. They are embedded in dashboardSnapshots as
+    // pyRevenue/pyOrders — but we need the raw rows for AOV/Orders cards.
+    // Reconstruct from snapshots (the loader doesn't serialize raw compare rows).
+    return dashboardSnapshots.map((s) => ({
+      locationId: s.locationId,
+      locationName: s.locationName,
+      revenue: s.pyRevenue,
+      orderCount: s.pyOrders,
+      totalDiscounts: s.pyDiscounts,
+      currencyCode: initialCurrencyCode as string | null,
+    }));
+  })();
+  const initialProratedMtdGoal: number | null = (() => {
+    if (!defaultPeriod.isSingleMonth || !defaultPeriod.monthKey) return null;
+    const totalGoal = dashboardSnapshots.reduce(
+      (sum, s) => sum + (s.goal ?? 0),
+      0,
+    );
+    if (totalGoal <= 0) return null;
+    const elapsedDays = defaultPeriod.periodDays;
+    const [y, m] = defaultPeriod.monthKey.split("-").map(Number);
+    const daysInMonth = new Date(y, m, 0).getDate();
+    return totalGoal * (elapsedDays / daysInMonth);
+  })();
+
+  const [periodStats, setPeriodStats] = useState<DashboardPeriodStats>({
+    period: defaultPeriod,
+    snapshots: dashboardSnapshots,
+    kpis: dashboardKpis,
+    currencyCode: initialCurrencyCode,
+    storesWithGoalsCount: initialStoresWithGoalsCount,
+    locationsCount: dashboardSnapshots.length,
+    prevYearAggregates: initialPrevYearAggregates,
+    proratedMtdGoal: initialProratedMtdGoal,
+  });
+  const initialFetchSkippedRef = useRef(false);
+
+  const currencyCode = periodStats.currencyCode;
+  const formatCurrency = (value: number, code: string) =>
+    fmtCurrencyBase(value, code, locale);
+  const formatMonthLabel = (monthStr: string) =>
+    fmtMonthBase(monthStr, locale);
 
   type KpiKey =
     | "revenue"
@@ -1196,10 +1942,16 @@ export default function SalesGoalsPage() {
   const toggleKpi = (key: KpiKey) =>
     setActiveKpi((prev) => (prev === key ? null : key));
 
-  // Day 1–5 of the current month: projection is noisy, italicize "proj" labels.
+  // ── Adaptive rendering based on resolved period ────────────────────────────
+  // `isSingleMonth` gates goal/projection/Best-vs-Worst visibility.
+  // `includesToday` gates the projection (YoY-pace extrapolation for the
+  // current month in progress). `isCurrentMonthEarly` italicizes projection
+  // labels in the first 5 days of the current month — noise window.
+  const isSingleMonth = periodStats.period.isSingleMonth;
+  const isViewingCurrentMonth =
+    isSingleMonth && periodStats.period.includesToday;
   const isCurrentMonthEarly =
-    dashboardMonth === currentMonth && new Date().getDate() <= 5;
-  const isViewingCurrentMonth = dashboardMonth === currentMonth;
+    isViewingCurrentMonth && new Date().getDate() <= 5;
 
   // Per-location inline edit state for the Goals tab
   const [editingLocationId, setEditingLocationId] = useState<string | null>(null);
@@ -1254,6 +2006,84 @@ export default function SalesGoalsPage() {
     if (bulkFetcher.data?.ok) setBulkModalOpen(false);
   }, [bulkFetcher.data]);
 
+  // ── Period fetcher (Dashboard tab) ─────────────────────────────────────────
+
+  // Fire a fresh server aggregation whenever the period/compare changes.
+  // Skip the very first mount — the loader seeded state for the default view.
+  useEffect(() => {
+    if (!initialFetchSkippedRef.current) {
+      initialFetchSkippedRef.current = true;
+      return;
+    }
+    // Don't re-fetch mid-custom-pick: wait until both drafts applied.
+    if (periodPreset === "custom" && (!customStart || !customEnd)) return;
+    const fd = new FormData();
+    fd.append("intent", "fetch-dashboard-period");
+    fd.append("preset", periodPreset);
+    fd.append("compareMode", comparisonMode);
+    if (periodPreset === "custom") {
+      fd.append("customStart", customStart);
+      fd.append("customEnd", customEnd);
+    }
+    periodFetcher.submit(fd, { method: "post" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodPreset, comparisonMode, customStart, customEnd]);
+
+  useEffect(() => {
+    if (
+      periodFetcher.data?.ok &&
+      periodFetcher.data.intent === "fetch-dashboard-period"
+    ) {
+      setPeriodStats(periodFetcher.data.stats);
+    }
+  }, [periodFetcher.data]);
+
+  // Track previous preset so Cancel reverts; reset drafts when entering custom.
+  useEffect(() => {
+    if (periodPreset === "custom") {
+      setDraftStart(customStart);
+      setDraftEnd(customEnd);
+      setCustomCalendarOpen(true);
+    } else {
+      prevPresetRef.current = periodPreset;
+      setCustomCalendarOpen(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodPreset]);
+
+  const canApplyCustom =
+    Boolean(draftStart) && Boolean(draftEnd) && draftStart <= draftEnd;
+
+  const handleApplyCustom = () => {
+    if (!canApplyCustom) return;
+    setCustomStart(draftStart);
+    setCustomEnd(draftEnd);
+    setCustomCalendarOpen(false);
+  };
+
+  const handleCancelCustom = () => {
+    setDraftStart("");
+    setDraftEnd("");
+    setCustomCalendarOpen(false);
+    const target = prevPresetRef.current || "this_month";
+    setPeriodPreset(target === "custom" ? "this_month" : target);
+  };
+
+  const handleEditCustomDates = () => {
+    setDraftStart(customStart);
+    setDraftEnd(customEnd);
+    setCustomCalendarOpen(true);
+  };
+
+  // Friendly range label for the overview strip.
+  const activeRangeFriendly = useMemo(() => {
+    return formatDateRangeFriendly(
+      periodStats.period.start,
+      periodStats.period.end,
+      locale,
+    );
+  }, [periodStats.period.start, periodStats.period.end, locale]);
+
   // ── Derived: current + comparison month values per location ────────────────
 
   const bucketFor = (
@@ -1270,11 +2100,6 @@ export default function SalesGoalsPage() {
     );
   };
 
-  const comparisonMonth = useMemo(
-    () => comparisonMonthFor(dashboardMonth, comparisonMode),
-    [dashboardMonth, comparisonMode],
-  );
-
   type LocationRow = {
     id: string;
     name: string;
@@ -1288,102 +2113,33 @@ export default function SalesGoalsPage() {
     pyRevenue: number;
   };
 
+  // Breakdown-table rows come straight from the active period's snapshots.
+  // The 13-month sparkline is independent — always last 13 calendar months.
   const locationRows: LocationRow[] = useMemo(() => {
-    return enabledLocations.map((loc) => {
-      const current = bucketFor(loc.id, dashboardMonth);
-      const prevYear = bucketFor(loc.id, addMonths(dashboardMonth, -12));
-      const goal =
-        goals.find(
-          (g) => g.locationId === loc.id && g.month === dashboardMonth,
-        )?.target ?? null;
-      const proj = projectionsByLocation[loc.id]?.[dashboardMonth];
-      // For past months, projected = actual; for current month, use YoY projection.
-      const projectedRevenue = proj
-        ? proj.isProjection
-          ? (proj.yoy ?? null)
-          : (proj.yoy ?? current.revenue)
-        : null;
-      // Achievement = projected / goal (not MTD / goal)
+    return periodStats.snapshots.map((s) => {
       const achievement =
-        goal != null && goal > 0 && projectedRevenue != null
-          ? (projectedRevenue / goal) * 100
+        s.goal != null && s.goal > 0 && s.projectedRevenue != null
+          ? (s.projectedRevenue / s.goal) * 100
           : null;
-      // YoY = (projected - PY) / PY
-      const yoyDelta =
-        projectedRevenue != null
-          ? deltaPercent(projectedRevenue, prevYear.revenue)
-          : deltaPercent(current.revenue, prevYear.revenue);
+      const currentForYoY = s.projectedRevenue ?? s.mtdRevenue;
+      const yoyDelta = deltaPercent(currentForYoY, s.pyRevenue);
       const sparklineValues = months.map(
-        (m) => monthlyByLocation[loc.id]?.[m]?.revenue ?? 0,
+        (m) => monthlyByLocation[s.locationId]?.[m]?.revenue ?? 0,
       );
       return {
-        id: loc.id,
-        name: loc.name,
-        orders: current.orderCount,
-        revenue: current.revenue,
-        projectedRevenue,
-        goal,
+        id: s.locationId,
+        name: s.locationName,
+        orders: s.mtdOrders,
+        revenue: s.mtdRevenue,
+        projectedRevenue: s.projectedRevenue,
+        goal: s.goal,
         achievement,
         yoyDelta,
         sparklineValues,
-        pyRevenue: prevYear.revenue,
+        pyRevenue: s.pyRevenue,
       };
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    enabledLocations,
-    goals,
-    dashboardMonth,
-    monthlyByLocation,
-    months,
-    projectionsByLocation,
-  ]);
-
-  // Drilldown sort + max-scale now live inside KpiDrilldownBars, since each
-  // metric has a canonical ranking direction.
-
-  const totals = useMemo(() => {
-    const revenue = locationRows.reduce((s, r) => s + r.revenue, 0);
-    const orders = locationRows.reduce((s, r) => s + r.orders, 0);
-    const goal = locationRows.reduce((s, r) => s + (r.goal ?? 0), 0);
-    const aov = orders > 0 ? revenue / orders : 0;
-    const achievement = goal > 0 ? (revenue / goal) * 100 : null;
-    return { revenue, orders, goal, aov, achievement };
-  }, [locationRows]);
-
-  const comparisonTotals = useMemo(() => {
-    if (!comparisonMonth) return null;
-    let revenue = 0;
-    let orders = 0;
-    for (const loc of enabledLocations) {
-      const b = bucketFor(loc.id, comparisonMonth);
-      revenue += b.revenue;
-      orders += b.orderCount;
-    }
-    const aov = orders > 0 ? revenue / orders : 0;
-    return { revenue, orders, aov };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [comparisonMonth, enabledLocations, monthlyByLocation]);
-
-  const revenueDelta =
-    comparisonTotals != null
-      ? deltaPercent(totals.revenue, comparisonTotals.revenue)
-      : null;
-  const ordersDelta =
-    comparisonTotals != null
-      ? deltaPercent(totals.orders, comparisonTotals.orders)
-      : null;
-  const aovDelta =
-    comparisonTotals != null
-      ? deltaPercent(totals.aov, comparisonTotals.aov)
-      : null;
-
-  const bestPerformer = useMemo(() => {
-    const scored = locationRows
-      .filter((r) => r.achievement != null)
-      .sort((a, b) => (b.achievement ?? 0) - (a.achievement ?? 0));
-    return scored[0] ?? null;
-  }, [locationRows]);
+  }, [periodStats.snapshots, monthlyByLocation, months]);
 
   // Sorted rows driven by the active KPI drilldown
   const sortedLocationRows = useMemo(() => {
@@ -1520,9 +2276,6 @@ export default function SalesGoalsPage() {
   // ── Sync status display ──
   const isSyncing =
     syncMeta.status === "syncing" || syncFetcher.state !== "idle";
-  const lastSyncLabel = syncMeta.lastSyncedAt
-    ? new Date(syncMeta.lastSyncedAt).toLocaleString(locale)
-    : t("sync.never");
   const hoursSinceSync = syncMeta.lastSyncedAt
     ? (Date.now() - new Date(syncMeta.lastSyncedAt).getTime()) / 3_600_000
     : null;
@@ -1562,62 +2315,164 @@ export default function SalesGoalsPage() {
           {/* ── Dashboard ──────────────────────────────────────────────── */}
           {activeTab === "dashboard" ? (
             <>
-              {/* Single-row controls: Month + Compare with + Last synced + Goals chip */}
-              <div className={styles.controlsRow}>
-                <s-select
-                  label={t("dashboard.month")}
-                  value={dashboardMonth}
-                  onChange={(e: Event) => {
-                    const v = (e.currentTarget as HTMLSelectElement).value;
-                    if (v) setDashboardMonth(v);
-                  }}
+              {/* Overview strip: heading + friendly range + subtitle stats. */}
+              <div className={styles.overviewStrip}>
+                <div className={styles.overviewStripHeader}>
+                  <h2 className={styles.overviewStripHeading}>
+                    {t("dashboard.stripHeading", "Retail goals dashboard")}
+                  </h2>
+                  {activeRangeFriendly ? (
+                    periodPreset === "custom" && !customCalendarOpen ? (
+                      <button
+                        type="button"
+                        className={`${styles.periodFriendly} ${styles.periodFriendlyEditable}`}
+                        onClick={handleEditCustomDates}
+                        title={t("dashboard.period.edit", "Change dates")}
+                      >
+                        {activeRangeFriendly}
+                      </button>
+                    ) : (
+                      <span className={styles.periodFriendly}>
+                        {activeRangeFriendly}
+                      </span>
+                    )
+                  ) : null}
+                </div>
+                <div
+                  className={`${styles.overviewStripSubtitle} ${syncStaleClass}`}
                 >
-                  {months
-                    .slice()
-                    .reverse()
-                    .map((m) => (
-                      <s-option key={m} value={m}>
-                        {formatMonthLabel(m)}
-                      </s-option>
-                    ))}
-                </s-select>
-                <s-select
-                  label={t("dashboard.compareWith")}
-                  value={comparisonMode}
-                  onChange={(e: Event) => {
-                    const v = (e.currentTarget as HTMLSelectElement).value;
-                    setComparisonMode(v as ComparisonMode);
-                  }}
-                >
-                  <s-option value="none">
-                    {t("dashboard.comparison.none")}
-                  </s-option>
-                  <s-option value="prev_month">
-                    {t("dashboard.comparison.prevMonth")}
-                  </s-option>
-                  <s-option value="prev_year">
-                    {t("dashboard.comparison.prevYear")}
-                  </s-option>
-                </s-select>
-                <span className={`${styles.syncLabel} ${syncStaleClass}`}>
-                  {t("sync.lastSynced")}: {lastSyncLabel}
-                </span>
-                <span className={styles.storesWithGoalsChip}>
-                  {t("dashboard.storesWithGoalsChip", {
-                    set: storesWithGoalsCount,
-                    total: enabledLocations.length,
+                  {t("dashboard.stripSubtitle", {
+                    locations: periodStats.locationsCount,
+                    set: periodStats.storesWithGoalsCount,
+                    total: periodStats.locationsCount,
+                    lastSynced: syncMeta.lastSyncedAt
+                      ? formatLastSyncShort(syncMeta.lastSyncedAt, locale)
+                      : t("sync.never"),
+                    defaultValue:
+                      "{{locations}} locations · {{set}}/{{total}} goals set · Last synced {{lastSynced}}",
                   })}
-                </span>
-                {adminSyncEnabled ? (
-                  <s-button
-                    variant="secondary"
-                    onClick={triggerSyncNow}
-                    disabled={isSyncing}
-                  >
-                    {isSyncing ? t("sync.syncing") : t("sync.syncNow")}
-                  </s-button>
-                ) : null}
+                </div>
               </div>
+
+              {/* Single-row period bar: Period | Compare with | (admin sync) */}
+              <div className={styles.periodBar}>
+                <div className={styles.filterControl}>
+                  <span className={styles.filterLabel}>
+                    {t("dashboard.period.label", "Period")}
+                  </span>
+                  <s-select
+                    label={t("dashboard.period.label", "Period")}
+                    labelAccessibilityVisibility="exclusive"
+                    value={periodPreset}
+                    onChange={(e: Event) => {
+                      const v = (e.currentTarget as HTMLSelectElement).value;
+                      setPeriodPreset(v as PeriodPreset);
+                    }}
+                  >
+                    <s-option value="this_month">
+                      {t("dashboard.period.thisMonth", "This month")}
+                    </s-option>
+                    <s-option value="last_month">
+                      {t("dashboard.period.lastMonth", "Last month")}
+                    </s-option>
+                    <s-option value="last_7d">
+                      {t("dashboard.period.last7d", "Last 7 days")}
+                    </s-option>
+                    <s-option value="last_30d">
+                      {t("dashboard.period.last30d", "Last 30 days")}
+                    </s-option>
+                    <s-option value="last_3_months">
+                      {t("dashboard.period.last3Months", "Last 3 months")}
+                    </s-option>
+                    <s-option value="custom">
+                      {t("dashboard.period.custom", "Custom")}
+                    </s-option>
+                  </s-select>
+                </div>
+                <div className={styles.filterControl}>
+                  <span className={styles.filterLabel}>
+                    {t("dashboard.compareWith")}
+                  </span>
+                  <s-select
+                    label={t("dashboard.compareWith")}
+                    labelAccessibilityVisibility="exclusive"
+                    value={comparisonMode}
+                    onChange={(e: Event) => {
+                      const v = (e.currentTarget as HTMLSelectElement).value;
+                      setComparisonMode(v as ComparisonMode);
+                    }}
+                  >
+                    <s-option value="none">
+                      {t("dashboard.comparison.none")}
+                    </s-option>
+                    <s-option value="prev_period">
+                      {t("dashboard.comparison.prevPeriod", "Previous period")}
+                    </s-option>
+                    <s-option value="prev_year">
+                      {t("dashboard.comparison.prevYear")}
+                    </s-option>
+                  </s-select>
+                </div>
+                <div className={styles.filterControl} aria-hidden>
+                  {adminSyncEnabled ? (
+                    <s-button
+                      variant="secondary"
+                      onClick={triggerSyncNow}
+                      disabled={isSyncing}
+                    >
+                      {isSyncing ? t("sync.syncing") : t("sync.syncNow")}
+                    </s-button>
+                  ) : null}
+                </div>
+              </div>
+
+              {/* Custom date calendar — draft → apply flow. */}
+              {periodPreset === "custom" && customCalendarOpen ? (
+                <div className={styles.customDateGrid}>
+                  <div className={styles.customDateCol}>
+                    <span className={styles.customDateLabel}>
+                      {t("dashboard.period.startDate", "Start date")}
+                    </span>
+                    <s-date-picker
+                      type="single"
+                      value={draftStart}
+                      onChange={(e: Event) =>
+                        setDraftStart(
+                          (e.currentTarget as HTMLInputElement).value,
+                        )
+                      }
+                    />
+                  </div>
+                  <div className={styles.customDateCol}>
+                    <span className={styles.customDateLabel}>
+                      {t("dashboard.period.endDate", "End date")}
+                    </span>
+                    <s-date-picker
+                      type="single"
+                      value={draftEnd}
+                      onChange={(e: Event) =>
+                        setDraftEnd(
+                          (e.currentTarget as HTMLInputElement).value,
+                        )
+                      }
+                    />
+                  </div>
+                  <div className={styles.customDateActions}>
+                    <s-button variant="secondary" onClick={handleCancelCustom}>
+                      {t("dashboard.period.cancel", "Cancel")}
+                    </s-button>
+                    {canApplyCustom ? (
+                      <s-button variant="primary" onClick={handleApplyCustom}>
+                        {t("dashboard.period.apply", "Apply")}
+                      </s-button>
+                    ) : (
+                      <s-button variant="primary" disabled>
+                        {t("dashboard.period.apply", "Apply")}
+                      </s-button>
+                    )}
+                  </div>
+                </div>
+              ) : null}
 
               {/* ─── Row 1: Scoreboard (Revenue = Orders × AOV) ─── */}
               <div className={styles.kpiGroupLabel}>
@@ -1626,10 +2481,12 @@ export default function SalesGoalsPage() {
               <div className={styles.kpiGrid}>
                 {/* Total revenue — clicking this opens the bar drilldown */}
                 {(() => {
-                  const k = dashboardKpis.revenue;
-                  const projVsGoal =
-                    k.projected != null && k.goal != null && k.goal > 0
-                      ? ((k.projected - k.goal) / k.goal) * 100
+                  const k = periodStats.kpis.revenue;
+                  const mtdVsGoal =
+                    isSingleMonth &&
+                    periodStats.proratedMtdGoal != null &&
+                    periodStats.proratedMtdGoal > 0
+                      ? ((k.mtd / periodStats.proratedMtdGoal) - 1) * 100
                       : null;
                   const goalVsProj =
                     k.goal != null && k.projected != null && k.projected > 0
@@ -1639,31 +2496,36 @@ export default function SalesGoalsPage() {
                     k.py > 0 && k.projected != null
                       ? ((k.py - k.projected) / k.projected) * 100
                       : null;
+                  const periodVsPy =
+                    k.py > 0 ? ((k.mtd - k.py) / k.py) * 100 : null;
                   return (
                     <KpiRichCard
                       title={t("dashboard.totalRevenue")}
                       primary={formatCurrency(k.mtd, currencyCode)}
-                      primaryDelta={projVsGoal}
-                      primaryDeltaSuffix={t("dashboard.vsGoal")}
+                      primaryDelta={isSingleMonth ? mtdVsGoal : periodVsPy}
+                      primaryDeltaSuffix={
+                        isSingleMonth
+                          ? t("dashboard.vsMtdGoal")
+                          : t("dashboard.vsPy")
+                      }
                       projected={
                         k.projected != null
                           ? {
-                              value: `${t("dashboard.projLabel")} ${formatCurrency(k.projected, currencyCode)}`,
+                              value: `${t("dashboard.projectionLabel")} ${formatCurrency(k.projected, currencyCode)}`,
                               early: isCurrentMonthEarly,
                             }
                           : null
                       }
                       lines={[
-                        k.goal != null
-                          ? {
-                              label: t("dashboard.goalLabel"),
-                              value: formatCurrency(k.goal, currencyCode),
-                              delta: goalVsProj,
-                            }
-                          : {
-                              label: t("dashboard.goalLabel"),
-                              value: "—",
-                            },
+                        ...(k.goal != null
+                          ? [
+                              {
+                                label: t("dashboard.goalLabel"),
+                                value: formatCurrency(k.goal, currencyCode),
+                                delta: goalVsProj,
+                              },
+                            ]
+                          : []),
                         {
                           label: t("dashboard.pyLabel"),
                           value: formatCurrency(k.py, currencyCode),
@@ -1675,65 +2537,16 @@ export default function SalesGoalsPage() {
                     />
                   );
                 })()}
-                {/* AOV */}
-                {(() => {
-                  const k = dashboardKpis.aov;
-                  const projVsGoal =
-                    k.projected != null && k.goal != null && k.goal > 0
-                      ? ((k.projected - k.goal) / k.goal) * 100
-                      : null;
-                  const goalVsProj =
-                    k.goal != null && k.projected != null && k.projected > 0
-                      ? ((k.goal - k.projected) / k.projected) * 100
-                      : null;
-                  const pyVsProj =
-                    k.py > 0 && k.projected != null
-                      ? ((k.py - k.projected) / k.projected) * 100
-                      : null;
-                  return (
-                    <KpiRichCard
-                      title={t("dashboard.aov")}
-                      primary={formatCurrency(k.mtd, currencyCode)}
-                      primaryDelta={projVsGoal}
-                      primaryDeltaSuffix={t("dashboard.vsGoal")}
-                      projected={
-                        k.projected != null
-                          ? {
-                              value: `${t("dashboard.projLabel")} ${formatCurrency(k.projected, currencyCode)}`,
-                              early: isCurrentMonthEarly,
-                            }
-                          : null
-                      }
-                      tooltip={t("dashboard.aovGoalTooltip")}
-                      lines={[
-                        k.goal != null
-                          ? {
-                              label: t("dashboard.goalLabel"),
-                              value: formatCurrency(k.goal, currencyCode),
-                              delta: goalVsProj,
-                            }
-                          : { label: t("dashboard.goalLabel"), value: "—" },
-                        {
-                          label: t("dashboard.pyLabel"),
-                          value: formatCurrency(k.py, currencyCode),
-                          delta: pyVsProj,
-                        },
-                      ]}
-                      active={activeKpi === "aov"}
-                      onClick={() => toggleKpi("aov")}
-                    />
-                  );
-                })()}
                 {/* Orders */}
                 {(() => {
-                  const k = dashboardKpis.orders;
-                  const projVsGoal =
-                    k.projected != null && k.goal != null && k.goal > 0
-                      ? ((k.projected - k.goal) / k.goal) * 100
-                      : null;
-                  const goalVsProj =
-                    k.goal != null && k.projected != null && k.projected > 0
-                      ? ((k.goal - k.projected) / k.projected) * 100
+                  const k = periodStats.kpis.orders;
+                  const prevYearOrders = periodStats.prevYearAggregates.reduce(
+                    (sum, r) => sum + r.orderCount,
+                    0,
+                  );
+                  const ordersYoY =
+                    prevYearOrders > 0
+                      ? ((k.mtd - prevYearOrders) / prevYearOrders) * 100
                       : null;
                   const pyVsProj =
                     k.py > 0 && k.projected != null
@@ -1743,25 +2556,18 @@ export default function SalesGoalsPage() {
                     <KpiRichCard
                       title={t("dashboard.orders")}
                       primary={k.mtd.toLocaleString(locale)}
-                      primaryDelta={projVsGoal}
-                      primaryDeltaSuffix={t("dashboard.vsGoal")}
+                      primaryDelta={ordersYoY}
+                      primaryDeltaSuffix={t("dashboard.vsPreviousYear")}
                       projected={
                         k.projected != null
                           ? {
-                              value: `${t("dashboard.projLabel")} ${k.projected.toLocaleString(locale)}`,
+                              value: `${t("dashboard.projectionLabel")} ${k.projected.toLocaleString(locale)}`,
                               early: isCurrentMonthEarly,
                             }
                           : null
                       }
                       tooltip={t("dashboard.ordersGoalTooltip")}
                       lines={[
-                        k.goal != null
-                          ? {
-                              label: t("dashboard.goalLabel"),
-                              value: Math.round(k.goal).toLocaleString(locale),
-                              delta: goalVsProj,
-                            }
-                          : { label: t("dashboard.goalLabel"), value: "—" },
                         {
                           label: t("dashboard.pyLabel"),
                           value: k.py.toLocaleString(locale),
@@ -1773,6 +2579,46 @@ export default function SalesGoalsPage() {
                     />
                   );
                 })()}
+                {/* AOV */}
+                {(() => {
+                  const k = periodStats.kpis.aov;
+                  const pyAggRev = periodStats.prevYearAggregates.reduce(
+                    (sum, r) => sum + r.revenue,
+                    0,
+                  );
+                  const pyAggOrd = periodStats.prevYearAggregates.reduce(
+                    (sum, r) => sum + r.orderCount,
+                    0,
+                  );
+                  const prevYearAov = pyAggOrd > 0 ? pyAggRev / pyAggOrd : 0;
+                  const aovYoY =
+                    prevYearAov > 0
+                      ? ((k.mtd - prevYearAov) / prevYearAov) * 100
+                      : null;
+                  const pyVsProj =
+                    k.py > 0 && k.projected != null
+                      ? ((k.py - k.projected) / k.projected) * 100
+                      : null;
+                  return (
+                    <KpiRichCard
+                      title={t("dashboard.aov")}
+                      primary={formatCurrency(k.mtd, currencyCode)}
+                      primaryDelta={aovYoY}
+                      primaryDeltaSuffix={t("dashboard.vsPreviousYear")}
+                      projected={null}
+                      tooltip={t("dashboard.aovGoalTooltip")}
+                      lines={[
+                        {
+                          label: t("dashboard.pyLabel"),
+                          value: formatCurrency(k.py, currencyCode),
+                          delta: pyVsProj,
+                        },
+                      ]}
+                      active={activeKpi === "aov"}
+                      onClick={() => toggleKpi("aov")}
+                    />
+                  );
+                })()}
               </div>
 
               {/* ─── Row-1 drilldown: renders below Row 1 when Revenue/AOV/Orders is active ─── */}
@@ -1781,13 +2627,12 @@ export default function SalesGoalsPage() {
               activeKpi === "orders" ? (
                 <KpiDrilldownBars
                   metric={activeKpi}
-                  snapshots={dashboardSnapshots}
+                  snapshots={periodStats.snapshots}
                   currencyCode={currencyCode}
                   locale={locale}
                   isCurrentMonthEarly={isCurrentMonthEarly}
                   isViewingCurrentMonth={isViewingCurrentMonth}
                   t={t}
-                  formatCurrency={formatCurrency}
                 />
               ) : null}
 
@@ -1798,7 +2643,26 @@ export default function SalesGoalsPage() {
               <div className={styles.kpiGrid}>
                 {/* Same-Store YoY */}
                 {(() => {
-                  const k = dashboardKpis.sameStoreYoY;
+                  const k = periodStats.kpis.sameStoreYoY;
+                  const sameStoreLines: KpiRichLine[] = [];
+                  if (k.qualifyingCount > 0) {
+                    sameStoreLines.push({
+                      label: "",
+                      value: t("dashboard.declining", {
+                        declining: k.decliningCount,
+                        total: k.qualifyingCount,
+                      }),
+                    });
+                  }
+                  if (k.topGrower) {
+                    sameStoreLines.push({
+                      label: t("dashboard.sameStoreTopGrower", {
+                        store: k.topGrower.name,
+                        percent: k.topGrower.deltaPercent.toFixed(1),
+                      }),
+                      value: "",
+                    });
+                  }
                   return (
                     <KpiRichCard
                       title={t("dashboard.sameStoreYoY")}
@@ -1807,28 +2671,23 @@ export default function SalesGoalsPage() {
                           ? `${k.deltaPercent >= 0 ? "+" : ""}${k.deltaPercent.toFixed(1)}%`
                           : "—"
                       }
-                      tooltip={t("dashboard.sameStoreYoyTooltip")}
-                      lines={
-                        k.qualifyingCount > 0
-                          ? [
-                              {
-                                label: "",
-                                value: t("dashboard.declining", {
-                                  declining: k.decliningCount,
-                                  total: k.qualifyingCount,
-                                }),
-                              },
-                            ]
-                          : []
+                      primaryColor={
+                        k.deltaPercent != null
+                          ? k.deltaPercent >= 0
+                            ? "#008060"
+                            : "#d72c0d"
+                          : undefined
                       }
+                      tooltip={t("dashboard.sameStoreYoyTooltip")}
+                      lines={sameStoreLines}
                       active={activeKpi === "sameStore"}
                       onClick={() => toggleKpi("sameStore")}
                     />
                   );
                 })()}
-                {/* Best vs worst */}
-                {(() => {
-                  const k = dashboardKpis.bestVsWorst;
+                {/* Best vs worst — hidden for non-single-month periods (no goals). */}
+                {!isSingleMonth ? null : (() => {
+                  const k = periodStats.kpis.bestVsWorst;
                   if (!k.best) {
                     return (
                       <KpiRichCard
@@ -1841,31 +2700,28 @@ export default function SalesGoalsPage() {
                   }
                   const bestAchPct = k.best.achievement;
                   const worstAchPct = k.worst?.achievement;
+                  const bestWorstLines: KpiRichLine[] = [
+                    {
+                      label: t("dashboard.bestVsWorstLeaderBy", {
+                        gap: k.gapPp?.toFixed(0) ?? "0",
+                      }),
+                      value: "",
+                    },
+                  ];
+                  if (k.worst) {
+                    bestWorstLines.push({
+                      label: t("dashboard.bestVsWorstTrailing", {
+                        store: k.worst.name,
+                        percent: worstAchPct?.toFixed(0) ?? "0",
+                      }),
+                      value: "",
+                    });
+                  }
                   return (
                     <KpiRichCard
                       title={t("dashboard.bestVsWorst")}
-                      primary={k.best.name}
-                      primaryDelta={k.gapPp}
-                      primaryDeltaSuffix={t("dashboard.aheadLabel")}
-                      lines={
-                        k.worst
-                          ? [
-                              {
-                                label: t("dashboard.bestAheadOf"),
-                                value: `${k.worst.name} ${worstAchPct != null ? `${worstAchPct.toFixed(0)}%` : ""}`,
-                              },
-                              {
-                                label: t("dashboard.bestAchLabel"),
-                                value: `${bestAchPct.toFixed(0)}%`,
-                              },
-                            ]
-                          : [
-                              {
-                                label: t("dashboard.bestAchLabel"),
-                                value: `${bestAchPct.toFixed(0)}%`,
-                              },
-                            ]
-                      }
+                      primary={`${k.best.name} \u00B7 ${bestAchPct.toFixed(0)}%`}
+                      lines={bestWorstLines}
                       active={activeKpi === "bestWorst"}
                       onClick={() => toggleKpi("bestWorst")}
                     />
@@ -1873,7 +2729,7 @@ export default function SalesGoalsPage() {
                 })()}
                 {/* Discount rate */}
                 {(() => {
-                  const k = dashboardKpis.discountRate;
+                  const k = periodStats.kpis.discountRate;
                   const currentRatePct =
                     k.currentRate != null
                       ? (k.currentRate * 100).toFixed(1)
@@ -1915,13 +2771,12 @@ export default function SalesGoalsPage() {
               activeKpi === "discount" ? (
                 <KpiDrilldownBars
                   metric={activeKpi}
-                  snapshots={dashboardSnapshots}
+                  snapshots={periodStats.snapshots}
                   currencyCode={currencyCode}
                   locale={locale}
                   isCurrentMonthEarly={isCurrentMonthEarly}
                   isViewingCurrentMonth={isViewingCurrentMonth}
                   t={t}
-                  formatCurrency={formatCurrency}
                 />
               ) : null}
 
@@ -1935,7 +2790,11 @@ export default function SalesGoalsPage() {
                     <div className={`${styles.table} ${styles.tableLocations}`}>
                       <div className={styles.tableHeader}>
                         <span>{t("common:label.location")}</span>
-                        <span>{t("dashboard.mtdRevenue")}</span>
+                        <span>
+                          {isSingleMonth
+                            ? t("dashboard.mtdRevenue")
+                            : t("dashboard.periodRevenue", "Period revenue")}
+                        </span>
                         <span>{t("dashboard.projectedRev")}</span>
                         <span>{t("dashboard.goal")}</span>
                         <span>{t("dashboard.achievement")}</span>
@@ -1950,7 +2809,7 @@ export default function SalesGoalsPage() {
                         sortedLocationRows.map((row) => {
                           const isBestHighlight =
                             activeKpi === "bestWorst" &&
-                            dashboardKpis.bestVsWorst.best?.locationId ===
+                            periodStats.kpis.bestVsWorst.best?.locationId ===
                               row.id;
                           return (
                             <div
@@ -2342,6 +3201,8 @@ export default function SalesGoalsPage() {
               currencyCode={currencyCode}
               onSubmit={(fd) => campaignFetcher.submit(fd, { method: "post" })}
               isSubmitting={campaignFetcher.state !== "idle"}
+              matchOptionsFetcher={matchOptionsFetcher}
+              baselineFetcher={baselineFetcher}
             />
           ) : null}
 
