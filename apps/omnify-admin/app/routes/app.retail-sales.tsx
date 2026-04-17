@@ -1408,8 +1408,11 @@ const KpiDrilldownBars = ({
     const hasNeg = deltas.some((d) => d < 0);
     const maxPos = hasPos ? Math.max(...deltas.filter((d) => d > 0)) : 0;
     const maxNeg = hasNeg ? Math.max(...deltas.filter((d) => d < 0).map((d) => -d)) : 0;
-    const niceMax = hasPos ? niceCeil(maxPos) : 0;
-    const niceMin = hasNeg ? niceCeil(maxNeg) : 0; // absolute
+    // Pad by 15% so the bar never reaches the plot edge — leaves room for the
+    // value label to render outside the bar (above for positive, below for
+    // negative) without colliding with the x-axis location name.
+    const niceMax = hasPos ? niceCeil(maxPos * 1.15) : 0;
+    const niceMin = hasNeg ? niceCeil(maxNeg * 1.15) : 0; // absolute
     const totalRange = niceMax + niceMin;
     const baselinePct = totalRange > 0 ? (niceMax / totalRange) * 100 : 100; // from top
 
