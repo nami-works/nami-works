@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — [feature name]</title>
+<!--
+  Mockup template for CPG Labs UI refactors.
+
+  How to use:
+  1. Copy this file to inputs/mockups/<feature>-v1.html
+  2. Replace [feature name], the intro, and the cards with the actual
+     components under design.
+  3. Use the "Notes" and "Open questions" panels to capture decisions
+     and things that need user input.
+  4. Iterate with the user in the mockup. When the visual language is
+     settled, translate to React/Polaris components.
+  5. Commit the mockup alongside the production change.
+
+  Design system tokens are mirrored from app/routes/app.retail-sales/styles.module.css
+  and the "UI Tokens" section of CLAUDE.md. Keep them in sync if the real app
+  tokens evolve.
+-->
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --grid: #ebebeb;
+    --text: #303030;
+    --subdued: #6d7175;
+    --axis: #8c9196;
+    --blue-primary: #005bd3;
+    --blue-projection: #b3d1ff;
+    --blue-py: #d9e3ef;
+    --blue-py-edge: #c3d2e3;
+    --green: #067647;
+    --red: #d72c0d;
+    --goal: #b8350f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 720px;
+    margin-bottom: 24px;
+  }
+
+  /* ==== Card wrapper (mimics <s-section>) ==== */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px 24px;
+    margin-bottom: 24px;
+    max-width: 880px;
+  }
+  .card h2 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    color: var(--text);
+  }
+  .card .sub {
+    font-size: 12px;
+    color: var(--subdued);
+    margin-bottom: 20px;
+  }
+
+  /* ==== Chart frame (y-axis 44px + plot 1fr) ==== */
+  .chart {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 8px;
+    height: 280px;
+    position: relative;
+  }
+  .yAxis {
+    position: relative;
+    height: 240px;
+  }
+  .yTick {
+    position: absolute;
+    right: 0;
+    transform: translateY(50%);
+    font-size: 11px;
+    color: var(--axis);
+    padding-right: 4px;
+  }
+  .plot {
+    position: relative;
+    height: 240px;
+    border-left: 1px solid var(--border);
+  }
+  .gridline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--grid);
+  }
+  .gridline.zero { background: var(--border); }
+
+  .bars {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    padding: 0 8px;
+  }
+  .group {
+    position: relative;
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  /* ==== Bars ==== */
+  .bar {
+    width: 28px;
+    border-radius: 3px 3px 0 0;
+    position: relative;
+  }
+  .barCurrent {
+    background: var(--blue-primary);
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .barProjection {
+    width: 100%;
+    background: var(--blue-projection);
+    border-radius: 3px 3px 0 0;
+  }
+  .barPy {
+    background: var(--blue-py);
+  }
+
+  /* ==== Goal marker (dotted, ~20% wider than bar pair) ==== */
+  .goalMark {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 75px;
+    border-top: 2px dotted var(--goal);
+    pointer-events: none;
+  }
+  .goalMark::after {
+    content: attr(data-label);
+    position: absolute;
+    right: 0;
+    top: -14px;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--goal);
+  }
+
+  /* ==== X-axis labels ==== */
+  .xAxis {
+    display: flex;
+    margin-left: 52px;
+    margin-top: 8px;
+    justify-content: space-around;
+    padding: 0 8px;
+  }
+  .xLabel {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.3;
+    padding: 0 4px;
+  }
+
+  /* ==== Mini stats table ==== */
+  .statsTable {
+    margin-top: 4px;
+    border-top: 1px solid var(--grid);
+  }
+  .statsRow {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--grid);
+    font-size: 12px;
+  }
+  .statsRow:last-child { border-bottom: none; }
+  .statsLabel {
+    text-align: left;
+    color: var(--subdued);
+    font-weight: 500;
+    font-size: 11px;
+  }
+  .statsCells {
+    display: flex;
+    justify-content: space-around;
+    padding: 0 8px;
+  }
+  .statsCell {
+    flex: 1;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+  }
+  .valPos { color: var(--green); }
+  .valNeg { color: var(--red); }
+  .valFlat { color: var(--subdued); }
+
+  /* ==== Legend ==== */
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--grid);
+    font-size: 12px;
+    color: var(--subdued);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dotCurrent {
+    background: linear-gradient(to top, var(--blue-projection) 0% 50%, var(--blue-primary) 50% 100%);
+  }
+  .dotCurrentSolid { background: var(--blue-primary); }
+  .dotPy { background: var(--blue-py); border: 1px solid var(--blue-py-edge); }
+  .dotPos { background: var(--green); }
+  .dotNeg { background: var(--red); }
+  .dashMark {
+    width: 16px;
+    height: 0;
+    border-top: 2px dotted var(--goal);
+    display: inline-block;
+  }
+
+  /* ==== Tooltip (static demo — toggle via .showTooltip on group) ==== */
+  .tooltipMock {
+    position: absolute;
+    background: #1f1f1f;
+    color: white;
+    font-size: 11px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    top: -130px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: none;
+  }
+  .tooltipMock::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
+    background: #1f1f1f;
+  }
+  .tooltipMock strong { font-weight: 600; color: #fff; display: block; margin-bottom: 4px; }
+  .tooltipMock .row { display: flex; justify-content: space-between; gap: 12px; margin-top: 3px; }
+  .tooltipMock .row span:first-child { color: #c9cbd0; }
+  .tooltipMock .row .val { font-weight: 600; }
+  .group.showTooltip .tooltipMock { display: block; }
+
+  /* ==== Notes / Open-questions panels ==== */
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 880px;
+    margin-bottom: 24px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; color: #4a3600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 2px; }
+</style>
+</head>
+<body>
+
+<h1>[feature name] — mockup v1</h1>
+<p class="intro">
+  [One-sentence purpose. What is being redesigned, against what reference, and what decisions this mockup is meant to unblock.]
+</p>
+
+<div class="notes">
+  <h3>Changes vs current</h3>
+  <ul>
+    <li><strong>[Change 1]</strong> — one-line rationale.</li>
+    <li><strong>[Change 2]</strong> — one-line rationale.</li>
+  </ul>
+</div>
+
+<!-- ==== Example chart card (delete / duplicate as needed) ==== -->
+<div class="card">
+  <h2>[Chart title]</h2>
+  <div class="sub">[Subtitle carrying date context · compared to · goal for]</div>
+
+  <div class="chart">
+    <div class="yAxis">
+      <div class="yTick" style="top: 0%;">R$100k</div>
+      <div class="yTick" style="top: 25%;">R$75k</div>
+      <div class="yTick" style="top: 50%;">R$50k</div>
+      <div class="yTick" style="top: 75%;">R$25k</div>
+      <div class="yTick" style="top: 100%;">R$0</div>
+    </div>
+
+    <div class="plot">
+      <div class="gridline" style="top: 0%;"></div>
+      <div class="gridline" style="top: 25%;"></div>
+      <div class="gridline" style="top: 50%;"></div>
+      <div class="gridline" style="top: 75%;"></div>
+      <div class="gridline zero" style="top: 100%;"></div>
+
+      <div class="bars">
+        <!-- Group 1 (tooltip demo on this group) -->
+        <div class="group showTooltip">
+          <div class="bar barCurrent" style="height: 45%;">
+            <div class="barProjection" style="height: 42%;"></div>
+          </div>
+          <div class="bar barPy" style="height: 46%;"></div>
+          <div class="goalMark" style="bottom: 84%;" data-label="R$84k"></div>
+
+          <div class="tooltipMock">
+            <strong>[Group name]</strong>
+            <div class="row"><span>MTD</span><span class="val">R$26,000</span></div>
+            <div class="row"><span>Projected</span><span class="val">R$45,000</span></div>
+            <div class="row"><span>Goal</span><span class="val">R$84,000</span></div>
+            <div class="row"><span>vs. Goal</span><span class="val valNeg">54%</span></div>
+            <div class="row"><span>Apr 25</span><span class="val">R$46,000</span></div>
+            <div class="row"><span>YoY</span><span class="val valNeg">−2%</span></div>
+          </div>
+        </div>
+
+        <!-- Duplicate groups as needed for each x-axis entry -->
+      </div>
+    </div>
+  </div>
+
+  <div class="xAxis">
+    <div class="xLabel">[Label 1]</div>
+    <!-- more labels -->
+  </div>
+
+  <div class="statsTable">
+    <div class="statsRow">
+      <div class="statsLabel">Goal</div>
+      <div class="statsCells">
+        <div class="statsCell valNeg">54%</div>
+        <!-- one cell per bar group -->
+      </div>
+    </div>
+    <div class="statsRow">
+      <div class="statsLabel">YoY</div>
+      <div class="statsCells">
+        <div class="statsCell valNeg">−2%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot dotCurrent"></i> Current + projection</span>
+    <span><i class="dot dotPy"></i> Prior year</span>
+    <span><i class="dashMark"></i> Goal</span>
+  </div>
+</div>
+
+<div class="notes">
+  <h3>Open questions</h3>
+  <ul>
+    <li><strong>[Question 1]</strong> — options A / B / C and the tradeoff.</li>
+    <li><strong>[Question 2]</strong> — context and what we need from the user.</li>
+  </ul>
+</div>
+
+</body>
+</html>

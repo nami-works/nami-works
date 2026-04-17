@@ -15,11 +15,11 @@ CPG Labs is an embedded Shopify app. **Production URL:** `https://omnify.cpg-lab
 
 ### Core Features & Routes
 - **Local Delivery** — `/app/local-delivery` — Route planning, map, order tags
-- **Retail goals** — `/app/retail-goals` — Monthly sales targets by location (renamed from Sales Goals; old URL 302s)
+- **Retail sales** — `/app/retail-sales` — Monthly sales targets by location, KPI dashboard, campaign goals
 - **Footprint expansion** — `/app/footprint-expansion` — Location ranking with Maps + analytics (renamed from Retail Footprint; old URL 302s)
 - **Sales** — `/app/merchandising/sales` — Bulk price campaigns with optional price tag labeling (merged from Campaigns + Price Tags)
 - **Story-telling** — `/app/storytelling` — AI blog content generation
-- **Settings** — `/app/settings` — Per-location Delivery details (renamed from Location settings) + Retail goals filters (migrated from Sales Goals > Settings tab); Delivery providers + Carriers tabs
+- **Settings** — `/app/settings` — Per-location Delivery details + Retail sales filters; Delivery providers + Carriers tabs
 
 ### Key Commands
 ```bash
@@ -129,6 +129,15 @@ When in doubt about whether something belongs in the brief, ask: "would a planni
 
 Follow these conventions for all UI work.
 
+### Design Validation (mockup-first)
+For any non-trivial UI refactor — charts, dashboards, new interaction patterns, anything where visual language matters — **build an HTML mockup before touching production React code**. This is how the Retail Sales chart refactor landed smoothly: iterate on the visual in a throw-away HTML file, converge on bar shapes / tooltips / legends / stats / thresholds with the user, THEN translate to components.
+
+- **Start from the template:** copy [inputs/mockups/_template.html](inputs/mockups/_template.html) to `inputs/mockups/<feature>-v1.html`.
+- **Iterate in the mockup** until the visual language is settled (labels, legends, tooltip row order, colors, hover states, breakpoints). Include a "Notes" panel explaining the deltas vs current state and an "Open questions" panel for decisions that need user input.
+- **Commit the mockup** alongside the production change as a reference artifact. Future sessions reviewing the design decision read the mockup first.
+- **Skip the mockup** only for trivial changes (single copy edit, class rename, CSS token swap). When unsure, ask the user.
+- **Invoke `/ui-specialist`** when starting UI refactor work — it bootstraps this workflow and loads the full convention library.
+
 ### Layout
 - Aside/config blocks on the **right** on desktop, matching Shopify admin native layout.
 - On mobile (`max-width: 768px`), aside renders **first** (above main content) via `order: -1`.
@@ -143,7 +152,7 @@ All tabs use the flat/underline style. No emojis. No `<s-link>` (its shadow DOM 
 
 - **When adding tabs to a page, ask the user:** "Will these tabs be potential standalone pages in a future app split, or will they always live inside this page?" The answer determines the element and placement:
   - `<Link to>` — tabs that navigate between Outlet child routes (e.g. Merchandising, Storytelling). Placed **outside** `<s-section>`, directly under `<s-page>`, above `<Outlet />`. Never use `<a href>` — plain anchors trigger full page loads which cause 404s inside the Shopify embedded iframe.
-  - `<button onClick>` — tabs that switch content in-place without navigation (e.g. Settings, Sales Goals). Placed **inside** `<s-section>`, before the content. Add `border: none; border-radius: 0;` to reset button defaults.
+  - `<button onClick>` — tabs that switch content in-place without navigation (e.g. Settings, Retail Sales). Placed **inside** `<s-section>`, before the content. Add `border: none; border-radius: 0;` to reset button defaults.
 
 - **CSS spec (route-level):**
   ```css
@@ -227,6 +236,32 @@ Cards inside aside panels (e.g. Route Manager in Local Delivery, Expansion Proje
 </div>
 ```
 
+### Form Inputs
+Polaris `<s-select>`, `<s-text-field>`, `<s-date-field>` render a compact-when-possible internal label. The convention in this codebase is to make the label external so multiple inputs in a row stay visually aligned and so the label can carry additional context without crowding the control itself.
+
+- **Pattern:** wrap each control in `.filterControl` and place its label as a sibling `<span>` above. Use `labelAccessibilityVisibility="exclusive"` on the Polaris control so the internal label is hidden visually but still announced to screen readers.
+  ```tsx
+  <div className={styles.filterControl}>
+    <span className={styles.filterLabel}>{t("filters.period")}</span>
+    <s-select
+      label={t("filters.period")}
+      labelAccessibilityVisibility="exclusive"
+      value={value}
+      onChange={onChange}
+    >
+      {/* options */}
+    </s-select>
+  </div>
+  ```
+- **CSS:**
+  ```css
+  .filterControl { display: flex; flex-direction: column; gap: 4px; }
+  .filterLabel { font-size: 12px; font-weight: 600; color: #6d7175; }
+  ```
+- **Mobile:** filter controls stack **one per row, full viewport width**. Never let them truncate ("This m..." / "Previo..."). In a horizontal filter bar, set `flex-direction: column` at `≤768px` and let the existing `flex: 1` on each control take the whole width.
+- **Row packing — prefer wide rows over new rows.** When a filter bar has room to fit an adjacent action (e.g. Export CSV button, sort toggle, refresh), pack it into the SAME row on desktop rather than spawning a new row. A button sitting alone on an otherwise-empty row (see: Affiliate page Export CSV on 2026-04-17) wastes vertical space and reads as a layout bug. Use `flex-wrap: wrap` + `align-items: flex-end` on the container so the bar naturally wraps only when space genuinely runs out. On mobile the wrap becomes stacking — desired.
+- **Reference implementations:** `app/routes/app.retail-sales.tsx` (Period + Compare-with selects) and `app/routes/app.local-delivery.tsx` (Location, Delivery promise, Time limit). Both use the same pattern — keep them consistent when touching either.
+
 ### Buttons
 - **All button rows must be right-aligned** (`justify-content: flex-end`) within their container — modals, blocks, cards, sections, everywhere. No exceptions.
 - `<s-button>` web component: removing `disabled` dynamically may not re-enable it — use conditional rendering with different `key` values or two separate elements.
@@ -289,6 +324,65 @@ Cards inside aside panels (e.g. Route Manager in Local Delivery, Expansion Proje
 - All pages must be mobile-friendly. Main breakpoint: `768px`.
 - Tables use `overflow-x: auto` for horizontal scroll on small screens.
 - Modals and result lists must be scrollable/responsive.
+
+### Inserted Elements — Spacing
+Whenever a new element is inserted into a page — **temporary** (loading bars, sync-progress indicators, toast banners, status strips) or **permanent** (new cards, new sections, new tables) — it must carry the standard spacing for its type so it doesn't visually crash into adjacent content.
+
+- **Never render an inserted element flush against the next one.** A progress bar sitting directly on top of the card below it (see: Affiliate ranking sync bar on 2026-04-17) reads as a bug. Leave breathing room.
+- **Default gaps:**
+  - Between stacked elements inside a section: `margin-bottom: 12px` (or parent `gap: 12px`).
+  - Between cards in a list: `gap: 16px`.
+  - Between page-level sections: `gap: 20px` (matches `<s-stack gap="base">`).
+  - Page-top banners / loading bars above the first content card: `margin-bottom: 16px`.
+- **When to own spacing on the inserted element:** if the new element is **conditionally rendered** (e.g. a loading bar that only appears during sync), apply the bottom margin to the inserted element itself, not to the next-sibling card. That way the card keeps its natural top position whether the loading bar is there or not.
+- **When to own spacing on the container:** if the parent uses flex/grid with `gap:`, the gap handles spacing automatically — don't add extra margin on the inserted child.
+- **Sync-progress / loading strips specifically:** always wrap with `margin-bottom: 12px` when rendered above a card or content block. Match the visual weight of the bar (1px progress bar → 12px gap; a full banner → 16px gap).
+- Full-width on data-heavy pages (Local Delivery, Footprint Expansion). `<s-page>` must NOT wrap the map in `inlineSize="base"` — the map needs the whole viewport.
+- Canvas: `min-height: 360px` so it never collapses; desktop `height: calc(100vh - 140px)`; mobile `height: 300px` (more of the screen belongs to the map on phones).
+- **Expand / collapse is a desktop-only control.** On mobile, `.mapOverlayButton` renders `display: none` inside the `@media (max-width: 768px)` block. The fullscreen map toggle breaks the iframe-inside-admin experience on small screens (the overlay spills past the iframe and interactions break).
+- Map container ref + Google Maps SDK loaded via `app/utils/load-google-maps.client.ts` — keep map instances stable; update markers/options in place on data changes.
+
+### Drilldown Charts (Shopify-native)
+All KPI drilldown charts — Revenue, Orders, AOV, Same-store YoY, Achievement ranking, Discount — follow a single frame so the dashboard reads as one coherent instrument panel. Reference implementation: `KpiDrilldownBars` in `app/routes/app.retail-sales.tsx` with CSS at `app/routes/app.retail-sales/styles.module.css`.
+
+- **Chart frame:** `grid-template-columns: 44px 1fr` — y-axis column on the left (5 ticks, labeled), plot area on the right with horizontal gridlines at each tick. Zero tick uses `.gridlineZero` for emphasis.
+- **Scale:** pick a ceiling via `niceCeil(maxValue)` (rounds to 1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10 × 10ⁿ). Pad by ~15% before ceiling when labels render outside the bar (Same-store YoY) so the label never collides with x-axis text.
+- **Bars — flat fills only.** No gradients, no inset shadows. Shopify blue `#005bd3` for current period (MTD), pastel `#b3d1ff` for the projection portion stacked above it, light gray `#d9e3ef` for prior year.
+- **Bar variants by metric:**
+  - **Revenue / Orders:** split "Current + projection" bar (MTD solid bottom, projection pastel top) + flat PY bar next to it. Revenue adds a dotted goal marker (see below).
+  - **AOV / Discount:** single solid current bar + flat PY bar (no projection split — rates aren't cumulative).
+  - **Same-store YoY:** single bar per location, green if positive / red if negative; grows up or down from a dynamic baseline (see below).
+  - **Achievement ranking:** not bars at all — horizontal sorted list (see below).
+- **No labels above bars.** Values live in the tooltip on hover/focus. Only the y-axis, gridlines, and the goal marker label carry numbers on the chart face.
+- **Goal marker (Revenue only):** dotted horizontal line, ~20% wider than the bar pair, centered over the group, with a compact goal value label to its right. 2px dotted in `#b8350f`. No shaded bar, no solid line — dotted is the signal for "target/reference," not "measurement."
+- **Same-store YoY — dynamic baseline:**
+  - **All-positive:** zero line at bottom, green bars grow up.
+  - **All-negative:** zero line at top, red bars hang down.
+  - **Mixed:** zero line at `(niceMax / (niceMax + niceMin)) * 100%` from top (visible, `.gridlineZero`). Green bars grow up from the baseline; red bars grow down from it. Labels sit outside the bar (above for positive, below for negative) — the 15% scale padding keeps them from colliding with x-axis text.
+- **Achievement ranking (formerly "Best vs worst"):** horizontal sorted list, not bars. Row grid: `20px rank · 140px name · 1fr track · 52px %`. Tiers: green `#067647` (≥80%), yellow `#d99a0a` (60–79%), red `#d72c0d` (<60%). Include a tier legend below the list with threshold labels.
+- **Subtitle carries date context.** `Apr 1–17, 2026 · compared to Apr 2025 · goal for Apr 2026`. Never put the date range inside legend items — legends describe the visual encoding only (color = series), dates are chart-wide metadata.
+- **Mini stats table below the x-axis** (Revenue only): row labels left-aligned in the 44px y-axis column; one column per bar group under the x-axis position. Rows: `Goal` (achievement %), `YoY` (%). Values colored green/red/subdued. This moves per-location metadata out of the chart body while keeping it glanceable.
+
+### KPI Drilldown Interaction
+Clicking a KPI card toggles a drilldown chart linked to that metric. Behavior:
+
+- **Toggle:** clicking the active card hides its drilldown; clicking another card switches. Maintain `activeKpi` state in the page component.
+- **Active highlight:** the active card carries a colored border (Shopify blue) and a subtle shadow so the source of the drilldown is obvious at a glance.
+- **Placement — desktop:** drilldown renders BELOW the entire row of cards, spanning the full width. Scoreboard cards above stay visible; clicking a different card in the same row swaps the drilldown in place.
+- **Placement — mobile:** drilldown renders BELOW the clicked card AND ABOVE the next card in the same row (DOM reorder). The user should always see the drilldown directly beneath the card they clicked — never buried after the whole card list. Use `flex-direction: column` + `order:` to achieve this or inline the drilldown between cards conditionally on the active state.
+- **Reference implementation:** `app/routes/app.retail-sales.tsx` — Row-1 (Revenue/Orders/AOV) and Row-2 (Same-store YoY / Achievement ranking / Discount) both follow this pattern.
+
+### Tooltips (chart + ranking)
+- **Trigger:** `:hover` and `:focus-within` on the bar group (or ranking row). Group must be `tabIndex={0}` for keyboard access.
+- **Style:** dark background `#1f1f1f`, white text, 11px, rounded 6px, soft shadow, arrow pointing down to the anchor. Row values right-aligned with `font-variant-numeric: tabular-nums` so digits line up across rows.
+- **Row order (variance-first):** `MTD → Projected → Goal → vs. Goal → Prior year → YoY`. Put the absolute numbers the user reads FIRST (MTD, Projected, Goal), then the computed variances (vs. Goal, YoY). Subsets per chart:
+  - Revenue: all 6 rows.
+  - Orders: `MTD · Projected · Prior year · YoY`.
+  - AOV / Discount: `Current · Prior year · YoY`.
+  - Same-store YoY: `Current window · Matching prior window · YoY`.
+  - Achievement ranking: `Projected · Goal · vs. Goal · Rank`.
+- **Absolute values inside the tooltip.** Do not use the compact `R$16k` format — use `R$16,000` with thousands separators and zero decimals. Compact format stays on y-axis ticks and the goal marker label (limited space); the tooltip has room for precision.
+- **On-dark variance colors:** green `#7ee0a1` for positive, red `#ff9b85` for negative. These are softer than the chart bar greens/reds because they read better on the dark tooltip background.
 
 ### UI Tokens
 | Token | Value | Use |
