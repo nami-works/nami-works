@@ -6137,9 +6137,7 @@ export default function Index() {
       ) : null}
       </div>
 
-      <div className={styles.ordersBlock}>
       {!isFullscreen ? renderOrdersSection() : null}
-      </div>
     </s-page>
   );
 }
