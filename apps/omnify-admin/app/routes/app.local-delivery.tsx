@@ -4994,7 +4994,7 @@ export default function Index() {
       </s-section>
       </div>
       </div>
-      <div className={styles.mapBlock}>
+      <s-section>
       <div className={styles.mainBlocks}>
         <div className={isFullscreen ? styles.fullscreenOverlay : undefined}>
           <div className={isFullscreen ? styles.fullscreenContent : undefined}>
@@ -5601,7 +5601,7 @@ export default function Index() {
           </div>
         </div>
       </div>
-      </div>
+      </s-section>
 
       <div slot="aside" className={styles.routeManagerBlock}>
       {!isFullscreen && isRouteManagerVisible ? (
