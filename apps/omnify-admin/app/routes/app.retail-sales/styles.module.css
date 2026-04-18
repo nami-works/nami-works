@@ -1347,11 +1347,28 @@
   top: -110px;
 }
 
-/* Mobile: reduce chart height a touch. */
+/* Mobile: reduce chart height + tighten bar pairs so groups read as units.
+   On narrow viewports the default 28px bars with 6px intra-group gap leave
+   too little room between groups — the PY bar of group N visually drifts
+   closer to the Current bar of group N+1 than to its own group. Shrink bars
+   and halve the intra-group gap so each pair coheres and `space-around`
+   produces a clear inter-group gap. */
 @media (max-width: 768px) {
   .chartYAxis,
   .chartPlot {
     height: 200px;
+  }
+  .barGroup {
+    gap: 3px;
+  }
+  .barCurrent,
+  .barCurrentSolid,
+  .barPy,
+  .yoyBar {
+    width: 15px;
+  }
+  .goalMark {
+    width: 40px;
   }
   .rankRow {
     grid-template-columns: 20px 1fr 48px;
