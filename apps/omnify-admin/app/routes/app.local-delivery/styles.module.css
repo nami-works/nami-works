@@ -4,6 +4,18 @@
   gap: 8px;
 }
 
+.filterControl {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filterLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+}
+
 .mapCanvas {
   position: relative;
   height: calc(100vh - 140px);
@@ -395,6 +407,9 @@
   border-radius: 8px;
   overflow-x: auto;
   background: #ffffff;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .dueOrdersHeader,
@@ -869,6 +884,9 @@
     height: 300px;
     min-height: 250px;
   }
+  .mapOverlayButton {
+    display: none;
+  }
 
   /* Prevent route card button row from overflowing on small screens */
   .routeCard :global(s-stack[direction="inline"]) {
@@ -1121,6 +1139,11 @@
 
 .ordersSectionWrap {
   scroll-margin-top: 30vh;
+  min-width: 0;
+}
+
+.ordersSectionWrap * {
+  min-width: 0;
 }
 
 .ordersFilterPill {
@@ -1202,8 +1225,8 @@
   .dueOrdersTable {
     overflow-x: auto;
   }
-  .dueOrdersHeader,
-  .dueOrdersRow {
+  .dueOrdersTable > .dueOrdersHeader,
+  .dueOrdersTable > .dueOrdersRow {
     min-width: 1060px;
   }
 }
