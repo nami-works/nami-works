@@ -1012,6 +1012,7 @@ type KpiRichCardProps = {
   tooltip?: string;
   active?: boolean;
   onClick?: () => void;
+  metricId?: string;
 };
 
 const KpiRichCard = ({
@@ -1025,11 +1026,13 @@ const KpiRichCard = ({
   tooltip,
   active,
   onClick,
+  metricId,
 }: KpiRichCardProps) => {
   const clickableClass = `${styles.kpiCardClickable}${active ? ` ${styles.kpiCardActive}` : ""}`;
   return (
     <div
       className={clickableClass}
+      data-kpi-card={metricId}
       onClick={onClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
@@ -2054,6 +2057,24 @@ export default function SalesGoalsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [periodPreset]);
 
+  // Mobile only: when a KPI becomes active, anchor its card near the top
+  // of the viewport so the inline drilldown is partially visible below.
+  // On desktop the drilldown renders below the whole row; scrolling would
+  // disorient the 3-card grid layout.
+  useEffect(() => {
+    if (!activeKpi) return;
+    if (typeof window === "undefined") return;
+    if (!window.matchMedia("(max-width: 768px)").matches) return;
+    const el = document.querySelector(
+      `[data-kpi-card="${activeKpi}"]`,
+    ) as HTMLElement | null;
+    if (!el) return;
+    // Defer to next frame so the drilldown has mounted and layout has settled.
+    requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [activeKpi]);
+
   const canApplyCustom =
     Boolean(draftStart) && Boolean(draftEnd) && draftStart <= draftEnd;
 
@@ -2569,6 +2590,7 @@ export default function SalesGoalsPage() {
                       ]}
                       active={activeKpi === "revenue"}
                       onClick={() => toggleKpi("revenue")}
+                      metricId="revenue"
                     />
                   );
                 })()}
@@ -2624,6 +2646,7 @@ export default function SalesGoalsPage() {
                       ]}
                       active={activeKpi === "orders"}
                       onClick={() => toggleKpi("orders")}
+                      metricId="orders"
                     />
                   );
                 })()}
@@ -2677,6 +2700,7 @@ export default function SalesGoalsPage() {
                       ]}
                       active={activeKpi === "aov"}
                       onClick={() => toggleKpi("aov")}
+                      metricId="aov"
                     />
                   );
                 })()}
@@ -2758,6 +2782,7 @@ export default function SalesGoalsPage() {
                       lines={sameStoreLines}
                       active={activeKpi === "sameStore"}
                       onClick={() => toggleKpi("sameStore")}
+                      metricId="sameStore"
                     />
                   );
                 })()}
@@ -2784,6 +2809,7 @@ export default function SalesGoalsPage() {
                         primary="—"
                         active={activeKpi === "bestWorst"}
                         onClick={() => toggleKpi("bestWorst")}
+                        metricId="bestWorst"
                       />
                     );
                   }
@@ -2813,6 +2839,7 @@ export default function SalesGoalsPage() {
                       lines={bestWorstLines}
                       active={activeKpi === "bestWorst"}
                       onClick={() => toggleKpi("bestWorst")}
+                      metricId="bestWorst"
                     />
                   );
                 })()}
@@ -2862,6 +2889,7 @@ export default function SalesGoalsPage() {
                       ]}
                       active={activeKpi === "discount"}
                       onClick={() => toggleKpi("discount")}
+                      metricId="discount"
                     />
                   );
                 })()}
