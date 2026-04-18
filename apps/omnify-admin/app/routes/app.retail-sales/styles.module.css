@@ -1371,7 +1371,11 @@
    achievement pill at top, progress bar with MTD/Goal context, secondary
    MTD/Projected grid, YoY footer with sparkline. */
 .locationCards {
-  display: none;
+  /* Visible by default — hidden on desktop via min-width media query at
+     end of file. Base `display: none` would live AFTER the max-width
+     media query that shows them on mobile, losing the cascade on equal
+     specificity. Desktop-scoping via min-width sidesteps the ordering. */
+  display: flex;
   flex-direction: column;
   gap: 10px;
 }
@@ -1482,17 +1486,21 @@
   color: #6d7175;
 }
 
-/* Mobile-only Manage goals button below the overview subtitle. */
+/* Mobile-only Manage goals button below the overview subtitle.
+   Visible by default, hidden on desktop via min-width media query. */
 .manageGoalsMobile {
-  display: none;
+  display: block;
+  width: 100%;
+  margin-top: 10px;
 }
 
 /* Mobile inline drilldown — renders below the clicked KPI card so the user
    always sees the chart directly under the source card rather than buried
    after the whole KPI list. Grid-column full-span keeps the chart visually
-   tied to the card above even when the grid is nominally 1-col on mobile. */
+   tied to the card above even when the grid is nominally 1-col on mobile.
+   Visible by default, hidden on desktop via min-width media query. */
 .mobileDrilldown {
-  display: none;
+  display: block;
   grid-column: 1 / -1;
 }
 
@@ -1523,4 +1531,14 @@
     grid-template-columns: 20px 1fr 48px;
   }
   .rankRow .rankTrack { display: none; }
+}
+
+/* Desktop-scoped visibility — hide mobile-only elements on wide viewports.
+   Paired with the base `display: flex/block` on .locationCards /
+   .manageGoalsMobile / .mobileDrilldown (visible-by-default strategy to
+   dodge the source-order cascade issue vs. the max-width media query). */
+@media (min-width: 769px) {
+  .locationCards { display: none; }
+  .manageGoalsMobile { display: none; }
+  .mobileDrilldown { display: none; }
 }
