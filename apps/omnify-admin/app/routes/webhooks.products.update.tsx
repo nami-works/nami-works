@@ -1,6 +1,7 @@
 import type { ActionFunctionArgs } from "react-router";
 import { normalizeWebhookTopic, verifyWebhookRequest } from "../webhooks.server";
 import { handleProductUpdate } from "../services/price-tags/webhook-handler.server";
+import { ingestProduct } from "../services/shop-ingest/products.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const verified = await verifyWebhookRequest(request);
@@ -35,6 +36,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     console.warn(`[webhooks:products] no variant data SKIP shop=${shop} productGid=${productGid} reason=metafield-only update`);
     return new Response();
   }
+
+  // Shadow-mode: upsert canonical ShopProduct row. Additive — existing
+  // price-tag handler still runs below.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await ingestProduct(shop, payload as any, "webhook").catch((err) =>
+    console.warn(
+      `[shop-ingest:products] ingest SKIP shop=${shop} productGid=${productGid}`,
+      err,
+    ),
+  );
 
   console.info(`[webhooks:products] handleProductUpdate START shop=${shop} productGid=${productGid}`);
   try {

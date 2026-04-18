@@ -2,6 +2,10 @@ import type { ActionFunctionArgs } from "react-router";
 import { normalizeWebhookTopic, verifyWebhookRequest } from "../webhooks.server";
 import { upsertRetailCustomers } from "../retail-footprint/analytics-queries.server";
 import prisma from "../db.server";
+import {
+  ingestCustomer,
+  deleteIngestedCustomer,
+} from "../services/shop-ingest/customers.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const verified = await verifyWebhookRequest(request);
@@ -18,9 +22,26 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   if (normalizedTopic === "CUSTOMERS_DELETE") {
     const customerId = String(payload?.admin_graphql_api_id ?? payload?.id ?? "?");
+    // Shadow-mode: delete from canonical table first
+    await deleteIngestedCustomer(shop, customerId).catch((err) =>
+      console.warn(
+        `[shop-ingest:customers] delete SKIP shop=${shop} customerId=${customerId}`,
+        err,
+      ),
+    );
     await prisma.retailCustomer.deleteMany({ where: { id: customerId, shop } }).catch(() => {});
     console.info(`[webhooks:customers] delete customer OK shop=${shop} customerId=${customerId}`);
   } else {
+    // Shadow-mode: always canonicalize into ShopCustomer — accepts customers
+    // without an address (feature tables like RetailCustomer still filter).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await ingestCustomer(shop, payload as any, "webhook").catch((err) =>
+      console.warn(
+        `[shop-ingest:customers] ingest SKIP shop=${shop} customerId=${payload?.id}`,
+        err,
+      ),
+    );
+
     const customer = toCustomerRow(payload);
     if (customer) {
       await upsertRetailCustomers(shop, [customer]).catch((err) => {
@@ -35,6 +56,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   return new Response();
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const toCustomerRow = (payload: any) => {
   const address = payload?.default_address ?? null;
   const latitude = address?.latitude != null ? Number(address.latitude) : null;

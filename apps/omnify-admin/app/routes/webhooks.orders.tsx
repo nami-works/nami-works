@@ -17,6 +17,10 @@ import {
 import prisma from "../db.server";
 import { autoAssignOrderToRoute } from "../services/auto-routing.server";
 import { getAppIdentity } from "../utils/app-identity.server";
+import {
+  ingestOrder,
+  deleteIngestedOrder,
+} from "../services/shop-ingest/orders.server";
 
 // Module-level cache for retail locations per shop (10-minute TTL).
 // Avoids a Shopify GraphQL call on every order webhook.
@@ -67,6 +71,31 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const identity = getAppIdentity();
   const runAnalytics = identity === "cpg-labs" || identity === "omnify";
   const runAutoRouting = identity === "cpg-labs" || identity === "omnify";
+
+  // Shadow-mode: write to canonical ShopOrder table alongside feature tables.
+  // This is additive — existing code below still runs unchanged. Phase 3 flips
+  // feature reads to project from ShopOrder.
+  if (runAnalytics) {
+    if (normalizedTopic === "ORDERS_DELETE") {
+      const orderId = String(payload?.admin_graphql_api_id ?? payload?.id ?? "");
+      if (orderId) {
+        await deleteIngestedOrder(shop, orderId).catch((err) =>
+          console.warn(
+            `[shop-ingest:orders] delete SKIP shop=${shop} orderId=${orderId}`,
+            err,
+          ),
+        );
+      }
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await ingestOrder(shop, payload as any, "webhook").catch((err) =>
+        console.warn(
+          `[shop-ingest:orders] ingest SKIP shop=${shop} orderId=${payload?.id}`,
+          err,
+        ),
+      );
+    }
+  }
 
   // Analytics: upsert/delete in normalized RetailOrder + SalesOrder tables
   if (runAnalytics) {

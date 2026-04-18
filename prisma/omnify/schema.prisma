@@ -934,3 +934,132 @@ model WaitlistSubscriber {
   /// Free-form lead metadata (e.g. store_url, pain, workaround, timeline) keyed by source variant
   metadata  Json?
 }
+
+// ─── Shopify Ingest Layer: canonical normalized tables ───────────────────────
+// Source of truth for Shopify store data. Webhooks write here; features read
+// projections from here. A drift-aware hourly cron reconciles dropped webhooks.
+// Phase 1 runs in shadow mode — these tables are populated alongside the
+// existing feature tables until a 48h diff check confirms equivalence.
+
+model ShopOrder {
+  shop                  String
+  id                    String    // gid://shopify/Order/{n}
+  legacyId              String?   // numeric legacy id as string (avoid BigInt JSON pitfalls)
+  name                  String?   // "#1001"
+  sourceName            String?   // "pos" | "web" | "shopify_draft_order" | null
+  status                String?   // "open" | "closed" | "cancelled"
+  orderDate             DateTime  // processed_at || created_at
+  createdAt             DateTime
+  shopifyUpdatedAt      DateTime  // used as watermark for drift detection
+  cancelledAt           DateTime?
+  closedAt              DateTime?
+  customerId            String?
+  currencyCode          String?
+  currentTotalPrice     Float     @default(0)
+  currentTotalDiscounts Float     @default(0)
+  currentTotalRefunded  Float     @default(0)
+  locationId            String?   // POS location (gid) when applicable
+  shippingAddressJson   Json?
+  billingAddressJson    Json?
+  customerJson          Json?
+  tagsJson              Json      @default("[]")
+  refundsJson           Json?
+  lineItemsJson         Json?
+  staffMemberId         String?
+  staffMemberName       String?
+  ingestedAt            DateTime  @default(now())
+  ingestedVia           String?   // "webhook" | "reconcile" | "backfill"
+
+  @@id([shop, id])
+  @@index([shop, shopifyUpdatedAt])
+  @@index([shop, orderDate])
+  @@index([shop, customerId])
+  @@index([shop, locationId])
+  @@index([shop, status])
+}
+
+model ShopCustomer {
+  shop                 String
+  id                   String    // gid://shopify/Customer/{n}
+  legacyId             String?
+  email                String?
+  phone                String?
+  displayName          String?
+  firstName            String?
+  lastName             String?
+  createdAt            DateTime?
+  shopifyUpdatedAt     DateTime  // watermark for drift detection
+  ordersCount          Int?
+  totalSpent           Float?
+  defaultAddressJson   Json?     // { city, province, country, zip, lat, lng }
+  addressesJson        Json?
+  tagsJson             Json      @default("[]")
+  ingestedAt           DateTime  @default(now())
+  ingestedVia          String?
+
+  @@id([shop, id])
+  @@index([shop, shopifyUpdatedAt])
+  @@index([shop, email])
+}
+
+model ShopProduct {
+  shop             String
+  id               String    // gid://shopify/Product/{n}
+  legacyId         String?
+  title            String
+  handle           String?
+  productType      String?
+  vendor           String?
+  status           String?   // "ACTIVE" | "DRAFT" | "ARCHIVED"
+  createdAt        DateTime?
+  shopifyUpdatedAt DateTime
+  publishedAt      DateTime?
+  tagsJson         Json      @default("[]")
+  variantsJson     Json      @default("[]")
+  imagesJson       Json?
+  metafieldsJson   Json?
+  ingestedAt       DateTime  @default(now())
+  ingestedVia      String?
+
+  @@id([shop, id])
+  @@index([shop, shopifyUpdatedAt])
+  @@index([shop, handle])
+}
+
+model ShopLocation {
+  shop                 String
+  id                   String    // gid://shopify/Location/{n}
+  legacyId             String?
+  name                 String
+  addressJson          Json?
+  isActive             Boolean   @default(true)
+  fulfillsOnlineOrders Boolean   @default(false)
+  localPickupEnabled   Boolean   @default(false)
+  isRetailStore        Boolean   @default(false) // localPickupSettingsV2 != null
+  shopifyUpdatedAt     DateTime?
+  ingestedAt           DateTime  @default(now())
+  ingestedVia          String?
+
+  @@id([shop, id])
+}
+
+// Drift-detection watermarks per shop per entity. One row per shop.
+model ShopIngestMeta {
+  shop                   String    @unique
+  ordersLastSeenUpdatedAt      DateTime?
+  customersLastSeenUpdatedAt   DateTime?
+  productsLastSeenUpdatedAt    DateTime?
+  locationsLastRefreshedAt     DateTime?
+  ordersLastReconcileAt        DateTime?
+  customersLastReconcileAt     DateTime?
+  productsLastReconcileAt      DateTime?
+  ordersBackfillCompletedAt    DateTime?
+  customersBackfillCompletedAt DateTime?
+  productsBackfillCompletedAt  DateTime?
+  ordersRowCount               Int?
+  customersRowCount            Int?
+  productsRowCount             Int?
+  status                       String    @default("idle")   // idle | syncing | error
+  errorMessage                 String?
+  updatedAt                    DateTime  @updatedAt
+}
