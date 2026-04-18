@@ -3914,7 +3914,7 @@ export default function Index() {
   };
 
   return (
-    <s-page heading={t("pageHeading")} inlineSize="base">
+    <s-page heading={t("pageHeading")}>
       <s-modal
         id="manage-route-modal"
         heading={activeRouteIndex != null ? getRouteLabel(editableRoutes[activeRouteIndex] ?? { id: "", locationId: "", polyline: "", color: "", orderIds: [] }, activeRouteIndex) : ""}
@@ -4862,8 +4862,7 @@ export default function Index() {
           </pre>
         </s-banner>
       ) : null}
-      <div className={styles.pageLayout}>
-      <div className={styles.fulfillmentBlock}>
+      <div slot="aside" className={styles.fulfillmentBlock}>
       <div
         className={styles.collapsibleSectionWrap}
       >
@@ -4871,19 +4870,25 @@ export default function Index() {
         <s-stack direction="block" gap="base">
           <div className={styles.locationSelectRow}>
             <div className={styles.locationSelectFlex}>
-              <s-select
-                label=""
-                name="locationId"
-                value={locationId}
-                onChange={handleLocationChange}
-              >
-                <s-option value={DEFAULT_LOCATION_ID}>{t("filters.allLocations")}</s-option>
-                {locations.map((location) => (
-                  <s-option key={location.id} value={location.id}>
-                    {location.name}
-                  </s-option>
-                ))}
-              </s-select>
+              <div className={styles.filterControl}>
+                <span className={styles.filterLabel}>
+                  {t("filters.location", "Location")}
+                </span>
+                <s-select
+                  label={t("filters.location", "Location")}
+                  labelAccessibilityVisibility="exclusive"
+                  name="locationId"
+                  value={locationId}
+                  onChange={handleLocationChange}
+                >
+                  <s-option value={DEFAULT_LOCATION_ID}>{t("filters.allLocations")}</s-option>
+                  {locations.map((location) => (
+                    <s-option key={location.id} value={location.id}>
+                      {location.name}
+                    </s-option>
+                  ))}
+                </s-select>
+              </div>
             </div>
           </div>
           {!isRouteManagerVisible ? (
@@ -4898,31 +4903,43 @@ export default function Index() {
             </div>
           ) : null}
           {!isRouteManagerVisible ? (
-            <s-select
-              label={t("filters.deliveryPromise")}
-              value={`${deliveryPromiseDays}`}
-              onChange={handleDeliveryPromiseChange}
-            >
-              <s-option value="0">{t("filters.sameDay")}</s-option>
-              <s-option value="1">{t("filters.nextDay")}</s-option>
-              <s-option value="2">{t("filters.dayPlus2")}</s-option>
-              <s-option value="3">{t("filters.dayPlus3")}</s-option>
-              <s-option value="4">{t("filters.dayPlus4")}</s-option>
-            </s-select>
+            <div className={styles.filterControl}>
+              <span className={styles.filterLabel}>
+                {t("filters.deliveryPromise")}
+              </span>
+              <s-select
+                label={t("filters.deliveryPromise")}
+                labelAccessibilityVisibility="exclusive"
+                value={`${deliveryPromiseDays}`}
+                onChange={handleDeliveryPromiseChange}
+              >
+                <s-option value="0">{t("filters.sameDay")}</s-option>
+                <s-option value="1">{t("filters.nextDay")}</s-option>
+                <s-option value="2">{t("filters.dayPlus2")}</s-option>
+                <s-option value="3">{t("filters.dayPlus3")}</s-option>
+                <s-option value="4">{t("filters.dayPlus4")}</s-option>
+              </s-select>
+            </div>
           ) : null}
           {!isRouteManagerVisible ? (
-            <s-text-field
-              label={t("filters.sameDayTimeLimit")}
-              {...{ type: "time" } as Record<string, string>}
-              value={`${String(sameDayHour).padStart(2, "0")}:${String(sameDayMinute).padStart(2, "0")}`}
-              onChange={(e: Event) => {
-                const val = (e.currentTarget as HTMLInputElement).value;
-                if (!val) return;
-                const [h, m] = val.split(":").map(Number);
-                if (!isNaN(h)) setSameDayHour(h);
-                if (!isNaN(m)) setSameDayMinute(m);
-              }}
-            ></s-text-field>
+            <div className={styles.filterControl}>
+              <span className={styles.filterLabel}>
+                {t("filters.sameDayTimeLimit")}
+              </span>
+              <s-text-field
+                label={t("filters.sameDayTimeLimit")}
+                labelAccessibilityVisibility="exclusive"
+                {...{ type: "time" } as Record<string, string>}
+                value={`${String(sameDayHour).padStart(2, "0")}:${String(sameDayMinute).padStart(2, "0")}`}
+                onChange={(e: Event) => {
+                  const val = (e.currentTarget as HTMLInputElement).value;
+                  if (!val) return;
+                  const [h, m] = val.split(":").map(Number);
+                  if (!isNaN(h)) setSameDayHour(h);
+                  if (!isNaN(m)) setSameDayMinute(m);
+                }}
+              ></s-text-field>
+            </div>
           ) : null}
           {locationId !== DEFAULT_LOCATION_ID && isRouteManagerVisible ? (
             <>
@@ -4987,7 +5004,6 @@ export default function Index() {
               }
             >
               <div className={isFullscreen ? styles.fullscreenMapPane : undefined}>
-                <s-section>
                 <div className={styles.mapCanvasWrap}>
                   <div className={styles.mapOverlayButton} role="group">
                     <s-button
@@ -5078,7 +5094,6 @@ export default function Index() {
                     ) : null}
                   </div>
                 </div>
-                </s-section>
                 {isFullscreen ? renderOrdersSection() : null}
               </div>
               {isFullscreen ? (
@@ -5087,19 +5102,25 @@ export default function Index() {
                     <s-stack direction="block" gap="base">
                       <div className={styles.locationSelectRow}>
                         <div className={styles.locationSelectFlex}>
-                          <s-select
-                            label=""
-                            name="locationId"
-                            value={locationId}
-                            onChange={handleLocationChange}
-                          >
-                            <s-option value={DEFAULT_LOCATION_ID}>{t("filters.allLocations")}</s-option>
-                            {locations.map((location) => (
-                              <s-option key={location.id} value={location.id}>
-                                {location.name}
-                              </s-option>
-                            ))}
-                          </s-select>
+                          <div className={styles.filterControl}>
+                            <span className={styles.filterLabel}>
+                              {t("filters.location", "Location")}
+                            </span>
+                            <s-select
+                              label={t("filters.location", "Location")}
+                              labelAccessibilityVisibility="exclusive"
+                              name="locationId"
+                              value={locationId}
+                              onChange={handleLocationChange}
+                            >
+                              <s-option value={DEFAULT_LOCATION_ID}>{t("filters.allLocations")}</s-option>
+                              {locations.map((location) => (
+                                <s-option key={location.id} value={location.id}>
+                                  {location.name}
+                                </s-option>
+                              ))}
+                            </s-select>
+                          </div>
                         </div>
                       </div>
                       {!isRouteManagerVisible ? (
@@ -5114,23 +5135,34 @@ export default function Index() {
                         </div>
                       ) : null}
                       {!isRouteManagerVisible ? (
-                        <s-select
-                          label={t("filters.deliveryPromise")}
-                          value={`${deliveryPromiseDays}`}
-                          onChange={handleDeliveryPromiseChange}
-                        >
-                          <s-option value="0">{t("filters.sameDay")}</s-option>
-                          <s-option value="1">{t("filters.nextDay")}</s-option>
-                          <s-option value="2">{t("filters.dayPlus2")}</s-option>
-                          <s-option value="3">{t("filters.dayPlus3")}</s-option>
-                          <s-option value="4">{t("filters.dayPlus4")}</s-option>
-                        </s-select>
+                        <div className={styles.filterControl}>
+                          <span className={styles.filterLabel}>
+                            {t("filters.deliveryPromise")}
+                          </span>
+                          <s-select
+                            label={t("filters.deliveryPromise")}
+                            labelAccessibilityVisibility="exclusive"
+                            value={`${deliveryPromiseDays}`}
+                            onChange={handleDeliveryPromiseChange}
+                          >
+                            <s-option value="0">{t("filters.sameDay")}</s-option>
+                            <s-option value="1">{t("filters.nextDay")}</s-option>
+                            <s-option value="2">{t("filters.dayPlus2")}</s-option>
+                            <s-option value="3">{t("filters.dayPlus3")}</s-option>
+                            <s-option value="4">{t("filters.dayPlus4")}</s-option>
+                          </s-select>
+                        </div>
                       ) : null}
                       {!isRouteManagerVisible ? (
-                        <s-text-field
-                          label={t("filters.sameDayTimeLimit")}
-                          {...{ type: "time" } as Record<string, string>}
-                          value={`${String(sameDayHour).padStart(2, "0")}:${String(sameDayMinute).padStart(2, "0")}`}
+                        <div className={styles.filterControl}>
+                          <span className={styles.filterLabel}>
+                            {t("filters.sameDayTimeLimit")}
+                          </span>
+                          <s-text-field
+                            label={t("filters.sameDayTimeLimit")}
+                            labelAccessibilityVisibility="exclusive"
+                            {...{ type: "time" } as Record<string, string>}
+                            value={`${String(sameDayHour).padStart(2, "0")}:${String(sameDayMinute).padStart(2, "0")}`}
                           onChange={(e: Event) => {
                             const val = (e.currentTarget as HTMLInputElement).value;
                             if (!val) return;
@@ -5138,7 +5170,8 @@ export default function Index() {
                             if (!isNaN(h)) setSameDayHour(h);
                             if (!isNaN(m)) setSameDayMinute(m);
                           }}
-                        ></s-text-field>
+                          ></s-text-field>
+                        </div>
                       ) : null}
                       {locationId !== DEFAULT_LOCATION_ID && isRouteManagerVisible ? (
                         <>
@@ -5570,7 +5603,7 @@ export default function Index() {
       </div>
       </div>
 
-      <div className={styles.routeManagerBlock}>
+      <div slot="aside" className={styles.routeManagerBlock}>
       {!isFullscreen && isRouteManagerVisible ? (
       <s-section heading={t("routeManager.heading")}>
           {/* Orders badge + actions menu */}
@@ -6106,7 +6139,6 @@ export default function Index() {
 
       <div className={styles.ordersBlock}>
       {!isFullscreen ? renderOrdersSection() : null}
-      </div>
       </div>
     </s-page>
   );

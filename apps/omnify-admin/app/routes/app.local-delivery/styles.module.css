@@ -270,23 +270,6 @@
   width: 100%;
 }
 
-/* Custom two-column layout (replaces <s-page> aside slot for ordering control) */
-.pageLayout {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  grid-template-rows: auto 1fr auto;
-  grid-template-areas:
-    "map fulfillment"
-    "map routeManager"
-    "orders orders";
-  gap: 20px;
-  align-items: start;
-}
-.fulfillmentBlock { grid-area: fulfillment; }
-.routeManagerBlock { grid-area: routeManager; }
-.mapBlock { grid-area: map; }
-.ordersBlock { grid-area: orders; }
-
 .mainBlocks {
   display: flex;
   flex-direction: column;
@@ -870,16 +853,6 @@
 }
 
 @media (max-width: 768px) {
-  .pageLayout {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .fulfillmentBlock { order: 1; }
-  .routeManagerBlock { order: 2; }
-  .mapBlock { order: 3; }
-  .ordersBlock { order: 4; }
-
   .mapCanvas {
     height: 300px;
     min-height: 250px;
@@ -897,6 +870,7 @@
     grid-template-columns: minmax(0, 1fr);
   }
   .mapSelectBox {
+    width: 100%;
     max-width: 100%;
   }
   .assignedRoutesList {
