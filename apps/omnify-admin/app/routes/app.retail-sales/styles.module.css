@@ -779,10 +779,20 @@
 }
 
 @media (max-width: 768px) {
-  .tableLocations .tableHeader,
-  .tableLocations .tableRow {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  /* Hide the 7-col desktop table on mobile; show the card list instead. */
+  .tableLocations { display: none; }
+  .locationCards { display: flex; }
+
+  /* Mobile: promote the duplicated Manage goals button (below subtitle)
+     and hide the desktop one in the header right-edge. */
+  .manageGoalsDesktop { display: none; }
+  .manageGoalsMobile { display: block; width: 100%; margin-top: 10px; }
+
+  /* Mobile inline drilldown — reveal under the active card; hide the
+     desktop-positioned one that sits after the whole KPI row. */
+  .mobileDrilldown { display: block; }
+  .desktopDrilldown { display: none; }
+
   .goalCardsGrid {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1351,6 +1361,139 @@
 
 .rankRow .barTooltip {
   top: -110px;
+}
+
+/* ── Mobile location cards (breakdown) ─────────────────────────────────────
+   Mobile replaces the 7-column breakdown table with a card-per-row list —
+   the table's `grid-template-columns: repeat(2, minmax(0, 1fr))` collapsed
+   7 cells into stacked chaos. Card layout mirrors Shopify-admin-native
+   mobile list patterns (Orders, Customers): primary metric + colored
+   achievement pill at top, progress bar with MTD/Goal context, secondary
+   MTD/Projected grid, YoY footer with sparkline. */
+.locationCards {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.locationCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.locCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.locCardName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303030;
+  margin: 0;
+}
+
+.achPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.achPillGreen { background: rgba(6, 118, 71, 0.1); color: #067647; }
+.achPillYellow { background: rgba(217, 154, 10, 0.1); color: #b0800a; }
+.achPillRed { background: rgba(215, 44, 13, 0.1); color: #d72c0d; }
+
+.locCardProgressRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.locCardProgressBar {
+  flex: 1;
+  height: 6px;
+  background: #f1f1f1;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.locCardProgressFill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.locCardProgressFillGreen { background: #067647; }
+.locCardProgressFillYellow { background: #d99a0a; }
+.locCardProgressFillRed { background: #d72c0d; }
+
+.locCardProgressLabel {
+  font-size: 11px;
+  color: #6d7175;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  min-width: 60px;
+  text-align: right;
+}
+
+.locCardMetricGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  font-size: 12px;
+}
+
+.locCardMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.locCardMetricLabel {
+  color: #6d7175;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.locCardMetricValue {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.locCardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 6px;
+  border-top: 1px solid #ebebeb;
+  font-size: 12px;
+  color: #6d7175;
+}
+
+/* Mobile-only Manage goals button below the overview subtitle. */
+.manageGoalsMobile {
+  display: none;
+}
+
+/* Mobile inline drilldown — renders below the clicked KPI card so the user
+   always sees the chart directly under the source card rather than buried
+   after the whole KPI list. Grid-column full-span keeps the chart visually
+   tied to the card above even when the grid is nominally 1-col on mobile. */
+.mobileDrilldown {
+  display: none;
+  grid-column: 1 / -1;
 }
 
 /* Mobile: reduce chart height + tighten bar pairs so groups read as units.

@@ -2342,16 +2342,20 @@ export default function SalesGoalsPage() {
                       )
                     ) : null}
                   </div>
-                  <s-button
-                    variant="primary"
-                    commandFor="manage-goals-modal"
-                    command="--show"
-                    onClick={() => {
-                      console.info(`[sales-goals:ui] manage-goals modal opened`);
-                    }}
-                  >
-                    {t("goals.manageButton")}
-                  </s-button>
+                  <div className={styles.manageGoalsDesktop}>
+                    <s-button
+                      variant="primary"
+                      commandFor="manage-goals-modal"
+                      command="--show"
+                      onClick={() => {
+                        console.info(
+                          `[sales-goals:ui] manage-goals modal opened (desktop)`,
+                        );
+                      }}
+                    >
+                      {t("goals.manageButton")}
+                    </s-button>
+                  </div>
                 </div>
                 <div
                   className={`${styles.overviewStripSubtitle} ${syncStaleClass}`}
@@ -2366,6 +2370,22 @@ export default function SalesGoalsPage() {
                     defaultValue:
                       "{{locations}} locations · {{set}}/{{total}} goals set · Last synced {{lastSynced}}",
                   })}
+                </div>
+                {/* Mobile-only Manage goals button (full-width below the
+                    subtitle). Hidden on desktop via CSS. */}
+                <div className={styles.manageGoalsMobile}>
+                  <s-button
+                    variant="primary"
+                    commandFor="manage-goals-modal"
+                    command="--show"
+                    onClick={() => {
+                      console.info(
+                        `[sales-goals:ui] manage-goals modal opened (mobile)`,
+                      );
+                    }}
+                  >
+                    {t("goals.manageButton")}
+                  </s-button>
                 </div>
               </div>
 
@@ -2552,6 +2572,19 @@ export default function SalesGoalsPage() {
                     />
                   );
                 })()}
+                {activeKpi === "revenue" ? (
+                  <div className={styles.mobileDrilldown}>
+                    <KpiDrilldownBars
+                      metric="revenue"
+                      snapshots={periodStats.snapshots}
+                      currencyCode={currencyCode}
+                      locale={locale}
+                      isCurrentMonthEarly={isCurrentMonthEarly}
+                      isViewingCurrentMonth={isViewingCurrentMonth}
+                      t={t}
+                    />
+                  </div>
+                ) : null}
                 {/* Orders */}
                 {(() => {
                   const k = periodStats.kpis.orders;
@@ -2594,6 +2627,19 @@ export default function SalesGoalsPage() {
                     />
                   );
                 })()}
+                {activeKpi === "orders" ? (
+                  <div className={styles.mobileDrilldown}>
+                    <KpiDrilldownBars
+                      metric="orders"
+                      snapshots={periodStats.snapshots}
+                      currencyCode={currencyCode}
+                      locale={locale}
+                      isCurrentMonthEarly={isCurrentMonthEarly}
+                      isViewingCurrentMonth={isViewingCurrentMonth}
+                      t={t}
+                    />
+                  </div>
+                ) : null}
                 {/* AOV */}
                 {(() => {
                   const k = periodStats.kpis.aov;
@@ -2634,21 +2680,36 @@ export default function SalesGoalsPage() {
                     />
                   );
                 })()}
+                {activeKpi === "aov" ? (
+                  <div className={styles.mobileDrilldown}>
+                    <KpiDrilldownBars
+                      metric="aov"
+                      snapshots={periodStats.snapshots}
+                      currencyCode={currencyCode}
+                      locale={locale}
+                      isCurrentMonthEarly={isCurrentMonthEarly}
+                      isViewingCurrentMonth={isViewingCurrentMonth}
+                      t={t}
+                    />
+                  </div>
+                ) : null}
               </div>
 
-              {/* ─── Row-1 drilldown: renders below Row 1 when Revenue/AOV/Orders is active ─── */}
+              {/* ─── Row-1 drilldown: renders below Row 1 when Revenue/AOV/Orders is active (desktop) ─── */}
               {activeKpi === "revenue" ||
               activeKpi === "aov" ||
               activeKpi === "orders" ? (
-                <KpiDrilldownBars
-                  metric={activeKpi}
-                  snapshots={periodStats.snapshots}
-                  currencyCode={currencyCode}
-                  locale={locale}
-                  isCurrentMonthEarly={isCurrentMonthEarly}
-                  isViewingCurrentMonth={isViewingCurrentMonth}
-                  t={t}
-                />
+                <div className={styles.desktopDrilldown}>
+                  <KpiDrilldownBars
+                    metric={activeKpi}
+                    snapshots={periodStats.snapshots}
+                    currencyCode={currencyCode}
+                    locale={locale}
+                    isCurrentMonthEarly={isCurrentMonthEarly}
+                    isViewingCurrentMonth={isViewingCurrentMonth}
+                    t={t}
+                  />
+                </div>
               ) : null}
 
               {/* ─── Row 2: Volume / quality ─── */}
@@ -2700,6 +2761,19 @@ export default function SalesGoalsPage() {
                     />
                   );
                 })()}
+                {activeKpi === "sameStore" ? (
+                  <div className={styles.mobileDrilldown}>
+                    <KpiDrilldownBars
+                      metric="sameStore"
+                      snapshots={periodStats.snapshots}
+                      currencyCode={currencyCode}
+                      locale={locale}
+                      isCurrentMonthEarly={isCurrentMonthEarly}
+                      isViewingCurrentMonth={isViewingCurrentMonth}
+                      t={t}
+                    />
+                  </div>
+                ) : null}
                 {/* Best vs worst — hidden for non-single-month periods (no goals). */}
                 {!isSingleMonth ? null : (() => {
                   const k = periodStats.kpis.bestVsWorst;
@@ -2742,6 +2816,19 @@ export default function SalesGoalsPage() {
                     />
                   );
                 })()}
+                {activeKpi === "bestWorst" ? (
+                  <div className={styles.mobileDrilldown}>
+                    <KpiDrilldownBars
+                      metric="bestWorst"
+                      snapshots={periodStats.snapshots}
+                      currencyCode={currencyCode}
+                      locale={locale}
+                      isCurrentMonthEarly={isCurrentMonthEarly}
+                      isViewingCurrentMonth={isViewingCurrentMonth}
+                      t={t}
+                    />
+                  </div>
+                ) : null}
                 {/* Discount rate */}
                 {(() => {
                   const k = periodStats.kpis.discountRate;
@@ -2778,21 +2865,36 @@ export default function SalesGoalsPage() {
                     />
                   );
                 })()}
+                {activeKpi === "discount" ? (
+                  <div className={styles.mobileDrilldown}>
+                    <KpiDrilldownBars
+                      metric="discount"
+                      snapshots={periodStats.snapshots}
+                      currencyCode={currencyCode}
+                      locale={locale}
+                      isCurrentMonthEarly={isCurrentMonthEarly}
+                      isViewingCurrentMonth={isViewingCurrentMonth}
+                      t={t}
+                    />
+                  </div>
+                ) : null}
               </div>
 
-              {/* ─── Row-2 drilldown: renders below Row 2 when Same-Store / Best vs Worst / Discount is active ─── */}
+              {/* ─── Row-2 drilldown: renders below Row 2 when Same-Store / Best vs Worst / Discount is active (desktop) ─── */}
               {activeKpi === "sameStore" ||
               activeKpi === "bestWorst" ||
               activeKpi === "discount" ? (
-                <KpiDrilldownBars
-                  metric={activeKpi}
-                  snapshots={periodStats.snapshots}
-                  currencyCode={currencyCode}
-                  locale={locale}
-                  isCurrentMonthEarly={isCurrentMonthEarly}
-                  isViewingCurrentMonth={isViewingCurrentMonth}
-                  t={t}
-                />
+                <div className={styles.desktopDrilldown}>
+                  <KpiDrilldownBars
+                    metric={activeKpi}
+                    snapshots={periodStats.snapshots}
+                    currencyCode={currencyCode}
+                    locale={locale}
+                    isCurrentMonthEarly={isCurrentMonthEarly}
+                    isViewingCurrentMonth={isViewingCurrentMonth}
+                    t={t}
+                  />
+                </div>
               ) : null}
 
               {/* ─── Breakdown table (always visible below the scoreboard) ─── */}
@@ -2873,6 +2975,121 @@ export default function SalesGoalsPage() {
                               <span>
                                 <Sparkline values={row.sparklineValues} />
                               </span>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+
+                    {/* Mobile card-per-row breakdown — replaces the 7-col
+                        table at <=768px via CSS. Desktop table is hidden
+                        on mobile; this list is hidden on desktop. */}
+                    <div className={styles.locationCards}>
+                      {sortedLocationRows.length === 0 ? (
+                        <div className={styles.tableEmpty}>
+                          {t("dashboard.noLocations")}
+                        </div>
+                      ) : (
+                        sortedLocationRows.map((row) => {
+                          const ach = row.achievement;
+                          const tier: "green" | "yellow" | "red" | null =
+                            ach == null
+                              ? null
+                              : ach >= 80
+                                ? "green"
+                                : ach >= 60
+                                  ? "yellow"
+                                  : "red";
+                          const pillClass =
+                            tier === "green"
+                              ? styles.achPillGreen
+                              : tier === "yellow"
+                                ? styles.achPillYellow
+                                : tier === "red"
+                                  ? styles.achPillRed
+                                  : "";
+                          const fillClass =
+                            tier === "green"
+                              ? styles.locCardProgressFillGreen
+                              : tier === "yellow"
+                                ? styles.locCardProgressFillYellow
+                                : tier === "red"
+                                  ? styles.locCardProgressFillRed
+                                  : "";
+                          return (
+                            <div key={row.id} className={styles.locationCard}>
+                              <div className={styles.locCardHeader}>
+                                <h4 className={styles.locCardName}>
+                                  {row.name}
+                                </h4>
+                                {ach != null ? (
+                                  <span
+                                    className={`${styles.achPill} ${pillClass}`}
+                                  >
+                                    {ach.toFixed(0)}%
+                                  </span>
+                                ) : null}
+                              </div>
+                              {ach != null && row.goal != null ? (
+                                <div className={styles.locCardProgressRow}>
+                                  <div className={styles.locCardProgressBar}>
+                                    <span
+                                      className={`${styles.locCardProgressFill} ${fillClass}`}
+                                      style={{
+                                        width: `${Math.min(100, ach)}%`,
+                                      }}
+                                    />
+                                  </div>
+                                  <span className={styles.locCardProgressLabel}>
+                                    {formatCurrencyCompact(
+                                      row.revenue,
+                                      currencyCode,
+                                      locale,
+                                    )}
+                                    {" / "}
+                                    {formatCurrencyCompact(
+                                      row.goal,
+                                      currencyCode,
+                                      locale,
+                                    )}
+                                  </span>
+                                </div>
+                              ) : null}
+                              <div className={styles.locCardMetricGrid}>
+                                <div className={styles.locCardMetric}>
+                                  <span className={styles.locCardMetricLabel}>
+                                    {isSingleMonth
+                                      ? t("dashboard.mtdRevenue")
+                                      : t(
+                                          "dashboard.periodRevenue",
+                                          "Period revenue",
+                                        )}
+                                  </span>
+                                  <span className={styles.locCardMetricValue}>
+                                    {formatCurrency(row.revenue, currencyCode)}
+                                  </span>
+                                </div>
+                                <div className={styles.locCardMetric}>
+                                  <span className={styles.locCardMetricLabel}>
+                                    {t("dashboard.projectedRev")}
+                                  </span>
+                                  <span className={styles.locCardMetricValue}>
+                                    {row.projectedRevenue != null
+                                      ? formatCurrency(
+                                          row.projectedRevenue,
+                                          currencyCode,
+                                        )
+                                      : "—"}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className={styles.locCardFooter}>
+                                <span>
+                                  {t("dashboard.yoyDelta")}{" "}
+                                  <Delta delta={row.yoyDelta} />
+                                </span>
+                                <Sparkline values={row.sparklineValues} />
+                              </div>
                             </div>
                           );
                         })
