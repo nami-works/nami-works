@@ -824,10 +824,16 @@
   outline-offset: 2px;
 }
 
-.kpiCardActive s-box {
+/* Active KPI card highlight.
+   The outer <s-box> draws its own border inside shadow DOM — we can't
+   restyle it from outside. Instead, paint the active ring on the
+   wrapper <div>: a 2px box-shadow acts as an outer border that follows
+   the 12px radius, and a subtle backdrop tint signals the state without
+   competing with the Shopify-blue primary. */
+.kpiCardActive {
+  border-radius: 12px;
+  box-shadow: 0 0 0 2px #1f2d5a, 0 2px 8px rgba(31, 45, 90, 0.12);
   background: #eef1f8;
-  border-color: #1f2d5a !important;
-  border-width: 2px;
 }
 
 .kpiGroupLabel {
