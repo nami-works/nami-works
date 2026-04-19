@@ -9,11 +9,23 @@ embedded = true
 [build]
 automatically_update_urls_on_dev = true
 
-# Webhooks for compliance, customers/*, and orders/* require Protected Customer Data approval.
-# Partner Dashboard → CPG Labs → API access requests → Protected customer data access.
-# After approval, add back: compliance, customers, orders subscriptions and redeploy.
+# Webhooks — compliance, customers/*, and orders/* require Protected Customer Data
+# approval (granted). Redeploy via `shopify app deploy --config shopify.app.toml`
+# after any change here to re-register the subscriptions on Shopify's side.
 [webhooks]
 api_version = "2026-04"
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks"
+  compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
+
+  [[webhooks.subscriptions]]
+  topics = [ "customers/create", "customers/update", "customers/delete" ]
+  uri = "/webhooks/customers"
+
+  [[webhooks.subscriptions]]
+  topics = [ "orders/create", "orders/updated", "orders/delete" ]
+  uri = "/webhooks/orders"
 
   [[webhooks.subscriptions]]
   topics = [ "app/scopes_update" ]
@@ -29,7 +41,7 @@ api_version = "2026-04"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_customers,read_locations,read_merchant_managed_fulfillment_orders,read_orders,read_all_orders,read_products,write_products,read_publications,read_shipping,write_shipping,write_orders,write_merchant_managed_fulfillment_orders,read_content,write_content,read_metaobject_definitions,write_metaobject_definitions,read_metaobjects,write_metaobjects,read_themes,read_discounts"
+scopes = "read_customers,read_locations,read_merchant_managed_fulfillment_orders,read_orders,read_all_orders,read_products,write_products,read_publications,read_shipping,write_shipping,write_orders,write_merchant_managed_fulfillment_orders,read_content,write_content,read_metaobject_definitions,write_metaobject_definitions,read_metaobjects,write_metaobjects,read_themes,read_discounts,read_fulfillments,write_fulfillments"
 use_legacy_install_flow = false
 
 [auth]

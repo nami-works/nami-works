@@ -64,7 +64,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const { topic, payload, shop } = verified.result;
   const normalizedTopic = normalizeWebhookTopic(String(topic));
-  if (!["ORDERS_CREATE", "ORDERS_UPDATE", "ORDERS_DELETE"].includes(normalizedTopic)) {
+  // Shopify sends `orders/updated` (past tense) → normalizes to ORDERS_UPDATED.
+  // ORDERS_UPDATE kept for back-compat with any older subscription.
+  if (
+    !["ORDERS_CREATE", "ORDERS_UPDATE", "ORDERS_UPDATED", "ORDERS_DELETE"].includes(
+      normalizedTopic,
+    )
+  ) {
     return new Response("Unsupported webhook topic.", { status: 400 });
   }
 
