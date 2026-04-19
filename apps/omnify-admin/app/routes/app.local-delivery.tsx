@@ -280,7 +280,6 @@ export default function Index() {
   const [ordersSearch, setOrdersSearch] = useState("");
   const ordersSectionRef = useRef<HTMLDivElement | null>(null);
   const [lalamoveBusyRouteId, setLalamoveBusyRouteId] = useState<string | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [isRouteManagerVisible, setIsRouteManagerVisible] = useState(false);
   const [isAccuracyCollapsed, setIsAccuracyCollapsed] = useState(false);
   const [settingsLocationId, setSettingsLocationId] = useState<string>("");
@@ -1138,36 +1137,6 @@ export default function Index() {
   }, [lalamoveSettingsFetcher.data, lalamoveSettings, settingsLocationId]);
 
 
-  // Re-fit map viewport when the user expands or collapses the map canvas.
-  // Google Maps doesn't auto-resize when the CSS container changes; we must
-  // trigger a "resize" event and re-run fitBounds after the animation settles.
-  // Also filters by current locationId so only relevant orders are in view.
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const gMaps = window.google?.maps;
-      if (!mapRef.current || !gMaps) return;
-      gMaps.event.trigger(mapRef.current, "resize");
-      // Filter points by current location if set
-      const filteredOrders = mapData.orders.filter((point) => {
-        if (locationId === DEFAULT_LOCATION_ID) return true;
-        const order = ordersById.get(point.id);
-        return order?.fulfillmentLocation?.id === locationId;
-      });
-      const filteredLocations = mapData.locations.filter((point) => {
-        if (locationId === DEFAULT_LOCATION_ID) return true;
-        return point.id === locationId;
-      });
-      const allPoints = [...filteredLocations, ...filteredOrders];
-      if (allPoints.length === 0) return;
-      const bounds = new gMaps.LatLngBounds();
-      allPoints.forEach((p) =>
-        bounds.extend({ lat: p.latitude, lng: p.longitude }),
-      );
-      mapRef.current.fitBounds(bounds);
-    }, 150);
-    return () => window.clearTimeout(timer);
-  }, [isFullscreen]); // intentionally omit mapData — fires only on toggle
-
   const assignedOrderIds = useMemo(() => {
     const assigned = new Set<string>();
     editableRoutes.forEach((route) => {
@@ -1842,12 +1811,6 @@ export default function Index() {
     locationId,
     filters.locationId,
   ]);
-
-  useEffect(() => {
-    if (!mapRef.current) return;
-    if (!window.google?.maps?.event?.trigger) return;
-    window.google.maps.event.trigger(mapRef.current, "resize");
-  }, [isFullscreen]);
 
   useEffect(() => {
     if (activeModalType !== "manage") return;
@@ -4862,168 +4825,12 @@ export default function Index() {
           </pre>
         </s-banner>
       ) : null}
-      <div slot="aside" className={styles.fulfillmentBlock}>
-      <div
-        className={styles.collapsibleSectionWrap}
-      >
-      <s-section heading={t("filters.fulfillmentDetails")}>
-        <s-stack direction="block" gap="base">
-          <div className={styles.locationSelectRow}>
-            <div className={styles.locationSelectFlex}>
-              <div className={styles.filterControl}>
-                <span className={styles.filterLabel}>
-                  {t("filters.location", "Location")}
-                </span>
-                <s-select
-                  label={t("filters.location", "Location")}
-                  labelAccessibilityVisibility="exclusive"
-                  name="locationId"
-                  value={locationId}
-                  onChange={handleLocationChange}
-                >
-                  <s-option value={DEFAULT_LOCATION_ID}>{t("filters.allLocations")}</s-option>
-                  {locations.map((location) => (
-                    <s-option key={location.id} value={location.id}>
-                      {location.name}
-                    </s-option>
-                  ))}
-                </s-select>
-              </div>
+      <div className={styles.fullscreenContent}>
+        <div className={styles.fullscreenSplitLayout}>
+          <div className={styles.fullscreenMapPane}>
+            <div className={styles.mapCanvasWrap}>
+              <div ref={mapContainerRef} className={styles.mapCanvas} />
             </div>
-          </div>
-          {!isRouteManagerVisible ? (
-            <div className={styles.startDateFieldGroup}>
-              <s-date-field
-                label={t("filters.startDate")}
-                value={startDate}
-                {...{ lang: i18n.language } as Record<string, string>}
-                onChange={handleStartDateChange}
-              />
-              <s-text color="subdued">{daysAgoText}</s-text>
-            </div>
-          ) : null}
-          {!isRouteManagerVisible ? (
-            <div className={styles.filterControl}>
-              <span className={styles.filterLabel}>
-                {t("filters.deliveryPromise")}
-              </span>
-              <s-select
-                label={t("filters.deliveryPromise")}
-                labelAccessibilityVisibility="exclusive"
-                value={`${deliveryPromiseDays}`}
-                onChange={handleDeliveryPromiseChange}
-              >
-                <s-option value="0">{t("filters.sameDay")}</s-option>
-                <s-option value="1">{t("filters.nextDay")}</s-option>
-                <s-option value="2">{t("filters.dayPlus2")}</s-option>
-                <s-option value="3">{t("filters.dayPlus3")}</s-option>
-                <s-option value="4">{t("filters.dayPlus4")}</s-option>
-              </s-select>
-            </div>
-          ) : null}
-          {!isRouteManagerVisible ? (
-            <div className={styles.filterControl}>
-              <span className={styles.filterLabel}>
-                {t("filters.sameDayTimeLimit")}
-              </span>
-              <s-text-field
-                label={t("filters.sameDayTimeLimit")}
-                labelAccessibilityVisibility="exclusive"
-                {...{ type: "time" } as Record<string, string>}
-                value={`${String(sameDayHour).padStart(2, "0")}:${String(sameDayMinute).padStart(2, "0")}`}
-                onChange={(e: Event) => {
-                  const val = (e.currentTarget as HTMLInputElement).value;
-                  if (!val) return;
-                  const [h, m] = val.split(":").map(Number);
-                  if (!isNaN(h)) setSameDayHour(h);
-                  if (!isNaN(m)) setSameDayMinute(m);
-                }}
-              ></s-text-field>
-            </div>
-          ) : null}
-          {locationId !== DEFAULT_LOCATION_ID && isRouteManagerVisible ? (
-            <>
-              {failedDeliveryCount > 0 ? (
-                <div className={styles.warningLink}>
-                  <s-text>{t("filters.failedDelivery", { count: failedDeliveryCount })}</s-text>
-                </div>
-              ) : null}
-              {hasUnfulfilledPresaleOrders ? (
-                <span className={styles.warningLink}>
-                <s-link
-                  onClick={() => setIsPresaleModalOpen(true)}
-                >
-                  {t("filters.presaleWarning")}
-                </s-link></span>
-              ) : null}
-              {addressErrorOrders.length > 0 ? (
-                <span style={{ cursor: "pointer" }} onClick={() => setIsAddressErrorsModalOpen(true)}>
-                  <s-badge tone="warning">
-                    <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M11.251 3.25a1.412 1.412 0 0 0-2.502 0L1.91 16.244A1.29 1.29 0 0 0 3.062 18h13.876a1.29 1.29 0 0 0 1.153-1.756L11.25 3.25Zm-1.25 4a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75Zm1 7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" fill="currentColor" /></svg>
-                    {t("warnings.addressErrors", { count: addressErrorOrders.length })}
-                  </s-badge>
-                </span>
-              ) : null}
-              {shipmentRequestOrders.length > 0 ? (
-                <span style={{ cursor: "pointer" }} onClick={() => setIsShipmentRequestsModalOpen(true)}>
-                  <s-badge tone="warning">
-                    <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M11.251 3.25a1.412 1.412 0 0 0-2.502 0L1.91 16.244A1.29 1.29 0 0 0 3.062 18h13.876a1.29 1.29 0 0 0 1.153-1.756L11.25 3.25Zm-1.25 4a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75Zm1 7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" fill="currentColor" /></svg>
-                    {t("warnings.shipmentRequests", { count: shipmentRequestOrders.length })}
-                  </s-badge>
-                </span>
-              ) : null}
-              {pendingReturnPickups.length > 0 ? (
-                <span style={{ cursor: "pointer" }} onClick={() => setIsReturnPickupsModalOpen(true)}>
-                  <s-badge tone="warning">
-                    <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M17 8.5A8.5 8.5 0 1 1 8.5 0H9v4.1A4.5 4.5 0 1 0 13 8.5h-1.5l3-4 3 4H16a7 7 0 1 1-7-7V0a8.5 8.5 0 0 1 8 8.5Z" fill="currentColor" /></svg>
-                    {t("warnings.returnPickups", { count: pendingReturnPickups.length })}
-                  </s-badge>
-                </span>
-              ) : null}
-            </>
-          ) : null}
-        </s-stack>
-        <div
-          className={`${styles.collapseChevron}${isRouteManagerVisible ? ` ${styles.collapsed}` : ""}`}
-          onClick={() => setIsRouteManagerVisible((prev) => !prev)}
-          role="button"
-          aria-label={isRouteManagerVisible ? t("map.expand") : t("map.collapse")}
-        >
-          <span className={styles.chevronIcon}>›</span>
-        </div>
-      </s-section>
-      </div>
-      </div>
-      <s-section>
-      <div className={styles.mainBlocks}>
-        <div className={isFullscreen ? styles.fullscreenOverlay : undefined}>
-          <div className={isFullscreen ? styles.fullscreenContent : undefined}>
-            <div
-              className={
-                isFullscreen ? styles.fullscreenSplitLayout : undefined
-              }
-            >
-              <div className={isFullscreen ? styles.fullscreenMapPane : undefined}>
-                <div className={styles.mapCanvasWrap}>
-                  <div className={styles.mapOverlayButton} role="group">
-                    <s-button
-                      variant="secondary"
-                      accessibilityLabel={
-                        isFullscreen ? t("map.collapseMap") : t("map.expandMap")
-                      }
-                      aria-expanded={isFullscreen}
-                      onClick={() => setIsFullscreen((current) => !current)}
-                    >
-                      {isFullscreen ? t("map.collapse") : t("map.expand")}
-                    </s-button>
-                  </div>
-                  <div
-                    ref={mapContainerRef}
-                    className={`${styles.mapCanvas} ${
-                      isFullscreen ? styles.mapCanvasFullscreen : ""
-                    }`}
-                  />
-                </div>
                 {mapData.locations.length === 0 && mapData.orders.length === 0 ? (
                   <s-text color="subdued">
                     {t("map.noCoordinates")}
@@ -5094,10 +4901,9 @@ export default function Index() {
                     ) : null}
                   </div>
                 </div>
-                {isFullscreen ? renderOrdersSection() : null}
+                {renderOrdersSection()}
               </div>
-              {isFullscreen ? (
-                <div className={styles.fullscreenAssignedPane}>
+              <div className={styles.fullscreenAssignedPane}>
                   <s-section heading={t("filters.fulfillmentDetails")}>
                     <s-stack direction="block" gap="base">
                       <div className={styles.locationSelectRow}>
@@ -5595,549 +5401,49 @@ export default function Index() {
                     ) : null}
                   </s-section>
                   ) : null}
-                </div>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      </div>
-      </s-section>
-
-      <div slot="aside" className={styles.routeManagerBlock}>
-      {!isFullscreen && isRouteManagerVisible ? (
-      <s-section heading={t("routeManager.heading")}>
-          {/* Orders badge + actions menu */}
-          <div className={styles.routeManagerStatusRow}>
-            <s-badge>{t("filters.ordersToDeliver", { count: mapData.orders.length })}</s-badge>
-            {locationId !== DEFAULT_LOCATION_ID ? (
-              optimizeProgress ? (
-                <div style={{ flex: 1 }} />
-              ) : updateRoutesFetcher.state !== "idle" ? (
-                <s-spinner size="base" accessibilityLabel={t("routeManager.updateRoutes")}></s-spinner>
-              ) : (
-                <div className={styles.routeManagerActionsMenu}>
-                  {dirtyRouteIds.size > 0 ? (
-                    <s-button
-                      key="confirm-changes-aside"
-                      variant="primary"
-                      disabled={isRoutingBusy}
-                      onClick={handleUpdateRoutes}
-                    >
-                      {t("routeManager.confirmChanges")}
-                    </s-button>
-                  ) : (
-                    <>
-                      <s-button
-                        key="actions-trigger-aside"
-                        variant="tertiary"
-                        icon="menu-horizontal"
-                        accessibilityLabel={t("routeManager.actions")}
-                        commandFor="route-manager-actions-aside"
-                      ></s-button>
-                      <s-menu id="route-manager-actions-aside" accessibilityLabel={t("routeManager.actions")}>
-                        <s-button icon="view" onClick={scrollToOrdersSection}>
-                          {t("routeManager.seeOrders")}
-                        </s-button>
-                        {unassignedOrders.length > 0 ? (
-                          <s-button
-                            icon="transfer"
-                            disabled={orders.length === 0}
-                            onClick={() => {
-                              autoAssignSelection();
-                              handleOptimizeFleet();
-                            }}
-                          >
-                            {t("routeManager.autoAssign")}
-                          </s-button>
-                        ) : null}
-                        {hasAssignedRoutes ? (
-                          <s-button
-                            tone="critical"
-                            icon="delete"
-                            disabled={isRoutingBusy}
-                            onClick={() => setClearAllConfirmOpen(true)}
-                          >
-                            {t("routeManager.clearAllRoutes")}
-                          </s-button>
-                        ) : null}
-                      </s-menu>
-                    </>
-                  )}
-                </div>
-              )
-            ) : null}
-          </div>
-          {optimizeProgress ? (
-            <div className={styles.optimizeProgressWrap}>
-              <div className={styles.optimizeProgressHeader}>
-                <span>{optimizeProgress.phase}</span>
-                <span>~{Math.max(0, Math.ceil((optimizeProgress.estimatedMs - (Date.now() - optimizeProgress.startedAt)) / 1000))}s remaining</span>
-              </div>
-              <div className={styles.optimizeProgressBar}>
-                <div className={styles.optimizeProgressFill} style={{ width: `${optimizeProgress.pct}%` }} />
-              </div>
-              {optimizeProgress.estimatedMs > 20000 && (() => {
-                const otherLoc = locations.find(
-                  (loc) => loc.id !== locationId && orders.some(
-                    (o) => o.fulfillmentLocation.id === loc.id && !assignedOrderIds.has(o.id),
-                  ),
-                );
-                if (!otherLoc) return null;
-                const otherCount = orders.filter(
-                  (o) => o.fulfillmentLocation.id === otherLoc.id && !assignedOrderIds.has(o.id),
-                ).length;
-                return otherCount > 0 ? (
-                  <div className={styles.optimizeSuggestionBadge}>
-                    {otherLoc.name} has {otherCount} orders ready to assign
-                  </div>
-                ) : null;
-              })()}
-            </div>
-          ) : null}
-          {/* ── Auto-assigned pending routes ── */}
-          {(() => {
-            const visiblePending = locationId === DEFAULT_LOCATION_ID
-              ? pendingRoutes
-              : pendingRoutes.filter((pr) => pr.locationId === locationId);
-            if (visiblePending.length === 0) return null;
-            const isDismissing = pendingRouteFetcher.state !== "idle";
-            return (
-              <div className={styles.pendingRoutesSection}>
-                <s-text type="strong">
-                  {t("routeManager.autoAssignedResult", {
-                    count: visiblePending.length,
-                    routeCount: visiblePending.length,
-                    routeWord: visiblePending.length === 1 ? t("routeManager.routeWord") : t("routeManager.routeWordPlural"),
-                  })}
-                </s-text>
-                <div className={styles.assignedRoutesList}>
-                  {visiblePending.map((pr) => {
-                    const ordersData = pr.ordersData as Array<{
-                      shopifyOrderId: string;
-                      address: string;
-                      name: string;
-                    }>;
-                    const stopCount = ordersData.length;
-                    const matchedCount = ordersData.filter((s) =>
-                      ordersById.has(s.shopifyOrderId),
-                    ).length;
-                    const canLoad =
-                      matchedCount > 0 &&
-                      editableRoutes.some((r) => r.orderIds.length === 0);
-                    const locName =
-                      lalamoveConfigMap[pr.locationId]?.locationName ??
-                      pr.locationId;
-                    return (
-                      <div key={pr.id} className={styles.routeCard}>
-                      <s-box
-                        padding="base"
-                        borderWidth="base"
-                        borderRadius="base"
-                      >
-                        <div className={styles.routeCardHeader}>
-                          <div className={styles.routeCardHeaderText}>
-                            <s-badge tone="info">{t("routeManager.autoRouted")}</s-badge>
-                          </div>
-                        </div>
-                        <div className={styles.routeCardOrderStats}>
-                          <s-stack direction="block" gap="small">
-                            <s-text type="strong">
-                              {t("routeManager.stops", { count: stopCount })}
-                              {locationId === DEFAULT_LOCATION_ID
-                                ? ` · ${locName}`
-                                : ""}
-                            </s-text>
-                            {ordersData.slice(0, 2).map((s, i) => (
-                              <s-text key={i} color="subdued">
-                                {s.name
-                                  ? `${s.name} — `
-                                  : ""}{s.address}
-                              </s-text>
-                            ))}
-                            {stopCount > 2 ? (
-                              <s-text color="subdued">
-                                {t("routeManager.moreOrders", { count: stopCount - 2 })}
-                              </s-text>
-                            ) : null}
-                            {matchedCount < stopCount ? (
-                              <s-text color="subdued">
-                                {t("routeManager.ordersVisible", { count: matchedCount })}
-                              </s-text>
-                            ) : null}
-                          </s-stack>
-                        </div>
-                        <s-stack
-                          direction="inline"
-                          gap="base"
-                          justifyContent="space-between"
-                        >
-                          <s-button
-                            variant="secondary"
-                            tone="critical"
-                            disabled={isDismissing}
-                            onClick={() => handleDismissPendingRoute(pr.id)}
-                          >
-                            {t("routeManager.dismiss")}
-                          </s-button>
-                          <s-button
-                            variant="primary"
-                            disabled={!canLoad || isDismissing || isRoutingBusy}
-                            onClick={() => handleLoadPendingRoute(pr)}
-                          >
-                            {t("routeManager.loadToPlanner")}
-                          </s-button>
-                        </s-stack>
-                      </s-box>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })()}
-          {/* ── Add to best route (contextual to selection) ── */}
-          {locationId !== DEFAULT_LOCATION_ID ? (() => {
-            const selectedUnassignedCount = unassignedOrders.filter(
-              (o) => selectedOrderIds.has(o.id),
-            ).length;
-            return selectedUnassignedCount > 0 && hasAssignedRoutes ? (
-            <div className={styles.routeManagerTopRow}>
-              <s-button
-                variant="secondary"
-                onClick={handleAddToBestRoute}
-                disabled={optimizeFetcher.state !== "idle"}
-              >
-                {t("routeManager.addToBestRoute")}
-              </s-button>
-            </div>
-            ) : null;
-          })() : null}
-          {assignmentSuccessMessage ? (
-            <div className={styles.successBadgeRow}>
-              <s-badge tone="success">{assignmentSuccessMessage}</s-badge>
-            </div>
-          ) : null}
-          {assignmentWarningMessage ? (
-            <div className={styles.successBadgeRow}>
-              <s-badge tone="caution">{assignmentWarningMessage}</s-badge>
-            </div>
-          ) : null}
-          {hasAssignedRoutes ? (
-            <div className={styles.assignedRoutesSection}>
-              {locationId === DEFAULT_LOCATION_ID ? (
-                // Grouped by location when "All locations" selected
-                [...new Set(editableRoutes.filter((r) => r.orderIds.length > 0).map((r) => r.locationId))].map((locId) => (
-                  <div key={locId} className={styles.locationGroup}>
-                    <s-text type="strong">{locationsById.get(locId)?.name ?? locId}</s-text>
-                    <div className={styles.assignedRoutesList}>
-                      {editableRoutes
-                        .map((route, index) => ({ route, index }))
-                        .filter(({ route }) => route.orderIds.length > 0 && route.locationId === locId)
-                        .map(({ route, index: routeIndex }) => {
-                          const routeOrders = route.orderIds.map((orderId) => ordersById.get(orderId)).filter((order): order is LoaderOrder => Boolean(order));
-                          const orderCount = routeOrders.length;
-                          const label = getRouteLabel(route, routeIndex);
-                          const badgeColors = deriveBadgeColors(route.color);
+                  {optimizerAccuracy && optimizerAccuracy.optimizations > 0 ? (
+                    <div className={styles.collapsibleSectionWrap}>
+                      <s-section heading={t("routeManager.autoAssignAccuracy")}>
+                        {!isAccuracyCollapsed ? (() => {
+                          const accurate = optimizerAccuracy.totalDispatched - optimizerAccuracy.totalReassigned;
+                          const pct = optimizerAccuracy.totalDispatched > 0
+                            ? Math.round((accurate / optimizerAccuracy.totalDispatched) * 100)
+                            : 0;
                           return (
-                            <div key={route.id} className={styles.routeCard}>
-                              <s-box padding="base" borderWidth="base" borderRadius="base">
-                                <div className={styles.routeCardHeader}>
-                                  <span className={styles.routeBadge} style={{ "--badge-bg": badgeColors.bg, "--badge-text": badgeColors.text } as CSSProperties}>
-                                    {label}
-                                  </span>
-                                </div>
-                                <s-text color="subdued">{t("routeManager.ordersMeta", { count: orderCount, shipping: "--" })}</s-text>
-                              </s-box>
+                            <div className={styles.accuracyContent}>
+                              <div className={styles.accuracyBarWrap}>
+                                <div
+                                  className={styles.accuracyBarFill}
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                              <div className={styles.accuracyStats}>
+                                <span className={styles.accuracyPct}>{pct}%</span>
+                                <span className={styles.accuracyDetail}>
+                                  {t("routeManager.accurateOf", { accurate, total: optimizerAccuracy.totalDispatched })}
+                                </span>
+                              </div>
+                              <span className={styles.accuracyPeriod}>
+                                {t("routeManager.last30Days", { count: optimizerAccuracy.optimizations })}
+                              </span>
                             </div>
                           );
-                        })}
+                        })() : null}
+                        <div
+                          className={`${styles.collapseChevron}${isAccuracyCollapsed ? ` ${styles.collapsed}` : ""}`}
+                          onClick={() => setIsAccuracyCollapsed((prev) => !prev)}
+                          role="button"
+                          aria-label="Toggle section"
+                        >
+                          <span className={styles.chevronIcon}>›</span>
+                        </div>
+                      </s-section>
                     </div>
-                  </div>
-                ))
-              ) : (
-              <div className={styles.assignedRoutesList}>
-                {editableRoutes
-                  .map((route, index) => ({ route, index }))
-                  .filter(({ route }) => route.orderIds.length > 0)
-                  .map(({ route, index: routeIndex }) => {
-                    const routeOrders = route.orderIds
-                      .map((orderId) => ordersById.get(orderId))
-                      .filter((order): order is LoaderOrder => Boolean(order));
-                    const orderCount = routeOrders.length;
-                    const shippingAmounts = routeOrders
-                      .map((order) => order.shippingCost)
-                      .filter(Boolean) as Array<{
-                      amount: number;
-                      currencyCode: string;
-                    }>;
-                    const currencyCodes = new Set(
-                      shippingAmounts.map((shipping) => shipping.currencyCode),
-                    );
-                    const hasMultipleCurrencies = currencyCodes.size > 1;
-                    const shippingTotal = shippingAmounts.reduce(
-                      (total, shipping) => total + shipping.amount,
-                      0,
-                    );
-                    const formattedShippingTotal =
-                      shippingAmounts.length === 0
-                        ? "--"
-                        : hasMultipleCurrencies
-                          ? t("routeManager.multipleCurrencies")
-                          : formatCurrency(
-                              shippingTotal,
-                              shippingAmounts[0]!.currencyCode,
-                              userLocale,
-                            );
-                    const label = getRouteLabel(route, routeIndex);
-                    const metaLine1 = t("routeManager.ordersMeta", { count: orderCount, shipping: formattedShippingTotal });
-                    const hasDistance =
-                      route.totalDistanceMeters != null &&
-                      Number.isFinite(route.totalDistanceMeters);
-                    const hasDuration =
-                      route.totalDurationSeconds != null &&
-                      Number.isFinite(route.totalDurationSeconds);
-                    const distanceStr = hasDistance
-                      ? `${(route.totalDistanceMeters! / 1000).toFixed(1)} km`
-                      : "--";
-                    const durationStr = hasDuration
-                      ? formatDurationSummary(route.totalDurationSeconds!)
-                      : "--";
-                    const quoteTotal = routeQuoteTotals[route.id];
-                    const costStr = quoteTotal
-                      ? t("routeManager.costLabel", { cost: `${quoteTotal.total}${quoteTotal.currency ? ` ${quoteTotal.currency}` : ""}` })
-                      : t("routeManager.costPlaceholder");
-                    const metaLine2 = `${distanceStr} • ${durationStr} • ${costStr}`;
-                    const lalamoveConfig = lalamoveConfigMap[route.locationId];
-                    const isLalamoveReady =
-                      credentialStatus.configured &&
-                      lalamoveConfig &&
-                      lalamoveConfig.market &&
-                      lalamoveConfig.preferredServiceType &&
-                      lalamoveConfig.locationName &&
-                      lalamoveConfig.locationPhone &&
-                      lalamoveConfig.locationAddress;
-                    const badgeColors = deriveBadgeColors(route.color);
-                    const hasSelectedOrders = selectedOrderIds.size > 0;
-                    const canAddToRoute = assignableExistingRoutes.some(
-                      (candidate) => candidate.id === route.id,
-                    );
-                    const allSelectedAlreadyInRoute = hasSelectedOrders
-                      && [...selectedOrderIds].every((id) => route.orderIds.includes(id));
-                    const isThisRouteBusy = lalamoveBusyRouteId === route.id;
-                    const isAnyRouteBusy = lalamoveBusyRouteId !== null;
-                    const isOtherRouteBusy = isAnyRouteBusy && !isThisRouteBusy;
-                    const notification = renderRouteNotification(route);
-                    return (
-                      <div
-                        key={route.id}
-                        className={`${styles.routeCard}${isOtherRouteBusy ? ` ${styles.routeCardSubdued}` : ""}`}
-                      >
-                      <s-box
-                        padding="base"
-                        borderWidth="base"
-                        borderRadius="base"
-                      >
-                        <div className={styles.routeCardHeader}>
-                          <div className={styles.routeCardHeaderText}>
-                            <span
-                              className={styles.routeBadge}
-                              style={
-                                {
-                                  "--badge-bg": badgeColors.bg,
-                                  "--badge-text": badgeColors.text,
-                              } as CSSProperties
-                              }
-                            >
-                              {label}
-                            </span>
-                          </div>
-                          {dispatchedRoutes[route.id] && !TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") ? (
-                            <s-button
-                              variant="secondary"
-                              disabled={isOtherRouteBusy}
-                              onClick={() => openDetailsRouteModal(route, routeIndex)}
-                            >
-                              {t("routeManager.details")}
-                            </s-button>
-                          ) : (
-                            <span title={dispatchedRoutes[route.id] ? t("routeManager.clearRouteDisabledTooltip") : undefined}>
-                              <s-button
-                                variant="secondary"
-                                tone="critical"
-                                disabled={!!dispatchedRoutes[route.id] || isRoutingBusy || isOtherRouteBusy}
-                                onClick={() =>
-                                  setUnassignConfirmRoute({ route, index: routeIndex })
-                                }
-                              >
-                                {t("routeManager.clearRoute")}
-                              </s-button>
-                            </span>
-                          )}
-                        </div>
-                        <div className={styles.routeCardOrderStats}>
-                          <s-stack direction="block" gap="small">
-                            <s-text type="strong">{metaLine1}</s-text>
-                            <s-text color="subdued">{metaLine2}</s-text>
-                          </s-stack>
-                        </div>
-                        {hasSelectedOrders ? (
-                          <div className={styles.assignedRoutesTopActions}>
-                            <s-button
-                              variant="primary"
-                              disabled={!canAddToRoute || allSelectedAlreadyInRoute || isRoutingBusy || isOtherRouteBusy}
-                              onClick={() => handleAddSelectedToRoute(routeIndex)}
-                            >
-                              {t("routeManager.addToRoute")}
-                            </s-button>
-                          </div>
-                        ) : dispatchedRoutes[route.id] && !TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") ? (
-                          <div className={styles.dispatchedBlock}>
-                            <div className={styles.deliveryStatusRow}>
-                              <s-button
-                                variant="primary"
-                                tone="critical"
-                                disabled={isOtherRouteBusy}
-                                onClick={() => setCancelConfirmRouteId(route.id)}
-                              >
-                                {t("routeManager.cancelDelivery")}
-                              </s-button>
-                            </div>
-                          </div>
-                        ) : (
-                          <s-stack
-                            direction="inline"
-                            gap="base"
-                            justifyContent="space-between"
-                          >
-                            <div />
-                            <s-stack direction="inline" gap="base">
-                              <s-button
-                                variant="secondary"
-                                disabled={isRoutingBusy || isOtherRouteBusy}
-                                onClick={() => openManageRouteModal(route, routeIndex)}
-                              >
-                                {t("routeManager.manage")}
-                              </s-button>
-                              {quotePreview?.routeId === route.id ? (
-                                isThisRouteBusy ? (
-                                  <s-button
-                                    key="requesting-driver"
-                                    variant="primary"
-                                    loading
-                                    disabled
-                                  >
-                                    {t("routeManager.requestingDriver")}
-                                  </s-button>
-                                ) : (
-                                  <s-button
-                                    key="request-driver"
-                                    variant="primary"
-                                    disabled={isOtherRouteBusy}
-                                    onClick={() => handlePlaceOrderFromCard(route, routeIndex)}
-                                  >
-                                    {t("routeManager.requestDriver")}
-                                  </s-button>
-                                )
-                              ) : isThisRouteBusy ? (
-                                <s-button
-                                  key="requesting-quote"
-                                  variant="secondary"
-                                  loading
-                                  disabled
-                                >
-                                  {t("routeManager.requestingQuote")}
-                                </s-button>
-                              ) : (
-                                <s-button
-                                  key="request-quote"
-                                  variant="secondary"
-                                  disabled={!isLalamoveReady || isRoutingBusy || isOtherRouteBusy}
-                                  onClick={() => handleRequestDriver(route)}
-                                >
-                                  {t("routeManager.requestQuote")}
-                                </s-button>
-                              )}
-                            </s-stack>
-                          </s-stack>
-                        )}
-                        {notification ? (
-                          <div className={styles.routeCardNotifications}>
-                            {notification}
-                          </div>
-                        ) : null}
-                      </s-box>
-                      </div>
-                    );
-                  })}
-              </div>
-              )}
-            </div>
-          ) : null}
-          {locationId !== DEFAULT_LOCATION_ID &&
-          (() => {
-            const config = lalamoveConfigMap[locationId];
-            const isMissing =
-              !config ||
-              !config.locationName ||
-              !config.locationPhone ||
-              !config.locationAddress ||
-              !config.locationDetails;
-            return isMissing ? (
-              <div className={styles.mapFooterBadge}>
-                <s-link href={settingsHref}>
-                  <s-badge tone="critical">
-                    {t("routeManager.lalamoveDisabled")}
-                  </s-badge>
-                </s-link>
-              </div>
-            ) : null;
-          })()}
-      </s-section>
-      ) : null}
-
-      {/* ── Auto-assign accuracy (standalone aside, always visible) ── */}
-      {optimizerAccuracy && optimizerAccuracy.optimizations > 0 ? (
-        <div className={styles.collapsibleSectionWrap}>
-          <s-section heading={t("routeManager.autoAssignAccuracy")}>
-            {!isAccuracyCollapsed ? (() => {
-              const accurate = optimizerAccuracy.totalDispatched - optimizerAccuracy.totalReassigned;
-              const pct = optimizerAccuracy.totalDispatched > 0
-                ? Math.round((accurate / optimizerAccuracy.totalDispatched) * 100)
-                : 0;
-              return (
-                <div className={styles.accuracyContent}>
-                  <div className={styles.accuracyBarWrap}>
-                    <div
-                      className={styles.accuracyBarFill}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <div className={styles.accuracyStats}>
-                    <span className={styles.accuracyPct}>{pct}%</span>
-                    <span className={styles.accuracyDetail}>
-                      {t("routeManager.accurateOf", { accurate, total: optimizerAccuracy.totalDispatched })}
-                    </span>
-                  </div>
-                  <span className={styles.accuracyPeriod}>
-                    {t("routeManager.last30Days", { count: optimizerAccuracy.optimizations })}
-                  </span>
+                  ) : null}
                 </div>
-              );
-            })() : null}
-            <div
-              className={`${styles.collapseChevron}${isAccuracyCollapsed ? ` ${styles.collapsed}` : ""}`}
-              onClick={() => setIsAccuracyCollapsed((prev) => !prev)}
-              role="button"
-              aria-label="Toggle section"
-            >
-              <span className={styles.chevronIcon}>›</span>
             </div>
-          </s-section>
-        </div>
-      ) : null}
-      </div>
+          </div>
 
-      {!isFullscreen ? renderOrdersSection() : null}
     </s-page>
   );
 }

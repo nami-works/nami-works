@@ -35,8 +35,6 @@
     "mapStyleButton": "Estilo do mapa",
     "collapse": "[-] Recolher",
     "expand": "[+] Expandir",
-    "collapseMap": "Recolher mapa",
-    "expandMap": "Expandir mapa",
     "clearSelection": "Limpar seleção",
     "unassignSelected": "Desatribuir",
     "assignToNewRoute": "Atribuir a nova rota",

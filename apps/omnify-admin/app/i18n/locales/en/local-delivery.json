@@ -35,8 +35,6 @@
     "mapStyleButton": "Map style",
     "collapse": "[-] Collapse",
     "expand": "[+] Expand",
-    "collapseMap": "Collapse map",
-    "expandMap": "Expand map",
     "clearSelection": "Clear selection",
     "unassignSelected": "Unassign",
     "assignToNewRoute": "Assign to new route",
