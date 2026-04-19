@@ -9,8 +9,8 @@
       "title": "Local delivery",
       "description": "Plan and assign local delivery routes. Visualize orders on a map, tag them to routes, and organize efficient delivery zones for your customers."
     },
-    "retailGoals": {
-      "title": "Retail goals",
+    "retailSales": {
+      "title": "Retail sales",
       "description": "Set monthly sales targets by location and track actual performance. Monitor KPIs, rankings, and goal completion across all your stores."
     },
     "footprintExpansion": {

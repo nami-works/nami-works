@@ -73,9 +73,9 @@ const LALAMOVE_MARKETS = [
   { value: "VN", label: "Vietnam" },
 ];
 
-// Retail goals per-location configuration (mirrors shape used by /app/retail-goals
+// Retail sales per-location configuration (mirrors shape used by /app/retail-sales
 // and the salesGoalsLocationConfig Prisma table). Writes round-trip through the
-// Retail goals route's existing `save-location-config` action intent.
+// Retail sales route's existing `save-location-config` action intent.
 type RetailGoalsLocationConfig = {
   enabled: boolean;
   orderSources: { enabled: boolean; sources: string[] };
@@ -177,8 +177,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     {},
   );
 
-  // Retail goals per-location configs (migrated from old Sales Goals > Settings tab).
-  // Read-only here; writes route through /app/retail-goals with save-location-config intent.
+  // Retail sales per-location configs (migrated from old Sales Goals > Settings tab).
+  // Read-only here; writes route through /app/retail-sales with save-location-config intent.
   const retailGoalsRows = await prisma.salesGoalsLocationConfig.findMany({
     where: { shop },
   });
@@ -700,7 +700,7 @@ export default function LocationSettings() {
     fd.append("config", JSON.stringify(retailGoalsDraft));
     retailGoalsFetcher.submit(fd, {
       method: "post",
-      action: "/app/retail-goals",
+      action: "/app/retail-sales",
     });
   };
 
@@ -718,7 +718,7 @@ export default function LocationSettings() {
     fd.append("config", JSON.stringify(next));
     retailGoalsToggleFetcher.submit(fd, {
       method: "post",
-      action: "/app/retail-goals",
+      action: "/app/retail-sales",
     });
   };
 
@@ -1095,7 +1095,7 @@ export default function LocationSettings() {
               <s-section>
                 <div className={styles.sectionHeaderRow}>
                   <h2 className={styles.sectionHeaderTitle}>
-                    {t("retailGoals.title")}
+                    {t("retailSales.title")}
                   </h2>
                   <div
                     className={styles.headerToggle}
@@ -1118,22 +1118,22 @@ export default function LocationSettings() {
                       }
                     />
                     {retailGoalsDraft.enabled
-                      ? t("retailGoals.includeToggleOn")
-                      : t("retailGoals.includeToggleOff")}
+                      ? t("retailSales.includeToggleOn")
+                      : t("retailSales.includeToggleOff")}
                   </div>
                 </div>
 
                 {retailGoalsDraft.enabled ? (
                   <s-stack direction="block" gap="base">
                     <span className={styles.filterHint}>
-                      {t("retailGoals.subtitle")}
+                      {t("retailSales.subtitle")}
                     </span>
 
                     {/* Order sources filter block */}
                     <div className={styles.filterBlock}>
                       <div className={styles.filterHeaderRow}>
                         <span className={styles.filterLabel}>
-                          {t("retailGoals.orderSources")}
+                          {t("retailSales.orderSources")}
                         </span>
                         <s-checkbox
                           checked={
@@ -1157,7 +1157,7 @@ export default function LocationSettings() {
                         value={retailGoalsDraft.orderSources.sources}
                         suggestions={retailGoalsOrderSources}
                         disabled={!retailGoalsDraft.orderSources.enabled}
-                        placeholder={t("retailGoals.searchOrderSources")}
+                        placeholder={t("retailSales.searchOrderSources")}
                         onChange={(next) =>
                           patchRetailGoals((prev) => ({
                             ...prev,
@@ -1166,7 +1166,7 @@ export default function LocationSettings() {
                         }
                       />
                       <span className={styles.filterHint}>
-                        {t("retailGoals.orderSourcesHint")}
+                        {t("retailSales.orderSourcesHint")}
                       </span>
                     </div>
 
@@ -1174,7 +1174,7 @@ export default function LocationSettings() {
                     <div className={styles.filterBlock}>
                       <div className={styles.filterHeaderRow}>
                         <span className={styles.filterLabel}>
-                          {t("retailGoals.tags")}
+                          {t("retailSales.tags")}
                         </span>
                         <s-checkbox
                           checked={retailGoalsDraft.tags.enabled || undefined}
@@ -1196,7 +1196,7 @@ export default function LocationSettings() {
                         value={retailGoalsDraft.tags.tags}
                         suggestions={retailGoalsTagSuggestions}
                         disabled={!retailGoalsDraft.tags.enabled}
-                        placeholder={t("retailGoals.searchTags")}
+                        placeholder={t("retailSales.searchTags")}
                         onChange={(next) =>
                           patchRetailGoals((prev) => ({
                             ...prev,
@@ -1205,7 +1205,7 @@ export default function LocationSettings() {
                         }
                       />
                       <span className={styles.filterHint}>
-                        {t("retailGoals.tagsHint")}
+                        {t("retailSales.tagsHint")}
                       </span>
                     </div>
 
@@ -1223,7 +1223,7 @@ export default function LocationSettings() {
                           loading
                           disabled
                         >
-                          {t("retailGoals.saveRetailGoals")}
+                          {t("retailSales.saveRetailSales")}
                         </s-button>
                       ) : (
                         <s-button
@@ -1231,14 +1231,14 @@ export default function LocationSettings() {
                           variant="primary"
                           onClick={saveRetailGoals}
                         >
-                          {t("retailGoals.saveRetailGoals")}
+                          {t("retailSales.saveRetailSales")}
                         </s-button>
                       )}
                     </div>
                   </s-stack>
                 ) : (
                   <span className={styles.collapsedHint}>
-                    {t("retailGoals.collapsedHint")}
+                    {t("retailSales.collapsedHint")}
                   </span>
                 )}
               </s-section>

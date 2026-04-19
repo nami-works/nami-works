@@ -13,8 +13,8 @@
     "saveSettings": "Salvar detalhes de entrega",
     "showDisabled": "Mostrar localizações desativadas"
   },
-  "retailGoals": {
-    "title": "Metas de vendas",
+  "retailSales": {
+    "title": "Vendas de varejo",
     "subtitle": "Configure filtros por localização para vendas históricas. Apenas lojas de varejo (com retirada habilitada) são exibidas.",
     "includeToggleOn": "Incluída",
     "includeToggleOff": "Não incluída",
@@ -25,8 +25,8 @@
     "tags": "Tags obrigatórias",
     "tagsHint": "Quando ativado, um pedido precisa ter ao menos uma das tags selecionadas para contar.",
     "searchTags": "Buscar tags…",
-    "saveRetailGoals": "Salvar metas de vendas",
-    "savedSuccess": "Metas de vendas salvas com sucesso."
+    "saveRetailSales": "Salvar vendas de varejo",
+    "savedSuccess": "Vendas de varejo salvas com sucesso."
   },
   "labels": {
     "location": "Localização",

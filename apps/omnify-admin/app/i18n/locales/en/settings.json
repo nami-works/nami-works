@@ -13,20 +13,20 @@
     "saveSettings": "Save delivery details",
     "showDisabled": "Show disabled locations"
   },
-  "retailGoals": {
-    "title": "Retail goals",
+  "retailSales": {
+    "title": "Retail sales",
     "subtitle": "Configure per-location filters for historical sales. Only retail stores (pickup-enabled) are shown.",
     "includeToggleOn": "Included",
     "includeToggleOff": "Not included",
-    "collapsedHint": "Excluded from Retail goals dashboards and goals.",
+    "collapsedHint": "Excluded from Retail sales dashboards and goals.",
     "orderSources": "Order sources",
     "orderSourcesHint": "When enabled, only orders from the selected sources count for this location.",
     "searchOrderSources": "Search order sources…",
     "tags": "Required tags",
     "tagsHint": "When enabled, an order must carry at least one of the selected tags to count.",
     "searchTags": "Search tags…",
-    "saveRetailGoals": "Save Retail goals",
-    "savedSuccess": "Retail goals saved successfully."
+    "saveRetailSales": "Save Retail sales",
+    "savedSuccess": "Retail sales saved successfully."
   },
   "labels": {
     "location": "Location",
