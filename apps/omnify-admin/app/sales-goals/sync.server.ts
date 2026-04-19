@@ -12,7 +12,6 @@ import {
 } from "./analytics-queries.server";
 import {
   filterCandidateLocations,
-  IGLU_APP_SOURCE,
   resolveOrderLocation,
   type OrderForResolution,
   type RetailLocation,
@@ -151,10 +150,13 @@ export async function runSalesGoalsSync(
     startDate.setMonth(startDate.getMonth() - monthsBack);
     const startKey = startDate.toISOString().slice(0, 10);
     const endKey = new Date().toISOString().slice(0, 10);
-    // Explicit source filter matches the classifier (pos | IGLU app source).
-    // Tightens the fetch vs the old `-source_name:web` and eliminates an
-    // entire class of orders that would be dropped by the classifier anyway.
-    const query = `created_at:>=${startKey} created_at:<=${endKey} (source_name:pos OR source_name:${IGLU_APP_SOURCE})`;
+    // Why not `(source_name:pos OR source_name:<IGLU>)`? Shopify's search
+    // engine silently returns 0 for `source_name:<numeric-app-id>` even when
+    // quoted — verified empirically against ge-beauty-cosmeticos. Using
+    // `-source_name:web` instead is the robust filter: it includes Shopify
+    // POS, IGLU POS, draft orders, tiktok, etc., and the in-app
+    // resolveOrderLocation classifier drops non-retail rows anyway.
+    const query = `created_at:>=${startKey} created_at:<=${endKey} -source_name:web`;
 
     let hasNextPage = true;
     let after: string | null = null;
