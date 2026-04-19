@@ -17,12 +17,13 @@ export const verifyWebhookRequest = async (
     const result = await authenticate.webhook(request);
     return { result };
   } catch (error) {
-    if (error instanceof Response) {
-      if (error.status === 401 || error.status === 400) {
-        return { response: new Response("Unauthorized", { status: 401 }) };
-      }
-    }
-    throw error;
+    // Shopify's "Verifies webhooks with HMAC signatures" automated check sends a
+    // POST with a deliberately invalid HMAC and expects a 401. Any non-401 (500,
+    // 403, etc.) fails the check. Treat every auth failure as 401 so we never
+    // leak a 500 through the HMAC path.
+    const status = error instanceof Response ? error.status : "n/a";
+    console.warn(`[webhooks] auth FAILED status=${status}`, error);
+    return { response: new Response("Unauthorized", { status: 401 }) };
   }
 };
 
