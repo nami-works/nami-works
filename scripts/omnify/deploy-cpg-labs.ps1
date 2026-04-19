@@ -6,7 +6,17 @@ param(
   [string]$ShopifyAppUrl = "https://omnify.cpg-labs.io/full",
   [string]$Cluster = "cpg-labs",
   [string]$Service = "omnify-gebeauty-service",
-  [string]$TaskFamily = "omnify-gebeauty-task"
+  [string]$TaskFamily = "omnify-gebeauty-task",
+  # BASE_PATH is baked into the client bundle by `npm run build` inside the
+  # Dockerfile. Docker layer caching can silently reuse a build from a prior
+  # invocation with a different BASE_PATH, producing a <Router basename="..."/>
+  # that doesn't match the ALB path -> ALB 404s the health check -> ECS
+  # crash-loops the task. Default to --no-cache on gebeauty builds to
+  # eliminate this class of failure.
+  [bool]$NoCache = $true,
+  # External URL hit after deploy to verify the ALB sees a 200 from the app.
+  # Must resolve to the same target as $Service.
+  [string]$HealthCheckUrl = "https://omnify.cpg-labs.io/full/health"
 )
 
 $ErrorActionPreference = "Stop"
@@ -131,12 +141,17 @@ try {
   }
   if ($LASTEXITCODE -ne 0) { throw "ECR login failed. Aborting deploy." }
 
-  Write-Host "Building image with BASE_PATH=$BasePath..."
+  $cacheFlag = if ($NoCache) { "--no-cache" } else { "" }
+  Write-Host "Building image with BASE_PATH=$BasePath NoCache=$NoCache..."
   for ($attempt = 1; $attempt -le 2; $attempt++) {
     if ($attempt -gt 1) {
       Write-Host "Retrying docker build (attempt $attempt)..."
     }
-    docker build --build-arg BASE_PATH=$BasePath -t "${Repository}:${Tag}" .
+    if ($NoCache) {
+      docker build --no-cache --build-arg BASE_PATH=$BasePath -t "${Repository}:${Tag}" .
+    } else {
+      docker build --build-arg BASE_PATH=$BasePath -t "${Repository}:${Tag}" .
+    }
     if ($LASTEXITCODE -eq 0) { break }
     Write-Host "Docker build failed. Attempting to pull base image and retry..."
     docker pull node:20-alpine | Out-Null
@@ -181,6 +196,41 @@ if url:
     env['SHOPIFY_APP_URL'] = {'name': 'SHOPIFY_APP_URL', 'value': url}
 env['APP_IDENTITY'] = {'name': 'APP_IDENTITY', 'value': 'cpg-labs'}
 cd['environment'] = list(env.values())
+
+# Reconcile secrets[] from /omnify/* SSM params (single source of truth).
+# Prevents drift when Terraform adds a new SSM-backed secret: the script's
+# old behavior was to copy the previous revision's secrets verbatim, so new
+# params never landed in subsequent deploys.
+#
+# Two services share the /omnify/* SSM namespace:
+#   - omnify-service          -> /omnify/SHOPIFY_API_KEY / SHOPIFY_API_SECRET
+#   - omnify-gebeauty-service -> /omnify/GEBEAUTY_SHOPIFY_API_KEY / _SECRET,
+#     surfaced to the container as env SHOPIFY_API_KEY / SHOPIFY_API_SECRET.
+#
+# This script deploys gebeauty, so: skip the /omnify/SHOPIFY_* params (belong
+# to the other service) and strip the GEBEAUTY_ prefix off env names.
+region = os.environ['OMNIFY_REGION']
+ssm_prefix = '/omnify/'
+acct = json.loads(subprocess.check_output(
+    ['aws', 'sts', 'get-caller-identity', '--output', 'json'], text=True))['Account']
+ssm_resp = json.loads(subprocess.check_output([
+    'aws', 'ssm', 'describe-parameters',
+    '--parameter-filters', f'Key=Name,Option=BeginsWith,Values={ssm_prefix}',
+    '--region', region, '--output', 'json',
+], text=True))
+secrets_by_name = {}
+for p in ssm_resp.get('Parameters', []):
+    name = p['Name']
+    rel = name[len(ssm_prefix):]
+    if rel == 'SHOPIFY_API_KEY' or rel == 'SHOPIFY_API_SECRET':
+        continue
+    env_name = rel[len('GEBEAUTY_'):] if rel.startswith('GEBEAUTY_') else rel
+    secrets_by_name[env_name] = {
+        'name': env_name,
+        'valueFrom': f'arn:aws:ssm:{region}:{acct}:parameter{name}',
+    }
+cd['secrets'] = list(secrets_by_name.values())
+
 with open(os.environ['OMNIFY_TMP_JSON'], 'w', encoding='utf-8') as f:
     f.write(json.dumps(td))
 '@
@@ -196,6 +246,32 @@ with open(os.environ['OMNIFY_TMP_JSON'], 'w', encoding='utf-8') as f:
   $readyStatus = aws ecs describe-services --cluster $Cluster --services $Service --region $Region --query $readyQuery --output table
   Write-Host "Deployment readiness:"
   Write-Host $readyStatus
+
+  # Post-deploy smoke test. Hits the external health check URL and fails if it
+  # isn't 200 — catches BASE_PATH / basename mismatches BEFORE we declare
+  # success. Retries briefly to absorb ALB target registration latency.
+  if ($HealthCheckUrl) {
+    Write-Host "Smoke testing $HealthCheckUrl ..."
+    $ok = $false
+    for ($i = 1; $i -le 10; $i++) {
+      try {
+        $resp = Invoke-WebRequest -Uri $HealthCheckUrl -UseBasicParsing -TimeoutSec 10 -MaximumRedirection 0 -ErrorAction Stop
+        if ($resp.StatusCode -eq 200) {
+          Write-Host "  attempt $i -> 200 OK"
+          $ok = $true
+          break
+        }
+        Write-Host "  attempt $i -> $($resp.StatusCode)"
+      } catch {
+        Write-Host "  attempt $i -> $($_.Exception.Message)"
+      }
+      Start-Sleep -Seconds 6
+    }
+    if (-not $ok) {
+      throw "Smoke test FAILED: $HealthCheckUrl did not return 200 after 10 attempts. The ALB will crash-loop this task. Roll back or investigate BASE_PATH/basename."
+    }
+    Write-Host "Smoke test passed."
+  }
 
   Cleanup-StaleTargets -ClusterName $Cluster -ServiceName $Service -RegionName $Region
 } finally {
