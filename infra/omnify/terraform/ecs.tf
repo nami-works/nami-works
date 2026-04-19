@@ -93,7 +93,10 @@ resource "aws_ecs_task_definition" "app" {
             { name = "GOOGLE_MAPS_MAP_ID", value = var.google_maps_map_id }
           ],
           var.app_encryption_key != "" ? [{ name = "APP_ENCRYPTION_KEY", value = var.app_encryption_key }] : [],
-          var.anthropic_api_key != "" ? [{ name = "ANTHROPIC_API_KEY", value = var.anthropic_api_key }] : []
+          var.anthropic_api_key != "" ? [{ name = "ANTHROPIC_API_KEY", value = var.anthropic_api_key }] : [],
+          var.enable_delivery_cron && var.cron_secret != "" ? [{ name = "CRON_SECRET", value = var.cron_secret }] : [],
+          var.enable_claude_control && var.claude_control_token != "" ? [{ name = "CLAUDE_CONTROL_TOKEN", value = var.claude_control_token }] : [],
+          var.enable_claude_control && var.claude_control_shop != "" ? [{ name = "CLAUDE_CONTROL_SHOP", value = var.claude_control_shop }] : []
         )
       )
       secrets = var.create_ssm ? concat(
@@ -105,7 +108,10 @@ resource "aws_ecs_task_definition" "app" {
           { name = "GOOGLE_MAPS_MAP_ID", valueFrom = aws_ssm_parameter.google_maps_map_id[0].arn }
         ],
         var.app_encryption_key != "" ? [{ name = "APP_ENCRYPTION_KEY", valueFrom = aws_ssm_parameter.app_encryption_key[0].arn }] : [],
-        var.anthropic_api_key != "" ? [{ name = "ANTHROPIC_API_KEY", valueFrom = aws_ssm_parameter.anthropic_api_key[0].arn }] : []
+        var.anthropic_api_key != "" ? [{ name = "ANTHROPIC_API_KEY", valueFrom = aws_ssm_parameter.anthropic_api_key[0].arn }] : [],
+        var.enable_delivery_cron && var.cron_secret != "" ? [{ name = "CRON_SECRET", valueFrom = aws_ssm_parameter.cron_secret[0].arn }] : [],
+        var.enable_claude_control && var.claude_control_token != "" ? [{ name = "CLAUDE_CONTROL_TOKEN", valueFrom = aws_ssm_parameter.claude_control_token[0].arn }] : [],
+        var.enable_claude_control && var.claude_control_shop != "" ? [{ name = "CLAUDE_CONTROL_SHOP", valueFrom = aws_ssm_parameter.claude_control_shop[0].arn }] : []
       ) : []
       logConfiguration = {
         logDriver = "awslogs"
@@ -117,6 +123,13 @@ resource "aws_ecs_task_definition" "app" {
       }
     }
   ])
+
+  # Deploy script (`scripts/deploy-omnify.ps1`) owns image rollouts. See the
+  # equivalent comment in gebeauty.tf for the full rationale and the
+  # `terraform apply -replace=...` recipe for schema changes.
+  lifecycle {
+    ignore_changes = [container_definitions]
+  }
 }
 
 resource "aws_ecs_service" "app" {

@@ -50,6 +50,7 @@ npx prisma migrate dev  # Create/apply migrations
 - **Deploy:** `scripts/deploy-cpg-labs.ps1` (CPG Labs) or `scripts/deploy-omnify.ps1` (Omnify)
 - **Shopify scopes (CPG Labs):** `shopify app deploy --config shopify.app.cpg-labs.toml`
 - **Shopify scopes (Omnify):** `shopify app deploy --config shopify.app.omnify.toml`
+- **Task-def image is owned by the deploy script, not terraform.** Both `aws_ecs_task_definition.app` and `aws_ecs_task_definition.gebeauty` carry `lifecycle { ignore_changes = [container_definitions] }` so a `terraform apply` never silently reverts the running image. When schema-level fields change (env vars, secrets, cpu, memory), force the update with `terraform apply -replace=aws_ecs_task_definition.gebeauty[0]` (or `.app[0]`). Without `-replace`, terraform sees no drift and the new env var won't reach the running task.
 
 ### Environment Variables
 - `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET`, `SHOPIFY_APP_URL`

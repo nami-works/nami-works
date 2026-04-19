@@ -172,8 +172,8 @@ variable "shopify_api_secret_gebeauty" {
 
 variable "image_tag_gebeauty" {
   type        = string
-  description = "Docker image tag for the gebeauty service (must be built with BASE_PATH=/full)."
-  default     = "full-v3"
+  description = "Initial Docker image tag for gebeauty task def (only applied on first create — `lifecycle { ignore_changes = [container_definitions] }` prevents terraform from reverting deploy-script-registered images on subsequent applies). Real image is managed by scripts/deploy-cpg-labs.ps1."
+  default     = "managed-by-deploy-script"
 }
 
 # Lalamove credential encryption (required for per-shop credential storage)

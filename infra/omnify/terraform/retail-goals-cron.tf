@@ -32,14 +32,10 @@ variable "enable_retail_goals_cron" {
   default     = false
 }
 
-variable "cron_secret_arn" {
-  description = "ARN of the AWS Secrets Manager secret holding CRON_SECRET. Required when enable_retail_goals_cron = true."
-  type        = string
-  default     = ""
-}
+# `var.cron_secret` is shared with delivery-cron.tf (declared there).
 
 variable "app_base_url" {
-  description = "Public base URL of the Omnify app (used for cron target URL)."
+  description = "Public base URL of the Omnify app (used for cron target URLs). Shared across all cron modules."
   type        = string
   default     = "https://omnify.cpg-labs.io"
 }
@@ -59,7 +55,7 @@ resource "aws_cloudwatch_event_connection" "retail_goals_cron" {
   auth_parameters {
     api_key {
       key   = "X-Cron-Secret"
-      value = var.cron_secret_arn
+      value = var.cron_secret
     }
   }
 }
@@ -69,7 +65,7 @@ resource "aws_cloudwatch_event_api_destination" "retail_goals_cron" {
 
   name                             = "retail-goals-cron-destination"
   description                      = "HTTPS target for the Retail Goals hourly reconciliation cron."
-  invocation_endpoint              = "${var.app_base_url}/api/cron/retail-goals-sync"
+  invocation_endpoint              = "${var.app_base_url}/full/api/cron/retail-goals-sync"
   http_method                      = "GET"
   invocation_rate_limit_per_second = 1
   connection_arn                   = aws_cloudwatch_event_connection.retail_goals_cron[0].arn
