@@ -2665,7 +2665,7 @@ export default function AffiliatesPage() {
         )}
 
         {/* ── Attribution queue tab ── */}
-        {activeTab === "attribution" && (
+        {activeTab === "attribution" && attributionMeta && (
           <AttributionQueue
             shop={shop}
             meta={attributionMeta}

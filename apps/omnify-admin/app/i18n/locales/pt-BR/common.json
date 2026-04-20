@@ -25,6 +25,9 @@
     "saving": "Salvando...",
     "saved": "Salvo com sucesso"
   },
+  "loading": {
+    "appUpdatingSuffix": "está carregando"
+  },
   "label": {
     "location": "Localização",
     "date": "Data",

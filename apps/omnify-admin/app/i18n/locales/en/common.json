@@ -25,6 +25,9 @@
     "saving": "Saving...",
     "saved": "Saved successfully"
   },
+  "loading": {
+    "appUpdatingSuffix": "is updating"
+  },
   "label": {
     "location": "Location",
     "date": "Date",

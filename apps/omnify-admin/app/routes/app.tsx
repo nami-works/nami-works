@@ -11,7 +11,7 @@ import {
   normalizeLocale,
   type SupportedLocale,
 } from "../i18n/config";
-import { getAppIdentity, getNavItems } from "../utils/app-identity.server";
+import { getAppDisplayName, getAppIdentity, getNavItems } from "../utils/app-identity.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
@@ -20,14 +20,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   );
   const basePath = process.env.BASE_PATH || "";
   const appIdentity = getAppIdentity();
+  const appDisplayName = getAppDisplayName(appIdentity);
   const navItems = getNavItems();
 
   // eslint-disable-next-line no-undef
-  return { apiKey: process.env.SHOPIFY_API_KEY || "", basePath, locale, appIdentity, navItems };
+  return { apiKey: process.env.SHOPIFY_API_KEY || "", basePath, locale, appIdentity, appDisplayName, navItems };
 };
 
 export default function App() {
-  const { apiKey, locale, navItems, basePath } = useLoaderData<typeof loader>();
+  const { apiKey, locale, navItems, basePath, appDisplayName } = useLoaderData<typeof loader>();
   const logoSrc = `${basePath}/cpg-labs_box.png`.replace(/\/+/g, "/");
   const navigation = useNavigation();
   const isPageNavigation = navigation.state === "loading" && !!navigation.location;
@@ -99,6 +100,20 @@ export default function App() {
                 }}
               />
             </div>
+            <div
+              style={{
+                fontSize: 13,
+                color: "#6d7175",
+                fontWeight: 400,
+                letterSpacing: 0.1,
+                textAlign: "center",
+              }}
+            >
+              <span style={{ color: "#303030", fontWeight: 500 }}>
+                {appDisplayName}
+              </span>{" "}
+              {t("common:loading.appUpdatingSuffix")}
+            </div>
             <style>{`
               @keyframes omnify-holo-bar {
                 0%   { background-position: 100% 0; }
@@ -109,7 +124,12 @@ export default function App() {
         )}
         <s-app-nav>
           {navItems.map((item: { href: string; labelKey: string }) => (
-            <s-link key={item.href} href={item.href}>{t(item.labelKey)}</s-link>
+            <s-link
+              key={item.href}
+              href={`${basePath}${item.href}`.replace(/\/+/g, "/")}
+            >
+              {t(item.labelKey)}
+            </s-link>
           ))}
         </s-app-nav>
         <div style={showOverlay ? { visibility: "hidden" } : undefined}>

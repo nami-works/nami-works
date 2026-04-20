@@ -6,6 +6,17 @@ export function getAppIdentity(): AppIdentity {
   return "cpg-labs";
 }
 
+const APP_DISPLAY_NAMES: Record<AppIdentity, string> = {
+  "cpg-labs": "CPG Labs",
+  omnify: "Omnify",
+  storytelling: "Storytelling",
+  storefront: "Storefront",
+};
+
+export function getAppDisplayName(identity: AppIdentity = getAppIdentity()): string {
+  return APP_DISPLAY_NAMES[identity];
+}
+
 /**
  * Route prefixes each identity is allowed to serve.
  * CPG Labs serves everything; focused apps serve only their domain.
