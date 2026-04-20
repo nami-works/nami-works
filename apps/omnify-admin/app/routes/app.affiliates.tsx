@@ -1764,18 +1764,20 @@ export default function AffiliatesPage() {
             onClick={() => setActiveTab("attribution")}
           >
             {t("tab.attributionQueue", "Attribution queue")}
-            {attributionMeta.claimedPendingCount +
-              attributionMeta.forgottenCount >
+            {(attributionMeta?.claimedPendingCount ?? 0) +
+              (attributionMeta?.forgottenCount ?? 0) >
               0 && (
               <>
                 {" "}
                 <s-badge
                   tone={
-                    attributionMeta.forgottenCount > 0 ? "warning" : "info"
+                    (attributionMeta?.forgottenCount ?? 0) > 0
+                      ? "warning"
+                      : "info"
                   }
                 >
-                  {attributionMeta.claimedPendingCount +
-                    attributionMeta.forgottenCount}
+                  {(attributionMeta?.claimedPendingCount ?? 0) +
+                    (attributionMeta?.forgottenCount ?? 0)}
                 </s-badge>
               </>
             )}
