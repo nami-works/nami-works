@@ -27,6 +27,21 @@ variable "enable_delivery_cron" {
   default     = false
 }
 
+# When Claude Code is driving the pipeline via /api/control/*, the auto-delivery
+# cron creates concurrent PendingDeliveryRoute suggestions that conflict with
+# Claude's clustering. Flip this to false to disable just the auto-delivery
+# cron while keeping the watchdog running (stuck-driver retry is still useful
+# regardless of who drove the dispatch).
+variable "enable_auto_delivery_cron" {
+  description = "Whether the auto-delivery cron (Phase A auto-assign + Phase B auto-dispatch) runs. Disable when Claude drives the pipeline."
+  type        = bool
+  default     = true
+}
+
+locals {
+  auto_delivery_cron_enabled = var.enable_delivery_cron && var.enable_auto_delivery_cron
+}
+
 variable "cron_secret" {
   description = "Shared secret for cron endpoint authentication (X-Cron-Secret header). Must match CRON_SECRET env var in ECS."
   type        = string
@@ -64,7 +79,7 @@ resource "aws_cloudwatch_event_connection" "delivery_cron" {
 # ── Auto-delivery (every 5 minutes) ───────────────────────────────────────
 
 resource "aws_cloudwatch_event_api_destination" "auto_delivery" {
-  count = var.enable_delivery_cron ? 1 : 0
+  count = local.auto_delivery_cron_enabled ? 1 : 0
 
   name                             = "auto-delivery-cron-destination"
   description                      = "HTTPS target for auto-delivery cron (assign + dispatch)."
@@ -75,7 +90,7 @@ resource "aws_cloudwatch_event_api_destination" "auto_delivery" {
 }
 
 resource "aws_cloudwatch_event_rule" "auto_delivery" {
-  count = var.enable_delivery_cron ? 1 : 0
+  count = local.auto_delivery_cron_enabled ? 1 : 0
 
   name                = "auto-delivery-cron-5min"
   description         = "Fires auto-delivery cron every 5 minutes."
@@ -83,7 +98,7 @@ resource "aws_cloudwatch_event_rule" "auto_delivery" {
 }
 
 resource "aws_cloudwatch_event_target" "auto_delivery" {
-  count = var.enable_delivery_cron ? 1 : 0
+  count = local.auto_delivery_cron_enabled ? 1 : 0
 
   rule      = aws_cloudwatch_event_rule.auto_delivery[0].name
   target_id = "auto-delivery-cron-http"
