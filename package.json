@@ -1,0 +1,43 @@
+{
+  "name": "nami-works-gateway",
+  "version": "0.1.0",
+  "description": "NAMI Works MCP gateway — curated Shopify + Omie tools for managed-service tenants",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ssm": "^3.700.0",
+    "@fastify/sensible": "^6.0.2",
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "@prisma/client": "^6.1.0",
+    "@shopify/admin-api-client": "^1.0.8",
+    "fastify": "^5.2.0",
+    "pino": "^9.5.0",
+    "pino-pretty": "^13.0.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.0",
+    "prisma": "^6.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.19.0",
+    "vitest": "^2.1.8"
+  }
+}
