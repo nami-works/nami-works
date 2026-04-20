@@ -3,6 +3,8 @@ import sensible from "@fastify/sensible";
 import Fastify, { type FastifyBaseLogger } from "fastify";
 import { rootLogger } from "./lib/logger.js";
 import { mountTenantRoute } from "./mcp/transport.js";
+// Side-effect import: registers every tool in the catalog at boot.
+import "./tools/index.js";
 
 const isDev = process.env.NODE_ENV === "development";
 
