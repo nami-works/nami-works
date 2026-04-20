@@ -124,6 +124,9 @@ class Control:
             "notifyCustomer": notify_customer,
         })
 
+    def check_dispatches(self):
+        return self._request("POST", "/api/control/check-dispatches", {})
+
     def quote(self, location_id, routes):
         """routes: list of lists of order gids. Each inner list is one route to price-check."""
         return self._request("POST", "/api/control/quote", {
@@ -174,6 +177,8 @@ def main():
     p_md.add_argument("--skip-shopify-fulfillment", action="store_true", help="Do NOT create a Shopify fulfillment (default: creates one, flipping order status to Fulfilled)")
     p_md.add_argument("--notify-customer", action="store_true", help="Trigger Shopify's customer notification email when fulfilling (default: off)")
 
+    p_cd = sub.add_parser("check-dispatches", help="Poll driver GPS on all in-flight dispatches; flag drivers not approaching the pickup (suggests reorder after 3 consecutive non-approach samples)")
+
     p_qt = sub.add_parser("quote", help="Price-check one or more route compositions without placing an order")
     p_qt.add_argument("--location", required=True, help="Location gid")
     p_qt.add_argument("--route", action="append", required=True,
@@ -210,6 +215,8 @@ def main():
         )
     elif args.cmd == "mark-all-today":
         result = ctrl.mark_all_today(args.location, notify_customer=args.notify_customer)
+    elif args.cmd == "check-dispatches":
+        result = ctrl.check_dispatches()
     elif args.cmd == "quote":
         routes = [[oid.strip() for oid in r.split(",") if oid.strip()] for r in args.route]
         result = ctrl.quote(args.location, routes)

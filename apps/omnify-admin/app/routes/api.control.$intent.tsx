@@ -13,6 +13,9 @@
  *   POST /api/control/unassign   body: {routeTag, orderIds[], locationId}
  *   POST /api/control/dispatch   body: {routeIndex, locationId}
  *   POST /api/control/quote      body: {locationId, routes:[{orderIds:string[]}]}
+ *   POST /api/control/check-dispatches   body: {} — polls live driver location
+ *       for every in-flight dispatch and returns approach-to-pickup telemetry +
+ *       reorder suggestions when a driver has stalled.
  */
 
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
@@ -32,6 +35,7 @@ import {
   normalizePhoneForMarket,
   cancelLalamoveOrder,
   getLalamoveOrderDetails,
+  getLalamoveDriverDetails,
 } from "../services/lalamove.server";
 import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
 import { clusterOrders } from "../services/carrier-quotation-optimizer.server";
@@ -126,7 +130,9 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
       if (scoped.length > 0) ordersBySlot.set(slot, scoped);
     }
 
-    // Active Lalamove dispatches for this location
+    // Active Lalamove dispatches for this location.
+    // Multiple jobs can share a slot across days (cron's rota-01 + Claude's
+    // rota-01 the next day); keep only the most recent per slot.
     const activeDispatchesRaw = await (prisma as any).lalamoveDispatchJob.findMany({
       where: {
         shop: auth.shop,
@@ -134,12 +140,15 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         status: { notIn: Array.from(TERMINAL_DISPATCH_STATUSES) },
       },
       select: { routeId: true, status: true, lalamoveOrderId: true, market: true, requestedAt: true },
+      orderBy: { requestedAt: "desc" },
     });
     const dispatchBySlot = new Map<number, any>();
     for (const d of activeDispatchesRaw as Array<any>) {
       const suffix = String(d.routeId).slice(locationGid.length + 1);
       const idx = Number.parseInt(suffix, 10);
-      if (Number.isFinite(idx) && idx >= 0) dispatchBySlot.set(idx, d);
+      if (Number.isFinite(idx) && idx >= 0 && !dispatchBySlot.has(idx)) {
+        dispatchBySlot.set(idx, d);
+      }
     }
 
     // Live refresh: for each active dispatch, fetch fresh status from Lalamove.
@@ -321,6 +330,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       return handleMarkAllToday(auth.shop, body);
     case "quote":
       return handleQuote(auth.shop, body);
+    case "check-dispatches":
+      return handleCheckDispatches(auth.shop, body);
     default:
       return jsonResponse(
         { ok: false, error: `Unknown or not-yet-implemented POST intent: ${intent}` },
@@ -1179,8 +1190,17 @@ async function handleMarkDelivered(shop: string, body: Record<string, unknown>):
     });
     const orderIds = (orderMaps as Array<{ shopifyOrderId: string }>).map((m) => m.shopifyOrderId);
 
-    const now = new Date();
-    const dateStr = `${String(now.getFullYear()).slice(-2)}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(now.getDate()).padStart(2, "0")}`;
+    // Archive tag reflects the dispatch/delivery date (job.requestedAt) in
+    // Brazil local time, not the date mark-delivered was called. Otherwise
+    // an end-of-day sweep that crosses UTC midnight tags with the wrong day.
+    const isoBrt = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/Sao_Paulo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(job.requestedAt));
+    const [yy, mm, dd] = isoBrt.split("-");
+    const dateStr = `${yy!.slice(-2)}.${mm}.${dd}`;
 
     const { admin } = await unauthenticated.admin(shop);
     const archiveResults = await Promise.allSettled(
@@ -1377,6 +1397,254 @@ async function handleMarkDelivered(shop: string, body: Record<string, unknown>):
 // /v3/quotations endpoint; no DB writes.
 // Body: { locationId, routes: [{ orderIds: string[] }, ...] }
 // ──────────────────────────────────────────────────────────────────────
+
+// ──────────────────────────────────────────────────────────────────────
+// POST /api/control/check-dispatches — poll driver GPS for every in-flight
+// dispatch and flag drivers that aren't approaching the pickup.
+//
+// Rule (4-min cadence, 12-min timeout, matched 4-min grace):
+//   - Only evaluates routes in ON_GOING (driver assigned, pre-pickup)
+//   - Grace window of 4 min from dispatch requestedAt — no strikes
+//   - Arrival zone ≤300 m from pickup — no strikes (driver parking/hunting)
+//   - Each poll: haversine distance(driver → pickup)
+//       · distance decreased → approachFailCount = 0
+//       · distance same/grew → approachFailCount += 1
+//   - approachFailCount ≥ 3 → suggested: "reorder"
+// Returns per-dispatch telemetry; caller decides whether to fire reorder.
+// ──────────────────────────────────────────────────────────────────────
+
+const APPROACH_STRIKE_LIMIT = 3;
+const APPROACH_ARRIVAL_RADIUS_M = 300;
+const APPROACH_GRACE_MINUTES = 4;
+
+function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371000;
+  const toRad = (x: number) => (x * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+async function handleCheckDispatches(shop: string, _body: Record<string, unknown>): Promise<Response> {
+  const prismaAny = prisma as any;
+  const credentials = await getRuntimeCredentialsForShop(shop);
+  if (!credentials) {
+    return jsonResponse({ ok: false, error: "Missing Lalamove credentials." }, 400);
+  }
+
+  console.info(`[control] check-dispatches START shop=${shop}`);
+  const start = Date.now();
+
+  try {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const jobs = await prismaAny.lalamoveDispatchJob.findMany({
+      where: {
+        shop,
+        requestedAt: { gte: since },
+        status: { notIn: Array.from(TERMINAL_DISPATCH_STATUSES) },
+        lalamoveOrderId: { not: null },
+      },
+      orderBy: { requestedAt: "desc" },
+    });
+
+    // Load all relevant LalamoveLocationConfig rows once (pickup coords)
+    const uniqueLocations = Array.from(new Set((jobs as Array<any>).map((j) => j.locationId)));
+    const configByLocation = new Map<string, any>();
+    for (const locId of uniqueLocations) {
+      const cfg = await prisma.lalamoveLocationConfig.findUnique({
+        where: { shop_locationId: { shop, locationId: locId } },
+      });
+      if (cfg) configByLocation.set(locId, cfg.data);
+    }
+
+    const results: Array<Record<string, unknown>> = [];
+
+    for (const job of jobs as Array<any>) {
+      let liveStatus = job.status;
+      let driverId: string | undefined;
+
+      try {
+        const orderDetails = await getLalamoveOrderDetails(job.market, job.lalamoveOrderId, credentials);
+        liveStatus = orderDetails.status ?? job.status;
+        driverId = orderDetails.driverId;
+        if (liveStatus !== job.status) {
+          await prismaAny.lalamoveDispatchJob.updateMany({
+            where: { shop, lalamoveOrderId: job.lalamoveOrderId },
+            data: { status: liveStatus },
+          });
+        }
+      } catch (err) {
+        results.push({
+          routeId: job.routeId,
+          lalamoveOrderId: job.lalamoveOrderId,
+          ok: false,
+          note: `order fetch failed: ${err instanceof Error ? err.message : String(err)}`,
+        });
+        continue;
+      }
+
+      if (liveStatus !== "ON_GOING" || !driverId) {
+        results.push({
+          routeId: job.routeId,
+          lalamoveOrderId: job.lalamoveOrderId,
+          status: liveStatus,
+          ok: true,
+          note: "rule inactive (not ON_GOING with driver)",
+        });
+        continue;
+      }
+
+      const cfg = configByLocation.get(job.locationId) as any;
+      const pickupLat = cfg?.pickupLat;
+      const pickupLng = cfg?.pickupLng;
+      if (pickupLat == null || pickupLng == null) {
+        results.push({
+          routeId: job.routeId,
+          lalamoveOrderId: job.lalamoveOrderId,
+          status: liveStatus,
+          ok: false,
+          note: "missing pickup coords on location config",
+        });
+        continue;
+      }
+
+      let driverDetails: Awaited<ReturnType<typeof getLalamoveDriverDetails>>;
+      try {
+        driverDetails = await getLalamoveDriverDetails(job.market, job.lalamoveOrderId, driverId, credentials);
+      } catch (err) {
+        results.push({
+          routeId: job.routeId,
+          lalamoveOrderId: job.lalamoveOrderId,
+          status: liveStatus,
+          driverId,
+          ok: false,
+          note: `driver details fetch failed: ${err instanceof Error ? err.message : String(err)}`,
+        });
+        continue;
+      }
+
+      const dLat = parseFloat(driverDetails.coordinates?.lat ?? "NaN");
+      const dLng = parseFloat(driverDetails.coordinates?.lng ?? "NaN");
+      if (!Number.isFinite(dLat) || !Number.isFinite(dLng)) {
+        results.push({
+          routeId: job.routeId,
+          lalamoveOrderId: job.lalamoveOrderId,
+          status: liveStatus,
+          driverId,
+          ok: false,
+          note: "driver coordinates unavailable from Lalamove",
+        });
+        continue;
+      }
+
+      const distanceM = haversineMeters(dLat, dLng, Number(pickupLat), Number(pickupLng));
+      const minutesSinceRequested = (Date.now() - new Date(job.requestedAt).getTime()) / 60000;
+      const inGrace = minutesSinceRequested < APPROACH_GRACE_MINUTES;
+
+      // Arrival zone — don't strike
+      if (distanceM <= APPROACH_ARRIVAL_RADIUS_M) {
+        await prismaAny.lalamoveDispatchJob.updateMany({
+          where: { shop, lalamoveOrderId: job.lalamoveOrderId },
+          data: {
+            lastDriverLat: dLat,
+            lastDriverLng: dLng,
+            lastDriverSampledAt: new Date(),
+            lastDistanceToPickupM: distanceM,
+            approachFailCount: 0,
+          },
+        });
+        results.push({
+          routeId: job.routeId,
+          lalamoveOrderId: job.lalamoveOrderId,
+          status: liveStatus,
+          driverId,
+          distanceM: Math.round(distanceM),
+          approachFailCount: 0,
+          ok: true,
+          note: "arrival zone",
+        });
+        continue;
+      }
+
+      // First sample — record without strike
+      if (job.lastDistanceToPickupM == null) {
+        await prismaAny.lalamoveDispatchJob.updateMany({
+          where: { shop, lalamoveOrderId: job.lalamoveOrderId },
+          data: {
+            lastDriverLat: dLat,
+            lastDriverLng: dLng,
+            lastDriverSampledAt: new Date(),
+            lastDistanceToPickupM: distanceM,
+            approachFailCount: 0,
+          },
+        });
+        results.push({
+          routeId: job.routeId,
+          lalamoveOrderId: job.lalamoveOrderId,
+          status: liveStatus,
+          driverId,
+          distanceM: Math.round(distanceM),
+          delta: null,
+          approachFailCount: 0,
+          ok: true,
+          note: "first sample",
+        });
+        continue;
+      }
+
+      const delta = distanceM - Number(job.lastDistanceToPickupM);
+      const approaching = delta < 0;
+      const newFailCount = approaching ? 0 : Number(job.approachFailCount ?? 0) + 1;
+
+      await prismaAny.lalamoveDispatchJob.updateMany({
+        where: { shop, lalamoveOrderId: job.lalamoveOrderId },
+        data: {
+          lastDriverLat: dLat,
+          lastDriverLng: dLng,
+          lastDriverSampledAt: new Date(),
+          lastDistanceToPickupM: distanceM,
+          approachFailCount: newFailCount,
+        },
+      });
+
+      const suggested = !inGrace && newFailCount >= APPROACH_STRIKE_LIMIT ? "reorder" : null;
+
+      results.push({
+        routeId: job.routeId,
+        lalamoveOrderId: job.lalamoveOrderId,
+        status: liveStatus,
+        driverId,
+        distanceM: Math.round(distanceM),
+        deltaM: Math.round(delta),
+        approachFailCount: newFailCount,
+        inGrace,
+        suggested,
+        ok: true,
+      });
+    }
+
+    const elapsed = Date.now() - start;
+    console.info(
+      `[control] check-dispatches OK shop=${shop} checked=${results.length} suggestions=${results.filter((r) => r.suggested).length} elapsed=${elapsed}ms`,
+    );
+
+    return jsonResponse({
+      ok: true,
+      checkedAt: new Date().toISOString(),
+      dispatches: results,
+      elapsedMs: elapsed,
+    });
+  } catch (err) {
+    console.error(`[control] check-dispatches FAILED shop=${shop}`, err);
+    return jsonResponse(
+      { ok: false, error: err instanceof Error ? err.message : "check-dispatches failed" },
+      500,
+    );
+  }
+}
 
 async function handleQuote(shop: string, body: Record<string, unknown>): Promise<Response> {
   const locationIdRaw = typeof body.locationId === "string" ? body.locationId : null;

@@ -498,6 +498,32 @@ export const getLalamoveOrderDetails = async (
   );
 };
 
+export type LalamoveDriverDetailsResponse = {
+  driverId?: string;
+  name?: string;
+  phone?: string;
+  plateNumber?: string;
+  photo?: string;
+  coordinates?: { lat?: string; lng?: string; updatedAt?: string };
+};
+
+export const getLalamoveDriverDetails = async (
+  market: string,
+  orderId: string,
+  driverId: string,
+  credentials?: LalamoveCredentials,
+) => {
+  const safeOrderId = encodeURIComponent(orderId);
+  const safeDriverId = encodeURIComponent(driverId);
+  return lalamoveRequest<LalamoveDriverDetailsResponse>(
+    "GET",
+    market,
+    `/v3/orders/${safeOrderId}/drivers/${safeDriverId}`,
+    undefined,
+    credentials,
+  );
+};
+
 export const cancelLalamoveOrder = async (
   market: string,
   orderId: string,
