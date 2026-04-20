@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Brand {
+  cpg_labs @map("cpg-labs")
+}
+
+enum TenantStatus {
+  active
+  suspended
+  disabled
+}
+
+model IntegrationTenant {
+  id              String       @id @default(cuid())
+  slug            String       @unique
+  displayName     String
+  brand           Brand
+  shopifyShop     String?
+  bearerTokenHash String       @unique
+  ssmPrefix       String       @unique
+  status          TenantStatus @default(active)
+  contactEmail   String
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  invocations    ToolInvocationLog[]
+
+  @@index([status])
+}
+
+model ToolInvocationLog {
+  id         String            @id @default(cuid())
+  tenantId   String
+  toolName   String
+  status     String
+  durationMs Int
+  requestId  String
+  createdAt  DateTime          @default(now())
+  tenant     IntegrationTenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, createdAt])
+  @@index([requestId])
+}

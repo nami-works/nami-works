@@ -13,11 +13,12 @@
     "start": "node dist/server.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint src",
-    "typecheck": "tsc --noEmit",
+    "lint": "eslint src scripts",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:deploy": "prisma migrate deploy"
+    "prisma:deploy": "prisma migrate deploy",
+    "provision-tenant": "tsx scripts/provision-tenant.ts"
   },
   "dependencies": {
     "@aws-sdk/client-ssm": "^3.700.0",
