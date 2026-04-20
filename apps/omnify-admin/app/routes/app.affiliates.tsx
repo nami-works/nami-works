@@ -33,6 +33,17 @@ import type { AffiliateOverviewStats } from "../affiliates/overview-stats.server
 import { KpiCard, type DrillDownKey } from "./app.affiliates/kpi-card";
 import { ProfilesList } from "./app.affiliates/profiles-list";
 import { ProfileDetail } from "./app.affiliates/profile-detail";
+import { AttributionQueue } from "./app.affiliates/attribution-queue";
+import type { AttributionTabLoaderData } from "../affiliates/attribution.server";
+import {
+  buildAttributionQueueSnapshot,
+  createAttributionClaim,
+  deleteAttributionClaim,
+  importPedidosCsv,
+  listForgottenClaims,
+  readAttributionTabLoaderData,
+  DEFAULT_LOOKBACK_DAYS,
+} from "../affiliates/attribution.server";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -48,6 +59,8 @@ type LoaderData = {
   syncTotalAffiliateOrders: number | null;
   syncLastSyncedAt: string | null;
   userLocale: string;
+  shop: string;
+  attribution: AttributionTabLoaderData;
 };
 
 type PeriodPreset =
@@ -246,9 +259,10 @@ export const loader = async ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userLocale = normalizeLocale((session as any).locale);
 
-  const [profiles, syncMeta] = await Promise.all([
+  const [profiles, syncMeta, attribution] = await Promise.all([
     readAffiliateProfiles(shop),
     readAffiliateSyncMeta(shop),
+    readAttributionTabLoaderData(shop),
   ]);
 
   const hasData =
@@ -278,6 +292,8 @@ export const loader = async ({
     syncTotalAffiliateOrders: syncMeta.totalAffiliateOrders,
     syncLastSyncedAt: syncMeta.lastSyncedAt,
     userLocale,
+    shop,
+    attribution,
   };
 };
 
@@ -415,6 +431,184 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
   }
 
+  if (intent === "attribution-fetch-queue") {
+    const lookbackRaw = Number.parseInt(
+      String(formData.get("lookbackDays") || DEFAULT_LOOKBACK_DAYS),
+      10,
+    );
+    const lookbackDays = Number.isFinite(lookbackRaw) && lookbackRaw > 0
+      ? Math.min(lookbackRaw, 365 * 2)
+      : DEFAULT_LOOKBACK_DAYS;
+    try {
+      const [snapshot, forgotten, tabMeta] = await Promise.all([
+        buildAttributionQueueSnapshot(admin, shop, { lookbackDays }),
+        listForgottenClaims(shop),
+        readAttributionTabLoaderData(shop),
+      ]);
+      return {
+        ok: true as const,
+        intent: "attribution-fetch-queue" as const,
+        snapshot,
+        forgotten,
+        tabMeta,
+      };
+    } catch (error) {
+      console.error(
+        `[affiliates] attribution-fetch-queue FAILED shop=${shop}`,
+        error,
+      );
+      return {
+        ok: false as const,
+        intent: "attribution-fetch-queue" as const,
+        error: String((error as Error)?.message ?? "Fetch failed"),
+      };
+    }
+  }
+
+  if (intent === "attribution-claim-order") {
+    const orderName = String(formData.get("orderName") || "").trim();
+    const couponCode = String(formData.get("couponCode") || "").trim();
+    if (!orderName || !couponCode) {
+      return {
+        ok: false as const,
+        intent: "attribution-claim-order" as const,
+        error: "Missing orderName or couponCode",
+      };
+    }
+    const orderGid = formData.get("orderGid")
+      ? String(formData.get("orderGid"))
+      : null;
+    const affiliateCode = formData.get("affiliateCode")
+      ? String(formData.get("affiliateCode"))
+      : null;
+    const affiliateEmail = formData.get("affiliateEmail")
+      ? String(formData.get("affiliateEmail"))
+      : null;
+    const subtotalRaw = formData.get("subtotal")
+      ? Number.parseFloat(String(formData.get("subtotal")))
+      : null;
+    const subtotal =
+      subtotalRaw != null && Number.isFinite(subtotalRaw) ? subtotalRaw : null;
+    const currencyCode = formData.get("currencyCode")
+      ? String(formData.get("currencyCode"))
+      : null;
+    const sourceName = formData.get("sourceName")
+      ? String(formData.get("sourceName"))
+      : null;
+    const orderDateRaw = formData.get("orderDate")
+      ? String(formData.get("orderDate"))
+      : null;
+    const orderDate = orderDateRaw ? new Date(orderDateRaw) : null;
+    const claimedBy =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ((session as any).onlineAccessInfo?.associated_user?.email as
+        | string
+        | undefined) ?? null;
+    try {
+      const result = await createAttributionClaim(shop, {
+        orderName,
+        orderGid,
+        couponCode,
+        affiliateCode,
+        affiliateEmail,
+        subtotal,
+        currencyCode,
+        sourceName,
+        orderDate: orderDate && !Number.isNaN(orderDate.getTime()) ? orderDate : null,
+        claimedBy,
+      });
+      return {
+        ok: true as const,
+        intent: "attribution-claim-order" as const,
+        claimId: result.id,
+        alreadyExisted: result.alreadyExisted,
+        orderName,
+      };
+    } catch (error) {
+      console.error(
+        `[affiliates] attribution-claim-order FAILED shop=${shop} order=${orderName}`,
+        error,
+      );
+      return {
+        ok: false as const,
+        intent: "attribution-claim-order" as const,
+        error: String((error as Error)?.message ?? "Claim failed"),
+      };
+    }
+  }
+
+  if (intent === "attribution-unclaim-order") {
+    const orderName = String(formData.get("orderName") || "").trim();
+    if (!orderName) {
+      return {
+        ok: false as const,
+        intent: "attribution-unclaim-order" as const,
+        error: "Missing orderName",
+      };
+    }
+    try {
+      const result = await deleteAttributionClaim(shop, orderName);
+      return {
+        ok: true as const,
+        intent: "attribution-unclaim-order" as const,
+        deleted: result.deleted,
+        orderName,
+      };
+    } catch (error) {
+      console.error(
+        `[affiliates] attribution-unclaim-order FAILED shop=${shop} order=${orderName}`,
+        error,
+      );
+      return {
+        ok: false as const,
+        intent: "attribution-unclaim-order" as const,
+        error: String((error as Error)?.message ?? "Unclaim failed"),
+      };
+    }
+  }
+
+  if (intent === "attribution-import-pedidos-csv") {
+    const csvText = String(formData.get("csvText") || "");
+    const fileName = formData.get("fileName")
+      ? String(formData.get("fileName"))
+      : null;
+    if (!csvText.trim()) {
+      return {
+        ok: false as const,
+        intent: "attribution-import-pedidos-csv" as const,
+        error: "No CSV data provided",
+      };
+    }
+    const importedBy =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ((session as any).onlineAccessInfo?.associated_user?.email as
+        | string
+        | undefined) ?? null;
+    try {
+      const result = await importPedidosCsv(shop, csvText, {
+        importedBy,
+        fileName,
+      });
+      const tabMeta = await readAttributionTabLoaderData(shop);
+      return {
+        ok: true as const,
+        intent: "attribution-import-pedidos-csv" as const,
+        result,
+        tabMeta,
+      };
+    } catch (error) {
+      console.error(
+        `[affiliates] attribution-import-pedidos-csv FAILED shop=${shop}`,
+        error,
+      );
+      return {
+        ok: false as const,
+        intent: "attribution-import-pedidos-csv" as const,
+        error: String((error as Error)?.message ?? "Import failed"),
+      };
+    }
+  }
+
   return { ok: false, error: "Unknown intent" };
 };
 
@@ -433,6 +627,8 @@ export default function AffiliatesPage() {
     syncTotalAffiliateOrders,
     syncLastSyncedAt,
     userLocale,
+    shop,
+    attribution: attributionMeta,
   } = useLoaderData<LoaderData>();
 
   void _syncStartedAt; // reserved for future elapsed-time display
@@ -450,7 +646,9 @@ export default function AffiliatesPage() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ─── State ──────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<"overview" | "profiles">("overview");
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "profiles" | "attribution"
+  >("overview");
   const [periodPreset, setPeriodPreset] = useState<PeriodPreset>("last_30d");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
@@ -1249,13 +1447,15 @@ export default function AffiliatesPage() {
 
       return (
         <div className={styles.vwaterfallCol}>
-          <div className={styles.vwaterfallTitle}>
-            {title}{" "}
-            <span className={styles.vwaterfallPct}>
-              {netPct.toFixed(1)}%
-            </span>
-          </div>
-          <div className={styles.waterfallChart}>
+          <s-box padding="base" borderWidth="base" borderRadius="base">
+            <div className={styles.vwaterfallColInner}>
+              <div className={styles.vwaterfallTitle}>
+                {title}{" "}
+                <span className={styles.vwaterfallPct}>
+                  {netPct.toFixed(1)}%
+                </span>
+              </div>
+              <div className={styles.waterfallChart}>
             {/* Gross: full-height reference bar at col 1 */}
             <div className={styles.waterfallCol}>
               <div className={styles.waterfallBarArea}>
@@ -1312,7 +1512,9 @@ export default function AffiliatesPage() {
                 {t("drill.netMargin", "Net margin")}
               </span>
             </div>
-          </div>
+              </div>
+            </div>
+          </s-box>
         </div>
       );
     };
@@ -1555,6 +1757,28 @@ export default function AffiliatesPage() {
             }}
           >
             {t("tab.affiliates", "Affiliates")}
+          </button>
+          <button
+            type="button"
+            className={`${styles.tab}${activeTab === "attribution" ? ` ${styles.tabActive}` : ""}`}
+            onClick={() => setActiveTab("attribution")}
+          >
+            {t("tab.attributionQueue", "Attribution queue")}
+            {attributionMeta.claimedPendingCount +
+              attributionMeta.forgottenCount >
+              0 && (
+              <>
+                {" "}
+                <s-badge
+                  tone={
+                    attributionMeta.forgottenCount > 0 ? "warning" : "info"
+                  }
+                >
+                  {attributionMeta.claimedPendingCount +
+                    attributionMeta.forgottenCount}
+                </s-badge>
+              </>
+            )}
           </button>
 
           {/* Badge + action buttons, pushed to far right */}
@@ -2179,6 +2403,8 @@ export default function AffiliatesPage() {
                 onDragLeave={handleCsvDragLeave}
                 onDrop={handleCsvDrop}
               >
+                <s-box padding="base" borderWidth="base" borderRadius="base">
+                  <div className={styles.onboardingStepInner}>
                 <div
                   className={
                     profiles.length > 0
@@ -2296,6 +2522,8 @@ export default function AffiliatesPage() {
                     {importResult.errors.join(", ")}
                   </s-banner>
                 )}
+                  </div>
+                </s-box>
               </div>
 
               {/* Step 2 — Sync */}
@@ -2306,6 +2534,8 @@ export default function AffiliatesPage() {
                     : styles.onboardingStep
                 }
               >
+                <s-box padding="base" borderWidth="base" borderRadius="base">
+                  <div className={styles.onboardingStepInner}>
                 <div className={styles.onboardingStepNumber}>2</div>
                 <div className={styles.onboardingStepTitle}>
                   {t("empty.step2Title", "Sync orders")}
@@ -2340,6 +2570,8 @@ export default function AffiliatesPage() {
                     </s-button>
                   )}
                 </div>
+                  </div>
+                </s-box>
               </div>
             </div>
           </div>
@@ -2428,6 +2660,16 @@ export default function AffiliatesPage() {
               {t("profiles.emptyMessage", "No affiliate profiles yet. Import a BixGrow CSV to get started.")}
             </s-text>
           </div>
+        )}
+
+        {/* ── Attribution queue tab ── */}
+        {activeTab === "attribution" && (
+          <AttributionQueue
+            shop={shop}
+            meta={attributionMeta}
+            userLocale={userLocale}
+            t={t}
+          />
         )}
       </s-section>
 

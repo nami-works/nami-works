@@ -43,13 +43,6 @@
   margin-bottom: 24px;
 }
 
-.blockCard {
-  background: #fff;
-  border: 1px solid #e1e3e5;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
 .modalTitle {
   font-size: 18px;
   font-weight: 600;
@@ -172,23 +165,6 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.locationCard {
-  border: 1px solid #e1e3e5;
-  border-radius: 12px;
-  padding: 20px;
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.locationCardTitle {
-  font-size: 15px;
-  font-weight: 600;
-  color: #202223;
-  margin: 0;
 }
 
 .toggleLabelRow {
@@ -924,14 +900,6 @@
 }
 
 /* ── Drilldown chart (Shopify-native style) ───────────────────────────────── */
-.revenueDrilldown {
-  padding: 20px 24px 20px 12px;
-  border: 1px solid #e1e3e5;
-  border-radius: 12px;
-  margin-bottom: 12px;
-  background: #fff;
-}
-
 .breakdownHeader {
   display: flex;
   flex-direction: column;

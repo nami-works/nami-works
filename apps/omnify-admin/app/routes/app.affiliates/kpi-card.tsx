@@ -55,17 +55,21 @@ export function KpiCard({
         if (e.key === "Enter" || e.key === " ") onClick(drillKey);
       }}
     >
-      {isLoading && (
-        <div className={styles.overviewSpinner}>
-          <s-spinner size="base" />
+      <s-box padding="base" borderWidth="base" borderRadius="base">
+        <div className={styles.overviewBoxInner}>
+          {isLoading && (
+            <div className={styles.overviewSpinner}>
+              <s-spinner size="base" />
+            </div>
+          )}
+          <span className={styles.overviewPrimary}>
+            {primary}
+            {renderDelta(delta)}
+          </span>
+          <span className={styles.overviewLabel}>{label}</span>
+          <span className={styles.overviewSecondary}>{secondary}</span>
         </div>
-      )}
-      <span className={styles.overviewPrimary}>
-        {primary}
-        {renderDelta(delta)}
-      </span>
-      <span className={styles.overviewLabel}>{label}</span>
-      <span className={styles.overviewSecondary}>{secondary}</span>
+      </s-box>
     </div>
   );
 }

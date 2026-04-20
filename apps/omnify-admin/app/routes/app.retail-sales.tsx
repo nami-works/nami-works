@@ -1301,21 +1301,21 @@ const KpiDrilldownBars = ({
 
   if (sorted.length === 0) {
     return (
-      <div className={styles.revenueDrilldown}>
+      <s-section>
         <div className={styles.breakdownHeader}>
           <h3 className={styles.subSectionTitle}>
             {t(`dashboard.drilldown.${metric}`)}
           </h3>
         </div>
         <div className={styles.tableEmpty}>{t("dashboard.noLocations")}</div>
-      </div>
+      </s-section>
     );
   }
 
   // ── Achievement ranking (formerly bestWorst) ────────────────────────────
   if (metric === "bestWorst") {
     return (
-      <div className={styles.revenueDrilldown}>
+      <s-section>
         <div className={styles.breakdownHeader}>
           <h3 className={styles.subSectionTitle}>
             {t("dashboard.drilldown.bestWorst")}
@@ -1400,7 +1400,7 @@ const KpiDrilldownBars = ({
             {t("dashboard.rankingTierRed")}
           </span>
         </div>
-      </div>
+      </s-section>
     );
   }
 
@@ -1453,7 +1453,7 @@ const KpiDrilldownBars = ({
     }
 
     return (
-      <div className={styles.revenueDrilldown}>
+      <s-section>
         <div className={styles.breakdownHeader}>
           <h3 className={styles.subSectionTitle}>
             {t("dashboard.drilldown.sameStore")}
@@ -1577,7 +1577,7 @@ const KpiDrilldownBars = ({
             {t("dashboard.legendDecline")}
           </span>
         </div>
-      </div>
+      </s-section>
     );
   }
 
@@ -1608,7 +1608,7 @@ const KpiDrilldownBars = ({
   });
 
   return (
-    <div className={styles.revenueDrilldown}>
+    <s-section>
       <div className={styles.breakdownHeader}>
         <h3 className={styles.subSectionTitle}>
           {t(`dashboard.drilldown.${metric}`)}
@@ -1826,7 +1826,7 @@ const KpiDrilldownBars = ({
           </span>
         ) : null}
       </div>
-    </div>
+    </s-section>
   );
 };
 
@@ -2926,9 +2926,8 @@ export default function SalesGoalsPage() {
               ) : null}
 
               {/* ─── Breakdown table (always visible below the scoreboard) ─── */}
-              <div className={styles.blockCard}>
-                <s-box padding="base" borderRadius="base">
-                  <s-stack direction="block" gap="base">
+              <s-box padding="base" borderWidth="base" borderRadius="base">
+                <s-stack direction="block" gap="base">
                     <h2 className={styles.sectionTitle}>
                       {t("dashboard.breakdownTitle")}
                     </h2>
@@ -3125,7 +3124,6 @@ export default function SalesGoalsPage() {
                     </div>
                   </s-stack>
                 </s-box>
-              </div>
             </>
           ) : null}
 

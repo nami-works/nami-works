@@ -79,10 +79,13 @@
 }
 
 .overviewBox {
-  padding: 16px;
-  background: #fff;
-  border: 1px solid #e8e8e8;
-  border-radius: 10px;
+  /* Structural chrome (background, border, border-radius, padding) provided
+   * by the inner <s-box padding="base" borderWidth="base" borderRadius="base">.
+   * This outer wrapper carries only layout and interaction state. */
+  display: flex;
+  flex-direction: column;
+}
+.overviewBoxInner {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -90,15 +93,15 @@
 
 .overviewBoxClickable {
   cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: box-shadow 0.15s;
+  border-radius: 10px;
 }
 .overviewBoxClickable:hover {
-  border-color: #c9cdd1;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 .overviewBoxActive {
-  border-color: #5ecece;
   box-shadow: 0 0 0 1px #5ecece;
+  border-radius: 10px;
   background: linear-gradient(0deg,
     rgba(252, 228, 240, 0.5) 0%,
     rgba(232, 245, 250, 0.5) 100%);
@@ -588,13 +591,15 @@ a.affiliateHandle:hover {
   }
 }
 .vwaterfallCol {
+  /* Chrome (padding, border, border-radius) supplied by inner
+   * <s-box padding="base" borderWidth="base" borderRadius="base">. */
+  display: flex;
+  flex-direction: column;
+}
+.vwaterfallColInner {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px;
-  background: #fafbfb;
-  border: 1px solid #e1e3e5;
-  border-radius: 10px;
 }
 .vwaterfallTitle {
   font-size: 14px;
@@ -854,19 +859,21 @@ a.affiliateHandle:hover {
 }
 
 .onboardingStep {
-  padding: 22px;
-  background: #fff;
-  border: 1px solid #e8e8e8;
+  /* Chrome (background, border, border-radius, padding) supplied by inner
+   * <s-box padding="base" borderWidth="base" borderRadius="base">. */
+  display: flex;
+  flex-direction: column;
   border-radius: 10px;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.onboardingStepInner {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 
 .onboardingStep:hover {
-  border-color: #b09fda;
-  box-shadow: 0 4px 12px rgba(176, 159, 218, 0.15);
+  box-shadow: 0 0 0 1px #b09fda, 0 4px 12px rgba(176, 159, 218, 0.15);
   transform: translateY(-2px);
 }
 
@@ -875,15 +882,14 @@ a.affiliateHandle:hover {
 }
 
 .onboardingStepDisabled:hover {
-  border-color: #e8e8e8;
   box-shadow: none;
   transform: none;
 }
 
 .onboardingStepDrag {
-  border-color: #5ecece;
   background: rgba(94, 206, 206, 0.06);
   box-shadow: 0 0 0 3px rgba(94, 206, 206, 0.15);
+  border-radius: 10px;
 }
 
 .onboardingStepNumber {
@@ -1180,4 +1186,269 @@ a.affiliateHandle:hover {
   color: #8c9196;
   font-style: italic;
   margin-top: 4px;
+}
+
+/* ── Attribution Queue ─────────────────────────────────────────────────── */
+
+.attributionSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.attributionHeader {
+  color: #6d7175;
+  font-size: 13px;
+}
+
+.attributionControls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.attributionSearch {
+  flex: 1 1 240px;
+  min-width: 220px;
+  padding: 7px 10px;
+  border: 1px solid #c9cccf;
+  border-radius: 6px;
+  font: inherit;
+  color: #202223;
+  background: #fff;
+}
+.attributionSearch:focus {
+  outline: 2px solid #005bd3;
+  outline-offset: -2px;
+}
+
+.attributionLookbackLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+}
+.attributionLookbackSelect {
+  padding: 7px 10px;
+  border: 1px solid #c9cccf;
+  border-radius: 6px;
+  font: inherit;
+  background: #fff;
+  color: #202223;
+}
+
+.attributionActionsRight {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.attributionWarnBanner {
+  background: #fff4e4;
+  border: 1px solid #f0b849;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #3a3a3a;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.attributionWarnBanner ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.attributionWarnBanner li {
+  margin: 2px 0;
+}
+
+.attributionSuccessBanner {
+  background: #e4f6ea;
+  border: 1px solid #95cfaa;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #1b4332;
+}
+
+.attributionErrorBanner {
+  background: #fbeae5;
+  border: 1px solid #d72c0d;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #8a1b0a;
+}
+
+.attributionFetchSummary {
+  color: #6d7175;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.attributionEmptyState {
+  padding: 24px 16px;
+  text-align: center;
+  color: #6d7175;
+  background: #fafbfc;
+  border: 1px dashed #e1e3e5;
+  border-radius: 8px;
+}
+
+.attributionSubSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.attributionSectionHeading {
+  font-size: 14px;
+  font-weight: 600;
+  color: #202223;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: default;
+}
+details > summary.attributionSectionHeading {
+  cursor: pointer;
+}
+details > summary.attributionSectionHeading::-webkit-details-marker {
+  display: none;
+}
+details > summary.attributionSectionHeading::before {
+  content: "▸ ";
+  color: #6d7175;
+  font-size: 12px;
+}
+details[open] > summary.attributionSectionHeading::before {
+  content: "▾ ";
+}
+
+.attributionTotalPill {
+  background: #f1f2f3;
+  color: #3a3a3a;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.attributionForgottenSection {
+  border-left: 3px solid #f0b849;
+  padding-left: 12px;
+}
+
+.attributionHelp {
+  color: #6d7175;
+  font-size: 12px;
+  margin: 0 0 6px;
+}
+
+.attributionTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: #fff;
+}
+.attributionTable thead th {
+  background: #f6f6f7;
+  color: #6d7175;
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e1e3e5;
+  white-space: nowrap;
+}
+.attributionTable tbody td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f1f1f1;
+  vertical-align: middle;
+}
+.attributionTable tbody tr:hover td {
+  background: #fafbfc;
+}
+
+.attributionRowClaimed td {
+  color: #a9acaf;
+}
+.attributionRowClaimed code {
+  color: #a9acaf;
+}
+
+.attributionRowForgotten td {
+  background: #fff4e4;
+}
+.attributionRowForgotten:hover td {
+  background: #fef0d6;
+}
+
+.attributionDate {
+  color: #6d7175;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.attributionNum {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.attributionDim {
+  color: #6d7175;
+}
+
+.attributionCopyBtn {
+  all: unset;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.15s ease;
+}
+.attributionCopyBtn:hover {
+  background: #e3f1ff;
+  outline: 1px dashed #005bd3;
+}
+.attributionCopyBtnCopied {
+  background: #d4f4de !important;
+  outline: 1px dashed #067647 !important;
+}
+
+.attributionExtLink {
+  text-decoration: none;
+  color: #005bd3;
+  font-size: 16px;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.attributionExtLink:hover {
+  background: #e3f1ff;
+  color: #003d99;
+}
+
+@media (max-width: 768px) {
+  .attributionControls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .attributionSearch {
+    width: 100%;
+  }
+  .attributionActionsRight {
+    margin-left: 0;
+  }
+  .attributionTable {
+    font-size: 12px;
+  }
+  .attributionTable thead th,
+  .attributionTable tbody td {
+    padding: 6px 8px;
+  }
 }
