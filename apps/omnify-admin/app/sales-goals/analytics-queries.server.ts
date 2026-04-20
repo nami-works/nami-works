@@ -245,6 +245,144 @@ export async function queryMonthlyAggregates(
   return rows;
 }
 
+// ─── Range aggregate (for arbitrary date ranges, not month-bucketed) ────────
+
+export type RangeAggregateRow = {
+  locationId: string;
+  locationName: string;
+  orderCount: number;
+  revenue: number;
+  totalDiscounts: number;
+  currencyCode: string | null;
+};
+
+/**
+ * Aggregates raw SalesOrder rows by location for an arbitrary inclusive
+ * YYYY-MM-DD date range. Single GROUP BY query; relies on the existing
+ * `@@index([shop, locationId, orderDate])` index on SalesOrder.
+ */
+export async function queryRangeAggregates(
+  shop: string,
+  locationIds: string[],
+  startDate: string, // YYYY-MM-DD (inclusive)
+  endDate: string, // YYYY-MM-DD (inclusive)
+): Promise<RangeAggregateRow[]> {
+  if (locationIds.length === 0) return [];
+  // End exclusive = endDate + 1 day, so we include the full endDate.
+  const start = new Date(`${startDate}T00:00:00`);
+  const endInclusive = new Date(`${endDate}T00:00:00`);
+  const end = new Date(endInclusive.getTime() + 24 * 60 * 60 * 1000);
+
+  const rows = await prisma.$queryRawUnsafe<
+    Array<{
+      locationId: string;
+      locationName: string;
+      orderCount: bigint;
+      revenue: number;
+      totalDiscounts: number;
+      currencyCode: string | null;
+    }>
+  >(
+    `SELECT
+       "locationId",
+       MAX("locationName") AS "locationName",
+       COUNT(*)::bigint AS "orderCount",
+       COALESCE(SUM("totalAmount"), 0)::float AS "revenue",
+       COALESCE(SUM("discountAmount"), 0)::float AS "totalDiscounts",
+       MAX("currencyCode") AS "currencyCode"
+     FROM "SalesOrder"
+     WHERE "shop" = $1
+       AND "locationId" = ANY($2::text[])
+       AND "orderDate" >= $3
+       AND "orderDate" < $4
+     GROUP BY "locationId"`,
+    shop,
+    locationIds,
+    start,
+    end,
+  );
+  return rows.map((r) => ({
+    locationId: r.locationId,
+    locationName: r.locationName,
+    orderCount: Number(r.orderCount),
+    revenue: r.revenue,
+    totalDiscounts: r.totalDiscounts ?? 0,
+    currencyCode: r.currencyCode,
+  }));
+}
+
+/**
+ * Counts zero-revenue days per location within an inclusive YYYY-MM-DD range.
+ * Mirrors `countZeroRevenueDays` but takes start/end instead of month keys.
+ * Used by the scaled same-store YoY threshold.
+ */
+export async function countZeroRevenueDaysInRange(
+  shop: string,
+  locationIds: string[],
+  startDate: string,
+  endDate: string,
+): Promise<Record<string, number>> {
+  const result: Record<string, number> = {};
+  if (locationIds.length === 0) return result;
+  for (const id of locationIds) result[id] = 0;
+
+  const start = new Date(`${startDate}T00:00:00`);
+  const endInclusive = new Date(`${endDate}T00:00:00`);
+  const end = new Date(endInclusive.getTime() + 24 * 60 * 60 * 1000);
+  const totalDays = Math.round(
+    (endInclusive.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+  ) + 1;
+
+  const rows = await prisma.$queryRawUnsafe<
+    Array<{ locationId: string; nonZeroDays: bigint }>
+  >(
+    `SELECT "locationId", COUNT(DISTINCT DATE("orderDate"))::bigint AS "nonZeroDays"
+     FROM "SalesOrder"
+     WHERE "shop" = $1
+       AND "locationId" = ANY($2::text[])
+       AND "orderDate" >= $3
+       AND "orderDate" < $4
+       AND "totalAmount" > 0
+     GROUP BY "locationId"`,
+    shop,
+    locationIds,
+    start,
+    end,
+  );
+
+  for (const row of rows) {
+    const nonZero = Number(row.nonZeroDays);
+    result[row.locationId] = Math.max(0, totalDays - nonZero);
+  }
+  return result;
+}
+
+/**
+ * Narrow helper: compute the YoY-pace projection for the CURRENT month only.
+ * The Dashboard uses this when the period is the current calendar month in
+ * progress. Past-month or arbitrary-range periods skip projection entirely
+ * (plan: "Current month only, hide otherwise").
+ */
+export async function computeCurrentMonthProjection(
+  shop: string,
+  locationIds: string[],
+  today: Date = new Date(),
+): Promise<Record<string, MonthProjection>> {
+  const currentMonth = monthKey(today);
+  const nested = await computeMonthProjections(
+    shop,
+    locationIds,
+    [currentMonth],
+    today,
+  );
+  const flat: Record<string, MonthProjection> = {};
+  for (const locId of locationIds) {
+    const p = nested[locId]?.[currentMonth];
+    if (p) flat[locId] = p;
+  }
+  return flat;
+}
+
 // ─── SalesGoalsSyncMeta ──────────────────────────────────────────────────────
 
 export async function readSyncMeta(shop: string): Promise<SyncMetaRecord> {
@@ -527,14 +665,17 @@ export async function computeMonthProjections(
 // import them without pulling Prisma into the browser bundle.
 export {
   buildLocationSnapshots,
+  buildSnapshotsFromRange,
   aggregateSnapshots,
   sameStoreYoY,
   bestVsWorst,
   discountRate,
+  scaleZeroDayThreshold,
   SAME_STORE_ZERO_DAYS_THRESHOLD,
   type LocationSnapshot,
   type AggregateKpi,
   type BuildSnapshotInput,
+  type BuildRangeSnapshotInput,
 } from "./analytics-pure";
 
 // ─── Zero-day counting (for Same-Store YoY exclusion) ───────────────────────

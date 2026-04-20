@@ -109,17 +109,60 @@ try {
   $env:OMNIFY_TMP_JSON = (Join-Path $repoRoot ("tmp-{0}-task.json" -f $Service))
   $env:OMNIFY_REGION = $Region
 
-  python -c "import json, os, subprocess; data=json.loads(subprocess.check_output(['aws','ecs','describe-task-definition','--task-definition',os.environ['OMNIFY_TASK_FAMILY'],'--region',os.environ['OMNIFY_REGION']], text=True)); td=data['taskDefinition']; \
-[(td.pop(k,None)) for k in ['taskDefinitionArn','revision','status','requiresAttributes','compatibilities','registeredAt','registeredBy']]; \
-cd=td['containerDefinitions'][0]; cd['image']=os.environ['OMNIFY_IMAGE']; \
-env={e['name']: e for e in cd.get('environment', [])}; \
-bp=os.environ.get('OMNIFY_BASE_PATH',''); \
-(env.update({'BASE_PATH':{'name':'BASE_PATH','value':bp}}) if bp and bp != '/' else env.pop('BASE_PATH', None)); \
-url=os.environ.get('OMNIFY_SHOPIFY_APP_URL',''); \
-(env.update({'SHOPIFY_APP_URL':{'name':'SHOPIFY_APP_URL','value':url}}) if url else None); \
-env.update({'APP_IDENTITY':{'name':'APP_IDENTITY','value':'omnify'}}); \
-cd['environment']=list(env.values()); \
-open(os.environ['OMNIFY_TMP_JSON'],'w',encoding='utf-8').write(json.dumps(td))"
+  # Write the task-definition update script to a temp file to avoid PowerShell
+  # misinterpreting Python syntax (brackets, braces) as PS tokens.
+  $pyScript = Join-Path $repoRoot "tmp-update-task.py"
+  $pyCode = @'
+import json, os, subprocess
+data = json.loads(subprocess.check_output(
+    ['aws', 'ecs', 'describe-task-definition',
+     '--task-definition', os.environ['OMNIFY_TASK_FAMILY'],
+     '--region', os.environ['OMNIFY_REGION']], text=True))
+td = data['taskDefinition']
+for k in ['taskDefinitionArn', 'revision', 'status', 'requiresAttributes',
+          'compatibilities', 'registeredAt', 'registeredBy']:
+    td.pop(k, None)
+cd = td['containerDefinitions'][0]
+cd['image'] = os.environ['OMNIFY_IMAGE']
+env = {e['name']: e for e in cd.get('environment', [])}
+bp = os.environ.get('OMNIFY_BASE_PATH', '')
+if bp and bp != '/':
+    env['BASE_PATH'] = {'name': 'BASE_PATH', 'value': bp}
+else:
+    env.pop('BASE_PATH', None)
+url = os.environ.get('OMNIFY_SHOPIFY_APP_URL', '')
+if url:
+    env['SHOPIFY_APP_URL'] = {'name': 'SHOPIFY_APP_URL', 'value': url}
+env['APP_IDENTITY'] = {'name': 'APP_IDENTITY', 'value': 'omnify'}
+cd['environment'] = list(env.values())
+
+# Reconcile secrets[] from /omnify/* SSM params (single source of truth).
+# Prevents drift when Terraform adds a new SSM-backed secret.
+region = os.environ['OMNIFY_REGION']
+ssm_prefix = '/omnify/'
+acct = json.loads(subprocess.check_output(
+    ['aws', 'sts', 'get-caller-identity', '--output', 'json'], text=True))['Account']
+ssm_resp = json.loads(subprocess.check_output([
+    'aws', 'ssm', 'describe-parameters',
+    '--parameter-filters', f'Key=Name,Option=BeginsWith,Values={ssm_prefix}',
+    '--region', region, '--output', 'json',
+], text=True))
+secrets_by_name = {}
+for p in ssm_resp.get('Parameters', []):
+    name = p['Name']
+    env_name = name[len(ssm_prefix):]
+    secrets_by_name[env_name] = {
+        'name': env_name,
+        'valueFrom': f'arn:aws:ssm:{region}:{acct}:parameter{name}',
+    }
+cd['secrets'] = list(secrets_by_name.values())
+
+with open(os.environ['OMNIFY_TMP_JSON'], 'w', encoding='utf-8') as f:
+    f.write(json.dumps(td))
+'@
+  Set-Content -Path $pyScript -Value $pyCode -Encoding UTF8
+  python $pyScript
+  Remove-Item $pyScript -ErrorAction SilentlyContinue
 
   $rev = aws ecs register-task-definition --cli-input-json ("file://{0}" -f $env:OMNIFY_TMP_JSON) --region $Region --query "taskDefinition.revision" --output text
   Write-Host "Deploying task definition revision $rev..."

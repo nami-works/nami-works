@@ -195,5 +195,76 @@
       "share": "% da receita do afiliado",
       "orderShare": "% dos pedidos"
     }
+  },
+  "tab": {
+    "overview": "Visao geral",
+    "affiliates": "Afiliadas",
+    "attributionQueue": "Fila de atribuicao"
+  },
+  "attributionQueue": {
+    "heading": "Fila de atribuicao",
+    "subtitle": "Pedidos de canais que o BixGrow nao ve (IGLU POS, WhatsApp) e precisam ser lancados manualmente",
+    "refresh": "Atualizar fila",
+    "refreshing": "Escaneando Shopify…",
+    "uploadPedidos": "Enviar pedidos.csv",
+    "lookbackLabel": "Periodo",
+    "lookback30": "30 dias",
+    "lookback90": "90 dias",
+    "lookback180": "180 dias",
+    "lookback365": "1 ano",
+    "searchPlaceholder": "Buscar pedido, cupom, afiliada, local…",
+    "empty": {
+      "noFetchYet": "Clique em Atualizar fila para escanear o Shopify em busca de pedidos IGLU ausentes no BixGrow.",
+      "nothingPending": "Nada pendente. Todos os pedidos elegiveis ja estao no BixGrow."
+    },
+    "section": {
+      "pending": "Atribuicoes pendentes",
+      "claimed": "Marcadas, aguardando confirmacao do BixGrow",
+      "forgotten": "Esquecidas — marcadas mas nao constam em pedidos.csv",
+      "unknown": "Cupons nao identificados",
+      "unknownHelp": "Pedidos cujo cupom nao esta na lista de afiliadas. Mistura de codigos de novas UGCs (reimporte o CSV de afiliadas) e promos nao relacionadas (BEAUTYBACK-*, PRIMEIRACOMPRA*, NIVER-*) que podem ser ignoradas."
+    },
+    "column": {
+      "done": "",
+      "date": "Data",
+      "order": "Pedido",
+      "subtotal": "Subtotal",
+      "coupon": "Cupom",
+      "affiliate": "Afiliada",
+      "email": "Email",
+      "location": "Local",
+      "link": "",
+      "claimedAt": "Marcada"
+    },
+    "row": {
+      "markProcessed": "Marcar como lancado",
+      "unmark": "Desmarcar",
+      "claimedDaysAgo_one": "Marcada ha {{count}} dia",
+      "claimedDaysAgo_other": "Marcada ha {{count}} dias",
+      "inactiveAffiliate": "(inativa)",
+      "copyTooltip": "Copiar",
+      "copied": "Copiado",
+      "openInAdmin": "Abrir no admin Shopify"
+    },
+    "warning": {
+      "pedidosStale": "bixgrow_pedidos.csv esta desatualizado ({{days}} dias; ultimo envio {{date}}). Envie um export novo para limpar os pedidos ja processados.",
+      "pedidosMissing": "Nenhum pedidos.csv foi importado ainda — a reconciliacao esta DESLIGADA. Envie o export mais recente para confirmar as marcacoes.",
+      "unknownCoupons": "{{count}} pedido(s) com cupons fora da lista de afiliadas. Reimporte o CSV de afiliadas se novas UGCs foram cadastradas."
+    },
+    "import": {
+      "success": "Importados {{rows}} pedidos, confirmadas {{confirmed}} marcacoes",
+      "successWithDate": "Importados {{rows}} pedidos (mais recente {{date}}), confirmadas {{confirmed}} marcacoes",
+      "error": "Falha na importacao: {{error}}"
+    },
+    "fetch": {
+      "success": "{{scanned}} pedidos escaneados · {{pending}} pendentes · {{claimed}} marcadas · {{unknown}} desconhecidas",
+      "error": "Falha no escaneamento: {{error}}"
+    },
+    "summary": {
+      "pendingCount": "{{count}} pendentes",
+      "claimedCount": "{{count}} marcadas",
+      "forgottenCount": "{{count}} esquecidas",
+      "unknownCount": "{{count}} desconhecidas"
+    }
   }
 }

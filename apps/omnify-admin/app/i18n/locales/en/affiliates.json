@@ -195,5 +195,76 @@
     "repeatComparison": "Repeat Rate Comparison",
     "aovComparison": "AOV Comparison",
     "roasBreakdown": "ROAS Breakdown"
+  },
+  "tab": {
+    "overview": "Overview",
+    "affiliates": "Affiliates",
+    "attributionQueue": "Attribution queue"
+  },
+  "attributionQueue": {
+    "heading": "Attribution queue",
+    "subtitle": "Orders from non-BixGrow channels (IGLU POS, WhatsApp) that need manual entry in BixGrow",
+    "refresh": "Refresh queue",
+    "refreshing": "Scanning Shopify…",
+    "uploadPedidos": "Upload pedidos.csv",
+    "lookbackLabel": "Look back",
+    "lookback30": "30 days",
+    "lookback90": "90 days",
+    "lookback180": "180 days",
+    "lookback365": "1 year",
+    "searchPlaceholder": "Search order, coupon, affiliate, location…",
+    "empty": {
+      "noFetchYet": "Click Refresh queue to scan Shopify for IGLU orders missing from BixGrow.",
+      "nothingPending": "Nothing to do — every eligible order is already in BixGrow."
+    },
+    "section": {
+      "pending": "Pending attributions",
+      "claimed": "Claimed, waiting for BixGrow confirmation",
+      "forgotten": "Forgotten — claimed but not in pedidos.csv",
+      "unknown": "Unknown coupon codes",
+      "unknownHelp": "Orders whose coupon isn't in the affiliate list. Mix of new-UGC affiliate codes (re-upload the affiliate CSV) and unrelated promos (BEAUTYBACK-*, PRIMEIRACOMPRA*, NIVER-*) you can ignore."
+    },
+    "column": {
+      "done": "",
+      "date": "Date",
+      "order": "Order",
+      "subtotal": "Subtotal",
+      "coupon": "Coupon",
+      "affiliate": "Affiliate",
+      "email": "Email",
+      "location": "Location",
+      "link": "",
+      "claimedAt": "Claimed"
+    },
+    "row": {
+      "markProcessed": "Mark processed",
+      "unmark": "Unmark",
+      "claimedDaysAgo_one": "Claimed {{count}} day ago",
+      "claimedDaysAgo_other": "Claimed {{count}} days ago",
+      "inactiveAffiliate": "(inactive)",
+      "copyTooltip": "Copy",
+      "copied": "Copied",
+      "openInAdmin": "Open in Shopify admin"
+    },
+    "warning": {
+      "pedidosStale": "bixgrow_pedidos.csv is {{days}} days stale (last import {{date}}). Upload a fresh export so processed orders drop off.",
+      "pedidosMissing": "No pedidos.csv has been imported yet — reconciliation is OFF. Upload the latest export to confirm claims.",
+      "unknownCoupons": "{{count}} order(s) carry coupons not in the affiliate list. Re-import the affiliate CSV if new UGCs were onboarded."
+    },
+    "import": {
+      "success": "Imported {{rows}} orders, confirmed {{confirmed}} claim(s)",
+      "successWithDate": "Imported {{rows}} orders (latest {{date}}), confirmed {{confirmed}} claim(s)",
+      "error": "Import failed: {{error}}"
+    },
+    "fetch": {
+      "success": "Scanned {{scanned}} orders · {{pending}} pending · {{claimed}} claimed · {{unknown}} unknown",
+      "error": "Scan failed: {{error}}"
+    },
+    "summary": {
+      "pendingCount": "{{count}} pending",
+      "claimedCount": "{{count}} claimed",
+      "forgottenCount": "{{count}} forgotten",
+      "unknownCount": "{{count}} unknown"
+    }
   }
 }

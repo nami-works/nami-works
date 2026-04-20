@@ -1074,9 +1074,6 @@ export default function RetailLocatorRoute() {
   const [setName, setSetName] = useState("");
   const [showSelectionMap, setShowSelectionMap] = useState(false);
   const [mapLocationName, setMapLocationName] = useState("");
-  const [isHeatmapExpanded, setIsHeatmapExpanded] = useState(false);
-  const [citiesCollapsed, setCitiesCollapsed] = useState(false);
-  const [projectsCollapsed, setProjectsCollapsed] = useState(false);
   const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null);
   const [loadedProjectId, setLoadedProjectId] = useState<string | null>(null);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
@@ -2035,9 +2032,6 @@ export default function RetailLocatorRoute() {
     // Auto-load the newly created project in focused layout
     setLoadedProjectId(newSetId);
     fetchProjectStats(newSetId);
-    setIsHeatmapExpanded(true);
-    setCitiesCollapsed(true);
-    setProjectsCollapsed(true);
     setSetName("");
     setPendingLocations([]);
   };
@@ -2057,12 +2051,6 @@ export default function RetailLocatorRoute() {
     }
     setHeatmapWeightApplied("orders");
   }, [heatmapOptionsStorageKey]);
-
-  useEffect(() => {
-    if (!overviewMapInstance.current) return;
-    if (!window.google?.maps?.event?.trigger) return;
-    window.google.maps.event.trigger(overviewMapInstance.current, "resize");
-  }, [isHeatmapExpanded]);
 
   // Apply map style (light / grayscale / dark) to both map instances
   useEffect(() => {
@@ -3066,7 +3054,7 @@ export default function RetailLocatorRoute() {
       )}
 
       {/* ── Overview Stats Strip ── */}
-      {syncStatus === "idle" && syncTotalOrders && syncTotalOrders > 0 && !isHeatmapExpanded && (
+      {syncStatus === "idle" && syncTotalOrders && syncTotalOrders > 0 && (
         <div className={styles.overviewStrip}>
           <div className={styles.overviewHeader}>
             <h2 className={styles.overviewHeading}>{t("overview.heading")}</h2>
@@ -3434,43 +3422,30 @@ export default function RetailLocatorRoute() {
         </div>
       )}
 
-      {/* ── Map + Aside layout (single map DOM, CSS-toggled fullscreen) ── */}
-      <div className={isHeatmapExpanded ? styles.fullscreenOverlay : undefined}>
-        <div className={isHeatmapExpanded ? styles.fullscreenContent : undefined}>
-          <div className={isHeatmapExpanded ? styles.fullscreenSplitLayout : styles.campaignLayout}>
-            <div className={isHeatmapExpanded ? styles.fullscreenMapPane : styles.campaignMain}>
-              <s-section>
-                <div className={styles.mapCanvasWrap}>
-                  <div className={styles.mapOverlayButton} role="group">
-                    {showNationalViewReset ? (
-                      <s-button variant="secondary" onClick={resetToNationalView}>
-                        {t("map.backToNationalView")}
-                      </s-button>
-                    ) : null}
-                    <s-button
-                      variant="secondary"
-                      accessibilityLabel={isHeatmapExpanded ? t("map.collapse") : t("map.expand")}
-                      aria-expanded={isHeatmapExpanded}
-                      onClick={() => setIsHeatmapExpanded((prev) => !prev)}
-                    >
-                      {isHeatmapExpanded ? t("map.collapse") : t("map.expand")}
-                    </s-button>
-                  </div>
-                  <div
-                    ref={overviewMapRef}
-                    className={`${styles.mapCanvasLarge} ${isHeatmapExpanded ? styles.mapCanvasFullscreen : ""}`}
-                  />
+      {/* ── Map layout ── */}
+      <div className={styles.campaignLayout}>
+        <div className={styles.campaignMain}>
+          <s-section>
+            <div className={styles.mapCanvasWrap}>
+              {showNationalViewReset ? (
+                <div className={styles.mapOverlayButton} role="group">
+                  <s-button variant="secondary" onClick={resetToNationalView}>
+                    {t("map.backToNationalView")}
+                  </s-button>
                 </div>
-                <div className={styles.mapFooterRow}>
-                  <s-link
-                    commandFor="heatmap-options-modal"
-                    command="--show"
-                    onClick={handleOpenHeatmapOptions}
-                  >
-                    {t("map.heatmapOptions")}
-                  </s-link>
-                </div>
-              </s-section>
+              ) : null}
+              <div ref={overviewMapRef} className={styles.mapCanvasLarge} />
+            </div>
+            <div className={styles.mapFooterRow}>
+              <s-link
+                commandFor="heatmap-options-modal"
+                command="--show"
+                onClick={handleOpenHeatmapOptions}
+              >
+                {t("map.heatmapOptions")}
+              </s-link>
+            </div>
+          </s-section>
               {/* ── Loaded project table (in main column, below heatmap) ── */}
               {loadedProjectId ? (() => {
                 const loadedRow = projectTableData.find((r) => r.id === loadedProjectId);
@@ -3507,9 +3482,6 @@ export default function RetailLocatorRoute() {
                           className={styles.closeProjectButton}
                           onClick={() => {
                             setLoadedProjectId(null);
-                            setIsHeatmapExpanded(false);
-                            setCitiesCollapsed(false);
-                            setProjectsCollapsed(false);
                             setProjectStats([]);
                             resetToNationalView();
                           }}
@@ -3666,138 +3638,11 @@ export default function RetailLocatorRoute() {
                   </s-section>
                 );
               })() : null}
-            </div>
-            {/* Aside only shown in fullscreen expanded mode */}
-            {isHeatmapExpanded && (
-              <div className={styles.fullscreenAssignedPane}>
-                <div className={styles.collapsibleSectionWrap}>
-                <s-section heading={t("projects.heading")}>
-                  {projectTableData.length === 0 ? (
-                    <s-text color="subdued">{t("projects.noProjectsCreate")}</s-text>
-                  ) : projectsCollapsed ? (
-                    <>
-                      {loadedProjectId && (() => {
-                        const row = projectTableData.find((r) => r.id === loadedProjectId);
-                        const set = locationSets.find((s) => s.id === loadedProjectId);
-                        if (!row || !set) return null;
-                        return (
-                          <s-box padding="base" borderWidth="base" borderRadius="base">
-                            <div className={styles.cardHeader}>
-                              <span className={styles.cardBadge}>{row.name}</span>
-                              <s-button
-                                variant="secondary"
-                                tone="critical"
-                                onClick={() => setDeleteConfirmSetId(set.id)}
-                              >
-                                {t("modals.deleteProject")}
-                              </s-button>
-                            </div>
-                            <div className={styles.cardInfo}>
-                              <s-text color="subdued">
-                                {row.locationCount} {t("projects.locations")}
-                              </s-text>
-                            </div>
-                            <div className={styles.cardActions}>
-                              <s-button
-                                variant="secondary"
-                                commandFor="edit-project-modal"
-                                command="--show"
-                                onClick={() => {
-                                  setEditingSetId(set.id);
-                                  setEditingSetName(set.name);
-                                  setEditingSetLocations([...set.locations]);
-                                }}
-                              >
-                                {t("projects.edit")}
-                              </s-button>
-                            </div>
-                          </s-box>
-                        );
-                      })()}
-                    </>
-                  ) : (
-                    <s-stack direction="block" gap="large">
-                      <div className={styles.asideRowRight}>
-                        <s-button
-                          variant="primary"
-                          commandFor="new-project-modal"
-                          command="--show"
-                          onClick={handleStartNewProject}
-                        >
-                          {t("projects.newProject")}
-                        </s-button>
-                      </div>
-                      {projectTableData.map((row) => {
-                        const set = locationSets.find((s) => s.id === row.id);
-                        return (
-                          <s-box key={row.id} padding="base" borderWidth="base" borderRadius="base">
-                            <div className={styles.cardHeader}>
-                              <span className={styles.cardBadge}>{row.name}</span>
-                              <s-button
-                                variant="secondary"
-                                tone="critical"
-                                onClick={() => setDeleteConfirmSetId(row.id)}
-                              >
-                                {t("modals.deleteProject")}
-                              </s-button>
-                            </div>
-                            <div className={styles.cardInfo}>
-                              <s-text color="subdued">
-                                {row.locationCount} {t("projects.locations")}
-                              </s-text>
-                            </div>
-                            <div className={styles.cardActions}>
-                              <s-button
-                                variant="secondary"
-                                commandFor="edit-project-modal"
-                                command="--show"
-                                onClick={() => {
-                                  if (set) {
-                                    setEditingSetId(set.id);
-                                    setEditingSetName(set.name);
-                                    setEditingSetLocations([...set.locations]);
-                                  }
-                                }}
-                              >
-                                {t("projects.edit")}
-                              </s-button>
-                              <s-button
-                                variant="primary"
-                                onClick={() => {
-                                  setLoadedProjectId(row.id);
-                                  fetchProjectStats(row.id);
-                                  setIsHeatmapExpanded(true);
-                                  setCitiesCollapsed(true);
-                                  setProjectsCollapsed(true);
-                                }}
-                              >
-                                {t("projects.load")}
-                              </s-button>
-                            </div>
-                          </s-box>
-                        );
-                      })}
-                    </s-stack>
-                  )}
-                  <div
-                    className={`${styles.collapseChevron}${projectsCollapsed ? ` ${styles.collapsed}` : ""}`}
-                    onClick={() => setProjectsCollapsed((prev) => !prev)}
-                    role="button"
-                    aria-label="Toggle expansion projects"
-                  >
-                    <span className={styles.chevronIcon}>›</span>
-                  </div>
-                </s-section>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
       {/* ── Expansion Projects (full-width below heatmap) ── */}
-      {!isHeatmapExpanded && (
-        <div className={styles.projectsFullWidth}>
+      <div className={styles.projectsFullWidth}>
           <s-section heading={t("projects.heading")}>
             {projectTableData.length === 0 ? (
               <s-text color="subdued">{t("projects.noProjectsCreate")}</s-text>
@@ -3853,9 +3698,6 @@ export default function RetailLocatorRoute() {
                             onClick={() => {
                               setLoadedProjectId(row.id);
                               fetchProjectStats(row.id);
-                              setIsHeatmapExpanded(true);
-                              setCitiesCollapsed(true);
-                              setProjectsCollapsed(true);
                             }}
                           >
                             {t("projects.load")}
@@ -3869,7 +3711,6 @@ export default function RetailLocatorRoute() {
             )}
           </s-section>
         </div>
-      )}
     </s-page>
   );
 }

@@ -37,6 +37,12 @@ export function matchRuleApplies(
       const set = new Set(rule.values);
       return order.lineItems.some((li) => li.sku != null && set.has(li.sku));
     }
+    case "lineItemProductType": {
+      const set = new Set(rule.values);
+      return order.lineItems.some(
+        (li) => li.productType != null && set.has(li.productType),
+      );
+    }
     case "lineItemProductId": {
       const set = new Set(rule.values);
       return order.lineItems.some(
@@ -79,6 +85,7 @@ const ORDER_LINE_ITEMS_QUERY = `#graphql
           product {
             id
             tags
+            productType
           }
         }
       }
@@ -109,10 +116,11 @@ export async function fetchOrderLineItems(
       (n: {
         sku: string | null;
         customAttributes: Array<{ key: string; value: string }> | null;
-        product: { id: string; tags: string[] } | null;
+        product: { id: string; tags: string[]; productType: string | null } | null;
       }) => ({
         productId: n.product?.id ?? null,
         sku: n.sku ?? null,
+        productType: n.product?.productType ?? null,
         productTags: Array.isArray(n.product?.tags) ? n.product!.tags : [],
         properties: Array.isArray(n.customAttributes)
           ? n.customAttributes.map((p) => ({

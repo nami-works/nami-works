@@ -64,58 +64,6 @@
   position: relative;
 }
 
-.mapCanvasExpanded {
-  height: min(760px, calc(100vh - 220px));
-}
-
-.fullscreenOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: #f6f6f7;
-  padding: 16px;
-}
-
-.fullscreenContent {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  height: calc(100vh - 32px);
-}
-
-.fullscreenScroll {
-  flex: 1;
-  overflow: auto;
-  padding-bottom: 8px;
-}
-
-.fullscreenSplitLayout {
-  flex: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(280px, 1fr);
-  gap: 12px;
-  overflow: hidden;
-}
-
-.fullscreenMapPane {
-  min-width: 0;
-  overflow: auto;
-  padding-right: 4px;
-}
-
-.fullscreenAssignedPane {
-  min-width: 0;
-  overflow: auto;
-  padding-bottom: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.mapCanvasFullscreen {
-  height: clamp(360px, calc(100vh - 240px), 760px);
-}
-
 .mapOverlayButton {
   position: absolute;
   top: 12px;

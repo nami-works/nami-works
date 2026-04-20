@@ -3,13 +3,17 @@
 
 export type CampaignStatus = "draft" | "active" | "ended" | "archived";
 
-export type CampaignMetric = "bundle_orders"; // V1; extensible to "units" etc.
+export type CampaignMetric =
+  | "bundle_orders"
+  | "specific_products"
+  | "specific_combination"
+  | "aov"
+  | "revenue";
 
-// Flexible match-rule shape. Refined from a sample injected order once available.
-// The schema accepts any of these variants without migration.
 export type CampaignMatchRule =
   | { type: "lineItemTag"; values: string[] }
   | { type: "lineItemSku"; values: string[] }
+  | { type: "lineItemProductType"; values: string[] }
   | { type: "lineItemProductId"; values: string[] }
   | { type: "lineItemProperty"; key: string; value?: string }
   | { type: "orderTag"; values: string[] }
@@ -34,6 +38,8 @@ export type CampaignTargetView = {
   locationName: string;
   targetOrders: number;
   baselineOrders: number | null;
+  targetValue: number;
+  baselineValue: number | null;
 };
 
 export type CampaignLocationProgress = {
@@ -41,10 +47,13 @@ export type CampaignLocationProgress = {
   locationName: string;
   targetOrders: number;
   baselineOrders: number | null;
-  matchedOrders: number; // orders containing the matching item
-  totalOrders: number; // denominator for attach rate
+  matchedOrders: number;
+  totalOrders: number;
   attachRate: number | null; // matchedOrders / totalOrders, 0..1
   achievementPercent: number | null; // matchedOrders / targetOrders, %
+  targetValue: number;
+  matchedValue: number;
+  achievementPercentValue: number | null;
 };
 
 export type CampaignProgressView = {
@@ -54,17 +63,19 @@ export type CampaignProgressView = {
   overallAttachRate: number | null;
   overallAchievementPercent: number | null;
   perLocation: CampaignLocationProgress[];
-  // Elapsed fraction of campaign duration. 0..1. For "pace" math.
-  elapsedFraction: number;
+  elapsedFraction: number; // 0..1
+  totalMatchedValue: number;
+  totalTargetValue: number;
+  overallAchievementPercentValue: number | null;
 };
 
-// Webhook/backfill uses this shape; lightweight subset of Shopify Order.
 export type OrderSnapshotForMatching = {
   orderId: string;
   orderTags: string[];
   lineItems: Array<{
     productId: string | null;
     sku: string | null;
+    productType: string | null;
     productTags: string[];
     properties: Array<{ name: string; value: string }>;
   }>;

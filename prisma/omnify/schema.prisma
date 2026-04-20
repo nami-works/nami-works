@@ -1070,3 +1070,49 @@ model ShopIngestMeta {
   errorMessage                 String?
   updatedAt                    DateTime  @updatedAt
 }
+
+// ─── Attribution Queue (IGLU/WhatsApp orders missing from BixGrow) ──────────
+
+model AttributionClaim {
+  id             String    @id @default(cuid())
+  shop           String
+  orderName      String
+  orderGid       String?
+  couponCode     String
+  affiliateCode  String?
+  affiliateEmail String?
+  subtotal       Float?
+  currencyCode   String?
+  sourceName     String?
+  orderDate      DateTime?
+  claimedBy      String?
+  claimedAt      DateTime  @default(now())
+  confirmedAt    DateTime?
+  confirmedVia   String?
+  @@unique([shop, orderName])
+  @@index([shop, confirmedAt])
+  @@index([shop, claimedAt])
+}
+
+model PedidosImport {
+  id              String    @id @default(cuid())
+  shop            String
+  importedAt      DateTime  @default(now())
+  importedBy      String?
+  rowCount        Int       @default(0)
+  maxOrderDate    DateTime?
+  claimsConfirmed Int       @default(0)
+  fileName        String?
+  @@index([shop, importedAt])
+}
+
+model BixgrowAttributedOrder {
+  id        String    @id @default(cuid())
+  shop      String
+  orderName String
+  orderDate DateTime?
+  importId  String
+  createdAt DateTime  @default(now())
+  @@unique([shop, orderName])
+  @@index([shop, importId])
+}

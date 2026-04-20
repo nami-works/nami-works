@@ -49,16 +49,17 @@ export function formatCurrencyCompact(
   value: number,
   currency: string,
   locale: string,
+  decimals: number = 1,
 ): string {
   if (!Number.isFinite(value)) return "—";
   const abs = Math.abs(value);
   const sign = value < 0 ? "-" : "";
   const prefix = currencyPrefix(currency);
   if (abs >= 1_000_000) {
-    return `${sign}${prefix}${(abs / 1_000_000).toFixed(1)}M`;
+    return `${sign}${prefix}${(abs / 1_000_000).toFixed(decimals)}M`;
   }
   if (abs >= 1_000) {
-    return `${sign}${prefix}${(abs / 1_000).toFixed(1)}k`;
+    return `${sign}${prefix}${(abs / 1_000).toFixed(decimals)}k`;
   }
   return formatCurrency(value, currency, locale);
 }

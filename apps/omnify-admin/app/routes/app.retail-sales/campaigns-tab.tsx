@@ -1,23 +1,47 @@
 // Campaigns tab — route-agnostic React component.
-// Mounted today by app.retail-goals.tsx; portable to a standalone /app/campaigns
+// Mounted by app.retail-sales.tsx; portable to a standalone /app/campaigns
 // route later without changes.
-//
-// Receives loader data + fetchers via props. Doesn't import react-router loader
-// primitives itself; the hosting route passes everything in.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./campaigns.module.css";
 import sharedStyles from "./styles.module.css";
-import { formatCurrencyCompact } from "../../i18n/format";
 import type {
   CampaignGoalView,
   CampaignMatchRule,
+  CampaignMetric,
   CampaignProgressView,
 } from "../../campaign-goals/types";
 import type { RetailLocation } from "../../sales-goals/classification";
 
-// ─── Props ───────────────────────────────────────────────────────────────────
+// ─── Types ──────────────────────────────────────────────────────────────────
+
+type MatchRuleType =
+  | "lineItemTag"
+  | "lineItemProductType"
+  | "lineItemProductId"
+  | "lineItemProperty"
+  | "orderTag";
+
+type MatchOptionsFetcher = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  submit: (...args: any[]) => void;
+  state: string;
+  data?: {
+    ok: boolean;
+    options?: Array<{ value: string; label: string }>;
+  };
+};
+
+type BaselineFetcher = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  submit: (...args: any[]) => void;
+  state: string;
+  data?: {
+    ok: boolean;
+    baseline?: Record<string, { orderCount: number; revenue: number }>;
+  };
+};
 
 export type CampaignsTabProps = {
   locations: RetailLocation[];
@@ -26,22 +50,25 @@ export type CampaignsTabProps = {
   currencyCode: string;
   onSubmit: (payload: FormData) => void;
   isSubmitting: boolean;
+  matchOptionsFetcher: MatchOptionsFetcher;
+  baselineFetcher: BaselineFetcher;
 };
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
-type MatchRuleType =
-  | "lineItemTag"
-  | "lineItemSku"
-  | "lineItemProductId"
-  | "lineItemProperty"
-  | "orderTag";
+const METRIC_OPTIONS: CampaignMetric[] = [
+  "bundle_orders",
+  "specific_products",
+  "specific_combination",
+  "aov",
+  "revenue",
+];
 
 const parseMatchRuleForForm = (rule: CampaignMatchRule) => {
   if (rule.type === "lineItemProperty") {
     return {
-      type: rule.type,
-      values: "",
+      type: rule.type as MatchRuleType,
+      values: [] as string[],
       propertyKey: rule.key,
       propertyValue: rule.value ?? "",
     };
@@ -49,23 +76,30 @@ const parseMatchRuleForForm = (rule: CampaignMatchRule) => {
   if (
     rule.type === "lineItemTag" ||
     rule.type === "lineItemSku" ||
+    rule.type === "lineItemProductType" ||
     rule.type === "lineItemProductId" ||
     rule.type === "orderTag"
   ) {
+    const mappedType: MatchRuleType =
+      rule.type === "lineItemSku" ? "lineItemTag" : (rule.type as MatchRuleType);
     return {
-      type: rule.type,
-      values: rule.values.join(", "),
+      type: mappedType,
+      values: rule.values,
       propertyKey: "",
       propertyValue: "",
     };
   }
-  // any/all composites collapse to a placeholder for V1; user can re-enter.
-  return { type: "lineItemTag" as const, values: "", propertyKey: "", propertyValue: "" };
+  return {
+    type: "lineItemTag" as MatchRuleType,
+    values: [] as string[],
+    propertyKey: "",
+    propertyValue: "",
+  };
 };
 
 const buildMatchRuleFromForm = (form: {
   type: MatchRuleType;
-  values: string;
+  values: string[];
   propertyKey: string;
   propertyValue: string;
 }): CampaignMatchRule => {
@@ -76,14 +110,26 @@ const buildMatchRuleFromForm = (form: {
       value: form.propertyValue.trim() || undefined,
     };
   }
-  const vals = form.values
-    .split(",")
-    .map((v) => v.trim())
-    .filter(Boolean);
-  return { type: form.type, values: vals };
+  return { type: form.type, values: form.values };
 };
 
-// ─── Campaign progress card ──────────────────────────────────────────────────
+const statusToBadgeTone = (
+  status: string,
+): "success" | "info" | undefined => {
+  switch (status) {
+    case "active":
+      return "success";
+    case "draft":
+      return "info";
+    default:
+      return undefined;
+  }
+};
+
+const fmtDate = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+// ─── Campaign progress card ────────────────────────────────────────────────
 
 const ProgressBar = ({ pct }: { pct: number }) => (
   <div className={styles.progressBar}>
@@ -97,13 +143,11 @@ const ProgressBar = ({ pct }: { pct: number }) => (
 const CampaignCard = ({
   campaign,
   progress,
-  locale,
   onArchive,
   onEdit,
 }: {
   campaign: CampaignGoalView;
   progress: CampaignProgressView | undefined;
-  locale: string;
   onArchive: () => void;
   onEdit: () => void;
 }) => {
@@ -128,18 +172,20 @@ const CampaignCard = ({
     return t("paceInfo", { pct });
   })();
 
-  const totalTarget = campaign.targets.reduce((s, t) => s + t.targetOrders, 0);
+  const totalTarget = campaign.targets.reduce(
+    (s, tgt) => s + tgt.targetOrders,
+    0,
+  );
+  const badgeTone = statusToBadgeTone(campaign.status);
 
   return (
     <div className={styles.campaignCard} data-status={campaign.status}>
       <div className={styles.cardHeader}>
         <div className={styles.cardTitleGroup}>
           <h3 className={styles.cardTitle}>{campaign.name}</h3>
-          <span
-            className={`${styles.statusBadge} ${styles[`status-${campaign.status}`] ?? ""}`}
-          >
+          <s-badge tone={badgeTone || undefined}>
             {t(`status.${campaign.status}`)}
-          </span>
+          </s-badge>
           <span className={styles.cardDateRange}>
             {campaign.startDate} → {campaign.endDate}
           </span>
@@ -148,14 +194,13 @@ const CampaignCard = ({
           ) : null}
         </div>
         <div className={styles.cardHeaderActions}>
-          <button
-            type="button"
-            className={styles.cardToggle}
+          <s-button
+            variant="tertiary"
             onClick={() => setExpanded((p) => !p)}
             aria-label={expanded ? "Collapse" : "Expand"}
           >
             {expanded ? "▾" : "▸"}
-          </button>
+          </s-button>
         </div>
       </div>
 
@@ -227,38 +272,18 @@ const CampaignCard = ({
             })}
           </div>
           <div className={styles.cardFooter}>
-            <span className={styles.cardFooterNote}>
-              {t("baselineNote")}:{" "}
-              {campaign.targets.some((t) => t.baselineOrders != null)
-                ? campaign.targets
-                    .filter((t) => t.baselineOrders != null)
-                    .map(
-                      (t) =>
-                        `${t.locationName} ${formatCurrencyCompact(
-                          t.baselineOrders ?? 0,
-                          "",
-                          locale,
-                        )}`,
-                    )
-                    .join(" · ")
-                : t("noBaseline")}
-            </span>
             <div className={styles.cardFooterActions}>
-              <button
-                type="button"
-                className={styles.secondaryButton}
-                onClick={onEdit}
-              >
+              <s-button variant="secondary" onClick={onEdit}>
                 {t("actions.edit")}
-              </button>
+              </s-button>
               {campaign.status !== "archived" ? (
-                <button
-                  type="button"
-                  className={styles.dangerButton}
+                <s-button
+                  variant="secondary"
+                  tone="critical"
                   onClick={onArchive}
                 >
                   {t("actions.archive")}
-                </button>
+                </s-button>
               ) : null}
             </div>
           </div>
@@ -268,33 +293,35 @@ const CampaignCard = ({
   );
 };
 
-// ─── Wizard (create + edit) ──────────────────────────────────────────────────
+// ─── Wizard state ───────────────────────────────────────────────────────────
 
 type WizardDraft = {
   id?: string;
   name: string;
   startDate: string;
   endDate: string;
+  metric: CampaignMetric;
   matchRuleType: MatchRuleType;
-  matchRuleValues: string;
+  matchRuleValues: string[];
   matchRulePropertyKey: string;
   matchRulePropertyValue: string;
+  baselinePeriod: "none" | "last_month" | "last_quarter" | "last_year";
   targets: Record<string, { targetOrders: string; baselineOrders: string }>;
 };
 
 const emptyDraft = (): WizardDraft => {
   const today = new Date();
   const nextWeek = new Date(today.getTime() + 7 * 24 * 3600 * 1000);
-  const fmt = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   return {
     name: "",
-    startDate: fmt(today),
-    endDate: fmt(nextWeek),
+    startDate: fmtDate(today),
+    endDate: fmtDate(nextWeek),
+    metric: "bundle_orders",
     matchRuleType: "lineItemTag",
-    matchRuleValues: "",
+    matchRuleValues: [],
     matchRulePropertyKey: "",
     matchRulePropertyValue: "",
+    baselinePeriod: "none",
     targets: {},
   };
 };
@@ -302,10 +329,11 @@ const emptyDraft = (): WizardDraft => {
 const draftFromCampaign = (c: CampaignGoalView): WizardDraft => {
   const parsed = parseMatchRuleForForm(c.matchRule);
   const targets: WizardDraft["targets"] = {};
-  for (const t of c.targets) {
-    targets[t.locationId] = {
-      targetOrders: String(t.targetOrders),
-      baselineOrders: t.baselineOrders != null ? String(t.baselineOrders) : "",
+  for (const tgt of c.targets) {
+    targets[tgt.locationId] = {
+      targetOrders: String(tgt.targetOrders),
+      baselineOrders:
+        tgt.baselineOrders != null ? String(tgt.baselineOrders) : "",
     };
   }
   return {
@@ -313,360 +341,30 @@ const draftFromCampaign = (c: CampaignGoalView): WizardDraft => {
     name: c.name,
     startDate: c.startDate,
     endDate: c.endDate,
-    matchRuleType: parsed.type as MatchRuleType,
+    metric: c.metric,
+    matchRuleType: parsed.type,
     matchRuleValues: parsed.values,
     matchRulePropertyKey: parsed.propertyKey,
     matchRulePropertyValue: parsed.propertyValue,
+    baselinePeriod: "none",
     targets,
   };
 };
 
-const Wizard = ({
-  draft,
-  setDraft,
-  locations,
-  onClose,
-  onSave,
-  isSaving,
-  lockedMatchRule,
-}: {
-  draft: WizardDraft;
-  setDraft: (d: WizardDraft) => void;
-  locations: RetailLocation[];
-  onClose: () => void;
-  onSave: () => void;
-  isSaving: boolean;
-  lockedMatchRule: boolean;
-}) => {
-  const { t } = useTranslation("campaigns");
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-
-  const updateTarget = (
-    locationId: string,
-    field: "targetOrders" | "baselineOrders",
-    value: string,
-  ) => {
-    setDraft({
-      ...draft,
-      targets: {
-        ...draft.targets,
-        [locationId]: {
-          targetOrders: draft.targets[locationId]?.targetOrders ?? "",
-          baselineOrders: draft.targets[locationId]?.baselineOrders ?? "",
-          [field]: value,
-        },
-      },
-    });
-  };
-
-  const totalTarget = Object.values(draft.targets).reduce(
-    (s, t) => s + (Number(t.targetOrders) || 0),
-    0,
-  );
-
-  return (
-    <div className={styles.wizardBackdrop}>
-      <div className={styles.wizardModal}>
-        <div className={styles.wizardHeader}>
-          <h2 className={styles.wizardTitle}>
-            {draft.id ? t("wizard.editTitle") : t("wizard.newTitle")}
-          </h2>
-          <button
-            type="button"
-            className={styles.closeButton}
-            onClick={onClose}
-            aria-label="Close"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className={styles.wizardSteps}>
-          {[1, 2, 3, 4].map((n) => (
-            <div
-              key={n}
-              className={`${styles.wizardStepDot}${step === n ? ` ${styles.wizardStepDotActive}` : ""}`}
-              onClick={() => setStep(n as 1 | 2 | 3 | 4)}
-            >
-              {n}
-            </div>
-          ))}
-        </div>
-
-        {step === 1 ? (
-          <div className={styles.wizardBody}>
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>{t("wizard.nameLabel")}</span>
-              <input
-                type="text"
-                className={styles.textInput}
-                value={draft.name}
-                onChange={(e) =>
-                  setDraft({ ...draft, name: e.currentTarget.value })
-                }
-                placeholder={t("wizard.namePlaceholder")}
-              />
-            </label>
-            <div className={styles.fieldRow}>
-              <label className={styles.field}>
-                <span className={styles.fieldLabel}>
-                  {t("wizard.startDateLabel")}
-                </span>
-                <input
-                  type="date"
-                  className={styles.textInput}
-                  value={draft.startDate}
-                  onChange={(e) =>
-                    setDraft({ ...draft, startDate: e.currentTarget.value })
-                  }
-                />
-              </label>
-              <label className={styles.field}>
-                <span className={styles.fieldLabel}>
-                  {t("wizard.endDateLabel")}
-                </span>
-                <input
-                  type="date"
-                  className={styles.textInput}
-                  value={draft.endDate}
-                  onChange={(e) =>
-                    setDraft({ ...draft, endDate: e.currentTarget.value })
-                  }
-                />
-              </label>
-            </div>
-            <p className={styles.fieldHint}>{t("wizard.metricHint")}</p>
-          </div>
-        ) : null}
-
-        {step === 2 ? (
-          <div className={styles.wizardBody}>
-            {lockedMatchRule ? (
-              <div className={styles.banner}>{t("wizard.matchRuleLocked")}</div>
-            ) : null}
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>
-                {t("wizard.matchRuleTypeLabel")}
-              </span>
-              <select
-                className={styles.textInput}
-                value={draft.matchRuleType}
-                disabled={lockedMatchRule}
-                onChange={(e) =>
-                  setDraft({
-                    ...draft,
-                    matchRuleType: e.currentTarget.value as MatchRuleType,
-                  })
-                }
-              >
-                <option value="lineItemTag">
-                  {t("wizard.matchRuleLineItemTag")}
-                </option>
-                <option value="lineItemSku">
-                  {t("wizard.matchRuleLineItemSku")}
-                </option>
-                <option value="lineItemProductId">
-                  {t("wizard.matchRuleLineItemProductId")}
-                </option>
-                <option value="lineItemProperty">
-                  {t("wizard.matchRuleLineItemProperty")}
-                </option>
-                <option value="orderTag">
-                  {t("wizard.matchRuleOrderTag")}
-                </option>
-              </select>
-            </label>
-            {draft.matchRuleType === "lineItemProperty" ? (
-              <div className={styles.fieldRow}>
-                <label className={styles.field}>
-                  <span className={styles.fieldLabel}>
-                    {t("wizard.propertyKeyLabel")}
-                  </span>
-                  <input
-                    type="text"
-                    className={styles.textInput}
-                    value={draft.matchRulePropertyKey}
-                    disabled={lockedMatchRule}
-                    onChange={(e) =>
-                      setDraft({
-                        ...draft,
-                        matchRulePropertyKey: e.currentTarget.value,
-                      })
-                    }
-                    placeholder="_bundle_id"
-                  />
-                </label>
-                <label className={styles.field}>
-                  <span className={styles.fieldLabel}>
-                    {t("wizard.propertyValueLabel")}
-                  </span>
-                  <input
-                    type="text"
-                    className={styles.textInput}
-                    value={draft.matchRulePropertyValue}
-                    disabled={lockedMatchRule}
-                    onChange={(e) =>
-                      setDraft({
-                        ...draft,
-                        matchRulePropertyValue: e.currentTarget.value,
-                      })
-                    }
-                    placeholder={t("wizard.propertyValuePlaceholder")}
-                  />
-                </label>
-              </div>
-            ) : (
-              <label className={styles.field}>
-                <span className={styles.fieldLabel}>
-                  {t("wizard.matchValuesLabel")}
-                </span>
-                <input
-                  type="text"
-                  className={styles.textInput}
-                  value={draft.matchRuleValues}
-                  disabled={lockedMatchRule}
-                  onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      matchRuleValues: e.currentTarget.value,
-                    })
-                  }
-                  placeholder={t("wizard.matchValuesPlaceholder")}
-                />
-              </label>
-            )}
-            <p className={styles.fieldHint}>{t("wizard.matchRuleHint")}</p>
-          </div>
-        ) : null}
-
-        {step === 3 ? (
-          <div className={styles.wizardBody}>
-            <p className={styles.fieldHint}>{t("wizard.targetsHint")}</p>
-            <div className={styles.targetsTable}>
-              <div className={styles.targetsHeader}>
-                <span>{t("col.location")}</span>
-                <span>{t("col.baseline")}</span>
-                <span>{t("col.target")}</span>
-              </div>
-              {locations.map((loc) => {
-                const row = draft.targets[loc.id] ?? {
-                  targetOrders: "",
-                  baselineOrders: "",
-                };
-                return (
-                  <div key={loc.id} className={styles.targetsRow}>
-                    <span>{loc.name}</span>
-                    <input
-                      type="number"
-                      min="0"
-                      className={styles.numberInput}
-                      value={row.baselineOrders}
-                      onChange={(e) =>
-                        updateTarget(
-                          loc.id,
-                          "baselineOrders",
-                          e.currentTarget.value,
-                        )
-                      }
-                      placeholder="—"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      className={styles.numberInput}
-                      value={row.targetOrders}
-                      onChange={(e) =>
-                        updateTarget(
-                          loc.id,
-                          "targetOrders",
-                          e.currentTarget.value,
-                        )
-                      }
-                      placeholder="0"
-                    />
-                  </div>
-                );
-              })}
-            </div>
-            <p className={styles.fieldHint}>
-              {t("wizard.totalTargetLabel")}: <strong>{totalTarget}</strong>
-            </p>
-          </div>
-        ) : null}
-
-        {step === 4 ? (
-          <div className={styles.wizardBody}>
-            <div className={styles.reviewBlock}>
-              <h4>{t("wizard.reviewHeading")}</h4>
-              <dl className={styles.reviewList}>
-                <dt>{t("wizard.nameLabel")}</dt>
-                <dd>{draft.name || "—"}</dd>
-                <dt>{t("wizard.dateRangeLabel")}</dt>
-                <dd>
-                  {draft.startDate} → {draft.endDate}
-                </dd>
-                <dt>{t("wizard.matchRuleTypeLabel")}</dt>
-                <dd>{draft.matchRuleType}</dd>
-                <dt>{t("wizard.matchValuesLabel")}</dt>
-                <dd>
-                  {draft.matchRuleType === "lineItemProperty"
-                    ? `${draft.matchRulePropertyKey}=${draft.matchRulePropertyValue || "*"}`
-                    : draft.matchRuleValues || "—"}
-                </dd>
-                <dt>{t("wizard.totalTargetLabel")}</dt>
-                <dd>{totalTarget}</dd>
-              </dl>
-            </div>
-          </div>
-        ) : null}
-
-        <div className={styles.wizardFooter}>
-          <button
-            type="button"
-            className={styles.secondaryButton}
-            onClick={onClose}
-            disabled={isSaving}
-          >
-            {t("actions.cancel")}
-          </button>
-          <div className={styles.wizardNav}>
-            {step > 1 ? (
-              <button
-                type="button"
-                className={styles.secondaryButton}
-                onClick={() => setStep((step - 1) as 1 | 2 | 3)}
-                disabled={isSaving}
-              >
-                {t("actions.back")}
-              </button>
-            ) : null}
-            {step < 4 ? (
-              <button
-                type="button"
-                className={styles.primaryButton}
-                onClick={() => setStep((step + 1) as 2 | 3 | 4)}
-                disabled={step === 1 && draft.name.trim().length === 0}
-              >
-                {t("actions.next")}
-              </button>
-            ) : (
-              <button
-                type="button"
-                className={styles.primaryButton}
-                onClick={onSave}
-                disabled={isSaving || totalTarget === 0}
-              >
-                {isSaving ? t("actions.saving") : t("actions.save")}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+const WizardModalOpener = ({ open }: { open: boolean }) => {
+  useEffect(() => {
+    const el = document.getElementById("campaign-wizard");
+    if (!el) return;
+    if (open) {
+      el.setAttribute("open", "");
+    } else {
+      el.removeAttribute("open");
+    }
+  }, [open]);
+  return null;
 };
 
-// ─── Main export ─────────────────────────────────────────────────────────────
+// ─── Main export ────────────────────────────────────────────────────────────
 
 export function CampaignsTab({
   locations,
@@ -674,6 +372,8 @@ export function CampaignsTab({
   progressByCampaignId,
   onSubmit,
   isSubmitting,
+  matchOptionsFetcher,
+  baselineFetcher,
 }: CampaignsTabProps) {
   const { t, i18n } = useTranslation("campaigns");
   const locale = i18n.language;
@@ -681,9 +381,15 @@ export function CampaignsTab({
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardDraft, setWizardDraft] = useState<WizardDraft>(emptyDraft());
   const [wizardLockedMatchRule, setWizardLockedMatchRule] = useState(false);
+  const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4>(1);
+  const [matchSearch, setMatchSearch] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activeCampaigns = useMemo(
-    () => campaigns.filter((c) => c.status === "active" || c.status === "draft"),
+    () =>
+      campaigns.filter(
+        (c) => c.status === "active" || c.status === "draft",
+      ),
     [campaigns],
   );
   const pastCampaigns = useMemo(
@@ -694,17 +400,134 @@ export function CampaignsTab({
     [campaigns],
   );
 
+  // Fetch match options when rule type changes or search changes
+  useEffect(() => {
+    if (!wizardOpen || wizardStep !== 2) return;
+    if (wizardDraft.matchRuleType === "lineItemProperty") return;
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      const fd = new FormData();
+      fd.append("intent", "fetch-match-options");
+      fd.append("ruleType", wizardDraft.matchRuleType);
+      fd.append("query", matchSearch);
+      matchOptionsFetcher.submit(fd, { method: "post" });
+    }, 300);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wizardDraft.matchRuleType, matchSearch, wizardOpen, wizardStep]);
+
+  // Auto-populate baseline when period changes
+  useEffect(() => {
+    if (
+      wizardDraft.baselinePeriod === "none" ||
+      !wizardDraft.startDate ||
+      !wizardDraft.endDate
+    )
+      return;
+
+    const fd = new FormData();
+    fd.append("intent", "fetch-campaign-baseline");
+    fd.append("period", wizardDraft.baselinePeriod);
+    fd.append("campaignStart", wizardDraft.startDate);
+    fd.append("campaignEnd", wizardDraft.endDate);
+    baselineFetcher.submit(fd, { method: "post" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wizardDraft.baselinePeriod, wizardDraft.startDate, wizardDraft.endDate]);
+
+  // Apply baseline data when fetcher returns
+  useEffect(() => {
+    if (
+      baselineFetcher.state === "idle" &&
+      baselineFetcher.data?.ok &&
+      baselineFetcher.data.baseline &&
+      wizardDraft.baselinePeriod !== "none"
+    ) {
+      const baseline = baselineFetcher.data.baseline;
+      const updatedTargets = { ...wizardDraft.targets };
+      for (const loc of locations) {
+        const data = baseline[loc.id];
+        const existing = updatedTargets[loc.id] ?? {
+          targetOrders: "",
+          baselineOrders: "",
+        };
+        updatedTargets[loc.id] = {
+          ...existing,
+          baselineOrders: data ? String(data.orderCount) : "0",
+        };
+      }
+      setWizardDraft((prev) => ({ ...prev, targets: updatedTargets }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baselineFetcher.state, baselineFetcher.data]);
+
+  const matchOptions = matchOptionsFetcher.data?.options ?? [];
+  const matchOptionsLoading = matchOptionsFetcher.state !== "idle";
+
   const openNewWizard = () => {
     setWizardDraft(emptyDraft());
     setWizardLockedMatchRule(false);
+    setWizardStep(1);
+    setMatchSearch("");
     setWizardOpen(true);
   };
 
   const openEditWizard = (c: CampaignGoalView) => {
     setWizardDraft(draftFromCampaign(c));
     setWizardLockedMatchRule(c.status === "active" || c.status === "ended");
+    setWizardStep(1);
+    setMatchSearch("");
     setWizardOpen(true);
   };
+
+  const closeWizard = () => {
+    setWizardOpen(false);
+  };
+
+  const toggleMatchValue = (val: string) => {
+    setWizardDraft((prev) => {
+      const has = prev.matchRuleValues.includes(val);
+      return {
+        ...prev,
+        matchRuleValues: has
+          ? prev.matchRuleValues.filter((v) => v !== val)
+          : [...prev.matchRuleValues, val],
+      };
+    });
+  };
+
+  const removeMatchValue = (val: string) => {
+    setWizardDraft((prev) => ({
+      ...prev,
+      matchRuleValues: prev.matchRuleValues.filter((v) => v !== val),
+    }));
+  };
+
+  const updateTarget = (
+    locationId: string,
+    field: "targetOrders" | "baselineOrders",
+    value: string,
+  ) => {
+    setWizardDraft((prev) => ({
+      ...prev,
+      targets: {
+        ...prev.targets,
+        [locationId]: {
+          targetOrders: prev.targets[locationId]?.targetOrders ?? "",
+          baselineOrders: prev.targets[locationId]?.baselineOrders ?? "",
+          [field]: value,
+        },
+      },
+    }));
+  };
+
+  const totalTarget = Object.values(wizardDraft.targets).reduce(
+    (s, tgt) => s + (Number(tgt.targetOrders) || 0),
+    0,
+  );
 
   const submitWizard = () => {
     const targetsPayload = locations
@@ -719,7 +542,7 @@ export function CampaignsTab({
           baselineOrders: baselineStr === "" ? null : Number(baselineStr) || 0,
         };
       })
-      .filter((t) => t.targetOrders > 0);
+      .filter((tgt) => tgt.targetOrders > 0);
 
     const matchRule = buildMatchRuleFromForm({
       type: wizardDraft.matchRuleType,
@@ -729,12 +552,15 @@ export function CampaignsTab({
     });
 
     const fd = new FormData();
-    fd.append("intent", wizardDraft.id ? "update-campaign" : "create-campaign");
+    fd.append(
+      "intent",
+      wizardDraft.id ? "update-campaign" : "create-campaign",
+    );
     if (wizardDraft.id) fd.append("id", wizardDraft.id);
     fd.append("name", wizardDraft.name);
     fd.append("startDate", wizardDraft.startDate);
     fd.append("endDate", wizardDraft.endDate);
-    fd.append("metric", "bundle_orders");
+    fd.append("metric", wizardDraft.metric);
     fd.append("matchRule", JSON.stringify(matchRule));
     fd.append("targets", JSON.stringify(targetsPayload));
     onSubmit(fd);
@@ -748,29 +574,25 @@ export function CampaignsTab({
     onSubmit(fd);
   };
 
+  const stepHeading = wizardDraft.id
+    ? t("wizard.editTitle")
+    : t("wizard.newTitle");
+
   return (
     <div className={styles.campaignsTab}>
       <div className={styles.tabHeader}>
         <h2 className={sharedStyles.sectionTitle}>{t("pageHeading")}</h2>
-        <button
-          type="button"
-          className={styles.primaryButton}
-          onClick={openNewWizard}
-        >
+        <s-button variant="primary" onClick={openNewWizard}>
           {t("actions.newCampaign")}
-        </button>
+        </s-button>
       </div>
 
       {activeCampaigns.length === 0 ? (
         <div className={styles.emptyState}>
           <p>{t("emptyState")}</p>
-          <button
-            type="button"
-            className={styles.primaryButton}
-            onClick={openNewWizard}
-          >
+          <s-button variant="primary" onClick={openNewWizard}>
             {t("actions.newCampaign")}
-          </button>
+          </s-button>
         </div>
       ) : (
         <div className={styles.cardList}>
@@ -779,7 +601,6 @@ export function CampaignsTab({
               key={c.id}
               campaign={c}
               progress={progressByCampaignId[c.id]}
-              locale={locale}
               onArchive={() => archiveCampaign(c.id)}
               onEdit={() => openEditWizard(c)}
             />
@@ -789,17 +610,21 @@ export function CampaignsTab({
 
       {pastCampaigns.length > 0 ? (
         <div className={styles.pastSection}>
-          <h3 className={sharedStyles.subSectionTitle}>{t("pastCampaigns")}</h3>
+          <h3 className={sharedStyles.subSectionTitle}>
+            {t("pastCampaigns")}
+          </h3>
           <div className={styles.pastList}>
             {pastCampaigns.map((c) => {
               const progress = progressByCampaignId[c.id];
-              const totalTarget = c.targets.reduce(
-                (s, t) => s + t.targetOrders,
+              const total = c.targets.reduce(
+                (s, tgt) => s + tgt.targetOrders,
                 0,
               );
               const matched = progress?.totalMatched ?? 0;
               const ach =
-                totalTarget > 0 ? ((matched / totalTarget) * 100).toFixed(0) : "—";
+                total > 0
+                  ? ((matched / total) * 100).toFixed(0)
+                  : "—";
               return (
                 <div key={c.id} className={styles.pastRow}>
                   <span className={styles.pastName}>{c.name}</span>
@@ -807,15 +632,14 @@ export function CampaignsTab({
                     {c.startDate} → {c.endDate}
                   </span>
                   <span className={styles.pastResult}>
-                    {matched} / {totalTarget} ({ach}%)
+                    {matched} / {total} ({ach}%)
                   </span>
-                  <button
-                    type="button"
-                    className={styles.secondaryButton}
+                  <s-button
+                    variant="secondary"
                     onClick={() => openEditWizard(c)}
                   >
                     {t("actions.view")}
-                  </button>
+                  </s-button>
                 </div>
               );
             })}
@@ -823,16 +647,442 @@ export function CampaignsTab({
         </div>
       ) : null}
 
+      {/* ── Wizard modal ──────────────────────────────────────────────────── */}
+
+      <WizardModalOpener open={wizardOpen} />
       {wizardOpen ? (
-        <Wizard
-          draft={wizardDraft}
-          setDraft={setWizardDraft}
-          locations={locations}
-          onClose={() => setWizardOpen(false)}
-          onSave={submitWizard}
-          isSaving={isSubmitting}
-          lockedMatchRule={wizardLockedMatchRule}
-        />
+        <s-modal id="campaign-wizard" heading={stepHeading}>
+          <div className={styles.wizardBody}>
+            <div className={styles.wizardSteps}>
+              {([1, 2, 3, 4] as const).map((n) => (
+                <div
+                  key={n}
+                  className={`${styles.wizardStepDot}${wizardStep === n ? ` ${styles.wizardStepDotActive}` : ""}`}
+                  onClick={() => setWizardStep(n)}
+                >
+                  {n}
+                </div>
+              ))}
+            </div>
+
+            {/* ── Step 1: Basic info ──────────────────────────────────────── */}
+            {wizardStep === 1 ? (
+              <div className={styles.stepContent}>
+                <s-text-field
+                  label={t("wizard.nameLabel")}
+                  value={wizardDraft.name}
+                  placeholder={t("wizard.namePlaceholder")}
+                  onChange={(e: Event) =>
+                    setWizardDraft({
+                      ...wizardDraft,
+                      name: (e.currentTarget as HTMLInputElement).value,
+                    })
+                  }
+                ></s-text-field>
+
+                <div className={styles.fieldRow}>
+                  <div className={styles.field}>
+                    <span className={styles.fieldLabel}>
+                      {t("wizard.startDateLabel")}
+                    </span>
+                    <s-date-picker
+                      type="single"
+                      value={wizardDraft.startDate}
+                      onChange={(e: Event) =>
+                        setWizardDraft({
+                          ...wizardDraft,
+                          startDate: (e.currentTarget as HTMLInputElement)
+                            .value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className={styles.field}>
+                    <span className={styles.fieldLabel}>
+                      {t("wizard.endDateLabel")}
+                    </span>
+                    <s-date-picker
+                      type="single"
+                      value={wizardDraft.endDate}
+                      onChange={(e: Event) =>
+                        setWizardDraft({
+                          ...wizardDraft,
+                          endDate: (e.currentTarget as HTMLInputElement)
+                            .value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {/* ── Step 2: Metric + Match rule ────────────────────────────── */}
+            {wizardStep === 2 ? (
+              <div className={styles.stepContent}>
+                <s-select
+                  label={t("wizard.metricLabel")}
+                  value={wizardDraft.metric}
+                  onChange={(e: Event) =>
+                    setWizardDraft({
+                      ...wizardDraft,
+                      metric: (e.currentTarget as HTMLSelectElement)
+                        .value as CampaignMetric,
+                    })
+                  }
+                >
+                  {METRIC_OPTIONS.map((m) => (
+                    <s-option key={m} value={m}>
+                      {t(`wizard.metric_${m}`)}
+                    </s-option>
+                  ))}
+                </s-select>
+
+                {wizardLockedMatchRule ? (
+                  <div className={styles.banner}>
+                    {t("wizard.matchRuleLocked")}
+                  </div>
+                ) : null}
+
+                <s-select
+                  label={t("wizard.matchRuleTypeLabel")}
+                  value={wizardDraft.matchRuleType}
+                  disabled={wizardLockedMatchRule || undefined}
+                  onChange={(e: Event) => {
+                    const val = (e.currentTarget as HTMLSelectElement)
+                      .value as MatchRuleType;
+                    setWizardDraft({
+                      ...wizardDraft,
+                      matchRuleType: val,
+                      matchRuleValues: [],
+                    });
+                    setMatchSearch("");
+                  }}
+                >
+                  <s-option value="lineItemTag">
+                    {t("wizard.matchRuleLineItemTag")}
+                  </s-option>
+                  <s-option value="lineItemProductType">
+                    {t("wizard.matchRuleLineItemProductType")}
+                  </s-option>
+                  <s-option value="lineItemProductId">
+                    {t("wizard.matchRuleLineItemProductId")}
+                  </s-option>
+                  <s-option value="lineItemProperty">
+                    {t("wizard.matchRuleLineItemProperty")}
+                  </s-option>
+                  <s-option value="orderTag">
+                    {t("wizard.matchRuleOrderTag")}
+                  </s-option>
+                </s-select>
+
+                {wizardDraft.matchRuleType === "lineItemProperty" ? (
+                  <div className={styles.fieldRow}>
+                    <s-text-field
+                      label={t("wizard.propertyKeyLabel")}
+                      value={wizardDraft.matchRulePropertyKey}
+                      disabled={wizardLockedMatchRule || undefined}
+                      placeholder="_bundle_id"
+                      onChange={(e: Event) =>
+                        setWizardDraft({
+                          ...wizardDraft,
+                          matchRulePropertyKey: (
+                            e.currentTarget as HTMLInputElement
+                          ).value,
+                        })
+                      }
+                    ></s-text-field>
+                    <s-text-field
+                      label={t("wizard.propertyValueLabel")}
+                      value={wizardDraft.matchRulePropertyValue}
+                      disabled={wizardLockedMatchRule || undefined}
+                      placeholder={t("wizard.propertyValuePlaceholder")}
+                      onChange={(e: Event) =>
+                        setWizardDraft({
+                          ...wizardDraft,
+                          matchRulePropertyValue: (
+                            e.currentTarget as HTMLInputElement
+                          ).value,
+                        })
+                      }
+                    ></s-text-field>
+                  </div>
+                ) : (
+                  <>
+                    <div className={styles.matchSearchWrap}>
+                      <s-text-field
+                        label={t("wizard.matchValuesLabel")}
+                        value={matchSearch}
+                        disabled={wizardLockedMatchRule || undefined}
+                        placeholder={t("wizard.matchSearchPlaceholder")}
+                        onChange={(e: Event) =>
+                          setMatchSearch(
+                            (e.currentTarget as HTMLInputElement).value,
+                          )
+                        }
+                      ></s-text-field>
+
+                      {matchOptionsLoading ? (
+                        <p className={styles.fieldHint}>
+                          {t("wizard.matchValuesLoading")}
+                        </p>
+                      ) : matchOptions.length > 0 ? (
+                        <div className={styles.matchOptionsDropdown}>
+                          {matchOptions.map((opt) => {
+                            const selected =
+                              wizardDraft.matchRuleValues.includes(opt.value);
+                            return (
+                              <div
+                                key={opt.value}
+                                className={`${styles.matchOptionItem}${selected ? ` ${styles.matchOptionSelected}` : ""}`}
+                                onClick={() =>
+                                  !wizardLockedMatchRule &&
+                                  toggleMatchValue(opt.value)
+                                }
+                                role="button"
+                              >
+                                <s-checkbox
+                                  checked={selected || undefined}
+                                  onChange={() =>
+                                    !wizardLockedMatchRule &&
+                                    toggleMatchValue(opt.value)
+                                  }
+                                />
+                                <span>{opt.label}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : null}
+                    </div>
+
+                    {wizardDraft.matchRuleValues.length > 0 ? (
+                      <div className={styles.matchChips}>
+                        {wizardDraft.matchRuleValues.map((val) => (
+                          <span key={val} className={styles.matchChip}>
+                            {val}
+                            {!wizardLockedMatchRule ? (
+                              <span
+                                className={styles.matchChipRemove}
+                                onClick={() => removeMatchValue(val)}
+                                role="button"
+                              >
+                                ×
+                              </span>
+                            ) : null}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </>
+                )}
+
+                <p className={styles.fieldHint}>
+                  {t("wizard.matchRuleHint")}
+                </p>
+              </div>
+            ) : null}
+
+            {/* ── Step 3: Targets + Baseline ─────────────────────────────── */}
+            {wizardStep === 3 ? (
+              <div className={styles.stepContent}>
+                <div className={styles.baselinePeriodRow}>
+                  <s-select
+                    label={t("wizard.baselinePeriodLabel")}
+                    value={wizardDraft.baselinePeriod}
+                    onChange={(e: Event) =>
+                      setWizardDraft({
+                        ...wizardDraft,
+                        baselinePeriod: (
+                          e.currentTarget as HTMLSelectElement
+                        ).value as WizardDraft["baselinePeriod"],
+                      })
+                    }
+                  >
+                    <s-option value="none">
+                      {t("wizard.baselineNone")}
+                    </s-option>
+                    <s-option value="last_month">
+                      {t("wizard.baselineLastMonth")}
+                    </s-option>
+                    <s-option value="last_quarter">
+                      {t("wizard.baselineLastQuarter")}
+                    </s-option>
+                    <s-option value="last_year">
+                      {t("wizard.baselineLastYear")}
+                    </s-option>
+                  </s-select>
+                </div>
+
+                {baselineFetcher.state !== "idle" ? (
+                  <p className={styles.fieldHint}>
+                    {t("wizard.baselineLoading")}
+                  </p>
+                ) : null}
+
+                <div className={styles.targetsTable}>
+                  <div className={styles.targetsHeader}>
+                    <span>{t("col.location")}</span>
+                    <span>{t("col.baseline")}</span>
+                    <span>{t("col.target")}</span>
+                  </div>
+                  {locations.map((loc) => {
+                    const row = wizardDraft.targets[loc.id] ?? {
+                      targetOrders: "",
+                      baselineOrders: "",
+                    };
+                    const baselineReadOnly =
+                      wizardDraft.baselinePeriod !== "none";
+                    return (
+                      <div key={loc.id} className={styles.targetsRow}>
+                        <span>{loc.name}</span>
+                        <input
+                          type="number"
+                          min="0"
+                          className={styles.numberInput}
+                          value={row.baselineOrders}
+                          disabled={baselineReadOnly}
+                          placeholder="—"
+                          onChange={(e) =>
+                            updateTarget(
+                              loc.id,
+                              "baselineOrders",
+                              e.currentTarget.value,
+                            )
+                          }
+                        />
+                        <input
+                          type="number"
+                          min="0"
+                          className={styles.numberInput}
+                          value={row.targetOrders}
+                          placeholder="0"
+                          onChange={(e) =>
+                            updateTarget(
+                              loc.id,
+                              "targetOrders",
+                              e.currentTarget.value,
+                            )
+                          }
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className={styles.fieldHint}>
+                  {t("wizard.totalTargetLabel")}: <strong>{totalTarget}</strong>
+                </p>
+              </div>
+            ) : null}
+
+            {/* ── Step 4: Review ──────────────────────────────────────────── */}
+            {wizardStep === 4 ? (
+              <div className={styles.stepContent}>
+                <div className={styles.reviewBlock}>
+                  <h4>{t("wizard.reviewHeading")}</h4>
+                  <div className={styles.reviewGrid}>
+                    <s-box padding="base">
+                      <span className={styles.reviewLabel}>
+                        {t("wizard.nameLabel")}
+                      </span>
+                      <span className={styles.reviewValue}>
+                        {wizardDraft.name || "—"}
+                      </span>
+                    </s-box>
+                    <s-box padding="base">
+                      <span className={styles.reviewLabel}>
+                        {t("wizard.dateRangeLabel")}
+                      </span>
+                      <span className={styles.reviewValue}>
+                        {wizardDraft.startDate} → {wizardDraft.endDate}
+                      </span>
+                    </s-box>
+                    <s-box padding="base">
+                      <span className={styles.reviewLabel}>
+                        {t("wizard.metricLabel")}
+                      </span>
+                      <span className={styles.reviewValue}>
+                        {t(`wizard.metric_${wizardDraft.metric}`)}
+                      </span>
+                    </s-box>
+                    <s-box padding="base">
+                      <span className={styles.reviewLabel}>
+                        {t("wizard.matchRuleTypeLabel")}
+                      </span>
+                      <span className={styles.reviewValue}>
+                        {wizardDraft.matchRuleType}
+                      </span>
+                    </s-box>
+                    <s-box padding="base">
+                      <span className={styles.reviewLabel}>
+                        {t("wizard.matchValuesLabel")}
+                      </span>
+                      <span className={styles.reviewValue}>
+                        {wizardDraft.matchRuleType === "lineItemProperty"
+                          ? `${wizardDraft.matchRulePropertyKey}=${wizardDraft.matchRulePropertyValue || "*"}`
+                          : wizardDraft.matchRuleValues.join(", ") || "—"}
+                      </span>
+                    </s-box>
+                    <s-box padding="base">
+                      <span className={styles.reviewLabel}>
+                        {t("wizard.totalTargetLabel")}
+                      </span>
+                      <span className={styles.reviewValue}>
+                        {totalTarget}
+                      </span>
+                    </s-box>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+
+          {/* ── Wizard footer ──────────────────────────────────────────── */}
+          <div className={styles.wizardFooter}>
+            <s-button variant="secondary" onClick={closeWizard}>
+              {t("actions.cancel")}
+            </s-button>
+            <div className={styles.wizardNav}>
+              {wizardStep > 1 ? (
+                <s-button
+                  variant="secondary"
+                  onClick={() =>
+                    setWizardStep((wizardStep - 1) as 1 | 2 | 3)
+                  }
+                >
+                  {t("actions.back")}
+                </s-button>
+              ) : null}
+              {wizardStep < 4 ? (
+                <s-button
+                  variant="primary"
+                  onClick={() =>
+                    setWizardStep((wizardStep + 1) as 2 | 3 | 4)
+                  }
+                  disabled={
+                    (wizardStep === 1 && wizardDraft.name.trim().length === 0) ||
+                    undefined
+                  }
+                >
+                  {t("actions.next")}
+                </s-button>
+              ) : (
+                <s-button
+                  variant="primary"
+                  onClick={submitWizard}
+                  disabled={
+                    isSubmitting || totalTarget === 0 || undefined
+                  }
+                  loading={isSubmitting || undefined}
+                >
+                  {isSubmitting
+                    ? t("actions.saving")
+                    : t("actions.save")}
+                </s-button>
+              )}
+            </div>
+          </div>
+        </s-modal>
       ) : null}
     </div>
   );

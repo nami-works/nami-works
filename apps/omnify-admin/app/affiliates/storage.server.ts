@@ -53,7 +53,7 @@ export type BixGrowImportResult = {
 
 // ─── CSV Parsing Helper ─────────────────────────────────────────────────────
 
-function parseCsvLine(line: string): string[] {
+export function parseCsvLine(line: string): string[] {
   const fields: string[] = [];
   let current = "";
   let inQuotes = false;

@@ -51,6 +51,8 @@ const toDashboardView = (row: {
       locationName: t.locationName,
       targetOrders: t.targetOrders,
       baselineOrders: t.baselineOrders,
+      targetValue: t.targetOrders,
+      baselineValue: t.baselineOrders,
     }),
   ),
 });
@@ -283,11 +285,11 @@ export async function getCampaignProgress(
   });
   if (!campaign) return null;
 
+  const metric = campaign.metric as CampaignMetric;
   const startDate = campaign.startDate;
   const endDateExclusive = new Date(campaign.endDate);
-  endDateExclusive.setDate(endDateExclusive.getDate() + 1); // inclusive end
+  endDateExclusive.setDate(endDateExclusive.getDate() + 1);
 
-  // Matched orders per location
   const matchRows = await prisma.campaignOrderMatch.groupBy({
     by: ["locationId"],
     where: { campaignGoalId: campaignId },
@@ -297,7 +299,6 @@ export async function getCampaignProgress(
     matchRows.map((r) => [r.locationId, r._count._all]),
   );
 
-  // Total orders per location in the campaign window (for attach rate denominator)
   const totalRows = await prisma.salesOrder.groupBy({
     by: ["locationId"],
     where: {
@@ -310,6 +311,29 @@ export async function getCampaignProgress(
     totalRows.map((r) => [r.locationId, r._count._all]),
   );
 
+  // For revenue/AOV metrics, compute matched revenue per location
+  const revenueByLoc = new Map<string, number>();
+  if (metric === "revenue" || metric === "aov") {
+    const revenueRows = await prisma.$queryRawUnsafe<
+      Array<{ locationId: string; totalRevenue: number }>
+    >(
+      `SELECT m."locationId", COALESCE(SUM(s."totalAmount"), 0) as "totalRevenue"
+       FROM "CampaignOrderMatch" m
+       JOIN "SalesOrder" s ON s.id = m."orderId"
+       WHERE m."campaignGoalId" = $1
+       GROUP BY m."locationId"`,
+      campaignId,
+    );
+    for (const r of revenueRows) {
+      revenueByLoc.set(r.locationId, Number(r.totalRevenue));
+    }
+  }
+
+  const isCountMetric =
+    metric === "bundle_orders" ||
+    metric === "specific_products" ||
+    metric === "specific_combination";
+
   const perLocation: CampaignLocationProgress[] = campaign.targets.map(
     (t) => {
       const matched = matchByLoc.get(t.locationId) ?? 0;
@@ -317,6 +341,25 @@ export async function getCampaignProgress(
       const attachRate = total > 0 ? matched / total : null;
       const achievementPercent =
         t.targetOrders > 0 ? (matched / t.targetOrders) * 100 : null;
+
+      let matchedValue: number;
+      let targetValue: number;
+      if (isCountMetric) {
+        matchedValue = matched;
+        targetValue = t.targetOrders;
+      } else if (metric === "revenue") {
+        matchedValue = revenueByLoc.get(t.locationId) ?? 0;
+        targetValue = t.targetOrders; // target column stores the target in the same unit
+      } else {
+        // aov
+        const rev = revenueByLoc.get(t.locationId) ?? 0;
+        matchedValue = matched > 0 ? rev / matched : 0;
+        targetValue = t.targetOrders;
+      }
+
+      const achievementPercentValue =
+        targetValue > 0 ? (matchedValue / targetValue) * 100 : null;
+
       return {
         locationId: t.locationId,
         locationName: t.locationName,
@@ -326,6 +369,9 @@ export async function getCampaignProgress(
         totalOrders: total,
         attachRate,
         achievementPercent,
+        targetValue,
+        matchedValue,
+        achievementPercentValue,
       };
     },
   );
@@ -340,6 +386,19 @@ export async function getCampaignProgress(
   );
   const overallAchievementPercent =
     totalTarget > 0 ? (totalMatched / totalTarget) * 100 : null;
+
+  const totalMatchedValue = perLocation.reduce(
+    (s, p) => s + p.matchedValue,
+    0,
+  );
+  const totalTargetValue = perLocation.reduce(
+    (s, p) => s + p.targetValue,
+    0,
+  );
+  const overallAchievementPercentValue =
+    totalTargetValue > 0
+      ? (totalMatchedValue / totalTargetValue) * 100
+      : null;
 
   const now = Date.now();
   const startMs = startDate.getTime();
@@ -357,6 +416,9 @@ export async function getCampaignProgress(
     overallAchievementPercent,
     perLocation,
     elapsedFraction,
+    totalMatchedValue,
+    totalTargetValue,
+    overallAchievementPercentValue,
   };
 }
 
@@ -433,4 +495,31 @@ export async function reconcileCampaignMatches(
     `[campaign-goals] reconcile shop=${shop} campaignId=${campaignId} scanned=${scanned} matched=${matched}`,
   );
   return { scanned, matched };
+}
+
+// ─── Baseline data ──────────────────────────────────────────────────────────
+
+export async function getBaselineData(
+  shop: string,
+  periodStart: Date,
+  periodEnd: Date,
+): Promise<Record<string, { orderCount: number; revenue: number }>> {
+  const rows = await prisma.salesOrder.groupBy({
+    by: ["locationId"],
+    where: {
+      shop,
+      orderDate: { gte: periodStart, lt: periodEnd },
+    },
+    _count: { _all: true },
+    _sum: { totalAmount: true },
+  });
+
+  const result: Record<string, { orderCount: number; revenue: number }> = {};
+  for (const row of rows) {
+    result[row.locationId] = {
+      orderCount: row._count._all,
+      revenue: row._sum.totalAmount ?? 0,
+    };
+  }
+  return result;
 }
