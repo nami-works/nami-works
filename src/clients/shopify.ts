@@ -4,7 +4,10 @@ import {
 } from "@shopify/admin-api-client";
 import { getSecret } from "../secrets/ssm.js";
 
-const API_VERSION = process.env.SHOPIFY_API_VERSION ?? "2025-01";
+// "latest" is a Shopify-maintained alias that always resolves to the newest
+// stable quarterly release. Using it keeps NAMI Works on the current API
+// surface without quarterly manual bumps.
+const API_VERSION = "latest";
 const DEFAULT_TTL_MS = 5 * 60 * 1000;
 
 type CacheEntry = { client: AdminApiClient; expiresAt: number };
