@@ -1,7 +1,8 @@
 {
   "page": {
     "title": "Afiliados",
-    "syncButton": "Sincronizar Pedidos",
+    "syncButton": "Forcar ressincronizacao completa",
+    "syncButtonTooltip": "Webhooks e cron horario mantem os dados atualizados automaticamente. Use somente para ressincronizar 14 meses.",
     "importButton": "Importar CSV BixGrow"
   },
   "sync": {

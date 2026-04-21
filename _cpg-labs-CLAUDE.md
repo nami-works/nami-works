@@ -38,6 +38,7 @@ npx prisma migrate dev  # Create/apply migrations
 | App routes | `app/routes/` |
 | Shopify auth | `app/shopify.server.ts` |
 | DB schema | `prisma/schema.prisma` |
+| Data sync layers (webhooks, crons, canonical tables) | `docs/data-sync-architecture.md` |
 | Extensions | `extensions/` |
 | Infra (ECS, RDS, ALB) | `infra/terraform/` |
 | Deploy scripts | `scripts/` |
@@ -63,7 +64,13 @@ npx prisma migrate dev  # Create/apply migrations
 
 ## Hard Rules
 
-- **Auto-deploy production app changes.** When a session lands code changes to the CPG Labs / Omnify React Router app (anything under `app/`, `prisma/`, `extensions/`, `infra/`, `scripts/`), Claude should run the relevant `scripts/deploy-*.ps1` script at the end of the session without waiting for explicit confirmation. Deploys are cheap to re-run and delaying them creates drift between `main` and production. The only exceptions are when the user explicitly says "don't deploy", when the changes are work-in-progress behind an incomplete flow, or when an infra/secrets/migration step needs manual setup first.
+- **Deploy queue protocol — coordinate across parallel sessions.** Multiple Claude Code sessions run against this repo at the same time, so a per-change deploy causes redundant image rebuilds and can stomp other sessions' work-in-progress. Instead of auto-deploying at the end of every session, use `.claude/deploy-queue.md` as a shared pending/deployed log.
+  - **After landing a change** that needs a deploy (anything under `app/`, `prisma/`, `extensions/`, `infra/`, `scripts/`, `shopify.app.*.toml`), append a Pending entry to `.claude/deploy-queue.md` with: date, short title, files touched, type (code/migration/env/Terraform), summary, what it affects, dependencies, and risk. Do this BEFORE telling the user the change is done.
+  - **Before proposing a deploy**, read the full Pending section. Summarize everything pending — not just your own entry — to the user. Call out dependencies between entries (e.g. "entry X adds a column my entry Y reads from"). Flag conflicts if two entries touch the same file path.
+  - **Ask the user** whether to deploy the full stack now or hold. Never auto-deploy when other Pending entries exist from a different session.
+  - **After a successful deploy**, move the items that went out in that deploy from Pending → Deployed, adding the deploy timestamp and (if you can get it via `aws ecs describe-services`) the ECS task-def revision. Keep the last ~20 Deployed entries for history, prune older ones.
+  - **Single-session fast path:** if Pending contains only your own entry and nothing else is queued, the old "auto-deploy at end of session" behavior still applies — just confirm once with the user. The queue entry stays as the audit trail.
+- **Production and `main` must stay in sync.** Anything deployed to production must also be committed to `main`. If a session deploys changes (via `scripts/deploy-*.ps1`, `shopify app deploy`, or any infra/website push), the corresponding code changes must be committed in the same session — no "I'll commit it later." Conversely, if uncommitted work exists on disk that's already running in production, treat committing it as part of the current task before moving on.
 - **Production and `main` must stay in sync.** Anything deployed to production must also be committed to `main`. If a session deploys changes (via `scripts/deploy-*.ps1`, `shopify app deploy`, or any infra/website push), the corresponding code changes must be committed in the same session — no "I'll commit it later." Conversely, if uncommitted work exists on disk that's already running in production, treat committing it as part of the current task before moving on.
 - Keep the app embedded and aligned with Shopify Admin UX.
 - Prefer Polaris web components for page and form structure.

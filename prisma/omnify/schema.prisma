@@ -1116,3 +1116,40 @@ model BixgrowAttributedOrder {
   @@unique([shop, orderName])
   @@index([shop, importId])
 }
+
+// Flagged by the orders webhook: IGLU POS / WhatsApp Hexagon orders that
+// carry a UGC coupon code and therefore might need affiliate attribution.
+// Populated in real-time so the Attribution tab can render candidates
+// without waiting for an hourly live-Shopify pagination.
+model AttributionCandidate {
+  shop           String
+  orderGid       String
+  orderName      String?
+  sourceName     String?    // "206755758081" (IGLU) | "316281618433" (WhatsApp Hexagon)
+  primaryCoupon  String?    // lowercased coupon code from order_discounts_info custom attr
+  orderDate      DateTime?
+  discoveredAt   DateTime   @default(now())
+  discoveredVia  String?    // "webhook" | "cron"
+
+  @@id([shop, orderGid])
+  @@index([shop, orderDate])
+  @@index([shop, primaryCoupon])
+}
+
+// Hourly snapshot of the Attribution queue so the Attribution tab loader can
+// paint instantly without paginating Shopify on every page load. The Refresh
+// button still calls buildAttributionQueueSnapshot(force) and overwrites this
+// row.
+model AttributionQueueSnapshot {
+  shop          String    @id
+  fetchedAt     DateTime  @default(now())
+  fetchedVia    String?   // "cron" | "manual"
+  lookbackDays  Int       @default(90)
+  scannedCount  Int       @default(0)
+  pendingCount  Int       @default(0)
+  claimedCount  Int       @default(0)
+  unknownCount  Int       @default(0)
+  rowsJson      Json      @default("[]")
+  statsJson     Json      @default("{}")
+  updatedAt     DateTime  @updatedAt
+}

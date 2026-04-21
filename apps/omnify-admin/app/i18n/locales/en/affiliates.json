@@ -1,7 +1,8 @@
 {
   "page": {
     "title": "Affiliates",
-    "syncButton": "Sync Orders",
+    "syncButton": "Force full resync",
+    "syncButtonTooltip": "Webhooks + hourly cron keep data current automatically. Use this only for a full 14-month resync.",
     "importButton": "Import BixGrow CSV"
   },
   "sync": {

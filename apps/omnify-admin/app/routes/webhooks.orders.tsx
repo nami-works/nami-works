@@ -21,6 +21,14 @@ import {
   ingestOrder,
   deleteIngestedOrder,
 } from "../services/shop-ingest/orders.server";
+import {
+  getAffiliateCodesCached,
+  classifyWebhookOrder,
+  upsertAffiliateOrderFromWebhook,
+  upsertOrganicOrderFromWebhook,
+  deleteAffiliateOrOrganicOrder,
+  flagAttributionCandidateFromWebhook,
+} from "../affiliates/webhook-ingest.server";
 
 // Module-level cache for retail locations per shop (10-minute TTL).
 // Avoids a Shopify GraphQL call on every order webhook.
@@ -120,6 +128,17 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             () => {},
           );
         }
+        // Affiliates: cascade delete from whichever table held the row. The
+        // hourly cron rebuilds AffiliateMonthly from scratch, so no partial
+        // aggregate updates needed here. Kill-switchable via env var.
+        if (process.env.AFFILIATES_WEBHOOK_WRITE === "1") {
+          await deleteAffiliateOrOrganicOrder(shop, orderId).catch((err) =>
+            console.warn(
+              `[affiliates:webhook] delete SKIP shop=${shop} orderId=${orderId}`,
+              err,
+            ),
+          );
+        }
         console.info(`[webhooks:orders] delete order OK shop=${shop} orderId=${orderId}`);
       }
     } else {
@@ -180,6 +199,56 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           `[webhooks:orders:sales-goals] upsert SKIP shop=${shop} orderId=${payload?.id}`,
           err,
         );
+      }
+
+      // Affiliates: classify discount codes against cached AffiliateProfile
+      // list, upsert into AffiliateOrder or OrganicOrder. Kill-switchable via
+      // AFFILIATES_WEBHOOK_WRITE env var. The hourly affiliates-sync cron
+      // rebuilds AffiliateMonthly/AffiliateOrganicAgg from these rows, so no
+      // aggregate update is needed here.
+      if (process.env.AFFILIATES_WEBHOOK_WRITE === "1") {
+        try {
+          const codes = await getAffiliateCodesCached(shop);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const cls = classifyWebhookOrder(shop, payload as any, codes);
+          if (cls.kind === "affiliate") {
+            await upsertAffiliateOrderFromWebhook(cls.row);
+            console.info(
+              `[affiliates:webhook] upsert affiliate OK shop=${shop} orderId=${cls.row.id} code=${cls.row.affiliateCode} month=${cls.monthKey}`,
+            );
+          } else if (cls.kind === "organic") {
+            await upsertOrganicOrderFromWebhook(cls.row);
+            console.info(
+              `[affiliates:webhook] upsert organic OK shop=${shop} orderId=${cls.row.id} month=${cls.monthKey}`,
+            );
+          } else {
+            console.info(
+              `[affiliates:webhook] SKIP shop=${shop} orderId=${payload?.id} reason=${cls.reason}`,
+            );
+          }
+        } catch (err) {
+          console.warn(
+            `[affiliates:webhook] upsert SKIP shop=${shop} orderId=${payload?.id}`,
+            err,
+          );
+        }
+
+        // Attribution queue: flag IGLU/WhatsApp orders with UGC coupons.
+        // Gated to gebeauty inside the helper — other shops return immediately.
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const res = await flagAttributionCandidateFromWebhook(shop, payload as any);
+          if (res.flagged) {
+            console.info(
+              `[affiliates:webhook] attribution candidate flagged shop=${shop} orderId=${payload?.id}`,
+            );
+          }
+        } catch (err) {
+          console.warn(
+            `[affiliates:webhook] attribution candidate SKIP shop=${shop} orderId=${payload?.id}`,
+            err,
+          );
+        }
       }
     }
   }

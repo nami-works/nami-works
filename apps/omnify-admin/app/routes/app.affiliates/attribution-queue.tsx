@@ -14,6 +14,12 @@ type Props = {
   meta: AttributionTabLoaderData;
   userLocale: string;
   t: TFunction<"affiliates">;
+  /**
+   * Cached snapshot from the hourly cron OR the most recent manual Refresh.
+   * When provided, the tab paints from this instantly on first render and
+   * the user's Refresh button replaces it with a fresh live snapshot.
+   */
+  initialSnapshot?: AttributionQueueSnapshot | null;
 };
 
 type FetchOk = {
@@ -132,10 +138,20 @@ function CopyBtn({ text, label, t }: CopyBtnProps) {
   );
 }
 
-export function AttributionQueue({ shop, meta, userLocale, t }: Props) {
-  const [lookbackDays, setLookbackDays] = useState<number>(90);
+export function AttributionQueue({
+  shop,
+  meta,
+  userLocale,
+  t,
+  initialSnapshot,
+}: Props) {
+  const [lookbackDays, setLookbackDays] = useState<number>(
+    initialSnapshot?.lookbackDays ?? 90,
+  );
   const [search, setSearch] = useState("");
-  const [snapshot, setSnapshot] = useState<AttributionQueueSnapshot | null>(null);
+  const [snapshot, setSnapshot] = useState<AttributionQueueSnapshot | null>(
+    initialSnapshot ?? null,
+  );
   const [forgotten, setForgotten] = useState<ForgottenClaim[]>([]);
   const [currentMeta, setCurrentMeta] = useState<AttributionTabLoaderData>(meta);
   const [fetchError, setFetchError] = useState<string | null>(null);

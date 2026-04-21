@@ -94,7 +94,7 @@ type DiscountApp = {
   };
 };
 
-function computeDiscountSplit(
+export function computeDiscountSplit(
   discountApplications: DiscountApp[],
   affiliateCode: string,
   subtotal: number,
@@ -139,7 +139,7 @@ function computeDiscountSplit(
 
 // ─── Month key helper ───────────────────────────────────────────────────────
 
-function toMonthKey(date: string | Date): string {
+export function toMonthKey(date: string | Date): string {
   const d = typeof date === "string" ? new Date(date) : date;
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -657,4 +657,376 @@ export async function backfillAffiliateOrders(
       errorMessage: String((error as Error)?.message ?? "Unknown sync error"),
     });
   }
+}
+
+// ─── Incremental reconcile (hourly cron path) ───────────────────────────────
+//
+// Same discount-split + classification logic as backfillAffiliateOrders, but
+// scoped to a trailing window (default 2 months). Paginates
+// `orders(query: "updated_at:>=<T-monthsBack>", sortKey: UPDATED_AT)` and
+// upserts through the same per-row SQL shape. Idempotent thanks to the
+// existing ON CONFLICT clauses. Unlike the full backfill, does NOT wipe
+// AffiliateOrganicAgg — only rebuilds the months touched in this run via
+// rebuildOrganicAggForMonths.
+//
+// Called from api.cron.affiliates-sync.tsx (EventBridge hourly at :30).
+//
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function reconcileAffiliatesIncremental(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  admin: any,
+  shop: string,
+  options: { monthsBack?: number } = {},
+): Promise<{
+  totalOrders: number;
+  affiliateOrders: number;
+  organicOrders: number;
+  touchedMonths: string[];
+}> {
+  const monthsBack = options.monthsBack ?? 2;
+  const phaseStart = Date.now();
+  console.info(
+    `[affiliates:reconcile] START shop=${shop} monthsBack=${monthsBack}`,
+  );
+
+  const profiles = await prisma.affiliateProfile.findMany({
+    where: { shop },
+    select: { code: true },
+  });
+  const affiliateCodes = new Set(
+    profiles.map((p) => p.code.toLowerCase()),
+  );
+
+  const since = new Date();
+  since.setMonth(since.getMonth() - monthsBack);
+  const sinceIso = since.toISOString();
+
+  let hasNextPage = true;
+  let cursor: string | null = null;
+  let pageCount = 0;
+  let totalOrders = 0;
+  let affiliateRowsWritten = 0;
+  let organicRowsWritten = 0;
+  const touchedMonths = new Set<string>();
+
+  // Accumulator for scoped organic-agg rebuild (only months seen here)
+  type MonthBucket = {
+    orderCount: number;
+    revenue: number;
+    subtotal: number;
+    siteDiscountTotal: number;
+    customerIds: Set<string>;
+    currencyCode: string | null;
+  };
+  const organicMap = new Map<string, MonthBucket>();
+
+  while (hasNextPage) {
+    const json = await graphqlJsonWithRetry(
+      admin,
+      `#graphql
+        query AffReconcile($first: Int!, $after: String, $query: String) {
+          orders(first: $first, after: $after, query: $query, sortKey: UPDATED_AT) {
+            nodes {
+              id
+              name
+              createdAt
+              updatedAt
+              customer {
+                id
+                displayName
+                email
+                numberOfOrders
+                createdAt
+              }
+              currentTotalPriceSet { shopMoney { amount currencyCode } }
+              subtotalPriceSet { shopMoney { amount } }
+              totalDiscountsSet { shopMoney { amount } }
+              discountCodes
+              discountApplications(first: 10) {
+                nodes {
+                  __typename
+                  ... on DiscountCodeApplication {
+                    code
+                    value {
+                      __typename
+                      ... on MoneyV2 { amount }
+                      ... on PricingPercentageValue { percentage }
+                    }
+                  }
+                  ... on AutomaticDiscountApplication {
+                    title
+                    value {
+                      __typename
+                      ... on MoneyV2 { amount }
+                      ... on PricingPercentageValue { percentage }
+                    }
+                  }
+                  ... on ManualDiscountApplication {
+                    title
+                    value {
+                      __typename
+                      ... on MoneyV2 { amount }
+                      ... on PricingPercentageValue { percentage }
+                    }
+                  }
+                  ... on ScriptDiscountApplication {
+                    title
+                    value {
+                      __typename
+                      ... on MoneyV2 { amount }
+                      ... on PricingPercentageValue { percentage }
+                    }
+                  }
+                }
+              }
+              lineItems(first: 50) {
+                nodes {
+                  title
+                  quantity
+                  originalTotalSet { shopMoney { amount } }
+                  product { id }
+                }
+              }
+            }
+            pageInfo { hasNextPage endCursor }
+          }
+        }`,
+      {
+        first: ANALYTICS_PAGE_SIZE,
+        after: cursor,
+        query: `updated_at:>=${sinceIso}`,
+      },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const nodes = (json?.data?.orders?.nodes ?? []) as any[];
+    totalOrders += nodes.length;
+
+    for (const order of nodes) {
+      const discountCodes: string[] = Array.isArray(order.discountCodes)
+        ? order.discountCodes
+        : [];
+      const matchedCode = discountCodes.find((c: string) =>
+        affiliateCodes.has(c.toLowerCase()),
+      );
+
+      const total = order.currentTotalPriceSet
+        ? parseFloat(order.currentTotalPriceSet.shopMoney.amount)
+        : 0;
+      const subtotal = order.subtotalPriceSet
+        ? parseFloat(order.subtotalPriceSet.shopMoney.amount)
+        : 0;
+      const discountTotal = order.totalDiscountsSet
+        ? parseFloat(order.totalDiscountsSet.shopMoney.amount)
+        : 0;
+      const currencyCode =
+        order.currentTotalPriceSet?.shopMoney?.currencyCode ?? null;
+      const orderDate = order.createdAt ?? null;
+
+      // wasPreExistingCustomer — same logic as backfill
+      let wasPreExistingCustomer = false;
+      if (order.customer?.id) {
+        const custOrders = order.customer.numberOfOrders ?? 0;
+        if (custOrders > 1) {
+          const custCreated = order.customer.createdAt
+            ? new Date(order.customer.createdAt).getTime()
+            : 0;
+          const orderCreated = order.createdAt
+            ? new Date(order.createdAt).getTime()
+            : 0;
+          const ONE_HOUR = 60 * 60 * 1000;
+          wasPreExistingCustomer =
+            custCreated > 0 &&
+            orderCreated > 0 &&
+            orderCreated - custCreated > ONE_HOUR;
+        }
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const liNodes = (order.lineItems?.nodes ?? []) as any[];
+      const itemCount = liNodes.reduce(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (sum: number, li: any) => sum + (li?.quantity ?? 0),
+        0,
+      );
+
+      if (matchedCode) {
+        const apps = (order.discountApplications?.nodes ?? []) as DiscountApp[];
+        const { affiliateDiscount, siteDiscount } = computeDiscountSplit(
+          apps,
+          matchedCode,
+          subtotal,
+        );
+        const lineItemsJson = JSON.stringify(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          liNodes.map((li: any) => ({
+            title: li.title,
+            quantity: li.quantity,
+            amount: li.originalTotalSet
+              ? parseFloat(li.originalTotalSet.shopMoney.amount)
+              : 0,
+            productId: li.product?.id ?? null,
+          })),
+        );
+
+        await prisma.$executeRaw`
+          INSERT INTO "AffiliateOrder" (
+            "id", "shop", "orderName", "customerId", "customerName", "customerEmail",
+            "wasPreExistingCustomer", "affiliateCode", "discountAmount",
+            "affiliateDiscount", "siteDiscount", "totalAmount", "subtotalAmount",
+            "currencyCode", "itemCount", "lineItemsJson", "orderDate", "syncedAt"
+          ) VALUES (
+            ${order.id}, ${shop}, ${order.name ?? null},
+            ${order.customer?.id ?? null}, ${order.customer?.displayName ?? null},
+            ${order.customer?.email ?? null}, ${wasPreExistingCustomer},
+            ${matchedCode}, ${discountTotal}, ${affiliateDiscount},
+            ${siteDiscount}, ${total}, ${subtotal}, ${currencyCode},
+            ${itemCount}, ${lineItemsJson},
+            ${orderDate ? new Date(orderDate) : null}, NOW()
+          )
+          ON CONFLICT ("id") DO UPDATE SET
+            "orderName" = EXCLUDED."orderName",
+            "customerId" = EXCLUDED."customerId",
+            "customerName" = EXCLUDED."customerName",
+            "customerEmail" = EXCLUDED."customerEmail",
+            "wasPreExistingCustomer" = EXCLUDED."wasPreExistingCustomer",
+            "affiliateCode" = EXCLUDED."affiliateCode",
+            "discountAmount" = EXCLUDED."discountAmount",
+            "affiliateDiscount" = EXCLUDED."affiliateDiscount",
+            "siteDiscount" = EXCLUDED."siteDiscount",
+            "totalAmount" = EXCLUDED."totalAmount",
+            "subtotalAmount" = EXCLUDED."subtotalAmount",
+            "currencyCode" = EXCLUDED."currencyCode",
+            "itemCount" = EXCLUDED."itemCount",
+            "lineItemsJson" = EXCLUDED."lineItemsJson",
+            "orderDate" = EXCLUDED."orderDate",
+            "syncedAt" = NOW()
+        `;
+        affiliateRowsWritten += 1;
+      } else {
+        await prisma.$executeRaw`
+          INSERT INTO "OrganicOrder" (
+            "id", "shop", "orderName", "customerId", "customerName", "customerEmail",
+            "totalAmount", "subtotalAmount", "discountAmount", "currencyCode",
+            "wasPreExistingCustomer", "itemCount", "orderDate", "syncedAt"
+          ) VALUES (
+            ${order.id}, ${shop}, ${order.name ?? null},
+            ${order.customer?.id ?? null}, ${order.customer?.displayName ?? null},
+            ${order.customer?.email ?? null}, ${total}, ${subtotal},
+            ${discountTotal}, ${currencyCode}, ${wasPreExistingCustomer},
+            ${itemCount}, ${orderDate ? new Date(orderDate) : null}, NOW()
+          )
+          ON CONFLICT ("id") DO UPDATE SET
+            "orderName" = EXCLUDED."orderName",
+            "customerId" = EXCLUDED."customerId",
+            "customerName" = EXCLUDED."customerName",
+            "customerEmail" = EXCLUDED."customerEmail",
+            "totalAmount" = EXCLUDED."totalAmount",
+            "subtotalAmount" = EXCLUDED."subtotalAmount",
+            "discountAmount" = EXCLUDED."discountAmount",
+            "currencyCode" = EXCLUDED."currencyCode",
+            "wasPreExistingCustomer" = EXCLUDED."wasPreExistingCustomer",
+            "itemCount" = EXCLUDED."itemCount",
+            "orderDate" = EXCLUDED."orderDate",
+            "syncedAt" = NOW()
+        `;
+        organicRowsWritten += 1;
+        if (orderDate) {
+          const month = toMonthKey(orderDate);
+          let bucket = organicMap.get(month);
+          if (!bucket) {
+            bucket = {
+              orderCount: 0,
+              revenue: 0,
+              subtotal: 0,
+              siteDiscountTotal: 0,
+              customerIds: new Set<string>(),
+              currencyCode,
+            };
+            organicMap.set(month, bucket);
+          }
+          bucket.orderCount += 1;
+          bucket.revenue += total;
+          bucket.subtotal += subtotal;
+          bucket.siteDiscountTotal += discountTotal;
+          if (order.customer?.id) bucket.customerIds.add(order.customer.id);
+        }
+      }
+
+      if (orderDate) touchedMonths.add(toMonthKey(orderDate));
+    }
+
+    hasNextPage = json.data.orders.pageInfo.hasNextPage;
+    cursor = json.data.orders.pageInfo.endCursor;
+    pageCount += 1;
+    const elapsed = ((Date.now() - phaseStart) / 1000).toFixed(1);
+    console.info(
+      `[affiliates:reconcile] page=${pageCount} pageNodes=${nodes.length} affiliates=${affiliateRowsWritten} organic=${organicRowsWritten} hasNext=${hasNextPage} elapsed=${elapsed}s shop=${shop}`,
+    );
+  }
+
+  // Rebuild the AffiliateOrganicAgg rows only for months touched in this run.
+  if (organicMap.size > 0) {
+    await rebuildOrganicAggForMonths(shop, organicMap);
+  }
+
+  const totalSec = ((Date.now() - phaseStart) / 1000).toFixed(1);
+  console.info(
+    `[affiliates:reconcile] DONE shop=${shop} total=${totalOrders} affiliate=${affiliateRowsWritten} organic=${organicRowsWritten} touchedMonths=${touchedMonths.size} elapsed=${totalSec}s`,
+  );
+
+  return {
+    totalOrders,
+    affiliateOrders: affiliateRowsWritten,
+    organicOrders: organicRowsWritten,
+    touchedMonths: Array.from(touchedMonths),
+  };
+}
+
+// Scoped replacement for a subset of AffiliateOrganicAgg rows. Unlike the
+// full-shop wipe in backfillAffiliateOrders, only touches the months passed
+// in. Called by the hourly cron.
+async function rebuildOrganicAggForMonths(
+  shop: string,
+  buckets: Map<
+    string,
+    {
+      orderCount: number;
+      revenue: number;
+      subtotal: number;
+      siteDiscountTotal: number;
+      customerIds: Set<string>;
+      currencyCode: string | null;
+    }
+  >,
+): Promise<void> {
+  if (buckets.size === 0) return;
+  const months = Array.from(buckets.keys());
+  await prisma.$transaction(async (tx) => {
+    await tx.affiliateOrganicAgg.deleteMany({
+      where: { shop, month: { in: months } },
+    });
+    for (const [month, bucket] of buckets) {
+      const aov =
+        bucket.orderCount > 0 ? bucket.revenue / bucket.orderCount : 0;
+      await tx.affiliateOrganicAgg.create({
+        data: {
+          shop,
+          month,
+          orderCount: bucket.orderCount,
+          revenue: bucket.revenue,
+          subtotal: bucket.subtotal,
+          siteDiscountTotal: bucket.siteDiscountTotal,
+          uniqueCustomers: bucket.customerIds.size,
+          newCustomers: 0,
+          repeatCustomers: 0,
+          avgOrderValue: aov,
+          currencyCode: bucket.currencyCode,
+        },
+      });
+    }
+  });
+  console.info(
+    `[affiliates:reconcile] rebuildOrganicAggForMonths OK shop=${shop} months=${months.join(",")}`,
+  );
 }

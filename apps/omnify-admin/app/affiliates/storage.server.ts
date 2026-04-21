@@ -5,6 +5,7 @@
  * Pattern follows retail-footprint/analytics-queries.server.ts.
  */
 import prisma from "../db.server";
+import { invalidateAffiliateCodesCache } from "./webhook-ingest.server";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -176,6 +177,9 @@ export async function upsertAffiliateProfile(
     } as any,
     update: updateData,
   });
+  // Invalidate the webhook-path cache so a newly-added code is matched on
+  // the next order webhook instead of waiting for the 10-min TTL.
+  invalidateAffiliateCodesCache(shop);
 }
 
 export async function deleteAffiliateProfile(
@@ -185,6 +189,7 @@ export async function deleteAffiliateProfile(
   await prisma.affiliateProfile.delete({
     where: { id: profileId },
   });
+  invalidateAffiliateCodesCache(shop);
   console.info(`[affiliates] deleteProfile OK shop=${shop} id=${profileId}`);
 }
 
@@ -299,6 +304,9 @@ export async function importBixGrowCsv(
     }
   }
 
+  // Bulk import likely added new codes — invalidate the webhook cache so the
+  // next order webhook sees them immediately instead of waiting for TTL.
+  invalidateAffiliateCodesCache(shop);
   console.info(`[affiliates] importBixGrowCsv OK shop=${shop} imported=${imported} skipped=${skipped}`);
   return { imported, skipped, errors };
 }

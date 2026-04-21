@@ -8,6 +8,7 @@ import { useFetcher, useLoaderData, useRevalidator } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { useTranslation } from "react-i18next";
 import { authenticate } from "../shopify.server";
+import prisma from "../db.server";
 import { normalizeLocale } from "../i18n/config";
 import { formatCurrencyCompact, formatNumberCompact } from "../i18n/format";
 import styles from "./app.affiliates/styles.module.css";
@@ -47,6 +48,18 @@ import {
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
+type CachedAttributionSnapshot = {
+  fetchedAt: string;
+  fetchedVia: string | null;
+  lookbackDays: number;
+  scannedCount: number;
+  pendingCount: number;
+  claimedCount: number;
+  unknownCount: number;
+  rows: unknown;
+  stats: unknown;
+} | null;
+
 type LoaderData = {
   profiles: AffiliateProfile[];
   syncStatus: "idle" | "running" | "failed";
@@ -61,6 +74,7 @@ type LoaderData = {
   userLocale: string;
   shop: string;
   attribution: AttributionTabLoaderData;
+  attributionSnapshot: CachedAttributionSnapshot;
 };
 
 type PeriodPreset =
@@ -259,11 +273,29 @@ export const loader = async ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userLocale = normalizeLocale((session as any).locale);
 
-  const [profiles, syncMeta, attribution] = await Promise.all([
+  const [profiles, syncMeta, attribution, snapshotRow] = await Promise.all([
     readAffiliateProfiles(shop),
     readAffiliateSyncMeta(shop),
     readAttributionTabLoaderData(shop),
+    // Read cached queue snapshot so the Attribution tab renders instantly
+    // without paginating Shopify. Missing row = tab falls back to the live
+    // Refresh path (the action's existing behavior).
+    prisma.attributionQueueSnapshot.findUnique({ where: { shop } }),
   ]);
+
+  const attributionSnapshot: CachedAttributionSnapshot = snapshotRow
+    ? {
+        fetchedAt: snapshotRow.fetchedAt.toISOString(),
+        fetchedVia: snapshotRow.fetchedVia,
+        lookbackDays: snapshotRow.lookbackDays,
+        scannedCount: snapshotRow.scannedCount,
+        pendingCount: snapshotRow.pendingCount,
+        claimedCount: snapshotRow.claimedCount,
+        unknownCount: snapshotRow.unknownCount,
+        rows: snapshotRow.rowsJson,
+        stats: snapshotRow.statsJson,
+      }
+    : null;
 
   const hasData =
     syncMeta.totalAffiliateOrders != null &&
@@ -294,6 +326,7 @@ export const loader = async ({
     userLocale,
     shop,
     attribution,
+    attributionSnapshot,
   };
 };
 
@@ -445,6 +478,50 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         listForgottenClaims(shop),
         readAttributionTabLoaderData(shop),
       ]);
+      // Persist to AttributionQueueSnapshot so subsequent page loads paint
+      // from cache without re-paginating Shopify. Matches the hourly cron's
+      // persistence path.
+      await prisma.attributionQueueSnapshot
+        .upsert({
+          where: { shop },
+          create: {
+            shop,
+            fetchedAt: new Date(snapshot.fetchedAt),
+            fetchedVia: "manual",
+            lookbackDays: snapshot.lookbackDays,
+            scannedCount: snapshot.scannedCount,
+            pendingCount: snapshot.stats.pending,
+            claimedCount: snapshot.stats.claimed,
+            unknownCount: snapshot.stats.unknown,
+            rowsJson: snapshot.rows as unknown as object,
+            statsJson: {
+              sinceDate: snapshot.sinceDate,
+              matchedCount: snapshot.matchedCount,
+              stats: snapshot.stats,
+            } as unknown as object,
+          },
+          update: {
+            fetchedAt: new Date(snapshot.fetchedAt),
+            fetchedVia: "manual",
+            lookbackDays: snapshot.lookbackDays,
+            scannedCount: snapshot.scannedCount,
+            pendingCount: snapshot.stats.pending,
+            claimedCount: snapshot.stats.claimed,
+            unknownCount: snapshot.stats.unknown,
+            rowsJson: snapshot.rows as unknown as object,
+            statsJson: {
+              sinceDate: snapshot.sinceDate,
+              matchedCount: snapshot.matchedCount,
+              stats: snapshot.stats,
+            } as unknown as object,
+          },
+        })
+        .catch((err) => {
+          console.warn(
+            `[affiliates] attribution-fetch-queue snapshot-persist SKIP shop=${shop}`,
+            err,
+          );
+        });
       return {
         ok: true as const,
         intent: "attribution-fetch-queue" as const,
@@ -629,6 +706,7 @@ export default function AffiliatesPage() {
     userLocale,
     shop,
     attribution: attributionMeta,
+    attributionSnapshot,
   } = useLoaderData<LoaderData>();
 
   void _syncStartedAt; // reserved for future elapsed-time display
@@ -1802,11 +1880,17 @@ export default function AffiliatesPage() {
             ) : (
               <s-button
                 variant="secondary"
-                {...{ icon: "refresh" } as Record<string, string>}
+                {...{
+                  icon: "refresh",
+                  title: t(
+                    "page.syncButtonTooltip",
+                    "Webhooks + hourly cron keep data current automatically. Use this only for a full 14-month resync.",
+                  ),
+                } as Record<string, string>}
                 key="sync-btn-active"
                 onClick={handleSync}
               >
-                {t("page.syncButton", "Sync Orders")}
+                {t("page.syncButton", "Force full resync")}
               </s-button>
             )}
             <s-button
@@ -2671,6 +2755,31 @@ export default function AffiliatesPage() {
             meta={attributionMeta}
             userLocale={userLocale}
             t={t}
+            initialSnapshot={
+              // Hydrate from the cached cron/manual snapshot so the tab paints
+              // instantly. The Refresh button replaces this with a fresh live
+              // snapshot.
+              attributionSnapshot
+                ? ({
+                    fetchedAt: attributionSnapshot.fetchedAt,
+                    lookbackDays: attributionSnapshot.lookbackDays,
+                    sinceDate:
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      (attributionSnapshot.stats as any)?.sinceDate ?? "",
+                    scannedCount: attributionSnapshot.scannedCount,
+                    matchedCount:
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      (attributionSnapshot.stats as any)?.matchedCount ?? 0,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    rows: attributionSnapshot.rows as any,
+                    stats: {
+                      pending: attributionSnapshot.pendingCount,
+                      claimed: attributionSnapshot.claimedCount,
+                      unknown: attributionSnapshot.unknownCount,
+                    },
+                  })
+                : null
+            }
           />
         )}
       </s-section>
