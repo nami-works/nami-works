@@ -417,6 +417,8 @@ Clicking a KPI card toggles a drilldown chart linked to that metric. Behavior:
 When deployed under a subpath (e.g. `BASE_PATH=/full`), React Router uses `basename`. **Do not manually add basePath to client links or form actions** — you'll get `/full/full/...` and 404s.
 - **Client links:** `href="/app/..."` — never `href={basePath + "/app/..."}`.
 - **Form actions:** `action="/app/..."` directly.
+- **Why it's wrong:** Shopify App Bridge resolves absolute-path `<s-link>` hrefs against the app's `application_url` (which already includes the subpath, e.g. `https://omnify.cpg-labs.io/full`). Manually prepending `basePath` makes App Bridge concatenate twice → double basename → 404. The only legitimate `${basePath}` concatenation is on static-asset tags (`<img src>`, `<link href>`, `<source>`, etc.) since those are direct HTTP fetches served by Express static middleware under BASE_PATH, not App Bridge navigations.
+- **Enforced by CI:** [scripts/check-no-basepath-in-nav-links.ts](scripts/check-no-basepath-in-nav-links.ts) is wired into `npm run typecheck` and fails on any `href` / `to` / `action` JSX attribute that concatenates `basePath`. Regression history: commit `facd79e` introduced the bug; the fix and this guard shipped in v17. Run standalone via `npm run check:basepath`.
 - **`BASE_PATH` is baked at Docker build time**, not runtime. `react-router.config.ts` reads `process.env.BASE_PATH` during `npm run build` inside the Dockerfile. Changing the `BASE_PATH` env var on the ECS task definition alone will NOT update the basename — the image must be rebuilt with the correct `--build-arg BASE_PATH=...`. Docker layer caching can silently reuse a stale build; use `--no-cache` if the basename is wrong after deploy.
 
 ---

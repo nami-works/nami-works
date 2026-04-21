@@ -17,6 +17,18 @@ export default function App() {
         <link rel="icon" href="/favicon.png" type="image/png" />
         <Meta />
         <Links />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              :where(s-app-nav, s-page, s-section, s-stack, s-box,
+                     s-button, s-link, s-text-field, s-select, s-option,
+                     s-badge, s-modal, s-choice-list, s-choice,
+                     s-checkbox, s-date-field):not(:defined) {
+                visibility: hidden;
+              }
+            `,
+          }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html:

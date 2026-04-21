@@ -32,20 +32,39 @@ export default function App() {
   const logoSrc = `${basePath}/cpg-labs_box.png`.replace(/\/+/g, "/");
   const navigation = useNavigation();
   const isPageNavigation = navigation.state === "loading" && !!navigation.location;
-  const [showOverlay, setShowOverlay] = useState(false);
+  // Default true so cold-start paints the overlay immediately, hiding the
+  // unstyled custom-element flash before App Bridge upgrades <s-*> tags.
+  const [showOverlay, setShowOverlay] = useState(true);
+  const [customElementsReady, setCustomElementsReady] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (typeof customElements === "undefined") {
+      setCustomElementsReady(true);
+      return;
+    }
+    let cancelled = false;
+    Promise.all([
+      customElements.whenDefined("s-app-nav"),
+      customElements.whenDefined("s-page"),
+      customElements.whenDefined("s-section"),
+    ]).then(() => {
+      if (!cancelled) setCustomElementsReady(true);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     if (isPageNavigation) {
       timerRef.current = setTimeout(() => setShowOverlay(true), 400);
-    } else {
+    } else if (customElementsReady) {
       if (timerRef.current) clearTimeout(timerRef.current);
       setShowOverlay(false);
     }
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [isPageNavigation]);
+  }, [isPageNavigation, customElementsReady]);
 
   const i18nInstance = useMemo(
     () => createI18nInstance(locale as SupportedLocale),
@@ -64,6 +83,7 @@ export default function App() {
         <img src={logoSrc} alt="" aria-hidden="true" style={{ display: "none" }} />
         {showOverlay && (
           <div
+            className="cpg-loading-overlay"
             style={{
               position: "fixed",
               inset: 0,
@@ -90,28 +110,10 @@ export default function App() {
                 overflow: "hidden",
               }}
             >
-              <div
-                style={{
-                  height: "100%",
-                  borderRadius: 99,
-                  background: "linear-gradient(90deg, #5ecece, #b09fda, #d4a8d4, #5ecece)",
-                  backgroundSize: "200% 100%",
-                  animation: "omnify-holo-bar 1.4s linear infinite",
-                }}
-              />
+              <div className="cpg-holo-bar" />
             </div>
-            <div
-              style={{
-                fontSize: 13,
-                color: "#6d7175",
-                fontWeight: 400,
-                letterSpacing: 0.1,
-                textAlign: "center",
-              }}
-            >
-              <span style={{ color: "#303030", fontWeight: 500 }}>
-                {appDisplayName}
-              </span>{" "}
+            <div className="cpg-loading-msg">
+              <span className="cpg-holo-signature">{appDisplayName}</span>{" "}
               {t("common:loading.appUpdatingSuffix")}
             </div>
             <style>{`
@@ -119,15 +121,41 @@ export default function App() {
                 0%   { background-position: 100% 0; }
                 100% { background-position: -100% 0; }
               }
+              .cpg-loading-overlay {
+                font-family: ShopifySans, -apple-system, BlinkMacSystemFont,
+                             "Inter", "Segoe UI", "Helvetica Neue", Helvetica,
+                             Arial, sans-serif;
+              }
+              .cpg-holo-bar {
+                height: 100%;
+                border-radius: 99px;
+                background: linear-gradient(90deg, #5ecece, #b09fda, #d4a8d4, #5ecece);
+                background-size: 200% 100%;
+                animation: omnify-holo-bar 1.4s linear infinite;
+              }
+              .cpg-loading-msg {
+                font-size: 13px;
+                color: #6d7175;
+                font-weight: 400;
+                letter-spacing: 0.1px;
+                text-align: center;
+              }
+              .cpg-holo-signature {
+                background: linear-gradient(90deg, #5ecece, #b09fda, #d4a8d4, #5ecece);
+                background-size: 200% 100%;
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+                -webkit-text-fill-color: transparent;
+                font-weight: 600;
+                animation: omnify-holo-bar 1.4s linear infinite;
+              }
             `}</style>
           </div>
         )}
         <s-app-nav>
           {navItems.map((item: { href: string; labelKey: string }) => (
-            <s-link
-              key={item.href}
-              href={`${basePath}${item.href}`.replace(/\/+/g, "/")}
-            >
+            <s-link key={item.href} href={item.href}>
               {t(item.labelKey)}
             </s-link>
           ))}
