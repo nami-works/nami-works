@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nami-works-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: nami_works
+    ports:
+      # 5432 is already used by the CPG Labs dev Postgres on this machine;
+      # bump NAMI Works to 5433 so both can run in parallel.
+      - "5433:5432"
+    volumes:
+      - nami-works-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nami_works"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  nami-works-pgdata:

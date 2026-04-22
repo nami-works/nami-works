@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { randomUUID } from "node:crypto";
 import sensible from "@fastify/sensible";
 import Fastify, { type FastifyBaseLogger } from "fastify";

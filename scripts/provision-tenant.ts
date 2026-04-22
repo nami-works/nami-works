@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { createHash, randomBytes } from "node:crypto";
 import { parseArgs } from "node:util";
 import {
