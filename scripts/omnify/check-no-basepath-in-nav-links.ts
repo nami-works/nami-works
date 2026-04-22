@@ -1,29 +1,31 @@
 /**
- * CI guard: forbid `basePath` in React Router JSX href / to / action attrs.
+ * CI guard: forbid `basePath` in JSX href / to / action attrs.
  *
- * Why: when running under a basename (e.g. `/full`), React Router's `<Link>`,
- * `<Form>`, and `useSubmit` already prepend the basename automatically. Manual
- * `basePath` concatenation produces `/full/full/...` → 404. CLAUDE.md
- * "Subpath (BASE_PATH)" documents the rule.
+ * Why: every URL-handling layer in this app already accounts for basename;
+ * manual `basePath` concatenation adds it a second time → `/full/full/...` →
+ * 404.
  *
- * Important exception — App Bridge `<s-link>`. Polaris web components do NOT
- * go through React Router. App Bridge constructs the iframe URL using the
- * href verbatim, ignoring `application_url`'s subpath. So `<s-link
- * href="/app/foo">` from inside a `/full`-mounted iframe drops `/full` →
- * backend gets `/app/foo` → 404. For `<s-link>` the basePath prefix is
- * REQUIRED (`<s-link href={`${basePath}${path}`}>`). The check skips
- * `<s-link>` for that reason. See `APP_BRIDGE_NAV_TAGS` below.
+ * - React Router `<Link>` / `<Form>` / `useSubmit` — basename is configured in
+ *   `react-router.config.ts` and applied automatically.
+ * - Shopify App Bridge `<s-link>` — prepends the `application_url`'s path
+ *   component (e.g. `/full`) to absolute-path hrefs at navigation time.
+ *   Verified from CloudWatch 2026-04-22: `<s-link href="/full/app/retail-sales">`
+ *   produced `GET /full/__manifest?paths=%2Ffull%2Ffull%2Fapp%2Fretail-sales`
+ *   (double prefix → 404). `<s-link href="/app/retail-sales">` is the correct
+ *   form. Regression history: facd79e added the prefix (broken), v17 reverted
+ *   (correct but masked by split-brain), v18 re-added (broken again), v19
+ *   reverted definitively.
  *
  * What's allowed:
  *   - `<img src={`${basePath}/asset.png`}>`  — static asset, direct HTTP
  *   - `<link href={`${basePath}/asset.css`}>` — same
- *   - `<s-link href={`${basePath}/app/foo`}>` — App Bridge nav, see above
  *   - `const logoSrc = `${basePath}/asset.png`` — variable, not a JSX attr
  *
  * What's forbidden:
- *   - `<Link  ... to={     ... basePath ... }>` — React Router, basename already applied
- *   - `<form  ... action={ ... basePath ... }>` — React Router, basename already applied
- *   - `href={...basePath...}` on any non-`<s-link>` non-static-asset JSX tag.
+ *   - `<s-link ... href={   ... basePath ... }>` — App Bridge prepends it
+ *   - `<Link   ... to={     ... basePath ... }>` — React Router prepends it
+ *   - `<form   ... action={ ... basePath ... }>` — React Router prepends it
+ *   - `href={...basePath...}` on any non-static-asset JSX tag.
  */
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
@@ -56,12 +58,6 @@ const STATIC_ASSET_TAGS = new Set([
   "object",
 ]);
 
-// App Bridge web components that DON'T honor React Router's basename — their
-// hrefs MUST include basePath manually or the iframe drops the subpath and
-// 404s at the origin. CLAUDE.md "Subpath (BASE_PATH)" documents the exception.
-const APP_BRIDGE_NAV_TAGS = new Set([
-  "s-link",
-]);
 
 type Violation = {
   file: string;
@@ -111,7 +107,6 @@ function scanSource(src: string): Array<{ line: number; excerpt: string; reason:
     const tagStartIdx = m.index;
 
     if (STATIC_ASSET_TAGS.has(tagName)) continue;
-    if (APP_BRIDGE_NAV_TAGS.has(tagName)) continue;
 
     // Look for href={...basePath...}, to={...basePath...}, action={...basePath...}
     const navAttrRe = /\b(href|to|action)\s*=\s*\{([^}]*)\}/g;
@@ -169,12 +164,13 @@ function main(): void {
   }
   console.error(
     `${violations.length} violation(s). See CLAUDE.md \u2192 "Subpath (BASE_PATH)".\n` +
-      "React Router's <Link>/<form> already prepend the basename - concatenating\n" +
-      "basePath produces /full/full/... and 404s. Use plain absolute paths\n" +
-      '(e.g. to="/app/foo"). basePath concatenation IS allowed on:\n' +
-      "  - static-asset tags (<img src>, <link href>, <source>, etc.)\n" +
-      "  - App Bridge <s-link>, which does NOT honor React Router's basename\n" +
-      "    and requires the basePath in the href.",
+      "Every URL-handling layer already prepends the basename:\n" +
+      "  - React Router <Link>/<form> - via react-router.config.ts basename.\n" +
+      "  - App Bridge <s-link> - via application_url's path component.\n" +
+      "Manual basePath concatenation adds it a second time and produces\n" +
+      "/full/full/... and 404s. Use plain absolute paths (e.g. to=\"/app/foo\",\n" +
+      "href=\"/app/foo\"). basePath concatenation is only allowed on static-\n" +
+      "asset tags (<img src>, <link href>, <source>, etc.).",
   );
   process.exit(1);
 }

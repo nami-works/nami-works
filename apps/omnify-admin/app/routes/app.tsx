@@ -162,16 +162,16 @@ export default function App() {
         )}
         <s-app-nav>
           {navItems.map((item: { href: string; labelKey: string }) => (
-            // App Bridge's <s-link> does NOT honor React Router's basename:
-            // a click on /app/foo from a /full-mounted iframe drops /full and
-            // navigates to /app/foo at the origin → 404. We must include the
-            // basePath in the href manually. CLAUDE.md "Subpath (BASE_PATH)"
-            // documents this exception. The CI guard at
-            // scripts/check-no-basepath-in-nav-links.ts skips <s-link>.
-            <s-link
-              key={item.href}
-              href={`${basePath}${item.href}`.replace(/\/+/g, "/")}
-            >
+            // App Bridge prepends application_url's path component to absolute
+            // <s-link> hrefs. With application_url="https://.../full" and
+            // href="/app/foo", the backend gets "/full/app/foo" (correct).
+            // Prepending basePath manually produces "/full/full/app/foo" (404).
+            // Verified from CloudWatch:
+            //   GET /full/__manifest?paths=%2Ffull%2Ffull%2Fapp%2Fretail-sales
+            // on v18 (with prefix). Single-/full on v19 (without). CLAUDE.md
+            // "Subpath (BASE_PATH)" + scripts/check-no-basepath-in-nav-links.ts
+            // forbid basePath on <s-link>.
+            <s-link key={item.href} href={item.href}>
               {t(item.labelKey)}
             </s-link>
           ))}

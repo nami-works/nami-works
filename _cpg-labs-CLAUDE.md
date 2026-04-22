@@ -414,20 +414,22 @@ Clicking a KPI card toggles a drilldown chart linked to that metric. Behavior:
 - Provide a clear way back (breadcrumbs or Back button).
 
 ### Subpath (BASE_PATH)
-When deployed under a subpath (e.g. `BASE_PATH=/full`), React Router uses `basename`. The basename auto-prefix rules are different for React Router and App Bridge — get the wrong one and you get either `/full/full/...` (double prefix → 404) or `/app/...` at the origin (missing prefix → 404).
+When deployed under a subpath (e.g. `BASE_PATH=/full`), **every URL-handling layer already prepends the basename**. Never add `basePath` manually to a nav link or form action — you will get `/full/full/...` and 404s.
 
-- **React Router `<Link>` / `<form>` / `useSubmit`:** plain absolute paths only. `to="/app/foo"` and `action="/app/foo"`. **Never** prepend `basePath` — React Router already does it from the `basename` config in `react-router.config.ts`. Manual prefix → `/full/full/...`.
+- **React Router `<Link>` / `<form>` / `useSubmit`:** plain absolute paths. `to="/app/foo"`, `action="/app/foo"`. React Router applies the basename from `react-router.config.ts`.
 
-- **Shopify App Bridge `<s-link>`:** must include `basePath`. App Bridge constructs the iframe URL using the href verbatim and ignores `application_url`'s subpath; so `<s-link href="/app/foo">` from a `/full`-mounted iframe drops `/full` → backend gets `/app/foo` → 404. Pattern:
+- **Shopify App Bridge `<s-link>`:** plain absolute paths. `href="/app/foo"`. App Bridge prepends the `application_url`'s path component at navigation time. Verified 2026-04-22 via CloudWatch: `<s-link href="/full/app/retail-sales">` produced `GET /full/__manifest?paths=%2Ffull%2Ffull%2Fapp%2Fretail-sales` (double prefix → 404). Removing the manual prefix was the fix.
+
+- **Static assets (`<img>`, `<link rel>`, `<source>`, etc.):** DO prepend `basePath`. These are direct HTTP fetches served by Express static middleware under `/full/<asset>`, outside the React Router and App Bridge URL-prepend layers.
   ```tsx
-  <s-link href={`${basePath}${item.href}`.replace(/\/+/g, "/")}>
+  const logoSrc = `${basePath}/cpg-labs_box.png`.replace(/\/+/g, "/");
   ```
 
-- **Static assets (`<img>`, `<link rel>`, `<source>`, etc.):** prepend `basePath`. Express static middleware serves these at `/full/<asset>`.
-
-- **Enforced by CI:** [scripts/check-no-basepath-in-nav-links.ts](scripts/check-no-basepath-in-nav-links.ts) is wired into `npm run typecheck` and fails on any `href` / `to` / `action` JSX attribute that concatenates `basePath` on a tag *other than* `<s-link>` or a static-asset tag. Regression history: commit `facd79e` correctly added the prefix to `<s-link>`; it was wrongly reverted in v17 (broke nav at the origin), restored in v18 alongside this guard's `<s-link>` exception. Run standalone via `npm run check:basepath`.
+- **Enforced by CI:** [scripts/check-no-basepath-in-nav-links.ts](scripts/check-no-basepath-in-nav-links.ts) is wired into `npm run typecheck` and fails on any `href` / `to` / `action` JSX attribute that concatenates `basePath` on any non-static-asset tag. Regression history: `facd79e` introduced the prefix on `<s-link>`; v17 removed (correct but masked by an unrelated split-brain making nav look broken); v18 re-added (broken); v19 removed definitively with CloudWatch proof. Standalone: `npm run check:basepath`.
 
 - **`BASE_PATH` is baked at Docker build time**, not runtime. `react-router.config.ts` reads `process.env.BASE_PATH` during `npm run build` inside the Dockerfile. Changing the `BASE_PATH` env var on the ECS task definition alone will NOT update the basename — the image must be rebuilt with the correct `--build-arg BASE_PATH=...`. Docker layer caching can silently reuse a stale build; use `--no-cache` if the basename is wrong after deploy.
+
+- **Permanent fix (planned, not yet shipped):** the CPG Labs full app moves to its own hostname (`app.cpg-labs.io`) in Phase 6 of the AWS split-brain remediation plan — kills BASE_PATH entirely. See [docs/aws-topology.md](docs/aws-topology.md).
 
 ---
 
