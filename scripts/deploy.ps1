@@ -88,7 +88,9 @@ $taskDef.containerDefinitions[0].image = "${ecrUrl}:${Tag}"
 
 $newTaskDefJson = $taskDef | ConvertTo-Json -Depth 20
 $tmpFile = [System.IO.Path]::GetTempFileName() + '.json'
-$newTaskDefJson | Set-Content -Path $tmpFile -Encoding utf8
+# PowerShell 5.1's `Set-Content -Encoding utf8` prepends a BOM that AWS CLI's
+# JSON parser rejects. WriteAllText writes UTF-8 without BOM.
+[System.IO.File]::WriteAllText($tmpFile, $newTaskDefJson)
 
 Step "Registering new task definition revision"
 $newRevisionArn = aws ecs register-task-definition `
