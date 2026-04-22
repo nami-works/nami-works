@@ -1,0 +1,24 @@
+node_modules
+dist
+coverage
+.git
+.github
+.vscode
+.idea
+
+.env
+.env.*
+
+*.log
+npm-debug.log*
+.npm
+
+# macOS / Windows cruft
+.DS_Store
+Thumbs.db
+
+# local dev
+docker-compose.yml
+
+# tests don't need to ship in the image
+**/*.test.ts
