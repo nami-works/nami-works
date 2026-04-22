@@ -68,7 +68,9 @@ $currentTaskDefJson = aws ecs describe-task-definition `
   --output json
 if ($LASTEXITCODE -ne 0) { throw "describe-task-definition failed" }
 
-$taskDef = $currentTaskDefJson | ConvertFrom-Json -Depth 20
+# ConvertFrom-Json -Depth is Pwsh 6.2+; 5.1 uses a fixed depth of 1024, which
+# is plenty for a task definition.
+$taskDef = $currentTaskDefJson | ConvertFrom-Json
 
 # Strip fields that register-task-definition rejects (they're output-only).
 $fieldsToDrop = @(
