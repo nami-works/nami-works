@@ -43,8 +43,11 @@ Write-Host "    Family:  $taskFamily"
 Write-Host "    Tag:     $Tag"
 
 Step "Logging into ECR"
-$loginPw = aws ecr get-login-password --region $region
-$loginPw | docker login --username AWS --password-stdin "$account.dkr.ecr.$region.amazonaws.com"
+$ecrHost = "$account.dkr.ecr.$region.amazonaws.com"
+# PowerShell 5.1's pipeline rewrites stdin encoding when piping `aws ecr
+# get-login-password` into `docker login --password-stdin`, causing a
+# 400 Bad Request. Route through cmd.exe, which pipes raw bytes.
+cmd /c "aws ecr get-login-password --region $region | docker login --username AWS --password-stdin $ecrHost"
 if ($LASTEXITCODE -ne 0) { throw "docker login failed" }
 
 Step "Building image ${ecrUrl}:${Tag}"
