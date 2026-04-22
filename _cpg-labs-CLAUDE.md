@@ -414,11 +414,19 @@ Clicking a KPI card toggles a drilldown chart linked to that metric. Behavior:
 - Provide a clear way back (breadcrumbs or Back button).
 
 ### Subpath (BASE_PATH)
-When deployed under a subpath (e.g. `BASE_PATH=/full`), React Router uses `basename`. **Do not manually add basePath to client links or form actions** — you'll get `/full/full/...` and 404s.
-- **Client links:** `href="/app/..."` — never `href={basePath + "/app/..."}`.
-- **Form actions:** `action="/app/..."` directly.
-- **Why it's wrong:** Shopify App Bridge resolves absolute-path `<s-link>` hrefs against the app's `application_url` (which already includes the subpath, e.g. `https://omnify.cpg-labs.io/full`). Manually prepending `basePath` makes App Bridge concatenate twice → double basename → 404. The only legitimate `${basePath}` concatenation is on static-asset tags (`<img src>`, `<link href>`, `<source>`, etc.) since those are direct HTTP fetches served by Express static middleware under BASE_PATH, not App Bridge navigations.
-- **Enforced by CI:** [scripts/check-no-basepath-in-nav-links.ts](scripts/check-no-basepath-in-nav-links.ts) is wired into `npm run typecheck` and fails on any `href` / `to` / `action` JSX attribute that concatenates `basePath`. Regression history: commit `facd79e` introduced the bug; the fix and this guard shipped in v17. Run standalone via `npm run check:basepath`.
+When deployed under a subpath (e.g. `BASE_PATH=/full`), React Router uses `basename`. The basename auto-prefix rules are different for React Router and App Bridge — get the wrong one and you get either `/full/full/...` (double prefix → 404) or `/app/...` at the origin (missing prefix → 404).
+
+- **React Router `<Link>` / `<form>` / `useSubmit`:** plain absolute paths only. `to="/app/foo"` and `action="/app/foo"`. **Never** prepend `basePath` — React Router already does it from the `basename` config in `react-router.config.ts`. Manual prefix → `/full/full/...`.
+
+- **Shopify App Bridge `<s-link>`:** must include `basePath`. App Bridge constructs the iframe URL using the href verbatim and ignores `application_url`'s subpath; so `<s-link href="/app/foo">` from a `/full`-mounted iframe drops `/full` → backend gets `/app/foo` → 404. Pattern:
+  ```tsx
+  <s-link href={`${basePath}${item.href}`.replace(/\/+/g, "/")}>
+  ```
+
+- **Static assets (`<img>`, `<link rel>`, `<source>`, etc.):** prepend `basePath`. Express static middleware serves these at `/full/<asset>`.
+
+- **Enforced by CI:** [scripts/check-no-basepath-in-nav-links.ts](scripts/check-no-basepath-in-nav-links.ts) is wired into `npm run typecheck` and fails on any `href` / `to` / `action` JSX attribute that concatenates `basePath` on a tag *other than* `<s-link>` or a static-asset tag. Regression history: commit `facd79e` correctly added the prefix to `<s-link>`; it was wrongly reverted in v17 (broke nav at the origin), restored in v18 alongside this guard's `<s-link>` exception. Run standalone via `npm run check:basepath`.
+
 - **`BASE_PATH` is baked at Docker build time**, not runtime. `react-router.config.ts` reads `process.env.BASE_PATH` during `npm run build` inside the Dockerfile. Changing the `BASE_PATH` env var on the ECS task definition alone will NOT update the basename — the image must be rebuilt with the correct `--build-arg BASE_PATH=...`. Docker layer caching can silently reuse a stale build; use `--no-cache` if the basename is wrong after deploy.
 
 ---

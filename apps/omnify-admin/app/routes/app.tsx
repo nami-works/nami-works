@@ -44,14 +44,25 @@ export default function App() {
       return;
     }
     let cancelled = false;
+    // Safety: never let the overlay stick longer than 3s even if a custom
+    // element fails to define (App Bridge bundle delay, network hiccup, etc.).
+    const safetyTimeout = setTimeout(() => {
+      if (!cancelled) setCustomElementsReady(true);
+    }, 3000);
     Promise.all([
       customElements.whenDefined("s-app-nav"),
       customElements.whenDefined("s-page"),
       customElements.whenDefined("s-section"),
     ]).then(() => {
-      if (!cancelled) setCustomElementsReady(true);
+      if (!cancelled) {
+        clearTimeout(safetyTimeout);
+        setCustomElementsReady(true);
+      }
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      clearTimeout(safetyTimeout);
+    };
   }, []);
 
   useEffect(() => {
@@ -94,6 +105,10 @@ export default function App() {
               justifyContent: "center",
               gap: 20,
               background: "#f6f6f7",
+              // Inline so it applies even before the <style> block is parsed
+              // and even if the Shopify CDN Inter stylesheet hasn't loaded.
+              fontFamily:
+                'ShopifySans, -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif',
             }}
           >
             <img
@@ -112,19 +127,13 @@ export default function App() {
             >
               <div className="cpg-holo-bar" />
             </div>
-            <div className="cpg-loading-msg">
-              <span className="cpg-holo-signature">{appDisplayName}</span>{" "}
-              {t("common:loading.appUpdatingSuffix")}
+            <div className="cpg-loading-msg cpg-holo-signature">
+              {appDisplayName} {t("common:loading.appUpdatingSuffix")}
             </div>
             <style>{`
               @keyframes omnify-holo-bar {
                 0%   { background-position: 100% 0; }
                 100% { background-position: -100% 0; }
-              }
-              .cpg-loading-overlay {
-                font-family: ShopifySans, -apple-system, BlinkMacSystemFont,
-                             "Inter", "Segoe UI", "Helvetica Neue", Helvetica,
-                             Arial, sans-serif;
               }
               .cpg-holo-bar {
                 height: 100%;
@@ -135,8 +144,7 @@ export default function App() {
               }
               .cpg-loading-msg {
                 font-size: 13px;
-                color: #6d7175;
-                font-weight: 400;
+                font-weight: 500;
                 letter-spacing: 0.1px;
                 text-align: center;
               }
@@ -147,7 +155,6 @@ export default function App() {
                 -webkit-background-clip: text;
                 color: transparent;
                 -webkit-text-fill-color: transparent;
-                font-weight: 600;
                 animation: omnify-holo-bar 1.4s linear infinite;
               }
             `}</style>
@@ -155,7 +162,16 @@ export default function App() {
         )}
         <s-app-nav>
           {navItems.map((item: { href: string; labelKey: string }) => (
-            <s-link key={item.href} href={item.href}>
+            // App Bridge's <s-link> does NOT honor React Router's basename:
+            // a click on /app/foo from a /full-mounted iframe drops /full and
+            // navigates to /app/foo at the origin → 404. We must include the
+            // basePath in the href manually. CLAUDE.md "Subpath (BASE_PATH)"
+            // documents this exception. The CI guard at
+            // scripts/check-no-basepath-in-nav-links.ts skips <s-link>.
+            <s-link
+              key={item.href}
+              href={`${basePath}${item.href}`.replace(/\/+/g, "/")}
+            >
               {t(item.labelKey)}
             </s-link>
           ))}
