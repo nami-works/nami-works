@@ -7,23 +7,40 @@ owns its own ECR repo, RDS Postgres, task role, and `*.nami.works` cert.
 State: **local** (`terraform.tfstate` on the operator laptop). Upgrade to
 S3 + DynamoDB backend when you onboard a second operator or CI.
 
-## First apply — order matters
+## First apply — order matters (the email-safe sequence)
+
+Current state: `nami.works` DNS is served by **GoDaddy**. Email uses
+Google Workspace MX records, an SPF TXT (currently via GoDaddy's "SPF
+flattening" service), a Google site-verification TXT, and a strict
+DMARC policy. All of those are mirrored in `route53-records.tf` so
+they exist in Route 53 *before* we ask resolvers to use Route 53.
 
 ```powershell
 cd infra/terraform
 terraform init
 
-# 1. Create the hosted zone and read the NS records.
-terraform apply -target=aws_route53_zone.main
+# 1. Stage the DNS zone + email-critical records in Route 53. Nothing in
+#    the world queries them yet (NS pointer still at GoDaddy).
+terraform apply `
+  -target=aws_route53_zone.main `
+  -target=aws_route53_record.mx `
+  -target=aws_route53_record.apex_txt `
+  -target=aws_route53_record.dmarc
+
 terraform output route53_name_servers
 ```
 
-Copy the four NS values into Registro.br (or wherever `nami.works` is
-registered). Wait 5-15 minutes for delegation to propagate. Verify:
+Copy the four `ns-###.awsdns-##.*` values. Open GoDaddy → Domains →
+`nami.works` → DNS / Nameservers → "Usar nameservers personalizados" →
+paste all four → Salvar. Wait 15-30 minutes. Verify:
 
 ```powershell
 nslookup -type=NS nami.works 8.8.8.8
-# Should list your AWS NS records (ns-###.awsdns-##.*).
+# Should list the AWS NS records, not ns11/ns12.domaincontrol.com.
+
+# Confirm email records resolve from Route 53:
+nslookup -type=MX nami.works 8.8.8.8
+nslookup -type=TXT nami.works 8.8.8.8
 ```
 
 ```powershell
@@ -69,11 +86,23 @@ laptop. RDS is **not publicly accessible** — reach it via:
 | `/nami-works/app/database_url` | SSM SecureString (DSN) |
 | `/ecs/nami-works-gateway` | CloudWatch log group |
 | `nami.works` | Route 53 public hosted zone |
+| MX / SPF / Google verify / DMARC | `aws_route53_record`, mirroring existing GoDaddy records |
 | `mcp.nami.works` | A-record alias → `omnify-alb` |
 | `*.nami.works` + `nami.works` SAN | ACM cert (DNS validated) |
 | `nami-works-gw` | ALB target group |
 | `omnify-alb:443` rule (priority 500) | Host `mcp.nami.works` → `nami-works-gw` |
 | `nami-works-gateway` | ECS Fargate task definition + service |
+
+## What's intentionally NOT mirrored from GoDaddy's DNS
+
+- GoDaddy NS + SOA records (auto-replaced by Route 53's own).
+- `_domainconnect` CNAME (GoDaddy-proprietary service discovery).
+- `A @` pointing at GoDaddy's WebsiteBuilder (never resolved publicly).
+- `CNAME www → nami.works` (only useful once apex resolves to a site;
+  add back when you launch a marketing landing).
+- GoDaddy's SPF flattening chain (`dc-…_spfm.nami.works`). The flattened
+  value is literally `v=spf1 include:_spf.google.com ~all`, which we
+  inline directly — identical semantics, no GoDaddy indirection.
 
 ## Known gotchas
 
