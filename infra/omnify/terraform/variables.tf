@@ -223,3 +223,33 @@ variable "image_tag_storytelling" {
   type    = string
   default = "latest"
 }
+
+# ---------- Phase 6 consolidated apps.tf inputs ----------
+# These are the forward-looking vars used by `apps.tf` via the shared
+# modules/shopify-app module. Until Phase 5's rename pass, `module "full"`
+# reuses the existing `shopify_api_key_gebeauty` / `shopify_api_secret_gebeauty`
+# inputs — a follow-up will rename those to `..._full` and drop the aliases.
+
+variable "image_tag_full" {
+  type        = string
+  description = "Initial Docker image tag for the CPG Labs full app task def. Real image managed by the consolidated deploy script."
+  default     = "managed-by-deploy-script"
+}
+
+variable "image_tag_omnify" {
+  type        = string
+  description = "Initial Docker image tag for the Omnify focused app task def. Real image managed by the consolidated deploy script."
+  default     = "managed-by-deploy-script"
+}
+
+variable "shopify_scopes_full" {
+  type        = string
+  description = "Shopify scopes for the CPG Labs full app (previously implicit; now explicit per-app)."
+  default     = "read_customers,read_locations,read_merchant_managed_fulfillment_orders,read_orders,write_orders,read_products,write_products,read_content,write_content"
+}
+
+variable "shopify_scopes_omnify" {
+  type        = string
+  description = "Shopify scopes for the Omnify focused delivery app."
+  default     = "read_customers,read_locations,read_merchant_managed_fulfillment_orders,read_orders"
+}

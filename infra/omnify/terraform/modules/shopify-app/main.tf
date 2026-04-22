@@ -69,6 +69,28 @@ resource "aws_lb_listener_rule" "app" {
   }
 }
 
+# Additional hostnames → same target group. One listener rule per extra
+# hostname, each at its own priority slot immediately after the primary rule.
+# Used for the marketing-on-Omnify conflation (www.cpg-labs.io piggybacks on
+# the omnify service via host-aware dispatch in app/routes/_site.*.tsx).
+resource "aws_lb_listener_rule" "app_additional" {
+  for_each = { for idx, domain in var.additional_domains : domain => idx }
+
+  listener_arn = var.alb_listener_arn
+  priority     = var.listener_rule_priority + 1 + each.value
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.app.arn
+  }
+
+  condition {
+    host_header {
+      values = [each.key]
+    }
+  }
+}
+
 # ---------- ECS Task Definition ----------
 
 resource "aws_ecs_task_definition" "app" {

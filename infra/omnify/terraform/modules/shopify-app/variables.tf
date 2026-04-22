@@ -95,6 +95,12 @@ variable "listener_rule_priority" {
   description = "Priority for the ALB host-based listener rule."
 }
 
+variable "additional_domains" {
+  type        = list(string)
+  default     = []
+  description = "Extra hostnames that should route to this app's target group (e.g. marketing site piggybacking on an app service)."
+}
+
 variable "aws_region" {
   type    = string
   default = "us-east-1"
