@@ -93,3 +93,21 @@ variable "log_retention_days" {
   type    = number
   default = 30
 }
+
+# ---- one-off operator DB access ----
+# These toggle RDS from private to temporarily reachable from the operator's
+# public IP for manual migrations / tenant provisioning. Flip to true, apply,
+# run the bootstrap steps, flip back to false, apply again. Off by default
+# so the private-DB posture is the steady state.
+
+variable "enable_operator_db_access" {
+  type        = bool
+  default     = false
+  description = "When true, makes RDS publicly accessible and opens a 5432 ingress rule for operator_ip_cidr. Use ONLY for one-off bootstrap / migrations; revert after."
+}
+
+variable "operator_ip_cidr" {
+  type        = string
+  default     = ""
+  description = "Operator's public IP in CIDR form (e.g. 203.0.113.5/32). Required when enable_operator_db_access=true."
+}

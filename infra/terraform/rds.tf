@@ -66,7 +66,7 @@ resource "aws_db_instance" "nami_works" {
   password                = random_password.rds.result
   db_subnet_group_name    = aws_db_subnet_group.nami_works.name
   vpc_security_group_ids  = [aws_security_group.rds.id]
-  publicly_accessible     = false
+  publicly_accessible     = var.enable_operator_db_access
   backup_retention_period = 7
   deletion_protection     = true
   skip_final_snapshot     = false
