@@ -5,3 +5,5 @@ import "./list-todays-orders.js";
 import "./update-product-price.js";
 import "./apply-price-tag.js";
 import "./create-discount-code.js";
+import "./list-beautyback-codes.js";
+import "./audit-beautyback-consistency.js";
