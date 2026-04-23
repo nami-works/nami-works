@@ -5,3 +5,6 @@ import "./list-todays-orders.js";
 import "./update-product-price.js";
 import "./apply-price-tag.js";
 import "./create-discount-code.js";
+import "./low-inventory-alert.js";
+import "./product-dimensions.js";
+import "./find-products-by-metafield.js";
