@@ -32,3 +32,6 @@ import "./list-delivery-profiles.js";
 import "./discount-usage-summary.js";
 import "./upcoming-discounts.js";
 import "./audit-product-metafield.js";
+import "./low-inventory-alert.js";
+import "./product-dimensions.js";
+import "./find-products-by-metafield.js";
