@@ -193,11 +193,11 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 13px 22px;
-  min-height: 44px;
-  background: var(--text);
-  color: var(--bg);
-  border-radius: 10px;
+  padding: 10px 22px;
+  min-height: 40px;
+  background: #1d1d1f;
+  color: #ffffff;
+  border-radius: 999px;
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
@@ -205,6 +205,10 @@
   width: 100%;
   border: none;
   cursor: pointer;
+}
+:global([data-theme="dark"]) .ctaPrimary {
+  background: #f5f5f7;
+  color: #1d1d1f;
 }
 .ctaPrimary:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.18); }
 .ctaSecondary {
@@ -339,11 +343,11 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 11px 18px;
-  min-height: 44px;
+  padding: 9px 18px;
+  min-height: 38px;
   background: transparent;
   border: 1px solid var(--border-strong);
-  border-radius: 10px;
+  border-radius: 999px;
   text-decoration: none;
   color: var(--text);
   font-size: 13px;
@@ -358,11 +362,11 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 24px;
-  min-height: 48px;
+  padding: 11px 22px;
+  min-height: 42px;
   background: linear-gradient(135deg, var(--holo-1), var(--holo-2), var(--holo-3), var(--holo-4));
   color: #1d1d1f;
-  border-radius: 12px;
+  border-radius: 999px;
   text-decoration: none;
   font-size: 14px;
   font-weight: 700;
@@ -746,7 +750,7 @@
     align-items: center;
   }
   .storefrontCard .productVisual { width: 220px; margin-top: 0; }
-  .waitlistCta { width: auto; padding: 16px 28px; font-size: 15px; min-height: 52px; }
+  .waitlistCta { width: auto; padding: 13px 26px; font-size: 15px; min-height: 46px; }
 
   .contactGrid {
     flex-direction: row;
