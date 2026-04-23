@@ -27,3 +27,5 @@ import "./kpi-monthly-average.js";
 import "./shipping-journal.js";
 import "./list-beautyback-codes.js";
 import "./audit-beautyback-consistency.js";
+import "./list-carrier-services.js";
+import "./list-delivery-profiles.js";
