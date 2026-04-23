@@ -19,6 +19,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   const variant = resolveSiteVariant(request);
+
+  // Consolidate public publisher identity on cpg-labs.io. The bare Omnify
+  // hostname 301-redirects to the CPG Labs corporate landing so the public
+  // brand voice stays consistent across all surfaces. The embedded app at
+  // omnify.cpg-labs.io/apps/... is unaffected (different route tree), and
+  // the ?shop=... install path above is preserved.
+  if (variant === "omnify" && process.env.NODE_ENV === "production") {
+    throw redirect("https://cpg-labs.io/", 301);
+  }
+
   return { variant };
 };
 
