@@ -192,7 +192,7 @@ with open(os.environ['OMNIFY_TMP_JSON'], 'w', encoding='utf-8') as f:
   Write-Host "Deploying task definition revision $rev..."
   aws ecs update-service --cluster $Cluster --service $Service --task-definition ("{0}:{1}" -f $TaskFamily, $rev) --region $Region
   aws ecs wait services-stable --cluster $Cluster --services $Service --region $Region
-  $readyStatus = aws ecs describe-services --cluster $Cluster --services $Service --region $Region --query "services[0].{rollout:deployments[0].rolloutState, running:runningCount, taskDef:taskDefinition}" --output table
+  $readyStatus = aws ecs describe-services --cluster $Cluster --services $Service --region $Region --query 'services[0].{rollout:deployments[0].rolloutState, running:runningCount, taskDef:taskDefinition}' --output table
   Write-Host "Deployment readiness:"
   Write-Host $readyStatus
 } finally {
