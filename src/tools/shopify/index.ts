@@ -29,3 +29,6 @@ import "./list-beautyback-codes.js";
 import "./audit-beautyback-consistency.js";
 import "./list-carrier-services.js";
 import "./list-delivery-profiles.js";
+import "./discount-usage-summary.js";
+import "./upcoming-discounts.js";
+import "./audit-product-metafield.js";
