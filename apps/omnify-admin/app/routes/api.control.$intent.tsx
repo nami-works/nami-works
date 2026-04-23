@@ -26,6 +26,11 @@
  *   POST /api/control/mark-delivered body: {locationId, routeIndex} — LEGACY
  *       one-shot: both phases in a single call. Kept for scripts that haven't
  *       migrated to the two-phase flow.
+ *   POST /api/control/render-routes  body: {locationId?} — build Google Static
+ *       Maps URLs (one per active-route location) with color-coded order markers
+ *       + store pickup point. Python client downloads the PNGs so Claude can
+ *       Read them and apply spatial reasoning that coordinate math misses
+ *       (water barriers, neighborhood gravity, traffic corridors).
  */
 
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
@@ -342,6 +347,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       return handleQuote(auth.shop, body);
     case "check-dispatches":
       return handleCheckDispatches(auth.shop, body);
+    case "render-routes":
+      return handleRenderRoutes(auth.shop, body);
     case "close-route":
       // Phase A: tag archival + DB close. No Shopify fulfillment.
       return handleMarkDelivered(auth.shop, {
@@ -761,7 +768,10 @@ async function handleDispatch(shop: string, body: Record<string, unknown>): Prom
 // ──────────────────────────────────────────────────────────────────────
 
 const CLAUDE_OPTIMIZE_MAX_ROUTES = 20;
-const CLAUDE_OPTIMIZE_DEFAULT_MAX_PER_ROUTE = 10;
+// Hard cap per GE Beauty operational constraint (2026-04-23): a driver cannot
+// carry or reliably drop off more than 7 packages per route, regardless of how
+// tight the geographic cluster is. See memory/feedback_max_orders_per_route.md.
+const CLAUDE_OPTIMIZE_DEFAULT_MAX_PER_ROUTE = 7;
 const CLAUDE_OPTIMIZE_TARGET_PER_ROUTE = 5;
 
 type EligibleOrderForOptimize = {
@@ -1487,6 +1497,167 @@ function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number)
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// POST /api/control/render-routes — build Google Static Maps URLs per
+// active-route location so Claude can Read the PNG and apply spatial
+// reasoning the coordinate-math centroid rule misses (water barriers,
+// neighborhood gravity, traffic corridors).
+// Body: { locationId?: string } — omit to render all active-route locations.
+// Returns: { ok, renders: [{ locationId, locationName, url, routeCount, orderCount }] }
+// ──────────────────────────────────────────────────────────────────────
+
+// 7 visually-distinct colors for routes rota-01..rota-07 (7-order hard cap
+// means we never need more). Hex without the '0x' prefix — Static Maps
+// expects '0xRRGGBB' in the marker URL.
+const ROUTE_MARKER_COLORS = [
+  "0xEF4444", // red
+  "0x3B82F6", // blue
+  "0x22C55E", // green
+  "0xF97316", // orange
+  "0xA855F7", // purple
+  "0xEAB308", // yellow
+  "0x78350F", // brown
+];
+
+async function handleRenderRoutes(shop: string, body: Record<string, unknown>): Promise<Response> {
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) {
+    return jsonResponse({ ok: false, error: "GOOGLE_MAPS_API_KEY not configured on server." }, 500);
+  }
+  const locationIdRaw = typeof body.locationId === "string" ? body.locationId : null;
+
+  console.info(`[control] render-routes START shop=${shop} location=${locationIdRaw ?? "all"}`);
+  const start = Date.now();
+
+  try {
+    // Find all locations that have active-route dispatched orders, OR all
+    // location configs the shop has (if we want to render even when no
+    // dispatches exist yet — useful right after optimize).
+    const locationFilter = locationIdRaw
+      ? [normalizeLocationId(locationIdRaw).gid]
+      : null;
+    const configs = await prisma.lalamoveLocationConfig.findMany({
+      where: {
+        shop,
+        ...(locationFilter ? { locationId: { in: locationFilter } } : {}),
+      },
+    });
+    if (configs.length === 0) {
+      return jsonResponse({ ok: false, error: "No Lalamove location configs found for shop." }, 404);
+    }
+
+    const { admin } = await unauthenticated.admin(shop);
+    const renders: Array<Record<string, unknown>> = [];
+
+    for (const configRow of configs) {
+      const locationGid = configRow.locationId;
+      const config = configRow.data as any;
+      const pickupLat = config.pickupLat;
+      const pickupLng = config.pickupLng;
+      if (pickupLat == null || pickupLng == null) {
+        renders.push({ locationId: locationGid, ok: false, note: "missing pickup coords" });
+        continue;
+      }
+
+      // Fetch orders with ld_rota-NN tags at this location (per-slot loop)
+      const routesPerLocation: Array<{ slot: number; orders: Array<any> }> = [];
+      for (let slot = 0; slot < MAX_ROUTE_SLOTS; slot += 1) {
+        const tag = routeTagForSlot(slot);
+        const resp = await admin.graphql(
+          `#graphql
+            query ControlRenderRoutesBySlot($query: String!, $first: Int!) {
+              orders(first: $first, query: $query, sortKey: ID) {
+                nodes {
+                  id name
+                  shippingAddress { latitude longitude }
+                  fulfillmentOrders(first: 5) {
+                    nodes { assignedLocation { location { id } } }
+                  }
+                }
+              }
+            }`,
+          { variables: { query: `tag:${tag} fulfillment_status:unshipped`, first: 100 } },
+        );
+        const json = await resp.json();
+        const nodes = (json.data?.orders?.nodes ?? []) as Array<any>;
+        const scoped = nodes.filter((o) => {
+          const loc = o?.fulfillmentOrders?.nodes?.[0]?.assignedLocation?.location?.id ?? null;
+          return !loc || loc === locationGid;
+        });
+        if (scoped.length > 0) {
+          routesPerLocation.push({ slot, orders: scoped });
+        }
+      }
+
+      if (routesPerLocation.length === 0) {
+        renders.push({ locationId: locationGid, locationName: config.locationName ?? null, ok: true, note: "no active routes", url: null });
+        continue;
+      }
+
+      // Build Static Maps URL
+      // Pickup marker — black "P" mid-size
+      const params: string[] = [
+        "size=640x640",
+        "scale=2", // higher-DPI render (effective 1280x1280) while keeping URL short
+        "maptype=roadmap",
+        `markers=color:black|label:P|size:mid|${pickupLat},${pickupLng}`,
+      ];
+
+      let orderTotal = 0;
+      for (const route of routesPerLocation) {
+        const color = ROUTE_MARKER_COLORS[route.slot] ?? "0x6B7280";
+        const labels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // one letter per order within route
+        const markerPoints: string[] = [];
+        route.orders.forEach((o, i) => {
+          const lat = o.shippingAddress?.latitude;
+          const lng = o.shippingAddress?.longitude;
+          if (lat == null || lng == null) return;
+          const label = labels[i] ?? "X";
+          markerPoints.push(`${lat},${lng}`);
+          // One markers= entry per point so we can keep its label distinct
+          params.push(`markers=color:${color}|label:${label}|size:small|${lat},${lng}`);
+          orderTotal += 1;
+        });
+      }
+
+      params.push(`key=${encodeURIComponent(apiKey)}`);
+      const url = `https://maps.googleapis.com/maps/api/staticmap?${params.join("&")}`;
+
+      renders.push({
+        locationId: locationGid,
+        locationName: config.locationName ?? null,
+        routeCount: routesPerLocation.length,
+        orderCount: orderTotal,
+        url,
+        // Per-route legend the client can echo so the user knows which color = which rota.
+        legend: routesPerLocation.map((r) => ({
+          tag: routeTagForSlot(r.slot),
+          color: ROUTE_MARKER_COLORS[r.slot] ?? "0x6B7280",
+          orderCount: r.orders.length,
+        })),
+      });
+    }
+
+    const elapsed = Date.now() - start;
+    console.info(
+      `[control] render-routes OK shop=${shop} renders=${renders.length} elapsed=${elapsed}ms`,
+    );
+
+    return jsonResponse({
+      ok: true,
+      renders,
+      generatedAt: new Date().toISOString(),
+      elapsedMs: elapsed,
+    });
+  } catch (err) {
+    console.error(`[control] render-routes FAILED shop=${shop}`, err);
+    return jsonResponse(
+      { ok: false, error: err instanceof Error ? err.message : "render-routes failed" },
+      500,
+    );
+  }
 }
 
 async function handleCheckDispatches(shop: string, _body: Record<string, unknown>): Promise<Response> {
