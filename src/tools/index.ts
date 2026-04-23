@@ -3,3 +3,4 @@
 // serve. New tool verticals add another side-effect import here.
 import "./shopify/index.js";
 import "./omie/index.js";
+import "./affiliates/index.js";

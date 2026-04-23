@@ -31,6 +31,7 @@ model IntegrationTenant {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   invocations    ToolInvocationLog[]
+  affiliates     AffiliateProfile[]
 
   @@index([status])
 }
@@ -47,4 +48,40 @@ model ToolInvocationLog {
 
   @@index([tenantId, createdAt])
   @@index([requestId])
+}
+
+// Affiliate profile for a tenant. Links a discount-code handle to a payable
+// contact (name + phone) with a commission share. Ported from cpg-labs
+// `AffiliateProfile`; simplified for v1 — no claim-workflow state yet.
+model AffiliateProfile {
+  id                String   @id @default(cuid())
+  tenantId          String
+  affiliateCode     String   // Shopify discount code used for attribution
+  contactName       String
+  phone             String?
+  commissionPercent Float    // 0.0 to 1.0 (0.10 = 10%)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  tenant            IntegrationTenant @relation(fields: [tenantId], references: [id])
+  monthly           AffiliateMonthly[]
+
+  @@unique([tenantId, affiliateCode])
+  @@index([tenantId])
+}
+
+// Rolled-up monthly stats per affiliate. Rebuilt by a sync job (TBD) that
+// scans Shopify orders with matching discount codes. For v1 the columns
+// exist; populating is a follow-up (see DECISIONS.md).
+model AffiliateMonthly {
+  id                   String   @id @default(cuid())
+  affiliateProfileId   String
+  yearMonth            String   // e.g. "2026-04"
+  orders               Int      @default(0)
+  grossRevenueCents    Int      @default(0)
+  commissionOwedCents  Int      @default(0)
+  updatedAt            DateTime @updatedAt
+  profile              AffiliateProfile @relation(fields: [affiliateProfileId], references: [id])
+
+  @@unique([affiliateProfileId, yearMonth])
+  @@index([affiliateProfileId])
 }
