@@ -42,3 +42,8 @@ import "./list-products-in-collection.js";
 import "./audit-missing-image.js";
 import "./audit-missing-seo.js";
 import "./product-collection-memberships.js";
+import "./customer-order-history.js";
+import "./detect-duplicate-customers.js";
+import "./list-customer-segments.js";
+import "./search-customers-advanced.js";
+import "./list-abandoned-checkouts.js";
