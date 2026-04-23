@@ -21,6 +21,32 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# ── Pre-flight guards (mini Phase 3a, 2026-04-22) ──────────────────────
+# Imported from scripts/_deploy-common.psm1. Read-only, cheap. Guards
+# against the two known failure modes we hit this week:
+#   - Assert-CleanWorkingTree : prevents Docker `COPY .` from silently
+#     shipping uncommitted files (hit in v16 with Phase 3 affiliates,
+#     again in v18 with the Local Delivery mobile route).
+#   - Assert-NoSplitBrain     : refuses to deploy while any non-canonical
+#     cluster has running tasks (guards against accidental re-scaling of
+#     the drained omnify-cluster during the remediation observation
+#     window).
+# Graceful fallback: if the guards module is missing (older branch /
+# rebase), warn and continue rather than block.
+$guardModule = Join-Path $PSScriptRoot "_deploy-common.psm1"
+if (Test-Path $guardModule) {
+  try {
+    Import-Module $guardModule -Force -ErrorAction Stop
+    Assert-CleanWorkingTree
+    Assert-NoSplitBrain -Region $Region
+    Write-Host "Pre-flight guards: OK"
+  } catch {
+    throw "Pre-flight guard failed: $($_.Exception.Message)"
+  }
+} else {
+  Write-Warning "scripts/_deploy-common.psm1 not found — skipping pre-flight guards."
+}
+
 function Cleanup-StaleTargets {
   param(
     [string]$ClusterName,
