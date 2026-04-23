@@ -6,3 +6,6 @@ import "./update-product-price.js";
 import "./apply-price-tag.js";
 import "./create-discount-code.js";
 import "./preview-bulk-price-update.js";
+import "./top-cities-by-orders.js";
+import "./compare-revenue-yoy.js";
+import "./list-pending-local-delivery.js";
