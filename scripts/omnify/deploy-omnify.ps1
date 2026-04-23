@@ -100,14 +100,26 @@ try {
   # so we capture the token to a variable and pass via --password. The token is
   # a short-lived (12 h) bearer, and this script runs on a local developer
   # machine where process listings are not a meaningful attack surface.
+  # We also temporarily lower ErrorActionPreference because docker writes the
+  # expected "--password is insecure" warning to stderr, which $EAP='Stop'
+  # would treat as a terminating exception even on exit-code 0.
   $ecrToken = (aws ecr get-login-password --region $Region).Trim()
-  docker login --username AWS --password $ecrToken $registry 2>$null
-  if ($LASTEXITCODE -ne 0) {
-    Write-Host "ECR login failed. Retrying after docker logout..."
-    docker logout $registry | Out-Null
-    docker login --username AWS --password $ecrToken $registry 2>$null
+  $prevEAP = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    docker login --username AWS --password $ecrToken $registry 2>&1 | Out-Null
+    $loginExit = $LASTEXITCODE
+    if ($loginExit -ne 0) {
+      Write-Host "ECR login failed. Retrying after docker logout..."
+      docker logout $registry 2>&1 | Out-Null
+      docker login --username AWS --password $ecrToken $registry 2>&1 | Out-Null
+      $loginExit = $LASTEXITCODE
+    }
+  } finally {
+    $ErrorActionPreference = $prevEAP
   }
-  if ($LASTEXITCODE -ne 0) { throw "ECR login failed. Aborting deploy." }
+  if ($loginExit -ne 0) { throw "ECR login failed. Aborting deploy." }
+  Write-Host "ECR login: OK"
 
   for ($attempt = 1; $attempt -le 2; $attempt++) {
     if ($attempt -gt 1) {
