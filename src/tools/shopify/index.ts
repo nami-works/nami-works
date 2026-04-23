@@ -37,3 +37,8 @@ import "./product-dimensions.js";
 import "./find-products-by-metafield.js";
 import "./audit-retail-totals.js";
 import "./list-fulfillment-stragglers.js";
+import "./list-collections.js";
+import "./list-products-in-collection.js";
+import "./audit-missing-image.js";
+import "./audit-missing-seo.js";
+import "./product-collection-memberships.js";
