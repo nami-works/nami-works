@@ -44,7 +44,7 @@ if (Test-Path $guardModule) {
     throw "Pre-flight guard failed: $($_.Exception.Message)"
   }
 } else {
-  Write-Warning "scripts/_deploy-common.psm1 not found — skipping pre-flight guards."
+  Write-Warning "scripts/_deploy-common.psm1 not found, skipping pre-flight guards."
 }
 
 function Cleanup-StaleTargets {
@@ -274,7 +274,7 @@ with open(os.environ['OMNIFY_TMP_JSON'], 'w', encoding='utf-8') as f:
   Write-Host $readyStatus
 
   # Post-deploy smoke test. Hits the external health check URL and fails if it
-  # isn't 200 — catches BASE_PATH / basename mismatches BEFORE we declare
+  # isn't 200, catches BASE_PATH / basename mismatches BEFORE we declare
   # success. Retries briefly to absorb ALB target registration latency.
   if ($HealthCheckUrl) {
     Write-Host "Smoke testing $HealthCheckUrl ..."

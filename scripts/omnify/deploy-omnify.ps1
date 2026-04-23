@@ -32,7 +32,7 @@ if (Test-Path $guardModule) {
     throw "Pre-flight guard failed: $($_.Exception.Message)"
   }
 } else {
-  Write-Warning "scripts/_deploy-common.psm1 not found — skipping pre-flight guards."
+  Write-Warning "scripts/_deploy-common.psm1 not found, skipping pre-flight guards."
 }
 
 function Ensure-DockerRunning {
@@ -192,7 +192,8 @@ with open(os.environ['OMNIFY_TMP_JSON'], 'w', encoding='utf-8') as f:
   Write-Host "Deploying task definition revision $rev..."
   aws ecs update-service --cluster $Cluster --service $Service --task-definition ("{0}:{1}" -f $TaskFamily, $rev) --region $Region
   aws ecs wait services-stable --cluster $Cluster --services $Service --region $Region
-  $readyStatus = aws ecs describe-services --cluster $Cluster --services $Service --region $Region --query 'services[0].{rollout:deployments[0].rolloutState, running:runningCount, taskDef:taskDefinition}' --output table
+  $readyQuery = 'services[0].{rollout:deployments[0].rolloutState, running:runningCount, taskDef:taskDefinition}'
+  $readyStatus = aws ecs describe-services --cluster $Cluster --services $Service --region $Region --query $readyQuery --output table
   Write-Host "Deployment readiness:"
   Write-Host $readyStatus
 } finally {
