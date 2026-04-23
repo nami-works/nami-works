@@ -25,3 +25,5 @@ import "./top-customers-by-ltv.js";
 import "./compare-two-orders.js";
 import "./kpi-monthly-average.js";
 import "./shipping-journal.js";
+import "./list-beautyback-codes.js";
+import "./audit-beautyback-consistency.js";
