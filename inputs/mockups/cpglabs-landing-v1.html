@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — CPG Labs corporate landing (publisher trust page)</title>
+<!--
+  MOCKUP: cpglabs-landing-v1.html
+  PURPOSE: Replacement landing page at cpg-labs.io intended to build Shopify App
+           Store reviewer trust in CPG Labs as the publisher of Omnify.
+  NOT a lead-gen page. NOT a sales pitch. Publisher identity + trust only.
+-->
+<style>
+  :root {
+    /* Existing CPG Labs design tokens, mirrored from cpglabs-home.module.css */
+    --bg:            #0b0b0c;
+    --bg-soft:       #14141a;
+    --card:          rgba(255, 255, 255, 0.04);
+    --border:        rgba(255, 255, 255, 0.12);
+    --border-strong: rgba(255, 255, 255, 0.22);
+    --text:          #f5f5f7;
+    --text-muted:    #a5a5b0;
+    --holo-1:        #5ecece;
+    --holo-2:        #b09fda;
+    --holo-3:        #d4a8d4;
+    --holo-4:        #5ecece;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg:            #fafafa;
+      --bg-soft:       #ffffff;
+      --card:          rgba(0, 0, 0, 0.02);
+      --border:        rgba(0, 0, 0, 0.09);
+      --border-strong: rgba(0, 0, 0, 0.18);
+      --text:          #1d1d1f;
+      --text-muted:    #5c5c68;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: inherit; }
+
+  /* ========== Nav ========== */
+  nav.site {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+  }
+  nav.site .brand {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  nav.site .brand img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+  nav.site .navRight {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 13px;
+  }
+  nav.site .navRight a {
+    text-decoration: none;
+    color: var(--text-muted);
+    transition: color 0.15s;
+  }
+  nav.site .navRight a:hover { color: var(--text); }
+  nav.site .navRight a.cta {
+    background: linear-gradient(90deg, var(--holo-1), var(--holo-2), var(--holo-3), var(--holo-4));
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 600;
+  }
+
+  /* ========== Hero ========== */
+  section.hero {
+    padding: 120px 32px 80px;
+    max-width: 1080px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 60px;
+    align-items: center;
+  }
+  .heroCopy { max-width: 560px; }
+  .heroEyebrow {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+  .heroHeadline {
+    font-size: 48px;
+    line-height: 1.08;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 20px;
+  }
+  .heroHeadline .holo {
+    background: linear-gradient(90deg, var(--holo-1), var(--holo-2), var(--holo-3), var(--holo-4));
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: holoSlide 4.5s linear infinite;
+  }
+  @keyframes holoSlide {
+    from { background-position: 0% 0%; }
+    to { background-position: 200% 0%; }
+  }
+  .heroSub {
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--text-muted);
+    margin: 0 0 32px;
+    max-width: 520px;
+  }
+  .heroCtas {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .ctaPrimary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    background: var(--text);
+    color: var(--bg);
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .ctaPrimary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .ctaSecondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    border-bottom: 1px dashed var(--border-strong);
+    padding-bottom: 1px;
+    transition: color 0.15s;
+  }
+  .ctaSecondary:hover { color: var(--text); }
+
+  .heroVisual {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .heroVisual::before {
+    content: "";
+    position: absolute;
+    inset: -30px;
+    background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-2) 20%, transparent), transparent 70%);
+    filter: blur(40px);
+    z-index: 0;
+  }
+  .heroVisual img {
+    position: relative;
+    z-index: 1;
+    max-width: 280px;
+    filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.35));
+  }
+
+  /* ========== What we build ========== */
+  section.about {
+    padding: 80px 32px;
+    max-width: 880px;
+    margin: 0 auto;
+    border-top: 1px solid var(--border);
+  }
+  .sectionEyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .sectionTitle {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 16px;
+  }
+  .aboutBody {
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--text-muted);
+    max-width: 640px;
+    margin: 0 0 32px;
+  }
+  .aboutBody strong { color: var(--text); font-weight: 600; }
+  .focusList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .focusItem {
+    padding: 16px 18px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+  }
+  .focusItem strong {
+    display: block;
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .focusItem span {
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* ========== Product card ========== */
+  section.product {
+    padding: 80px 32px;
+    max-width: 1000px;
+    margin: 0 auto;
+    border-top: 1px solid var(--border);
+  }
+  .productCard {
+    display: grid;
+    grid-template-columns: 140px 1fr auto;
+    gap: 28px;
+    align-items: center;
+    padding: 28px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .productCard::before {
+    content: "";
+    position: absolute;
+    top: -40%;
+    right: -10%;
+    width: 60%;
+    height: 180%;
+    background: radial-gradient(ellipse at center, color-mix(in srgb, var(--holo-1) 12%, transparent), transparent 65%);
+    filter: blur(60px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .productCard > * { position: relative; z-index: 1; }
+  .productIcon {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--holo-1) 14%, transparent), color-mix(in srgb, var(--holo-3) 14%, transparent));
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 18px;
+  }
+  .productIcon img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .productCopy h3 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 6px;
+  }
+  .productTagline {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0 0 10px;
+  }
+  .productBlurb {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.55;
+    margin: 0;
+    max-width: 520px;
+  }
+  .productCta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .productCta:hover {
+    background: var(--card);
+    border-color: var(--text-muted);
+  }
+
+  /* ========== Contact / about us ========== */
+  section.contact {
+    padding: 80px 32px 100px;
+    max-width: 880px;
+    margin: 0 auto;
+    border-top: 1px solid var(--border);
+  }
+  .contactGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 32px;
+    margin-top: 24px;
+  }
+  .contactBlock h4 {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 8px;
+  }
+  .contactBlock p {
+    font-size: 15px;
+    color: var(--text);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .contactBlock a {
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-strong);
+    padding-bottom: 1px;
+    transition: border-color 0.15s;
+  }
+  .contactBlock a:hover { border-bottom-color: var(--text); }
+
+  /* ========== Footer ========== */
+  footer.site {
+    padding: 32px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  footer.site a {
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-right: 20px;
+    transition: color 0.15s;
+  }
+  footer.site a:hover { color: var(--text); }
+  footer.site .footerCopy { font-size: 12px; }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 760px) {
+    section.hero {
+      grid-template-columns: 1fr;
+      padding: 96px 24px 48px;
+      gap: 40px;
+    }
+    .heroHeadline { font-size: 36px; }
+    .heroVisual { max-width: 240px; margin: 0 auto; }
+    .productCard {
+      grid-template-columns: 1fr;
+      text-align: center;
+      gap: 20px;
+    }
+    .productIcon { margin: 0 auto; }
+    nav.site { padding: 0 20px; }
+    nav.site .navRight { gap: 14px; font-size: 12px; }
+  }
+
+  /* ========== Mockup-only annotations (not shipped) ========== */
+  .mockNotes {
+    background: #fffbea;
+    color: #4a3600;
+    border: 1px solid #f4e3a1;
+    border-radius: 10px;
+    padding: 20px 24px;
+    max-width: 880px;
+    margin: 0 auto 40px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .mockNotes h3 {
+    font-size: 14px;
+    margin: 0 0 8px;
+    color: #3a2a00;
+  }
+  .mockNotes ul { margin: 6px 0 0 20px; padding: 0; }
+  .mockNotes li { margin-bottom: 4px; }
+  .mockNotes + .mockNotes { margin-top: -20px; }
+  @media (prefers-color-scheme: dark) {
+    .mockNotes {
+      background: #2b2510;
+      color: #f4e3a1;
+      border-color: #5b4700;
+    }
+    .mockNotes h3 { color: #fff0b3; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== NAV ========== -->
+<nav class="site">
+  <a href="#hero" class="brand">
+    <img src="../../public/cpg-labs_box.png" alt="CPG Labs" />
+    CPG Labs
+  </a>
+  <div class="navRight">
+    <a href="#about">About</a>
+    <a href="#product">Omnify</a>
+    <a href="#contact">Contact</a>
+    <a href="https://apps.shopify.com/omnify" class="cta" target="_blank" rel="noopener">Open Omnify →</a>
+  </div>
+</nav>
+
+<!-- ========== HERO ========== -->
+<section class="hero" id="hero">
+  <div class="heroCopy">
+    <span class="heroEyebrow">CPG Labs</span>
+    <h1 class="heroHeadline">
+      The software company behind <span class="holo">Omnify</span>.
+    </h1>
+    <p class="heroSub">
+      We build operating software for commerce brands. Omnify, our Shopify app, helps merchants plan local deliveries, track retail performance, and map expansion opportunities.
+    </p>
+    <div class="heroCtas">
+      <a href="https://apps.shopify.com/omnify" class="ctaPrimary" target="_blank" rel="noopener">
+        See Omnify on the Shopify App Store
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="mailto:contact@cpg-labs.io" class="ctaSecondary">
+        or email us at contact@cpg-labs.io
+      </a>
+    </div>
+  </div>
+  <div class="heroVisual">
+    <img src="../../public/cpg-labs_box.png" alt="CPG Labs" />
+  </div>
+</section>
+
+<!-- ========== ABOUT / WHAT WE BUILD ========== -->
+<section class="about" id="about">
+  <div class="sectionEyebrow">What we build</div>
+  <h2 class="sectionTitle">Operating software for commerce brands.</h2>
+  <p class="aboutBody">
+    CPG Labs is a small, independent software company focused on the operational tooling commerce brands rely on every day. <strong>Route planning. Retail analytics. Delivery dispatch. Footprint expansion.</strong> We build like engineers and ship like operators, tightly integrated with the platforms merchants already use.
+  </p>
+  <ul class="focusList">
+    <li class="focusItem">
+      <strong>Shopify-native</strong>
+      <span>Embedded apps that live inside Shopify Admin using session-token auth and the latest App Bridge.</span>
+    </li>
+    <li class="focusItem">
+      <strong>Production infrastructure</strong>
+      <span>AWS hosting with encrypted storage, monitored logging, and GDPR-compliant data handling.</span>
+    </li>
+    <li class="focusItem">
+      <strong>Built in São Paulo</strong>
+      <span>Headquartered in Brazil, serving merchants worldwide.</span>
+    </li>
+  </ul>
+</section>
+
+<!-- ========== PRODUCT ========== -->
+<section class="product" id="product">
+  <div class="sectionEyebrow">Our product</div>
+  <h2 class="sectionTitle">Omnify for Shopify.</h2>
+  <div class="productCard">
+    <div class="productIcon">
+      <img src="../../public/omnify_tree.png" alt="Omnify" />
+    </div>
+    <div class="productCopy">
+      <h3>Omnify</h3>
+      <p class="productTagline">Local delivery, retail performance, footprint expansion.</p>
+      <p class="productBlurb">
+        Omnify helps Shopify merchants plan delivery routes from their store locations, track retail sales performance against monthly goals, and decide where to open next based on customer geography.
+      </p>
+    </div>
+    <a href="https://apps.shopify.com/omnify" class="productCta" target="_blank" rel="noopener">
+      Open on Shopify App Store
+      <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- ========== CONTACT ========== -->
+<section class="contact" id="contact">
+  <div class="sectionEyebrow">Contact</div>
+  <h2 class="sectionTitle">Get in touch.</h2>
+  <div class="contactGrid">
+    <div class="contactBlock">
+      <h4>General</h4>
+      <p><a href="mailto:contact@cpg-labs.io">contact@cpg-labs.io</a></p>
+    </div>
+    <div class="contactBlock">
+      <h4>Support</h4>
+      <p><a href="mailto:support@cpg-labs.io">support@cpg-labs.io</a></p>
+    </div>
+    <div class="contactBlock">
+      <h4>Location</h4>
+      <p>São Paulo, Brazil</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer class="site">
+  <div>
+    <a href="https://omnify.cpg-labs.io/privacy">Privacy</a>
+    <a href="https://omnify.cpg-labs.io/terms">Terms</a>
+    <a href="https://omnify.cpg-labs.io/security">Security</a>
+    <a href="https://apps.shopify.com/omnify">Omnify on Shopify</a>
+  </div>
+  <div class="footerCopy">© 2026 CPG Labs</div>
+</footer>
+
+<!-- ========== MOCKUP NOTES ========== -->
+<div class="mockNotes" style="margin-top: 40px;">
+  <h3>Design language</h3>
+  <ul>
+    <li><strong>Dark-first</strong>, light-mode via <code>prefers-color-scheme</code>. Matches the existing CPG Labs holographic aesthetic and keeps the box logo prominent.</li>
+    <li><strong>Holographic gradient</strong> reused from <code>cpglabs-home.module.css</code> (tokens <code>#5ecece → #b09fda → #d4a8d4</code>) on the hero headline word "Omnify" and the nav CTA. Consistent with existing brand.</li>
+    <li><strong>Logo used twice, prominently</strong>: at 24px in nav + as the ~280px hero visual. This is the signature asset and should anchor the page identity.</li>
+    <li><strong>No lead form, no Calendly, no cost-stack SVG</strong> — this is a trust page, not a sales page. Two CTAs total: "Open Omnify on Shopify" (primary) and "email us" (secondary).</li>
+    <li><strong>One-screen hero</strong> on desktop, natural scroll fold at "About" section. Each section below ~500px tall.</li>
+    <li><strong>Mobile</strong>: single column, hero stacks visual above copy (or below — see Q2).</li>
+  </ul>
+</div>
+
+<div class="mockNotes">
+  <h3>Copy choices</h3>
+  <ul>
+    <li><strong>Headline</strong>: "The software company behind Omnify." Direct message-match for a reviewer who just saw "Omnify by CPG Labs" on the App Store.</li>
+    <li><strong>No superlatives</strong> ("best", "leading", "#1") and <strong>no stats</strong> — rule 4.3.3/4.3.4 compliance even on the corporate page since reviewers form trust holistically.</li>
+    <li><strong>No em dashes</strong> anywhere (per persistent user feedback). Comma/period constructions only.</li>
+    <li><strong>"Built in São Paulo"</strong> — concrete location is a trust signal. "Serving merchants worldwide" softens it from a regional-only shop to a global-intent product.</li>
+    <li><strong>Support vs contact email split</strong> — two roles. Flags that <code>support@cpg-labs.io</code> MX forwarding needs to be set up in GoDaddy/Google Workspace before this page goes live, OR we drop that block until it's wired.</li>
+  </ul>
+</div>
+
+<div class="mockNotes">
+  <h3>Open questions for the user</h3>
+  <ul>
+    <li><strong>Q1 — What happens to the existing <code>cpglabs-home.tsx</code></strong> (the $300–500 setup dev-shop pitch page)? Archive? Move to <code>/build</code>? Delete entirely? This decision determines whether I replace the root export or add a sibling component.</li>
+    <li><strong>Q2 — Hero layout on desktop</strong>: visual on the <em>right</em> (current mockup, more standard) vs visual on the <em>left</em> (more product-brand-forward, less corporate-stiff)?</li>
+    <li><strong>Q3 — Shopify App Store listing URL</strong>: the current link <code>https://apps.shopify.com/omnify</code> is a placeholder. Submission pending means the real URL does not exist yet. Option A: disable the link, show it as text until approved. Option B: link to <code>omnify.cpg-labs.io</code> (the app itself, not the listing) as a soft fallback. Option C: keep the placeholder and update after approval.</li>
+    <li><strong>Q4 — "Built in São Paulo"</strong>: is this the public positioning we want, or would you rather keep the location off the page (common for privacy-forward solo-founder shops)?</li>
+    <li><strong>Q5 — Founder / team bio block</strong>: do we add a short "Who we are" block with your name + photo + LinkedIn? It's a strong trust signal but also public exposure. Default: not included in v1, add later if you want.</li>
+    <li><strong>Q6 — NAMI Works parent mention</strong>: include a small "Part of NAMI Works" pill/footnote, or keep CPG Labs positioned standalone? The privacy policy already describes CPG Labs as "the operating entity behind Omnify", so legally CPG Labs stands on its own — NAMI Works mention is optional.</li>
+    <li><strong>Q7 — Product card visual</strong>: currently uses <code>omnify_tree.png</code>. Should it be a product screenshot instead (route map, delivery dashboard) to visually confirm "this is real software"? Stronger trust signal but requires a clean screenshot asset.</li>
+  </ul>
+</div>
+
+</body>
+</html>
