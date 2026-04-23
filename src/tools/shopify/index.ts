@@ -35,3 +35,5 @@ import "./audit-product-metafield.js";
 import "./low-inventory-alert.js";
 import "./product-dimensions.js";
 import "./find-products-by-metafield.js";
+import "./audit-retail-totals.js";
+import "./list-fulfillment-stragglers.js";
