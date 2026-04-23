@@ -62,3 +62,8 @@ import "./shop-info.js";
 import "./list-gift-cards.js";
 import "./list-metaobject-definitions.js";
 import "./list-markets.js";
+import "./list-inventory-adjustments.js";
+import "./product-inventory-by-location.js";
+import "./list-transfers.js";
+import "./reorder-forecast.js";
+import "./audit-inventory-negatives.js";
