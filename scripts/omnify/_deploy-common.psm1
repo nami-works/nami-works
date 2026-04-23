@@ -92,9 +92,13 @@ function Assert-NoSplitBrain {
       throw ("Assert-NoSplitBrain: 'aws ecs describe-clusters --clusters {0}' failed." -f $name)
     }
     $parsed = $runningJson | ConvertFrom-Json
+    # PS 5.1 unwraps single-element arrays from ConvertFrom-Json, so a single-
+    # cluster response has no .Count property on $parsed.clusters. @() coerces
+    # null / single-object / array uniformly into an array with .Count.
+    $clusters = @($parsed.clusters)
     $clusterObj = $null
-    if ($parsed.clusters -and $parsed.clusters.Count -gt 0) {
-      $clusterObj = $parsed.clusters[0]
+    if ($clusters.Count -gt 0) {
+      $clusterObj = $clusters[0]
     }
     $running = 0
     if ($clusterObj -and ($clusterObj.PSObject.Properties.Name -contains 'runningTasksCount')) {
