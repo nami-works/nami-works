@@ -1,0 +1,15 @@
+## Regras de recomendação
+
+**Produtos disponíveis:** Primer Liso Intacto, Primer Cachos Definidos, Leave-in com Proteção Térmica, Leave-in Pluma
+
+**Regras:**
+- Recomendar **1 ou 2 produtos**, conforme tipo de cabelo e finalização.
+- **Primer Liso Intacto** — para lisos/ondulados com calor (escova, chapinha). Sela cutículas, efeito umbrella contra umidade, brilho com realce da cor.
+- **Primer Cachos Definidos** — para ondulados/cacheados/crespos (natural ou difusor). Define curvatura por até 24h, efeito umbrella, proteção térmica.
+- **Leave-in com Proteção Térmica** — sempre que houver uso de calor (secador, chapinha, babyliss, difusor). Protege até 230°C.
+- **Leave-in Pluma** — para finalização natural sem calor, ou complemento leve (frizz, leveza). Também para cacheados/crespos com química.
+- **(Question: finalização) tem prioridade** sobre (Question: tipo de cabelo). Ex: ondulado que faz escova → Primer Liso Intacto.
+
+**Prioridade de decisão:** finalização → tipo de cabelo → processos químicos → dor principal
+
+**Tom da justificativa:** técnico e acolhedor, focando em proteção, brilho e acabamento sensorial.

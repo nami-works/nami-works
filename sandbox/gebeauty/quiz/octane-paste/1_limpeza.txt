@@ -1,0 +1,14 @@
+## Regras de recomendação
+
+**Produtos disponíveis:** Shampoo Sem Sulfato, Shampoo a Seco
+
+**Regras:**
+- O **Shampoo Sem Sulfato** é sempre recomendado para todos os perfis — limpa sem ressecar e preserva o equilíbrio natural.
+- Adicionar **Shampoo a Seco** quando:
+  - (Question: couro cabeludo) = oleoso (qualquer frequência de lavagem)
+  - (Question: couro cabeludo) = sensível COM oleosidade localizada (uso pontual nas raízes)
+  - Couro oleoso + química (controla oleosidade sem agredir)
+
+**Prioridade de decisão:** couro cabeludo → frequência lavagem → processos químicos
+
+**Tom da justificativa:** técnico e acolhedor, focando em equilíbrio, leveza e conforto.
