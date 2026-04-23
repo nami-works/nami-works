@@ -26,6 +26,17 @@ export function mountTenantRoute(
     });
 
     if (!authResult.ok) {
+      // RFC 6750 + MCP authorization spec: tell the client where to discover
+      // OAuth endpoints. Claude.ai's MCP host uses this hint to start the
+      // OAuth flow instead of giving up with "couldn't reach the server".
+      if (authResult.status === 401) {
+        const issuer =
+          process.env.OAUTH_ISSUER ?? "https://mcp.nami.works";
+        reply.header(
+          "WWW-Authenticate",
+          `Bearer realm="MCP", resource_metadata="${issuer}/.well-known/oauth-protected-resource"`,
+        );
+      }
       return reply
         .code(authResult.status)
         .send({ ok: false, error: authResult.error });

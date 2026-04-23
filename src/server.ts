@@ -4,6 +4,7 @@ import sensible from "@fastify/sensible";
 import Fastify, { type FastifyBaseLogger } from "fastify";
 import { rootLogger } from "./lib/logger.js";
 import { mountTenantRoute } from "./mcp/transport.js";
+import { mountOAuthRoutes } from "./oauth/index.js";
 // Side-effect import: registers every tool in the catalog at boot.
 import "./tools/index.js";
 
@@ -18,6 +19,7 @@ const app = Fastify({
 });
 
 await app.register(sensible);
+await mountOAuthRoutes(app);
 
 app.get("/health", async () => ({ ok: true }));
 

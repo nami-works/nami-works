@@ -1,6 +1,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import type { Brand, IntegrationTenant } from "@prisma/client";
 import { prisma as defaultPrisma } from "../db/prisma.js";
+import { verifyAccessToken } from "../oauth/jwt.js";
 
 export type TenantContext = {
   id: string;
@@ -50,6 +51,38 @@ export async function authorizeTenantRequest(input: {
 
   const db = input.prisma ?? defaultPrisma;
 
+  // Path 1: JWT (the OAuth-issued access token). Tokens shaped like
+  // `xxx.yyy.zzz` (3 dot-separated base64url segments) are only attempted
+  // through the JWT verifier; legacy bearers are pure base64url with no dots.
+  if (looksLikeJwt(presented)) {
+    const claims = await verifyAccessToken(presented);
+    if (!claims) return UNAUTHORIZED;
+    if (claims.tenant !== input.slug) return UNAUTHORIZED;
+
+    let tenant: IntegrationTenant | null;
+    try {
+      tenant = await db.integrationTenant.findUnique({
+        where: { slug: input.slug },
+      });
+    } catch {
+      return BACKEND_DOWN;
+    }
+    if (!tenant || tenant.status !== "active") return UNAUTHORIZED;
+    return {
+      ok: true,
+      tenant: {
+        id: tenant.id,
+        slug: tenant.slug,
+        displayName: tenant.displayName,
+        brand: tenant.brand,
+        shopifyShop: tenant.shopifyShop,
+        ssmPrefix: tenant.ssmPrefix,
+      },
+    };
+  }
+
+  // Path 2: legacy raw bearer (direct curl, Claude Desktop with manual config,
+  // and the OAuth consent step itself). Constant-time hash compare.
   let tenant: IntegrationTenant | null;
   try {
     tenant = await db.integrationTenant.findUnique({
@@ -77,6 +110,14 @@ export async function authorizeTenantRequest(input: {
       ssmPrefix: tenant.ssmPrefix,
     },
   };
+}
+
+function looksLikeJwt(token: string): boolean {
+  const parts = token.split(".");
+  return (
+    parts.length === 3 &&
+    parts.every((p) => p.length > 0 && /^[A-Za-z0-9_-]+$/.test(p))
+  );
 }
 
 function extractBearer(header: string | undefined): string | null {

@@ -35,7 +35,8 @@ resource "aws_ecs_task_definition" "gateway" {
     ]
 
     secrets = [
-      { name = "DATABASE_URL", valueFrom = aws_ssm_parameter.database_url.arn }
+      { name = "DATABASE_URL",       valueFrom = aws_ssm_parameter.database_url.arn },
+      { name = "OAUTH_SIGNING_KEY", valueFrom = aws_ssm_parameter.oauth_signing_key.arn },
     ]
 
     logConfiguration = {

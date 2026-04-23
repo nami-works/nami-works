@@ -1,6 +1,10 @@
 import { createHash } from "node:crypto";
 import type { IntegrationTenant } from "@prisma/client";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import {
+  __resetSigningKeyForTesting,
+  signAccessToken,
+} from "../oauth/jwt.js";
 import { authorizeTenantRequest, type TenantLookup } from "./tenant-auth.js";
 
 const BEARER = "the-raw-bearer-value-for-tests";
@@ -129,5 +133,56 @@ describe("authorizeTenantRequest", () => {
       expect(result.tenant.ssmPrefix).toBe("/nami-works/tenants/gebeauty");
       expect(result.tenant.shopifyShop).toBe("gebeauty.myshopify.com");
     }
+  });
+});
+
+describe("authorizeTenantRequest — JWT (OAuth-issued) path", () => {
+  beforeEach(() => {
+    __resetSigningKeyForTesting("test-jwt-key-for-tenant-auth-tests-12345");
+  });
+  afterEach(() => {
+    __resetSigningKeyForTesting();
+  });
+
+  it("accepts a valid JWT whose tenant claim matches the URL slug", async () => {
+    const jwt = await signAccessToken({ tenantSlug: "gebeauty" });
+    const result = await authorizeTenantRequest({
+      slug: "gebeauty",
+      authorizationHeader: `Bearer ${jwt}`,
+      prisma: stub(tenantRow()),
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.tenant.slug).toBe("gebeauty");
+  });
+
+  it("rejects a JWT whose tenant claim does not match the URL slug", async () => {
+    const jwt = await signAccessToken({ tenantSlug: "acme" });
+    const result = await authorizeTenantRequest({
+      slug: "gebeauty",
+      authorizationHeader: `Bearer ${jwt}`,
+      prisma: stub(tenantRow()),
+    });
+    expect(result.ok).toBe(false);
+  });
+
+  it("rejects a JWT signed with a different key", async () => {
+    const jwt = await signAccessToken({ tenantSlug: "gebeauty" });
+    __resetSigningKeyForTesting("a-totally-different-key-987654321zyxwvut");
+    const result = await authorizeTenantRequest({
+      slug: "gebeauty",
+      authorizationHeader: `Bearer ${jwt}`,
+      prisma: stub(tenantRow()),
+    });
+    expect(result.ok).toBe(false);
+  });
+
+  it("rejects a valid JWT when the tenant has been suspended", async () => {
+    const jwt = await signAccessToken({ tenantSlug: "gebeauty" });
+    const result = await authorizeTenantRequest({
+      slug: "gebeauty",
+      authorizationHeader: `Bearer ${jwt}`,
+      prisma: stub(tenantRow({ status: "suspended" })),
+    });
+    expect(result.ok).toBe(false);
   });
 });
