@@ -48,8 +48,9 @@ export default function Privacy() {
               </a>
             </li>
             <li className={styles.listItem}>
-              All features including Local Delivery, Retail Expansion, Sales,
-              Storytelling, and Analytics
+              All features including Local Delivery, Retail Sales goals,
+              Footprint Expansion, Affiliates, Carrier Service integrations,
+              and Analytics
             </li>
           </ul>
           <p className={styles.text}>

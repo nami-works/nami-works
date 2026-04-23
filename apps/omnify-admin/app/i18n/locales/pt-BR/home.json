@@ -15,7 +15,7 @@
     },
     "footprintExpansion": {
       "title": "Expansão de varejo",
-      "description": "Identifique as melhores localizações para expandir o varejo. Classifique pontos potenciais por proximidade do cliente e impacto estimado na receita."
+      "description": "Identifique localizações com alto potencial para expandir o varejo. Classifique candidatas por proximidade do cliente e impacto estimado na receita."
     },
     "priceTags": {
       "title": "Etiquetas de preço",

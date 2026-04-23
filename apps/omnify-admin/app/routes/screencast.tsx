@@ -9,7 +9,7 @@ export const meta: MetaFunction = () => [
 export default function Screencast() {
   return (
     <main className={styles.page}>
-      <img className={styles.logo} src="/omnify-logo.png" alt="Omnify logo" />
+      <img className={styles.logo} src="/omnify_tree.png" alt="Omnify logo" />
       <h1 className={styles.title}>Screencast</h1>
       <p className={styles.text}>
         This screencast shows an example of Omnify app being used on a Shopify store.

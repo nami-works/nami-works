@@ -106,7 +106,7 @@ export function SiteNav() {
       >
         <Link to="/" className={styles.navLogo}>
           <img
-            src="/astro-helmet.png"
+            src="/omnify_tree.png"
             alt="Omnify"
             className={styles.navLogoImg}
           />

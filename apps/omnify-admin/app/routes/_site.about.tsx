@@ -34,7 +34,7 @@ export default function About() {
       <section className={styles.productsSection}>
         <div className={styles.productCard}>
           <img
-            src="/omnify-logo.png"
+            src="/omnify_tree.png"
             alt="Omnify"
             className={styles.productLogo}
           />

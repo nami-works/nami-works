@@ -15,7 +15,7 @@
     },
     "footprintExpansion": {
       "title": "Footprint expansion",
-      "description": "Identify the best retail locations to expand into. Rank potential spots by customer proximity and estimated revenue impact."
+      "description": "Identify high-potential retail locations to expand into. Rank candidates by customer proximity and estimated revenue impact."
     },
     "priceTags": {
       "title": "Price tags",
