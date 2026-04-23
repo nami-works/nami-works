@@ -1,5 +1,7 @@
 # Session Handover — Local Delivery Control API — 2026-04-19
 
+> **Note (2026-04-23):** Paths in this document refer to `gebeauty-workspace/` as it existed at the time of writing. That workspace has since been migrated to the `nami-works` repo at `sandbox/gebeauty/` — the Python client, shipping journal, and `.env` all live there now. The `/api/control/*` server side is unchanged.
+
 ## What was done
 
 **Built and deployed a bearer-auth-gated HTTP control surface (`/api/control/*`) that lets Claude Code drive the Local Delivery pipeline headlessly** — no UI, no Shopify embedded session. Proved it end-to-end by running a full day's dispatch cycle (4 routes, 19 orders across SP + Rio + Recife) entirely through Claude calling these endpoints.

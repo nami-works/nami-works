@@ -60,18 +60,8 @@ infra/terraform/terraform.tfvars
 
 # Scripts with hardcoded tokens
 scripts/webhook-listen.ps1
-gebeauty-workspace/scripts/update_beautyback_combines.py
-
-# Generated Google Static Maps PNGs from render-routes (30d rolling prune by Python CLI)
-gebeauty-workspace/route-maps/
 
 # Python bytecode cache
 __pycache__/
-
-# Ad-hoc gebeauty diagnostic/draft files (created by one-off analysis scripts)
-gebeauty-workspace/scripts/_*.py
-gebeauty-workspace/scripts/_*.json
-gebeauty-workspace/scripts/_*.sh
-gebeauty-workspace/scripts/_*.ps1
 
 /.streamlit/

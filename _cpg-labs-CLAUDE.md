@@ -445,10 +445,8 @@ When deployed under a subpath (e.g. `BASE_PATH=/full`), **every URL-handling lay
 - **Theme settings are split across files.** Announcement bar content lives in `sections/header-group.json`, PDP banners in `config/settings_data.json`, and promotional logic in `snippets/*.liquid`. When auditing promotional consistency, read all three.
 - **Classifying Shopify locations as store vs warehouse:** Use the `localPickupSettingsV2` field on the `Location` GraphQL type. Non-null = physical store (pickup enabled), null = warehouse/DC. This is more reliable than `fulfillsOnlineOrders` or `shipsInventory` for determining physical retail presence.
 
-## GE Beauty Workspace
-- **`gebeauty-workspace/`** contains operational tooling for the GE Beauty Shopify store (scripts, quiz content, API access).
-- **`gebeauty-workspace/CLAUDE.md`** is the operational playbook — store access, product catalog, discount conventions, theme layout.
-- **`gebeauty-workspace/field-notes.md`** captures lessons from manual store operations that should inform app features (especially Merchandising). Review this file when designing features for `app/routes/app.merchandising.tsx`.
+## GE Beauty
+Operational tooling and knowledge for the GE Beauty Shopify store moved to the `nami-works` repo (`sandbox/gebeauty/`) on 2026-04-23. When designing cpg-labs features that intersect GE Beauty operations, read `nami-works/sandbox/gebeauty/field-notes.md` for the lessons captured during manual store ops.
 
 ---
 
