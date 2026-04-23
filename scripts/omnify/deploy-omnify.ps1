@@ -96,11 +96,16 @@ try {
 
   Write-Host "Logging into ECR..."
   $registry = ($Repository -split "/")[0]
-  aws ecr get-login-password --region $Region | docker login --username AWS --password-stdin $registry
+  # Windows PowerShell 5.1 pipes mangle docker --password-stdin stdin encoding,
+  # so we capture the token to a variable and pass via --password. The token is
+  # a short-lived (12 h) bearer, and this script runs on a local developer
+  # machine where process listings are not a meaningful attack surface.
+  $ecrToken = (aws ecr get-login-password --region $Region).Trim()
+  docker login --username AWS --password $ecrToken $registry 2>$null
   if ($LASTEXITCODE -ne 0) {
     Write-Host "ECR login failed. Retrying after docker logout..."
     docker logout $registry | Out-Null
-    aws ecr get-login-password --region $Region | docker login --username AWS --password-stdin $registry
+    docker login --username AWS --password $ecrToken $registry 2>$null
   }
   if ($LASTEXITCODE -ne 0) { throw "ECR login failed. Aborting deploy." }
 
