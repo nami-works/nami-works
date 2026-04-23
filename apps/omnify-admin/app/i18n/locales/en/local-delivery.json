@@ -353,5 +353,161 @@
   "customer": {
     "guest": "Guest",
     "noShippingAddress": "No shipping address"
+  },
+  "mobile": {
+    "pickLocation": "Pick a location",
+    "pickDate": "Pick a date",
+    "noCoordsForOptimize": "Pick a specific location to optimize.",
+    "optimizeCta": {
+      "heading": "{{count}} orders to route",
+      "body": "Packs today's unassigned orders into the fewest viable routes.",
+      "button": "Optimize",
+      "optimizing": "Optimizing {{count}} orders…"
+    },
+    "phases": {
+      "buildingMatrix": "Building distance matrix…",
+      "computingRoutes": "Computing route assignments…",
+      "quoting": "Quoting routes with Lalamove…",
+      "finalizing": "Finalizing…"
+    },
+    "statusStrip": "{{routes}} routes out · {{pending}} pending",
+    "statusStripErrors": "{{count}} errors",
+    "statusStripAddrErrors": "{{count}} addr errors",
+    "routesHeading": "Routes",
+    "noRoutesYet": "No routes yet.\nTap **Optimize** above to auto-assign today's orders.",
+    "pickLocationFirst": "Pick a specific location above to see routes and optimize.",
+    "unassignedSection": "Unassigned orders",
+    "unassignedEmpty": "No unassigned orders for the current filter.",
+    "showMap": "Show map",
+    "hideMap": "Hide map",
+    "mapPins": "{{routes}} routes · {{pins}} pins",
+    "mapEmpty": "No pins to display — pick a specific location and optimize, or reselect a date range with orders.",
+    "triage": "Triage (tap to review)",
+    "desktopOnlyHeading": "Desktop-only actions",
+    "triageChip": {
+      "addressErrors": "Address errors ({{count}})",
+      "shipmentRequests": "Shipment requests ({{count}})",
+      "returnPickups": "Return pickups ({{count}})",
+      "specialRequests": "Special requests",
+      "mapStyle": "Map style",
+      "lalamoveSettings": "Lalamove settings",
+      "openOnDesktop": "open on desktop ↗"
+    },
+    "sheet": {
+      "close": "Close",
+      "openInShopify": "Open in Shopify ↗",
+      "viewDesktop": "View desktop version",
+      "refresh": "Refresh",
+      "sameDay": "Same day",
+      "nextDay": "Next day",
+      "dayPlus2": "Day +2",
+      "dayPlus3": "Day +3",
+      "dayPlus4": "Day +4"
+    },
+    "orderDetails": {
+      "heading": "{{name}} · {{customer}}",
+      "address": "Shipping address",
+      "phone": "Phone",
+      "fulfillment": "Fulfillment",
+      "tags": "Tags",
+      "total": "Order total",
+      "due": "Due",
+      "noPhone": "—"
+    },
+    "routeDetails": {
+      "heading": "Route {{number}} · {{location}}",
+      "ordersIn": "{{count}} orders",
+      "distance": "Distance",
+      "duration": "Duration",
+      "cost": "Est. cost",
+      "stops": "Stops",
+      "lalamoveOrder": "Lalamove order",
+      "lalamoveLink": "Open tracking ↗"
+    },
+    "quoteConfirm": {
+      "heading": "Quote · Route {{number}}",
+      "sub": "{{stops}} stops",
+      "total": "Total",
+      "distance": "Distance",
+      "duration": "Est. duration",
+      "pickup": "Pickup",
+      "pickupAsap": "ASAP",
+      "disclaimer": "Once you request a driver, Lalamove dispatches immediately. Cancellation after pickup incurs a fee.",
+      "cancel": "Cancel",
+      "requestDriver": "Request driver →"
+    },
+    "cancelConfirm": {
+      "heading": "Cancel delivery?",
+      "body": "This cancels the Lalamove order. Cancellation fees may apply if the driver has already started.",
+      "cancel": "Keep delivery",
+      "confirm": "Yes, cancel"
+    },
+    "clearRouteConfirm": {
+      "heading": "Clear this route?",
+      "body": "Orders will return to unassigned. No Shopify tags are changed for dispatched routes.",
+      "cancel": "Keep route",
+      "confirm": "Clear route"
+    },
+    "clearAllConfirm": {
+      "heading": "Clear all routes?",
+      "body": "All pending routes will be cleared. Dispatched routes are kept.",
+      "cancel": "Keep routes",
+      "confirm": "Clear all"
+    },
+    "errorDetails": {
+      "heading": "Driver request error",
+      "close": "Close"
+    },
+    "addressErrorsSheet": {
+      "heading": "Address errors ({{count}})",
+      "sub": "Fix in Shopify admin. The next Optimize will pick up the corrected address.",
+      "empty": "No address errors.",
+      "noAddress": "No address line 1"
+    },
+    "shipmentRequestsSheet": {
+      "heading": "Shipment requests ({{count}})",
+      "sub": "These orders are tagged LOCAL but have non-local delivery methods. Open each in Shopify to fix the shipping method.",
+      "empty": "No shipment requests.",
+      "status": "Status: {{status}}",
+      "method": "Method: {{method}}"
+    },
+    "card": {
+      "orderCount": "{{count}} orders",
+      "distance": "{{km}} km",
+      "duration": "~{{min}} min",
+      "shipping": "R$ {{amount}}",
+      "quoteTotal": "{{total}}",
+      "quoteStops": "{{count}} stops",
+      "quoteExpiresAt": "expires {{time}}",
+      "tracking": "Lalamove dispatch",
+      "trackingLink": "Open Lalamove tracking ↗",
+      "errorHeading": "Driver request failed",
+      "requestQuote": "Request quote",
+      "requestingQuote": "Requesting…",
+      "requestDriver": "Request driver",
+      "requestingDriver": "Requesting…",
+      "retryDriver": "Retry driver",
+      "viewError": "View error",
+      "viewDetails": "Details",
+      "cancelDelivery": "Cancel",
+      "viewOrders": "View",
+      "statusPending": "Pending",
+      "statusQuoted": "Quoted",
+      "statusRequested": "Driver requested",
+      "statusAssigning": "Assigning…",
+      "statusHeadingToPickup": "Driver heading to pickup",
+      "statusInProgress": "Out for delivery",
+      "statusDelivered": "Delivered",
+      "statusFailed": "Cancelled",
+      "statusRejected": "No driver",
+      "statusExpired": "Expired",
+      "statusError": "Failed"
+    },
+    "bannerMapsMissing": "Google Maps is not configured. Contact your admin.",
+    "bannerOrdersAccess": "Orders access is required for local delivery. Contact your admin.",
+    "desktopBanner": "Viewport is wide enough for the desktop view.",
+    "desktopBannerSwitch": "Switch to desktop",
+    "desktopBannerUnreadable": "Desktop view is unreadable at this width.",
+    "desktopBannerOpenAnyway": "Open anyway"
   }
 }

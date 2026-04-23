@@ -189,6 +189,27 @@ const toPresaleTags = (value: string | null) => {
 };
 
 export default function Index() {
+  // ── Viewport redirect to mobile route ──
+  // Mobile version lives at /app/local-delivery-mobile. Redirect when the
+  // client viewport is <768px AND the user hasn't explicitly asked for the
+  // desktop view via ?desktop=1. First render matches SSR (no window, flag
+  // stays false); effect below flips the flag on client + triggers the
+  // navigation. A `return null` later in the component prevents further
+  // renders once the redirect is in flight.
+  const [hidingForMobileRedirect, setHidingForMobileRedirect] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.innerWidth >= 768) return;
+    if (new URLSearchParams(window.location.search).has("desktop")) return;
+    setHidingForMobileRedirect(true);
+    const next = new URL(window.location.href);
+    next.pathname = next.pathname.replace(
+      /\/app\/local-delivery(?!-mobile)/,
+      "/app/local-delivery-mobile",
+    );
+    window.location.replace(next.toString()); // preserves query params
+  }, []);
+
   const {
     orders,
     locations,
@@ -3912,6 +3933,11 @@ export default function Index() {
       unassignFetcher.submit(formData, { method: "post" });
     }
   };
+
+  // Hide desktop tree while the viewport-redirect navigation is in flight.
+  // All hooks above still run (React rules) but no JSX is emitted, avoiding a
+  // flash of desktop UI on mobile viewports during navigation.
+  if (hidingForMobileRedirect) return null;
 
   return (
     <s-page heading={t("pageHeading")}>

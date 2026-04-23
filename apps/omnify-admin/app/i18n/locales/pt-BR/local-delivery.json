@@ -345,5 +345,161 @@
   "customer": {
     "guest": "Visitante",
     "noShippingAddress": "Sem endereço de entrega"
+  },
+  "mobile": {
+    "pickLocation": "Escolha um local",
+    "pickDate": "Escolha uma data",
+    "noCoordsForOptimize": "Escolha um local específico para otimizar.",
+    "optimizeCta": {
+      "heading": "{{count}} pedidos para rotear",
+      "body": "Agrupa os pedidos não atribuídos de hoje nas menores rotas viáveis.",
+      "button": "Otimizar",
+      "optimizing": "Otimizando {{count}} pedidos…"
+    },
+    "phases": {
+      "buildingMatrix": "Construindo matriz de distância…",
+      "computingRoutes": "Calculando rotas…",
+      "quoting": "Cotando rotas com Lalamove…",
+      "finalizing": "Finalizando…"
+    },
+    "statusStrip": "{{routes}} rotas em campo · {{pending}} pendentes",
+    "statusStripErrors": "{{count}} erros",
+    "statusStripAddrErrors": "{{count}} end. inválidos",
+    "routesHeading": "Rotas",
+    "noRoutesYet": "Nenhuma rota ainda.\nToque em **Otimizar** acima para atribuir os pedidos de hoje.",
+    "pickLocationFirst": "Escolha um local específico acima para ver rotas e otimizar.",
+    "unassignedSection": "Pedidos não atribuídos",
+    "unassignedEmpty": "Não há pedidos não atribuídos para o filtro atual.",
+    "showMap": "Mostrar mapa",
+    "hideMap": "Ocultar mapa",
+    "mapPins": "{{routes}} rotas · {{pins}} pontos",
+    "mapEmpty": "Sem pontos para mostrar. Escolha um local específico e otimize.",
+    "triage": "Triagem (toque para revisar)",
+    "desktopOnlyHeading": "Ações exclusivas do desktop",
+    "triageChip": {
+      "addressErrors": "Erros de endereço ({{count}})",
+      "shipmentRequests": "Pedidos de envio ({{count}})",
+      "returnPickups": "Coletas de retorno ({{count}})",
+      "specialRequests": "Solicitações especiais",
+      "mapStyle": "Estilo do mapa",
+      "lalamoveSettings": "Configurações Lalamove",
+      "openOnDesktop": "abrir no desktop ↗"
+    },
+    "sheet": {
+      "close": "Fechar",
+      "openInShopify": "Abrir no Shopify ↗",
+      "viewDesktop": "Ver versão desktop",
+      "refresh": "Atualizar",
+      "sameDay": "Mesmo dia",
+      "nextDay": "Próximo dia",
+      "dayPlus2": "Dia +2",
+      "dayPlus3": "Dia +3",
+      "dayPlus4": "Dia +4"
+    },
+    "orderDetails": {
+      "heading": "{{name}} · {{customer}}",
+      "address": "Endereço de entrega",
+      "phone": "Telefone",
+      "fulfillment": "Local de retirada",
+      "tags": "Tags",
+      "total": "Total do pedido",
+      "due": "Entrega",
+      "noPhone": "—"
+    },
+    "routeDetails": {
+      "heading": "Rota {{number}} · {{location}}",
+      "ordersIn": "{{count}} pedidos",
+      "distance": "Distância",
+      "duration": "Duração",
+      "cost": "Custo est.",
+      "stops": "Paradas",
+      "lalamoveOrder": "Pedido Lalamove",
+      "lalamoveLink": "Abrir rastreio ↗"
+    },
+    "quoteConfirm": {
+      "heading": "Cotação · Rota {{number}}",
+      "sub": "{{stops}} paradas",
+      "total": "Total",
+      "distance": "Distância",
+      "duration": "Duração est.",
+      "pickup": "Coleta",
+      "pickupAsap": "Imediata",
+      "disclaimer": "Ao solicitar o motorista, a Lalamove despacha imediatamente. O cancelamento após a coleta pode ter taxa.",
+      "cancel": "Cancelar",
+      "requestDriver": "Solicitar motorista →"
+    },
+    "cancelConfirm": {
+      "heading": "Cancelar entrega?",
+      "body": "Isto cancela o pedido na Lalamove. Pode haver taxa se o motorista já iniciou a viagem.",
+      "cancel": "Manter entrega",
+      "confirm": "Sim, cancelar"
+    },
+    "clearRouteConfirm": {
+      "heading": "Limpar esta rota?",
+      "body": "Os pedidos voltam a \"não atribuídos\". Rotas já despachadas não têm tags alteradas.",
+      "cancel": "Manter rota",
+      "confirm": "Limpar rota"
+    },
+    "clearAllConfirm": {
+      "heading": "Limpar todas as rotas?",
+      "body": "Todas as rotas pendentes serão limpas. Rotas despachadas permanecem.",
+      "cancel": "Manter rotas",
+      "confirm": "Limpar todas"
+    },
+    "errorDetails": {
+      "heading": "Erro na solicitação do motorista",
+      "close": "Fechar"
+    },
+    "addressErrorsSheet": {
+      "heading": "Erros de endereço ({{count}})",
+      "sub": "Corrija no Shopify admin. A próxima Otimização usará o endereço corrigido.",
+      "empty": "Sem erros de endereço.",
+      "noAddress": "Sem linha de endereço"
+    },
+    "shipmentRequestsSheet": {
+      "heading": "Pedidos de envio ({{count}})",
+      "sub": "Estes pedidos têm tag LOCAL mas método de entrega não-local. Abra cada um no Shopify para corrigir.",
+      "empty": "Sem pedidos de envio.",
+      "status": "Status: {{status}}",
+      "method": "Método: {{method}}"
+    },
+    "card": {
+      "orderCount": "{{count}} pedidos",
+      "distance": "{{km}} km",
+      "duration": "~{{min}} min",
+      "shipping": "R$ {{amount}}",
+      "quoteTotal": "{{total}}",
+      "quoteStops": "{{count}} paradas",
+      "quoteExpiresAt": "expira {{time}}",
+      "tracking": "Despacho Lalamove",
+      "trackingLink": "Abrir rastreio Lalamove ↗",
+      "errorHeading": "Solicitação de motorista falhou",
+      "requestQuote": "Solicitar cotação",
+      "requestingQuote": "Solicitando…",
+      "requestDriver": "Solicitar motorista",
+      "requestingDriver": "Solicitando…",
+      "retryDriver": "Tentar novamente",
+      "viewError": "Ver erro",
+      "viewDetails": "Detalhes",
+      "cancelDelivery": "Cancelar",
+      "viewOrders": "Ver",
+      "statusPending": "Pendente",
+      "statusQuoted": "Cotada",
+      "statusRequested": "Motorista solicitado",
+      "statusAssigning": "Buscando motorista…",
+      "statusHeadingToPickup": "Motorista indo para coleta",
+      "statusInProgress": "Em rota de entrega",
+      "statusDelivered": "Entregue",
+      "statusFailed": "Cancelada",
+      "statusRejected": "Sem motorista",
+      "statusExpired": "Expirada",
+      "statusError": "Falhou"
+    },
+    "bannerMapsMissing": "Google Maps não configurado. Contate o admin.",
+    "bannerOrdersAccess": "Acesso a pedidos é necessário. Contate o admin.",
+    "desktopBanner": "Tela larga o suficiente para a versão desktop.",
+    "desktopBannerSwitch": "Trocar para desktop",
+    "desktopBannerUnreadable": "A versão desktop é difícil de ler nesta largura.",
+    "desktopBannerOpenAnyway": "Abrir mesmo assim"
   }
 }

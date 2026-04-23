@@ -24,6 +24,7 @@ export function getAppDisplayName(identity: AppIdentity = getAppIdentity()): str
 const IDENTITY_ROUTES: Record<Exclude<AppIdentity, "cpg-labs">, string[]> = {
   omnify: [
     "app.local-delivery",
+    "app.local-delivery-mobile",
     "app.carrier-service",
     "app.settings",
     "app.settings_.providers",
