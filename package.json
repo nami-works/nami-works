@@ -18,7 +18,9 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
-    "provision-tenant": "tsx scripts/provision-tenant.ts"
+    "provision-tenant": "tsx scripts/provision-tenant.ts",
+    "rotate-bearer": "tsx scripts/rotate-bearer.ts",
+    "suspend-tenant": "tsx scripts/suspend-tenant.ts"
   },
   "dependencies": {
     "@aws-sdk/client-ssm": "^3.700.0",
