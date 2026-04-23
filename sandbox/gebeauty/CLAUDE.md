@@ -133,6 +133,12 @@ When running a campaign (e.g., Consumer Month), the discount is baked directly i
 
 ---
 
+## Local Delivery / Dispatch
+
+For anything touching Local Delivery — route optimization, Lalamove dispatch, driver monitoring, route closure, `ld_rota-*` tags, the `cpg_control.py` client — read [LOCAL-DELIVERY-PLAYBOOK.md](LOCAL-DELIVERY-PLAYBOOK.md) before acting. It covers the full CLI, SOPs, hard rules (max 7 orders per route, read map PNGs before dispatching, confirm before money-spending), and failure recovery.
+
+---
+
 ## Quiz System
 
 See `quiz/` folder. Octane AI quiz (CORE-1 engine), 7 questions, smart prompts v4. Source of truth: `quiz/geb_smart-properties_v260327.md`. Paste-ready files in `quiz/octane-paste/`. AI Readiness metaobjects deployed on Shopify (14 entries, `custom.ai_readiness` type).
