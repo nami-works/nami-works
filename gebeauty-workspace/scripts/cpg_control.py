@@ -134,6 +134,21 @@ class Control:
             "routes": [{"orderIds": r} for r in routes],
         })
 
+    def close_route(self, location_id, route_index):
+        """Phase A: archive ld_rota tags + mark DB job FULFILLED. No Shopify fulfillment."""
+        return self._request("POST", "/api/control/close-route", {
+            "locationId": location_id,
+            "routeIndex": route_index,
+        })
+
+    def fulfill_route(self, location_id, route_index, notify_customer=False):
+        """Phase B: create Shopify fulfillment + DELIVERED event. Tags already archived."""
+        return self._request("POST", "/api/control/fulfill-route", {
+            "locationId": location_id,
+            "routeIndex": route_index,
+            "notifyCustomer": notify_customer,
+        })
+
     def mark_all_today(self, location_id, notify_customer=False):
         return self._request("POST", "/api/control/mark-all-today", {
             "locationId": location_id,
@@ -184,6 +199,15 @@ def main():
     p_qt.add_argument("--route", action="append", required=True,
                       help="Comma-separated order gids for one route. Repeat for multiple routes.")
 
+    p_cr = sub.add_parser("close-route", help="Phase A: archive ld_rota tags (ld_rota-NN → ld_rota-NN_YY.MM.DD) and close DB job. No Shopify fulfillment.")
+    p_cr.add_argument("--location", required=True, help="Location gid")
+    p_cr.add_argument("--route-index", type=int, required=True, help="Route index (0-based)")
+
+    p_fr = sub.add_parser("fulfill-route", help="Phase B: create Shopify fulfillment + DELIVERED event for orders in this route. Tags already archived by close-route.")
+    p_fr.add_argument("--location", required=True, help="Location gid")
+    p_fr.add_argument("--route-index", type=int, required=True, help="Route index (0-based)")
+    p_fr.add_argument("--notify-customer", action="store_true", help="Trigger Shopify customer notification email (default off)")
+
     p_mat = sub.add_parser("mark-all-today", help="Close EVERY dispatch job from the last 24h at a location (fulfill + DELIVERED event)")
     p_mat.add_argument("--location", required=True, help="Location gid")
     p_mat.add_argument("--notify-customer", action="store_true", help="Trigger customer notification emails (default: off)")
@@ -213,6 +237,10 @@ def main():
             create_shopify_fulfillment=not args.skip_shopify_fulfillment,
             notify_customer=args.notify_customer,
         )
+    elif args.cmd == "close-route":
+        result = ctrl.close_route(args.location, args.route_index)
+    elif args.cmd == "fulfill-route":
+        result = ctrl.fulfill_route(args.location, args.route_index, notify_customer=args.notify_customer)
     elif args.cmd == "mark-all-today":
         result = ctrl.mark_all_today(args.location, notify_customer=args.notify_customer)
     elif args.cmd == "check-dispatches":

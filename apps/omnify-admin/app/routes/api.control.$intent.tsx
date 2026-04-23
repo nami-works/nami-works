@@ -15,7 +15,17 @@
  *   POST /api/control/quote      body: {locationId, routes:[{orderIds:string[]}]}
  *   POST /api/control/check-dispatches   body: {} — polls live driver location
  *       for every in-flight dispatch and returns approach-to-pickup telemetry +
- *       reorder suggestions when a driver has stalled.
+ *       reorder suggestions when a driver has stalled. Also auto-archives route
+ *       tags (Phase A of the close flow) when a route transitions to COMPLETED.
+ *   POST /api/control/close-route    body: {locationId, routeIndex} — Phase A:
+ *       archive ld_rota-NN tags to ld_rota-NN_YY.MM.DD + mark DB job FULFILLED.
+ *       No Shopify fulfillment. Safe to run repeatedly (Promise.allSettled).
+ *   POST /api/control/fulfill-route  body: {locationId, routeIndex} — Phase B:
+ *       create Shopify fulfillment + DELIVERED event. Assumes close-route already
+ *       archived tags. Requires user approval (manual trigger).
+ *   POST /api/control/mark-delivered body: {locationId, routeIndex} — LEGACY
+ *       one-shot: both phases in a single call. Kept for scripts that haven't
+ *       migrated to the two-phase flow.
  */
 
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
@@ -332,6 +342,22 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       return handleQuote(auth.shop, body);
     case "check-dispatches":
       return handleCheckDispatches(auth.shop, body);
+    case "close-route":
+      // Phase A: tag archival + DB close. No Shopify fulfillment.
+      return handleMarkDelivered(auth.shop, {
+        ...body,
+        createShopifyFulfillment: false,
+        archiveTags: true,
+        cancelPendingLalamove: false,
+      });
+    case "fulfill-route":
+      // Phase B: Shopify fulfillment + DELIVERED event. Tags already archived.
+      return handleMarkDelivered(auth.shop, {
+        ...body,
+        createShopifyFulfillment: true,
+        archiveTags: false,
+        cancelPendingLalamove: false,
+      });
     default:
       return jsonResponse(
         { ok: false, error: `Unknown or not-yet-implemented POST intent: ${intent}` },
@@ -396,9 +422,25 @@ type DispatchOrderData = {
   lat: number;
   lng: number;
   address: string;
+  address2: string | null;
   name: string;
   phone: string;
 };
+
+// Mirrors formatFulfillmentStopAddress in app.local-delivery.tsx — joins
+// locationName + locationAddress + locationDetails with " • " so Lalamove's
+// UI shows store name, street, and complement as distinct lines rather than
+// only the street.
+function formatPickupStopAddress(
+  name?: string | null,
+  address?: string | null,
+  details?: string | null,
+): string {
+  return [name, address, details]
+    .map((s) => (s ?? "").trim())
+    .filter(Boolean)
+    .join(" • ");
+}
 
 async function handleDispatch(shop: string, body: Record<string, unknown>): Promise<Response> {
   const locationIdRaw = typeof body.locationId === "string" ? body.locationId : null;
@@ -513,7 +555,9 @@ async function handleDispatch(shop: string, body: Record<string, unknown>): Prom
         unresolvedAddresses.push(o.name);
         continue;
       }
-      const line = [addr.address1, addr.address2, addr.city, addr.province, addr.zip]
+      // Build the street-line portion (without address2 — that goes through
+      // sourceAddress2 so Lalamove keeps the complement visually distinct).
+      const line = [addr.address1, addr.city, addr.province, addr.zip]
         .filter(Boolean)
         .join(", ");
       const phoneCandidates = [
@@ -531,6 +575,7 @@ async function handleDispatch(shop: string, body: Record<string, unknown>): Prom
         lat: Number(addr.latitude),
         lng: Number(addr.longitude),
         address: line,
+        address2: addr.address2 ?? null,
         name: o.customer?.displayName || "Customer",
         phone: normalizedPhone || config.locationPhone || "",
       });
@@ -549,9 +594,18 @@ async function handleDispatch(shop: string, body: Record<string, unknown>): Prom
       { market: config.market, city: (config as any).city ?? null, preferredServiceType: serviceType },
       credentials,
     );
+    const pickupAddressBase = formatPickupStopAddress(
+      (config as any).locationName,
+      config.locationAddress,
+      (config as any).locationDetails,
+    ) || (config.locationAddress ?? "").trim();
     const stops = [
-      { coordinates: { lat: String(pickupLat), lng: String(pickupLng) }, address: (config.locationAddress ?? "").trim() },
-      ...ordersData.map((o) => ({ coordinates: { lat: String(o.lat), lng: String(o.lng) }, address: o.address })),
+      { coordinates: { lat: String(pickupLat), lng: String(pickupLng) }, address: pickupAddressBase },
+      ...ordersData.map((o) => ({
+        coordinates: { lat: String(o.lat), lng: String(o.lng) },
+        address: o.address,
+        sourceAddress2: o.address2,
+      })),
     ];
 
     const quotation = await createLalamoveQuotation(
@@ -1119,6 +1173,7 @@ async function handleMarkDelivered(shop: string, body: Record<string, unknown>):
   const routeIndexRaw = body.routeIndex;
   const cancelPendingLalamove = body.cancelPendingLalamove !== false; // default true
   const createShopifyFulfillment = body.createShopifyFulfillment !== false; // default true
+  const archiveTags = body.archiveTags !== false; // default true — Phase B flows pass false
   const notifyCustomer = body.notifyCustomer === true; // default false to avoid email spam
   if (!locationIdRaw) return jsonResponse({ ok: false, error: "locationId required" }, 400);
   const routeIndex =
@@ -1184,6 +1239,8 @@ async function handleMarkDelivered(shop: string, body: Record<string, unknown>):
     }
 
     // 3. Archive route tags on all mapped orders (ld_rota-NN → ld_rota-NN_YY.MM.DD)
+    //    Skipped when archiveTags=false (Phase B: fulfill-route after close-route
+    //    already archived them).
     const orderMaps = await prismaAny.lalamoveDispatchOrderMap.findMany({
       where: { shop, dispatchJobId: job.id },
       select: { shopifyOrderId: true },
@@ -1203,13 +1260,17 @@ async function handleMarkDelivered(shop: string, body: Record<string, unknown>):
     const dateStr = `${yy!.slice(-2)}.${mm}.${dd}`;
 
     const { admin } = await unauthenticated.admin(shop);
-    const archiveResults = await Promise.allSettled(
-      orderIds.map((id) => renameRouteTagsToArchive(admin, id, dateStr)),
-    );
-    const archived = archiveResults.filter((r) => r.status === "fulfilled").length;
-    const archiveFailures = archiveResults.length - archived;
-    if (archiveFailures > 0) {
-      console.warn(`[control] mark-delivered: ${archiveFailures} tag-archive failures (non-fatal)`);
+    let archived = 0;
+    let archiveFailures = 0;
+    if (archiveTags) {
+      const archiveResults = await Promise.allSettled(
+        orderIds.map((id) => renameRouteTagsToArchive(admin, id, dateStr)),
+      );
+      archived = archiveResults.filter((r) => r.status === "fulfilled").length;
+      archiveFailures = archiveResults.length - archived;
+      if (archiveFailures > 0) {
+        console.warn(`[control] mark-delivered: ${archiveFailures} tag-archive failures (non-fatal)`);
+      }
     }
 
     // 4. Mark dispatch job FULFILLED and order maps delivered
@@ -1475,6 +1536,48 @@ async function handleCheckDispatches(shop: string, _body: Record<string, unknown
             where: { shop, lalamoveOrderId: job.lalamoveOrderId },
             data: { status: liveStatus },
           });
+          // Phase A auto-close: when a route just transitioned to COMPLETED,
+          // archive route tags (ld_rota-NN → ld_rota-NN_YY.MM.DD) so dispatched
+          // orders are no longer unassigned. Shopify fulfillment is intentionally
+          // NOT created here — that's Phase B, gated on user approval via
+          // /api/control/fulfill-route.
+          const completed = String(liveStatus).toUpperCase() === "COMPLETED";
+          const wasPending = String(job.status ?? "").toUpperCase() !== "COMPLETED";
+          if (completed && wasPending) {
+            try {
+              const orderMaps = await prismaAny.lalamoveDispatchOrderMap.findMany({
+                where: { shop, dispatchJobId: job.id },
+                select: { shopifyOrderId: true },
+              });
+              const mapOrderIds = (orderMaps as Array<{ shopifyOrderId: string }>).map(
+                (m) => m.shopifyOrderId,
+              );
+              const isoBrt = new Intl.DateTimeFormat("en-CA", {
+                timeZone: "America/Sao_Paulo",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+              }).format(new Date(job.requestedAt));
+              const [yy, mm, dd] = isoBrt.split("-");
+              const dateStr = `${yy!.slice(-2)}.${mm}.${dd}`;
+              const { admin } = await unauthenticated.admin(shop);
+              await Promise.allSettled(
+                mapOrderIds.map((id) => renameRouteTagsToArchive(admin, id, dateStr)),
+              );
+              await prismaAny.lalamoveDispatchOrderMap.updateMany({
+                where: { shop, dispatchJobId: job.id },
+                data: { currentStatus: "delivered" },
+              });
+              console.info(
+                `[control] check-dispatches auto-close route=${job.routeId} orders=${mapOrderIds.length} dateStr=${dateStr}`,
+              );
+            } catch (closeErr) {
+              console.warn(
+                `[control] check-dispatches auto-close FAILED route=${job.routeId}`,
+                closeErr instanceof Error ? closeErr.message : String(closeErr),
+              );
+            }
+          }
         }
       } catch (err) {
         results.push({
@@ -1750,19 +1853,25 @@ async function handleQuote(shop: string, body: Record<string, unknown>): Promise
         continue;
       }
 
+      const pickupAddressBase = formatPickupStopAddress(
+        (config as any).locationName,
+        config.locationAddress,
+        (config as any).locationDetails,
+      ) || (config.locationAddress ?? "").trim();
       const stops = [
         {
           coordinates: { lat: String(pickupLat), lng: String(pickupLng) },
-          address: (config.locationAddress ?? "").trim(),
+          address: pickupAddressBase,
         },
         ...routeOrders.map((o: any) => {
           const addr = o.shippingAddress;
-          const line = [addr.address1, addr.address2, addr.city, addr.province, addr.zip]
+          const line = [addr.address1, addr.city, addr.province, addr.zip]
             .filter(Boolean)
             .join(", ");
           return {
             coordinates: { lat: String(addr.latitude), lng: String(addr.longitude) },
             address: line,
+            sourceAddress2: addr.address2 ?? null,
           };
         }),
       ];
