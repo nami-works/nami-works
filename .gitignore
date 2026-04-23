@@ -74,3 +74,4 @@ gebeauty-workspace/scripts/_*.json
 gebeauty-workspace/scripts/_*.sh
 gebeauty-workspace/scripts/_*.ps1
 
+/.streamlit/
