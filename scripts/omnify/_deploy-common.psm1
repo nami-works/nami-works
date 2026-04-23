@@ -152,7 +152,10 @@ function Assert-CleanWorkingTree {
     }
 
     if ($porcelain) {
-      $lines = ($porcelain -split "`n") | Where-Object { $_ -ne "" }
+      # PS 5.1 unwraps single-element pipelines to the bare object (not an
+      # array), so a 1-line porcelain output leaves $lines as a string with
+      # no .Count. @() coerces uniformly into an array.
+      $lines = @(($porcelain -split "`n") | Where-Object { $_ -ne "" })
       $preview = ($lines | Select-Object -First 10) -join "`n  "
       $extra = ""
       if ($lines.Count -gt 10) {
