@@ -47,3 +47,8 @@ import "./detect-duplicate-customers.js";
 import "./list-customer-segments.js";
 import "./search-customers-advanced.js";
 import "./list-abandoned-checkouts.js";
+import "./list-draft-orders.js";
+import "./list-recent-orders.js";
+import "./product-sales-rank.js";
+import "./list-orders-by-tag.js";
+import "./list-recent-refunds.js";
