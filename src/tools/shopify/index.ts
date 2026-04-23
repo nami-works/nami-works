@@ -52,3 +52,8 @@ import "./list-recent-orders.js";
 import "./product-sales-rank.js";
 import "./list-orders-by-tag.js";
 import "./list-recent-refunds.js";
+import "./tag-order.js";
+import "./untag-order.js";
+import "./add-note-to-order.js";
+import "./tag-customer.js";
+import "./replace-product-tags.js";
