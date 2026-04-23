@@ -18,5 +18,8 @@ Thumbs.db
 *.swp
 *.swo
 
+# Claude Code per-machine settings (the project-shared file is settings.json)
+.claude/settings.local.json
+
 .turbo/
 .cache/
