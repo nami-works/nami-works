@@ -9,7 +9,7 @@ import prisma from "../../db.server";
 import { resolveSiteVariant } from "../../utils/host.server";
 
 import { OmnifyHome } from "./omnify-home";
-import { CpgLabsHome } from "./cpglabs-home";
+import { CpgLabsCorporate } from "./cpglabs-corporate";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
@@ -25,17 +25,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (data?.variant === "cpglabs") {
     return [
-      { title: "CPG Labs | Custom Shopify software for CPG brands" },
+      { title: "CPG Labs — Software for brands bridging online and retail" },
       {
         name: "description",
         content:
-          "Custom software for Shopify stores, priced like an app. We scope it, quote it in 48 hours, and ship it as an embedded app inside your Shopify admin.",
+          "CPG Labs is an independent software studio for FMCG brands running omnichannel on Shopify. We build the operational tools to unify e-commerce and retail management. Omnify is live today. Storefront is next.",
       },
       { property: "og:title", content: "CPG Labs" },
       {
         property: "og:description",
         content:
-          "Custom software for Shopify stores. Priced like an app.",
+          "Operational software for brands where online meets retail.",
       },
     ];
   }
@@ -166,5 +166,5 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function HomePage() {
   const { variant } = useLoaderData<typeof loader>();
-  return variant === "cpglabs" ? <CpgLabsHome /> : <OmnifyHome />;
+  return variant === "cpglabs" ? <CpgLabsCorporate /> : <OmnifyHome />;
 }
