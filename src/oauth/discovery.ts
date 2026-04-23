@@ -28,8 +28,29 @@ export function mountOAuthDiscovery(app: FastifyInstance): void {
     };
   });
 
-  // Some MCP clients (claude.ai included) probe `/.well-known/oauth-protected-resource`
-  // per the draft MCP authorization spec. Point them back at the same authorization server.
+  // Per-RFC 9728 OAuth Protected Resource Metadata. The MCP authorization
+  // spec requires us to advertise per-tenant resource metadata so the MCP
+  // host (e.g. claude.ai) can pass `resource=<tenant URL>` through to the
+  // authorize/token calls per RFC 8707. Without this, the host has no way
+  // to know which tenant the OAuth flow is for.
+  app.get(
+    "/.well-known/oauth-protected-resource/:tenant",
+    async (request, reply) => {
+      const { tenant } = request.params as { tenant: string };
+      if (!/^[a-z0-9-]+$/.test(tenant)) {
+        return reply.code(400).send({ error: "invalid_tenant" });
+      }
+      return {
+        resource: `${ISSUER}/${tenant}`,
+        authorization_servers: [ISSUER],
+        bearer_methods_supported: ["header"],
+        scopes_supported: [],
+      };
+    },
+  );
+
+  // Backward-compat: the no-tenant variant returns the same shape but with
+  // the bare origin as the resource. Some older clients fall back to this.
   app.get("/.well-known/oauth-protected-resource", async () => {
     return {
       resource: ISSUER,

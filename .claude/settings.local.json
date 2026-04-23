@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(aws ecs *)",
+      "Bash(aws elbv2 *)",
+      "Bash(aws route53 *)",
+      "Bash(aws s3api *)"
+    ]
+  }
+}

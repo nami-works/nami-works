@@ -32,9 +32,14 @@ export function mountTenantRoute(
       if (authResult.status === 401) {
         const issuer =
           process.env.OAUTH_ISSUER ?? "https://mcp.nami.works";
+        // Per-tenant protected-resource metadata URL. Claude.ai's MCP host
+        // fetches this, reads `resource: "<issuer>/<tenant>"`, and then
+        // passes that resource value in the OAuth authorize + token calls
+        // (RFC 8707). This is how the tenant slug travels from the
+        // 401 response into the OAuth flow without any URL params.
         reply.header(
           "WWW-Authenticate",
-          `Bearer realm="MCP", resource_metadata="${issuer}/.well-known/oauth-protected-resource"`,
+          `Bearer realm="MCP", resource_metadata="${issuer}/.well-known/oauth-protected-resource/${slug}"`,
         );
       }
       return reply
