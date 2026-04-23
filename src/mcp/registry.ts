@@ -20,9 +20,25 @@ export function listRegisteredToolNames(): string[] {
   return definitions.map((d) => d.name);
 }
 
+// Used as the absolute base URL for MCP-advertised resource URLs (e.g. icons).
+// Falls back to the production hostname so the icon is served by the live ALB
+// even when OAUTH_ISSUER isn't set.
+const PUBLIC_ISSUER =
+  process.env.OAUTH_ISSUER ?? "https://mcp.nami.works";
+
 export function createMcpServerForTenant(ctx: ToolContext): McpServer {
   const server = new McpServer(
-    { name: "nami-works-gateway", version: "0.1.0" },
+    {
+      name: "nami-works-gateway",
+      version: "0.1.0",
+      icons: [
+        {
+          src: `${PUBLIC_ISSUER}/icon.svg`,
+          mimeType: "image/svg+xml",
+          sizes: ["32x32"],
+        },
+      ],
+    },
     { capabilities: { tools: {} } },
   );
 
