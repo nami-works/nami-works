@@ -2,6 +2,7 @@ import "dotenv/config";
 import { randomUUID } from "node:crypto";
 import sensible from "@fastify/sensible";
 import Fastify, { type FastifyBaseLogger } from "fastify";
+import { mountIconRoutes } from "./lib/icon-routes.js";
 import { rootLogger } from "./lib/logger.js";
 import { mountTenantRoute } from "./mcp/transport.js";
 import { mountOAuthRoutes } from "./oauth/index.js";
@@ -20,6 +21,7 @@ const app = Fastify({
 
 await app.register(sensible);
 await mountOAuthRoutes(app);
+mountIconRoutes(app);
 
 app.get("/health", async () => ({ ok: true }));
 
