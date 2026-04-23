@@ -1,0 +1,20 @@
+## Regras de recomendação
+
+**Produtos disponíveis:** Booster Antifrizz, Booster Hidratante, Booster Definição, Booster Fortificante, Booster Antioxidante
+
+**Regras:**
+- Recomendar **1 a 3 boosters** (1 principal + até 2 complementares).
+- **Booster Antifrizz** — quando (Question: dor principal) = frizz. Também para lisos e finalização com calor.
+- **Booster Hidratante** — quando (Question: dor principal) = ressecamento, aspereza ou opacidade. Também para ondulados e coloração.
+- **Booster Definição** — quando (Question: dor principal) = falta de definição. Para cacheados e crespos.
+- **Booster Fortificante** — quando (Question: dor principal) = quebra, fragilidade ou queda. Também para crespos e alisamento.
+- **Booster Antioxidante** — quando (Question: dor principal) = desbotamento ou exposição solar. Para coloração e descoloração.
+
+**Combinações por processo químico:**
+- Coloração/descoloração → Antioxidante + Hidratante
+- Alisamento/progressiva → Hidratante + Antifrizz
+- Química intensa/sobreposição → Fortificante + Antioxidante
+
+**Prioridade de decisão:** dor principal → processos químicos → tipo de cabelo → finalização
+
+**Tom da justificativa:** técnico, acolhedor e sensorial. Focar em benefício percebido, evitar modo de uso.

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Adding theme font inheritance for consistent typography */
+    body, a {
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <!-- Added px-4 for padding to prevent shadow cutoff, made image full-width on mobile with md:max-w-2xl -->
+  <div class="w-full overflow-visible pt-3 pb-4 px-4">
+    <a href="https://www.gebeauty.com.br/products/kit-protetor-solar-do-cabelo" 
+       target="_blank" 
+       rel="noopener noreferrer"
+       class="block max-h-[50vh] mx-auto cursor-pointer">
+      <img id="carouselImage" alt="Carousel Image" class="max-h-[50vh] w-auto mx-auto" />
+    </a>
+  </div>
+
+  <script>
+    (function() {
+      const images = [
+        'https://cdn.shopify.com/s/files/1/0807/8344/2240/files/capa_dupla-protetor.png?v=1765901255',
+        'https://cdn.shopify.com/s/files/1/0807/8344/2240/files/o-que-faz_dupla-protetor.png?v=1765901165',
+        'https://cdn.shopify.com/s/files/1/0807/8344/2240/files/como-usar_dupla-protetor.png?v=1765901269'
+      ];
+      
+      let currentIndex = 0;
+      const imgElement = document.getElementById('carouselImage');
+      
+      if (imgElement && images.length > 0) {
+        imgElement.src = images[0];
+        
+        if (images.length > 1) {
+          setInterval(function() {
+            currentIndex = (currentIndex + 1) % images.length;
+            imgElement.src = images[currentIndex];
+          }, 5000);
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
