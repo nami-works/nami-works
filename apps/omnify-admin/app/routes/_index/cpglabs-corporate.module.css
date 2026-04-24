@@ -27,6 +27,9 @@
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  overflow-x: hidden; /* Clip hero-glow / card-glow overflow that was blowing
+                         out the root on narrow mobile viewports and making
+                         text clip past the right edge. */
 }
 
 @media (prefers-color-scheme: light) {
@@ -146,15 +149,21 @@
 }
 
 /* ---------- Hero ---------- */
-.hero { padding: 88px 0 48px; }
+.hero {
+  padding: 80px 0 40px;
+  position: relative;
+  overflow: hidden; /* contain the large leftward blob we extend from heroVisual */
+}
 .heroGrid {
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  gap: 20px;
   align-items: stretch;
 }
-.heroCopy { order: 1; }
-.heroVisual { order: 2; }
+/* Mobile: logo top-right (smaller), blob extends leftward behind the viewport.
+   Copy drops below. Desktop override restores the original 2-col side-by-side. */
+.heroCopy { order: 2; }
+.heroVisual { order: 1; }
 
 .heroHeadline {
   font-size: 36px;
@@ -231,8 +240,9 @@
 .heroVisual {
   position: relative;
   aspect-ratio: 1 / 1;
-  max-width: 280px;
-  margin: 0 auto;
+  width: 36%;
+  max-width: 140px;
+  margin: 0 -4px 4px auto; /* right-align on mobile, tucked into right edge */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -244,15 +254,25 @@
   pointer-events: none;
   z-index: 0;
 }
+/* Mobile: big blob extending LEFT of the logo so it reads as a decorative
+   accent on the left side of the hero. Desktop @media overrides back to a
+   symmetric radial. */
 .heroVisual::before {
-  inset: -30px;
-  background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-2) 32%, transparent), transparent 62%);
-  filter: blur(40px);
+  top: -40px;
+  bottom: -40px;
+  right: 30%;
+  width: 200vw;
+  background: radial-gradient(
+    ellipse closest-side at right center,
+    color-mix(in srgb, var(--holo-2) 38%, transparent),
+    transparent 70%
+  );
+  filter: blur(55px);
 }
 .heroVisual::after {
-  inset: 20px;
-  background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-1) 24%, transparent), transparent 55%);
-  filter: blur(28px);
+  inset: 4px;
+  background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-1) 28%, transparent), transparent 55%);
+  filter: blur(22px);
 }
 .heroVisualImg {
   position: relative;
@@ -711,16 +731,31 @@
     align-items: center;
   }
   .heroCopy { order: unset; max-width: 560px; }
-  .heroVisual { order: unset; max-width: none; }
+  .heroVisual {
+    order: unset;
+    width: auto;
+    max-width: none;
+    margin: 0 auto;
+    aspect-ratio: 1 / 1;
+  }
   .heroHeadline { font-size: 56px; line-height: 1.05; letter-spacing: -0.025em; }
   .heroSub { font-size: 17px; max-width: 46ch; margin-bottom: 36px; }
 
   .heroCtas { flex-direction: row; align-items: center; gap: 18px; }
   .ctaPrimary { width: auto; }
 
-  .heroVisual { max-width: none; aspect-ratio: 1 / 1; }
-  .heroVisual::before { inset: -40px; filter: blur(48px); }
-  .heroVisual::after { inset: 40px; filter: blur(32px); }
+  .heroVisual::before {
+    top: auto; bottom: auto; right: auto;
+    width: auto;
+    inset: -40px;
+    background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-2) 32%, transparent), transparent 62%);
+    filter: blur(48px);
+  }
+  .heroVisual::after {
+    inset: 40px;
+    background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-1) 24%, transparent), transparent 55%);
+    filter: blur(32px);
+  }
   .heroVisualImg { max-width: 360px; margin: 0 auto; }
 
   .productsStack { gap: 32px; }
