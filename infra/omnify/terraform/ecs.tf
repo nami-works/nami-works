@@ -4,7 +4,17 @@ resource "aws_cloudwatch_log_group" "app" {
 }
 
 resource "aws_ecs_cluster" "app" {
-  name = "${local.name_prefix}-cluster"
+  # Hardcoded "cpg-labs" rather than "${local.name_prefix}-cluster" because
+  # the cluster was renamed to `cpg-labs` (without the `-cluster` suffix) by
+  # the migrate-cluster.ps1 script in March 2026. The original `omnify-cluster`
+  # was deleted on 2026-04-28 as part of Phase 4 of the AWS split-brain
+  # remediation. Flipping `var.project_name` from "omnify" to "cpg-labs" would
+  # cascade into renames of the ALB, target groups, ECR repo, RDS instance,
+  # IAM roles, security groups, and task-def families — all destructive
+  # destroy+recreate operations with potential data loss (especially RDS).
+  # Internal AWS resource names with the `omnify-` prefix are purely
+  # historical and have no customer impact, so we accept the divergence.
+  name = "cpg-labs"
 }
 
 resource "aws_ssm_parameter" "shopify_api_key" {

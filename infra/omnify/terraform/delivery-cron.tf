@@ -167,10 +167,14 @@ resource "aws_iam_role_policy" "delivery_cron_invoke" {
       {
         Effect = "Allow"
         Action = ["events:InvokeApiDestination"]
-        Resource = [
-          aws_cloudwatch_event_api_destination.auto_delivery[0].arn,
-          aws_cloudwatch_event_api_destination.lalamove_watchdog[0].arn,
-        ]
+        # auto_delivery is gated by local.auto_delivery_cron_enabled
+        # (enable_delivery_cron && enable_auto_delivery_cron). When that's
+        # false the resource is an empty tuple, so we conditionally include
+        # its ARN — matches the gating pattern used elsewhere in this file.
+        Resource = concat(
+          local.auto_delivery_cron_enabled ? [aws_cloudwatch_event_api_destination.auto_delivery[0].arn] : [],
+          [aws_cloudwatch_event_api_destination.lalamove_watchdog[0].arn],
+        )
       },
     ]
   })

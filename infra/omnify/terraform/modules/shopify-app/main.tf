@@ -162,6 +162,10 @@ resource "aws_ecs_service" "app" {
   desired_count   = 1
   launch_type     = "FARGATE"
 
+  # Match the existing live setting (auto-rebalance Fargate tasks across AZs
+  # after a failure). AWS console enables this by default for new services.
+  availability_zone_rebalancing = "ENABLED"
+
   network_configuration {
     subnets          = var.subnet_ids
     security_groups  = [var.security_group_id]
