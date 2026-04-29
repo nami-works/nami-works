@@ -143,38 +143,11 @@ variable "anthropic_api_key" {
   default     = ""
 }
 
-# Optional: host custom app (Omnify | Custom) at a subpath on the same ALB
-variable "enable_gebeauty" {
-  type        = bool
-  description = "If true, add a second ECS service for the custom app at the given subpath."
-  default     = false
-}
-
-variable "gebeauty_base_path" {
-  type        = string
-  description = "Subpath for the custom app (e.g. '/full'). Used for ALB routing, health checks, and BASE_PATH env var."
-  default     = "/full"
-}
-
-variable "shopify_api_key_gebeauty" {
-  type        = string
-  description = "Shopify API key (Client ID) for the custom app when enable_gebeauty=true."
-  sensitive   = true
-  default     = ""
-}
-
-variable "shopify_api_secret_gebeauty" {
-  type        = string
-  description = "Shopify API secret for the custom app when enable_gebeauty=true."
-  sensitive   = true
-  default     = ""
-}
-
-variable "image_tag_gebeauty" {
-  type        = string
-  description = "Initial Docker image tag for gebeauty task def (only applied on first create — `lifecycle { ignore_changes = [container_definitions] }` prevents terraform from reverting deploy-script-registered images on subsequent applies). Real image is managed by scripts/deploy-cpg-labs.ps1."
-  default     = "managed-by-deploy-script"
-}
+# gebeauty path-based subpath app retired in Phase 6j (2026-04-29).
+# CPG Labs full now lives at its own hostname (app.cpg-labs.io) via
+# `module "full"` in apps.tf. The old `enable_gebeauty`, `gebeauty_base_path`,
+# `shopify_api_key_gebeauty`, `shopify_api_secret_gebeauty`, and
+# `image_tag_gebeauty` variables are no longer declared.
 
 # Lalamove credential encryption (required for per-shop credential storage)
 variable "app_encryption_key" {
@@ -225,10 +198,37 @@ variable "image_tag_storytelling" {
 }
 
 # ---------- Phase 6 consolidated apps.tf inputs ----------
-# These are the forward-looking vars used by `apps.tf` via the shared
-# modules/shopify-app module. Until Phase 5's rename pass, `module "full"`
-# reuses the existing `shopify_api_key_gebeauty` / `shopify_api_secret_gebeauty`
-# inputs — a follow-up will rename those to `..._full` and drop the aliases.
+# Forward-looking vars used by `apps.tf` via the shared modules/shopify-app
+# module. As of Phase 6j (2026-04-29), `module "full"` reads `_full` vars
+# directly; the old `_gebeauty` aliases are gone alongside gebeauty.tf.
+
+variable "shopify_api_key_full" {
+  type        = string
+  description = "Shopify API key (Client ID) for the CPG Labs full app at app.cpg-labs.io."
+  sensitive   = true
+  default     = ""
+}
+
+variable "shopify_api_secret_full" {
+  type        = string
+  description = "Shopify API secret for the CPG Labs full app at app.cpg-labs.io."
+  sensitive   = true
+  default     = ""
+}
+
+variable "shopify_api_key_omnify" {
+  type        = string
+  description = "Shopify API key (Client ID) for the Omnify focused delivery app at omnify.cpg-labs.io."
+  sensitive   = true
+  default     = ""
+}
+
+variable "shopify_api_secret_omnify" {
+  type        = string
+  description = "Shopify API secret for the Omnify focused delivery app at omnify.cpg-labs.io."
+  sensitive   = true
+  default     = ""
+}
 
 variable "image_tag_full" {
   type        = string

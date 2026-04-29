@@ -3,10 +3,15 @@
 # ─────────────────────────────────────────────────────────────────────────────
 #
 # Alarms for the failure mode we hit on 2026-04-17: a Docker image built with
-# the wrong BASE_PATH makes the React Router basename mismatch the ALB path,
-# which 404s the health check, which crash-loops the ECS task every ~8 min.
+# the wrong BASE_PATH made the React Router basename mismatch the ALB path,
+# which 404'd the health check, which crash-looped the ECS task every ~8 min.
 #
-# Two alarms:
+# Phase 6j (2026-04-29) retired the legacy /full BASE_PATH path entirely —
+# CPG Labs full now lives at app.cpg-labs.io with no basename. The
+# basename_mismatch alarm is preserved as a defense-in-depth signal in case
+# a future build accidentally re-introduces a basename mismatch.
+#
+# Two alarms target the new omnify-full service:
 #
 # 1. basename_mismatch — counts log lines like:
 #    `<Router basename="..."> is not able to match the URL "..."`
@@ -25,35 +30,31 @@ variable "alarm_sns_topic_arn" {
   default     = ""
 }
 
-# ── Alarm 1: basename mismatch in gebeauty app logs ────────────────────────
+# ── Alarm 1: basename mismatch in omnify-full app logs ─────────────────────
 
-resource "aws_cloudwatch_log_metric_filter" "gebeauty_basename_mismatch" {
-  count = var.enable_gebeauty ? 1 : 0
-
-  name           = "gebeauty-basename-mismatch"
+resource "aws_cloudwatch_log_metric_filter" "full_basename_mismatch" {
+  name           = "omnify-full-basename-mismatch"
   pattern        = "\"is not able to match the URL\""
-  log_group_name = aws_cloudwatch_log_group.gebeauty[0].name
+  log_group_name = module.full.log_group_name
 
   metric_transformation {
     name          = "BasenameMismatch"
-    namespace     = "CPGLabs/Gebeauty"
+    namespace     = "CPGLabs/Full"
     value         = "1"
     default_value = "0"
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "gebeauty_basename_mismatch" {
-  count = var.enable_gebeauty ? 1 : 0
-
-  alarm_name          = "gebeauty-basename-mismatch"
-  alarm_description   = "React Router basename doesn't match request URL. The deployed image was built with wrong BASE_PATH. Rebuild with --no-cache and correct --build-arg BASE_PATH."
+resource "aws_cloudwatch_metric_alarm" "full_basename_mismatch" {
+  alarm_name          = "omnify-full-basename-mismatch"
+  alarm_description   = "React Router basename doesn't match request URL on app.cpg-labs.io. Phase 6j removed BASE_PATH entirely, so any occurrence here is a regression — likely a build accidentally re-introduced a basename. Rebuild without --build-arg BASE_PATH."
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 1
   period              = 300
   statistic           = "Sum"
   threshold           = 0
   metric_name         = "BasenameMismatch"
-  namespace           = "CPGLabs/Gebeauty"
+  namespace           = "CPGLabs/Full"
   treat_missing_data  = "notBreaching"
 
   alarm_actions = var.alarm_sns_topic_arn != "" ? [var.alarm_sns_topic_arn] : []
@@ -62,11 +63,9 @@ resource "aws_cloudwatch_metric_alarm" "gebeauty_basename_mismatch" {
 
 # ── Alarm 2: ALB target group has no healthy hosts ─────────────────────────
 
-resource "aws_cloudwatch_metric_alarm" "gebeauty_unhealthy_targets" {
-  count = var.enable_gebeauty ? 1 : 0
-
-  alarm_name          = "gebeauty-no-healthy-targets"
-  alarm_description   = "Gebeauty ALB target group has 0 healthy hosts for 3+ minutes. Task is crash-looping, OOM, or stuck. Check ECS service events and /ecs/omnify-gebeauty logs."
+resource "aws_cloudwatch_metric_alarm" "full_unhealthy_targets" {
+  alarm_name          = "omnify-full-no-healthy-targets"
+  alarm_description   = "omnify-full ALB target group has 0 healthy hosts for 3+ minutes on app.cpg-labs.io. Task is crash-looping, OOM, or stuck. Check ECS service events and /ecs/omnify-full logs."
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = 3
   period              = 60
@@ -78,7 +77,7 @@ resource "aws_cloudwatch_metric_alarm" "gebeauty_unhealthy_targets" {
 
   dimensions = {
     LoadBalancer = aws_lb.app.arn_suffix
-    TargetGroup  = aws_lb_target_group.gebeauty[0].arn_suffix
+    TargetGroup  = module.full.target_group_arn_suffix
   }
 
   alarm_actions = var.alarm_sns_topic_arn != "" ? [var.alarm_sns_topic_arn] : []

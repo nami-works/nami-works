@@ -60,11 +60,8 @@ module "full" {
   domain       = "app.cpg-labs.io"
   app_identity = "cpg-labs"
 
-  # TODO(phase-6-rename): swap to var.shopify_api_key_full /
-  # var.shopify_api_secret_full once the tfvars rename pass lands. For now we
-  # reuse the existing _gebeauty inputs so the live secret value doesn't move.
-  shopify_api_key    = var.shopify_api_key_gebeauty
-  shopify_api_secret = var.shopify_api_secret_gebeauty
+  shopify_api_key    = var.shopify_api_key_full
+  shopify_api_secret = var.shopify_api_secret_full
   database_url       = local.database_url
   shopify_scopes     = var.shopify_scopes_full
   image_tag          = var.image_tag_full
@@ -106,12 +103,10 @@ module "full" {
   subnet_ids             = data.aws_subnets.default.ids
   security_group_id      = aws_security_group.ecs.id
   alb_listener_arn       = aws_lb_listener.https.arn
-  # Priority 11 (not 10) because the legacy `aws_lb_listener_rule.gebeauty`
-  # (path_pattern /full + /full/*, declared in gebeauty.tf) currently holds
-  # priority 10 and is retired after the Shopify-side application_url cuts
-  # over to app.cpg-labs.io. Once retired, this can be moved back to 10 if
-  # desired — but priority 11 is fine, host_header rules don't compete with
-  # path_pattern rules semantically.
+  # Priority 11 — set during Phase 6 cutover when the legacy
+  # `aws_lb_listener_rule.gebeauty` (path_pattern /full + /full/*) still held
+  # priority 10. After Phase 6j retired that rule, priority 10 is free, but
+  # priority 11 is kept to avoid an unnecessary listener-rule mutation.
   listener_rule_priority = 11
   aws_region             = var.aws_region
   create_ssm             = var.create_ssm
