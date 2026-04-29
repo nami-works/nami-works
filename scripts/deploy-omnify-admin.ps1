@@ -189,11 +189,26 @@ try {
 
   Write-Host "Logging into ECR..."
   $registry = ($Repository -split "/")[0]
-  aws ecr get-login-password --region $Region | docker login --username AWS --password-stdin $registry
-  if ($LASTEXITCODE -ne 0) {
-    Write-Host "ECR login failed. Retrying after docker logout..."
-    docker logout $registry | Out-Null
-    aws ecr get-login-password --region $Region | docker login --username AWS --password-stdin $registry
+  # PS 5.1 + UTF-8: piping `aws ecr get-login-password | docker login --password-stdin`
+  # garbles the token via Windows codepage encoding, producing 400 Bad Request from
+  # ECR. Capture to a variable and pass via --password instead. The insecure-password
+  # warning docker emits to stderr is downgraded with $ErrorActionPreference=Continue
+  # because $EAP=Stop turns it into a NativeCommandError. Same fix as rev 39 deploy.
+  $ecrPassword = (aws ecr get-login-password --region $Region).Trim()
+  if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($ecrPassword)) {
+    throw "Failed to fetch ECR login password. Aborting deploy."
+  }
+  $prevEap = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    docker login --username AWS --password $ecrPassword $registry 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+      Write-Host "ECR login failed. Retrying after docker logout..."
+      docker logout $registry 2>&1 | Out-Null
+      docker login --username AWS --password $ecrPassword $registry 2>&1 | Out-Null
+    }
+  } finally {
+    $ErrorActionPreference = $prevEap
   }
   if ($LASTEXITCODE -ne 0) { throw "ECR login failed. Aborting deploy." }
 
