@@ -85,7 +85,13 @@ module "full" {
   subnet_ids             = data.aws_subnets.default.ids
   security_group_id      = aws_security_group.ecs.id
   alb_listener_arn       = aws_lb_listener.https.arn
-  listener_rule_priority = 10
+  # Priority 11 (not 10) because the legacy `aws_lb_listener_rule.gebeauty`
+  # (path_pattern /full + /full/*, declared in gebeauty.tf) currently holds
+  # priority 10 and is retired after the Shopify-side application_url cuts
+  # over to app.cpg-labs.io. Once retired, this can be moved back to 10 if
+  # desired — but priority 11 is fine, host_header rules don't compete with
+  # path_pattern rules semantically.
+  listener_rule_priority = 11
   aws_region             = var.aws_region
   create_ssm             = var.create_ssm
   ssm_prefix             = local.ssm_prefix
