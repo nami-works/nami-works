@@ -27,9 +27,11 @@
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
-  overflow-x: hidden; /* Clip hero-glow / card-glow overflow that was blowing
-                         out the root on narrow mobile viewports and making
-                         text clip past the right edge. */
+  overflow-x: hidden; /* Clip child-element overflow (hero glow, card glow). */
+  max-width: 100vw;   /* iOS Safari belt-and-suspenders: enforce viewport-bound
+                          width so document body never grows past the visible
+                          viewport, which was clipping text at the right edge. */
+  position: relative; /* New stacking context — overflow:hidden's clip applies. */
 }
 
 @media (prefers-color-scheme: light) {
@@ -150,27 +152,37 @@
 
 /* ---------- Hero ---------- */
 .hero {
-  padding: 80px 0 40px;
+  padding: 76px 0 36px;
   position: relative;
-  overflow: hidden; /* contain the large leftward blob we extend from heroVisual */
+  overflow: hidden;
+  max-width: 100%;
 }
+/* Mobile: 2-column grid with logo top-left and headline immediately right.
+   .heroCopy uses display:contents so its children (heroSub, heroCtas) become
+   direct grid items and can span the full width below. Desktop @media flips
+   .heroCopy back to a normal block in column 1, with .heroVisual centered in
+   column 2 — original side-by-side layout. */
 .heroGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  column-gap: 14px;
+  row-gap: 18px;
+  align-items: start;
 }
-/* Mobile: logo top-right (smaller), blob extends leftward behind the viewport.
-   Copy drops below. Desktop override restores the original 2-col side-by-side. */
-.heroCopy { order: 2; }
-.heroVisual { order: 1; }
 
+.heroCopy {
+  display: contents; /* dissolve so heroSub + heroCtas become direct grid items */
+}
 .heroHeadline {
-  font-size: 36px;
+  /* Mobile: top-right column next to logo */
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 24px;
   line-height: 1.08;
   font-weight: 700;
   letter-spacing: -0.02em;
-  margin: 0 0 18px;
+  margin: 0;
+  align-self: start;
 }
 .heroHolo {
   background: linear-gradient(90deg, var(--holo-1), var(--holo-2), var(--holo-3), var(--holo-4));
@@ -186,16 +198,20 @@
   to { background-position: 200% 0%; }
 }
 .heroSub {
+  /* Mobile: span both columns, full width below the logo+headline row */
+  grid-column: 1 / -1;
   font-size: 16px;
-  line-height: 1.65;
+  line-height: 1.6;
   color: var(--text-muted);
-  margin: 0 0 28px;
+  margin: 0;
 }
 .heroCtas {
+  /* Mobile: span both columns */
+  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 14px;
+  gap: 12px;
 }
 .ctaPrimary {
   display: inline-flex;
@@ -238,11 +254,13 @@
 }
 
 .heroVisual {
+  /* Mobile: top-left column, fixed 96px square */
+  grid-column: 1;
+  grid-row: 1;
   position: relative;
   aspect-ratio: 1 / 1;
-  width: 36%;
-  max-width: 140px;
-  margin: 0 -4px 4px auto; /* right-align on mobile, tucked into right edge */
+  width: 96px;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -254,25 +272,17 @@
   pointer-events: none;
   z-index: 0;
 }
-/* Mobile: big blob extending LEFT of the logo so it reads as a decorative
-   accent on the left side of the hero. Desktop @media overrides back to a
-   symmetric radial. */
+/* Tight glow around the small logo. No huge blobs — they were the source of
+   horizontal overflow that was clipping body text on the right edge. */
 .heroVisual::before {
-  top: -40px;
-  bottom: -40px;
-  right: 30%;
-  width: 200vw;
-  background: radial-gradient(
-    ellipse closest-side at right center,
-    color-mix(in srgb, var(--holo-2) 38%, transparent),
-    transparent 70%
-  );
-  filter: blur(55px);
+  inset: -16px;
+  background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-2) 36%, transparent), transparent 62%);
+  filter: blur(24px);
 }
 .heroVisual::after {
   inset: 4px;
   background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-1) 28%, transparent), transparent 55%);
-  filter: blur(22px);
+  filter: blur(14px);
 }
 .heroVisualImg {
   position: relative;
@@ -724,29 +734,53 @@
 
   .sectionTitle { font-size: 32px; }
 
+  /* Desktop: 2-column 1fr|380px grid; heroCopy is back to a normal block
+     container (no display:contents) so children flow naturally inside it. */
   .heroGrid {
-    display: grid;
     grid-template-columns: 1fr 380px;
-    gap: 60px;
+    column-gap: 60px;
+    row-gap: 0;
     align-items: center;
   }
-  .heroCopy { order: unset; max-width: 560px; }
+  .heroCopy {
+    display: block;
+    grid-column: 1;
+    grid-row: 1;
+    max-width: 560px;
+  }
+  .heroHeadline {
+    grid-column: unset;
+    grid-row: unset;
+    font-size: 56px;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    margin: 0 0 18px;
+    align-self: unset;
+  }
+  .heroSub {
+    grid-column: unset;
+    font-size: 17px;
+    line-height: 1.65;
+    max-width: 46ch;
+    margin: 0 0 36px;
+  }
+  .heroCtas {
+    grid-column: unset;
+    flex-direction: row;
+    align-items: center;
+    gap: 18px;
+  }
+  .ctaPrimary { width: auto; }
+
   .heroVisual {
-    order: unset;
+    grid-column: 2;
+    grid-row: 1;
     width: auto;
     max-width: none;
     margin: 0 auto;
     aspect-ratio: 1 / 1;
   }
-  .heroHeadline { font-size: 56px; line-height: 1.05; letter-spacing: -0.025em; }
-  .heroSub { font-size: 17px; max-width: 46ch; margin-bottom: 36px; }
-
-  .heroCtas { flex-direction: row; align-items: center; gap: 18px; }
-  .ctaPrimary { width: auto; }
-
   .heroVisual::before {
-    top: auto; bottom: auto; right: auto;
-    width: auto;
     inset: -40px;
     background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-2) 32%, transparent), transparent 62%);
     filter: blur(48px);
