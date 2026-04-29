@@ -48,7 +48,7 @@ npx prisma migrate dev  # Create/apply migrations
 - **Hosting:** AWS ECS Fargate behind ALB (`us-east-1`)
 - **Database:** AWS RDS PostgreSQL
 - **Secrets:** AWS SSM Parameter Store (`/omnify/` prefix)
-- **Deploy:** `scripts/deploy-cpg-labs.ps1` (CPG Labs) or `scripts/deploy-omnify.ps1` (Omnify)
+- **Deploy:** `scripts/deploy.ps1 -App <key>` — unified script. Keys are registered in `scripts/apps.psd1`: `full` (CPG Labs full app at `app.cpg-labs.io`, ECS service `omnify-full-service`) and `omnify` (public Omnify at `omnify.cpg-labs.io`, ECS service `omnify-service`). Legacy `deploy-cpg-labs.ps1` / `deploy-omnify.ps1` / `deploy-storefront.ps1` were retired in Phase 7 (2026-04-29) and live in `scripts/archive/` for reference only. Do not run them.
 - **Shopify scopes (CPG Labs):** `shopify app deploy --config shopify.app.cpg-labs.toml`
 - **Shopify scopes (Omnify):** `shopify app deploy --config shopify.app.omnify.toml`
 - **Task-def image is owned by the deploy script, not terraform.** Both `aws_ecs_task_definition.app` and `aws_ecs_task_definition.gebeauty` carry `lifecycle { ignore_changes = [container_definitions] }` so a `terraform apply` never silently reverts the running image. When schema-level fields change (env vars, secrets, cpu, memory), force the update with `terraform apply -replace=aws_ecs_task_definition.gebeauty[0]` (or `.app[0]`). Without `-replace`, terraform sees no drift and the new env var won't reach the running task.
@@ -64,6 +64,13 @@ npx prisma migrate dev  # Create/apply migrations
 
 ## Hard Rules
 
+- **Branch-per-task — work in isolation, merge intentionally.** Every non-trivial change happens on a feature branch, not directly on `main`. This bounds blast radius (a broken commit doesn't poison parallel sessions) and creates a natural pre-merge gate where lint/typecheck/review can run before code touches the shared branch.
+  - **Cut a branch at session start** for any work touching `app/`, `prisma/`, `extensions/`, `infra/`, `scripts/`, `shopify.app.*.toml`, or anything else that ships. Naming: `feat/<short-slug>`, `fix/<short-slug>`, `chore/<short-slug>`, `docs/<short-slug>`. Always cut from the latest `main`: `git checkout main && git pull && git checkout -b feat/<slug>`.
+  - **Skip the branch** only for: typo-only edits, single-line config tweaks, memory/`MEMORY.md` updates, or explicit user-approved hotfixes. When in doubt, branch — the cost of a wasted branch is near zero, the cost of poisoning `main` for parallel sessions is high.
+  - **Stale `main` at session start:** if uncommitted work exists on `main` when you start (working tree dirty), do not silently inherit it into your branch. Ask the user whose work it is and whether to move it to its own branch, commit it as-is, or hold off. Never `git stash` or `git reset` someone else's work to clean the slate.
+  - **Merge to `main` via squash-merge** when the branch is complete and gates pass. One commit per branch on `main` — keeps history readable and matches the unit-of-work model the deploy-queue tracks. Use `git checkout main && git merge --squash <branch> && git commit` with the final message, or `gh pr merge --squash` if a PR is open. Delete the branch after merge.
+  - **Deploy-queue entry happens AFTER merge to `main`,** not before. The queue tracks code already on `main` waiting to deploy — branches are pre-merge state and don't belong in the queue. Don't double-track.
+  - **Review before merge (Phase 2, not yet active):** a reviewer agent will gate every squash-merge against CLAUDE.md, the diff, and conflicts with other in-flight branches. Until that ships, the author-agent merges its own branch after lint/typecheck pass locally.
 - **Deploy queue protocol — coordinate across parallel sessions.** Multiple Claude Code sessions run against this repo at the same time, so a per-change deploy causes redundant image rebuilds and can stomp other sessions' work-in-progress. Instead of auto-deploying at the end of every session, use `.claude/deploy-queue.md` as a shared pending/deployed log.
   - **After landing a change** that needs a deploy (anything under `app/`, `prisma/`, `extensions/`, `infra/`, `scripts/`, `shopify.app.*.toml`), append a Pending entry to `.claude/deploy-queue.md` with: date, short title, files touched, type (code/migration/env/Terraform), summary, what it affects, dependencies, and risk. Do this BEFORE telling the user the change is done.
   - **Before proposing a deploy**, read the full Pending section. Summarize everything pending — not just your own entry — to the user. Call out dependencies between entries (e.g. "entry X adds a column my entry Y reads from"). Flag conflicts if two entries touch the same file path.
@@ -478,7 +485,7 @@ Operational tooling and knowledge for the GE Beauty Shopify store moved to the `
 
 ## Logging
 
-Every server-side module (route loaders/actions, services, webhooks) **must** include structured console logs so issues can be traced via `aws logs tail /ecs/omnify-gebeauty --since 15m --region us-east-1`.
+Every server-side module (route loaders/actions, services, webhooks) **must** include structured console logs so issues can be traced via `aws logs tail /ecs/omnify-full --since 15m --region us-east-1` (CPG Labs full at `app.cpg-labs.io`) or `aws logs tail /ecs/omnify --since 15m --region us-east-1` (Omnify focused at `omnify.cpg-labs.io`). The `scripts/logs.ps1 <module>` helper wraps both with module-aware filtering.
 
 ### Pattern
 

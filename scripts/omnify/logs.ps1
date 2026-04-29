@@ -70,8 +70,9 @@ param(
   # Max number of lines to show (ignored in follow mode).
   [int]$Limit = 500,
 
-  # Log group name.
-  [string]$LogGroup = "/ecs/omnify-gebeauty",
+  # Log group name. Defaults to the CPG Labs full app at app.cpg-labs.io.
+  # Use `-LogGroup /ecs/omnify` for the focused Omnify service at omnify.cpg-labs.io.
+  [string]$LogGroup = "/ecs/omnify-full",
 
   # AWS region.
   [string]$Region = "us-east-1"

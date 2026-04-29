@@ -61,6 +61,21 @@ pairs into SSM before a code deploy. Terraform now manages SSM parameters
 declaratively via the shared `modules/shopify-app/` module + `terraform.tfvars`,
 so a credential change is a `terraform apply` rather than a script run.
 
+### `deploy-ecr.ps1` — superseded
+
+Generic ECR build/tag/push helper. `scripts/deploy.ps1` performs ECR login,
+build, and push inline (with NoCache + retry behavior); the standalone helper
+became unused after Phase 7. Kept for reference if a manual ECR push is ever
+needed outside the consolidated deploy flow.
+
+### `health-check.ps1` — defaulted to deleted resources
+
+Hard-coded `$Cluster = "omnify-cluster"` (deleted in Phase 4) and
+`$Service = "omnify-gebeauty-service"` (deleted in Phase 6j). Running it
+post-Phase-6j would just error. The CloudWatch alarms in
+`infra/terraform/delivery-alarms.tf` cover the same observability surface
+declaratively against the live `omnify-full` service.
+
 ## How deploys work today
 
 ```
