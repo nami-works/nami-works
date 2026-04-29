@@ -53,10 +53,13 @@ vrp-logs.txt
 tmp-timing.txt
 tmp-*.txt
 
-# Terraform state & secrets
+# Terraform state & secrets (state itself lives in S3 since 2026-04-29 — see infra/terraform/backend.tf)
 infra/terraform/terraform.tfstate
 infra/terraform/terraform.tfstate.backup
+infra/terraform/terraform.tfstate.*.backup
 infra/terraform/terraform.tfvars
+infra/terraform/*.tfplan
+infra/terraform/drift-check-lambda.zip
 
 # Scripts with hardcoded tokens
 scripts/webhook-listen.ps1
