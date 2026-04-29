@@ -28,6 +28,7 @@
     "@aws-sdk/client-ssm": "^3.700.0",
     "@fastify/formbody": "^8.0.2",
     "@fastify/sensible": "^6.0.2",
+    "@googleapis/drive": "^20.1.0",
     "@modelcontextprotocol/sdk": "^1.17.0",
     "@prisma/client": "^6.1.0",
     "@shopify/admin-api-client": "^1.0.8",

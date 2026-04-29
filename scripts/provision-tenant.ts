@@ -123,6 +123,7 @@ const paramsToWrite = [
   `${ssmPrefix}/shopify/access_token`,
   `${ssmPrefix}/omie/app_key`,
   `${ssmPrefix}/omie/app_secret`,
+  `${ssmPrefix}/google_drive/service_account_json`,
 ];
 
 const failed: { name: string; reason: string }[] = [];
