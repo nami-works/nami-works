@@ -2,7 +2,7 @@
 # Hourly Retail Goals reconciliation cron
 # ─────────────────────────────────────────────────────────────────────────────
 #
-# Fires GET https://omnify.cpg-labs.io/api/cron/retail-goals-sync every hour
+# Fires GET https://app.cpg-labs.io/api/cron/retail-goals-sync every hour
 # with header `X-Cron-Secret: <secret>`. The endpoint iterates shops in
 # SalesGoalsSyncMeta, calls unauthenticated.admin(shop) per shop, and runs
 # runSalesGoalsSync(admin, shop, monthsBack=2) to reconcile any webhook
@@ -35,9 +35,9 @@ variable "enable_retail_goals_cron" {
 # `var.cron_secret` is shared with delivery-cron.tf (declared there).
 
 variable "app_base_url" {
-  description = "Public base URL of the Omnify app (used for cron target URLs). Shared across all cron modules."
+  description = "Public base URL of the CPG Labs full app (used for cron target URLs). Shared across all cron modules. Moved from omnify.cpg-labs.io to app.cpg-labs.io in Phase 6 (2026-04-29) when CPG Labs full got its own dedicated hostname and BASE_PATH was killed."
   type        = string
-  default     = "https://omnify.cpg-labs.io"
+  default     = "https://app.cpg-labs.io"
 }
 
 # ── EventBridge API Destination connection ──────────────────────────────────
@@ -65,7 +65,7 @@ resource "aws_cloudwatch_event_api_destination" "retail_goals_cron" {
 
   name                             = "retail-goals-cron-destination"
   description                      = "HTTPS target for the Retail Goals hourly reconciliation cron."
-  invocation_endpoint              = "${var.app_base_url}/full/api/cron/retail-goals-sync"
+  invocation_endpoint              = "${var.app_base_url}/api/cron/retail-goals-sync"
   http_method                      = "GET"
   invocation_rate_limit_per_second = 1
   connection_arn                   = aws_cloudwatch_event_connection.retail_goals_cron[0].arn

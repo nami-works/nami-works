@@ -2,7 +2,7 @@
 # Hourly Affiliates reconciliation cron
 # ─────────────────────────────────────────────────────────────────────────────
 #
-# Fires GET https://omnify.cpg-labs.io/full/api/cron/affiliates-sync every
+# Fires GET https://app.cpg-labs.io/api/cron/affiliates-sync every
 # hour at :30 with header `X-Cron-Secret: <secret>`. The endpoint:
 #   - Runs reconcileAffiliatesIncremental (updated_at:>=T-2mo) — catches any
 #     dropped webhook or out-of-band admin edit.
@@ -45,7 +45,7 @@ resource "aws_cloudwatch_event_api_destination" "affiliates_cron" {
 
   name                             = "affiliates-cron-destination"
   description                      = "HTTPS target for the Affiliates hourly reconciliation cron."
-  invocation_endpoint              = "${var.app_base_url}/full/api/cron/affiliates-sync"
+  invocation_endpoint              = "${var.app_base_url}/api/cron/affiliates-sync"
   http_method                      = "GET"
   invocation_rate_limit_per_second = 1
   connection_arn                   = aws_cloudwatch_event_connection.affiliates_cron[0].arn

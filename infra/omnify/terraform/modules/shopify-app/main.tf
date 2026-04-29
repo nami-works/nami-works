@@ -140,6 +140,7 @@ resource "aws_ecs_task_definition" "app" {
           { name = "SHOPIFY_API_SECRET", valueFrom = aws_ssm_parameter.shopify_api_secret[0].arn },
           { name = "DATABASE_URL", valueFrom = var.database_url_ssm_arn },
         ],
+        var.shared_secrets,
       ) : []
       logConfiguration = {
         logDriver = "awslogs"

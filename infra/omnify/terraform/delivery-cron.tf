@@ -83,7 +83,7 @@ resource "aws_cloudwatch_event_api_destination" "auto_delivery" {
 
   name                             = "auto-delivery-cron-destination"
   description                      = "HTTPS target for auto-delivery cron (assign + dispatch)."
-  invocation_endpoint              = "${var.app_base_url}/full/api/cron/auto-delivery"
+  invocation_endpoint              = "${var.app_base_url}/api/cron/auto-delivery"
   http_method                      = "GET"
   invocation_rate_limit_per_second = 1
   connection_arn                   = aws_cloudwatch_event_connection.delivery_cron[0].arn
@@ -113,7 +113,7 @@ resource "aws_cloudwatch_event_api_destination" "lalamove_watchdog" {
 
   name                             = "lalamove-watchdog-cron-destination"
   description                      = "HTTPS target for Lalamove watchdog cron (stuck order retry + escalation)."
-  invocation_endpoint              = "${var.app_base_url}/full/api/cron/lalamove-watchdog"
+  invocation_endpoint              = "${var.app_base_url}/api/cron/lalamove-watchdog"
   http_method                      = "GET"
   invocation_rate_limit_per_second = 1
   connection_arn                   = aws_cloudwatch_event_connection.delivery_cron[0].arn

@@ -69,11 +69,32 @@ module "full" {
   shopify_scopes     = var.shopify_scopes_full
   image_tag          = var.image_tag_full
 
-  # No BASE_PATH — dedicated hostname. CLAUDE_CONTROL_TOKEN is injected as an
-  # extra env var (the claude_control_token var is declared in claude-control.tf).
-  extra_env = var.enable_claude_control && var.claude_control_token != "" ? [
-    { name = "CLAUDE_CONTROL_TOKEN", value = var.claude_control_token },
-  ] : []
+  # No BASE_PATH — dedicated hostname.
+  # CLAUDE_CONTROL_TOKEN comes through `shared_secrets` below as an SSM
+  # passthrough so it's not embedded in the task def as plain text.
+  extra_env = []
+
+  # Passthrough wiring for the 6 shared SSM secrets that the legacy gebeauty
+  # task def carries (declared in ecs.tf, delivery-cron.tf, claude-control.tf).
+  # Without these, the new app.cpg-labs.io service silently breaks: no map,
+  # no Lalamove credentials, no Anthropic, no cron auth, no Claude control.
+  shared_secrets = concat(
+    [
+      { name = "GOOGLE_MAPS_API_KEY", valueFrom = aws_ssm_parameter.google_maps_api_key[0].arn },
+      { name = "GOOGLE_MAPS_MAP_ID", valueFrom = aws_ssm_parameter.google_maps_map_id[0].arn },
+      { name = "APP_ENCRYPTION_KEY", valueFrom = aws_ssm_parameter.app_encryption_key[0].arn },
+      { name = "ANTHROPIC_API_KEY", valueFrom = aws_ssm_parameter.anthropic_api_key[0].arn },
+    ],
+    var.enable_delivery_cron && var.cron_secret != "" ? [
+      { name = "CRON_SECRET", valueFrom = aws_ssm_parameter.cron_secret[0].arn },
+    ] : [],
+    var.enable_claude_control && var.claude_control_token != "" ? [
+      { name = "CLAUDE_CONTROL_TOKEN", valueFrom = aws_ssm_parameter.claude_control_token[0].arn },
+    ] : [],
+    var.enable_claude_control && var.claude_control_shop != "" ? [
+      { name = "CLAUDE_CONTROL_SHOP", valueFrom = aws_ssm_parameter.claude_control_shop[0].arn },
+    ] : [],
+  )
 
   # Shared infra references
   name_prefix            = local.name_prefix

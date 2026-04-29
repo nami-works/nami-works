@@ -128,6 +128,12 @@ variable "extra_env" {
   description = "Additional environment variables for the container."
 }
 
+variable "shared_secrets" {
+  type        = list(object({ name = string, valueFrom = string }))
+  default     = []
+  description = "Additional secrets to inject into the task definition by reference to existing SSM parameter ARNs (e.g. shared GOOGLE_MAPS_API_KEY, CRON_SECRET, APP_ENCRYPTION_KEY). Each entry maps an env var name to an SSM parameter ARN."
+}
+
 variable "app_encryption_key" {
   type      = string
   sensitive = true

@@ -2,7 +2,7 @@
 # Hourly Shop Ingest reconciliation cron (Phase 1 drift safety net)
 # ─────────────────────────────────────────────────────────────────────────────
 #
-# Fires GET https://omnify.cpg-labs.io/api/cron/shop-ingest-reconcile every
+# Fires GET https://app.cpg-labs.io/api/cron/shop-ingest-reconcile every
 # hour with header `X-Cron-Secret: <secret>`. The endpoint queries Shopify for
 # orders/customers/products with `updated_at > watermark`, paginates only when
 # there's a delta, and upserts through the same canonical ingest service that
@@ -43,7 +43,7 @@ resource "aws_cloudwatch_event_api_destination" "shop_ingest_cron" {
 
   name                             = "shop-ingest-cron-destination"
   description                      = "HTTPS target for the Shop Ingest hourly reconciliation cron."
-  invocation_endpoint              = "${var.app_base_url}/full/api/cron/shop-ingest-reconcile"
+  invocation_endpoint              = "${var.app_base_url}/api/cron/shop-ingest-reconcile"
   http_method                      = "GET"
   invocation_rate_limit_per_second = 1
   connection_arn                   = aws_cloudwatch_event_connection.shop_ingest_cron[0].arn
