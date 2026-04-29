@@ -20,9 +20,11 @@
     "prisma:deploy": "prisma migrate deploy",
     "provision-tenant": "tsx scripts/provision-tenant.ts",
     "rotate-bearer": "tsx scripts/rotate-bearer.ts",
-    "suspend-tenant": "tsx scripts/suspend-tenant.ts"
+    "suspend-tenant": "tsx scripts/suspend-tenant.ts",
+    "replace-shopify-files": "tsx scripts/replace-shopify-files.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.91.1",
     "@aws-sdk/client-ssm": "^3.700.0",
     "@fastify/formbody": "^8.0.2",
     "@fastify/sensible": "^6.0.2",
