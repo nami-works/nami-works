@@ -839,12 +839,17 @@ model GeocodeCacheEntry {
 }
 
 model RoutePolylineCache {
-  id             String   @id @default(cuid())
-  shop           String
-  locationId     String
-  orderIdsKey    String   // sorted order IDs joined by "|"
+  id              String   @id @default(cuid())
+  shop            String
+  locationId      String
+  orderIdsKey     String   // sorted order IDs joined by "|"
   encodedPolyline String
-  createdAt      DateTime @default(now())
+  // Full computeRoutePolyline result so cache hits skip the Google Routes call.
+  // Nullable: legacy rows (created before these columns existed) fall through to recompute.
+  distanceMeters  Int?
+  durationSeconds Int?
+  orderedIdsKey   String?  // ordered order IDs joined by "|" (Google's optimized stop sequence)
+  createdAt       DateTime @default(now())
 
   @@unique([shop, locationId, orderIdsKey])
   @@index([shop, locationId])

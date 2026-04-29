@@ -8344,47 +8344,97 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         });
         continue;
       }
-      console.info(`[local-delivery] update-routes computing polyline route=${route.routeId} orders=${routeOrders.length}`);
+      const orderIdsKey = [...route.orderIds].sort().join("|");
 
+      // Cache-read guard: if the same sorted orderIds were already computed,
+      // reuse the cached Google Routes result instead of paying for it again.
+      // Legacy rows (created before the metadata columns existed) have null
+      // distance/duration/orderedIdsKey and fall through to recompute.
+      let polylineResult: {
+        polyline: string;
+        distanceMeters: number;
+        durationSeconds: number;
+        ordered: Array<{ orderId: string }>;
+      } | null = null;
       try {
-        const polylineResult = await computeRoutePolyline(
-          mapsApiKey,
-          locationCoords,
-          routeOrders,
-        );
-        // Cache the new polyline
-        try {
-          const orderIdsKey = [...route.orderIds].sort().join("|");
-          await prisma.routePolylineCache.upsert({
-            where: { shop_locationId_orderIdsKey: { shop, locationId: route.locationId, orderIdsKey } },
-            update: { encodedPolyline: polylineResult.polyline },
-            create: { shop, locationId: route.locationId, orderIdsKey, encodedPolyline: polylineResult.polyline },
-          });
-        } catch (cacheErr) {
-          console.warn("[local-delivery] update-routes cache FAILED", cacheErr instanceof Error ? cacheErr.message : String(cacheErr));
+        const cached = await prisma.routePolylineCache.findUnique({
+          where: { shop_locationId_orderIdsKey: { shop, locationId: route.locationId, orderIdsKey } },
+        });
+        if (
+          cached?.encodedPolyline &&
+          cached.distanceMeters != null &&
+          cached.durationSeconds != null &&
+          cached.orderedIdsKey
+        ) {
+          polylineResult = {
+            polyline: cached.encodedPolyline,
+            distanceMeters: cached.distanceMeters,
+            durationSeconds: cached.durationSeconds,
+            ordered: cached.orderedIdsKey.split("|").map((orderId) => ({ orderId })),
+          };
+          console.info(`[local-delivery] update-routes polyline CACHE HIT route=${route.routeId} orders=${routeOrders.length}`);
         }
-
-        results.push({
-          routeId: route.routeId,
-          routeIndex: route.routeIndex,
-          polyline: polylineResult.polyline,
-          totalDistanceMeters: polylineResult.distanceMeters,
-          totalDurationSeconds: polylineResult.durationSeconds,
-          orderedIds: polylineResult.ordered.map((o) => o.orderId),
-        });
-        console.info(`[local-delivery] update-routes polyline OK route=${route.routeId} distance=${polylineResult.distanceMeters}m`);
-      } catch (err) {
-        console.error(`[local-delivery] update-routes polyline FAILED route=${route.routeId}`, err);
-        results.push({
-          routeId: route.routeId,
-          routeIndex: route.routeIndex,
-          polyline: "",
-          totalDistanceMeters: 0,
-          totalDurationSeconds: 0,
-          orderedIds: route.orderIds,
-          error: err instanceof Error ? err.message : "Polyline computation failed.",
-        });
+      } catch (cacheReadErr) {
+        console.warn("[local-delivery] update-routes cache read FAILED", cacheReadErr instanceof Error ? cacheReadErr.message : String(cacheReadErr));
       }
+
+      if (!polylineResult) {
+        console.info(`[local-delivery] update-routes computing polyline route=${route.routeId} orders=${routeOrders.length}`);
+        try {
+          const computed = await computeRoutePolyline(
+            mapsApiKey,
+            locationCoords,
+            routeOrders,
+          );
+          polylineResult = computed;
+          // Cache the full result so subsequent calls with the same orderIds skip Google Routes.
+          try {
+            const orderedIdsKey = computed.ordered.map((o) => o.orderId).join("|");
+            await prisma.routePolylineCache.upsert({
+              where: { shop_locationId_orderIdsKey: { shop, locationId: route.locationId, orderIdsKey } },
+              update: {
+                encodedPolyline: computed.polyline,
+                distanceMeters: Math.round(computed.distanceMeters),
+                durationSeconds: Math.round(computed.durationSeconds),
+                orderedIdsKey,
+              },
+              create: {
+                shop,
+                locationId: route.locationId,
+                orderIdsKey,
+                encodedPolyline: computed.polyline,
+                distanceMeters: Math.round(computed.distanceMeters),
+                durationSeconds: Math.round(computed.durationSeconds),
+                orderedIdsKey,
+              },
+            });
+          } catch (cacheErr) {
+            console.warn("[local-delivery] update-routes cache FAILED", cacheErr instanceof Error ? cacheErr.message : String(cacheErr));
+          }
+          console.info(`[local-delivery] update-routes polyline OK route=${route.routeId} distance=${computed.distanceMeters}m`);
+        } catch (err) {
+          console.error(`[local-delivery] update-routes polyline FAILED route=${route.routeId}`, err);
+          results.push({
+            routeId: route.routeId,
+            routeIndex: route.routeIndex,
+            polyline: "",
+            totalDistanceMeters: 0,
+            totalDurationSeconds: 0,
+            orderedIds: route.orderIds,
+            error: err instanceof Error ? err.message : "Polyline computation failed.",
+          });
+          continue;
+        }
+      }
+
+      results.push({
+        routeId: route.routeId,
+        routeIndex: route.routeIndex,
+        polyline: polylineResult.polyline,
+        totalDistanceMeters: polylineResult.distanceMeters,
+        totalDurationSeconds: polylineResult.durationSeconds,
+        orderedIds: polylineResult.ordered.map((o) => o.orderId),
+      });
     }
 
     // Now re-quote each route with Lalamove
@@ -8405,6 +8455,94 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         // The polyline + distance/duration update is the primary deliverable of update-routes.
       }
     }
+
+    // Persist Shopify tag assignments matching the new route mapping.
+    // Without this, manual reshuffles in update-routes never reach the
+    // rendering source of truth (Shopify order tags) and snap back on reload.
+    // Also strips orphan tags from orders that USED to live on a dirty route
+    // but no longer appear in any of the new orderIds (i.e. dragged out).
+    const allRouteTags = ROUTE_TAG_DEFINITIONS.map((d) => d.tag);
+    const tagAssignments: Array<{ orderId: string; tag: string }> = [];
+    const ordersInNewRoutes = new Set<string>();
+    const ordersToTouch = new Set<string>();
+    for (const route of routesInput) {
+      const tag = ROUTE_TAG_DEFINITIONS[route.routeIndex]?.tag;
+      if (!tag) continue;
+      for (const orderId of route.orderIds) {
+        tagAssignments.push({ orderId, tag });
+        ordersInNewRoutes.add(orderId);
+        ordersToTouch.add(orderId);
+      }
+    }
+    const normalizeLocForOrphanScan = (locId: string | null | undefined) =>
+      locId ? (locId.startsWith("gid://") ? locId.split("/").pop() ?? locId : locId) : "";
+    let orphansFound = 0;
+    for (const route of routesInput) {
+      const tag = ROUTE_TAG_DEFINITIONS[route.routeIndex]?.tag;
+      if (!tag) continue;
+      const targetLocNorm = normalizeLocForOrphanScan(route.locationId);
+      try {
+        const resp = await admin.graphql(
+          `#graphql
+            query OrdersByDirtyRouteTag($first: Int!, $query: String) {
+              orders(first: $first, query: $query) {
+                nodes {
+                  id
+                  fulfillmentOrders(first: 10, displayable: true) {
+                    nodes { assignedLocation { location { id } } }
+                  }
+                }
+              }
+            }`,
+          { variables: { first: 250, query: `tag:${tag}` } },
+        );
+        const json = await resp.json();
+        const nodes = (json.data?.orders?.nodes ?? []) as Array<{
+          id: string;
+          fulfillmentOrders: {
+            nodes: Array<{ assignedLocation?: { location?: { id: string } | null } | null }>;
+          };
+        }>;
+        for (const node of nodes) {
+          const locForOrder = normalizeLocForOrphanScan(
+            node.fulfillmentOrders?.nodes?.[0]?.assignedLocation?.location?.id,
+          );
+          if (locForOrder !== targetLocNorm) continue;
+          if (!ordersInNewRoutes.has(node.id)) {
+            ordersToTouch.add(node.id);
+            orphansFound += 1;
+          }
+        }
+      } catch (orphanErr) {
+        console.warn(
+          `[local-delivery] update-routes orphan-scan FAILED route=${route.routeId}`,
+          orphanErr instanceof Error ? orphanErr.message : String(orphanErr),
+        );
+      }
+    }
+    if (ordersToTouch.size > 0) {
+      await batchProcess(Array.from(ordersToTouch), GQL_BATCH_SIZE, (orderId) =>
+        admin.graphql(
+          `#graphql
+            mutation RemoveOrderTagsForUpdate($id: ID!, $tags: [String!]!) {
+              tagsRemove(id: $id, tags: $tags) { userErrors { message } }
+            }`,
+          { variables: { id: orderId, tags: allRouteTags } },
+        ),
+      );
+      await batchProcess(tagAssignments, GQL_BATCH_SIZE, ({ orderId, tag }) =>
+        admin.graphql(
+          `#graphql
+            mutation AddOrderTagForUpdate($id: ID!, $tags: [String!]!) {
+              tagsAdd(id: $id, tags: $tags) { userErrors { message } }
+            }`,
+          { variables: { id: orderId, tags: [tag] } },
+        ),
+      );
+    }
+    console.info(
+      `[local-delivery] update-routes tags OK shop=${shop} assigned=${tagAssignments.length} orphansUntagged=${orphansFound}`,
+    );
 
     if (effectiveLocationId && effectiveLocationId !== "all") {
       try {
