@@ -258,6 +258,13 @@ for k in ['taskDefinitionArn', 'revision', 'status', 'requiresAttributes',
     td.pop(k, None)
 # Update only the image; env + secrets come through unchanged.
 td['containerDefinitions'][0]['image'] = os.environ['CPG_IMAGE']
+# Filter out secrets whose SSM parameters were retired in Phase 6j (gebeauty
+# hard-cut, 524b4e2). The task-def chain inherited them because the previous
+# revision still listed them; left in place they cause ResourceInitializationError
+# on every new task start because the SSM parameters no longer exist.
+RETIRED_SECRETS = {'GEBEAUTY_SHOPIFY_API_KEY', 'GEBEAUTY_SHOPIFY_API_SECRET'}
+secrets = td['containerDefinitions'][0].get('secrets', [])
+td['containerDefinitions'][0]['secrets'] = [s for s in secrets if s['name'] not in RETIRED_SECRETS]
 with open(os.environ['CPG_TMP_JSON'], 'w', encoding='utf-8') as f:
     f.write(json.dumps(td))
 '@
