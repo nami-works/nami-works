@@ -183,6 +183,8 @@
   letter-spacing: -0.02em;
   margin: 0;
   align-self: start;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .heroHolo {
   background: linear-gradient(90deg, var(--holo-1), var(--holo-2), var(--holo-3), var(--holo-4));
@@ -191,7 +193,6 @@
   background-clip: text;
   color: transparent;
   animation: holoSlide 5s linear infinite;
-  white-space: nowrap;
 }
 @keyframes holoSlide {
   from { background-position: 0% 0%; }
@@ -756,7 +757,9 @@
     letter-spacing: -0.025em;
     margin: 0 0 18px;
     align-self: unset;
+    overflow-wrap: normal;
   }
+  .heroHolo { white-space: nowrap; }
   .heroSub {
     grid-column: unset;
     font-size: 17px;
