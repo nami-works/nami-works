@@ -5306,9 +5306,11 @@ export default function Index() {
           </pre>
         </s-banner>
       ) : null}
-      <div slot="aside" className={styles.fulfillmentBlock}>
-        {fulfillmentDetailsSection}
-      </div>
+      {!isFullscreen ? (
+        <div slot="aside" className={styles.fulfillmentBlock}>
+          {fulfillmentDetailsSection}
+        </div>
+      ) : null}
       <s-section>
       <div className={styles.mainBlocks}>
         <div className={isFullscreen ? styles.fullscreenOverlay : undefined}>
@@ -5424,10 +5426,12 @@ export default function Index() {
       </div>
       </s-section>
 
-      <div slot="aside" className={styles.routeManagerBlock}>
-        {!isFullscreen ? routeManagerSection : null}
-        {!isFullscreen ? accuracyBlock : null}
-      </div>
+      {!isFullscreen ? (
+        <div slot="aside" className={styles.routeManagerBlock}>
+          {routeManagerSection}
+          {accuracyBlock}
+        </div>
+      ) : null}
 
       {!isFullscreen ? renderOrdersSection() : null}
     </s-page>
