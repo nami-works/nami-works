@@ -34,3 +34,10 @@ body {
   color: var(--site-text);
   min-height: 100vh;
 }
+
+/* Admin routes (`/app/*`) render <s-app-nav> via app/routes/app.tsx — let
+   Polaris's embedded admin chrome paint the page surface so collapsed and
+   fullscreen overlays match the native gray instead of our site white. */
+html:has(s-app-nav) body {
+  background: transparent;
+}

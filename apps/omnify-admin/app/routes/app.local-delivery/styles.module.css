@@ -307,7 +307,6 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: var(--s-color-bg, #f1f1f1);
   padding: 16px;
 }
 
