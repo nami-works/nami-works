@@ -307,7 +307,7 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: #f6f6f7;
+  background: var(--s-color-bg, #f1f1f1);
   padding: 16px;
 }
 
@@ -492,15 +492,6 @@
   border-radius: 50%;
 }
 
-.pendingRoutesSection {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-bottom: 16px;
-  margin-bottom: 4px;
-  border-bottom: 1px solid #e1e3e5;
-}
-
 .assignedRoutesSection {
   display: flex;
   flex-direction: column;
@@ -595,16 +586,6 @@
 
 .locationGroup:last-child {
   margin-bottom: 0;
-}
-
-.successBadgeRow {
-  padding-bottom: 8px;
-}
-
-.routeManagerSuccessText {
-  color: #008060;
-  font-weight: 600;
-  font-size: 13px;
 }
 
 .assignedRoutesTopActions {
@@ -1120,58 +1101,36 @@
   min-width: 0;
 }
 
-.ordersFilterPill {
-  padding: 4px 12px;
-  border: 1px solid #e1e3e5;
-  border-radius: 999px;
-  background: #ffffff;
-  color: #6d7175;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.ordersFilterPill:hover {
-  color: #303030;
-}
-
-.ordersFilterPillActive {
-  background: #303030;
-  color: #ffffff;
-  border-color: #303030;
-}
-
-.unassignedBadge {
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  background: #e4e5e7;
-  color: #303030;
-}
-
-.dueBadge {
-  display: inline-flex;
+.tabsRow {
+  display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 600;
+  gap: 7px;
+  border-bottom: 1px solid #e1e3e5;
 }
 
-.dueBadgeToday {
-  background: #fff1f0;
-  color: #b42318;
+.tab {
+  padding: 8px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: #6d7175;
+  font-weight: 400;
+  font-size: 13px;
+  text-decoration: none;
+  background: none;
+  cursor: pointer;
+  margin-bottom: -1px;
 }
 
-.dueBadgeTomorrow {
-  background: #fff8e1;
-  color: #8a6d3b;
+.tab:hover {
+  color: #303030;
+  border-bottom-color: #8c9196;
 }
 
-.dueBadgeLater {
-  background: #eef3ff;
-  color: #1e3a8a;
+.tabActive {
+  color: #303030;
+  font-weight: 500;
+  border-bottom-color: #303030;
 }
 
 .rowActionCell {
@@ -1238,14 +1197,3 @@
   transition: width 0.5s ease;
 }
 
-.optimizeSuggestionBadge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  margin-top: 4px;
-  background: #f0f6ff;
-  border-radius: 8px;
-  font-size: 12px;
-  color: #2c6ecb;
-}
