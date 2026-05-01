@@ -1,6 +1,6 @@
 {
   "include": ["env.d.ts", "**/*.ts", "**/*.tsx", ".react-router/types/**/*"],
-  "exclude": ["node_modules", "inputs", "content-gen-api", "content-scraper-api", "extensions", "extensions_bak", "z_playground", "storage", "omnify"],
+  "exclude": ["node_modules", "inputs", "content-gen-api", "content-scraper-api", "extensions", "extensions_bak", "z_playground", "storage", "omnify", "cpg-labs-redeploy"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "strict": true,

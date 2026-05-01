@@ -29,6 +29,9 @@ database.sqlite
 # Legacy omnify directory (moved to root)
 /omnify/
 
+# Local scratch repo snapshot (untracked, used for prior session redeploy work)
+/cpg-labs-redeploy/
+
 # Sensitive / local-only files
 *.csv
 tmp-*.json
