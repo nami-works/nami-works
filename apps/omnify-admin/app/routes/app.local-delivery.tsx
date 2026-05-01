@@ -326,6 +326,7 @@ export default function Index() {
     Record<string, { message: string; tone?: "success" | "critical"; errorDetails?: string }>
   >({});
   const lalamoveStatusTimeoutsRef = useRef<Record<string, number>>({});
+  const lalamoveBusyTimerRef = useRef<number | null>(null);
   // Tracks routes where a driver has been successfully requested (hydrated from DB)
   const [dispatchedRoutes, setDispatchedRoutes] = useState<
     Record<string, { shareLink?: string; status?: string; lalamoveOrderId?: string; market?: string }>
@@ -538,6 +539,25 @@ export default function Index() {
       setLalamoveBusyRouteId(null);
     }
   }, [lalamoveFetcher.state, cancelFetcher.state]);
+
+  // Backstop for the fetcher-idle effect above: if a Lalamove fetcher wedges (backgrounded tab, aborted submit) the busy id would never clear and every route-card button stays disabled — force-clear after 60s.
+  useEffect(() => {
+    if (lalamoveBusyTimerRef.current !== null) {
+      window.clearTimeout(lalamoveBusyTimerRef.current);
+      lalamoveBusyTimerRef.current = null;
+    }
+    if (lalamoveBusyRouteId === null) return;
+    lalamoveBusyTimerRef.current = window.setTimeout(() => {
+      setLalamoveBusyRouteId(null);
+      lalamoveBusyTimerRef.current = null;
+    }, 60000);
+    return () => {
+      if (lalamoveBusyTimerRef.current !== null) {
+        window.clearTimeout(lalamoveBusyTimerRef.current);
+        lalamoveBusyTimerRef.current = null;
+      }
+    };
+  }, [lalamoveBusyRouteId]);
 
   useEffect(() => {
     setSettingsSaved(false);
