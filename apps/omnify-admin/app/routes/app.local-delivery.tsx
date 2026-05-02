@@ -31,9 +31,7 @@ import {
   getMaxZoneRadiusKm,
 } from "../services/carrier/sample-rate-db.server";
 import type { OptimizerOrderInput } from "../services/google-routes-shared.server";
-import {
-  getFailedDeliveryTag,
-} from "../services/lalamove-sync.server";
+import { getFailedDeliveryTag } from "../services/lalamove-tags";
 import { runCarrierQuotationForOrderId } from "../services/auto-routing.server";
 import {
   checkAndApplyEscalations,

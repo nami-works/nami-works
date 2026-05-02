@@ -11,7 +11,8 @@ import {
   buildLalamoveRecipientRemarks,
   normalizePhoneForMarket,
 } from "../services/lalamove.server";
-import { addTags, getFailedDeliveryTag } from "../services/lalamove-sync.server";
+import { addTags } from "../services/lalamove-sync.server";
+import { getFailedDeliveryTag } from "../services/lalamove-tags";
 import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
 
 const MAX_ROUTES = 20;

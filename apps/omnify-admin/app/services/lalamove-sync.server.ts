@@ -1,4 +1,9 @@
 import type { AdminApiContext } from "@shopify/shopify-app-react-router/server";
+import {
+  FAILED_DELIVERY_TAG,
+  DELIVERY_REJECTED_TAG,
+  DELIVERY_EXPIRED_TAG,
+} from "./lalamove-tags";
 
 /**
  * Internal delivery state machine for Lalamove orders.
@@ -27,10 +32,6 @@ type DeliveryState =
   | "failed"
   | "rejected"
   | "expired";
-
-const FAILED_DELIVERY_TAG = "Failed delivery";
-const DELIVERY_REJECTED_TAG = "Delivery rejected";
-const DELIVERY_EXPIRED_TAG = "Delivery expired";
 
 // ── Tag helpers (exported for use by webhook, escalation, cron) ─────────────
 
@@ -158,4 +159,7 @@ export const applyLalamoveDeliveryState = async (
   // (delivered tag rename is handled by renameRouteTagsToArchive from webhook)
 };
 
-export const getFailedDeliveryTag = () => FAILED_DELIVERY_TAG;
+// Re-export for back-compat with existing call sites that import from here.
+// New code should import from `lalamove-tags.ts` directly so client bundles
+// can use the constants too (this file is server-only).
+export { getFailedDeliveryTag } from "./lalamove-tags";
