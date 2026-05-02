@@ -333,7 +333,7 @@
 .fullscreenSplitLayout {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(320px, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   overflow: hidden;
 }
@@ -397,28 +397,19 @@
 .dueOrdersHeader,
 .dueOrdersRow {
   display: grid;
-  /* Columns: checkbox, order#, date, customer, due, route+unassign, address.
-     Wider gap between date and customer (12px) restores breathing room while
-     other columns keep the tighter 6px grid established for density. */
+  /* Columns: checkbox, order#, customer, date, due, route+unassign, address. */
   grid-template-columns:
     24px
-    72px
-    96px
-    var(--customer-col-width, 88px)
-    96px                                  /* Due (centered) */
-    var(--route-col-width, 168px)         /* Route badge + Unassign button (centered) */
+    56px                                  /* Order # */
+    var(--customer-col-width, 92px)       /* Customer */
+    80px                                  /* Date */
+    56px                                  /* Due (emoji-only badge, centered) */
+    var(--route-col-width, 168px)         /* Route badge + Unassign icon */
     minmax(140px, 1fr);                   /* Address — fills remaining */
-  column-gap: 6px;
+  column-gap: 8px;
   padding: 8px 8px;
   align-items: center;
   font-size: 13px;
-}
-
-/* Single wider gap between Date (col 3) and Customer (col 4) — overrides
-   the global 6px column-gap with negative-margin trick + larger spacer. */
-.dueOrdersHeader > :nth-child(4),
-.dueOrdersRow > :nth-child(4) {
-  margin-left: 6px;
 }
 
 .dueOrdersHeader > span:not(:first-child),
@@ -456,7 +447,7 @@
 /* Expanded mode (fullscreen): wider customer column + Route badge spelled out
    ("Route 02") makes the route+unassign cell wider. */
 .dueOrdersTable[data-mode="expanded"] {
-  --customer-col-width: 140px;
+  --customer-col-width: 120px;
   --route-col-width: 200px;
 }
 
@@ -466,15 +457,28 @@
   justify-self: center;
 }
 
-/* Route+Unassign combined cell — badge on the left, Unassign button to its
-   right, both centered as a pair within the column. Falls back to a plain
-   centered "—" when the row is unassigned. */
+/* Route+Unassign combined cell: badge centered relative to the column,
+   Unassign icon attached to the right edge. Three-column grid with flexible
+   sides keeps the badge column-centered (tracking the header) regardless
+   of the icon's presence. Falls back to a centered "—" when unassigned. */
 .routeWithUnassignCell {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 6px;
-  justify-content: center;
   width: 100%;
+  text-align: initial;
+  justify-self: stretch;
+}
+
+.routeWithUnassignCell > .routeBadge,
+.routeWithUnassignCell > .routeUnassignedDash {
+  grid-column: 2;
+  justify-self: center;
+}
+
+.routeWithUnassignCell > s-button {
+  grid-column: 3;
+  justify-self: end;
 }
 
 /* Orders filter chips — replace previous tabs UI. Active chip is filled dark,
@@ -805,17 +809,50 @@
   gap: 16px;
 }
 
+/* The manage/details route modals reuse .dueOrdersTable but render only
+   4 columns (checkbox/Order/Customer/Address). Override the main 7-column
+   grid for these scoped tables so the address column doesn't get squeezed. */
+.manageRouteLayout .dueOrdersHeader,
+.manageRouteLayout .dueOrdersRow {
+  grid-template-columns:
+    24px
+    56px
+    var(--customer-col-width, 120px)
+    minmax(140px, 1fr);
+}
+
+/* The table fills its row and scrolls vertically inside; the embedded
+   map above stays fixed so only the order list pages through long routes. */
+.manageRouteLayout .dueOrdersTable {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+/* Anchor the table header to the top of the scroll container so it stays
+   visible while the body scrolls. Background must be opaque so rows don't
+   show through. */
+.manageRouteLayout .dueOrdersHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f6f6f7;
+}
+
 .manageRouteLayout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  /* Map gets ~35% of vertical space, table ~65% — table-dominant per Lucas's call.
+     Vertical scroll lives inside the table only; map area stays fixed. */
+  grid-template-rows: minmax(0, 0.55fr) minmax(0, 1fr);
   gap: 16px;
   height: min(72vh, 760px);
 }
 
 .manageRouteTableRow {
-  display: block;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .manageRouteMapCanvas {

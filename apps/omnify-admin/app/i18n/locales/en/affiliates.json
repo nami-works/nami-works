@@ -221,7 +221,7 @@
     "section": {
       "pending": "Pending attributions",
       "claimed": "Claimed, waiting for BixGrow confirmation",
-      "forgotten": "Forgotten — claimed but not in pedidos.csv",
+      "forgotten": "Forgotten: claimed but not in pedidos.csv",
       "unknown": "Unknown coupon codes",
       "unknownHelp": "Orders whose coupon isn't in the affiliate list. Mix of new-UGC affiliate codes (re-upload the affiliate CSV) and unrelated promos (BEAUTYBACK-*, PRIMEIRACOMPRA*, NIVER-*) you can ignore."
     },

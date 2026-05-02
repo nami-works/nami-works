@@ -14,9 +14,7 @@ export function formatCustomerShort(
     );
   if (words.length === 0) return guestFallback;
   if (words.length === 1) return words[0]!;
-  if (words.length === 2) return `${words[0]} ${words[1]}`;
   const first = words[0]!;
-  const middleInitial = words[1]!.charAt(0).toLocaleUpperCase();
-  const last = words[words.length - 1]!;
-  return `${first} ${middleInitial} ${last}`;
+  const lastInitial = words[words.length - 1]!.charAt(0).toLocaleUpperCase();
+  return `${first} ${lastInitial}`;
 }

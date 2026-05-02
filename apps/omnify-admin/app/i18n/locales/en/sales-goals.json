@@ -9,7 +9,7 @@
     "never": "never",
     "syncNow": "Sync now",
     "syncing": "Syncing…",
-    "bannerSyncing": "Syncing POS order history ({{phase}}) — {{count}} orders processed."
+    "bannerSyncing": "Syncing POS order history ({{phase}}): {{count}} orders processed."
   },
   "dashboard": {
     "stripHeading": "Retail sales dashboard",

@@ -129,15 +129,6 @@ const TERMINAL_DISPATCH_STATUSES = new Set(["failed", "rejected", "expired", "de
 
 const toDateKey = (date: Date) => date.toISOString().slice(0, 10);
 
-// Hard char-count truncation with ellipsis. Used by the orders-table customer
-// column so column width stays predictable across modes (15ch fullscreen,
-// 10ch collapsed) regardless of glyph rendering.
-const truncateCustomer = (value: string, maxChars: number): string => {
-  if (!value) return value;
-  if (value.length <= maxChars) return value;
-  return `${value.slice(0, Math.max(0, maxChars - 1))}…`;
-};
-
 const toStartDateKey = (value: string | null) => {
   if (!value) {
     const fallback = new Date();
@@ -3054,18 +3045,18 @@ export default function Index() {
   const renderDueBadge = (orderId: string) => {
     const bucket = dueBucketByOrderId.get(orderId);
     if (bucket === "failed") {
-      return <s-badge tone="critical">{t("map.legend.failedEmoji")} {t("map.legend.failed")}</s-badge>;
+      return <s-badge tone="critical">{t("map.legend.failedEmoji")}</s-badge>;
     }
     if (bucket === "overdue") {
-      return <s-badge tone="critical">{t("map.legend.overdueEmoji")} {t("map.legend.overdue")}</s-badge>;
+      return <s-badge tone="critical">{t("map.legend.overdueEmoji")}</s-badge>;
     }
     if (bucket === "today") {
-      return <s-badge tone="info">{t("map.legend.dueTodayEmoji")} {t("map.legend.dueToday")}</s-badge>;
+      return <s-badge tone="info">{t("map.legend.dueTodayEmoji")}</s-badge>;
     }
     if (bucket === "tomorrow") {
-      return <s-badge tone="warning">{t("map.legend.dueTomorrowEmoji")} {t("map.legend.dueTomorrow")}</s-badge>;
+      return <s-badge tone="warning">{t("map.legend.dueTomorrowEmoji")}</s-badge>;
     }
-    return <s-badge>{t("map.legend.dueLaterEmoji")} {t("map.legend.dueLater")}</s-badge>;
+    return <s-badge>{t("map.legend.dueLaterEmoji")}</s-badge>;
   };
 
   const renderRouteNotification = (route: PrecomputedRoute) => {
@@ -3237,8 +3228,8 @@ export default function Index() {
                   />
                 </span>
                 <span>{t("routeManager.table.order")}</span>
-                <span>{t("routeManager.table.date")}</span>
                 <span>{t("routeManager.table.customer")}</span>
+                <span>{t("routeManager.table.date")}</span>
                 <span className={styles.dueOrdersCenterCell}>{t("routeManager.table.due")}</span>
                 <span className={styles.dueOrdersCenterCell}>{t("routeManager.table.route")}</span>
                 <span>{t("routeManager.table.address")}</span>
@@ -3260,13 +3251,10 @@ export default function Index() {
                     <s-link href={row.adminOrderUrl} target="_blank">
                       {row.name}
                     </s-link>
-                    <span>{formatOrderDateShort(row.processedAt)}</span>
                     <span>
-                      {truncateCustomer(
-                        formatCustomerShort(row.customerName, t("customer.guest")),
-                        isFullscreen ? 15 : 10,
-                      )}
+                      {formatCustomerShort(row.customerName, t("customer.guest"))}
                     </span>
+                    <span>{formatOrderDateShort(row.processedAt)}</span>
                     <span className={styles.dueOrdersCenterCell}>{renderDueBadge(row.id)}</span>
                     <span className={`${styles.dueOrdersCenterCell} ${styles.routeWithUnassignCell}`}>
                       {row.route && row.routeIndex !== null && routeBadgeColors ? (
@@ -3288,12 +3276,12 @@ export default function Index() {
                             )}
                           </span>
                           <s-button
-                            variant="secondary"
+                            variant="tertiary"
                             tone="critical"
+                            icon="x-circle"
+                            accessibilityLabel={t("routeManager.rowAction.unassign")}
                             onClick={() => unassignSingleOrderFromRoute(row.id, row.route!)}
-                          >
-                            {t("routeManager.rowAction.unassign")}
-                          </s-button>
+                          ></s-button>
                         </>
                       ) : (
                         <span className={styles.routeUnassignedDash}>—</span>
@@ -3481,14 +3469,19 @@ export default function Index() {
   } | null>(null);
 
   const postIntent = async (formData: FormData): Promise<unknown> => {
+    const intent = String(formData.get("intent") ?? "?");
     const res = await fetch(window.location.pathname + window.location.search, {
       method: "POST",
       body: formData,
       headers: { Accept: "application/json" },
     });
+    const text = await res.text();
     try {
-      return await res.json();
+      return JSON.parse(text);
     } catch {
+      console.error(
+        `[local-delivery:bulk] postIntent non-JSON response intent=${intent} status=${res.status} contentType=${res.headers.get("content-type") ?? "?"} bodyPreview=${text.slice(0, 200)}`,
+      );
       return null;
     }
   };
@@ -3508,7 +3501,12 @@ export default function Index() {
       formData.append("locationId", route.locationId);
       route.orderIds.forEach((id) => formData.append("orderIds", id));
       try {
-        await postIntent(formData);
+        const quoteRes = (await postIntent(formData)) as { ok?: boolean; error?: string } | null;
+        if (!quoteRes?.ok) {
+          console.warn(
+            `[local-delivery:bulk] quote-all SKIP route=${route.id} reason=${quoteRes?.error ?? "unknown"}`,
+          );
+        }
       } catch (err) {
         console.error(`[local-delivery:bulk] quote-all FAILED route=${route.id}`, err);
       }
@@ -3547,7 +3545,15 @@ export default function Index() {
             }
           | null;
         if (!quoteRes?.ok || !quoteRes.quotationId || !Array.isArray(quoteRes.stopIds)) {
-          console.warn(`[local-delivery:bulk] dispatch-all SKIP route=${route.id} reason=quote-failed`);
+          let preview = "?";
+          try {
+            preview = JSON.stringify(quoteRes)?.slice(0, 300) ?? "?";
+          } catch {
+            preview = "[unserializable]";
+          }
+          console.warn(
+            `[local-delivery:bulk] dispatch-all SKIP route=${route.id} reason=quote-failed response=${preview}`,
+          );
         } else {
           // Phase 2 — place order
           const placeForm = new FormData();
@@ -3963,6 +3969,21 @@ export default function Index() {
                     commandFor="route-manager-actions"
                   ></s-button>
                   <s-menu id="route-manager-actions" accessibilityLabel={t("routeManager.actions")}>
+                    {unassignedOrders.length > 0 ? (
+                      <s-button
+                        icon="wand"
+                        disabled={orders.length === 0}
+                        onClick={() => {
+                          autoAssignSelection();
+                          handleOptimizeFleet();
+                        }}
+                      >
+                        {t("routeManager.autoAssign")}
+                      </s-button>
+                    ) : null}
+                    <s-button icon="view" onClick={scrollToOrdersSection}>
+                      {t("routeManager.seeOrders")}
+                    </s-button>
                     {hasAssignedRoutes ? (
                       <s-button
                         icon="receipt-dollar"
@@ -3979,21 +4000,6 @@ export default function Index() {
                         onClick={handleDispatchAllRoutes}
                       >
                         {t("routeManager.dispatchAllRoutes")}
-                      </s-button>
-                    ) : null}
-                    <s-button icon="view" onClick={scrollToOrdersSection}>
-                      {t("routeManager.seeOrders")}
-                    </s-button>
-                    {unassignedOrders.length > 0 ? (
-                      <s-button
-                        icon="automation"
-                        disabled={orders.length === 0}
-                        onClick={() => {
-                          autoAssignSelection();
-                          handleOptimizeFleet();
-                        }}
-                      >
-                        {t("routeManager.autoAssign")}
                       </s-button>
                     ) : null}
                     <s-button
@@ -4082,9 +4088,11 @@ export default function Index() {
         <div className={styles.assignedRoutesSection}>
           {locationId === DEFAULT_LOCATION_ID ? (
             // Grouped by location when "All locations" selected
-            [...new Set(editableRoutes.filter((r) => r.orderIds.length > 0).map((r) => r.locationId))].map((locId) => (
+            [...new Set(editableRoutes.filter((r) => r.orderIds.length > 0).map((r) => r.locationId))].map((locId) => {
+              const groupName = locationsById.get(locId)?.name;
+              return (
               <div key={locId} className={styles.locationGroup}>
-                <s-text type="strong">{locationsById.get(locId)?.name ?? locId}</s-text>
+                {groupName ? <s-text type="strong">{groupName}</s-text> : null}
                 <div className={styles.assignedRoutesList}>
                   {editableRoutes
                     .map((route, index) => ({ route, index }))
@@ -4109,7 +4117,8 @@ export default function Index() {
                     })}
                 </div>
               </div>
-            ))
+              );
+            })
           ) : (
             <div className={styles.assignedRoutesList}>
               {editableRoutes
@@ -5450,12 +5459,6 @@ export default function Index() {
                 </div>
                 {isFullscreen ? renderOrdersSection() : null}
               </div>
-              {isFullscreen ? (
-                <div className={styles.fullscreenAssignedPane}>
-                  {routeManagerSection}
-                  {accuracyBlock}
-                </div>
-              ) : null}
             </div>
           </div>
         </div>
@@ -5864,14 +5867,16 @@ const loadGoogleMaps = (apiKey: string) => {
 const formatAddress = (parts: Array<string | null | undefined>) =>
   parts.filter(Boolean).join(", ");
 
+// Returns just the street line. address2 (complemento) is appended downstream
+// by enrichStopAddressWithAddress2 in lalamove.server.ts; including it here too
+// produced "{adr2}, {adr1}, {adr2}" in Lalamove POSTs.
 const formatDeliveryStopAddress = (
   address1: string | null | undefined,
   address2: string | null | undefined,
 ) => {
   const line1 = (address1 ?? "").trim();
   const line2 = (address2 ?? "").trim();
-  if (line1 && line2) return `${line2} , ${line1}`;
-  return line2 || line1;
+  return line1 || line2;
 };
 
 const formatFulfillmentStopAddress = (
@@ -5905,22 +5910,18 @@ function formatOrderDateShort(iso: string | null): string {
   const startOfDay = (d: Date) =>
     new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   const diffDays = Math.round((startOfDay(now) - startOfDay(date)) / 86_400_000);
-  const time = new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  })
-    .format(date)
-    .replace(" AM", " am")
-    .replace(" PM", " pm");
-  if (diffDays === 0) return `Today, ${time}`;
-  if (diffDays === 1) return `Yesterday, ${time}`;
+  const hour24 = date.getHours();
+  const ampm = hour24 >= 12 ? "pm" : "am";
+  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+  const time = `${hour12}${ampm}`;
+  if (diffDays === 0) return `Today ${time}`;
+  if (diffDays === 1) return `Yesterday ${time}`;
   if (diffDays > 1 && diffDays < 7) {
     const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(date);
-    return `${weekday}, ${time}`;
+    return `${weekday} ${time}`;
   }
   const md = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date);
-  return `${md}, ${time}`;
+  return `${md} ${time}`;
 }
 
 const isPresaleTag = (tag: string) => {

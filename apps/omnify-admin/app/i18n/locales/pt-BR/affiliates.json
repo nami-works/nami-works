@@ -221,7 +221,7 @@
     "section": {
       "pending": "Atribuicoes pendentes",
       "claimed": "Marcadas, aguardando confirmacao do BixGrow",
-      "forgotten": "Esquecidas — marcadas mas nao constam em pedidos.csv",
+      "forgotten": "Esquecidas: marcadas mas nao constam em pedidos.csv",
       "unknown": "Cupons nao identificados",
       "unknownHelp": "Pedidos cujo cupom nao esta na lista de afiliadas. Mistura de codigos de novas UGCs (reimporte o CSV de afiliadas) e promos nao relacionadas (BEAUTYBACK-*, PRIMEIRACOMPRA*, NIVER-*) que podem ser ignoradas."
     },

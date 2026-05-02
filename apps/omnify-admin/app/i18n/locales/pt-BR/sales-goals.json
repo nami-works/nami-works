@@ -9,7 +9,7 @@
     "never": "nunca",
     "syncNow": "Sincronizar agora",
     "syncing": "Sincronizando…",
-    "bannerSyncing": "Sincronizando histórico de pedidos POS ({{phase}}) — {{count}} pedidos processados."
+    "bannerSyncing": "Sincronizando histórico de pedidos POS ({{phase}}): {{count}} pedidos processados."
   },
   "dashboard": {
     "stripHeading": "Painel de vendas de varejo",
