@@ -42,12 +42,31 @@ import {
 import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { formatCustomerShort } from "../utils/format-name";
+import { computeDueBuckets, type DueBucket } from "./app.local-delivery/due-bucket";
 import styles from "./app.local-delivery/styles.module.css";
 
 const DEFAULT_DELIVERY_METHOD = "local";
 const DEFAULT_LOCATION_ID = "all";
-const DEFAULT_START_DATE_DAYS = 30;
+// Hardwired window: orders processed in the last N days are considered for delivery routing.
+// Was a user-facing filter; per-location settings + auto-delivery now own the relevant timing.
+const DEFAULT_START_DATE_DAYS = 90;
 const DEFAULT_DELIVERY_PROMISE_DAYS = 1;
+const DEFAULT_SAME_DAY_HOUR = 12;
+const DEFAULT_SAME_DAY_MINUTE = 0;
+
+// Parses an "HH:mm" string from per-location settings into [hour, minute]. Falls
+// back to the default same-day cutoff when the value is missing or malformed.
+const parseCutoffTime = (value: string | null | undefined): [number, number] => {
+  if (!value) return [DEFAULT_SAME_DAY_HOUR, DEFAULT_SAME_DAY_MINUTE];
+  const match = /^(\d{1,2}):(\d{1,2})$/.exec(value.trim());
+  if (!match) return [DEFAULT_SAME_DAY_HOUR, DEFAULT_SAME_DAY_MINUTE];
+  const hour = Math.min(23, Math.max(0, Number(match[1])));
+  const minute = Math.min(59, Math.max(0, Number(match[2])));
+  if (Number.isNaN(hour) || Number.isNaN(minute)) {
+    return [DEFAULT_SAME_DAY_HOUR, DEFAULT_SAME_DAY_MINUTE];
+  }
+  return [hour, minute];
+};
 const MAP_STYLE_STORAGE_KEY = "omnify.localDelivery.mapStyle";
 
 const toLegacyLocationId = (gid: string) => {
@@ -58,8 +77,6 @@ const toLegacyLocationId = (gid: string) => {
 };
 
 const toAdminStoreHandle = (shop: string) => shop.replace(/\.myshopify\.com$/i, "");
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 const getStartOfDay = (): Date => {
   const d = new Date();
@@ -112,50 +129,16 @@ const getStatusBadgeTone = (status: string): BadgeTone => {
 
 const TERMINAL_DISPATCH_STATUSES = new Set(["failed", "rejected", "expired", "delivered"]);
 
-const getDayIndexInTimeZone = (
-  date: Date,
-  timeZone: string,
-  userLocale: string,
-) => {
-  const locale = userLocale?.replace("_", "-") || "en-US";
-  const formatter = new Intl.DateTimeFormat(locale, {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  const parts = formatter.formatToParts(date);
-  const year = Number(parts.find((part) => part.type === "year")?.value ?? "0");
-  const month = Number(parts.find((part) => part.type === "month")?.value ?? "0");
-  const day = Number(parts.find((part) => part.type === "day")?.value ?? "0");
-  if (!year || !month || !day) return 0;
-  return Math.floor(Date.UTC(year, month - 1, day) / DAY_MS);
-};
-
-// Returns the 0–23 hour for a given date in the specified timezone.
-// hourCycle "h23" guarantees midnight = 0, 1 PM = 13, avoiding the "24" edge case.
-const getHourInTimeZone = (date: Date, timeZone: string): number => {
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    hour: "numeric",
-    hourCycle: "h23",
-  });
-  const parts = formatter.formatToParts(date);
-  const hourPart = parts.find((p) => p.type === "hour");
-  return hourPart ? Number(hourPart.value) : date.getUTCHours();
-};
-
-const getMinuteInTimeZone = (date: Date, timeZone: string): number => {
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    minute: "numeric",
-  });
-  const parts = formatter.formatToParts(date);
-  const minutePart = parts.find((p) => p.type === "minute");
-  return minutePart ? Number(minutePart.value) : date.getUTCMinutes();
-};
-
 const toDateKey = (date: Date) => date.toISOString().slice(0, 10);
+
+// Hard char-count truncation with ellipsis. Used by the orders-table customer
+// column so column width stays predictable across modes (15ch fullscreen,
+// 10ch collapsed) regardless of glyph rendering.
+const truncateCustomer = (value: string, maxChars: number): string => {
+  if (!value) return value;
+  if (value.length <= maxChars) return value;
+  return `${value.slice(0, Math.max(0, maxChars - 1))}…`;
+};
 
 const toStartDateKey = (value: string | null) => {
   if (!value) {
@@ -170,14 +153,6 @@ const toStartDateKey = (value: string | null) => {
     return toDateKey(fallback);
   }
   return toDateKey(parsed);
-};
-
-const toDeliveryPromiseDays = (value: string | null) => {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return DEFAULT_DELIVERY_PROMISE_DAYS;
-  const normalized = Math.trunc(parsed);
-  if (![0, 1, 2, 3, 4].includes(normalized)) return DEFAULT_DELIVERY_PROMISE_DAYS;
-  return normalized;
 };
 
 const toPresaleTags = (value: string | null) => {
@@ -233,7 +208,7 @@ export default function Index() {
     optimizerAccuracy,
   } =
     useLoaderData<typeof loader>();
-  const { t, i18n } = useTranslation("local-delivery");
+  const { t } = useTranslation("local-delivery");
   const lalamoveFetcher = useFetcher<typeof action>();
   const lalamoveSettingsFetcher = useFetcher<typeof action>();
   const optimizeFetcher = useFetcher<typeof action>();
@@ -256,12 +231,6 @@ export default function Index() {
     () => new Set(),
   );
   const [locationId, setLocationId] = useState(filters.locationId);
-  const [startDate, setStartDate] = useState(filters.startDate);
-  const [deliveryPromiseDays, setDeliveryPromiseDays] = useState(
-    filters.deliveryPromiseDays,
-  );
-  const [sameDayHour, setSameDayHour] = useState(12);
-  const [sameDayMinute, setSameDayMinute] = useState(0);
   const [selectedPresaleTags, setSelectedPresaleTags] = useState<string[]>(
     filters.selectedPresaleTags,
   );
@@ -295,12 +264,13 @@ export default function Index() {
   const [removeFromRouteOrderIds, setRemoveFromRouteOrderIds] = useState<Set<string>>(
     () => new Set(),
   );
-  const [ordersFilter, setOrdersFilter] = useState<"all" | "unassigned" | "assigned">("all");
+  const [ordersFilter, setOrdersFilter] = useState<
+    "all" | "unassigned" | "assigned" | "failed"
+  >("all");
   const [ordersSearch, setOrdersSearch] = useState("");
   const ordersSectionRef = useRef<HTMLDivElement | null>(null);
   const [lalamoveBusyRouteId, setLalamoveBusyRouteId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isRouteManagerVisible, setIsRouteManagerVisible] = useState(false);
   const [isAccuracyCollapsed, setIsAccuracyCollapsed] = useState(false);
   const [settingsLocationId, setSettingsLocationId] = useState<string>("");
   const [lalamoveSettings, setLalamoveSettings] = useState<LalamoveConfig>(() => {
@@ -511,14 +481,10 @@ export default function Index() {
 
   useEffect(() => {
     setLocationId(filters.locationId);
-    setStartDate(filters.startDate);
-    setDeliveryPromiseDays(filters.deliveryPromiseDays);
     setSelectedPresaleTags(filters.selectedPresaleTags);
     setDraftPresaleTags(filters.selectedPresaleTags);
   }, [
     filters.locationId,
-    filters.startDate,
-    filters.deliveryPromiseDays,
     filters.selectedPresaleTags,
   ]);
 
@@ -1294,48 +1260,54 @@ export default function Index() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unassignedOrders.length, optimizeFetcher.state]);
 
-  const dueBucketByOrderId = useMemo(() => {
-    const now = new Date();
-    const todayDayIndex = getDayIndexInTimeZone(now, browserTimeZone, userLocale);
-    const map = new Map<string, "today" | "tomorrow" | "later">();
-    orders.forEach((order) => {
-      const processedAt = order.processedAt ? new Date(order.processedAt) : null;
-      if (!processedAt || Number.isNaN(processedAt.getTime())) {
-        // Unknown placement time → treat as due today (safest for operations)
-        map.set(order.id, "today");
-        return;
-      }
-      const orderDayIndex = getDayIndexInTimeZone(
-        processedAt,
+  // Per-location settings drive the bucket math (same-day cutoff + delivery
+  // promise days). When all locations are selected, fall back to defaults —
+  // we'd otherwise have to compute per-order using each order's location.
+  const activeLocationConfig = locationId !== DEFAULT_LOCATION_ID
+    ? lalamoveConfigMap[locationId]
+    : undefined;
+  const deliveryPromiseDays =
+    activeLocationConfig?.deliveryPromiseDays ?? DEFAULT_DELIVERY_PROMISE_DAYS;
+  const [sameDayHour, sameDayMinute] = parseCutoffTime(
+    activeLocationConfig?.orderCutoffTime,
+  );
+
+  const dueBucketByOrderId = useMemo(
+    () =>
+      computeDueBuckets({
+        orders,
+        deliveryPromiseDays,
+        sameDayHour,
+        sameDayMinute,
         browserTimeZone,
         userLocale,
-      );
-      const orderHour = getHourInTimeZone(processedAt, browserTimeZone);
-      const orderMinute = getMinuteInTimeZone(processedAt, browserTimeZone);
-      // Cutoff driven by sameDayHour:sameDayMinute (user-configurable).
-      // Orders placed before cutoff count from that day's cycle;
-      // at/after cutoff they count from the next day's cycle.
-      const pastCutoff =
-        orderHour > sameDayHour ||
-        (orderHour === sameDayHour && orderMinute >= sameDayMinute);
-      const cycleDayIndex = pastCutoff ? orderDayIndex + 1 : orderDayIndex;
-      // Due day = cycle day + (deliveryPromiseDays - 1)
-      const dueDayIndex = cycleDayIndex + (deliveryPromiseDays - 1);
-      if (dueDayIndex <= todayDayIndex) {
-        map.set(order.id, "today"); // due today or overdue
-      } else if (dueDayIndex === todayDayIndex + 1) {
-        map.set(order.id, "tomorrow");
-      } else {
-        map.set(order.id, "later");
-      }
-    });
-    return map;
-  }, [orders, deliveryPromiseDays, sameDayHour, sameDayMinute, browserTimeZone]);
+        failedDeliveryTag: getFailedDeliveryTag(),
+      }),
+    [orders, deliveryPromiseDays, sameDayHour, sameDayMinute, browserTimeZone, userLocale],
+  );
 
+  const dueBucketEmoji = useCallback(
+    (bucket: DueBucket | undefined): string => {
+      switch (bucket) {
+        case "failed": return t("map.legend.failedEmoji");
+        case "overdue": return t("map.legend.overdueEmoji");
+        case "today": return t("map.legend.dueTodayEmoji");
+        case "tomorrow": return t("map.legend.dueTomorrowEmoji");
+        default: return t("map.legend.dueLaterEmoji");
+      }
+    },
+    [t],
+  );
+
+  // Unassigned panel groups orders by due-date urgency. Failed orders are
+  // excluded entirely (they live in the new Failed filter chip in the orders
+  // table). Overdue orders fold into the "today" group — they share the
+  // "must do now" semantic; the badge tells them apart visually.
   const dueBuckets = useMemo(() => {
-    const today = unassignedOrders.filter(
-      (order) => dueBucketByOrderId.get(order.id) === "today",
-    );
+    const today = unassignedOrders.filter((order) => {
+      const bucket = dueBucketByOrderId.get(order.id);
+      return bucket === "today" || bucket === "overdue";
+    });
     const tomorrow = unassignedOrders.filter(
       (order) => dueBucketByOrderId.get(order.id) === "tomorrow",
     );
@@ -1539,11 +1511,7 @@ export default function Index() {
             point.kind === "order"
               ? hasAddressError
                 ? "🟡"
-                : dueBucket === "today"
-                  ? "📦"
-                  : dueBucket === "tomorrow"
-                    ? "⏰"
-                    : "🕒"
+                : dueBucketEmoji(dueBucket)
               : "🏬";
           const isSelected = point.kind === "order" && selectedOrderIds.has(point.id);
           const assignedBadgeColors =
@@ -1838,6 +1806,7 @@ export default function Index() {
     editableRoutes,
     assignedOrderIds,
     dueBucketByOrderId,
+    dueBucketEmoji,
     selectedOrderIds,
     locationId,
     filters.locationId,
@@ -1973,11 +1942,7 @@ export default function Index() {
           const dueBucket = dueBucketByOrderId.get(order.id);
           const routeOrderEmoji = !order.addressValidation.isValid
             ? "🟡"
-            : dueBucket === "today"
-              ? "📦"
-              : dueBucket === "tomorrow"
-                ? "⏰"
-                : "🕒";
+            : dueBucketEmoji(dueBucket);
           const marker = new AdvancedMarkerElement({
             map: manageRouteMapInstance.current,
             position: { lat: coords.latitude, lng: coords.longitude },
@@ -2054,6 +2019,7 @@ export default function Index() {
     locationsById,
     mapStyle,
     dueBucketByOrderId,
+    dueBucketEmoji,
   ]);
 
   // ── Details route modal map ──────────────────────────────────────────────
@@ -2181,11 +2147,7 @@ export default function Index() {
           const dueBucket = dueBucketByOrderId.get(order.id);
           const routeOrderEmoji = !order.addressValidation.isValid
             ? "🟡"
-            : dueBucket === "today"
-              ? "📦"
-              : dueBucket === "tomorrow"
-                ? "⏰"
-                : "🕒";
+            : dueBucketEmoji(dueBucket);
           const marker = new AdvancedMarkerElement({
             map: detailsRouteMapInstance.current,
             position: { lat: coords.latitude, lng: coords.longitude },
@@ -2260,6 +2222,7 @@ export default function Index() {
     locationsById,
     mapStyle,
     dueBucketByOrderId,
+    dueBucketEmoji,
   ]);
 
   const toggleSelection = (orderId: string) => {
@@ -2611,19 +2574,13 @@ export default function Index() {
 
   const applyFilters = ({
     nextLocationId,
-    nextStartDate,
-    nextDeliveryPromiseDays,
     nextPresaleTags,
   }: {
     nextLocationId?: string;
-    nextStartDate?: string;
-    nextDeliveryPromiseDays?: number;
     nextPresaleTags?: string[];
   }) => {
     const payload: Record<string, string> = {
       locationId: nextLocationId ?? locationId,
-      startDate: nextStartDate ?? startDate,
-      deliveryPromiseDays: String(nextDeliveryPromiseDays ?? deliveryPromiseDays),
     };
     const tags = nextPresaleTags ?? selectedPresaleTags;
     if (tags.length > 0) {
@@ -2650,7 +2607,6 @@ export default function Index() {
     window.scrollTo({ top: 0 });
     setDirtyRouteIds(new Set());
     lastFittedLocationIdRef.current = "";
-    setIsRouteManagerVisible(nextValue !== DEFAULT_LOCATION_ID);
     setLocationId(nextValue);
     setSelectedPresaleTags([]);
     setDraftPresaleTags([]);
@@ -2660,54 +2616,7 @@ export default function Index() {
     });
   };
 
-  const handleDeliveryPromiseChange = (event: Event) => {
-    const target = event.currentTarget as { value?: string } | null;
-    if (!target) return;
-    const nextValue = toDeliveryPromiseDays(target.value ?? null);
-    setDeliveryPromiseDays(nextValue);
-    setSelectedPresaleTags([]);
-    setDraftPresaleTags([]);
-    applyFilters({
-      nextDeliveryPromiseDays: nextValue,
-      nextPresaleTags: [],
-    });
-  };
-
-  const handleStartDateChange = (event: Event) => {
-    const target = event.currentTarget as { value?: string } | null;
-    if (!target) return;
-    const nextValue = toStartDateKey(target.value ?? null);
-    setStartDate(nextValue);
-    setSelectedPresaleTags([]);
-    setDraftPresaleTags([]);
-    applyFilters({
-      nextStartDate: nextValue,
-      nextPresaleTags: [],
-    });
-  };
-
-  const formatStartDateLabel = (value: string) => {
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return value;
-    const dd = String(parsed.getDate()).padStart(2, "0");
-    const mm = String(parsed.getMonth() + 1).padStart(2, "0");
-    const yy = String(parsed.getFullYear()).slice(-2);
-    return `${dd}/${mm}/${yy}`;
-  };
-
-  const daysAgoText = useMemo(() => {
-    const parsed = new Date(startDate);
-    if (Number.isNaN(parsed.getTime())) return t("filters.daysAgo", { count: 0 });
-    const now = new Date();
-    const diffDays = Math.max(
-      0,
-      Math.floor((now.getTime() - parsed.getTime()) / (1000 * 60 * 60 * 24)),
-    );
-    return t("filters.daysAgo", { count: diffDays });
-  }, [startDate]);
-
   const handleManageOrdersClick = () => {
-    setIsRouteManagerVisible(true);
     const googleMaps = typeof window !== "undefined" ? window.google?.maps : undefined;
     if (!mapRef.current || !googleMaps) return;
 
@@ -3103,6 +3012,7 @@ export default function Index() {
       .filter((row) => {
         if (ordersFilter === "assigned" && !row.route) return false;
         if (ordersFilter === "unassigned" && row.route) return false;
+        if (ordersFilter === "failed" && dueBucketByOrderId.get(row.id) !== "failed") return false;
         if (!term) return true;
         const hay = `${row.name} ${row.customerName ?? ""} ${row.address1 ?? ""}`.toLowerCase();
         return hay.includes(term);
@@ -3112,13 +3022,17 @@ export default function Index() {
         const tb = b.processedAt ? new Date(b.processedAt).getTime() : 0;
         return tb - ta;
       });
-  }, [allOrderRows, ordersFilter, ordersSearch]);
+  }, [allOrderRows, ordersFilter, ordersSearch, dueBucketByOrderId]);
 
   const unassignedCountAll = useMemo(
     () => allOrderRows.filter((r) => !r.route).length,
     [allOrderRows],
   );
   const assignedCountAll = allOrderRows.length - unassignedCountAll;
+  const failedCountAll = useMemo(
+    () => allOrderRows.filter((r) => dueBucketByOrderId.get(r.id) === "failed").length,
+    [allOrderRows, dueBucketByOrderId],
+  );
 
   const scrollToOrdersSection = useCallback(() => {
     ordersSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -3140,13 +3054,19 @@ export default function Index() {
 
   const renderDueBadge = (orderId: string) => {
     const bucket = dueBucketByOrderId.get(orderId);
+    if (bucket === "failed") {
+      return <s-badge tone="critical">{t("map.legend.failedEmoji")} {t("map.legend.failed")}</s-badge>;
+    }
+    if (bucket === "overdue") {
+      return <s-badge tone="critical">{t("map.legend.overdueEmoji")} {t("map.legend.overdue")}</s-badge>;
+    }
     if (bucket === "today") {
-      return <s-badge tone="critical">{t("map.legend.dueTodayEmoji")} {t("map.legend.dueToday")}</s-badge>;
+      return <s-badge tone="info">{t("map.legend.dueTodayEmoji")} {t("map.legend.dueToday")}</s-badge>;
     }
     if (bucket === "tomorrow") {
       return <s-badge tone="warning">{t("map.legend.dueTomorrowEmoji")} {t("map.legend.dueTomorrow")}</s-badge>;
     }
-    return <s-badge tone="info">{t("map.legend.dueLaterEmoji")} {t("map.legend.dueLater")}</s-badge>;
+    return <s-badge>{t("map.legend.dueLaterEmoji")} {t("map.legend.dueLater")}</s-badge>;
   };
 
   const renderRouteNotification = (route: PrecomputedRoute) => {
@@ -3255,30 +3175,36 @@ export default function Index() {
             ></s-text-field>
           </s-stack>
 
-          <div className={styles.tabsRow}>
-            {(["all", "unassigned", "assigned"] as const).map((key) => {
+          <div className={styles.ordersFilterChipsRow}>
+            {(["all", "unassigned", "assigned", "failed"] as const).map((key) => {
               const count =
                 key === "all"
                   ? allOrderRows.length
                   : key === "unassigned"
                   ? unassignedCountAll
-                  : assignedCountAll;
+                  : key === "assigned"
+                  ? assignedCountAll
+                  : failedCountAll;
               const label =
                 key === "all"
                   ? t("routeManager.filterAll")
                   : key === "unassigned"
                   ? t("routeManager.filterUnassigned")
-                  : t("routeManager.filterAssigned");
+                  : key === "assigned"
+                  ? t("routeManager.filterAssigned")
+                  : t("routeManager.filterFailed");
+              const isActive = ordersFilter === key;
               return (
                 <button
                   key={key}
                   type="button"
-                  className={`${styles.tab}${
-                    ordersFilter === key ? ` ${styles.tabActive}` : ""
+                  className={`${styles.ordersFilterChip}${
+                    isActive ? ` ${styles.ordersFilterChipActive}` : ""
                   }`}
                   onClick={() => setOrdersFilter(key)}
+                  aria-pressed={isActive}
                 >
-                  {label} ({count})
+                  {label} <span className={styles.ordersFilterChipCount}>{count}</span>
                 </button>
               );
             })}
@@ -3291,7 +3217,10 @@ export default function Index() {
                 : t("routeManager.noUnassigned")}
             </s-text>
           ) : (
-            <div className={styles.dueOrdersTable}>
+            <div
+              className={styles.dueOrdersTable}
+              data-mode={isFullscreen ? "expanded" : "collapsed"}
+            >
               <div className={styles.dueOrdersHeader}>
                 <span>
                   <s-checkbox
@@ -3334,7 +3263,12 @@ export default function Index() {
                       {row.name}
                     </s-link>
                     <span>{formatOrderDateShort(row.processedAt)}</span>
-                    <span>{formatCustomerShort(row.customerName, t("customer.guest"))}</span>
+                    <span>
+                      {truncateCustomer(
+                        formatCustomerShort(row.customerName, t("customer.guest")),
+                        isFullscreen ? 15 : 10,
+                      )}
+                    </span>
                     <span>
                       {row.route && row.routeIndex !== null && routeBadgeColors ? (
                         <span
@@ -3346,12 +3280,15 @@ export default function Index() {
                             } as CSSProperties
                           }
                         >
-                          {t("routeManager.routeLabel", {
-                            number: String(row.routeIndex + 1).padStart(2, "0"),
-                          })}
+                          {t(
+                            isFullscreen
+                              ? "routeManager.routeLabel"
+                              : "routeManager.routeLabelCompact",
+                            { number: String(row.routeIndex + 1).padStart(2, "0") },
+                          )}
                         </span>
                       ) : (
-                        <s-badge>{t("routeManager.filterUnassigned")}</s-badge>
+                        <span className={styles.routeUnassignedDash}>—</span>
                       )}
                     </span>
                     <span>{renderDueBadge(row.id)}</span>
@@ -3363,7 +3300,7 @@ export default function Index() {
                           tone="critical"
                           onClick={() => unassignSingleOrderFromRoute(row.id, row.route!)}
                         >
-                          {t("routeManager.rowAction.removeFromRoute")}
+                          {t("routeManager.rowAction.unassign")}
                         </s-button>
                       ) : null}
                     </span>
@@ -3534,6 +3471,113 @@ export default function Index() {
     formData.append("intent", "fetch-integration-log");
     formData.append("routeId", routeId);
     integrationLogFetcher.submit(formData, { method: "post" });
+  };
+
+  // ── Bulk Route Manager actions ─────────────────────────────────
+  // Both iterate routes at the active location and call existing server
+  // intents per route, bypassing the route-card UI flow. Posts go through
+  // raw fetch() so we can chain quote → place-order without sharing the
+  // single useFetcher state machine across N routes.
+  const [bulkOpStatus, setBulkOpStatus] = useState<{
+    kind: "quote" | "dispatch";
+    total: number;
+    completed: number;
+  } | null>(null);
+
+  const postIntent = async (formData: FormData): Promise<unknown> => {
+    const res = await fetch(window.location.pathname + window.location.search, {
+      method: "POST",
+      body: formData,
+      headers: { Accept: "application/json" },
+    });
+    try {
+      return await res.json();
+    } catch {
+      return null;
+    }
+  };
+
+  const handleQuoteAllRoutes = async () => {
+    if (locationId === DEFAULT_LOCATION_ID) return;
+    const routes = editableRoutes.filter(
+      (r) => r.locationId === locationId && r.orderIds.length > 0,
+    );
+    if (routes.length === 0) return;
+    setBulkOpStatus({ kind: "quote", total: routes.length, completed: 0 });
+    console.info(`[local-delivery:bulk] quote-all START location=${locationId} routes=${routes.length}`);
+    for (const route of routes) {
+      const formData = new FormData();
+      formData.append("intent", "lalamove-quote");
+      formData.append("routeId", route.id);
+      formData.append("locationId", route.locationId);
+      route.orderIds.forEach((id) => formData.append("orderIds", id));
+      try {
+        await postIntent(formData);
+      } catch (err) {
+        console.error(`[local-delivery:bulk] quote-all FAILED route=${route.id}`, err);
+      }
+      setBulkOpStatus((prev) => (prev ? { ...prev, completed: prev.completed + 1 } : null));
+    }
+    console.info(`[local-delivery:bulk] quote-all OK location=${locationId} routes=${routes.length}`);
+    setBulkOpStatus(null);
+    revalidator.revalidate();
+  };
+
+  const handleDispatchAllRoutes = async () => {
+    if (locationId === DEFAULT_LOCATION_ID) return;
+    const routes = editableRoutes.filter(
+      (r) => r.locationId === locationId && r.orderIds.length > 0,
+    );
+    if (routes.length === 0) return;
+    setBulkOpStatus({ kind: "dispatch", total: routes.length, completed: 0 });
+    console.info(`[local-delivery:bulk] dispatch-all START location=${locationId} routes=${routes.length}`);
+    for (const route of routes) {
+      try {
+        // Phase 1 — fetch quote
+        const quoteForm = new FormData();
+        quoteForm.append("intent", "lalamove-quote");
+        quoteForm.append("routeId", route.id);
+        quoteForm.append("locationId", route.locationId);
+        route.orderIds.forEach((id) => quoteForm.append("orderIds", id));
+        const quoteRes = (await postIntent(quoteForm)) as
+          | {
+              ok?: boolean;
+              quotationId?: string;
+              total?: string | null;
+              currency?: string | null;
+              stopIds?: string[];
+              orderIds?: string[];
+              deliveryAssignments?: unknown;
+            }
+          | null;
+        if (!quoteRes?.ok || !quoteRes.quotationId || !Array.isArray(quoteRes.stopIds)) {
+          console.warn(`[local-delivery:bulk] dispatch-all SKIP route=${route.id} reason=quote-failed`);
+        } else {
+          // Phase 2 — place order
+          const placeForm = new FormData();
+          placeForm.append("intent", "lalamove-place-order");
+          placeForm.append("routeId", route.id);
+          placeForm.append("locationId", route.locationId);
+          placeForm.append("quotationId", quoteRes.quotationId);
+          placeForm.append("quotationTotal", quoteRes.total ?? "");
+          placeForm.append("quotationCurrency", quoteRes.currency ?? "");
+          quoteRes.stopIds.forEach((id) => placeForm.append("stopIds", id));
+          (quoteRes.orderIds ?? route.orderIds).forEach((id) =>
+            placeForm.append("orderIds", id),
+          );
+          if (quoteRes.deliveryAssignments) {
+            placeForm.append("deliveryAssignments", JSON.stringify(quoteRes.deliveryAssignments));
+          }
+          await postIntent(placeForm);
+        }
+      } catch (err) {
+        console.error(`[local-delivery:bulk] dispatch-all FAILED route=${route.id}`, err);
+      }
+      setBulkOpStatus((prev) => (prev ? { ...prev, completed: prev.completed + 1 } : null));
+    }
+    console.info(`[local-delivery:bulk] dispatch-all OK location=${locationId} routes=${routes.length}`);
+    setBulkOpStatus(null);
+    revalidator.revalidate();
   };
 
   const proceedWithDriverRequest = (route: PrecomputedRoute) => {
@@ -3821,140 +3865,88 @@ export default function Index() {
   // flash of desktop UI on mobile viewports during navigation.
   if (hidingForMobileRedirect) return null;
 
-  // Shared sections — defined once, placed in two layouts (collapsed aside rail and
-  // fullscreen overlay's right pane). Keeps the two render trees in sync.
-  const fulfillmentDetailsSection = (
-    <div className={styles.collapsibleSectionWrap}>
-      <s-section heading={t("filters.fulfillmentDetails")}>
-        <s-stack direction="block" gap="base">
-          <div className={styles.locationSelectRow}>
-            <div className={styles.locationSelectFlex}>
-              <div className={styles.filterControl}>
-                <span className={styles.filterLabel}>
-                  {t("filters.location", "Location")}
-                </span>
-                <s-select
-                  label={t("filters.location", "Location")}
-                  labelAccessibilityVisibility="exclusive"
-                  name="locationId"
-                  value={locationId}
-                  onChange={handleLocationChange}
-                >
-                  <s-option value={DEFAULT_LOCATION_ID}>{t("filters.allLocations")}</s-option>
-                  {locations.map((location) => (
-                    <s-option key={location.id} value={location.id}>
-                      {location.name}
-                    </s-option>
-                  ))}
-                </s-select>
-              </div>
-            </div>
-          </div>
-          {!isRouteManagerVisible ? (
-            <div className={styles.startDateFieldGroup}>
-              <s-date-field
-                label={t("filters.startDate")}
-                value={startDate}
-                {...{ lang: i18n.language } as Record<string, string>}
-                onChange={handleStartDateChange}
-              />
-              <s-text color="subdued">{daysAgoText}</s-text>
-            </div>
-          ) : null}
-          {!isRouteManagerVisible ? (
+  // Single consolidated aside section — Fulfillment details merged in.
+  // Location selector at the top; warning stack + routes show only when a
+  // specific location is selected. Per-location delivery promise + cutoff
+  // come from the Settings page (lalamoveConfigs), no longer surfaced here.
+  const isLocationSelected = locationId !== DEFAULT_LOCATION_ID;
+  const hasWarnings =
+    isLocationSelected &&
+    (failedDeliveryCount > 0 ||
+      hasUnfulfilledPresaleOrders ||
+      addressErrorOrders.length > 0 ||
+      shipmentRequestOrders.length > 0 ||
+      pendingReturnPickups.length > 0);
+
+  const routeManagerSection = (
+    <s-section heading={t("routeManager.heading")}>
+      <s-stack direction="block" gap="base">
+        <div className={styles.locationSelectRow}>
+          <div className={styles.locationSelectFlex}>
             <div className={styles.filterControl}>
               <span className={styles.filterLabel}>
-                {t("filters.deliveryPromise")}
+                {t("filters.location", "Location")}
               </span>
               <s-select
-                label={t("filters.deliveryPromise")}
+                label={t("filters.location", "Location")}
                 labelAccessibilityVisibility="exclusive"
-                value={`${deliveryPromiseDays}`}
-                onChange={handleDeliveryPromiseChange}
+                name="locationId"
+                value={locationId}
+                onChange={handleLocationChange}
               >
-                <s-option value="0">{t("filters.sameDay")}</s-option>
-                <s-option value="1">{t("filters.nextDay")}</s-option>
-                <s-option value="2">{t("filters.dayPlus2")}</s-option>
-                <s-option value="3">{t("filters.dayPlus3")}</s-option>
-                <s-option value="4">{t("filters.dayPlus4")}</s-option>
+                <s-option value={DEFAULT_LOCATION_ID}>{t("filters.allLocations")}</s-option>
+                {locations.map((location) => (
+                  <s-option key={location.id} value={location.id}>
+                    {location.name}
+                  </s-option>
+                ))}
               </s-select>
             </div>
-          ) : null}
-          {!isRouteManagerVisible ? (
-            <div className={styles.filterControl}>
-              <span className={styles.filterLabel}>
-                {t("filters.sameDayTimeLimit")}
-              </span>
-              <s-text-field
-                label={t("filters.sameDayTimeLimit")}
-                labelAccessibilityVisibility="exclusive"
-                {...{ type: "time" } as Record<string, string>}
-                value={`${String(sameDayHour).padStart(2, "0")}:${String(sameDayMinute).padStart(2, "0")}`}
-                onChange={(e: Event) => {
-                  const val = (e.currentTarget as HTMLInputElement).value;
-                  if (!val) return;
-                  const [h, m] = val.split(":").map(Number);
-                  if (!isNaN(h)) setSameDayHour(h);
-                  if (!isNaN(m)) setSameDayMinute(m);
-                }}
-              ></s-text-field>
-            </div>
-          ) : null}
-          {locationId !== DEFAULT_LOCATION_ID && isRouteManagerVisible ? (
-            <>
-              {failedDeliveryCount > 0 ? (
-                <div className={styles.warningLink}>
-                  <s-text>{t("filters.failedDelivery", { count: failedDeliveryCount })}</s-text>
-                </div>
-              ) : null}
-              {hasUnfulfilledPresaleOrders ? (
-                <span className={styles.warningLink}>
-                  <s-link onClick={() => setIsPresaleModalOpen(true)}>
-                    {t("filters.presaleWarning")}
-                  </s-link>
-                </span>
-              ) : null}
-              {addressErrorOrders.length > 0 ? (
-                <span style={{ cursor: "pointer" }} onClick={() => setIsAddressErrorsModalOpen(true)}>
-                  <s-badge tone="warning">
-                    <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M11.251 3.25a1.412 1.412 0 0 0-2.502 0L1.91 16.244A1.29 1.29 0 0 0 3.062 18h13.876a1.29 1.29 0 0 0 1.153-1.756L11.25 3.25Zm-1.25 4a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75Zm1 7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" fill="currentColor" /></svg>
-                    {t("warnings.addressErrors", { count: addressErrorOrders.length })}
-                  </s-badge>
-                </span>
-              ) : null}
-              {shipmentRequestOrders.length > 0 ? (
-                <span style={{ cursor: "pointer" }} onClick={() => setIsShipmentRequestsModalOpen(true)}>
-                  <s-badge tone="warning">
-                    <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M11.251 3.25a1.412 1.412 0 0 0-2.502 0L1.91 16.244A1.29 1.29 0 0 0 3.062 18h13.876a1.29 1.29 0 0 0 1.153-1.756L11.25 3.25Zm-1.25 4a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75Zm1 7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" fill="currentColor" /></svg>
-                    {t("warnings.shipmentRequests", { count: shipmentRequestOrders.length })}
-                  </s-badge>
-                </span>
-              ) : null}
-              {pendingReturnPickups.length > 0 ? (
-                <span style={{ cursor: "pointer" }} onClick={() => setIsReturnPickupsModalOpen(true)}>
-                  <s-badge tone="warning">
-                    <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M17 8.5A8.5 8.5 0 1 1 8.5 0H9v4.1A4.5 4.5 0 1 0 13 8.5h-1.5l3-4 3 4H16a7 7 0 1 1-7-7V0a8.5 8.5 0 0 1 8 8.5Z" fill="currentColor" /></svg>
-                    {t("warnings.returnPickups", { count: pendingReturnPickups.length })}
-                  </s-badge>
-                </span>
-              ) : null}
-            </>
-          ) : null}
-        </s-stack>
-        <div
-          className={`${styles.collapseChevron}${isRouteManagerVisible ? ` ${styles.collapsed}` : ""}`}
-          onClick={() => setIsRouteManagerVisible((prev) => !prev)}
-          role="button"
-          aria-label={isRouteManagerVisible ? t("map.expand") : t("map.collapse")}
-        >
-          <span className={styles.chevronIcon}>›</span>
+          </div>
         </div>
-      </s-section>
-    </div>
-  );
 
-  const routeManagerSection = isRouteManagerVisible ? (
-    <s-section heading={t("routeManager.heading")}>
+        {hasWarnings ? (
+          <>
+            {failedDeliveryCount > 0 ? (
+              <div className={styles.warningLink}>
+                <s-text>{t("filters.failedDelivery", { count: failedDeliveryCount })}</s-text>
+              </div>
+            ) : null}
+            {hasUnfulfilledPresaleOrders ? (
+              <span className={styles.warningLink}>
+                <s-link onClick={() => setIsPresaleModalOpen(true)}>
+                  {t("filters.presaleWarning")}
+                </s-link>
+              </span>
+            ) : null}
+            {addressErrorOrders.length > 0 ? (
+              <span style={{ cursor: "pointer" }} onClick={() => setIsAddressErrorsModalOpen(true)}>
+                <s-badge tone="warning">
+                  <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M11.251 3.25a1.412 1.412 0 0 0-2.502 0L1.91 16.244A1.29 1.29 0 0 0 3.062 18h13.876a1.29 1.29 0 0 0 1.153-1.756L11.25 3.25Zm-1.25 4a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75Zm1 7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" fill="currentColor" /></svg>
+                  {t("warnings.addressErrors", { count: addressErrorOrders.length })}
+                </s-badge>
+              </span>
+            ) : null}
+            {shipmentRequestOrders.length > 0 ? (
+              <span style={{ cursor: "pointer" }} onClick={() => setIsShipmentRequestsModalOpen(true)}>
+                <s-badge tone="warning">
+                  <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M11.251 3.25a1.412 1.412 0 0 0-2.502 0L1.91 16.244A1.29 1.29 0 0 0 3.062 18h13.876a1.29 1.29 0 0 0 1.153-1.756L11.25 3.25Zm-1.25 4a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75Zm1 7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" fill="currentColor" /></svg>
+                  {t("warnings.shipmentRequests", { count: shipmentRequestOrders.length })}
+                </s-badge>
+              </span>
+            ) : null}
+            {pendingReturnPickups.length > 0 ? (
+              <span style={{ cursor: "pointer" }} onClick={() => setIsReturnPickupsModalOpen(true)}>
+                <s-badge tone="warning">
+                  <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M17 8.5A8.5 8.5 0 1 1 8.5 0H9v4.1A4.5 4.5 0 1 0 13 8.5h-1.5l3-4 3 4H16a7 7 0 1 1-7-7V0a8.5 8.5 0 0 1 8 8.5Z" fill="currentColor" /></svg>
+                  {t("warnings.returnPickups", { count: pendingReturnPickups.length })}
+                </s-badge>
+              </span>
+            ) : null}
+          </>
+        ) : null}
+      </s-stack>
+
       {/* Orders badge + actions menu */}
       <div className={styles.routeManagerStatusRow}>
         <s-badge>{t("filters.ordersToDeliver", { count: mapData.orders.length })}</s-badge>
@@ -3984,6 +3976,24 @@ export default function Index() {
                     commandFor="route-manager-actions"
                   ></s-button>
                   <s-menu id="route-manager-actions" accessibilityLabel={t("routeManager.actions")}>
+                    {hasAssignedRoutes ? (
+                      <s-button
+                        icon="receipt-dollar"
+                        disabled={bulkOpStatus !== null}
+                        onClick={handleQuoteAllRoutes}
+                      >
+                        {t("routeManager.quoteAllRoutes")}
+                      </s-button>
+                    ) : null}
+                    {hasAssignedRoutes ? (
+                      <s-button
+                        icon="bolt"
+                        disabled={bulkOpStatus !== null}
+                        onClick={handleDispatchAllRoutes}
+                      >
+                        {t("routeManager.dispatchAllRoutes")}
+                      </s-button>
+                    ) : null}
                     <s-button icon="view" onClick={scrollToOrdersSection}>
                       {t("routeManager.seeOrders")}
                     </s-button>
@@ -4024,6 +4034,35 @@ export default function Index() {
           </div>
           <div className={styles.optimizeProgressBar}>
             <div className={styles.optimizeProgressFill} style={{ width: `${optimizeProgress.pct}%` }} />
+          </div>
+        </div>
+      ) : null}
+      {bulkOpStatus ? (
+        <div className={styles.optimizeProgressWrap}>
+          <div className={styles.optimizeProgressHeader}>
+            <span>
+              {bulkOpStatus.kind === "quote"
+                ? t("routeManager.quoteAllProgress", {
+                    completed: bulkOpStatus.completed,
+                    total: bulkOpStatus.total,
+                  })
+                : t("routeManager.dispatchAllProgress", {
+                    completed: bulkOpStatus.completed,
+                    total: bulkOpStatus.total,
+                  })}
+            </span>
+          </div>
+          <div className={styles.optimizeProgressBar}>
+            <div
+              className={styles.optimizeProgressFill}
+              style={{
+                width: `${
+                  bulkOpStatus.total > 0
+                    ? Math.round((bulkOpStatus.completed / bulkOpStatus.total) * 100)
+                    : 0
+                }%`,
+              }}
+            />
           </div>
         </div>
       ) : null}
@@ -4315,7 +4354,7 @@ export default function Index() {
           ) : null;
         })()}
     </s-section>
-  ) : null;
+  );
 
   const accuracyBlock = (optimizerAccuracy && optimizerAccuracy.optimizations > 0) ? (
     <div className={styles.collapsibleSectionWrap}>
@@ -5306,11 +5345,6 @@ export default function Index() {
           </pre>
         </s-banner>
       ) : null}
-      {!isFullscreen ? (
-        <div slot="aside" className={styles.fulfillmentBlock}>
-          {fulfillmentDetailsSection}
-        </div>
-      ) : null}
       <s-section>
       <div className={styles.mainBlocks}>
         <div className={isFullscreen ? styles.fullscreenOverlay : undefined}>
@@ -5348,6 +5382,14 @@ export default function Index() {
                 ) : null}
                 <div className={styles.mapMetaRow}>
                   <div className={styles.mapLegendOutside}>
+                    <span className={styles.legendPill}>
+                      <span className={styles.legendPillEmoji}>{t("map.legend.failedEmoji")}</span>
+                      <span className={styles.legendPillText}>{t("map.legend.failed")}</span>
+                    </span>
+                    <span className={styles.legendPill}>
+                      <span className={styles.legendPillEmoji}>{t("map.legend.overdueEmoji")}</span>
+                      <span className={styles.legendPillText}>{t("map.legend.overdue")}</span>
+                    </span>
                     <span className={styles.legendPill}>
                       <span className={styles.legendPillEmoji}>{t("map.legend.dueTodayEmoji")}</span>
                       <span className={styles.legendPillText}>{t("map.legend.dueToday")}</span>
@@ -5415,7 +5457,6 @@ export default function Index() {
               </div>
               {isFullscreen ? (
                 <div className={styles.fullscreenAssignedPane}>
-                  {fulfillmentDetailsSection}
                   {routeManagerSection}
                   {accuracyBlock}
                 </div>
@@ -5487,6 +5528,10 @@ type LalamoveConfig = {
   locationAddress: string;
   locationDetails: string;
   pickupInstructions: string;
+  /** 0=same-day, 1=next-day, 2=D+2, etc. Drives due-bucket math for this location. */
+  deliveryPromiseDays?: number | null;
+  /** Same-day cutoff "HH:mm" — orders placed at/after this shift to next cycle. */
+  orderCutoffTime?: string | null;
 };
 
 type LalamoveDeliveryAssignment = {
@@ -5873,14 +5918,14 @@ function formatOrderDateShort(iso: string | null): string {
     .format(date)
     .replace(" AM", " am")
     .replace(" PM", " pm");
-  if (diffDays === 0) return `Today at ${time}`;
-  if (diffDays === 1) return `Yesterday at ${time}`;
+  if (diffDays === 0) return `Today, ${time}`;
+  if (diffDays === 1) return `Yesterday, ${time}`;
   if (diffDays > 1 && diffDays < 7) {
     const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(date);
-    return `${weekday} at ${time}`;
+    return `${weekday}, ${time}`;
   }
   const md = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date);
-  return `${md} at ${time}`;
+  return `${md}, ${time}`;
 }
 
 const isPresaleTag = (tag: string) => {
@@ -6145,10 +6190,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     url.searchParams.get("locationId"),
     DEFAULT_LOCATION_ID,
   );
-  const startDateKey = toStartDateKey(url.searchParams.get("startDate"));
-  const deliveryPromiseDays = toDeliveryPromiseDays(
-    url.searchParams.get("deliveryPromiseDays"),
-  );
+  // Hardwired D-90 window — was a user-facing filter, now a fixed lookback so
+  // the ops surface always shows the relevant order pool.
+  const startDateKey = toStartDateKey(null);
+  // deliveryPromiseDays comes from per-location Lalamove settings on the client;
+  // the server-side default exists only for back-compat with the filters payload.
+  const deliveryPromiseDays = DEFAULT_DELIVERY_PROMISE_DAYS;
   const selectedPresaleTags = toPresaleTags(url.searchParams.get("presaleTags"));
 
   let locationsResponse: Response;

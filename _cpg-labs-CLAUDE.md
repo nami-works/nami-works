@@ -140,16 +140,98 @@ When in doubt about whether something belongs in the brief, ask: "would a planni
 
 ---
 
+## Shopify Design Compliance
+
+This app is judged against Shopify's official **App design** guidelines and the **Built for Shopify** design requirements. The "UI Patterns" section below is our local implementation; the rules here are the canonical constraints that every UI decision must satisfy. When local convention and Shopify guideline conflict, the Shopify guideline wins — flag the conflict in the PR.
+
+**Canonical sources** (re-read when in doubt, do not paraphrase from memory):
+- App design index — https://shopify.dev/docs/apps/design
+- App structure — https://shopify.dev/docs/apps/design/app-structure
+- Layout — https://shopify.dev/docs/apps/design/layout
+- Visual design — https://shopify.dev/docs/apps/design/visual-design
+- Content — https://shopify.dev/docs/apps/design/content
+- Navigation — https://shopify.dev/docs/apps/design/navigation
+- Built for Shopify requirements — https://shopify.dev/docs/apps/launch/built-for-shopify/requirements#design
+- Polaris web components — https://shopify.dev/docs/api/app-home/web-components
+
+### Information architecture & navigation
+- **Use `<s-app-nav>`** for top-level navigation (App Bridge native). Never use the legacy `NavMenu` from `@shopify/app-bridge-react` — `s-app-nav` is a Built for Shopify hard requirement and the only way the app's links render correctly when pinned to the admin nav.
+- **Max 7 top-level nav items.** Item 8+ collapses into Shopify's "View more" dropdown and visually buries that feature. If you need to add an 8th, retire one first or move it under a parent route.
+- **Nav labels: noun-based, short, scannable.** "Orders" not "Manage orders"; "Settings" not "Configure". Verb forms are reserved for action labels (buttons), never nav.
+- **App name ≤ 20 characters.** Longer names truncate in the desktop pinned nav. Check every `shopify.app.*.toml` `name` field.
+- **Sub-pages must highlight their parent nav item.** When a route is a child of an `<s-app-nav>` entry, the parent must stay active in the menu — verify after any URL restructure.
+- **No app-nav duplication in page body.** The merchant already sees the nav; don't render a second copy of those links inside `<s-page>`.
+- **Back button on every sub-page.** Built for Shopify requirement. Use Polaris `back-action` slot on `<s-page>` (or breadcrumbs when there are >1 ancestors). Never rely on browser back alone.
+- **Tabs are secondary navigation only**, must never wrap, must never reposition during navigation, and must not modify the header above them. See the existing "Tabs" subsection in UI Patterns for the implementation contract.
+
+### Page structure
+- **One purpose per page.** If a page is doing two things, split it. Page title is action-focused and concrete: "Story-telling" not "Marketing".
+- **`<s-page>` is the single top-level container per route** — already in our hard rules. The Shopify guideline that motivates it: every embedded page must use the Polaris page primitive so it inherits admin chrome, breadcrumbs, save bar slots, and responsive behavior for free.
+- **Page header carries page-specific actions only.** Cross-app and global actions stay in `<s-app-nav>`.
+- **Content lives inside containers** (`<s-section>` / `<s-box>`), never directly on the admin background. Text on bare background is a readability regression.
+- **Cards have at most one primary action.** Secondary/destructive go alongside but only one button per card carries `variant="primary"`.
+
+### Forms & save semantics
+- **Use the Contextual Save Bar (`<s-save-bar>`)** on any page with editable persisted state (Settings, Brand, Goals, etc.). The CSB is how merchants know they have unsaved changes — inline submit buttons alone are non-compliant on form-heavy routes.
+- **Error messages render in red, contextually next to the field they describe.** Page-top `<s-banner tone="critical">` is for whole-form failures (network, auth) — field errors belong on the field.
+- **No more than one banner stacked on top of another in the same viewport area.** Multiple banners reading as a wall of red is a Built for Shopify rejection signal — consolidate into one banner with a list, or queue them.
+- **Input labels must be precise.** "Name" alone is ambiguous; "Customer name" or "Store name" makes context explicit. The `label` prop is required even when `labelAccessibilityVisibility="exclusive"` is set (a11y still needs it).
+
+### Visual design
+- **Polaris primitives first, hand-rolled UI never** — already a hard rule. The Shopify-side reason: any custom button/select/checkbox you build will drift from admin styling and trigger Built for Shopify rejection.
+- **Color semantics are reserved.** Each color has one meaning across the admin and apps must respect it:
+  - **Green** = success, complete, positive status
+  - **Yellow** = paused / needs attention but not urgent
+  - **Orange** = in-progress / requires attention
+  - **Red** = blocked, error, impossible action — never anything else (no red "delete" buttons in non-destructive contexts, no red branding)
+  - **Blue** = informational, primary action — Shopify's blue (`#005bd3`-family), not your own
+- **Never rely on color alone.** Pair every status color with iconography or text — colorblind merchants must be able to parse state. Status badges should carry both a tone and a label.
+- **Contrast ≥ 4.5:1** for body text against background (WCAG 2.1 AA). The light-subdued `#6d7175` on white is exactly at the line — do not lighten it further. Never put light gray text on a colored background without checking contrast.
+- **Typography: sans-serif only**, no serif/script fonts. Body text and interactive elements ≥ 13px; captions/subheadings ≥ 12px. Headings differ from body by weight and/or size — never by underline (reads as a link) and never by color alone.
+- **4px spacing grid.** All gaps, padding, margin should round to a multiple of 4 (4, 8, 12, 16, 20, 24...). The existing UI Tokens table in this doc is consistent with this — keep it that way.
+- **Density stays uniform per page.** Don't mix tight and loose spacing in the same view; pick one density for the page and hold it.
+- **Brand-specific colors stay out of admin chrome.** Storefront/marketing accents (the teal/purple in Affiliates) belong inside content cards if at all — never on buttons, banners, or status indicators that compete with Shopify's reserved palette.
+
+### Tables in admin context
+- **Table row actions use secondary styling only** — text buttons, icon buttons, dropdowns. **Never `variant="primary"` inside a table row.** Primary buttons are reserved for the page-level CTA; using one per row creates 50 competing primaries and the merchant doesn't know what to click.
+- See the existing "Tables" subsection for the visual spec (no zebra, header bg `#f6f6f7`, etc.).
+
+### Mobile & embedded behavior
+- **No horizontal page scroll on mobile.** Multi-column layouts collapse to a single column at the 768px breakpoint. Wide tables are the only legitimate `overflow-x: auto` case, and they must scroll inside their container, not the whole page.
+- **Stack aside above main on mobile** — already in our layout pattern (`order: -1`). Re-confirm any new aside content respects this.
+- **Don't auto-launch modals, popovers, dramatic animations, or fullscreen on page load.** Every overlay opens only after explicit merchant click. The same goes for promotional/onboarding overlays — if you ship one, it must be dismissible and must not re-open on every visit.
+
+### Content & copy
+- **Plain language, ~US grade-7 reading level.** Short sentences, scannable bullets, no jargon. If you find yourself writing a paragraph, restructure as a list.
+- **Action labels: verb + noun.** "Create order", "Save changes", "Delete route" — never "OK", "Submit", "Go". The merchant must be able to predict what happens before clicking.
+- **Use the same word for the same concept everywhere.** If it's a "route" in one place, it's not an "itinerary" in another. Pick the canonical noun/verb per concept and grep before introducing a synonym.
+- **First reference uses the proper name; subsequent references in the same section use "we"** ("Omnify syncs your orders. We refresh every 5 minutes.").
+- **No idioms, sarcasm, irony, or culture-specific phrasing.** All copy is bilingual (en + pt-BR) and idioms mistranslate. The "no em dash" rule already lives in feedback memory — applies here too.
+- **All user-facing strings must come from `app/i18n/locales/`.** Hardcoded English in JSX is a regression — the Settings markets list (hardcoded country names) is the current open exception, fix opportunistically when touching that file.
+
+### App icon & store listing
+- App icon: PNG/JPG, 1200×1200, square (no rounded corners), icon fills 750–900px (10/16–12/16) with ≥ 75px (1/16) clear margin. Designed to read on white and light-gray. No Shopify logo, no brand impersonation.
+
+### Plan-gating (when introduced)
+- Plan-gated features must be **disabled and visibly labeled** ("Available on Plus", "Upgrade to access"), not silently hidden — the merchant needs to see what they could unlock. Plus-only features are the exception: hide entirely from non-Plus stores.
+
+### Deceptive-pattern bans (Built for Shopify)
+- No auto-launching anything on load. No false guarantees ("Save 30%!" without basis). No animations that obstruct content. No promotional/upsell content that isn't dismissible. Don't impersonate Shopify's first-party app icons or branding.
+
+---
+
 ## UI Patterns
 
-Follow these conventions for all UI work.
+Follow these conventions for all UI work. They implement the Shopify Design Compliance rules above with codebase-specific specs (CSS classes, file paths, component structure).
 
 ### Design Validation (mockup-first)
-For any non-trivial UI refactor — charts, dashboards, new interaction patterns, anything where visual language matters — **build an HTML mockup before touching production React code**. This is how the Retail Sales chart refactor landed smoothly: iterate on the visual in a throw-away HTML file, converge on bar shapes / tooltips / legends / stats / thresholds with the user, THEN translate to components.
+For any non-trivial UI refactor — charts, dashboards, new interaction patterns, anything where visual language matters — **always build an HTML mockup before touching production React code**. This is how the Retail Sales chart refactor and the Local Delivery tweaks landed smoothly: iterate on the visual in a throw-away HTML file, converge on the visual language with the user, THEN translate to components. The mockup is not optional.
 
 - **Start from the template:** copy [inputs/mockups/_template.html](inputs/mockups/_template.html) to `inputs/mockups/<feature>-v1.html`.
-- **Iterate in the mockup** until the visual language is settled (labels, legends, tooltip row order, colors, hover states, breakpoints). Include a "Notes" panel explaining the deltas vs current state and an "Open questions" panel for decisions that need user input.
-- **Commit the mockup** alongside the production change as a reference artifact. Future sessions reviewing the design decision read the mockup first.
+- **Iterate in the mockup** until the visual language is settled (labels, legends, tooltip row order, colors, hover states, breakpoints). Include a "Notes" panel explaining the deltas vs current state.
+- **Open questions live in the CLI, not in the mockup HTML.** Use the `AskUserQuestion` tool — present 2–4 options each with a label, description, and (when comparing layouts/strings) a `preview`. Never embed an "Open questions" panel inside the mockup file: the user's chosen answers belong in chat history where they're auditable, not buried in throw-away HTML. The mockup shows decided state only.
+- **Iterate to a final clean version.** When the visual language is locked in, write a `<feature>-v2-final.html` (or vN) that contains only the production target — no Before/After columns, no "REMOVED" callouts, no NEW pills, no highlight rings. Earlier versions stay as iteration history.
+- **Commit the final mockup** alongside the production change as a reference artifact. Future sessions reviewing the design decision read the mockup first.
 - **Skip the mockup** only for trivial changes (single copy edit, class rename, CSS token swap). When unsure, ask the user.
 - **Invoke `/ui-specialist`** when starting UI refactor work — it bootstraps this workflow and loads the full convention library.
 
@@ -315,6 +397,8 @@ Polaris `<s-select>`, `<s-text-field>`, `<s-date-field>` render a compact-when-p
 - `margin-top: 12px` between search row and badge list.
 
 ### Shopify Web Components
+- **Default to native Polaris web components.** Before introducing a custom element, hand-rolling SVGs, or pulling in a third-party UI library, check the official catalog at [shopify.dev/docs/api/app-home/web-components](https://shopify.dev/docs/api/app-home/web-components) for an existing primitive. Layout (`<s-page>`, `<s-section>`, `<s-stack>`, `<s-box>`), forms (`<s-select>`, `<s-text-field>`, `<s-checkbox>`, `<s-choice-list>`, `<s-date-field>`), feedback (`<s-banner>`, `<s-badge>`, `<s-spinner>`), navigation (`<s-link>`, `<s-button>`, `<s-modal>`), media (`<s-icon>`, `<s-image>`) and many more are all built in. Polaris primitives ship with the right tones, accessibility hooks, and Shopify-admin-native rendering for free — bespoke versions drift over time and rarely match. If a Polaris primitive doesn't fit a specific need, document why in the PR.
+- **Icons use `<s-icon type="...">`,** not hand-rolled SVG paths or `@shopify/polaris-icons`. The `type` prop accepts named icons from Polaris's 600+-icon library (e.g. `"search"`, `"bolt"`, `"receipt-dollar"`, `"truck"`). Browse the full list inside the icon docs page. Pass `tone` (`info`/`success`/`warning`/`critical`/`auto`/`neutral`/`caution`) and `size` (`small`/`base`) instead of styling manually. Existing inline SVGs and `app/components/tab-icons.tsx` predate this rule and migrate opportunistically when a file is touched — do not bulk-rewrite.
 - Use `<s-option>` inside `<s-select>`, not HTML `<option>`.
 - `<s-select>` onChange: cast with `(e.currentTarget as HTMLSelectElement).value`.
 - `<s-choice-list>` onChange: cast with `(event.currentTarget as { values?: string[] } | null)?.values?.[0]` and validate against expected union type.

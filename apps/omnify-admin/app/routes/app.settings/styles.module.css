@@ -53,8 +53,25 @@
   gap: 16px;
 }
 
+/* Three-column grid variant — used by the market/city/timezone row and the
+   auto-delivery schedule row (auto-assign delay, dispatch time, retry cutoff). */
+.settingsGridThree {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
 .settingsSpanFull {
   grid-column: 1 / -1;
+}
+
+/* Section terminator: a 1px line that lives BELOW the chevron and OUTSIDE
+   the collapsed conditional, so it always renders as a clean divider between
+   sections regardless of whether the body is open. */
+.sectionTerminator {
+  height: 1px;
+  background: #e1e3e5;
+  margin: 0;
 }
 
 .settingsPickupInstructionsWrap {
@@ -215,9 +232,8 @@
   justify-content: flex-end;
   align-items: center;
   gap: 12px;
-  padding-top: 12px;
-  margin-top: 12px;
-  border-top: 1px solid #f1f1f1;
+  padding-top: 8px;
+  margin-top: 16px;
 }
 
 .savedHint {

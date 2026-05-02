@@ -11,7 +11,7 @@ import {
   buildLalamoveRecipientRemarks,
   normalizePhoneForMarket,
 } from "../services/lalamove.server";
-import { addTags } from "../services/lalamove-sync.server";
+import { addTags, getFailedDeliveryTag } from "../services/lalamove-sync.server";
 import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
 
 const MAX_ROUTES = 20;
@@ -592,6 +592,12 @@ async function fetchEligibleOrders(
 
       // Skip orders tagged for address review
       if (tags.includes("ld_address_review")) continue;
+
+      // Skip orders flagged as failed delivery — operator must resolve manually
+      if (tags.includes(getFailedDeliveryTag())) {
+        console.info(`[auto-delivery] skip orderId=${order.id} reason=failed-delivery`);
+        continue;
+      }
 
       // Verify LOCAL delivery method
       const fulfillmentOrders = order.fulfillmentOrders?.nodes ?? [];

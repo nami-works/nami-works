@@ -398,16 +398,16 @@
 .dueOrdersRow {
   display: grid;
   grid-template-columns:
-    32px
-    88px
-    148px
-    minmax(140px, 1.3fr)
-    100px
-    116px
-    minmax(180px, 1fr)
-    148px;
-  gap: 12px;
-  padding: 10px 16px;
+    24px
+    72px
+    96px
+    var(--customer-col-width, 88px)
+    var(--route-col-width, 56px)
+    96px
+    minmax(140px, 1fr)
+    96px;
+  gap: 6px;
+  padding: 8px 8px;
   align-items: center;
   font-size: 13px;
 }
@@ -442,6 +442,67 @@
   display: flex;
   justify-content: flex-start;
   margin-top: 8px;
+}
+
+/* Expanded mode (fullscreen): give customer + route columns the full label width. */
+.dueOrdersTable[data-mode="expanded"] {
+  --customer-col-width: 140px;
+  --route-col-width: 88px;
+}
+
+/* Orders filter chips — replace previous tabs UI. Active chip is filled dark,
+   inactive chips are subdued grey. Drives a single visual cue for current filter. */
+.ordersFilterChipsRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.ordersFilterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: #f1f2f3;
+  color: #6d7175;
+  user-select: none;
+  font-family: inherit;
+}
+
+.ordersFilterChip:hover {
+  background: #e7e8ea;
+  color: #303030;
+}
+
+.ordersFilterChipActive {
+  background: #303030;
+  color: #ffffff;
+  border-color: #303030;
+}
+
+.ordersFilterChipActive:hover {
+  background: #1f1f1f;
+  color: #ffffff;
+}
+
+.ordersFilterChipCount {
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+.ordersFilterChipActive .ordersFilterChipCount {
+  opacity: 0.85;
+}
+
+.routeUnassignedDash {
+  color: #6d7175;
+  font-weight: 500;
 }
 
 .legendItem {

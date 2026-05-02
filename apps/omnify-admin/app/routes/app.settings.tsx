@@ -848,31 +848,39 @@ export default function LocationSettings() {
               {!isDeliveryDetailsCollapsed && (
                 <s-stack direction="block" gap="base">
                   <div className={styles.settingsGrid}>
-            <s-select
-              label={t("labels.market")}
-              name="market"
-              value={lalamoveSettings.market}
-              onChange={(e) =>
-                updateField(
-                  "market",
-                  (e.currentTarget as unknown as HTMLSelectElement).value,
-                )
-              }
-            >
-              <s-option value="">{t("locationSettings.selectMarket")}</s-option>
-              {LALAMOVE_MARKETS.map((opt) => (
-                <s-option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </s-option>
-              ))}
-            </s-select>
-            <s-text-field
-              label={t("labels.city")}
-              value={lalamoveSettings.city}
-              disabled
-            />
-            <div />
-            <div />
+            <div className={`${styles.settingsSpanFull} ${styles.settingsGridThree}`}>
+              <s-select
+                label={t("labels.market")}
+                name="market"
+                value={lalamoveSettings.market}
+                onChange={(e) =>
+                  updateField(
+                    "market",
+                    (e.currentTarget as unknown as HTMLSelectElement).value,
+                  )
+                }
+              >
+                <s-option value="">{t("locationSettings.selectMarket")}</s-option>
+                {LALAMOVE_MARKETS.map((opt) => (
+                  <s-option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </s-option>
+                ))}
+              </s-select>
+              <s-text-field
+                label={t("labels.city")}
+                value={lalamoveSettings.city}
+                disabled
+              />
+              <s-text-field
+                label={t("labels.timezone")}
+                value={lalamoveSettings.timezone ?? ""}
+                {...{ placeholder: Intl.DateTimeFormat().resolvedOptions().timeZone } as Record<string, string>}
+                onChange={(e) =>
+                  updateField("timezone", (e.currentTarget as unknown as HTMLInputElement).value)
+                }
+              />
+            </div>
             <s-text-field
               label={t("labels.locationName")}
               value={lalamoveSettings.locationName}
@@ -950,89 +958,80 @@ export default function LocationSettings() {
               </s-select>
             </div>
 
-            {/* ── Auto-Delivery Schedule ──────────────────────────────── */}
-            <div className={styles.settingsSpanFull} style={{ borderTop: "1px solid #e1e3e5", paddingTop: 16, marginTop: 8 }}>
-              <s-stack direction="block" gap="base">
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <s-checkbox
-                    checked={lalamoveSettings.autoDeliveryEnabled ?? false}
-                    onChange={(e) =>
-                      updateField(
-                        "autoDeliveryEnabled",
-                        (e.currentTarget as unknown as HTMLInputElement).checked,
-                      )
-                    }
-                  />
-                  <s-text type="strong">{t("labels.autoDeliveryEnabled")}</s-text>
-                </div>
+            {/* Delivery promise + cutoff — peer settings (no longer nested under
+                the auto-delivery toggle, no divider above). */}
+            <s-select
+              label={t("labels.deliveryPromiseDays")}
+              value={String(lalamoveSettings.deliveryPromiseDays ?? 0)}
+              onChange={(e) =>
+                updateField(
+                  "deliveryPromiseDays",
+                  parseInt((e.currentTarget as unknown as HTMLSelectElement).value, 10),
+                )
+              }
+            >
+              <s-option value="0">{t("labels.sameDay")}</s-option>
+              <s-option value="1">{t("labels.nextDay")}</s-option>
+              <s-option value="2">{t("labels.dayPlus2")}</s-option>
+              <s-option value="3">{t("labels.dayPlus3")}</s-option>
+            </s-select>
+            <s-text-field
+              label={t("labels.orderCutoffTime")}
+              {...{ type: "time" } as Record<string, string>}
+              value={lalamoveSettings.orderCutoffTime ?? "12:00"}
+              onChange={(e) =>
+                updateField("orderCutoffTime", (e.currentTarget as unknown as HTMLInputElement).value)
+              }
+            />
 
-                <div className={styles.settingsGrid}>
-                  <s-select
-                    label={t("labels.deliveryPromiseDays")}
-                    value={String(lalamoveSettings.deliveryPromiseDays ?? 0)}
-                    onChange={(e) =>
-                      updateField(
-                        "deliveryPromiseDays",
-                        parseInt((e.currentTarget as unknown as HTMLSelectElement).value, 10),
-                      )
-                    }
-                  >
-                    <s-option value="0">{t("labels.sameDay")}</s-option>
-                    <s-option value="1">{t("labels.nextDay")}</s-option>
-                    <s-option value="2">{t("labels.dayPlus2")}</s-option>
-                    <s-option value="3">{t("labels.dayPlus3")}</s-option>
-                  </s-select>
-                  <s-text-field
-                    label={t("labels.orderCutoffTime")}
-                    {...{ type: "time" } as Record<string, string>}
-                    value={lalamoveSettings.orderCutoffTime ?? "12:00"}
-                    onChange={(e) =>
-                      updateField("orderCutoffTime", (e.currentTarget as unknown as HTMLInputElement).value)
-                    }
-                  />
-                  <s-text-field
-                    label={t("labels.timezone")}
-                    value={lalamoveSettings.timezone ?? ""}
-                    {...{ placeholder: Intl.DateTimeFormat().resolvedOptions().timeZone } as Record<string, string>}
-                    onChange={(e) =>
-                      updateField("timezone", (e.currentTarget as unknown as HTMLInputElement).value)
-                    }
-                  />
-                </div>
-
-                {lalamoveSettings.autoDeliveryEnabled ? (
-                  <div className={styles.settingsGrid}>
-                    <s-text-field
-                      label={t("labels.autoAssignDelayMinutes")}
-                      {...{ type: "number", min: "0", max: "120" } as Record<string, string>}
-                      value={String(lalamoveSettings.autoAssignDelayMinutes ?? 15)}
-                      onChange={(e) =>
-                        updateField(
-                          "autoAssignDelayMinutes",
-                          parseInt((e.currentTarget as unknown as HTMLInputElement).value, 10) || 15,
-                        )
-                      }
-                    />
-                    <s-text-field
-                      label={t("labels.autoDispatchTime")}
-                      {...{ type: "time" } as Record<string, string>}
-                      value={lalamoveSettings.autoDispatchTime ?? "14:30"}
-                      onChange={(e) =>
-                        updateField("autoDispatchTime", (e.currentTarget as unknown as HTMLInputElement).value)
-                      }
-                    />
-                    <s-text-field
-                      label={t("labels.retryCutoffTime")}
-                      {...{ type: "time" } as Record<string, string>}
-                      value={lalamoveSettings.retryCutoffTime ?? "17:30"}
-                      onChange={(e) =>
-                        updateField("retryCutoffTime", (e.currentTarget as unknown as HTMLInputElement).value)
-                      }
-                    />
-                  </div>
-                ) : null}
-              </s-stack>
+            {/* Enable automatic delivery — peer setting placed below promise+cutoff. */}
+            <div
+              className={styles.settingsSpanFull}
+              style={{ display: "flex", alignItems: "center", gap: 8 }}
+            >
+              <s-checkbox
+                checked={lalamoveSettings.autoDeliveryEnabled ?? false}
+                onChange={(e) =>
+                  updateField(
+                    "autoDeliveryEnabled",
+                    (e.currentTarget as unknown as HTMLInputElement).checked,
+                  )
+                }
+              />
+              <s-text type="strong">{t("labels.autoDeliveryEnabled")}</s-text>
             </div>
+
+            {lalamoveSettings.autoDeliveryEnabled ? (
+              <div className={`${styles.settingsSpanFull} ${styles.settingsGridThree}`}>
+                <s-text-field
+                  label={t("labels.autoAssignDelayMinutes")}
+                  {...{ type: "number", min: "0", max: "120" } as Record<string, string>}
+                  value={String(lalamoveSettings.autoAssignDelayMinutes ?? 15)}
+                  onChange={(e) =>
+                    updateField(
+                      "autoAssignDelayMinutes",
+                      parseInt((e.currentTarget as unknown as HTMLInputElement).value, 10) || 15,
+                    )
+                  }
+                />
+                <s-text-field
+                  label={t("labels.autoDispatchTime")}
+                  {...{ type: "time" } as Record<string, string>}
+                  value={lalamoveSettings.autoDispatchTime ?? "14:30"}
+                  onChange={(e) =>
+                    updateField("autoDispatchTime", (e.currentTarget as unknown as HTMLInputElement).value)
+                  }
+                />
+                <s-text-field
+                  label={t("labels.retryCutoffTime")}
+                  {...{ type: "time" } as Record<string, string>}
+                  value={lalamoveSettings.retryCutoffTime ?? "17:30"}
+                  onChange={(e) =>
+                    updateField("retryCutoffTime", (e.currentTarget as unknown as HTMLInputElement).value)
+                  }
+                />
+              </div>
+            ) : null}
                   </div>
 
                   {/* Per-section Save: Delivery details */}
@@ -1086,6 +1085,8 @@ export default function LocationSettings() {
               >
                 <span className={styles.chevronIcon}>›</span>
               </div>
+              {/* Section terminator — visible whether collapsed or expanded. */}
+              <div className={styles.sectionTerminator} />
             </s-section>
           </div>
 
@@ -1241,6 +1242,8 @@ export default function LocationSettings() {
                     {t("retailSales.collapsedHint")}
                   </span>
                 )}
+                {/* Section terminator — visible whether collapsed or expanded. */}
+                <div className={styles.sectionTerminator} />
               </s-section>
             </div>
           ) : null}
