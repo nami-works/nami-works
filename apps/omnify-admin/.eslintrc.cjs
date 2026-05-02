@@ -74,6 +74,23 @@ module.exports = {
         "plugin:import/recommended",
         "plugin:import/typescript",
       ],
+      rules: {
+        // Wall: admin (this app/) must never import from the public site (site/).
+        // Marketing/admin live in the same repo for context but ship as
+        // independent runtimes. See CLAUDE.md "Public Site (cpg-labs.io)".
+        "no-restricted-imports": [
+          "error",
+          {
+            patterns: [
+              {
+                group: ["../site/*", "../../site/*", "../../../site/*", "site/*"],
+                message:
+                  "Admin code (app/) cannot import from site/. The public site is a separate runtime; share via packages/ or duplicate.",
+              },
+            ],
+          },
+        ],
+      },
     },
 
     // Node

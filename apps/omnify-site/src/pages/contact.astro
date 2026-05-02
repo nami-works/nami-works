@@ -1,0 +1,181 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const contactItems = [
+  {
+    iconKey: "mail",
+    label: "General inquiries",
+    value: "contact@cpg-labs.io",
+    href: "mailto:contact@cpg-labs.io",
+  },
+  {
+    iconKey: "shield",
+    label: "Security reports",
+    value: "security@cpg-labs.io",
+    href: "mailto:security@cpg-labs.io",
+  },
+  {
+    iconKey: "users",
+    label: "Partnerships",
+    value: "partners@cpg-labs.io",
+    href: "mailto:partners@cpg-labs.io",
+  },
+  {
+    iconKey: "pin",
+    label: "Location",
+    value: "São Paulo, SP — Brazil",
+    href: null,
+  },
+] as const;
+---
+
+<BaseLayout
+  title="CPG Labs | Contact"
+  description="Get in touch with CPG Labs for inquiries, security reports, or partnerships."
+>
+  <main class="page">
+    <h1 class="headline">Get in Touch</h1>
+
+    <div class="card">
+      {
+        contactItems.map((item, i) => (
+          <div
+            class:list={[
+              "item",
+              i < contactItems.length - 1 && "itemBorder",
+            ]}
+          >
+            <div class="iconWrap">
+              {item.iconKey === "mail" && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="M22 4L12 13L2 4" />
+                </svg>
+              )}
+              {item.iconKey === "shield" && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              )}
+              {item.iconKey === "users" && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 00-3-3.87" />
+                  <path d="M16 3.13a4 4 0 010 7.75" />
+                </svg>
+              )}
+              {item.iconKey === "pin" && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              )}
+            </div>
+            <div class="itemContent">
+              <span class="label">{item.label}</span>
+              {item.href ? (
+                <a href={item.href} class="value">
+                  {item.value}
+                </a>
+              ) : (
+                <span class="value">{item.value}</span>
+              )}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 48px 16px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .headline {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--site-text);
+    margin: 0 0 32px;
+    text-align: center;
+    letter-spacing: -0.02em;
+  }
+
+  .card {
+    background: var(--site-surface);
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 480px;
+    width: 100%;
+  }
+
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px 0;
+  }
+
+  .item:first-child {
+    padding-top: 0;
+  }
+
+  .item:last-child {
+    padding-bottom: 0;
+  }
+
+  .itemBorder {
+    border-bottom: 1px solid var(--site-border);
+  }
+
+  .iconWrap {
+    flex-shrink: 0;
+    color: var(--site-text-secondary);
+    margin-top: 2px;
+  }
+
+  .itemContent {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .label {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--site-text-secondary);
+  }
+
+  .value {
+    font-size: 16px;
+    color: var(--site-text);
+    text-decoration: none;
+    transition: opacity 0.15s ease;
+  }
+
+  a.value:hover {
+    opacity: 0.7;
+  }
+
+  @media (min-width: 769px) {
+    .page {
+      padding: 80px 24px 120px;
+    }
+    .headline {
+      font-size: 48px;
+      margin-bottom: 48px;
+    }
+    .card {
+      padding: 40px;
+    }
+  }
+</style>

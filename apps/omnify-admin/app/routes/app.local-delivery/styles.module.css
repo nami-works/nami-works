@@ -397,19 +397,28 @@
 .dueOrdersHeader,
 .dueOrdersRow {
   display: grid;
+  /* Columns: checkbox, order#, date, customer, due, route+unassign, address.
+     Wider gap between date and customer (12px) restores breathing room while
+     other columns keep the tighter 6px grid established for density. */
   grid-template-columns:
     24px
     72px
     96px
     var(--customer-col-width, 88px)
-    var(--route-col-width, 56px)
-    96px
-    minmax(140px, 1fr)
-    96px;
-  gap: 6px;
+    96px                                  /* Due (centered) */
+    var(--route-col-width, 168px)         /* Route badge + Unassign button (centered) */
+    minmax(140px, 1fr);                   /* Address — fills remaining */
+  column-gap: 6px;
   padding: 8px 8px;
   align-items: center;
   font-size: 13px;
+}
+
+/* Single wider gap between Date (col 3) and Customer (col 4) — overrides
+   the global 6px column-gap with negative-margin trick + larger spacer. */
+.dueOrdersHeader > :nth-child(4),
+.dueOrdersRow > :nth-child(4) {
+  margin-left: 6px;
 }
 
 .dueOrdersHeader > span:not(:first-child),
@@ -444,10 +453,28 @@
   margin-top: 8px;
 }
 
-/* Expanded mode (fullscreen): give customer + route columns the full label width. */
+/* Expanded mode (fullscreen): wider customer column + Route badge spelled out
+   ("Route 02") makes the route+unassign cell wider. */
 .dueOrdersTable[data-mode="expanded"] {
   --customer-col-width: 140px;
-  --route-col-width: 88px;
+  --route-col-width: 200px;
+}
+
+/* Center-align Due and Route columns (header label + cell content). */
+.dueOrdersCenterCell {
+  text-align: center;
+  justify-self: center;
+}
+
+/* Route+Unassign combined cell — badge on the left, Unassign button to its
+   right, both centered as a pair within the column. Falls back to a plain
+   centered "—" when the row is unassigned. */
+.routeWithUnassignCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  width: 100%;
 }
 
 /* Orders filter chips — replace previous tabs UI. Active chip is filled dark,
@@ -591,6 +618,9 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 4px;
+  /* Breathing room around the orders-to-deliver badge so it doesn't crowd
+     the location selector above or the routes list below. */
+  padding: 6px 4px;
 }
 
 .accuracyContent {
@@ -664,16 +694,18 @@
 }
 
 .routeCard {
-  padding-top: 24px;
+  /* Tightened from 24px → 8px (1/3) so route cards stack more densely. */
+  padding-top: 8px;
 }
 
 .routeCardHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  margin: -12px -12px 12px -12px;
-  padding: 16px 12px;
+  gap: 8px;
+  /* Header bleed reduced to match the tighter card; was -12/-12/12/-12 + 16/12. */
+  margin: -8px -8px 8px -8px;
+  padding: 8px 8px;
   border-radius: 12px 12px 0 0;
 }
 

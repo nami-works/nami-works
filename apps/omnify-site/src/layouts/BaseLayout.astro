@@ -1,0 +1,73 @@
+---
+import "../styles/global.css";
+
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  /** When true (the legacy / and corporate landing), the page paints its
+   *  own header/footer/sections, so we skip the shared SiteNav + SiteFooter.
+   *  All `_site.*` legacy children kept the shared chrome — default is to
+   *  render them. */
+  bareLayout?: boolean;
+}
+
+const {
+  title,
+  description,
+  ogTitle = title,
+  ogDescription = description,
+  bareLayout = false,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://cpg-labs.io");
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="canonical" href={canonical.toString()} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={ogDescription} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical.toString()} />
+
+    <script is:inline>
+      // Apply theme before paint to avoid flash. Mirrors the inline script
+      // in the original app/root.tsx — read prefer-color-scheme on first
+      // visit, otherwise honor stored preference.
+      (function () {
+        try {
+          var t = localStorage.getItem("theme");
+          if (!t) {
+            t = window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+          }
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (_) {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    {!bareLayout && <Nav />}
+    <main style={!bareLayout ? "padding-top: 60px;" : ""}>
+      <slot />
+    </main>
+    {!bareLayout && <Footer />}
+  </body>
+</html>

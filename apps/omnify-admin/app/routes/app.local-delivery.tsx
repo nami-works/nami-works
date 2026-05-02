@@ -6,7 +6,7 @@ import type {
   HeadersFunction,
   LoaderFunctionArgs,
 } from "react-router";
-import { useFetcher, useLoaderData, useRevalidator, useSubmit } from "react-router";
+import { useFetcher, useLoaderData, useNavigate, useRevalidator, useSubmit } from "react-router";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
 import {
@@ -31,7 +31,7 @@ import {
   getMaxZoneRadiusKm,
 } from "../services/carrier/sample-rate-db.server";
 import type { OptimizerOrderInput } from "../services/google-routes-shared.server";
-import { getFailedDeliveryTag } from "../services/lalamove-tags";
+import { getAllFailedDeliveryTags } from "../services/lalamove-tags";
 import { runCarrierQuotationForOrderId } from "../services/auto-routing.server";
 import {
   checkAndApplyEscalations,
@@ -225,6 +225,7 @@ export default function Index() {
   const trackingFetcher = useFetcher<typeof action>();
   const trackingRouteRef = useRef<string | null>(null);
   const submit = useSubmit();
+  const navigate = useNavigate();
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -1279,7 +1280,7 @@ export default function Index() {
         sameDayMinute,
         browserTimeZone,
         userLocale,
-        failedDeliveryTag: getFailedDeliveryTag(),
+        failedDeliveryTags: getAllFailedDeliveryTags(),
       }),
     [orders, deliveryPromiseDays, sameDayHour, sameDayMinute, browserTimeZone, userLocale],
   );
@@ -3238,10 +3239,9 @@ export default function Index() {
                 <span>{t("routeManager.table.order")}</span>
                 <span>{t("routeManager.table.date")}</span>
                 <span>{t("routeManager.table.customer")}</span>
-                <span>{t("routeManager.table.route")}</span>
-                <span>{t("routeManager.table.due")}</span>
+                <span className={styles.dueOrdersCenterCell}>{t("routeManager.table.due")}</span>
+                <span className={styles.dueOrdersCenterCell}>{t("routeManager.table.route")}</span>
                 <span>{t("routeManager.table.address")}</span>
-                <span aria-hidden="true" />
               </div>
               {filteredOrderRows.map((row) => {
                 const isSelected = selectedOrderIds.has(row.id);
@@ -3267,41 +3267,39 @@ export default function Index() {
                         isFullscreen ? 15 : 10,
                       )}
                     </span>
-                    <span>
+                    <span className={styles.dueOrdersCenterCell}>{renderDueBadge(row.id)}</span>
+                    <span className={`${styles.dueOrdersCenterCell} ${styles.routeWithUnassignCell}`}>
                       {row.route && row.routeIndex !== null && routeBadgeColors ? (
-                        <span
-                          className={styles.routeBadge}
-                          style={
-                            {
-                              "--badge-bg": routeBadgeColors.bg,
-                              "--badge-text": routeBadgeColors.text,
-                            } as CSSProperties
-                          }
-                        >
-                          {t(
-                            isFullscreen
-                              ? "routeManager.routeLabel"
-                              : "routeManager.routeLabelCompact",
-                            { number: String(row.routeIndex + 1).padStart(2, "0") },
-                          )}
-                        </span>
+                        <>
+                          <span
+                            className={styles.routeBadge}
+                            style={
+                              {
+                                "--badge-bg": routeBadgeColors.bg,
+                                "--badge-text": routeBadgeColors.text,
+                              } as CSSProperties
+                            }
+                          >
+                            {t(
+                              isFullscreen
+                                ? "routeManager.routeLabel"
+                                : "routeManager.routeLabelCompact",
+                              { number: String(row.routeIndex + 1).padStart(2, "0") },
+                            )}
+                          </span>
+                          <s-button
+                            variant="secondary"
+                            tone="critical"
+                            onClick={() => unassignSingleOrderFromRoute(row.id, row.route!)}
+                          >
+                            {t("routeManager.rowAction.unassign")}
+                          </s-button>
+                        </>
                       ) : (
                         <span className={styles.routeUnassignedDash}>—</span>
                       )}
                     </span>
-                    <span>{renderDueBadge(row.id)}</span>
                     <span>{row.address1 ?? t("routeManager.noAddressLine1")}</span>
-                    <span className={styles.rowActionCell}>
-                      {row.route ? (
-                        <s-button
-                          variant="secondary"
-                          tone="critical"
-                          onClick={() => unassignSingleOrderFromRoute(row.id, row.route!)}
-                        >
-                          {t("routeManager.rowAction.unassign")}
-                        </s-button>
-                      ) : null}
-                    </span>
                   </div>
                 );
               })}
@@ -3879,29 +3877,20 @@ export default function Index() {
   const routeManagerSection = (
     <s-section heading={t("routeManager.heading")}>
       <s-stack direction="block" gap="base">
-        <div className={styles.locationSelectRow}>
-          <div className={styles.locationSelectFlex}>
-            <div className={styles.filterControl}>
-              <span className={styles.filterLabel}>
-                {t("filters.location", "Location")}
-              </span>
-              <s-select
-                label={t("filters.location", "Location")}
-                labelAccessibilityVisibility="exclusive"
-                name="locationId"
-                value={locationId}
-                onChange={handleLocationChange}
-              >
-                <s-option value={DEFAULT_LOCATION_ID}>{t("filters.allLocations")}</s-option>
-                {locations.map((location) => (
-                  <s-option key={location.id} value={location.id}>
-                    {location.name}
-                  </s-option>
-                ))}
-              </s-select>
-            </div>
-          </div>
-        </div>
+        <s-select
+          label={t("filters.location", "Location")}
+          labelAccessibilityVisibility="exclusive"
+          name="locationId"
+          value={locationId}
+          onChange={handleLocationChange}
+        >
+          <s-option value={DEFAULT_LOCATION_ID}>{t("filters.allLocations")}</s-option>
+          {locations.map((location) => (
+            <s-option key={location.id} value={location.id}>
+              {location.name}
+            </s-option>
+          ))}
+        </s-select>
 
         {hasWarnings ? (
           <>
@@ -3997,7 +3986,7 @@ export default function Index() {
                     </s-button>
                     {unassignedOrders.length > 0 ? (
                       <s-button
-                        icon="transfer"
+                        icon="automation"
                         disabled={orders.length === 0}
                         onClick={() => {
                           autoAssignSelection();
@@ -4007,6 +3996,14 @@ export default function Index() {
                         {t("routeManager.autoAssign")}
                       </s-button>
                     ) : null}
+                    <s-button
+                      icon="settings"
+                      onClick={() =>
+                        navigate(`/app/settings?locationId=${encodeURIComponent(locationId)}`)
+                      }
+                    >
+                      {t("routeManager.openLocationSettings")}
+                    </s-button>
                     {hasAssignedRoutes ? (
                       <s-button
                         tone="critical"
@@ -6778,8 +6775,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     color: ROUTE_PRECOMPUTE_COLORS[i % ROUTE_PRECOMPUTE_COLORS.length] ?? "#2C6ECB",
     orderIds: r.orders.map((o) => o.orderId),
   }));
+  const failedDeliveryTagSet = new Set(getAllFailedDeliveryTags());
   const failedDeliveryCount = filteredOrders.filter((order) =>
-    order.tags.includes(getFailedDeliveryTag()),
+    order.tags.some((t) => failedDeliveryTagSet.has(t)),
   ).length;
 
   const normalizedLocations: LoaderLocation[] = locations.map((location) => {

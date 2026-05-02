@@ -1,0 +1,138 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="CPG Labs | About"
+  description="CPG Labs levels the playing field for independent consumer brands with enterprise-grade retail tools."
+>
+  <main class="page">
+    <h1 class="headline">About CPG Labs</h1>
+
+    <div class="mission">
+      <p class="text">
+        Our goal is to <strong>level the playing field</strong> for
+        <u>independent</u> consumer brands. We build tools to deliver
+        <strong>competitive edge</strong> to growing companies, so they can
+        compete at <u>enterprise-level</u>, without enterprise budgets.
+      </p>
+      <p class="text">
+        From <strong>local stores visibility</strong> to
+        <strong>last-mile delivery intelligence</strong> and
+        <strong>footprint expansion insights,</strong> we give
+        <u>independent CPG brands</u> the same reach and intelligence the big
+        players take for granted.
+      </p>
+    </div>
+
+    <section class="productsSection">
+      <div class="productCard">
+        <img src="/omnify_tree.png" alt="Omnify" class="productLogo" />
+        <p class="productSubtitle">
+          Omnify is a location management technology developed and operated by
+          CPG Labs.
+        </p>
+        <p class="productDescription">
+          Google Business Profile sync, local delivery planning, sales goals,
+          and retail expansion analytics, all at Omnify dashboard or in the
+          Shopify admin.
+        </p>
+      </div>
+    </section>
+
+    <p class="bottomInfo">contact@cpg-labs.io · São Paulo, Brazil</p>
+  </main>
+</BaseLayout>
+
+<style>
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 48px 16px 80px;
+  }
+
+  .headline {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--site-text);
+    margin: 0 0 32px;
+    text-align: center;
+    letter-spacing: -0.02em;
+  }
+
+  .mission {
+    max-width: 720px;
+    margin: 0 auto 40px;
+    text-align: center;
+  }
+
+  .text {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--site-text-secondary);
+    margin: 0 0 20px;
+  }
+
+  .text:last-child {
+    margin-bottom: 0;
+  }
+
+  .productsSection {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 64px;
+  }
+
+  .productCard {
+    background: var(--site-surface);
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 600px;
+    width: 100%;
+  }
+
+  .productLogo {
+    max-height: 48px;
+    width: auto;
+    margin-bottom: 16px;
+  }
+
+  .productSubtitle {
+    font-size: 15px;
+    color: var(--site-text-secondary);
+    margin: 0 0 16px;
+  }
+
+  .productDescription {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--site-text-secondary);
+    margin: 0 0 20px;
+  }
+
+  .bottomInfo {
+    text-align: center;
+    font-size: 14px;
+    color: var(--site-text-secondary);
+    margin: 0;
+  }
+
+  @media (min-width: 769px) {
+    .page {
+      padding: 80px 24px 120px;
+    }
+    .headline {
+      font-size: 48px;
+      margin-bottom: 48px;
+    }
+    .mission {
+      margin-bottom: 64px;
+    }
+    .text {
+      font-size: 18px;
+    }
+    .productCard {
+      padding: 40px;
+    }
+  }
+</style>

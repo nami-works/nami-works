@@ -12,7 +12,7 @@ import {
   normalizePhoneForMarket,
 } from "../services/lalamove.server";
 import { addTags } from "../services/lalamove-sync.server";
-import { getFailedDeliveryTag } from "../services/lalamove-tags";
+import { getAllFailedDeliveryTags } from "../services/lalamove-tags";
 import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
 
 const MAX_ROUTES = 20;
@@ -594,8 +594,11 @@ async function fetchEligibleOrders(
       // Skip orders tagged for address review
       if (tags.includes("ld_address_review")) continue;
 
-      // Skip orders flagged as failed delivery — operator must resolve manually
-      if (tags.includes(getFailedDeliveryTag())) {
+      // Skip orders flagged as failed delivery — operator must resolve manually.
+      // Checks both the operator tag (ld_failed-delivery) and the legacy
+      // state-machine tag (Failed delivery) so existing data stays excluded.
+      const failedTags = getAllFailedDeliveryTags();
+      if (tags.some((t: string) => failedTags.includes(t))) {
         console.info(`[auto-delivery] skip orderId=${order.id} reason=failed-delivery`);
         continue;
       }

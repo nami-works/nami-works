@@ -59,7 +59,11 @@ export default defineConfig({
   },
   plugins: [
     reactRouter(),
-    tsconfigPaths(),
+    // Scope tsconfigPaths to the admin's tsconfig only. The public site
+    // (site/) has its own toolchain and a tsconfig that extends astro's
+    // strict preset; without this, the plugin tries to parse site/tsconfig.json
+    // before astro is installed and the admin build crashes.
+    tsconfigPaths({ projects: ["./tsconfig.json"] }),
   ],
   build: {
     assetsInlineLimit: 0,

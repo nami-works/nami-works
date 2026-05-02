@@ -77,6 +77,7 @@
     "dispatchAllRoutes": "Dispatch all routes",
     "quoteAllProgress": "Fetching quotes — {{completed}} / {{total}}",
     "dispatchAllProgress": "Dispatching — {{completed}} / {{total}}",
+    "openLocationSettings": "Settings",
     "noRoutes": "No routes created yet. Select orders on the map and assign them to routes.",
     "unassignedOrders": "Unassigned orders ({{count}})",
     "noUnassigned": "No unassigned orders for current filters.",

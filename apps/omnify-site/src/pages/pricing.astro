@@ -1,0 +1,389 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+interface Plan {
+  name: string;
+  price: number;
+  locations: string;
+  extra?: string;
+  features: string[];
+  recommended: boolean;
+}
+
+const plans: Plan[] = [
+  {
+    name: "Start",
+    price: 25,
+    locations: "Up to 3 locations",
+    features: ["GBP sync", "Health check", "Basic analytics"],
+    recommended: false,
+  },
+  {
+    name: "Grow",
+    price: 49,
+    locations: "Up to 10 locations",
+    extra: "+$7/mo each additional",
+    features: [
+      "Everything in Start, plus:",
+      "Unlimited locations",
+      "Review management",
+      "Local delivery",
+    ],
+    recommended: true,
+  },
+  {
+    name: "Scale",
+    price: 99,
+    locations: "Up to 10 locations",
+    extra: "+$10/mo each additional",
+    features: [
+      "Everything in Grow, plus:",
+      "Expansion analytics",
+      "Multi-brand support",
+      "Priority support",
+    ],
+    recommended: false,
+  },
+];
+
+// Default expand state per plan name (matches the original component)
+const defaultExpanded: Record<string, boolean> = {
+  Start: false,
+  Grow: true,
+  Scale: false,
+};
+---
+
+<BaseLayout
+  title="CPG Labs | Pricing"
+  description="Simple, transparent pricing for CPG Labs. No sales calls. No hidden fees."
+>
+  <main class="page">
+    <div class="header">
+      <h1 class="headline">Simple, transparent pricing.</h1>
+      <p class="sub">No sales calls. No hidden fees.</p>
+    </div>
+
+    <div class="grid">
+      {
+        plans.map((plan) => {
+          const isExpanded = defaultExpanded[plan.name] ?? false;
+          const isCollapsible = !plan.recommended;
+          const card = (
+            <div
+              class:list={[
+                "card",
+                plan.recommended && "cardRecommended",
+                isCollapsible && !isExpanded && "cardCollapsed",
+              ]}
+              data-plan={plan.name}
+              data-collapsible={isCollapsible ? "true" : "false"}
+              data-expanded={isExpanded ? "true" : "false"}
+              role={isCollapsible ? "button" : undefined}
+              aria-expanded={isCollapsible ? String(isExpanded) : undefined}
+              style={isCollapsible ? "cursor: pointer;" : undefined}
+            >
+              {plan.recommended && <span class="badge">Recommended</span>}
+              <h2 class="planName">{plan.name}</h2>
+              <div class="priceRow">
+                <span class="price">${plan.price}</span>
+                <span class="period">/mo</span>
+              </div>
+              <p class="locations">{plan.locations}</p>
+
+              <div class="planExpanded">
+                {plan.extra && <p class="extra">{plan.extra}</p>}
+                <ul class="features">
+                  {plan.features.map((f) => (
+                    <li class="feature">{f}</li>
+                  ))}
+                </ul>
+                <a
+                  href={`mailto:contact@cpg-labs.io?subject=${encodeURIComponent(
+                    `Get started — ${plan.name} plan`,
+                  )}`}
+                  class={plan.recommended ? "ctaHolo" : "ctaGhost"}
+                >
+                  Get Started
+                </a>
+              </div>
+
+              {isCollapsible && (
+                <span class="expandHint">See details</span>
+              )}
+            </div>
+          );
+
+          return plan.recommended ? <div class="holoWrap">{card}</div> : <div>{card}</div>;
+        })
+      }
+    </div>
+
+    <p class="footer">
+      All plans include HTTPS, encryption at rest, and Google API Services
+      compliance.
+    </p>
+  </main>
+</BaseLayout>
+
+<script>
+  document
+    .querySelectorAll<HTMLElement>('[data-collapsible="true"]')
+    .forEach((card) => {
+      card.addEventListener("click", (event) => {
+        // Avoid toggling when the user clicks the inner CTA link
+        if ((event.target as HTMLElement).closest("a")) return;
+        const expanded = card.getAttribute("data-expanded") === "true";
+        const next = !expanded;
+        card.setAttribute("data-expanded", String(next));
+        card.setAttribute("aria-expanded", String(next));
+        card.classList.toggle("cardCollapsed", !next);
+      });
+    });
+</script>
+
+<style>
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 16px 80px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .headline {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--site-text);
+    margin: 0 0 12px;
+    letter-spacing: -0.02em;
+  }
+
+  .sub {
+    font-size: 17px;
+    color: var(--site-text-secondary);
+    margin: 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .holoWrap {
+    position: relative;
+    border-radius: 22px;
+    padding: 0;
+  }
+
+  .holoWrap::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    right: -6px;
+    bottom: -6px;
+    background: var(--site-holo-gradient);
+    border-radius: 22px;
+    z-index: 0;
+  }
+
+  .holoWrap > .card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .card {
+    background: var(--site-surface);
+    border-radius: 20px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+  }
+
+  .cardRecommended {
+    border-radius: 20px;
+    border: 1px solid var(--site-border);
+  }
+
+  .cardCollapsed {
+    padding: 24px 32px;
+  }
+
+  .cardCollapsed .locations {
+    margin-bottom: 0;
+  }
+
+  .cardCollapsed .planExpanded {
+    display: none;
+  }
+
+  .card:not(.cardCollapsed) .expandHint {
+    display: none;
+  }
+
+  .badge {
+    display: inline-block;
+    align-self: flex-start;
+    background: var(--site-holo-gradient);
+    color: #1d1d1f;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+  }
+
+  .planName {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--site-text);
+    margin: 0 0 8px;
+  }
+
+  .priceRow {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .price {
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--site-text);
+    letter-spacing: -0.02em;
+  }
+
+  .period {
+    font-size: 18px;
+    color: var(--site-text-secondary);
+  }
+
+  .locations {
+    font-size: 15px;
+    color: var(--site-text-secondary);
+    margin: 0 0 4px;
+  }
+
+  .extra {
+    font-size: 14px;
+    color: var(--site-text-secondary);
+    margin: 0;
+  }
+
+  .features {
+    list-style: none;
+    padding: 0;
+    margin: 24px 0 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .feature {
+    font-size: 15px;
+    color: var(--site-text);
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .feature::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 7px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--site-text-secondary);
+    opacity: 0.4;
+  }
+
+  .expandHint {
+    font-size: 13px;
+    color: var(--site-text-secondary);
+    margin-top: 8px;
+    opacity: 0.6;
+  }
+
+  .ctaHolo {
+    display: inline-block;
+    background: var(--site-holo-gradient);
+    color: #1d1d1f;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    font-family: inherit;
+    transition: opacity 0.15s ease;
+  }
+
+  .ctaHolo:hover {
+    opacity: 0.85;
+  }
+
+  .ctaGhost {
+    display: inline-block;
+    background: transparent;
+    color: var(--site-text);
+    border: 1px solid var(--site-border);
+    border-radius: 12px;
+    padding: 14px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    font-family: inherit;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .ctaGhost:hover {
+    border-color: var(--site-text-secondary);
+  }
+
+  .footer {
+    text-align: center;
+    font-size: 14px;
+    color: var(--site-text-secondary);
+    margin-top: 48px;
+  }
+
+  @media (min-width: 769px) {
+    .page {
+      padding: 80px 24px 120px;
+    }
+    .headline {
+      font-size: 48px;
+    }
+    .sub {
+      font-size: 20px;
+    }
+    .header {
+      margin-bottom: 64px;
+    }
+    .grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .card {
+      padding: 40px;
+    }
+    .price {
+      font-size: 48px;
+    }
+  }
+</style>

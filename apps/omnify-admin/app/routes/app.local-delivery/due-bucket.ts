@@ -63,7 +63,10 @@ export type ComputeDueBucketsParams = {
   sameDayMinute: number;
   browserTimeZone: string;
   userLocale: string;
-  failedDeliveryTag: string;
+  // Any of these tags on an order maps the order to the "failed" bucket.
+  // Matches both the operator tag (ld_failed-delivery) and the legacy
+  // state-machine tag (Failed delivery) so existing data stays surfaced.
+  failedDeliveryTags: ReadonlyArray<string>;
 };
 
 export const computeDueBuckets = ({
@@ -73,14 +76,15 @@ export const computeDueBuckets = ({
   sameDayMinute,
   browserTimeZone,
   userLocale,
-  failedDeliveryTag,
+  failedDeliveryTags,
 }: ComputeDueBucketsParams): Map<string, DueBucket> => {
   const now = new Date();
   const todayDayIndex = getDayIndexInTimeZone(now, browserTimeZone, userLocale);
   const map = new Map<string, DueBucket>();
+  const failedTagSet = new Set(failedDeliveryTags);
 
   orders.forEach((order) => {
-    if (order.tags?.includes(failedDeliveryTag)) {
+    if (order.tags?.some((tag) => failedTagSet.has(tag))) {
       map.set(order.id, "failed");
       return;
     }

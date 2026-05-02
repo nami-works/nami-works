@@ -535,6 +535,18 @@ export default function LocationSettings() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  // Allow other routes (e.g. Local Delivery's "Settings" action) to deep-link
+  // into Settings with a location pre-selected via ?locationId=<id>. Runs once
+  // per mount; ignores "all" sentinel and unknown ids.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const param = new URLSearchParams(window.location.search).get("locationId");
+    if (!param || param === "all") return;
+    const exists = locations.some((loc: { id: string }) => loc.id === param);
+    if (exists) setSettingsLocationId(param);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const allTabs: { id: SettingsTab; label: string }[] = [
     { id: "settings", label: t("tabs.locations") },
     { id: "providers", label: t("tabs.providers") },

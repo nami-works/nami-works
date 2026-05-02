@@ -4,9 +4,16 @@ This is the single source of truth for all AI-assisted development in the Omnify
 
 ## Project Identity
 
-CPG Labs is an embedded Shopify app. **Production URL:** `https://omnify.cpg-labs.io`
+CPG Labs ships **two surfaces** from this repo. They share content, not runtime — different framework, different bundle, different hosting. Each one has its own scope of conventions; never let admin code import from site/ or vice versa.
 
-### Tech Stack
+| Surface | Where | What | Stack |
+|---------|-------|------|-------|
+| **Embedded Shopify app** | `https://app.cpg-labs.io` (CPG Labs full) + `https://omnify.cpg-labs.io` (Omnify focused) | Local delivery, retail sales, footprint expansion, etc. | React Router v7 + Shopify App Bridge + Polaris + Prisma + AWS ECS Fargate |
+| **Public site** | `https://cpg-labs.io` | Marketing, pricing, legal (privacy/terms/security), product walkthroughs, future docs/blog/status | Astro (static) + AWS S3 + CloudFront — see `site/` and the "Public Site" section below |
+
+The admin app's code lives at the **repo root** (`app/`, `prisma/`, `infra/terraform/`, etc.). The public site's code lives in **`site/`** — completely self-contained, own `package.json`, own build, own deploy.
+
+### Tech Stack — admin app
 - **Framework:** React Router v7 + Shopify App React Router
 - **UI:** Polaris web components (`s-page`, `s-section`, `s-stack`, `s-box`)
 - **Data:** Prisma (SQLite locally, PostgreSQL in production via AWS RDS)
@@ -78,7 +85,7 @@ npx prisma migrate dev  # Create/apply migrations
   - **After a successful deploy**, move the items that went out in that deploy from Pending → Deployed, adding the deploy timestamp and (if you can get it via `aws ecs describe-services`) the ECS task-def revision. Keep the last ~20 Deployed entries for history, prune older ones.
   - **Single-session fast path:** if Pending contains only your own entry and nothing else is queued, the old "auto-deploy at end of session" behavior still applies — just confirm once with the user. The queue entry stays as the audit trail.
 - **Production and `main` must stay in sync.** Anything deployed to production must also be committed to `main`. If a session deploys changes (via `scripts/deploy-*.ps1`, `shopify app deploy`, or any infra/website push), the corresponding code changes must be committed in the same session — no "I'll commit it later." Conversely, if uncommitted work exists on disk that's already running in production, treat committing it as part of the current task before moving on.
-- **Production and `main` must stay in sync.** Anything deployed to production must also be committed to `main`. If a session deploys changes (via `scripts/deploy-*.ps1`, `shopify app deploy`, or any infra/website push), the corresponding code changes must be committed in the same session — no "I'll commit it later." Conversely, if uncommitted work exists on disk that's already running in production, treat committing it as part of the current task before moving on.
+- **Shell compatibility — Windows PowerShell 5.1.** The user's terminal and Claude's `PowerShell` tool both run in Windows PowerShell 5.1, which does not support `&&` / `||` pipeline-chain operators (parser error: *"O token '&&' não é um separador de instruções válido nesta versão"*). When sharing multi-step terminal commands or chaining inside the PowerShell tool, use `;` for unconditional sequencing or `command1; if ($?) { command2 }` for fail-fast chaining. One command per line is always safe. The Bash tool (POSIX) still accepts `&&` — only PowerShell breaks. Watch for this when copying example commands from documentation, GitHub READMEs, or other CLAUDE.md sections written in bash style.
 - Keep the app embedded and aligned with Shopify Admin UX.
 - Prefer Polaris web components for page and form structure.
 - **One top-level `<s-page>` per route.** No extra wrappers.
@@ -220,9 +227,47 @@ This app is judged against Shopify's official **App design** guidelines and the 
 
 ---
 
-## UI Patterns
+## Public Site (`cpg-labs.io`)
 
-Follow these conventions for all UI work. They implement the Shopify Design Compliance rules above with codebase-specific specs (CSS classes, file paths, component structure).
+Everything publicly reachable that isn't the embedded Shopify admin app. Lives in **`site/`**, ships as static HTML to S3 + CloudFront, never touches admin runtime. The wall is structural (different framework, different host, different deploy lane), not just a convention.
+
+### Scope
+- **Today:** marketing pages (`/`, `/about`, `/pricing`, `/contact`), legal (`/privacy`, `/terms`, `/security`), product walkthroughs (`/screencast`, `/preview`).
+- **Future (same surface, same wall):** blog, status page, public docs, release notes — anything served from `cpg-labs.io` that isn't the embedded admin app.
+- **NOT in scope:** anything that requires a Shopify session, a database write, a server runtime, or merchant-only content. Those live in admin.
+
+### Stack & hosting
+- **Framework:** [Astro 5](https://astro.build), static output (`output: "static"` in `astro.config.mjs`).
+- **Hosting:** AWS S3 + CloudFront (planned in Phase 2 of the marketing-admin split — currently Phase 1 builds the source only).
+- **Deploy:** `scripts/deploy.ps1 -App site` (planned). Deploy = `aws s3 sync site/dist s3://...` + CloudFront invalidation. No ECS, no Docker, no task-def.
+- **Local dev:** `cd site && npm install && npm run dev` (port 4321).
+
+### Wall rules (CI-enforced, do not work around)
+- **No imports from admin (`app/`).** Site code cannot read the Prisma client, Shopify SDK, encryption helpers, or anything else inside `app/`. Enforced by ESLint `no-restricted-imports` in the admin's `.eslintrc.cjs` and by structural separation (Astro doesn't see `app/` from inside `site/`).
+- **No banned dependencies.** `site/package.json` MUST NOT list `@shopify/*`, `@prisma/client`, `prisma`, `@anthropic-ai/*`, `googleapis`, `@google/maps`, or any `@cpg-labs/shared-*` server-only package. Enforced by `scripts/check-site-deps.ts`, wired into `npm run typecheck`.
+- **No backend logic.** Forms use `mailto:` links. If a future surface genuinely needs server I/O, the answer is either (a) add an API endpoint to admin and have the public page POST to it via CORS, or (b) use a third-party form processor (Formspree/Tally/Resend webhook). Either path requires explicit approval and a privacy-policy update.
+- **No shared global CSS with admin.** `site/src/styles/global.css` is loaded by `BaseLayout.astro` only. Admin has its own CSS. The legacy `:has(s-app-nav)` body-background override that scoped admin chrome inside the shared `app/styles/site-theme.css` is obsolete here — Astro never renders admin elements.
+
+### Conventions
+- **Pages:** `site/src/pages/<slug>.astro`. Pure-static pages should not need scripts; if interactivity is needed, prefer inline `<script>` in the `.astro` file over framework islands. The codebase doesn't pull React into the site bundle on purpose.
+- **Layout:** all pages render through `BaseLayout.astro`, which provides `<html>`, `<head>` (meta, OG, theme script), shared `<Nav>` and `<Footer>`. Pages with their own chrome (the homepage `/` and `/screencast`) pass `bareLayout={true}` to suppress the shared nav/footer.
+- **Styles:** scoped `<style>` blocks in each `.astro` file. Astro auto-scopes them. Reusable styles live in `site/src/styles/<name>.css` and are imported from layouts or specific pages (e.g. `legal.css` for privacy/terms).
+- **Theme:** light/dark via the `data-theme` attribute on `<html>`. Inline boot script in `BaseLayout.astro` reads `localStorage.theme` (or `prefers-color-scheme` on first visit) before paint. Theme persistence works through `ThemeToggle.astro`.
+- **Assets:** `site/public/` only — copied from `public/` at the repo root for files the site needs (`omnify_tree.png`, `cpg-labs_box.png`, favicons, `screencast.mp4`). Don't reference assets in `app/public/` from site pages.
+- **Content & copy:** the brand voice rules from "Shopify Design Compliance > Content & copy" apply here too — plain language, no idioms, no em dashes, bilingual-friendly. Action labels still verb + noun. No claims that overpromise.
+- **No tracking pixels / analytics scripts** without explicit approval. Anything that loads remote JS from a third party changes the privacy story; route the request through the privacy-policy update flow.
+
+### Out-of-scope for the public site
+- Polaris components and their conventions (admin only).
+- Shopify Design Compliance rules above (those govern admin chrome — Polaris save bar, `<s-app-nav>`, `<s-page>`, BFS requirements). The public site has its own visual language inspired by the corporate landing.
+- Translation / i18n via the `app/i18n/` directory (admin only). If the public site goes multilingual, it picks its own approach.
+
+### Adding a new page
+1. Create `site/src/pages/<slug>.astro`. Import `BaseLayout`, set `title` and `description` props.
+2. Use scoped `<style>` for page-specific styling. Reference `var(--site-text)`, `var(--site-bg)`, `var(--site-text-secondary)`, `var(--site-border)`, `var(--site-surface)` for theme-aware colors.
+3. Run `npm run dev` from `site/` to verify locally.
+4. `npm run build` to confirm static output writes cleanly to `site/dist/`.
+5. Phase-2 deploy: `scripts/deploy.ps1 -App site` will sync `site/dist` to S3 and invalidate CloudFront. Until Phase 2 lands, the page exists in source but isn't served.
 
 ### Design Validation (mockup-first)
 For any non-trivial UI refactor — charts, dashboards, new interaction patterns, anything where visual language matters — **always build an HTML mockup before touching production React code**. This is how the Retail Sales chart refactor and the Local Delivery tweaks landed smoothly: iterate on the visual in a throw-away HTML file, converge on the visual language with the user, THEN translate to components. The mockup is not optional.

@@ -3,3 +3,6 @@ build
 public/build
 */*.yml
 .shopify
+
+# Public site (cpg-labs.io) has its own toolchain — Astro, separate config.
+site
