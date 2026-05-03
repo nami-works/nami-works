@@ -49,20 +49,20 @@ variable "drift_alert_email" {
 }
 
 variable "drift_shared_target_groups" {
-  description = "Names of target groups that are shared across multiple services. The Lambda checks each for cross-cluster IP membership."
+  description = "Names of target groups whose IP membership the Lambda verifies for cross-cluster drift. `omnify-gebeauty-tg` was retired in Phase 6j (2026-04-29) along with the gebeauty path-based subpath app — not in the list anymore. `omnify-full-tg` is the CPG Labs full app's TG (added when module.full became canonical at app.cpg-labs.io)."
   type        = list(string)
-  default     = ["omnify-tg", "omnify-gebeauty-tg"]
+  default     = ["omnify-tg", "omnify-full-tg"]
 }
 
 variable "drift_monitored_services" {
-  description = "List of {cluster, service} tuples to monitor for task-def revision drift among their live targets."
+  description = "List of {cluster, service} tuples to monitor for task-def revision drift among their live targets. `omnify-gebeauty-service` was retired alongside the gebeauty app in Phase 6j."
   type = list(object({
     cluster = string
     service = string
   }))
   default = [
     { cluster = "cpg-labs", service = "omnify-service" },
-    { cluster = "cpg-labs", service = "omnify-gebeauty-service" },
+    { cluster = "cpg-labs", service = "omnify-full-service" },
   ]
 }
 

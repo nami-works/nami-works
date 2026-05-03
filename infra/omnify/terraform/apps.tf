@@ -1,50 +1,32 @@
-# Consolidated Shopify-app declarations — Phase 6 target state.
+# Consolidated Shopify-app declarations.
 #
-# Each module block is a full app: ECS service, task def, target group, listener
-# rule, log group, SSM. The structure lives exactly once in
-# modules/shopify-app/main.tf.
+# `module "full"` is the canonical home for the CPG Labs full app at
+# app.cpg-labs.io. It uses `modules/shopify-app/main.tf` for ECS service,
+# task def, target group, listener rule, log group, and SSM parameters.
 #
-# Coexists with ecs.tf + gebeauty.tf + storytelling.tf until the main session
-# runs `terraform state mv` to re-anchor live resources onto these module
-# addresses, at which point the hand-rolled files are deleted.
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Omnify — focused delivery app at omnify.cpg-labs.io
-# Marketing site (www.cpg-labs.io) piggybacks on this service via host-aware
-# dispatch in app/routes/_site.*.tsx. Second listener rule at priority 21.
-# ─────────────────────────────────────────────────────────────────────────────
-
-module "omnify" {
-  source = "./modules/shopify-app"
-
-  app_name           = "omnify"
-  domain             = "omnify.cpg-labs.io"
-  additional_domains = ["www.cpg-labs.io"]
-  app_identity       = "omnify"
-
-  shopify_api_key    = var.shopify_api_key
-  shopify_api_secret = var.shopify_api_secret
-  database_url       = local.database_url
-  shopify_scopes     = var.shopify_scopes_omnify
-  image_tag          = var.image_tag_omnify
-
-  # Shared infra references
-  name_prefix            = local.name_prefix
-  ecs_cluster_id         = aws_ecs_cluster.app.id
-  ecr_repository_url     = aws_ecr_repository.app.repository_url
-  execution_role_arn     = var.create_iam ? aws_iam_role.ecs_execution[0].arn : var.execution_role_arn
-  task_role_arn          = var.create_iam ? aws_iam_role.ecs_task[0].arn : var.task_role_arn
-  vpc_id                 = data.aws_vpc.default.id
-  subnet_ids             = data.aws_subnets.default.ids
-  security_group_id      = aws_security_group.ecs.id
-  alb_listener_arn       = aws_lb_listener.https.arn
-  listener_rule_priority = 20
-  aws_region             = var.aws_region
-  create_ssm             = var.create_ssm
-  ssm_prefix             = local.ssm_prefix
-  database_url_ssm_arn   = var.create_ssm ? aws_ssm_parameter.database_url[0].arn : ""
-}
-
+# ── Why the legacy Omnify app is NOT consolidated into this file ─────────────
+# An earlier note here said "Coexists with ecs.tf + gebeauty.tf + storytelling.tf
+# until the main session runs `terraform state mv` to re-anchor live resources
+# onto these module addresses, at which point the hand-rolled files are
+# deleted." That plan worked for `module "full"` (net-new app at a new
+# hostname — no migration needed) but does NOT work for Omnify because the
+# module's naming convention `${name_prefix}-${app_name}-*` would produce:
+#   omnify-tg          → omnify-omnify-tg
+#   omnify-task        → omnify-omnify-task
+#   omnify-service     → omnify-omnify-service
+#   /omnify/SHOPIFY_*  → /omnify/OMNIFY_SHOPIFY_*
+#   /ecs/omnify        → /ecs/omnify-omnify
+# All of those names are immutable AWS primary identifiers — you can't
+# rename a target group, an ECS service, or an SSM parameter; you destroy
+# and recreate. That would mean Omnify service downtime + a window where
+# omnify.cpg-labs.io has no listener rule. Not worth it.
+#
+# Decision (2026-05-02): legacy `ecs.tf` + `alb.tf` are the canonical home
+# for the Omnify app. They use the names that match production. The
+# `module "omnify"` block was removed from this file alongside that decision.
+# Phase-6-style consolidation for Omnify would need a parameterized module
+# (e.g. an optional `name_override` variable) AND a coordinated downtime
+# migration; both are out of scope for the marketing-admin split work.
 # ─────────────────────────────────────────────────────────────────────────────
 # CPG Labs full — full feature set at app.cpg-labs.io
 # Dedicated hostname kills BASE_PATH entirely; the whole /full/full/ bug class

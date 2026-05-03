@@ -149,6 +149,11 @@ resource "aws_ecs_service" "app" {
   desired_count   = 1
   launch_type     = "FARGATE"
 
+  # AZ rebalancing is enabled in production (set via the AWS console or by a
+  # past deploy). Match reality so terraform doesn't keep wanting to disable
+  # it on every plan.
+  availability_zone_rebalancing = "ENABLED"
+
   network_configuration {
     subnets          = data.aws_subnets.default.ids
     security_groups  = [aws_security_group.ecs.id]
@@ -159,6 +164,18 @@ resource "aws_ecs_service" "app" {
     target_group_arn = aws_lb_target_group.app.arn
     container_name   = local.container_name
     container_port   = var.app_port
+  }
+
+  # The deploy script (`scripts/deploy.ps1 -App omnify`) registers new task-
+  # definition revisions and updates the service to use them. Terraform's
+  # state freezes at whatever revision was current when terraform last
+  # applied — which can be many revisions behind production. Without this
+  # lifecycle ignore, a `terraform apply` would silently roll the running
+  # service BACK to the stale revision in state, blowing away weeks of
+  # deploys. Same pattern as `aws_ecs_task_definition.app`'s ignore on
+  # `container_definitions` — the deploy script owns these fields.
+  lifecycle {
+    ignore_changes = [task_definition]
   }
 
   depends_on = [aws_lb_listener.https]

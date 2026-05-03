@@ -179,5 +179,17 @@ resource "aws_ecs_service" "app" {
     container_port   = var.app_port
   }
 
+  # The deploy script (`scripts/deploy.ps1 -App <key>`) registers new task-
+  # definition revisions and points the service at them. Terraform's state
+  # freezes at whatever revision was current when terraform last applied,
+  # which can be many revisions behind production. Without this lifecycle
+  # ignore, a `terraform apply` would silently roll the running service
+  # BACK to the stale revision in state, blowing away weeks of deploys.
+  # Same pattern as `aws_ecs_task_definition.app`'s `ignore_changes =
+  # [container_definitions]` — the deploy script owns these fields.
+  lifecycle {
+    ignore_changes = [task_definition]
+  }
+
   depends_on = [aws_lb_listener_rule.app]
 }
