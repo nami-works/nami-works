@@ -300,8 +300,18 @@ with open(os.environ['CPG_TMP_JSON'], 'w', encoding='utf-8') as f:
   }
 
   # ── post-deploy guard: single revision in TG ────────────────────────────────
-  if ($guardsLoaded -and (Get-Command Assert-SingleTaskDefInTargetGroup -ErrorAction SilentlyContinue)) {
-    Assert-SingleTaskDefInTargetGroup -Cluster $CanonicalCluster -Service $service -Region $Region
+  # Resolve the TG ARN from the service once, then pass it to the assertion +
+  # the cleanup. The assertion's signature requires -TargetGroupArn (we used
+  # to call it with -Service and the script silently aborted at this line on
+  # every deploy, skipping Cleanup-StaleTargets — the very routine that
+  # catches the ALB-zombie footgun documented in handover-cpglabs-website.md).
+  $postDeployTgArn = aws ecs describe-services --cluster $CanonicalCluster --services $service --region $Region --query "services[0].loadBalancers[0].targetGroupArn" --output text 2>$null
+  if ($postDeployTgArn -and $postDeployTgArn -ne "None") {
+    if ($guardsLoaded -and (Get-Command Assert-SingleTaskDefInTargetGroup -ErrorAction SilentlyContinue)) {
+      Assert-SingleTaskDefInTargetGroup -TargetGroupArn $postDeployTgArn -Cluster $CanonicalCluster -Region $Region
+    }
+  } else {
+    Write-Host "[guards] Post-deploy: no target group attached to service -- skipping single-revision assertion."
   }
 
   Cleanup-StaleTargets -ClusterName $CanonicalCluster -ServiceName $service -RegionName $Region
