@@ -1,6 +1,11 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 
-import "./styles/site-theme.css";
+// No global stylesheet on the admin root: Polaris + App Bridge paint the
+// embedded admin chrome (background, typography, spacing). Anything we set on
+// `html`/`body` here would leak into the embedded iframe and compete with
+// Shopify's chrome — exactly what the old `site-theme.css` (deleted in Phase 3
+// of the marketing-admin split) did. The marketing site lives in `site/` now
+// and has its own scoped global.css.
 
 export default function App() {
   return (
@@ -27,12 +32,6 @@ export default function App() {
                 visibility: hidden;
               }
             `,
-          }}
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "(function(){var t=localStorage.getItem('theme');if(!t){t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t)})()",
           }}
         />
       </head>

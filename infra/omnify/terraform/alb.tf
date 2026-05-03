@@ -38,52 +38,15 @@ resource "aws_lb_listener" "https" {
   }
 }
 
-# ── cpg-labs.io marketing website routing ──
-
-# Additional SSL cert for apex domain (only if provided)
-resource "aws_lb_listener_certificate" "site" {
-  count           = var.site_certificate_arn != "" ? 1 : 0
-  listener_arn    = aws_lb_listener.https.arn
-  certificate_arn = var.site_certificate_arn
-}
-
-# Route www.cpg-labs.io → omnify target group (same app serves public routes)
-resource "aws_lb_listener_rule" "site_root" {
-  count        = var.site_certificate_arn != "" ? 1 : 0
-  listener_arn = aws_lb_listener.https.arn
-  priority     = 3
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.app.arn
-  }
-
-  condition {
-    host_header {
-      values = ["www.cpg-labs.io"]
-    }
-  }
-}
-
-# Redirect cpg-labs.io → www.cpg-labs.io (301)
-resource "aws_lb_listener_rule" "site_www_redirect" {
-  count        = var.site_certificate_arn != "" ? 1 : 0
-  listener_arn = aws_lb_listener.https.arn
-  priority     = 2
-
-  action {
-    type = "redirect"
-    redirect {
-      host        = "www.cpg-labs.io"
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
-    }
-  }
-
-  condition {
-    host_header {
-      values = ["cpg-labs.io"]
-    }
-  }
-}
+# cpg-labs.io marketing website routing — RETIRED 2026-05-02 (Phase 3 of the
+# marketing-admin split). The public site now serves from S3 + CloudFront via
+# infra/terraform/site.tf. DNS for www.cpg-labs.io was repointed at GoDaddy
+# from `omnify-alb-2060949013...` to `d1cuwnxki4q9wr.cloudfront.net`.
+#
+# What used to live here:
+#   - aws_lb_listener_certificate.site (cert attached to ALB for cpg-labs.io)
+#   - aws_lb_listener_rule.site_root (www.cpg-labs.io -> omnify target group)
+#   - aws_lb_listener_rule.site_www_redirect (cpg-labs.io 301 -> www)
+# All three are gone alongside the admin-side _site.* / _index/ marketing
+# routes deleted in this same commit. The ACM cert itself (588d00ef-...)
+# remains in ACM and is now consumed by aws_cloudfront_distribution.site.
