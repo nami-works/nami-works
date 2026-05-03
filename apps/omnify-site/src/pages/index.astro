@@ -75,10 +75,11 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
         <div class="productsStack">
           <article class="productCard productCardFeatured">
+            <img class="productLogo productLogoOmnify" src="/omnify_map.png" alt="" />
             <div>
               <div class="productHeader">
                 <h3 class="productName">Omnify</h3>
-                <span class="productBadge productBadgeLive">Available</span>
+                <span class="productBadge productBadgeLive">coming soon</span>
               </div>
               <p class="productTagline">
                 Local delivery, retail sales, footprint planning.
@@ -183,6 +184,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           </article>
 
           <article class="productCard storefrontCard">
+            <img class="productLogo productLogoStorefront" src="/storefront_window.png" alt="" />
             <div class="productVisual">
               <div class="storefrontVisual" role="img" aria-label="Storefront preview, a merchandising canvas with price tag badges">
                 <div class="storefrontTile"></div>
@@ -193,7 +195,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
             <div>
               <div class="productHeader">
                 <h3 class="productName">Storefront</h3>
-                <span class="productBadge productBadgeWip">Coming soon</span>
+                <span class="productBadge productBadgeWip">later this year</span>
               </div>
               <p class="productTagline">
                 Merchandising, sale campaigns, price tags.
@@ -552,8 +554,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   .productsStack {
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    margin-top: 12px;
+    gap: 56px;
+    margin-top: 24px;
   }
   .productCard {
     background: var(--card);
@@ -561,42 +563,54 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     border-radius: 16px;
     padding: 24px;
     position: relative;
-    overflow: hidden;
+    /* overflow: visible — floating logos extend past the card edge */
   }
-  .productCardFeatured::before {
-    content: "";
+  /* Featured-card holo glow removed: it was competing with the new floating
+     logo's drop-shadow + radial halo. The logo now carries the card's visual
+     accent. */
+  .productCard > *:not(.productLogo) { position: relative; z-index: 1; }
+
+  /* Floating product logo. Bleeds outside the card box, anchored to the
+     card via position: absolute. Drop-shadow + holo halo make it read as
+     hovering, not pasted on. */
+  .productLogo {
     position: absolute;
-    top: -20%;
-    right: -15%;
-    width: 50%;
-    height: 120%;
-    background: radial-gradient(ellipse at center, color-mix(in srgb, var(--holo-1) 14%, transparent), transparent 65%);
-    filter: blur(60px);
-    pointer-events: none;
-    z-index: 0;
+    top: -28px;
+    left: -24px;
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    z-index: 2;
+    filter:
+      drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55))
+      drop-shadow(0 0 24px color-mix(in srgb, var(--holo-2) 25%, transparent));
+    transition: transform 220ms ease;
   }
-  .productCard > * { position: relative; z-index: 1; }
+  .productLogo:hover { transform: translateY(-3px) scale(1.02); }
+
   .productHeader {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 6px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 10px;
   }
   .productName {
     font-size: 22px;
     font-weight: 700;
     letter-spacing: -0.01em;
     margin: 0;
+    line-height: 1.1;
   }
   .productBadge {
     display: inline-flex;
     align-items: center;
-    padding: 3px 9px;
+    padding: 3px 10px;
     border-radius: 99px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    letter-spacing: 0;
+    text-transform: none;
   }
   .productBadgeLive {
     background: color-mix(in srgb, var(--holo-1) 18%, transparent);
@@ -1043,7 +1057,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     }
     .heroVisualImg { max-width: 360px; margin: 0 auto; }
 
-    .productsStack { gap: 32px; }
+    .productsStack { gap: 64px; }
     .productCard { padding: 32px; }
     .productCardFeatured {
       display: grid;
@@ -1061,6 +1075,20 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     .appShotWorkspace {
       display: grid;
       grid-template-columns: 1fr 170px;
+    }
+
+    /* Desktop: Omnify card has the floating logo at top-left of card,
+       overlapping the text column — header needs left padding to clear it.
+       Storefront card lays the visual in column 1 and text in column 2,
+       so the logo (anchored to the card's top-left) sits OVER the visual,
+       not the text — header doesn't need padding. */
+    .productCardFeatured .productHeader {
+      padding-left: 84px;
+      min-height: 76px;
+      justify-content: center;
+    }
+    .storefrontCard .productHeader {
+      padding-left: 0;
     }
 
     .storefrontCard {
@@ -1086,9 +1114,27 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     }
   }
 
+  /* Mobile: smaller floating logo, smaller offsets, header padded to clear it.
+     Mobile lays both cards as a vertical stack; logo always anchors top-left
+     of the card and content begins below/right of it. */
+  @media (max-width: 759px) {
+    .productLogo {
+      top: -22px;
+      left: -14px;
+      width: 68px;
+      height: 68px;
+    }
+    .productHeader {
+      padding-left: 64px;
+      min-height: 50px;
+      justify-content: center;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .heroHolo { animation: none; }
     .heroVisualImg { animation: none; }
+    .productLogo { transition: none; }
     .root :global(*) { transition-duration: 0.01ms !important; }
   }
 </style>

@@ -165,6 +165,25 @@ resource "aws_cloudfront_response_headers_policy" "site" {
   }
 }
 
+# ── CloudFront Function: clean-URL rewriting (viewer-request) ────────────────
+# Astro builds with `build.format: "file"` produce flat `.html` files
+# (`/about.html`, `/pricing.html`, etc.) but the site uses extension-less
+# links (`/about`, `/pricing`). Without a rewriter, every clean URL 404s
+# from S3. This function appends `.html` to extension-less paths and
+# `index.html` to trailing-slash paths.
+#
+# The wall-closure deploy on 2026-05-03 exposed this latent issue: the
+# admin app's `_site.*` routes were masking it by serving the same paths
+# from the embedded ECS app. Once those routes were deleted, the bare-S3
+# 404 surfaced. Function lives at cloudfront-functions/site-url-rewrite.js.
+resource "aws_cloudfront_function" "site_url_rewrite" {
+  name    = "cpg-labs-site-url-rewrite"
+  runtime = "cloudfront-js-2.0"
+  comment = "Rewrite clean URLs to .html / index.html for static-site S3 origin"
+  publish = true
+  code    = file("${path.module}/cloudfront-functions/site-url-rewrite.js")
+}
+
 # ── CloudFront distribution ──────────────────────────────────────────────────
 resource "aws_cloudfront_distribution" "site" {
   enabled             = true
@@ -192,13 +211,14 @@ resource "aws_cloudfront_distribution" "site" {
     # AWS-managed CachingOptimized policy — sensible defaults for static sites.
     cache_policy_id            = "658327ea-f89d-4fab-a63d-7e88639e58f6"
     response_headers_policy_id = aws_cloudfront_response_headers_policy.site.id
-  }
 
-  # Astro `output: "static"` with `build.format: "file"` writes /about.html etc.
-  # CloudFront's S3 origin doesn't auto-rewrite /about → /about.html, so we
-  # rely on our `astro.config.mjs` `trailingSlash: "never"` and let pages
-  # be reached at .html. If we ever want extension-less URLs, swap to a
-  # CloudFront Function that appends `.html` for non-asset paths.
+    # Rewrite clean URLs (/about) → .html (/about.html) at the edge so the
+    # S3 origin can resolve them. See aws_cloudfront_function.site_url_rewrite.
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.site_url_rewrite.arn
+    }
+  }
 
   custom_error_response {
     error_code            = 403
