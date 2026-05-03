@@ -278,6 +278,12 @@ model LalamoveDispatchJob {
   /// Snapshot of order stops at dispatch time so escalation reorder does not depend on PendingDeliveryRoute.
   /// Shape: Array<{ shopifyOrderId: string; lat: number; lng: number; address: string; name: string; phone: string }>
   ordersData        Json?
+  /// Per-stop POD bucket: clean | mixed | held | skip. Set by handleMarkDelivered.
+  podBucket         String?
+  /// True when shopifyFulfilled !== deliveredEventsCreated on the last mark-delivered run.
+  partialDelivery   Boolean  @default(false)
+  /// Timestamp of the last podBucket update.
+  lastBucketingAt   DateTime?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -293,6 +299,10 @@ model LalamoveDispatchOrderMap {
   lalamoveOrderId   String?
   currentStatus     String?
   failureReason     String?
+  /// Per-stop outcome from POD bucketing: DELIVERED | FAILED | PENDING | MISSING.
+  stopOutcome       String?
+  /// Reason text when stopOutcome is FAILED.
+  stopFailureReason String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 

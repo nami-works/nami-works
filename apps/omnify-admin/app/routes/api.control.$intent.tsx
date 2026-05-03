@@ -56,6 +56,16 @@ import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-r
 import { clusterOrders } from "../services/carrier-quotation-optimizer.server";
 import { addTags, renameRouteTagsToArchive } from "../services/lalamove-sync.server";
 import type { OptimizerOrderInput } from "../services/google-routes-shared.server";
+import {
+  summarizeRoutePOD,
+  bucketRouteForFulfillment,
+  REDELIVERY_TAG,
+  type RouteBucket,
+  type StopSummary,
+  type LalamoveStop,
+  type DispatchOrderSnapshot,
+  type DispatchOrderMapRow,
+} from "../services/pod-bucketing.server";
 
 const MAX_ROUTE_SLOTS = 20;
 const TERMINAL_DISPATCH_STATUSES = new Set(["COMPLETED", "CANCELED", "REJECTED", "EXPIRED"]);
@@ -341,6 +351,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       return handleReorder(auth.shop, body);
     case "mark-delivered":
       return handleMarkDelivered(auth.shop, body);
+    case "mark-stop-delivered":
+      return handleMarkStopDelivered(auth.shop, body);
     case "mark-all-today":
       return handleMarkAllToday(auth.shop, body);
     case "quote":
@@ -1178,6 +1190,361 @@ async function handleReorder(shop: string, body: Record<string, unknown>): Promi
 // shows up after the fact.
 // ──────────────────────────────────────────────────────────────────────
 
+// ──────────────────────────────────────────────────────────────────────
+// Fulfillment + DELIVERED-event helpers (issue #1, blueprint §13.8)
+// ──────────────────────────────────────────────────────────────────────
+
+/** Minimal shape we need from the Shopify admin client. */
+type ShopifyAdminClient = {
+  graphql: (
+    query: string,
+    options?: { variables?: Record<string, unknown> },
+  ) => Promise<{ json: () => Promise<unknown> }>;
+};
+
+type InspectResult = {
+  existingFulfillments: Array<{ id: string; status: string | null; displayStatus: string | null }>;
+  openFulfillmentOrders: Array<{ id: string; status: string | null; locationId: string | null }>;
+};
+
+type UserError = { field?: unknown; message?: string };
+type FulfillmentNode = { id?: string; status?: string | null; displayStatus?: string | null };
+type FulfillmentOrderNode = {
+  id?: string;
+  status?: string | null;
+  assignedLocation?: { location?: { id?: string | null } | null } | null;
+};
+
+async function inspectOrderForFulfillment(
+  admin: ShopifyAdminClient,
+  shopifyOrderId: string,
+): Promise<InspectResult> {
+  const inspect = await admin.graphql(
+    `#graphql
+      query ControlInspectOrder($id: ID!) {
+        order(id: $id) {
+          fulfillments(first: 20) { id status displayStatus }
+          fulfillmentOrders(first: 20) {
+            nodes {
+              id status
+              assignedLocation { location { id } }
+            }
+          }
+        }
+      }`,
+    { variables: { id: shopifyOrderId } },
+  );
+  const json = (await inspect.json()) as {
+    data?: {
+      order?: {
+        fulfillments?: FulfillmentNode[];
+        fulfillmentOrders?: { nodes?: FulfillmentOrderNode[] };
+      };
+    };
+  };
+  const existingFulfillments = (json?.data?.order?.fulfillments ?? []).map((f) => ({
+    id: f.id ?? "",
+    status: f?.status ?? null,
+    displayStatus: f?.displayStatus ?? null,
+  }));
+  const openFulfillmentOrders = (json?.data?.order?.fulfillmentOrders?.nodes ?? []).map((n) => ({
+    id: n.id ?? "",
+    status: n?.status ?? null,
+    locationId: n?.assignedLocation?.location?.id ?? null,
+  }));
+  return { existingFulfillments, openFulfillmentOrders };
+}
+
+async function fireFulfillmentEvent(
+  admin: ShopifyAdminClient,
+  fulfillmentId: string,
+  status: "IN_TRANSIT" | "OUT_FOR_DELIVERY" | "DELIVERED",
+): Promise<{ ok: boolean; reason: string | null }> {
+  try {
+    const resp = await admin.graphql(
+      `#graphql
+        mutation ControlFulfillmentEvent($fulfillmentId: ID!, $status: FulfillmentEventStatus!) {
+          fulfillmentEventCreate(fulfillmentEvent: { fulfillmentId: $fulfillmentId, status: $status }) {
+            fulfillmentEvent { id status }
+            userErrors { field message }
+          }
+        }`,
+      { variables: { fulfillmentId, status } },
+    );
+    const json = (await resp.json()) as {
+      data?: { fulfillmentEventCreate?: { userErrors?: UserError[] } };
+    };
+    const errs = json?.data?.fulfillmentEventCreate?.userErrors ?? [];
+    if (errs.length > 0) {
+      return {
+        ok: false,
+        reason: errs.map((e) => e.message ?? "unknown").join("; "),
+      };
+    }
+    return { ok: true, reason: null };
+  } catch (err) {
+    return { ok: false, reason: err instanceof Error ? err.message : String(err) };
+  }
+}
+
+async function readFulfillmentDisplayStatus(
+  admin: ShopifyAdminClient,
+  fulfillmentId: string,
+): Promise<string | null> {
+  try {
+    const resp = await admin.graphql(
+      `#graphql
+        query ControlReadFulfillment($id: ID!) {
+          fulfillment(id: $id) { id status displayStatus }
+        }`,
+      { variables: { id: fulfillmentId } },
+    );
+    const json = (await resp.json()) as {
+      data?: { fulfillment?: { displayStatus?: string | null } };
+    };
+    return json?.data?.fulfillment?.displayStatus ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fire a DELIVERED event, then re-query displayStatus. If Shopify hasn't
+ * promoted the fulfillment to DELIVERED, run the explicit chain
+ *   IN_TRANSIT → OUT_FOR_DELIVERY → DELIVERED
+ * once. Synchronous in the same request — only kicks in on the rare
+ * degenerate path where the initial event didn't promote.
+ */
+async function deliverWithVerification(
+  admin: ShopifyAdminClient,
+  fulfillmentId: string,
+): Promise<{ deliveredEvent: boolean; finalDisplayStatus: string | null; reason: string | null }> {
+  const first = await fireFulfillmentEvent(admin, fulfillmentId, "DELIVERED");
+  if (!first.ok) {
+    return { deliveredEvent: false, finalDisplayStatus: null, reason: first.reason };
+  }
+  const status1 = await readFulfillmentDisplayStatus(admin, fulfillmentId);
+  if (status1 === "DELIVERED") {
+    return { deliveredEvent: true, finalDisplayStatus: status1, reason: null };
+  }
+
+  // Retry chain — explicit chronology helps when prior event history is empty.
+  const inTransit = await fireFulfillmentEvent(admin, fulfillmentId, "IN_TRANSIT");
+  const outForDelivery = await fireFulfillmentEvent(admin, fulfillmentId, "OUT_FOR_DELIVERY");
+  const deliveredAgain = await fireFulfillmentEvent(admin, fulfillmentId, "DELIVERED");
+  const status2 = await readFulfillmentDisplayStatus(admin, fulfillmentId);
+
+  const chainOk = inTransit.ok && outForDelivery.ok && deliveredAgain.ok;
+  return {
+    deliveredEvent: chainOk,
+    finalDisplayStatus: status2,
+    reason:
+      status2 === "DELIVERED"
+        ? null
+        : `displayStatus=${status2 ?? "null"} after retry chain`,
+  };
+}
+
+type FulfillResult = {
+  ok: boolean;
+  fulfillmentCreated: boolean;
+  fulfillmentId: string | null;
+  deliveredEventCreated: boolean;
+  finalDisplayStatus: string | null;
+  alreadyDelivered: boolean;
+  reason: string | null;
+};
+
+async function fulfillOrderWithVerification(args: {
+  admin: ShopifyAdminClient;
+  shopifyOrderId: string;
+  locationGid: string;
+  trackingNumber: string | null;
+  notifyCustomer: boolean;
+}): Promise<FulfillResult> {
+  const { admin, shopifyOrderId, locationGid, trackingNumber, notifyCustomer } = args;
+  const inspect = await inspectOrderForFulfillment(admin, shopifyOrderId);
+
+  // Already delivered? — short-circuit, idempotent.
+  const alreadyDelivered = inspect.existingFulfillments.some(
+    (f) => f.displayStatus === "DELIVERED",
+  );
+  if (alreadyDelivered) {
+    return {
+      ok: true,
+      fulfillmentCreated: false,
+      fulfillmentId: inspect.existingFulfillments.find((f) => f.displayStatus === "DELIVERED")?.id ?? null,
+      deliveredEventCreated: false,
+      finalDisplayStatus: "DELIVERED",
+      alreadyDelivered: true,
+      reason: null,
+    };
+  }
+
+  // Existing non-cancelled fulfillment? — push DELIVERED event on each.
+  const reusableFulfillments = inspect.existingFulfillments.filter(
+    (f) => f.status && f.status !== "CANCELLED",
+  );
+  if (reusableFulfillments.length > 0) {
+    let lastVerify: { deliveredEvent: boolean; finalDisplayStatus: string | null; reason: string | null } = {
+      deliveredEvent: false,
+      finalDisplayStatus: null,
+      reason: "no fulfillments processed",
+    };
+    for (const f of reusableFulfillments) {
+      lastVerify = await deliverWithVerification(admin, f.id);
+    }
+    const lastFulfillmentId = reusableFulfillments[reusableFulfillments.length - 1]!.id;
+    return {
+      ok: lastVerify.finalDisplayStatus === "DELIVERED",
+      fulfillmentCreated: false,
+      fulfillmentId: lastFulfillmentId,
+      deliveredEventCreated: lastVerify.deliveredEvent,
+      finalDisplayStatus: lastVerify.finalDisplayStatus,
+      alreadyDelivered: false,
+      reason: lastVerify.reason,
+    };
+  }
+
+  // No existing fulfillment — create one against open fulfillment orders at this location.
+  const openFOs = inspect.openFulfillmentOrders.filter(
+    (n) => (n.status === "OPEN" || n.status === "IN_PROGRESS") && n.locationId === locationGid,
+  );
+  if (openFOs.length === 0) {
+    return {
+      ok: false,
+      fulfillmentCreated: false,
+      fulfillmentId: null,
+      deliveredEventCreated: false,
+      finalDisplayStatus: null,
+      alreadyDelivered: false,
+      reason: "no fulfillments and no open fulfillment orders at this location",
+    };
+  }
+
+  const createResp = await admin.graphql(
+    `#graphql
+      mutation ControlFulfillCreate($fulfillment: FulfillmentV2Input!) {
+        fulfillmentCreateV2(fulfillment: $fulfillment) {
+          fulfillment { id status }
+          userErrors { field message }
+        }
+      }`,
+    {
+      variables: {
+        fulfillment: {
+          lineItemsByFulfillmentOrder: openFOs.map((n) => ({ fulfillmentOrderId: n.id })),
+          notifyCustomer,
+          trackingInfo: trackingNumber ? { company: "Lalamove", number: trackingNumber } : undefined,
+        },
+      },
+    },
+  );
+  const createJson = (await createResp.json()) as {
+    data?: {
+      fulfillmentCreateV2?: {
+        fulfillment?: { id?: string | null };
+        userErrors?: UserError[];
+      };
+    };
+  };
+  const userErrors = createJson?.data?.fulfillmentCreateV2?.userErrors ?? [];
+  const fulfillmentId = createJson?.data?.fulfillmentCreateV2?.fulfillment?.id ?? null;
+  if (userErrors.length > 0) {
+    return {
+      ok: false,
+      fulfillmentCreated: false,
+      fulfillmentId: null,
+      deliveredEventCreated: false,
+      finalDisplayStatus: null,
+      alreadyDelivered: false,
+      reason: userErrors.map((e) => e.message ?? "unknown").join("; "),
+    };
+  }
+  if (!fulfillmentId) {
+    return {
+      ok: false,
+      fulfillmentCreated: false,
+      fulfillmentId: null,
+      deliveredEventCreated: false,
+      finalDisplayStatus: null,
+      alreadyDelivered: false,
+      reason: "no fulfillment returned",
+    };
+  }
+
+  const verify = await deliverWithVerification(admin, fulfillmentId);
+  return {
+    ok: verify.finalDisplayStatus === "DELIVERED",
+    fulfillmentCreated: true,
+    fulfillmentId,
+    deliveredEventCreated: verify.deliveredEvent,
+    finalDisplayStatus: verify.finalDisplayStatus,
+    alreadyDelivered: false,
+    reason: verify.reason,
+  };
+}
+
+async function tagOrderForRedelivery(
+  admin: ShopifyAdminClient,
+  shopifyOrderId: string,
+): Promise<{ ok: boolean; reason: string | null }> {
+  try {
+    const resp = await admin.graphql(
+      `#graphql
+        mutation ControlTagRedelivery($id: ID!, $tags: [String!]!) {
+          tagsAdd(id: $id, tags: $tags) {
+            userErrors { field message }
+          }
+        }`,
+      { variables: { id: shopifyOrderId, tags: [REDELIVERY_TAG] } },
+    );
+    const json = (await resp.json()) as {
+      data?: { tagsAdd?: { userErrors?: UserError[] } };
+    };
+    const errs = json?.data?.tagsAdd?.userErrors ?? [];
+    if (errs.length > 0) {
+      return { ok: false, reason: errs.map((e) => e.message ?? "unknown").join("; ") };
+    }
+    return { ok: true, reason: null };
+  } catch (err) {
+    return { ok: false, reason: err instanceof Error ? err.message : String(err) };
+  }
+}
+
+async function persistBucketingResults(args: {
+  shop: string;
+  jobId: string;
+  bucket: RouteBucket;
+  partialDelivery: boolean;
+  summary: StopSummary[];
+}): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- matches the file-wide pattern for Prisma untyped models
+  const prismaAny = prisma as any;
+  try {
+    await prismaAny.lalamoveDispatchJob.update({
+      where: { id: args.jobId },
+      data: {
+        podBucket: args.bucket,
+        partialDelivery: args.partialDelivery,
+        lastBucketingAt: new Date(),
+      },
+    });
+    for (const stop of args.summary) {
+      if (!stop.orderId) continue;
+      await prismaAny.lalamoveDispatchOrderMap.updateMany({
+        where: { shop: args.shop, dispatchJobId: args.jobId, shopifyOrderId: stop.orderId },
+        data: {
+          stopOutcome: stop.outcome,
+          stopFailureReason: stop.failureReason,
+        },
+      });
+    }
+  } catch (err) {
+    console.warn(`[control] persist bucketing FAILED job=${args.jobId}`, err);
+  }
+}
+
 async function handleMarkDelivered(shop: string, body: Record<string, unknown>): Promise<Response> {
   const locationIdRaw = typeof body.locationId === "string" ? body.locationId : null;
   const routeIndexRaw = body.routeIndex;
@@ -1248,18 +1615,47 @@ async function handleMarkDelivered(shop: string, body: Record<string, unknown>):
       }
     }
 
-    // 3. Archive route tags on all mapped orders (ld_rota-NN → ld_rota-NN_YY.MM.DD)
-    //    Skipped when archiveTags=false (Phase B: fulfill-route after close-route
-    //    already archived them).
+    // 3. Load order maps + ordersData snapshot for stop-to-order matching.
     const orderMaps = await prismaAny.lalamoveDispatchOrderMap.findMany({
       where: { shop, dispatchJobId: job.id },
-      select: { shopifyOrderId: true },
+      select: {
+        shopifyOrderId: true,
+        currentStatus: true,
+        failureReason: true,
+      },
     });
     const orderIds = (orderMaps as Array<{ shopifyOrderId: string }>).map((m) => m.shopifyOrderId);
+    const ordersData: DispatchOrderSnapshot[] = Array.isArray(job.ordersData)
+      ? (job.ordersData as DispatchOrderSnapshot[])
+      : [];
 
-    // Archive tag reflects the dispatch/delivery date (job.requestedAt) in
-    // Brazil local time, not the date mark-delivered was called. Otherwise
-    // an end-of-day sweep that crosses UTC midnight tags with the wrong day.
+    // 4. Fetch live Lalamove stops + POD (best-effort; bucketing tolerates empty).
+    let lalamoveStops: LalamoveStop[] = [];
+    try {
+      const credentials = await getRuntimeCredentialsForShop(shop);
+      if (credentials && job.lalamoveOrderId) {
+        const details = await getLalamoveOrderDetails(job.market, job.lalamoveOrderId, credentials);
+        lalamoveStops = (details.stops ?? []) as LalamoveStop[];
+      }
+    } catch (err) {
+      console.warn(
+        `[control] mark-delivered: stop fetch failed lalamove=${job.lalamoveOrderId}`,
+        err instanceof Error ? err.message : String(err),
+      );
+    }
+
+    // 5. Bucket the route per per-stop POD outcomes.
+    const summary = summarizeRoutePOD(
+      lalamoveStops,
+      ordersData,
+      orderMaps as DispatchOrderMapRow[],
+    );
+    const decision = bucketRouteForFulfillment(summary);
+
+    console.info(
+      `[control] mark-delivered bucket=${decision.bucket} shop=${shop} route=${routeId} stops=${lalamoveStops.length} fulfill=${decision.ordersToFulfill.length} redeliver=${decision.ordersToRedeliver.length} unmatched=${decision.unmatchedStopIndexes.length}`,
+    );
+
     const isoBrt = new Intl.DateTimeFormat("en-CA", {
       timeZone: "America/Sao_Paulo",
       year: "numeric",
@@ -1270,6 +1666,58 @@ async function handleMarkDelivered(shop: string, body: Record<string, unknown>):
     const dateStr = `${yy!.slice(-2)}.${mm}.${dd}`;
 
     const { admin } = await unauthenticated.admin(shop);
+
+    // 6. Held / skip — persist bucket and bail out before any Shopify writes.
+    if (decision.bucket === "held") {
+      await persistBucketingResults({
+        shop,
+        jobId: job.id,
+        bucket: decision.bucket,
+        partialDelivery: false,
+        summary,
+      });
+      console.info(
+        `[control] mark-delivered HOLD shop=${shop} route=${routeId} pending=${
+          summary.filter((s) => !s.isPickup && s.outcome === "PENDING").length
+        } unmatched=${decision.unmatchedStopIndexes.length}`,
+      );
+      return jsonResponse({
+        ok: false,
+        status: "held",
+        bucket: decision.bucket,
+        routeId,
+        jobId: job.id,
+        retryAfter: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+        summary,
+        unmatchedStopIndexes: decision.unmatchedStopIndexes,
+        lalamove: lalamoveCancelNote,
+      });
+    }
+
+    if (decision.bucket === "skip") {
+      await persistBucketingResults({
+        shop,
+        jobId: job.id,
+        bucket: decision.bucket,
+        partialDelivery: false,
+        summary,
+      });
+      console.info(
+        `[control] mark-delivered SKIP shop=${shop} route=${routeId} reason=no-delivered-stops`,
+      );
+      return jsonResponse({
+        ok: false,
+        status: "manual-review",
+        bucket: decision.bucket,
+        routeId,
+        jobId: job.id,
+        summary,
+        unmatchedStopIndexes: decision.unmatchedStopIndexes,
+        lalamove: lalamoveCancelNote,
+      });
+    }
+
+    // 7. Clean / mixed — archive tags + mark DB job FULFILLED.
     let archived = 0;
     let archiveFailures = 0;
     if (archiveTags) {
@@ -1283,7 +1731,6 @@ async function handleMarkDelivered(shop: string, body: Record<string, unknown>):
       }
     }
 
-    // 4. Mark dispatch job FULFILLED and order maps delivered
     await prismaAny.lalamoveDispatchJob.update({
       where: { id: job.id },
       data: { status: "FULFILLED" },
@@ -1293,157 +1740,242 @@ async function handleMarkDelivered(shop: string, body: Record<string, unknown>):
       data: { currentStatus: "delivered" },
     });
 
-    // 5. Flip Shopify status to Fulfilled + Delivered.
-    // Idempotent: if a fulfillment already exists (prior run), we just add a
-    // DELIVERED event. Otherwise we fulfillmentCreateV2 first, then event.
+    // 8. Fulfill DELIVERED stops only. shopifyFulfilled increments only on
+    //    full success (fulfillment AND DELIVERED-event AND displayStatus
+    //    promoted). deliveredEventsCreated tracks the inner half.
     let shopifyFulfilled = 0;
     let deliveredEventsCreated = 0;
     const fulfillmentFailures: Array<{ orderId: string; reason: string }> = [];
+    const trackingNumber = (job.lalamoveOrderId ?? null) as string | null;
 
-    async function addDeliveredEvent(fulfillmentId: string, orderId: string) {
-      try {
-        const eventResp = await admin.graphql(
-          `#graphql
-            mutation ControlMarkDeliveredEvent($fulfillmentId: ID!, $status: FulfillmentEventStatus!) {
-              fulfillmentEventCreate(fulfillmentEvent: { fulfillmentId: $fulfillmentId, status: $status }) {
-                fulfillmentEvent { id status }
-                userErrors { field message }
-              }
-            }`,
-          { variables: { fulfillmentId, status: "DELIVERED" } },
-        );
-        const eventJson = await eventResp.json();
-        const eventErrors = eventJson?.data?.fulfillmentEventCreate?.userErrors ?? [];
-        if (eventErrors.length > 0) {
-          console.warn(`[control] mark-delivered event userErrors order=${orderId}`, eventErrors);
-          fulfillmentFailures.push({
-            orderId,
-            reason: `event: ${eventErrors.map((e: any) => e.message).join("; ")}`,
-          });
-          return false;
-        }
-        deliveredEventsCreated += 1;
-        return true;
-      } catch (err) {
-        console.warn(
-          `[control] mark-delivered event exception order=${orderId}`,
-          err instanceof Error ? err.message : String(err),
-        );
-        return false;
-      }
-    }
+    if (createShopifyFulfillment) {
+      // FAILED stops are not in ordersToFulfill (the Yasmin protection),
+      // so the only customers reachable here are DELIVERED ones. They get
+      // the caller's notifyCustomer preference regardless of bucket — a
+      // mixed route's clean stops still deserve their delivered email.
+      const effectiveNotify = notifyCustomer;
 
-    if (createShopifyFulfillment && orderIds.length > 0) {
-      for (const shopifyOrderId of orderIds) {
+      for (const shopifyOrderId of decision.ordersToFulfill) {
         try {
-          // Inspect order: existing fulfillments + open fulfillment orders
-          const inspect = await admin.graphql(
-            `#graphql
-              query ControlMarkDeliveredInspect($id: ID!) {
-                order(id: $id) {
-                  fulfillments(first: 20) { id status displayStatus }
-                  fulfillmentOrders(first: 20) {
-                    nodes {
-                      id status
-                      assignedLocation { location { id } }
-                    }
-                  }
-                }
-              }`,
-            { variables: { id: shopifyOrderId } },
-          );
-          const inspectJson = await inspect.json();
-          const existingFulfillments = (inspectJson?.data?.order?.fulfillments ?? []) as Array<any>;
-          const foNodes = (inspectJson?.data?.order?.fulfillmentOrders?.nodes ?? []) as Array<any>;
-
-          if (existingFulfillments.length > 0) {
-            // Already fulfilled — just push DELIVERED event on each non-cancelled fulfillment
-            const targets = existingFulfillments.filter((f) => f?.status && f.status !== "CANCELLED");
-            if (targets.length === 0) {
-              fulfillmentFailures.push({ orderId: shopifyOrderId, reason: "only cancelled fulfillments found" });
-              continue;
-            }
-            for (const f of targets) {
-              await addDeliveredEvent(f.id, shopifyOrderId);
-            }
+          const result = await fulfillOrderWithVerification({
+            admin,
+            shopifyOrderId,
+            locationGid,
+            trackingNumber,
+            notifyCustomer: effectiveNotify,
+          });
+          if (result.deliveredEventCreated) deliveredEventsCreated += 1;
+          if (result.ok) {
             shopifyFulfilled += 1;
-            continue;
-          }
-
-          // No existing fulfillment — create one using open fulfillment orders at this location
-          const openFOs = foNodes.filter(
-            (n) =>
-              (n?.status === "OPEN" || n?.status === "IN_PROGRESS") &&
-              n?.assignedLocation?.location?.id === locationGid,
-          );
-          if (openFOs.length === 0) {
-            fulfillmentFailures.push({ orderId: shopifyOrderId, reason: "no fulfillments and no open fulfillment orders at this location" });
-            continue;
-          }
-
-          const createResp = await admin.graphql(
-            `#graphql
-              mutation ControlMarkDeliveredFulfill($fulfillment: FulfillmentV2Input!) {
-                fulfillmentCreateV2(fulfillment: $fulfillment) {
-                  fulfillment { id status }
-                  userErrors { field message }
-                }
-              }`,
-            {
-              variables: {
-                fulfillment: {
-                  lineItemsByFulfillmentOrder: openFOs.map((n) => ({ fulfillmentOrderId: n.id })),
-                  notifyCustomer,
-                  trackingInfo: { company: "Lalamove", number: job.lalamoveOrderId },
-                },
-              },
-            },
-          );
-          const createJson = await createResp.json();
-          const userErrors = createJson?.data?.fulfillmentCreateV2?.userErrors ?? [];
-          const fulfillmentId = createJson?.data?.fulfillmentCreateV2?.fulfillment?.id ?? null;
-          if (userErrors.length > 0) {
+          } else {
             fulfillmentFailures.push({
               orderId: shopifyOrderId,
-              reason: userErrors.map((e: any) => e.message).join("; "),
+              reason: result.reason ?? `displayStatus=${result.finalDisplayStatus ?? "null"}`,
             });
-            continue;
           }
-          if (!fulfillmentId) {
-            fulfillmentFailures.push({ orderId: shopifyOrderId, reason: "no fulfillment returned" });
-            continue;
-          }
-          shopifyFulfilled += 1;
-          await addDeliveredEvent(fulfillmentId, shopifyOrderId);
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           fulfillmentFailures.push({ orderId: shopifyOrderId, reason: msg.slice(0, 150) });
-          console.warn(`[control] mark-delivered order-loop exception order=${shopifyOrderId}`, msg);
+          console.warn(
+            `[control] mark-delivered order-loop exception order=${shopifyOrderId}`,
+            msg,
+          );
         }
       }
     }
 
+    // 9. Tag FAILED stops for re-delivery; never email these customers.
+    let redeliveryTagged = 0;
+    const redeliveryTagFailures: Array<{ orderId: string; reason: string }> = [];
+    for (const shopifyOrderId of decision.ordersToRedeliver) {
+      const tagResult = await tagOrderForRedelivery(admin, shopifyOrderId);
+      if (tagResult.ok) {
+        redeliveryTagged += 1;
+      } else {
+        redeliveryTagFailures.push({
+          orderId: shopifyOrderId,
+          reason: tagResult.reason ?? "tag failed",
+        });
+      }
+    }
+
+    // 10. Persist bucketing results + partialDelivery flag.
+    const partialDelivery = shopifyFulfilled !== deliveredEventsCreated;
+    await persistBucketingResults({
+      shop,
+      jobId: job.id,
+      bucket: decision.bucket,
+      partialDelivery,
+      summary,
+    });
+
     console.info(
-      `[control] mark-delivered OK shop=${shop} route=${routeId} job=${job.id} orders=${orderIds.length} archived=${archived} lalamove=${lalamoveCancelNote} shopifyFulfilled=${shopifyFulfilled}/${orderIds.length}`,
+      `[control] mark-delivered OK shop=${shop} route=${routeId} job=${job.id} bucket=${decision.bucket} orders=${orderIds.length} archived=${archived} lalamove=${lalamoveCancelNote} shopifyFulfilled=${shopifyFulfilled}/${decision.ordersToFulfill.length} delivered=${deliveredEventsCreated} redeliveryTagged=${redeliveryTagged} partial=${partialDelivery}`,
     );
 
     return jsonResponse({
       ok: true,
+      bucket: decision.bucket,
+      partialDelivery,
       routeId,
       jobId: job.id,
       lalamoveOrderId: job.lalamoveOrderId,
-      ordersDelivered: orderIds.length,
+      ordersDelivered: decision.ordersToFulfill.length,
+      ordersFlaggedForRedelivery: decision.ordersToRedeliver,
       tagsArchivedOn: `${dateStr} (YY.MM.DD)`,
       archiveFailures,
       lalamove: lalamoveCancelNote,
       shopifyFulfilled,
       deliveredEventsCreated,
+      redeliveryTagged,
+      redeliveryTagFailures,
       fulfillmentFailures,
+      summary,
+      unmatchedStopIndexes: decision.unmatchedStopIndexes,
     });
   } catch (err) {
     console.error(`[control] mark-delivered FAILED shop=${shop} route=${routeId}`, err);
     return jsonResponse(
       { ok: false, error: err instanceof Error ? err.message : "mark-delivered failed" },
+      500,
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// POST /api/control/mark-stop-delivered — surgical single-order fulfill.
+// Solves the Beatriz #77793 case: an order physically delivered but stuck
+// UNFULFILLED in Shopify, with no path through route-level mark-delivered.
+//
+// Body: { orderId: string, dispatchJobId?: string, locationId?: string,
+//         notifyCustomer?: boolean = true, force?: boolean = false }
+// Idempotent: if displayStatus === "DELIVERED" already, no-op (or fire
+// the notification only when notifyCustomer && force, never re-create
+// the fulfillment).
+// ──────────────────────────────────────────────────────────────────────
+
+async function handleMarkStopDelivered(
+  shop: string,
+  body: Record<string, unknown>,
+): Promise<Response> {
+  const orderId = typeof body.orderId === "string" ? body.orderId : null;
+  const dispatchJobId = typeof body.dispatchJobId === "string" ? body.dispatchJobId : null;
+  const locationIdRaw = typeof body.locationId === "string" ? body.locationId : null;
+  const notifyCustomer = body.notifyCustomer === false ? false : true; // default ON
+  const force = body.force === true;
+
+  if (!orderId) {
+    return jsonResponse({ ok: false, error: "orderId required" }, 400);
+  }
+
+  console.info(
+    `[control] mark-stop-delivered START shop=${shop} order=${orderId} notify=${notifyCustomer} force=${force}`,
+  );
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- matches the file-wide pattern for Prisma untyped models
+    const prismaAny = prisma as any;
+
+    // Resolve location + tracking number from the dispatch job map (if known).
+    let locationGid: string | null = locationIdRaw
+      ? normalizeLocationId(locationIdRaw).gid
+      : null;
+    let trackingNumber: string | null = null;
+    let resolvedJobId: string | null = dispatchJobId;
+
+    if (!resolvedJobId || !locationGid) {
+      const orderMap = await prismaAny.lalamoveDispatchOrderMap.findFirst({
+        where: { shop, shopifyOrderId: orderId },
+        orderBy: { updatedAt: "desc" },
+      });
+      if (orderMap) {
+        resolvedJobId = resolvedJobId ?? orderMap.dispatchJobId;
+        const job = await prismaAny.lalamoveDispatchJob.findUnique({
+          where: { id: orderMap.dispatchJobId },
+        });
+        if (job) {
+          locationGid = locationGid ?? (job.locationId ?? null);
+          trackingNumber = job.lalamoveOrderId ?? null;
+        }
+      }
+    } else {
+      const job = await prismaAny.lalamoveDispatchJob.findUnique({
+        where: { id: resolvedJobId },
+      });
+      if (job) trackingNumber = job.lalamoveOrderId ?? null;
+    }
+
+    if (!locationGid) {
+      return jsonResponse(
+        { ok: false, error: "locationId could not be resolved (pass locationId or dispatchJobId)" },
+        400,
+      );
+    }
+
+    const { admin } = await unauthenticated.admin(shop);
+
+    // Idempotency check — short-circuit if already DELIVERED at displayStatus.
+    const inspect = await inspectOrderForFulfillment(admin, orderId);
+    const deliveredFulfillment = inspect.existingFulfillments.find(
+      (f) => f.displayStatus === "DELIVERED",
+    );
+
+    if (deliveredFulfillment && !force) {
+      console.info(
+        `[control] mark-stop-delivered ALREADY-DELIVERED shop=${shop} order=${orderId} fulfillment=${deliveredFulfillment.id}`,
+      );
+      // Persist outcome on the order map so the UI pill reflects DELIVERED.
+      if (resolvedJobId) {
+        await prismaAny.lalamoveDispatchOrderMap.updateMany({
+          where: { shop, dispatchJobId: resolvedJobId, shopifyOrderId: orderId },
+          data: { stopOutcome: "DELIVERED", currentStatus: "delivered" },
+        }).catch(() => {});
+      }
+      return jsonResponse({
+        ok: true,
+        alreadyDelivered: true,
+        orderId,
+        fulfillmentId: deliveredFulfillment.id,
+        displayStatus: "DELIVERED",
+        notificationSent: false,
+      });
+    }
+
+    const result = await fulfillOrderWithVerification({
+      admin,
+      shopifyOrderId: orderId,
+      locationGid,
+      trackingNumber,
+      notifyCustomer,
+    });
+
+    // Sync the order map so UI pills and bucket recompute reflect the new state.
+    if (resolvedJobId && result.ok) {
+      await prismaAny.lalamoveDispatchOrderMap.updateMany({
+        where: { shop, dispatchJobId: resolvedJobId, shopifyOrderId: orderId },
+        data: { stopOutcome: "DELIVERED", currentStatus: "delivered" },
+      }).catch(() => {});
+    }
+
+    console.info(
+      `[control] mark-stop-delivered ${result.ok ? "OK" : "FAILED"} shop=${shop} order=${orderId} fulfillmentId=${result.fulfillmentId ?? "null"} created=${result.fulfillmentCreated} delivered=${result.deliveredEventCreated} displayStatus=${result.finalDisplayStatus ?? "null"}`,
+    );
+
+    return jsonResponse({
+      ok: result.ok,
+      alreadyDelivered: result.alreadyDelivered,
+      orderId,
+      fulfillmentId: result.fulfillmentId,
+      fulfillmentCreated: result.fulfillmentCreated,
+      deliveredEventCreated: result.deliveredEventCreated,
+      displayStatus: result.finalDisplayStatus,
+      notificationSent: notifyCustomer && result.fulfillmentCreated,
+      reason: result.reason,
+    });
+  } catch (err) {
+    console.error(`[control] mark-stop-delivered FAILED shop=${shop} order=${orderId}`, err);
+    return jsonResponse(
+      { ok: false, error: err instanceof Error ? err.message : "mark-stop-delivered failed" },
       500,
     );
   }

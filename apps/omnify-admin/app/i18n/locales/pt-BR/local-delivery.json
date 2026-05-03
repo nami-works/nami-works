@@ -504,5 +504,26 @@
     "desktopBannerSwitch": "Trocar para desktop",
     "desktopBannerUnreadable": "A versão desktop é difícil de ler nesta largura.",
     "desktopBannerOpenAnyway": "Abrir mesmo assim"
+  },
+  "pod": {
+    "table": {
+      "status": "Status"
+    },
+    "stopPill": {
+      "delivered": "Entregue",
+      "failed": "Falhou",
+      "pending": "Pendente",
+      "unknown": "Desconhecido"
+    },
+    "bucket": {
+      "clean": "Todos entregues · {{delivered}} de {{total}}",
+      "mixed": "Parcial · {{delivered}} de {{total}} entregues",
+      "held": "Em revisão",
+      "skip": "Revisão manual necessária"
+    },
+    "partialBanner": {
+      "title": "{{fulfilled}} de {{total}} paradas concluídas.",
+      "body": "A Shopify ainda não confirmou a entrega das demais. Tente novamente mais tarde ou verifique a timeline do pedido."
+    }
   }
 }

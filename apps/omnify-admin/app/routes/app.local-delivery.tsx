@@ -287,15 +287,44 @@ export default function Index() {
   const lalamoveBusyTimerRef = useRef<number | null>(null);
   // Tracks routes where a driver has been successfully requested (hydrated from DB)
   const [dispatchedRoutes, setDispatchedRoutes] = useState<
-    Record<string, { shareLink?: string; status?: string; lalamoveOrderId?: string; market?: string }>
+    Record<string, {
+      shareLink?: string;
+      status?: string;
+      lalamoveOrderId?: string;
+      market?: string;
+      podBucket?: string | null;
+      partialDelivery?: boolean;
+      stops?: Array<{
+        shopifyOrderId: string;
+        orderName: string | null;
+        stopOutcome: string | null;
+        stopFailureReason: string | null;
+      }>;
+    }>
   >(() => {
-    const initial: Record<string, { shareLink?: string; status?: string; lalamoveOrderId?: string; market?: string }> = {};
+    const initial: Record<string, {
+      shareLink?: string;
+      status?: string;
+      lalamoveOrderId?: string;
+      market?: string;
+      podBucket?: string | null;
+      partialDelivery?: boolean;
+      stops?: Array<{
+        shopifyOrderId: string;
+        orderName: string | null;
+        stopOutcome: string | null;
+        stopFailureReason: string | null;
+      }>;
+    }> = {};
     (activeDispatchData ?? []).forEach((d) => {
       initial[d.routeId] = {
         shareLink: d.shareLink ?? undefined,
         status: d.status ?? undefined,
         lalamoveOrderId: d.lalamoveOrderId ?? undefined,
         market: d.market ?? undefined,
+        podBucket: d.podBucket ?? null,
+        partialDelivery: !!d.partialDelivery,
+        stops: d.stops ?? [],
       };
     });
     return initial;
@@ -831,6 +860,9 @@ export default function Index() {
           shareLink: d.shareLink ?? prev[d.routeId]?.shareLink,
           lalamoveOrderId: d.lalamoveOrderId ?? prev[d.routeId]?.lalamoveOrderId,
           market: d.market ?? prev[d.routeId]?.market,
+          podBucket: d.podBucket ?? null,
+          partialDelivery: !!d.partialDelivery,
+          stops: d.stops ?? [],
         };
       }
       // Keep optimistic "requested" entries not yet in loader data
@@ -4216,7 +4248,7 @@ export default function Index() {
                               {label}
                             </span>
                           </div>
-                          {dispatchedRoutes[route.id] && !TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") ? (
+                          {dispatchedRoutes[route.id] && (!TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") || dispatchedRoutes[route.id]?.podBucket) ? (
                             <s-button
                               variant="secondary"
                               disabled={isOtherRouteBusy}
@@ -4239,6 +4271,27 @@ export default function Index() {
                             </span>
                           )}
                         </div>
+                        {dispatchedRoutes[route.id]?.partialDelivery ? (
+                          <div className={styles.podPartialBanner} role="status">
+                            <span className={styles.podPartialBannerTitle}>
+                              {t("pod.partialBanner.title", {
+                                fulfilled: (dispatchedRoutes[route.id]?.stops ?? []).filter((s) => s.stopOutcome === "DELIVERED").length,
+                                total: (dispatchedRoutes[route.id]?.stops ?? []).length,
+                              })}
+                            </span>
+                            <span className={styles.podPartialBannerBody}>
+                              {t("pod.partialBanner.body")}
+                            </span>
+                          </div>
+                        ) : null}
+                        {dispatchedRoutes[route.id]?.podBucket ? (
+                          <div className={`${styles.podBucketBadge} ${styles[`podBucket_${dispatchedRoutes[route.id]!.podBucket}`] ?? ""}`}>
+                            {t(`pod.bucket.${dispatchedRoutes[route.id]!.podBucket}`, {
+                              delivered: (dispatchedRoutes[route.id]?.stops ?? []).filter((s) => s.stopOutcome === "DELIVERED").length,
+                              total: (dispatchedRoutes[route.id]?.stops ?? []).length,
+                            })}
+                          </div>
+                        ) : null}
                         <div className={styles.routeCardOrderStats}>
                           <s-stack direction="block" gap="small">
                             <s-text type="strong">{metaLine1}</s-text>
@@ -4492,24 +4545,57 @@ export default function Index() {
             </div>
             <div className={styles.manageRouteTableRow}>
               {activeManagedRouteOrders.length > 0 ? (
-                <div className={styles.dueOrdersTable}>
-                  <div className={styles.dueOrdersHeader}>
-                    <span />
-                    <span>{t("routeManager.table.order")}</span>
-                    <span>{t("routeManager.table.customer")}</span>
-                    <span>{t("routeManager.table.address")}</span>
-                  </div>
-                  {activeManagedRouteOrders.map((order) => (
-                    <div key={order.id} className={styles.dueOrdersRow}>
-                      <span />
-                      <s-link href={order.adminOrderUrl} target="_blank">
-                        {order.name}
-                      </s-link>
-                      <span>{formatCustomerShort(order.customerName, t("customer.guest"))}</span>
-                      <span>{order.address1 ?? t("routeManager.noAddressLine1")}</span>
+                (() => {
+                  const activeRouteId =
+                    activeRouteIndex != null ? editableRoutes[activeRouteIndex]?.id ?? null : null;
+                  const stopByOrderId = new Map<string, { stopOutcome: string | null; stopFailureReason: string | null }>();
+                  if (activeRouteId) {
+                    for (const stop of dispatchedRoutes[activeRouteId]?.stops ?? []) {
+                      stopByOrderId.set(stop.shopifyOrderId, {
+                        stopOutcome: stop.stopOutcome,
+                        stopFailureReason: stop.stopFailureReason,
+                      });
+                    }
+                  }
+                  const hasAnyOutcome = Array.from(stopByOrderId.values()).some((s) => !!s.stopOutcome);
+                  return (
+                    <div className={`${styles.dueOrdersTable}${hasAnyOutcome ? ` ${styles.dueOrdersTableWithStatus}` : ""}`}>
+                      <div className={styles.dueOrdersHeader}>
+                        <span />
+                        <span>{t("routeManager.table.order")}</span>
+                        <span>{t("routeManager.table.customer")}</span>
+                        <span>{t("routeManager.table.address")}</span>
+                        {hasAnyOutcome ? <span>{t("pod.table.status")}</span> : null}
+                      </div>
+                      {activeManagedRouteOrders.map((order) => {
+                        const stop = stopByOrderId.get(order.id);
+                        const outcome = stop?.stopOutcome ?? null;
+                        const pillKey = outcome === "DELIVERED" ? "delivered"
+                          : outcome === "FAILED" ? "failed"
+                          : outcome === "PENDING" ? "pending"
+                          : "unknown";
+                        return (
+                          <div key={order.id} className={styles.dueOrdersRow}>
+                            <span />
+                            <s-link href={order.adminOrderUrl} target="_blank">
+                              {order.name}
+                            </s-link>
+                            <span>{formatCustomerShort(order.customerName, t("customer.guest"))}</span>
+                            <span>{order.address1 ?? t("routeManager.noAddressLine1")}</span>
+                            {hasAnyOutcome ? (
+                              <span
+                                className={`${styles.podStopPill} ${styles[`podStopPill_${pillKey}`] ?? ""}`}
+                                title={stop?.stopFailureReason ?? undefined}
+                              >
+                                {t(`pod.stopPill.${pillKey}`)}
+                              </span>
+                            ) : null}
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
+                  );
+                })()
               ) : (
                 <s-text color="subdued">{t("modals.routeDetails.noOrders")}</s-text>
               )}
@@ -6838,7 +6924,21 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // Load Lalamove dispatch jobs for routes that still have tagged orders.
   // Tags are the source of truth: present = needs action, removed = fulfilled.
   // No date filter — dispatch records are fetched by routeId, not by time window.
-  let activeDispatchData: Array<{ routeId: string; shareLink: string | null; status: string; lalamoveOrderId: string; market: string }> = [];
+  let activeDispatchData: Array<{
+    routeId: string;
+    shareLink: string | null;
+    status: string;
+    lalamoveOrderId: string;
+    market: string;
+    podBucket: string | null;
+    partialDelivery: boolean;
+    stops: Array<{
+      shopifyOrderId: string;
+      orderName: string | null;
+      stopOutcome: string | null;
+      stopFailureReason: string | null;
+    }>;
+  }> = [];
   try {
     const activeRouteIds = routeStats
       .map((r, i) => ({ routeId: `${effectiveLocationId}-${i}`, hasOrders: r.orders.length > 0 }))
@@ -6856,14 +6956,31 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       "FULFILLED",
       "COMPLETED", "completed", "delivered", "DELIVERED",
     ];
+    // Active in-flight dispatches PLUS recently-FULFILLED dispatches whose
+    // bucket has been computed in the last 24h. The latter keep the bucket
+    // badge + partialDelivery banner visible on the route card after the cron
+    // closes a route, so the operator can see what happened (Yasmin scenario).
+    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
     const allDispatches = activeRouteIds.length > 0
       ? await (prisma as any).lalamoveDispatchJob.findMany({
           where: {
             shop,
             routeId: { in: activeRouteIds },
-            status: { notIn: terminalExclude },
+            OR: [
+              { status: { notIn: terminalExclude } },
+              { podBucket: { not: null }, lastBucketingAt: { gte: sixHoursAgo } },
+            ],
           },
-          select: { id: true, routeId: true, lalamoveOrderId: true, market: true, status: true, requestedAt: true },
+          select: {
+            id: true,
+            routeId: true,
+            lalamoveOrderId: true,
+            market: true,
+            status: true,
+            requestedAt: true,
+            podBucket: true,
+            partialDelivery: true,
+          },
           orderBy: { createdAt: "desc" },
         })
       : [];
@@ -6907,12 +7024,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     // Post-reconciliation filter: remove dispatches that became terminal during
     // API reconciliation, or that are stale intermediates (API unreachable).
+    // EXCEPTION: keep terminal dispatches that have a bucket computed — those
+    // surface bucket badge + partialDelivery banner on the route card.
     const STALE_THRESHOLD_MS = 18 * 60 * 60 * 1000;
     const nowMs = Date.now();
     const terminalRaw = new Set(["COMPLETED", "CANCELED", "REJECTED", "EXPIRED"]);
     const finalDispatches = activeDispatches.filter((d: any) => {
+      const hasBucket = !!d.podBucket;
       // Reconciliation may have updated status to terminal
-      if (terminalRaw.has(String(d.status).toUpperCase())) {
+      if (terminalRaw.has(String(d.status).toUpperCase()) && !hasBucket) {
         return false;
       }
       // Intermediate dispatches older than 18h are stale (deliveries complete within hours)
@@ -6931,12 +7051,56 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       return true;
     });
 
+    // Fetch per-stop POD outcomes for each surviving dispatch so the UI can
+    // render per-stop pills + bucket badge.
+    type StopRow = {
+      dispatchJobId: string;
+      shopifyOrderId: string;
+      stopOutcome: string | null;
+      stopFailureReason: string | null;
+    };
+    const dispatchIds = finalDispatches.map((d: { id: string }) => d.id);
+    const stopRows: StopRow[] = dispatchIds.length > 0
+      ? await (prisma as unknown as {
+          lalamoveDispatchOrderMap: {
+            findMany: (args: unknown) => Promise<StopRow[]>;
+          };
+        }).lalamoveDispatchOrderMap.findMany({
+          where: { shop, dispatchJobId: { in: dispatchIds } },
+          select: {
+            dispatchJobId: true,
+            shopifyOrderId: true,
+            stopOutcome: true,
+            stopFailureReason: true,
+          },
+        })
+      : [];
+    const stopsByJob = new Map<string, Array<{
+      shopifyOrderId: string;
+      orderName: string | null;
+      stopOutcome: string | null;
+      stopFailureReason: string | null;
+    }>>();
+    for (const row of stopRows) {
+      if (!stopsByJob.has(row.dispatchJobId)) stopsByJob.set(row.dispatchJobId, []);
+      const orderName = orders.find((o: { id: string; name?: string | null }) => o.id === row.shopifyOrderId)?.name ?? null;
+      stopsByJob.get(row.dispatchJobId)!.push({
+        shopifyOrderId: row.shopifyOrderId,
+        orderName,
+        stopOutcome: row.stopOutcome ?? null,
+        stopFailureReason: row.stopFailureReason ?? null,
+      });
+    }
+
     activeDispatchData = finalDispatches.map((d: any) => ({
       routeId: d.routeId as string,
       shareLink: dispatchDetails.get(d.routeId)?.shareLink ?? null,
       status: mapLalamoveStatusToInternal(dispatchDetails.get(d.routeId)?.apiStatus ?? d.status),
       lalamoveOrderId: d.lalamoveOrderId as string,
       market: (d.market ?? "BR_SAO") as string,
+      podBucket: (d.podBucket ?? null) as string | null,
+      partialDelivery: !!d.partialDelivery,
+      stops: stopsByJob.get(d.id) ?? [],
     }));
   } catch {
     // Silently ignore if table is unavailable

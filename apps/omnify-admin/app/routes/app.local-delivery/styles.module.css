@@ -1326,3 +1326,109 @@
   transition: width 0.5s ease;
 }
 
+/* ── Per-stop POD bucketing — issue #1 / blueprint §13.8 ── */
+
+/* Details-modal variant of dueOrdersTable that adds a Status column. */
+.dueOrdersTableWithStatus .dueOrdersHeader,
+.dueOrdersTableWithStatus .dueOrdersRow {
+  grid-template-columns:
+    24px
+    72px                            /* Order # */
+    minmax(120px, 1.2fr)            /* Customer */
+    minmax(160px, 2fr)              /* Address */
+    minmax(96px, max-content);      /* Status pill */
+}
+
+.podStopPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  justify-self: start;
+}
+
+.podStopPill_delivered {
+  background: #e0f5ea;
+  color: #067647;
+  border-color: #aedcc1;
+}
+
+.podStopPill_failed {
+  background: #fde2dd;
+  color: #d72c0d;
+  border-color: #f3b8ad;
+}
+
+.podStopPill_pending {
+  background: #fff4d6;
+  color: #b88500;
+  border-color: #f0d68a;
+}
+
+.podStopPill_unknown {
+  background: #ececed;
+  color: #6d7175;
+  border-color: #d4d6d8;
+}
+
+/* Bucket badge sits inline below the route header. */
+.podBucketBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  margin-top: 8px;
+  align-self: flex-start;
+}
+
+.podBucket_clean {
+  background: #e0f5ea;
+  color: #067647;
+  border-color: #aedcc1;
+}
+
+.podBucket_mixed,
+.podBucket_held {
+  background: #fff4d6;
+  color: #b88500;
+  border-color: #f0d68a;
+}
+
+.podBucket_skip {
+  background: #fde2dd;
+  color: #d72c0d;
+  border-color: #f3b8ad;
+}
+
+/* Persistent yellow banner for partialDelivery state. */
+.podPartialBanner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #fff8e1;
+  color: #5b4700;
+  border: 1px solid #f0d68a;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.podPartialBannerTitle {
+  font-weight: 600;
+}
+
+.podPartialBannerBody {
+  color: #5b4700;
+}
+
