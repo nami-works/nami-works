@@ -121,20 +121,75 @@ function Assert-NoSplitBrain {
   Write-Host "[guards] Assert-NoSplitBrain: OK -- only '$($script:CanonicalCluster)' has running tasks."
 }
 
+function Test-DockerIgnored {
+  <#
+    .SYNOPSIS
+      Returns $true if the given path matches a .dockerignore pattern.
+    .DESCRIPTION
+      The deploy guard's job is to prevent local files from leaking into
+      `COPY .` in the Dockerfile. Files already excluded by .dockerignore
+      cannot leak — so they shouldn't gate the deploy. This helper reads
+      the repo's .dockerignore once and tests paths against the patterns.
+
+      Coverage is the common subset of dockerignore syntax used in this
+      repo today (see .dockerignore at repo root):
+        - bare dir/file name        -> matches anywhere in path
+        - dir name with slash       -> root-anchored
+        - extension wildcard *.ext  -> matches any file with extension
+        - prefix wildcard prefix*   -> matches name starting with prefix
+        - blank lines / # comments  -> skipped
+      Negation (!) is not handled — we do not use it in this repo.
+  #>
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory=$true)][AllowEmptyString()][string]$Path,
+    [Parameter(Mandatory=$true)][AllowEmptyCollection()][AllowEmptyString()][AllowNull()][string[]]$Patterns
+  )
+  if (-not $Path) { return $false }
+  if ($null -eq $Patterns -or $Patterns.Count -eq 0) { return $false }
+  $normalized = $Path -replace '\\', '/'
+  $normalized = $normalized.TrimStart('/')
+  foreach ($raw in $Patterns) {
+    if ($null -eq $raw) { continue }
+    $p = $raw.Trim()
+    if (-not $p -or $p.StartsWith('#') -or $p.StartsWith('!')) { continue }
+
+    if ($p.Contains('/')) {
+      # Path-style (root-anchored) pattern.
+      $regex = "^" + ([regex]::Escape($p) -replace '\\\*', '[^/]*') + "(/.*)?$"
+    } elseif ($p.Contains('*')) {
+      # Glob (e.g. *.md, tmp-*). Matches name segments only.
+      $regex = "(^|/)" + ([regex]::Escape($p) -replace '\\\*', '[^/]*') + "(/|$)"
+    } else {
+      # Bare name — matches anywhere in path as a segment.
+      $regex = "(^|/)" + [regex]::Escape($p) + "(/|$)"
+    }
+    if ($normalized -match $regex) { return $true }
+  }
+  return $false
+}
+
 function Assert-CleanWorkingTree {
   <#
     .SYNOPSIS
-      Throw if the git working tree has uncommitted changes or untracked files.
+      Throw if the git working tree has uncommitted changes that would
+      actually ship into the Docker image.
     .DESCRIPTION
-      The Dockerfile uses `COPY . /app`, which means ANY uncommitted file on
-      disk (tracked-dirty OR untracked) silently ships into the image. We hit
-      this twice this week: Phase 3 affiliates auto-sync and the mobile route
-      were both "deployed" before being committed, then a later session
-      committing unrelated work would alter behavior in a way that couldn't
-      be traced via git history.
+      The Dockerfile uses `COPY . /app`, so dirty/untracked files can leak
+      into the image. We hit this twice: Phase 3 affiliates auto-sync and
+      the mobile route were "deployed" before commit, then later sessions
+      committing unrelated work changed behavior unreproducibly.
 
-      This guard refuses the deploy until the tree is clean, forcing the
-      "Production and main must stay in sync" rule from CLAUDE.md.
+      The guard checks `git status --porcelain`, then filters out paths
+      that are already excluded by .dockerignore — those cannot leak, so
+      they shouldn't block the deploy. The remaining paths (truly
+      shippable dirty files) trigger the throw.
+
+      This implements the durable "future-proof" version asked for after
+      the 2026-05-02 chinese-wall WIP block: docs/, inputs/, *.md, etc.
+      are all dockerignored, so leaving them dirty across sessions doesn't
+      gate every deploy. Anything in public/, app/, prisma/, etc. that
+      isn't dockerignored still gates correctly.
     .PARAMETER RepoRoot
       Optional repo root. Defaults to two levels up from this module
       (scripts/ -> repo root).
@@ -151,29 +206,66 @@ function Assert-CleanWorkingTree {
       throw "Assert-CleanWorkingTree: 'git status --porcelain' failed in $RepoRoot."
     }
 
-    if ($porcelain) {
-      # PS 5.1 unwraps single-element pipelines to the bare object (not an
-      # array), so a 1-line porcelain output leaves $lines as a string with
-      # no .Count. @() coerces uniformly into an array.
-      $lines = @(($porcelain -split "`n") | Where-Object { $_ -ne "" })
-      $preview = ($lines | Select-Object -First 10) -join "`n  "
-      $extra = ""
-      if ($lines.Count -gt 10) {
-        $extra = "`n  ... and {0} more" -f ($lines.Count - 10)
-      }
-      throw (@"
-Assert-CleanWorkingTree: working tree is dirty. Dockerfile COPY . would ship
-uncommitted changes that don't exist on main, re-creating the Phase-3-affiliates
-and mobile-route footgun. Commit or stash before deploying.
+    if (-not $porcelain) {
+      Write-Host "[guards] Assert-CleanWorkingTree: OK -- working tree is clean."
+      return
+    }
 
-Offending paths:
+    # Load .dockerignore patterns once.
+    $dockerignorePath = Join-Path $RepoRoot ".dockerignore"
+    $patterns = @()
+    if (Test-Path $dockerignorePath) {
+      # @() ensures array even when the file has 0 or 1 lines.
+      $patterns = @(Get-Content $dockerignorePath)
+    }
+
+    # PS 5.1 quirk: single-line porcelain output isn't an array, hence @().
+    $lines = @(($porcelain -split "`n") | Where-Object { $_ -ne "" })
+
+    # Each porcelain line is `XY <path>` where XY is the status code (2 chars
+    # + space). Renames look like `R  old -> new` — we take the new path.
+    $shippablePaths = @()
+    $ignoredCount = 0
+    foreach ($line in $lines) {
+      $rest = $line.Substring(3)
+      if ($rest -match ' -> ') { $rest = ($rest -split ' -> ')[1] }
+      $path = $rest.Trim('"')
+      # Cast to [string[]] so PowerShell doesn't try to bind an Object[] of
+      # mixed-type elements positionally and trip the "empty string" error.
+      $matched = Test-DockerIgnored -Path $path -Patterns ([string[]]$patterns)
+      if ($matched) {
+        $ignoredCount += 1
+      } else {
+        $shippablePaths += $line
+      }
+    }
+
+    if ($ignoredCount -gt 0) {
+      Write-Host "[guards] Assert-CleanWorkingTree: $ignoredCount dirty path(s) skipped (.dockerignore)."
+    }
+
+    if ($shippablePaths.Count -eq 0) {
+      Write-Host "[guards] Assert-CleanWorkingTree: OK -- no shippable dirty paths."
+      return
+    }
+
+    $preview = ($shippablePaths | Select-Object -First 10) -join "`n  "
+    $extra = ""
+    if ($shippablePaths.Count -gt 10) {
+      $extra = "`n  ... and {0} more" -f ($shippablePaths.Count - 10)
+    }
+    throw (@"
+Assert-CleanWorkingTree: working tree has shippable dirty paths. Dockerfile
+COPY . would ship uncommitted changes that don't exist on main, re-creating
+the Phase-3-affiliates and mobile-route footgun. Commit or stash before
+deploying. Paths covered by .dockerignore have been filtered out and are
+not blocking.
+
+Offending paths (not in .dockerignore):
   $preview$extra
 
 See plan Phase 3a and CLAUDE.md "Production and main must stay in sync".
 "@)
-    }
-
-    Write-Host "[guards] Assert-CleanWorkingTree: OK -- working tree is clean."
   }
   finally {
     Pop-Location
@@ -361,5 +453,6 @@ scripts/archive/migrate-cluster.README.md.
 Export-ModuleMember -Function `
   Assert-NoSplitBrain, `
   Assert-CleanWorkingTree, `
+  Test-DockerIgnored, `
   New-AppImageTag, `
   Assert-SingleTaskDefInTargetGroup
