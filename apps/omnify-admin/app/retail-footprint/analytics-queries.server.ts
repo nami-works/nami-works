@@ -4,11 +4,8 @@
  * Consumes the normalized RetailOrder / RetailCustomer / RetailCityMonthly /
  * RetailHeatmapBucket tables and returns pre-computed data for the UI.
  */
+import type { Prisma } from "@prisma/client";
 import prisma from "../db.server";
-import {
-  getMonthsIncluded,
-  monthlyAverageFromBuckets,
-} from "../utils/kpi-monthly-average";
 
 // ─── Shared helpers ──────────────────────────────────────────────────────────
 
@@ -128,16 +125,14 @@ export async function getCityRankings(
   endMonth?: string,
   limit = 15,
 ): Promise<CityRanking[]> {
-  const where: Record<string, unknown> = { shop };
-  if (startMonth || endMonth) {
-    where.month = {};
-    if (startMonth) (where.month as Record<string, string>).gte = startMonth;
-    if (endMonth) (where.month as Record<string, string>).lte = endMonth;
-  }
+  const where: Prisma.RetailCityMonthlyWhereInput = {
+    shop,
+    ...(startMonth || endMonth
+      ? { month: { gte: startMonth, lte: endMonth } }
+      : {}),
+  };
 
-  const rows = await prisma.retailCityMonthly.findMany({
-    where: where as any,
-  });
+  const rows = await prisma.retailCityMonthly.findMany({ where });
 
   // Group by cityNorm, compute averages
   const grouped = new Map<
@@ -501,7 +496,7 @@ export async function writeSyncMeta(
 
   await prisma.retailSyncMeta.upsert({
     where: { shop },
-    create: { shop, ...data } as any,
+    create: { shop, ...data } as Prisma.RetailSyncMetaCreateInput,
     update: data,
   });
 }
@@ -513,7 +508,7 @@ export async function writeSyncProgress(
 ): Promise<void> {
   await prisma.retailSyncMeta.upsert({
     where: { shop },
-    create: { shop, status: "running", phase, progressCount: count } as any,
+    create: { shop, status: "running", phase, progressCount: count } as Prisma.RetailSyncMetaCreateInput,
     update: { phase, progressCount: count },
   });
 }
