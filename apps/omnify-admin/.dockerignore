@@ -23,6 +23,12 @@ scripts
 .streamlit
 .vscode
 
+# Project knowledge (planning notes, briefs, drafts) — never shipped
+.knowledge
+
+# Runtime / session log artifacts
+*.log
+
 # Dev/test files
 inputs
 storage
