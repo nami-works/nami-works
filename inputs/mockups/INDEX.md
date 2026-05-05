@@ -9,7 +9,8 @@ When you commit a new `-vN-final.html`, add or update its row here in the same c
 | Feature | Final mockup | Implements (route / component) | Last updated | Notes |
 |---|---|---|---|---|
 | Local Delivery — page tweaks (filters, route cards, map overlay) | [local-delivery-tweaks-v2-final.html](local-delivery-tweaks-v2-final.html) | [app/routes/app.local-delivery.tsx](../../app/routes/app.local-delivery.tsx) | 2026-04 | — |
-| Mark-as-delivered — POD bucketing | [mark-delivered-pod-bucketing-v2-final.html](mark-delivered-pod-bucketing-v2-final.html) | [app/routes/app.local-delivery.tsx](../../app/routes/app.local-delivery.tsx) + [app/routes/api.control.$intent.tsx](../../app/routes/api.control.$intent.tsx) | 2026-05 | Active branch `feat/mark-delivered-pod-bucketing` |
+| Mark-as-delivered — POD bucketing | [mark-delivered-pod-bucketing-v2-final.html](mark-delivered-pod-bucketing-v2-final.html) | [app/routes/app.local-delivery.tsx](../../app/routes/app.local-delivery.tsx) + [app/routes/api.control.$intent.tsx](../../app/routes/api.control.$intent.tsx) | 2026-05 | Shipped 2026-05-02 (rev 9, PR #10) |
+| Affiliates — Attribution Queue revamp + auto-sync codes from Shopify | [affiliates-attribution-queue-revamp-v1.html](affiliates-attribution-queue-revamp-v1.html) | [app/routes/app.affiliates.tsx](../../app/routes/app.affiliates.tsx) + [app/routes/app.affiliates/settings.tsx](../../app/routes/app.affiliates/settings.tsx) + [app/routes/app.affiliates.onboarding.tsx](../../app/routes/app.affiliates.onboarding.tsx) | 2026-05 | Shipped 2026-05-05 (rev 11, PR #15). v1 doubles as design record — includes 5-state walkthrough + before/after annotations of removed banners (no separate v2-final needed; user approved v1 with no iteration). |
 
 ## Pre-rule iteration mockups (no formal `-final`)
 
@@ -17,7 +18,6 @@ These mockups were created before this index existed. They reflect the latest it
 
 | Feature | Latest mockup | Implements (route / component) | Notes |
 |---|---|---|---|
-| Affiliates — attribution queue revamp | [affiliates-attribution-queue-revamp-v1.html](affiliates-attribution-queue-revamp-v1.html) | `app/routes/app.affiliates.tsx` | — |
 | CPG Labs landing page | [cpglabs-landing-v3.html](cpglabs-landing-v3.html) | `site/src/pages/index.astro` | v1, v2 are iteration history |
 | Footprint Expansion | [footprint-expansion-v1.html](footprint-expansion-v1.html) | `app/routes/app.footprint-expansion.tsx` | — |
 | Local Delivery — Manage Route modal layout | [ld-manage-route-modal-layout-v1.html](ld-manage-route-modal-layout-v1.html) | `app/routes/app.local-delivery.tsx` (Manage Route modal) | — |
