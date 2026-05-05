@@ -90,7 +90,6 @@ export async function computeRoutePolyline(
         },
       })),
       travelMode: "DRIVE",
-      routingPreference: "TRAFFIC_AWARE",
       optimizeWaypointOrder: true,
     }),
   });
