@@ -4,6 +4,7 @@
  * CRUD for affiliate profiles, sync meta, and BixGrow CSV import.
  * Pattern follows retail-footprint/analytics-queries.server.ts.
  */
+import { Prisma } from "@prisma/client";
 import prisma from "../db.server";
 import { invalidateAffiliateCodesCache } from "./webhook-ingest.server";
 
@@ -174,7 +175,7 @@ export async function upsertAffiliateProfile(
       shop,
       code: data.code,
       ...updateData,
-    } as any,
+    } as Prisma.AffiliateProfileUncheckedCreateInput,
     update: updateData,
   });
   // Invalidate the webhook-path cache so a newly-added code is matched on
@@ -304,6 +305,40 @@ export async function importBixGrowCsv(
     }
   }
 
+  // Mirror each profile into AffiliateCode so the code is queryable by
+  // webhook-ingest's UNION even before a program is registered. This also
+  // sets profileId so syncProgramCodes' UPDATE step picks up the mapping.
+  // programId stays null — codes from BixGrow CSV are not tied to a Shopify
+  // discount node yet.
+  if (values.length > 0) {
+    const ids = await prisma.affiliateProfile.findMany({
+      where: { shop },
+      select: { id: true, code: true },
+    });
+    const BATCH = 500;
+    for (let start = 0; start < ids.length; start += BATCH) {
+      const slice = ids.slice(start, start + BATCH);
+      const shopEsc = shop.replace(/'/g, "''");
+      const rowSql = slice
+        .map((p, idx) => {
+          const codeUpper = p.code.toUpperCase().replace(/'/g, "''");
+          const profileIdEsc = p.id.replace(/'/g, "''");
+          const id = `code_csv_${Date.now().toString(36)}_${start}_${idx}`;
+          return `('${id}', '${shopEsc}', '${codeUpper}', NULL, '${profileIdEsc}', 0, NULL, NOW(), NOW())`;
+        })
+        .filter(Boolean)
+        .join(",\n");
+      if (rowSql.length === 0) continue;
+      await prisma.$executeRawUnsafe(`
+        INSERT INTO "AffiliateCode" ("id", "shop", "code", "programId", "profileId", "asyncUsageCount", "shopifyCodeId", "firstSeenAt", "lastSeenAt")
+        VALUES ${rowSql}
+        ON CONFLICT ("shop", "code") DO UPDATE SET
+          "profileId" = EXCLUDED."profileId",
+          "lastSeenAt" = NOW()
+      `);
+    }
+  }
+
   // Bulk import likely added new codes — invalidate the webhook cache so the
   // next order webhook sees them immediately instead of waiting for TTL.
   invalidateAffiliateCodesCache(shop);
@@ -375,7 +410,7 @@ export async function writeAffiliateSyncMeta(
 
   await prisma.affiliateSyncMeta.upsert({
     where: { shop },
-    create: { shop, ...data } as any,
+    create: { shop, ...data } as Prisma.AffiliateSyncMetaUncheckedCreateInput,
     update: data,
   });
 }
@@ -387,7 +422,7 @@ export async function writeAffiliateSyncProgress(
 ): Promise<void> {
   await prisma.affiliateSyncMeta.upsert({
     where: { shop },
-    create: { shop, status: "running", phase, progressCount: count } as any,
+    create: { shop, status: "running", phase, progressCount: count } satisfies Prisma.AffiliateSyncMetaUncheckedCreateInput,
     update: { phase, progressCount: count },
   });
 }

@@ -838,6 +838,47 @@ model AffiliateSyncMeta {
   updatedAt            DateTime  @updatedAt
 }
 
+// Per-shop registration of a Shopify code-discount node as an "affiliate
+// program". Coupon codes belonging to the discount auto-sync hourly into
+// AffiliateCode. Multiple programs are allowed per shop.
+model AffiliateProgram {
+  id              String    @id @default(cuid())
+  shop            String
+  discountNodeId  String    // gid://shopify/DiscountCodeNode/xxx
+  label           String    // user-facing program name (unique per shop)
+  discountTitle   String    // cached at add-time, refreshed on each sync
+  status          String    @default("active") // "active" | "removed"
+  lastSyncedAt    DateTime?
+  lastSyncStatus  String?   // "ok" | "failed"
+  lastSyncError   String?
+  codesCount      Int       @default(0)
+  mappedCount     Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([shop, discountNodeId])
+  @@unique([shop, label])
+  @@index([shop, status])
+}
+
+// Coupon codes synced from Shopify discount registrations (or imported via
+// BixGrow CSV with programId=null). One row per (shop, code).
+model AffiliateCode {
+  id               String    @id @default(cuid())
+  shop             String
+  code             String    // literal coupon string, uppercased on write
+  programId        String?   // null after program is removed (soft-delete)
+  profileId        String?   // null when not yet mapped to an affiliate
+  asyncUsageCount  Int       @default(0)
+  shopifyCodeId    String?   // gid://shopify/DiscountRedeemCode/xxx
+  firstSeenAt      DateTime  @default(now())
+  lastSeenAt       DateTime  @default(now())
+
+  @@unique([shop, code])
+  @@index([shop, programId])
+  @@index([shop, profileId])
+}
+
 model GeocodeCacheEntry {
   id        String   @id @default(cuid())
   queryKey  String   @unique

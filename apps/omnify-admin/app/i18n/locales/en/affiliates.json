@@ -267,5 +267,97 @@
       "forgottenCount": "{{count}} forgotten",
       "unknownCount": "{{count}} unknown"
     }
+  },
+  "tabs": {
+    "settings": "Settings"
+  },
+  "freshChip": {
+    "fresh": "Updated {{when}}",
+    "stale": "Updated {{when}}",
+    "unknown": "Sync pending"
+  },
+  "cronStaleBanner": {
+    "title": "Automatic sync is delayed.",
+    "message": "Last successful run {{when}}. Cron error: {{error}}",
+    "messageNoError": "Last successful run {{when}}.",
+    "runManual": "Run manual sync"
+  },
+  "unmappedCodesBanner": {
+    "message_one": "{{count}} code used in orders isn't mapped to a profile yet",
+    "message_other": "{{count}} codes used in orders aren't mapped to a profile yet",
+    "cta": "Open onboarding queue"
+  },
+  "overflowMenu": {
+    "trigger": "More",
+    "forceResync": "Force full resync",
+    "forceResyncHint": "Re-fetch 14 months of orders. Heavy.",
+    "uploadBixgrow": "Upload BixGrow CSV",
+    "uploadBixgrowHint": "Update affiliate metadata (names, commission %)."
+  },
+  "settings": {
+    "title": "Affiliate programs",
+    "subtitle": "The system pulls coupon codes directly from these Shopify discounts every hour. Adding a code in Shopify makes it active here within ~1 hour, no upload needed.",
+    "searchPlaceholder": "Search registered programs…",
+    "addProgram": "+ Add program",
+    "summary_one": "{{n}} program · {{codes}} codes synced · {{mapped}} mapped to profiles",
+    "summary_other": "{{n}} programs · {{codes}} codes synced · {{mapped}} mapped to profiles",
+    "noPrograms": "No affiliate programs registered yet. Click \"Add program\" to register a Shopify code-discount as an affiliate program.",
+    "noMatches": "No programs match your search.",
+    "programCard": {
+      "lastSynced": "Last synced {{when}}",
+      "neverSynced": "Never synced",
+      "codesSynced": "{{count}} codes synced from Shopify",
+      "mapped": "{{count}} mapped to profiles",
+      "openInShopify": "Open in Shopify",
+      "resync": "Re-sync now",
+      "resyncing": "Syncing…",
+      "remove": "Remove",
+      "active": "Active",
+      "syncFailed": "Sync failed",
+      "discountLabel": "Shopify discount"
+    },
+    "removeModal": {
+      "title": "Remove program?",
+      "body": "Codes synced from this discount will stay in your records but will no longer be refreshed.",
+      "cancel": "Cancel",
+      "remove": "Remove"
+    },
+    "addModal": {
+      "title": "Add affiliate program",
+      "searchLabel": "Search Shopify code discounts",
+      "searchPlaceholder": "Type a discount title…",
+      "labelLabel": "Program label (shown in this app)",
+      "labelPlaceholder": "BixGrow UGC",
+      "add": "Add program",
+      "cancel": "Cancel",
+      "searching": "Searching…",
+      "noResults": "No discounts match. Try a different search.",
+      "selectFirst": "Select a discount and choose a label.",
+      "errorAdd": "Could not add program: {{error}}",
+      "statusActive": "Active",
+      "statusScheduled": "Scheduled",
+      "statusExpired": "Expired",
+      "codesCount_one": "{{count}} code",
+      "codesCount_other": "{{count}} codes"
+    }
+  },
+  "onboarding": {
+    "title": "Codes awaiting onboarding",
+    "subtitle": "These coupon codes appear in orders but aren't mapped to an affiliate profile yet.",
+    "empty": "All codes are mapped to affiliate profiles.",
+    "back": "Back to Affiliates",
+    "comingSoon": "Coming soon",
+    "column": {
+      "code": "Code",
+      "firstSeen": "First seen",
+      "orders": "Orders",
+      "revenue": "Revenue",
+      "program": "Program",
+      "action": "Action"
+    },
+    "action": {
+      "onboard": "Onboard"
+    },
+    "noProgram": "—"
   }
 }

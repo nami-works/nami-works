@@ -4,7 +4,7 @@ import type {
   HeadersFunction,
   LoaderFunctionArgs,
 } from "react-router";
-import { useFetcher, useLoaderData, useRevalidator } from "react-router";
+import { Link, useFetcher, useLoaderData, useRevalidator } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { useTranslation } from "react-i18next";
 import { authenticate } from "../shopify.server";
@@ -28,7 +28,6 @@ import {
 } from "../affiliates/analytics-queries.server";
 import {
   PAID_ADS_PCT,
-  STALE_SYNC_DAYS,
 } from "../affiliates/classification-thresholds";
 import type { AffiliateOverviewStats } from "../affiliates/overview-stats.server";
 import { KpiCard, type DrillDownKey } from "./app.affiliates/kpi-card";
@@ -45,6 +44,19 @@ import {
   readAttributionTabLoaderData,
   DEFAULT_LOOKBACK_DAYS,
 } from "../affiliates/attribution.server";
+import {
+  addAffiliateProgram,
+  getAffiliateCronHealth,
+  listAffiliatePrograms,
+  removeAffiliateProgram,
+  syncProgramCodes,
+} from "../affiliates/programs.server";
+import { searchShopifyDiscounts } from "../affiliates/discount-search.server";
+import type {
+  AffiliateCronHealth,
+  AffiliateProgramSummary,
+} from "../affiliates/types";
+import { AffiliatesSettings } from "./app.affiliates/settings";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -64,7 +76,6 @@ type LoaderData = {
   profiles: AffiliateProfile[];
   syncStatus: "idle" | "running" | "failed";
   syncError: string | null;
-  syncWarning: string | null;
   syncPhase: string | null;
   syncProgressCount: number | null;
   syncStartedAt: string | null;
@@ -75,6 +86,9 @@ type LoaderData = {
   shop: string;
   attribution: AttributionTabLoaderData;
   attributionSnapshot: CachedAttributionSnapshot;
+  programs: AffiliateProgramSummary[];
+  cronHealth: AffiliateCronHealth;
+  unmappedCount: number;
 };
 
 type PeriodPreset =
@@ -169,20 +183,22 @@ function formatDateRangeFriendly(start: string, end: string, locale: string): st
   return `${fmtFull.format(s)} – ${fmtFull.format(e)}`;
 }
 
-/** Shorter last-sync format: "Last sync: 4/10/2026, 1PM" */
-function formatLastSyncShort(iso: string, locale: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const date = new Intl.DateTimeFormat(locale, {
-    day: "numeric",
-    month: "numeric",
-    year: "numeric",
-  }).format(d);
-  let hour = d.getHours();
-  const ampm = hour >= 12 ? "PM" : "AM";
-  hour = hour % 12;
-  if (hour === 0) hour = 12;
-  return `${date}, ${hour}${ampm}`;
+/**
+ * Compact relative-time format used by the freshness chip:
+ *   <1m | Xm | Xh | Xd
+ * Returns "" when iso is invalid/empty so callers can short-circuit render.
+ */
+function formatDistanceShort(iso: string | null): string {
+  if (!iso) return "";
+  const ms = Date.now() - new Date(iso).getTime();
+  if (!Number.isFinite(ms) || ms < 0) return "";
+  const minutes = Math.floor(ms / 60000);
+  if (minutes < 1) return "<1m";
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `${days}d`;
 }
 
 function getPresetDates(preset: PeriodPreset): {
@@ -273,7 +289,15 @@ export const loader = async ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userLocale = normalizeLocale((session as any).locale);
 
-  const [profiles, syncMeta, attribution, snapshotRow] = await Promise.all([
+  const [
+    profiles,
+    syncMeta,
+    attribution,
+    snapshotRow,
+    programs,
+    cronHealth,
+    unmappedCount,
+  ] = await Promise.all([
     readAffiliateProfiles(shop),
     readAffiliateSyncMeta(shop),
     readAttributionTabLoaderData(shop),
@@ -281,6 +305,13 @@ export const loader = async ({
     // without paginating Shopify. Missing row = tab falls back to the live
     // Refresh path (the action's existing behavior).
     prisma.attributionQueueSnapshot.findUnique({ where: { shop } }),
+    listAffiliatePrograms(shop),
+    getAffiliateCronHealth(shop),
+    // Count of AffiliateCode rows where no profile mapping has been done yet.
+    // Powers the inline "{N} codes used in orders aren't mapped" banner.
+    prisma.affiliateCode.count({
+      where: { shop, profileId: null },
+    }),
   ]);
 
   const attributionSnapshot: CachedAttributionSnapshot = snapshotRow
@@ -302,13 +333,9 @@ export const loader = async ({
     syncMeta.totalAffiliateOrders > 0;
   const effectiveStatus =
     syncMeta.status === "failed" && hasData ? "idle" : syncMeta.status;
-  const syncWarning =
-    syncMeta.status === "failed" && hasData
-      ? (syncMeta.errorMessage ?? null)
-      : null;
 
   console.info(
-    `[affiliates] loader shop=${shop} syncStatus=${syncMeta.status}->${effectiveStatus} profiles=${profiles.length} lastSynced=${syncMeta.lastSyncedAt ?? "?"}`,
+    `[affiliates] loader shop=${shop} syncStatus=${syncMeta.status}->${effectiveStatus} profiles=${profiles.length} programs=${programs.length} cron=${cronHealth.status} unmapped=${unmappedCount} lastSynced=${syncMeta.lastSyncedAt ?? "?"}`,
   );
 
   return {
@@ -316,7 +343,6 @@ export const loader = async ({
     syncStatus: effectiveStatus as LoaderData["syncStatus"],
     syncError:
       effectiveStatus === "failed" ? (syncMeta.errorMessage ?? null) : null,
-    syncWarning,
     syncPhase: syncMeta.phase,
     syncProgressCount: syncMeta.progressCount,
     syncStartedAt: syncMeta.startedAt,
@@ -327,6 +353,9 @@ export const loader = async ({
     shop,
     attribution,
     attributionSnapshot,
+    programs,
+    cronHealth,
+    unmappedCount,
   };
 };
 
@@ -686,6 +715,141 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
   }
 
+  if (intent === "programs-search-discounts") {
+    const queryRaw = formData.get("query");
+    const query = typeof queryRaw === "string" ? queryRaw.trim() : "";
+    // Empty query → return empty results without hitting Shopify. The user
+    // hasn't typed anything yet; no point spending an API call.
+    if (!query) {
+      return {
+        ok: true as const,
+        intent: "programs-search-discounts" as const,
+        results: [],
+      };
+    }
+    try {
+      const results = await searchShopifyDiscounts(admin, query, shop);
+      return {
+        ok: true as const,
+        intent: "programs-search-discounts" as const,
+        results,
+      };
+    } catch (error) {
+      console.error(
+        `[affiliates] programs-search-discounts FAILED shop=${shop}`,
+        error,
+      );
+      return {
+        ok: false as const,
+        intent: "programs-search-discounts" as const,
+        error: String((error as Error)?.message ?? "Search failed"),
+      };
+    }
+  }
+
+  if (intent === "programs-add") {
+    const discountNodeId = String(formData.get("discountNodeId") || "").trim();
+    const label = String(formData.get("label") || "").trim();
+    const discountTitle = String(formData.get("discountTitle") || "").trim();
+    if (!discountNodeId || !label) {
+      return {
+        ok: false as const,
+        intent: "programs-add" as const,
+        error: "Missing discountNodeId or label",
+      };
+    }
+    try {
+      const { programId } = await addAffiliateProgram(
+        shop,
+        discountNodeId,
+        label,
+        discountTitle,
+      );
+      // Trigger an initial sync in the background — the cron will eventually
+      // catch up too, but the user expects the program to populate quickly.
+      syncProgramCodes(admin, shop, programId).catch((err) => {
+        console.error(
+          `[affiliates] programs-add background sync FAILED shop=${shop} programId=${programId}`,
+          err,
+        );
+      });
+      return {
+        ok: true as const,
+        intent: "programs-add" as const,
+        programId,
+      };
+    } catch (error) {
+      console.error(`[affiliates] programs-add FAILED shop=${shop}`, error);
+      return {
+        ok: false as const,
+        intent: "programs-add" as const,
+        error: String((error as Error)?.message ?? "Add failed"),
+      };
+    }
+  }
+
+  if (intent === "programs-remove") {
+    const programId = String(formData.get("programId") || "").trim();
+    if (!programId) {
+      return {
+        ok: false as const,
+        intent: "programs-remove" as const,
+        error: "Missing programId",
+      };
+    }
+    try {
+      await removeAffiliateProgram(shop, programId);
+      return { ok: true as const, intent: "programs-remove" as const };
+    } catch (error) {
+      console.error(
+        `[affiliates] programs-remove FAILED shop=${shop} programId=${programId}`,
+        error,
+      );
+      return {
+        ok: false as const,
+        intent: "programs-remove" as const,
+        error: String((error as Error)?.message ?? "Remove failed"),
+      };
+    }
+  }
+
+  if (intent === "programs-resync") {
+    const programId = String(formData.get("programId") || "").trim();
+    if (!programId) {
+      return {
+        ok: false as const,
+        intent: "programs-resync" as const,
+        error: "Missing programId",
+      };
+    }
+    try {
+      const result = await syncProgramCodes(admin, shop, programId);
+      if (!result.ok) {
+        return {
+          ok: false as const,
+          intent: "programs-resync" as const,
+          error: result.error ?? "Sync failed",
+        };
+      }
+      return {
+        ok: true as const,
+        intent: "programs-resync" as const,
+        codesCount: result.codesCount,
+        mappedCount: result.mappedCount,
+      };
+    } catch (error) {
+      console.error(
+        `[affiliates] programs-resync FAILED shop=${shop} programId=${programId}`,
+        error,
+      );
+      return {
+        ok: false as const,
+        intent: "programs-resync" as const,
+        error: String((error as Error)?.message ?? "Resync failed"),
+      };
+    }
+  }
+
   return { ok: false, error: "Unknown intent" };
 };
 
@@ -696,20 +860,23 @@ export default function AffiliatesPage() {
     profiles,
     syncStatus,
     syncError,
-    syncWarning,
     syncPhase,
     syncProgressCount,
     syncStartedAt: _syncStartedAt,
     syncTotalOrders,
     syncTotalAffiliateOrders,
-    syncLastSyncedAt,
+    syncLastSyncedAt: _syncLastSyncedAt,
     userLocale,
     shop,
     attribution: attributionMeta,
     attributionSnapshot,
+    programs,
+    cronHealth,
+    unmappedCount,
   } = useLoaderData<LoaderData>();
 
   void _syncStartedAt; // reserved for future elapsed-time display
+  void _syncLastSyncedAt; // freshness now sourced from cronHealth
   const { t } = useTranslation("affiliates");
   const fetcher = useFetcher<typeof action>();
   // Separate fetcher for the cohort LTV drill so its response doesn't race
@@ -725,8 +892,10 @@ export default function AffiliatesPage() {
 
   // ─── State ──────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<
-    "overview" | "profiles" | "attribution"
+    "overview" | "profiles" | "attribution" | "settings"
   >("overview");
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const overflowRef = useRef<HTMLDivElement | null>(null);
   const [periodPreset, setPeriodPreset] = useState<PeriodPreset>("last_30d");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
@@ -1044,6 +1213,25 @@ export default function AffiliatesPage() {
     document.addEventListener("mousedown", onMouseDown);
     return () => document.removeEventListener("mousedown", onMouseDown);
   }, [comboboxOpen]);
+
+  // Close the overflow menu (⋯ More) on outside click or Escape.
+  useEffect(() => {
+    if (!overflowOpen) return;
+    const onMouseDown = (e: MouseEvent) => {
+      const target = e.target as Node | null;
+      if (!overflowRef.current || !target) return;
+      if (!overflowRef.current.contains(target)) setOverflowOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOverflowOpen(false);
+    };
+    document.addEventListener("mousedown", onMouseDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onMouseDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [overflowOpen]);
 
   // Filtered dropdown items. Empty query = full list.
   const comboboxItems = useMemo(() => {
@@ -1818,9 +2006,11 @@ export default function AffiliatesPage() {
         {/* ── Tabs — left-aligned, divider bleeds to section edges
             (matches Settings page pattern). Badge + actions sit far-right
             on the same row, pushed by margin-left: auto. ── */}
-        <div className={styles.tabsRow}>
+        <div className={styles.tabsRow} role="tablist">
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === "overview"}
             className={`${styles.tab}${activeTab === "overview" ? ` ${styles.tabActive}` : ""}`}
             onClick={() => setActiveTab("overview")}
           >
@@ -1828,6 +2018,8 @@ export default function AffiliatesPage() {
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === "profiles"}
             className={`${styles.tab}${activeTab === "profiles" ? ` ${styles.tabActive}` : ""}`}
             onClick={() => {
               setActiveTab("profiles");
@@ -1838,6 +2030,8 @@ export default function AffiliatesPage() {
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === "attribution"}
             className={`${styles.tab}${activeTab === "attribution" ? ` ${styles.tabActive}` : ""}`}
             onClick={() => setActiveTab("attribution")}
           >
@@ -1860,46 +2054,124 @@ export default function AffiliatesPage() {
               </>
             )}
           </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "settings"}
+            className={`${styles.tab}${activeTab === "settings" ? ` ${styles.tabActive}` : ""}`}
+            onClick={() => setActiveTab("settings")}
+          >
+            {t("tabs.settings", "Settings")}
+          </button>
 
-          {/* Badge + action buttons, pushed to far right */}
+          {/* Right group: freshness chip + ⋯ More overflow menu. */}
           <div className={styles.tabsRightGroup}>
-            {syncLastSyncedAt && (
-              <s-badge tone="info">
-                {t("sync.lastSyncShort", "Last sync")}: {formatLastSyncShort(syncLastSyncedAt, userLocale)}
-              </s-badge>
-            )}
-            {syncStatus === "running" ? (
-              <s-button
-                variant="secondary"
-                {...{ icon: "refresh" } as Record<string, string>}
-                disabled
-                key="sync-btn-disabled"
+            {(() => {
+              const ageIso = cronHealth.lastSuccessAt;
+              const distance = formatDistanceShort(ageIso);
+              if (cronHealth.status === "fresh") {
+                return (
+                  <span
+                    className={styles.freshChip}
+                    title={t(
+                      "freshChip.fresh",
+                      "Updated {{when}}",
+                      { when: distance ? `${distance} ago` : "" },
+                    )}
+                  >
+                    <span className={styles.checkmark}>✓</span>
+                    {t("freshChip.fresh", "Updated {{when}}", {
+                      when: distance ? `${distance} ago` : "",
+                    })}
+                  </span>
+                );
+              }
+              if (cronHealth.status === "stale") {
+                return (
+                  <span
+                    className={`${styles.freshChip} ${styles.freshChipStale}`}
+                    title={t(
+                      "freshChip.stale",
+                      "Updated {{when}}",
+                      { when: distance ? `${distance} ago` : "" },
+                    )}
+                  >
+                    ⚠{" "}
+                    {t("freshChip.stale", "Updated {{when}}", {
+                      when: distance ? `${distance} ago` : "",
+                    })}
+                  </span>
+                );
+              }
+              return (
+                <span
+                  className={`${styles.freshChip} ${styles.freshChipUnknown}`}
+                >
+                  {t("freshChip.unknown", "Sync pending")}
+                </span>
+              );
+            })()}
+            <div ref={overflowRef} className={styles.overflowMenu}>
+              <button
+                type="button"
+                className={styles.overflowBtn}
+                onClick={() => setOverflowOpen((v) => !v)}
+                aria-haspopup="menu"
+                aria-expanded={overflowOpen}
               >
-                {t("sync.running", "Syncing...")}
-              </s-button>
-            ) : (
-              <s-button
-                variant="secondary"
-                {...{
-                  icon: "refresh",
-                  title: t(
-                    "page.syncButtonTooltip",
-                    "Webhooks + hourly cron keep data current automatically. Use this only for a full 14-month resync.",
-                  ),
-                } as Record<string, string>}
-                key="sync-btn-active"
-                onClick={handleSync}
-              >
-                {t("page.syncButton", "Force full resync")}
-              </s-button>
-            )}
-            <s-button
-              variant="secondary"
-              {...{ icon: "upload" } as Record<string, string>}
-              onClick={handleCsvDropZoneClick}
-            >
-              {t("page.updateDatabase", "Update database")}
-            </s-button>
+                ⋯ {t("overflowMenu.trigger", "More")}
+              </button>
+              {overflowOpen && (
+                <div className={styles.overflowMenuPanel} role="menu">
+                  <button
+                    type="button"
+                    className={styles.overflowMenuItem}
+                    role="menuitem"
+                    disabled={syncStatus === "running"}
+                    onClick={() => {
+                      setOverflowOpen(false);
+                      handleSync();
+                    }}
+                  >
+                    <span className={styles.menuIcon}>↻</span>
+                    <span>
+                      {syncStatus === "running"
+                        ? t("sync.running", "Syncing...")
+                        : t(
+                            "overflowMenu.forceResync",
+                            "Force full resync",
+                          )}
+                      <span className={styles.menuHint}>
+                        {t(
+                          "overflowMenu.forceResyncHint",
+                          "Re-fetch 14 months of orders. Heavy.",
+                        )}
+                      </span>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.overflowMenuItem}
+                    role="menuitem"
+                    onClick={() => {
+                      setOverflowOpen(false);
+                      handleCsvDropZoneClick();
+                    }}
+                  >
+                    <span className={styles.menuIcon}>⇧</span>
+                    <span>
+                      {t("overflowMenu.uploadBixgrow", "Upload BixGrow CSV")}
+                      <span className={styles.menuHint}>
+                        {t(
+                          "overflowMenu.uploadBixgrowHint",
+                          "Update affiliate metadata (names, commission %).",
+                        )}
+                      </span>
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -1938,34 +2210,50 @@ export default function AffiliatesPage() {
           );
         })()}
 
-        {/* ── Stale sync warning ────────────────────────────────── */}
+        {/* ── Cron stale + last-failure banner (only fires when actually stuck) ── */}
         {syncStatus !== "running" &&
-          syncLastSyncedAt &&
-          (() => {
-            const lastSynced = new Date(syncLastSyncedAt);
-            const ageMs = Date.now() - lastSynced.getTime();
-            const ageDays = ageMs / (1000 * 60 * 60 * 24);
-            if (ageDays < STALE_SYNC_DAYS) return null;
-            return (
+          cronHealth.status === "stale" &&
+          cronHealth.lastFailureMessage && (
+            <div style={{ marginBottom: 12 }}>
               <s-banner tone="warning">
-                {t("sync.stale", {
-                  days: Math.floor(ageDays),
+                <strong>
+                  {t("cronStaleBanner.title", "Automatic sync is delayed.")}
+                </strong>{" "}
+                {t("cronStaleBanner.message", {
+                  when: formatDistanceShort(cronHealth.lastSuccessAt) + " ago",
+                  error: cronHealth.lastFailureMessage,
                   defaultValue:
-                    "Affiliate data is {{days}} days old — run Sync Orders to refresh before drawing conclusions.",
+                    "Last successful run {{when}}. Cron error: {{error}}",
                 })}
               </s-banner>
-            );
-          })()}
+            </div>
+          )}
 
-        {/* ── Error / Warning banners ──────────────────────────── */}
+        {/* ── Unmapped-codes inline banner (info, with onboarding link) ── */}
+        {unmappedCount > 0 && activeTab === "attribution" && (
+          <div className={styles.inlineBannerInfo}>
+            <span className={styles.bannerIcon}>ⓘ</span>
+            <span>
+              {t("unmappedCodesBanner.message", {
+                count: unmappedCount,
+                defaultValue:
+                  "{{count}} codes used in orders aren't mapped to a profile yet",
+              })}
+            </span>
+            <span className={styles.bannerSpacer}></span>
+            <Link
+              to="/app/affiliates/onboarding"
+              className={styles.bannerCta}
+            >
+              {t("unmappedCodesBanner.cta", "Open onboarding queue")} →
+            </Link>
+          </div>
+        )}
+
+        {/* ── Error banners ──────────────────────────── */}
         {syncError && (
           <s-banner tone="critical">
             {syncError}
-          </s-banner>
-        )}
-        {syncWarning && (
-          <s-banner tone="warning">
-            {t("sync.warning", "Previous sync had issues")}: {syncWarning}
           </s-banner>
         )}
         {statsError && (
@@ -2780,6 +3068,15 @@ export default function AffiliatesPage() {
                   })
                 : null
             }
+          />
+        )}
+
+        {/* ── Settings tab (affiliate programs registry) ── */}
+        {activeTab === "settings" && (
+          <AffiliatesSettings
+            shop={shop}
+            programs={programs}
+            t={t}
           />
         )}
       </s-section>

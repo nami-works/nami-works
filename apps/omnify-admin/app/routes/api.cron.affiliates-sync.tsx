@@ -26,6 +26,11 @@ import {
   buildAttributionQueueSnapshot,
   listForgottenClaims,
 } from "../affiliates/attribution.server";
+import {
+  listAffiliatePrograms,
+  syncProgramCodes,
+} from "../affiliates/programs.server";
+import { invalidateAffiliateCodesCache } from "../affiliates/webhook-ingest.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
@@ -75,6 +80,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     snapshotClaimed?: number;
     snapshotUnknown?: number;
     forgottenClaims?: number;
+    programsTotal?: number;
+    programsOk?: number;
+    programsFailed?: number;
+    programsCodesSynced?: number;
   }> = [];
 
   for (const shop of shops) {
@@ -114,6 +123,52 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       const message = err instanceof Error ? err.message : String(err);
       errors.push({ shop, phase: "reconcile", error: message });
       console.error(`[affiliates-cron] reconcile FAILED shop=${shop}`, err);
+    }
+
+    // 1b. Sync registered AffiliatePrograms (Shopify discount → AffiliateCode).
+    // Per-program errors don't fail the whole shop — codes from a single
+    // misconfigured program shouldn't block the rest of the pipeline.
+    try {
+      const programs = await listAffiliatePrograms(shop);
+      let pOk = 0;
+      let pFailed = 0;
+      let pTotalCodes = 0;
+      for (const p of programs) {
+        try {
+          const result = await syncProgramCodes(admin, shop, p.id);
+          if (result.ok) {
+            pOk += 1;
+            pTotalCodes += result.codesCount;
+          } else {
+            pFailed += 1;
+          }
+        } catch (err) {
+          pFailed += 1;
+          console.error(
+            `[affiliates-cron] program-sync FAILED shop=${shop} programId=${p.id}`,
+            err,
+          );
+        }
+      }
+      shopRow.programsTotal = programs.length;
+      shopRow.programsOk = pOk;
+      shopRow.programsFailed = pFailed;
+      shopRow.programsCodesSynced = pTotalCodes;
+      if (programs.length > 0) {
+        // Refresh the codes cache so any new codes from this run are matched
+        // by webhooks immediately.
+        invalidateAffiliateCodesCache(shop);
+      }
+      console.info(
+        `[affiliates-cron] programs OK shop=${shop} total=${programs.length} ok=${pOk} failed=${pFailed} codes=${pTotalCodes}`,
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      errors.push({ shop, phase: "programs", error: message });
+      console.error(
+        `[affiliates-cron] programs FAILED shop=${shop}`,
+        err,
+      );
     }
 
     // 2. Rebuild AffiliateMonthly (cheap even if reconcile failed)
@@ -193,6 +248,26 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       console.warn(
         `[affiliates-cron] forgotten SKIP shop=${shop} reason=${message}`,
       );
+    }
+
+    // 5. Clear stale "failed" sync meta when this run had no errors for the
+    // shop. This kills the lingering "Previous sync had issues: Unknown sync
+    // error" banner that used to persist across days even after the cron
+    // recovered. Only clears when no per-phase errors were recorded for THIS
+    // shop in THIS run.
+    const shopErrors = errors.filter((e) => e.shop === shop);
+    if (shopErrors.length === 0) {
+      try {
+        await prisma.affiliateSyncMeta.updateMany({
+          where: { shop, status: "failed" },
+          data: { status: "idle", errorMessage: null },
+        });
+      } catch (err) {
+        console.warn(
+          `[affiliates-cron] clear-stale-error SKIP shop=${shop}`,
+          err,
+        );
+      }
     }
 
     summary.push(shopRow);

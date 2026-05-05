@@ -267,5 +267,97 @@
       "forgottenCount": "{{count}} esquecidas",
       "unknownCount": "{{count}} desconhecidas"
     }
+  },
+  "tabs": {
+    "settings": "Configurações"
+  },
+  "freshChip": {
+    "fresh": "Atualizado há {{when}}",
+    "stale": "Atualizado há {{when}}",
+    "unknown": "Sincronização pendente"
+  },
+  "cronStaleBanner": {
+    "title": "A sincronização automática está atrasada.",
+    "message": "Última execução bem-sucedida há {{when}}. Erro do cron: {{error}}",
+    "messageNoError": "Última execução bem-sucedida há {{when}}.",
+    "runManual": "Executar sincronização manual"
+  },
+  "unmappedCodesBanner": {
+    "message_one": "{{count}} cupom usado em pedidos ainda não está vinculado a um perfil",
+    "message_other": "{{count}} cupons usados em pedidos ainda não estão vinculados a um perfil",
+    "cta": "Abrir fila de cadastro"
+  },
+  "overflowMenu": {
+    "trigger": "Mais",
+    "forceResync": "Forçar resincronização total",
+    "forceResyncHint": "Refazer 14 meses de pedidos. Pesado.",
+    "uploadBixgrow": "Enviar CSV do BixGrow",
+    "uploadBixgrowHint": "Atualizar metadados de afiliados (nomes, comissão %)."
+  },
+  "settings": {
+    "title": "Programas de afiliados",
+    "subtitle": "O sistema busca os cupons diretamente desses descontos do Shopify a cada hora. Adicionar um cupom no Shopify o ativa aqui em até ~1 hora, sem upload.",
+    "searchPlaceholder": "Buscar programas registrados…",
+    "addProgram": "+ Adicionar programa",
+    "summary_one": "{{n}} programa · {{codes}} cupons sincronizados · {{mapped}} vinculados",
+    "summary_other": "{{n}} programas · {{codes}} cupons sincronizados · {{mapped}} vinculados",
+    "noPrograms": "Nenhum programa de afiliados registrado ainda. Clique em \"Adicionar programa\" para registrar um desconto do Shopify como programa de afiliados.",
+    "noMatches": "Nenhum programa corresponde à sua busca.",
+    "programCard": {
+      "lastSynced": "Sincronizado há {{when}}",
+      "neverSynced": "Nunca sincronizado",
+      "codesSynced": "{{count}} cupons sincronizados do Shopify",
+      "mapped": "{{count}} vinculados a perfis",
+      "openInShopify": "Abrir no Shopify",
+      "resync": "Sincronizar agora",
+      "resyncing": "Sincronizando…",
+      "remove": "Remover",
+      "active": "Ativo",
+      "syncFailed": "Falha na sincronização",
+      "discountLabel": "Desconto Shopify"
+    },
+    "removeModal": {
+      "title": "Remover programa?",
+      "body": "Os cupons sincronizados desse desconto continuarão registrados, mas não serão mais atualizados automaticamente.",
+      "cancel": "Cancelar",
+      "remove": "Remover"
+    },
+    "addModal": {
+      "title": "Adicionar programa de afiliados",
+      "searchLabel": "Buscar descontos com cupom no Shopify",
+      "searchPlaceholder": "Digite o título do desconto…",
+      "labelLabel": "Nome do programa (exibido neste app)",
+      "labelPlaceholder": "UGC BixGrow",
+      "add": "Adicionar programa",
+      "cancel": "Cancelar",
+      "searching": "Buscando…",
+      "noResults": "Nenhum desconto encontrado. Tente outra busca.",
+      "selectFirst": "Selecione um desconto e defina um nome.",
+      "errorAdd": "Não foi possível adicionar o programa: {{error}}",
+      "statusActive": "Ativo",
+      "statusScheduled": "Agendado",
+      "statusExpired": "Expirado",
+      "codesCount_one": "{{count}} cupom",
+      "codesCount_other": "{{count}} cupons"
+    }
+  },
+  "onboarding": {
+    "title": "Cupons aguardando cadastro",
+    "subtitle": "Estes cupons aparecem em pedidos, mas ainda não estão vinculados a um perfil de afiliado.",
+    "empty": "Todos os cupons estão vinculados a perfis de afiliados.",
+    "back": "Voltar para Afiliados",
+    "comingSoon": "Em breve",
+    "column": {
+      "code": "Cupom",
+      "firstSeen": "Primeira ocorrência",
+      "orders": "Pedidos",
+      "revenue": "Receita",
+      "program": "Programa",
+      "action": "Ação"
+    },
+    "action": {
+      "onboard": "Cadastrar"
+    },
+    "noProgram": "—"
   }
 }

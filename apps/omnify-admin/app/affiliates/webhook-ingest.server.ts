@@ -28,15 +28,36 @@ const AFFILIATE_CODES_TTL_MS = 10 * 60 * 1000;
 export async function getAffiliateCodesCached(shop: string): Promise<Set<string>> {
   const cached = codeCache.get(shop);
   if (cached && cached.expires > Date.now()) return cached.codes;
-  const profiles = await prisma.affiliateProfile.findMany({
-    where: { shop },
-    select: { code: true },
-  });
-  const codes = new Set(profiles.map((p) => p.code.toLowerCase()));
+
+  // UNION:
+  //  1. AffiliateCode (Shopify-synced) — primary source of truth
+  //  2. AffiliateProfile.code — fallback for shops with profiles but no
+  //     program registered yet (or for codes uploaded only via BixGrow CSV
+  //     before the storage layer started mirroring into AffiliateCode).
+  const [codeRows, profileRows] = await Promise.all([
+    prisma.affiliateCode.findMany({
+      where: { shop },
+      select: { code: true },
+    }),
+    prisma.affiliateProfile.findMany({
+      where: { shop },
+      select: { code: true },
+    }),
+  ]);
+  const codes = new Set<string>();
+  for (const r of codeRows) {
+    if (r.code) codes.add(r.code.toLowerCase());
+  }
+  for (const r of profileRows) {
+    if (r.code) codes.add(r.code.toLowerCase());
+  }
   codeCache.set(shop, {
     codes,
     expires: Date.now() + AFFILIATE_CODES_TTL_MS,
   });
+  console.info(
+    `[affiliates-cache] HIT shop=${shop} fromShopify=${codeRows.length} fromProfiles=${profileRows.length} merged=${codes.size}`,
+  );
   return codes;
 }
 

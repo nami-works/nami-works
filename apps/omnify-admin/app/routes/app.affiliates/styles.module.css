@@ -1452,3 +1452,425 @@ details[open] > summary.attributionSectionHeading::before {
     padding: 6px 8px;
   }
 }
+
+/* ── Freshness chip (tab strip right group) ─────────────────────────── */
+
+.freshChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 14px;
+  background: #e7f4ec;
+  color: #067647;
+  line-height: 1;
+  white-space: nowrap;
+}
+.freshChipStale {
+  background: #fff5dc;
+  color: #b8660a;
+}
+.freshChipUnknown {
+  background: #f6f6f7;
+  color: #6d7175;
+}
+.freshChip .checkmark {
+  font-size: 11px;
+  line-height: 1;
+}
+
+/* ── Overflow menu (⋯ More) ─────────────────────────────────────────── */
+
+.overflowMenu {
+  position: relative;
+  display: inline-block;
+}
+
+.overflowBtn {
+  border: 1px solid #e1e3e5;
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+  color: #303030;
+  cursor: pointer;
+  line-height: 1;
+  height: 28px;
+  font-family: inherit;
+}
+.overflowBtn:hover { background: #f6f6f7; }
+
+.overflowMenuPanel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  padding: 4px;
+  min-width: 240px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 5;
+}
+
+.overflowMenuItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #303030;
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 1.3;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+}
+.overflowMenuItem:hover { background: #f6f6f7; }
+.overflowMenuItem:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.menuIcon {
+  color: #8c9196;
+  width: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.menuHint {
+  display: block;
+  font-size: 11px;
+  color: #6d7175;
+  margin-top: 2px;
+}
+
+/* ── Inline banners (info / warn) ───────────────────────────────────── */
+
+.inlineBannerInfo,
+.inlineBannerWarn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 12px;
+  border: 1px solid;
+}
+.inlineBannerInfo {
+  background: #ebf2ff;
+  border-color: #c7d8f5;
+  color: #1f3d7a;
+}
+.inlineBannerWarn {
+  background: #fff5dc;
+  border-color: #f4d49a;
+  color: #6b3f00;
+}
+.inlineBannerInfo .bannerIcon,
+.inlineBannerWarn .bannerIcon {
+  font-size: 14px;
+  line-height: 1;
+}
+.inlineBannerInfo .bannerSpacer,
+.inlineBannerWarn .bannerSpacer {
+  flex: 1;
+}
+.bannerCta {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 13px;
+  padding: 0;
+  font-family: inherit;
+}
+
+/* ── Settings tab — programs registry ───────────────────────────────── */
+
+.registryHeader {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 8px 0 4px;
+  flex-wrap: wrap;
+}
+.registryHeader .registrySearch {
+  flex: 1;
+  min-width: 240px;
+}
+.registrySummary {
+  color: #6d7175;
+  font-size: 12px;
+  margin: 0 0 16px;
+  text-align: right;
+}
+
+.programCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  background: #ffffff;
+}
+.programCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.programCardLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303030;
+}
+.programCardSpacer { flex: 1; }
+.programBadge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #e7f4ec;
+  color: #067647;
+}
+.programBadgeRemoved {
+  background: #f6f6f7;
+  color: #6d7175;
+}
+.programBadgeFailed {
+  background: #ffe9e6;
+  color: #d72c0d;
+}
+.programCardCount {
+  font-size: 12px;
+  color: #6d7175;
+}
+.programCardMeta {
+  font-size: 12px;
+  color: #6d7175;
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+.programCardMetaMono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  color: #8c9196;
+}
+.programCardStats {
+  font-size: 12px;
+  color: #6d7175;
+  margin: 8px 0 12px;
+}
+.programCardError {
+  font-size: 12px;
+  color: #d72c0d;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+.programCardActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.programCardActions .leftSlot {
+  margin-right: auto;
+}
+
+@media (max-width: 768px) {
+  .programCardActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .programCardActions .leftSlot {
+    margin-right: 0;
+    margin-bottom: 4px;
+  }
+}
+
+.settingsHeader {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #303030;
+}
+.settingsSubtitle {
+  margin: 0 0 16px;
+  color: #6d7175;
+  font-size: 13px;
+}
+
+.settingsEmpty {
+  border: 1px dashed #e1e3e5;
+  border-radius: 10px;
+  padding: 24px;
+  text-align: center;
+  color: #6d7175;
+  font-size: 13px;
+  background: #fafbfb;
+}
+
+/* ── Add-program modal ──────────────────────────────────────────────── */
+
+.modalDemo { padding: 0; }
+.modalSearchInput {
+  width: 100%;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  padding: 6px 10px 6px 32px;
+  font-size: 13px;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' width='14' height='14' fill='%236d7175'><path fill-rule='evenodd' d='M9 3a6 6 0 104.472 10.03l3.249 3.25a1 1 0 001.414-1.415l-3.249-3.25A6 6 0 009 3zm-4 6a4 4 0 118 0 4 4 0 01-8 0z' clip-rule='evenodd'/></svg>") no-repeat 10px center;
+  background-color: #ffffff;
+  font-family: inherit;
+  color: #303030;
+  height: 32px;
+  line-height: 1;
+}
+.modalResults {
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  margin-top: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #ffffff;
+}
+.modalResultRow {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f1f1;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  width: 100%;
+  text-align: left;
+  color: #303030;
+  font-family: inherit;
+}
+.modalResultRow:last-child { border-bottom: none; }
+.modalResultRow:hover { background: #f6f6f7; }
+.modalResultRowSelected { background: #ebf2ff; }
+.modalResultRow .resultMeta {
+  margin-left: auto;
+  font-size: 12px;
+  color: #6d7175;
+  white-space: nowrap;
+}
+.radio {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid #8c9196;
+  flex-shrink: 0;
+  position: relative;
+  background: #ffffff;
+}
+.modalResultRowSelected .radio {
+  border-color: #005bd3;
+}
+.modalResultRowSelected .radio::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: #005bd3;
+  border-radius: 50%;
+}
+
+.modalEmpty {
+  padding: 16px;
+  font-size: 12px;
+  color: #6d7175;
+  text-align: center;
+}
+
+/* Onboarding placeholder route */
+.onboardingTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.onboardingTable th {
+  background: #f6f6f7;
+  color: #6d7175;
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e1e3e5;
+  font-size: 12px;
+}
+.onboardingTable td {
+  padding: 10px;
+  border-bottom: 1px solid #f1f1f1;
+}
+.onboardingTable tr:hover td { background: #f6f6f7; }
+.onboardingCode {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* ── Settings tab — modal-internal helpers ──────────────────────────── */
+
+.modalBody { padding: 0 4px; }
+.modalFieldGroup { margin-bottom: 14px; }
+.modalFieldGroupTop { margin-top: 14px; }
+.modalFieldLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+  margin-bottom: 4px;
+}
+.modalErrorText {
+  margin-top: 12px;
+  color: #d72c0d;
+  font-size: 12px;
+}
+.removeModalText {
+  margin: 0;
+  font-size: 13px;
+  color: #303030;
+}
+.removeModalLabel {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: #6d7175;
+}
+.programCardLink {
+  color: #005bd3;
+  font-size: 13px;
+  text-decoration: none;
+}
+.programCardLink:hover { text-decoration: underline; }
+
+/* Onboarding placeholder helpers */
+.onboardingSubtitle {
+  margin: 0 0 16px;
+  color: #6d7175;
+  font-size: 13px;
+}
+.onboardingBackLink {
+  margin-top: 16px;
+}
+.onboardingBackLink a {
+  color: #005bd3;
+  text-decoration: none;
+}
+.onboardingBackLink a:hover { text-decoration: underline; }
+.onboardingTableWrap { overflow-x: auto; }
+.onboardingNumeric { text-align: right; }
