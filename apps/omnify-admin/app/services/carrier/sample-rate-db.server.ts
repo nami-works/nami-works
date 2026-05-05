@@ -5,11 +5,9 @@
  */
 
 import prisma from "../../db.server";
-import type { CarrierProviderId } from "./types";
-import type { CarrierServiceConfigData } from "./types";
+import type { CarrierProviderId, CarrierServiceConfigData } from "./types";
 import { quoteLalamove } from "./lalamove-adapter.server";
-import { geocodeAddress } from "./geocode.server";
-import { haversineKm } from "./geocode.server";
+import { geocodeAddress, haversineKm } from "./geocode.server";
 import { getRuntimeCredentialsForShop } from "../lalamove-credentials.server";
 
 const QUADRANT_SIZE_KM = 0.5;
@@ -39,7 +37,6 @@ export function getQuadrantIndices(
 /** Get max delivery zone radius in km from config. */
 export function getMaxZoneRadiusKm(config: CarrierServiceConfigData | null): number {
   if (!config?.distanceZones?.length) return 20;
-  const unit = config.distanceUnit ?? "km";
   let max = 0;
   for (const z of config.distanceZones) {
     const r = z.radiusKm ?? (z.radiusMiles ? z.radiusMiles * 1.60934 : 0);
@@ -67,7 +64,6 @@ export type OrderWithCoords = {
  */
 export async function fetchOrdersForSampleBuild(
   admin: { graphql: (q: string, v?: { variables?: Record<string, unknown> }) => Promise<Response> },
-  shop: string,
 ): Promise<OrderWithCoords[]> {
   const since = new Date();
   since.setFullYear(since.getFullYear() - 1);
@@ -357,7 +353,7 @@ export async function buildAllSampleRatesForShop(
   if (!apiKey) return 0;
 
   const maxRadiusKm = getMaxZoneRadiusKm(config);
-  const orders = await fetchOrdersForSampleBuild(admin, shop);
+  const orders = await fetchOrdersForSampleBuild(admin);
 
   let total = 0;
   for (const row of rows) {
@@ -393,7 +389,7 @@ export async function buildSampleRatesForLocationWithOrders(
   currency: string,
   options?: { googleMapsApiKey?: string },
 ): Promise<number> {
-  const orders = await fetchOrdersForSampleBuild(admin, shop);
+  const orders = await fetchOrdersForSampleBuild(admin);
   return buildSampleRatesForLocation(
     shop,
     locationId,
