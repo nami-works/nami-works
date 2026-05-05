@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
+import type { Prisma } from "@prisma/client";
 import prisma from "../db.server";
 
 export type RetailLocation = {
@@ -453,10 +454,11 @@ export const writeStatsConfig = async (
   setId: string | null,
   config: StatsConfig,
 ): Promise<void> => {
+  const data = config as unknown as Prisma.InputJsonValue;
   await prisma.retailStatsConfig.upsert({
     where: { shop_setId: { shop, setId: setId ?? "" } },
-    create: { shop, setId: setId ?? "", data: config as any },
-    update: { data: config as any },
+    create: { shop, setId: setId ?? "", data },
+    update: { data },
   });
 };
 
@@ -491,9 +493,9 @@ export const readSyncStatus = async (shop: string): Promise<SyncStatusRecord> =>
     updatedAt: row.updatedAt.toISOString(),
     phase: (row.phase as "customers" | "orders" | null) ?? null,
     progressCount: row.progressCount ?? null,
-    startedAt: (row as any).startedAt ? new Date((row as any).startedAt).toISOString() : null,
-    lastCustomersTotal: (row as any).lastCustomersTotal ?? null,
-    lastOrdersTotal: (row as any).lastOrdersTotal ?? null,
+    startedAt: row.startedAt ? row.startedAt.toISOString() : null,
+    lastCustomersTotal: row.lastCustomersTotal ?? null,
+    lastOrdersTotal: row.lastOrdersTotal ?? null,
   };
 };
 
