@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Local Delivery backlog (badges, route cards, polyline toolbar, address-errors modal)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --border-light: #f1f1f1;
+    --text: #303030;
+    --header-text: #3a3a3a;
+    --subdued: #6d7175;
+    --axis: #8c9196;
+    --blue: #005bd3;
+    --blue-tint: #ebf1ff;
+    --green: #008060;
+    --green-text: #067647;
+    --green-tint: #e3f1df;
+    --red: #d72c0d;
+    --red-tint: #fde8e6;
+    --orange: #b8350f;
+    --orange-tint: #fff1e6;
+    --warn: #d99a0a;
+    --warn-tint: #fff5d8;
+    --info-tint: #ebf1ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+  h2 { font-size: 16px; font-weight: 600; margin: 0 0 4px; color: var(--text); }
+  h3 { font-size: 13px; font-weight: 600; margin: 0 0 12px; color: var(--subdued); text-transform: uppercase; letter-spacing: 0.06em; }
+  .intro { font-size: 13px; color: var(--subdued); max-width: 780px; margin-bottom: 24px; line-height: 1.55; }
+  .intro p { margin: 0 0 8px; }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px 24px;
+    margin-bottom: 24px;
+    max-width: 1080px;
+  }
+  .card .sub {
+    font-size: 12px;
+    color: var(--subdued);
+    margin-bottom: 16px;
+  }
+
+  /* Side-by-side compare */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .compare > div { display: flex; flex-direction: column; gap: 8px; }
+  .compare h3 { margin-bottom: 8px; }
+  .stage {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    min-height: 80px;
+  }
+  .stage.spec {
+    background: var(--card);
+    border-style: dashed;
+  }
+
+  /* Notes panel */
+  .notes {
+    background: #fffdf2;
+    border: 1px solid #f1e1a1;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: #6b5400;
+    margin-top: 16px;
+  }
+  .notes strong { color: #4a3a00; }
+  .notes ul { margin: 6px 0 0; padding-left: 18px; }
+  .notes li { margin-bottom: 4px; }
+
+  /* Badges (Polaris s-badge replicas) */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+  }
+  .badge svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .badge.warning { background: var(--warn-tint); color: #8a6500; }
+  .badge.warning svg { color: var(--warn); }
+  .badge.info { background: var(--info-tint); color: #003a8c; }
+  .badge.info svg { color: var(--blue); }
+  .badge.critical { background: var(--red-tint); color: #8b1d0a; }
+  .badge.critical svg { color: var(--red); }
+  .badge.subdued { background: #e4e5e7; color: #303030; }
+  .badge.success { background: var(--green-tint); color: var(--green-text); }
+
+  /* Header bar with badges */
+  .header-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .header-spacer { flex: 1; }
+
+  /* Buttons (s-button replicas) */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: var(--card);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    line-height: 18px;
+  }
+  .btn.secondary { border-color: #babfc3; }
+  .btn.secondary:hover { background: #f6f6f7; }
+  .btn.primary { background: var(--blue); color: white; }
+  .btn.primary:hover { background: #004db1; }
+  .btn.icon-only { padding: 6px 8px; }
+  .btn.tone-critical { color: var(--red); border-color: #f1b5af; }
+  .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+  /* Route card (matches CLAUDE.md "Aside Card Blocks" spec) */
+  .route-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    background: var(--card);
+    max-width: 360px;
+  }
+  .route-card .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin: -12px -12px 12px;
+    padding: 12px 12px 0;
+  }
+  .route-card .info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+    font-size: 13px;
+  }
+  .route-card .info .stat-row {
+    display: flex;
+    justify-content: space-between;
+    color: var(--subdued);
+  }
+  .route-card .info .stat-row span:last-child {
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .route-card .actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  .route-card .actions .status-badge {
+    margin-right: auto;
+  }
+
+  /* Map block + polyline toolbar */
+  .map {
+    position: relative;
+    background: linear-gradient(135deg, #d0e1f5 0%, #b3d4e8 50%, #d3dde8 100%);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    height: 280px;
+    overflow: hidden;
+  }
+  .map svg { display: block; width: 100%; height: 100%; }
+  .toolbar {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 8px;
+    background: var(--card);
+    border-radius: 8px;
+    padding: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .toolbar .btn { padding: 4px 10px; font-size: 12px; }
+
+  /* Modal mockup */
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0;
+    max-width: 520px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  }
+  .modal .modal-head {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal .modal-head h2 { margin: 0; }
+  .modal .modal-body {
+    padding: 16px 20px;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .modal .modal-foot {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    background: var(--bg);
+    border-radius: 0 0 12px 12px;
+  }
+  .order-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+  }
+  .order-row:last-child { border-bottom: none; }
+  .order-row .order-id { font-weight: 500; }
+  .order-row .err {
+    font-size: 12px;
+    color: var(--subdued);
+  }
+
+  /* Overflow menu mockup */
+  .overflow-menu {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px;
+    width: 200px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .overflow-menu .item {
+    padding: 8px 10px;
+    font-size: 13px;
+    color: var(--text);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .overflow-menu .item:hover { background: var(--bg); }
+  .overflow-menu .item.critical { color: var(--red); }
+  .overflow-menu .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+  }
+
+  .arrow {
+    color: var(--subdued);
+    font-weight: 600;
+    margin: 0 8px;
+  }
+  .strikethrough {
+    text-decoration: line-through;
+    color: var(--subdued);
+  }
+  .pill-removed {
+    display: inline-block;
+    padding: 1px 8px;
+    background: var(--red-tint);
+    color: var(--red);
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .pill-new {
+    display: inline-block;
+    padding: 1px 8px;
+    background: var(--green-tint);
+    color: var(--green-text);
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+
+<h1>Local Delivery — backlog visual changes</h1>
+<div class="intro">
+  <p>One mockup covering all visual changes from <code>inputs/backlog/local-delivery.md</code>: badge standardization, per-route card restructure, polyline edit toolbar, address-errors modal rewire, and the "Shipment requests" removal. Plus three micro-fixes (sidebar parity in expanded mode, "Dispatching: 1/3" spacing, "Orders to deliver: n" format) covered in the Notes panel of each section.</p>
+  <p><strong>Out of scope here:</strong> the canonical tag rename (<code>ld_address_review → ld_address-confirm</code>) is already on main from Track 1B1 — this mockup just consumes the new tag name in the address-errors modal deep-link.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- 1. HEADER BADGES — standardization                           -->
+<!-- ============================================================ -->
+<section class="card">
+  <h2>1. Header badges — standardization</h2>
+  <div class="sub">All badges adopt: <code>&lt;s-icon&gt;</code> + <code>&lt;s-badge tone="…"&gt;</code> + <code>": n"</code> format (no parentheses). One badge removed entirely (Shipment requests). One newly visible on All locations (Potential address errors).</div>
+
+  <div class="compare">
+    <div>
+      <h3>Before</h3>
+      <div class="stage">
+        <div class="header-bar">
+          <span class="badge critical">⚠️ Failed delivery (2)</span>
+          <span class="badge warning">⚠️ Potential address errors (1)</span>
+          <span class="badge warning">⚠️ Shipment requests to process (6)</span>
+          <span class="badge subdued">📦 Orders to deliver (17)</span>
+          <span class="header-spacer"></span>
+          <span style="font-size:13px;color:var(--subdued);">Dispatching: 1 / 3</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3>After</h3>
+      <div class="stage">
+        <div class="header-bar">
+          <span class="badge warning">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M14.04 2H5.96L1 6.96v8.08L5.96 20h8.08L19 15.04V6.96L14.04 2zM10 15a1 1 0 110-2 1 1 0 010 2zm1-4a1 1 0 11-2 0V6a1 1 0 112 0v5z"/></svg>
+            Failed delivery: 2
+          </span>
+          <span class="badge warning">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 1.67a1.5 1.5 0 011.31.77l7.45 13.13A1.5 1.5 0 0117.45 18H2.55a1.5 1.5 0 01-1.31-2.43L8.69 2.44A1.5 1.5 0 0110 1.67zM10 7a1 1 0 00-1 1v3a1 1 0 102 0V8a1 1 0 00-1-1zm0 7.5a1 1 0 100 2 1 1 0 000-2z"/></svg>
+            Potential address errors: 1
+          </span>
+          <span class="badge info">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 1.5l7.5 4v9L10 19l-7.5-4.5v-9L10 1.5zm0 2.16L4.46 6.85 10 10.18l5.54-3.33L10 3.66zM4 8.5v5.4L9 17v-5.5L4 8.5zm12 0l-5 3v5.5L16 13.9V8.5z"/></svg>
+            Orders to deliver: 17
+          </span>
+          <span class="header-spacer"></span>
+          <span style="font-size:13px;color:var(--subdued);">Dispatching: 1/3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <strong>Spec details:</strong>
+    <ul>
+      <li><strong>Failed delivery</strong>: <code>&lt;s-icon type="alert-octagon"&gt;</code>, <code>&lt;s-badge tone="warning"&gt;</code>, <code>": n"</code>. <em>(was emoji + parentheses)</em></li>
+      <li><strong>Potential address errors</strong>: <code>&lt;s-icon type="alert-triangle"&gt;</code> (unchanged from today), <code>&lt;s-badge tone="warning"&gt;</code>, <code>": n"</code>. <em>Newly visible when "All locations" is selected (today: hidden).</em></li>
+      <li><strong>Shipment requests to process</strong>: <span class="pill-removed">REMOVED</span> entire UI + computed logic. See section 6.</li>
+      <li><strong>Orders to deliver</strong>: <code>&lt;s-icon type="receipt-dollar"&gt;</code> (suggestion — see open question below), <code>&lt;s-badge tone="info"&gt;</code>, <code>": n"</code>.</li>
+      <li><strong>"Dispatching: n/m"</strong>: drop the spaces around the slash. Locale string change in <code>en/local-delivery.json</code> + <code>pt-BR/local-delivery.json</code>: <code>"Dispatching: {{completed}} / {{total}}" → "Dispatching: {{completed}}/{{total}}"</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 2. PER-ROUTE CARD restructure                                -->
+<!-- ============================================================ -->
+<section class="card">
+  <h2>2. Per-route card — destructive actions consolidated into ⋯ menu</h2>
+  <div class="sub">The ⋯ overflow menu replaces the trash icon at the top-right of the card head. <strong>All destructive actions</strong> (Clear route, Delete route, Cancel delivery) move INSIDE the menu — no destructive button on the card surface anymore. Status badges, when present, sit at the LEFT of the action row.</div>
+
+  <div class="compare">
+    <div>
+      <h3>Pre-dispatch</h3>
+      <div class="stage">
+        <div class="route-card">
+          <div class="head">
+            <span class="badge subdued" style="background:#e3f1df;color:#067647;">Route 1 · 3 stops · 12.4 km</span>
+            <button class="btn icon-only secondary" title="More actions">
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" style="width:14px;height:14px;"><circle cx="4" cy="10" r="2"/><circle cx="10" cy="10" r="2"/><circle cx="16" cy="10" r="2"/></svg>
+            </button>
+          </div>
+          <div class="info">
+            <div class="stat-row"><span>Pickup</span><span>10:30 AM</span></div>
+            <div class="stat-row"><span>Drop-off</span><span>11:45 AM</span></div>
+            <div class="stat-row"><span>Estimate</span><span>R$ 38.20</span></div>
+          </div>
+          <div class="actions">
+            <button class="btn primary">Dispatch</button>
+          </div>
+        </div>
+        <div style="margin-top:12px;color:var(--subdued);font-size:12px;">⋯ opens:</div>
+        <div class="overflow-menu" style="margin-top:6px;">
+          <div class="item">Manage</div>
+          <div class="item">Details</div>
+          <div class="divider"></div>
+          <div class="item critical">Clear route</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3>Post-dispatch</h3>
+      <div class="stage">
+        <div class="route-card">
+          <div class="head">
+            <span class="badge subdued" style="background:#e3f1df;color:#067647;">Route 1 · Lalamove #ABCD-1234</span>
+            <button class="btn icon-only secondary" title="More actions">
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" style="width:14px;height:14px;"><circle cx="4" cy="10" r="2"/><circle cx="10" cy="10" r="2"/><circle cx="16" cy="10" r="2"/></svg>
+            </button>
+          </div>
+          <div class="info">
+            <div class="stat-row"><span>Pickup ETA</span><span>10:32 AM</span></div>
+            <div class="stat-row"><span>Drop-off ETA</span><span>11:48 AM</span></div>
+            <div class="stat-row"><span>Driver</span><span>João S. · (11) 9 9876-5432</span></div>
+          </div>
+          <div class="actions">
+            <span class="badge info">
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm.5-9a.5.5 0 11-1 0 .5.5 0 011 0zm-.5 1.5a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1z"/></svg>
+              Driver heading to pickup
+            </span>
+          </div>
+        </div>
+        <div style="margin-top:12px;color:var(--subdued);font-size:12px;">⋯ opens:</div>
+        <div class="overflow-menu" style="margin-top:6px;">
+          <div class="item">Details</div>
+          <div class="divider"></div>
+          <div class="item critical">Cancel delivery</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <strong>Spec details:</strong>
+    <ul>
+      <li><strong>Trash icon removed.</strong> The top-right slot of the card head holds the ⋯ overflow menu button (Polaris <code>&lt;s-button variant="secondary"&gt;</code> with horizontal-dots icon). The destructive "Delete route" action moves inside the menu.</li>
+      <li><strong>Pre-dispatch menu:</strong> <code>Manage</code> · <code>Details</code> · ─── · <code>Clear route</code> (red). Constructive items first, divider, destructive item last.</li>
+      <li><strong>Post-dispatch menu:</strong> <code>Details</code> · ─── · <code>Cancel delivery</code> (red). <em>Manage</em> and <em>Clear route</em> hidden — route shape and stops lock once the Lalamove order is live; the operator must Cancel delivery first to unlock them.</li>
+      <li><strong>Pre-dispatch action row:</strong> primary "Dispatch" right-aligned. No status badge yet (no Lalamove order exists).</li>
+      <li><strong>Post-dispatch action row:</strong> status badge right-aligned (sits where the Dispatch button would sit pre-dispatch). No main action button — the only meaningful next action is destructive (Cancel delivery) and lives in the menu. Default <code>justify-content: flex-end</code>, consistent with the pre-dispatch row.</li>
+      <li><strong>Visibility logic preservation:</strong> menu items inherit the same conditional rendering rules as the buttons they replaced. "Cancel delivery" only renders when the Lalamove order is in a cancellable state; "Manage" only renders when the route still has editable stops.</li>
+      <li><strong>Confirmation modal still required for destructive items.</strong> Clicking "Clear route" or "Cancel delivery" inside the menu opens the existing confirmation modal — no destructive action fires directly from menu click.</li>
+      <li><strong>Polyline edit lockout</strong> (cross-reference Section 3): while the polyline editor is open, the primary action button (Dispatch) is disabled, and destructive menu items are also disabled. The user must Confirm or Cancel the edit first.</li>
+      <li><strong>Menu icons (locked):</strong> <code>Manage</code> → <code>&lt;s-icon type="edit"&gt;</code> · <code>Details</code> → <code>&lt;s-icon type="info"&gt;</code> · <code>Clear route</code> → <code>&lt;s-icon type="minus-circle"&gt;</code> · <code>Cancel delivery</code> → <code>&lt;s-icon type="disabled"&gt;</code>. Icons render to the LEFT of the menu label, with a 8px gap.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 3. POLYLINE EDIT TOOLBAR                                     -->
+<!-- ============================================================ -->
+<section class="card">
+  <h2>3. Polyline edit toolbar — Edit / Confirm / Cancel</h2>
+  <div class="sub">New toolbar overlay on the map block. Three states: default, editing (drag+drop unlocked, polylines dotted), and editing-with-confirm-pending. The toolbar lives at top-right of the map (does NOT overlap the existing fullscreen toggle that sits at top-left on desktop).</div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+    <div>
+      <h3>State A · default</h3>
+      <div class="map">
+        <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid slice">
+          <path d="M50 80 Q150 40 250 100 T450 80 L520 220" stroke="#005bd3" stroke-width="3" fill="none"/>
+          <path d="M80 200 Q200 220 320 180 T540 130" stroke="#067647" stroke-width="3" fill="none"/>
+          <circle cx="50" cy="80" r="6" fill="#005bd3"/>
+          <circle cx="450" cy="80" r="6" fill="#005bd3"/>
+          <circle cx="520" cy="220" r="6" fill="#005bd3"/>
+          <circle cx="80" cy="200" r="6" fill="#067647"/>
+          <circle cx="540" cy="130" r="6" fill="#067647"/>
+        </svg>
+        <div class="toolbar">
+          <button class="btn secondary"><svg viewBox="0 0 20 20" fill="currentColor" style="width:12px;height:12px;" aria-hidden="true"><path d="M14.7 2.3a1 1 0 011.4 0l1.6 1.6a1 1 0 010 1.4L7.4 15.6l-3.5.5.5-3.5L14.7 2.3z"/></svg> Edit</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--subdued);margin-top:8px;">Polylines rendered solid in their default colors.</div>
+    </div>
+
+    <div>
+      <h3>State B · editing</h3>
+      <div class="map">
+        <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid slice">
+          <path d="M50 80 Q150 40 250 100 T450 80 L520 220" stroke="#7ea4d6" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+          <path d="M80 200 Q200 220 320 180 T540 130" stroke="#9ec6a3" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+          <circle cx="50" cy="80" r="7" fill="#005bd3" stroke="white" stroke-width="2"/>
+          <circle cx="450" cy="80" r="7" fill="#005bd3" stroke="white" stroke-width="2"/>
+          <circle cx="520" cy="220" r="7" fill="#005bd3" stroke="white" stroke-width="2"/>
+          <circle cx="80" cy="200" r="7" fill="#067647" stroke="white" stroke-width="2"/>
+          <circle cx="540" cy="130" r="7" fill="#067647" stroke="white" stroke-width="2"/>
+        </svg>
+        <div class="toolbar">
+          <button class="btn primary">Confirm</button>
+          <button class="btn secondary">Cancel</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--subdued);margin-top:8px;">Polylines dotted + subdued. Stops draggable. Edit button is hidden — replaced by Confirm + Cancel.</div>
+    </div>
+
+    <div>
+      <h3>State C · after confirm</h3>
+      <div class="map">
+        <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid slice">
+          <path d="M50 80 L250 100 L450 80 L520 220" stroke="#005bd3" stroke-width="3" fill="none"/>
+          <path d="M80 200 L320 180 L540 130" stroke="#067647" stroke-width="3" fill="none"/>
+          <circle cx="50" cy="80" r="6" fill="#005bd3"/>
+          <circle cx="450" cy="80" r="6" fill="#005bd3"/>
+          <circle cx="520" cy="220" r="6" fill="#005bd3"/>
+          <circle cx="80" cy="200" r="6" fill="#067647"/>
+          <circle cx="540" cy="130" r="6" fill="#067647"/>
+        </svg>
+        <div class="toolbar">
+          <button class="btn secondary"><svg viewBox="0 0 20 20" fill="currentColor" style="width:12px;height:12px;" aria-hidden="true"><path d="M14.7 2.3a1 1 0 011.4 0l1.6 1.6a1 1 0 010 1.4L7.4 15.6l-3.5.5.5-3.5L14.7 2.3z"/></svg> Edit</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--subdued);margin-top:8px;">New polylines from API recompute (no <code>TRAFFIC_AWARE</code> per Track 1A). Previous polylines erased.</div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <strong>Spec details:</strong>
+    <ul>
+      <li><strong>Default → Edit clicked:</strong> unlocks Google Maps drag + drop on stops; current polylines reformat as dotted (4px gap) and subdued (~50% lightness via lerp toward white); Edit hides; Confirm + Cancel appear.</li>
+      <li><strong>Confirm clicked:</strong> calls existing Google Routes recompute path, renders new polylines in default solid format, erases previous polylines completely, restores Edit button.</li>
+      <li><strong>Cancel clicked:</strong> reverts all stop drags since last auto-assignment or last Confirm; restores original polylines in default format; restores Edit button.</li>
+      <li>Toolbar position: <code>position: absolute; top: 12px; right: 12px;</code> on the map container.</li>
+      <li>Toolbar does NOT render when no routes are visible (avoid an editor for nothing).</li>
+      <li>While editing, the existing per-route cards stay interactive — but their primary action ("Request driver", "Cancel", etc.) is disabled until the user resolves the edit (Confirm or Cancel) so we don't dispatch a route mid-edit.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 4. ADDRESS-ERRORS MODAL — rewire                             -->
+<!-- ============================================================ -->
+<section class="card">
+  <h2>4. "Potential address errors" modal — rewire</h2>
+  <div class="sub">Modal becomes a list of orders (no per-row CTA) plus a single primary "Fix addresses" button that opens Shopify's native order list filtered by <code>tag:ld_address-confirm</code> in a new tab. Reason: Shopify's order list lets the operator edit addresses inline, far faster than per-order modals here.</div>
+
+  <div class="compare">
+    <div>
+      <h3>Before · per-row CTAs</h3>
+      <div class="stage">
+        <div class="modal" style="max-width:100%;">
+          <div class="modal-head">
+            <h2>Potential address errors</h2>
+            <button class="btn icon-only secondary" aria-label="Close">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="order-row">
+              <span class="order-id">#1052</span>
+              <div>
+                <div>Av. Itaberaba, 1515, Ap82 B, ⁠82</div>
+                <div class="err">Duplicated trailing number</div>
+              </div>
+              <button class="btn secondary">Fix</button>
+            </div>
+            <div class="order-row">
+              <span class="order-id">#1054</span>
+              <div>
+                <div>Rua Forte William, ⁠11</div>
+                <div class="err">Possible duplicated number (complement: 11 Matizes)</div>
+              </div>
+              <button class="btn secondary">Fix</button>
+            </div>
+          </div>
+          <div class="modal-foot">
+            <button class="btn secondary">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3>After · single Fix-all CTA</h3>
+      <div class="stage">
+        <div class="modal" style="max-width:100%;">
+          <div class="modal-head">
+            <h2>Potential address errors</h2>
+            <button class="btn icon-only secondary" aria-label="Close">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="order-row">
+              <span class="order-id">#1052</span>
+              <div>
+                <div>Av. Itaberaba, 1515, Ap82 B, ⁠82</div>
+                <div class="err">Duplicated trailing number</div>
+              </div>
+              <span></span>
+            </div>
+            <div class="order-row">
+              <span class="order-id">#1054</span>
+              <div>
+                <div>Rua Forte William, ⁠11</div>
+                <div class="err">Possible duplicated number (complement: 11 Matizes)</div>
+              </div>
+              <span></span>
+            </div>
+          </div>
+          <div class="modal-foot">
+            <button class="btn secondary">Close</button>
+            <button class="btn primary">
+              Fix addresses
+              <svg viewBox="0 0 20 20" fill="currentColor" style="width:12px;height:12px;margin-left:4px;" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-7.293 7.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 100-2H5z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <strong>Spec details:</strong>
+    <ul>
+      <li><strong>Trigger of badge visibility:</strong> badge is visible when "All locations" is selected (today: hidden). Per-location selection keeps existing behavior.</li>
+      <li><strong>"Fix addresses" deep-link:</strong> opens <code>https://&lt;shop&gt;.myshopify.com/admin/orders?query=tag:ld_address-confirm</code> in a new tab via <code>window.open(url, "_blank", "noopener,noreferrer")</code>. Tag value comes from <code>LD_ADDRESS_CONFIRM_TAG</code> constant (Track 1B1, on main).</li>
+      <li><strong>Per-row CTAs removed.</strong> The per-row "Fix" buttons are gone. The list is now read-only context — operator clicks Fix-all once, fixes everything in Shopify's native UI.</li>
+      <li><strong>Empty state:</strong> if zero orders match (count drops to 0 between modal open and render), show "No address errors found." centered, no action button.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 5. EXPANDED LAYOUT — sidebar parity                          -->
+<!-- ============================================================ -->
+<section class="card">
+  <h2>5. Expanded (fullscreen) layout — sidebar parity</h2>
+  <div class="sub">The expanded/fullscreen view of Local Delivery should render the sidebar blocks (Route manager, Auto-assign accuracy) at the SAME relative positions as the collapsed view. Today they drift.</div>
+  <div class="notes">
+    <strong>Spec details:</strong>
+    <ul>
+      <li>Both views should render the sidebar in this order: <strong>Route manager → Auto-assign accuracy</strong>. No reordering between collapsed and expanded.</li>
+      <li>Both views should keep the same vertical spacing between blocks (16px gap, matching the rest of the codebase's aside conventions).</li>
+      <li>Expanded view today places "Route manager" higher than the map — this is correct. Verify "Auto-assign accuracy" appears immediately below it, not somewhere else.</li>
+      <li><strong>Implementation note:</strong> if the expanded layout uses a different render path (separate JSX branch), DRY it — same sub-component, single source of truth, only the wrapper differs.</li>
+    </ul>
+    <strong style="display:block;margin-top:8px;">Verification step:</strong> open both layouts side-by-side after the change. Take screenshots before/after. Confirm sidebar blocks are at identical relative positions in both.
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 6. SHIPMENT REQUESTS — full removal                          -->
+<!-- ============================================================ -->
+<section class="card">
+  <h2>6. "Shipment requests to process" — full removal <span class="pill-removed">REMOVED</span></h2>
+  <div class="sub">Full delete: UI + computed logic + i18n strings. No DB column, no cron, no webhook subscription — pure UI feature today (audit confirmed).</div>
+  <div class="notes">
+    <strong>Removal blast radius (audited):</strong>
+    <ul>
+      <li><strong><code>app/routes/app.local-delivery.tsx</code></strong>: 8 spots — loader-prop destructure (line 151), modal-state useState (line 191), focus-effect (lines 1900-1905), modal JSX (lines 3482-3519), warning button in map view (lines 3640-3645), warning button in route-manager sidebar (lines 3906-3911), computed <code>shipmentRequestOrders</code> (lines 5599-5621), loader return key (line 5915).</li>
+      <li><strong><code>app/i18n/locales/en/local-delivery.json</code></strong>: 8 keys (modals.shipmentRequests.* and warnings.shipmentRequests).</li>
+      <li><strong><code>app/i18n/locales/pt-BR/local-delivery.json</code></strong>: 7 keys (same parents, pt-BR translations).</li>
+      <li><strong><code>docs/shopify-to-local-delivery-field-mapping.md</code></strong>: 5-line section "Shipment Request Orders (Warning)" — delete in same PR.</li>
+      <li><em>Out of scope:</em> <code>inputs/streamlit/local_delivery/shipment_requests.py</code> stays as historical reference per Lucas's call.</li>
+    </ul>
+    <strong style="display:block;margin-top:8px;">No mockup needed — feature simply ceases to exist. Section 1's "After" already shows the badge bar without it.</strong>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 7. DISPATCH ALL — bug fix (Track 1D)                         -->
+<!-- ============================================================ -->
+<section class="card">
+  <h2>7. "Dispatch all" — bug fix (Track 1D, no visual change)</h2>
+  <div class="sub">No visual change; behavioral fix.</div>
+  <div class="notes">
+    <strong>Diagnostic from CloudWatch (today, 2026-05-05 16:19 BRT):</strong>
+    <ul>
+      <li>The <code>/app/local-delivery.data</code> loader returned <strong>502</strong> after 9.4s on a specific <code>locationId=gid://shopify/Location/97784398144</code>. Around the same window, the <code>shop-ingest:reconcile</code> background job logged <code>elapsed=502.5s</code> and <code>elapsed=3502.8s</code>. The 502 strongly correlates with reconcile holding the DB connection pool while the loader times out.</li>
+      <li>The dispatch-all handler at <code>app.local-delivery.tsx:3552</code> looks structurally fine — quote-then-place sequential per route. The bug is upstream: the LOADER fails to revalidate after dispatch-all completes, so the UI shows stale state. With reconcile contention, the post-dispatch <code>revalidator.revalidate()</code> call at line 3614 sometimes returns 502.</li>
+      <li><strong>Proposed fix (lands inside the UI sequential branch since same file):</strong> add error handling around the post-dispatch revalidate; if it 502s, log + retry once after 2s; surface a non-blocking banner if the second revalidate also fails. Don't let a stale loader block the user from seeing dispatched-route state.</li>
+      <li>Longer-term — investigate why <code>shop-ingest:reconcile</code> takes 500-3500s on this shop. Likely a Shopify pagination loop without a hard cap. Out of scope for this round; flag for a separate ticket.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 8. NOTES — out of scope                                      -->
+<!-- ============================================================ -->
+<section class="card" style="background:#fcfcfc;">
+  <h2>What this mockup does NOT cover</h2>
+  <div class="notes">
+    <ul>
+      <li><strong>Lalamove → Shopify status mapping (Track 1C)</strong> — backend-only, no UI surface. Currently in flight on its own branch.</li>
+      <li><strong>Address parser port (Track 4)</strong> — runs server-side, no visible UI change. The <code>ld_number-confirm</code> tag will start appearing on orders that hit Pattern 3 of the §6.7 deterministic patterns; this surfaces in Section 1's "Potential address errors" badge naturally (no per-tag distinction in the badge — both <code>ld_address-confirm</code> and <code>ld_number-confirm</code> roll up to one badge count).</li>
+      <li><strong>Address-from-prior-orders research (Track 5)</strong> — research note, ships as <code>docs/&lt;name&gt;.md</code>, no UI.</li>
+    </ul>
+  </div>
+</section>
+
+</body>
+</html>

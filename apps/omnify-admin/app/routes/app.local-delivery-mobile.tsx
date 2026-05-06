@@ -139,13 +139,6 @@ type MobileLoaderData = {
   };
   mapsApiKey: string;
   mapsMapId: string;
-  shipmentRequestOrders: Array<{
-    id: string;
-    name: string;
-    adminOrderUrl: string;
-    status?: string;
-    deliveryMethod?: string;
-  }>;
   precomputedRoutes: Array<{
     id: string;
     locationId: string;
@@ -221,8 +214,7 @@ type SheetState =
   | { kind: "clearRouteConfirm"; routeId: string; routeIndex: number }
   | { kind: "clearAllConfirm" }
   | { kind: "errorDetails"; routeId: string; message: string; errorDetails: string }
-  | { kind: "addressErrors" }
-  | { kind: "shipmentRequests" };
+  | { kind: "addressErrors" };
 
 // ═══════════════════════════════════════════════════════════════════
 // Polyline decoder (Google Maps encoded polyline algorithm)
@@ -352,7 +344,6 @@ export default function MobileIndex() {
     locations,
     filters,
     mapsApiKey,
-    shipmentRequestOrders,
     precomputedRoutes,
     lalamoveConfigs,
     returnPickupRequests,
@@ -1387,35 +1378,20 @@ export default function MobileIndex() {
 
         {/* Chip section */}
         <div className={styles.chipSection}>
-          {addressErrorOrders.length > 0 || shipmentRequestOrders.length > 0 ? (
+          {addressErrorOrders.length > 0 ? (
             <>
               <div className={styles.chipSectionHeading}>{t("mobile.triage")}</div>
-              {addressErrorOrders.length > 0 ? (
-                <button
-                  type="button"
-                  className={`${styles.triageChip} ${styles.triageChipActionable}`}
-                  onClick={() => setSheet({ kind: "addressErrors" })}
-                >
-                  <span className={styles.triageLabel}>
-                    <span className={styles.triageIcon}>⚠</span>
-                    {t("mobile.triageChip.addressErrors", { count: addressErrorOrders.length })}
-                  </span>
-                  <span className={styles.chipArrow}>→</span>
-                </button>
-              ) : null}
-              {shipmentRequestOrders.length > 0 ? (
-                <button
-                  type="button"
-                  className={`${styles.triageChip} ${styles.triageChipActionable}`}
-                  onClick={() => setSheet({ kind: "shipmentRequests" })}
-                >
-                  <span className={styles.triageLabel}>
-                    <span className={styles.triageIcon}>📦</span>
-                    {t("mobile.triageChip.shipmentRequests", { count: shipmentRequestOrders.length })}
-                  </span>
-                  <span className={styles.chipArrow}>→</span>
-                </button>
-              ) : null}
+              <button
+                type="button"
+                className={`${styles.triageChip} ${styles.triageChipActionable}`}
+                onClick={() => setSheet({ kind: "addressErrors" })}
+              >
+                <span className={styles.triageLabel}>
+                  <span className={styles.triageIcon}>⚠</span>
+                  {t("mobile.triageChip.addressErrors", { count: addressErrorOrders.length })}
+                </span>
+                <span className={styles.chipArrow}>→</span>
+              </button>
             </>
           ) : null}
 
@@ -2015,54 +1991,6 @@ export default function MobileIndex() {
           </BottomSheet>
         ) : null}
 
-        {/* Shipment requests */}
-        {sheet.kind === "shipmentRequests" ? (
-          <BottomSheet open onClose={() => setSheet({ kind: "none" })}>
-            <h2 className={styles.sheetHeading}>
-              {t("mobile.shipmentRequestsSheet.heading", { count: shipmentRequestOrders.length })}
-            </h2>
-            <div className={styles.sheetSubheading}>{t("mobile.shipmentRequestsSheet.sub")}</div>
-            <div className={styles.sheetDivider} />
-            {shipmentRequestOrders.length === 0 ? (
-              <div className={styles.sheetBody}>{t("mobile.shipmentRequestsSheet.empty")}</div>
-            ) : (
-              shipmentRequestOrders.map((o) => (
-                <div key={o.id} className={styles.sheetListRow}>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: 12 }}>{o.name}</div>
-                    {o.status ? (
-                      <div style={{ color: "#6d7175", fontSize: 11 }}>
-                        {t("mobile.shipmentRequestsSheet.status", { status: o.status })}
-                      </div>
-                    ) : null}
-                    {o.deliveryMethod ? (
-                      <div style={{ color: "#6d7175", fontSize: 11 }}>
-                        {t("mobile.shipmentRequestsSheet.method", { method: o.deliveryMethod })}
-                      </div>
-                    ) : null}
-                  </div>
-                  <a
-                    href={o.adminOrderUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={styles.sheetListRowLink}
-                  >
-                    {t("mobile.sheet.openInShopify")}
-                  </a>
-                </div>
-              ))
-            )}
-            <div className={styles.sheetActionRow}>
-              <button
-                type="button"
-                className={`${styles.btn} ${styles.btnSecondary} ${styles.btnSm} ${styles.btnFull}`}
-                onClick={() => setSheet({ kind: "none" })}
-              >
-                {t("mobile.sheet.close")}
-              </button>
-            </div>
-          </BottomSheet>
-        ) : null}
       </div>
     </s-page>
   );

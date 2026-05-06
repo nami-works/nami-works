@@ -8,8 +8,8 @@
     "deliveryPromise": "Promessa de entrega",
     "all": "Todos",
     "daysAgo": "{{count}} dia(s) atrás",
-    "ordersToDeliver": "📦 Pedidos para entregar: {{count}}",
-    "failedDelivery": "⚠️ Entrega falhada ({{count}})",
+    "ordersToDeliver": "Pedidos para entregar: {{count}}",
+    "failedDelivery": "Entrega falhada: {{count}}",
     "sameDay": "Mesmo dia",
     "sameDayTimeLimit": "Horário limite para mesmo dia",
     "nextDay": "Próximo dia",
@@ -41,6 +41,11 @@
     "expand": "[+] Expandir",
     "collapseMap": "Recolher mapa",
     "expandMap": "Expandir mapa",
+    "polylineEdit": {
+      "edit": "Editar",
+      "confirm": "Confirmar",
+      "cancel": "Cancelar"
+    },
     "clearSelection": "Limpar seleção",
     "unassignSelected": "Desatribuir",
     "assignToNewRoute": "Atribuir a nova rota",
@@ -75,17 +80,19 @@
     "clearAllRoutes": "Limpar todas as rotas",
     "quoteAllRoutes": "Cotar todas",
     "dispatchAllRoutes": "Despachar todas",
-    "quoteAllProgress": "Cotando: {{completed}} / {{total}}",
-    "dispatchAllProgress": "Despachando: {{completed}} / {{total}}",
+    "quoteAllProgress": "Cotando: {{completed}}/{{total}}",
+    "dispatchAllProgress": "Despachando: {{completed}}/{{total}}",
+    "dispatchAllStaleAfterDispatch": "Rotas despachadas, mas a página não atualizou automaticamente. Recarregue para ver o status mais recente.",
     "openLocationSettings": "Configurações",
     "noRoutes": "Nenhuma rota criada ainda. Selecione pedidos no mapa e atribua-os a rotas.",
     "unassignedOrders": "Pedidos não atribuídos ({{count}})",
     "noUnassigned": "Nenhum pedido não atribuído para os filtros atuais.",
     "autoAssignmentInProgress": "Atribuição automática em andamento",
-    "requestDriver": "Solicitar motorista",
-    "requestingDriver": "Solicitando…",
+    "requestDriver": "Despachar",
+    "requestingDriver": "Despachando…",
     "requestQuote": "Solicitar cotação",
     "requestingQuote": "Solicitando…",
+    "moreActions": "Mais ações",
     "assignToRoute": "Atribuir à rota",
     "newRoute": "Nova rota",
     "route": "Rota {{number}}",
@@ -211,9 +218,10 @@
     },
     "addressErrors": {
       "heading": "Possíveis erros de endereço",
-      "noErrors": "Nenhum erro de endereço potencial encontrado.",
+      "noErrors": "Nenhum erro de endereço encontrado.",
       "footer": "Estes pedidos podem ter endereços de entrega incompletos ou inválidos.",
       "fixAddress": "Corrigir endereço no Shopify",
+      "fixAddresses": "Corrigir endereços",
       "openInShopify": "Abrir no Shopify",
       "close": "Fechar",
       "apartmentInAddress": "Detalhes de apartamento/unidade provavelmente na linha 1 do endereço.",
@@ -247,15 +255,6 @@
       "locationName": "Nome da localização",
       "locationPhone": "Telefone da localização",
       "locationAddress": "Endereço da localização"
-    },
-    "shipmentRequests": {
-      "heading": "Solicitações de envio para processar",
-      "noIssues": "Nenhum problema de solicitação de envio encontrado.",
-      "footer": "Estes pedidos podem precisar de processamento manual antes da atribuição de entrega.",
-      "close": "Fechar",
-      "statusPrefix": "Status: {{status}}",
-      "deliveryMethodPrefix": "Método de entrega: {{method}}",
-      "instruction": "Estes pedidos estão marcados como LOCAL mas possuem métodos de entrega não locais. Abra cada pedido, depois use Cliente > ... > Editar endereço de entrega para corrigir."
     },
     "specialRequests": {
       "heading": "Solicitações especiais",
@@ -294,7 +293,6 @@
   },
   "warnings": {
     "addressErrors": "Possíveis erros de endereço: {{count}}",
-    "shipmentRequests": "Solicitações de envio para processar ({{count}})",
     "returnPickups": "Devoluções pendentes ({{count}})"
   },
   "banners": {
@@ -381,7 +379,6 @@
     "desktopOnlyHeading": "Ações exclusivas do desktop",
     "triageChip": {
       "addressErrors": "Erros de endereço ({{count}})",
-      "shipmentRequests": "Pedidos de envio ({{count}})",
       "returnPickups": "Coletas de retorno ({{count}})",
       "specialRequests": "Solicitações especiais",
       "mapStyle": "Estilo do mapa",
@@ -458,13 +455,6 @@
       "sub": "Corrija no Shopify admin. A próxima Otimização usará o endereço corrigido.",
       "empty": "Sem erros de endereço.",
       "noAddress": "Sem linha de endereço"
-    },
-    "shipmentRequestsSheet": {
-      "heading": "Pedidos de envio ({{count}})",
-      "sub": "Estes pedidos têm tag LOCAL mas método de entrega não-local. Abra cada um no Shopify para corrigir.",
-      "empty": "Sem pedidos de envio.",
-      "status": "Status: {{status}}",
-      "method": "Método: {{method}}"
     },
     "card": {
       "orderCount": "{{count}} pedidos",

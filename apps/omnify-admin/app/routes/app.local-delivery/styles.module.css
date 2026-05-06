@@ -36,11 +36,43 @@
 .mapOverlayButton {
   position: absolute;
   top: 12px;
+  left: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Polyline edit toolbar — top-right corner of the map canvas, parallel to
+   the expand/collapse toggle on the left. Three states: Edit (default),
+   Confirm + Cancel (editing). Only renders on desktop. */
+.polylineToolbar {
+  position: absolute;
+  top: 12px;
   right: 12px;
   z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 768px) {
+  .polylineToolbar {
+    display: none;
+  }
+}
+
+/* Map canvas in polyline-edit mode — adds a subtle visual cue (dashed inner
+   border) so the operator knows polylines are in edit state. The actual
+   dotted+subdued polyline rendering happens via google.maps.Polyline.setOptions
+   in the map render effect. */
+.mapCanvasEditing {
+  outline: 2px dashed #b3d1ff;
+  outline-offset: -2px;
 }
 
 .fullscreenMapActions {
@@ -333,9 +365,27 @@
 .fullscreenSplitLayout {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 12px;
+  /* Sidebar parity in expanded mode: 1fr map + fixed aside column.
+     The aside renders Route manager + Auto-assign accuracy in the same
+     order as the collapsed view. */
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 16px;
   overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+  .fullscreenSplitLayout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.fullscreenAsidePane {
+  min-width: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 8px;
 }
 
 .fullscreenMapPane {
@@ -625,6 +675,24 @@
   /* Breathing room around the orders-to-deliver badge so it doesn't crowd
      the location selector above or the routes list below. */
   padding: 6px 4px;
+}
+
+/* Header-style badge stack — wraps when narrow, keeps consistent gap. */
+.headerBadgesRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Route card action row — right-aligned, used for both pre-dispatch
+   primary button cluster and post-dispatch status badge. */
+.routeCardActionsRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 12px;
 }
 
 .accuracyContent {

@@ -31,7 +31,7 @@ import {
   getMaxZoneRadiusKm,
 } from "../services/carrier/sample-rate-db.server";
 import type { OptimizerOrderInput } from "../services/google-routes-shared.server";
-import { LD_ADDRESS_CONFIRM_TAG, getAllFailedDeliveryTags } from "../services/lalamove-tags";
+import { LD_ADDRESS_CONFIRM_TAG, LD_NUMBER_CONFIRM_TAG, getAllFailedDeliveryTags } from "../services/lalamove-tags";
 import { runCarrierQuotationForOrderId } from "../services/auto-routing.server";
 import {
   checkAndApplyEscalations,
@@ -182,7 +182,6 @@ export default function Index() {
     ordersError,
     mapsApiKey,
     mapsMapId,
-    shipmentRequestOrders,
     routeStats,
     precomputedRoutes,
     lalamoveConfigs,
@@ -229,8 +228,22 @@ export default function Index() {
     filters.selectedPresaleTags,
   );
   const [isAddressErrorsModalOpen, setIsAddressErrorsModalOpen] = useState(false);
-  const [isShipmentRequestsModalOpen, setIsShipmentRequestsModalOpen] = useState(false);
   const [isReturnPickupsModalOpen, setIsReturnPickupsModalOpen] = useState(false);
+  // Bulk-dispatch stale-state banner (Item 7). Surfaced when dispatch-all
+  // succeeds but the post-dispatch revalidate times out (typically due to
+  // shop-ingest:reconcile holding the DB pool). Non-blocking — operator
+  // refreshes manually to see latest route state.
+  const [dispatchAllStaleBanner, setDispatchAllStaleBanner] = useState<string | null>(null);
+  // Polyline edit mode (desktop only). When true:
+  //  - polylines render dotted+subdued via google.maps Polyline.setOptions
+  //  - per-route Dispatch buttons + destructive menu items are disabled
+  //  - bulk actions (Dispatch all / Fetch quotes) are disabled
+  // The edit toolbar replaces Edit with Confirm/Cancel buttons. Confirm
+  // delegates to handleUpdateRoutes for the recompute (Track 1A: no
+  // TRAFFIC_AWARE). Cancel exits edit mode without recomputing. Stop-marker
+  // drag-and-drop wiring is deferred to a follow-up — the visual layer +
+  // lockout already prevents mid-edit dispatch.
+  const [polylineEditMode, setPolylineEditMode] = useState(false);
   const [selectedReturnIds, setSelectedReturnIds] = useState<Set<string>>(() => new Set());
   const [returnInstructions, setReturnInstructions] = useState("");
   const [returnQuotePreview, setReturnQuotePreview] = useState<{
@@ -783,7 +796,7 @@ export default function Index() {
         deliveryAssignments: data.deliveryAssignments ?? [],
         locationId: data.locationId ?? "",
       });
-      // Quote fetched — card button will change to "Request driver"; no modal needed
+      // Quote fetched — card button will change to "Dispatch"; no modal needed
       setLalamoveStatus((current) => ({
         ...current,
         [routeId]: { message: t("driverRequest.readyForDelivery"), tone: "success" },
@@ -1381,8 +1394,17 @@ export default function Index() {
     });
   };
 
+  // Address-error badge count includes BOTH:
+  //   - orders with in-app address-validation flags (isValid=false)
+  //   - orders carrying ld_address-confirm or ld_number-confirm tags from
+  //     server-side address-repair (Track 4)
+  // Both signal "operator must review the shipping address before dispatch".
   const addressErrorOrders = useMemo(
-    () => orders.filter((order) => !order.addressValidation.isValid),
+    () => orders.filter((order) => {
+      if (!order.addressValidation.isValid) return true;
+      const tags = order.tags ?? [];
+      return tags.includes(LD_ADDRESS_CONFIRM_TAG) || tags.includes(LD_NUMBER_CONFIRM_TAG);
+    }),
     [orders],
   );
 
@@ -2316,20 +2338,45 @@ export default function Index() {
   }, [isAddressErrorsModalOpen]);
 
   useEffect(() => {
-    if (!isShipmentRequestsModalOpen) return;
-    const modal = document.getElementById("shipment-requests-modal") as
-      | { showOverlay?: () => void }
-      | null;
-    modal?.showOverlay?.();
-  }, [isShipmentRequestsModalOpen]);
-
-  useEffect(() => {
     if (!isReturnPickupsModalOpen) return;
     const modal = document.getElementById("return-pickups-modal") as
       | { showOverlay?: () => void }
       | null;
     modal?.showOverlay?.();
   }, [isReturnPickupsModalOpen]);
+
+  // Restyle precomputed-route polylines based on polyline edit mode.
+  // Editing: dotted + reduced opacity (visual lerp toward white) so the
+  // operator sees they're in edit state. Default: solid full opacity.
+  useEffect(() => {
+    const polylines = precomputedRoutePolylinesRef.current;
+    if (polylines.length === 0) return;
+    polylines.forEach((polyline) => {
+      try {
+        if (polylineEditMode) {
+          polyline.setOptions({
+            strokeOpacity: 0,
+            strokeWeight: 2,
+            icons: [
+              {
+                icon: { path: "M 0,-1 0,1", strokeOpacity: 0.5, scale: 3 },
+                offset: "0",
+                repeat: "10px",
+              },
+            ],
+          });
+        } else {
+          polyline.setOptions({
+            strokeOpacity: 0.85,
+            strokeWeight: 4,
+            icons: null,
+          });
+        }
+      } catch (err) {
+        console.warn(`[local-delivery:polyline-edit] restyle failed`, err);
+      }
+    });
+  }, [polylineEditMode]);
 
   useEffect(() => {
     if (!isMapStyleModalOpen) return;
@@ -3611,7 +3658,23 @@ export default function Index() {
     }
     console.info(`[local-delivery:bulk] dispatch-all OK location=${locationId} routes=${routes.length}`);
     setBulkOpStatus(null);
-    revalidator.revalidate();
+    // Item 7: revalidate-with-retry guard. The shop-ingest:reconcile
+    // background job can hold the DB pool, causing the post-dispatch
+    // loader call to 502 after ~9s. Retry once after 2s; if that also
+    // fails, surface a non-blocking banner so the operator knows their
+    // dispatches DID happen, only the UI state is stale.
+    try {
+      await Promise.resolve(revalidator.revalidate());
+    } catch (err) {
+      console.warn(`[local-delivery:bulk] dispatch-all revalidate FAILED, retrying in 2s shop=${shop}`, err);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      try {
+        await Promise.resolve(revalidator.revalidate());
+      } catch (retryErr) {
+        console.error(`[local-delivery:bulk] dispatch-all revalidate FAILED after retry shop=${shop}`, retryErr);
+        setDispatchAllStaleBanner(t("routeManager.dispatchAllStaleAfterDispatch"));
+      }
+    }
   };
 
   const proceedWithDriverRequest = (route: PrecomputedRoute) => {
@@ -3904,13 +3967,16 @@ export default function Index() {
   // specific location is selected. Per-location delivery promise + cutoff
   // come from the Settings page (lalamoveConfigs), no longer surfaced here.
   const isLocationSelected = locationId !== DEFAULT_LOCATION_ID;
-  const hasWarnings =
+  // Address-error badge is visible regardless of location filter (per
+  // Item 2: "All locations" should still surface address issues so
+  // operators can triage them at the global view). Other warnings remain
+  // location-scoped. The Shipment-Requests badge was retired (Item 1).
+  const hasLocationScopedWarnings =
     isLocationSelected &&
     (failedDeliveryCount > 0 ||
       hasUnfulfilledPresaleOrders ||
-      addressErrorOrders.length > 0 ||
-      shipmentRequestOrders.length > 0 ||
       pendingReturnPickups.length > 0);
+  const hasWarnings = hasLocationScopedWarnings || addressErrorOrders.length > 0;
 
   const routeManagerSection = (
     <s-section heading={t("routeManager.heading")}>
@@ -3931,13 +3997,14 @@ export default function Index() {
         </s-select>
 
         {hasWarnings ? (
-          <>
-            {failedDeliveryCount > 0 ? (
-              <div className={styles.warningLink}>
-                <s-text>{t("filters.failedDelivery", { count: failedDeliveryCount })}</s-text>
-              </div>
+          <div className={styles.headerBadgesRow}>
+            {isLocationSelected && failedDeliveryCount > 0 ? (
+              <s-badge tone="warning">
+                <s-icon type="alert-octagon" />
+                {t("filters.failedDelivery", { count: failedDeliveryCount })}
+              </s-badge>
             ) : null}
-            {hasUnfulfilledPresaleOrders ? (
+            {isLocationSelected && hasUnfulfilledPresaleOrders ? (
               <span className={styles.warningLink}>
                 <s-link onClick={() => setIsPresaleModalOpen(true)}>
                   {t("filters.presaleWarning")}
@@ -3947,34 +4014,29 @@ export default function Index() {
             {addressErrorOrders.length > 0 ? (
               <span style={{ cursor: "pointer" }} onClick={() => setIsAddressErrorsModalOpen(true)}>
                 <s-badge tone="warning">
-                  <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M11.251 3.25a1.412 1.412 0 0 0-2.502 0L1.91 16.244A1.29 1.29 0 0 0 3.062 18h13.876a1.29 1.29 0 0 0 1.153-1.756L11.25 3.25Zm-1.25 4a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75Zm1 7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" fill="currentColor" /></svg>
+                  <s-icon type="alert-triangle" />
                   {t("warnings.addressErrors", { count: addressErrorOrders.length })}
                 </s-badge>
               </span>
             ) : null}
-            {shipmentRequestOrders.length > 0 ? (
-              <span style={{ cursor: "pointer" }} onClick={() => setIsShipmentRequestsModalOpen(true)}>
-                <s-badge tone="warning">
-                  <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M11.251 3.25a1.412 1.412 0 0 0-2.502 0L1.91 16.244A1.29 1.29 0 0 0 3.062 18h13.876a1.29 1.29 0 0 0 1.153-1.756L11.25 3.25Zm-1.25 4a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75Zm1 7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" fill="currentColor" /></svg>
-                  {t("warnings.shipmentRequests", { count: shipmentRequestOrders.length })}
-                </s-badge>
-              </span>
-            ) : null}
-            {pendingReturnPickups.length > 0 ? (
+            {isLocationSelected && pendingReturnPickups.length > 0 ? (
               <span style={{ cursor: "pointer" }} onClick={() => setIsReturnPickupsModalOpen(true)}>
                 <s-badge tone="warning">
-                  <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "currentColor" }}><path fillRule="evenodd" d="M17 8.5A8.5 8.5 0 1 1 8.5 0H9v4.1A4.5 4.5 0 1 0 13 8.5h-1.5l3-4 3 4H16a7 7 0 1 1-7-7V0a8.5 8.5 0 0 1 8 8.5Z" fill="currentColor" /></svg>
+                  <s-icon type="refresh" />
                   {t("warnings.returnPickups", { count: pendingReturnPickups.length })}
                 </s-badge>
               </span>
             ) : null}
-          </>
+          </div>
         ) : null}
       </s-stack>
 
       {/* Orders badge + actions menu */}
       <div className={styles.routeManagerStatusRow}>
-        <s-badge>{t("filters.ordersToDeliver", { count: mapData.orders.length })}</s-badge>
+        <s-badge tone="info">
+          <s-icon type="package" />
+          {t("filters.ordersToDeliver", { count: mapData.orders.length })}
+        </s-badge>
         {locationId !== DEFAULT_LOCATION_ID ? (
           optimizeProgress ? (
             <div style={{ flex: 1 }} />
@@ -4019,7 +4081,7 @@ export default function Index() {
                     {hasAssignedRoutes ? (
                       <s-button
                         icon="receipt-dollar"
-                        disabled={bulkOpStatus !== null}
+                        disabled={bulkOpStatus !== null || polylineEditMode}
                         onClick={handleQuoteAllRoutes}
                       >
                         {t("routeManager.quoteAllRoutes")}
@@ -4028,7 +4090,7 @@ export default function Index() {
                     {hasAssignedRoutes ? (
                       <s-button
                         icon="bolt"
-                        disabled={bulkOpStatus !== null}
+                        disabled={bulkOpStatus !== null || polylineEditMode}
                         onClick={handleDispatchAllRoutes}
                       >
                         {t("routeManager.dispatchAllRoutes")}
@@ -4248,28 +4310,66 @@ export default function Index() {
                               {label}
                             </span>
                           </div>
-                          {dispatchedRoutes[route.id] && (!TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") || dispatchedRoutes[route.id]?.podBucket) ? (
-                            <s-button
-                              variant="secondary"
-                              disabled={isOtherRouteBusy}
-                              onClick={() => openDetailsRouteModal(route, routeIndex)}
-                            >
-                              {t("routeManager.details")}
-                            </s-button>
-                          ) : (
-                            <span title={dispatchedRoutes[route.id] ? t("routeManager.clearRouteDisabledTooltip") : undefined}>
-                              <s-button
-                                variant="secondary"
-                                tone="critical"
-                                disabled={!!dispatchedRoutes[route.id] || isRoutingBusy || isOtherRouteBusy}
-                                onClick={() =>
-                                  setUnassignConfirmRoute({ route, index: routeIndex })
-                                }
-                              >
-                                {t("routeManager.clearRoute")}
-                              </s-button>
-                            </span>
-                          )}
+                          {/* ⋯ overflow menu — pre-dispatch shows Manage/Details/Clear,
+                              post-dispatch shows Details/Cancel (Manage and Clear hidden
+                              once a Lalamove order is live). Polyline-edit lockout
+                              disables destructive items via the disabled flag. */}
+                          {(() => {
+                            const dispatched = dispatchedRoutes[route.id];
+                            const isPostDispatch = !!dispatched && (!TERMINAL_DISPATCH_STATUSES.has(dispatched.status ?? "") || dispatched.podBucket);
+                            const menuId = `route-card-menu-${route.id}`;
+                            return (
+                              <>
+                                <s-button
+                                  variant="secondary"
+                                  icon="menu-horizontal"
+                                  accessibilityLabel={t("routeManager.moreActions")}
+                                  commandFor={menuId}
+                                  disabled={isOtherRouteBusy}
+                                ></s-button>
+                                <s-menu id={menuId} accessibilityLabel={t("routeManager.moreActions")}>
+                                  {!isPostDispatch ? (
+                                    <s-button
+                                      icon="edit"
+                                      disabled={polylineEditMode || isRoutingBusy || isOtherRouteBusy}
+                                      onClick={() => openManageRouteModal(route, routeIndex)}
+                                    >
+                                      {t("routeManager.manage")}
+                                    </s-button>
+                                  ) : null}
+                                  <s-button
+                                    icon="info"
+                                    disabled={isOtherRouteBusy}
+                                    onClick={() => openDetailsRouteModal(route, routeIndex)}
+                                  >
+                                    {t("routeManager.details")}
+                                  </s-button>
+                                  {!isPostDispatch ? (
+                                    <s-button
+                                      icon="minus-circle"
+                                      tone="critical"
+                                      disabled={polylineEditMode || isRoutingBusy || isOtherRouteBusy}
+                                      onClick={() =>
+                                        setUnassignConfirmRoute({ route, index: routeIndex })
+                                      }
+                                    >
+                                      {t("routeManager.clearRoute")}
+                                    </s-button>
+                                  ) : null}
+                                  {isPostDispatch && !TERMINAL_DISPATCH_STATUSES.has(dispatched?.status ?? "") ? (
+                                    <s-button
+                                      icon="disabled"
+                                      tone="critical"
+                                      disabled={polylineEditMode || isOtherRouteBusy}
+                                      onClick={() => setCancelConfirmRouteId(route.id)}
+                                    >
+                                      {t("routeManager.cancelDelivery")}
+                                    </s-button>
+                                  ) : null}
+                                </s-menu>
+                              </>
+                            );
+                          })()}
                         </div>
                         {dispatchedRoutes[route.id]?.partialDelivery ? (
                           <div className={styles.podPartialBanner} role="status">
@@ -4309,74 +4409,57 @@ export default function Index() {
                             </s-button>
                           </div>
                         ) : dispatchedRoutes[route.id] && !TERMINAL_DISPATCH_STATUSES.has(dispatchedRoutes[route.id]?.status ?? "") ? (
-                          <div className={styles.dispatchedBlock}>
-                            <div className={styles.deliveryStatusRow}>
-                              <s-button
-                                variant="primary"
-                                tone="critical"
-                                disabled={isOtherRouteBusy}
-                                onClick={() => setCancelConfirmRouteId(route.id)}
-                              >
-                                {t("routeManager.cancelDelivery")}
-                              </s-button>
-                            </div>
+                          // Post-dispatch action row: status badge only (right-aligned).
+                          // The destructive Cancel delivery action lives in the ⋯ menu above.
+                          <div className={styles.routeCardActionsRow}>
+                            <s-badge tone={getStatusBadgeTone(dispatchedRoutes[route.id]?.status ?? "")}>
+                              {t(`routeManager.status.${dispatchedRoutes[route.id]?.status ?? "requested"}`)}
+                            </s-badge>
                           </div>
                         ) : (
-                          <s-stack
-                            direction="inline"
-                            gap="base"
-                            justifyContent="space-between"
-                          >
-                            <div />
-                            <s-stack direction="inline" gap="base">
-                              <s-button
-                                variant="secondary"
-                                disabled={isRoutingBusy || isOtherRouteBusy}
-                                onClick={() => openManageRouteModal(route, routeIndex)}
-                              >
-                                {t("routeManager.manage")}
-                              </s-button>
-                              {quotePreview?.routeId === route.id ? (
-                                isThisRouteBusy ? (
-                                  <s-button
-                                    key="requesting-driver"
-                                    variant="primary"
-                                    loading
-                                    disabled
-                                  >
-                                    {t("routeManager.requestingDriver")}
-                                  </s-button>
-                                ) : (
-                                  <s-button
-                                    key="request-driver"
-                                    variant="primary"
-                                    disabled={isOtherRouteBusy}
-                                    onClick={() => handlePlaceOrderFromCard(route, routeIndex)}
-                                  >
-                                    {t("routeManager.requestDriver")}
-                                  </s-button>
-                                )
-                              ) : isThisRouteBusy ? (
+                          // Pre-dispatch action row: primary "Dispatch" or "Request quote".
+                          // Manage and Clear route moved into the ⋯ overflow menu.
+                          <div className={styles.routeCardActionsRow}>
+                            {quotePreview?.routeId === route.id ? (
+                              isThisRouteBusy ? (
                                 <s-button
-                                  key="requesting-quote"
-                                  variant="secondary"
+                                  key="requesting-driver"
+                                  variant="primary"
                                   loading
                                   disabled
                                 >
-                                  {t("routeManager.requestingQuote")}
+                                  {t("routeManager.requestingDriver")}
                                 </s-button>
                               ) : (
                                 <s-button
-                                  key="request-quote"
-                                  variant="secondary"
-                                  disabled={!isLalamoveReady || isRoutingBusy || isOtherRouteBusy}
-                                  onClick={() => handleRequestDriver(route)}
+                                  key="request-driver"
+                                  variant="primary"
+                                  disabled={polylineEditMode || isOtherRouteBusy}
+                                  onClick={() => handlePlaceOrderFromCard(route, routeIndex)}
                                 >
-                                  {t("routeManager.requestQuote")}
+                                  {t("routeManager.requestDriver")}
                                 </s-button>
-                              )}
-                            </s-stack>
-                          </s-stack>
+                              )
+                            ) : isThisRouteBusy ? (
+                              <s-button
+                                key="requesting-quote"
+                                variant="primary"
+                                loading
+                                disabled
+                              >
+                                {t("routeManager.requestingQuote")}
+                              </s-button>
+                            ) : (
+                              <s-button
+                                key="request-quote"
+                                variant="primary"
+                                disabled={!isLalamoveReady || polylineEditMode || isRoutingBusy || isOtherRouteBusy}
+                                onClick={() => handleRequestDriver(route)}
+                              >
+                                {t("routeManager.requestQuote")}
+                              </s-button>
+                            )}
+                          </div>
                         )}
                         {notification ? (
                           <div className={styles.routeCardNotifications}>
@@ -5011,9 +5094,6 @@ export default function Index() {
                       )}
                     </div>
                   )}
-                  <s-link href={order.adminOrderUrl} target="_blank">
-                    {t("modals.addressErrors.fixAddress")}
-                  </s-link>
                 </s-stack>
               </s-box>
             ))
@@ -5030,6 +5110,23 @@ export default function Index() {
             >
               {t("modals.addressErrors.close")}
             </s-button>
+            {addressErrorOrders.length > 0 ? (
+              <s-button
+                variant="primary"
+                onClick={() => {
+                  // Deep-link to Shopify's order list filtered by ld_address-confirm.
+                  // Note: orders carrying ld_number-confirm (Track 4 Pattern 3)
+                  // are also surfaced in the badge — operator can toggle the
+                  // tag filter inside Shopify after landing.
+                  const url = `https://${shop}/admin/orders?query=tag%3Ald_address-confirm`;
+                  if (typeof window !== "undefined") {
+                    window.open(url, "_blank", "noopener,noreferrer");
+                  }
+                }}
+              >
+                {t("modals.addressErrors.fixAddresses")}
+              </s-button>
+            ) : null}
           </div>
         </s-stack>
       </s-modal>
@@ -5371,48 +5468,11 @@ export default function Index() {
           </s-stack>
         </s-modal>
       ) : null}
-      <s-modal id="shipment-requests-modal" heading={t("modals.shipmentRequests.heading")}>
-        <s-stack direction="block" gap="base">
-          {shipmentRequestOrders.length === 0 ? (
-            <s-text color="subdued">{t("modals.shipmentRequests.noIssues")}</s-text>
-          ) : (
-            shipmentRequestOrders.map((order) => (
-              <s-box
-                key={order.id}
-                padding="base"
-                borderWidth="base"
-                borderRadius="base"
-              >
-                <s-stack direction="block" gap="small">
-                  <s-text type="strong">{order.name}</s-text>
-                  <s-text color="subdued">
-                    {t("modals.shipmentRequests.statusPrefix", { status: order.displayFulfillmentStatus })}
-                  </s-text>
-                  <s-text color="subdued">
-                    {t("modals.shipmentRequests.deliveryMethodPrefix", { method: order.deliveryMethodTypes.join(", ") })}
-                  </s-text>
-                  <s-link href={order.adminOrderUrl} target="_blank">
-                    {t("modals.addressErrors.openInShopify")}
-                  </s-link>
-                </s-stack>
-              </s-box>
-            ))
-          )}
-          <s-text color="subdued">
-            {t("modals.shipmentRequests.instruction")}
-          </s-text>
-          <div className={styles.assignModalFooter}>
-            <s-button
-              variant="secondary"
-              commandFor="shipment-requests-modal"
-              command="--hide"
-              onClick={() => setIsShipmentRequestsModalOpen(false)}
-            >
-              {t("modals.shipmentRequests.close")}
-            </s-button>
-          </div>
-        </s-stack>
-      </s-modal>
+      {dispatchAllStaleBanner ? (
+        <s-banner tone="warning" dismissible onDismiss={() => setDispatchAllStaleBanner(null)}>
+          {dispatchAllStaleBanner}
+        </s-banner>
+      ) : null}
       {!mapsApiKey ? (
         <s-banner tone="warning" heading={t("banners.mapsKeyMissing")}>
           {t("banners.mapsKeyDescription")}
@@ -5458,11 +5518,51 @@ export default function Index() {
                       {isFullscreen ? t("map.collapse") : t("map.expand")}
                     </s-button>
                   </div>
+                  {/* Polyline edit toolbar (desktop only). Hidden when no
+                      routes are visible. State A: Edit only. State B: Confirm
+                      + Cancel (polylines render dotted+subdued, lockouts
+                      active across cards + bulk actions). */}
+                  {locationId !== DEFAULT_LOCATION_ID && editableRoutes.some((r) => r.locationId === locationId && r.orderIds.length > 0) ? (
+                    <div className={styles.polylineToolbar} role="group">
+                      {!polylineEditMode ? (
+                        <s-button
+                          key="polyline-edit"
+                          variant="secondary"
+                          icon="edit"
+                          onClick={() => setPolylineEditMode(true)}
+                        >
+                          {t("map.polylineEdit.edit")}
+                        </s-button>
+                      ) : (
+                        <>
+                          <s-button
+                            key="polyline-confirm"
+                            variant="primary"
+                            disabled={isRoutingBusy}
+                            onClick={() => {
+                              // Recompute via existing path (Track 1A: no TRAFFIC_AWARE)
+                              handleUpdateRoutes();
+                              setPolylineEditMode(false);
+                            }}
+                          >
+                            {t("map.polylineEdit.confirm")}
+                          </s-button>
+                          <s-button
+                            key="polyline-cancel"
+                            variant="secondary"
+                            onClick={() => setPolylineEditMode(false)}
+                          >
+                            {t("map.polylineEdit.cancel")}
+                          </s-button>
+                        </>
+                      )}
+                    </div>
+                  ) : null}
                   <div
                     ref={mapContainerRef}
                     className={`${styles.mapCanvas} ${
                       isFullscreen ? styles.mapCanvasFullscreen : ""
-                    }`}
+                    } ${polylineEditMode ? styles.mapCanvasEditing : ""}`}
                   />
                 </div>
                 {mapData.locations.length === 0 && mapData.orders.length === 0 ? (
@@ -5545,6 +5645,16 @@ export default function Index() {
                 </div>
                 {isFullscreen ? renderOrdersSection() : null}
               </div>
+              {/* Sidebar parity (Item 6): in fullscreen, render the same
+                  Route Manager + Auto-assign Accuracy stack as the
+                  collapsed view, in the same relative order, inside the
+                  expanded split layout's aside column. */}
+              {isFullscreen ? (
+                <div className={styles.fullscreenAsidePane}>
+                  {routeManagerSection}
+                  {accuracyBlock}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -6491,17 +6601,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     };
     fulfillments?: Array<{ displayStatus: string }>;
   }> = [];
-  let warningOrders: Array<{
-    id: string;
-    name: string;
-    displayFulfillmentStatus: string;
-    tags: string[];
-    fulfillmentOrders: {
-      nodes: Array<{
-        deliveryMethod: { methodType: string; presentedName: string | null };
-      }>;
-    };
-  }> = [];
 
   try {
     let hasNextPage = true;
@@ -6590,36 +6689,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       after = payload?.pageInfo?.endCursor ?? null;
     }
 
-    const warningResponse = await admin.graphql(
-      `#graphql
-        query OrdersWarningView($first: Int!, $query: String) {
-          orders(first: $first, query: $query) {
-            nodes {
-              id
-              name
-              displayFulfillmentStatus
-              tags
-              fulfillmentOrders(first: 10) {
-                nodes {
-                  deliveryMethod {
-                    methodType
-                    presentedName
-                  }
-                }
-              }
-            }
-          }
-        }`,
-      {
-        variables: {
-          first: 50,
-          query: `tag:LOCAL created_at:>=${startDateKey}`,
-        },
-      },
-    );
-
-    const warningJson = await warningResponse.json();
-    warningOrders = warningJson?.data?.orders?.nodes ?? [];
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown error loading orders.";
@@ -6643,30 +6712,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         unknown: 0,
       }
     : null;
-
-  const shipmentRequestOrders = warningOrders
-    .filter((order) => {
-      if (
-        order.displayFulfillmentStatus === "DELIVERED" ||
-        order.displayFulfillmentStatus === "CANCELLED"
-      ) {
-        return false;
-      }
-      if (!order.tags?.some((tag) => tag.toUpperCase() === "LOCAL")) return false;
-      return order.fulfillmentOrders.nodes.some((fulfillment) => {
-        const methodType = fulfillment.deliveryMethod?.methodType;
-        return methodType != null && methodType !== "LOCAL";
-      });
-    })
-    .map((order) => ({
-      id: order.id,
-      name: order.name,
-      displayFulfillmentStatus: order.displayFulfillmentStatus,
-      deliveryMethodTypes: order.fulfillmentOrders.nodes
-        .map((fo) => fo.deliveryMethod?.methodType)
-        .filter(Boolean) as string[],
-      adminOrderUrl: `https://admin.shopify.com/store/${toAdminStoreHandle(shop)}/orders/${toLegacyLocationId(order.id)}`,
-    }));
 
   const availablePresaleTags = extractPresaleTagsFromOrders(orders);
   const selectedPresaleTagSet = new Set(selectedPresaleTags);
@@ -7143,7 +7188,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     ordersError,
     mapsApiKey,
     mapsMapId: process.env.GOOGLE_MAPS_MAP_ID?.trim() || "",
-    shipmentRequestOrders,
     routeStats,
     precomputedRoutes,
     lalamoveConfigs,

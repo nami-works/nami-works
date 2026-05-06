@@ -8,8 +8,8 @@
     "deliveryPromise": "Delivery promise",
     "all": "All",
     "daysAgo": "{{count}} day(s) ago",
-    "ordersToDeliver": "📦 Orders to deliver: {{count}}",
-    "failedDelivery": "⚠️ Failed delivery ({{count}})",
+    "ordersToDeliver": "Orders to deliver: {{count}}",
+    "failedDelivery": "Failed delivery: {{count}}",
     "sameDay": "Same day",
     "sameDayTimeLimit": "Time limit for same day",
     "nextDay": "Next day",
@@ -41,6 +41,11 @@
     "expand": "[+] Expand",
     "collapseMap": "Collapse map",
     "expandMap": "Expand map",
+    "polylineEdit": {
+      "edit": "Edit",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    },
     "clearSelection": "Clear selection",
     "unassignSelected": "Unassign",
     "assignToNewRoute": "Assign to new route",
@@ -75,17 +80,19 @@
     "clearAllRoutes": "Clear all routes",
     "quoteAllRoutes": "Fetch quotes",
     "dispatchAllRoutes": "Dispatch all",
-    "quoteAllProgress": "Fetching quotes: {{completed}} / {{total}}",
-    "dispatchAllProgress": "Dispatching: {{completed}} / {{total}}",
+    "quoteAllProgress": "Fetching quotes: {{completed}}/{{total}}",
+    "dispatchAllProgress": "Dispatching: {{completed}}/{{total}}",
+    "dispatchAllStaleAfterDispatch": "Routes dispatched, but the page didn't refresh automatically. Reload to see latest status.",
     "openLocationSettings": "Settings",
     "noRoutes": "No routes created yet. Select orders on the map and assign them to routes.",
     "unassignedOrders": "Unassigned orders ({{count}})",
     "noUnassigned": "No unassigned orders for current filters.",
     "autoAssignmentInProgress": "Auto-assignment in progress",
-    "requestDriver": "Request driver",
-    "requestingDriver": "Requesting…",
+    "requestDriver": "Dispatch",
+    "requestingDriver": "Dispatching…",
     "requestQuote": "Request quote",
     "requestingQuote": "Requesting…",
+    "moreActions": "More actions",
     "assignToRoute": "Assign to route",
     "newRoute": "New route",
     "route": "Route {{number}}",
@@ -219,9 +226,10 @@
     },
     "addressErrors": {
       "heading": "Potential address errors",
-      "noErrors": "No potential address errors found.",
+      "noErrors": "No address errors found.",
       "footer": "These orders may have incomplete or invalid delivery addresses.",
       "fixAddress": "Fix address in Shopify",
+      "fixAddresses": "Fix addresses",
       "openInShopify": "Open in Shopify",
       "close": "Close",
       "apartmentInAddress": "Apartment/unit details likely in address line 1.",
@@ -255,15 +263,6 @@
       "locationName": "Location name",
       "locationPhone": "Location phone",
       "locationAddress": "Location address"
-    },
-    "shipmentRequests": {
-      "heading": "Shipment requests to process",
-      "noIssues": "No shipment request issues found.",
-      "footer": "These orders may require manual processing before delivery assignment.",
-      "close": "Close",
-      "statusPrefix": "Status: {{status}}",
-      "deliveryMethodPrefix": "Delivery method: {{method}}",
-      "instruction": "These orders are tagged LOCAL but have non-local delivery methods. Open each order, then use Customer > ... > Edit shipping address to fix."
     },
     "specialRequests": {
       "heading": "Special requests",
@@ -302,7 +301,6 @@
   },
   "warnings": {
     "addressErrors": "Potential address errors: {{count}}",
-    "shipmentRequests": "Shipment requests to process ({{count}})",
     "returnPickups": "Return pickups ({{count}})"
   },
   "banners": {
@@ -389,7 +387,6 @@
     "desktopOnlyHeading": "Desktop-only actions",
     "triageChip": {
       "addressErrors": "Address errors ({{count}})",
-      "shipmentRequests": "Shipment requests ({{count}})",
       "returnPickups": "Return pickups ({{count}})",
       "specialRequests": "Special requests",
       "mapStyle": "Map style",
@@ -466,13 +463,6 @@
       "sub": "Fix in Shopify admin. The next Optimize will pick up the corrected address.",
       "empty": "No address errors.",
       "noAddress": "No address line 1"
-    },
-    "shipmentRequestsSheet": {
-      "heading": "Shipment requests ({{count}})",
-      "sub": "These orders are tagged LOCAL but have non-local delivery methods. Open each in Shopify to fix the shipping method.",
-      "empty": "No shipment requests.",
-      "status": "Status: {{status}}",
-      "method": "Method: {{method}}"
     },
     "card": {
       "orderCount": "{{count}} orders",

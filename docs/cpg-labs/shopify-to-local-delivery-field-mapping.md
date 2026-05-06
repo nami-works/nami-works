@@ -131,10 +131,3 @@ Data comes from:
 | `recipients[n].stopId` | `Quotation.stops[n+1].stopId` | Comes from Lalamove quotation response |
 | `recipients[n]` order linkage | Optimized `stopId -> orderId` assignment | Deterministic mapping captured at quote time |
 
----
-
-## Shipment Request Orders (Warning)
-
-| Omnify Local Delivery field | Shopify source | Notes |
-|-----------------------------|----------------|-------|
-| `shipmentRequestOrders` | `Order` with `tag:LOCAL` and `deliveryMethod.methodType !== LOCAL` | Orders tagged LOCAL but not using local delivery method |
