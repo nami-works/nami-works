@@ -227,7 +227,7 @@
       "apartmentInAddress": "Apartment/unit details likely in address line 1.",
       "duplicateNumber": "Potential duplicate number across address lines.",
       "multipleNumbers": "Multiple numbers found in address line 1 — possible formatting error.",
-      "reviewNeeded": "Address review needed.",
+      "reviewNeeded": "Address needs confirmation.",
       "instruction": "Open the order, then use Customer > ... > Edit shipping address."
     },
     "addressWarn": {

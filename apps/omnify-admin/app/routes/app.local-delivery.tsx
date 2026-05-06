@@ -31,7 +31,7 @@ import {
   getMaxZoneRadiusKm,
 } from "../services/carrier/sample-rate-db.server";
 import type { OptimizerOrderInput } from "../services/google-routes-shared.server";
-import { getAllFailedDeliveryTags } from "../services/lalamove-tags";
+import { LD_ADDRESS_CONFIRM_TAG, getAllFailedDeliveryTags } from "../services/lalamove-tags";
 import { runCarrierQuotationForOrderId } from "../services/auto-routing.server";
 import {
   checkAndApplyEscalations,
@@ -8451,7 +8451,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       );
       // Remove address review tag
       const { removeTags } = await import("../services/lalamove-sync.server");
-      await removeTags(admin, orderId, ["ld_address_review"]);
+      await removeTags(admin, orderId, [LD_ADDRESS_CONFIRM_TAG]);
       console.info(`[local-delivery] fix-address OK shop=${shop} order=${orderId}`);
       return { ok: true };
     } catch (error) {

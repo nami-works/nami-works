@@ -12,7 +12,10 @@ import {
   normalizePhoneForMarket,
 } from "../services/lalamove.server";
 import { addTags } from "../services/lalamove-sync.server";
-import { getAllFailedDeliveryTags } from "../services/lalamove-tags";
+import {
+  LD_ADDRESS_CONFIRM_TAG,
+  getAllAutoAssignSkipTags,
+} from "../services/lalamove-tags";
 import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
 
 const MAX_ROUTES = 20;
@@ -145,7 +148,7 @@ async function runAutoAssign(
     const validation = validateOrderAddress(order.address1, order.address2);
     if (!validation.isValid) {
       try {
-        await addTags(adminClient.admin, order.id, ["ld_address_review"]);
+        await addTags(adminClient.admin, order.id, [LD_ADDRESS_CONFIRM_TAG]);
         // Add order note for merchant visibility in Shopify admin
         await adminClient.admin.graphql(
           `#graphql
@@ -591,15 +594,16 @@ async function fetchEligibleOrders(
       const tags: string[] = order.tags ?? [];
       if (tags.some((t: string) => /^ld_rota-\d+$/i.test(t))) continue;
 
-      // Skip orders tagged for address review
-      if (tags.includes("ld_address_review")) continue;
-
-      // Skip orders flagged as failed delivery — operator must resolve manually.
-      // Checks both the operator tag (ld_failed-delivery) and the legacy
-      // state-machine tag (Failed delivery) so existing data stays excluded.
-      const failedTags = getAllFailedDeliveryTags();
-      if (tags.some((t: string) => failedTags.includes(t))) {
-        console.info(`[auto-delivery] skip orderId=${order.id} reason=failed-delivery`);
+      // Skip orders carrying any operator tag that excludes auto-assignment.
+      // Includes:
+      //   - ld_address-confirm: address validation flagged the shipping address
+      //   - ld_number-confirm: duplicated-number heuristic flagged the recipient phone
+      //   - ld_failed-delivery (operator) and "Failed delivery" (state-machine):
+      //     failed delivery, operator must resolve manually
+      const skipTags = getAllAutoAssignSkipTags();
+      const matchedSkip = tags.find((t: string) => skipTags.includes(t));
+      if (matchedSkip) {
+        console.info(`[auto-delivery] skip orderId=${order.id} reason=${matchedSkip}`);
         continue;
       }
 

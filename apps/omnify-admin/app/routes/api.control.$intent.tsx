@@ -55,6 +55,7 @@ import {
 import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
 import { clusterOrders } from "../services/carrier-quotation-optimizer.server";
 import { addTags, renameRouteTagsToArchive } from "../services/lalamove-sync.server";
+import { LD_ADDRESS_CONFIRM_TAG } from "../services/lalamove-tags";
 import type { OptimizerOrderInput } from "../services/google-routes-shared.server";
 import {
   summarizeRoutePOD,
@@ -69,7 +70,7 @@ import {
 
 const MAX_ROUTE_SLOTS = 20;
 const TERMINAL_DISPATCH_STATUSES = new Set(["COMPLETED", "CANCELED", "REJECTED", "EXPIRED"]);
-const ADDRESS_REVIEW_TAG = "ld_address_review";
+const ADDRESS_REVIEW_TAG = LD_ADDRESS_CONFIRM_TAG;
 
 const routeTagForSlot = (slot: number) => `ld_rota-${String(slot + 1).padStart(2, "0")}`;
 
@@ -849,7 +850,7 @@ async function fetchUnassignedOrdersForLocation(
       seen.add(o.id);
       const tags: string[] = o.tags ?? [];
       if (tags.some((t: string) => /^ld_rota-\d+$/i.test(t))) continue;
-      if (tags.includes("ld_address_review")) continue;
+      if (tags.includes(LD_ADDRESS_CONFIRM_TAG)) continue;
       const fo = o.fulfillmentOrders?.nodes ?? [];
       const isLocal = fo.some(
         (f: any) =>
@@ -953,7 +954,7 @@ async function handleOptimize(shop: string, body: Record<string, unknown>): Prom
         flagged.push({ orderId: o.id, name: o.name, issue: v.issue ?? "unknown" });
         if (flagAddressIssues) {
           try {
-            await addTags(admin, o.id, ["ld_address_review"]);
+            await addTags(admin, o.id, [LD_ADDRESS_CONFIRM_TAG]);
             await admin.graphql(
               `#graphql
                 mutation ControlOptimizeAddressNote($input: OrderInput!) {

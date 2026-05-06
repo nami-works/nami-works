@@ -219,7 +219,7 @@
       "apartmentInAddress": "Detalhes de apartamento/unidade provavelmente na linha 1 do endereço.",
       "duplicateNumber": "Possível número duplicado entre as linhas do endereço.",
       "multipleNumbers": "Múltiplos números encontrados na linha 1 do endereço — possível erro de formatação.",
-      "reviewNeeded": "Revisão de endereço necessária.",
+      "reviewNeeded": "Endereço precisa de confirmação.",
       "instruction": "Abra o pedido, depois use Cliente > ... > Editar endereço de entrega."
     },
     "addressWarn": {

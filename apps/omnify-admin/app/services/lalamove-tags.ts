@@ -10,12 +10,25 @@ export const FAILED_DELIVERY_TAG = "Failed delivery";
 export const DELIVERY_REJECTED_TAG = "Delivery rejected";
 export const DELIVERY_EXPIRED_TAG = "Delivery expired";
 
-// Operator-namespaced tag (matches ld_* convention used by ld_address_review,
+// Operator-namespaced tag (matches ld_* convention used by ld_address-confirm,
 // ld_rota-NN). Applied manually by operators to mark an order as a failed
 // delivery that needs triage. UI bucket helper + auto-assign cron treat any
 // order carrying THIS tag (or the state-machine FAILED_DELIVERY_TAG) as
 // "failed" → excluded from auto-routing, surfaced in the Failed chip.
 export const LD_FAILED_DELIVERY_TAG = "ld_failed-delivery";
+
+// Operator-namespaced tag applied when address validation fails (e.g. apartment
+// detail in line 1, multiple numbers, etc.). Auto-assign skips orders carrying
+// this tag — operator must clean the address before the order rejoins routing.
+// Hyphen-delimited canonical form. Replaces legacy ld_address_review (migrated
+// via scripts/migrate-ld-address-review-tag.ts).
+export const LD_ADDRESS_CONFIRM_TAG = "ld_address-confirm";
+
+// Operator-namespaced tag applied when the duplicated-number heuristic flags
+// the recipient phone as a likely placeholder/duplicate. Placeholder constant
+// today — actual auto-tagging logic ships in the Track 4 address parser port.
+// Auto-assign already skips orders carrying this tag.
+export const LD_NUMBER_CONFIRM_TAG = "ld_number-confirm";
 
 // Returns the canonical operator tag. Both the UI and cron compare order
 // tags against the result of this getter AND the state-machine tag below.
@@ -26,4 +39,15 @@ export const getFailedDeliveryTag = () => LD_FAILED_DELIVERY_TAG;
 export const getAllFailedDeliveryTags = (): readonly string[] => [
   LD_FAILED_DELIVERY_TAG,
   FAILED_DELIVERY_TAG,
+];
+
+// Returns every operator tag that excludes an order from auto-assignment.
+// Centralizes the skip-list so new "needs operator action" tags land in one
+// place. Today: failed-delivery (both variants), address-confirm,
+// number-confirm.
+export const getAllAutoAssignSkipTags = (): readonly string[] => [
+  LD_FAILED_DELIVERY_TAG,
+  FAILED_DELIVERY_TAG,
+  LD_ADDRESS_CONFIRM_TAG,
+  LD_NUMBER_CONFIRM_TAG,
 ];
