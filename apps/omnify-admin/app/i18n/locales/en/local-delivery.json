@@ -45,7 +45,7 @@
       "edit": "Edit",
       "confirm": "Confirm",
       "exit": "Exit",
-      "reassignTo": "Reassign to...",
+      "reassign": "Reassign",
       "unassign": "Unassign",
       "cantExceedCap": "Cannot reassign. Route {{routeName}} would exceed the 7-orders cap.",
       "routeOptionLabel": "{{routeName}} ({{orderCount}} stops)"

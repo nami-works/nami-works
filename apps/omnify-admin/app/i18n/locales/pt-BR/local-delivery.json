@@ -45,7 +45,7 @@
       "edit": "Editar",
       "confirm": "Confirmar",
       "exit": "Sair",
-      "reassignTo": "Reatribuir para...",
+      "reassign": "Reatribuir",
       "unassign": "Remover atribuição",
       "cantExceedCap": "Não foi possível reatribuir. A rota {{routeName}} excederia o limite de 7 pedidos.",
       "routeOptionLabel": "{{routeName}} ({{orderCount}} paradas)"

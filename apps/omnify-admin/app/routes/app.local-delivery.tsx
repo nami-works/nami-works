@@ -1609,6 +1609,7 @@ export default function Index() {
 
           if (point.kind === "order" && !assignedRoute) {
             advancedMarker.addListener("click", () => {
+              if (!polylineEditMode) enterPolylineEditMode();
               toggleSelection(point.id);
               const orderDetails = ordersById.get(point.id);
               if (!orderDetails) return;
@@ -1639,6 +1640,7 @@ export default function Index() {
           } else if (point.kind === "order" && assignedRoute) {
             // Left-click: toggle multiselection (same as unassigned orders)
             advancedMarker.addListener("click", () => {
+              if (!polylineEditMode) enterPolylineEditMode();
               toggleSelection(point.id);
               const orderDetails = ordersById.get(point.id);
               if (!orderDetails) return;
@@ -5769,52 +5771,45 @@ export default function Index() {
                       const hasAssignedSelection = [...selectedOrderIds].some((id) => assignedOrderIds.has(id));
                       const hasUnassignedSelection = [...selectedOrderIds].some((id) => !assignedOrderIds.has(id));
                       const hasChangesPending = dirtyRouteIds.size > 0;
-                      const hasRoutesAtLocation = editableRoutes.some((r) => r.locationId === locationId && r.orderIds.length > 0);
                       const routesAtLocation = editableRoutes
                         .map((route, index) => ({ route, index }))
                         .filter(({ route }) => route.locationId === locationId);
-                      // Edit (state A): visible when not editing + no selection + has routes
-                      const showEdit = !polylineEditMode && !hasSelection && hasRoutesAtLocation;
-                      // Reassign-to + Unassign (state C/D'): editing + assigned selection
-                      const showReassignCluster = polylineEditMode && hasAssignedSelection && routesAtLocation.length > 0;
-                      // Clear selection (in edit mode, state C/D'): icon=x to differentiate from Unassign
-                      const showClearSelectionEdit = polylineEditMode && hasSelection;
-                      // Assign-to-new-route (state E): not editing + has unassigned selection
-                      const showAssignToNew = !polylineEditMode && hasUnassignedSelection;
-                      // Clear selection (state E): not editing + selection (no Unassign coexists, icon=minus-circle)
-                      const showClearSelectionStateE = !polylineEditMode && hasSelection;
-                      // Confirm: editing + changes pending
+                      // Edit button DROPPED (2026-05-06 final review): clicking
+                      // any map label now enters edit mode automatically (wired
+                      // in the marker click handler), so the explicit Edit
+                      // button is redundant. State A (default, no selection)
+                      // shows just the ⋯ menu.
+                      // Reassign + Unassign: assigned selection (always inside
+                      //   edit mode now since clicking enters it).
+                      const showReassignCluster = hasAssignedSelection && routesAtLocation.length > 0;
+                      // Assign-to-new-route: unassigned selection (auto-confirms).
+                      const showAssignToNew = hasUnassignedSelection;
+                      // Clear selection: any selection. Single icon (minus-circle)
+                      //   regardless of state — Lucas's 2026-05-06 final pick.
+                      const showClearSelection = hasSelection;
+                      // Confirm: editing + changes pending.
                       const showConfirm = polylineEditMode && hasChangesPending;
-                      // Exit: editing AND (no selection OR changes pending) — hidden in state C
+                      // Exit: editing AND (no selection OR changes pending) —
+                      //   hidden when selection exists with no changes (use
+                      //   Clear selection first to surface Exit).
                       const showExit = polylineEditMode && (!hasSelection || hasChangesPending);
                       return (
                         <>
-                          {showEdit ? (
-                            <s-button
-                              key="edit"
-                              variant="secondary"
-                              icon="edit"
-                              accessibilityLabel={t("map.polylineEdit.edit")}
-                              onClick={enterPolylineEditMode}
-                            >
-                              {isFullscreen ? t("map.polylineEdit.edit") : null}
-                            </s-button>
-                          ) : null}
                           {showReassignCluster ? (
                             <>
-                              <s-button
-                                key="reassign-trigger"
-                                variant="secondary"
-                                icon="exchange"
-                                accessibilityLabel={t("map.polylineEdit.reassignTo")}
-                                commandFor="polyline-reassign-popover"
-                                command="--toggle"
-                              >
-                                {isFullscreen ? t("map.polylineEdit.reassignTo") : null}
-                              </s-button>
                               <div className={styles.polylineReassignPopover}>
+                                <s-button
+                                  key="reassign-trigger"
+                                  variant="secondary"
+                                  icon="exchange"
+                                  accessibilityLabel={t("map.polylineEdit.reassign")}
+                                  commandFor="polyline-reassign-popover"
+                                  command="--toggle"
+                                >
+                                  {isFullscreen ? t("map.polylineEdit.reassign") : null}
+                                </s-button>
                                 <s-popover id="polyline-reassign-popover">
-                                  <s-menu accessibilityLabel={t("map.polylineEdit.reassignTo")}>
+                                  <s-menu accessibilityLabel={t("map.polylineEdit.reassign")}>
                                     {routesAtLocation.map(({ route, index }) => (
                                       <s-button
                                         key={`reassign-target-${route.id}`}
@@ -5844,18 +5839,6 @@ export default function Index() {
                               </s-button>
                             </>
                           ) : null}
-                          {showClearSelectionEdit ? (
-                            <s-button
-                              key="clear-selection-edit"
-                              variant="secondary"
-                              icon="x"
-                              accessibilityLabel={t("map.clearSelection")}
-                              disabled={isRoutingBusy || undefined}
-                              onClick={clearSelection}
-                            >
-                              {isFullscreen ? t("map.clearSelection") : null}
-                            </s-button>
-                          ) : null}
                           {showAssignToNew ? (
                             <s-button
                               key="assign-to-new"
@@ -5873,9 +5856,9 @@ export default function Index() {
                               {isFullscreen ? t("map.assignToNewRoute") : null}
                             </s-button>
                           ) : null}
-                          {showClearSelectionStateE ? (
+                          {showClearSelection ? (
                             <s-button
-                              key="clear-selection-state-e"
+                              key="clear-selection"
                               variant="secondary"
                               icon="minus-circle"
                               accessibilityLabel={t("map.clearSelection")}
@@ -5901,34 +5884,30 @@ export default function Index() {
                             <s-button
                               key="exit"
                               variant="secondary"
-                              icon="exit"
+                              icon="x"
                               accessibilityLabel={t("map.polylineEdit.exit")}
                               onClick={cancelPolylineEditMode}
                             >
                               {isFullscreen ? t("map.polylineEdit.exit") : null}
                             </s-button>
                           ) : null}
-                          <s-button
-                            key="more"
-                            variant="secondary"
-                            icon="menu-horizontal"
-                            commandFor="map-more-actions"
-                            command="--toggle"
-                            accessibilityLabel={t("routeManager.moreActions")}
-                          />
                           <div className={styles.moreActionsMenuWrap}>
+                            <s-button
+                              key="more"
+                              variant="secondary"
+                              icon="menu-horizontal"
+                              commandFor="map-more-actions"
+                              command="--toggle"
+                              accessibilityLabel={t("routeManager.moreActions")}
+                            />
                             <s-popover id="map-more-actions">
                               <s-menu accessibilityLabel={t("routeManager.moreActions")}>
                                 <s-button
-                                  commandFor="map-more-actions"
-                                  command="--hide"
+                                  commandFor="map-style-modal"
+                                  command="--show"
                                   onClick={() => {
                                     setDraftMapStyle(mapStyle);
                                     setIsMapStyleModalOpen(true);
-                                    const modal = document.getElementById("map-style-modal") as
-                                      | (HTMLElement & { showOverlay?: () => void })
-                                      | null;
-                                    modal?.showOverlay?.();
                                   }}
                                 >
                                   {t("map.mapStyleButton")}
