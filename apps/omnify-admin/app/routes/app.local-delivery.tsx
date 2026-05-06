@@ -244,6 +244,16 @@ export default function Index() {
   // drag-and-drop wiring is deferred to a follow-up — the visual layer +
   // lockout already prevents mid-edit dispatch.
   const [polylineEditMode, setPolylineEditMode] = useState(false);
+  // Pre-edit snapshots for the polyline editor's Cancel button. Captured when
+  // entering edit mode; restored on Cancel; cleared on Confirm or after a
+  // successful Cancel-restore. Only the two pieces the editor mutates are
+  // snapshotted (editableRoutes + selectedOrderIds) — not the rest of the
+  // page state.
+  const preEditRoutesRef = useRef<PrecomputedRoute[] | null>(null);
+  const preEditSelectionRef = useRef<Set<string> | null>(null);
+  // Banner shown when an attempted reassign would push a route over the
+  // 7-orders cap. Non-blocking — operator dismisses + picks a different route.
+  const [polylineEditCapBanner, setPolylineEditCapBanner] = useState<string | null>(null);
   const [selectedReturnIds, setSelectedReturnIds] = useState<Set<string>>(() => new Set());
   const [returnInstructions, setReturnInstructions] = useState("");
   const [returnQuotePreview, setReturnQuotePreview] = useState<{
@@ -1570,8 +1580,18 @@ export default function Index() {
             badgeStyle.borderColor = "#111111";
           }
           if (isSelected) {
-            badgeStyle.borderColor = "#ff7a00";
-            badgeStyle.backgroundColor = "#fff3e0";
+            // Signature holographic gradient at 25% alpha. Replaces the
+            // legacy #ff7a00 selected-state which collided visually with
+            // route palette index 4 (#FF7A00). Reinforces the brand
+            // signature color used in the progress bar + accuracy meter.
+            badgeStyle.background =
+              "linear-gradient(90deg, rgba(94, 206, 206, 0.25), rgba(176, 159, 218, 0.25), rgba(212, 168, 212, 0.25), rgba(94, 206, 206, 0.25))";
+            badgeStyle.borderColor = "rgba(176, 159, 218, 0.6)";
+            // Edit mode: extra ring outline so the operator can see at a
+            // glance which stops are picked for the next reassign/unassign.
+            if (polylineEditMode) {
+              badgeStyle.boxShadow = "0 0 0 3px rgba(176, 159, 218, 0.5)";
+            }
           }
           const content = buildLabel(labelText, emoji, badgeStyle);
 
@@ -1821,8 +1841,11 @@ export default function Index() {
           ];
           const polyline = new googleMaps.Polyline({
             path,
-            strokeColor: "#ff7a00",
-            strokeOpacity: 0.85,
+            // Signature lavender (midpoint of the holographic gradient) at
+            // 25% alpha. Replaces the legacy #ff7a00 selection overlay which
+            // collided with route palette index 4 (#FF7A00).
+            strokeColor: "#b09fda",
+            strokeOpacity: 0.25,
             strokeWeight: 4,
             map: mapRef.current,
           });
@@ -1854,6 +1877,7 @@ export default function Index() {
     selectedOrderIds,
     locationId,
     filters.locationId,
+    polylineEditMode,
   ]);
 
   useEffect(() => {
@@ -3018,6 +3042,135 @@ export default function Index() {
         submit(formData, { method: "post" });
       }
     }
+  };
+
+  // Polyline editor: reassign all selected stops to the given target route.
+  // Only mutates local state + marks affected routes dirty — the actual
+  // recompute happens on Confirm via handleUpdateRoutes. Respects the
+  // 7-orders-per-route hard cap (CLAUDE.md feedback_max_orders_per_route).
+  // If the target would exceed the cap, no state mutation; surface a banner.
+  const handleMoveSelectedToRoute = (targetRouteId: string) => {
+    if (selectedOrderIds.size === 0) return;
+    const targetRoute = editableRoutes.find((route) => route.id === targetRouteId);
+    if (!targetRoute) return;
+    // Only operate on selected orders that are currently assigned to a route
+    // at the same location as the target. Unassigned selections + cross-location
+    // selections are silently filtered (operator can re-do via the existing
+    // assign flow).
+    const selectedIds = [...selectedOrderIds];
+    const movableIds = selectedIds.filter((id) => {
+      const current = orderRouteMap.get(id);
+      return current != null && current.locationId === targetRoute.locationId;
+    });
+    if (movableIds.length === 0) return;
+    const movableSet = new Set(movableIds);
+    // Compute the projected target order list (deduped) BEFORE mutating.
+    const projectedTargetOrders = Array.from(
+      new Set([
+        ...targetRoute.orderIds.filter((id) => !movableSet.has(id)),
+        ...targetRoute.orderIds,
+        ...movableIds,
+      ]),
+    );
+    if (projectedTargetOrders.length > 7) {
+      const routeIndex = editableRoutes.findIndex((r) => r.id === targetRouteId);
+      const routeName = t("routeManager.routeLabel", {
+        number: routeIndex >= 0 ? routeIndex + 1 : "?",
+      });
+      setPolylineEditCapBanner(
+        t("map.polylineEdit.cantExceedCap", { routeName }),
+      );
+      return;
+    }
+    // Track which routes are dirty BEFORE mutating: source routes that lose
+    // an order + the target route.
+    const sourceRouteIds = new Set<string>();
+    for (const id of movableIds) {
+      const src = orderRouteMap.get(id);
+      if (src && src.id !== targetRouteId) sourceRouteIds.add(src.id);
+    }
+    setEditableRoutes((current) =>
+      current.map((route) => {
+        if (route.id === targetRouteId) {
+          return {
+            ...route,
+            orderIds: Array.from(
+              new Set([
+                ...route.orderIds.filter((id) => !movableSet.has(id)),
+                ...movableIds,
+              ]),
+            ),
+          };
+        }
+        if (sourceRouteIds.has(route.id)) {
+          return {
+            ...route,
+            orderIds: route.orderIds.filter((id) => !movableSet.has(id)),
+          };
+        }
+        return route;
+      }),
+    );
+    setDirtyRouteIds((prev) => {
+      const next = new Set(prev);
+      next.add(targetRouteId);
+      sourceRouteIds.forEach((id) => next.add(id));
+      return next;
+    });
+    // Clear quote totals for affected routes — quotes are stale post-move.
+    setRouteQuoteTotals((prev) => {
+      const next = { ...prev };
+      delete next[targetRouteId];
+      sourceRouteIds.forEach((id) => {
+        delete next[id];
+      });
+      return next;
+    });
+    clearSelection();
+    setPolylineEditCapBanner(null);
+    console.info(
+      `[local-delivery:polyline-edit] reassigned orders=${movableIds.length} target=${targetRouteId} sources=${[...sourceRouteIds].join(",")}`,
+    );
+  };
+
+  // Polyline editor: enter edit mode + snapshot the state pieces Cancel
+  // restores. Snapshots are deep-copied so subsequent mutations don't bleed
+  // back into the snapshot.
+  const enterPolylineEditMode = () => {
+    preEditRoutesRef.current = editableRoutes.map((route) => ({
+      ...route,
+      orderIds: [...route.orderIds],
+    }));
+    preEditSelectionRef.current = new Set(selectedOrderIds);
+    setPolylineEditCapBanner(null);
+    setPolylineEditMode(true);
+  };
+
+  // Polyline editor: Cancel — restore the snapshots, clear dirty flags +
+  // banner, exit edit mode. Snapshots are released after restore.
+  const cancelPolylineEditMode = () => {
+    if (preEditRoutesRef.current) {
+      setEditableRoutes(preEditRoutesRef.current);
+    }
+    if (preEditSelectionRef.current) {
+      setSelectedOrderIds(preEditSelectionRef.current);
+    }
+    preEditRoutesRef.current = null;
+    preEditSelectionRef.current = null;
+    setDirtyRouteIds(new Set());
+    setPolylineEditCapBanner(null);
+    setPolylineEditMode(false);
+  };
+
+  // Polyline editor: Confirm — flush dirty routes via the existing recompute
+  // path. Snapshots are released; banner cleared. handleUpdateRoutes itself
+  // early-returns when nothing is dirty.
+  const confirmPolylineEditMode = () => {
+    handleUpdateRoutes();
+    preEditRoutesRef.current = null;
+    preEditSelectionRef.current = null;
+    setPolylineEditCapBanner(null);
+    setPolylineEditMode(false);
   };
 
   const unassignSingleOrderFromRoute = (orderId: string, route: PrecomputedRoute) => {
@@ -5473,6 +5626,15 @@ export default function Index() {
           {dispatchAllStaleBanner}
         </s-banner>
       ) : null}
+      {polylineEditCapBanner ? (
+        <s-banner
+          tone="warning"
+          dismissible
+          onDismiss={() => setPolylineEditCapBanner(null)}
+        >
+          {polylineEditCapBanner}
+        </s-banner>
+      ) : null}
       {!mapsApiKey ? (
         <s-banner tone="warning" heading={t("banners.mapsKeyMissing")}>
           {t("banners.mapsKeyDescription")}
@@ -5529,28 +5691,81 @@ export default function Index() {
                           key="polyline-edit"
                           variant="secondary"
                           icon="edit"
-                          onClick={() => setPolylineEditMode(true)}
+                          onClick={enterPolylineEditMode}
                         >
                           {t("map.polylineEdit.edit")}
                         </s-button>
                       ) : (
                         <>
+                          {(() => {
+                            const routesAtLocation = editableRoutes
+                              .map((route, index) => ({ route, index }))
+                              .filter(({ route }) => route.locationId === locationId);
+                            const hasAssignedSelection = [...selectedOrderIds].some((id) => {
+                              const r = orderRouteMap.get(id);
+                              return r != null && r.locationId === locationId;
+                            });
+                            const reassignDisabled =
+                              selectedOrderIds.size === 0 || routesAtLocation.length === 0;
+                            return (
+                              <>
+                                <s-button
+                                  key="polyline-reassign"
+                                  variant="secondary"
+                                  disabled={reassignDisabled || undefined}
+                                  commandFor="polyline-reassign-popover"
+                                  command="--toggle"
+                                >
+                                  {t("map.polylineEdit.reassignTo")}
+                                </s-button>
+                                <div className={styles.polylineReassignPopover}>
+                                  <s-popover id="polyline-reassign-popover">
+                                    <s-menu accessibilityLabel={t("map.polylineEdit.reassignTo")}>
+                                      {routesAtLocation.map(({ route, index }) => {
+                                        const routeName = t("routeManager.routeLabel", {
+                                          number: index + 1,
+                                        });
+                                        return (
+                                          <s-button
+                                            key={`reassign-target-${route.id}`}
+                                            commandFor="polyline-reassign-popover"
+                                            command="--hide"
+                                            onClick={() => handleMoveSelectedToRoute(route.id)}
+                                          >
+                                            {t("map.polylineEdit.routeOptionLabel", {
+                                              routeName,
+                                              orderCount: route.orderIds.length,
+                                            })}
+                                          </s-button>
+                                        );
+                                      })}
+                                    </s-menu>
+                                  </s-popover>
+                                </div>
+                                <s-button
+                                  key="polyline-unassign"
+                                  variant="secondary"
+                                  tone="critical"
+                                  disabled={!hasAssignedSelection || undefined}
+                                  onClick={handleUnassignSelected}
+                                >
+                                  {t("map.polylineEdit.unassign")}
+                                </s-button>
+                              </>
+                            );
+                          })()}
                           <s-button
                             key="polyline-confirm"
                             variant="primary"
                             disabled={isRoutingBusy}
-                            onClick={() => {
-                              // Recompute via existing path (Track 1A: no TRAFFIC_AWARE)
-                              handleUpdateRoutes();
-                              setPolylineEditMode(false);
-                            }}
+                            onClick={confirmPolylineEditMode}
                           >
                             {t("map.polylineEdit.confirm")}
                           </s-button>
                           <s-button
                             key="polyline-cancel"
                             variant="secondary"
-                            onClick={() => setPolylineEditMode(false)}
+                            onClick={cancelPolylineEditMode}
                           >
                             {t("map.polylineEdit.cancel")}
                           </s-button>

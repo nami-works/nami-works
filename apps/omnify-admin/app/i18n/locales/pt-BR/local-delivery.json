@@ -44,7 +44,11 @@
     "polylineEdit": {
       "edit": "Editar",
       "confirm": "Confirmar",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "reassignTo": "Reatribuir para...",
+      "unassign": "Remover atribuição",
+      "cantExceedCap": "Não foi possível reatribuir. A rota {{routeName}} excederia o limite de 7 pedidos.",
+      "routeOptionLabel": "{{routeName}} ({{orderCount}} paradas)"
     },
     "clearSelection": "Limpar seleção",
     "unassignSelected": "Desatribuir",

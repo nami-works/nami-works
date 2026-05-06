@@ -66,6 +66,14 @@
   }
 }
 
+/* Popover wrapper for the polyline editor's "Reassign to..." dropdown.
+   Same pattern used in app.goals (.actionPopover) — the wrapper exists so
+   the popover anchors to its trigger row instead of escaping the toolbar. */
+.polylineReassignPopover {
+  position: relative;
+  display: inline-block;
+}
+
 /* Map canvas in polyline-edit mode — adds a subtle visual cue (dashed inner
    border) so the operator knows polylines are in edit state. The actual
    dotted+subdued polyline rendering happens via google.maps.Polyline.setOptions

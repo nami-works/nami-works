@@ -44,7 +44,11 @@
     "polylineEdit": {
       "edit": "Edit",
       "confirm": "Confirm",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "reassignTo": "Reassign to...",
+      "unassign": "Unassign",
+      "cantExceedCap": "Cannot reassign. Route {{routeName}} would exceed the 7-orders cap.",
+      "routeOptionLabel": "{{routeName}} ({{orderCount}} stops)"
     },
     "clearSelection": "Clear selection",
     "unassignSelected": "Unassign",
