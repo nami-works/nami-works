@@ -1,0 +1,243 @@
+/**
+ * Unit tests for address-repair.server.ts — the four §6.7 patterns + negative
+ * cases. Mirrors `nami-works/sandbox/gebeauty/scripts/test_address_repair.py`
+ * to keep parity with the Python source of truth.
+ *
+ * Run: npx tsx --test app/services/address-repair.server.test.ts
+ *  or: npm test
+ */
+
+import test from "node:test";
+import assert from "node:assert/strict";
+import {
+  repairBrazilianAddress,
+  tryPattern1,
+  tryPattern2,
+  tryPattern3,
+  tryPattern4,
+} from "./address-repair.server";
+
+// ─── Pattern 1 ─────────────────────────────────────────────────────────────
+
+test("p1: playbook example — drops trailing duplicate '82'", () => {
+  // Real example with U+2060 word-joiner before the trailing 82 (Shopify
+  // embeds these in real Brazilian addresses).
+  const result = repairBrazilianAddress(
+    "Av Itaberaba, 1515, Ap82 B, ⁠82",
+    "Ap82 B, Nossa Senhora do Ó",
+  );
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.pattern, "p1");
+  assert.equal(result.confidence, "high");
+  assert.equal(result.corrected.address1, "Av Itaberaba, 1515, Ap82 B");
+  assert.equal(result.corrected.address2, "Ap82 B, Nossa Senhora do Ó");
+});
+
+test("p1: dyandra real-world (order #78065, 2026-04-25)", () => {
+  const result = repairBrazilianAddress(
+    "Avenida Miguel Estefno, 2800, ap 24, ⁠2800",
+    "ap 24, ⁠Saúde",
+  );
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.pattern, "p1");
+  assert.equal(result.corrected.address1, "Avenida Miguel Estefno, 2800, ap 24");
+});
+
+test("p1: does NOT trigger when only two segments", () => {
+  const result = repairBrazilianAddress("Rua X, 100", "Apto 5, Bairro");
+  if (result.ok) {
+    assert.notEqual(result.pattern, "p1");
+  } else {
+    // failing OK — just must not be p1 specifically.
+    assert.ok(true);
+  }
+});
+
+test("p1: does NOT trigger when trailing number isn't duplicated", () => {
+  const result = repairBrazilianAddress("Rua X, 100, Apto 5, 999", "Bairro");
+  if (result.ok) {
+    assert.notEqual(result.pattern, "p1");
+  }
+});
+
+// ─── Pattern 4 ─────────────────────────────────────────────────────────────
+
+test("p4: playbook example — Rua da Passagem ap 805, ⁠114", () => {
+  const result = repairBrazilianAddress(
+    "Rua da Passagem ap 805, ⁠114",
+    "Ed Shangrila, ⁠Botafogo",
+  );
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.pattern, "p4");
+  assert.equal(result.confidence, "high");
+  assert.equal(result.corrected.address1, "Rua da Passagem, 114");
+  assert.ok(result.corrected.address2.includes("ap 805"));
+  assert.ok(result.corrected.address2.includes("Ed Shangrila"));
+  assert.ok(result.corrected.address2.includes("Botafogo"));
+});
+
+test("p4: 'apto.' (with dot) abbreviation also matches", () => {
+  const result = repairBrazilianAddress("Rua Y apto. 12, 200", "Bairro");
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.pattern, "p4");
+  assert.equal(result.corrected.address1, "Rua Y, 200");
+});
+
+test("p4: does NOT trigger when there is no apt prefix", () => {
+  const result = repairBrazilianAddress("Rua X, 100", "Apto 5, Bairro");
+  if (result.ok) {
+    assert.notEqual(result.pattern, "p4");
+  }
+});
+
+// ─── Pattern 2 ─────────────────────────────────────────────────────────────
+
+test("p2: playbook example — Avenida Aquarela do Brasil, 611, Bl2apt1602", () => {
+  const result = repairBrazilianAddress(
+    "Avenida Aquarela do Brasil, 611, Bl2apt1602",
+    "Apt 1602, Sao Conrado",
+  );
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.pattern, "p2");
+  assert.equal(result.confidence, "high");
+  assert.equal(result.corrected.address1, "Avenida Aquarela do Brasil, 611");
+  assert.ok(result.corrected.address2.includes("Bloco 2"));
+  assert.ok(result.corrected.address2.includes("Apt 1602"));
+  assert.ok(result.corrected.address2.includes("Sao Conrado"));
+});
+
+test("p2: does NOT duplicate when components already in a2", () => {
+  const result = repairBrazilianAddress(
+    "Av Test, 100, Bl 2 Apt 1602",
+    "Bl 2 Apt 1602, Bairro",
+  );
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.pattern, "p2");
+  assert.equal(result.corrected.address2, "Bl 2 Apt 1602, Bairro");
+});
+
+// ─── Pattern 3 ─────────────────────────────────────────────────────────────
+
+test("p3: playbook example — Rua Engenheiro Jorge Oliva, 174 B, ⁠333", () => {
+  const result = repairBrazilianAddress(
+    "Rua Engenheiro Jorge Oliva, 174 B, ⁠333",
+    "174 B, Vila Mascote",
+  );
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.pattern, "p3");
+  assert.equal(result.confidence, "medium");
+  assert.equal(result.corrected.address1, "Rua Engenheiro Jorge Oliva, 333");
+  assert.equal(result.corrected.address2, "Apto 174 B, Vila Mascote");
+});
+
+test("p3: does NOT trigger with three numbers in a1", () => {
+  const result = repairBrazilianAddress("Rua X, 100, 200, 300", "100, Bairro");
+  if (result.ok) {
+    assert.notEqual(result.pattern, "p3");
+  }
+});
+
+test("p3: does NOT trigger when there's no duplicate in a2", () => {
+  const result = repairBrazilianAddress("Rua X, 100, 200", "Bairro");
+  if (result.ok) {
+    assert.notEqual(result.pattern, "p3");
+  }
+});
+
+// ─── Negative cases ────────────────────────────────────────────────────────
+
+test("clean address — no pattern matches", () => {
+  const result = repairBrazilianAddress("Rua Augusta, 1500", "Apto 42, Consolação");
+  assert.equal(result.ok, false);
+  if (result.ok) return;
+  assert.equal(result.reason, "no-pattern-matched");
+});
+
+test("empty address1 → no-pattern-matched", () => {
+  const result = repairBrazilianAddress("", "Bairro");
+  assert.equal(result.ok, false);
+  if (result.ok) return;
+  assert.equal(result.reason, "no-pattern-matched");
+  assert.equal(result.explanation, "empty address1");
+});
+
+test("null inputs are tolerated", () => {
+  const result = repairBrazilianAddress(null, null);
+  assert.equal(result.ok, false);
+});
+
+test("single-number address with no apt → no-pattern-matched", () => {
+  const result = repairBrazilianAddress("Rua X, 100", "Bairro");
+  assert.equal(result.ok, false);
+});
+
+test("unparseable junk → no-pattern-matched", () => {
+  const result = repairBrazilianAddress("asdfqwer", "blahblah");
+  assert.equal(result.ok, false);
+});
+
+// ─── Ambiguity detection ───────────────────────────────────────────────────
+
+test("duplicated number with no apt indicator → ambiguous", () => {
+  // "Rua Forte William, 11" + "11 Matizes, Panamby" — the number 11 appears
+  // in both, but neither line carries an apt indicator. We can't tell which
+  // is street vs apartment, so caller should tag ld_number-confirm.
+  const result = repairBrazilianAddress("Rua Forte William, 11", "11 Matizes, Panamby");
+  assert.equal(result.ok, false);
+  if (result.ok) return;
+  assert.equal(result.reason, "duplicated-number-ambiguous");
+});
+
+// ─── Unicode handling ──────────────────────────────────────────────────────
+
+test("zero-width word-joiner U+2060 is stripped before matching", () => {
+  // The trailing "82" is preceded by U+2060. If we didn't strip the joiner
+  // BEFORE applying the digit-comparison pattern, p1 would miss the duplicate.
+  const result = repairBrazilianAddress(
+    "Av Itaberaba, 1515, Ap82 B, ⁠⁠⁠82",
+    "",
+  );
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.pattern, "p1");
+  assert.ok(!result.corrected.address1.includes("⁠"));
+});
+
+// ─── Pattern ordering ──────────────────────────────────────────────────────
+
+test("ordering: p1 wins over p2 when both could match", () => {
+  // This input could match P1 (trailing 82 duplicates Ap82) AND P2 (Ap82 has
+  // a number that matches Ap82 in a2). P1 is more specific → should win.
+  const result = repairBrazilianAddress(
+    "Av Itaberaba, 1515, Ap82 B, ⁠82",
+    "Ap82 B, Nossa Senhora do Ó",
+  );
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.pattern, "p1");
+});
+
+// ─── Direct pattern-fn smoke checks ────────────────────────────────────────
+
+test("tryPattern1 returns null when not applicable", () => {
+  assert.equal(tryPattern1("Rua X, 100", "Bairro"), null);
+});
+
+test("tryPattern2 returns null when not applicable", () => {
+  assert.equal(tryPattern2("Rua X, 100", "Bairro"), null);
+});
+
+test("tryPattern3 returns null when not applicable", () => {
+  assert.equal(tryPattern3("Rua X, 100", "Bairro"), null);
+});
+
+test("tryPattern4 returns null when not applicable", () => {
+  assert.equal(tryPattern4("Rua X, 100", "Bairro"), null);
+});

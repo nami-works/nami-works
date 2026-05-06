@@ -56,6 +56,7 @@ import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-r
 import { clusterOrders } from "../services/carrier-quotation-optimizer.server";
 import { addTags, renameRouteTagsToArchive } from "../services/lalamove-sync.server";
 import { LD_ADDRESS_CONFIRM_TAG } from "../services/lalamove-tags";
+import { applyAddressRepairOrTag } from "../services/address-repair.server";
 import type { OptimizerOrderInput } from "../services/google-routes-shared.server";
 import {
   summarizeRoutePOD,
@@ -945,7 +946,9 @@ async function handleOptimize(shop: string, body: Record<string, unknown>): Prom
       });
     }
 
-    // 3. Address validation — flag problematic orders, exclude from this batch
+    // 3. Address validation — flag problematic orders, exclude from this batch.
+    // Track 4 §6.7: try the deterministic patterns first; auto-fix in place
+    // when one matches, else tag for human review.
     const validOrders: EligibleOrderForOptimize[] = [];
     const flagged: Array<{ orderId: string; name: string; issue: string }> = [];
     for (const o of orders) {
@@ -954,21 +957,12 @@ async function handleOptimize(shop: string, body: Record<string, unknown>): Prom
         flagged.push({ orderId: o.id, name: o.name, issue: v.issue ?? "unknown" });
         if (flagAddressIssues) {
           try {
-            await addTags(admin, o.id, [LD_ADDRESS_CONFIRM_TAG]);
-            await admin.graphql(
-              `#graphql
-                mutation ControlOptimizeAddressNote($input: OrderInput!) {
-                  orderUpdate(input: $input) { userErrors { message } }
-                }`,
-              {
-                variables: {
-                  input: {
-                    id: o.id,
-                    note: `Delivery paused - address needs review: ${v.issue}. Fix in CPG Labs > Local Delivery.`,
-                  },
-                },
-              },
-            );
+            await applyAddressRepairOrTag({
+              admin,
+              shop,
+              order: { id: o.id, address1: o.address1, address2: o.address2 },
+              noteFallback: `Delivery paused - address needs review: ${v.issue}. Fix in CPG Labs > Local Delivery.`,
+            });
           } catch (tagErr) {
             console.warn(`[control:optimize] address-review tag failed order=${o.id}`, tagErr);
           }

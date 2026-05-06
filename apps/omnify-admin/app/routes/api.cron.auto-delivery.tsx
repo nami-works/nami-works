@@ -12,10 +12,8 @@ import {
   normalizePhoneForMarket,
 } from "../services/lalamove.server";
 import { addTags } from "../services/lalamove-sync.server";
-import {
-  LD_ADDRESS_CONFIRM_TAG,
-  getAllAutoAssignSkipTags,
-} from "../services/lalamove-tags";
+import { getAllAutoAssignSkipTags } from "../services/lalamove-tags";
+import { applyAddressRepairOrTag } from "../services/address-repair.server";
 import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
 
 const MAX_ROUTES = 20;
@@ -142,29 +140,29 @@ async function runAutoAssign(
     return 0;
   }
 
-  // Address validation: exclude orders with issues, tag them
+  // Address validation: exclude orders with issues, then either auto-fix
+  // (Track 4 §6.7 deterministic patterns) or tag for human review.
   const validOrders: typeof orders = [];
   for (const order of orders) {
     const validation = validateOrderAddress(order.address1, order.address2);
     if (!validation.isValid) {
       try {
-        await addTags(adminClient.admin, order.id, [LD_ADDRESS_CONFIRM_TAG]);
-        // Add order note for merchant visibility in Shopify admin
-        await adminClient.admin.graphql(
-          `#graphql
-            mutation AddOrderNote($input: OrderInput!) {
-              orderUpdate(input: $input) { userErrors { message } }
-            }`,
-          {
-            variables: {
-              input: {
-                id: order.id,
-                note: `Delivery paused - address needs review: ${validation.issueType ?? "unknown issue"}. Fix in CPG Labs > Local Delivery.`,
-              },
-            },
-          },
-        );
-        console.info(`[auto-delivery:assign] address review tagged order=${order.id} issue=${validation.issueType}`);
+        const outcome = await applyAddressRepairOrTag({
+          admin: adminClient.admin,
+          shop,
+          order: { id: order.id, address1: order.address1, address2: order.address2 },
+          noteFallback: `Delivery paused - address needs review: ${validation.issueType ?? "unknown issue"}. Fix in CPG Labs > Local Delivery.`,
+        });
+        if (outcome.outcome === "auto-fixed") {
+          // Repaired in place — order rejoins the validation queue next cron tick.
+          console.info(
+            `[auto-delivery:assign] address auto-fixed order=${order.id} pattern=${outcome.pattern} issue=${validation.issueType}`,
+          );
+        } else {
+          console.info(
+            `[auto-delivery:assign] address review tagged order=${order.id} issue=${validation.issueType} outcome=${outcome.outcome}`,
+          );
+        }
       } catch (tagErr) {
         console.warn(`[auto-delivery:assign] failed to tag address review order=${order.id}`, tagErr);
       }
