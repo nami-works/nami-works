@@ -7,7 +7,7 @@ export function getAppIdentity(): AppIdentity {
 }
 
 const APP_DISPLAY_NAMES: Record<AppIdentity, string> = {
-  "cpg-labs": "CPG Labs",
+  "cpg-labs": "Omnify",
   omnify: "Omnify",
   storytelling: "Storytelling",
   storefront: "Storefront",

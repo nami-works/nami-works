@@ -1,7 +1,7 @@
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "58ada92edbe153c956b3600e58e17382"
-name = "CPG Labs"
+name = "Omnify"
 # Hosted at app.cpg-labs.io (Phase 6 cutover 2026-04-29). Was previously at
 # omnify.cpg-labs.io/full with BASE_PATH=/full baked into the build, which
 # caused intermittent /full/full/* double-prefix bugs (App Bridge prepends

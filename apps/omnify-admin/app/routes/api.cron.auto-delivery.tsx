@@ -151,7 +151,7 @@ async function runAutoAssign(
           admin: adminClient.admin,
           shop,
           order: { id: order.id, address1: order.address1, address2: order.address2 },
-          noteFallback: `Delivery paused - address needs review: ${validation.issueType ?? "unknown issue"}. Fix in CPG Labs > Local Delivery.`,
+          noteFallback: `Delivery paused - address needs review: ${validation.issueType ?? "unknown issue"}. Fix in Omnify > Local Delivery.`,
         });
         if (outcome.outcome === "auto-fixed") {
           // Repaired in place — order rejoins the validation queue next cron tick.

@@ -961,7 +961,7 @@ async function handleOptimize(shop: string, body: Record<string, unknown>): Prom
               admin,
               shop,
               order: { id: o.id, address1: o.address1, address2: o.address2 },
-              noteFallback: `Delivery paused - address needs review: ${v.issue}. Fix in CPG Labs > Local Delivery.`,
+              noteFallback: `Delivery paused - address needs review: ${v.issue}. Fix in Omnify > Local Delivery.`,
             });
           } catch (tagErr) {
             console.warn(`[control:optimize] address-review tag failed order=${o.id}`, tagErr);

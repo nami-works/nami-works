@@ -29,7 +29,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export default function App() {
   const { apiKey, locale, navItems, basePath, appDisplayName } = useLoaderData<typeof loader>();
-  const logoSrc = `${basePath}/cpg-labs_box.png`.replace(/\/+/g, "/");
+  const logoSrc = `${basePath}/omnify_map.png`.replace(/\/+/g, "/");
   const navigation = useNavigation();
   const isPageNavigation = navigation.state === "loading" && !!navigation.location;
   // Default true so cold-start paints the overlay immediately, hiding the
