@@ -1785,13 +1785,33 @@ export default function Index() {
               path.push({ lat: lat / 1e5, lng: lng / 1e5 });
             }
 
-            const polyline = new googleMaps.Polyline({
-              path,
-              strokeColor: route.color,
-              strokeOpacity: 0.85,
-              strokeWeight: 4,
-              map: mapRef.current,
-            });
+            // Apply edit-mode (dotted+subdued) styling at CREATION when
+            // polylineEditMode is already active. Without this, polylines
+            // rebuilt mid-edit (e.g. after optimize) render solid because
+            // the restyle effect at line 2377 runs synchronously BEFORE
+            // the async polyline creation completes.
+            const polyline = new googleMaps.Polyline(
+              polylineEditMode
+                ? {
+                    path,
+                    strokeColor: route.color,
+                    strokeOpacity: 0,
+                    strokeWeight: 2,
+                    icons: [{
+                      icon: { path: "M 0,-1 0,1", strokeOpacity: 0.5, scale: 3 },
+                      offset: "0",
+                      repeat: "10px",
+                    }],
+                    map: mapRef.current,
+                  }
+                : {
+                    path,
+                    strokeColor: route.color,
+                    strokeOpacity: 0.85,
+                    strokeWeight: 4,
+                    map: mapRef.current,
+                  },
+            );
             precomputedRoutePolylinesRef.current.push(polyline);
           });
         }
@@ -2852,22 +2872,12 @@ export default function Index() {
       });
       return next;
     });
-    setDirtyRouteIds((prev) => {
-      const next = new Set(prev);
-      editableRoutes.forEach((route, index) => {
-        const withoutSelected = route.orderIds.filter(
-          (orderId) => !selectedSet.has(orderId),
-        );
-        if (index === routeIndex || withoutSelected.length !== route.orderIds.length) {
-          next.add(route.id);
-        }
-      });
-      // Also mark newly created route if applicable
-      if (routeIndex >= editableRoutes.length) {
-        next.add(`${locationId}-${editableRoutes.length}`);
-      }
-      return next;
-    });
+    // Per 2026-05-06 review: Assign-to-new-route (and per-route-card
+     // "Add to route") submits via assignFetcher immediately and persists
+     // server-side. Dirty marking is reserved for the polyline editor's
+     // Confirm flow only — assignment paths must NOT surface the
+     // "Confirm changes" button. Removing the dirty mark makes both
+     // paths one-step from the user's perspective.
     clearSelection();
     const formData = new FormData();
     formData.append("route", routeValue);
@@ -3332,13 +3342,12 @@ export default function Index() {
       );
     }
 
-    if (dispatch && status) {
-      return (
-        <s-badge tone={getStatusBadgeTone(status)}>
-          {t(`routeManager.status.${status}`)}
-        </s-badge>
-      );
-    }
+    // NOTE: the previous "dispatch && status" branch that rendered another
+    // status badge was REMOVED — the post-dispatch action row at line ~4566
+    // already renders the status badge for non-terminal states, so this slot
+    // duplicated it (Lucas's 2026-05-06 review: "status badge is duplicated").
+    // The terminal-status branch above stays because the action row hides
+    // its badge for terminal states.
 
     if (lalamove && !dispatch) {
       if (lalamove.tone === "success") {
@@ -3839,10 +3848,13 @@ export default function Index() {
     formData.append("routeId", route.id);
     formData.append("locationId", route.locationId);
     route.orderIds.forEach((orderId) => formData.append("orderIds", orderId));
-    setLalamoveStatus((current) => ({
-      ...current,
-      [route.id]: { message: t("driverRequest.creatingQuotation") },
-    }));
+    // Clear any stale lalamoveStatus message — the spinner button already
+    // signals "request in flight"; no text needed (per 2026-05-06 review).
+    setLalamoveStatus((current) => {
+      const next = { ...current };
+      delete next[route.id];
+      return next;
+    });
     setLalamoveBusyRouteId(route.id);
     lalamoveFetcher.submit(formData, { method: "post" });
   };
@@ -3886,10 +3898,13 @@ export default function Index() {
     if (Object.keys(addressVerifyEdits).length > 0) {
       formData.append("addressEdits", JSON.stringify(addressVerifyEdits));
     }
-    setLalamoveStatus((current) => ({
-      ...current,
-      [route.id]: { message: t("driverRequest.creatingQuotation") },
-    }));
+    // Clear any stale lalamoveStatus message — the spinner button already
+    // signals "request in flight"; no text needed (per 2026-05-06 review).
+    setLalamoveStatus((current) => {
+      const next = { ...current };
+      delete next[route.id];
+      return next;
+    });
     setLalamoveBusyRouteId(route.id);
     lalamoveFetcher.submit(formData, { method: "post" });
   };
@@ -3917,10 +3932,13 @@ export default function Index() {
     if (Object.keys(addressVerifyEdits).length > 0) {
       formData.append("addressEdits", JSON.stringify(addressVerifyEdits));
     }
-    setLalamoveStatus((current) => ({
-      ...current,
-      [route.id]: { message: t("driverRequest.creatingQuotation") },
-    }));
+    // Clear any stale lalamoveStatus message — the spinner button already
+    // signals "request in flight"; no text needed (per 2026-05-06 review).
+    setLalamoveStatus((current) => {
+      const next = { ...current };
+      delete next[route.id];
+      return next;
+    });
     setLalamoveBusyRouteId(route.id);
     lalamoveFetcher.submit(formData, { method: "post" });
     setSpecialRequestsRoute(null);
@@ -4437,6 +4455,18 @@ export default function Index() {
                   const isAnyRouteBusy = lalamoveBusyRouteId !== null;
                   const isOtherRouteBusy = isAnyRouteBusy && !isThisRouteBusy;
                   const notification = renderRouteNotification(route);
+                  // Per-state notification placement (per 2026-05-06 review):
+                  // - pre-dispatch action row: render INLINE (left of the
+                  //   primary button) so the action row is one line.
+                  // - any other state: render BELOW the action row as before.
+                  const dispatch = dispatchedRoutes[route.id];
+                  const isPostDispatchActive =
+                    !!dispatch &&
+                    !TERMINAL_DISPATCH_STATUSES.has(dispatch.status ?? "");
+                  const isPreDispatchRow =
+                    !hasSelectedOrders && !isPostDispatchActive;
+                  const inlineNotification = isPreDispatchRow ? notification : null;
+                  const belowNotification = isPreDispatchRow ? null : notification;
                   return (
                     <div
                       key={route.id}
@@ -4568,9 +4598,15 @@ export default function Index() {
                             </s-badge>
                           </div>
                         ) : (
-                          // Pre-dispatch action row: primary "Dispatch" or "Request quote".
+                          // Pre-dispatch action row: notification (e.g. "Ready
+                          // for delivery") inline-left, primary button right.
                           // Manage and Clear route moved into the ⋯ overflow menu.
                           <div className={styles.routeCardActionsRow}>
+                            {inlineNotification ? (
+                              <div className={styles.routeCardActionsRowInlineNotif}>
+                                {inlineNotification}
+                              </div>
+                            ) : null}
                             {quotePreview?.routeId === route.id ? (
                               isThisRouteBusy ? (
                                 <s-button
@@ -4612,9 +4648,9 @@ export default function Index() {
                             )}
                           </div>
                         )}
-                        {notification ? (
+                        {belowNotification ? (
                           <div className={styles.routeCardNotifications}>
-                            {notification}
+                            {belowNotification}
                           </div>
                         ) : null}
                       </s-box>
@@ -5677,99 +5713,11 @@ export default function Index() {
                       onClick={() => setIsFullscreen((current) => !current)}
                     />
                   </div>
-                  {/* Polyline edit toolbar (desktop only). Hidden when no
-                      routes are visible. State A: Edit only. State B: Confirm
-                      + Cancel (polylines render dotted+subdued, lockouts
-                      active across cards + bulk actions). */}
-                  {locationId !== DEFAULT_LOCATION_ID && editableRoutes.some((r) => r.locationId === locationId && r.orderIds.length > 0) ? (
-                    <div className={styles.polylineToolbar} role="group">
-                      {!polylineEditMode ? (
-                        <s-button
-                          key="polyline-edit"
-                          variant="secondary"
-                          icon="edit"
-                          onClick={enterPolylineEditMode}
-                        >
-                          {t("map.polylineEdit.edit")}
-                        </s-button>
-                      ) : (
-                        <>
-                          {(() => {
-                            const routesAtLocation = editableRoutes
-                              .map((route, index) => ({ route, index }))
-                              .filter(({ route }) => route.locationId === locationId);
-                            const hasAssignedSelection = [...selectedOrderIds].some((id) => {
-                              const r = orderRouteMap.get(id);
-                              return r != null && r.locationId === locationId;
-                            });
-                            const reassignDisabled =
-                              selectedOrderIds.size === 0 || routesAtLocation.length === 0;
-                            return (
-                              <>
-                                <s-button
-                                  key="polyline-reassign"
-                                  variant="secondary"
-                                  disabled={reassignDisabled || undefined}
-                                  commandFor="polyline-reassign-popover"
-                                  command="--toggle"
-                                >
-                                  {t("map.polylineEdit.reassignTo")}
-                                </s-button>
-                                <div className={styles.polylineReassignPopover}>
-                                  <s-popover id="polyline-reassign-popover">
-                                    <s-menu accessibilityLabel={t("map.polylineEdit.reassignTo")}>
-                                      {routesAtLocation.map(({ route, index }) => {
-                                        const routeName = t("routeManager.routeLabel", {
-                                          number: index + 1,
-                                        });
-                                        return (
-                                          <s-button
-                                            key={`reassign-target-${route.id}`}
-                                            commandFor="polyline-reassign-popover"
-                                            command="--hide"
-                                            onClick={() => handleMoveSelectedToRoute(route.id)}
-                                          >
-                                            {t("map.polylineEdit.routeOptionLabel", {
-                                              routeName,
-                                              orderCount: route.orderIds.length,
-                                            })}
-                                          </s-button>
-                                        );
-                                      })}
-                                    </s-menu>
-                                  </s-popover>
-                                </div>
-                                <s-button
-                                  key="polyline-unassign"
-                                  variant="secondary"
-                                  tone="critical"
-                                  disabled={!hasAssignedSelection || undefined}
-                                  onClick={handleUnassignSelected}
-                                >
-                                  {t("map.polylineEdit.unassign")}
-                                </s-button>
-                              </>
-                            );
-                          })()}
-                          <s-button
-                            key="polyline-confirm"
-                            variant="primary"
-                            disabled={isRoutingBusy}
-                            onClick={confirmPolylineEditMode}
-                          >
-                            {t("map.polylineEdit.confirm")}
-                          </s-button>
-                          <s-button
-                            key="polyline-cancel"
-                            variant="secondary"
-                            onClick={cancelPolylineEditMode}
-                          >
-                            {t("map.polylineEdit.cancel")}
-                          </s-button>
-                        </>
-                      )}
-                    </div>
-                  ) : null}
+                  {/* On-map polyline toolbar REMOVED (2026-05-06 review):
+                      all editor actions (Edit / Confirm / Exit / Reassign-to /
+                      Unassign / Clear selection) consolidated into the footer
+                      control row below the map. Map overlay area is now just
+                      the expand/collapse toggle. */}
                   <div
                     ref={mapContainerRef}
                     className={`${styles.mapCanvas} ${
@@ -5809,50 +5757,188 @@ export default function Index() {
                       <span className={styles.legendPillText}>{t("map.legend.addressError")}</span>
                     </span>
                   </div>
+                  {/* Unified state-driven control row (2026-05-06 review).
+                      Buttons render only when in-context. Collapsed map block
+                      shows icons only; fullscreen shows icons + names.
+                      Spec: inputs/mockups/local-delivery-control-row-v1.html */}
                   <div className={styles.mapBlockFooterRight}>
-                    <s-link
-                      commandFor="map-style-modal"
-                      command="--show"
-                      onClick={() => {
-                        setDraftMapStyle(mapStyle);
-                        setIsMapStyleModalOpen(true);
-                      }}
-                    >
-                      {t("map.mapStyleButton")}
-                    </s-link>
-                    {locationId !== DEFAULT_LOCATION_ID ? (
-                      <>
-                        <s-button
-                          variant="secondary"
-                          disabled={selectedOrderIds.size === 0 || isRoutingBusy}
-                          onClick={clearSelection}
-                        >
-                          {t("map.clearSelection")}
-                        </s-button>
-                        {[...selectedOrderIds].some((id) => assignedOrderIds.has(id)) ? (
+                    {(() => {
+                      const isLocationContext = locationId !== DEFAULT_LOCATION_ID;
+                      if (!isLocationContext) return null;
+                      const hasSelection = selectedOrderIds.size > 0;
+                      const hasAssignedSelection = [...selectedOrderIds].some((id) => assignedOrderIds.has(id));
+                      const hasUnassignedSelection = [...selectedOrderIds].some((id) => !assignedOrderIds.has(id));
+                      const hasChangesPending = dirtyRouteIds.size > 0;
+                      const hasRoutesAtLocation = editableRoutes.some((r) => r.locationId === locationId && r.orderIds.length > 0);
+                      const routesAtLocation = editableRoutes
+                        .map((route, index) => ({ route, index }))
+                        .filter(({ route }) => route.locationId === locationId);
+                      // Edit (state A): visible when not editing + no selection + has routes
+                      const showEdit = !polylineEditMode && !hasSelection && hasRoutesAtLocation;
+                      // Reassign-to + Unassign (state C/D'): editing + assigned selection
+                      const showReassignCluster = polylineEditMode && hasAssignedSelection && routesAtLocation.length > 0;
+                      // Clear selection (in edit mode, state C/D'): icon=x to differentiate from Unassign
+                      const showClearSelectionEdit = polylineEditMode && hasSelection;
+                      // Assign-to-new-route (state E): not editing + has unassigned selection
+                      const showAssignToNew = !polylineEditMode && hasUnassignedSelection;
+                      // Clear selection (state E): not editing + selection (no Unassign coexists, icon=minus-circle)
+                      const showClearSelectionStateE = !polylineEditMode && hasSelection;
+                      // Confirm: editing + changes pending
+                      const showConfirm = polylineEditMode && hasChangesPending;
+                      // Exit: editing AND (no selection OR changes pending) — hidden in state C
+                      const showExit = polylineEditMode && (!hasSelection || hasChangesPending);
+                      return (
+                        <>
+                          {showEdit ? (
+                            <s-button
+                              key="edit"
+                              variant="secondary"
+                              icon="edit"
+                              accessibilityLabel={t("map.polylineEdit.edit")}
+                              onClick={enterPolylineEditMode}
+                            >
+                              {isFullscreen ? t("map.polylineEdit.edit") : null}
+                            </s-button>
+                          ) : null}
+                          {showReassignCluster ? (
+                            <>
+                              <s-button
+                                key="reassign-trigger"
+                                variant="secondary"
+                                icon="exchange"
+                                accessibilityLabel={t("map.polylineEdit.reassignTo")}
+                                commandFor="polyline-reassign-popover"
+                                command="--toggle"
+                              >
+                                {isFullscreen ? t("map.polylineEdit.reassignTo") : null}
+                              </s-button>
+                              <div className={styles.polylineReassignPopover}>
+                                <s-popover id="polyline-reassign-popover">
+                                  <s-menu accessibilityLabel={t("map.polylineEdit.reassignTo")}>
+                                    {routesAtLocation.map(({ route, index }) => (
+                                      <s-button
+                                        key={`reassign-target-${route.id}`}
+                                        commandFor="polyline-reassign-popover"
+                                        command="--hide"
+                                        onClick={() => handleMoveSelectedToRoute(route.id)}
+                                      >
+                                        {t("map.polylineEdit.routeOptionLabel", {
+                                          routeName: t("routeManager.routeLabel", { number: index + 1 }),
+                                          orderCount: route.orderIds.length,
+                                        })}
+                                      </s-button>
+                                    ))}
+                                  </s-menu>
+                                </s-popover>
+                              </div>
+                              <s-button
+                                key="unassign"
+                                variant="secondary"
+                                tone="critical"
+                                icon="minus-circle"
+                                accessibilityLabel={t("map.polylineEdit.unassign")}
+                                disabled={isRoutingBusy || undefined}
+                                onClick={handleUnassignSelected}
+                              >
+                                {isFullscreen ? t("map.polylineEdit.unassign") : null}
+                              </s-button>
+                            </>
+                          ) : null}
+                          {showClearSelectionEdit ? (
+                            <s-button
+                              key="clear-selection-edit"
+                              variant="secondary"
+                              icon="x"
+                              accessibilityLabel={t("map.clearSelection")}
+                              disabled={isRoutingBusy || undefined}
+                              onClick={clearSelection}
+                            >
+                              {isFullscreen ? t("map.clearSelection") : null}
+                            </s-button>
+                          ) : null}
+                          {showAssignToNew ? (
+                            <s-button
+                              key="assign-to-new"
+                              variant="primary"
+                              icon="plus-circle"
+                              accessibilityLabel={t("map.assignToNewRoute")}
+                              loading={isRoutingBusy}
+                              disabled={
+                                selectedOrderIds.size === 0 ||
+                                routesWithOrdersCount >= ROUTE_TAGS.size ||
+                                isRoutingBusy
+                              }
+                              onClick={handleAssignToNewRoute}
+                            >
+                              {isFullscreen ? t("map.assignToNewRoute") : null}
+                            </s-button>
+                          ) : null}
+                          {showClearSelectionStateE ? (
+                            <s-button
+                              key="clear-selection-state-e"
+                              variant="secondary"
+                              icon="minus-circle"
+                              accessibilityLabel={t("map.clearSelection")}
+                              disabled={isRoutingBusy || undefined}
+                              onClick={clearSelection}
+                            >
+                              {isFullscreen ? t("map.clearSelection") : null}
+                            </s-button>
+                          ) : null}
+                          {showConfirm ? (
+                            <s-button
+                              key="confirm"
+                              variant="primary"
+                              icon="check-circle"
+                              accessibilityLabel={t("map.polylineEdit.confirm")}
+                              disabled={isRoutingBusy}
+                              onClick={confirmPolylineEditMode}
+                            >
+                              {isFullscreen ? t("map.polylineEdit.confirm") : null}
+                            </s-button>
+                          ) : null}
+                          {showExit ? (
+                            <s-button
+                              key="exit"
+                              variant="secondary"
+                              icon="exit"
+                              accessibilityLabel={t("map.polylineEdit.exit")}
+                              onClick={cancelPolylineEditMode}
+                            >
+                              {isFullscreen ? t("map.polylineEdit.exit") : null}
+                            </s-button>
+                          ) : null}
                           <s-button
+                            key="more"
                             variant="secondary"
-                            tone="critical"
-                            disabled={isRoutingBusy}
-                            onClick={handleUnassignSelected}
-                          >
-                            {t("map.unassignSelected")}
-                          </s-button>
-                        ) : null}
-                        <s-button
-                          variant="primary"
-                          disabled={
-                            selectedOrderIds.size === 0 ||
-                            routesWithOrdersCount >= ROUTE_TAGS.size ||
-                            isRoutingBusy
-                          }
-                          loading={isRoutingBusy}
-                          onClick={handleAssignToNewRoute}
-                        >
-                          {t("map.assignToNewRoute")}
-                        </s-button>
-                      </>
-                    ) : null}
+                            icon="menu-horizontal"
+                            commandFor="map-more-actions"
+                            command="--toggle"
+                            accessibilityLabel={t("routeManager.moreActions")}
+                          />
+                          <div className={styles.moreActionsMenuWrap}>
+                            <s-popover id="map-more-actions">
+                              <s-menu accessibilityLabel={t("routeManager.moreActions")}>
+                                <s-button
+                                  commandFor="map-more-actions"
+                                  command="--hide"
+                                  onClick={() => {
+                                    setDraftMapStyle(mapStyle);
+                                    setIsMapStyleModalOpen(true);
+                                    const modal = document.getElementById("map-style-modal") as
+                                      | (HTMLElement & { showOverlay?: () => void })
+                                      | null;
+                                    modal?.showOverlay?.();
+                                  }}
+                                >
+                                  {t("map.mapStyleButton")}
+                                </s-button>
+                              </s-menu>
+                            </s-popover>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
                 {isFullscreen ? renderOrdersSection() : null}

@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Local Delivery — control row reorg (final)</title>
+<style>
+  :root {
+    --text: #303030;
+    --subdued: #6d7175;
+    --border: #e1e3e5;
+    --bg: #ffffff;
+    --canvas: #f6f6f7;
+    --primary-bg: #303030;
+    --primary-text: #ffffff;
+    --critical: #d72c0d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    margin: 0;
+    padding: 32px;
+    background: var(--canvas);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
+  h2 { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+  h3 { font-size: 12px; font-weight: 600; margin: 0; color: var(--subdued); text-transform: uppercase; letter-spacing: 0.4px; }
+  .lede { color: var(--subdued); margin: 0 0 24px; }
+
+  .state {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .state-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .state-tag {
+    background: #ececed;
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+  }
+  .state-when { color: var(--subdued); font-size: 12px; margin: 0 0 12px; }
+
+  .form-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0 6px;
+  }
+  .form-label .badge {
+    background: #ececed;
+    color: var(--subdued);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .map-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    flex-wrap: wrap;
+  }
+  .legend {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    color: var(--subdued);
+    font-size: 12px;
+  }
+  .legend-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 99px;
+  }
+  .actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+  }
+  .btn.primary {
+    background: var(--primary-bg);
+    color: var(--primary-text);
+    border-color: var(--primary-bg);
+  }
+  .btn.critical {
+    color: var(--critical);
+    border-color: var(--critical);
+  }
+  .btn .icon {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn.icon-only {
+    padding: 6px 8px;
+    gap: 0;
+  }
+  .btn .caret { margin-left: 2px; color: var(--subdued); font-size: 10px; }
+
+  .legend-icons {
+    margin-top: 28px;
+    padding: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .legend-icons table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+  }
+  .legend-icons th,
+  .legend-icons td {
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    vertical-align: top;
+  }
+  .legend-icons th {
+    color: var(--subdued);
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<h1>Local Delivery — control-row reorganization</h1>
+<p class="lede">
+  Replaces the on-map polyline-edit toolbar overlay AND the existing footer-right row
+  with a single state-driven control panel below the map. Each button is visible only when
+  in-context. Secondary actions (today: Map style) live in the <code>⋯ More</code> menu.
+  Collapsed map block renders icons only; expanded (fullscreen) renders icons + names.
+</p>
+
+<!-- ================================================================ -->
+<div class="state">
+  <div class="state-head">
+    <span class="state-tag">State A</span>
+    <h2>Default — routes exist, not editing, no selection</h2>
+  </div>
+  <p class="state-when">User on a location with at least one route. No orders selected.</p>
+
+  <div class="form-label"><h3>Collapsed</h3><span class="badge">Icons only</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-pill">🟢 Today</span>
+      <span class="legend-pill">🟡 Tomorrow</span>
+      <span class="legend-pill">⚪ Later</span>
+      <span class="legend-pill">⚠️ Address error</span>
+    </div>
+    <div class="actions">
+      <button class="btn icon-only" title="Edit"><span class="icon">✏️</span></button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+
+  <div class="form-label"><h3>Expanded</h3><span class="badge">Icons + names</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-pill">🟢 Today</span>
+      <span class="legend-pill">🟡 Tomorrow</span>
+      <span class="legend-pill">⚪ Later</span>
+      <span class="legend-pill">⚠️ Address error</span>
+    </div>
+    <div class="actions">
+      <button class="btn"><span class="icon">✏️</span>Edit</button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<div class="state">
+  <div class="state-head">
+    <span class="state-tag">State B</span>
+    <h2>Editing — no selection, no changes</h2>
+  </div>
+  <p class="state-when">User clicked Edit. Polylines render dotted+subdued. Nothing picked yet. Exit returns to State A.</p>
+
+  <div class="form-label"><h3>Collapsed</h3><span class="badge">Icons only</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-pill">🟢 Today</span>
+      <span class="legend-pill">🟡 Tomorrow</span>
+      <span class="legend-pill">⚪ Later</span>
+      <span class="legend-pill">⚠️ Address error</span>
+    </div>
+    <div class="actions">
+      <button class="btn icon-only" title="Exit"><span class="icon">↩</span></button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+
+  <div class="form-label"><h3>Expanded</h3><span class="badge">Icons + names</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-pill">🟢 Today</span>
+      <span class="legend-pill">🟡 Tomorrow</span>
+      <span class="legend-pill">⚪ Later</span>
+      <span class="legend-pill">⚠️ Address error</span>
+    </div>
+    <div class="actions">
+      <button class="btn"><span class="icon">↩</span>Exit</button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<div class="state">
+  <div class="state-head">
+    <span class="state-tag">State C</span>
+    <h2>Editing — assigned stops picked, no changes made yet</h2>
+  </div>
+  <p class="state-when">User clicked stops on the map. The selection highlights with the signature gradient. To exit edit mode, Clear selection first → State B exposes Exit.</p>
+
+  <div class="form-label"><h3>Collapsed</h3><span class="badge">Icons only</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-pill">🟢 Today</span>
+      <span class="legend-pill">🟡 Tomorrow</span>
+      <span class="legend-pill">⚪ Later</span>
+      <span class="legend-pill">⚠️ Address error</span>
+    </div>
+    <div class="actions">
+      <button class="btn icon-only" title="Reassign to…"><span class="icon">⇄</span><span class="caret">▾</span></button>
+      <button class="btn icon-only critical" title="Unassign"><span class="icon">⊖</span></button>
+      <button class="btn icon-only" title="Clear selection"><span class="icon">✕</span></button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+
+  <div class="form-label"><h3>Expanded</h3><span class="badge">Icons + names</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-pill">🟢 Today</span>
+      <span class="legend-pill">🟡 Tomorrow</span>
+      <span class="legend-pill">⚪ Later</span>
+      <span class="legend-pill">⚠️ Address error</span>
+    </div>
+    <div class="actions">
+      <button class="btn"><span class="icon">⇄</span>Reassign to<span class="caret">▾</span></button>
+      <button class="btn critical"><span class="icon">⊖</span>Unassign</button>
+      <button class="btn"><span class="icon">✕</span>Clear selection</button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<div class="state">
+  <div class="state-head">
+    <span class="state-tag">State D</span>
+    <h2>Editing — changes pending, no selection</h2>
+  </div>
+  <p class="state-when">After a Reassign or Unassign committed, selection cleared. Confirm runs the recompute and applies; Exit reverts via the pre-edit snapshot.</p>
+
+  <div class="form-label"><h3>Collapsed</h3><span class="badge">Icons only</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-pill">🟢 Today</span>
+      <span class="legend-pill">🟡 Tomorrow</span>
+      <span class="legend-pill">⚪ Later</span>
+      <span class="legend-pill">⚠️ Address error</span>
+    </div>
+    <div class="actions">
+      <button class="btn icon-only primary" title="Confirm"><span class="icon">✅</span></button>
+      <button class="btn icon-only" title="Exit"><span class="icon">↩</span></button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+
+  <div class="form-label"><h3>Expanded</h3><span class="badge">Icons + names</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-pill">🟢 Today</span>
+      <span class="legend-pill">🟡 Tomorrow</span>
+      <span class="legend-pill">⚪ Later</span>
+      <span class="legend-pill">⚠️ Address error</span>
+    </div>
+    <div class="actions">
+      <button class="btn primary"><span class="icon">✅</span>Confirm</button>
+      <button class="btn"><span class="icon">↩</span>Exit</button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<div class="state">
+  <div class="state-head">
+    <span class="state-tag">State D'</span>
+    <h2>Editing — changes pending AND new stops selected</h2>
+  </div>
+  <p class="state-when">User has applied at least one Reassign/Unassign and picked more stops to chain another. Exit and Clear selection coexist here — distinct icons (<code>↩</code> for Exit, <code>✕</code> for Clear) keep them readable in collapsed form.</p>
+
+  <div class="form-label"><h3>Collapsed</h3><span class="badge">Icons only</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-pill">🟢 Today</span>
+      <span class="legend-pill">🟡 Tomorrow</span>
+      <span class="legend-pill">⚪ Later</span>
+      <span class="legend-pill">⚠️ Address error</span>
+    </div>
+    <div class="actions">
+      <button class="btn icon-only" title="Reassign to…"><span class="icon">⇄</span><span class="caret">▾</span></button>
+      <button class="btn icon-only critical" title="Unassign"><span class="icon">⊖</span></button>
+      <button class="btn icon-only" title="Clear selection"><span class="icon">✕</span></button>
+      <button class="btn icon-only primary" title="Confirm"><span class="icon">✅</span></button>
+      <button class="btn icon-only" title="Exit"><span class="icon">↩</span></button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+
+  <div class="form-label"><h3>Expanded</h3><span class="badge">Icons + names</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-pill">🟢 Today</span>
+      <span class="legend-pill">🟡 Tomorrow</span>
+      <span class="legend-pill">⚪ Later</span>
+      <span class="legend-pill">⚠️ Address error</span>
+    </div>
+    <div class="actions">
+      <button class="btn"><span class="icon">⇄</span>Reassign to<span class="caret">▾</span></button>
+      <button class="btn critical"><span class="icon">⊖</span>Unassign</button>
+      <button class="btn"><span class="icon">✕</span>Clear selection</button>
+      <button class="btn primary"><span class="icon">✅</span>Confirm</button>
+      <button class="btn"><span class="icon">↩</span>Exit</button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<div class="state">
+  <div class="state-head">
+    <span class="state-tag">State E</span>
+    <h2>Not editing — unassigned stops selected (auto-confirm)</h2>
+  </div>
+  <p class="state-when">User picked one or more orders that aren't on a route yet. <code>Assign to new route</code> commits immediately, no Confirm step. No Unassign coexists here, so Clear selection adopts <code>minus-circle</code>.</p>
+
+  <div class="form-label"><h3>Collapsed</h3><span class="badge">Icons only</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-pill">🟢 Today</span>
+      <span class="legend-pill">🟡 Tomorrow</span>
+      <span class="legend-pill">⚪ Later</span>
+      <span class="legend-pill">⚠️ Address error</span>
+    </div>
+    <div class="actions">
+      <button class="btn icon-only primary" title="Assign to new route"><span class="icon">⊕</span></button>
+      <button class="btn icon-only" title="Clear selection"><span class="icon">⊖</span></button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+
+  <div class="form-label"><h3>Expanded</h3><span class="badge">Icons + names</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-pill">🟢 Today</span>
+      <span class="legend-pill">🟡 Tomorrow</span>
+      <span class="legend-pill">⚪ Later</span>
+      <span class="legend-pill">⚠️ Address error</span>
+    </div>
+    <div class="actions">
+      <button class="btn primary"><span class="icon">⊕</span>Assign to new route</button>
+      <button class="btn"><span class="icon">⊖</span>Clear selection</button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<div class="legend-icons">
+  <h2>Polaris icon picks</h2>
+  <table>
+    <thead>
+      <tr><th>Button</th><th>Polaris <code>icon</code></th><th>Render hint</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Edit</td><td><code>edit</code></td><td>✏️</td><td>Already used for <code>Manage</code> in the per-route ⋯ menu — consistent.</td></tr>
+      <tr><td>Confirm</td><td><code>check-circle</code></td><td>✅</td><td>Filled-circle reads as "complete the action".</td></tr>
+      <tr><td>Exit</td><td><code>exit</code></td><td>↩</td><td>Renamed from "Cancel" — semantically clearer ("leave edit mode" vs "abort last action"). Reverts pending changes via the pre-edit snapshot.</td></tr>
+      <tr><td>Reassign to ▾</td><td><code>exchange</code></td><td>⇄</td><td>"Swap routes". Caret on the right indicates popover.</td></tr>
+      <tr><td>Unassign</td><td><code>minus-circle</code></td><td>⊖</td><td>Already used for <code>Clear route</code> destructive item.</td></tr>
+      <tr><td>Clear selection (State C / D')</td><td><code>x</code></td><td>✕</td><td>Bare <code>x</code> in states where Unassign coexists, to keep icons distinct in collapsed form.</td></tr>
+      <tr><td>Clear selection (State E)</td><td><code>minus-circle</code></td><td>⊖</td><td>State-E only — no Unassign coexists, so adopts the canonical "drop selection" icon.</td></tr>
+      <tr><td>Assign to new route</td><td><code>plus-circle</code></td><td>⊕</td><td>"Add new route from these orders".</td></tr>
+      <tr><td>⋯ More actions</td><td><code>menu-horizontal</code></td><td>⋯</td><td>Already used for the per-route overflow menu — consistent.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>
