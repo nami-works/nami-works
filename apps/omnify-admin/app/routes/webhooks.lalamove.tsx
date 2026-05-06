@@ -3,6 +3,7 @@ import type { ActionFunctionArgs } from "react-router";
 import prisma from "../db.server";
 import { unauthenticated } from "../shopify.server";
 import { applyLalamoveDeliveryState, renameRouteTagsToArchive } from "../services/lalamove-sync.server";
+import { syncLalamoveStatusToShopify } from "../services/lalamove-shopify-sync.server";
 
 const verifySignature = (rawBody: string, signatureHeader: string | null) => {
   const secret = process.env.LALAMOVE_WEBHOOK_SECRET?.trim();
@@ -265,6 +266,36 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   // ── Tag operations (no Shopify fulfillment mutations) ─────────────────────
 
+  // Resolved failure reason (used by both tag application and Shopify metafield mirror)
+  const resolvedFailureReason = isFailure
+    ? String(data?.failureReason ?? data?.cancelReason ?? "").trim() || `Delivery ${mapped}`
+    : null;
+
+  // Mirror status into the Shopify order's custom.lalamove_delivery_status metafield
+  // (and append a [Lalamove] note line on terminal-failure events). Best-effort —
+  // never block the webhook 200 if Shopify is unreachable or returns user errors.
+  const mirrorStatusToShopify = async (adminClient: { admin: import("@shopify/shopify-app-react-router/server").AdminApiContext }) => {
+    const orderIds = orderMaps.map((item: { shopifyOrderId: string }) => item.shopifyOrderId);
+    await Promise.all(
+      orderIds.map(async (id: string) => {
+        try {
+          await syncLalamoveStatusToShopify({
+            admin: adminClient.admin,
+            shopifyOrderId: id,
+            lalamoveStatus: normalized,
+            failureReason: resolvedFailureReason,
+            shop,
+          });
+        } catch (mirrorErr) {
+          console.error(
+            `[local-delivery:webhook] metafield mirror ERROR shop=${shop} orderId=${lalamoveOrderId} shopifyOrderId=${id}`,
+            mirrorErr,
+          );
+        }
+      }),
+    );
+  };
+
   // On COMPLETED: rename route tags to archived format (ld_rota-## → ld_rota-##_YY.MM.DD)
   if (mapped === "delivered") {
     try {
@@ -281,6 +312,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         });
       }
       console.info(`[local-delivery:webhook] COMPLETED — tags archived shop=${shop} orderId=${lalamoveOrderId} date=${dateStr}`);
+      await mirrorStatusToShopify(adminClient);
     } catch (error) {
       console.error(`[local-delivery:webhook] tag rename FAILED shop=${shop} orderId=${lalamoveOrderId}`, error);
     }
@@ -295,11 +327,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       await applyLalamoveDeliveryState(adminClient.admin, {
         orderIds,
         state: mapped,
-        reason: String(data?.failureReason ?? data?.cancelReason ?? "").trim() ||
-          `Delivery ${mapped}`,
+        reason: resolvedFailureReason ?? `Delivery ${mapped}`,
       });
+      await mirrorStatusToShopify(adminClient);
     } catch (error) {
       console.error(`[local-delivery:webhook] failure tags FAILED shop=${shop} orderId=${lalamoveOrderId} status=${externalStatus}`, error);
+    }
+  } else {
+    // Non-terminal mapped status (assigning / heading_to_pickup / in_progress):
+    // mirror the status to Shopify so downstream consumers see the live state.
+    try {
+      const adminClient = await unauthenticated.admin(shop);
+      await mirrorStatusToShopify(adminClient);
+    } catch (error) {
+      console.error(`[local-delivery:webhook] metafield mirror FAILED shop=${shop} orderId=${lalamoveOrderId} status=${externalStatus}`, error);
     }
   }
 
