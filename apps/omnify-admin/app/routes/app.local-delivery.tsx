@@ -1580,17 +1580,19 @@ export default function Index() {
             badgeStyle.borderColor = "#111111";
           }
           if (isSelected) {
-            // Signature holographic gradient at 25% alpha. Replaces the
-            // legacy #ff7a00 selected-state which collided visually with
-            // route palette index 4 (#FF7A00). Reinforces the brand
-            // signature color used in the progress bar + accuracy meter.
+            // Signature holographic gradient at 55% alpha (was 25% — too
+            // subtle for legibility on the map). Reinforces the brand
+            // signature color used in the progress bar + accuracy meter,
+            // while staying distinct from route palette index 4 (#FF7A00).
+            // Label text rendered white for contrast against the gradient.
             badgeStyle.background =
-              "linear-gradient(90deg, rgba(94, 206, 206, 0.25), rgba(176, 159, 218, 0.25), rgba(212, 168, 212, 0.25), rgba(94, 206, 206, 0.25))";
-            badgeStyle.borderColor = "rgba(176, 159, 218, 0.6)";
+              "linear-gradient(90deg, rgba(94, 206, 206, 0.55), rgba(176, 159, 218, 0.55), rgba(212, 168, 212, 0.55), rgba(94, 206, 206, 0.55))";
+            badgeStyle.borderColor = "rgba(176, 159, 218, 0.85)";
+            badgeStyle.color = "#ffffff";
             // Edit mode: extra ring outline so the operator can see at a
             // glance which stops are picked for the next reassign/unassign.
             if (polylineEditMode) {
-              badgeStyle.boxShadow = "0 0 0 3px rgba(176, 159, 218, 0.5)";
+              badgeStyle.boxShadow = "0 0 0 3px rgba(176, 159, 218, 0.7)";
             }
           }
           const content = buildLabel(labelText, emoji, badgeStyle);
@@ -4152,8 +4154,7 @@ export default function Index() {
         {hasWarnings ? (
           <div className={styles.headerBadgesRow}>
             {isLocationSelected && failedDeliveryCount > 0 ? (
-              <s-badge tone="warning">
-                <s-icon type="alert-octagon" />
+              <s-badge tone="warning" icon="alert-octagon">
                 {t("filters.failedDelivery", { count: failedDeliveryCount })}
               </s-badge>
             ) : null}
@@ -4166,16 +4167,14 @@ export default function Index() {
             ) : null}
             {addressErrorOrders.length > 0 ? (
               <span style={{ cursor: "pointer" }} onClick={() => setIsAddressErrorsModalOpen(true)}>
-                <s-badge tone="warning">
-                  <s-icon type="alert-triangle" />
+                <s-badge tone="warning" icon="alert-triangle">
                   {t("warnings.addressErrors", { count: addressErrorOrders.length })}
                 </s-badge>
               </span>
             ) : null}
             {isLocationSelected && pendingReturnPickups.length > 0 ? (
               <span style={{ cursor: "pointer" }} onClick={() => setIsReturnPickupsModalOpen(true)}>
-                <s-badge tone="warning">
-                  <s-icon type="refresh" />
+                <s-badge tone="warning" icon="refresh">
                   {t("warnings.returnPickups", { count: pendingReturnPickups.length })}
                 </s-badge>
               </span>
@@ -4186,8 +4185,7 @@ export default function Index() {
 
       {/* Orders badge + actions menu */}
       <div className={styles.routeManagerStatusRow}>
-        <s-badge tone="info">
-          <s-icon type="package" />
+        <s-badge tone="info" icon="package">
           {t("filters.ordersToDeliver", { count: mapData.orders.length })}
         </s-badge>
         {locationId !== DEFAULT_LOCATION_ID ? (
@@ -5671,14 +5669,13 @@ export default function Index() {
                   <div className={styles.mapOverlayButton} role="group">
                     <s-button
                       variant="secondary"
+                      icon={isFullscreen ? "minimize" : "maximize"}
                       accessibilityLabel={
                         isFullscreen ? t("map.collapseMap") : t("map.expandMap")
                       }
                       aria-expanded={isFullscreen}
                       onClick={() => setIsFullscreen((current) => !current)}
-                    >
-                      {isFullscreen ? t("map.collapse") : t("map.expand")}
-                    </s-button>
+                    />
                   </div>
                   {/* Polyline edit toolbar (desktop only). Hidden when no
                       routes are visible. State A: Edit only. State B: Confirm

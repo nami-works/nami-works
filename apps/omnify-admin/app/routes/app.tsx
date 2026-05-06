@@ -29,7 +29,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export default function App() {
   const { apiKey, locale, navItems, basePath, appDisplayName } = useLoaderData<typeof loader>();
-  const logoSrc = `${basePath}/omnify_map.png`.replace(/\/+/g, "/");
+  const logoSrc = `${basePath}/omnify_map-2x.png`.replace(/\/+/g, "/");
   const navigation = useNavigation();
   const isPageNavigation = navigation.state === "loading" && !!navigation.location;
   // Default true so cold-start paints the overlay immediately, hiding the
@@ -103,7 +103,7 @@ export default function App() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: 20,
+              gap: 0,
               background: "#f6f6f7",
               // Inline so it applies even before the <style> block is parsed
               // and even if the Shopify CDN Inter stylesheet hasn't loaded.
@@ -126,9 +126,6 @@ export default function App() {
               }}
             >
               <div className="cpg-holo-bar" />
-            </div>
-            <div className="cpg-loading-msg cpg-holo-signature">
-              {appDisplayName} {t("common:loading.appUpdatingSuffix")}
             </div>
             <style>{`
               @keyframes omnify-holo-bar {

@@ -36,20 +36,20 @@
 .mapOverlayButton {
   position: absolute;
   top: 12px;
-  left: 12px;
+  right: 12px;
   z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
-/* Polyline edit toolbar — top-right corner of the map canvas, parallel to
-   the expand/collapse toggle on the left. Three states: Edit (default),
+/* Polyline edit toolbar — top-left corner of the map canvas, parallel to
+   the expand/collapse toggle on the right. Three states: Edit (default),
    Confirm + Cancel (editing). Only renders on desktop. */
 .polylineToolbar {
   position: absolute;
   top: 12px;
-  right: 12px;
+  left: 12px;
   z-index: 2;
   display: inline-flex;
   align-items: center;
@@ -348,6 +348,11 @@
   inset: 0;
   z-index: 1000;
   padding: 16px;
+  /* Backdrop covers the underlying page (Route manager, Auto-assign
+     accuracy, header, app nav) so the fullscreen-expanded view reads as
+     a focused workspace rather than floating on top of cluttered admin
+     chrome. */
+  background: #f1f1f1;
 }
 
 .fullscreenContent {
