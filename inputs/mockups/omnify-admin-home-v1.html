@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Omnify admin home v1 (app/routes/app._index.tsx)</title>
+<!--
+  MOCKUP: omnify-admin-home-v1.html
+  TARGET ROUTE: app/routes/app._index.tsx (embedded Shopify admin home)
+
+  CONTEXT
+  - Today, Omnify identity short-circuits the admin home: getHomeRoute()
+    in app/utils/app-identity.server.ts redirects to /app/local-delivery
+    on first load. Merchants never see a "home" — they land on the LD page.
+  - Shopify Built for Shopify §4.2.3 ("Helpful homepage") requires the
+    homepage to indicate setup status, surface performance metrics, and
+    avoid being only static content. Today's stub fails all three checks.
+  - This mockup proposes the genuine first home — single-column,
+    scannable top-to-bottom, populated with live state.
+
+  REFERENCES (canonical Shopify guidance applied)
+  - Built for Shopify requirements §4.2.3 helpful homepage
+                                  §4.2.2 helpful onboarding
+                                  §4.1.1 follow UX best practices
+  - App Home patterns:  homepage template
+                        + setup-guide composition (§4.2.2 dismissible)
+                        + metrics-card composition (§4.2.3)
+                        + callout-card composition
+                        + interstitial-nav composition
+                        + footer-help composition
+  - Layout: single-column (Shopify: "best for homepages")
+  - Local: CLAUDE.md "UI Tokens" + "Buttons" + "Inserted Elements — Spacing"
+
+  SECTIONS (top → bottom, single column)
+   1. Setup guide                  — first-run merchants only, dismissible
+   2. Activity overview            — 3 metrics cards, one per feature
+   3. Jump back in                 — interstitial nav: 4 cards w/ primary CTA
+   4. Recent activity              — last 5 system events (dispatch, sync, fix)
+   5. Footer help                  — docs, support, what's new
+
+  Two states are shown side-by-side:
+   A. First-run (setup incomplete, empty metrics, prominent guide)
+   B. Returning merchant (setup dismissed, populated metrics, recent activity)
+-->
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --border-light: #f1f1f1;
+    --text: #303030;
+    --header-text: #3a3a3a;
+    --subdued: #6d7175;
+    --axis: #8c9196;
+    --shopify-blue: #005bd3;
+    --shopify-blue-soft: #ebf2ff;
+    --shopify-green: #008060;
+    --shopify-green-soft: #e3f1df;
+    --warning: #d99a0a;
+    --warning-soft: #fff4d6;
+    --critical: #d72c0d;
+    --critical-soft: #fde2dc;
+    --info-bg: #f1f1f1;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 24px 64px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  h1.docTitle {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  p.docIntro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 820px;
+    margin: 0 0 24px;
+  }
+
+  /* --- Stacked state comparison (vertical, full-width) --- */
+  .stateGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    max-width: 1280px;
+  }
+  .stateLabel {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--subdued);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 8px;
+  }
+  .stateCanvas {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  /* --- Mock <s-page> chrome --- */
+  .sPage {
+    padding: 24px 28px 32px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .pageHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 4px;
+  }
+  .pageHeading {
+    font-size: 20px;
+    font-weight: 650;
+    margin: 0;
+    color: var(--text);
+  }
+  .pageSubheading {
+    font-size: 13px;
+    color: var(--subdued);
+    margin: 0 0 24px;
+    max-width: 560px;
+  }
+
+  /* --- Mock <s-section> --- */
+  .sSection {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+  .sSection.tight { padding: 0; }
+  .sectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .sectionTitle {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text);
+  }
+  .sectionMeta {
+    font-size: 12px;
+    color: var(--subdued);
+  }
+  .sectionMeta a, .sectionMeta button {
+    color: var(--shopify-blue);
+    text-decoration: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  /* --- Setup guide composition --- */
+  .setupGuide { padding: 0; border: 1px solid var(--border); border-radius: 12px; background: var(--card); margin-bottom: 16px; overflow: hidden; }
+  .setupGuideHeader {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 16px; padding: 18px 20px 4px;
+  }
+  .setupGuideHeader h2 { font-size: 14px; font-weight: 600; margin: 0; color: var(--text); }
+  .setupGuideSub { font-size: 12px; color: var(--subdued); margin: 4px 0 0; }
+  .setupProgress {
+    margin: 12px 20px 16px;
+    height: 4px;
+    background: #ebebeb;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .setupProgressFill {
+    display: block;
+    height: 100%;
+    background: var(--shopify-green);
+    border-radius: 2px;
+  }
+  .setupSteps { padding: 0 8px 12px; }
+  .setupStep {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 8px;
+    transition: background 120ms ease;
+  }
+  .setupStep:hover { background: var(--bg); }
+  .setupStep + .setupStep { border-top: 1px solid var(--border-light); }
+  .stepIcon {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .stepIcon.done { background: var(--shopify-green); color: #fff; }
+  .stepIcon.active { background: #fff; color: var(--shopify-blue); border: 2px solid var(--shopify-blue); }
+  .stepIcon.todo { background: #fff; color: var(--subdued); border: 2px solid var(--border); }
+  .stepBody { display: flex; flex-direction: column; }
+  .stepTitle { font-size: 13px; color: var(--text); font-weight: 500; }
+  .stepTitle.done { color: var(--subdued); text-decoration: line-through; text-decoration-color: var(--border); }
+  .stepDesc { font-size: 12px; color: var(--subdued); margin-top: 2px; }
+  .stepCta {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--shopify-blue);
+    background: none;
+    border: 1px solid var(--border);
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .stepCta.primary {
+    background: var(--shopify-blue);
+    color: #fff;
+    border-color: var(--shopify-blue);
+  }
+  .stepCta.muted { color: var(--subdued); }
+  .setupGuideFooter {
+    padding: 10px 20px;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--subdued);
+  }
+  .iconBtn {
+    background: none; border: 0; cursor: pointer;
+    color: var(--subdued); padding: 4px 8px; border-radius: 6px;
+    font: inherit; font-size: 12px;
+  }
+  .iconBtn:hover { background: var(--bg); color: var(--text); }
+
+  /* --- Metrics-card composition (driven by enabled features; up to 4 across) --- */
+  .metricsRow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 1100px) { .metricsRow { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px)  { .metricsRow { grid-template-columns: 1fr; } }
+  .metricCard {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 132px;
+  }
+  .metricLabel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--subdued);
+    font-weight: 500;
+  }
+  .metricLabel .labelLeft { display: inline-flex; align-items: center; gap: 6px; }
+  .metricLabel s-icon {
+    width: 14px; height: 14px;
+    color: var(--axis);
+  }
+  .metricRange {
+    font-size: 11px;
+    color: var(--axis);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .metricValue {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .metricSecondary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 12px;
+    color: var(--subdued);
+  }
+  .metricDelta {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .deltaPos { color: var(--shopify-green); }
+  .deltaNeg { color: var(--critical); }
+  .deltaFlat { color: var(--subdued); }
+  .metricFooter {
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .metricLink {
+    font-size: 12px;
+    color: var(--shopify-blue);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .metricLink::after { content: " →"; }
+
+  /* Empty-metric state (first-run) */
+  .metricEmpty {
+    color: var(--subdued);
+    font-size: 13px;
+    line-height: 1.4;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+  }
+  .metricEmpty strong { color: var(--text); font-weight: 600; }
+
+  /* --- Interstitial-nav composition (Jump back in) --- */
+  .jumpGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  @media (max-width: 600px) {
+    .jumpGrid { grid-template-columns: 1fr; }
+  }
+  .jumpCard {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    background: var(--card);
+    transition: border-color 120ms ease, background 120ms ease;
+  }
+  .jumpCard:hover { border-color: var(--axis); background: var(--bg); }
+  .jumpIcon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--shopify-blue-soft);
+    color: var(--shopify-blue);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .jumpIcon.green { background: var(--shopify-green-soft); color: var(--shopify-green); }
+  .jumpIcon.amber { background: var(--warning-soft); color: var(--warning); }
+  .jumpIcon.gray  { background: var(--info-bg); color: var(--subdued); }
+  .jumpIcon svg { width: 16px; height: 16px; }
+  .jumpBody { display: flex; flex-direction: column; }
+  .jumpTitle { font-size: 13px; font-weight: 500; color: var(--text); }
+  .jumpSub { font-size: 12px; color: var(--subdued); margin-top: 2px; }
+  .jumpArrow { color: var(--axis); font-size: 14px; }
+
+  /* --- Recent activity --- */
+  .activityList { display: flex; flex-direction: column; }
+  .activityItem {
+    display: grid;
+    grid-template-columns: 22px 1fr auto;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+  }
+  .activityItem:last-child { border-bottom: none; }
+  .activityIcon {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .actGreen { background: var(--shopify-green-soft); color: var(--shopify-green); }
+  .actBlue { background: var(--shopify-blue-soft); color: var(--shopify-blue); }
+  .actAmber { background: var(--warning-soft); color: var(--warning); }
+  .actRed { background: var(--critical-soft); color: var(--critical); }
+  .activityIcon svg { width: 11px; height: 11px; }
+  .activityText { color: var(--text); }
+  .activityText em { color: var(--subdued); font-style: normal; }
+  .activityWhen { color: var(--subdued); font-size: 12px; white-space: nowrap; }
+  .activityEmpty {
+    text-align: center;
+    color: var(--subdued);
+    font-size: 13px;
+    padding: 24px 0;
+  }
+
+  /* --- Regression banner (post-dismiss; replaces the full setup guide) --- */
+  .regressBanner {
+    display: grid;
+    grid-template-columns: 22px 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    background: var(--warning-soft);
+    border: 1px solid #f4e3a1;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #5b4700;
+  }
+  .regressBanner svg { color: var(--warning); width: 18px; height: 18px; }
+  .regressBanner strong { color: var(--text); font-weight: 600; }
+  .regressBanner em { color: var(--subdued); font-style: normal; margin-left: 6px; font-size: 12px; }
+  .regressBanner .fixCta {
+    color: var(--shopify-blue);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 13px;
+  }
+  .regressBanner .dismissCta {
+    background: none; border: 0; color: var(--subdued);
+    cursor: pointer; padding: 4px; font: inherit; font-size: 16px;
+    line-height: 1;
+  }
+
+  /* --- Footer help --- */
+  .footerHelp {
+    margin-top: 16px;
+    padding: 14px 18px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    background: var(--card);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--subdued);
+  }
+  .footerHelp a {
+    color: var(--shopify-blue);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .footerHelp a + a { margin-left: 16px; }
+  @media (max-width: 600px) {
+    .footerHelp { flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+
+  /* --- Notes panel --- */
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 1600px;
+    margin: 24px 0;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; color: #4a3600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 4px; }
+  .notes code { background: rgba(91, 71, 0, 0.08); padding: 1px 4px; border-radius: 3px; font-size: 11px; }
+
+  /* --- Inline icon helpers (Polaris-style 16px viewBox 0 0 20 20) --- */
+  .ic { width: 14px; height: 14px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<h1 class="docTitle">Omnify admin home — mockup v1</h1>
+<p class="docIntro">
+  First-pass design for <code>app/routes/app._index.tsx</code> when <code>APP_IDENTITY=omnify</code>.
+  Today the route redirects merchants straight to <code>/app/local-delivery</code>, which means the
+  app has no "home" and fails Shopify's Built for Shopify §4.2.3 (helpful homepage) check.
+  This mockup replaces the redirect with a real landing page: setup status, performance metrics,
+  jump-back-in, and recent activity. Rendered side-by-side in two states so we can validate both
+  the first-run and steady-state experience before translating to Polaris components.
+</p>
+
+<div class="notes">
+  <h3>What changed vs current</h3>
+  <ul>
+    <li><strong>Drop the <code>/app/local-delivery</code> redirect</strong> for the Omnify identity. The home becomes a real page so §4.2.3 can be satisfied.</li>
+    <li><strong>Setup guide</strong> — driven by real database checks (Lalamove credentials present? at least one location configured? carrier service registered? auto-delivery cron on?). Dismiss button only enabled once all required steps are done. §4.2.2.</li>
+    <li><strong>Four metrics cards</strong> — one per enabled feature surface (Local Delivery / Retail Sales / Footprint Expansion / Affiliates for Omnify; up to 6+ for the CPG Labs full identity). Driven by <code>getNavItems()</code> so the same template serves both identities. §4.2.3.</li>
+    <li><strong>Per-card natural cadence</strong> — each metric carries its own time window (Today · MTD · Lifetime · Last 30d). No global range picker; each surface picks the cadence that makes sense for its job-to-be-done.</li>
+    <li><strong>Jump back in</strong> — four primary entry points (mirrors <code>IDENTITY_NAV.omnify</code>). One primary CTA per card per Polaris guideline. Affiliates is intentionally surfaced via its metrics card (not jump-back-in) because it's not currently in the nav.</li>
+    <li><strong>Recent activity</strong> — last 5 system events pulled from the same audit log the cron pipeline already writes. Read-only. Empty state for first-run.</li>
+    <li><strong>Footer help</strong> — docs link, support email, "What's new" link. Composition recommended by Shopify Homepage Pattern.</li>
+    <li><strong>Regression banner (post-dismissal)</strong> — once the setup guide is hidden, a thin <code>tone="warning"</code> banner re-appears only when a previously-completed step regresses (e.g. credentials revoked, location deleted). Click → deep-link to the offending setting. Never re-opens the full guide.</li>
+  </ul>
+</div>
+
+<div class="stateGrid">
+
+  <!-- ============================== STATE A: FIRST-RUN ============================== -->
+  <div>
+    <p class="stateLabel">State A — first-run (setup incomplete, no data)</p>
+    <div class="stateCanvas">
+      <div class="sPage">
+
+        <div class="pageHeader">
+          <h1 class="pageHeading">Omnify</h1>
+        </div>
+        <p class="pageSubheading">
+          Local delivery, retail sales, and footprint expansion for consumer brands selling on Shopify.
+        </p>
+
+        <!-- 1. Setup guide -->
+        <div class="setupGuide">
+          <div class="setupGuideHeader">
+            <div>
+              <h2>Get Omnify running</h2>
+              <p class="setupGuideSub">Finish setup so we can start syncing orders, planning routes, and tracking sales.</p>
+            </div>
+            <span class="metricDelta deltaFlat" style="font-size:12px;">1 of 4 done</span>
+          </div>
+          <div class="setupProgress"><span class="setupProgressFill" style="width: 25%;"></span></div>
+
+          <div class="setupSteps">
+            <div class="setupStep">
+              <span class="stepIcon done">✓</span>
+              <div class="stepBody">
+                <span class="stepTitle done">Install the app</span>
+                <span class="stepDesc">Granted scopes: read_orders, read_customers, read_products, write_fulfillments.</span>
+              </div>
+              <span></span>
+            </div>
+
+            <div class="setupStep">
+              <span class="stepIcon active">2</span>
+              <div class="stepBody">
+                <span class="stepTitle">Connect your delivery provider</span>
+                <span class="stepDesc">Add your Lalamove API key and pick the cities you operate in. Required for local delivery routing.</span>
+              </div>
+              <button class="stepCta primary">Connect Lalamove</button>
+            </div>
+
+            <div class="setupStep">
+              <span class="stepIcon todo">3</span>
+              <div class="stepBody">
+                <span class="stepTitle">Configure your pickup locations</span>
+                <span class="stepDesc">Tell Omnify which Shopify locations dispatch deliveries and what their pickup windows look like.</span>
+              </div>
+              <button class="stepCta">Open settings</button>
+            </div>
+
+            <div class="setupStep">
+              <span class="stepIcon todo">4</span>
+              <div class="stepBody">
+                <span class="stepTitle">Sync your customer base</span>
+                <span class="stepDesc">Optional, but unlocks footprint analytics and retail expansion ranking.</span>
+              </div>
+              <button class="stepCta muted">Run later</button>
+            </div>
+          </div>
+
+          <div class="setupGuideFooter">
+            <span>Setup typically takes 5–10 minutes.</span>
+            <button class="iconBtn" disabled style="opacity:0.5;">Hide setup guide</button>
+          </div>
+        </div>
+
+        <!-- 2. Activity overview -->
+        <div class="sectionHeader" style="margin-top:24px;">
+          <h2 class="sectionTitle">Activity overview</h2>
+        </div>
+        <div class="metricsRow">
+          <div class="metricCard">
+            <span class="metricLabel">
+              <span class="labelLeft">
+                <svg viewBox="0 0 20 20" class="ic" fill="currentColor"><path d="M3 5h11l3 4v5h-2a2 2 0 1 1-4 0H8a2 2 0 1 1-4 0H3V5zm12 4h2.4L15 6.6V9z"/></svg>
+                Local delivery
+              </span>
+              <span class="metricRange">Today</span>
+            </span>
+            <div class="metricEmpty">
+              <strong>No deliveries yet.</strong>
+              <span>Connect Lalamove and tag your first order to see today's routes here.</span>
+            </div>
+            <div class="metricFooter">
+              <a href="#" class="metricLink" style="color: var(--subdued);">Plan today's deliveries</a>
+              <span class="metricDelta deltaFlat">—</span>
+            </div>
+          </div>
+
+          <div class="metricCard">
+            <span class="metricLabel">
+              <span class="labelLeft">
+                <svg viewBox="0 0 20 20" class="ic" fill="currentColor"><path d="M3 14h2v3H3v-3zm4-4h2v7H7v-7zm4-4h2v11h-2V6zm4 6h2v5h-2v-5z"/></svg>
+                Retail sales
+              </span>
+              <span class="metricRange">May (MTD)</span>
+            </span>
+            <div class="metricEmpty">
+              <strong>No goals set.</strong>
+              <span>Set monthly revenue targets per location to track actual vs. goal.</span>
+            </div>
+            <div class="metricFooter">
+              <a href="#" class="metricLink" style="color: var(--subdued);">Set monthly goals</a>
+              <span class="metricDelta deltaFlat">—</span>
+            </div>
+          </div>
+
+          <div class="metricCard">
+            <span class="metricLabel">
+              <span class="labelLeft">
+                <svg viewBox="0 0 20 20" class="ic" fill="currentColor"><path d="M10 2a6 6 0 0 0-6 6c0 4.5 6 10 6 10s6-5.5 6-10a6 6 0 0 0-6-6zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>
+                Footprint expansion
+              </span>
+              <span class="metricRange">Lifetime</span>
+            </span>
+            <div class="metricEmpty">
+              <strong>No customers synced.</strong>
+              <span>Run a sync to see where your demand is concentrated and rank candidates.</span>
+            </div>
+            <div class="metricFooter">
+              <a href="#" class="metricLink" style="color: var(--subdued);">Start customer sync</a>
+              <span class="metricDelta deltaFlat">—</span>
+            </div>
+          </div>
+
+          <div class="metricCard">
+            <span class="metricLabel">
+              <span class="labelLeft">
+                <svg viewBox="0 0 20 20" class="ic" fill="currentColor"><path d="M4 4h12v3H4V4zm0 5h12v3H4V9zm0 5h12v3H4v-3z"/></svg>
+                Affiliates
+              </span>
+              <span class="metricRange">Last 30d</span>
+            </span>
+            <div class="metricEmpty">
+              <strong>No codes registered.</strong>
+              <span>Connect a Shopify discount code or import a BixGrow CSV to track attribution.</span>
+            </div>
+            <div class="metricFooter">
+              <a href="#" class="metricLink" style="color: var(--subdued);">Manage affiliates</a>
+              <span class="metricDelta deltaFlat">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Jump back in (still rendered on first-run, even though metrics are empty — gives merchant something to click) -->
+        <div class="sectionHeader" style="margin-top:24px;">
+          <h2 class="sectionTitle">Jump in</h2>
+        </div>
+        <div class="jumpGrid">
+          <a class="jumpCard" href="#">
+            <span class="jumpIcon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 5h11l3 4v5h-2a2 2 0 1 1-4 0H8a2 2 0 1 1-4 0H3V5zm12 4h2.4L15 6.6V9z"/></svg></span>
+            <div class="jumpBody">
+              <span class="jumpTitle">Plan deliveries</span>
+              <span class="jumpSub">View the day's orders on the map and dispatch routes.</span>
+            </div>
+            <span class="jumpArrow">›</span>
+          </a>
+          <a class="jumpCard" href="#">
+            <span class="jumpIcon green"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 14h2v3H3v-3zm4-4h2v7H7v-7zm4-4h2v11h-2V6zm4 6h2v5h-2v-5z"/></svg></span>
+            <div class="jumpBody">
+              <span class="jumpTitle">Track retail sales</span>
+              <span class="jumpSub">Set goals and watch progress per store.</span>
+            </div>
+            <span class="jumpArrow">›</span>
+          </a>
+          <a class="jumpCard" href="#">
+            <span class="jumpIcon amber"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 0 0-6 6c0 4.5 6 10 6 10s6-5.5 6-10a6 6 0 0 0-6-6zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg></span>
+            <div class="jumpBody">
+              <span class="jumpTitle">Find new locations</span>
+              <span class="jumpSub">See where your customers are and rank expansion candidates.</span>
+            </div>
+            <span class="jumpArrow">›</span>
+          </a>
+          <a class="jumpCard" href="#">
+            <span class="jumpIcon gray"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 4a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm-1 3h2v4h3v2H9V7z"/></svg></span>
+            <div class="jumpBody">
+              <span class="jumpTitle">Manage settings</span>
+              <span class="jumpSub">Carriers, locations, and delivery providers.</span>
+            </div>
+            <span class="jumpArrow">›</span>
+          </a>
+        </div>
+
+        <!-- 4. Recent activity (empty state) -->
+        <div class="sectionHeader" style="margin-top:24px;">
+          <h2 class="sectionTitle">Recent activity</h2>
+        </div>
+        <div class="sSection" style="margin-bottom:0;">
+          <div class="activityEmpty">No activity yet. Once Omnify starts dispatching routes and syncing orders, the latest events show up here.</div>
+        </div>
+
+        <!-- 5. Footer help -->
+        <div class="footerHelp">
+          <span>Need a hand getting set up?</span>
+          <span>
+            <a href="#">Read the docs</a>
+            <a href="#">Email support</a>
+            <a href="#">What's new</a>
+          </span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== STATE B: STEADY STATE ============================== -->
+  <div>
+    <p class="stateLabel">State B — returning merchant (setup hidden, live data)</p>
+    <div class="stateCanvas">
+      <div class="sPage">
+
+        <div class="pageHeader">
+          <h1 class="pageHeading">Omnify</h1>
+        </div>
+        <p class="pageSubheading">
+          Wednesday, May 6 · everything's running. Three routes already dispatched today.
+        </p>
+
+        <!-- Regression banner (post-dismissal: a previously-completed step regressed) -->
+        <div class="regressBanner" role="alert">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2L1 18h18L10 2zm0 6v4M10 14v.01"/></svg>
+          <span><strong>Setup needs attention</strong><em>Lalamove credentials were revoked yesterday — driver requests will fail.</em></span>
+          <a href="#" class="fixCta">Reconnect Lalamove</a>
+          <button class="dismissCta" aria-label="Dismiss">×</button>
+        </div>
+
+        <!-- 2. Activity overview (populated) -->
+        <div class="sectionHeader">
+          <h2 class="sectionTitle">Activity overview</h2>
+        </div>
+        <div class="metricsRow">
+
+          <div class="metricCard">
+            <span class="metricLabel">
+              <span class="labelLeft">
+                <svg viewBox="0 0 20 20" class="ic" fill="currentColor"><path d="M3 5h11l3 4v5h-2a2 2 0 1 1-4 0H8a2 2 0 1 1-4 0H3V5zm12 4h2.4L15 6.6V9z"/></svg>
+                Local delivery
+              </span>
+              <span class="metricRange">Today</span>
+            </span>
+            <span class="metricValue">8 / 11</span>
+            <div class="metricSecondary">
+              <span>orders dispatched today</span>
+              <span>3 routes out · 2 awaiting driver</span>
+            </div>
+            <div class="metricFooter">
+              <a href="#" class="metricLink">Plan deliveries</a>
+              <span class="metricDelta deltaPos">94% on-time (7d)</span>
+            </div>
+          </div>
+
+          <div class="metricCard">
+            <span class="metricLabel">
+              <span class="labelLeft">
+                <svg viewBox="0 0 20 20" class="ic" fill="currentColor"><path d="M3 14h2v3H3v-3zm4-4h2v7H7v-7zm4-4h2v11h-2V6zm4 6h2v5h-2v-5z"/></svg>
+                Retail sales
+              </span>
+              <span class="metricRange">May (MTD)</span>
+            </span>
+            <span class="metricValue">R$48.2k</span>
+            <div class="metricSecondary">
+              <span><span class="metricDelta deltaNeg">▼ 6%</span> vs. goal pace</span>
+              <span>3 of 4 stores on track</span>
+            </div>
+            <div class="metricFooter">
+              <a href="#" class="metricLink">Open dashboard</a>
+              <span class="metricDelta deltaPos">+11% YoY</span>
+            </div>
+          </div>
+
+          <div class="metricCard">
+            <span class="metricLabel">
+              <span class="labelLeft">
+                <svg viewBox="0 0 20 20" class="ic" fill="currentColor"><path d="M10 2a6 6 0 0 0-6 6c0 4.5 6 10 6 10s6-5.5 6-10a6 6 0 0 0-6-6zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>
+                Footprint expansion
+              </span>
+              <span class="metricRange">Lifetime</span>
+            </span>
+            <span class="metricValue">12,418</span>
+            <div class="metricSecondary">
+              <span>customers geocoded</span>
+              <span>Top demand: <strong style="color:var(--text);">São Paulo · Pinheiros</strong></span>
+            </div>
+            <div class="metricFooter">
+              <a href="#" class="metricLink">View heatmap</a>
+              <span class="metricDelta deltaFlat">2 active projects</span>
+            </div>
+          </div>
+
+          <div class="metricCard">
+            <span class="metricLabel">
+              <span class="labelLeft">
+                <svg viewBox="0 0 20 20" class="ic" fill="currentColor"><path d="M4 4h12v3H4V4zm0 5h12v3H4V9zm0 5h12v3H4v-3z"/></svg>
+                Affiliates
+              </span>
+              <span class="metricRange">Last 30d</span>
+            </span>
+            <span class="metricValue">R$4.1k</span>
+            <div class="metricSecondary">
+              <span>attributed · 23 active codes</span>
+              <span><span class="metricDelta deltaPos">▲ 18%</span> vs. previous 30d</span>
+            </div>
+            <div class="metricFooter">
+              <a href="#" class="metricLink">Attribution queue</a>
+              <span class="metricDelta deltaNeg">12 unmapped</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Jump back in -->
+        <div class="sectionHeader" style="margin-top:24px;">
+          <h2 class="sectionTitle">Jump back in</h2>
+        </div>
+        <div class="jumpGrid">
+          <a class="jumpCard" href="#">
+            <span class="jumpIcon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 5h11l3 4v5h-2a2 2 0 1 1-4 0H8a2 2 0 1 1-4 0H3V5zm12 4h2.4L15 6.6V9z"/></svg></span>
+            <div class="jumpBody">
+              <span class="jumpTitle">Plan deliveries</span>
+              <span class="jumpSub">8 orders waiting · 3 routes dispatched today</span>
+            </div>
+            <span class="jumpArrow">›</span>
+          </a>
+          <a class="jumpCard" href="#">
+            <span class="jumpIcon green"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 14h2v3H3v-3zm4-4h2v7H7v-7zm4-4h2v11h-2V6zm4 6h2v5h-2v-5z"/></svg></span>
+            <div class="jumpBody">
+              <span class="jumpTitle">Track retail sales</span>
+              <span class="jumpSub">May goals set · Iguatemi at 112% of pace</span>
+            </div>
+            <span class="jumpArrow">›</span>
+          </a>
+          <a class="jumpCard" href="#">
+            <span class="jumpIcon amber"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 0 0-6 6c0 4.5 6 10 6 10s6-5.5 6-10a6 6 0 0 0-6-6zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg></span>
+            <div class="jumpBody">
+              <span class="jumpTitle">Find new locations</span>
+              <span class="jumpSub">2 candidates · Pinheiros scored 87/100</span>
+            </div>
+            <span class="jumpArrow">›</span>
+          </a>
+          <a class="jumpCard" href="#">
+            <span class="jumpIcon gray"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 4a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm-1 3h2v4h3v2H9V7z"/></svg></span>
+            <div class="jumpBody">
+              <span class="jumpTitle">Manage settings</span>
+              <span class="jumpSub">4 locations · Lalamove connected</span>
+            </div>
+            <span class="jumpArrow">›</span>
+          </a>
+        </div>
+
+        <!-- 4. Recent activity -->
+        <div class="sectionHeader" style="margin-top:24px;">
+          <h2 class="sectionTitle">Recent activity</h2>
+          <span class="sectionMeta"><a href="#">View full log</a></span>
+        </div>
+        <div class="sSection">
+          <div class="activityList">
+
+            <div class="activityItem">
+              <span class="activityIcon actGreen"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M7.6 13.2L4.4 10l-1.4 1.4 4.6 4.6 10-10L16.2 4.6 7.6 13.2z"/></svg></span>
+              <span class="activityText">Route <strong>ld_rota-03</strong> dispatched · 6 orders, R$32.10 · driver picked up at 10:14</span>
+              <span class="activityWhen">8 min ago</span>
+            </div>
+
+            <div class="activityItem">
+              <span class="activityIcon actBlue"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="3"/></svg></span>
+              <span class="activityText">Customer sync completed · <em>+38 new, 12,418 total geocoded</em></span>
+              <span class="activityWhen">42 min ago</span>
+            </div>
+
+            <div class="activityItem">
+              <span class="activityIcon actAmber"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2L1 18h18L10 2zm0 6v4M10 14v.01"/></svg></span>
+              <span class="activityText">Order <strong>#10234</strong> needs an address fix · <em>missing house number</em></span>
+              <span class="activityWhen">1 h ago</span>
+            </div>
+
+            <div class="activityItem">
+              <span class="activityIcon actGreen"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M7.6 13.2L4.4 10l-1.4 1.4 4.6 4.6 10-10L16.2 4.6 7.6 13.2z"/></svg></span>
+              <span class="activityText">Footprint sync ingested <strong>1,204 orders</strong> from the last 30 days</span>
+              <span class="activityWhen">3 h ago</span>
+            </div>
+
+            <div class="activityItem">
+              <span class="activityIcon actRed"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M5 5l10 10M15 5l-10 10"/></svg></span>
+              <span class="activityText">Driver request failed for <strong>#10219</strong> · <em>Recife motorcycle service unavailable</em> · <a href="#" style="color:var(--shopify-blue);text-decoration:none;font-weight:500;">retry</a></span>
+              <span class="activityWhen">5 h ago</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 5. Footer help -->
+        <div class="footerHelp">
+          <span>Updates and tips</span>
+          <span>
+            <a href="#">Read the docs</a>
+            <a href="#">Email support</a>
+            <a href="#">What's new</a>
+          </span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Compliance check (Built for Shopify)</h3>
+  <ul>
+    <li><strong>§4.2.3 Helpful homepage</strong> — setup status (guide), performance metrics (3 cards), live activity (recent events). No purely-static content. ✓</li>
+    <li><strong>§4.2.2 Helpful onboarding</strong> — concise 4-step guide, step descriptions justify each ask, "Hide setup guide" appears once complete, never re-opens automatically. ✓</li>
+    <li><strong>§4.1.1 UX best practices</strong> — Polaris primitives only, 4px grid spacing, WCAG-AA contrast on every label, single primary action per card. ✓</li>
+    <li><strong>§4.1.4 Use the nav menu</strong> — home is the entry point that <code>s-app-nav</code>'s app-name link points at. Page does not duplicate nav links inside the body. ✓</li>
+    <li><strong>One purpose per page</strong> — orient + jump-back-in. No editing, no settings here. ✓</li>
+    <li><strong>Single-column layout</strong> — Shopify-recommended for homepages. ✓</li>
+    <li><strong>Action labels</strong> — verb + noun ("Plan deliveries", "Connect Lalamove", "Track retail sales", "Find new locations"). ✓</li>
+  </ul>
+</div>
+
+<div class="notes">
+  <h3>Implementation notes (when this moves to React/Polaris)</h3>
+  <ul>
+    <li><strong>Single unified loader, identity-aware.</strong> One <code>app/routes/app._index.tsx</code> serves both <code>cpg-labs</code> and <code>omnify</code> identities. Metric cards, jump cards, and setup steps render based on <code>getNavItems()</code> + per-feature data probes. Omnify gets 4 cards (LD · Retail · Footprint · Affiliates). CPG Labs full gets up to 6 (adds Merchandising · Storytelling, plus Goals/Helpers as pre-existing helper cards).</li>
+    <li><strong>Loader fan-out.</strong> Wrap data fetches in <code>Promise.allSettled</code>; each failure degrades to that card's empty state — never blocks the page. Required probes: <code>getSetupChecklistState(shop)</code>, plus per-enabled-feature: <code>getDeliveryActivityToday(shop)</code>, <code>getRetailSalesSummary(shop, monthMtd)</code>, <code>getFootprintSummary(shop)</code>, <code>getAffiliatesSummary(shop, last30d)</code>, plus <code>getRecentActivity(shop, limit=5)</code> and <code>getRegressionStatus(shop)</code> (returns the most-severe regressed step or null).</li>
+    <li><strong>Per-card cadence is explicit.</strong> Each metric helper owns its own time window — no shared range. Local Delivery = today; Retail Sales = MTD; Footprint = lifetime; Affiliates = last 30 days. If we ever need a global range later, add it as a per-card override, not a top-level picker.</li>
+    <li><strong>Setup checklist</strong> persists per-shop in a new <code>OnboardingState</code> Prisma row (<code>shopId, dismissedAt, completedSteps</code>). Step completion is re-derived from system state on each load — never user-claimed. Once <code>dismissedAt</code> is set, the full guide stays hidden; <code>getRegressionStatus()</code> independently computes whether to surface the warning banner.</li>
+    <li><strong>Regression banner trigger.</strong> Only shown when <code>dismissedAt IS NOT NULL</code> AND a required step's current state evaluates false (credentials missing, no enabled location, carrier service deregistered). One banner at a time, severity-ordered. Dismiss is session-scoped only — banner re-appears next page-load if not yet fixed.</li>
+    <li><strong>Recent activity</strong> reuses the audit log the cron pipeline already writes (<code>[local-delivery]</code>, <code>[retail-footprint:sync]</code>, <code>[affiliates:cron]</code>, etc. from CLAUDE.md "Logging" — but as a structured table, not raw stdout). New thin <code>EventLog</code> table; existing services dual-write.</li>
+    <li><strong>Mobile</strong>: at <code>≤1100px</code> the metrics row goes 2x2; at <code>≤600px</code> it stacks. Setup-guide steps stack the CTA below the body. Jump-back-in goes 1-column.</li>
+    <li><strong>i18n</strong>: keys under <code>app/i18n/locales/{en,pt-BR}/home.json</code>. Existing keys from the current function-card home are reusable for jump-back-in titles.</li>
+  </ul>
+</div>
+
+<div class="notes">
+  <h3>Decisions resolved (2026-05-06)</h3>
+  <ul>
+    <li>✅ <strong>Affiliates</strong> — added as 4th metric card. Surfaced on the home even though it's not in <code>IDENTITY_NAV.omnify</code>. Jump-back-in mirrors NAV exactly (4 cards), so Affiliates is reachable via its metric-card footer link only.</li>
+    <li>✅ <strong>Identity scope</strong> — unified template, drives off enabled features. Same route for Omnify and CPG Labs full; metrics row scales 4 → 6+ as needed.</li>
+    <li>✅ <strong>Setup regression</strong> — thin warning banner (shown in State B), never re-opens the full guide. Banner copy: "Setup needs attention — &lt;reason&gt; → Fix now".</li>
+    <li>✅ <strong>Activity time range</strong> — per-card natural cadence (Today · MTD · Lifetime · Last 30d). No global picker.</li>
+  </ul>
+  <h3 style="margin-top:12px;">Still open (flag for review when implementing)</h3>
+  <ul>
+    <li><strong>"What's new" link target</strong> — points where? A changelog on cpg-labs.io, an in-app modal, or the docs site? No target exists today.</li>
+    <li><strong>Affiliates in IDENTITY_NAV.omnify?</strong> — separate question, but if we promote Affiliates to a first-class home metric, the next logical step is adding it to the nav. Out of scope for this mockup; flagged for follow-up.</li>
+    <li><strong>Activity log table size</strong> — how far back to retain events? 90 days? 1 year? Drives <code>EventLog</code> retention policy.</li>
+  </ul>
+</div>
+
+</body>
+</html>

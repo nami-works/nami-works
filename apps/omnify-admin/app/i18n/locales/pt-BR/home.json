@@ -1,42 +1,90 @@
 {
   "pageHeading": "Início",
+  "subheading": "Entrega local, vendas de varejo e expansão de pontos físicos para marcas de bens de consumo no Shopify.",
   "sections": {
-    "functions": "Funcionalidades",
-    "ideasAndHelpers": "Ideias e auxiliares"
+    "activityOverview": "Visão geral",
+    "jumpIn": "Comece por aqui",
+    "jumpBackIn": "Continue de onde parou"
   },
-  "cards": {
-    "localDelivery": {
-      "title": "Entrega local",
-      "description": "Planeje e atribua rotas de entrega local. Visualize pedidos no mapa, associe-os a rotas e organize zonas de entrega eficientes para seus clientes."
-    },
-    "retailSales": {
-      "title": "Vendas de varejo",
-      "description": "Defina metas mensais de vendas por localização e acompanhe o desempenho real. Monitore KPIs, rankings e cumprimento de metas em todas as suas lojas."
-    },
-    "footprintExpansion": {
-      "title": "Expansão de varejo",
-      "description": "Identifique localizações com alto potencial para expandir o varejo. Classifique candidatas por proximidade do cliente e impacto estimado na receita."
-    },
-    "priceTags": {
-      "title": "Etiquetas de preço",
-      "description": "Atribua automaticamente etiquetas de desconto aos produtos com base em reduções de preço. Configure tags baseadas em metaobjetos e faixas de desconto."
-    },
-    "storytelling": {
-      "title": "Story-telling",
-      "description": "Gere conteúdo de blog otimizado para SEO usando IA. Crie briefings de conteúdo, revise rascunhos da IA e publique diretamente no seu blog Shopify."
-    },
-    "settings": {
-      "title": "Configurações",
-      "description": "Configure locais de entrega, configurações de despacho Lalamove, serviços de transportadora e tarifas de frete para sua loja."
-    },
-    "productLaunches": {
-      "title": "Lançamentos de produtos",
-      "description": "Acompanhe metas de receita e unidades para lançamentos de novos produtos. Compare resultados com benchmarks e segmente por tag, localização ou canal."
-    },
-    "uiElements": {
-      "title": "Elementos de UI",
-      "description": "Navegue por exemplos interativos de componentes web Polaris usados neste app. Útil para referência de desenvolvimento e testes."
+  "setup": {
+    "title": "Vamos colocar o Omnify para rodar",
+    "subtitle": "Conclua a configuração para começarmos a sincronizar pedidos, planejar rotas e acompanhar vendas.",
+    "progress": "{{done}} de {{total}} concluídos",
+    "steps": {
+      "install": {
+        "title": "Instalar o app",
+        "desc": "Acesso à sua loja concedido.",
+        "cta": "Pronto"
+      },
+      "lalamove": {
+        "title": "Conectar o transportador",
+        "desc": "Adicione sua chave da API Lalamove e selecione as cidades atendidas. Necessário para o roteamento de entrega local.",
+        "cta": "Conectar Lalamove"
+      },
+      "locations": {
+        "title": "Configurar os pontos de coleta",
+        "desc": "Indique quais locais do Shopify despacham entregas e os horários de coleta.",
+        "cta": "Abrir configurações"
+      },
+      "customerSync": {
+        "title": "Sincronizar a base de clientes",
+        "desc": "Opcional, mas habilita a análise de expansão e o ranking de novos pontos.",
+        "cta": "Sincronizar"
+      }
     }
   },
-  "goTo": "Ir para {{title}}"
+  "metrics": {
+    "localDelivery": {
+      "label": "Entrega local",
+      "range": "Hoje",
+      "cta": "Planejar entregas",
+      "emptyTitle": "Nenhuma entrega ainda.",
+      "emptyDesc": "Conecte o Lalamove e etiquete o primeiro pedido para ver as rotas do dia aqui.",
+      "subPending": "pedidos aguardando",
+      "subDispatched": "{{n}} rotas despachadas hoje"
+    },
+    "retailSales": {
+      "label": "Vendas de varejo",
+      "range": "Este mês",
+      "cta": "Abrir dashboard",
+      "emptyTitle": "Sem metas definidas.",
+      "emptyDesc": "Defina metas mensais de receita por local para comparar real vs. meta.",
+      "subRevenue": "Receita MTD",
+      "subLocations": "{{n}} locais reportando"
+    },
+    "footprintExpansion": {
+      "label": "Expansão de varejo",
+      "range": "Total",
+      "cta": "Ver mapa de calor",
+      "emptyTitle": "Nenhum cliente sincronizado.",
+      "emptyDesc": "Rode uma sincronização para ver onde está sua demanda e classificar candidatos.",
+      "subCustomers": "clientes geocodificados",
+      "subTopCity": "Maior demanda: {{city}}"
+    },
+    "affiliates": {
+      "label": "Afiliados",
+      "range": "Últimos 30d",
+      "cta": "Fila de atribuição",
+      "emptyTitle": "Nenhum código cadastrado.",
+      "emptyDesc": "Conecte um cupom Shopify ou importe um CSV BixGrow para acompanhar a atribuição.",
+      "subAttributed": "atribuído · {{n}} códigos ativos",
+      "subUnmapped": "{{n}} códigos não mapeados"
+    }
+  },
+  "jumpCards": {
+    "localDelivery": { "title": "Planejar entregas", "sub": "Mapeie pedidos, despache rotas, acompanhe motoristas." },
+    "retailSales": { "title": "Acompanhar vendas", "sub": "Defina metas e veja o progresso por loja." },
+    "footprintExpansion": { "title": "Encontrar novos pontos", "sub": "Veja onde estão os clientes e ranqueie candidatos." },
+    "affiliates": { "title": "Gerenciar afiliados", "sub": "Códigos, atribuição e cálculo de comissões." },
+    "merchandising": { "title": "Merchandising", "sub": "Campanhas de promoção e etiquetas de preço." },
+    "storytelling": { "title": "Story-telling", "sub": "Conteúdo de blog gerado por IA para sua marca." },
+    "settings": { "title": "Configurações", "sub": "Transportadores, locais e provedores de entrega." },
+    "extras": { "title": "Extras", "sub": "Auxiliares e acompanhamento de lançamentos." }
+  },
+  "footer": {
+    "heading": "Precisa de ajuda?",
+    "docs": "Ler a documentação",
+    "support": "Falar com o suporte",
+    "changelog": "Novidades"
+  }
 }

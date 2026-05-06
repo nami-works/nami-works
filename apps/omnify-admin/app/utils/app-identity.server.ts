@@ -115,7 +115,13 @@ const ALL_NAV_ITEMS: NavItem[] = [
 ];
 
 const IDENTITY_NAV: Record<Exclude<AppIdentity, "cpg-labs">, string[]> = {
-  omnify: ["/app/local-delivery", "/app/footprint-expansion", "/app/retail-sales", "/app/settings"],
+  omnify: [
+    "/app/local-delivery",
+    "/app/footprint-expansion",
+    "/app/retail-sales",
+    "/app/affiliates",
+    "/app/settings",
+  ],
   storytelling: ["/app/storytelling"],
   storefront: ["/app/merchandising"],
 };
