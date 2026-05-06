@@ -1,26 +1,28 @@
-# CPG Labs — Project Brief
+# Project Brief — CPG Labs (parent) & Omnify (product)
 
 > Use this document as context when discussing the project on mobile or with anyone unfamiliar with the codebase. It describes what the product does, how it works, and where things stand — written for planning conversations, not for coding.
 
 ---
 
-## What Is CPG Labs?
+## Brand model
 
-CPG Labs is a **Shopify embedded app** built for consumer packaged goods (CPG) brands selling through Shopify. It lives inside the Shopify Admin and helps merchants with **local delivery logistics, retail expansion analytics, product merchandising, and AI content generation**.
+**CPG Labs** is the parent company and developer brand. It owns the corporate landing at `cpg-labs.io`, the Partner-account org, and the engineering surfaces (this repo, AWS infrastructure, deploy pipelines). Merchants do not "install CPG Labs" — they install one of its products.
 
-The app is deployed at `omnify.cpg-labs.io` and runs on AWS (ECS Fargate + RDS PostgreSQL). It's built with React Router v7, TypeScript, Prisma, Google Maps, and Shopify's Polaris design system.
+**Omnify** is the Shopify embedded app that CPG Labs publishes. It is what every merchant — including GE Beauty — sees in their Shopify admin: app name in the install list, header inside the embedded iframe, App Bridge nav entries. Omnify is built for consumer packaged goods (CPG) brands selling through Shopify and helps merchants with **local delivery logistics, retail expansion analytics, product merchandising, and AI content generation**.
+
+The Omnify app is deployed at `app.cpg-labs.io` (full feature set) and runs on AWS (ECS Fargate + RDS PostgreSQL). It's built with React Router v7, TypeScript, Prisma, Google Maps, and Shopify's Polaris design system.
 
 ### Multi-App Architecture
 
-The same codebase powers multiple focused Shopify apps via an `APP_IDENTITY` environment variable:
+The same codebase powers multiple focused Shopify apps via an `APP_IDENTITY` environment variable. All user-facing identities surface as **Omnify** to merchants — `APP_IDENTITY` is an internal dispatcher that scopes which features render, not a user-visible brand:
 
-| Identity | Target Merchant | Features Enabled |
-|----------|----------------|------------------|
-| **CPG Labs** (default) | Internal / power users | Everything |
-| **Omnify** | Delivery-focused brands | Local Delivery, Retail Footprint, Retail Sales, Carrier Service, Settings |
-| **Storefront** | Product merchandising & content | Price Tags, Merchandising, Story-telling (Blog Generation, Brand Settings, Alt Text) |
+| Identity (env var) | Target Merchant | Features Enabled |
+|--------------------|----------------|------------------|
+| `cpg-labs` (default — Omnify full) | All merchants, full feature set | Everything |
+| `omnify` (Omnify focused) | Delivery-focused brands | Local Delivery, Retail Footprint, Retail Sales, Carrier Service, Settings |
+| `storefront` | Product merchandising & content | Price Tags, Merchandising, Story-telling (Blog Generation, Brand Settings, Alt Text) |
 
-Each identity has its own Shopify app credentials, deploy script, and scoped navigation. This lets us publish focused apps to the Shopify App Store while keeping the full CPG Labs running for our production store. Story-telling features are being merged into the Storefront app.
+Each identity has its own Shopify app credentials, deploy lane (`scripts/deploy.ps1 -App <key>`), and scoped navigation. The `cpg-labs` identity key is a historical infrastructure label — the merchant-facing name across all identities is Omnify. Story-telling features are being merged into the Storefront app.
 
 ---
 
