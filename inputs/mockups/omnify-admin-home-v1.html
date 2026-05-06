@@ -3,44 +3,60 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>UI mockup — Omnify admin home v1 (app/routes/app._index.tsx)</title>
+<title>As-built — Omnify embedded admin home (app/routes/app._index.tsx)</title>
 <!--
-  MOCKUP: omnify-admin-home-v1.html
-  TARGET ROUTE: app/routes/app._index.tsx (embedded Shopify admin home)
+  AS-BUILT RECORD: omnify-admin-home-v1.html
+  Shipped 2026-05-06 · commit 5e68627 on main.
 
-  CONTEXT
-  - Today, Omnify identity short-circuits the admin home: getHomeRoute()
-    in app/utils/app-identity.server.ts redirects to /app/local-delivery
-    on first load. Merchants never see a "home" — they land on the LD page.
-  - Shopify Built for Shopify §4.2.3 ("Helpful homepage") requires the
-    homepage to indicate setup status, surface performance metrics, and
-    avoid being only static content. Today's stub fails all three checks.
-  - This mockup proposes the genuine first home — single-column,
-    scannable top-to-bottom, populated with live state.
+  IMPLEMENTING FILES
+  - app/routes/app._index.tsx                    (loader + components)
+  - app/routes/app._index/styles.module.css      (CSS module)
+  - app/i18n/locales/en/home.json + pt-BR/home.json (copy)
+  - app/utils/app-identity.server.ts             (Affiliates added to NAV)
 
-  REFERENCES (canonical Shopify guidance applied)
-  - Built for Shopify requirements §4.2.3 helpful homepage
-                                  §4.2.2 helpful onboarding
-                                  §4.1.1 follow UX best practices
-  - App Home patterns:  homepage template
-                        + setup-guide composition (§4.2.2 dismissible)
-                        + metrics-card composition (§4.2.3)
-                        + callout-card composition
-                        + interstitial-nav composition
-                        + footer-help composition
-  - Layout: single-column (Shopify: "best for homepages")
-  - Local: CLAUDE.md "UI Tokens" + "Buttons" + "Inserted Elements — Spacing"
+  WHAT IT DOES
+  Renders the embedded Shopify admin home for both APP_IDENTITY=omnify and
+  APP_IDENTITY=cpg-labs. Driven off getNavItems() so the same template
+  serves both identities. Built for Shopify §4.2.3 compliant: setup status,
+  performance metrics, no purely-static content.
 
-  SECTIONS (top → bottom, single column)
-   1. Setup guide                  — first-run merchants only, dismissible
-   2. Activity overview            — 3 metrics cards, one per feature
-   3. Jump back in                 — interstitial nav: 4 cards w/ primary CTA
-   4. Recent activity              — last 5 system events (dispatch, sync, fix)
-   5. Footer help                  — docs, support, what's new
+  SHIPPED IN v1
+   1. Setup guide              — auto-derived from system state; auto-hides
+                                  when all 4 steps done; CTAs deep-link to
+                                  the relevant settings.
+   2. Activity overview        — 4 metric cards (LD · Retail · Footprint ·
+                                  Affiliates) driven by getNavItems(). Each
+                                  card has its own natural cadence chip.
+                                  Loader fans out 4 defensive Prisma queries;
+                                  failures degrade to that card's empty state.
+   3. Jump back in             — 5 cards mirroring IDENTITY_NAV.omnify
+                                  (Plan deliveries · Track retail sales ·
+                                   Find new locations · Manage affiliates ·
+                                   Settings). Excludes "/app" (Extras).
+   4. Footer help              — docs · email support · /changelog on
+                                  cpg-labs.io.
 
-  Two states are shown side-by-side:
-   A. First-run (setup incomplete, empty metrics, prominent guide)
-   B. Returning merchant (setup dismissed, populated metrics, recent activity)
+  DEFERRED FOR v2 (visible in this mockup, marked with the "Deferred" pill)
+   - Recent activity list      — needs new EventLog table + dual-write from
+                                  the cron pipeline.
+   - Regression warning banner — needs OnboardingState.dismissedAt
+                                  persistence to distinguish first-run from
+                                  post-dismissal.
+
+  POLARIS ICONS WIRED IN PRODUCTION
+   - Local delivery     → s-icon type="delivery"
+   - Retail sales       → s-icon type="chart-histogram-growth"
+   - Footprint          → s-icon type="location"
+   - Affiliates         → s-icon type="affiliate"
+   - Merchandising      → s-icon type="discount"     (cpg-labs only)
+   - Storytelling       → s-icon type="blog"          (cpg-labs only)
+   - Settings           → s-icon type="settings"
+
+  Two states are shown stacked vertically:
+   A. First-run         — setup incomplete, metric cards in empty state.
+   B. Returning         — setup hidden, metric cards populated.
+  Both are real production states; the component renders one or the other
+  based on data, not user preference.
 -->
 <style>
   :root {
@@ -471,6 +487,40 @@
     .footerHelp { flex-direction: column; align-items: flex-start; gap: 8px; }
   }
 
+  /* --- Deferred-section overlay (sections in mockup but NOT shipped in v1) --- */
+  .deferred {
+    position: relative;
+    opacity: 0.55;
+    filter: saturate(0.55);
+  }
+  .deferred::before {
+    content: attr(data-deferred-label);
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    background: #1f1f1f;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    z-index: 1;
+  }
+  .deferred::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent 0 8px,
+      rgba(31, 31, 31, 0.04) 8px 9px
+    );
+    pointer-events: none;
+    border-radius: 8px;
+  }
+
   /* --- Notes panel --- */
   .notes {
     background: #fffbea;
@@ -494,27 +544,24 @@
 </head>
 <body>
 
-<h1 class="docTitle">Omnify admin home — mockup v1</h1>
+<h1 class="docTitle">As-built — Omnify embedded admin home (shipped 2026-05-06 · commit 5e68627)</h1>
 <p class="docIntro">
-  First-pass design for <code>app/routes/app._index.tsx</code> when <code>APP_IDENTITY=omnify</code>.
-  Today the route redirects merchants straight to <code>/app/local-delivery</code>, which means the
-  app has no "home" and fails Shopify's Built for Shopify §4.2.3 (helpful homepage) check.
-  This mockup replaces the redirect with a real landing page: setup status, performance metrics,
-  jump-back-in, and recent activity. Rendered side-by-side in two states so we can validate both
-  the first-run and steady-state experience before translating to Polaris components.
+  Visual record of <code>app/routes/app._index.tsx</code>, the Shopify admin home rendered when a merchant
+  selects the app name in the admin nav. Same route serves both <code>APP_IDENTITY=omnify</code> and
+  <code>APP_IDENTITY=cpg-labs</code>; metric/jump cards are driven by <code>getNavItems()</code>. Built for
+  Shopify §4.2.3-compliant. Two production states shown vertically (first-run and returning); two
+  sections are visually faded out as deferred-to-v2.
 </p>
 
 <div class="notes">
-  <h3>What changed vs current</h3>
+  <h3>Why the page looks the way it does</h3>
   <ul>
-    <li><strong>Drop the <code>/app/local-delivery</code> redirect</strong> for the Omnify identity. The home becomes a real page so §4.2.3 can be satisfied.</li>
-    <li><strong>Setup guide</strong> — driven by real database checks (Lalamove credentials present? at least one location configured? carrier service registered? auto-delivery cron on?). Dismiss button only enabled once all required steps are done. §4.2.2.</li>
-    <li><strong>Four metrics cards</strong> — one per enabled feature surface (Local Delivery / Retail Sales / Footprint Expansion / Affiliates for Omnify; up to 6+ for the CPG Labs full identity). Driven by <code>getNavItems()</code> so the same template serves both identities. §4.2.3.</li>
-    <li><strong>Per-card natural cadence</strong> — each metric carries its own time window (Today · MTD · Lifetime · Last 30d). No global range picker; each surface picks the cadence that makes sense for its job-to-be-done.</li>
-    <li><strong>Jump back in</strong> — four primary entry points (mirrors <code>IDENTITY_NAV.omnify</code>). One primary CTA per card per Polaris guideline. Affiliates is intentionally surfaced via its metrics card (not jump-back-in) because it's not currently in the nav.</li>
-    <li><strong>Recent activity</strong> — last 5 system events pulled from the same audit log the cron pipeline already writes. Read-only. Empty state for first-run.</li>
-    <li><strong>Footer help</strong> — docs link, support email, "What's new" link. Composition recommended by Shopify Homepage Pattern.</li>
-    <li><strong>Regression banner (post-dismissal)</strong> — once the setup guide is hidden, a thin <code>tone="warning"</code> banner re-appears only when a previously-completed step regresses (e.g. credentials revoked, location deleted). Click → deep-link to the offending setting. Never re-opens the full guide.</li>
+    <li><strong>Single column, top-to-bottom.</strong> Shopify's homepage pattern recommends this for orientation pages — merchants scan, then click. No sidebars, no tabs.</li>
+    <li><strong>Setup guide auto-hides when complete.</strong> No explicit dismiss button. Step state is re-derived from the database on every load (Lalamove credentials? location configured? customer sync run?). Once all four steps register as done, the guide simply doesn't render. The next-state design (a thin warning banner if something regresses) is staged below as a Deferred section — it requires a new <code>OnboardingState.dismissedAt</code> column to land.</li>
+    <li><strong>Four metric cards, not three.</strong> Affiliates is a first-class home metric (not a jump-only entry) because the auto-sync-from-Shopify-discount-codes feature shipped 2026-05-05 and the home is the easiest place to surface attribution health. Affiliates was promoted to <code>IDENTITY_NAV.omnify</code> in the same commit (5 nav items, still under the BFS 7-cap).</li>
+    <li><strong>Per-card cadence chip, not a global range picker.</strong> Each metric picks the window that makes sense for its job: Today (LD), May (MTD) for retail, Lifetime for footprint, Last 30d for affiliates. Scaling decision: if we ever need to compare ranges, do it per-card (drilldown), not by adding a top-level dropdown.</li>
+    <li><strong>Verb + noun jump labels.</strong> "Plan deliveries", "Track retail sales", "Find new locations", "Manage affiliates", "Settings" — predictable on click, no jargon.</li>
+    <li><strong>Footer points at real targets.</strong> Docs and changelog live on cpg-labs.io (Astro static site). Support is mailto:.</li>
   </ul>
 </div>
 
@@ -549,7 +596,7 @@
               <span class="stepIcon done">✓</span>
               <div class="stepBody">
                 <span class="stepTitle done">Install the app</span>
-                <span class="stepDesc">Granted scopes: read_orders, read_customers, read_products, write_fulfillments.</span>
+                <span class="stepDesc">Granted access to your store.</span>
               </div>
               <span></span>
             </div>
@@ -578,13 +625,8 @@
                 <span class="stepTitle">Sync your customer base</span>
                 <span class="stepDesc">Optional, but unlocks footprint analytics and retail expansion ranking.</span>
               </div>
-              <button class="stepCta muted">Run later</button>
+              <button class="stepCta">Run sync</button>
             </div>
-          </div>
-
-          <div class="setupGuideFooter">
-            <span>Setup typically takes 5–10 minutes.</span>
-            <button class="iconBtn" disabled style="opacity:0.5;">Hide setup guide</button>
           </div>
         </div>
 
@@ -696,26 +738,36 @@
             <span class="jumpArrow">›</span>
           </a>
           <a class="jumpCard" href="#">
+            <span class="jumpIcon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 4h12v3H4V4zm0 5h12v3H4V9zm0 5h12v3H4v-3z"/></svg></span>
+            <div class="jumpBody">
+              <span class="jumpTitle">Manage affiliates</span>
+              <span class="jumpSub">Codes, attribution, and commission tracking.</span>
+            </div>
+            <span class="jumpArrow">›</span>
+          </a>
+          <a class="jumpCard" href="#">
             <span class="jumpIcon gray"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 4a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm-1 3h2v4h3v2H9V7z"/></svg></span>
             <div class="jumpBody">
-              <span class="jumpTitle">Manage settings</span>
+              <span class="jumpTitle">Settings</span>
               <span class="jumpSub">Carriers, locations, and delivery providers.</span>
             </div>
             <span class="jumpArrow">›</span>
           </a>
         </div>
 
-        <!-- 4. Recent activity (empty state) -->
-        <div class="sectionHeader" style="margin-top:24px;">
-          <h2 class="sectionTitle">Recent activity</h2>
-        </div>
-        <div class="sSection" style="margin-bottom:0;">
-          <div class="activityEmpty">No activity yet. Once Omnify starts dispatching routes and syncing orders, the latest events show up here.</div>
+        <!-- 4. Recent activity (DEFERRED — needs new EventLog table) -->
+        <div class="deferred" data-deferred-label="Deferred · v2 · needs EventLog table" style="margin-top:24px;">
+          <div class="sectionHeader">
+            <h2 class="sectionTitle">Recent activity</h2>
+          </div>
+          <div class="sSection" style="margin-bottom:0;">
+            <div class="activityEmpty">No activity yet. Once Omnify starts dispatching routes and syncing orders, the latest events show up here.</div>
+          </div>
         </div>
 
         <!-- 5. Footer help -->
         <div class="footerHelp">
-          <span>Need a hand getting set up?</span>
+          <span>Need a hand?</span>
           <span>
             <a href="#">Read the docs</a>
             <a href="#">Email support</a>
@@ -737,15 +789,17 @@
           <h1 class="pageHeading">Omnify</h1>
         </div>
         <p class="pageSubheading">
-          Wednesday, May 6 · everything's running. Three routes already dispatched today.
+          Local delivery, retail sales, and footprint expansion for consumer brands selling on Shopify.
         </p>
 
-        <!-- Regression banner (post-dismissal: a previously-completed step regressed) -->
-        <div class="regressBanner" role="alert">
-          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2L1 18h18L10 2zm0 6v4M10 14v.01"/></svg>
-          <span><strong>Setup needs attention</strong><em>Lalamove credentials were revoked yesterday — driver requests will fail.</em></span>
-          <a href="#" class="fixCta">Reconnect Lalamove</a>
-          <button class="dismissCta" aria-label="Dismiss">×</button>
+        <!-- Regression banner (DEFERRED — needs OnboardingState.dismissedAt) -->
+        <div class="deferred" data-deferred-label="Deferred · v2 · needs OnboardingState.dismissedAt">
+          <div class="regressBanner" role="alert">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2L1 18h18L10 2zm0 6v4M10 14v.01"/></svg>
+            <span><strong>Setup needs attention</strong><em>Lalamove credentials were revoked yesterday — driver requests will fail.</em></span>
+            <a href="#" class="fixCta">Reconnect Lalamove</a>
+            <button class="dismissCta" aria-label="Dismiss">×</button>
+          </div>
         </div>
 
         <!-- 2. Activity overview (populated) -->
@@ -856,64 +910,74 @@
             <span class="jumpIcon amber"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 0 0-6 6c0 4.5 6 10 6 10s6-5.5 6-10a6 6 0 0 0-6-6zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg></span>
             <div class="jumpBody">
               <span class="jumpTitle">Find new locations</span>
-              <span class="jumpSub">2 candidates · Pinheiros scored 87/100</span>
+              <span class="jumpSub">See where customers are and rank candidates.</span>
+            </div>
+            <span class="jumpArrow">›</span>
+          </a>
+          <a class="jumpCard" href="#">
+            <span class="jumpIcon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 4h12v3H4V4zm0 5h12v3H4V9zm0 5h12v3H4v-3z"/></svg></span>
+            <div class="jumpBody">
+              <span class="jumpTitle">Manage affiliates</span>
+              <span class="jumpSub">Codes, attribution, and commission tracking.</span>
             </div>
             <span class="jumpArrow">›</span>
           </a>
           <a class="jumpCard" href="#">
             <span class="jumpIcon gray"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 4a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm-1 3h2v4h3v2H9V7z"/></svg></span>
             <div class="jumpBody">
-              <span class="jumpTitle">Manage settings</span>
-              <span class="jumpSub">4 locations · Lalamove connected</span>
+              <span class="jumpTitle">Settings</span>
+              <span class="jumpSub">Carriers, locations, and delivery providers.</span>
             </div>
             <span class="jumpArrow">›</span>
           </a>
         </div>
 
-        <!-- 4. Recent activity -->
-        <div class="sectionHeader" style="margin-top:24px;">
-          <h2 class="sectionTitle">Recent activity</h2>
-          <span class="sectionMeta"><a href="#">View full log</a></span>
-        </div>
-        <div class="sSection">
-          <div class="activityList">
+        <!-- 4. Recent activity (DEFERRED — needs new EventLog table) -->
+        <div class="deferred" data-deferred-label="Deferred · v2 · needs EventLog table" style="margin-top:24px;">
+          <div class="sectionHeader">
+            <h2 class="sectionTitle">Recent activity</h2>
+            <span class="sectionMeta"><a href="#">View full log</a></span>
+          </div>
+          <div class="sSection">
+            <div class="activityList">
 
-            <div class="activityItem">
-              <span class="activityIcon actGreen"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M7.6 13.2L4.4 10l-1.4 1.4 4.6 4.6 10-10L16.2 4.6 7.6 13.2z"/></svg></span>
-              <span class="activityText">Route <strong>ld_rota-03</strong> dispatched · 6 orders, R$32.10 · driver picked up at 10:14</span>
-              <span class="activityWhen">8 min ago</span>
+              <div class="activityItem">
+                <span class="activityIcon actGreen"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M7.6 13.2L4.4 10l-1.4 1.4 4.6 4.6 10-10L16.2 4.6 7.6 13.2z"/></svg></span>
+                <span class="activityText">Route <strong>ld_rota-03</strong> dispatched · 6 orders, R$32.10 · driver picked up at 10:14</span>
+                <span class="activityWhen">8 min ago</span>
+              </div>
+
+              <div class="activityItem">
+                <span class="activityIcon actBlue"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="3"/></svg></span>
+                <span class="activityText">Customer sync completed · <em>+38 new, 12,418 total geocoded</em></span>
+                <span class="activityWhen">42 min ago</span>
+              </div>
+
+              <div class="activityItem">
+                <span class="activityIcon actAmber"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2L1 18h18L10 2zm0 6v4M10 14v.01"/></svg></span>
+                <span class="activityText">Order <strong>#10234</strong> needs an address fix · <em>missing house number</em></span>
+                <span class="activityWhen">1 h ago</span>
+              </div>
+
+              <div class="activityItem">
+                <span class="activityIcon actGreen"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M7.6 13.2L4.4 10l-1.4 1.4 4.6 4.6 10-10L16.2 4.6 7.6 13.2z"/></svg></span>
+                <span class="activityText">Footprint sync ingested <strong>1,204 orders</strong> from the last 30 days</span>
+                <span class="activityWhen">3 h ago</span>
+              </div>
+
+              <div class="activityItem">
+                <span class="activityIcon actRed"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M5 5l10 10M15 5l-10 10"/></svg></span>
+                <span class="activityText">Driver request failed for <strong>#10219</strong> · <em>Recife motorcycle service unavailable</em> · <a href="#" style="color:var(--shopify-blue);text-decoration:none;font-weight:500;">retry</a></span>
+                <span class="activityWhen">5 h ago</span>
+              </div>
+
             </div>
-
-            <div class="activityItem">
-              <span class="activityIcon actBlue"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="3"/></svg></span>
-              <span class="activityText">Customer sync completed · <em>+38 new, 12,418 total geocoded</em></span>
-              <span class="activityWhen">42 min ago</span>
-            </div>
-
-            <div class="activityItem">
-              <span class="activityIcon actAmber"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2L1 18h18L10 2zm0 6v4M10 14v.01"/></svg></span>
-              <span class="activityText">Order <strong>#10234</strong> needs an address fix · <em>missing house number</em></span>
-              <span class="activityWhen">1 h ago</span>
-            </div>
-
-            <div class="activityItem">
-              <span class="activityIcon actGreen"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M7.6 13.2L4.4 10l-1.4 1.4 4.6 4.6 10-10L16.2 4.6 7.6 13.2z"/></svg></span>
-              <span class="activityText">Footprint sync ingested <strong>1,204 orders</strong> from the last 30 days</span>
-              <span class="activityWhen">3 h ago</span>
-            </div>
-
-            <div class="activityItem">
-              <span class="activityIcon actRed"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M5 5l10 10M15 5l-10 10"/></svg></span>
-              <span class="activityText">Driver request failed for <strong>#10219</strong> · <em>Recife motorcycle service unavailable</em> · <a href="#" style="color:var(--shopify-blue);text-decoration:none;font-weight:500;">retry</a></span>
-              <span class="activityWhen">5 h ago</span>
-            </div>
-
           </div>
         </div>
 
         <!-- 5. Footer help -->
         <div class="footerHelp">
-          <span>Updates and tips</span>
+          <span>Need a hand?</span>
           <span>
             <a href="#">Read the docs</a>
             <a href="#">Email support</a>
@@ -928,45 +992,35 @@
 </div>
 
 <div class="notes">
-  <h3>Compliance check (Built for Shopify)</h3>
+  <h3>Compliance check (Built for Shopify) — as shipped</h3>
   <ul>
-    <li><strong>§4.2.3 Helpful homepage</strong> — setup status (guide), performance metrics (3 cards), live activity (recent events). No purely-static content. ✓</li>
-    <li><strong>§4.2.2 Helpful onboarding</strong> — concise 4-step guide, step descriptions justify each ask, "Hide setup guide" appears once complete, never re-opens automatically. ✓</li>
-    <li><strong>§4.1.1 UX best practices</strong> — Polaris primitives only, 4px grid spacing, WCAG-AA contrast on every label, single primary action per card. ✓</li>
-    <li><strong>§4.1.4 Use the nav menu</strong> — home is the entry point that <code>s-app-nav</code>'s app-name link points at. Page does not duplicate nav links inside the body. ✓</li>
-    <li><strong>One purpose per page</strong> — orient + jump-back-in. No editing, no settings here. ✓</li>
+    <li><strong>§4.2.3 Helpful homepage</strong> — setup status (guide), performance metrics (4 cards). No purely-static content. ✓</li>
+    <li><strong>§4.2.2 Helpful onboarding</strong> — 4-step guide, descriptions justify each ask, auto-hides when complete (no manual dismiss). ✓</li>
+    <li><strong>§4.1.1 UX best practices</strong> — Polaris primitives only (s-page, s-icon, native CSS Modules), 4px grid, WCAG-AA contrast, single primary action per card. ✓</li>
+    <li><strong>§4.1.4 Use the nav menu</strong> — home is the entry point <code>s-app-nav</code>'s app-name link points at. Page does not duplicate nav links inside the body (jump-back-in cards are entry points by design, not duplicates). ✓</li>
+    <li><strong>One purpose per page</strong> — orient + jump-back-in. No editing, no settings. ✓</li>
     <li><strong>Single-column layout</strong> — Shopify-recommended for homepages. ✓</li>
-    <li><strong>Action labels</strong> — verb + noun ("Plan deliveries", "Connect Lalamove", "Track retail sales", "Find new locations"). ✓</li>
+    <li><strong>Action labels</strong> — verb + noun (Plan deliveries · Track retail sales · Find new locations · Manage affiliates). ✓</li>
   </ul>
 </div>
 
 <div class="notes">
-  <h3>Implementation notes (when this moves to React/Polaris)</h3>
+  <h3>Where to find the code</h3>
   <ul>
-    <li><strong>Single unified loader, identity-aware.</strong> One <code>app/routes/app._index.tsx</code> serves both <code>cpg-labs</code> and <code>omnify</code> identities. Metric cards, jump cards, and setup steps render based on <code>getNavItems()</code> + per-feature data probes. Omnify gets 4 cards (LD · Retail · Footprint · Affiliates). CPG Labs full gets up to 6 (adds Merchandising · Storytelling, plus Goals/Helpers as pre-existing helper cards).</li>
-    <li><strong>Loader fan-out.</strong> Wrap data fetches in <code>Promise.allSettled</code>; each failure degrades to that card's empty state — never blocks the page. Required probes: <code>getSetupChecklistState(shop)</code>, plus per-enabled-feature: <code>getDeliveryActivityToday(shop)</code>, <code>getRetailSalesSummary(shop, monthMtd)</code>, <code>getFootprintSummary(shop)</code>, <code>getAffiliatesSummary(shop, last30d)</code>, plus <code>getRecentActivity(shop, limit=5)</code> and <code>getRegressionStatus(shop)</code> (returns the most-severe regressed step or null).</li>
-    <li><strong>Per-card cadence is explicit.</strong> Each metric helper owns its own time window — no shared range. Local Delivery = today; Retail Sales = MTD; Footprint = lifetime; Affiliates = last 30 days. If we ever need a global range later, add it as a per-card override, not a top-level picker.</li>
-    <li><strong>Setup checklist</strong> persists per-shop in a new <code>OnboardingState</code> Prisma row (<code>shopId, dismissedAt, completedSteps</code>). Step completion is re-derived from system state on each load — never user-claimed. Once <code>dismissedAt</code> is set, the full guide stays hidden; <code>getRegressionStatus()</code> independently computes whether to surface the warning banner.</li>
-    <li><strong>Regression banner trigger.</strong> Only shown when <code>dismissedAt IS NOT NULL</code> AND a required step's current state evaluates false (credentials missing, no enabled location, carrier service deregistered). One banner at a time, severity-ordered. Dismiss is session-scoped only — banner re-appears next page-load if not yet fixed.</li>
-    <li><strong>Recent activity</strong> reuses the audit log the cron pipeline already writes (<code>[local-delivery]</code>, <code>[retail-footprint:sync]</code>, <code>[affiliates:cron]</code>, etc. from CLAUDE.md "Logging" — but as a structured table, not raw stdout). New thin <code>EventLog</code> table; existing services dual-write.</li>
-    <li><strong>Mobile</strong>: at <code>≤1100px</code> the metrics row goes 2x2; at <code>≤600px</code> it stacks. Setup-guide steps stack the CTA below the body. Jump-back-in goes 1-column.</li>
-    <li><strong>i18n</strong>: keys under <code>app/i18n/locales/{en,pt-BR}/home.json</code>. Existing keys from the current function-card home are reusable for jump-back-in titles.</li>
+    <li><strong>Route + components</strong> — <code>app/routes/app._index.tsx</code>. Loader does 4 defensive Prisma probes wrapped in <code>Promise.all</code>; each metric returns <code>null</code> on error or no-data, which renders the card's empty state. Setup state derives from <code>LalamoveShopCredential</code>, <code>LalamoveLocationConfig</code>, <code>RetailSyncMeta</code>.</li>
+    <li><strong>Styles</strong> — <code>app/routes/app._index/styles.module.css</code>. Tokens copied from CLAUDE.md "UI Tokens"; metrics row breakpoint is <code>≤1100px → 2 cols</code> and <code>≤600px → 1 col</code>.</li>
+    <li><strong>Copy</strong> — <code>app/i18n/locales/{en,pt-BR}/home.json</code>. All visible strings are i18n keys; the mockup mirrors the English values verbatim.</li>
+    <li><strong>Nav promotion</strong> — Affiliates added to <code>IDENTITY_NAV.omnify</code> in <code>app/utils/app-identity.server.ts</code> (5 nav items, still under the BFS 7-cap).</li>
+    <li><strong>Polaris icons</strong> — names verified against <code>@shopify/polaris-types</code>: <code>delivery</code>, <code>chart-histogram-growth</code>, <code>location</code>, <code>affiliate</code>, <code>discount</code>, <code>blog</code>, <code>settings</code>, <code>apps</code>.</li>
   </ul>
 </div>
 
 <div class="notes">
-  <h3>Decisions resolved (2026-05-06)</h3>
+  <h3>Roadmap — what the deferred sections need</h3>
   <ul>
-    <li>✅ <strong>Affiliates</strong> — added as 4th metric card. Surfaced on the home even though it's not in <code>IDENTITY_NAV.omnify</code>. Jump-back-in mirrors NAV exactly (4 cards), so Affiliates is reachable via its metric-card footer link only.</li>
-    <li>✅ <strong>Identity scope</strong> — unified template, drives off enabled features. Same route for Omnify and CPG Labs full; metrics row scales 4 → 6+ as needed.</li>
-    <li>✅ <strong>Setup regression</strong> — thin warning banner (shown in State B), never re-opens the full guide. Banner copy: "Setup needs attention — &lt;reason&gt; → Fix now".</li>
-    <li>✅ <strong>Activity time range</strong> — per-card natural cadence (Today · MTD · Lifetime · Last 30d). No global picker.</li>
-  </ul>
-  <h3 style="margin-top:12px;">Still open (flag for review when implementing)</h3>
-  <ul>
-    <li><strong>"What's new" link target</strong> — points where? A changelog on cpg-labs.io, an in-app modal, or the docs site? No target exists today.</li>
-    <li><strong>Affiliates in IDENTITY_NAV.omnify?</strong> — separate question, but if we promote Affiliates to a first-class home metric, the next logical step is adding it to the nav. Out of scope for this mockup; flagged for follow-up.</li>
-    <li><strong>Activity log table size</strong> — how far back to retain events? 90 days? 1 year? Drives <code>EventLog</code> retention policy.</li>
+    <li><strong>Recent activity</strong> — new <code>EventLog</code> table (Prisma migration). Existing cron pipelines (<code>[local-delivery]</code>, <code>[retail-footprint:sync]</code>, <code>[affiliates:cron]</code>) dual-write structured rows alongside their stdout logging. Loader reads top-5 by <code>createdAt DESC</code> for the shop. Retention policy: TBD (90 days vs 1 year).</li>
+    <li><strong>Regression warning banner</strong> — new <code>OnboardingState.dismissedAt</code> column. Banner only renders when <code>dismissedAt IS NOT NULL</code> AND a required step currently evaluates false. Click → deep-link to the offending setting. Dismiss is session-scoped only; banner re-appears next page-load if not yet fixed.</li>
+    <li><strong>Dynamic state-aware page subheading</strong> — currently uses the static i18n string in both first-run and steady states. Future: copy variants like "Wednesday, May 6 · everything's running. Three routes already dispatched today." for steady-state, and welcome-state copy for first-run. Requires a small server-side computed <code>subheadingVariant</code> in the loader.</li>
   </ul>
 </div>
 
