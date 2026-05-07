@@ -283,7 +283,7 @@ For any non-trivial UI refactor — charts, dashboards, new interaction patterns
   - **When you commit a final mockup,** add or update its row in `INDEX.md` in the same commit. Schema: `| Feature | Final mockup | Implements (route/component) | Last updated | Notes |`. One row per feature; in-place updates only — don't append a new row when iterating.
   - **When a mockup is superseded by a real implementation that has since drifted past it,** mark the row `STALE` in the Notes column with a one-line reason. Do not delete the row — stale mockups still document the original design intent.
 - **Skip the mockup** only for trivial changes (single copy edit, class rename, CSS token swap). When unsure, ask the user.
-- **Invoke `/ui-specialist`** when starting UI refactor work — it bootstraps this workflow and loads the full convention library.
+- **Invoke `/design-engineer`** when starting UI or interaction work — it bootstraps the mockup-first + state-matrix workflow and loads the full convention library. (Renamed from `/ui-specialist` 2026-05-07 to reflect ownership of both visual AND interaction design.)
 
 ### Layout
 - Aside/config blocks on the **right** on desktop, matching Shopify admin native layout.
@@ -418,6 +418,15 @@ Polaris `<s-select>`, `<s-text-field>`, `<s-date-field>` render a compact-when-p
   - **Delete is NOT the expected action** (edit modals, settings blocks, any context where Save/Confirm is the primary intent): Place Delete **bottom-left** with `variant="secondary" tone="critical"`, spatially isolated from the primary action cluster on the right. This prevents misclicks. Use a split footer (`justify-content: space-between`): `[Delete]          [Cancel] [Save]`.
   - **Exception — Aside Card Blocks:** In card headers (Route Manager, Expansion Projects), the destructive action sits **top-right** next to the badge, not bottom-left. See the "Aside Card Blocks" section for this pattern. The bottom-left rule applies to modals and full-page forms; the top-right rule applies to compact cards.
 - **Button order (left to right):** Cancel/Dismiss (secondary) → Save/Confirm/Load (primary). The main action is always **rightmost**; the dismiss action is always **leftmost**. This applies to modals, cards, blocks — everywhere. Exception: destructive actions go bottom-left when delete is not the expected action (see above).
+
+### Control Panels & State-Driven Visibility
+Compact control panels — selection bars, batch toolbars, contextual action strips that appear above tables, the Local Delivery selection footer, the Storytelling iteration controls — follow an **only actionable controls are visible** premise. Every control in the panel must have a real, executable effect in the current state. A control that has nothing meaningful to do right now is removed from the DOM, not greyed out.
+
+- **Hide, don't disable, when the action is non-actionable in the current context.** A "Confirm" button rendered visible whenever orders are selected — even when no order has been re-routed yet — has nothing to confirm. The fix is hiding it until at least one order is staged for a route change, not adding a `disabled` state. Disabled controls signal "this is the panel's purpose, you just can't use it yet" — they belong on Save buttons in forms with validation errors, not on context-specific actions in batch toolbars.
+- **Disable is reserved for narrow cases:** the action **is** the panel's reason-for-being AND a precondition is unmet AND the user benefits from seeing the affordance with an inline explanation (e.g. Save disabled with tooltip "Form has validation errors"). When in doubt, hide.
+- **Every interactive panel needs a state matrix at design time.** Before implementing, enumerate the meaningful states (no selection / partial selection / all-staged / mixed-dirty / error / loading) and for each state list which controls are visible/hidden/enabled/disabled. The `/design-engineer` skill (Phase 3.5) requires this matrix before code is written. Sessions that skip it ship silent state bugs — the canonical case is the local-delivery Confirm button (shipped 2026-05-XX) where the "selected but untouched" state was never explicitly designed.
+- **The state matrix lives in the mockup file**, not in code comments. Future sessions reading the design decision should see what every state was supposed to do, not just what the happy path looks like. When adding/changing a state in production, update the mockup matrix in the same commit.
+- **State decisions resolve via `AskUserQuestion`, not assumption.** If the cell value for a given state×control is ambiguous, escalate. Don't guess — the matrix is a contract.
 
 ### Tables
 - **No zebra striping.** All tables use white rows with subtle borders — this is consistent across Local Delivery, Price Tags, Carrier Service, and Retail Expansion.
