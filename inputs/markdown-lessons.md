@@ -31,7 +31,7 @@ UI / UX tweaks to local delivery
 # auto-assign logic
 - orders under the new failed delivery state **ARE NOT SUPPOSED TO BE ADDED TO ANY ROUTE**
 
-/senior-engineer /ui-specialist /product-manager are expected to join
+/senior-engineer /design-engineer /product-manager are expected to join
 
 # All orders table
 - replace tabs UI with Polaris native bagdes in grey-scale schema to separate active filter from others
@@ -57,7 +57,7 @@ UI / UX tweaks to local delivery
 ````markdown
 # UI/UX tweaks — Local Delivery
 
-Agents expected to join: /senior-engineer, /ui-specialist, /product-manager
+Agents expected to join: /senior-engineer, /design-engineer, /product-manager
 
 ## Fulfillment details
 - Remove the "Start date" filter; hardwire D-90 as the default period.
@@ -136,7 +136,7 @@ Agents expected to join: /senior-engineer, /ui-specialist, /product-manager
 - One typo is a non-issue. Several across one spec slow down parsing because each one breaks the flow. Spell-check before sending if the spec is non-trivial.
 
 ### 8. Move metadata to the top
-- **Before:** `/senior-engineer /ui-specialist /product-manager are expected to join` sat between two sections, near the bottom.
+- **Before:** `/senior-engineer /design-engineer /product-manager are expected to join` sat between two sections, near the bottom.
 - **After:** moved to a single line under the doc title.
 - **Why:** "who's involved" is metadata about the whole task, not part of any section. It belongs near the title where readers expect to find it.
 
