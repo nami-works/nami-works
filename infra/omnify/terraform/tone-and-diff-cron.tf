@@ -1,21 +1,21 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Hourly tone-source refresh + draft-diff cron (Storytelling Phase 6)
+# Weekly tone-source refresh + draft-diff cron (Storytelling Phase 6)
 # ─────────────────────────────────────────────────────────────────────────────
 #
-# Fires GET https://app.cpg-labs.io/api/cron/weekly-tone-and-diff every hour
-# at :45 with header `X-Cron-Secret: <secret>`. The endpoint iterates every
-# installed shop and only acts on shops where current local time (per shop's
-# IANA timezone, fetched from Shopify Shop) is Monday between 09:00 and
-# 09:59. For each gated shop:
+# Fires GET https://app.cpg-labs.io/api/cron/weekly-tone-and-diff once a week
+# (Monday 03:00 UTC = midnight Sunday→Monday BRT) with header
+# `X-Cron-Secret: <secret>`. The endpoint iterates every installed shop and
+# for each one:
 #   - Refresh Shopify blog samples
 #   - Refresh Monday.com samples (if configured)
+#   - Refresh Meta IG/FB samples (if configured)
 #   - Run Claude inference on the new BrandToneSource batch
 #   - Run BlogPostDraft -> live article diff detection (Storytelling learnings)
 #
-# Offset to :45 so it doesn't collide with:
-#   - retail-goals-cron   at :00
-#   - shop-ingest-cron    at :15
-#   - affiliates-cron     at :30
+# Earlier hourly schedule (with per-shop local-time gating) replaced 2026-05-07
+# in favor of a single weekly fire — timing of the refresh isn't user-visible
+# (merchants see the resulting banner whenever they next open the admin), so
+# 168 hourly invocations per week was wasteful.
 #
 # Default: resources NOT created. Enable via `enable_tone_cron = true`
 # in terraform.tfvars. Reuses the shared `var.cron_secret` (declared in
@@ -56,9 +56,11 @@ resource "aws_cloudwatch_event_api_destination" "tone_cron" {
 resource "aws_cloudwatch_event_rule" "tone_cron_hourly" {
   count = var.enable_tone_cron ? 1 : 0
 
+  # Resource name kept for state continuity even though the cadence is now
+  # weekly (renaming would force-replace the rule).
   name                = "tone-cron-hourly"
-  description         = "Fires the weekly tone-and-diff cron every hour at :45."
-  schedule_expression = "cron(45 * * * ? *)"
+  description         = "Fires the tone-and-diff cron every Monday at 03:00 UTC."
+  schedule_expression = "cron(0 3 ? * MON *)"
 }
 
 data "aws_iam_policy_document" "tone_cron_assume" {

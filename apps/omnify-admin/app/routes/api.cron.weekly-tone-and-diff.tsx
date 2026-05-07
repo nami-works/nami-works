@@ -9,77 +9,27 @@ import { makeBatchId } from "../services/tone-sources/service.server";
 import type { ToneSourceType } from "../services/tone-sources/types";
 import { runInferenceForBatch } from "../services/tone-sources/inference.server";
 
-const SHOP_TZ_QUERY = `#graphql
-  query ShopTimezone {
-    shop {
-      ianaTimezone
-    }
-  }
-`;
-
-const SIX_DAYS_MS = 6 * 24 * 60 * 60 * 1000;
-
-function getLocalDayHour(tz: string): { weekday: number; hour: number } {
-  const now = new Date();
-  const fmt = new Intl.DateTimeFormat("en-US", {
-    timeZone: tz,
-    hour: "numeric",
-    weekday: "short",
-    hour12: false,
-  });
-  const parts = fmt.formatToParts(now);
-  const hour = parseInt(parts.find((p) => p.type === "hour")?.value ?? "0", 10);
-  const weekdayStr = parts.find((p) => p.type === "weekday")?.value ?? "";
-  const map: Record<string, number> = {
-    Sun: 0,
-    Mon: 1,
-    Tue: 2,
-    Wed: 3,
-    Thu: 4,
-    Fri: 5,
-    Sat: 6,
-  };
-  return { weekday: map[weekdayStr] ?? -1, hour };
-}
-
-async function getShopTimezone(
-  admin: { graphql: (q: string) => Promise<Response> },
-): Promise<string> {
-  try {
-    const response = await admin.graphql(SHOP_TZ_QUERY);
-    const json = (await response.json()) as {
-      data?: { shop?: { ianaTimezone?: string } };
-    };
-    return json.data?.shop?.ianaTimezone || "America/Sao_Paulo";
-  } catch {
-    return "America/Sao_Paulo";
-  }
-}
-
-async function hasRecentToneBatch(shop: string): Promise<boolean> {
-  const since = new Date(Date.now() - SIX_DAYS_MS);
-  const recent = await prisma.brandToneSource.findFirst({
-    where: { shop, capturedAt: { gte: since } },
-    select: { id: true },
-  });
-  return recent !== null;
-}
-
 /**
  * Weekly tone refresh + diff scan cron.
  *
- * Schedule HOURLY (every cron hit). Per-shop gate: fires only when current
- * local time is Monday between 09:00 and 09:59 in the shop's IANA timezone,
- * AND no tone batch has been created in the last 6 days.
+ * Schedule: Monday 03:00 UTC (= midnight Sunday→Monday BRT) via EventBridge.
+ * One fire per week, per app deployment. No hourly polling, no per-shop
+ * timezone gating — refresh timing isn't user-visible, merchants see the
+ * resulting banner whenever they next open the admin.
  *
  *   GET /api/cron/weekly-tone-and-diff
  *   Header: X-Cron-Secret: <CRON_SECRET>
  *
- * For each gated shop:
+ * For each installed shop:
  *  1. Refresh Shopify blog samples
  *  2. Refresh Monday.com samples (if configured)
- *  3. Run Claude inference on the new batch
- *  4. Run diff detection for published BlogPostDrafts
+ *  3. Refresh Meta IG/FB samples (if configured)
+ *  4. Run Claude inference on the new BrandToneSource batch
+ *  5. Run diff detection for published BlogPostDrafts
+ *
+ * Failures on individual shops are logged with their real error message and
+ * the loop continues with the next shop — one stale session must not block
+ * the rest of the fleet.
  */
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const secret =
@@ -103,36 +53,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const results: Array<{
     shop: string;
     fired: boolean;
-    reason?: string;
     sampled?: number;
     inferred?: number;
     diffsDetected?: number;
+    sourcesUsed?: ToneSourceType[];
     error?: string;
   }> = [];
 
   for (const { shop } of sessions) {
     try {
       const { admin } = await unauthenticated.admin(shop);
-
-      const tz = await getShopTimezone(admin);
-      const { weekday, hour } = getLocalDayHour(tz);
-      const isMondayMorning = weekday === 1 && hour === 9;
-
-      if (!isMondayMorning) {
-        results.push({ shop, fired: false, reason: `local_time=${tz}_w${weekday}h${hour}` });
-        continue;
-      }
-
-      const recent = await hasRecentToneBatch(shop);
-      if (recent) {
-        results.push({ shop, fired: false, reason: "recent_batch_exists" });
-        continue;
-      }
-
       const batchId = makeBatchId();
-      console.info(
-        `[cron:weekly-tone-and-diff] firing shop=${shop} tz=${tz} batchId=${batchId}`,
-      );
 
       const sourcesUsed: ToneSourceType[] = [];
       let totalSampled = 0;
@@ -145,8 +76,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         }
       } catch (err) {
         console.warn(
-          `[cron:weekly-tone-and-diff] shopify ingest SKIP shop=${shop}`,
-          err,
+          `[cron:weekly-tone-and-diff] shopify ingest SKIP shop=${shop} reason=${describeError(err)}`,
         );
       }
 
@@ -192,8 +122,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         diffsDetected = diffResult.detected;
       } catch (err) {
         console.warn(
-          `[cron:weekly-tone-and-diff] diff SKIP shop=${shop}`,
-          err,
+          `[cron:weekly-tone-and-diff] diff SKIP shop=${shop} reason=${describeError(err)}`,
         );
       }
 
@@ -206,21 +135,39 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         sampled: totalSampled,
         inferred,
         diffsDetected,
+        sourcesUsed,
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "unknown";
+      const reason = describeError(err);
       console.error(
-        `[cron:weekly-tone-and-diff] FAILED shop=${shop} reason=${message}`,
+        `[cron:weekly-tone-and-diff] FAILED shop=${shop} reason=${reason}`,
       );
-      results.push({ shop, fired: false, error: message });
+      results.push({ shop, fired: false, error: reason });
     }
   }
 
   const fired = results.filter((r) => r.fired).length;
-  console.info(`[cron:weekly-tone-and-diff] DONE shops=${sessions.length} fired=${fired}`);
+  console.info(
+    `[cron:weekly-tone-and-diff] DONE shops=${sessions.length} fired=${fired}`,
+  );
 
   return new Response(
     JSON.stringify({ ok: true, shops: sessions.length, fired, results }),
     { headers: { "Content-Type": "application/json" } },
   );
 };
+
+function describeError(err: unknown): string {
+  if (err instanceof Error) {
+    return `${err.name}: ${err.message}`;
+  }
+  if (typeof err === "string") return err;
+  if (err && typeof err === "object") {
+    try {
+      return JSON.stringify(err).slice(0, 300);
+    } catch {
+      return String(err);
+    }
+  }
+  return String(err);
+}
