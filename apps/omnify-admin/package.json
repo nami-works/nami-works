@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
+    "@aws-sdk/client-s3": "^3.1044.0",
     "@cpg-labs/shared-auth": "workspace:*",
     "@cpg-labs/shared-db": "workspace:*",
     "@cpg-labs/shared-encryption": "workspace:*",

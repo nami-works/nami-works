@@ -1,5 +1,10 @@
 import prisma from "../../db.server";
 import { extractTextFromPdfBuffer } from "../claude/client.server";
+import {
+  deleteToneFile,
+  downloadToneFile,
+  uploadToneFile,
+} from "./s3.server";
 
 const MAX_RAW_TEXT_CHARS = 80_000;
 const MAX_FETCHED_BYTES = 10 * 1024 * 1024;
@@ -198,6 +203,26 @@ export async function listManualReferences(shop: string) {
 }
 
 export async function deleteManualReference(shop: string, sourceId: string) {
+  const existing = await prisma.brandToneSource.findFirst({
+    where: {
+      shop,
+      sourceId,
+      sourceType: { in: ["manual_upload", "manual_url"] },
+    },
+  });
+
+  if (existing) {
+    const s3Key = (existing.metaJson as { s3Key?: string } | null)?.s3Key;
+    if (s3Key) {
+      const result = await deleteToneFile({ shop, key: s3Key });
+      if ("error" in result) {
+        console.warn(
+          `[tone-sources:manual] s3 delete SKIP shop=${shop} sourceId=${sourceId} reason=${result.error}`,
+        );
+      }
+    }
+  }
+
   return prisma.brandToneSource.deleteMany({
     where: {
       shop,
@@ -205,4 +230,102 @@ export async function deleteManualReference(shop: string, sourceId: string) {
       sourceType: { in: ["manual_upload", "manual_url"] },
     },
   });
+}
+
+/**
+ * Persist a manual upload's binary to S3 + extracted text to DB.
+ * If S3 fails, the row is still saved with text-only (graceful degradation).
+ */
+export async function persistManualUploadWithBinary(input: {
+  shop: string;
+  batchId: string;
+  sourceId: string;
+  rawText: string;
+  buffer: Buffer;
+  contentType: string;
+  filename: string;
+  mediaType: string;
+}) {
+  const upload = await uploadToneFile({
+    shop: input.shop,
+    sourceId: input.sourceId,
+    body: input.buffer,
+    contentType: input.contentType,
+    filename: input.filename,
+  });
+
+  const baseMeta: Record<string, unknown> = {
+    filename: input.filename,
+    mediaType: input.mediaType,
+    sizeBytes: input.buffer.length,
+    contentType: input.contentType,
+  };
+
+  if (!("error" in upload)) {
+    baseMeta.s3Key = upload.key;
+    baseMeta.s3Bucket = process.env.TONE_UPLOADS_S3_BUCKET ?? "cpg-labs-tone-uploads";
+  } else {
+    console.warn(
+      `[tone-sources:manual] s3 upload SKIP shop=${input.shop} sourceId=${input.sourceId} reason=${upload.error}`,
+    );
+  }
+
+  return persistManualSource({
+    shop: input.shop,
+    batchId: input.batchId,
+    sourceType: "manual_upload",
+    sourceId: input.sourceId,
+    sourceUrl: null,
+    rawText: input.rawText,
+    metaJson: baseMeta,
+  });
+}
+
+/**
+ * Re-fetch a previously uploaded file from S3 and re-run text extraction with
+ * the current Claude pipeline. Useful when Claude improves and the merchant
+ * wants a fresher pass without re-uploading.
+ */
+export async function reExtractFromS3(input: {
+  shop: string;
+  sourceId: string;
+}): Promise<{ rawText: string } | { error: string }> {
+  const row = await prisma.brandToneSource.findFirst({
+    where: {
+      shop: input.shop,
+      sourceId: input.sourceId,
+      sourceType: "manual_upload",
+    },
+  });
+  if (!row) return { error: "Manual upload not found." };
+
+  const meta = (row.metaJson ?? {}) as {
+    s3Key?: string;
+    contentType?: string;
+    filename?: string;
+  };
+  if (!meta.s3Key) {
+    return { error: "No S3 binary recorded for this upload." };
+  }
+
+  const download = await downloadToneFile({ shop: input.shop, key: meta.s3Key });
+  if ("error" in download) return { error: download.error };
+
+  const extracted = await extractFromBuffer({
+    shop: input.shop,
+    buffer: download.body,
+    filename: meta.filename ?? "(unknown)",
+    mimeType: meta.contentType ?? download.contentType ?? "",
+  });
+  if ("error" in extracted) return { error: extracted.error };
+
+  await prisma.brandToneSource.update({
+    where: { id: row.id },
+    data: {
+      rawText: extracted.text.slice(0, 80_000),
+      capturedAt: new Date(),
+    },
+  });
+
+  return { rawText: extracted.text };
 }

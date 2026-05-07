@@ -29,6 +29,8 @@ import {
   extractFromUrl,
   listManualReferences,
   persistManualSource,
+  persistManualUploadWithBinary,
+  reExtractFromS3,
 } from "../services/tone-sources/manual.server";
 import {
   clearMondayConfig,
@@ -238,18 +240,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return { success: false, intent, error: extracted.error };
     }
     const batchId = makeBatchId();
-    await persistManualSource({
+    await persistManualUploadWithBinary({
       shop,
       batchId,
-      sourceType: "manual_upload",
       sourceId: `upload_${Date.now()}_${file.name}`,
-      sourceUrl: null,
       rawText: extracted.text,
-      metaJson: {
-        filename: file.name,
-        mediaType: extracted.mediaType,
-        sizeBytes: file.size,
-      },
+      buffer,
+      contentType: file.type || "application/octet-stream",
+      filename: file.name,
+      mediaType: extracted.mediaType,
     });
 
     let inferred = 0;
@@ -267,6 +266,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       chars: extracted.text.length,
       inferred,
       ...(inferenceError ? { inferenceError } : {}),
+    };
+  }
+
+  if (intent === "reExtract") {
+    const sourceId = formData.get("sourceId") as string | null;
+    if (!sourceId) {
+      return { success: false, intent, error: "Missing source ID." };
+    }
+    const result = await reExtractFromS3({ shop, sourceId });
+    if ("error" in result) {
+      return { success: false, intent, error: result.error };
+    }
+    return {
+      success: true,
+      intent,
+      chars: result.rawText.length,
     };
   }
 
@@ -606,7 +621,10 @@ export default function ToneSourcesPage() {
     if (!uploadFetcher.data) return;
     if (uploadFetcher.data.success && "chars" in uploadFetcher.data) {
       const chars = uploadFetcher.data.chars ?? 0;
-      const inferred = uploadFetcher.data.inferred ?? 0;
+      const inferred =
+        "inferred" in uploadFetcher.data
+          ? (uploadFetcher.data.inferred ?? 0)
+          : 0;
       shopify.toast?.show?.(
         t("toneSources.uploadOk", {
           chars,
@@ -1187,6 +1205,21 @@ export default function ToneSourcesPage() {
                 <span style={{ color: "#6d7175" }}>
                   {formatRelative(r.capturedAt)}
                 </span>
+                {r.sourceType === "manual_upload" && (
+                  <fetcher.Form method="POST">
+                    <input
+                      type="hidden"
+                      name="intent"
+                      value="reExtract"
+                    />
+                    <input type="hidden" name="sourceId" value={r.sourceId} />
+                    <s-button type="submit" variant="tertiary">
+                      {t("toneSources.actions.reExtract", {
+                        defaultValue: "Re-extract",
+                      })}
+                    </s-button>
+                  </fetcher.Form>
+                )}
                 <fetcher.Form method="POST">
                   <input
                     type="hidden"

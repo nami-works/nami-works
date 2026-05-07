@@ -72,7 +72,8 @@
       "configureSoon": "Coming soon",
       "accept": "Accept",
       "reject": "Reject",
-      "delete": "Delete"
+      "delete": "Delete",
+      "reExtract": "Re-extract"
     },
     "monday": {
       "title": "Monday.com configuration",

@@ -72,7 +72,8 @@
       "configureSoon": "Em breve",
       "accept": "Aceitar",
       "reject": "Rejeitar",
-      "delete": "Remover"
+      "delete": "Remover",
+      "reExtract": "Re-extrair"
     },
     "monday": {
       "title": "Configuração do Monday.com",
