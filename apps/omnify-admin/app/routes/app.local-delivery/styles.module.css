@@ -80,6 +80,29 @@
   display: inline-block;
 }
 
+/* Fix #1 (2026-05-06 review): expand-on-hover for control-panel buttons in
+   collapsed mode. The label span starts collapsed (max-width: 0) and
+   expands on hover to reveal the button name inline. In fullscreen mode
+   the parent gets .mapBlockFooterRightFullscreen which keeps labels
+   permanently expanded. The popover-menu items (route options, map style)
+   don't use .btnLabel so they're unaffected. */
+.btnLabel {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 0;
+  margin-left: 0;
+  transition: max-width 0.2s ease, margin-left 0.2s ease;
+}
+.mapBlockFooterRight s-button:hover .btnLabel {
+  max-width: 220px;
+  margin-left: 4px;
+}
+.mapBlockFooterRightFullscreen .btnLabel {
+  max-width: 220px;
+  margin-left: 4px;
+}
+
 /* Map canvas in polyline-edit mode — adds a subtle visual cue (dashed inner
    border) so the operator knows polylines are in edit state. The actual
    dotted+subdued polyline rendering happens via google.maps.Polyline.setOptions
@@ -690,10 +713,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 4px;
-  /* Breathing room around the orders-to-deliver badge so it doesn't crowd
-     the location selector above or the routes list below. */
-  padding: 6px 4px;
+  margin: 6px 0 4px 0;
+  /* Padding removed (2026-05-06): the prior `padding: 6px 4px` was offsetting
+     the Orders-to-deliver badge 4px to the right of the warning badges in
+     .headerBadgesRow above, creating a visible misalignment between the two
+     stacked badge rows. Margin handles the vertical breathing room without
+     introducing horizontal offset. */
 }
 
 /* Header-style badge stack — wraps when narrow, keeps consistent gap. */
@@ -1538,5 +1563,241 @@
 
 .podPartialBannerBody {
   color: #5b4700;
+}
+
+/* ---------- Order details modal (2026-05-07) ---------- */
+/* Hover affordance for clickable rows in the All-orders table. The whole
+   row (except interactive children: checkbox, action buttons) opens the
+   order details modal on click. */
+.dueOrdersRowClickable {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.dueOrdersRowClickable:hover {
+  background: #f6f6f7;
+}
+.dueOrdersRowClickable:focus-visible {
+  outline: 2px solid #005bd3;
+  outline-offset: -2px;
+}
+
+.dueOrdersOrderName {
+  color: #005bd3;
+  font-weight: 500;
+}
+
+/* Modal body — two-column grid on desktop, single column on mobile. */
+.orderModalBody {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 4px 0;
+}
+.orderModalFull {
+  grid-column: 1 / -1;
+}
+
+.orderModalCard {
+  background: #f6f6f7;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.orderModalSectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0 0 6px;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.orderModalKeyVal {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.orderModalKey {
+  color: #6d7175;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.orderModalVal {
+  color: #303030;
+  font-size: 13px;
+  word-wrap: break-word;
+}
+
+.orderModalAddress {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.orderModalLineItems {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.orderModalTotals {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e1e3e5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.orderModalTotalsRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.orderModalExternalLink {
+  color: #005bd3;
+  font-size: 12px;
+  text-decoration: none;
+}
+.orderModalExternalLink:hover {
+  text-decoration: underline;
+}
+.orderModalExternalLink::after {
+  content: " ↗";
+}
+
+/* Tag editor — Hybrid: operator quick-toggles + chip editor */
+.orderModalTagsLabel {
+  color: #6d7175;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin: 8px 0 4px;
+}
+
+.orderModalTagToggleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.orderModalTagToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid #e1e3e5;
+  border-radius: 14px;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #6d7175;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.orderModalTagToggle:hover {
+  border-color: #303030;
+  color: #303030;
+}
+
+.orderModalTagToggleIndicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid #6d7175;
+  background: transparent;
+}
+
+.orderModalTagToggleActive {
+  background: #fff3e0;
+  border-color: #b54708;
+  color: #b54708;
+}
+.orderModalTagToggleActive:hover {
+  background: #ffe5cc;
+}
+.orderModalTagToggleActive .orderModalTagToggleIndicator {
+  background: #b54708;
+  border-color: #b54708;
+}
+
+.orderModalChipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.orderModalChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px 2px 10px;
+  background: #ececed;
+  color: #303030;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.orderModalChipRemove {
+  border: none;
+  background: transparent;
+  color: #6d7175;
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: 50%;
+}
+.orderModalChipRemove:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #303030;
+}
+
+.orderModalAddTagInput {
+  padding: 3px 10px;
+  border: 1px dashed #e1e3e5;
+  border-radius: 12px;
+  background: transparent;
+  color: #303030;
+  font-size: 12px;
+  min-width: 140px;
+  outline: none;
+}
+.orderModalAddTagInput::placeholder {
+  color: #6d7175;
+}
+.orderModalAddTagInput:focus {
+  border-color: #005bd3;
+  border-style: solid;
+}
+
+.orderModalNotesEmpty {
+  color: #6d7175;
+  font-style: italic;
+  margin: 0 0 8px;
+  font-size: 12px;
+}
+
+.orderModalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .orderModalBody {
+    grid-template-columns: 1fr;
+  }
 }
 

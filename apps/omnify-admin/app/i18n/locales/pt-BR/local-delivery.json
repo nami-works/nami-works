@@ -519,5 +519,32 @@
       "title": "{{fulfilled}} de {{total}} paradas concluídas.",
       "body": "A Shopify ainda não confirmou a entrega das demais. Tente novamente mais tarde ou verifique a timeline do pedido."
     }
+  },
+  "orderDetailsModal": {
+    "heading": "Pedido {{orderName}}",
+    "headingFallback": "Detalhes do pedido",
+    "itemsHeading": "Itens",
+    "shippingSummary": "Envio",
+    "noShippingSummary": "Sem resumo de envio disponível.",
+    "shippingCost": "Custo de envio",
+    "total": "Total",
+    "customer": "Cliente",
+    "customerName": "Nome",
+    "processedAt": "Processado em",
+    "shippingAddress": "Endereço de entrega",
+    "noAddress": "Sem endereço cadastrado.",
+    "fulfillsFrom": "Sai de {{location}}",
+    "editAddressInShopify": "Editar endereço na Shopify",
+    "tags": "Tags",
+    "operatorTagsLabel": "Tags do operador (clique para alternar)",
+    "allTagsLabel": "Todas as tags",
+    "addTagPlaceholder": "Adicionar tag…",
+    "removeTag": "Remover tag {{tag}}",
+    "internalNotes": "Notas internas",
+    "noNotes": "Sem notas internas ainda.",
+    "addNote": "+ Adicionar nota",
+    "addNoteSoon": "Em breve",
+    "openInShopify": "Abrir pedido completo na Shopify ↗",
+    "close": "Fechar"
   }
 }

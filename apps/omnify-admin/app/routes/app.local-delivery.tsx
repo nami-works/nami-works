@@ -31,7 +31,7 @@ import {
   getMaxZoneRadiusKm,
 } from "../services/carrier/sample-rate-db.server";
 import type { OptimizerOrderInput } from "../services/google-routes-shared.server";
-import { LD_ADDRESS_CONFIRM_TAG, LD_NUMBER_CONFIRM_TAG, getAllFailedDeliveryTags } from "../services/lalamove-tags";
+import { LD_ADDRESS_CONFIRM_TAG, LD_FAILED_DELIVERY_TAG, LD_NUMBER_CONFIRM_TAG, getAllFailedDeliveryTags } from "../services/lalamove-tags";
 import { runCarrierQuotationForOrderId } from "../services/auto-routing.server";
 import {
   checkAndApplyEscalations,
@@ -284,7 +284,17 @@ export default function Index() {
   const ordersSectionRef = useRef<HTMLDivElement | null>(null);
   const [lalamoveBusyRouteId, setLalamoveBusyRouteId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isAccuracyCollapsed, setIsAccuracyCollapsed] = useState(false);
+  // Auto-assign accuracy block is always-expanded (the chevron toggle was
+  // removed 2026-05-06 — the metric is small enough that hiding it adds no
+  // value).
+  // Order details modal state (2026-05-07): clicking an order row in the
+  // All-orders table opens an in-page Polaris s-modal instead of navigating
+  // to Shopify admin in a new tab. The Shopify deep-link is preserved as
+  // the modal footer's left-hand action.
+  const [orderDetailsModalOrderId, setOrderDetailsModalOrderId] = useState<
+    string | null
+  >(null);
+  const orderTagFetcher = useFetcher<typeof action>();
   const [settingsLocationId, setSettingsLocationId] = useState<string>("");
   const [lalamoveSettings, setLalamoveSettings] = useState<LalamoveConfig>(() => {
     return (
@@ -1269,6 +1279,75 @@ export default function Index() {
     });
     return map;
   }, [orders]);
+
+  const orderDetailsModalOrder: LoaderOrder | null = useMemo(
+    () =>
+      orderDetailsModalOrderId
+        ? ordersById.get(orderDetailsModalOrderId) ?? null
+        : null,
+    [orderDetailsModalOrderId, ordersById],
+  );
+
+  // Open / close the order details modal imperatively. Polaris s-modal
+  // requires showOverlay() to surface; closing happens via the footer
+  // close button (commandFor + onClick that resets the state). The effect
+  // also handles the case where the user closes the modal via the
+  // backdrop / esc — we don't currently observe that, so the state
+  // resets only when the close button fires.
+  useEffect(() => {
+    if (!orderDetailsModalOrderId) return;
+    const modal = document.getElementById("order-details-modal") as
+      | { showOverlay?: () => void }
+      | null;
+    modal?.showOverlay?.();
+  }, [orderDetailsModalOrderId]);
+
+  // After a tag-update completes, revalidate so the modal reflects the
+  // updated tag list. The fetcher's data carries an ok/err signal.
+  useEffect(() => {
+    if (orderTagFetcher.state !== "idle") return;
+    if (!orderTagFetcher.data) return;
+    revalidator.revalidate();
+    // We deliberately do NOT include revalidator in deps — calling its
+    // .revalidate() triggers a re-render that would otherwise re-fire
+    // this effect indefinitely.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderTagFetcher.state, orderTagFetcher.data]);
+
+  const submitOrderTagUpdate = (
+    orderId: string,
+    addTags: string[],
+    removeTags: string[],
+  ) => {
+    const formData = new FormData();
+    formData.append("intent", "order-tag-update");
+    formData.append("orderId", orderId);
+    addTags.forEach((tag) => formData.append("addTags", tag));
+    removeTags.forEach((tag) => formData.append("removeTags", tag));
+    orderTagFetcher.submit(formData, { method: "post" });
+  };
+
+  const handleOrderTagToggle = (
+    orderId: string,
+    tag: string,
+    isCurrentlyActive: boolean,
+  ) => {
+    if (isCurrentlyActive) {
+      submitOrderTagUpdate(orderId, [], [tag]);
+    } else {
+      submitOrderTagUpdate(orderId, [tag], []);
+    }
+  };
+
+  const handleOrderTagAdd = (orderId: string, tag: string) => {
+    const trimmed = tag.trim();
+    if (!trimmed) return;
+    submitOrderTagUpdate(orderId, [trimmed], []);
+  };
+
+  const handleOrderTagRemove = (orderId: string, tag: string) => {
+    submitOrderTagUpdate(orderId, [], [tag]);
+  };
 
   const pendingReturnPickups = useMemo(
     () =>
@@ -3162,7 +3241,28 @@ export default function Index() {
 
   // Polyline editor: Cancel — restore the snapshots, clear dirty flags +
   // banner, exit edit mode. Snapshots are released after restore.
+  // Also: imperatively restyle the precomputed polylines back to solid as a
+  // safety net — the polyline-creation useEffect will re-run with
+  // polylineEditMode=false, but if its async load callback hasn't resolved
+  // yet OR the cleanup races, polylines could remain dotted/invisible. The
+  // imperative setOptions guarantees the visible state matches "not editing"
+  // immediately (per 2026-05-06 review: "polylines not rendered again on
+  // cancel").
   const cancelPolylineEditMode = () => {
+    precomputedRoutePolylinesRef.current.forEach((polyline) => {
+      try {
+        polyline.setOptions({
+          strokeOpacity: 0.85,
+          strokeWeight: 4,
+          icons: null,
+        });
+      } catch (err) {
+        console.warn(
+          `[local-delivery:polyline-edit] cancel restyle failed`,
+          err,
+        );
+      }
+    });
     if (preEditRoutesRef.current) {
       setEditableRoutes(preEditRoutesRef.current);
     }
@@ -3485,7 +3585,26 @@ export default function Index() {
                   ? deriveBadgeColors(row.route.color)
                   : null;
                 return (
-                  <div key={row.id} className={styles.dueOrdersRow}>
+                  <div
+                    key={row.id}
+                    className={`${styles.dueOrdersRow} ${styles.dueOrdersRowClickable}`}
+                    onClick={(event) => {
+                      // Skip if the click originated on an interactive child
+                      // (checkbox, action button) — those have their own
+                      // handlers and should not also open the modal.
+                      const target = event.target as HTMLElement | null;
+                      if (target?.closest("s-checkbox, s-button, button")) return;
+                      setOrderDetailsModalOrderId(row.id);
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setOrderDetailsModalOrderId(row.id);
+                      }
+                    }}
+                  >
                     <span>
                       <s-checkbox
                         accessibilityLabel={t("routeManager.selectOrder", { name: row.name })}
@@ -3493,9 +3612,7 @@ export default function Index() {
                         onChange={(event) => handleOrderToggle(event, row.id)}
                       />
                     </span>
-                    <s-link href={row.adminOrderUrl} target="_blank">
-                      {row.name}
-                    </s-link>
+                    <span className={styles.dueOrdersOrderName}>{row.name}</span>
                     <span>
                       {formatCustomerShort(row.customerName, t("customer.guest"))}
                     </span>
@@ -4686,43 +4803,33 @@ export default function Index() {
   );
 
   const accuracyBlock = (optimizerAccuracy && optimizerAccuracy.optimizations > 0) ? (
-    <div className={styles.collapsibleSectionWrap}>
-      <s-section heading={t("routeManager.autoAssignAccuracy")}>
-        {!isAccuracyCollapsed ? (() => {
-          const accurate = optimizerAccuracy.totalDispatched - optimizerAccuracy.totalReassigned;
-          const pct = optimizerAccuracy.totalDispatched > 0
-            ? Math.round((accurate / optimizerAccuracy.totalDispatched) * 100)
-            : 0;
-          return (
-            <div className={styles.accuracyContent}>
-              <div className={styles.accuracyBarWrap}>
-                <div
-                  className={styles.accuracyBarFill}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              <div className={styles.accuracyStats}>
-                <span className={styles.accuracyPct}>{pct}%</span>
-                <span className={styles.accuracyDetail}>
-                  {t("routeManager.accurateOf", { accurate, total: optimizerAccuracy.totalDispatched })}
-                </span>
-              </div>
-              <span className={styles.accuracyPeriod}>
-                {t("routeManager.last30Days", { count: optimizerAccuracy.optimizations })}
+    <s-section heading={t("routeManager.autoAssignAccuracy")}>
+      {(() => {
+        const accurate = optimizerAccuracy.totalDispatched - optimizerAccuracy.totalReassigned;
+        const pct = optimizerAccuracy.totalDispatched > 0
+          ? Math.round((accurate / optimizerAccuracy.totalDispatched) * 100)
+          : 0;
+        return (
+          <div className={styles.accuracyContent}>
+            <div className={styles.accuracyBarWrap}>
+              <div
+                className={styles.accuracyBarFill}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <div className={styles.accuracyStats}>
+              <span className={styles.accuracyPct}>{pct}%</span>
+              <span className={styles.accuracyDetail}>
+                {t("routeManager.accurateOf", { accurate, total: optimizerAccuracy.totalDispatched })}
               </span>
             </div>
-          );
-        })() : null}
-        <div
-          className={`${styles.collapseChevron}${isAccuracyCollapsed ? ` ${styles.collapsed}` : ""}`}
-          onClick={() => setIsAccuracyCollapsed((prev) => !prev)}
-          role="button"
-          aria-label="Toggle section"
-        >
-          <span className={styles.chevronIcon}>›</span>
-        </div>
-      </s-section>
-    </div>
+            <span className={styles.accuracyPeriod}>
+              {t("routeManager.last30Days", { count: optimizerAccuracy.optimizations })}
+            </span>
+          </div>
+        );
+      })()}
+    </s-section>
   ) : null;
 
   return (
@@ -5761,9 +5868,14 @@ export default function Index() {
                   </div>
                   {/* Unified state-driven control row (2026-05-06 review).
                       Buttons render only when in-context. Collapsed map block
-                      shows icons only; fullscreen shows icons + names.
+                      shows icons only with hover-to-expand labels (Fix #1);
+                      fullscreen keeps labels permanently expanded.
                       Spec: inputs/mockups/local-delivery-control-row-v1.html */}
-                  <div className={styles.mapBlockFooterRight}>
+                  <div
+                    className={`${styles.mapBlockFooterRight}${
+                      isFullscreen ? ` ${styles.mapBlockFooterRightFullscreen}` : ""
+                    }`}
+                  >
                     {(() => {
                       const isLocationContext = locationId !== DEFAULT_LOCATION_ID;
                       if (!isLocationContext) return null;
@@ -5806,7 +5918,7 @@ export default function Index() {
                                   commandFor="polyline-reassign-popover"
                                   command="--toggle"
                                 >
-                                  {isFullscreen ? t("map.polylineEdit.reassign") : null}
+                                  <span className={styles.btnLabel}>{t("map.polylineEdit.reassign")}</span>
                                 </s-button>
                                 <s-popover id="polyline-reassign-popover">
                                   <s-menu accessibilityLabel={t("map.polylineEdit.reassign")}>
@@ -5835,7 +5947,7 @@ export default function Index() {
                                 disabled={isRoutingBusy || undefined}
                                 onClick={handleUnassignSelected}
                               >
-                                {isFullscreen ? t("map.polylineEdit.unassign") : null}
+                                <span className={styles.btnLabel}>{t("map.polylineEdit.unassign")}</span>
                               </s-button>
                             </>
                           ) : null}
@@ -5843,7 +5955,7 @@ export default function Index() {
                             <s-button
                               key="assign-to-new"
                               variant="primary"
-                              icon="plus-circle"
+                              icon="arrow-right-circle"
                               accessibilityLabel={t("map.assignToNewRoute")}
                               loading={isRoutingBusy}
                               disabled={
@@ -5853,7 +5965,7 @@ export default function Index() {
                               }
                               onClick={handleAssignToNewRoute}
                             >
-                              {isFullscreen ? t("map.assignToNewRoute") : null}
+                              <span className={styles.btnLabel}>{t("map.assignToNewRoute")}</span>
                             </s-button>
                           ) : null}
                           {showClearSelection ? (
@@ -5865,7 +5977,7 @@ export default function Index() {
                               disabled={isRoutingBusy || undefined}
                               onClick={clearSelection}
                             >
-                              {isFullscreen ? t("map.clearSelection") : null}
+                              <span className={styles.btnLabel}>{t("map.clearSelection")}</span>
                             </s-button>
                           ) : null}
                           {showConfirm ? (
@@ -5877,7 +5989,7 @@ export default function Index() {
                               disabled={isRoutingBusy}
                               onClick={confirmPolylineEditMode}
                             >
-                              {isFullscreen ? t("map.polylineEdit.confirm") : null}
+                              <span className={styles.btnLabel}>{t("map.polylineEdit.confirm")}</span>
                             </s-button>
                           ) : null}
                           {showExit ? (
@@ -5888,7 +6000,7 @@ export default function Index() {
                               accessibilityLabel={t("map.polylineEdit.exit")}
                               onClick={cancelPolylineEditMode}
                             >
-                              {isFullscreen ? t("map.polylineEdit.exit") : null}
+                              <span className={styles.btnLabel}>{t("map.polylineEdit.exit")}</span>
                             </s-button>
                           ) : null}
                           <div className={styles.moreActionsMenuWrap}>
@@ -5903,11 +6015,25 @@ export default function Index() {
                             <s-popover id="map-more-actions">
                               <s-menu accessibilityLabel={t("routeManager.moreActions")}>
                                 <s-button
-                                  commandFor="map-style-modal"
-                                  command="--show"
                                   onClick={() => {
+                                    // Programmatic open of the map-style modal.
+                                    // commandFor on this button raced with the
+                                    // s-menu's auto-dismiss and the modal
+                                    // never opened (per 2026-05-06 review).
                                     setDraftMapStyle(mapStyle);
                                     setIsMapStyleModalOpen(true);
+                                    const popover = document.getElementById(
+                                      "map-more-actions",
+                                    );
+                                    popover?.removeAttribute("open");
+                                    const modal = document.getElementById(
+                                      "map-style-modal",
+                                    ) as
+                                      | (HTMLElement & {
+                                          showOverlay?: () => void;
+                                        })
+                                      | null;
+                                    modal?.showOverlay?.();
                                   }}
                                 >
                                   {t("map.mapStyleButton")}
@@ -5946,6 +6072,245 @@ export default function Index() {
       ) : null}
 
       {!isFullscreen ? renderOrdersSection() : null}
+
+      {/* Order details modal — opens when an operator clicks a row in the
+          All-orders table. Replaces the prior "open in Shopify in new tab"
+          behavior. The Shopify deep-link is preserved as the footer's
+          left-hand action. The Hybrid tag editor (operator quick-toggles
+          + chip editor) is wired to the order-tag-update server action. */}
+      <s-modal
+        id="order-details-modal"
+        heading={
+          orderDetailsModalOrder
+            ? t("orderDetailsModal.heading", {
+                orderName: orderDetailsModalOrder.name,
+              })
+            : t("orderDetailsModal.headingFallback")
+        }
+      >
+        {orderDetailsModalOrder ? (
+          <div className={styles.orderModalBody}>
+            <div
+              className={`${styles.orderModalCard} ${styles.orderModalFull}`}
+            >
+              <h3 className={styles.orderModalSectionTitle}>
+                {t("orderDetailsModal.itemsHeading")}
+              </h3>
+              <div className={styles.orderModalLineItems}>
+                <div className={styles.orderModalKeyVal}>
+                  <span className={styles.orderModalKey}>
+                    {t("orderDetailsModal.shippingSummary")}
+                  </span>
+                  <span className={styles.orderModalVal}>
+                    {orderDetailsModalOrder.shippingSummary ??
+                      t("orderDetailsModal.noShippingSummary")}
+                  </span>
+                </div>
+                {orderDetailsModalOrder.shippingCost ? (
+                  <div className={styles.orderModalKeyVal}>
+                    <span className={styles.orderModalKey}>
+                      {t("orderDetailsModal.shippingCost")}
+                    </span>
+                    <span className={styles.orderModalVal}>
+                      {orderDetailsModalOrder.shippingCost.amount.toFixed(2)}{" "}
+                      {orderDetailsModalOrder.shippingCost.currencyCode}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+              <div className={styles.orderModalTotals}>
+                <div className={styles.orderModalTotalsRow}>
+                  <span>{t("orderDetailsModal.total")}</span>
+                  <span>{orderDetailsModalOrder.total}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.orderModalCard}>
+              <h3 className={styles.orderModalSectionTitle}>
+                {t("orderDetailsModal.customer")}
+              </h3>
+              <div className={styles.orderModalKeyVal}>
+                <span className={styles.orderModalKey}>
+                  {t("orderDetailsModal.customerName")}
+                </span>
+                <span className={styles.orderModalVal}>
+                  {orderDetailsModalOrder.customerName ??
+                    t("customer.guest")}
+                </span>
+              </div>
+              <div className={styles.orderModalKeyVal}>
+                <span className={styles.orderModalKey}>
+                  {t("orderDetailsModal.processedAt")}
+                </span>
+                <span className={styles.orderModalVal}>
+                  {formatOrderDateShort(orderDetailsModalOrder.processedAt)}
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.orderModalCard}>
+              <h3 className={styles.orderModalSectionTitle}>
+                {t("orderDetailsModal.shippingAddress")}
+              </h3>
+              <div className={styles.orderModalAddress}>
+                <span className={styles.orderModalVal}>
+                  {orderDetailsModalOrder.address1 ??
+                    t("orderDetailsModal.noAddress")}
+                </span>
+                {orderDetailsModalOrder.address2 ? (
+                  <span className={styles.orderModalVal}>
+                    {orderDetailsModalOrder.address2}
+                  </span>
+                ) : null}
+                <span className={styles.orderModalKey}>
+                  {t("orderDetailsModal.fulfillsFrom", {
+                    location: orderDetailsModalOrder.fulfillmentLocation.name,
+                  })}
+                </span>
+              </div>
+              <a
+                href={orderDetailsModalOrder.adminOrderUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.orderModalExternalLink}
+              >
+                {t("orderDetailsModal.editAddressInShopify")}
+              </a>
+            </div>
+
+            <div
+              className={`${styles.orderModalCard} ${styles.orderModalFull}`}
+            >
+              <h3 className={styles.orderModalSectionTitle}>
+                {t("orderDetailsModal.tags")}
+              </h3>
+              <div className={styles.orderModalTagsLabel}>
+                {t("orderDetailsModal.operatorTagsLabel")}
+              </div>
+              <div className={styles.orderModalTagToggleRow}>
+                {[
+                  LD_FAILED_DELIVERY_TAG,
+                  LD_ADDRESS_CONFIRM_TAG,
+                  LD_NUMBER_CONFIRM_TAG,
+                ].map((tag) => {
+                  const isActive = (orderDetailsModalOrder.tags ?? []).includes(
+                    tag,
+                  );
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      className={`${styles.orderModalTagToggle}${
+                        isActive
+                          ? ` ${styles.orderModalTagToggleActive}`
+                          : ""
+                      }`}
+                      onClick={() =>
+                        handleOrderTagToggle(
+                          orderDetailsModalOrder.id,
+                          tag,
+                          isActive,
+                        )
+                      }
+                    >
+                      <span className={styles.orderModalTagToggleIndicator} />
+                      {tag}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className={styles.orderModalTagsLabel}>
+                {t("orderDetailsModal.allTagsLabel")}
+              </div>
+              <div className={styles.orderModalChipRow}>
+                {(orderDetailsModalOrder.tags ?? [])
+                  .filter(
+                    (tag) =>
+                      tag !== LD_FAILED_DELIVERY_TAG &&
+                      tag !== LD_ADDRESS_CONFIRM_TAG &&
+                      tag !== LD_NUMBER_CONFIRM_TAG,
+                  )
+                  .map((tag) => (
+                    <span key={tag} className={styles.orderModalChip}>
+                      {tag}
+                      <button
+                        type="button"
+                        className={styles.orderModalChipRemove}
+                        onClick={() =>
+                          handleOrderTagRemove(
+                            orderDetailsModalOrder.id,
+                            tag,
+                          )
+                        }
+                        aria-label={t("orderDetailsModal.removeTag", { tag })}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                <input
+                  type="text"
+                  className={styles.orderModalAddTagInput}
+                  placeholder={t("orderDetailsModal.addTagPlaceholder")}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      const value = (event.currentTarget as HTMLInputElement)
+                        .value;
+                      if (value.trim()) {
+                        handleOrderTagAdd(
+                          orderDetailsModalOrder.id,
+                          value,
+                        );
+                        (event.currentTarget as HTMLInputElement).value = "";
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            <div
+              className={`${styles.orderModalCard} ${styles.orderModalFull}`}
+            >
+              <h3 className={styles.orderModalSectionTitle}>
+                {t("orderDetailsModal.internalNotes")}
+              </h3>
+              <p className={styles.orderModalNotesEmpty}>
+                {t("orderDetailsModal.noNotes")}
+              </p>
+              <s-button disabled>
+                {t("orderDetailsModal.addNote")} ·{" "}
+                {t("orderDetailsModal.addNoteSoon")}
+              </s-button>
+            </div>
+          </div>
+        ) : null}
+
+        <div className={styles.orderModalFooter} slot="footer">
+          {orderDetailsModalOrder ? (
+            <a
+              href={orderDetailsModalOrder.adminOrderUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.orderModalExternalLink}
+            >
+              {t("orderDetailsModal.openInShopify")}
+            </a>
+          ) : (
+            <span />
+          )}
+          <s-button
+            variant="primary"
+            commandFor="order-details-modal"
+            command="--hide"
+            onClick={() => setOrderDetailsModalOrderId(null)}
+          >
+            {t("orderDetailsModal.close")}
+          </s-button>
+        </div>
+      </s-modal>
     </s-page>
   );
 }
@@ -8742,6 +9107,47 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   // mark-fulfilled intent removed — fulfillment is now handled automatically
   // by the webhook (tag rename on COMPLETED, dispatch marked FULFILLED).
+
+  if (intent === "order-tag-update") {
+    const orderId = String(formData.get("orderId") ?? "").trim();
+    if (!orderId) {
+      return { ok: false, error: "Missing order ID." };
+    }
+    const tagsToAdd = formData
+      .getAll("addTags")
+      .filter((t): t is string => typeof t === "string" && t.trim().length > 0)
+      .map((t) => t.trim());
+    const tagsToRemove = formData
+      .getAll("removeTags")
+      .filter((t): t is string => typeof t === "string" && t.trim().length > 0)
+      .map((t) => t.trim());
+    console.info(
+      `[local-delivery:order-tags] update START shop=${shop} orderId=${orderId} add=${tagsToAdd.length} remove=${tagsToRemove.length}`,
+    );
+    try {
+      const { addTags, removeTags } = await import(
+        "../services/lalamove-sync.server"
+      );
+      if (tagsToAdd.length > 0) {
+        await addTags(admin, orderId, tagsToAdd);
+      }
+      if (tagsToRemove.length > 0) {
+        await removeTags(admin, orderId, tagsToRemove);
+      }
+      console.info(
+        `[local-delivery:order-tags] update OK shop=${shop} orderId=${orderId}`,
+      );
+      return { ok: true };
+    } catch (error) {
+      const msg =
+        error instanceof Error ? error.message : "Tag update failed.";
+      console.error(
+        `[local-delivery:order-tags] update FAILED shop=${shop} orderId=${orderId}`,
+        error,
+      );
+      return { ok: false, error: msg };
+    }
+  }
 
   if (intent === "fix-address") {
     const orderId = String(formData.get("orderId") ?? "").trim();
