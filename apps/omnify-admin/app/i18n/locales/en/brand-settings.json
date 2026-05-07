@@ -51,5 +51,69 @@
     "viewAll": "View all",
     "remove": "Remove"
   },
-  "settingsSaved": "Settings saved"
+  "settingsSaved": "Settings saved",
+  "toneSources": {
+    "manageLink": "Manage tone sources",
+    "pageHeading": "Tone of voice sources",
+    "refreshNow": "Refresh tone now",
+    "refreshOk": "Sampled {{sampled}} articles, inferred {{inferred}} traits.",
+    "sources": {
+      "heading": "Connected sources",
+      "description": "We sample copy from these sources weekly to learn how your brand sounds. Every new batch is reviewed by you before it changes how blog posts are written."
+    },
+    "status": {
+      "connected": "Connected",
+      "notConfigured": "Not configured",
+      "error": "Error"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "configure": "Configure",
+      "configureSoon": "Coming soon",
+      "accept": "Accept",
+      "reject": "Reject",
+      "delete": "Delete"
+    },
+    "monday": {
+      "title": "Monday.com configuration",
+      "description": "Generate an API key in Monday.com (Profile → Admin → API). Paste your board IDs comma-separated.",
+      "apiKey": "API key",
+      "apiKeyPlaceholderConfigured": "(stored — leave blank to keep current)",
+      "boardIds": "Board IDs (comma-separated)",
+      "save": "Save Monday.com config",
+      "disconnect": "Disconnect"
+    },
+    "meta": {
+      "title": "Instagram & Facebook configuration",
+      "description": "Generate a long-lived Page Access Token in Meta Business Suite (Settings → Users → System Users → Generate token). Provide the IG Business ID and/or FB Page ID for accounts you want sampled.",
+      "token": "Long-lived Page Access Token",
+      "tokenPlaceholderConfigured": "(stored — leave blank to keep current)",
+      "igBusinessId": "Instagram Business ID",
+      "fbPageId": "Facebook Page ID",
+      "save": "Save Meta config",
+      "disconnect": "Disconnect"
+    },
+    "upload": {
+      "title": "Add a brandbook, manifesto, or any reference",
+      "sub": "PDF, DOCX, TXT, MD up to 10MB · or paste a URL",
+      "fetchUrl": "Fetch URL",
+      "or": "or",
+      "referencesHeading": "Manual references"
+    },
+    "uploadOk": "Reference added ({{chars}} chars), inferred {{inferred}} traits.",
+    "manualOverride": {
+      "title": "Manual override (always wins)",
+      "empty": "No manual tone string set. Add one on Brand settings to override the inferred tone.",
+      "editLink": "Edit on Brand settings →"
+    },
+    "pending": {
+      "heading_one": "Pending review · 1 trait",
+      "heading_other": "Pending review · {{count}} traits",
+      "empty": "No hypotheses pending. Run a refresh to sample your sources and infer traits."
+    },
+    "batches": {
+      "heading": "Past batches",
+      "empty": "No batches yet."
+    }
+  }
 }

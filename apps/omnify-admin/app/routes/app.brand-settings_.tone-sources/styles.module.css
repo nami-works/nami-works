@@ -1,0 +1,320 @@
+.headerActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sourceList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.sourceRow {
+  display: grid;
+  grid-template-columns: 32px 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.sourceIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #f1f8ff;
+  color: #005bd3;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.sourceIconMeta {
+  background: #ede5fc;
+  color: #6433f0;
+}
+
+.sourceIconMonday {
+  background: #ffe5d9;
+  color: #d83b01;
+}
+
+.sourceIconUpload {
+  background: #fff5d9;
+  color: #8a5a08;
+}
+
+.sourceMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sourceName {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.sourceDetail {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.statusPillConnected {
+  background: #e6f4ec;
+  color: #067647;
+}
+
+.statusPillNotConfigured {
+  background: #ececec;
+  color: #6d7175;
+}
+
+.statusPillError {
+  background: #fbeae5;
+  color: #d72c0d;
+}
+
+.legacyToneRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px dashed #e1e3e5;
+  font-size: 12px;
+  color: #6d7175;
+  margin-top: 16px;
+}
+
+.legacyToneTitle {
+  color: #303030;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.legacyToneBody {
+  font-size: 13px;
+  color: #303030;
+  font-style: italic;
+}
+
+.hypothesisCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: #ffffff;
+}
+
+.hypothesisHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.categoryPill {
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.categoryPillVoice {
+  background: #d6e8ff;
+  color: #2a4a8d;
+}
+
+.categoryPillVocabulary {
+  background: #c8e1d2;
+  color: #1f5b3a;
+}
+
+.categoryPillDo {
+  background: #d1e7dd;
+  color: #0a4a2c;
+}
+
+.categoryPillDont {
+  background: #fbeae5;
+  color: #d72c0d;
+}
+
+.categoryPillRegister {
+  background: #f3e1c4;
+  color: #6f4707;
+}
+
+.categoryPillStructure {
+  background: #e0d1f0;
+  color: #4f2c87;
+}
+
+.confidenceBar {
+  flex: 0 0 80px;
+  height: 4px;
+  background: #ebebeb;
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.confidenceFill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: #067647;
+}
+
+.confidenceLabel {
+  font-size: 11px;
+  color: #6d7175;
+}
+
+.hypothesisStatement {
+  font-size: 14px;
+  margin: 8px 0 10px;
+  line-height: 1.4;
+}
+
+.evidenceList {
+  background: #fafafa;
+  border-left: 2px solid #e1e3e5;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #6d7175;
+  line-height: 1.5;
+}
+
+.evidenceItem {
+  margin: 2px 0;
+}
+
+.evidenceSource {
+  font-weight: 600;
+  color: #303030;
+  margin-right: 6px;
+}
+
+.hypothesisActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.batchTable {
+  margin-top: 12px;
+}
+
+.batchRow {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f1f1;
+  font-size: 13px;
+  align-items: center;
+}
+
+.batchRow:last-child {
+  border-bottom: none;
+}
+
+.batchSource {
+  color: #303030;
+  font-weight: 500;
+}
+
+.batchDate {
+  color: #6d7175;
+  font-size: 12px;
+}
+
+.uploadDropzone {
+  margin-top: 14px;
+  padding: 16px;
+  border: 2px dashed #e1e3e5;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.uploadDropzoneCenter {
+  text-align: center;
+}
+
+.uploadDropzoneTitle {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.uploadDropzoneSub {
+  font-size: 12px;
+  color: #6d7175;
+  margin-bottom: 12px;
+}
+
+.uploadDropzoneRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.uploadDropzoneInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.uploadDropzoneOr {
+  color: #6d7175;
+  font-size: 12px;
+}
+
+.emptyHint {
+  padding: 16px;
+  text-align: center;
+  color: #6d7175;
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .sourceRow {
+    grid-template-columns: 32px 1fr;
+    grid-template-rows: auto auto;
+  }
+  .sourceRow > .statusPill,
+  .sourceRow > button {
+    grid-column: 2;
+  }
+  .uploadDropzoneRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

@@ -1,5 +1,6 @@
 import prisma from "../../db.server";
 import type { ContentGenBrandContext } from "../content-gen/client.server";
+import { listAcceptedTraitsForContext } from "../tone-sources/inference.server";
 
 export async function getBrandAssets(shop: string) {
   return prisma.brandAssets.findUnique({ where: { shop } });
@@ -103,6 +104,25 @@ export async function getBrandContextForGeneration(
       beforeSnippet: l.beforeSnippet,
       afterSnippet: l.afterSnippet,
       interpretation: l.interpretation,
+    }));
+  }
+
+  const toneTraits = await listAcceptedTraitsForContext(shop, 50).catch(
+    (err) => {
+      console.warn(`[brand-assets] toneTraits lookup SKIP shop=${shop}`, err);
+      return [] as Array<{
+        category: string;
+        statement: string;
+        sourceTypes: import("../tone-sources/types").ToneSourceType[];
+      }>;
+    },
+  );
+
+  if (toneTraits.length > 0) {
+    context.toneTraits = toneTraits.map((t) => ({
+      category: t.category,
+      statement: t.statement,
+      sourceTypes: t.sourceTypes,
     }));
   }
 

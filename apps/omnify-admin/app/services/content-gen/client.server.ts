@@ -14,6 +14,11 @@ export type ContentGenBrandContext = {
     afterSnippet: string;
     interpretation: string;
   }>;
+  toneTraits?: Array<{
+    category: string;
+    statement: string;
+    sourceTypes: string[];
+  }>;
 };
 
 export type GeneratedTheme = {

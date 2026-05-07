@@ -4,7 +4,7 @@ import type {
   HeadersFunction,
   LoaderFunctionArgs,
 } from "react-router";
-import { useLoaderData, useFetcher } from "react-router";
+import { useLoaderData, useFetcher, Link } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
@@ -176,6 +176,18 @@ export default function BrandSettingsPage() {
 
   return (
     <s-page heading={t("pageHeading")}>
+      <s-stack direction="inline" slot="secondary-actions" gap="base">
+        <s-button variant="tertiary">
+          <Link
+            to="/app/brand-settings/tone-sources"
+            style={{ color: "inherit", textDecoration: "none" }}
+          >
+            {t("toneSources.manageLink", {
+              defaultValue: "Manage tone sources",
+            })}
+          </Link>
+        </s-button>
+      </s-stack>
       <s-stack direction="inline" slot="primary-action" gap="base">
         <s-button variant="tertiary" onClick={() => window.history.back()}>
           {t("common:button.back")}

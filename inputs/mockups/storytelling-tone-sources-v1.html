@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Storytelling tone sources</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --grid: #ebebeb;
+    --text: #303030;
+    --subdued: #6d7175;
+    --axis: #8c9196;
+    --blue-primary: #005bd3;
+    --blue-bg: #f1f8ff;
+    --green: #067647;
+    --green-bg: #e6f4ec;
+    --red: #d72c0d;
+    --red-bg: #fbeae5;
+    --yellow: #d99a0a;
+    --yellow-bg: #fff5d9;
+    --pill-tone: #b3d1ff;
+    --pill-vocab: #c8e1d2;
+    --pill-do: #d1e7dd;
+    --pill-dont: #f8d7da;
+    --pill-register: #f3e1c4;
+    --pill-structure: #e0d1f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 720px;
+    margin-bottom: 24px;
+  }
+  .pageHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 880px;
+    margin-bottom: 20px;
+  }
+  .pageTitle { font-size: 18px; font-weight: 600; margin: 0; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text);
+  }
+  .btnPrimary {
+    background: var(--blue-primary);
+    color: white;
+    border-color: var(--blue-primary);
+  }
+  .btnDanger {
+    background: white;
+    color: var(--red);
+    border-color: var(--border);
+  }
+  .btnTertiary {
+    background: transparent;
+    border-color: transparent;
+    color: var(--subdued);
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px 24px;
+    margin-bottom: 20px;
+    max-width: 880px;
+  }
+  .card h2 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    color: var(--text);
+  }
+  .card .sub {
+    font-size: 12px;
+    color: var(--subdued);
+    margin-bottom: 16px;
+  }
+  .sourceList { display: flex; flex-direction: column; gap: 12px; }
+  .sourceRow {
+    display: grid;
+    grid-template-columns: 32px 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .sourceIcon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: var(--blue-bg);
+    color: var(--blue-primary);
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .sourceIcon.meta { background: #e8e0fa; color: #6433f0; }
+  .sourceIcon.monday { background: #ffe5d9; color: #d83b01; }
+  .sourceMeta { display: flex; flex-direction: column; gap: 2px; }
+  .sourceName { font-weight: 600; }
+  .sourceDetail { font-size: 12px; color: var(--subdued); }
+  .pill {
+    display: inline-flex; align-items: center;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .pillConnected { background: var(--green-bg); color: var(--green); }
+  .pillDisconnected { background: var(--red-bg); color: var(--red); }
+  .pillNotConfigured { background: #ececec; color: var(--subdued); }
+  .pillCount { background: var(--blue-bg); color: var(--blue-primary); }
+  .pillPending { background: var(--yellow-bg); color: var(--yellow); }
+
+  /* hypothesis cards */
+  .hypothesisCard {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .hypothesisHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .categoryPill {
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .categoryPill.voice { background: var(--pill-tone); color: #2a4a8d; }
+  .categoryPill.vocabulary { background: var(--pill-vocab); color: #1f5b3a; }
+  .categoryPill.do { background: var(--pill-do); color: #0a4a2c; }
+  .categoryPill.dont { background: var(--pill-dont); color: #842029; }
+  .categoryPill.register { background: var(--pill-register); color: #6f4707; }
+  .categoryPill.structure { background: var(--pill-structure); color: #4f2c87; }
+  .confidenceBar {
+    flex: 0 0 80px;
+    height: 4px;
+    background: var(--grid);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .confidenceFill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: var(--green);
+  }
+  .confidenceLabel { font-size: 11px; color: var(--subdued); }
+
+  .hypothesisStatement {
+    font-size: 14px;
+    margin: 8px 0 10px;
+  }
+  .evidenceList {
+    background: #fafafa;
+    border-left: 2px solid var(--border);
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--subdued);
+  }
+  .evidenceItem { margin: 2px 0; }
+  .evidenceSource {
+    font-weight: 600;
+    color: var(--text);
+    margin-right: 6px;
+  }
+  .hypothesisActions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  /* batch summary cards */
+  .batchSummaryRow {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--grid);
+    font-size: 13px;
+    align-items: center;
+  }
+  .batchSummaryRow:last-child { border-bottom: none; }
+  .batchSummaryDate { color: var(--subdued); font-size: 12px; }
+  .batchSummarySource { color: var(--text); }
+
+  /* notes panels */
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 880px;
+    margin-bottom: 24px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; color: #4a3600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 4px; }
+
+  /* aside indicator (replaced existing tone-of-voice text) */
+  .legacyToneRow {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    background: #fafafa;
+    border-radius: 6px;
+    border: 1px dashed var(--border);
+    font-size: 12px;
+    color: var(--subdued);
+  }
+  .legacyToneRow b { color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h1>Storytelling tone sources — mockup v1</h1>
+<p class="intro">
+  New sub-route at <code>/app/brand-settings/tone-sources</code>. Tab inside Brand settings. Pulls tone signal from Shopify blogs, Meta IG/FB, Monday.com, and merchant-supplied references (brandbooks via PDF/DOCX/TXT/MD upload OR pasted URLs); runs Claude inference; presents hypotheses for the merchant to accept or reject before they influence generation. Same human-in-the-loop pattern as the existing Storytelling Learnings page.
+</p>
+
+<div class="notes">
+  <h3>What this mockup decides</h3>
+  <ul>
+    <li><strong>Page anatomy</strong> — three sections: Sources connection, Pending hypotheses (current batch), Recent batches (history).</li>
+    <li><strong>Validation pattern</strong> — per-hypothesis Accept/Reject buttons, plus batch-level Accept all / Reject all. Mirrors <code>/app/storytelling/learnings</code>.</li>
+    <li><strong>Source connection states</strong> — connected · disconnected · not configured. Per-source error banner stays inside the source row, doesn't blow up the page.</li>
+    <li><strong>Manual + scheduled</strong> — "Refresh tone now" primary action; weekly cron handles steady state.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ PAGE -->
+
+<div class="pageHeader">
+  <h2 class="pageTitle">Tone of voice sources</h2>
+  <div style="display: flex; gap: 8px;">
+    <button class="btn btnTertiary">Back to Brand settings</button>
+    <button class="btn btnPrimary">Refresh tone now</button>
+  </div>
+</div>
+
+<!-- ============================================================ SOURCES -->
+
+<div class="card">
+  <h2>Connected sources</h2>
+  <div class="sub">
+    The system samples copy from these sources weekly to learn how your brand sounds. Each new batch is reviewed by you before it changes how blog posts are written.
+  </div>
+
+  <div class="sourceList">
+    <div class="sourceRow">
+      <div class="sourceIcon">S</div>
+      <div class="sourceMeta">
+        <div class="sourceName">Shopify blog posts</div>
+        <div class="sourceDetail">Last 25 articles across 3 blogs · sampled 14 hours ago</div>
+      </div>
+      <span class="pill pillConnected">Connected</span>
+      <button class="btn btnTertiary">Configure</button>
+    </div>
+
+    <div class="sourceRow">
+      <div class="sourceIcon meta">M</div>
+      <div class="sourceMeta">
+        <div class="sourceName">Instagram &amp; Facebook</div>
+        <div class="sourceDetail">@gebeauty_oficial · 50 posts (captions + image OCR) · sampled 14 hours ago</div>
+      </div>
+      <span class="pill pillConnected">Connected</span>
+      <button class="btn btnTertiary">Configure</button>
+    </div>
+
+    <div class="sourceRow">
+      <div class="sourceIcon monday">M</div>
+      <div class="sourceMeta">
+        <div class="sourceName">Monday.com</div>
+        <div class="sourceDetail">2 boards · GE Beauty - Brand Voice, GE Beauty - Approved Copy</div>
+      </div>
+      <span class="pill pillConnected">Connected</span>
+      <button class="btn btnTertiary">Configure</button>
+    </div>
+
+    <div class="sourceRow">
+      <div class="sourceIcon" style="background: #fff5d9; color: #8a5a08;">F</div>
+      <div class="sourceMeta">
+        <div class="sourceName">Manual references</div>
+        <div class="sourceDetail">3 files + 1 URL · Brandbook 2026.pdf · Manifesto Editorial.docx · Tone Guidelines.pdf · linktree.com/gebeauty</div>
+      </div>
+      <span class="pill pillConnected">4 references</span>
+      <button class="btn btnTertiary">Manage</button>
+    </div>
+  </div>
+
+  <div style="margin-top: 14px; padding: 16px; border: 2px dashed var(--border); border-radius: 8px; background: #fafafa;">
+    <div style="text-align: center;">
+      <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px;">Add a brandbook, manifesto, or any reference</div>
+      <div style="font-size: 12px; color: var(--subdued); margin-bottom: 12px;">PDF, DOCX, TXT, MD up to 10MB &nbsp;·&nbsp; or paste a URL</div>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center; max-width: 600px; margin: 0 auto;">
+      <input type="text" placeholder="https://..." style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit;" />
+      <button class="btn">Fetch URL</button>
+      <span style="color: var(--subdued); font-size: 12px;">or</span>
+      <button class="btn">Choose file</button>
+    </div>
+  </div>
+
+  <div class="legacyToneRow" style="margin-top: 16px;">
+    <b>Manual override (always wins)</b>
+    "Warm, confident, beauty-as-self-care, never clinical. Brazilian Portuguese."
+    <span style="margin-top: 4px;"><a href="#" style="color: var(--blue-primary); text-decoration: none;">Edit on Brand settings →</a></span>
+  </div>
+</div>
+
+<!-- ============================================================ PENDING HYPOTHESES (BATCH UNDER REVIEW) -->
+
+<div class="card">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+    <h2 style="margin: 0;">Pending review · 12 traits</h2>
+    <span class="pill pillPending">Batch 2026-05-06 21:14</span>
+  </div>
+  <div class="sub">
+    Inferred from 25 Shopify articles + 50 IG/FB posts + 18 Monday rows + 3 uploaded files. Accept the ones that match how the brand should sound; reject the ones that don't. Accepted traits will guide every future blog post; rejected traits are discarded silently.
+  </div>
+
+  <!-- Hypothesis 1 -->
+  <div class="hypothesisCard">
+    <div class="hypothesisHeader">
+      <span class="categoryPill voice">Voice</span>
+      <div class="confidenceBar"><div class="confidenceFill" style="width: 84%;"></div></div>
+      <span class="confidenceLabel">0.84 confidence</span>
+    </div>
+    <div class="hypothesisStatement">
+      Speaks in second person ("você"), warm and conversational; opens posts with a relatable scenario before introducing the product.
+    </div>
+    <div class="evidenceList">
+      <div class="evidenceItem"><span class="evidenceSource">IG @gebeauty_oficial</span> "E aí, percebeu que sua pele tá pedindo socorro depois daquele dia..."</div>
+      <div class="evidenceItem"><span class="evidenceSource">Shopify "Skincare Brasileiro"</span> "Quem nunca olhou no espelho e..."</div>
+      <div class="evidenceItem"><span class="evidenceSource">Monday Brand Voice</span> "Sempre fala 'você' diretamente — nunca 'o cliente' ou 'o consumidor'."</div>
+    </div>
+    <div class="hypothesisActions">
+      <button class="btn">Reject</button>
+      <button class="btn btnPrimary">Accept</button>
+    </div>
+  </div>
+
+  <!-- Hypothesis 2 -->
+  <div class="hypothesisCard">
+    <div class="hypothesisHeader">
+      <span class="categoryPill dont">Don't</span>
+      <div class="confidenceBar"><div class="confidenceFill" style="width: 91%;"></div></div>
+      <span class="confidenceLabel">0.91 confidence</span>
+    </div>
+    <div class="hypothesisStatement">
+      Avoid clinical or medical framing. No words like "tratamento", "diagnóstico", "patologia". Stay in self-care, beauty, and lifestyle vocabulary.
+    </div>
+    <div class="evidenceList">
+      <div class="evidenceItem"><span class="evidenceSource">Monday Approved Copy</span> "Veta qualquer linguagem clínica — somos beleza, não medicina."</div>
+      <div class="evidenceItem"><span class="evidenceSource">FB post 2026-04-22</span> "Cuidado diário pra você se sentir bem" (no clinical claims)</div>
+    </div>
+    <div class="hypothesisActions">
+      <button class="btn">Reject</button>
+      <button class="btn btnPrimary">Accept</button>
+    </div>
+  </div>
+
+  <!-- Hypothesis 3 -->
+  <div class="hypothesisCard">
+    <div class="hypothesisHeader">
+      <span class="categoryPill vocabulary">Vocabulary</span>
+      <div class="confidenceBar"><div class="confidenceFill" style="width: 67%;"></div></div>
+      <span class="confidenceLabel">0.67 confidence</span>
+    </div>
+    <div class="hypothesisStatement">
+      Uses Brazilian-specific brand terms: "rotina de beleza" (not "skincare routine"), "produtinho" (diminutive, affectionate), "pele de bebê".
+    </div>
+    <div class="evidenceList">
+      <div class="evidenceItem"><span class="evidenceSource">IG caption 2026-04-15</span> "Esse produtinho aqui é o segredo da minha rotina..."</div>
+      <div class="evidenceItem"><span class="evidenceSource">Shopify "Pele de Bebê"</span> "Pele de bebê em 4 semanas — sem milagre, só rotina"</div>
+    </div>
+    <div class="hypothesisActions">
+      <button class="btn">Reject</button>
+      <button class="btn btnPrimary">Accept</button>
+    </div>
+  </div>
+
+  <!-- Hypothesis 4 (already accepted, demo state) -->
+  <div class="hypothesisCard" style="background: #fafafa;">
+    <div class="hypothesisHeader">
+      <span class="categoryPill structure">Structure</span>
+      <div class="confidenceBar"><div class="confidenceFill" style="width: 78%;"></div></div>
+      <span class="confidenceLabel">0.78 confidence</span>
+    </div>
+    <div class="hypothesisStatement">
+      Blog posts open with a 1–2 sentence hook (not a heading), then introduce the body with an H2.
+    </div>
+    <div class="evidenceList">
+      <div class="evidenceItem"><span class="evidenceSource">Shopify all 25 articles</span> "First paragraph is always pre-heading prose."</div>
+    </div>
+    <div class="hypothesisActions">
+      <span class="pill pillConnected">Accepted</span>
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--grid);">
+    <div style="display: flex; gap: 8px;">
+      <button class="btn">Reject all remaining</button>
+      <button class="btn">Re-run inference</button>
+    </div>
+    <button class="btn btnPrimary">Accept all remaining</button>
+  </div>
+</div>
+
+<!-- ============================================================ RECENT BATCHES -->
+
+<div class="card">
+  <h2>Past batches</h2>
+  <div class="sub">Each weekly refresh creates a batch. Review history retained for 90 days.</div>
+
+  <div class="batchSummaryRow">
+    <div>
+      <div class="batchSummarySource">2026-05-06 batch</div>
+      <div class="batchSummaryDate">Today · all 3 sources</div>
+    </div>
+    <span class="pill pillPending">12 pending</span>
+    <span class="pill pillCount">3 accepted</span>
+    <button class="btn btnTertiary">View →</button>
+  </div>
+
+  <div class="batchSummaryRow">
+    <div>
+      <div class="batchSummarySource">2026-04-29 batch</div>
+      <div class="batchSummaryDate">8 days ago · all 3 sources</div>
+    </div>
+    <span class="pill pillCount">9 accepted</span>
+    <span class="pill pillCount">2 rejected</span>
+    <button class="btn btnTertiary">View →</button>
+  </div>
+
+  <div class="batchSummaryRow">
+    <div>
+      <div class="batchSummarySource">2026-04-22 batch</div>
+      <div class="batchSummaryDate">15 days ago · Shopify + Monday only</div>
+    </div>
+    <span class="pill pillCount">7 accepted</span>
+    <span class="pill pillCount">3 rejected</span>
+    <button class="btn btnTertiary">View →</button>
+  </div>
+</div>
+
+<!-- ============================================================ NOTES PANEL -->
+
+<div class="notes">
+  <h3>Decisions locked in</h3>
+  <ul>
+    <li>✅ Schema: separate <code>BrandToneSource</code> + <code>BrandToneHypothesis</code> tables (migration <code>20260507002209</code>).</li>
+    <li>✅ Manual upload files stored in S3 at <code>/omnify/tenants/&lt;shop&gt;/tone-uploads/</code>.</li>
+    <li>✅ Formats accepted: PDF, DOCX, TXT, MD + URL paste.</li>
+    <li>✅ Cron: weekly Monday 09:00 in each shop's local timezone (read from Shopify Shop.ianaTimezone).</li>
+    <li>✅ Confidence threshold: auto-hide hypotheses below 0.50 with a "Show low-confidence" toggle.</li>
+    <li>✅ Track B: weekly cron piggy-backs on the same Monday 09:00 run, scans all published drafts for diffs, queues a single batched "N articles to review" notification.</li>
+    <li>✅ Meta App: reuse Lucas's existing App ID for tenant 1; per-tenant App ID for tenant 2.</li>
+  </ul>
+</div>
+
+</body>
+</html>

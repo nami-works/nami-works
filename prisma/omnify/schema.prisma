@@ -530,6 +530,53 @@ model BlogPostDiff {
   @@index([shopifyArticleId])
 }
 
+model BrandToneSource {
+  id              String   @id @default(cuid())
+  shop            String
+  sourceType      String
+  sourceId        String
+  sourceUrl       String?
+  capturedAt      DateTime @default(now())
+  rawText         String
+  contentLanguage String?
+  metaJson        Json?
+  batchId         String
+
+  @@unique([shop, sourceType, sourceId])
+  @@index([shop, sourceType])
+  @@index([shop, batchId])
+}
+
+model BrandToneHypothesis {
+  id          String    @id @default(cuid())
+  shop        String
+  batchId     String
+  category    String
+  statement   String
+  evidence    Json
+  confidence  Float
+  status      String    @default("pending_review")
+  createdAt   DateTime  @default(now())
+  reviewedAt  DateTime?
+
+  @@index([shop, status])
+  @@index([shop, batchId])
+}
+
+model BrandIntegrationConfig {
+  id              String   @id @default(cuid())
+  shop            String
+  integrationType String
+  configCipher    String
+  keyVersion      Int      @default(1)
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([shop, integrationType])
+  @@index([shop])
+}
+
 model ProductImageAltSuggestion {
   id            String    @id @default(cuid())
   shop          String

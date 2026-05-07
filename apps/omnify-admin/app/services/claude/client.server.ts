@@ -27,6 +27,16 @@ function brandContextBlock(brandContext: ContentGenBrandContext): string {
     lines.push(`Editorial guidelines: ${brandContext.editorialGuidelines}`);
   if (brandContext.benchmarks) lines.push(`Benchmarks: ${brandContext.benchmarks}`);
 
+  if (brandContext.toneTraits && brandContext.toneTraits.length > 0) {
+    lines.push("");
+    lines.push(
+      `Validated tone traits from ${brandContext.toneTraits.length} merchant-approved samples (follow these):`,
+    );
+    for (const t of brandContext.toneTraits) {
+      lines.push(`- [${t.category}] ${t.statement}`);
+    }
+  }
+
   if (brandContext.learnings && brandContext.learnings.length > 0) {
     lines.push("");
     lines.push("Past corrections from the merchant (follow these):");
@@ -228,6 +238,221 @@ export async function interpretDiff(input: {
     return { hypotheses };
   } catch (err) {
     console.error(`[claude:diff] interpret FAILED shop=${input.shop}`, err);
+    return {
+      error: err instanceof Error ? err.message : "Claude call failed.",
+    };
+  }
+}
+
+export async function extractTextFromImage(input: {
+  shop: string;
+  imageUrl: string;
+  maxDimension?: number;
+}): Promise<{ text: string } | { error: string }> {
+  const client = getClient();
+  if (!client) return { error: "ANTHROPIC_API_KEY not configured." };
+
+  try {
+    console.info(
+      `[claude:image-ocr] START shop=${input.shop} url=${input.imageUrl.slice(0, 80)}`,
+    );
+    const response = await client.messages.create({
+      model: VISION_MODEL,
+      max_tokens: 1500,
+      system:
+        "Extract any readable text rendered inside the image (overlay text, captions, signs, labels). If the image has no text, respond with the single word NONE. Return ONLY the extracted text, no preamble.",
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              source: { type: "url", url: input.imageUrl },
+            },
+            { type: "text", text: "Extract any text rendered in this image." },
+          ],
+        },
+      ],
+    });
+
+    const textBlock = response.content.find((b) => b.type === "text") as
+      | { type: "text"; text: string }
+      | undefined;
+    const text = textBlock?.text?.trim() ?? "";
+    if (!text || text === "NONE") {
+      return { text: "" };
+    }
+    console.info(
+      `[claude:image-ocr] OK shop=${input.shop} chars=${text.length}`,
+    );
+    return { text };
+  } catch (err) {
+    console.error(`[claude:image-ocr] FAILED shop=${input.shop}`, err);
+    return {
+      error: err instanceof Error ? err.message : "Claude OCR failed.",
+    };
+  }
+}
+
+export async function extractTextFromPdfBuffer(input: {
+  shop: string;
+  pdfBase64: string;
+  filename: string;
+}): Promise<{ text: string } | { error: string }> {
+  const client = getClient();
+  if (!client) return { error: "ANTHROPIC_API_KEY not configured." };
+
+  try {
+    console.info(
+      `[claude:pdf-extract] START shop=${input.shop} filename=${input.filename}`,
+    );
+    const response = await client.messages.create({
+      model: VISION_MODEL,
+      max_tokens: 8000,
+      system:
+        "Extract the full readable text from the attached PDF. Preserve paragraph breaks. Skip page numbers, headers, footers. Return ONLY the extracted text — no preamble, no commentary.",
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "document",
+              source: {
+                type: "base64",
+                media_type: "application/pdf",
+                data: input.pdfBase64,
+              },
+            },
+            { type: "text", text: "Extract the text content." },
+          ],
+        },
+      ],
+    });
+
+    const textBlock = response.content.find((b) => b.type === "text") as
+      | { type: "text"; text: string }
+      | undefined;
+    const text = textBlock?.text?.trim() ?? "";
+    if (!text) return { error: "Claude returned no text." };
+    console.info(
+      `[claude:pdf-extract] OK shop=${input.shop} chars=${text.length}`,
+    );
+    return { text };
+  } catch (err) {
+    console.error(`[claude:pdf-extract] FAILED shop=${input.shop}`, err);
+    return {
+      error: err instanceof Error ? err.message : "Claude PDF extract failed.",
+    };
+  }
+}
+
+export type ToneTraitHypothesis = {
+  category: "voice" | "vocabulary" | "do" | "dont" | "register" | "structure";
+  statement: string;
+  evidence: Array<{ sourceType: string; sourceId: string; snippet: string }>;
+  confidence: number;
+};
+
+export type ToneInferenceSample = {
+  sourceType: string;
+  sourceId: string;
+  excerpt: string;
+};
+
+export async function inferToneTraits(input: {
+  shop: string;
+  contentLanguage: string;
+  brandName: string | null;
+  samples: ToneInferenceSample[];
+}): Promise<{ hypotheses: ToneTraitHypothesis[] } | { error: string }> {
+  const client = getClient();
+  if (!client) {
+    return { error: "ANTHROPIC_API_KEY not configured." };
+  }
+
+  if (input.samples.length === 0) {
+    return { hypotheses: [] };
+  }
+
+  const language = input.contentLanguage || "en_US";
+  const systemPrompt = [
+    {
+      type: "text" as const,
+      text: [
+        `You are analyzing brand voice samples from ${input.brandName ?? input.shop}.`,
+        `The samples come from multiple sources: existing blog posts, social captions,`,
+        `internal copy guidelines, and merchant-uploaded reference documents.`,
+        ``,
+        `Extract up to 15 distinct tone-of-voice traits that capture how this brand`,
+        `communicates. Each trait must have at least one piece of evidence pulled`,
+        `directly from the samples.`,
+        ``,
+        `Categories:`,
+        `  voice       — overall personality, formality, point-of-view`,
+        `  vocabulary  — preferred or recurring word choices, phrases, terms`,
+        `  do          — explicit positive guidelines (do this)`,
+        `  dont        — explicit negative guidelines (avoid this)`,
+        `  register    — emotional register (warm, clinical, playful, formal)`,
+        `  structure   — recurring structural patterns (hook first, then heading; bullet-heavy; etc.)`,
+        ``,
+        `For each trait, output JSON with these fields:`,
+        `  category:   one of the categories above`,
+        `  statement:  one sentence describing the trait (respond in ${language})`,
+        `  evidence:   array of up to 3 items, each { sourceType, sourceId, snippet (≤200 chars) }`,
+        `  confidence: 0.0 to 1.0 — how strongly the samples support this trait`,
+        ``,
+        `Skip trivial observations (length, language detection, generic facts).`,
+        `Skip duplicates — merge similar traits into one stronger statement.`,
+        `Respond with ONLY a JSON object: {"hypotheses": [...]}.`,
+        `No prose before or after the JSON.`,
+      ].join("\n"),
+    },
+  ];
+
+  const samplesBlob = input.samples
+    .map(
+      (s, i) =>
+        `[Sample ${i + 1}] sourceType=${s.sourceType} sourceId=${s.sourceId}\n${s.excerpt}`,
+    )
+    .join("\n\n---\n\n");
+
+  try {
+    console.info(
+      `[claude:tone-infer] START shop=${input.shop} samples=${input.samples.length}`,
+    );
+    const response = await client.messages.create({
+      model: TEXT_MODEL,
+      max_tokens: 4000,
+      system: systemPrompt,
+      messages: [
+        {
+          role: "user",
+          content: [{ type: "text", text: samplesBlob.slice(0, 80_000) }],
+        },
+      ],
+    });
+
+    const textBlock = response.content.find((b) => b.type === "text") as
+      | { type: "text"; text: string }
+      | undefined;
+    const raw = textBlock?.text?.trim() ?? "";
+    if (!raw) return { error: "Claude returned no text." };
+
+    const jsonStart = raw.indexOf("{");
+    const jsonEnd = raw.lastIndexOf("}");
+    if (jsonStart === -1 || jsonEnd === -1) {
+      return { error: "Claude response missing JSON." };
+    }
+    const parsed = JSON.parse(raw.slice(jsonStart, jsonEnd + 1)) as {
+      hypotheses?: ToneTraitHypothesis[];
+    };
+    const hypotheses = Array.isArray(parsed.hypotheses) ? parsed.hypotheses : [];
+    console.info(
+      `[claude:tone-infer] OK shop=${input.shop} hypotheses=${hypotheses.length}`,
+    );
+    return { hypotheses };
+  } catch (err) {
+    console.error(`[claude:tone-infer] FAILED shop=${input.shop}`, err);
     return {
       error: err instanceof Error ? err.message : "Claude call failed.",
     };
