@@ -400,7 +400,13 @@
 
 .fullscreenScroll {
   flex: 1;
-  overflow: hidden;
+  /* Single right-edge scroll: outer container absorbs the scroll so the
+     fullscreen view scrolls as one unit (header + map + aside together),
+     matching collapsed-mode behavior. Both panes below drop their
+     independent overflow.
+     Spec: inputs/mockups/local-delivery-control-row-v1.html → "Fullscreen
+     layout — single-scroll fix" section. */
+  overflow-y: auto;
   padding-bottom: 8px;
 }
 
@@ -412,7 +418,6 @@
      order as the collapsed view. */
   grid-template-columns: minmax(0, 1fr) 360px;
   gap: 16px;
-  overflow: hidden;
 }
 
 @media (max-width: 1024px) {
@@ -423,7 +428,6 @@
 
 .fullscreenAsidePane {
   min-width: 0;
-  overflow: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -432,8 +436,6 @@
 
 .fullscreenMapPane {
   min-width: 0;
-  overflow: auto;
-  padding-right: 4px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -502,6 +504,22 @@
   padding: 8px 8px;
   align-items: center;
   font-size: 13px;
+}
+
+/* Location gate: when no specific location is selected, the checkbox column
+   is dropped from the grid and the cells are conditionally not rendered in
+   JSX. Selection is unreachable from this surface (matches map-marker
+   click guards at app.local-delivery.tsx ~1691/1722).
+   Spec: inputs/mockups/local-delivery-control-row-v1.html */
+.dueOrdersTable[data-no-cb="true"] .dueOrdersHeader,
+.dueOrdersTable[data-no-cb="true"] .dueOrdersRow {
+  grid-template-columns:
+    56px
+    var(--customer-col-width, 92px)
+    80px
+    56px
+    var(--route-col-width, 168px)
+    minmax(140px, 1fr);
 }
 
 .dueOrdersHeader > span:not(:first-child),

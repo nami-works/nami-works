@@ -504,6 +504,12 @@ export default function Index() {
     index: number;
   } | null>(null);
   const [clearAllConfirmOpen, setClearAllConfirmOpen] = useState(false);
+  // Exit-confirm modal: opens when the user clicks Exit (✕) while
+  // hasChangesPending — guards against accidental loss of pending Reassign /
+  // Unassign work. State B (no work pending) bypasses the modal entirely.
+  // Spec: inputs/mockups/local-delivery-control-row-v1.html → "Exit
+  // confirmation modal" section.
+  const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
   const autoAssignActiveRef = useRef(false);
   const prevUnassignedCountRef = useRef(0);
@@ -1688,6 +1694,11 @@ export default function Index() {
 
           if (point.kind === "order" && !assignedRoute) {
             advancedMarker.addListener("click", () => {
+              // Location gate: when no specific location is selected, marker
+              // clicks are no-op. The control row is hidden anyway (line
+              // 5881) so any selection would be a ghost — early-return keeps
+              // the affordance off. Banner above the page explains why.
+              if (locationId === DEFAULT_LOCATION_ID) return;
               if (!polylineEditMode) enterPolylineEditMode();
               toggleSelection(point.id);
               const orderDetails = ordersById.get(point.id);
@@ -1719,6 +1730,9 @@ export default function Index() {
           } else if (point.kind === "order" && assignedRoute) {
             // Left-click: toggle multiselection (same as unassigned orders)
             advancedMarker.addListener("click", () => {
+              // Location gate — see unassigned-marker handler above for
+              // rationale.
+              if (locationId === DEFAULT_LOCATION_ID) return;
               if (!polylineEditMode) enterPolylineEditMode();
               toggleSelection(point.id);
               const orderDetails = ordersById.get(point.id);
@@ -1752,6 +1766,8 @@ export default function Index() {
             if (advancedMarker.element) {
               advancedMarker.element.addEventListener("contextmenu", (e: Event) => {
                 e.preventDefault();
+                // Location gate — same rationale as the click handlers above.
+                if (locationId === DEFAULT_LOCATION_ID) return;
                 const routeIndex = editableRoutes.findIndex(
                   (candidate) => candidate.id === assignedRoute.id,
                 );
@@ -2445,6 +2461,14 @@ export default function Index() {
       | null;
     modal?.showOverlay?.();
   }, [clearAllConfirmOpen]);
+
+  useEffect(() => {
+    if (!exitConfirmOpen) return;
+    const modal = document.getElementById("exit-confirm-modal") as
+      | { showOverlay?: () => void }
+      | null;
+    modal?.showOverlay?.();
+  }, [exitConfirmOpen]);
 
   useEffect(() => {
     if (!isPresaleModalOpen) return;
@@ -3555,23 +3579,26 @@ export default function Index() {
             <div
               className={styles.dueOrdersTable}
               data-mode={isFullscreen ? "expanded" : "collapsed"}
+              data-no-cb={locationId === DEFAULT_LOCATION_ID ? "true" : undefined}
             >
               <div className={styles.dueOrdersHeader}>
-                <span>
-                  <s-checkbox
-                    accessibilityLabel={t("routeManager.selectAll")}
-                    checked={areAllVisibleSelected(filteredOrderRows)}
-                    onChange={(event) => {
-                      const target = event.currentTarget as
-                        | { checked?: boolean }
-                        | null;
-                      toggleAllVisibleSelection(
-                        filteredOrderRows,
-                        Boolean(target?.checked),
-                      );
-                    }}
-                  />
-                </span>
+                {locationId !== DEFAULT_LOCATION_ID ? (
+                  <span>
+                    <s-checkbox
+                      accessibilityLabel={t("routeManager.selectAll")}
+                      checked={areAllVisibleSelected(filteredOrderRows)}
+                      onChange={(event) => {
+                        const target = event.currentTarget as
+                          | { checked?: boolean }
+                          | null;
+                        toggleAllVisibleSelection(
+                          filteredOrderRows,
+                          Boolean(target?.checked),
+                        );
+                      }}
+                    />
+                  </span>
+                ) : null}
                 <span>{t("routeManager.table.order")}</span>
                 <span>{t("routeManager.table.customer")}</span>
                 <span>{t("routeManager.table.date")}</span>
@@ -3605,13 +3632,15 @@ export default function Index() {
                       }
                     }}
                   >
-                    <span>
-                      <s-checkbox
-                        accessibilityLabel={t("routeManager.selectOrder", { name: row.name })}
-                        checked={isSelected}
-                        onChange={(event) => handleOrderToggle(event, row.id)}
-                      />
-                    </span>
+                    {locationId !== DEFAULT_LOCATION_ID ? (
+                      <span>
+                        <s-checkbox
+                          accessibilityLabel={t("routeManager.selectOrder", { name: row.name })}
+                          checked={isSelected}
+                          onChange={(event) => handleOrderToggle(event, row.id)}
+                        />
+                      </span>
+                    ) : null}
                     <span className={styles.dueOrdersOrderName}>{row.name}</span>
                     <span>
                       {formatCustomerShort(row.customerName, t("customer.guest"))}
@@ -5055,6 +5084,40 @@ export default function Index() {
           </s-stack>
         </s-modal>
       ) : null}
+      {exitConfirmOpen ? (
+        <s-modal id="exit-confirm-modal" heading={t("map.polylineEdit.exitConfirm.heading")}>
+          <s-stack direction="block" gap="base">
+            <s-text>
+              {t("map.polylineEdit.exitConfirm.body", { count: dirtyRouteIds.size })}
+            </s-text>
+            <div className={styles.assignModalFooter}>
+              <s-button
+                variant="secondary"
+                onClick={() => {
+                  // Programmatic close per CLAUDE.md "<s-button> with
+                  // commandFor + onClick" gotcha — the dismiss command
+                  // races with the click handler.
+                  setExitConfirmOpen(false);
+                  document.getElementById("exit-confirm-modal")?.removeAttribute("open");
+                }}
+              >
+                {t("map.polylineEdit.exitConfirm.stay")}
+              </s-button>
+              <s-button
+                variant="primary"
+                tone="critical"
+                onClick={() => {
+                  cancelPolylineEditMode();
+                  setExitConfirmOpen(false);
+                  document.getElementById("exit-confirm-modal")?.removeAttribute("open");
+                }}
+              >
+                {t("map.polylineEdit.exitConfirm.discard")}
+              </s-button>
+            </div>
+          </s-stack>
+        </s-modal>
+      ) : null}
       <s-modal id="address-verify-modal" heading={t("modals.addressVerify.heading")}>
           <s-stack direction="block" gap="base">
             <s-text color="subdued">{t("modals.addressVerify.description")}</s-text>
@@ -5800,6 +5863,18 @@ export default function Index() {
           </pre>
         </s-banner>
       ) : null}
+      {/* Location gate (page-level): when no specific location is selected,
+          neither map markers nor table checkboxes can do anything useful —
+          control row is hidden, marker clicks are gated to no-op (lines
+          ~1691/1722), and the All-orders checkbox column is hidden. This
+          banner is the single source of truth explaining the gate. Spec:
+          inputs/mockups/local-delivery-control-row-v1.html → "Location ===
+          'all' — selection gate (page-level)" section. */}
+      {locationId === DEFAULT_LOCATION_ID ? (
+        <s-banner tone="info" heading={t("map.locationGate.heading")}>
+          {t("map.locationGate.body")}
+        </s-banner>
+      ) : null}
       <s-section>
       <div className={styles.mainBlocks}>
         <div className={isFullscreen ? styles.fullscreenOverlay : undefined}>
@@ -5942,7 +6017,7 @@ export default function Index() {
                                 key="unassign"
                                 variant="secondary"
                                 tone="critical"
-                                icon="minus-circle"
+                                icon="delete"
                                 accessibilityLabel={t("map.polylineEdit.unassign")}
                                 disabled={isRoutingBusy || undefined}
                                 onClick={handleUnassignSelected}
@@ -5998,7 +6073,18 @@ export default function Index() {
                               variant="secondary"
                               icon="x"
                               accessibilityLabel={t("map.polylineEdit.exit")}
-                              onClick={cancelPolylineEditMode}
+                              onClick={() => {
+                                // Exit-confirm gate: when changes are
+                                // pending (States D / D' / G in the matrix),
+                                // open the confirmation modal first. State B
+                                // (no work pending) exits immediately. Spec:
+                                // inputs/mockups/local-delivery-control-row-v1.html
+                                if (hasChangesPending) {
+                                  setExitConfirmOpen(true);
+                                } else {
+                                  cancelPolylineEditMode();
+                                }
+                              }}
                             >
                               <span className={styles.btnLabel}>{t("map.polylineEdit.exit")}</span>
                             </s-button>

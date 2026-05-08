@@ -34,6 +34,10 @@
       "addressError": "Problema no endereço"
     },
     "noMapAvailable": "Mapa não disponível.",
+    "locationGate": {
+      "heading": "Escolha uma localização para começar a rotear pedidos.",
+      "body": "O planejador de rotas precisa de uma única localização de origem. Selecione uma no filtro Localização acima."
+    },
     "selectLocationToShowRoutes": "Selecione uma localização específica para exibir rotas no mapa.",
     "noCoordinates": "Nenhuma coordenada disponível para os filtros selecionados.",
     "mapStyleButton": "Estilo do mapa",
@@ -48,7 +52,13 @@
       "reassign": "Reatribuir",
       "unassign": "Remover atribuição",
       "cantExceedCap": "Não foi possível reatribuir. A rota {{routeName}} excederia o limite de 7 pedidos.",
-      "routeOptionLabel": "{{routeName}} ({{orderCount}} paradas)"
+      "routeOptionLabel": "{{routeName}} ({{orderCount}} paradas)",
+      "exitConfirm": {
+        "heading": "Descartar mudanças pendentes?",
+        "body": "Sair vai desfazer suas {{count}} mudança(s) de rota pendente(s). Os pedidos voltarão para suas rotas originais.",
+        "stay": "Continuar editando",
+        "discard": "Descartar e sair"
+      }
     },
     "clearSelection": "Limpar seleção",
     "unassignSelected": "Desatribuir",

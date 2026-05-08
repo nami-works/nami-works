@@ -34,6 +34,10 @@
       "addressError": "Address issue"
     },
     "noMapAvailable": "Map not available.",
+    "locationGate": {
+      "heading": "Pick a location to start routing orders.",
+      "body": "Route planner needs a single origin location. Choose one from the Location filter above."
+    },
     "selectLocationToShowRoutes": "Select a specific location to display routes on the map.",
     "noCoordinates": "No coordinates available for the selected filters.",
     "mapStyleButton": "Map style",
@@ -48,7 +52,13 @@
       "reassign": "Reassign",
       "unassign": "Unassign",
       "cantExceedCap": "Cannot reassign. Route {{routeName}} would exceed the 7-orders cap.",
-      "routeOptionLabel": "{{routeName}} ({{orderCount}} stops)"
+      "routeOptionLabel": "{{routeName}} ({{orderCount}} stops)",
+      "exitConfirm": {
+        "heading": "Discard pending changes?",
+        "body": "Exiting will undo your {{count}} pending route change(s). The orders will go back to their original routes.",
+        "stay": "Stay",
+        "discard": "Discard and exit"
+      }
     },
     "clearSelection": "Clear selection",
     "unassignSelected": "Unassign",
