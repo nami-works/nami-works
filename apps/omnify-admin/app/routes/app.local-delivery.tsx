@@ -318,6 +318,29 @@ export default function Index() {
   >({});
   const lalamoveStatusTimeoutsRef = useRef<Record<string, number>>({});
   const lalamoveBusyTimerRef = useRef<number | null>(null);
+  // EDIT MODE — 5s idle auto-confirm timer (2026-05-08 unified write flow).
+  // Spec: any user-initiated write (Reassign/Unassign/Add-to-route/Clear/
+  // Assign-to-new) enters edit mode automatically via the dirty-set watcher.
+  // The timer fires 5s after the LAST interaction; on fire, auto-confirm
+  // (calls handleUpdateRoutes). Any of these reset the timer:
+  //   - marker click (selection toggle)
+  //   - map zoom / pan
+  //   - All-orders table checkbox toggle
+  //   - another write (chains additional changes)
+  const editModeIdleTimerRef = useRef<number | null>(null);
+  // Per-route in-flight set (optimistic concurrency, follow-up): while
+  // a route is mid-commit (handleUpdateRoutes for that routeId), other
+  // routes could still be edited; only the in-flight route's action
+  // buttons would be gated. Deferred from this branch -- the 5s idle
+  // batching means most edits land in a single commit, so the
+  // concurrency window is narrow. Wire when a real conflict surfaces.
+  // const [inFlightRouteIds, setInFlightRouteIds] = useState<Set<string>>(new Set());
+  // Stable ref to the "any interaction in editMode" handler, used by
+  // Google Maps listeners (zoom_changed / dragend) which are attached
+  // once at map creation. Without a ref the listeners would close over
+  // a stale polylineEditMode + resetEditModeIdleTimer; with a ref they
+  // always invoke the latest version. Updated each render via useEffect.
+  const editInteractionHandlerRef = useRef<() => void>(() => {});
   // Tracks routes where a driver has been successfully requested (hydrated from DB)
   const [dispatchedRoutes, setDispatchedRoutes] = useState<
     Record<string, {
@@ -550,11 +573,91 @@ export default function Index() {
     setLalamoveConfigMap(lalamoveConfigs);
   }, [lalamoveConfigs]);
 
+  // Bug 5 fix (2026-05-08): release the lalamove busy lock as soon as the
+  // action RESPONSE arrives (data set), not after revalidation completes
+  // (state === "idle"). The old gate held the lock through ~15s of loader
+  // re-fire, blocking dispatching Route 2 until well after Route 1 had
+  // already received "Driver requested" from Lalamove. With this change
+  // Route 2 unlocks immediately when the server responds.
   useEffect(() => {
-    if (lalamoveFetcher.state === "idle" && cancelFetcher.state === "idle") {
+    if (lalamoveFetcher.data || cancelFetcher.data) {
       setLalamoveBusyRouteId(null);
     }
-  }, [lalamoveFetcher.state, cancelFetcher.state]);
+  }, [lalamoveFetcher.data, cancelFetcher.data]);
+
+  // Defensive: also release if both fetchers somehow end up idle (e.g.
+  // user navigates back and re-mounts with stale state).
+  useEffect(() => {
+    if (lalamoveFetcher.state === "idle" && cancelFetcher.state === "idle" && !lalamoveFetcher.data && !cancelFetcher.data) {
+      setLalamoveBusyRouteId(null);
+    }
+  }, [lalamoveFetcher.state, cancelFetcher.state, lalamoveFetcher.data, cancelFetcher.data]);
+
+  // EDIT MODE — dirty-set watcher (2026-05-08).
+  // Auto-enters edit mode the FIRST time any route becomes dirty, and
+  // (re-)arms the 5s idle timer. Auto-exits when the dirty set drains.
+  // Spec: inputs/backlog/local-delivery.md > "EDIT MODE" (Lucas's note
+  // 2026-05-08 -- write triggers entry; selection alone does not).
+  useEffect(() => {
+    const hasDirty = dirtyRouteIds.size > 0;
+    if (hasDirty && !polylineEditMode) {
+      // First dirty mark -> snapshot + enter edit mode + arm timer.
+      enterPolylineEditMode();
+      resetEditModeIdleTimer();
+    } else if (hasDirty && polylineEditMode) {
+      // Already in edit mode + new write chained on top -> just bump
+      // the idle timer back to 5s.
+      resetEditModeIdleTimer();
+    } else if (!hasDirty && polylineEditMode) {
+      // Dirty set drained (auto-confirm success OR user reverted all
+      // changes manually). Exit edit mode + clear timer.
+      clearEditModeIdleTimer();
+      setPolylineEditMode(false);
+      preEditRoutesRef.current = null;
+      preEditSelectionRef.current = null;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dirtyRouteIds, polylineEditMode]);
+
+  // Cleanup the idle timer on unmount.
+  useEffect(() => {
+    return () => clearEditModeIdleTimer();
+  }, []);
+
+  // Bug 3 fix (2026-05-08): when a route becomes dirty, clear its stale
+  // encoded polyline string so the polyline-rendering loop skips it
+  // (the `if (route.polyline)` guard at the polyline creation site
+  // means no polyline is drawn for routes whose `polyline` is empty).
+  // Without this, a removed-order's stop still appears on the rendered
+  // polyline because the encoded string is the LAST server-returned
+  // path. Once the server recomputes (handleUpdateRoutes response), a
+  // fresh polyline string lands and renders correctly.
+  useEffect(() => {
+    if (dirtyRouteIds.size === 0) return;
+    setEditableRoutes((current) => {
+      let mutated = false;
+      const next = current.map((route) => {
+        if (dirtyRouteIds.has(route.id) && route.polyline) {
+          mutated = true;
+          return { ...route, polyline: "" };
+        }
+        return route;
+      });
+      return mutated ? next : current;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dirtyRouteIds]);
+
+  // Keep the map-listener interaction handler ref pointing at the latest
+  // (polylineEditMode + resetEditModeIdleTimer). Map listeners attached
+  // once at map creation read .current, so they always invoke the live
+  // version.
+  useEffect(() => {
+    editInteractionHandlerRef.current = () => {
+      if (polylineEditMode) resetEditModeIdleTimer();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  });
 
   // Backstop for the fetcher-idle effect above: if a Lalamove fetcher wedges (backgrounded tab, aborted submit) the busy id would never clear and every route-card button stays disabled — force-clear after 60s.
   useEffect(() => {
@@ -1571,6 +1674,16 @@ export default function Index() {
           mapRef.current.mapTypes.set("light", styledMapTypes.light);
           mapRef.current.mapTypes.set("grayscale", styledMapTypes.grayscale);
           mapRef.current.mapTypes.set("dark", styledMapTypes.dark);
+          // EDIT MODE timer reset (2026-05-08): zoom and pan count as
+          // interactions per Lucas's spec. Listeners attached once at
+          // map creation; they call into a ref to always invoke the
+          // latest handler closure (avoids the stale-closure trap).
+          mapRef.current.addListener("zoom_changed", () => {
+            editInteractionHandlerRef.current();
+          });
+          mapRef.current.addListener("dragend", () => {
+            editInteractionHandlerRef.current();
+          });
         } else if (mapContainerEl) {
           mapRef.current.setOptions({
             mapTypeControl: false,
@@ -1699,7 +1812,13 @@ export default function Index() {
               // 5881) so any selection would be a ghost — early-return keeps
               // the affordance off. Banner above the page explains why.
               if (locationId === DEFAULT_LOCATION_ID) return;
-              if (!polylineEditMode) enterPolylineEditMode();
+              // Bug 4 fix (2026-05-08): selection alone no longer enters
+              // edit mode. EDIT MODE is triggered by writes only (assign /
+              // unassign / move / clear), via the dirty-set watcher.
+              // Marker click is just selection.
+              // EDIT MODE timer reset: any marker click while in editMode
+              // resets the 5s idle countdown.
+              if (polylineEditMode) resetEditModeIdleTimer();
               toggleSelection(point.id);
               const orderDetails = ordersById.get(point.id);
               if (!orderDetails) return;
@@ -1733,7 +1852,10 @@ export default function Index() {
               // Location gate — see unassigned-marker handler above for
               // rationale.
               if (locationId === DEFAULT_LOCATION_ID) return;
-              if (!polylineEditMode) enterPolylineEditMode();
+              // Bug 4 fix (2026-05-08): selection alone no longer enters
+              // edit mode (rolled back from rev-21). Marker click resets
+              // the EDIT MODE idle timer when already in edit mode.
+              if (polylineEditMode) resetEditModeIdleTimer();
               toggleSelection(point.id);
               const orderDetails = ordersById.get(point.id);
               if (!orderDetails) return;
@@ -2435,6 +2557,9 @@ export default function Index() {
   const handleOrderToggle = (event: Event, orderId: string) => {
     const target = event.currentTarget as { checked?: boolean } | null;
     if (!target) return;
+    // EDIT MODE timer reset (2026-05-08): table checkbox toggle counts
+    // as an interaction. Resets the 5s idle countdown when in edit mode.
+    if (polylineEditMode) resetEditModeIdleTimer();
     setSelectedOrderIds((current) => {
       const next = new Set(current);
       if (target.checked) {
@@ -2977,12 +3102,31 @@ export default function Index() {
       });
       return next;
     });
-    // Per 2026-05-06 review: Assign-to-new-route (and per-route-card
-     // "Add to route") submits via assignFetcher immediately and persists
-     // server-side. Dirty marking is reserved for the polyline editor's
-     // Confirm flow only — assignment paths must NOT surface the
-     // "Confirm changes" button. Removing the dirty mark makes both
-     // paths one-step from the user's perspective.
+    // 2026-05-08 update — supersedes the 2026-05-06 "one-step assign"
+    // decision per Lucas's unified EDIT MODE spec. ALL writes (Assign-to-
+    // new + Add-to-route + Reassign + Unassign + Clear) now mark the
+    // affected route(s) dirty. The dirty-set watcher useEffect auto-
+    // enters EDIT MODE, polylines render dotted, the 5s idle timer arms,
+    // and auto-confirm fires handleUpdateRoutes (server-side recompute
+    // including any new routes). Manually clicking Confirm has the same
+    // effect immediately. Bug 1 (assign-to-new no Confirm + no polyline)
+    // and Bug 2b (Add-to-route no Confirm + no polyline) both resolve
+    // because dirty marking now triggers the recompute path.
+    //
+    // The assignFetcher.submit is still kept here so the server learns
+    // about the new route assignment immediately (the action handler
+    // creates the server-side route record). The polyline recompute
+    // (server-side Lalamove routing call) happens via handleUpdateRoutes
+    // when the timer fires or the user clicks Confirm.
+    const targetRouteId = (() => {
+      if (routeIndex >= editableRoutes.length) {
+        return `${locationId}-${editableRoutes.length}`;
+      }
+      return editableRoutes[routeIndex]?.id ?? null;
+    })();
+    if (targetRouteId) {
+      setDirtyRouteIds((prev) => new Set(prev).add(targetRouteId));
+    }
     clearSelection();
     const formData = new FormData();
     formData.append("route", routeValue);
@@ -3250,6 +3394,38 @@ export default function Index() {
     );
   };
 
+  // EDIT MODE — 5s idle timer helpers (2026-05-08).
+  // resetEditModeIdleTimer is called from every watched interaction
+  // (marker click, zoom, pan, table checkbox toggle, additional writes).
+  // It (re-)arms a 5-second timeout; when fired, auto-confirm runs.
+  // autoConfirmFromIdleTimer is the timer's payload — same effect as
+  // clicking the Confirm button.
+  const resetEditModeIdleTimer = () => {
+    if (editModeIdleTimerRef.current !== null) {
+      window.clearTimeout(editModeIdleTimerRef.current);
+    }
+    editModeIdleTimerRef.current = window.setTimeout(() => {
+      editModeIdleTimerRef.current = null;
+      autoConfirmFromIdleTimer();
+    }, 5000);
+  };
+
+  const clearEditModeIdleTimer = () => {
+    if (editModeIdleTimerRef.current !== null) {
+      window.clearTimeout(editModeIdleTimerRef.current);
+      editModeIdleTimerRef.current = null;
+    }
+  };
+
+  const autoConfirmFromIdleTimer = () => {
+    // Same effect as clicking Confirm. Server-side commit happens via
+    // handleUpdateRoutes. On success the dirty set drains (per-result
+    // delete at line ~1039); on failure the dirty set persists, the
+    // timer restarts via the dirty-set watcher useEffect, and the user
+    // can retry by interacting (or clicking Confirm manually).
+    handleUpdateRoutes();
+  };
+
   // Polyline editor: enter edit mode + snapshot the state pieces Cancel
   // restores. Snapshots are deep-copied so subsequent mutations don't bleed
   // back into the snapshot.
@@ -3402,6 +3578,9 @@ export default function Index() {
     rows.length > 0 && rows.every((r) => selectedOrderIds.has(r.id));
 
   const toggleAllVisibleSelection = (rows: DisplayOrderRow[], select: boolean) => {
+    // EDIT MODE timer reset (2026-05-08): "select all" counts as
+    // interaction. Resets idle timer when in edit mode.
+    if (polylineEditMode) resetEditModeIdleTimer();
     setSelectedOrderIds((prev) => {
       const next = new Set(prev);
       for (const r of rows) {
@@ -3715,11 +3894,22 @@ export default function Index() {
   };
 
   const handleOptimizeFleet = () => {
+    // Bug 2a fix (2026-05-08): exclude orders carrying ld_failed-delivery
+    // (or any tag in the failed-delivery family from getAllFailedDeliveryTags)
+    // at candidate collection -- BEFORE any route placement runs. Per
+    // inputs/backlog/local-delivery.md > "Assignment logic": these orders
+    // must NEVER be added to a route by auto-assign. Operator-driven
+    // dispatch only after the address/contact issue is resolved and the
+    // tag is removed.
+    const failedDeliveryTagSet = new Set(getAllFailedDeliveryTags());
     const candidates = unassignedOrders
       .filter((order) =>
         locationId === DEFAULT_LOCATION_ID
           ? true
           : order.fulfillmentLocation.id === locationId,
+      )
+      .filter(
+        (order) => !order.tags.some((t) => failedDeliveryTagSet.has(t)),
       )
       .filter(
         (order) =>
