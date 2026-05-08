@@ -7093,6 +7093,7 @@ type PrecomputedRoute = {
 
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const loaderT0 = Date.now();
   const { admin, session } = await authenticate.admin(request);
   const shop = session.shop;
   const userLocale =
@@ -7118,90 +7119,52 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const deliveryPromiseDays = DEFAULT_DELIVERY_PROMISE_DAYS;
   const selectedPresaleTags = toPresaleTags(url.searchParams.get("presaleTags"));
 
-  let locationsResponse: Response;
-  try {
-    locationsResponse = await admin.graphql(
-      `#graphql
-        query LocationsForMap {
-          locations(first: 50) {
-            nodes {
-              id
-              name
-              localPickupSettingsV2 { instructions }
-              address {
-                address1
-                address2
-                city
-                province
-                country
-                countryCode
-                phone
-                latitude
-                longitude
-              }
+  // Per-step timing — fires through the whole loader so we can attribute
+  // latency post-hoc when the route hits 502 again. Convention follows
+  // CLAUDE.md "Logging" §[module] step=… durationMs=… shop=…
+  const timeStep = (label: string) => {
+    const t0 = Date.now();
+    return (extra?: string) => {
+      const ms = Date.now() - t0;
+      console.info(
+        `[local-delivery] loader step=${label} durationMs=${ms}${extra ? ` ${extra}` : ""} shop=${shop}`,
+      );
+    };
+  };
+
+  // Phase 1 — three independent boundary fetches in parallel:
+  //   (a) Shopify locations,
+  //   (b) Shopify delivery profiles (used to filter which locations have a "local" method),
+  //   (c) the per-shop Prisma trio (lalamove configs + credentials + return-pickup requests).
+  // None of these depend on each other, so the prior sequential layout was
+  // wasting ~500-1000ms of round-trip time per loader fire.
+  const endPhase1 = timeStep("phase1-parallel");
+  const locationsPromise = admin.graphql(
+    `#graphql
+      query LocationsForMap {
+        locations(first: 50) {
+          nodes {
+            id
+            name
+            localPickupSettingsV2 { instructions }
+            address {
+              address1
+              address2
+              city
+              province
+              country
+              countryCode
+              phone
+              latitude
+              longitude
             }
           }
-        }`,
-    );
-  } catch (error) {
-    throw error;
-  }
-
-  const locationsJson = await locationsResponse.json();
-  const allLocations = (locationsJson?.data?.locations?.nodes ?? []) as Array<{
-    id: string;
-    name: string;
-    localPickupSettingsV2: { instructions: string } | null;
-    address: {
-      address1: string | null;
-      address2: string | null;
-      city: string | null;
-      province: string | null;
-      country: string | null;
-      countryCode: string | null;
-      phone: string | null;
-      latitude: number | null;
-      longitude: number | null;
-    } | null;
-  }>;
-
-  // Filter to stores only (pickup enabled = physical store, null = warehouse/DC)
-  const locations = allLocations.filter((loc) => loc.localPickupSettingsV2 != null);
-
-  const [lalamoveConfigRows, credentialStatus, returnPickupRequests] = await Promise.all([
-    prisma.lalamoveLocationConfig.findMany({ where: { shop } }),
-    hasShopCredentials(shop),
-    prisma.returnPickupRequest.findMany({
-      where: { shop, status: { in: ["pending", "quoted"] } },
-      orderBy: { createdAt: "asc" },
-    }),
-  ]);
-  const lalamoveConfigs = lalamoveConfigRows.reduce<
-    Record<string, LalamoveConfig>
-  >((acc, row) => {
-    acc[row.locationId] = row.data as LalamoveConfig;
-    return acc;
-  }, {});
-
-  // Always inject Location registration data into Lalamove config (name, details); Location overrides saved config
-  const locationsById = new Map(
-    locations.map((loc) => [loc.id, loc]),
+        }
+      }`,
   );
-  for (const [locId, config] of Object.entries(lalamoveConfigs)) {
-    const loc = locationsById.get(locId);
-    if (loc) {
-      (lalamoveConfigs as Record<string, LalamoveConfig>)[locId] = {
-        ...config,
-        locationName: (loc.name ?? "").trim() || config.locationName || "",
-        locationDetails: (loc.address?.address2 ?? "").trim() || config.locationDetails || "",
-        pickupInstructions: config.pickupInstructions ?? "",
-      };
-    }
-  }
 
-  let localDeliveryLocationIds: Set<string> | null = null;
-  try {
-    const deliveryProfilesResponse = await admin.graphql(
+  const deliveryProfilesPromise = admin
+    .graphql(
       `#graphql
         query DeliveryProfilesForLocalDelivery {
           deliveryProfiles(first: 20) {
@@ -7227,8 +7190,78 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             }
           }
         }`,
-    );
-    const deliveryProfilesJson = await deliveryProfilesResponse.json();
+    )
+    .then((res) => res.json())
+    .catch((error: unknown) => {
+      console.warn(
+        "[local-delivery] loader: failed to load delivery profiles for filtering",
+        error,
+      );
+      return null;
+    });
+
+  const prismaTrioPromise = Promise.all([
+    prisma.lalamoveLocationConfig.findMany({ where: { shop } }),
+    hasShopCredentials(shop),
+    prisma.returnPickupRequest.findMany({
+      where: { shop, status: { in: ["pending", "quoted"] } },
+      orderBy: { createdAt: "asc" },
+    }),
+  ]);
+
+  const [locationsResponse, deliveryProfilesJson, [lalamoveConfigRows, credentialStatus, returnPickupRequests]] =
+    await Promise.all([locationsPromise, deliveryProfilesPromise, prismaTrioPromise]);
+  endPhase1();
+
+  const endLocationsParse = timeStep("locations-parse");
+  const locationsJson = await locationsResponse.json();
+  const allLocations = (locationsJson?.data?.locations?.nodes ?? []) as Array<{
+    id: string;
+    name: string;
+    localPickupSettingsV2: { instructions: string } | null;
+    address: {
+      address1: string | null;
+      address2: string | null;
+      city: string | null;
+      province: string | null;
+      country: string | null;
+      countryCode: string | null;
+      phone: string | null;
+      latitude: number | null;
+      longitude: number | null;
+    } | null;
+  }>;
+
+  // Filter to stores only (pickup enabled = physical store, null = warehouse/DC)
+  const locations = allLocations.filter((loc) => loc.localPickupSettingsV2 != null);
+  endLocationsParse(`stores=${locations.length} all=${allLocations.length}`);
+
+  const lalamoveConfigs = lalamoveConfigRows.reduce<
+    Record<string, LalamoveConfig>
+  >((acc, row) => {
+    acc[row.locationId] = row.data as LalamoveConfig;
+    return acc;
+  }, {});
+
+  // Always inject Location registration data into Lalamove config (name, details); Location overrides saved config
+  const locationsById = new Map(
+    locations.map((loc) => [loc.id, loc]),
+  );
+  for (const [locId, config] of Object.entries(lalamoveConfigs)) {
+    const loc = locationsById.get(locId);
+    if (loc) {
+      (lalamoveConfigs as Record<string, LalamoveConfig>)[locId] = {
+        ...config,
+        locationName: (loc.name ?? "").trim() || config.locationName || "",
+        locationDetails: (loc.address?.address2 ?? "").trim() || config.locationDetails || "",
+        pickupInstructions: config.pickupInstructions ?? "",
+      };
+    }
+  }
+
+  // Parse delivery profiles (already fetched in phase 1).
+  let localDeliveryLocationIds: Set<string> | null = null;
+  if (deliveryProfilesJson) {
     const profileGroups =
       deliveryProfilesJson.data?.deliveryProfiles?.nodes?.flatMap(
         (profile: {
@@ -7255,8 +7288,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       );
     });
     localDeliveryLocationIds = localIds.size > 0 ? localIds : null;
-  } catch (error) {
-    console.warn("[local-delivery] loader: failed to load delivery profiles for filtering", error);
   }
 
   const effectiveLocationId =
@@ -7330,6 +7361,44 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     fulfillments?: Array<{ displayStatus: string }>;
   }> = [];
 
+  // Phase 2 — orders pagination + the optimizer-accuracy lookup run in parallel.
+  // The optimizer-accuracy query is independent (filters routeCorrection by
+  // shop + 30d window) and adds another DB round-trip if run sequentially.
+  // Use a promise that returns the value (rather than mutating an outer `let`)
+  // so TypeScript narrows the type cleanly across the await boundary.
+  type OptimizerAccuracy = {
+    optimizations: number;
+    modified: number;
+    totalDispatched: number;
+    totalReassigned: number;
+  };
+  const endOrdersFetch = timeStep("orders-graphql-pagination");
+  const optimizerAccuracyPromise: Promise<OptimizerAccuracy | null> = (async () => {
+    try {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const corrections = await (prisma as any).routeCorrection.findMany({
+        where: { shop, dispatchedAt: { gte: thirtyDaysAgo } },
+        select: { snapshotId: true, wasModified: true, ordersDispatched: true, ordersReassigned: true },
+      });
+      if (corrections.length > 0) {
+        const uniqueSnapshots = new Set(corrections.map((c: any) => c.snapshotId));
+        const modifiedSnapshots = new Set(
+          corrections.filter((c: any) => c.wasModified).map((c: any) => c.snapshotId),
+        );
+        return {
+          optimizations: uniqueSnapshots.size,
+          modified: modifiedSnapshots.size,
+          totalDispatched: corrections.reduce((sum: number, c: any) => sum + (c.ordersDispatched ?? 0), 0),
+          totalReassigned: corrections.reduce((sum: number, c: any) => sum + (c.ordersReassigned ?? 0), 0),
+        };
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  })();
+
+  let pagesFetched = 0;
   try {
     let hasNextPage = true;
     let after: string | null = null;
@@ -7413,6 +7482,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       const payload: any = ordersJson?.data?.orders;
       const nodes = Array.isArray(payload?.nodes) ? payload.nodes : [];
       orders.push(...nodes);
+      pagesFetched += 1;
       hasNextPage = Boolean(payload?.pageInfo?.hasNextPage);
       after = payload?.pageInfo?.endCursor ?? null;
     }
@@ -7427,6 +7497,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       throw error;
     }
   }
+  endOrdersFetch(`pages=${pagesFetched} rows=${orders.length}`);
+
+  // Wait for the optimizer-accuracy lookup if it hasn't completed yet
+  // (typically much faster than orders pagination, but await to be safe).
+  const optimizerAccuracy = await optimizerAccuracyPromise;
 
   const normalizedDeliveryMethod =
     deliveryMethod === "all" ? null : toDeliveryMethodType(deliveryMethod);
@@ -7441,6 +7516,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }
     : null;
 
+  const endFilterMap = timeStep("orders-filter-map");
   const availablePresaleTags = extractPresaleTagsFromOrders(orders);
   const selectedPresaleTagSet = new Set(selectedPresaleTags);
 
@@ -7584,7 +7660,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       };
     })
     .filter((order): order is LoaderOrder => Boolean(order));
+  endFilterMap(`fetched=${orders.length} kept=${filteredOrders.length}`);
 
+  const endRouteStats = timeStep("route-stats-build");
   const routeStats = ROUTE_TAG_DEFINITIONS.map((route) => {
     const routeOrders = filteredOrders.filter((order) =>
       order.tags.includes(route.tag),
@@ -7611,7 +7689,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     };
   });
 
+  endRouteStats(`routes=${routeStats.filter((r) => r.orders.length > 0).length}`);
+
   // Look up cached corridor polylines from DB (zero Google API calls)
+  const endPolylineLookup = timeStep("polyline-cache-lookup");
   const routesForCacheLookup = routeStats
     .map((r, i) => ({
       id: `${effectiveLocationId}-${i}`,
@@ -7627,6 +7708,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     );
     cachedPolylines = await lookupCachedPolylines(shop, routesForCacheLookup);
   }
+  endPolylineLookup(`requested=${routesForCacheLookup.length} hit=${cachedPolylines.size}`);
 
   const precomputedRoutes: PrecomputedRoute[] = routeStats.map((r, i) => ({
     id: `${effectiveLocationId}-${i}`,
@@ -7697,6 +7779,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // Load Lalamove dispatch jobs for routes that still have tagged orders.
   // Tags are the source of truth: present = needs action, removed = fulfilled.
   // No date filter — dispatch records are fetched by routeId, not by time window.
+  const endDispatchReconcile = timeStep("dispatch-reconcile");
+  let dispatchReconcileMeta = { dispatches: 0, lalamoveCalls: 0 };
   let activeDispatchData: Array<{
     routeId: string;
     shareLink: string | null;
@@ -7769,7 +7853,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     // Reconcile with Lalamove API — check current status and capture shareLink
     const dispatchDetails = new Map<string, { shareLink: string | null; apiStatus: string | null }>();
     const credentials = await getRuntimeCredentialsForShop(shop);
+    dispatchReconcileMeta.dispatches = activeDispatches.length;
     if (credentials && activeDispatches.length > 0) {
+      dispatchReconcileMeta.lalamoveCalls = activeDispatches.length;
       const terminalStatuses = ["COMPLETED", "CANCELED", "REJECTED", "EXPIRED"];
       await Promise.allSettled(
         activeDispatches.map((dispatch: any) =>
@@ -7878,30 +7964,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   } catch {
     // Silently ignore if table is unavailable
   }
+  endDispatchReconcile(
+    `dispatches=${dispatchReconcileMeta.dispatches} lalamoveCalls=${dispatchReconcileMeta.lalamoveCalls} returned=${activeDispatchData.length}`,
+  );
 
-  // ── Optimizer accuracy stats (last 30 days) ──
-  let optimizerAccuracy: { optimizations: number; modified: number; totalDispatched: number; totalReassigned: number } | null = null;
-  try {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const corrections = await (prisma as any).routeCorrection.findMany({
-      where: { shop, dispatchedAt: { gte: thirtyDaysAgo } },
-      select: { snapshotId: true, wasModified: true, ordersDispatched: true, ordersReassigned: true },
-    });
-    if (corrections.length > 0) {
-      const uniqueSnapshots = new Set(corrections.map((c: any) => c.snapshotId));
-      const modifiedSnapshots = new Set(
-        corrections.filter((c: any) => c.wasModified).map((c: any) => c.snapshotId),
-      );
-      optimizerAccuracy = {
-        optimizations: uniqueSnapshots.size,
-        modified: modifiedSnapshots.size,
-        totalDispatched: corrections.reduce((sum: number, c: any) => sum + (c.ordersDispatched ?? 0), 0),
-        totalReassigned: corrections.reduce((sum: number, c: any) => sum + (c.ordersReassigned ?? 0), 0),
-      };
-    }
-  } catch {
-    // Non-blocking
-  }
+  console.info(
+    `[local-delivery] loader OK durationMs=${Date.now() - loaderT0} shop=${shop} location=${effectiveLocationId} ordersFetched=${orders.length} ordersKept=${filteredOrders.length} pages=${pagesFetched} dispatches=${activeDispatchData.length}`,
+  );
 
   return {
     orders: filteredOrders,

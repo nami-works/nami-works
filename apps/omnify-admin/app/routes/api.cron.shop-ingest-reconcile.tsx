@@ -409,6 +409,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   let processed = 0;
   let skipped = 0;
+  let lockedOut = 0;
   const errors: Array<{ shop: string; entity: ReconcileEntity; error: string }> = [];
   const summary: Array<{
     shop: string;
@@ -417,7 +418,44 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     products?: ReconcileStats;
   }> = [];
 
+  // Re-entrancy guard: a previous hour's run can still be paginating Shopify
+  // when the next hour's tick fires. We observed three concurrent runs holding
+  // 19 minutes of work each on 2026-05-07T22:11Z, contributing to a 502 on the
+  // /app/local-delivery loader. Per-shop lock via `ShopIngestMeta.status` so
+  // one stuck shop doesn't block others. Stale-lock timeout = 2h (longer than
+  // any healthy reconcile, shorter than the next-hour collision window).
+  const STALE_LOCK_MS = 2 * 60 * 60 * 1000;
+
   for (const shop of shops) {
+    // Per-shop reentrancy check + lock acquisition.
+    const meta = await prisma.shopIngestMeta.findUnique({ where: { shop } });
+    if (
+      meta?.status === "syncing" &&
+      meta.updatedAt &&
+      Date.now() - meta.updatedAt.getTime() < STALE_LOCK_MS
+    ) {
+      lockedOut += 1;
+      const lockAgeS = Math.round((Date.now() - meta.updatedAt.getTime()) / 1000);
+      console.warn(
+        `[shop-ingest:reconcile] SKIP shop=${shop} reason=already-syncing lockAgeSec=${lockAgeS}`,
+      );
+      continue;
+    }
+    if (meta?.status === "syncing") {
+      const lockAgeS = Math.round((Date.now() - (meta.updatedAt?.getTime() ?? 0)) / 1000);
+      console.warn(
+        `[shop-ingest:reconcile] FORCE-RELEASE-STALE-LOCK shop=${shop} lockAgeSec=${lockAgeS} threshold=${STALE_LOCK_MS / 1000}s`,
+      );
+    }
+
+    // Acquire the lock. Use upsert because shop may not have a meta row yet
+    // (first reconcile ever for this shop).
+    await prisma.shopIngestMeta.upsert({
+      where: { shop },
+      create: { shop, status: "syncing", errorMessage: null },
+      update: { status: "syncing", errorMessage: null },
+    });
+
     let admin: Awaited<ReturnType<typeof unauthenticated.admin>>["admin"];
     try {
       ({ admin } = await unauthenticated.admin(shop));
@@ -430,38 +468,57 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       if (!/no.*session|session.*not.*found|offline.*session|Unauthorized/i.test(message)) {
         errors.push({ shop, entity: "orders", error: message });
       }
+      // Release the lock since we never started any work.
+      await prisma.shopIngestMeta.update({
+        where: { shop },
+        data: { status: "idle" },
+      }).catch(() => {});
       continue;
     }
 
-    const meta = await prisma.shopIngestMeta.findUnique({ where: { shop } });
     const shopRow: { shop: string; orders?: ReconcileStats; customers?: ReconcileStats; products?: ReconcileStats } = { shop };
 
-    if (!entityFilter || entityFilter === "orders") {
-      shopRow.orders = await reconcileOrders(
-        admin,
-        shop,
-        meta?.ordersLastSeenUpdatedAt ?? null,
-      );
-      if (shopRow.orders.error)
-        errors.push({ shop, entity: "orders", error: shopRow.orders.error });
-    }
-    if (!entityFilter || entityFilter === "customers") {
-      shopRow.customers = await reconcileCustomers(
-        admin,
-        shop,
-        meta?.customersLastSeenUpdatedAt ?? null,
-      );
-      if (shopRow.customers.error)
-        errors.push({ shop, entity: "customers", error: shopRow.customers.error });
-    }
-    if (!entityFilter || entityFilter === "products") {
-      shopRow.products = await reconcileProducts(
-        admin,
-        shop,
-        meta?.productsLastSeenUpdatedAt ?? null,
-      );
-      if (shopRow.products.error)
-        errors.push({ shop, entity: "products", error: shopRow.products.error });
+    try {
+      if (!entityFilter || entityFilter === "orders") {
+        shopRow.orders = await reconcileOrders(
+          admin,
+          shop,
+          meta?.ordersLastSeenUpdatedAt ?? null,
+        );
+        if (shopRow.orders.error)
+          errors.push({ shop, entity: "orders", error: shopRow.orders.error });
+      }
+      if (!entityFilter || entityFilter === "customers") {
+        shopRow.customers = await reconcileCustomers(
+          admin,
+          shop,
+          meta?.customersLastSeenUpdatedAt ?? null,
+        );
+        if (shopRow.customers.error)
+          errors.push({ shop, entity: "customers", error: shopRow.customers.error });
+      }
+      if (!entityFilter || entityFilter === "products") {
+        shopRow.products = await reconcileProducts(
+          admin,
+          shop,
+          meta?.productsLastSeenUpdatedAt ?? null,
+        );
+        if (shopRow.products.error)
+          errors.push({ shop, entity: "products", error: shopRow.products.error });
+      }
+    } finally {
+      // Always release the lock — even if a reconcile threw. The per-entity
+      // reconcile functions update their own watermark fields; this final
+      // upsert just flips status back to idle. Capture the most recent error
+      // (if any) for observability.
+      const lastError = shopRow.orders?.error ?? shopRow.customers?.error ?? shopRow.products?.error ?? null;
+      await prisma.shopIngestMeta.update({
+        where: { shop },
+        data: {
+          status: lastError ? "error" : "idle",
+          errorMessage: lastError ?? null,
+        },
+      }).catch(() => {});
     }
 
     summary.push(shopRow);
@@ -470,7 +527,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const elapsed = ((Date.now() - phaseStart) / 1000).toFixed(1);
   console.info(
-    `[shop-ingest:reconcile] DONE processed=${processed} skipped=${skipped} errors=${errors.length} elapsed=${elapsed}s`,
+    `[shop-ingest:reconcile] DONE processed=${processed} skipped=${skipped} lockedOut=${lockedOut} errors=${errors.length} elapsed=${elapsed}s`,
   );
 
   return new Response(
@@ -478,6 +535,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       ok: true,
       processed,
       skipped,
+      lockedOut,
       totalShops: shops.length,
       errors,
       summary,
