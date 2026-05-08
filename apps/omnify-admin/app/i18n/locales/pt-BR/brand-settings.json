@@ -64,10 +64,31 @@
     "status": {
       "connected": "Conectada",
       "notConfigured": "N\u00e3o configurada",
-      "error": "Erro"
+      "error": "Erro",
+      "noRefs": "Nenhuma refer\u00eancia ainda"
+    },
+    "rows": {
+      "shopifyName": "Posts do blog Shopify",
+      "shopifyDetailIdle": "Pronto para coletar amostras dos seus artigos.",
+      "metaName": "Instagram e Facebook",
+      "metaPosts": "posts",
+      "metaDetailIdle": "Conecte para coletar legendas + texto em imagens via Meta Graph API.",
+      "mondayName": "Monday.com",
+      "mondayDetailIdle": "Adicione chave de API + IDs dos quadros para coletar c\u00f3pia interna.",
+      "manualName": "Refer\u00eancias manuais",
+      "manualDetailIdle": "Brandbooks, manifestos ou qualquer documento de refer\u00eancia.",
+      "manualCount_one": "1 refer\u00eancia",
+      "manualCount_other": "{{count}} refer\u00eancias"
+    },
+    "shopify": {
+      "help": "Conectado automaticamente via sua sess\u00e3o Shopify \u2014 sem credenciais necess\u00e1rias. Coletamos at\u00e9 5 blogs \u00d7 25 artigos mais recentes."
+    },
+    "manual": {
+      "emptyHint": "Nenhuma refer\u00eancia ainda. Solte um arquivo ou cole uma URL acima para adicionar."
     },
     "actions": {
       "refresh": "Atualizar",
+      "refreshNow": "Atualizar agora",
       "configure": "Configurar",
       "configureSoon": "Em breve",
       "accept": "Aceitar",

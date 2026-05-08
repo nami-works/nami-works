@@ -64,10 +64,31 @@
     "status": {
       "connected": "Connected",
       "notConfigured": "Not configured",
-      "error": "Error"
+      "error": "Error",
+      "noRefs": "No references yet"
+    },
+    "rows": {
+      "shopifyName": "Shopify blog posts",
+      "shopifyDetailIdle": "Ready to sample your existing blog articles.",
+      "metaName": "Instagram & Facebook",
+      "metaPosts": "posts",
+      "metaDetailIdle": "Connect to pull captions + image text via Meta Graph API.",
+      "mondayName": "Monday.com",
+      "mondayDetailIdle": "Add API key + board IDs to sample internal copy.",
+      "manualName": "Manual references",
+      "manualDetailIdle": "Brandbooks, manifestos, or any reference document.",
+      "manualCount_one": "1 reference",
+      "manualCount_other": "{{count}} references"
+    },
+    "shopify": {
+      "help": "Auto-connected via your Shopify session — no credentials needed. We sample up to 5 blogs × 25 most recent articles."
+    },
+    "manual": {
+      "emptyHint": "No references yet. Drop a file or paste a URL above to add one."
     },
     "actions": {
       "refresh": "Refresh",
+      "refreshNow": "Refresh now",
       "configure": "Configure",
       "configureSoon": "Coming soon",
       "accept": "Accept",

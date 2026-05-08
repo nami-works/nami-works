@@ -477,47 +477,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   return { success: false, error: "Unknown intent." };
 };
 
-const SOURCE_DISPLAY: Record<
-  ToneSourceType,
-  { name: string; iconClass: string; iconLetter: string; defaultDetail: string }
-> = {
-  shopify_blog: {
-    name: "Shopify blog posts",
-    iconClass: styles.sourceIcon,
-    iconLetter: "S",
-    defaultDetail: "Ready to sample your existing blog articles.",
-  },
-  meta_ig: {
-    name: "Instagram",
-    iconClass: `${styles.sourceIcon} ${styles.sourceIconMeta}`,
-    iconLetter: "IG",
-    defaultDetail: "Connect to pull captions + image text via Meta Graph API.",
-  },
-  meta_fb: {
-    name: "Facebook",
-    iconClass: `${styles.sourceIcon} ${styles.sourceIconMeta}`,
-    iconLetter: "FB",
-    defaultDetail: "Connect to pull captions + image text via Meta Graph API.",
-  },
-  monday: {
-    name: "Monday.com",
-    iconClass: `${styles.sourceIcon} ${styles.sourceIconMonday}`,
-    iconLetter: "M",
-    defaultDetail: "Add API key + board IDs to sample internal copy.",
-  },
-  manual_upload: {
-    name: "Manual references — files",
-    iconClass: `${styles.sourceIcon} ${styles.sourceIconUpload}`,
-    iconLetter: "F",
-    defaultDetail: "Upload brandbooks, manifestos, or any reference document.",
-  },
-  manual_url: {
-    name: "Manual references — URLs",
-    iconClass: `${styles.sourceIcon} ${styles.sourceIconUpload}`,
-    iconLetter: "U",
-    defaultDetail: "Paste a URL to fetch and extract reference copy.",
-  },
-};
+/* ============================================================
+ * Display rows (UI grouping over the 6 underlying source types)
+ *  - shopify_blog                → "Shopify blog posts"
+ *  - meta_ig + meta_fb           → "Instagram & Facebook"
+ *  - monday                      → "Monday.com"
+ *  - manual_upload + manual_url  → "Manual references"
+ * ============================================================ */
+type DisplayRowId = "shopify" | "meta" | "monday" | "manual";
 
 function categoryPillClass(category: ToneHypothesisCategory): string {
   switch (category) {
@@ -550,6 +517,95 @@ function formatRelative(iso: string | null): string | null {
   return `${days}d ago`;
 }
 
+/* ============================================================
+ * Brand-glyph SVG icons (inline, no external deps)
+ * ============================================================ */
+function ShopifyIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+      <path
+        fill="#5e8e3e"
+        d="M19.39 6.45c-.02-.16-.16-.25-.27-.26l-2.36-.18-1.74-1.72c-.17-.17-.51-.12-.64-.08-.02 0-.32.1-.81.25-.49-1.39-1.36-2.66-2.86-2.66h-.13c-.43-.55-.95-.8-1.41-.8-3.51 0-5.18 4.39-5.71 6.62L1.6 8.18c-.51.16-.52.18-.59.66L0 21.92l13.79 2.58V5.69l-.41.13c-.61-1.96-1.71-4.39-3.83-4.39-.06 0-.13 0-.2.02-.69-.91-1.55-1.27-2.32-1.27-.61 0-1.18.21-1.7.6.31-.02.62.06.92.21z"
+      />
+      <path
+        fill="#ffffff"
+        d="M13.79 24.5L23 22.04 21.43 6.18l-2.04-.18-5.6 5.39z"
+      />
+    </svg>
+  );
+}
+
+function MetaDualIcon() {
+  return (
+    <svg viewBox="0 0 32 18" width="32" height="18" aria-hidden="true">
+      <defs>
+        <linearGradient id="igGrad" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%" stopColor="#FFD600" />
+          <stop offset="50%" stopColor="#FF1744" />
+          <stop offset="100%" stopColor="#7C4DFF" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="1" width="14" height="14" rx="3.5" fill="url(#igGrad)" />
+      <circle cx="7" cy="8" r="3" fill="none" stroke="#ffffff" strokeWidth="1.4" />
+      <circle cx="11" cy="4" r="0.8" fill="#ffffff" />
+      <circle cx="25" cy="8" r="7" fill="#1877F2" />
+      <path
+        fill="#ffffff"
+        d="M26.3 5.3h1.1V3.5h-1.3c-1 0-1.7.7-1.7 1.7v1.1h-1.1v1.7h1.1v3.7h1.7V8h1.3l.2-1.7h-1.5V5.5c0-.1.1-.2.2-.2z"
+      />
+    </svg>
+  );
+}
+
+function MondayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+      <rect x="3" y="6" width="18" height="3.5" rx="1.75" fill="#E2445C" />
+      <rect x="3" y="10.5" width="18" height="3.5" rx="1.75" fill="#FDAB3D" />
+      <rect x="3" y="15" width="18" height="3.5" rx="1.75" fill="#00CA72" />
+    </svg>
+  );
+}
+
+function ManualIcon() {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      width="16"
+      height="16"
+      fill="#8a5a08"
+      aria-hidden="true"
+    >
+      <path d="M3 13a1 1 0 0 1 1 1v3h12v-3a1 1 0 1 1 2 0v3a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3a1 1 0 0 1 1-1z" />
+      <path d="M10 1a1 1 0 0 1 .7.3l3 3a1 1 0 0 1-1.4 1.4L11 4.4V12a1 1 0 1 1-2 0V4.4L7.7 5.7a1 1 0 1 1-1.4-1.4l3-3A1 1 0 0 1 10 1z" />
+    </svg>
+  );
+}
+
+function ChevronIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" aria-hidden="true">
+      <path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z" />
+    </svg>
+  );
+}
+
+function FileIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true">
+      <path d="M3 2h7l3 3v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm0 1v11h10V6h-3V3H3z" />
+    </svg>
+  );
+}
+
+function LinkIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true">
+      <path d="M5.5 11.4a2 2 0 0 1 0-2.8l2-2a1 1 0 0 1 1.4 1.4l-2 2a.6.6 0 0 0 0 .8l1 1a.6.6 0 0 0 .8 0l2-2a1 1 0 0 1 1.4 1.4l-2 2a2.6 2.6 0 0 1-3.6 0zm-1.4-1.4a1 1 0 0 1-1.4 0 2.6 2.6 0 0 1 0-3.6l2-2a2.6 2.6 0 0 1 3.6 0 1 1 0 0 1-1.4 1.4.6.6 0 0 0-.8 0l-2 2a.6.6 0 0 0 0 .8 1 1 0 0 1 0 1.4z" />
+    </svg>
+  );
+}
+
 export default function ToneSourcesPage() {
   const {
     manualToneOverride,
@@ -568,13 +624,14 @@ export default function ToneSourcesPage() {
   const shopify = useAppBridge();
   const { t } = useTranslation("brand-settings");
 
-  const [showMondayConfig, setShowMondayConfig] = useState(false);
+  // ── single-expand-at-a-time state ──────────────────────────
+  const [expandedRow, setExpandedRow] = useState<DisplayRowId | null>("shopify");
+
+  // ── form input state ───────────────────────────────────────
   const [mondayApiKeyInput, setMondayApiKeyInput] = useState("");
   const [mondayBoardIdsInput, setMondayBoardIdsInput] = useState(
     mondayBoardIds.join(", "),
   );
-
-  const [showMetaConfig, setShowMetaConfig] = useState(false);
   const [metaTokenInput, setMetaTokenInput] = useState("");
   const [metaIgInput, setMetaIgInput] = useState(metaIgBusinessId ?? "");
   const [metaFbInput, setMetaFbInput] = useState(metaFbPageId ?? "");
@@ -637,6 +694,33 @@ export default function ToneSourcesPage() {
     }
   }, [uploadFetcher.data, shopify, t]);
 
+  // ── derive grouped row data from underlying sources ────────
+  const sourceMap = new Map<ToneSourceType, SerializedSource>(
+    sources.map((s) => [s.sourceType, s]),
+  );
+
+  const shopifySource = sourceMap.get("shopify_blog");
+  const igSource = sourceMap.get("meta_ig");
+  const fbSource = sourceMap.get("meta_fb");
+  const mondaySource = sourceMap.get("monday");
+  const uploadSource = sourceMap.get("manual_upload");
+  const urlSource = sourceMap.get("manual_url");
+
+  const metaSampleCount =
+    (igSource?.sampleCount ?? 0) + (fbSource?.sampleCount ?? 0);
+  const metaLastSampled =
+    [igSource?.lastSampledAt, fbSource?.lastSampledAt]
+      .filter((x): x is string => Boolean(x))
+      .sort()
+      .pop() ?? null;
+
+  const manualSampleCount =
+    (uploadSource?.sampleCount ?? 0) + (urlSource?.sampleCount ?? 0);
+
+  const toggleRow = (id: DisplayRowId) => {
+    setExpandedRow((prev) => (prev === id ? null : id));
+  };
+
   return (
     <s-page heading={t("toneSources.pageHeading", { defaultValue: "Tone of voice sources" })}>
       <s-button variant="tertiary" slot="secondary-actions">
@@ -671,178 +755,95 @@ export default function ToneSourcesPage() {
         </s-paragraph>
 
         <div className={styles.sourceList}>
-          {sources.map((source) => {
-            const display = SOURCE_DISPLAY[source.sourceType];
-            const sampledRelative = formatRelative(source.lastSampledAt);
-            const detail = source.detail
-              ? sampledRelative
-                ? `${source.detail} · sampled ${sampledRelative}`
-                : source.detail
-              : display.defaultDetail;
-
-            return (
-              <div className={styles.sourceRow} key={source.sourceType}>
-                <div className={display.iconClass}>{display.iconLetter}</div>
-                <div className={styles.sourceMeta}>
-                  <div className={styles.sourceName}>{display.name}</div>
-                  <div className={styles.sourceDetail}>{detail}</div>
-                </div>
-                {source.status === "connected" ? (
-                  <span
-                    className={`${styles.statusPill} ${styles.statusPillConnected}`}
-                  >
-                    {t("toneSources.status.connected", {
-                      defaultValue: "Connected",
-                    })}
-                  </span>
-                ) : (
-                  <span
-                    className={`${styles.statusPill} ${styles.statusPillNotConfigured}`}
-                  >
-                    {t("toneSources.status.notConfigured", {
-                      defaultValue: "Not configured",
-                    })}
-                  </span>
-                )}
-                {source.sourceType === "shopify_blog" ? (
-                  <fetcher.Form method="POST">
-                    <input
-                      type="hidden"
-                      name="intent"
-                      value="refreshShopify"
-                    />
-                    <s-button
-                      type="submit"
-                      variant="tertiary"
-                      {...(isRefreshingShopify
-                        ? { loading: true, disabled: true }
-                        : {})}
-                    >
-                      {t("toneSources.actions.refresh", {
-                        defaultValue: "Refresh",
-                      })}
-                    </s-button>
-                  </fetcher.Form>
-                ) : source.sourceType === "manual_upload" ||
-                  source.sourceType === "manual_url" ? (
-                  <span style={{ width: 96 }} />
-                ) : source.sourceType === "meta_ig" ||
-                  source.sourceType === "meta_fb" ? (
-                  metaConfigured ? (
-                    <fetcher.Form method="POST">
-                      <input
-                        type="hidden"
-                        name="intent"
-                        value="refreshMeta"
-                      />
-                      <s-button
-                        type="submit"
-                        variant="tertiary"
-                        {...(isRefreshingMeta
-                          ? { loading: true, disabled: true }
-                          : {})}
-                      >
-                        {t("toneSources.actions.refresh", {
-                          defaultValue: "Refresh",
-                        })}
-                      </s-button>
-                    </fetcher.Form>
-                  ) : (
-                    <s-button
-                      variant="tertiary"
-                      onClick={() => setShowMetaConfig((prev) => !prev)}
-                    >
-                      {t("toneSources.actions.configure", {
-                        defaultValue: "Configure",
-                      })}
-                    </s-button>
-                  )
-                ) : source.sourceType === "monday" ? (
-                  mondayConfigured ? (
-                    <fetcher.Form method="POST">
-                      <input
-                        type="hidden"
-                        name="intent"
-                        value="refreshMonday"
-                      />
-                      <s-button
-                        type="submit"
-                        variant="tertiary"
-                        {...(isRefreshingMonday
-                          ? { loading: true, disabled: true }
-                          : {})}
-                      >
-                        {t("toneSources.actions.refresh", {
-                          defaultValue: "Refresh",
-                        })}
-                      </s-button>
-                    </fetcher.Form>
-                  ) : (
-                    <s-button
-                      variant="tertiary"
-                      onClick={() => setShowMondayConfig((prev) => !prev)}
-                    >
-                      {t("toneSources.actions.configure", {
-                        defaultValue: "Configure",
-                      })}
-                    </s-button>
-                  )
-                ) : (
-                  <s-button variant="tertiary" disabled>
-                    {t("toneSources.actions.configureSoon", {
-                      defaultValue: "Coming soon",
-                    })}
-                  </s-button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {(showMetaConfig || metaConfigured) && (
-          <div
-            style={{
-              marginTop: 14,
-              padding: 16,
-              border: "1px solid #e1e3e5",
-              borderRadius: 8,
-              background: "#fafafa",
-            }}
+          {/* ───── SHOPIFY ───── */}
+          <SourceItem
+            id="shopify"
+            expanded={expandedRow === "shopify"}
+            onToggle={toggleRow}
+            iconClass={`${styles.sourceIcon} ${styles.sourceIconShopify}`}
+            icon={<ShopifyIcon />}
+            name={t("toneSources.rows.shopifyName", { defaultValue: "Shopify blog posts" })}
+            detail={
+              shopifySource?.detail
+                ? formatDetail(shopifySource.detail, shopifySource.lastSampledAt)
+                : t("toneSources.rows.shopifyDetailIdle", {
+                    defaultValue: "Ready to sample your existing blog articles.",
+                  })
+            }
+            statusKey={shopifySource?.sampleCount ? "connected" : "notConfigured"}
+            statusText={
+              shopifySource?.sampleCount
+                ? t("toneSources.status.connected", { defaultValue: "Connected" })
+                : t("toneSources.status.notConfigured", {
+                    defaultValue: "Not configured",
+                  })
+            }
           >
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
-              {t("toneSources.meta.title", {
-                defaultValue: "Instagram & Facebook configuration",
+            <p className={styles.bodyHelp}>
+              {t("toneSources.shopify.help", {
+                defaultValue:
+                  "Auto-connected via your Shopify session — no credentials needed. We sample up to 5 blogs × 25 most recent articles.",
               })}
+            </p>
+            <div className={styles.bodyActions}>
+              <fetcher.Form method="POST">
+                <input type="hidden" name="intent" value="refreshShopify" />
+                <s-button
+                  type="submit"
+                  variant="secondary"
+                  {...(isRefreshingShopify ? { loading: true, disabled: true } : {})}
+                >
+                  {t("toneSources.actions.refreshNow", {
+                    defaultValue: "Refresh now",
+                  })}
+                </s-button>
+              </fetcher.Form>
             </div>
-            <div
-              style={{ fontSize: 12, color: "#6d7175", marginBottom: 12 }}
-            >
+          </SourceItem>
+
+          {/* ───── INSTAGRAM & FACEBOOK (merged) ───── */}
+          <SourceItem
+            id="meta"
+            expanded={expandedRow === "meta"}
+            onToggle={toggleRow}
+            iconClass={`${styles.sourceIcon} ${styles.sourceIconMeta}`}
+            icon={<MetaDualIcon />}
+            name={t("toneSources.rows.metaName", {
+              defaultValue: "Instagram & Facebook",
+            })}
+            detail={
+              metaConfigured && metaSampleCount > 0
+                ? `${metaSampleCount} ${t("toneSources.rows.metaPosts", { defaultValue: "posts" })} ${formatSampledRelative(metaLastSampled)}`
+                : t("toneSources.rows.metaDetailIdle", {
+                    defaultValue:
+                      "Connect to pull captions + image text via Meta Graph API.",
+                  })
+            }
+            statusKey={metaConfigured ? "connected" : "notConfigured"}
+            statusText={
+              metaConfigured
+                ? t("toneSources.status.connected", { defaultValue: "Connected" })
+                : t("toneSources.status.notConfigured", {
+                    defaultValue: "Not configured",
+                  })
+            }
+          >
+            <p className={styles.bodyHelp}>
               {t("toneSources.meta.description", {
                 defaultValue:
                   "Generate a long-lived Page Access Token in Meta Business Suite (Settings → Users → System Users → Generate token). Provide the IG Business ID and/or FB Page ID for accounts you want sampled.",
               })}
-            </div>
+            </p>
             <fetcher.Form method="POST">
-              <input
-                type="hidden"
-                name="intent"
-                value="saveMetaConfig"
-              />
-              <div style={{ marginBottom: 12 }}>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "#6d7175",
-                    marginBottom: 4,
-                  }}
-                >
+              <input type="hidden" name="intent" value="saveMetaConfig" />
+              <div className={styles.field}>
+                <label className={styles.fieldLabel}>
                   {t("toneSources.meta.token", {
                     defaultValue: "Long-lived Page Access Token",
                   })}
                 </label>
                 <input
+                  className={styles.fieldInput}
                   type="password"
                   name="metaAccessToken"
                   value={metaTokenInput}
@@ -854,171 +855,132 @@ export default function ToneSourcesPage() {
                         })
                       : "EAAB..."
                   }
-                  style={{
-                    width: "100%",
-                    padding: "6px 10px",
-                    border: "1px solid #e1e3e5",
-                    borderRadius: 4,
-                    fontSize: 13,
-                  }}
                 />
               </div>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 12,
-                  marginBottom: 12,
-                }}
-              >
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: "#6d7175",
-                      marginBottom: 4,
-                    }}
-                  >
+              <div className={styles.fieldRow2}>
+                <div className={styles.field}>
+                  <label className={styles.fieldLabel}>
                     {t("toneSources.meta.igBusinessId", {
                       defaultValue: "Instagram Business ID",
                     })}
                   </label>
                   <input
+                    className={styles.fieldInput}
                     type="text"
                     name="metaIgBusinessId"
                     value={metaIgInput}
                     onChange={(e) => setMetaIgInput(e.target.value)}
                     placeholder="17841400000000000"
-                    style={{
-                      width: "100%",
-                      padding: "6px 10px",
-                      border: "1px solid #e1e3e5",
-                      borderRadius: 4,
-                      fontSize: 13,
-                    }}
                   />
                 </div>
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: "#6d7175",
-                      marginBottom: 4,
-                    }}
-                  >
+                <div className={styles.field}>
+                  <label className={styles.fieldLabel}>
                     {t("toneSources.meta.fbPageId", {
                       defaultValue: "Facebook Page ID",
                     })}
                   </label>
                   <input
+                    className={styles.fieldInput}
                     type="text"
                     name="metaFbPageId"
                     value={metaFbInput}
                     onChange={(e) => setMetaFbInput(e.target.value)}
                     placeholder="100000000000000"
-                    style={{
-                      width: "100%",
-                      padding: "6px 10px",
-                      border: "1px solid #e1e3e5",
-                      borderRadius: 4,
-                      fontSize: 13,
-                    }}
                   />
                 </div>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  justifyContent: "flex-end",
-                }}
-              >
-                {metaConfigured && (
+              {metaConfigured ? (
+                <div className={styles.bodyActionsSplit}>
                   <fetcher.Form method="POST">
-                    <input
-                      type="hidden"
-                      name="intent"
-                      value="clearMetaConfig"
-                    />
+                    <input type="hidden" name="intent" value="clearMetaConfig" />
                     <s-button type="submit" variant="tertiary" tone="critical">
                       {t("toneSources.meta.disconnect", {
                         defaultValue: "Disconnect",
                       })}
                     </s-button>
                   </fetcher.Form>
-                )}
-                <s-button
-                  type="submit"
-                  variant="primary"
-                  {...(isSavingMeta
-                    ? { loading: true, disabled: true }
-                    : {})}
-                >
-                  {t("toneSources.meta.save", {
-                    defaultValue: "Save Meta config",
-                  })}
-                </s-button>
-              </div>
+                  <div className={styles.bodyActionsRight}>
+                    <fetcher.Form method="POST">
+                      <input type="hidden" name="intent" value="refreshMeta" />
+                      <s-button
+                        type="submit"
+                        variant="secondary"
+                        {...(isRefreshingMeta
+                          ? { loading: true, disabled: true }
+                          : {})}
+                      >
+                        {t("toneSources.actions.refreshNow", {
+                          defaultValue: "Refresh now",
+                        })}
+                      </s-button>
+                    </fetcher.Form>
+                    <s-button
+                      type="submit"
+                      variant="primary"
+                      {...(isSavingMeta ? { loading: true, disabled: true } : {})}
+                    >
+                      {t("toneSources.meta.save", {
+                        defaultValue: "Save Meta config",
+                      })}
+                    </s-button>
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.bodyActions}>
+                  <s-button
+                    type="submit"
+                    variant="primary"
+                    {...(isSavingMeta ? { loading: true, disabled: true } : {})}
+                  >
+                    {t("toneSources.meta.save", {
+                      defaultValue: "Save Meta config",
+                    })}
+                  </s-button>
+                </div>
+              )}
             </fetcher.Form>
-          </div>
-        )}
+          </SourceItem>
 
-        {(showMondayConfig || mondayConfigured) && (
-          <div
-            style={{
-              marginTop: 14,
-              padding: 16,
-              border: "1px solid #e1e3e5",
-              borderRadius: 8,
-              background: "#fafafa",
-            }}
+          {/* ───── MONDAY ───── */}
+          <SourceItem
+            id="monday"
+            expanded={expandedRow === "monday"}
+            onToggle={toggleRow}
+            iconClass={`${styles.sourceIcon} ${styles.sourceIconMonday}`}
+            icon={<MondayIcon />}
+            name={t("toneSources.rows.mondayName", { defaultValue: "Monday.com" })}
+            detail={
+              mondayConfigured && mondaySource?.sampleCount
+                ? formatDetail(mondaySource.detail, mondaySource.lastSampledAt)
+                : t("toneSources.rows.mondayDetailIdle", {
+                    defaultValue:
+                      "Add API key + board IDs to sample internal copy.",
+                  })
+            }
+            statusKey={mondayConfigured ? "connected" : "notConfigured"}
+            statusText={
+              mondayConfigured
+                ? t("toneSources.status.connected", { defaultValue: "Connected" })
+                : t("toneSources.status.notConfigured", {
+                    defaultValue: "Not configured",
+                  })
+            }
           >
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
-              {t("toneSources.monday.title", {
-                defaultValue: "Monday.com configuration",
-              })}
-            </div>
-            <div
-              style={{ fontSize: 12, color: "#6d7175", marginBottom: 12 }}
-            >
+            <p className={styles.bodyHelp}>
               {t("toneSources.monday.description", {
                 defaultValue:
                   "Generate an API key in Monday.com (Profile → Admin → API). Paste your board IDs comma-separated.",
               })}
-            </div>
+            </p>
             <fetcher.Form method="POST">
-              <input
-                type="hidden"
-                name="intent"
-                value="saveMondayConfig"
-              />
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 12,
-                  marginBottom: 12,
-                }}
-              >
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: "#6d7175",
-                      marginBottom: 4,
-                    }}
-                  >
-                    {t("toneSources.monday.apiKey", {
-                      defaultValue: "API key",
-                    })}
+              <input type="hidden" name="intent" value="saveMondayConfig" />
+              <div className={styles.fieldRow2}>
+                <div className={styles.field}>
+                  <label className={styles.fieldLabel}>
+                    {t("toneSources.monday.apiKey", { defaultValue: "API key" })}
                   </label>
                   <input
+                    className={styles.fieldInput}
                     type="password"
                     name="mondayApiKey"
                     value={mondayApiKeyInput}
@@ -1031,212 +993,235 @@ export default function ToneSourcesPage() {
                           })
                         : "eyJ0eX..."
                     }
-                    style={{
-                      width: "100%",
-                      padding: "6px 10px",
-                      border: "1px solid #e1e3e5",
-                      borderRadius: 4,
-                      fontSize: 13,
-                    }}
                   />
                 </div>
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: "#6d7175",
-                      marginBottom: 4,
-                    }}
-                  >
+                <div className={styles.field}>
+                  <label className={styles.fieldLabel}>
                     {t("toneSources.monday.boardIds", {
                       defaultValue: "Board IDs (comma-separated)",
                     })}
                   </label>
                   <input
+                    className={styles.fieldInput}
                     type="text"
                     name="mondayBoardIds"
                     value={mondayBoardIdsInput}
-                    onChange={(e) =>
-                      setMondayBoardIdsInput(e.target.value)
-                    }
+                    onChange={(e) => setMondayBoardIdsInput(e.target.value)}
                     placeholder="123456789, 987654321"
-                    style={{
-                      width: "100%",
-                      padding: "6px 10px",
-                      border: "1px solid #e1e3e5",
-                      borderRadius: 4,
-                      fontSize: 13,
-                    }}
                   />
                 </div>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  justifyContent: "flex-end",
-                }}
-              >
-                {mondayConfigured && (
+              {mondayConfigured ? (
+                <div className={styles.bodyActionsSplit}>
                   <fetcher.Form method="POST">
-                    <input
-                      type="hidden"
-                      name="intent"
-                      value="clearMondayConfig"
-                    />
+                    <input type="hidden" name="intent" value="clearMondayConfig" />
                     <s-button type="submit" variant="tertiary" tone="critical">
                       {t("toneSources.monday.disconnect", {
                         defaultValue: "Disconnect",
                       })}
                     </s-button>
                   </fetcher.Form>
-                )}
-                <s-button
-                  type="submit"
-                  variant="primary"
-                  {...(isSavingMonday
-                    ? { loading: true, disabled: true }
-                    : {})}
-                >
-                  {t("toneSources.monday.save", {
-                    defaultValue: "Save Monday.com config",
-                  })}
-                </s-button>
-              </div>
-            </fetcher.Form>
-          </div>
-        )}
-
-        <div className={styles.uploadDropzone}>
-          <div className={styles.uploadDropzoneCenter}>
-            <div className={styles.uploadDropzoneTitle}>
-              {t("toneSources.upload.title", {
-                defaultValue:
-                  "Add a brandbook, manifesto, or any reference",
-              })}
-            </div>
-            <div className={styles.uploadDropzoneSub}>
-              {t("toneSources.upload.sub", {
-                defaultValue:
-                  "PDF, DOCX, TXT, MD up to 10MB · or paste a URL",
-              })}
-            </div>
-          </div>
-          <div className={styles.uploadDropzoneRow}>
-            <uploadFetcher.Form
-              method="POST"
-              style={{ display: "flex", gap: 8, flex: 1 }}
-            >
-              <input type="hidden" name="intent" value="addUrl" />
-              <input
-                className={styles.uploadDropzoneInput}
-                type="text"
-                name="url"
-                placeholder="https://..."
-              />
-              <s-button
-                type="submit"
-                variant="tertiary"
-                {...(isUploading ? { loading: true, disabled: true } : {})}
-              >
-                {t("toneSources.upload.fetchUrl", {
-                  defaultValue: "Fetch URL",
-                })}
-              </s-button>
-            </uploadFetcher.Form>
-            <span className={styles.uploadDropzoneOr}>
-              {t("toneSources.upload.or", { defaultValue: "or" })}
-            </span>
-            <uploadFetcher.Form
-              method="POST"
-              encType="multipart/form-data"
-              style={{ display: "flex", gap: 8 }}
-            >
-              <input type="hidden" name="intent" value="uploadFile" />
-              <input
-                type="file"
-                name="file"
-                accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
-                onChange={(e) => {
-                  if (e.currentTarget.files?.length) {
-                    e.currentTarget.form?.requestSubmit();
-                  }
-                }}
-                disabled={isUploading}
-              />
-            </uploadFetcher.Form>
-          </div>
-        </div>
-
-        {manualReferences.length > 0 && (
-          <div style={{ marginTop: 16 }}>
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: "#6d7175",
-                marginBottom: 8,
-              }}
-            >
-              {t("toneSources.upload.referencesHeading", {
-                defaultValue: "Manual references",
-              })}
-            </div>
-            {manualReferences.map((r) => (
-              <div
-                key={r.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: "8px 12px",
-                  borderBottom: "1px solid #f1f1f1",
-                  fontSize: 12,
-                }}
-              >
-                <span style={{ flex: 1 }}>
-                  {r.sourceType === "manual_upload"
-                    ? r.filename ?? "(file)"
-                    : r.sourceUrl ?? "(url)"}
-                </span>
-                <span style={{ color: "#6d7175" }}>{r.charCount} chars</span>
-                <span style={{ color: "#6d7175" }}>
-                  {formatRelative(r.capturedAt)}
-                </span>
-                {r.sourceType === "manual_upload" && (
-                  <fetcher.Form method="POST">
-                    <input
-                      type="hidden"
-                      name="intent"
-                      value="reExtract"
-                    />
-                    <input type="hidden" name="sourceId" value={r.sourceId} />
-                    <s-button type="submit" variant="tertiary">
-                      {t("toneSources.actions.reExtract", {
-                        defaultValue: "Re-extract",
+                  <div className={styles.bodyActionsRight}>
+                    <fetcher.Form method="POST">
+                      <input type="hidden" name="intent" value="refreshMonday" />
+                      <s-button
+                        type="submit"
+                        variant="secondary"
+                        {...(isRefreshingMonday
+                          ? { loading: true, disabled: true }
+                          : {})}
+                      >
+                        {t("toneSources.actions.refreshNow", {
+                          defaultValue: "Refresh now",
+                        })}
+                      </s-button>
+                    </fetcher.Form>
+                    <s-button
+                      type="submit"
+                      variant="primary"
+                      {...(isSavingMonday ? { loading: true, disabled: true } : {})}
+                    >
+                      {t("toneSources.monday.save", {
+                        defaultValue: "Save Monday.com config",
                       })}
                     </s-button>
-                  </fetcher.Form>
-                )}
-                <fetcher.Form method="POST">
-                  <input
-                    type="hidden"
-                    name="intent"
-                    value="deleteReference"
-                  />
-                  <input type="hidden" name="sourceId" value={r.sourceId} />
-                  <s-button type="submit" variant="tertiary">
-                    {t("toneSources.actions.delete", {
-                      defaultValue: "Delete",
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.bodyActions}>
+                  <s-button
+                    type="submit"
+                    variant="primary"
+                    {...(isSavingMonday ? { loading: true, disabled: true } : {})}
+                  >
+                    {t("toneSources.monday.save", {
+                      defaultValue: "Save Monday.com config",
                     })}
                   </s-button>
-                </fetcher.Form>
+                </div>
+              )}
+            </fetcher.Form>
+          </SourceItem>
+
+          {/* ───── MANUAL REFERENCES (merged file + URL) ───── */}
+          <SourceItem
+            id="manual"
+            expanded={expandedRow === "manual"}
+            onToggle={toggleRow}
+            iconClass={`${styles.sourceIcon} ${styles.sourceIconUpload}`}
+            icon={<ManualIcon />}
+            name={t("toneSources.rows.manualName", {
+              defaultValue: "Manual references",
+            })}
+            detail={
+              manualReferences.length > 0
+                ? manualReferences
+                    .slice(0, 4)
+                    .map((r) => r.filename ?? r.sourceUrl ?? "(ref)")
+                    .join(" · ")
+                : t("toneSources.rows.manualDetailIdle", {
+                    defaultValue:
+                      "Brandbooks, manifestos, or any reference document.",
+                  })
+            }
+            statusKey={manualReferences.length > 0 ? "connected" : "notConfigured"}
+            statusText={
+              manualReferences.length > 0
+                ? t("toneSources.rows.manualCount", {
+                    count: manualReferences.length,
+                    defaultValue:
+                      manualReferences.length === 1
+                        ? "1 reference"
+                        : `${manualReferences.length} references`,
+                  })
+                : t("toneSources.status.noRefs", {
+                    defaultValue: "No references yet",
+                  })
+            }
+          >
+            <div className={styles.uploadDropzone}>
+              <div className={styles.uploadDropzoneCenter}>
+                <div className={styles.uploadDropzoneTitle}>
+                  {t("toneSources.upload.title", {
+                    defaultValue:
+                      "Add a brandbook, manifesto, or any reference",
+                  })}
+                </div>
+                <div className={styles.uploadDropzoneSub}>
+                  {t("toneSources.upload.sub", {
+                    defaultValue:
+                      "PDF, DOCX, TXT, MD up to 10MB · or paste a URL",
+                  })}
+                </div>
               </div>
-            ))}
-          </div>
-        )}
+              <div className={styles.uploadDropzoneRow}>
+                <uploadFetcher.Form
+                  method="POST"
+                  style={{ display: "flex", gap: 8, flex: 1 }}
+                >
+                  <input type="hidden" name="intent" value="addUrl" />
+                  <input
+                    className={styles.uploadDropzoneInput}
+                    type="text"
+                    name="url"
+                    placeholder="https://..."
+                  />
+                  <s-button
+                    type="submit"
+                    variant="secondary"
+                    {...(isUploading ? { loading: true, disabled: true } : {})}
+                  >
+                    {t("toneSources.upload.fetchUrl", {
+                      defaultValue: "Fetch URL",
+                    })}
+                  </s-button>
+                </uploadFetcher.Form>
+                <span className={styles.uploadDropzoneOr}>
+                  {t("toneSources.upload.or", { defaultValue: "or" })}
+                </span>
+                <uploadFetcher.Form
+                  method="POST"
+                  encType="multipart/form-data"
+                  style={{ display: "flex", gap: 8 }}
+                >
+                  <input type="hidden" name="intent" value="uploadFile" />
+                  <input
+                    type="file"
+                    name="file"
+                    accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
+                    onChange={(e) => {
+                      if (e.currentTarget.files?.length) {
+                        e.currentTarget.form?.requestSubmit();
+                      }
+                    }}
+                    disabled={isUploading}
+                  />
+                </uploadFetcher.Form>
+              </div>
+            </div>
+
+            {manualReferences.length > 0 && (
+              <div className={styles.referenceList}>
+                {manualReferences.map((r) => (
+                  <div key={r.id} className={styles.referenceRow}>
+                    <span className={styles.referenceRowIcon}>
+                      {r.sourceType === "manual_url" ? <LinkIcon /> : <FileIcon />}
+                    </span>
+                    <span className={styles.referenceRowName}>
+                      {r.sourceType === "manual_upload"
+                        ? (r.filename ?? "(file)")
+                        : (r.sourceUrl ?? "(url)")}
+                    </span>
+                    <span className={styles.referenceRowMeta}>
+                      {r.charCount} chars
+                    </span>
+                    <span className={styles.referenceRowMeta}>
+                      {formatRelative(r.capturedAt)}
+                    </span>
+                    {r.sourceType === "manual_upload" ? (
+                      <fetcher.Form method="POST">
+                        <input type="hidden" name="intent" value="reExtract" />
+                        <input
+                          type="hidden"
+                          name="sourceId"
+                          value={r.sourceId}
+                        />
+                        <s-button type="submit" variant="tertiary">
+                          {t("toneSources.actions.reExtract", {
+                            defaultValue: "Re-extract",
+                          })}
+                        </s-button>
+                      </fetcher.Form>
+                    ) : (
+                      <span />
+                    )}
+                    <fetcher.Form method="POST">
+                      <input
+                        type="hidden"
+                        name="intent"
+                        value="deleteReference"
+                      />
+                      <input type="hidden" name="sourceId" value={r.sourceId} />
+                      <s-button type="submit" variant="tertiary">
+                        {t("toneSources.actions.delete", {
+                          defaultValue: "Delete",
+                        })}
+                      </s-button>
+                    </fetcher.Form>
+                  </div>
+                ))}
+              </div>
+            )}
+            {manualSampleCount === 0 && (
+              <p className={styles.bodyHelp} style={{ marginTop: 12 }}>
+                {t("toneSources.manual.emptyHint", {
+                  defaultValue:
+                    "No references yet. Drop a file or paste a URL above to add one.",
+                })}
+              </p>
+            )}
+          </SourceItem>
+        </div>
 
         <div className={styles.legacyToneRow}>
           <span className={styles.legacyToneTitle}>
@@ -1407,6 +1392,84 @@ export default function ToneSourcesPage() {
       </s-section>
     </s-page>
   );
+}
+
+/* ============================================================
+ * SourceItem — accordion row primitive
+ * ============================================================ */
+type SourceItemProps = {
+  id: DisplayRowId;
+  expanded: boolean;
+  onToggle: (id: DisplayRowId) => void;
+  iconClass: string;
+  icon: React.ReactNode;
+  name: string;
+  detail: string;
+  statusKey: "connected" | "notConfigured" | "error";
+  statusText: string;
+  children: React.ReactNode;
+};
+
+function SourceItem({
+  id,
+  expanded,
+  onToggle,
+  iconClass,
+  icon,
+  name,
+  detail,
+  statusKey,
+  statusText,
+  children,
+}: SourceItemProps) {
+  const wrapperClass = expanded
+    ? `${styles.sourceItem} ${styles.sourceItemExpanded}`
+    : styles.sourceItem;
+  const statusClass =
+    statusKey === "connected"
+      ? `${styles.sourceStatus} ${styles.sourceStatusConnected}`
+      : statusKey === "error"
+        ? `${styles.sourceStatus} ${styles.sourceStatusError}`
+        : styles.sourceStatus;
+  const chevronClass = expanded
+    ? `${styles.chevron} ${styles.chevronExpanded}`
+    : styles.chevron;
+
+  return (
+    <div className={wrapperClass}>
+      <button
+        type="button"
+        className={styles.sourceRow}
+        onClick={() => onToggle(id)}
+        aria-expanded={expanded}
+      >
+        <div className={iconClass}>{icon}</div>
+        <div className={styles.sourceMeta}>
+          <div className={styles.sourceName}>{name}</div>
+          <div className={styles.sourceDetail}>{detail}</div>
+        </div>
+        <span className={statusClass}>
+          <span className={styles.sourceStatusDot} />
+          {statusText}
+        </span>
+        <div className={chevronClass}>
+          <ChevronIcon />
+        </div>
+      </button>
+      {expanded && <div className={styles.sourceBody}>{children}</div>}
+    </div>
+  );
+}
+
+function formatDetail(detail: string | null, lastSampledAt: string | null): string {
+  const base = detail ?? "";
+  const rel = lastSampledAt ? formatRelative(lastSampledAt) : null;
+  return rel ? `${base} · sampled ${rel}` : base;
+}
+
+function formatSampledRelative(iso: string | null): string {
+  const rel = iso ? formatRelative(iso) : null;
+  return rel ? `· sampled ${rel}` : "";
 }
 
 export const headers: HeadersFunction = (headersArgs) =>

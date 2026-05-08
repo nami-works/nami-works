@@ -4,90 +4,320 @@
   align-items: center;
 }
 
+/* ============================================================
+   SOURCE ROWS — accordion pattern
+   ============================================================ */
+
 .sourceList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   margin-top: 12px;
+}
+
+.sourceItem {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.sourceItemExpanded {
+  border-color: #c9d4e0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .sourceRow {
   display: grid;
-  grid-template-columns: 32px 1fr auto auto;
-  gap: 12px;
+  grid-template-columns: 36px 1fr auto 24px;
   align-items: center;
+  gap: 12px;
   padding: 12px 14px;
-  border: 1px solid #e1e3e5;
-  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
   background: #ffffff;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.sourceRow:hover {
+  background: #fafbfc;
+}
+
+.sourceItemExpanded > .sourceRow {
+  background: #fafbfc;
+  border-bottom: 1px solid #ebebeb;
 }
 
 .sourceIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  background: #f1f8ff;
-  color: #005bd3;
-  font-weight: 600;
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  background: #f6f6f7;
+}
+
+.sourceIconShopify {
+  background: #e8f5e8;
 }
 
 .sourceIconMeta {
-  background: #ede5fc;
-  color: #6433f0;
+  background: #ffffff;
+  border: 1px solid #ececec;
 }
 
 .sourceIconMonday {
-  background: #ffe5d9;
-  color: #d83b01;
+  background: #ffffff;
+  border: 1px solid #ececec;
 }
 
 .sourceIconUpload {
   background: #fff5d9;
-  color: #8a5a08;
+}
+
+.sourceIcon svg {
+  display: block;
 }
 
 .sourceMeta {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .sourceName {
   font-weight: 600;
   font-size: 13px;
+  color: #303030;
 }
 
 .sourceDetail {
   font-size: 12px;
   color: #6d7175;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.statusPill {
+/* Status indicator — replaces chip pills. Right-aligned dot+text. */
+.sourceStatus {
   display: inline-flex;
   align-items: center;
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 500;
+  gap: 6px;
+  font-size: 12px;
+  color: #6d7175;
+  white-space: nowrap;
 }
 
-.statusPillConnected {
-  background: #e6f4ec;
+.sourceStatusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: 0 0 7px;
+  background: #c9cccf;
+}
+
+.sourceStatusConnected {
   color: #067647;
 }
 
-.statusPillNotConfigured {
-  background: #ececec;
-  color: #6d7175;
+.sourceStatusConnected .sourceStatusDot {
+  background: #067647;
 }
 
-.statusPillError {
-  background: #fbeae5;
+.sourceStatusError {
   color: #d72c0d;
+}
+
+.sourceStatusError .sourceStatusDot {
+  background: #d72c0d;
+}
+
+.chevron {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6d7175;
+  transition: transform 0.15s ease;
+}
+
+.chevronExpanded {
+  transform: rotate(180deg);
+}
+
+/* Expanded body */
+.sourceBody {
+  padding: 16px 18px 18px;
+  background: #ffffff;
+}
+
+.bodyHelp {
+  font-size: 12px;
+  color: #6d7175;
+  margin: 0 0 14px;
+  line-height: 1.55;
+}
+
+.bodyHelp code {
+  background: #eceeef;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fieldInput {
+  padding: 7px 10px;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  background: white;
+  color: #303030;
+}
+
+.fieldRow2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.fieldRow2 .field {
+  margin-bottom: 0;
+}
+
+.bodyActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid #ebebeb;
+}
+
+.bodyActionsSplit {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid #ebebeb;
+}
+
+.bodyActionsRight {
+  display: flex;
+  gap: 8px;
+}
+
+/* Manual references body */
+.uploadDropzone {
+  padding: 16px;
+  border: 1px dashed #e1e3e5;
+  border-radius: 8px;
+  background: #fafafa;
+  margin-bottom: 12px;
+}
+
+.uploadDropzoneCenter {
+  text-align: center;
+}
+
+.uploadDropzoneTitle {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.uploadDropzoneSub {
+  font-size: 12px;
+  color: #6d7175;
+  margin-bottom: 12px;
+}
+
+.uploadDropzoneRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.uploadDropzoneInput {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.uploadDropzoneOr {
+  color: #6d7175;
+  font-size: 12px;
+}
+
+.referenceList {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  background: white;
+  overflow: hidden;
+}
+
+.referenceRow {
+  display: grid;
+  grid-template-columns: 18px 1fr auto auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #ebebeb;
+  font-size: 12px;
+}
+
+.referenceRow:last-child {
+  border-bottom: none;
+}
+
+.referenceRowIcon {
+  color: #6d7175;
+  display: flex;
+}
+
+.referenceRowName {
+  color: #303030;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.referenceRowMeta {
+  color: #6d7175;
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 .legacyToneRow {
@@ -114,6 +344,10 @@
   color: #303030;
   font-style: italic;
 }
+
+/* ============================================================
+   HYPOTHESIS CARDS (unchanged from prior)
+   ============================================================ */
 
 .hypothesisCard {
   border: 1px solid #e1e3e5;
@@ -251,50 +485,23 @@
   font-size: 12px;
 }
 
-.uploadDropzone {
-  margin-top: 14px;
-  padding: 16px;
-  border: 2px dashed #e1e3e5;
-  border-radius: 8px;
-  background: #fafafa;
-}
-
-.uploadDropzoneCenter {
-  text-align: center;
-}
-
-.uploadDropzoneTitle {
-  font-size: 13px;
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-.uploadDropzoneSub {
-  font-size: 12px;
-  color: #6d7175;
-  margin-bottom: 12px;
-}
-
-.uploadDropzoneRow {
-  display: flex;
-  gap: 8px;
+.statusPill {
+  display: inline-flex;
   align-items: center;
-  max-width: 600px;
-  margin: 0 auto;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
 }
 
-.uploadDropzoneInput {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #e1e3e5;
-  border-radius: 6px;
-  font-size: 13px;
-  font-family: inherit;
+.statusPillConnected {
+  background: #e6f4ec;
+  color: #067647;
 }
 
-.uploadDropzoneOr {
+.statusPillNotConfigured {
+  background: #ececec;
   color: #6d7175;
-  font-size: 12px;
 }
 
 .emptyHint {
@@ -306,15 +513,27 @@
 
 @media (max-width: 768px) {
   .sourceRow {
-    grid-template-columns: 32px 1fr;
+    grid-template-columns: 36px 1fr 24px;
     grid-template-rows: auto auto;
+    row-gap: 4px;
   }
-  .sourceRow > .statusPill,
-  .sourceRow > button {
+  .sourceRow > .sourceStatus {
     grid-column: 2;
+    grid-row: 2;
+  }
+  .fieldRow2 {
+    grid-template-columns: 1fr;
   }
   .uploadDropzoneRow {
     flex-direction: column;
     align-items: stretch;
+  }
+  .referenceRow {
+    grid-template-columns: 18px 1fr auto;
+    grid-template-rows: auto auto;
+  }
+  .referenceRow > .referenceRowMeta {
+    grid-column: 2;
+    grid-row: 2;
   }
 }
