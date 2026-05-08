@@ -5,6 +5,7 @@ import "./list-todays-orders.js";
 import "./update-product-price.js";
 import "./apply-price-tag.js";
 import "./create-discount-code.js";
+import "./issue-store-credit.js";
 import "./list-discount-codes.js";
 import "./list-locations.js";
 import "./customer-lifetime.js";
