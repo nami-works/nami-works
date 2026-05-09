@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
+import type { ActionFunctionArgs } from "react-router";
 
 const SECRET = "test-secret";
 const SHOP = "test-shop.myshopify.com";
@@ -39,7 +40,7 @@ test("accepts valid compliance webhook", async () => {
   });
 
   const { action } = await import("../app/routes/webhooks");
-  const response = await action({ request } as any);
+  const response = await action({ request } as unknown as ActionFunctionArgs);
 
   assert.equal(response.status, 200);
 });
@@ -54,7 +55,7 @@ test("returns 400 for unsupported compliance topic", async () => {
   });
 
   const { action } = await import("../app/routes/webhooks");
-  const response = await action({ request } as any);
+  const response = await action({ request } as unknown as ActionFunctionArgs);
 
   assert.equal(response.status, 400);
 });
@@ -69,7 +70,7 @@ test("rejects compliance webhook with invalid HMAC", async () => {
   });
 
   const { action } = await import("../app/routes/webhooks");
-  const response = await action({ request } as any);
+  const response = await action({ request } as unknown as ActionFunctionArgs);
 
   assert.equal(response.status, 401);
 });
@@ -90,7 +91,7 @@ test("rejects compliance webhook with missing HMAC", async () => {
   });
 
   const { action } = await import("../app/routes/webhooks");
-  const response = await action({ request } as any);
+  const response = await action({ request } as unknown as ActionFunctionArgs);
 
   assert.equal(response.status, 401);
 });
@@ -100,7 +101,7 @@ test("returns 405 for non-POST webhook requests", async () => {
     method: "GET",
   });
   const { action } = await import("../app/routes/webhooks");
-  const response = await action({ request } as any);
+  const response = await action({ request } as unknown as ActionFunctionArgs);
   assert.equal(response.status, 405);
 });
 
@@ -120,7 +121,7 @@ test("accepts valid non-compliance webhook", async () => {
   });
 
   const { action } = await import("../app/routes/webhooks.orders");
-  const response = await action({ request } as any);
+  const response = await action({ request } as unknown as ActionFunctionArgs);
 
   assert.equal(response.status, 200);
 });
@@ -135,7 +136,7 @@ test("returns 400 for unsupported non-compliance topic", async () => {
   });
 
   const { action } = await import("../app/routes/webhooks.orders");
-  const response = await action({ request } as any);
+  const response = await action({ request } as unknown as ActionFunctionArgs);
 
   assert.equal(response.status, 400);
 });
@@ -154,7 +155,7 @@ test("rejects non-compliance webhook before side effects", async () => {
   });
 
   const { action } = await import("../app/routes/webhooks.orders");
-  const response = await action({ request } as any);
+  const response = await action({ request } as unknown as ActionFunctionArgs);
 
   assert.equal(response.status, 401);
 });
