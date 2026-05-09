@@ -122,6 +122,42 @@ test("p2: does NOT duplicate when components already in a2", () => {
   assert.equal(result.corrected.address2, "Bl 2 Apt 1602, Bairro");
 });
 
+test("p2: jammed building# + apt-indicator preserves building number (#79823)", () => {
+  // Real example (2026-05-09): GE Beauty order #79823 had address1
+  // "Avenida Benjamin Harris Hunnicutt, 2399 Casa 52" — building number 2399
+  // and apt indicator "Casa 52" jammed in the same comma-segment with no
+  // separator. Pre-fix Pattern 2 stripped the entire segment, dropping the
+  // legitimate building number along with the apt info.
+  const result = repairBrazilianAddress(
+    "Avenida Benjamin Harris Hunnicutt, 2399 Casa 52",
+    "Casa 52, Portal gramados",
+  );
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.pattern, "p2");
+  assert.equal(result.confidence, "high");
+  assert.equal(result.corrected.address1, "Avenida Benjamin Harris Hunnicutt, 2399");
+  assert.equal(result.corrected.address2, "Casa 52, Portal gramados");
+});
+
+test("p2: jammed building# variant — apt number not yet in a2 still migrates correctly", () => {
+  // Synthetic: building number 1500 jammed with "Apto 88" in the same segment;
+  // a2 mentions 88 only via the duplicate-number trigger. Confirms the building
+  // number stays in a1 AND the apt info gets migrated to a2 with normalized
+  // indicator ("Apto" → "Apto"). This guards against the building-prefix fix
+  // accidentally short-circuiting the a2 migration for the same segment.
+  const result = repairBrazilianAddress(
+    "Rua Teste, 1500 Apto 88",
+    "88, Bairro",
+  );
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.pattern, "p2");
+  assert.equal(result.corrected.address1, "Rua Teste, 1500");
+  // Original a2 already had "88" so no new component migrated; a2 unchanged.
+  assert.equal(result.corrected.address2, "88, Bairro");
+});
+
 // ─── Pattern 3 ─────────────────────────────────────────────────────────────
 
 test("p3: playbook example — Rua Engenheiro Jorge Oliva, 174 B, ⁠333", () => {

@@ -241,7 +241,22 @@ export function tryPattern2(a1: string, a2: string): AddressRepairResult | null 
     if (!segDigits.some((d) => a2Digits.has(d))) continue;
 
     // Match: strip this apt segment from a1.
-    const fixedA1 = [...segs.slice(0, i), ...segs.slice(i + 1)].join(", ");
+    // Edge case (#79823, 2026-05-09): when a building number and an apt
+    // indicator are jammed in the same comma-segment with no separator
+    // (e.g. "2399 Casa 52"), naively dropping the segment loses the
+    // legitimate building number. Detect a leading "<digits><whitespace>"
+    // before the apt-indicator and preserve those digits as a replacement
+    // segment. Indicator-prefixed forms ("Bl2apt1602") have no leading bare
+    // digits and fall through to the original drop behavior.
+    const buildingPrefixMatch = seg.match(
+      new RegExp(`^(\\d+(?:\\s*[A-Za-z])?)\\s+(?=${APT_PREFIX_PATTERN})`, "i"),
+    );
+    const replacementSeg = buildingPrefixMatch ? [buildingPrefixMatch[1].trim()] : [];
+    const fixedA1 = [
+      ...segs.slice(0, i),
+      ...replacementSeg,
+      ...segs.slice(i + 1),
+    ].join(", ");
 
     // Migrate apt-components NOT already in a2 (with expanded indicator).
     const aptComponents = extractAptComponents(seg);

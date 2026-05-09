@@ -55,7 +55,7 @@ import {
 import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
 import { clusterOrders } from "../services/carrier-quotation-optimizer.server";
 import { addTags, renameRouteTagsToArchive } from "../services/lalamove-sync.server";
-import { LD_ADDRESS_CONFIRM_TAG } from "../services/lalamove-tags";
+import { LD_ADDRESS_CONFIRM_TAG, getAllAutoAssignSkipTags } from "../services/lalamove-tags";
 import { applyAddressRepairOrTag } from "../services/address-repair.server";
 import type { OptimizerOrderInput } from "../services/google-routes-shared.server";
 import {
@@ -851,7 +851,15 @@ async function fetchUnassignedOrdersForLocation(
       seen.add(o.id);
       const tags: string[] = o.tags ?? [];
       if (tags.some((t: string) => /^ld_rota-\d+$/i.test(t))) continue;
-      if (tags.includes(LD_ADDRESS_CONFIRM_TAG)) continue;
+      // Centralized exclusion list — matches api.cron.auto-delivery.tsx so
+      // Claude-driven and cron-driven runs respect the same operator skips
+      // (ld_address-confirm, ld_number-confirm, ld_failed-delivery, "Failed delivery").
+      const skipTags = getAllAutoAssignSkipTags();
+      const matchedSkip = tags.find((t: string) => skipTags.includes(t));
+      if (matchedSkip) {
+        console.info(`[control:optimize] skip orderId=${o.id} reason=${matchedSkip}`);
+        continue;
+      }
       const fo = o.fulfillmentOrders?.nodes ?? [];
       const isLocal = fo.some(
         (f: any) =>
