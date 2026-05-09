@@ -26,7 +26,7 @@ import {
   getCarrierRegistration,
 } from "../services/carrier/registration.server";
 import { buildAllSampleRatesForShop } from "../services/carrier/sample-rate-db.server";
-import type { CarrierServiceConfigData } from "../services/carrier/types";
+import type { CarrierServiceConfigData, TimeRule } from "../services/carrier/types";
 import {
   CarrierServiceContent,
   type CarrierServiceLoaderData,
@@ -378,7 +378,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const data: CarrierServiceConfigData = {
       ...existing,
       enabledProviders,
-      timeRule: timeLimit && transitTime ? { timeLimit, transitTime: transitTime as any, ...(transitTime === "custom" && Number.isInteger(customDays) ? { customDays } : {}) } : undefined,
+      timeRule: timeLimit && transitTime ? { timeLimit, transitTime: transitTime as TimeRule["transitTime"], ...(transitTime === "custom" && Number.isInteger(customDays) ? { customDays } : {}) } : undefined,
       distanceZones: distanceZones.length ? distanceZones : undefined,
       distanceMethod,
       distanceUnit,
@@ -525,7 +525,15 @@ export default function LocationSettings() {
     useState<RetailGoalsLocationConfig>(DEFAULT_RETAIL_GOALS_CONFIG);
   const [retailGoalsSaved, setRetailGoalsSaved] = useState(false);
   const locationAddressFieldRef = useRef<HTMLDivElement | null>(null);
-  const locationAddressAutocompleteRef = useRef<any>(null);
+  // Google Maps Places Autocomplete instance — minimal inline type covering
+  // the methods + Place fields we actually read (avoids depending on
+  // @types/google.maps globals).
+  type PlaceResult = { formatted_address?: string; name?: string };
+  type PlacesAutocomplete = {
+    addListener: (event: string, handler: () => void) => void;
+    getPlace?: () => PlaceResult | undefined;
+  };
+  const locationAddressAutocompleteRef = useRef<PlacesAutocomplete | null>(null);
   const locationAddressInputListenerRef = useRef<((event: Event) => void) | null
     >(null);
   const [lalamoveSettings, setLalamoveSettings] = useState<LalamoveConfig>(
@@ -650,10 +658,11 @@ export default function LocationSettings() {
       }
 
       if (!locationAddressAutocompleteRef.current) {
-        locationAddressAutocompleteRef.current = new Autocomplete(input, {
+        const autocomplete: PlacesAutocomplete = new Autocomplete(input, {
           fields: ["formatted_address", "name"],
         });
-        locationAddressAutocompleteRef.current.addListener(
+        locationAddressAutocompleteRef.current = autocomplete;
+        autocomplete.addListener(
           "place_changed",
           () => {
             const place = locationAddressAutocompleteRef.current?.getPlace?.();

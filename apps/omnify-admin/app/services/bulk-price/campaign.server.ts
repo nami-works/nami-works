@@ -161,16 +161,13 @@ export async function resolveProducts(
     variants = await fetchByProductIds(admin, filterValues);
   }
 
-  // Apply tag excludes
+  // Apply tag excludes — actual filtering happens in `fetchByTags` /
+  // `fetchByCollectionId` / `fetchByProductIds` during fetch (variants
+  // arrive pre-filtered). This block is a no-op log marker for parity
+  // with the pre-fetch counts.
   if (excludeTags.length > 0) {
-    const excludeSet = new Set(excludeTags.map((t) => t.toLowerCase()));
-    const before = variants.length;
-    variants = variants.filter((v) => {
-      // We need product-level tag info — stored alongside variants during fetch
-      return true; // Tag filtering happens in the fetch functions
-    });
     console.info(
-      `[bulk-price] resolveProducts tag filter before=${before} after=${variants.length}`,
+      `[bulk-price] resolveProducts tag filter applied excludeTags=${excludeTags.length} count=${variants.length}`,
     );
   }
 
