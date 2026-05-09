@@ -69,7 +69,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const endQuery = end.toISOString();
     const query = `created_at:>=${startQuery} created_at:<=${endQuery}`;
 
-    while (true) {
+    do {
       const variables: { first: number; after: string | null; query?: string } =
         { first: PAGE_SIZE, after: cursor };
       variables.query = query;
@@ -91,9 +91,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         orders.push({ createdAt: n.createdAt }),
       );
       console.info(`[kpi] graphql page kpi=orders cursor=${cursor ?? "start"} pageNodes=${nodes.length} runningTotal=${orders.length} hasNextPage=${pageInfo.hasNextPage}`);
-      if (!pageInfo.hasNextPage) break;
-      cursor = pageInfo.endCursor;
-    }
+      cursor = pageInfo.hasNextPage ? pageInfo.endCursor : null;
+    } while (cursor !== null);
 
     const buckets = bucketByMonth(
       orders,
@@ -111,7 +110,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const endQuery = end.toISOString();
     const query = `created_at:>=${startQuery} created_at:<=${endQuery}`;
 
-    while (true) {
+    do {
       const res: Response = await admin.graphql(
         `#graphql
         query CustomersForKpi($first: Int!, $after: String, $query: String) {
@@ -128,16 +127,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           },
         },
       );
-      const json: any = await res.json();
+      const json = await res.json();
       const nodes = json?.data?.customers?.nodes ?? [];
-      const pageInfo: any = json?.data?.customers?.pageInfo ?? {};
+      const pageInfo = json?.data?.customers?.pageInfo ?? {};
       nodes.forEach((n: { createdAt: string | null }) =>
         customers.push({ createdAt: n.createdAt }),
       );
       console.info(`[kpi] graphql page kpi=customers cursor=${cursor ?? "start"} pageNodes=${nodes.length} runningTotal=${customers.length} hasNextPage=${pageInfo.hasNextPage}`);
-      if (!pageInfo.hasNextPage) break;
-      cursor = pageInfo.endCursor;
-    }
+      cursor = pageInfo.hasNextPage ? pageInfo.endCursor : null;
+    } while (cursor !== null);
 
     const buckets = bucketByMonth(
       customers,
@@ -159,7 +157,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const endQuery = end.toISOString();
     const query = `created_at:>=${startQuery} created_at:<=${endQuery}`;
 
-    while (true) {
+    do {
       const res: Response = await admin.graphql(
         `#graphql
         query OrdersNetSales($first: Int!, $after: String, $query: String) {
@@ -175,9 +173,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           variables: { first: PAGE_SIZE, after: cursor, query },
         },
       );
-      const json: any = await res.json();
+      const json = await res.json();
       const nodes = json?.data?.orders?.nodes ?? [];
-      const pageInfo: any = json?.data?.orders?.pageInfo ?? {};
+      const pageInfo = json?.data?.orders?.pageInfo ?? {};
       nodes.forEach(
         (n: {
           createdAt: string | null;
@@ -189,9 +187,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         },
       );
       console.info(`[kpi] graphql page kpi=net_sales cursor=${cursor ?? "start"} pageNodes=${nodes.length} runningTotal=${orders.length} hasNextPage=${pageInfo.hasNextPage}`);
-      if (!pageInfo.hasNextPage) break;
-      cursor = pageInfo.endCursor;
-    }
+      cursor = pageInfo.hasNextPage ? pageInfo.endCursor : null;
+    } while (cursor !== null);
 
     const buckets = bucketByMonth(
       orders,
