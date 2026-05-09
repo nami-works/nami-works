@@ -91,8 +91,8 @@ export type LalamoveEnvironment = "sandbox" | "production";
 
 export class LalamoveApiError extends Error {
   public readonly status: number;
-  public readonly payload: any;
-  constructor(status: number, message: string, payload: any) {
+  public readonly payload: unknown;
+  constructor(status: number, message: string, payload: unknown) {
     super(`${status}: ${message}`);
     this.name = "LalamoveApiError";
     this.status = status;
@@ -153,10 +153,16 @@ const getCredentials = (credentials?: LalamoveCredentials) => {
   return { apiKey, apiSecret };
 };
 
-const readErrorMessage = (payload: any, fallback: string) => {
-  if (typeof payload?.message === "string" && payload.message) return payload.message;
-  if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
-    const first = payload.errors[0];
+const readErrorMessage = (payload: unknown, fallback: string) => {
+  // Defensively narrow `unknown` to a permissive shape for the optional-chain
+  // accessors below.
+  const p = payload as {
+    message?: string;
+    errors?: Array<{ message?: string; detail?: string }>;
+  } | null | undefined;
+  if (typeof p?.message === "string" && p.message) return p.message;
+  if (Array.isArray(p?.errors) && p.errors.length > 0) {
+    const first = p.errors[0];
     if (typeof first?.message === "string" && first.message) return first.message;
     if (typeof first?.detail === "string" && first.detail) return first.detail;
   }
@@ -221,8 +227,14 @@ const enrichStopAddressWithAddress2 = (
 export const buildLalamoveRecipientRemarks = (
   index: number,
   pickupInstructions: string | null | undefined,
-  _deliveryAddress2: string | null | undefined,
+  deliveryAddress2: string | null | undefined,
 ) => {
+  // `deliveryAddress2` is currently unused but the param is kept in the
+  // public signature because 4 call sites pass it (Local Delivery UI dispatch,
+  // escalation reorder, control API dispatch+quote, auto-delivery cron) and
+  // future formatting may need it. Reference it via `void` so eslint sees
+  // it as used. See git blame on PR-#43 for more context.
+  void deliveryAddress2;
   const normalizedPickup = pickupInstructions?.trim() ?? "";
   if (index === 0) {
     return normalizedPickup.length > 0 ? normalizedPickup : undefined;
@@ -390,7 +402,7 @@ const lalamoveRequest = async <TResponse>(
     ...(method === "GET" || method === "DELETE" ? {} : { body }),
   });
 
-  let payload: any = null;
+  let payload: unknown = null;
   try {
     payload = await response.json();
   } catch {
@@ -402,14 +414,14 @@ const lalamoveRequest = async <TResponse>(
     throw new LalamoveApiError(response.status, errMsg, payload);
   }
   console.log(`[lalamove] ${method} ${path} → ${response.status} ok`);
-  return (payload?.data ?? null) as TResponse;
+  return ((payload as { data?: unknown } | null | undefined)?.data ?? null) as TResponse;
 };
 
 export const createLalamoveQuotation = async (
   request: LalamoveQuotationRequest,
   credentials?: LalamoveCredentials,
 ) => {
-  const stops = request.stops.map((stop, index) => ({
+  const stops = request.stops.map((stop) => ({
     coordinates: {
       lat: stop.coordinates.lat,
       lng: stop.coordinates.lng,
@@ -455,7 +467,7 @@ export const placeLalamoveOrder = async (
         }
       : {}),
   };
-  const recipients = request.recipients.map((r, index) => ({
+  const recipients = request.recipients.map((r) => ({
     stopId: r.stopId,
     name: r.name,
     phone: normalizePhoneForMarket(r.phone, market) || r.phone,
@@ -722,7 +734,9 @@ export const resolveSpecialRequestsForCity = async (
       return { availableNames, matchedCityCount };
     };
 
-    let { availableNames, matchedCityCount } = collectAvailable(false);
+    const initial = collectAvailable(false);
+    let availableNames = initial.availableNames;
+    const matchedCityCount = initial.matchedCityCount;
 
     // Safety net: if the location's city does not match any city in /v3/cities,
     // the first pass collects zero cities and every request would get filtered

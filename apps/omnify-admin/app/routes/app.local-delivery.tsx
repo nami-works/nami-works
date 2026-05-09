@@ -9966,8 +9966,10 @@ if (intent === "lalamove-place-order") {
       }
 
       // Payload recovery: Lalamove returned non-ok but may have included the orderId
-      if (error instanceof LalamoveApiError && error.payload?.data?.orderId) {
-        const recoveredOrderId = error.payload.data.orderId as string;
+      if (error instanceof LalamoveApiError) {
+        const errPayload = error.payload as { data?: { orderId?: string } } | null | undefined;
+        if (errPayload?.data?.orderId) {
+        const recoveredOrderId = errPayload.data.orderId;
         console.warn(`[local-delivery] lalamove-place-order payload-recovery: HTTP ${error.status} but orderId=${recoveredOrderId} — verifying shop=${shop} route=${routeId}`);
         try {
           const verified = await getLalamoveOrderDetails(configWithLocation.market, recoveredOrderId, credentials);
@@ -9980,6 +9982,7 @@ if (intent === "lalamove-place-order") {
           console.info(`[local-delivery] lalamove-place-order payload-recovery OK orderId=${placeResponse.orderId} status=${placeResponse.status}`);
         } catch (verifyErr) {
           console.error(`[local-delivery] lalamove-place-order payload-recovery FAILED orderId=${recoveredOrderId}`, verifyErr);
+        }
         }
       }
 
