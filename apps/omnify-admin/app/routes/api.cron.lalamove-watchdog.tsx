@@ -31,7 +31,7 @@ function getLocalTime(tz: string): { hour: number; minute: number } {
  */
 async function isPastRetryCutoff(shop: string, locationId: string): Promise<boolean> {
   try {
-    const configRow = await (prisma as any).lalamoveLocationConfig.findUnique({
+    const configRow = await prisma.lalamoveLocationConfig.findUnique({
       where: { shop_locationId: { shop, locationId } },
     });
     if (!configRow) return false;
@@ -74,11 +74,25 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   console.info("[lalamove-watchdog] cron triggered");
-  const prismaAny = prisma as any;
+  // Narrowing cast for `cancelLalamoveOrder` / `autoRetryDispatchJob` calls:
+  // typed Prisma returns nullable `market`/`routeId`/`lalamoveOrderId`, but
+  // those helpers' signatures require non-null strings. The original
+  // `prismaAny = prisma as any` was passing whatever Prisma returned,
+  // including null fields. Preserve that runtime behavior with this inline
+  // type — the function tolerates the same shape it was getting before.
+  type DispatchJobForRetry = {
+    id: string;
+    routeId: string;
+    locationId: string;
+    market: string;
+    lalamoveOrderId: string;
+    retryCount?: number;
+    shop: string;
+  };
   const cutoff = new Date(Date.now() - STALE_ON_GOING_MINUTES * 60_000);
 
   // ── 1. Stale ON_GOING orders ─────────────────────────────────────────────
-  const staleJobs = await prismaAny.lalamoveDispatchJob.findMany({
+  const staleJobs = await prisma.lalamoveDispatchJob.findMany({
     where: {
       status: "ON_GOING",
       updatedAt: { lte: cutoff },
@@ -102,7 +116,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         console.info(`[lalamove-watchdog] CUTOFF job=${job.id} past retry cutoff — removing route tags`);
         try {
           const adminClient = await unauthenticated.admin(job.shop);
-          const orderMaps = await prismaAny.lalamoveDispatchOrderMap.findMany({
+          const orderMaps = await prisma.lalamoveDispatchOrderMap.findMany({
             where: { shop: job.shop, dispatchJobId: job.id },
             select: { shopifyOrderId: true },
           });
@@ -114,7 +128,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         } catch (tagErr) {
           console.error(`[lalamove-watchdog] CUTOFF tag removal failed job=${job.id}`, tagErr);
         }
-        await prismaAny.lalamoveDispatchJob.update({
+        await prisma.lalamoveDispatchJob.update({
           where: { id: job.id },
           data: { status: "EXPIRED_CUTOFF" },
         });
@@ -123,7 +137,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }
 
       // Verify no PICKED_UP event exists (guard against out-of-order webhooks)
-      const pickedUpEvent = await prismaAny.lalamoveDispatchEvent.findFirst({
+      const pickedUpEvent = await prisma.lalamoveDispatchEvent.findFirst({
         where: {
           shop: job.shop,
           lalamoveOrderId: job.lalamoveOrderId,
@@ -154,8 +168,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
       try {
         await cancelLalamoveOrder(
-          job.market,
-          job.lalamoveOrderId,
+          job.market ?? "",
+          job.lalamoveOrderId ?? "",
           credentials,
         );
         console.info(
@@ -180,14 +194,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }
 
       // Update status before retry
-      await prismaAny.lalamoveDispatchJob.update({
+      await prisma.lalamoveDispatchJob.update({
         where: { id: job.id },
         data: { status: "CANCELED" },
       });
 
       const adminClient = await unauthenticated.admin(job.shop);
       const retryResult = await autoRetryDispatchJob(
-        job,
+        job as unknown as DispatchJobForRetry,
         job.shop,
         adminClient.admin,
       );
@@ -211,7 +225,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const failedCutoff = new Date(Date.now() - FAILED_RETRY_WINDOW_MINUTES * 60_000);
   let failedRetryCount = 0;
   try {
-    const failedJobs = await prismaAny.lalamoveDispatchJob.findMany({
+    const failedJobs = await prisma.lalamoveDispatchJob.findMany({
       where: {
         status: { in: ["CANCELED", "REJECTED", "EXPIRED"] },
         retryCount: { lt: MAX_AUTO_RETRIES },
@@ -228,7 +242,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           console.info(`[lalamove-watchdog] CUTOFF failed-retry job=${job.id} past retry cutoff — removing route tags`);
           try {
             const cutoffAdmin = await unauthenticated.admin(job.shop);
-            const orderMaps = await prismaAny.lalamoveDispatchOrderMap.findMany({
+            const orderMaps = await prisma.lalamoveDispatchOrderMap.findMany({
               where: { shop: job.shop, dispatchJobId: job.id },
               select: { shopifyOrderId: true },
             });
@@ -240,7 +254,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           } catch (tagErr) {
             console.error(`[lalamove-watchdog] CUTOFF tag removal failed job=${job.id}`, tagErr);
           }
-          await prismaAny.lalamoveDispatchJob.update({
+          await prisma.lalamoveDispatchJob.update({
             where: { id: job.id },
             data: { status: "EXPIRED_CUTOFF" },
           });
@@ -250,7 +264,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
         const adminClient = await unauthenticated.admin(job.shop);
         const retryResult = await autoRetryDispatchJob(
-          job,
+          job as unknown as DispatchJobForRetry,
           job.shop,
           adminClient.admin,
         );
@@ -277,7 +291,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // ── 3. Escalation checks for ASSIGNING_DRIVER jobs ────────────────────────
   let escalationCount = 0;
   try {
-    const assigningShops = await prismaAny.lalamoveDispatchJob.findMany({
+    const assigningShops = await prisma.lalamoveDispatchJob.findMany({
       where: { status: "ASSIGNING_DRIVER" },
       select: { shop: true },
       distinct: ["shop"],
