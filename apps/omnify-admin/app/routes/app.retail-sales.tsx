@@ -1273,12 +1273,6 @@ function niceCeil(max: number): number {
   return 10 * magnitude;
 }
 
-type PeriodLabels = {
-  current: string;
-  priorYear: string;
-  goalPeriod?: string;
-};
-
 const KpiDrilldownBars = ({
   metric,
   snapshots,
@@ -1340,7 +1334,7 @@ const KpiDrilldownBars = ({
                   ? styles.rankPctYellow
                   : styles.rankPctRed;
             return (
-              <div key={row.locationId} className={styles.rankRow} tabIndex={0}>
+              <div key={row.locationId} className={styles.rankRow}>
                 <div className={styles.rankPos}>{idx + 1}</div>
                 <div className={styles.rankName}>{row.name}</div>
                 <div className={styles.rankTrack}>
@@ -1490,7 +1484,7 @@ const KpiDrilldownBars = ({
                     ? (-delta / niceMin) * (100 - baselinePct)
                     : 0;
                 return (
-                  <div key={row.locationId} className={styles.barGroup} tabIndex={0}>
+                  <div key={row.locationId} className={styles.barGroup}>
                     {positive ? (
                       <>
                         <div
@@ -1648,7 +1642,7 @@ const KpiDrilldownBars = ({
                   ? Math.max(0, row.currentValue - row.mtdValue) / row.currentValue
                   : 0;
               return (
-                <div key={row.locationId} className={styles.barGroup} tabIndex={0}>
+                <div key={row.locationId} className={styles.barGroup}>
                   {hasProjectionSplit ? (
                     <div
                       className={styles.barCurrent}
