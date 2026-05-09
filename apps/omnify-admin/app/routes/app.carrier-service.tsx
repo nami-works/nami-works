@@ -394,7 +394,7 @@ function getExplanatoryTimeText(
   timeLimit: string,
   transitTime: TimeRule["transitTime"],
   customDays: number | undefined,
-  t: (key: string, opts?: any) => string,
+  t: (key: string, opts?: Record<string, unknown>) => string,
 ): string {
   const today = new Date();
   const limitLabel = formatTimeLabel(timeLimit);
@@ -430,7 +430,7 @@ function getExplanatoryTimeText(
   return t("parameters.explanatoryTime.text", { date: dateStr, time: limitLabel });
 }
 
-function zoneSummary(zone: DistanceZone, unit: "km" | "mi", t: (key: string, opts?: any) => string): string {
+function zoneSummary(zone: DistanceZone, unit: "km" | "mi", t: (key: string, opts?: Record<string, unknown>) => string): string {
   const u = unit === "km" ? "km" : "mi";
   const r = zone.radiusKm ?? (zone.radiusMiles ? zone.radiusMiles + " " + u : "");
   const radiusStr =
@@ -1180,6 +1180,14 @@ export function CarrierServiceContent({
                               ref={moreRef}
                               className={`${styles.prefMoreWrapper} ${moreExpanded ? styles.prefMoreExpanded : ""}`}
                               onClick={() => setMoreExpanded((v) => !v)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  setMoreExpanded((v) => !v);
+                                }
+                              }}
+                              role="button"
+                              tabIndex={0}
                             >
                               <span className={styles.prefMoreDots}>…</span>
                               <span className={styles.prefMoreTooltip}>{moreLabel}</span>
@@ -1198,6 +1206,15 @@ export function CarrierServiceContent({
                             setPrefMessage(null);
                             setPrefModalOpen(true);
                           }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setPrefMessage(null);
+                              setPrefModalOpen(true);
+                            }
+                          }}
+                          role="button"
+                          tabIndex={0}
                           title={hasPrefs
                             ? t("providers.updatePreferences")
                             : t("providers.definePreferences")}
@@ -1637,7 +1654,14 @@ export function CarrierServiceContent({
                                 key={sr.name}
                                 className={styles.checkboxToggle}
                                 onClick={() => toggleSR(sr.name, !checked)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    toggleSR(sr.name, !checked);
+                                  }
+                                }}
                                 role="button"
+                                tabIndex={0}
                               >
                                 <s-checkbox
                                   checked={checked || undefined}
@@ -1652,7 +1676,14 @@ export function CarrierServiceContent({
                               <div
                                 className={styles.checkboxToggle}
                                 onClick={() => toggleWaitTime(!waitTimeEnabled)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    toggleWaitTime(!waitTimeEnabled);
+                                  }
+                                }}
                                 role="button"
+                                tabIndex={0}
                               >
                                 <s-checkbox
                                   checked={waitTimeEnabled || undefined}
@@ -1669,7 +1700,14 @@ export function CarrierServiceContent({
                                         key={sr.name}
                                         className={styles.checkboxToggle}
                                         onClick={() => toggleSR(sr.name, !checked)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter" || e.key === " ") {
+                                            e.preventDefault();
+                                            toggleSR(sr.name, !checked);
+                                          }
+                                        }}
                                         role="button"
+                                        tabIndex={0}
                                       >
                                         <s-checkbox
                                           checked={checked || undefined}
@@ -1690,7 +1728,14 @@ export function CarrierServiceContent({
                                 key={sr.name}
                                 className={styles.checkboxToggle}
                                 onClick={() => toggleSR(sr.name, !checked)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    toggleSR(sr.name, !checked);
+                                  }
+                                }}
                                 role="button"
+                                tabIndex={0}
                               >
                                 <s-checkbox
                                   checked={checked || undefined}
@@ -1707,7 +1752,14 @@ export function CarrierServiceContent({
                                 key={sr.name}
                                 className={styles.checkboxToggle}
                                 onClick={() => toggleSR(sr.name, !checked)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    toggleSR(sr.name, !checked);
+                                  }
+                                }}
                                 role="button"
+                                tabIndex={0}
                               >
                                 <s-checkbox
                                   checked={checked || undefined}
