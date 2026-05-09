@@ -549,7 +549,7 @@ export default function BriefPage() {
 
   return (
     <s-page heading={t("brief.pageHeading")}>
-      <s-button variant="tertiary" slot="secondary-actions">
+      <s-button variant="tertiary" slot="back-action">
         <Link
           to="/app/storytelling"
           style={{ color: "inherit", textDecoration: "none" }}
@@ -579,7 +579,7 @@ export default function BriefPage() {
         {!hasBrandSettings && (
           <div className={styles.errorBanner}>
             {t("brief.configureBrandFirst")}{" "}
-            <Link to="/app/brand-settings">{t("index.configureBrand")}</Link>{" "}
+            <Link to="/app/settings/brand">{t("index.configureBrand")}</Link>{" "}
             {t("brief.beforeGenerating")}
           </div>
         )}
@@ -632,7 +632,7 @@ export default function BriefPage() {
             </div>
           </div>
           <Link
-            to="/app/brand-settings/tone-sources"
+            to="/app/settings/brand/tone-sources"
             className={styles.contextLink}
           >
             {t("brief.brandContext.manage", {

@@ -3,7 +3,8 @@
   "tabs": {
     "locations": "Localizações",
     "providers": "Provedores de entrega",
-    "carriers": "Transportadoras"
+    "carriers": "Transportadoras",
+    "brand": "Marca"
   },
   "locationSettings": {
     "title": "Detalhes de entrega",

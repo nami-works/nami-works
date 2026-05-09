@@ -3,7 +3,7 @@ import type {
   ActionFunctionArgs,
   LoaderFunctionArgs,
 } from "react-router";
-import { useLoaderData, useFetcher } from "react-router";
+import { Link, useLoaderData, useFetcher } from "react-router";
 import { useTranslation } from "react-i18next";
 import { loadGoogleMaps } from "../utils/load-google-maps.client";
 import { authenticate } from "../shopify.server";
@@ -788,6 +788,15 @@ export default function LocationSettings() {
               {tab.label}
             </button>
           ))}
+          {/* Brand is a sibling sub-route (`/app/settings/brand`), not an in-place tab.
+              Lives inside the same tab strip so users see the full Settings IA. */}
+          <Link
+            to="/app/settings/brand"
+            className={styles.settingsTab}
+            style={{ textDecoration: "none" }}
+          >
+            {t("tabs.brand", { defaultValue: "Brand" })}
+          </Link>
         </div>
         {activeTab === "settings" && (
         <s-stack direction="block" gap="base">

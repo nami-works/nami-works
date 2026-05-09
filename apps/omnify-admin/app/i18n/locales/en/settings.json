@@ -3,7 +3,8 @@
   "tabs": {
     "locations": "Locations",
     "providers": "Delivery providers",
-    "carriers": "Carriers"
+    "carriers": "Carriers",
+    "brand": "Brand"
   },
   "locationSettings": {
     "title": "Delivery details",

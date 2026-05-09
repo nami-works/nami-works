@@ -176,10 +176,15 @@ export default function BrandSettingsPage() {
 
   return (
     <s-page heading={t("pageHeading")}>
+      <s-button variant="tertiary" slot="back-action">
+        <Link to="/app/settings" style={{ color: "inherit", textDecoration: "none" }}>
+          {t("common:button.back")}
+        </Link>
+      </s-button>
       <s-stack direction="inline" slot="secondary-actions" gap="base">
         <s-button variant="tertiary">
           <Link
-            to="/app/brand-settings/tone-sources"
+            to="/app/settings/brand/tone-sources"
             style={{ color: "inherit", textDecoration: "none" }}
           >
             {t("toneSources.manageLink", {
@@ -188,18 +193,14 @@ export default function BrandSettingsPage() {
           </Link>
         </s-button>
       </s-stack>
-      <s-stack direction="inline" slot="primary-action" gap="base">
-        <s-button variant="tertiary" onClick={() => window.history.back()}>
-          {t("common:button.back")}
-        </s-button>
-        <s-button
-          variant="primary"
-          onClick={() => (document.getElementById("settings-form") as HTMLFormElement)?.requestSubmit()}
-          {...(isSaving ? { loading: true } : {})}
-        >
-          {t("common:button.save")}
-        </s-button>
-      </s-stack>
+      <s-button
+        variant="primary"
+        slot="primary-action"
+        onClick={() => (document.getElementById("settings-form") as HTMLFormElement)?.requestSubmit()}
+        {...(isSaving ? { loading: true } : {})}
+      >
+        {t("common:button.save")}
+      </s-button>
 
       <s-section heading={t("brandConfig.heading")}>
         <s-paragraph>

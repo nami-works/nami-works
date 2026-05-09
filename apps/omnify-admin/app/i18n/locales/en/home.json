@@ -77,9 +77,8 @@
     "footprintExpansion": { "title": "Find new locations", "sub": "See where customers are and rank candidates." },
     "affiliates": { "title": "Manage affiliates", "sub": "Codes, attribution, and commission tracking." },
     "merchandising": { "title": "Merchandising", "sub": "Sale campaigns and price tags." },
-    "storytelling": { "title": "Story-telling", "sub": "AI-generated blog content for your brand." },
-    "settings": { "title": "Settings", "sub": "Carriers, locations, and delivery providers." },
-    "extras": { "title": "Extras", "sub": "Helpers and product launch tracking." }
+    "storytelling": { "title": "Storytelling", "sub": "AI-generated blog content for your brand." },
+    "settings": { "title": "Settings", "sub": "Carriers, locations, and delivery providers." }
   },
   "footer": {
     "heading": "Need a hand?",

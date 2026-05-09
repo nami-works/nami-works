@@ -44,7 +44,8 @@ const IDENTITY_ROUTES: Record<Exclude<AppIdentity, "cpg-labs">, string[]> = {
     "app.storytelling",
     "app.alt-text",
     "app.places",
-    "app.brand-settings",
+    "app.settings_.brand",
+    "app.settings_.brand_.tone-sources",
     "api.blog-posts",
   ],
   storefront: [
@@ -85,21 +86,6 @@ export function isRouteEnabled(routeId: string): boolean {
   return allowed.some((prefix) => routeId === prefix || routeId.startsWith(`${prefix}.`));
 }
 
-/** Home route each identity should redirect to from app._index. */
-export function getHomeRoute(): string {
-  const identity = getAppIdentity();
-  switch (identity) {
-    case "omnify":
-      return "/app/local-delivery";
-    case "storytelling":
-      return "/app/storytelling";
-    case "storefront":
-      return "/app/merchandising";
-    default:
-      return "/app/local-delivery";
-  }
-}
-
 /** Nav items to render for the current identity. */
 export type NavItem = { href: string; labelKey: string };
 
@@ -111,7 +97,6 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/app/merchandising", labelKey: "common:nav.merchandising" },
   { href: "/app/storytelling", labelKey: "common:nav.storytelling" },
   { href: "/app/settings", labelKey: "common:nav.settings" },
-  { href: "/app", labelKey: "common:nav.extras" },
 ];
 
 const IDENTITY_NAV: Record<Exclude<AppIdentity, "cpg-labs">, string[]> = {

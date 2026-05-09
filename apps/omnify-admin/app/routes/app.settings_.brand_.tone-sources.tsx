@@ -48,7 +48,7 @@ import type {
   ToneHypothesisCategory,
   ToneSourceType,
 } from "../services/tone-sources/types";
-import styles from "./app.brand-settings_.tone-sources/styles.module.css";
+import styles from "./app.settings_.brand_.tone-sources/styles.module.css";
 
 const MIN_CONFIDENCE = 0.5;
 
@@ -723,9 +723,9 @@ export default function ToneSourcesPage() {
 
   return (
     <s-page heading={t("toneSources.pageHeading", { defaultValue: "Tone of voice sources" })}>
-      <s-button variant="tertiary" slot="secondary-actions">
+      <s-button variant="tertiary" slot="back-action">
         <Link
-          to="/app/brand-settings"
+          to="/app/settings/brand"
           style={{ color: "inherit", textDecoration: "none" }}
         >
           {t("common:button.back", { defaultValue: "Back" })}
@@ -1238,7 +1238,7 @@ export default function ToneSourcesPage() {
                 })}
           </span>
           <Link
-            to="/app/brand-settings"
+            to="/app/settings/brand"
             style={{ color: "#005bd3", textDecoration: "none", fontSize: 12 }}
           >
             {t("toneSources.manualOverride.editLink", {

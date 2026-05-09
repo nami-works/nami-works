@@ -77,9 +77,8 @@
     "footprintExpansion": { "title": "Encontrar novos pontos", "sub": "Veja onde estão os clientes e ranqueie candidatos." },
     "affiliates": { "title": "Gerenciar afiliados", "sub": "Códigos, atribuição e cálculo de comissões." },
     "merchandising": { "title": "Merchandising", "sub": "Campanhas de promoção e etiquetas de preço." },
-    "storytelling": { "title": "Story-telling", "sub": "Conteúdo de blog gerado por IA para sua marca." },
-    "settings": { "title": "Configurações", "sub": "Transportadores, locais e provedores de entrega." },
-    "extras": { "title": "Extras", "sub": "Auxiliares e acompanhamento de lançamentos." }
+    "storytelling": { "title": "Storytelling", "sub": "Conteúdo de blog gerado por IA para sua marca." },
+    "settings": { "title": "Configurações", "sub": "Transportadores, locais e provedores de entrega." }
   },
   "footer": {
     "heading": "Precisa de ajuda?",

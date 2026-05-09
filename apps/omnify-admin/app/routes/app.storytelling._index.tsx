@@ -24,14 +24,14 @@ export default function StorytellingIndex() {
           <Link to="/app/storytelling/brief">
             <s-button variant="primary">{t("index.createBrief")}</s-button>
           </Link>
-          <s-link href="/app/brand-settings">{t("index.configureBrand")}</s-link>
+          <s-link href="/app/settings/brand">{t("index.configureBrand")}</s-link>
         </s-stack>
       </s-section>
 
       <s-section heading={t("index.getStarted")}>
         <s-unordered-list>
           <s-list-item>
-            <s-link href="/app/brand-settings">{t("index.configureBrand")}</s-link>{" "}
+            <s-link href="/app/settings/brand">{t("index.configureBrand")}</s-link>{" "}
             {t("index.stepBrand")}
           </s-list-item>
           <s-list-item>
