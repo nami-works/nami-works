@@ -17,7 +17,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   }
 
   const { fileData, fileName, fileType } = result;
-  const safeFileName = fileName.replace(/[^\w.\-]/g, "_");
+  const safeFileName = fileName.replace(/[^\w.-]/g, "_");
 
   return new Response(new Uint8Array(fileData), {
     status: 200,

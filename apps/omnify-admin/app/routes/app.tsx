@@ -28,7 +28,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export default function App() {
-  const { apiKey, locale, navItems, basePath, appDisplayName } = useLoaderData<typeof loader>();
+  const { apiKey, locale, navItems, basePath } = useLoaderData<typeof loader>();
   const logoSrc = `${basePath}/omnify_map-2x.png`.replace(/\/+/g, "/");
   const navigation = useNavigation();
   const isPageNavigation = navigation.state === "loading" && !!navigation.location;

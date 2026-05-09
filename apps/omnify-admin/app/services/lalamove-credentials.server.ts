@@ -13,7 +13,7 @@ export type LalamoveCredentialStatus = {
 
 const MAX_SECRET_LEN = 512;
 const KEY_PATTERN = /^[A-Za-z0-9._:-]+$/;
-const SECRET_PATTERN = /^[A-Za-z0-9._:\/+=-]+$/;
+const SECRET_PATTERN = /^[A-Za-z0-9._:/+=-]+$/;
 
 const parse = (value: unknown) => (typeof value === "string" ? value.trim() : "");
 

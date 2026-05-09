@@ -60,10 +60,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   if (!DEBUG_ENABLED) throw redirect("/app");
   const { admin } = await authenticate.admin(request);
   const res = await admin.graphql(DEBUG_QUERY);
-  const json = await res.json();
+  const json = (await res.json()) as {
+    errors?: unknown[];
+    data?: { deliveryProfiles?: { nodes?: unknown[] } };
+  };
   return {
     raw: json,
-    errors: (json as any)?.errors,
+    errors: json?.errors,
     profileCount: json?.data?.deliveryProfiles?.nodes?.length ?? 0,
   };
 };

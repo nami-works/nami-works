@@ -29,7 +29,7 @@ export function createShopifyApp(config: ShopifyAppConfig) {
     scopes: process.env.SCOPES?.split(","),
     appUrl: config.appUrl ?? process.env.SHOPIFY_APP_URL ?? "",
     authPathPrefix: config.authPathPrefix ?? "/auth",
-    sessionStorage: new PrismaSessionStorage(config.prisma) as any,
+    sessionStorage: new PrismaSessionStorage(config.prisma) as unknown as Parameters<typeof shopifyApp>[0]["sessionStorage"],
     distribution: AppDistribution.AppStore,
     future: {
       expiringOfflineAccessTokens: true,

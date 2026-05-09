@@ -248,7 +248,7 @@ export async function normalizeShippingAddress(
 
   try {
     // Parse the street number from address1 (leading digit sequence)
-    const numberMatch = parts.address1.trim().match(/^(\d[\d\-\/]*)/);
+    const numberMatch = parts.address1.trim().match(/^(\d[\d/-]*)/);
     const parsedStreetNumber = numberMatch?.[1] ?? null;
 
     // Geocode using full address for best accuracy (zip is the primary anchor)

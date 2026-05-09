@@ -48,6 +48,8 @@ function safeEqual(a: string, b: string): boolean {
     for (let i = 0; i < Math.max(a.length, b.length); i += 1) {
       acc &= (a.charCodeAt(i % a.length) ^ b.charCodeAt(i % b.length)) === 0 ? 1 : 0;
     }
+    // Read `acc` so the JIT can't dead-code-eliminate the constant-time work above.
+    void acc;
     return false;
   }
   let diff = 0;

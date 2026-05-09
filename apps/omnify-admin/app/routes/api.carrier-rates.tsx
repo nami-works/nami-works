@@ -1,4 +1,4 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+import type { ActionFunctionArgs } from "react-router";
 import prisma from "../db.server";
 import { matchZone } from "../services/carrier/aggregator.server";
 import { geocodeAddress, formatAddressForGeocode, haversineKm } from "../services/carrier/geocode.server";
@@ -162,7 +162,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   });
 };
 
-export const loader = async (_: LoaderFunctionArgs) => {
+export const loader = async () => {
   return new Response(JSON.stringify({ rates: [] }), {
     status: 200,
     headers: { "Content-Type": "application/json" },

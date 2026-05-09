@@ -7,7 +7,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (verified.response) return verified.response;
 
   const { topic, shop, payload } = verified.result;
-  const handled = await handleComplianceWebhook(topic, shop, payload as any);
+  const handled = await handleComplianceWebhook(
+    topic,
+    shop,
+    payload as unknown as Parameters<typeof handleComplianceWebhook>[2],
+  );
   if (!handled) {
     return new Response("Unsupported webhook topic.", { status: 400 });
   }

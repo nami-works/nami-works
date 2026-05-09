@@ -67,7 +67,7 @@ const requireEnv = () => {
   }
 };
 
-const shopifyGraphql = async <T>(query: string, variables?: Record<string, any>) => {
+const shopifyGraphql = async <T>(query: string, variables?: Record<string, unknown>) => {
   const response = await fetch(
     `https://${SHOP_DOMAIN}/admin/api/${API_VERSION}/graphql.json`,
     {
