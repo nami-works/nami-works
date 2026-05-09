@@ -82,8 +82,8 @@ export const removeRouteTags = async (
       }`,
     { variables: { id: orderId } },
   );
-  const json = await response.json();
-  const tags: string[] = (json as any)?.data?.order?.tags ?? [];
+  const json = (await response.json()) as { data?: { order?: { tags?: string[] } } };
+  const tags: string[] = json?.data?.order?.tags ?? [];
   const routeTags = tags.filter((t: string) => /^ld_rota-\d+$/i.test(t));
   if (routeTags.length > 0) {
     await removeTags(admin, orderId, routeTags);
@@ -106,8 +106,8 @@ export const renameRouteTagsToArchive = async (
       }`,
     { variables: { id: orderId } },
   );
-  const json = await response.json();
-  const tags: string[] = (json as any)?.data?.order?.tags ?? [];
+  const json = (await response.json()) as { data?: { order?: { tags?: string[] } } };
+  const tags: string[] = json?.data?.order?.tags ?? [];
   const routeTags = tags.filter((t: string) => /^ld_rota-\d+$/i.test(t));
   if (routeTags.length === 0) return;
 
