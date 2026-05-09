@@ -375,8 +375,7 @@ export function CampaignsTab({
   matchOptionsFetcher,
   baselineFetcher,
 }: CampaignsTabProps) {
-  const { t, i18n } = useTranslation("campaigns");
-  const locale = i18n.language;
+  const { t } = useTranslation("campaigns");
 
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardDraft, setWizardDraft] = useState<WizardDraft>(emptyDraft());
@@ -659,6 +658,14 @@ export function CampaignsTab({
                   key={n}
                   className={`${styles.wizardStepDot}${wizardStep === n ? ` ${styles.wizardStepDotActive}` : ""}`}
                   onClick={() => setWizardStep(n)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setWizardStep(n);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
                 >
                   {n}
                 </div>
@@ -839,7 +846,17 @@ export function CampaignsTab({
                                   !wizardLockedMatchRule &&
                                   toggleMatchValue(opt.value)
                                 }
+                                onKeyDown={(e) => {
+                                  if (
+                                    !wizardLockedMatchRule &&
+                                    (e.key === "Enter" || e.key === " ")
+                                  ) {
+                                    e.preventDefault();
+                                    toggleMatchValue(opt.value);
+                                  }
+                                }}
                                 role="button"
+                                tabIndex={wizardLockedMatchRule ? -1 : 0}
                               >
                                 <s-checkbox
                                   checked={selected || undefined}
@@ -865,7 +882,14 @@ export function CampaignsTab({
                               <span
                                 className={styles.matchChipRemove}
                                 onClick={() => removeMatchValue(val)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    removeMatchValue(val);
+                                  }
+                                }}
                                 role="button"
+                                tabIndex={0}
                               >
                                 ×
                               </span>
