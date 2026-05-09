@@ -42,11 +42,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   console.info("[auto-delivery] cron triggered");
-  const prismaAny = prisma as any;
 
   // Find all locations with auto-delivery enabled
-  const allConfigs = await prismaAny.lalamoveLocationConfig.findMany({});
-  const autoConfigs = allConfigs.filter((c: any) => {
+  const allConfigs = await prisma.lalamoveLocationConfig.findMany({});
+  const autoConfigs = allConfigs.filter((c) => {
     const data = c.data as LalamoveConfig;
     return data.autoDeliveryEnabled === true;
   });
@@ -120,11 +119,10 @@ async function runAutoAssign(
   tz: string,
   errors: Array<{ shop: string; locationId: string; phase: string; error: string }>,
 ): Promise<number> {
-  const prismaAny = prisma as any;
   const startOfDay = getStartOfDayInTimezone(tz);
 
   // Idempotency: check if routes already exist for today
-  const existingRoutes = await prismaAny.pendingDeliveryRoute.findMany({
+  const existingRoutes = await prisma.pendingDeliveryRoute.findMany({
     where: { shop, locationId, createdAt: { gte: startOfDay } },
   });
   if (existingRoutes.length > 0) {
@@ -134,7 +132,7 @@ async function runAutoAssign(
 
   // Fetch unassigned LOCAL delivery orders via Shopify GraphQL
   const adminClient = await unauthenticated.admin(shop);
-  const orders = await fetchEligibleOrders(adminClient.admin, locationId, config);
+  const orders = await fetchEligibleOrders(adminClient.admin, locationId);
   if (orders.length === 0) {
     console.info(`[auto-delivery:assign] SKIP shop=${shop} location=${locationId} — no eligible orders`);
     return 0;
@@ -226,7 +224,7 @@ async function runAutoAssign(
     });
 
     // Create PendingDeliveryRoute
-    await prismaAny.pendingDeliveryRoute.create({
+    await prisma.pendingDeliveryRoute.create({
       data: {
         shop,
         locationId,
@@ -263,11 +261,10 @@ async function runAutoDispatch(
   tz: string,
   errors: Array<{ shop: string; locationId: string; phase: string; error: string }>,
 ): Promise<number> {
-  const prismaAny = prisma as any;
   const startOfDay = getStartOfDayInTimezone(tz);
 
   // Find open (undispatched) routes for this location
-  const openRoutes = await prismaAny.pendingDeliveryRoute.findMany({
+  const openRoutes = await prisma.pendingDeliveryRoute.findMany({
     where: { shop, locationId, status: "open" },
   });
 
@@ -283,7 +280,7 @@ async function runAutoDispatch(
   }
 
   const adminClient = await unauthenticated.admin(shop);
-  const carrierConfigRow = await prismaAny.carrierServiceConfig.findUnique({ where: { shop } });
+  const carrierConfigRow = await prisma.carrierServiceConfig.findUnique({ where: { shop } });
   const carrierConfig = carrierConfigRow?.data as { lalamovePreferredServiceType?: string } | undefined;
   const defaultServiceType = config.preferredServiceType?.trim() || carrierConfig?.lalamovePreferredServiceType?.trim() || "LALAGO";
 
@@ -304,7 +301,7 @@ async function runAutoDispatch(
   for (const route of openRoutes) {
     try {
       // Idempotency: check if already dispatched today
-      const existingDispatch = await prismaAny.lalamoveDispatchJob.findFirst({
+      const existingDispatch = await prisma.lalamoveDispatchJob.findFirst({
         where: {
           shop,
           locationId,
@@ -433,7 +430,7 @@ async function runAutoDispatch(
       });
 
       // Create DB records
-      const dispatchJob = await prismaAny.lalamoveDispatchJob.create({
+      const dispatchJob = await prisma.lalamoveDispatchJob.create({
         data: {
           shop,
           routeId: route.routeId,
@@ -452,7 +449,7 @@ async function runAutoDispatch(
 
       // Create order maps
       for (const orderId of assignmentOrderIds) {
-        await prismaAny.lalamoveDispatchOrderMap.create({
+        await prisma.lalamoveDispatchOrderMap.create({
           data: {
             shop,
             dispatchJobId: dispatchJob.id,
@@ -464,7 +461,7 @@ async function runAutoDispatch(
       }
 
       // Mark route as dispatched
-      await prismaAny.pendingDeliveryRoute.update({
+      await prisma.pendingDeliveryRoute.update({
         where: { id: route.id },
         data: { status: "dispatched" },
       });
@@ -528,7 +525,6 @@ type EligibleOrder = {
 async function fetchEligibleOrders(
   admin: { graphql: (q: string, o?: { variables?: Record<string, unknown> }) => Promise<Response> },
   locationId: string,
-  _config: LalamoveConfig,
 ): Promise<EligibleOrder[]> {
   // Convert GID to legacy ID for search filter
   const legacyId = locationId.replace("gid://shopify/Location/", "");
@@ -606,9 +602,13 @@ async function fetchEligibleOrders(
       }
 
       // Verify LOCAL delivery method
-      const fulfillmentOrders = order.fulfillmentOrders?.nodes ?? [];
+      type FulfillmentOrderNode = {
+        deliveryMethod?: { methodType?: string | null } | null;
+        assignedLocation?: { location?: { id?: string | null } | null } | null;
+      };
+      const fulfillmentOrders: FulfillmentOrderNode[] = order.fulfillmentOrders?.nodes ?? [];
       const isLocal = fulfillmentOrders.some(
-        (fo: any) =>
+        (fo) =>
           fo?.deliveryMethod?.methodType === "LOCAL" &&
           fo?.assignedLocation?.location?.id === locationId,
       );
