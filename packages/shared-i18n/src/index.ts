@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import { createInstance } from "i18next";
 import { initReactI18next } from "react-i18next";
 import type { Resource } from "i18next";
 
@@ -28,7 +28,7 @@ export function normalizeLocale(
  * Each app passes its own translation resources.
  */
 export function createI18nInstance(locale: SupportedLocale, resources: Resource) {
-  const instance = i18n.createInstance();
+  const instance = createInstance();
   instance.use(initReactI18next).init({
     resources,
     lng: locale,

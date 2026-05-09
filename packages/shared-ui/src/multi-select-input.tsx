@@ -90,6 +90,10 @@ export function MultiSelectInput({
       ref={wrapperRef}
       className={`${styles.wrapper}${disabled ? ` ${styles.wrapperDisabled}` : ""}`}
       onClick={() => !disabled && inputRef.current?.focus()}
+      onKeyDown={() => {
+        // No-op — keyboard users reach the inner <input> directly via Tab.
+      }}
+      role="presentation"
     >
       {value.map((item) => (
         <span key={item} className={styles.chip}>
@@ -134,6 +138,9 @@ export function MultiSelectInput({
                 addItem(item);
               }}
               onMouseEnter={() => setFocusedIndex(idx)}
+              role="option"
+              aria-selected={idx === focusedIndex}
+              tabIndex={-1}
             >
               {item}
             </div>
