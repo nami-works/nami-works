@@ -397,12 +397,6 @@ export default function GoalsPage() {
     }
   }, [showBenchmarkEdit]);
 
-  useEffect(() => {
-    const latestBenchmark = config.benchmarks[config.benchmarks.length - 1];
-  }, [config.benchmarks]);
-
-  useEffect(() => {
-  }, [benchmarkProducts]);
 
   return (
     <s-page heading={t("pageHeading")}>
@@ -632,7 +626,17 @@ export default function GoalsPage() {
         heading={t("modals.benchmarkHeading", { number: config.benchmarks.length + 1 })}
       >
         <div className={styles.modalBody}>
-          <div onClick={openBenchmarkProductPicker}>
+          <div
+            onClick={openBenchmarkProductPicker}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openBenchmarkProductPicker();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+          >
             <s-text-field
               label={t("modals.selectProductField")}
               value={benchmarkProducts.map((product) => product.title).join(", ")}
@@ -1063,7 +1067,42 @@ type NormalizedOrder = {
   lineItems: OrderLineItem[];
 };
 
-const fetchOrders = async (admin: any, startDate: string, endDate: string) => {
+type AdminGraphQL = {
+  graphql: (query: string, options?: { variables?: Record<string, unknown> }) => Promise<Response>;
+};
+
+type OrderLineItemNode = {
+  title: string;
+  product?: { id?: string | null } | null;
+  quantity?: number | string | null;
+  originalUnitPriceSet?: { shopMoney?: { amount?: string; currencyCode?: string } | null } | null;
+};
+
+type OrderNode = {
+  id: string;
+  name?: string | null;
+  processedAt?: string | null;
+  createdAt?: string | null;
+  channel?: string | null;
+  sourceName?: string | null;
+  tags?: string[] | null;
+  customer?: { displayName?: string | null; email?: string | null } | null;
+  currentTotalPriceSet?: { shopMoney?: { amount?: string; currencyCode?: string } | null } | null;
+  lineItems: { nodes: OrderLineItemNode[] };
+  fulfillmentOrders: { nodes: Array<{ assignedLocation?: { name?: string | null } | null }> };
+};
+
+type OrdersGraphqlResponse = {
+  errors?: unknown;
+  data?: {
+    orders?: {
+      nodes: OrderNode[];
+      pageInfo: { hasNextPage: boolean; endCursor: string | null };
+    };
+  };
+};
+
+const fetchOrders = async (admin: AdminGraphQL, startDate: string, endDate: string) => {
   const orders: NormalizedOrder[] = [];
   let hasNextPage = true;
   let after: string | null = null;
@@ -1122,16 +1161,17 @@ const fetchOrders = async (admin: any, startDate: string, endDate: string) => {
       }`,
       { variables: { first: 100, after, query } },
     );
-    const json: any = await response.json();
+    const json = (await response.json()) as OrdersGraphqlResponse;
     if (json.errors) {
       throw new Error("Shopify returned errors while loading orders.");
     }
-    const payload: any = json.data.orders;
-    payload.nodes.forEach((order: any) => {
+    const payload = json.data?.orders;
+    if (!payload) break;
+    payload.nodes.forEach((order) => {
       const totalMoney = order.currentTotalPriceSet?.shopMoney;
       const currencyCode = totalMoney?.currencyCode ?? "USD";
       const lineItems: OrderLineItem[] = order.lineItems.nodes.map(
-        (item: any) => ({
+        (item) => ({
           title: item.title,
           productId: item.product?.id ?? null,
           quantity: Number(item.quantity ?? 0),
@@ -1142,8 +1182,8 @@ const fetchOrders = async (admin: any, startDate: string, endDate: string) => {
       const locationName =
         order.fulfillmentOrders.nodes[0]?.assignedLocation?.name ?? null;
       orders.push({
-        name: order.name,
-        createdAt: new Date(order.processedAt ?? order.createdAt),
+        name: order.name ?? "",
+        createdAt: new Date(order.processedAt ?? order.createdAt ?? ""),
         customerName: order.customer?.displayName ?? "Guest",
         customerEmail: order.customer?.email ?? "",
         tags: order.tags ?? [],
@@ -1161,7 +1201,7 @@ const fetchOrders = async (admin: any, startDate: string, endDate: string) => {
 };
 
 const findFirstSoldAtForProduct = async (
-  admin: any,
+  admin: AdminGraphQL,
   productId: string,
   productCreatedAt: string | null,
 ) => {
@@ -1207,21 +1247,22 @@ const findFirstSoldAtForProduct = async (
       }`,
       { variables: { first: 50, after, query } },
     );
-    const json: any = await response.json();
+    const json = (await response.json()) as OrdersGraphqlResponse;
     if (json.errors) {
       throw new Error("Shopify returned errors while loading benchmark orders.");
     }
-    const payload: any = json.data.orders;
+    const payload = json.data?.orders;
+    if (!payload) break;
     for (const order of payload.nodes) {
       let matchedRevenue = 0;
-      order.lineItems.nodes.forEach((item: any) => {
+      order.lineItems.nodes.forEach((item) => {
         if (item.product?.id === productId) {
           const amount = Number(item.originalUnitPriceSet?.shopMoney?.amount ?? 0);
           matchedRevenue += amount * Number(item.quantity ?? 0);
         }
       });
       if (matchedRevenue > 0) {
-        return new Date(order.processedAt ?? order.createdAt);
+        return new Date(order.processedAt ?? order.createdAt ?? "");
       }
     }
     hasNextPage = payload.pageInfo.hasNextPage;
@@ -1639,7 +1680,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (!productIds.length) {
       return { ok: false, error: "Benchmark product is missing." };
     }
-    let cachedLaunch: { firstSoldAt: Date | null } | null = null;
     let cacheAvailable = true;
     try {
       const results: Array<{
@@ -1689,8 +1729,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           }`,
           { variables: { id } },
         );
-        const json = await response.json();
-        if ((json as any).errors || !json.data?.product) {
+        const json = (await response.json()) as {
+          errors?: unknown;
+          data?: { product?: { id: string; title: string; createdAt: string } | null } | null;
+        };
+        if (json.errors || !json.data?.product) {
           return { ok: false, error: "Unable to load benchmark product." };
         }
         const product = json.data.product as {
@@ -1721,7 +1764,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             },
           });
           savedDate = saved.firstSoldAt;
-        } else {
         }
 
         results.push({
