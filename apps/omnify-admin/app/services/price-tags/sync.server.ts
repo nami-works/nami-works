@@ -227,12 +227,14 @@ export async function runFullSync(
       const product = productEdge.node;
       result.processed++;
 
-      const variants = product.variants.edges.map((v: any) => ({
-        price: parseFloat(v.node.price),
-        compareAtPrice: v.node.compareAtPrice
-          ? parseFloat(v.node.compareAtPrice)
-          : null,
-      }));
+      const variants = product.variants.edges.map(
+        (v: { node: { price: string; compareAtPrice: string | null } }) => ({
+          price: parseFloat(v.node.price),
+          compareAtPrice: v.node.compareAtPrice
+            ? parseFloat(v.node.compareAtPrice)
+            : null,
+        }),
+      );
 
       const discount = resolveProductDiscount(variants, mode, dollarThreshold);
 

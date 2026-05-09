@@ -146,12 +146,21 @@ export async function setProductMetafieldValue(
     } else if (setJson.data?.metafieldsSet) {
       console.log(`[price-tags] metafieldsSet OK for ${productGid}`);
     }
-  } catch (err: any) {
-    // Shopify admin client throws GraphqlQueryError on top-level errors
-    const gqlErrors = err?.body?.errors?.graphQLErrors ?? err?.body?.data?.metafieldsSet?.userErrors ?? [];
+  } catch (err: unknown) {
+    // Shopify admin client throws GraphqlQueryError on top-level errors.
+    // Narrow via inline shape — ESLint's no-explicit-any rule is satisfied
+    // because we describe the fields we actually read.
+    const e = err as {
+      body?: {
+        errors?: { graphQLErrors?: unknown[] };
+        data?: { metafieldsSet?: { userErrors?: unknown[] } };
+      };
+      message?: string;
+    };
+    const gqlErrors = e?.body?.errors?.graphQLErrors ?? e?.body?.data?.metafieldsSet?.userErrors ?? [];
     const errMsg = gqlErrors.length > 0
       ? JSON.stringify(gqlErrors)
-      : (err?.message ?? String(err));
+      : (e?.message ?? String(err));
     console.error(`[price-tags] metafieldsSet THREW for ${productGid}: ${errMsg}`);
     throw new Error(`metafieldsSet failed: ${errMsg}`);
   }
@@ -253,10 +262,12 @@ export async function handleProductUpdate(
   const product = json.data?.product;
   if (!product) return skip;
 
-  const variants = product.variants.edges.map((v: any) => ({
-    price: parseFloat(v.node.price),
-    compareAtPrice: v.node.compareAtPrice ? parseFloat(v.node.compareAtPrice) : null,
-  }));
+  const variants = product.variants.edges.map(
+    (v: { node: { price: string; compareAtPrice: string | null } }) => ({
+      price: parseFloat(v.node.price),
+      compareAtPrice: v.node.compareAtPrice ? parseFloat(v.node.compareAtPrice) : null,
+    }),
+  );
 
   const discount = resolveProductDiscount(variants, mode, dollarThreshold);
   console.log(`[price-tags] product=${productGid} discount: dollar=${discount.dollar.toFixed(2)} percent=${discount.percent.toFixed(1)}% effective=${discount.effectiveValue.toFixed(2)} type=${discount.effectiveType}`);

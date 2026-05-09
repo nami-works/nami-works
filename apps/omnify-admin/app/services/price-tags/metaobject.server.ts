@@ -34,14 +34,16 @@ export async function fetchMetaobjectTypes(
 
   // Surface GraphQL-level errors (e.g. missing scopes) instead of silently returning []
   if (json.errors?.length) {
-    const msg = json.errors.map((e: any) => e.message).join("; ");
+    const msg = json.errors.map((e: { message: string }) => e.message).join("; ");
     console.error("[metaobject] GraphQL errors in MetaobjectDefinitions:", msg);
     throw new Error(msg);
   }
 
-  const edges = json.data?.metaobjectDefinitions?.edges ?? [];
+  const edges = (json.data?.metaobjectDefinitions?.edges ?? []) as Array<{
+    node: { type: string; name: string };
+  }>;
 
-  return edges.map((edge: any) => ({
+  return edges.map((edge) => ({
     type: edge.node.type,
     name: edge.node.name,
   }));
@@ -147,7 +149,7 @@ export async function fetchMetaobjectDefinitionFields(
 
   const displayNameKey: string = def.displayNameKey ?? "";
   const fields: MetaobjectFieldDef[] = (def.fieldDefinitions ?? []).map(
-    (f: any) => ({
+    (f: { key: string; name: string; type?: { name?: string }; required?: boolean }) => ({
       key: f.key,
       name: f.name,
       typeName: f.type?.name ?? "single_line_text_field",
