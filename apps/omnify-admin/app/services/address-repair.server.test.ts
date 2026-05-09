@@ -140,6 +140,22 @@ test("p2: jammed building# + apt-indicator preserves building number (#79823)", 
   assert.equal(result.corrected.address2, "Casa 52, Portal gramados");
 });
 
+test("p2: sanity check — bails when stripping leaves a1 with no digits", () => {
+  // Synthetic: a1 has only one digit group ("5"), and that digit is the apt
+  // number that also appears in a2. Pattern 2 WOULD have matched and stripped
+  // the segment, leaving "Rua Alpha" — a numberless street that's never a
+  // valid auto-fix. The sanity check bails out so the order falls through to
+  // the tagging path (silent auto-fix to a numberless street is worse than
+  // flagging for human review).
+  const result = repairBrazilianAddress("Rua Alpha, Apt 5", "Apt 5, Bairro");
+  assert.equal(result.ok, false);
+  if (result.ok) return;
+  // P2 sanity-bails → P3 needs exactly 2 digit groups in a1 (we have 1) → no
+  // match → ambiguity check sees the shared "5" but with apt indicator → not
+  // ambiguous → no-pattern-matched.
+  assert.equal(result.reason, "no-pattern-matched");
+});
+
 test("p2: jammed building# variant — apt number not yet in a2 still migrates correctly", () => {
   // Synthetic: building number 1500 jammed with "Apto 88" in the same segment;
   // a2 mentions 88 only via the duplicate-number trigger. Confirms the building

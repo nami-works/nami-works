@@ -291,6 +291,15 @@ export function tryPattern2(a1: string, a2: string): AddressRepairResult | null 
       fixedA2 = a2;
     }
 
+    // Sanity check: if the input had digits but the corrected a1 has none,
+    // we just stripped all building info (either through a not-yet-detected
+    // jammed shape, or because the user wrote the apt as the only "number").
+    // Bail out and let the caller fall through to tagging — silently auto-
+    // fixing a numberless street is worse than flagging for human review.
+    if (digitGroups(a1).length > 0 && digitGroups(fixedA1).length === 0) {
+      return null;
+    }
+
     return {
       ok: true,
       corrected: { address1: fixedA1, address2: fixedA2 },
@@ -437,11 +446,62 @@ export type AddressRepairOutcome =
   | { outcome: "tagged-number" }
   | { outcome: "tagged-address" };
 
+type OrderUpdateUserError = { field?: string[] | null; message: string };
+type SafeOrderUpdateResult =
+  | { ok: true }
+  | { ok: false; userErrors: OrderUpdateUserError[] };
+
+/**
+ * Wrapper around `orderUpdate` that surfaces `userErrors` as a real failure
+ * (vs. silently succeeding when Shopify rejects the input). Without this
+ * check, a paid-order address constraint or a Markets-locale validation
+ * rejection would leave the order in its original state with no review tag,
+ * because the GraphQL call itself "succeeded" — observed on order #79823
+ * (2026-05-09) when Pattern 2's pre-fix output produced an `address1` with
+ * no street number.
+ */
+async function safeOrderUpdate(
+  admin: AdminApiContext,
+  shop: string,
+  orderId: string,
+  input: Record<string, unknown>,
+  context: string,
+): Promise<SafeOrderUpdateResult> {
+  try {
+    const response = await admin.graphql(
+      `#graphql
+        mutation AddressRepairOrderUpdate($input: OrderInput!) {
+          orderUpdate(input: $input) { userErrors { field message } }
+        }`,
+      { variables: { input: { id: orderId, ...input } } },
+    );
+    const json = (await response.json()) as {
+      data?: { orderUpdate?: { userErrors?: OrderUpdateUserError[] } };
+    };
+    const userErrors = json?.data?.orderUpdate?.userErrors ?? [];
+    if (userErrors.length > 0) {
+      console.error(
+        `[address-repair] ${context} userErrors shop=${shop} orderId=${orderId} errors=${JSON.stringify(userErrors)}`,
+      );
+      return { ok: false, userErrors };
+    }
+    return { ok: true };
+  } catch (err) {
+    console.error(`[address-repair] ${context} HTTP_ERROR shop=${shop} orderId=${orderId}`, err);
+    return {
+      ok: false,
+      userErrors: [{ message: err instanceof Error ? err.message : String(err) }],
+    };
+  }
+}
+
 /**
  * Decision tree applied at every legacy `addTags(.., LD_ADDRESS_CONFIRM_TAG)`
  * call site. Runs the deterministic repair first; falls back to tagging.
  *
- * - pattern matches              → orderUpdate with corrected address, no tag
+ * - pattern matches AND Shopify accepts orderUpdate  → "auto-fixed", no tag
+ * - pattern matches BUT Shopify rejects orderUpdate  → "tagged-address" so
+ *   the order doesn't go silently unrouted (was a real bug pre-2026-05-09)
  * - duplicated-number-ambiguous  → tag ld_number-confirm
  * - no pattern matches           → tag ld_address-confirm (existing default)
  *
@@ -458,60 +518,50 @@ export async function applyAddressRepairOrTag(params: {
   const repair = repairBrazilianAddress(order.address1, order.address2);
 
   if (repair.ok) {
-    try {
-      const shippingAddress: { address1: string; address2?: string } = {
-        address1: repair.corrected.address1,
-      };
-      // Only include address2 when non-empty (Shopify retains existing value
-      // if field omitted; passing literal "" can leave a stale empty string).
-      const a2 = repair.corrected.address2.trim();
-      if (a2.length > 0) {
-        shippingAddress.address2 = a2;
-      }
-      await admin.graphql(
-        `#graphql
-          mutation AddressRepairOrderUpdate($input: OrderInput!) {
-            orderUpdate(input: $input) { userErrors { message } }
-          }`,
-        {
-          variables: {
-            input: {
-              id: order.id,
-              shippingAddress,
-              // Clear any prior "needs review" note attached by an earlier run.
-              note: "",
-            },
-          },
-        },
-      );
+    const shippingAddress: { address1: string; address2?: string } = {
+      address1: repair.corrected.address1,
+    };
+    // Only include address2 when non-empty (Shopify retains existing value
+    // if field omitted; passing literal "" can leave a stale empty string).
+    const a2 = repair.corrected.address2.trim();
+    if (a2.length > 0) {
+      shippingAddress.address2 = a2;
+    }
+    const updateResult = await safeOrderUpdate(
+      admin,
+      shop,
+      order.id,
+      {
+        shippingAddress,
+        // Clear any prior "needs review" note attached by an earlier run.
+        note: "",
+      },
+      "AUTO-FIX",
+    );
+    if (updateResult.ok) {
       console.info(
         `[address-repair] AUTO-FIX shop=${shop} orderId=${order.id} pattern=${repair.pattern} confidence=${repair.confidence}`,
       );
       return { outcome: "auto-fixed", pattern: repair.pattern, confidence: repair.confidence };
-    } catch (err) {
-      console.error(`[address-repair] FAILED orderUpdate shop=${shop} orderId=${order.id}`, err);
-      // Fall through to default tag on write failure so the order isn't lost.
-      try {
-        await addTags(admin, order.id, [LD_ADDRESS_CONFIRM_TAG]);
-      } catch (tagErr) {
-        console.error(`[address-repair] FAILED fallback addTags shop=${shop} orderId=${order.id}`, tagErr);
-      }
-      return { outcome: "tagged-address" };
     }
+    // Repair was found but Shopify rejected the update. Fall through to
+    // tag with ld_address-confirm so the order doesn't go silently unrouted.
+    try {
+      await addTags(admin, order.id, [LD_ADDRESS_CONFIRM_TAG]);
+      await safeOrderUpdate(admin, shop, order.id, { note: noteFallback }, "TAG-AFTER-REJECT");
+    } catch (tagErr) {
+      console.error(`[address-repair] FAILED fallback addTags shop=${shop} orderId=${order.id}`, tagErr);
+    }
+    console.info(
+      `[address-repair] AUTO-FIX-REJECTED shop=${shop} orderId=${order.id} pattern=${repair.pattern} → tagged-address`,
+    );
+    return { outcome: "tagged-address" };
   }
 
   if (repair.reason === "duplicated-number-ambiguous") {
     try {
       await addTags(admin, order.id, [LD_NUMBER_CONFIRM_TAG]);
-      await admin.graphql(
-        `#graphql
-          mutation AddressRepairOrderNote($input: OrderInput!) {
-            orderUpdate(input: $input) { userErrors { message } }
-          }`,
-        {
-          variables: { input: { id: order.id, note: noteFallback } },
-        },
-      );
+      await safeOrderUpdate(admin, shop, order.id, { note: noteFallback }, "TAG-NUMBER");
       console.info(`[address-repair] TAG-NUMBER shop=${shop} orderId=${order.id}`);
     } catch (err) {
       console.error(`[address-repair] FAILED tag-number shop=${shop} orderId=${order.id}`, err);
@@ -522,15 +572,7 @@ export async function applyAddressRepairOrTag(params: {
   // no-pattern-matched → existing default
   try {
     await addTags(admin, order.id, [LD_ADDRESS_CONFIRM_TAG]);
-    await admin.graphql(
-      `#graphql
-        mutation AddressRepairOrderNote($input: OrderInput!) {
-          orderUpdate(input: $input) { userErrors { message } }
-        }`,
-      {
-        variables: { input: { id: order.id, note: noteFallback } },
-      },
-    );
+    await safeOrderUpdate(admin, shop, order.id, { note: noteFallback }, "TAG-ADDRESS");
     console.info(`[address-repair] TAG-ADDRESS shop=${shop} orderId=${order.id}`);
   } catch (err) {
     console.error(`[address-repair] FAILED tag-address shop=${shop} orderId=${order.id}`, err);
