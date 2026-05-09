@@ -16,6 +16,7 @@
  * for this location, the webhook is ignored (idempotent).
  */
 
+import { Prisma } from "@prisma/client";
 import prisma from "../db.server";
 import { getRuntimeCredentialsForShop } from "./lalamove-credentials.server";
 import type { LalamoveConfig } from "./carrier/lalamove-adapter.server";
@@ -105,7 +106,7 @@ async function writeLog(
         locationId: locationId ?? null,
         status,
         reason,
-        details: details ? (details as any) : null,
+        details: details ? (details as unknown as Prisma.InputJsonValue) : Prisma.DbNull,
       },
     });
   } catch (err) {
@@ -394,10 +395,10 @@ async function _autoAssignOrderToRoute(
   };
 
   // 6. Fetch all open pending routes and deduplicate
-  const openRoutes = await (prisma as any).pendingDeliveryRoute.findMany({
+  const openRoutes = await prisma.pendingDeliveryRoute.findMany({
     where: { shop, locationId, status: "open" },
     orderBy: { createdAt: "asc" as const },
-  }) as Array<{ id: string; ordersData: unknown }>;
+  });
 
   const alreadyAssigned = openRoutes.some((r) =>
     (r.ordersData as OrderStop[]).some((s) => s.shopifyOrderId === newStop.shopifyOrderId),
@@ -439,13 +440,13 @@ async function _autoAssignOrderToRoute(
       );
 
     if (routeGroups.length > 0) {
-      await (prisma as any).$transaction([
-        (prisma as any).pendingDeliveryRoute.deleteMany({
+      await prisma.$transaction([
+        prisma.pendingDeliveryRoute.deleteMany({
           where: { shop, locationId, status: "open" },
         }),
         ...routeGroups.map((group) =>
-          (prisma as any).pendingDeliveryRoute.create({
-            data: { shop, locationId, status: "open", ordersData: group },
+          prisma.pendingDeliveryRoute.create({
+            data: { shop, locationId, status: "open", ordersData: group as unknown as Prisma.InputJsonValue },
           }),
         ),
       ]);
@@ -465,8 +466,8 @@ async function _autoAssignOrderToRoute(
   }
 
   // 9. Fallback: create a solo route for the new order (single order or clustering failed)
-  await (prisma as any).pendingDeliveryRoute.create({
-    data: { shop, locationId, status: "open", ordersData: [newStop] },
+  await prisma.pendingDeliveryRoute.create({
+    data: { shop, locationId, status: "open", ordersData: [newStop] as unknown as Prisma.InputJsonValue },
   });
   await writeLog(shop, orderId, orderName, "assigned", "Solo route (single order)", locationId, {
     openRoutesCount: openRoutes.length,
