@@ -13,20 +13,6 @@ type AddressRow = {
   country: string;
 };
 
-type LocalOrderJson = {
-  order?: {
-    currency?: string;
-    shipping_lines?: Array<{
-      title?: string;
-      code?: string | null;
-      source?: string | null;
-      price?: string;
-    }>;
-    shipping_address?: { company?: string | null };
-    billing_address?: { company?: string | null };
-  };
-};
-
 type CsvOrderLine = {
   sku: string;
   name: string;
@@ -95,10 +81,6 @@ const countPerZipArg = args.find((arg) => arg.startsWith("--count-per-zip="));
 const dryRun = args.includes("--dry-run");
 const verify = args.includes("--verify");
 const introspectLocalizedFields = args.includes("--introspect-localized-fields");
-const shippingArg = args.find((arg) => arg.startsWith("--shipping="));
-const shippingMode = (
-  shippingArg ? shippingArg.split("=")[1] : "local"
-) as "local" | "regular" | "mixed";
 const csvArg = args.find((arg) => arg.startsWith("--csv="));
 const csvDirArg = args.find((arg) => arg.startsWith("--csv-dir="));
 const maxOrdersArg = args.find((arg) => arg.startsWith("--max-orders="));
@@ -128,12 +110,6 @@ const requireEnv = () => {
       "Missing SHOPIFY_ADMIN_ACCESS_TOKEN (or SHOPIFY_ADMIN_API_ACCESS_TOKEN).",
     );
   }
-};
-
-const readJson = async <T>(relativePath: string): Promise<T> => {
-  const filePath = path.resolve(__dirname, "..", relativePath);
-  const raw = await fs.readFile(filePath, "utf-8");
-  return JSON.parse(raw) as T;
 };
 
 const parseCsvRows = (raw: string): string[][] => {
@@ -338,7 +314,7 @@ const runLocalizedFieldIntrospection = async () => {
         type: {
           kind: string;
           name: string | null;
-          ofType: { kind: string; name: string | null; ofType: any | null } | null;
+          ofType: { kind: string; name: string | null; ofType: unknown | null } | null;
         };
       }>;
     } | null;
@@ -356,7 +332,7 @@ const runLocalizedFieldIntrospection = async () => {
         type: {
           kind: string;
           name: string | null;
-          ofType: { kind: string; name: string | null; ofType: any | null } | null;
+          ofType: { kind: string; name: string | null; ofType: unknown | null } | null;
         };
       }>;
     } | null;
@@ -586,22 +562,6 @@ const normalizeTaxId = (value?: string | null) => {
   return null;
 };
 
-const formatTaxId = (digits: string) => {
-  if (digits.length === 11) {
-    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(
-      6,
-      9,
-    )}-${digits.slice(9, 11)}`;
-  }
-  if (digits.length === 14) {
-    return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(
-      5,
-      8,
-    )}/${digits.slice(8, 12)}-${digits.slice(12, 14)}`;
-  }
-  return digits;
-};
-
 const toRadians = (value: number) => (value * Math.PI) / 180;
 
 const haversineKm = (
@@ -810,7 +770,7 @@ const updateOrderShippingLine = async (
   }
 
   const edit = await shopifyGraphql<{
-    orderEditBegin: { calculatedOrder: { id: string } | null; userErrors: any[] };
+    orderEditBegin: { calculatedOrder: { id: string } | null; userErrors: Array<{ field?: string[] | null; message: string }> };
   }>(
     `#graphql
       mutation BeginOrderEdit($id: ID!) {
@@ -835,7 +795,7 @@ const updateOrderShippingLine = async (
 
   for (const line of data.order.shippingLines.nodes) {
     await shopifyGraphql<{
-      orderEditRemoveShippingLine: { userErrors: any[] };
+      orderEditRemoveShippingLine: { userErrors: Array<{ field?: string[] | null; message: string }> };
     }>(
       `#graphql
         mutation RemoveShippingLine($id: ID!, $shippingLineId: ID!) {
@@ -851,7 +811,7 @@ const updateOrderShippingLine = async (
   }
 
   await shopifyGraphql<{
-    orderEditAddShippingLine: { userErrors: any[] };
+    orderEditAddShippingLine: { userErrors: Array<{ field?: string[] | null; message: string }> };
   }>(
     `#graphql
       mutation AddShippingLine($id: ID!, $shippingLine: OrderEditShippingLineInput!) {
@@ -875,7 +835,7 @@ const updateOrderShippingLine = async (
   );
 
   await shopifyGraphql<{
-    orderEditCommit: { order: { id: string } | null; userErrors: any[] };
+    orderEditCommit: { order: { id: string } | null; userErrors: Array<{ field?: string[] | null; message: string }> };
   }>(
     `#graphql
       mutation CommitOrderEdit($id: ID!) {
@@ -1151,66 +1111,6 @@ const CUSTOMER_SAMPLES = [
   },
 ];
 
-type ShippingPreset = {
-  key: "local" | "regular";
-  shippingLines: Array<{
-    title: string;
-    code: string | null;
-    source: string | null;
-    price: { amount: string; currencyCode: string };
-  }>;
-  referenceTitle: string;
-  defaultCompany: string;
-};
-
-const loadShippingPreset = async (
-  key: "local" | "regular",
-): Promise<ShippingPreset> => {
-  const filePath =
-    key === "local"
-      ? "sample-data/local-delivery_order.json"
-      : "sample-data/regular-delivery-order.json";
-  const orderJson = await readJson<LocalOrderJson>(filePath);
-  const currency = orderJson.order?.currency || "BRL";
-  const shippingLine = orderJson.order?.shipping_lines?.[0];
-  const defaultCompany =
-    normalizeTaxId(orderJson.order?.shipping_address?.company) ||
-    normalizeTaxId(orderJson.order?.billing_address?.company) ||
-    "";
-
-  if (!shippingLine) {
-    const fallbackTitle = key === "local" ? "Local Delivery" : "Shipping";
-    return {
-      key,
-      shippingLines: [
-        {
-          title: fallbackTitle,
-          code: fallbackTitle,
-          source: "shopify",
-          price: { amount: "0.00", currencyCode: currency },
-        },
-      ],
-      referenceTitle: fallbackTitle,
-      defaultCompany,
-    };
-  }
-
-  return {
-    key,
-    shippingLines: [
-      {
-        title: shippingLine.title || (key === "local" ? "Local Delivery" : "Shipping"),
-        code: shippingLine.code || (key === "local" ? "Local Delivery" : "Shipping"),
-        source: shippingLine.source || "shopify",
-        price: { amount: shippingLine.price || "0.00", currencyCode: currency },
-      },
-    ],
-    referenceTitle:
-      shippingLine.title || (key === "local" ? "Local Delivery" : "Shipping"),
-    defaultCompany,
-  };
-};
-
 const loadAddresses = async (): Promise<AddressRow[]> => {
   const csvPath = path.resolve(__dirname, "..", "sample-data/addresses.csv");
   const raw = await fs.readFile(csvPath, "utf-8");
@@ -1259,66 +1159,6 @@ const fetchVariants = async () => {
     `,
   );
   return data.productVariants.nodes;
-};
-
-const upsertCustomer = async (
-  sample: {
-    firstName: string;
-    lastName: string;
-  },
-  cpfDigits?: string | null,
-) => {
-  const metafields = cpfDigits
-    ? [
-    {
-      namespace: "custom",
-      key: "cpf_cnpj",
-      type: "single_line_text_field",
-      value: cpfDigits,
-    },
-      ]
-    : [];
-
-  const create = await shopifyGraphql<{
-    customerCreate: {
-        customer: { id: string } | null;
-        userErrors: Array<{ field: string[] | null; message: string }>;
-      };
-    }>(
-      `#graphql
-      mutation CreateCustomer($input: CustomerInput!) {
-        customerCreate(input: $input) {
-            customer {
-              id
-            }
-            userErrors {
-              field
-              message
-            }
-          }
-        }
-      `,
-      {
-        input: {
-          firstName: sample.firstName,
-          lastName: sample.lastName,
-        ...(metafields.length ? { metafields } : {}),
-        },
-      },
-    );
-
-  if (create.customerCreate.userErrors.length) {
-    const errors = create.customerCreate.userErrors
-        .map((error) => error.message)
-        .join(", ");
-    throw new Error(`Customer create failed: ${errors}`);
-  }
-
-  if (!create.customerCreate.customer) {
-    throw new Error("Customer create did not return a customer.");
-  }
-
-  return create.customerCreate.customer.id;
 };
 
 const createCustomerFromAddress = async (input: {
@@ -1400,7 +1240,6 @@ const createOrder = async (
   row: AddressRow,
   index: number,
   variantIds: string[],
-  defaultCompany: string,
 ) => {
   const sample = CUSTOMER_SAMPLES[(index - 1) % CUSTOMER_SAMPLES.length];
   const companyDigits = normalizeTaxId(sample.cpf) || "07165036628";
@@ -1716,12 +1555,6 @@ const main = async () => {
       const shippingName = splitName(orderSeed.shipping.name);
       const companyRaw = orderSeed.billing.company || orderSeed.shipping.company || "";
       const companyDigits = normalizeTaxId(companyRaw) || "07165036628";
-      const customer = {
-        firstName: shippingName.firstName || billingName.firstName,
-        lastName: shippingName.lastName || billingName.lastName,
-        phone: "",
-        email: "",
-      };
 
       const shippingSource =
         orderSeed.shipping.address1 ||
@@ -1778,7 +1611,6 @@ const main = async () => {
           ? await createCustomerFromAddress({
               firstName: shippingAddressBase.firstName,
               lastName: shippingAddressBase.lastName,
-              company: (shippingAddressBase as any).company,
               address1:
                 shippingAddressBase.address1 || billingAddressBase.address1,
               address2:
@@ -1872,14 +1704,15 @@ const main = async () => {
         continue;
       }
 
-      let data: any;
+      type DraftOrderCreateResponse = {
+        draftOrderCreate: {
+          draftOrder: { id: string } | null;
+          userErrors: Array<{ field: string[] | null; message: string }>;
+        };
+      };
+      let data: DraftOrderCreateResponse | undefined;
       const createDraft = async (cpfOverride?: string) =>
-        shopifyGraphql<{
-          draftOrderCreate: {
-            draftOrder: { id: string } | null;
-            userErrors: Array<{ field: string[] | null; message: string }>;
-          };
-        }>(
+        shopifyGraphql<DraftOrderCreateResponse>(
           `#graphql
             mutation SeedDraftOrder($draft: DraftOrderInput!) {
               draftOrderCreate(input: $draft) {
@@ -1896,9 +1729,9 @@ const main = async () => {
           { draft: buildDraftInput(cpfOverride) },
         );
 
-      const getUserErrors = (payload: any) =>
+      const getUserErrors = (payload: DraftOrderCreateResponse) =>
         payload.draftOrderCreate.userErrors
-          .map((error: { message: string }) => error.message)
+          .map((error) => error.message)
           .join(", ");
 
       try {
@@ -2017,7 +1850,6 @@ const main = async () => {
     throw new Error("No addresses found to seed.");
   }
 
-  const preset = await loadShippingPreset("local");
   const variants = await fetchVariants();
   if (variants.length === 0) {
     throw new Error("No product variants found to seed line items.");
@@ -2027,12 +1859,7 @@ const main = async () => {
 
   for (let index = 0; index < seedRows.length; index += 1) {
     const row = seedRows[index];
-    const order = await createOrder(
-      row,
-      index + 1,
-      variantIds,
-      preset.defaultCompany,
-    );
+    const order = await createOrder(row, index + 1, variantIds);
     if (!dryRun && completeDraft) {
       await moveFulfillmentToNearestLocation(order.id);
       await fulfillOrder(order.id);
