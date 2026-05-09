@@ -72,14 +72,26 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  let payload: any;
+  // Lalamove webhook payload shape — minimal inline type covering the fields
+  // we read. v3 nests under `data`; some legacy events emit at the top level.
+  type LalamoveWebhookData = {
+    orderId?: string;
+    id?: string;
+    status?: string;
+    orderStatus?: string;
+    shop?: string;
+    failureReason?: string;
+    cancelReason?: string;
+    metadata?: { shop?: string; dispatchJobId?: string };
+  };
+  let payload: { data?: LalamoveWebhookData } & LalamoveWebhookData;
   try {
     payload = JSON.parse(rawBody);
   } catch {
     return new Response("Invalid JSON", { status: 400 });
   }
 
-  const data = payload?.data ?? payload;
+  const data: LalamoveWebhookData = payload?.data ?? payload;
   const lalamoveOrderId = String(data?.orderId ?? data?.id ?? "").trim();
   const externalStatus = String(data?.status ?? data?.orderStatus ?? "").trim();
   const metadata = data?.metadata ?? {};
@@ -93,10 +105,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
   console.info(`[local-delivery:webhook] received shop=${shop} orderId=${lalamoveOrderId} status=${externalStatus}`);
 
-  const prismaAny = prisma as any;
-
   // Always log every webhook event for audit trail
-  await prismaAny.lalamoveDispatchEvent.create({
+  await prisma.lalamoveDispatchEvent.create({
     data: {
       shop,
       dispatchJobId,
@@ -107,7 +117,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     },
   });
 
-  const orderMaps = await prismaAny.lalamoveDispatchOrderMap.findMany({
+  const orderMaps = await prisma.lalamoveDispatchOrderMap.findMany({
     where: { shop, lalamoveOrderId },
   });
 
@@ -202,7 +212,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   // ── DB update ─────────────────────────────────────────────────────────────
   const isFailure = mapped === "failed" || mapped === "rejected" || mapped === "expired";
-  await prismaAny.lalamoveDispatchOrderMap.updateMany({
+  await prisma.lalamoveDispatchOrderMap.updateMany({
     where: { shop, lalamoveOrderId },
     data: {
       currentStatus: externalStatus,
@@ -221,7 +231,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     dispatchJobId ?? (orderMaps[0]?.dispatchJobId as string | undefined) ?? null;
 
   if (effectiveDispatchJobId) {
-    await prismaAny.lalamoveDispatchJob.updateMany({
+    await prisma.lalamoveDispatchJob.updateMany({
       where: { shop, id: effectiveDispatchJobId },
       data: { status: externalStatus, lalamoveOrderId },
     });
@@ -231,7 +241,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   if (isFailure && effectiveDispatchJobId) {
     try {
-      const jobForRetry = await prismaAny.lalamoveDispatchJob.findUnique({
+      const jobForRetry = await prisma.lalamoveDispatchJob.findUnique({
         where: { id: effectiveDispatchJobId },
       });
       if (jobForRetry && (jobForRetry.retryCount ?? 0) < 2) {
@@ -242,8 +252,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         const { autoRetryDispatchJob } = await import(
           "../services/lalamove-escalation.server"
         );
+        // Narrowing cast: typed Prisma returns nullable `market` etc., but
+        // `autoRetryDispatchJob` was originally fed via `prismaAny` (= any).
+        // Preserve the prior runtime semantics — function tolerates whatever
+        // shape Prisma returned, including null fields where the signature
+        // says non-null.
+        type DispatchJobForRetry = {
+          id: string;
+          routeId: string;
+          locationId: string;
+          market: string;
+          lalamoveOrderId: string;
+          retryCount?: number;
+          shop?: string;
+        };
         const retryResult = await autoRetryDispatchJob(
-          jobForRetry,
+          jobForRetry as unknown as DispatchJobForRetry,
           shop,
           adminClient.admin,
         );
@@ -306,7 +330,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       await Promise.all(orderIds.map((id: string) => renameRouteTagsToArchive(adminClient.admin, id, dateStr)));
       // Mark dispatch job as FULFILLED so it's excluded from future loads
       if (effectiveDispatchJobId) {
-        await prismaAny.lalamoveDispatchJob.updateMany({
+        await prisma.lalamoveDispatchJob.updateMany({
           where: { shop, id: effectiveDispatchJobId },
           data: { status: "FULFILLED" },
         });
