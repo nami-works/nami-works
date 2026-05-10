@@ -36,7 +36,8 @@
     "noMapAvailable": "Mapa não disponível.",
     "locationGate": {
       "heading": "Escolha uma localização para começar a rotear pedidos.",
-      "body": "O planejador de rotas precisa de uma única localização de origem. Selecione uma no filtro Localização acima."
+      "body": "O planejador de rotas precisa de uma única localização de origem. Selecione uma no filtro Localização acima.",
+      "shortHeading": "Escolha uma localização para começar"
     },
     "selectLocationToShowRoutes": "Selecione uma localização específica para exibir rotas no mapa.",
     "noCoordinates": "Nenhuma coordenada disponível para os filtros selecionados.",
@@ -531,7 +532,7 @@
     }
   },
   "orderDetailsModal": {
-    "heading": "Pedido {{orderName}}",
+    "heading": "Detalhes do pedido · {{orderName}}",
     "headingFallback": "Detalhes do pedido",
     "itemsHeading": "Itens",
     "shippingSummary": "Envio",
@@ -540,21 +541,27 @@
     "total": "Total",
     "customer": "Cliente",
     "customerName": "Nome",
+    "customerEmail": "E-mail",
+    "customerPhone": "Telefone",
+    "noEmail": "—",
+    "noPhone": "—",
+    "lineItemQty": "× {{count}}",
+    "noLineItems": "Nenhum item encontrado neste pedido.",
     "processedAt": "Processado em",
     "shippingAddress": "Endereço de entrega",
     "noAddress": "Sem endereço cadastrado.",
     "fulfillsFrom": "Sai de {{location}}",
-    "editAddressInShopify": "Editar endereço na Shopify",
+    "editAddressInShopify": "Editar na página do pedido",
     "tags": "Tags",
     "operatorTagsLabel": "Tags do operador (clique para alternar)",
     "allTagsLabel": "Todas as tags",
-    "addTagPlaceholder": "Adicionar tag…",
+    "addTagPlaceholder": "Adicionar tag",
     "removeTag": "Remover tag {{tag}}",
     "internalNotes": "Notas internas",
     "noNotes": "Sem notas internas ainda.",
     "addNote": "+ Adicionar nota",
     "addNoteSoon": "Em breve",
-    "openInShopify": "Abrir pedido completo na Shopify ↗",
+    "openInShopify": "Abrir pedido completo",
     "close": "Fechar"
   }
 }

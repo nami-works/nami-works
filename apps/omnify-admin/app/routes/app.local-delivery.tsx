@@ -4493,6 +4493,18 @@ export default function Index() {
   const routeManagerSection = (
     <s-section heading={t("routeManager.heading")}>
       <s-stack direction="block" gap="base">
+        {/* All-locations gate badge (2026-05-08): shown right below the
+            section heading + above the location selector. Default grey
+            tone (no `tone` prop -> neutral) per Lucas's note: this is a
+            soft prompt, not an info-blue banner. Replaces the page-top
+            <s-banner tone="info"> that previously sat above <s-section>. */}
+        {locationId === DEFAULT_LOCATION_ID ? (
+          <div className={styles.locationGateBadgeRow}>
+            <s-badge icon="info">
+              {t("map.locationGate.shortHeading")}
+            </s-badge>
+          </div>
+        ) : null}
         <s-select
           label={t("filters.location", "Location")}
           labelAccessibilityVisibility="exclusive"
@@ -4686,9 +4698,18 @@ export default function Index() {
           </div>
         ) : null;
       })() : null}
-      {hasAssignedRoutes ? (
+      {/* Route cards are hidden entirely on the all-locations view (2026-05-08
+          per Lucas's spec). Only the Route Manager block (badge prompt +
+          general stats), the All-orders table, and the Auto-assign accuracy
+          block render when locationId === DEFAULT_LOCATION_ID. To see the
+          per-route cards the operator MUST pick a specific location. The
+          legacy "grouped by location" rendering inside this branch is left
+          in place for safety (no behavior change for picked-location views)
+          but is unreachable now. */}
+      {hasAssignedRoutes && locationId !== DEFAULT_LOCATION_ID ? (
         <div className={styles.assignedRoutesSection}>
           {locationId === DEFAULT_LOCATION_ID ? (
+            // Unreachable now (outer gate above) -- kept for diff clarity.
             // Grouped by location when "All locations" selected
             [...new Set(editableRoutes.filter((r) => r.orderIds.length > 0).map((r) => r.locationId))].map((locId) => {
               const groupName = locationsById.get(locId)?.name;
@@ -6061,11 +6082,11 @@ export default function Index() {
           banner is the single source of truth explaining the gate. Spec:
           inputs/mockups/local-delivery-control-row-v1.html → "Location ===
           'all' — selection gate (page-level)" section. */}
-      {locationId === DEFAULT_LOCATION_ID ? (
-        <s-banner tone="info" heading={t("map.locationGate.heading")}>
-          {t("map.locationGate.body")}
-        </s-banner>
-      ) : null}
+      {/* The page-top all-locations banner was relocated to a grey badge
+          inside the Route Manager block (2026-05-08, see routeManagerSection
+          above). Body copy was dropped -- the short heading "Pick a
+          location to start" is enough; the location selector right
+          below the badge is the single affordance to fix the gate. */}
       <s-section>
       <div className={styles.mainBlocks}>
         <div className={isFullscreen ? styles.fullscreenOverlay : undefined}>
@@ -6176,16 +6197,17 @@ export default function Index() {
                           {showReassignCluster ? (
                             <>
                               <div className={styles.polylineReassignPopover}>
-                                <s-button
-                                  key="reassign-trigger"
-                                  variant="secondary"
-                                  icon="exchange"
-                                  accessibilityLabel={t("map.polylineEdit.reassign")}
-                                  commandFor="polyline-reassign-popover"
-                                  command="--toggle"
-                                >
-                                  <span className={styles.btnLabel}>{t("map.polylineEdit.reassign")}</span>
-                                </s-button>
+                                <span className={styles.hoverExpandWrap}>
+                                  <s-button
+                                    key="reassign-trigger"
+                                    variant="secondary"
+                                    icon="exchange"
+                                    accessibilityLabel={t("map.polylineEdit.reassign")}
+                                    commandFor="polyline-reassign-popover"
+                                    command="--toggle"
+                                  />
+                                  <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.reassign")}</span>
+                                </span>
                                 <s-popover id="polyline-reassign-popover">
                                   <s-menu accessibilityLabel={t("map.polylineEdit.reassign")}>
                                     {routesAtLocation.map(({ route, index }) => (
@@ -6204,123 +6226,116 @@ export default function Index() {
                                   </s-menu>
                                 </s-popover>
                               </div>
-                              <s-button
-                                key="unassign"
-                                variant="secondary"
-                                tone="critical"
-                                icon="delete"
-                                accessibilityLabel={t("map.polylineEdit.unassign")}
-                                disabled={isRoutingBusy || undefined}
-                                onClick={handleUnassignSelected}
-                              >
-                                <span className={styles.btnLabel}>{t("map.polylineEdit.unassign")}</span>
-                              </s-button>
+                              <span className={styles.hoverExpandWrap}>
+                                <s-button
+                                  key="unassign"
+                                  variant="secondary"
+                                  tone="critical"
+                                  icon="delete"
+                                  accessibilityLabel={t("map.polylineEdit.unassign")}
+                                  disabled={isRoutingBusy || undefined}
+                                  onClick={handleUnassignSelected}
+                                />
+                                <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.unassign")}</span>
+                              </span>
                             </>
                           ) : null}
                           {showAssignToNew ? (
-                            <s-button
-                              key="assign-to-new"
-                              variant="primary"
-                              icon="arrow-right-circle"
-                              accessibilityLabel={t("map.assignToNewRoute")}
-                              loading={isRoutingBusy}
-                              disabled={
-                                selectedOrderIds.size === 0 ||
-                                routesWithOrdersCount >= ROUTE_TAGS.size ||
-                                isRoutingBusy
-                              }
-                              onClick={handleAssignToNewRoute}
-                            >
-                              <span className={styles.btnLabel}>{t("map.assignToNewRoute")}</span>
-                            </s-button>
+                            <span className={styles.hoverExpandWrap}>
+                              <s-button
+                                key="assign-to-new"
+                                variant="primary"
+                                icon="arrow-right-circle"
+                                accessibilityLabel={t("map.assignToNewRoute")}
+                                loading={isRoutingBusy}
+                                disabled={
+                                  selectedOrderIds.size === 0 ||
+                                  routesWithOrdersCount >= ROUTE_TAGS.size ||
+                                  isRoutingBusy
+                                }
+                                onClick={handleAssignToNewRoute}
+                              />
+                              <span className={styles.hoverExpandLabel}>{t("map.assignToNewRoute")}</span>
+                            </span>
                           ) : null}
                           {showClearSelection ? (
-                            <s-button
-                              key="clear-selection"
-                              variant="secondary"
-                              icon="minus-circle"
-                              accessibilityLabel={t("map.clearSelection")}
-                              disabled={isRoutingBusy || undefined}
-                              onClick={clearSelection}
-                            >
-                              <span className={styles.btnLabel}>{t("map.clearSelection")}</span>
-                            </s-button>
+                            <span className={styles.hoverExpandWrap}>
+                              <s-button
+                                key="clear-selection"
+                                variant="secondary"
+                                icon="minus-circle"
+                                accessibilityLabel={t("map.clearSelection")}
+                                disabled={isRoutingBusy || undefined}
+                                onClick={clearSelection}
+                              />
+                              <span className={styles.hoverExpandLabel}>{t("map.clearSelection")}</span>
+                            </span>
                           ) : null}
                           {showConfirm ? (
-                            <s-button
-                              key="confirm"
-                              variant="primary"
-                              icon="check-circle"
-                              accessibilityLabel={t("map.polylineEdit.confirm")}
-                              disabled={isRoutingBusy}
-                              onClick={confirmPolylineEditMode}
-                            >
-                              <span className={styles.btnLabel}>{t("map.polylineEdit.confirm")}</span>
-                            </s-button>
+                            <span className={styles.hoverExpandWrap}>
+                              <s-button
+                                key="confirm"
+                                variant="primary"
+                                icon="check-circle"
+                                accessibilityLabel={t("map.polylineEdit.confirm")}
+                                disabled={isRoutingBusy}
+                                onClick={confirmPolylineEditMode}
+                              />
+                              <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.confirm")}</span>
+                            </span>
                           ) : null}
                           {showExit ? (
-                            <s-button
-                              key="exit"
-                              variant="secondary"
-                              icon="x"
-                              accessibilityLabel={t("map.polylineEdit.exit")}
-                              onClick={() => {
-                                // Exit-confirm gate: when changes are
-                                // pending (States D / D' / G in the matrix),
-                                // open the confirmation modal first. State B
-                                // (no work pending) exits immediately. Spec:
-                                // inputs/mockups/local-delivery-control-row-v1.html
-                                if (hasChangesPending) {
-                                  setExitConfirmOpen(true);
-                                } else {
-                                  cancelPolylineEditMode();
-                                }
-                              }}
-                            >
-                              <span className={styles.btnLabel}>{t("map.polylineEdit.exit")}</span>
-                            </s-button>
+                            <span className={styles.hoverExpandWrap}>
+                              <s-button
+                                key="exit"
+                                variant="secondary"
+                                icon="x"
+                                accessibilityLabel={t("map.polylineEdit.exit")}
+                                onClick={() => {
+                                  // Exit-confirm gate: when changes are
+                                  // pending (States D / D' / G in the matrix),
+                                  // open the confirmation modal first. State B
+                                  // (no work pending) exits immediately. Spec:
+                                  // inputs/mockups/local-delivery-control-row-v1.html
+                                  if (hasChangesPending) {
+                                    setExitConfirmOpen(true);
+                                  } else {
+                                    cancelPolylineEditMode();
+                                  }
+                                }}
+                              />
+                              <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.exit")}</span>
+                            </span>
                           ) : null}
-                          <div className={styles.moreActionsMenuWrap}>
-                            <s-button
-                              key="more"
-                              variant="secondary"
-                              icon="menu-horizontal"
-                              commandFor="map-more-actions"
-                              command="--toggle"
-                              accessibilityLabel={t("routeManager.moreActions")}
-                            />
-                            <s-popover id="map-more-actions">
-                              <s-menu accessibilityLabel={t("routeManager.moreActions")}>
-                                <s-button
-                                  onClick={() => {
-                                    // Programmatic open of the map-style modal.
-                                    // commandFor on this button raced with the
-                                    // s-menu's auto-dismiss and the modal
-                                    // never opened (per 2026-05-06 review).
-                                    setDraftMapStyle(mapStyle);
-                                    setIsMapStyleModalOpen(true);
-                                    const popover = document.getElementById(
-                                      "map-more-actions",
-                                    );
-                                    popover?.removeAttribute("open");
-                                    const modal = document.getElementById(
-                                      "map-style-modal",
-                                    ) as
-                                      | (HTMLElement & {
-                                          showOverlay?: () => void;
-                                        })
-                                      | null;
-                                    modal?.showOverlay?.();
-                                  }}
-                                >
-                                  {t("map.mapStyleButton")}
-                                </s-button>
-                              </s-menu>
-                            </s-popover>
-                          </div>
                         </>
                       );
                     })()}
+                    {/* Map style — promoted from the overflow menu to a
+                        top-level link-style button (2026-05-08 per Lucas).
+                        Visible whenever NOT in edit mode (regardless of
+                        location-context); hidden in edit mode so the
+                        action row stays focused on confirm/exit. */}
+                    {!polylineEditMode ? (
+                      <s-button
+                        key="map-style"
+                        variant="tertiary"
+                        onClick={() => {
+                          // Programmatic open per the same race fix the
+                          // overflow-menu version used (commandFor + s-menu
+                          // dismiss raced and the modal never opened).
+                          setDraftMapStyle(mapStyle);
+                          setIsMapStyleModalOpen(true);
+                          const modal = document.getElementById(
+                            "map-style-modal",
+                          ) as
+                            | (HTMLElement & { showOverlay?: () => void })
+                            | null;
+                          modal?.showOverlay?.();
+                        }}
+                      >
+                        {t("map.mapStyleButton")}
+                      </s-button>
+                    ) : null}
                   </div>
                 </div>
                 {isFullscreen ? renderOrdersSection() : null}
@@ -6367,33 +6382,45 @@ export default function Index() {
       >
         {orderDetailsModalOrder ? (
           <div className={styles.orderModalBody}>
+            {/* Items block (2026-05-08 rewrite per Lucas):
+                  - "Processed at" pulled to the top of the block as a single
+                    label-+-value row.
+                  - The body now lists actual line items (title + quantity)
+                    instead of repeating shipping info, which was the bug.
+                  - Total row stays at the bottom.
+                Line items come from the loader's GraphQL projection
+                (lineItems(first: 20)). Empty list -> noLineItems copy. */}
             <div
               className={`${styles.orderModalCard} ${styles.orderModalFull}`}
             >
               <h3 className={styles.orderModalSectionTitle}>
                 {t("orderDetailsModal.itemsHeading")}
               </h3>
+              <div className={styles.orderModalKeyVal}>
+                <span className={styles.orderModalKey}>
+                  {t("orderDetailsModal.processedAt")}
+                </span>
+                <span className={styles.orderModalVal}>
+                  {formatOrderDateShort(orderDetailsModalOrder.processedAt)}
+                </span>
+              </div>
               <div className={styles.orderModalLineItems}>
-                <div className={styles.orderModalKeyVal}>
+                {orderDetailsModalOrder.lineItems.length === 0 ? (
                   <span className={styles.orderModalKey}>
-                    {t("orderDetailsModal.shippingSummary")}
+                    {t("orderDetailsModal.noLineItems")}
                   </span>
-                  <span className={styles.orderModalVal}>
-                    {orderDetailsModalOrder.shippingSummary ??
-                      t("orderDetailsModal.noShippingSummary")}
-                  </span>
-                </div>
-                {orderDetailsModalOrder.shippingCost ? (
-                  <div className={styles.orderModalKeyVal}>
-                    <span className={styles.orderModalKey}>
-                      {t("orderDetailsModal.shippingCost")}
-                    </span>
-                    <span className={styles.orderModalVal}>
-                      {orderDetailsModalOrder.shippingCost.amount.toFixed(2)}{" "}
-                      {orderDetailsModalOrder.shippingCost.currencyCode}
-                    </span>
-                  </div>
-                ) : null}
+                ) : (
+                  orderDetailsModalOrder.lineItems.map((li) => (
+                    <div key={li.id} className={styles.orderModalLineItemRow}>
+                      <span className={styles.orderModalVal}>{li.title}</span>
+                      <span className={styles.orderModalKey}>
+                        {t("orderDetailsModal.lineItemQty", {
+                          count: li.quantity,
+                        })}
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
               <div className={styles.orderModalTotals}>
                 <div className={styles.orderModalTotalsRow}>
@@ -6403,29 +6430,44 @@ export default function Index() {
               </div>
             </div>
 
+            {/* Customer block (2026-05-08 rewrite):
+                  - "Name" label dropped (the value is self-evident).
+                  - Email + Phone added with labels. Both fall back to "—" for
+                    guest checkouts where the customer record has no contact.
+                  - Processed at moved out of this block, now lives in Items. */}
             <div className={styles.orderModalCard}>
               <h3 className={styles.orderModalSectionTitle}>
                 {t("orderDetailsModal.customer")}
               </h3>
+              <div className={styles.orderModalCustomerName}>
+                {orderDetailsModalOrder.customerName ??
+                  t("customer.guest")}
+              </div>
               <div className={styles.orderModalKeyVal}>
                 <span className={styles.orderModalKey}>
-                  {t("orderDetailsModal.customerName")}
+                  {t("orderDetailsModal.customerEmail")}
                 </span>
                 <span className={styles.orderModalVal}>
-                  {orderDetailsModalOrder.customerName ??
-                    t("customer.guest")}
+                  {orderDetailsModalOrder.customerEmail ??
+                    t("orderDetailsModal.noEmail")}
                 </span>
               </div>
               <div className={styles.orderModalKeyVal}>
                 <span className={styles.orderModalKey}>
-                  {t("orderDetailsModal.processedAt")}
+                  {t("orderDetailsModal.customerPhone")}
                 </span>
                 <span className={styles.orderModalVal}>
-                  {formatOrderDateShort(orderDetailsModalOrder.processedAt)}
+                  {orderDetailsModalOrder.customerPhone ??
+                    t("orderDetailsModal.noPhone")}
                 </span>
               </div>
             </div>
 
+            {/* Shipping address block — Plan B per Lucas's spec (Plan A,
+                making the address editable inline, requires a Shopify
+                orderUpdate mutation + form fields and is parked as a
+                follow-up). The deep-link is now plain text "Edit in
+                order page" with the diagonal arrow dropped. */}
             <div className={styles.orderModalCard}>
               <h3 className={styles.orderModalSectionTitle}>
                 {t("orderDetailsModal.shippingAddress")}
@@ -6450,7 +6492,7 @@ export default function Index() {
                 href={orderDetailsModalOrder.adminOrderUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={styles.orderModalExternalLink}
+                className={styles.orderModalAddressLink}
               >
                 {t("orderDetailsModal.editAddressInShopify")}
               </a>
@@ -6526,25 +6568,37 @@ export default function Index() {
                       </button>
                     </span>
                   ))}
-                <input
-                  type="text"
-                  className={styles.orderModalAddTagInput}
-                  placeholder={t("orderDetailsModal.addTagPlaceholder")}
+                {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions --
+                    onKeyDown bubbles from the inner s-text-field; the wrapper
+                    isn't interactive itself, it's a listener for the child
+                    web component's events (Polaris s-text-field doesn't
+                    expose onKeyDown via its React adapter). */}
+                <div
+                  className={styles.orderModalAddTagWrap}
                   onKeyDown={(event) => {
                     if (event.key === "Enter") {
                       event.preventDefault();
-                      const value = (event.currentTarget as HTMLInputElement)
-                        .value;
+                      // s-text-field exposes its underlying input via the
+                      // event target. We read .value off the target's
+                      // value property.
+                      const tf = event.target as { value?: string } | null;
+                      const value = tf?.value ?? "";
                       if (value.trim()) {
                         handleOrderTagAdd(
                           orderDetailsModalOrder.id,
                           value,
                         );
-                        (event.currentTarget as HTMLInputElement).value = "";
+                        if (tf) tf.value = "";
                       }
                     }
                   }}
-                />
+                >
+                  <s-text-field
+                    label={t("orderDetailsModal.addTagPlaceholder")}
+                    labelAccessibilityVisibility="exclusive"
+                    placeholder={t("orderDetailsModal.addTagPlaceholder")}
+                  />
+                </div>
               </div>
             </div>
 
@@ -6565,19 +6619,26 @@ export default function Index() {
           </div>
         ) : null}
 
+        {/* Footer (2026-05-08 reformat per Lucas):
+              - All buttons right-aligned (justify-content: flex-end on .orderModalFooter).
+              - "Open full order" is now a Polaris secondary button (no
+                diagonal arrow, no anchor link styling).
+              - Close stays primary on the right. */}
         <div className={styles.orderModalFooter} slot="footer">
           {orderDetailsModalOrder ? (
-            <a
-              href={orderDetailsModalOrder.adminOrderUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.orderModalExternalLink}
+            <s-button
+              variant="secondary"
+              onClick={() => {
+                window.open(
+                  orderDetailsModalOrder.adminOrderUrl,
+                  "_blank",
+                  "noopener,noreferrer",
+                );
+              }}
             >
               {t("orderDetailsModal.openInShopify")}
-            </a>
-          ) : (
-            <span />
-          )}
+            </s-button>
+          ) : null}
           <s-button
             variant="primary"
             commandFor="order-details-modal"
@@ -6601,6 +6662,8 @@ type LoaderOrder = {
   name: string;
   processedAt: string | null;
   customerName: string | null;
+  customerEmail: string | null;
+  customerPhone: string | null;
   total: string;
   shippingCost: { amount: number; currencyCode: string } | null;
   shippingSummary: string | null;
@@ -6615,6 +6678,7 @@ type LoaderOrder = {
     coordinates: { latitude: number; longitude: number } | null;
   };
   tags: string[];
+  lineItems: Array<{ id: string; title: string; quantity: number }>;
 };
 
 type LoaderLocation = {
@@ -7508,12 +7572,21 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     processedAt: string | null;
     displayFulfillmentStatus: string;
     tags: string[];
-    customer: { displayName: string } | null;
+    email: string | null;
+    phone: string | null;
+    customer: { displayName: string; email: string | null; phone: string | null } | null;
     currentTotalPriceSet: {
       shopMoney: { amount: string; currencyCode: string };
     } | null;
     currentShippingPriceSet: {
       shopMoney: { amount: string; currencyCode: string };
+    } | null;
+    lineItems: {
+      nodes: Array<{
+        id: string;
+        title: string;
+        quantity: number;
+      }>;
     } | null;
     shippingAddress: {
       address1: string | null;
@@ -7608,8 +7681,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
               processedAt
               displayFulfillmentStatus
               tags
+              email
+              phone
               customer {
                 displayName
+                email
+                phone
               }
               currentTotalPriceSet {
                 shopMoney {
@@ -7621,6 +7698,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
                 shopMoney {
                   amount
                   currencyCode
+                }
+              }
+              lineItems(first: 20) {
+                nodes {
+                  id
+                  title
+                  quantity
                 }
               }
               shippingAddress {
@@ -7816,6 +7900,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         name: order.name,
         processedAt: order.processedAt ?? null,
         customerName: order.customer?.displayName ?? null,
+        // Customer email/phone — prefer the customer record (might be null
+        // for guest checkouts), fall back to the order's own email/phone.
+        customerEmail: order.customer?.email ?? order.email ?? null,
+        customerPhone: order.customer?.phone ?? order.phone ?? null,
         total: order.currentTotalPriceSet
           ? formatMoney(
               order.currentTotalPriceSet.shopMoney.amount,
@@ -7848,6 +7936,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           coordinates: locationCoordinates,
         },
         tags: order.tags ?? [],
+        lineItems: (order.lineItems?.nodes ?? []).map((li: { id: string; title: string; quantity: number }) => ({
+          id: li.id,
+          title: li.title,
+          quantity: li.quantity,
+        })),
       };
     })
     .filter((order): order is LoaderOrder => Boolean(order));

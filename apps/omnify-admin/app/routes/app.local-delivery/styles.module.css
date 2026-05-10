@@ -4,6 +4,14 @@
   gap: 8px;
 }
 
+/* All-locations gate badge — sits below the Route Manager heading and
+   above the location selector. Single inline row so the badge keeps
+   its natural width instead of stretching across the section. */
+.locationGateBadgeRow {
+  display: flex;
+  align-items: center;
+}
+
 .filterControl {
   display: flex;
   flex-direction: column;
@@ -80,27 +88,47 @@
   display: inline-block;
 }
 
-/* Fix #1 (2026-05-06 review): expand-on-hover for control-panel buttons in
-   collapsed mode. The label span starts collapsed (max-width: 0) and
-   expands on hover to reveal the button name inline. In fullscreen mode
-   the parent gets .mapBlockFooterRightFullscreen which keeps labels
-   permanently expanded. The popover-menu items (route options, map style)
-   don't use .btnLabel so they're unaffected. */
-.btnLabel {
+/* Hover-expand control buttons (2026-05-08 superseding the 2026-05-06 .btnLabel
+   approach). The 2026-05-06 approach kept the label as a CHILD of <s-button>
+   with max-width:0, which made the label visually invisible BUT Polaris'
+   s-button still allocated text-padding around it -- the buttons rendered
+   wider than a native icon-only button. Lucas's spec: "remove all spacing
+   so they look exactly as a regular icon-only button, while still carrying
+   the expand-on-hover behavior."
+
+   Pattern: the s-button is rendered icon-only (no children, accessibilityLabel
+   only). A sibling <span class="hoverExpandLabel"> sits next to it inside a
+   wrapper. CSS animates the sibling in on wrapper:hover. Result: collapsed-
+   state width matches a native icon-only button; hover slides the label in. */
+.hoverExpandWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.hoverExpandLabel {
   display: inline-block;
   white-space: nowrap;
   overflow: hidden;
   max-width: 0;
   margin-left: 0;
+  font-size: 13px;
+  color: inherit;
   transition: max-width 0.2s ease, margin-left 0.2s ease;
+  pointer-events: none; /* hover stays on the button alone */
 }
-.mapBlockFooterRight s-button:hover .btnLabel {
+.hoverExpandWrap:hover .hoverExpandLabel {
   max-width: 220px;
   margin-left: 4px;
 }
-.mapBlockFooterRightFullscreen .btnLabel {
+/* Fullscreen mode keeps labels permanently expanded. */
+.mapBlockFooterRightFullscreen .hoverExpandLabel {
   max-width: 220px;
   margin-left: 4px;
+}
+
+/* Legacy class kept as a no-op alias so any leftover usage doesn't break. */
+.btnLabel {
+  display: none;
 }
 
 /* Map canvas in polyline-edit mode — adds a subtle visual cue (dashed inner
@@ -376,19 +404,23 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  padding: 16px;
-  /* Backdrop covers the underlying page (Route manager, Auto-assign
-     accuracy, header, app nav) so the fullscreen-expanded view reads as
-     a focused workspace rather than floating on top of cluttered admin
-     chrome. */
+  /* 2026-05-08 scroll fix: overlay itself is the scroll container so the
+     scrollbar lands at the viewport's right edge. Padding moved to
+     .fullscreenContent so it doesn't push the scrollbar inward. All
+     blocks (header + map + aside) scroll together as a single unit.
+     Backdrop covers the underlying page so the fullscreen-expanded view
+     reads as a focused workspace. */
   background: #f1f1f1;
+  overflow-y: auto;
 }
 
 .fullscreenContent {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  height: calc(100vh - 32px);
+  padding: 16px;
+  /* Height removed -- content drives layout height; the parent overlay
+     handles overflow at the viewport edge. */
 }
 
 .fullscreenHeader {
@@ -399,14 +431,10 @@
 }
 
 .fullscreenScroll {
+  /* Outer .fullscreenOverlay handles the scroll now (2026-05-08).
+     This element is just a passthrough wrapper; flex layout is preserved
+     for any child sizing that depends on it. */
   flex: 1;
-  /* Single right-edge scroll: outer container absorbs the scroll so the
-     fullscreen view scrolls as one unit (header + map + aside together),
-     matching collapsed-mode behavior. Both panes below drop their
-     independent overflow.
-     Spec: inputs/mockups/local-delivery-control-row-v1.html → "Fullscreen
-     layout — single-scroll fix" section. */
-  overflow-y: auto;
   padding-bottom: 8px;
 }
 
@@ -491,15 +519,22 @@
 .dueOrdersHeader,
 .dueOrdersRow {
   display: grid;
-  /* Columns: checkbox, order#, customer, date, due, route+unassign, address. */
+  /* Columns: checkbox, order#, customer, date, due, route+unassign, address.
+     Default grid (collapsed mode 2026-05-08): all content columns auto-size
+     to fit per Lucas's spec -- "no excessive space nor info to be cut off".
+     The Route column keeps its var-width exception so the route badge stays
+     centered (header label aligned with the badge) and the X-unassign button
+     stays "attached" at the right edge. The Address column is the only 1fr
+     so it absorbs leftover horizontal space; on narrow viewports the table
+     scrolls horizontally via the `overflow-x: auto` on .dueOrdersTable. */
   grid-template-columns:
-    24px
-    56px                                  /* Order # */
-    var(--customer-col-width, 92px)       /* Customer */
-    80px                                  /* Date */
-    56px                                  /* Due (emoji-only badge, centered) */
+    24px                                  /* Checkbox */
+    auto                                  /* Order # */
+    auto                                  /* Customer */
+    auto                                  /* Date */
+    auto                                  /* Due */
     var(--route-col-width, 168px)         /* Route badge + Unassign icon */
-    minmax(140px, 1fr);                   /* Address — fills remaining */
+    minmax(140px, 1fr);                   /* Address — absorbs remainder */
   column-gap: 8px;
   padding: 8px 8px;
   align-items: center;
@@ -514,10 +549,10 @@
 .dueOrdersTable[data-no-cb="true"] .dueOrdersHeader,
 .dueOrdersTable[data-no-cb="true"] .dueOrdersRow {
   grid-template-columns:
-    56px
-    var(--customer-col-width, 92px)
-    80px
-    56px
+    auto
+    auto
+    auto
+    auto
     var(--route-col-width, 168px)
     minmax(140px, 1fr);
 }
@@ -1662,6 +1697,48 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-top: 8px;
+}
+
+/* 2026-05-08 rewrite: Items block now lists actual line items
+   (title + quantity) instead of repeating shipping data. */
+.orderModalLineItemRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+/* Customer-name display when the "Name" label is dropped (the value is
+   self-evident; spec 2026-05-08). */
+.orderModalCustomerName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303030;
+  margin-bottom: 8px;
+}
+
+/* Plain "Edit in order page" link inside the Shipping address card --
+   Plan B per Lucas. No diagonal arrow pseudo-element (the
+   .orderModalExternalLink::after rule still applies on the legacy
+   class but this new class skips it). */
+.orderModalAddressLink {
+  display: inline-block;
+  margin-top: 8px;
+  color: #005bd3;
+  font-size: 12px;
+  text-decoration: none;
+}
+.orderModalAddressLink:hover {
+  text-decoration: underline;
+}
+
+/* Add-a-tag wrapper -- adapts the Polaris s-text-field to the same
+   inline horizontal-flow as the chip row above it. */
+.orderModalAddTagWrap {
+  display: inline-block;
+  min-width: 160px;
 }
 
 .orderModalTotals {
@@ -1805,10 +1882,12 @@
   font-size: 12px;
 }
 
+/* Right-aligned footer (2026-05-08 per Lucas). The "Open full order"
+   button is secondary, Close is primary, both anchor to the right. */
 .orderModalFooter {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
   width: 100%;
 }

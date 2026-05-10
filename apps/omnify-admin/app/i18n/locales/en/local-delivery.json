@@ -36,7 +36,8 @@
     "noMapAvailable": "Map not available.",
     "locationGate": {
       "heading": "Pick a location to start routing orders.",
-      "body": "Route planner needs a single origin location. Choose one from the Location filter above."
+      "body": "Route planner needs a single origin location. Choose one from the Location filter above.",
+      "shortHeading": "Pick a location to start"
     },
     "selectLocationToShowRoutes": "Select a specific location to display routes on the map.",
     "noCoordinates": "No coordinates available for the selected filters.",
@@ -539,7 +540,7 @@
     }
   },
   "orderDetailsModal": {
-    "heading": "Order {{orderName}}",
+    "heading": "Order details · {{orderName}}",
     "headingFallback": "Order details",
     "itemsHeading": "Items",
     "shippingSummary": "Shipping",
@@ -548,21 +549,27 @@
     "total": "Total",
     "customer": "Customer",
     "customerName": "Name",
+    "customerEmail": "Email",
+    "customerPhone": "Phone",
+    "noEmail": "—",
+    "noPhone": "—",
+    "lineItemQty": "× {{count}}",
+    "noLineItems": "No items found on this order.",
     "processedAt": "Processed at",
     "shippingAddress": "Shipping address",
     "noAddress": "No address on file.",
     "fulfillsFrom": "Fulfills from {{location}}",
-    "editAddressInShopify": "Edit address in Shopify",
+    "editAddressInShopify": "Edit in order page",
     "tags": "Tags",
     "operatorTagsLabel": "Operator tags (click to toggle)",
     "allTagsLabel": "All tags",
-    "addTagPlaceholder": "Add a tag…",
+    "addTagPlaceholder": "Add a tag",
     "removeTag": "Remove tag {{tag}}",
     "internalNotes": "Internal notes",
     "noNotes": "No internal notes yet.",
     "addNote": "+ Add note",
     "addNoteSoon": "Coming soon",
-    "openInShopify": "Open full order in Shopify ↗",
+    "openInShopify": "Open full order",
     "close": "Close"
   }
 }
