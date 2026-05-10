@@ -6311,14 +6311,18 @@ export default function Index() {
                       );
                     })()}
                     {/* Map style — promoted from the overflow menu to a
-                        top-level link-style button (2026-05-08 per Lucas).
-                        Visible whenever NOT in edit mode (regardless of
-                        location-context); hidden in edit mode so the
-                        action row stays focused on confirm/exit. */}
+                        top-level link-style button (2026-05-08 per Lucas;
+                        2026-05-10 followup: render as a true Polaris-link
+                        style — blue, underlined, no hover effect).
+                        s-button variant="tertiary" doesn't render that way,
+                        so we use a styled native <button> with link
+                        semantics (.mapStyleLinkBtn). Visible whenever NOT
+                        in edit mode; hidden in edit mode. */}
                     {!polylineEditMode ? (
-                      <s-button
+                      <button
                         key="map-style"
-                        variant="tertiary"
+                        type="button"
+                        className={styles.mapStyleLinkBtn}
                         onClick={() => {
                           // Programmatic open per the same race fix the
                           // overflow-menu version used (commandFor + s-menu
@@ -6334,7 +6338,7 @@ export default function Index() {
                         }}
                       >
                         {t("map.mapStyleButton")}
-                      </s-button>
+                      </button>
                     ) : null}
                   </div>
                 </div>

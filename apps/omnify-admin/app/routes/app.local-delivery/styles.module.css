@@ -88,6 +88,27 @@
   display: inline-block;
 }
 
+/* Map-style button as a true Polaris-link style (2026-05-10 followup).
+   Lucas's spec: blue, underlined, no hover effect. Polaris s-button
+   variant="tertiary" doesn't render that way, so this is a styled
+   native button with link semantics. */
+.mapStyleLinkBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-size: 13px;
+  color: #005bd3;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.mapStyleLinkBtn:focus-visible {
+  outline: 2px solid #005bd3;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 /* Hover-expand control buttons (2026-05-08 superseding the 2026-05-06 .btnLabel
    approach). The 2026-05-06 approach kept the label as a CHILD of <s-button>
    with max-width:0, which made the label visually invisible BUT Polaris'
@@ -520,19 +541,22 @@
 .dueOrdersRow {
   display: grid;
   /* Columns: checkbox, order#, customer, date, due, route+unassign, address.
-     Default grid (collapsed mode 2026-05-08): all content columns auto-size
-     to fit per Lucas's spec -- "no excessive space nor info to be cut off".
-     The Route column keeps its var-width exception so the route badge stays
-     centered (header label aligned with the badge) and the X-unassign button
-     stays "attached" at the right edge. The Address column is the only 1fr
-     so it absorbs leftover horizontal space; on narrow viewports the table
-     scrolls horizontally via the `overflow-x: auto` on .dueOrdersTable. */
+     2026-05-10 fix: previous `auto` tracks collapsed because the child cells
+     carried `min-width: 0` (see ellipsis rule below) -- in CSS Grid, an
+     `auto` track honors its child's min-width, so 0 lets the track squash
+     and the address `1fr` greedily takes the freed space. Switched to
+     `max-content`, which IGNORES child min-width and sizes the track to its
+     largest content. Combined with `white-space: nowrap` on cells, customer
+     names like "Mariangelica F" now render in full. The Route column keeps
+     its var-width exception. The Address column stays `1fr` to absorb
+     leftover; on narrow viewports the table scrolls horizontally via the
+     `overflow-x: auto` on .dueOrdersTable. */
   grid-template-columns:
     24px                                  /* Checkbox */
-    auto                                  /* Order # */
-    auto                                  /* Customer */
-    auto                                  /* Date */
-    auto                                  /* Due */
+    max-content                           /* Order # */
+    max-content                           /* Customer */
+    max-content                           /* Date */
+    max-content                           /* Due */
     var(--route-col-width, 168px)         /* Route badge + Unassign icon */
     minmax(140px, 1fr);                   /* Address — absorbs remainder */
   column-gap: 8px;
@@ -549,21 +573,31 @@
 .dueOrdersTable[data-no-cb="true"] .dueOrdersHeader,
 .dueOrdersTable[data-no-cb="true"] .dueOrdersRow {
   grid-template-columns:
-    auto
-    auto
-    auto
-    auto
+    max-content
+    max-content
+    max-content
+    max-content
     var(--route-col-width, 168px)
     minmax(140px, 1fr);
 }
 
-.dueOrdersHeader > span:not(:first-child),
-.dueOrdersRow > span:not(:first-child),
-.dueOrdersRow > s-link {
+/* Cell ellipsis applies ONLY to the address (last) column — that's the
+   one that may genuinely overflow on narrow viewports. The other columns
+   are sized via `max-content` and should NEVER truncate. */
+.dueOrdersHeader > span:last-child,
+.dueOrdersRow > span:last-child,
+.dueOrdersRow > s-link:last-child {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
+}
+
+/* Non-address content columns: never truncate. nowrap keeps each cell on
+   one line so max-content tracking measures the full string. */
+.dueOrdersHeader > span:not(:first-child):not(:last-child),
+.dueOrdersRow > span:not(:first-child):not(:last-child) {
+  white-space: nowrap;
 }
 
 .dueOrdersHeader {
