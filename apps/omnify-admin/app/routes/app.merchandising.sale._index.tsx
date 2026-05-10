@@ -89,9 +89,12 @@ export default function CampaignsList() {
   const duplicateFetcher = useFetcher();
 
   // Modal refs — Polaris <s-modal> uses imperative showOverlay/hideOverlay.
-  const activateModalRef = useRef<any>(null);
-  const deactivateModalRef = useRef<any>(null);
-  const deleteModalRef = useRef<any>(null);
+  // `SModalElement` is declared in app/globals.d.ts and extracts the proper
+  // ref element type from Polaris's JSX intrinsic, replacing the legacy
+  // `useRef<any>` while preserving the imperative method calls.
+  const activateModalRef = useRef<SModalElement>(null);
+  const deactivateModalRef = useRef<SModalElement>(null);
+  const deleteModalRef = useRef<SModalElement>(null);
 
   // Banner
   const [banner, setBanner] = useState<

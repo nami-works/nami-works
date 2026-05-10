@@ -1729,9 +1729,16 @@ export default function RetailLocatorRoute() {
       if (!containerRef.current) return;
       const googleMaps = window.google?.maps;
       if (!googleMaps) return;
-      const { PlaceAutocompleteElement } = googleMaps.importLibrary
-        ? await googleMaps.importLibrary("places")
+      // `PlaceAutocompleteElement` is the newer Web-Components-based Places
+      // entry point. `@types/google.maps` doesn't expose it on PlacesLibrary
+      // for our pinned version; cast through `unknown` to access the field
+      // when the importLibrary path returns it. Runtime semantics unchanged.
+      const placesLib = googleMaps.importLibrary
+        ? ((await googleMaps.importLibrary("places")) as unknown as {
+            PlaceAutocompleteElement?: typeof google.maps.places.PlaceAutocompleteElement;
+          })
         : { PlaceAutocompleteElement: googleMaps.places?.PlaceAutocompleteElement };
+      const { PlaceAutocompleteElement } = placesLib;
       if (!PlaceAutocompleteElement) return;
 
       const createHandler = () => async (event: any) => {

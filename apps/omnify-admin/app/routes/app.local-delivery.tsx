@@ -2049,10 +2049,10 @@ export default function Index() {
                   order?.fulfillmentLocation?.coordinates,
               ),
           );
-        const selectedByLocation: Map<
+        const selectedByLocation: globalThis.Map<
           string,
           { origin: { latitude: number; longitude: number }; orders: LoaderOrder[] }
-        > = new Map();
+        > = new globalThis.Map();
         selectedOrders.forEach((order) => {
           const origin = order.fulfillmentLocation?.coordinates;
           if (!origin) return;
@@ -2812,10 +2812,11 @@ export default function Index() {
         });
         ac.addListener("place_changed", () => {
           const place = ac.getPlace?.();
-          if (place?.formatted_address) {
+          const formatted = place?.formatted_address;
+          if (formatted) {
             setAddressVerifyEdits((prev) => ({
               ...prev,
-              [orderId]: place.formatted_address,
+              [orderId]: formatted,
             }));
           }
         });
