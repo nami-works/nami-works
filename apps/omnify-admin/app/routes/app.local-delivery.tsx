@@ -5075,6 +5075,15 @@ export default function Index() {
 
   return (
     <s-page heading={t("pageHeading")}>
+      <s-button
+        slot="primary-action"
+        onClick={() => navigate("/app/local-delivery/analytics")}
+      >
+        {t("ld.viewAnalytics", {
+          ns: "ld-analytics",
+          defaultValue: "View analytics",
+        })}
+      </s-button>
       <s-modal
         id="manage-route-modal"
         heading={activeRouteIndex != null ? getRouteLabel(editableRoutes[activeRouteIndex] ?? { id: "", locationId: "", polyline: "", color: "", orderIds: [] }, activeRouteIndex) : ""}

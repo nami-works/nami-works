@@ -1,0 +1,162 @@
+{
+  "page": {
+    "title": "Análise",
+    "backLabel": "Entrega local"
+  },
+  "filters": {
+    "period": {
+      "label": "Período",
+      "values": {
+        "7d": "Últimos 7 dias",
+        "30d": "Últimos 30 dias",
+        "90d": "Últimos 90 dias",
+        "365d": "Últimos 365 dias"
+      }
+    },
+    "location": {
+      "label": "Loja",
+      "all": "Todas as lojas"
+    },
+    "city": {
+      "label": "Cidade",
+      "all": "Todas as cidades"
+    }
+  },
+  "headline": {
+    "pl_impact": {
+      "label": "Impacto no resultado de frete",
+      "footnote": "(Receita LD + economia de impostos) menos custo da transportadora LD, comparado a (receita transportadora menos custo transportadora). Use o botão de troca para comparar os modos: receita retida, variação de custo líquido."
+    },
+    "revenue_retained": {
+      "label": "Receita retida vs preço da transportadora",
+      "footnote": "O cliente pagou {{ldCharged}} pelo LD vs {{whRate}} se enviado pela transportadora. A diferença é a receita retida."
+    },
+    "net_cost_delta": {
+      "label": "Variação de custo líquido",
+      "footnote": "Custo da transportadora LD menos custo da transportadora padrão. Negativo significa economia."
+    },
+    "switchPickerTitle": "Trocar métrica destacada",
+    "switchAriaLabel": "Trocar métrica destacada"
+  },
+  "supporting": {
+    "ldNet": {
+      "label": "Resultado LD",
+      "subtitle": "{{charged}} cobrado + {{tax}} de imposto economizado menos {{cost}} de transportadora"
+    },
+    "whNet": {
+      "label": "Resultado transportadora (cenário)",
+      "subtitle": "{{rate}} que seria cobrado menos {{cost}} de custo"
+    }
+  },
+  "chart": {
+    "title": "Resultado mensal, LD vs cenário transportadora",
+    "subtitle": "Lucro por canal depois dos custos · {{range}}"
+  },
+  "table": {
+    "title": "Detalhamento por cidade",
+    "subtitle": "Clique em uma linha para ver os pedidos",
+    "headers": {
+      "city": "Cidade",
+      "orders": "Pedidos",
+      "ldCharged": "LD cobrado",
+      "whRate": "Tarifa transportadora",
+      "ldNet": "Resultado LD",
+      "whNet": "Resultado transp.",
+      "plDelta": "Diferença de resultado"
+    },
+    "drilldown": {
+      "headers": {
+        "order": "Pedido",
+        "date": "Data",
+        "ldCharged": "LD cobrado",
+        "whRate": "Tarifa transp.",
+        "ldCost": "Custo LD",
+        "whCost": "Custo transp."
+      },
+      "freeShipBadge": "Frete grátis"
+    }
+  },
+  "states": {
+    "loading": "Carregando…",
+    "noLdUsage": {
+      "title": "Sem entregas locais ainda",
+      "body": "Quando você despachar a primeira rota LD, este painel mostra o resultado de frete comparado à entrega por transportadora.",
+      "primaryCta": "Configurar entrega local",
+      "secondaryCta": "Ler guia de configuração"
+    },
+    "noCarrier": {
+      "title_teaser": "Você pode estar economizando cerca de {{amount}} por mês",
+      "body_teaser": "Com base nos últimos 90 dias de pedidos, trocar entregas elegíveis em {{city}} para LD em vez de transportadora teria gerado cerca de {{plDelta}} a mais de resultado de frete. Conecte uma transportadora para confirmar com cotações reais.",
+      "title_conservative": "Conecte uma transportadora para ver economias",
+      "body_conservative": "Para comparar custos LD com envio por transportadora, conecte uma transportadora para que possamos cotar os mesmos pedidos nas duas modalidades.",
+      "primaryCta": "Conectar Intelipost",
+      "secondaryCta": "Usar valores manuais",
+      "teaserDisclaimer": "Estimativa baseada em cotações especulativas Intelipost sobre seus pedidos históricos. Os números são refinados quando a transportadora estiver conectada."
+    },
+    "authFailed": {
+      "title": "Falha de autenticação na Intelipost",
+      "body": "A API recusou as credenciais salvas. Exibindo dados da última sincronização bem-sucedida ({{date}}).",
+      "reconnect": "Reconectar",
+      "switchManual": "Mudar para manual"
+    },
+    "partial": {
+      "title": "{{uncovered}} de {{total}} pedidos não puderam ser cotados (cobertura de {{coverage}}%)",
+      "body": "A transportadora retornou erros para alguns endereços, provavelmente fora de área ou inválidos. Os números abaixo cobrem os {{covered}} pedidos cotados.",
+      "retry": "Tentar novamente"
+    },
+    "insufficientCoverage": {
+      "title": "Dados insuficientes para calcular economias",
+      "body": "Menos de {{threshold}}% dos pedidos puderam ser cotados neste período. Tente novamente os pedidos sem cobertura para ver economias.",
+      "retry": "Tentar novamente"
+    },
+    "disabled": {
+      "title": "Análise de Entrega Local desligada",
+      "body": "Ative o painel de análise nas Configurações para começar a acompanhar o resultado de frete LD.",
+      "primaryCta": "Abrir Configurações"
+    },
+    "drilldownLoading": "Carregando {{n}} pedidos…",
+    "drilldownEmpty": "Sem pedidos para esta cidade no período selecionado."
+  },
+  "modal": {
+    "overrides": {
+      "openLabel": "Editar valores manuais",
+      "title": "Editar valores manuais",
+      "intro": "Custo fixo da transportadora por loja (usado quando não há integração de transportadora ou para sobrescrever o número da transportadora em uma loja específica). A economia de impostos se aplica aos pedidos LD para aquela cidade.",
+      "warehouseCostHeading": "Custo da transportadora por pedido, por loja",
+      "taxSavingsHeading": "Economia de impostos %, por cidade LD",
+      "save": "Salvar",
+      "cancel": "Cancelar"
+    }
+  },
+  "actions": {
+    "retry": "Tentar pedidos sem cobertura",
+    "viewOnLd": "Voltar para entrega local"
+  },
+  "settings": {
+    "title": "Análise de Entrega Local",
+    "enable": {
+      "label": "Análise de Entrega Local",
+      "description": "Beta. Mostra o resultado de frete LD comparado ao cenário transportadora. Precisa de Intelipost (ou outra transportadora) para números precisos."
+    },
+    "credential": {
+      "title": "Credenciais da transportadora",
+      "intelipost": {
+        "name": "Intelipost",
+        "apiKeyLabel": "Chave da API",
+        "endpointLabel": "Endpoint da API (sandbox ou produção)",
+        "endpointPlaceholder": "https://api.intelipost.com.br"
+      },
+      "save": "Salvar e validar",
+      "delete": "Remover credenciais",
+      "configured": "Configurado",
+      "notConfigured": "Não configurado",
+      "lastValidated": "Validado em {{date}}",
+      "validateOk": "Credenciais validadas.",
+      "validateFailed": "Falha de validação: {{reason}}",
+      "deleted": "Credenciais removidas."
+    }
+  },
+  "ld": {
+    "viewAnalytics": "Ver análise"
+  }
+}

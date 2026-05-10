@@ -1,0 +1,162 @@
+{
+  "page": {
+    "title": "Analytics",
+    "backLabel": "Local delivery"
+  },
+  "filters": {
+    "period": {
+      "label": "Period",
+      "values": {
+        "7d": "Last 7 days",
+        "30d": "Last 30 days",
+        "90d": "Last 90 days",
+        "365d": "Last 365 days"
+      }
+    },
+    "location": {
+      "label": "Location",
+      "all": "All locations"
+    },
+    "city": {
+      "label": "City",
+      "all": "All cities"
+    }
+  },
+  "headline": {
+    "pl_impact": {
+      "label": "Shipping P&L impact",
+      "footnote": "(LD revenue + tax savings) minus LD carrier cost, vs (warehouse revenue minus warehouse cost). Use the switch button to compare frames: revenue retained, net cost delta."
+    },
+    "revenue_retained": {
+      "label": "Revenue retained vs warehouse pricing",
+      "footnote": "Customer was charged {{ldCharged}} for LD vs {{whRate}} if shipped warehouse. The delta is retained revenue."
+    },
+    "net_cost_delta": {
+      "label": "Net cost delta",
+      "footnote": "LD carrier cost minus warehouse counterfactual cost. Negative means saving."
+    },
+    "switchPickerTitle": "Switch headline metric",
+    "switchAriaLabel": "Switch headline metric"
+  },
+  "supporting": {
+    "ldNet": {
+      "label": "LD net",
+      "subtitle": "{{charged}} charged + {{tax}} tax saved minus {{cost}} carrier"
+    },
+    "whNet": {
+      "label": "Warehouse counterfactual net",
+      "subtitle": "{{rate}} would-be charged minus {{cost}} cost"
+    }
+  },
+  "chart": {
+    "title": "Net P&L by month, LD vs warehouse counterfactual",
+    "subtitle": "Profit per channel after costs · {{range}}"
+  },
+  "table": {
+    "title": "Per-city breakdown",
+    "subtitle": "Click any row to drill down to orders",
+    "headers": {
+      "city": "City",
+      "orders": "Orders",
+      "ldCharged": "LD charged",
+      "whRate": "Warehouse rate",
+      "ldNet": "LD net",
+      "whNet": "WH net",
+      "plDelta": "P&L delta"
+    },
+    "drilldown": {
+      "headers": {
+        "order": "Order",
+        "date": "Date",
+        "ldCharged": "LD charged",
+        "whRate": "WH rate",
+        "ldCost": "LD cost",
+        "whCost": "WH cost"
+      },
+      "freeShipBadge": "Free ship"
+    }
+  },
+  "states": {
+    "loading": "Loading…",
+    "noLdUsage": {
+      "title": "No local delivery activity yet",
+      "body": "Once you dispatch your first LD route, this panel will show what your shipping P&L looks like vs warehouse delivery.",
+      "primaryCta": "Set up local delivery",
+      "secondaryCta": "Read setup guide"
+    },
+    "noCarrier": {
+      "title_teaser": "You could be saving about {{amount}} per month",
+      "body_teaser": "Based on your last 90 days of orders, switching eligible {{city}} deliveries to LD instead of warehouse would have generated an estimated {{plDelta}} in extra shipping P&L. Connect a carrier so we can confirm with real quotes.",
+      "title_conservative": "Connect a warehouse carrier to see savings",
+      "body_conservative": "To compare LD costs against warehouse shipping, connect a carrier so we can quote the same orders both ways.",
+      "primaryCta": "Connect Intelipost",
+      "secondaryCta": "Use manual rates",
+      "teaserDisclaimer": "Estimate based on Intelipost speculative quotes against your historical orders. Numbers refine once a carrier is connected."
+    },
+    "authFailed": {
+      "title": "Intelipost authentication failed",
+      "body": "The API rejected your stored credentials. Showing data from the last successful sync ({{date}}).",
+      "reconnect": "Reconnect",
+      "switchManual": "Switch to manual"
+    },
+    "partial": {
+      "title": "{{uncovered}} of {{total}} orders couldn't be quoted ({{coverage}}% coverage)",
+      "body": "The carrier returned errors for some addresses, likely out-of-zone or malformed. Numbers below cover the {{covered}} quoted orders.",
+      "retry": "Retry uncovered"
+    },
+    "insufficientCoverage": {
+      "title": "Insufficient data to compute savings",
+      "body": "Less than {{threshold}}% of orders could be quoted in this period. Retry uncovered orders to view savings.",
+      "retry": "Retry uncovered"
+    },
+    "disabled": {
+      "title": "Local Delivery analytics is off",
+      "body": "Enable the analytics panel from Settings to start tracking LD shipping P&L.",
+      "primaryCta": "Open Settings"
+    },
+    "drilldownLoading": "Loading {{n}} orders…",
+    "drilldownEmpty": "No orders in this city for the selected period."
+  },
+  "modal": {
+    "overrides": {
+      "openLabel": "Edit overrides",
+      "title": "Edit overrides",
+      "intro": "Manual flat warehouse cost per location (used when carrier integration is unavailable, or to override the carrier number for a specific location). Tax savings apply to LD orders to that city.",
+      "warehouseCostHeading": "Warehouse cost per order, by location",
+      "taxSavingsHeading": "Tax savings %, by LD city",
+      "save": "Save",
+      "cancel": "Cancel"
+    }
+  },
+  "actions": {
+    "retry": "Retry uncovered orders",
+    "viewOnLd": "Back to local delivery"
+  },
+  "settings": {
+    "title": "Local Delivery analytics",
+    "enable": {
+      "label": "Local Delivery analytics",
+      "description": "Beta. Shows LD shipping P&L vs warehouse counterfactual. Requires Intelipost (or another carrier) for accurate numbers."
+    },
+    "credential": {
+      "title": "Warehouse carrier credentials",
+      "intelipost": {
+        "name": "Intelipost",
+        "apiKeyLabel": "API key",
+        "endpointLabel": "API endpoint (sandbox or production)",
+        "endpointPlaceholder": "https://api.intelipost.com.br"
+      },
+      "save": "Save and validate",
+      "delete": "Remove credentials",
+      "configured": "Configured",
+      "notConfigured": "Not configured",
+      "lastValidated": "Last validated {{date}}",
+      "validateOk": "Credentials validated.",
+      "validateFailed": "Validation failed: {{reason}}",
+      "deleted": "Credentials removed."
+    }
+  },
+  "ld": {
+    "viewAnalytics": "View analytics"
+  }
+}

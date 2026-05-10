@@ -20,6 +20,14 @@ import {
 } from "../services/lalamove-credentials.server";
 import { probeLalamoveCredentials } from "../services/lalamove.server";
 import {
+  saveCredentials as saveIntelipostCredentials,
+  deleteCredentials as deleteIntelipostCredentials,
+  getStatus as getIntelipostStatus,
+  validate as validateIntelipostCredentials,
+  validateInput as validateIntelipostInput,
+  type IntelipostCredentialStatus,
+} from "../services/ld-analytics/intelipost-credentials.server";
+import {
   buildCarrierCallbackUrl,
   createCarrierService,
   deleteCarrierService,
@@ -214,6 +222,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     ),
   ];
 
+  // Local Delivery analytics opt-in + Intelipost credential status.
+  const ldAnalyticsConfigRow = await prisma.ldAnalyticsConfig.findUnique({
+    where: { shop },
+    select: { enabled: true },
+  });
+  const intelipostStatus = await getIntelipostStatus(shop);
+  const ldAnalyticsData = {
+    enabled: ldAnalyticsConfigRow?.enabled ?? false,
+    intelipostStatus,
+  };
+
   console.info(`[settings] loader OK shop=${shop} locations=${locations.length}`);
 
   return {
@@ -225,6 +244,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     userLocale,
     mapsApiKey: process.env.GOOGLE_MAPS_API_KEY?.trim() ?? "",
     appIdentity,
+    ldAnalyticsData,
     carrierServiceData: {
       shop,
       registration: registration
@@ -475,6 +495,55 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return { ok: true, details: probe.details ?? null, credentialStatus: await hasShopCredentials(shop) };
   }
 
+  if (intent === "set-ld-analytics-enabled") {
+    const enabled = formData.get("enabled") === "true";
+    console.info(
+      `[ld-analytics:settings] set-ld-analytics-enabled START shop=${shop} enabled=${enabled}`,
+    );
+    await prisma.ldAnalyticsConfig.upsert({
+      where: { shop },
+      create: { shop, enabled },
+      update: { enabled },
+    });
+    console.info(`[ld-analytics:settings] set-ld-analytics-enabled OK shop=${shop} enabled=${enabled}`);
+    return { ok: true, intent, enabled };
+  }
+
+  if (intent === "save-warehouse-credential") {
+    const provider = String(formData.get("provider") ?? "").trim();
+    if (provider !== "intelipost") {
+      return { ok: false, intent, error: "unsupported_provider" };
+    }
+    const validated = validateIntelipostInput(
+      formData.get("apiKey"),
+      formData.get("apiEndpoint"),
+    );
+    if (!validated.ok) {
+      return { ok: false, intent, error: validated.reason };
+    }
+    await saveIntelipostCredentials(shop, {
+      apiKey: validated.apiKey,
+      apiEndpoint: validated.apiEndpoint,
+    });
+    const validation = await validateIntelipostCredentials(shop);
+    return {
+      ok: validation.ok,
+      intent,
+      validated: validation.ok,
+      error: validation.ok ? null : validation.reason,
+      intelipostStatus: await getIntelipostStatus(shop),
+    };
+  }
+
+  if (intent === "delete-warehouse-credential") {
+    const provider = String(formData.get("provider") ?? "").trim();
+    if (provider !== "intelipost") {
+      return { ok: false, intent, error: "unsupported_provider" };
+    }
+    await deleteIntelipostCredentials(shop);
+    return { ok: true, intent, intelipostStatus: await getIntelipostStatus(shop) };
+  }
+
   return { ok: false, error: "Unknown intent." };
 };
 
@@ -511,6 +580,7 @@ export default function LocationSettings() {
     mapsApiKey,
     appIdentity,
     carrierServiceData,
+    ldAnalyticsData,
   } = useLoaderData<typeof loader>();
   const [activeTab, setActiveTab] = useState<SettingsTab>("settings");
   const { t } = useTranslation("settings");
@@ -1280,6 +1350,10 @@ export default function LocationSettings() {
         </s-stack>
         )}
 
+        {activeTab === "providers" && (
+          <LdAnalyticsSettingsBlock data={ldAnalyticsData} />
+        )}
+
         {(activeTab === "providers" || activeTab === "carriers") && (
           <CarrierServiceContent
             data={carrierServiceData}
@@ -1288,5 +1362,171 @@ export default function LocationSettings() {
         )}
       </s-section>
     </s-page>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// Local Delivery Analytics — Settings block (providers tab)
+// ────────────────────────────────────────────────────────────
+type LdAnalyticsSettingsData = {
+  enabled: boolean;
+  intelipostStatus: IntelipostCredentialStatus;
+};
+
+function LdAnalyticsSettingsBlock({ data }: { data: LdAnalyticsSettingsData }) {
+  const { t } = useTranslation("ld-analytics");
+  const toggleFetcher = useFetcher<{ ok: boolean; enabled?: boolean }>();
+  const credFetcher = useFetcher<{
+    ok: boolean;
+    intent?: string;
+    validated?: boolean;
+    error?: string | null;
+    intelipostStatus?: IntelipostCredentialStatus;
+  }>();
+  const [apiKey, setApiKey] = useState("");
+  const [apiEndpoint, setApiEndpoint] = useState(data.intelipostStatus.apiEndpoint ?? "");
+
+  const isEnabled = toggleFetcher.formData
+    ? toggleFetcher.formData.get("enabled") === "true"
+    : data.enabled;
+
+  const status = credFetcher.data?.intelipostStatus ?? data.intelipostStatus;
+  const isSaving = credFetcher.state !== "idle";
+  const lastError = credFetcher.data && !credFetcher.data.ok ? credFetcher.data.error : null;
+  const validatedJustNow =
+    credFetcher.data?.intent === "save-warehouse-credential" && credFetcher.data?.validated === true;
+
+  const onToggle = (next: boolean) => {
+    const fd = new FormData();
+    fd.append("intent", "set-ld-analytics-enabled");
+    fd.append("enabled", next ? "true" : "false");
+    toggleFetcher.submit(fd, { method: "post" });
+  };
+
+  const onSave = () => {
+    const fd = new FormData();
+    fd.append("intent", "save-warehouse-credential");
+    fd.append("provider", "intelipost");
+    fd.append("apiKey", apiKey);
+    if (apiEndpoint.trim()) fd.append("apiEndpoint", apiEndpoint.trim());
+    credFetcher.submit(fd, { method: "post" });
+    setApiKey("");
+  };
+
+  const onDelete = () => {
+    const fd = new FormData();
+    fd.append("intent", "delete-warehouse-credential");
+    fd.append("provider", "intelipost");
+    credFetcher.submit(fd, { method: "post" });
+  };
+
+  return (
+    <s-stack direction="block" gap="base">
+      <s-section heading={t("settings.title")}>
+        <s-stack direction="block" gap="base">
+          <div
+            className={styles.checkboxToggle ?? ""}
+            onClick={() => onToggle(!isEnabled)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onToggle(!isEnabled);
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", userSelect: "none" }}
+          >
+            <s-checkbox
+              checked={isEnabled || undefined}
+              onChange={() => onToggle(!isEnabled)}
+            />
+            <div>
+              <div style={{ fontWeight: 500 }}>{t("settings.enable.label")}</div>
+              <div style={{ color: "#6d7175", fontSize: 13 }}>
+                {t("settings.enable.description")}
+              </div>
+            </div>
+          </div>
+
+          {isEnabled && (
+            <s-box padding="base" borderWidth="base" borderRadius="base">
+              <s-stack direction="block" gap="base">
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
+                  {t("settings.credential.title")}
+                </h3>
+                <div style={{ display: "flex", gap: 16, alignItems: "flex-end", flexWrap: "wrap" }}>
+                  <div style={{ flex: 1, minWidth: 220 }}>
+                    <s-text-field
+                      label={t("settings.credential.intelipost.apiKeyLabel")}
+                      value={apiKey}
+                      onChange={(e: Event) => {
+                        setApiKey((e.target as HTMLInputElement).value);
+                      }}
+                      placeholder={status.configured ? status.apiKeyMask : ""}
+                    />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 220 }}>
+                    <s-text-field
+                      label={t("settings.credential.intelipost.endpointLabel")}
+                      value={apiEndpoint}
+                      onChange={(e: Event) => {
+                        setApiEndpoint((e.target as HTMLInputElement).value);
+                      }}
+                      placeholder={t("settings.credential.intelipost.endpointPlaceholder")}
+                    />
+                  </div>
+                </div>
+
+                {status.configured && (
+                  <div style={{ fontSize: 12, color: "#6d7175" }}>
+                    {t("settings.credential.configured")}
+                    {status.lastValidatedAt
+                      ? ` · ${t("settings.credential.lastValidated", { date: new Date(status.lastValidatedAt).toLocaleString() })}`
+                      : ""}
+                  </div>
+                )}
+
+                {validatedJustNow && (
+                  <s-banner tone="success">{t("settings.credential.validateOk")}</s-banner>
+                )}
+                {lastError && (
+                  <s-banner tone="critical">
+                    {t("settings.credential.validateFailed", { reason: lastError })}
+                  </s-banner>
+                )}
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: status.configured ? "space-between" : "flex-end",
+                    gap: 12,
+                    alignItems: "center",
+                  }}
+                >
+                  {status.configured ? (
+                    <s-button
+                      variant="secondary"
+                      tone="critical"
+                      onClick={onDelete}
+                    >
+                      {t("settings.credential.delete")}
+                    </s-button>
+                  ) : null}
+                  <s-button
+                    variant="primary"
+                    onClick={onSave}
+                    loading={isSaving || undefined}
+                    disabled={!apiKey || isSaving || undefined}
+                  >
+                    {t("settings.credential.save")}
+                  </s-button>
+                </div>
+              </s-stack>
+            </s-box>
+          )}
+        </s-stack>
+      </s-section>
+    </s-stack>
   );
 }
