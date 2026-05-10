@@ -6310,23 +6310,23 @@ export default function Index() {
                         </>
                       );
                     })()}
-                    {/* Map style — promoted from the overflow menu to a
-                        top-level link-style button (2026-05-08 per Lucas;
-                        2026-05-10 followup: render as a true Polaris-link
-                        style — blue, underlined, no hover effect).
-                        s-button variant="tertiary" doesn't render that way,
-                        so we use a styled native <button> with link
-                        semantics (.mapStyleLinkBtn). Visible whenever NOT
-                        in edit mode; hidden in edit mode. */}
+                    {/* Map style — Polaris <s-link> (2026-05-10 final).
+                        Doc: shopify.dev/docs/api/app-home/web-components/actions/link
+                        Earlier iterations used s-button variant="tertiary"
+                        (didn't render as a link) and a custom styled native
+                        button (worked but bypassed Polaris). s-link is the
+                        canonical primitive: native blue rendering, click
+                        handler supported (no href + onClick = button-as-link
+                        per the docs). Visible only when NOT in edit mode. */}
                     {!polylineEditMode ? (
-                      <button
+                      <s-link
                         key="map-style"
-                        type="button"
-                        className={styles.mapStyleLinkBtn}
                         onClick={() => {
-                          // Programmatic open per the same race fix the
-                          // overflow-menu version used (commandFor + s-menu
-                          // dismiss raced and the modal never opened).
+                          // Programmatic open: setDraftMapStyle has to run
+                          // BEFORE the modal opens (binds the radio group
+                          // to the current style), and showOverlay() is
+                          // the documented escape hatch when commandFor +
+                          // sibling-menu auto-dismiss race (2026-05-06).
                           setDraftMapStyle(mapStyle);
                           setIsMapStyleModalOpen(true);
                           const modal = document.getElementById(
@@ -6338,7 +6338,7 @@ export default function Index() {
                         }}
                       >
                         {t("map.mapStyleButton")}
-                      </button>
+                      </s-link>
                     ) : null}
                   </div>
                 </div>
