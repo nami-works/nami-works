@@ -549,13 +549,8 @@ export default function BriefPage() {
 
   return (
     <s-page heading={t("brief.pageHeading")}>
-      <s-button variant="tertiary" slot="back-action">
-        <Link
-          to="/app/storytelling"
-          style={{ color: "inherit", textDecoration: "none" }}
-        >
-          {t("common:button.back")}
-        </Link>
+      <s-button slot="back-action" {...{ href: "/app/storytelling", accessibilityLabel: t("common:button.back") } as Record<string, string>}>
+        <s-icon type="chevron-left" />
       </s-button>
       <div slot="primary-action" className={styles.headerActions}>
         <s-button variant="tertiary" onClick={toggleJsonView}>

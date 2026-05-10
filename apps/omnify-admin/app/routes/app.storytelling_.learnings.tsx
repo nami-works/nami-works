@@ -3,7 +3,7 @@ import type {
   HeadersFunction,
   LoaderFunctionArgs,
 } from "react-router";
-import { useLoaderData, useFetcher, Link } from "react-router";
+import { useLoaderData, useFetcher } from "react-router";
 import { authenticate } from "../shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { useTranslation } from "react-i18next";
@@ -138,10 +138,8 @@ export default function LearningsPage() {
 
   return (
     <s-page heading={t("learningsRoute.pageHeading")}>
-      <s-button variant="tertiary" slot="back-action">
-        <Link to="/app/storytelling" style={{ color: "inherit", textDecoration: "none" }}>
-          {t("common:button.back")}
-        </Link>
+      <s-button slot="back-action" {...{ href: "/app/storytelling", accessibilityLabel: t("common:button.back") } as Record<string, string>}>
+        <s-icon type="chevron-left" />
       </s-button>
       <div slot="primary-action">
         <fetcher.Form method="POST">

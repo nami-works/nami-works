@@ -723,13 +723,8 @@ export default function ToneSourcesPage() {
 
   return (
     <s-page heading={t("toneSources.pageHeading", { defaultValue: "Tone of voice sources" })}>
-      <s-button variant="tertiary" slot="back-action">
-        <Link
-          to="/app/settings/brand"
-          style={{ color: "inherit", textDecoration: "none" }}
-        >
-          {t("common:button.back", { defaultValue: "Back" })}
-        </Link>
+      <s-button slot="back-action" {...{ href: "/app/settings/brand", accessibilityLabel: t("common:button.back", { defaultValue: "Back" }) } as Record<string, string>}>
+        <s-icon type="chevron-left" />
       </s-button>
       <fetcher.Form method="POST" slot="primary-action">
         <input type="hidden" name="intent" value="refreshShopify" />

@@ -102,7 +102,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
               body: bodyHtml,
               summary: metaDescription?.slice(0, 200) || undefined,
               isPublished: false,
-              author: { name: author || "Story-telling" },
+              author: { name: author || "Storytelling" },
             },
           },
         },
@@ -236,10 +236,8 @@ export default function ReviewPage() {
 
   return (
     <s-page heading={t("review.pageHeading")}>
-      <s-button variant="tertiary" slot="back-action">
-        <Link to="/app/storytelling" style={{ color: "inherit", textDecoration: "none" }}>
-          {t("common:button.back")}
-        </Link>
+      <s-button slot="back-action" {...{ href: "/app/storytelling", accessibilityLabel: t("common:button.back") } as Record<string, string>}>
+        <s-icon type="chevron-left" />
       </s-button>
 
       <s-section heading={t("review.generatedContent")}>
@@ -338,7 +336,7 @@ export default function ReviewPage() {
                                     name="metaDescription"
                                     value={post.metafields?.meta_description ?? ""}
                                   />
-                                  <input type="hidden" name="author" value="Story-telling" />
+                                  <input type="hidden" name="author" value="Storytelling" />
                                   <s-button
                                     type="submit"
                                     variant="primary"

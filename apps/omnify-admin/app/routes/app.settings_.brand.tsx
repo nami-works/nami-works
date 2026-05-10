@@ -176,10 +176,8 @@ export default function BrandSettingsPage() {
 
   return (
     <s-page heading={t("pageHeading")}>
-      <s-button variant="tertiary" slot="back-action">
-        <Link to="/app/settings" style={{ color: "inherit", textDecoration: "none" }}>
-          {t("common:button.back")}
-        </Link>
+      <s-button slot="back-action" {...{ href: "/app/settings", accessibilityLabel: t("common:button.back") } as Record<string, string>}>
+        <s-icon type="chevron-left" />
       </s-button>
       <s-stack direction="inline" slot="secondary-actions" gap="base">
         <s-button variant="tertiary">
