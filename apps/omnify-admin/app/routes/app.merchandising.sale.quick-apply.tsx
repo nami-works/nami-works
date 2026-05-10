@@ -136,7 +136,17 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       { variables: { query: gqlQuery } },
     );
     const json = await response.json();
-    const products: ProductHit[] = (json.data?.products?.edges ?? []).map((edge: any) => {
+    type ProductSearchEdge = {
+      node: {
+        id: string;
+        title: string;
+        featuredMedia?: { preview?: { image?: { url?: string } } } | null;
+        totalVariants?: number;
+        variants?: { edges?: Array<{ node?: { price?: string; compareAtPrice?: string } }> };
+      };
+    };
+    const productEdges: ProductSearchEdge[] = json.data?.products?.edges ?? [];
+    const products: ProductHit[] = productEdges.map((edge) => {
       const node = edge.node;
       const v = node.variants?.edges?.[0]?.node;
       return {
@@ -170,7 +180,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       { variables: { query: query.trim() || undefined } },
     );
     const json = await response.json();
-    const collections: CollectionHit[] = (json.data?.collections?.edges ?? []).map((edge: any) => ({
+    type CollectionSearchEdge = {
+      node: {
+        id: string;
+        title: string;
+        image?: { url?: string } | null;
+        productsCount?: { count?: number } | null;
+      };
+    };
+    const collectionEdges: CollectionSearchEdge[] = json.data?.collections?.edges ?? [];
+    const collections: CollectionHit[] = collectionEdges.map((edge) => ({
       id: edge.node.id,
       title: edge.node.title,
       image: edge.node.image?.url ?? null,
@@ -209,8 +228,17 @@ export const action = async ({ request }: ActionFunctionArgs) => {
               }`,
               { variables: { id: collectionId, cursor } },
             );
-            const json: any = await response.json();
-            const data: any = json.data?.collection?.products;
+            const json = (await response.json()) as {
+              data?: {
+                collection?: {
+                  products?: {
+                    edges: Array<{ node: { id: string } }>;
+                    pageInfo: { hasNextPage: boolean; endCursor: string | null };
+                  };
+                };
+              };
+            };
+            const data = json.data?.collection?.products;
             if (!data) break;
             for (const edge of data.edges) productGids.push(edge.node.id);
             hasNextPage = data.pageInfo.hasNextPage;
@@ -292,7 +320,7 @@ export default function QuickApplyTags() {
   const syncFetcher = useFetcher<typeof action>();
   const fieldDefFetcher = useFetcher<typeof action>();
   const saveConfigFetcher = useFetcher<typeof action>();
-  const modalRef = useRef<any>(null);
+  const modalRef = useRef<SModalElement>(null);
 
   // --- Aside state ---
   const savedDefaults: Record<string, string> = config?.metaobjectFieldDefaults
@@ -305,9 +333,33 @@ export default function QuickApplyTags() {
   const [asideSaved, setAsideSaved] = useState(false);
   const [asideCollapsed, setAsideCollapsed] = useState(false);
 
+  // Shared fetcher response shape used by all 4 action intents on this route.
+  type QuickApplyFetcherResponse = {
+    intent?: string;
+    ok?: boolean;
+    error?: string;
+    fields?: MetaobjectFieldDef[];
+    displayNameKey?: string;
+    products?: ProductHit[];
+    collections?: CollectionHit[];
+    rows?: Array<{
+      id: string;
+      title: string;
+      status: string;
+      image: string | null;
+      price: string | null;
+      compareAtPrice: string | null;
+      tagAssigned: string | null;
+      tagStatus: string;
+      error?: string;
+    }>;
+    total?: number;
+    createdTags?: string[];
+  };
+
   // Update field defs when fetcher returns
   useEffect(() => {
-    const data = fieldDefFetcher.data as any;
+    const data = fieldDefFetcher.data as QuickApplyFetcherResponse | undefined;
     if (data?.intent === "fetchFieldDefs" && data.fields) {
       setAsideFieldDefs(data.fields);
       setAsideDisplayNameKey(data.displayNameKey || "");
@@ -323,7 +375,7 @@ export default function QuickApplyTags() {
   }, [fieldDefFetcher.data]);
 
   useEffect(() => {
-    const data = saveConfigFetcher.data as any;
+    const data = saveConfigFetcher.data as QuickApplyFetcherResponse | undefined;
     if (data?.intent === "saveFieldDefaults" && data.ok) {
       setAsideSaved(true);
       setTimeout(() => setAsideSaved(false), 3000);
@@ -365,13 +417,13 @@ export default function QuickApplyTags() {
   const [stagedProducts, setStagedProducts] = useState<ProductHit[]>([]);
   const [stagedCollections, setStagedCollections] = useState<CollectionHit[]>([]);
 
-  const searchResults = searchFetcher.data as any;
-  const productResults: ProductHit[] = searchResults?.intent === "searchProducts" ? searchResults.products : [];
-  const collectionResults: CollectionHit[] = searchResults?.intent === "searchCollections" ? searchResults.collections : [];
+  const searchResults = searchFetcher.data as QuickApplyFetcherResponse | undefined;
+  const productResults: ProductHit[] = searchResults?.intent === "searchProducts" ? (searchResults.products ?? []) : [];
+  const collectionResults: CollectionHit[] = searchResults?.intent === "searchCollections" ? (searchResults.collections ?? []) : [];
   const isSearching = searchFetcher.state !== "idle";
 
   const isSyncing = syncFetcher.state === "submitting" || syncFetcher.state === "loading";
-  const syncData = syncFetcher.data as any;
+  const syncData = syncFetcher.data as QuickApplyFetcherResponse | undefined;
   const syncDone = syncData?.intent === "applyTags";
   const syncSuccess = syncDone && syncData.ok;
   const syncFailed = syncDone && !syncData.ok;
@@ -486,7 +538,9 @@ export default function QuickApplyTags() {
                 <s-select
                   label={t("campaigns.appliesTo")}
                   value={mode}
-                  onChange={(e: any) => handleModeChange(e.currentTarget.value)}
+                  onChange={(e: Event) =>
+                    handleModeChange((e.currentTarget as HTMLSelectElement).value)
+                  }
                 >
                   <s-option value="collections">{t("campaigns.specificCollections")}</s-option>
                   <s-option value="products">{t("campaigns.specificProducts")}</s-option>
@@ -517,13 +571,41 @@ export default function QuickApplyTags() {
                       {mode === "collections" && selectedCollections.map((c) => (
                         <span key={c.id} className={styles.badge}>
                           <span className={styles.badgeLabel}>{c.title}</span>
-                          <span className={styles.badgeRemove} onClick={() => handleRemoveCollection(c.id)}>×</span>
+                          <span
+                            className={styles.badgeRemove}
+                            onClick={() => handleRemoveCollection(c.id)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                handleRemoveCollection(c.id);
+                              }
+                            }}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`Remove ${c.title}`}
+                          >
+                            ×
+                          </span>
                         </span>
                       ))}
                       {mode === "products" && selectedProducts.map((p) => (
                         <span key={p.id} className={styles.badge}>
                           <span className={styles.badgeLabel}>{p.title}</span>
-                          <span className={styles.badgeRemove} onClick={() => handleRemoveProduct(p.id)}>×</span>
+                          <span
+                            className={styles.badgeRemove}
+                            onClick={() => handleRemoveProduct(p.id)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                handleRemoveProduct(p.id);
+                              }
+                            }}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`Remove ${p.title}`}
+                          >
+                            ×
+                          </span>
                         </span>
                       ))}
                     </div>
@@ -550,7 +632,10 @@ export default function QuickApplyTags() {
               <div className={styles.asideSelectField}>
                 <s-select
                   value={asideMetaobjectType}
-                  onChange={(e: any) => { handleAsideTypeChange(e.currentTarget.value); setAsideCollapsed(false); }}
+                  onChange={(e: Event) => {
+                    handleAsideTypeChange((e.currentTarget as HTMLSelectElement).value);
+                    setAsideCollapsed(false);
+                  }}
                 >
                   <s-option value="">{t("campaigns.aside.selectDefinition")}</s-option>
                   {metaobjectTypes.map((mo) => (
@@ -637,8 +722,11 @@ export default function QuickApplyTags() {
                           <s-text-field
                             label={`${f.name} ${f.required ? "*" : ""}`}
                             value={asideFieldValues[f.key] || ""}
-                            onChange={(e: any) => {
-                              setAsideFieldValues((prev) => ({ ...prev, [f.key]: e.currentTarget.value }));
+                            onChange={(e: Event) => {
+                              setAsideFieldValues((prev) => ({
+                                ...prev,
+                                [f.key]: (e.currentTarget as HTMLInputElement).value,
+                              }));
                               setAsideSaved(false);
                             }}
                           />
@@ -664,7 +752,14 @@ export default function QuickApplyTags() {
             <div
               className={`${styles.collapseChevron}${asideCollapsed ? ` ${styles.collapsed}` : ""}`}
               onClick={() => setAsideCollapsed((prev) => !prev)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setAsideCollapsed((prev) => !prev);
+                }
+              }}
               role="button"
+              tabIndex={0}
               aria-label="Toggle aside"
             >
               <span className={styles.chevronIcon}>›</span>
@@ -675,10 +770,10 @@ export default function QuickApplyTags() {
       </div>
 
       {/* Results table — full width below the two-column layout */}
-      {syncSuccess && syncData.rows && (
+      {syncSuccess && syncData?.rows && (
         <div className={styles.resultsSection}>
           <s-section heading={t("campaigns.resultsHeading", { count: syncData.total })}>
-            {syncData.createdTags?.length > 0 && (
+            {syncData.createdTags && syncData.createdTags.length > 0 && (
               <s-banner tone="info">
                 {t("campaigns.tagsCreated", { count: syncData.createdTags.length })}:{" "}
                 {syncData.createdTags.join(", ")}
@@ -697,9 +792,8 @@ export default function QuickApplyTags() {
                   </tr>
                 </thead>
                 <tbody>
-                  {syncData.rows.map((row: any) => {
+                  {syncData.rows.map((row) => {
                     const numericId = row.id.replace("gid://shopify/Product/", "");
-                    const productUrl = `/app/products/${numericId}`;
                     return (
                     <tr key={row.id}>
                       <td className={styles.tdTitle}>
@@ -761,7 +855,20 @@ export default function QuickApplyTags() {
             {collectionResults.map((c) => {
               const isSelected = stagedIds.has(c.id);
               return (
-                <div key={c.id} className={`${styles.searchResultItem} ${isSelected ? styles.searchResultSelected : ""}`} onClick={() => handleToggleCollection(c)}>
+                <div
+                  key={c.id}
+                  className={`${styles.searchResultItem} ${isSelected ? styles.searchResultSelected : ""}`}
+                  onClick={() => handleToggleCollection(c)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleToggleCollection(c);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isSelected}
+                >
                   <input type="checkbox" checked={isSelected} readOnly className={styles.resultCheckbox} />
                   {c.image ? <img src={c.image} alt="" className={styles.productThumb} /> : <div className={styles.productThumbPlaceholder} />}
                   <div className={styles.productInfo}>
@@ -779,7 +886,20 @@ export default function QuickApplyTags() {
             {productResults.map((p) => {
               const isSelected = stagedIds.has(p.id);
               return (
-                <div key={p.id} className={`${styles.searchResultItem} ${isSelected ? styles.searchResultSelected : ""}`} onClick={() => handleToggleProduct(p)}>
+                <div
+                  key={p.id}
+                  className={`${styles.searchResultItem} ${isSelected ? styles.searchResultSelected : ""}`}
+                  onClick={() => handleToggleProduct(p)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleToggleProduct(p);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isSelected}
+                >
                   <input type="checkbox" checked={isSelected} readOnly className={styles.resultCheckbox} />
                   {p.image ? <img src={p.image} alt="" className={styles.productThumb} /> : <div className={styles.productThumbPlaceholder} />}
                   <div className={styles.productInfo}>
