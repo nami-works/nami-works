@@ -110,9 +110,20 @@ export default function CampaignsList() {
   const [deactivateTarget, setDeactivateTarget] = useState<Campaign | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Campaign | null>(null);
 
+  // Shared response shape across all four action fetchers — fields are optional
+  // because each intent returns its own subset.
+  type SaleFetcherResponse = {
+    intent?: string;
+    ok?: boolean;
+    errors?: unknown;
+    productCount?: number;
+    variantCount?: number;
+    reverted?: number;
+  };
+
   // Surface activate result.
   useEffect(() => {
-    const data = activateFetcher.data as any;
+    const data = activateFetcher.data as SaleFetcherResponse | undefined;
     if (!data || activateFetcher.state !== "idle") return;
     if (data.intent !== "activate") return;
     const errs: string[] = Array.isArray(data.errors) ? data.errors : [];
@@ -145,7 +156,7 @@ export default function CampaignsList() {
 
   // Surface deactivate result.
   useEffect(() => {
-    const data = deactivateFetcher.data as any;
+    const data = deactivateFetcher.data as SaleFetcherResponse | undefined;
     if (!data || deactivateFetcher.state !== "idle") return;
     if (data.intent !== "deactivate") return;
     const errs: string[] = Array.isArray(data.errors) ? data.errors : [];
@@ -354,13 +365,25 @@ export default function CampaignsList() {
                         <div
                           className={styles.saleStatusCell}
                           onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => e.stopPropagation()}
+                          role="presentation"
                         >
                           <div
                             className={`${styles.statusToggle}${isOn ? ` ${styles.statusToggleOn}` : ""}${toggleDisabled ? ` ${styles.statusToggleDisabled}` : ""}`}
                             role="button"
                             aria-label={isOn ? t("campaigns.toggleDeactivate") : t("campaigns.toggleActivate")}
                             aria-disabled={toggleDisabled || undefined}
+                            tabIndex={toggleDisabled ? -1 : 0}
                             onClick={() => !toggleDisabled && handleToggleClick(campaign)}
+                            onKeyDown={(e) => {
+                              if (
+                                !toggleDisabled &&
+                                (e.key === "Enter" || e.key === " ")
+                              ) {
+                                e.preventDefault();
+                                handleToggleClick(campaign);
+                              }
+                            }}
                           />
                           <span className={`${styles.statusBadge} ${STATUS_CLASSES[campaign.status] ?? styles.statusOther}`}>
                             {t(`campaigns.status${campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}`)}
@@ -437,7 +460,14 @@ export default function CampaignsList() {
           <div
             className={styles.checkboxToggle}
             onClick={() => setHasEndDate((prev) => !prev)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setHasEndDate((prev) => !prev);
+              }
+            }}
             role="button"
+            tabIndex={0}
           >
             <s-checkbox
               checked={hasEndDate || undefined}
@@ -451,12 +481,18 @@ export default function CampaignsList() {
               <s-date-field
                 label={t("campaigns.endDate")}
                 value={endDate}
-                onChange={(e: any) => setEndDate(e.currentTarget.value)}
+                onChange={(e: Event) =>
+                  setEndDate((e.currentTarget as HTMLInputElement).value)
+                }
               />
               <s-text-field
                 label={`${t("campaigns.endTime")} (-03)`}
                 value={endTime}
-                onChange={(e: any) => setEndTime(formatTimeInput(e.currentTarget.value))}
+                onChange={(e: Event) =>
+                  setEndTime(
+                    formatTimeInput((e.currentTarget as HTMLInputElement).value),
+                  )
+                }
                 placeholder="23:59"
               />
             </div>
