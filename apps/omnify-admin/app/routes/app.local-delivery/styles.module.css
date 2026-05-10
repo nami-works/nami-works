@@ -120,11 +120,11 @@
   max-width: 220px;
   margin-left: 4px;
 }
-/* Fullscreen mode keeps labels permanently expanded. */
-.mapBlockFooterRightFullscreen .hoverExpandLabel {
-  max-width: 220px;
-  margin-left: 4px;
-}
+/* 2026-05-10 r2 update: Lucas liked the hover-expand effect, so keep it
+   on BOTH collapsed and fullscreen views (was permanently-expanded in
+   fullscreen until now). Removed the
+   `.mapBlockFooterRightFullscreen .hoverExpandLabel { max-width: 220px }`
+   override -- the universal :hover rule above now covers both modes. */
 
 /* Legacy class kept as a no-op alias so any leftover usage doesn't break. */
 .btnLabel {
@@ -520,24 +520,29 @@
 .dueOrdersRow {
   display: grid;
   /* Columns: checkbox, order#, customer, date, due, route+unassign, address.
-     2026-05-10 fix: previous `auto` tracks collapsed because the child cells
-     carried `min-width: 0` (see ellipsis rule below) -- in CSS Grid, an
-     `auto` track honors its child's min-width, so 0 lets the track squash
-     and the address `1fr` greedily takes the freed space. Switched to
-     `max-content`, which IGNORES child min-width and sizes the track to its
-     largest content. Combined with `white-space: nowrap` on cells, customer
-     names like "Mariangelica F" now render in full. The Route column keeps
-     its var-width exception. The Address column stays `1fr` to absorb
-     leftover; on narrow viewports the table scrolls horizontally via the
-     `overflow-x: auto` on .dueOrdersTable. */
+     2026-05-10 r2 -- fail-proof rebuild after r1 still showed truncated
+     addresses + excess whitespace. Approach:
+       - Content columns use `max-content` so they fit content (header or
+         widest cell, whichever is bigger) and IGNORE child min-width:0.
+       - Address uses `minmax(max-content, 1fr)`. Floor = max-content so
+         the address NEVER truncates. Ceiling = 1fr so when leftover
+         viewport space exists, the address absorbs it (no excessive
+         whitespace at the right edge). When the natural sum exceeds the
+         viewport, `overflow-x: auto` on .dueOrdersTable kicks in.
+       - Route column keeps its var-width exception (badge centering +
+         X-unassign right-attached layout).
+       - Removed the blanket `overflow:hidden + text-overflow:ellipsis +
+         min-width:0` rule. That rule was the root cause of r1's bug:
+         `min-width: 0` on cells let `1fr` (= `minmax(auto, 1fr)`) squash
+         the address column below its content. */
   grid-template-columns:
-    24px                                  /* Checkbox */
-    max-content                           /* Order # */
-    max-content                           /* Customer */
-    max-content                           /* Date */
-    max-content                           /* Due */
-    var(--route-col-width, 168px)         /* Route badge + Unassign icon */
-    minmax(140px, 1fr);                   /* Address — absorbs remainder */
+    24px                                       /* Checkbox */
+    max-content                                /* Order # */
+    max-content                                /* Customer */
+    max-content                                /* Date */
+    max-content                                /* Due */
+    var(--route-col-width, 168px)              /* Route badge + Unassign */
+    minmax(max-content, 1fr);                  /* Address: never truncate, absorb leftover */
   column-gap: 8px;
   padding: 8px 8px;
   align-items: center;
@@ -546,9 +551,7 @@
 
 /* Location gate: when no specific location is selected, the checkbox column
    is dropped from the grid and the cells are conditionally not rendered in
-   JSX. Selection is unreachable from this surface (matches map-marker
-   click guards at app.local-delivery.tsx ~1691/1722).
-   Spec: inputs/mockups/local-delivery-control-row-v1.html */
+   JSX. Selection is unreachable from this surface. */
 .dueOrdersTable[data-no-cb="true"] .dueOrdersHeader,
 .dueOrdersTable[data-no-cb="true"] .dueOrdersRow {
   grid-template-columns:
@@ -557,25 +560,15 @@
     max-content
     max-content
     var(--route-col-width, 168px)
-    minmax(140px, 1fr);
+    minmax(max-content, 1fr);
 }
 
-/* Cell ellipsis applies ONLY to the address (last) column — that's the
-   one that may genuinely overflow on narrow viewports. The other columns
-   are sized via `max-content` and should NEVER truncate. */
-.dueOrdersHeader > span:last-child,
-.dueOrdersRow > span:last-child,
-.dueOrdersRow > s-link:last-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-/* Non-address content columns: never truncate. nowrap keeps each cell on
-   one line so max-content tracking measures the full string. */
-.dueOrdersHeader > span:not(:first-child):not(:last-child),
-.dueOrdersRow > span:not(:first-child):not(:last-child) {
+/* Content cells: nowrap keeps each cell on one line so max-content tracking
+   measures the full string. No truncation -- if total table width exceeds
+   the viewport, the parent .dueOrdersTable scrolls horizontally. */
+.dueOrdersHeader > span,
+.dueOrdersRow > span,
+.dueOrdersRow > s-link {
   white-space: nowrap;
 }
 
@@ -1713,6 +1706,15 @@
   margin-top: 8px;
 }
 
+/* 2026-05-10 r2: subdued subtitle row directly under the modal heading.
+   Holds order-level metadata (Processed at) so the Items block can stay
+   focused on products. Sits above the first card. */
+.orderModalSubtitle {
+  color: #6d7175;
+  font-size: 12px;
+  margin: -4px 0 4px;
+}
+
 /* 2026-05-08 rewrite: Items block now lists actual line items
    (title + quantity) instead of repeating shipping data. */
 .orderModalLineItemRow {
@@ -1895,9 +1897,24 @@
   font-size: 12px;
 }
 
-/* Right-aligned footer (2026-05-08 per Lucas). The "Open full order"
-   button is secondary, Close is primary, both anchor to the right. */
+/* Right-aligned footer (2026-05-08 per Lucas; 2026-05-10 r2 made flush
+   to the right edge by zeroing the left margin/padding the modal slot
+   adds and by using justify-content: flex-end). The "Open full order"
+   button is secondary, Close is primary, both anchor to the right edge. */
 .orderModalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Generic right-aligned modal footer (2026-05-10 r2). Drop-in container
+   for <div slot="footer"> in any s-modal. Buttons hug the right edge.
+   Used by: Map Style modal, Order Details modal. */
+.modalFooterRight {
   display: flex;
   align-items: center;
   justify-content: flex-end;

@@ -5583,51 +5583,56 @@ export default function Index() {
           </div>
         </s-stack>
       </s-modal>
+      {/* Map style modal (2026-05-10 r2 cleanup):
+            - Inline "Map style" label dropped (the modal's own heading
+              already says "Map style"; rendering it twice was redundant).
+            - Cancel + Confirm buttons moved into the canonical
+              <div slot="footer"> (Polaris s-modal footer slot).
+            - commandFor + onClick race replaced with programmatic close
+              via removeAttribute("open") per the CLAUDE.md gotcha. */}
       <s-modal id="map-style-modal" heading={t("modals.mapStyle.heading")}>
         <div className={styles.mapStyleModalContent}>
-        <s-stack direction="block" gap="base">
-          <div className={styles.mapStyleModalColumns}>
-            <div>
-              <s-text type="strong">{t("modals.mapStyle.mapStyleLabel")}</s-text>
-              <s-choice-list
-                label=""
-                values={[draftMapStyle]}
-                onChange={(event: Event) => {
-                  const target = event.currentTarget as { values?: string[] } | null;
-                  const value = target?.values?.[0];
-                  if (value === "dark" || value === "grayscale" || value === "light") {
-                    setDraftMapStyle(value);
-                  }
-                }}
-              >
-                <s-choice value="dark">{t("modals.mapStyle.dark")}</s-choice>
-                <s-choice value="grayscale">{t("modals.mapStyle.greyscale")}</s-choice>
-                <s-choice value="light">{t("modals.mapStyle.light")}</s-choice>
-              </s-choice-list>
-            </div>
-          </div>
-          <div className={styles.assignModalFooter}>
-            <s-button
-              variant="secondary"
-              commandFor="map-style-modal"
-              command="--hide"
-              onClick={() => {
-                setDraftMapStyle(mapStyle);
-                setIsMapStyleModalOpen(false);
-              }}
-            >
-              {t("modals.mapStyle.cancel")}
-            </s-button>
-            <s-button
-              variant="primary"
-              commandFor="map-style-modal"
-              command="--hide"
-              onClick={confirmMapStyle}
-            >
-              {t("modals.mapStyle.confirm")}
-            </s-button>
-          </div>
-        </s-stack>
+          <s-choice-list
+            label={t("modals.mapStyle.heading")}
+            labelAccessibilityVisibility="exclusive"
+            values={[draftMapStyle]}
+            onChange={(event: Event) => {
+              const target = event.currentTarget as { values?: string[] } | null;
+              const value = target?.values?.[0];
+              if (value === "dark" || value === "grayscale" || value === "light") {
+                setDraftMapStyle(value);
+              }
+            }}
+          >
+            <s-choice value="dark">{t("modals.mapStyle.dark")}</s-choice>
+            <s-choice value="grayscale">{t("modals.mapStyle.greyscale")}</s-choice>
+            <s-choice value="light">{t("modals.mapStyle.light")}</s-choice>
+          </s-choice-list>
+        </div>
+        <div className={styles.modalFooterRight} slot="footer">
+          <s-button
+            variant="secondary"
+            onClick={() => {
+              setDraftMapStyle(mapStyle);
+              setIsMapStyleModalOpen(false);
+              document
+                .getElementById("map-style-modal")
+                ?.removeAttribute("open");
+            }}
+          >
+            {t("modals.mapStyle.cancel")}
+          </s-button>
+          <s-button
+            variant="primary"
+            onClick={() => {
+              confirmMapStyle();
+              document
+                .getElementById("map-style-modal")
+                ?.removeAttribute("open");
+            }}
+          >
+            {t("modals.mapStyle.confirm")}
+          </s-button>
         </div>
       </s-modal>
       <s-modal id="address-errors-modal" heading={t("modals.addressErrors.heading")}>
@@ -6386,28 +6391,21 @@ export default function Index() {
       >
         {orderDetailsModalOrder ? (
           <div className={styles.orderModalBody}>
-            {/* Items block (2026-05-08 rewrite per Lucas):
-                  - "Processed at" pulled to the top of the block as a single
-                    label-+-value row.
-                  - The body now lists actual line items (title + quantity)
-                    instead of repeating shipping info, which was the bug.
-                  - Total row stays at the bottom.
-                Line items come from the loader's GraphQL projection
-                (lineItems(first: 20)). Empty list -> noLineItems copy. */}
+            {/* 2026-05-10 r2 reorganization: "Processed at" was inside the
+                Items block at the top, which was hierarchically incoherent
+                (an order-level timestamp inside a product-level container).
+                Pulled out as a subtle subdued metadata strip directly under
+                the modal heading. Items block now focuses purely on
+                products + total. Date/time format stays the same. */}
+            <div className={styles.orderModalSubtitle}>
+              {formatOrderDateShort(orderDetailsModalOrder.processedAt)}
+            </div>
             <div
               className={`${styles.orderModalCard} ${styles.orderModalFull}`}
             >
               <h3 className={styles.orderModalSectionTitle}>
                 {t("orderDetailsModal.itemsHeading")}
               </h3>
-              <div className={styles.orderModalKeyVal}>
-                <span className={styles.orderModalKey}>
-                  {t("orderDetailsModal.processedAt")}
-                </span>
-                <span className={styles.orderModalVal}>
-                  {formatOrderDateShort(orderDetailsModalOrder.processedAt)}
-                </span>
-              </div>
               <div className={styles.orderModalLineItems}>
                 {orderDetailsModalOrder.lineItems.length === 0 ? (
                   <span className={styles.orderModalKey}>
