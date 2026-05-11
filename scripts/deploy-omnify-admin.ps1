@@ -191,9 +191,23 @@ if (-not $SkipBuild) {
 
 Write-Host ""
 Write-Host "  [lightsail] refreshing ECR auth on $LightsailIp..." -ForegroundColor Cyan
-$ecrToken = & aws ecr get-login-password --region $Region
-if ($LASTEXITCODE -ne 0) { throw "aws ecr get-login-password failed" }
-$ecrToken | & ssh -i $LightsailKey -o StrictHostKeyChecking=no -o UserKnownHostsFile=NUL $LightsailHost "sudo docker login --username AWS --password-stdin $EcrRegistry" | Out-Null
+# Same PS pipe-encoding pitfall as the local ECR login (see comment above).
+# Compounded here because the password also has to survive transport over SSH.
+# Solution: base64-armor the token end-to-end. ASCII-safe, single-line, opaque
+# to PowerShell's UTF-8/UTF-16 conversions. The remote side decodes back to
+# raw bytes immediately before piping into `docker login --password-stdin`.
+$ecrToken = (& aws ecr get-login-password --region $Region).Trim()
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($ecrToken)) {
+  throw "aws ecr get-login-password failed or returned empty"
+}
+$tokenB64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($ecrToken))
+$prevEap = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
+try {
+  & ssh -i $LightsailKey -o StrictHostKeyChecking=no -o UserKnownHostsFile=NUL $LightsailHost "echo '$tokenB64' | base64 -d | sudo docker login --username AWS --password-stdin $EcrRegistry" 2>&1 | Out-Null
+} finally {
+  $ErrorActionPreference = $prevEap
+}
 if ($LASTEXITCODE -ne 0) {
   throw "SSH docker login on Lightsail failed (exit $LASTEXITCODE). Common causes: SSH key wrong, ECR token expired, or instance unreachable."
 }
