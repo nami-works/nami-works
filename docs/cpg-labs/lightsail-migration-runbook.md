@@ -333,37 +333,27 @@ Caddy can't issue real Let's Encrypt certs until DNS actually points at the box,
 
 ### Real cutover
 
-Currently `app.cpg-labs.io` and `omnify.cpg-labs.io` resolve via Route 53 ALIAS records pointing at the ALB. Change them to plain A records pointing at the Lightsail static IP:
+**DNS for `cpg-labs.io` is managed at GoDaddy**, not Route 53 — this was the runbook's biggest factual error on the original 2026-05-11 cutover attempt. The only Route 53 hosted zone in the AWS account is `nami.works`. Authoritative nameservers for `cpg-labs.io` are `ns29.domaincontrol.com` and `ns30.domaincontrol.com` (GoDaddy).
 
-```bash
-# Get current record sets
-aws route53 list-resource-record-sets --hosted-zone-id <zone-id> > current-records.json
+Currently `app.cpg-labs.io` and `omnify.cpg-labs.io` resolve via GoDaddy CNAME records pointing at the ALB (`omnify-alb-2060949013.us-east-1.elb.amazonaws.com`). Change them to A records pointing at the Lightsail static IP.
 
-# For each record (app.cpg-labs.io, omnify.cpg-labs.io), build a change-batch:
-cat > change.json <<EOF
-{
-  "Changes": [{
-    "Action": "UPSERT",
-    "ResourceRecordSet": {
-      "Name": "app.cpg-labs.io",
-      "Type": "A",
-      "TTL": 60,
-      "ResourceRecords": [{"Value": "<lightsail-static-ip>"}]
-    }
-  }]
-}
-EOF
+**At GoDaddy** (`dcc.godaddy.com/domains` → `cpg-labs.io` → DNS Management):
 
-aws route53 change-resource-record-sets --hosted-zone-id <zone-id> --change-batch file://change.json
-```
+1. Find the two CNAME records:
+   - `app` → `omnify-alb-2060949013.us-east-1.elb.amazonaws.com`
+   - `omnify` → `omnify-alb-2060949013.us-east-1.elb.amazonaws.com`
+2. Edit each — change Type from `CNAME` to `A`, change Value from the ALB hostname to the Lightsail static IP.
+3. Set TTL to the smallest available value (600s on most plans, custom 60s on some). Lower TTL = faster rollback if needed.
 
-Repeat for `omnify.cpg-labs.io`. Use TTL 60 so you can roll back fast if something breaks.
+GoDaddy's UI may show "modify" instead of separate "delete + add" — modify in place. If the CNAMEs are locked by a Domain Connect integration (Office 365 / Forwarding / etc.), disconnect the integration first, then modify.
 
-Within 60 seconds Caddy will see real traffic, request Let's Encrypt certs, and serve HTTPS. Watch `sudo journalctl -u caddy -f` — you want to see `certificate obtained successfully` for both names within a minute.
+**Note on auth:** GoDaddy uses SMS-based MFA by default for DNS changes. If SMS delivery fails (common in some regions), switch to an authenticator app via `account.godaddy.com/security` before attempting the change. Resolving MFA blocked the 2026-05-11 cutover for ~2 hours.
+
+Within ~60 seconds of saving, public resolvers will start returning the new IP. Once DNS resolves to Lightsail, Caddy will request real Let's Encrypt certs on first connection (~30s for both subdomains). Watch `sudo journalctl -u caddy -f` for `certificate obtained successfully` lines.
 
 ### Marketing site (`cpg-labs.io`)
 
-Move to Cloudflare Pages: connect the repo, set build command `cd site && npm install && npm run build`, output directory `site/dist`, custom domain `cpg-labs.io`. Cloudflare handles certs + CDN automatically. Free. Then in Route 53 change the `cpg-labs.io` A/AAAA record (or ALIAS to CloudFront) to Cloudflare's nameservers — or keep Route 53 and use a CNAME to the Cloudflare Pages hostname.
+The marketing site moved to S3 + CloudFront earlier (the broader split documented in CLAUDE.md "Public Site" section). If migrating to Cloudflare Pages becomes preferred later: connect the repo, set build command `cd site && npm install && npm run build`, output directory `site/dist`, custom domain `cpg-labs.io`. Cloudflare handles certs + CDN automatically. Free. Then at GoDaddy change the `cpg-labs.io` apex record to point at Cloudflare's nameservers (full delegation) — or keep GoDaddy and use a CNAME to the Cloudflare Pages hostname.
 
 ---
 
@@ -429,7 +419,7 @@ The migration is reversible at every step until you decommission RDS.
 
 | Step | How to roll back |
 |---|---|
-| Lightsail box not responding | Flip Route 53 record back to ALB DNS name. ALB + ECS are still running. TTL 60 means under a minute. |
+| Lightsail box not responding | Flip GoDaddy A records back to the ALB CNAME (`omnify-alb-2060949013.us-east-1.elb.amazonaws.com`). ALB + ECS are still running. TTL 60 means under a minute. |
 | New Postgres has wrong data | Re-import from the dump. Or flip `DATABASE_URL` in the env file back to the RDS endpoint and restart containers — RDS is still up. |
 | Caddy cert issue | Restore the hosts file workaround temporarily, debug, fix. Or roll DNS back to ALB. |
 | Cron firing twice (Lightsail + EventBridge) | Disable EventBridge rules (`enable_delivery_cron = false`, `enable_affiliates_cron = false`, etc. in `terraform.tfvars`, `terraform apply`). Cheaper: disable directly with `aws events disable-rule`. |
@@ -451,7 +441,7 @@ The migration is reversible at every step until you decommission RDS.
 | Caddy config | 30 min | Caddyfile, reload, verify localhost reverse proxy works |
 | Crontab | 30 min | Five lines, log dir, logrotate |
 | Pre-cutover validation | 1 hour | /etc/hosts trick, hit both apps, run a manual cron, place a test order |
-| DNS cutover | 15 min | Route 53 record swap, watch Caddy obtain certs |
+| DNS cutover | 15 min | GoDaddy A record swap (CNAME → A pointing at Lightsail IP), watch Caddy obtain certs |
 | Cloudflare Pages site | 30 min | Connect repo, point cpg-labs.io |
 | `deploy.ps1` rewrite | 2 hours | New flow, keep `_deploy-common.psm1` helpers |
 | Monitor + bake | 7 days | Watch logs, verify cron hits, watch RDS for residual traffic |

@@ -4,7 +4,9 @@ param(
   [string]$Region     = "us-east-1",
   [string]$Repository = "477780048372.dkr.ecr.us-east-1.amazonaws.com/omnify-app",
   [string]$Tag        = "",
-  [bool]$NoCache      = $true
+  [bool]$NoCache      = $true,
+  # Emergency override — see post-cutover guard below.
+  [switch]$ForceEcsRollback
 )
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -31,6 +33,55 @@ param(
 # ──────────────────────────────────────────────────────────────────────────────
 
 $ErrorActionPreference = "Stop"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# POST-CUTOVER GUARD (2026-05-11)
+# ──────────────────────────────────────────────────────────────────────────────
+# Production was migrated from AWS ECS Fargate to a Lightsail instance on
+# 2026-05-11. This script was written for the ECS world — its `aws ecs
+# update-service` step would now SILENTLY succeed against a drained service
+# (desiredCount=0) without actually deploying anything to production, since
+# DNS points at 54.221.23.142 not the ALB. Result: the script reports
+# success but the new image never lands on prod.
+#
+# Until this script is rewritten for the Lightsail deploy path, the manual
+# flow is the only safe way to deploy. See deploy-queue.md "Deploy mechanics"
+# section + memory/project_lightsail_migration_completed.md for the steps.
+#
+# After 2026-05-18 (post-bake decommission), the rewrite is unblocked and
+# this guard should be removed.
+# ──────────────────────────────────────────────────────────────────────────────
+
+Write-Host ""
+Write-Host "  ╔══════════════════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+Write-Host "  ║  deploy.ps1 ECS PATH IS DISABLED                                     ║" -ForegroundColor Yellow
+Write-Host "  ║                                                                      ║" -ForegroundColor Yellow
+Write-Host "  ║  Production has migrated to Lightsail (2026-05-11 cutover).          ║" -ForegroundColor Yellow
+Write-Host "  ║  Running this script would push the image to ECR and then silently   ║" -ForegroundColor Yellow
+Write-Host "  ║  succeed against drained ECS — the new image would NEVER land on     ║" -ForegroundColor Yellow
+Write-Host "  ║  prod. To deploy, use the manual Lightsail flow:                     ║" -ForegroundColor Yellow
+Write-Host "  ║                                                                      ║" -ForegroundColor Yellow
+Write-Host "  ║    1. docker build -t <tag> .                                        ║" -ForegroundColor Yellow
+Write-Host "  ║    2. aws ecr get-login-password ... | docker login                  ║" -ForegroundColor Yellow
+Write-Host "  ║    3. docker push <tag>                                              ║" -ForegroundColor Yellow
+Write-Host "  ║    4. ssh -i ~/.ssh/cpg-labs-lightsail.pem ubuntu@54.221.23.142      ║" -ForegroundColor Yellow
+Write-Host "  ║    5. Update /srv/cpg-labs/docker-compose.yml image tag              ║" -ForegroundColor Yellow
+Write-Host "  ║    6. sudo docker compose pull && sudo docker compose up -d          ║" -ForegroundColor Yellow
+Write-Host "  ║    7. Verify https://app.cpg-labs.io/health                          ║" -ForegroundColor Yellow
+Write-Host "  ║                                                                      ║" -ForegroundColor Yellow
+Write-Host "  ║  Full details: .claude/deploy-queue.md (Deploy mechanics section)    ║" -ForegroundColor Yellow
+Write-Host "  ║                                                                      ║" -ForegroundColor Yellow
+Write-Host "  ║  Override (truly need ECS for rollback only, before 2026-05-18):     ║" -ForegroundColor Yellow
+Write-Host "  ║    ./scripts/deploy.ps1 -App <key> -ForceEcsRollback                 ║" -ForegroundColor Yellow
+Write-Host "  ╚══════════════════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+Write-Host ""
+
+if (-not $ForceEcsRollback) {
+  exit 1
+}
+
+Write-Host "  [override] -ForceEcsRollback detected — proceeding with legacy ECS path." -ForegroundColor Red
+Write-Host "  [override] Only valid before 2026-05-18 decommission." -ForegroundColor Red
 
 $CanonicalCluster = "cpg-labs"
 
