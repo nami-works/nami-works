@@ -52,6 +52,20 @@
     "remove": "Remove"
   },
   "settingsSaved": "Settings saved",
+  "toneSummary": {
+    "heading": "Tone of voice — sources",
+    "title": "Brand voice evidence base",
+    "syncedAt": "✓ Last sampled {{when}}",
+    "neverSynced": "Never sampled",
+    "stats": "The AI infers your brand voice from these sources: {{traits}} validated tone trait{{traitPlural}}, {{learnings}} edit-correction{{learningPlural}}, {{toneState}}, language {{language}}.",
+    "toneSet": "manual tone string set",
+    "toneEmpty": "no manual tone string",
+    "pillShopify": "Shopify blog · {{count}} sampled",
+    "pillMeta": "Meta · {{count}} posts",
+    "pillMonday": "Monday.com · {{count}} briefs",
+    "pillManual": "Manual · {{count}} reference{{plural}}",
+    "manageLink": "Manage sources →"
+  },
   "toneSources": {
     "manageLink": "Manage tone sources",
     "pageHeading": "Tone of voice sources",

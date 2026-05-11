@@ -52,6 +52,20 @@
     "remove": "Remover"
   },
   "settingsSaved": "Configura\u00e7\u00f5es salvas",
+  "toneSummary": {
+    "heading": "Tom de voz \u2014 fontes",
+    "title": "Base de evid\u00eancias da voz da marca",
+    "syncedAt": "\u2713 \u00daltima amostragem {{when}}",
+    "neverSynced": "Nunca amostrado",
+    "stats": "A IA infere a voz da sua marca a partir destas fontes: {{traits}} tra\u00e7o{{traitPlural}} de tom validado{{traitPlural}}, {{learnings}} corre\u00e7\u00e3o{{learningPlural}} de edi\u00e7\u00e3o, {{toneState}}, idioma {{language}}.",
+    "toneSet": "tom manual definido",
+    "toneEmpty": "sem tom manual definido",
+    "pillShopify": "Blog Shopify \u00b7 {{count}} amostradas",
+    "pillMeta": "Meta \u00b7 {{count}} posts",
+    "pillMonday": "Monday.com \u00b7 {{count}} briefs",
+    "pillManual": "Manual \u00b7 {{count}} refer\u00eancia{{plural}}",
+    "manageLink": "Gerenciar fontes \u2192"
+  },
   "toneSources": {
     "manageLink": "Gerenciar fontes de tom de voz",
     "pageHeading": "Fontes de tom de voz",

@@ -1,0 +1,88 @@
+/* Brand settings page — local styles. Mirrors .contextBand from
+   app.storytelling_.brief/styles.module.css so the "Tone of voice — sources"
+   block reads as the same visual language across the brand surfaces. */
+
+.toneSummaryBand {
+  background: #e6f4ec;
+  border: 1px solid #c5e0d0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+}
+
+.toneSummaryHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.toneSummaryTitle {
+  font-size: 14px;
+  font-weight: 650;
+  color: #303030;
+  margin: 0;
+}
+
+.toneSummaryStatus {
+  font-size: 12px;
+  font-weight: 500;
+  color: #067647;
+  white-space: nowrap;
+}
+
+.toneSummaryStatusMuted {
+  color: #6d7175;
+  font-weight: 400;
+}
+
+.toneSummaryStats {
+  font-size: 12px;
+  color: #303030;
+  line-height: 1.55;
+  margin: 0 0 10px;
+}
+
+.toneSummaryStats strong {
+  color: #067647;
+  font-weight: 600;
+}
+
+.toneSummaryPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+
+.toneSummaryPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px 3px 6px;
+  border-radius: 999px;
+  background: #d6f7e3;
+  color: #0c5132;
+}
+
+.toneSummaryActions {
+  display: flex;
+  gap: 8px;
+}
+
+.toneSummaryLink {
+  font-size: 12px;
+  color: #005bd3;
+  text-decoration: none;
+  padding: 4px 10px;
+  border: 1px solid #005bd3;
+  border-radius: 6px;
+  background: white;
+}
+
+.toneSummaryLink:hover {
+  background: #f0f6ff;
+}

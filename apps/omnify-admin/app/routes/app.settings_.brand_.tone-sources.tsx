@@ -49,6 +49,12 @@ import type {
   ToneSourceType,
 } from "../services/tone-sources/types";
 import styles from "./app.settings_.brand_.tone-sources/styles.module.css";
+import {
+  ShopifyLogo,
+  MetaLogo,
+  MondayLogo,
+  ManualUploadIcon,
+} from "../components/brand-icons";
 
 const MIN_CONFIDENCE = 0.5;
 
@@ -64,6 +70,7 @@ type LoaderData = {
   metaConfigured: boolean;
   metaIgBusinessId: string | null;
   metaFbPageId: string | null;
+  basePath: string;
 };
 
 type SerializedManualReference = {
@@ -144,6 +151,7 @@ export const loader = async ({
     metaConfigured: metaConfig !== null,
     metaIgBusinessId: metaConfig?.igBusinessId ?? null,
     metaFbPageId: metaConfig?.fbPageId ?? null,
+    basePath: process.env.BASE_PATH || "",
   };
 };
 
@@ -520,67 +528,8 @@ function formatRelative(iso: string | null): string | null {
 /* ============================================================
  * Brand-glyph SVG icons (inline, no external deps)
  * ============================================================ */
-function ShopifyIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-      <path
-        fill="#5e8e3e"
-        d="M19.39 6.45c-.02-.16-.16-.25-.27-.26l-2.36-.18-1.74-1.72c-.17-.17-.51-.12-.64-.08-.02 0-.32.1-.81.25-.49-1.39-1.36-2.66-2.86-2.66h-.13c-.43-.55-.95-.8-1.41-.8-3.51 0-5.18 4.39-5.71 6.62L1.6 8.18c-.51.16-.52.18-.59.66L0 21.92l13.79 2.58V5.69l-.41.13c-.61-1.96-1.71-4.39-3.83-4.39-.06 0-.13 0-.2.02-.69-.91-1.55-1.27-2.32-1.27-.61 0-1.18.21-1.7.6.31-.02.62.06.92.21z"
-      />
-      <path
-        fill="#ffffff"
-        d="M13.79 24.5L23 22.04 21.43 6.18l-2.04-.18-5.6 5.39z"
-      />
-    </svg>
-  );
-}
-
-function MetaDualIcon() {
-  return (
-    <svg viewBox="0 0 32 18" width="32" height="18" aria-hidden="true">
-      <defs>
-        <linearGradient id="igGrad" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0%" stopColor="#FFD600" />
-          <stop offset="50%" stopColor="#FF1744" />
-          <stop offset="100%" stopColor="#7C4DFF" />
-        </linearGradient>
-      </defs>
-      <rect x="0" y="1" width="14" height="14" rx="3.5" fill="url(#igGrad)" />
-      <circle cx="7" cy="8" r="3" fill="none" stroke="#ffffff" strokeWidth="1.4" />
-      <circle cx="11" cy="4" r="0.8" fill="#ffffff" />
-      <circle cx="25" cy="8" r="7" fill="#1877F2" />
-      <path
-        fill="#ffffff"
-        d="M26.3 5.3h1.1V3.5h-1.3c-1 0-1.7.7-1.7 1.7v1.1h-1.1v1.7h1.1v3.7h1.7V8h1.3l.2-1.7h-1.5V5.5c0-.1.1-.2.2-.2z"
-      />
-    </svg>
-  );
-}
-
-function MondayIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-      <rect x="3" y="6" width="18" height="3.5" rx="1.75" fill="#E2445C" />
-      <rect x="3" y="10.5" width="18" height="3.5" rx="1.75" fill="#FDAB3D" />
-      <rect x="3" y="15" width="18" height="3.5" rx="1.75" fill="#00CA72" />
-    </svg>
-  );
-}
-
-function ManualIcon() {
-  return (
-    <svg
-      viewBox="0 0 20 20"
-      width="16"
-      height="16"
-      fill="#8a5a08"
-      aria-hidden="true"
-    >
-      <path d="M3 13a1 1 0 0 1 1 1v3h12v-3a1 1 0 1 1 2 0v3a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3a1 1 0 0 1 1-1z" />
-      <path d="M10 1a1 1 0 0 1 .7.3l3 3a1 1 0 0 1-1.4 1.4L11 4.4V12a1 1 0 1 1-2 0V4.4L7.7 5.7a1 1 0 1 1-1.4-1.4l3-3A1 1 0 0 1 10 1z" />
-    </svg>
-  );
-}
+// Brand logos (Shopify, Meta, Monday) and the Manual upload icon now live in
+// app/components/brand-icons.tsx. Imported at the top of this file.
 
 function ChevronIcon() {
   return (
@@ -618,6 +567,7 @@ export default function ToneSourcesPage() {
     metaConfigured,
     metaIgBusinessId,
     metaFbPageId,
+    basePath,
   } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
   const uploadFetcher = useFetcher<typeof action>();
@@ -756,7 +706,7 @@ export default function ToneSourcesPage() {
             expanded={expandedRow === "shopify"}
             onToggle={toggleRow}
             iconClass={`${styles.sourceIcon} ${styles.sourceIconShopify}`}
-            icon={<ShopifyIcon />}
+            icon={<ShopifyLogo basePath={basePath} size={20} />}
             name={t("toneSources.rows.shopifyName", { defaultValue: "Shopify blog posts" })}
             detail={
               shopifySource?.detail
@@ -802,7 +752,7 @@ export default function ToneSourcesPage() {
             expanded={expandedRow === "meta"}
             onToggle={toggleRow}
             iconClass={`${styles.sourceIcon} ${styles.sourceIconMeta}`}
-            icon={<MetaDualIcon />}
+            icon={<MetaLogo basePath={basePath} size={20} />}
             name={t("toneSources.rows.metaName", {
               defaultValue: "Instagram & Facebook",
             })}
@@ -942,7 +892,7 @@ export default function ToneSourcesPage() {
             expanded={expandedRow === "monday"}
             onToggle={toggleRow}
             iconClass={`${styles.sourceIcon} ${styles.sourceIconMonday}`}
-            icon={<MondayIcon />}
+            icon={<MondayLogo basePath={basePath} size={20} />}
             name={t("toneSources.rows.mondayName", { defaultValue: "Monday.com" })}
             detail={
               mondayConfigured && mondaySource?.sampleCount
@@ -1064,7 +1014,7 @@ export default function ToneSourcesPage() {
             expanded={expandedRow === "manual"}
             onToggle={toggleRow}
             iconClass={`${styles.sourceIcon} ${styles.sourceIconUpload}`}
-            icon={<ManualIcon />}
+            icon={<ManualUploadIcon size={16} />}
             name={t("toneSources.rows.manualName", {
               defaultValue: "Manual references",
             })}

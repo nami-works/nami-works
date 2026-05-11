@@ -15,6 +15,13 @@ import {
   removeLearning,
 } from "../services/brand-assets/service.server";
 import { buildExport } from "../services/brand-assets/export.server";
+import {
+  ShopifyLogo,
+  MetaLogo,
+  MondayLogo,
+  ManualUploadIcon,
+} from "../components/brand-icons";
+import styles from "./app.settings_.brand/styles.module.css";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
@@ -26,13 +33,43 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   });
 
   const learnings = await listLearnings(shop, { limit: 10 });
-  const learningsCount = await prisma.brandLearning
-    .count({ where: { shop, status: "accepted" } })
-    .catch(() => 0);
+  const [
+    learningsCount,
+    toneTraitsCount,
+    sourceCountsByType,
+    lastSampledRow,
+  ] = await Promise.all([
+    prisma.brandLearning
+      .count({ where: { shop, status: "accepted" } })
+      .catch(() => 0),
+    prisma.brandToneHypothesis
+      .count({ where: { shop, status: "accepted" } })
+      .catch(() => 0),
+    prisma.brandToneSource
+      .groupBy({
+        by: ["sourceType"],
+        where: { shop },
+        _count: { id: true },
+      })
+      .catch(() => [] as Array<{ sourceType: string; _count: { id: number } }>),
+    prisma.brandToneSource
+      .findFirst({
+        where: { shop },
+        orderBy: { capturedAt: "desc" },
+        select: { capturedAt: true },
+      })
+      .catch(() => null),
+  ]);
+
+  const sourceCounts: Record<string, number> = {};
+  for (const row of sourceCountsByType) {
+    sourceCounts[row.sourceType] = row._count.id;
+  }
 
   return {
     settings,
     shop,
+    basePath: process.env.BASE_PATH || "",
     learnings: learnings.map((l) => ({
       id: l.id,
       category: l.category,
@@ -40,6 +77,24 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       acceptedAt: l.acceptedAt.toISOString(),
     })),
     learningsCount,
+    toneSourcesSummary: {
+      // shopify_blog is the production sourceType key from BrandToneSource
+      // (see ingestShopifyBlogs in services/tone-sources/shopify.server.ts);
+      // legacy "shopify" / "monday_briefs" buckets also counted defensively
+      // in case older rows exist under those identifiers.
+      shopifyCount:
+        (sourceCounts.shopify_blog ?? 0) + (sourceCounts.shopify ?? 0),
+      metaCount:
+        (sourceCounts.instagram ?? 0) +
+        (sourceCounts.facebook ?? 0) +
+        (sourceCounts.meta ?? 0),
+      mondayCount:
+        (sourceCounts.monday_briefs ?? 0) + (sourceCounts.monday ?? 0),
+      manualCount:
+        (sourceCounts.manual_upload ?? 0) + (sourceCounts.manual_url ?? 0),
+      toneTraitsCount,
+      lastSampledAt: lastSampledRow?.capturedAt?.toISOString() ?? null,
+    },
   };
 };
 
@@ -152,7 +207,7 @@ function formatRelative(iso: string | null | undefined): string | null {
 }
 
 export default function BrandSettingsPage() {
-  const { settings, shop, learnings, learningsCount } =
+  const { settings, shop, learnings, learningsCount, toneSourcesSummary, basePath } =
     useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
   const shopify = useAppBridge();
@@ -307,6 +362,78 @@ export default function BrandSettingsPage() {
             </s-stack>
           </s-stack>
         </fetcher.Form>
+      </s-section>
+
+      <s-section heading={t("toneSummary.heading", { defaultValue: "Tone of voice — sources" })}>
+        <div className={styles.toneSummaryBand}>
+          <div className={styles.toneSummaryHeader}>
+            <h3 className={styles.toneSummaryTitle}>
+              {t("toneSummary.title", { defaultValue: "Brand voice evidence base" })}
+            </h3>
+            {toneSourcesSummary.lastSampledAt ? (
+              <span className={styles.toneSummaryStatus}>
+                {t("toneSummary.syncedAt", {
+                  defaultValue: "✓ Last sampled {{when}}",
+                  when: formatRelative(toneSourcesSummary.lastSampledAt) ?? "—",
+                })}
+              </span>
+            ) : (
+              <span className={`${styles.toneSummaryStatus} ${styles.toneSummaryStatusMuted}`}>
+                {t("toneSummary.neverSynced", { defaultValue: "Never sampled" })}
+              </span>
+            )}
+          </div>
+          <p className={styles.toneSummaryStats}>
+            {t("toneSummary.stats", {
+              defaultValue:
+                "The AI infers your brand voice from these sources: {{traits}} validated tone trait{{traitPlural}}, {{learnings}} edit-correction{{learningPlural}}, {{toneState}}, language {{language}}.",
+              traits: toneSourcesSummary.toneTraitsCount,
+              traitPlural: toneSourcesSummary.toneTraitsCount === 1 ? "" : "s",
+              learnings: learningsCount,
+              learningPlural: learningsCount === 1 ? "" : "s",
+              toneState: settings?.toneOfVoice
+                ? t("toneSummary.toneSet", { defaultValue: "manual tone string set" })
+                : t("toneSummary.toneEmpty", { defaultValue: "no manual tone string" }),
+              language: settings?.contentLanguage ?? "en_US",
+            })}
+          </p>
+          <div className={styles.toneSummaryPills}>
+            <span className={styles.toneSummaryPill}>
+              <ShopifyLogo basePath={basePath} size={14} />
+              {t("toneSummary.pillShopify", {
+                defaultValue: "Shopify blog · {{count}} sampled",
+                count: toneSourcesSummary.shopifyCount,
+              })}
+            </span>
+            <span className={styles.toneSummaryPill}>
+              <MetaLogo basePath={basePath} size={14} />
+              {t("toneSummary.pillMeta", {
+                defaultValue: "Meta · {{count}} posts",
+                count: toneSourcesSummary.metaCount,
+              })}
+            </span>
+            <span className={styles.toneSummaryPill}>
+              <MondayLogo basePath={basePath} size={14} />
+              {t("toneSummary.pillMonday", {
+                defaultValue: "Monday.com · {{count}} briefs",
+                count: toneSourcesSummary.mondayCount,
+              })}
+            </span>
+            <span className={styles.toneSummaryPill}>
+              <ManualUploadIcon size={13} />
+              {t("toneSummary.pillManual", {
+                defaultValue: "Manual · {{count}} reference{{plural}}",
+                count: toneSourcesSummary.manualCount,
+                plural: toneSourcesSummary.manualCount === 1 ? "" : "s",
+              })}
+            </span>
+          </div>
+          <div className={styles.toneSummaryActions}>
+            <Link to="/app/settings/brand/tone-sources" className={styles.toneSummaryLink}>
+              {t("toneSummary.manageLink", { defaultValue: "Manage sources →" })}
+            </Link>
+          </div>
+        </div>
       </s-section>
 
       <s-section slot="aside" heading={t("export.heading")}>
