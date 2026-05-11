@@ -158,5 +158,25 @@
   },
   "ld": {
     "viewAnalytics": "Ver análise"
+  },
+  "aside": {
+    "label": "Economia total",
+    "labelProvocation": "Oportunidade estimada",
+    "labelEmpty": "Economia de frete",
+    "deltaTemplate": "vs transportadora · últimos 90 dias · {{trend}} {{percent}}% MoM",
+    "trendUp": "▲",
+    "trendDown": "▼",
+    "trendFlat": "—",
+    "sparkLabel": "90d",
+    "seeMore": "Ver mais",
+    "newPill": "novo",
+    "provocationValueTemplate": "~{{amount}} / mês",
+    "provocationHelper": "Com base nos seus últimos 90 dias. Conecte uma transportadora para confirmar com cotações reais.",
+    "provocationConnect": "Conectar Intelipost",
+    "provocationManual": "Usar valores manuais",
+    "conservativeBody": "Conecte uma transportadora para ver quanto você economizaria comparado ao envio padrão.",
+    "conservativeConnect": "Conectar Intelipost",
+    "staleFootnoteTemplate": "⚠ Última atualização há {{age}} · cobertura de {{coverage}}%",
+    "skeletonAriaLabel": "Carregando economia de frete"
   }
 }

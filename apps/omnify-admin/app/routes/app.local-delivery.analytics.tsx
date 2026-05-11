@@ -34,6 +34,7 @@ import {
 import { getActiveCredentialForShop } from "../services/warehouse-carrier/aggregator.server";
 import { IntelipostAdapter } from "../services/warehouse-carrier/adapters/intelipost.server";
 import { isFraming } from "../services/ld-analytics/pl-math.server";
+import { computeAsideData } from "../services/ld-analytics/aside.server";
 import styles from "./app.local-delivery.analytics/styles.module.css";
 
 type LoaderResponse =
@@ -73,6 +74,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const shop = session.shop;
   const startedAt = Date.now();
   const url = new URL(request.url);
+
+  // Short-circuit for the LD-page aside fetcher (spec §4). Reuses the
+  // existing route to avoid a second route file; returns a small payload
+  // shaped for <LdAnalyticsAside>.
+  if (url.searchParams.get("aside") === "1") {
+    return computeAsideData(shop);
+  }
+
   const period = url.searchParams.get("period") ?? "90d";
   const locationId = url.searchParams.get("location") ?? "all";
   const cityNorm = url.searchParams.get("city") ?? "all";

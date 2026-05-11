@@ -41,6 +41,7 @@ import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-r
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { formatCustomerShort } from "../utils/format-name";
 import { computeDueBuckets, type DueBucket } from "./app.local-delivery/due-bucket";
+import { LdAnalyticsAside } from "../components/ld-analytics-aside";
 import styles from "./app.local-delivery/styles.module.css";
 
 const DEFAULT_DELIVERY_METHOD = "local";
@@ -5075,15 +5076,6 @@ export default function Index() {
 
   return (
     <s-page heading={t("pageHeading")}>
-      <s-button
-        slot="primary-action"
-        onClick={() => navigate("/app/local-delivery/analytics")}
-      >
-        {t("ld.viewAnalytics", {
-          ns: "ld-analytics",
-          defaultValue: "View analytics",
-        })}
-      </s-button>
       <s-modal
         id="manage-route-modal"
         heading={activeRouteIndex != null ? getRouteLabel(editableRoutes[activeRouteIndex] ?? { id: "", locationId: "", polyline: "", color: "", orderIds: [] }, activeRouteIndex) : ""}
@@ -6366,6 +6358,7 @@ export default function Index() {
                 <div className={styles.fullscreenAsidePane}>
                   {routeManagerSection}
                   {accuracyBlock}
+                  <LdAnalyticsAside />
                 </div>
               ) : null}
             </div>
@@ -6378,6 +6371,7 @@ export default function Index() {
         <div slot="aside" className={styles.routeManagerBlock}>
           {routeManagerSection}
           {accuracyBlock}
+          <LdAnalyticsAside />
         </div>
       ) : null}
 

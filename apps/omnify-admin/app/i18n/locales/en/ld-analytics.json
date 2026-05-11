@@ -158,5 +158,25 @@
   },
   "ld": {
     "viewAnalytics": "View analytics"
+  },
+  "aside": {
+    "label": "Total savings",
+    "labelProvocation": "Estimated opportunity",
+    "labelEmpty": "Shipping savings",
+    "deltaTemplate": "vs warehouse · last 90 days · {{trend}} {{percent}}% MoM",
+    "trendUp": "▲",
+    "trendDown": "▼",
+    "trendFlat": "—",
+    "sparkLabel": "90d",
+    "seeMore": "See more",
+    "newPill": "new",
+    "provocationValueTemplate": "~{{amount}} / month",
+    "provocationHelper": "Based on your last 90 days. Connect a carrier so we can confirm with real quotes.",
+    "provocationConnect": "Connect Intelipost",
+    "provocationManual": "Use manual rates",
+    "conservativeBody": "Connect a warehouse carrier to see what you'd save vs warehouse delivery.",
+    "conservativeConnect": "Connect Intelipost",
+    "staleFootnoteTemplate": "⚠ Last rollup {{age}} ago · {{coverage}}% coverage",
+    "skeletonAriaLabel": "Loading shipping savings"
   }
 }

@@ -1320,13 +1320,14 @@ model LdAnalyticsDaily {
 }
 
 model LdAnalyticsConfig {
-  shop                         String   @id
-  enabled                      Boolean  @default(false)
-  headlineFraming              String   @default("net_cost_delta") // pl_impact | revenue_retained | net_cost_delta. v1 default is net_cost_delta because pl_impact requires LD revenue capture (ShopOrder.shippingLines) which is deferred to v2.
-  perCityTaxSavingsJson        Json     @default("{}")
-  perLocationWarehouseCostJson Json     @default("{}")
-  partialDataThresholdPercent  Int      @default(80)
-  quoteCacheTtlDays            Int      @default(90)
-  createdAt                    DateTime @default(now())
-  updatedAt                    DateTime @updatedAt
+  shop                         String    @id
+  enabled                      Boolean   @default(false)
+  headlineFraming              String    @default("net_cost_delta") // pl_impact | revenue_retained | net_cost_delta. v1 default is net_cost_delta because pl_impact requires LD revenue capture (ShopOrder.shippingLines) which is deferred to v2.
+  perCityTaxSavingsJson        Json      @default("{}")
+  perLocationWarehouseCostJson Json      @default("{}")
+  partialDataThresholdPercent  Int       @default(80)
+  quoteCacheTtlDays            Int       @default(90)
+  asideFirstSeenAt             DateTime? // First time the LD-page analytics aside rendered for this shop. Drives the 14-day "new" pill TTL on the sidebar block. Nullable so existing shops backfill on first render.
+  createdAt                    DateTime  @default(now())
+  updatedAt                    DateTime  @updatedAt
 }

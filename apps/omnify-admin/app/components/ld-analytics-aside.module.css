@@ -1,0 +1,244 @@
+/*
+ * LD Analytics aside block — scoped styles.
+ * Mirrors inputs/mockups/local-delivery-analytics-aside-v1.html.
+ *
+ * 7 states: loading, full, provocation, conservative_empty, stale, hidden
+ * (no DOM), focus on See-more (CSS pseudo-class).
+ */
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 12px;
+  color: #6d7175;
+  font-weight: 500;
+}
+
+.value {
+  font-size: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #067647;
+  line-height: 1.1;
+}
+
+.delta {
+  font-size: 11px;
+  color: #6d7175;
+}
+
+.arrowUp { color: #067647; }
+.arrowDown { color: #d72c0d; }
+.arrowFlat { color: #6d7175; }
+
+/* Sparkline row */
+.sparkRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.spark {
+  flex: 1;
+  height: 28px;
+}
+
+.sparkLabel {
+  font-size: 10px;
+  color: #8c9196;
+  flex-shrink: 0;
+}
+
+/* Action row (See-more, etc.) */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.actionsSpread {
+  justify-content: space-between;
+}
+
+.seeMore {
+  background: white;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #303030;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.seeMore::after {
+  content: "›";
+  color: #6d7175;
+}
+
+.seeMore:hover,
+.seeMore:focus-visible {
+  background: #f6f6f7;
+  border-color: #c9cccf;
+  outline: none;
+}
+
+.seeMore:focus-visible {
+  box-shadow: 0 0 0 2px rgba(0, 91, 211, 0.4);
+}
+
+/* Stale footnote (aligned left of See-more) */
+.staleFootnote {
+  font-size: 10px;
+  color: #b98900;
+}
+
+/* Provocation (state 3) */
+.provocation {
+  background: linear-gradient(180deg, #f3fbf5 0%, #ffffff 100%);
+  border-color: #c8ebd1;
+}
+
+.provocation .label {
+  color: #067647;
+}
+
+.provocation .value {
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.helper {
+  font-size: 11px;
+  color: #6d7175;
+  line-height: 1.4;
+}
+
+/* Provocation / conservative empty CTAs */
+.ctaRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.ctaPrimary {
+  background: #005bd3;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ctaPrimary:hover,
+.ctaPrimary:focus-visible {
+  background: #004cb0;
+  outline: none;
+}
+
+.ctaSecondary {
+  background: white;
+  color: #303030;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ctaSecondary:hover,
+.ctaSecondary:focus-visible {
+  background: #f6f6f7;
+  outline: none;
+}
+
+/* Conservative empty body block */
+.conservativeBody {
+  font-size: 14px;
+  color: #303030;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* "New" pill */
+.newPill {
+  display: inline-block;
+  background: #e3f5e1;
+  color: #067647;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 8px;
+  margin-left: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Skeleton (state 1) */
+.skeletonGap {
+  gap: 6px;
+}
+
+.skel {
+  background: linear-gradient(90deg, #f0f0f0 0%, #e7e7e8 50%, #f0f0f0 100%);
+  border-radius: 4px;
+}
+
+.skelLine {
+  height: 12px;
+  margin: 2px 0;
+}
+
+.skelShort {
+  width: 40%;
+}
+
+.skelTall {
+  height: 24px;
+  width: 55%;
+  margin: 4px 0;
+}
+
+.skelSpark {
+  height: 28px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.skelButtonRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.skelButton {
+  width: 78px;
+  height: 28px;
+  border-radius: 6px;
+  margin-top: 4px;
+}

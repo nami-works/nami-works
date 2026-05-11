@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — LD page analytics aside block</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --grid: #ebebeb;
+    --text: #303030;
+    --subdued: #6d7175;
+    --axis: #8c9196;
+    --blue-primary: #005bd3;
+    --blue-bg: #ebf4ff;
+    --green: #067647;
+    --green-bg: #e3f5e1;
+    --green-soft: #c8ebd1;
+    --red: #d72c0d;
+    --warning: #b98900;
+    --warning-bg: #fff4d6;
+    --gray-bg: #f6f6f7;
+    --gray-track: #e4e5e7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+  }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 8px; }
+  h2.section { font-size: 15px; font-weight: 600; margin: 32px 0 12px; color: var(--text); }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 1080px;
+    margin-bottom: 24px;
+  }
+  code {
+    background: #fff4d6;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+
+  /* ==== Card primitive (mimics <s-section>) ==== */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+  .card h3 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    color: var(--subdued);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  /* ==== The analytics aside block (the focus of this mockup) ==== */
+  .asideAnalytics {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .asideAnalytics .label {
+    font-size: 12px;
+    color: var(--subdued);
+    font-weight: 500;
+  }
+  .asideAnalytics .value {
+    font-size: 24px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--green);
+    line-height: 1.1;
+  }
+  .asideAnalytics .delta {
+    font-size: 11px;
+    color: var(--subdued);
+  }
+  .asideAnalytics .delta .arrow.up { color: var(--green); }
+  .asideAnalytics .delta .arrow.down { color: var(--red); }
+
+  /* Sparkline */
+  .sparkRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .spark {
+    flex: 1;
+    height: 28px;
+  }
+  .sparkLabel {
+    font-size: 10px;
+    color: var(--axis);
+    flex-shrink: 0;
+  }
+
+  /* See-more button row */
+  .asideActions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 4px;
+  }
+  .seeMore {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .seeMore::after { content: "›"; color: var(--subdued); }
+
+  /* Empty / provocation state */
+  .asideAnalytics.provocation {
+    background: linear-gradient(180deg, #f3fbf5 0%, #ffffff 100%);
+    border-color: var(--green-soft);
+  }
+  .asideAnalytics.provocation .label { color: var(--green); }
+  .asideAnalytics.provocation .value { font-size: 16px; line-height: 1.3; }
+  .asideAnalytics.provocation .helper {
+    font-size: 11px;
+    color: var(--subdued);
+    line-height: 1.4;
+  }
+  .ctaButton {
+    background: var(--blue-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .ctaButton.secondary {
+    background: white;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  /* Skeleton */
+  .skel { background: linear-gradient(90deg, #f0f0f0 0%, #e7e7e8 50%, #f0f0f0 100%); border-radius: 4px; }
+  .skel.line { height: 12px; margin: 2px 0; }
+  .skel.line.short { width: 40%; }
+  .skel.line.med { width: 65%; }
+  .skel.line.tall { height: 24px; width: 55%; margin: 4px 0; }
+  .skel.spark { height: 28px; width: 100%; }
+
+  /* ==== LD page wireframe context ==== */
+  .ldPage {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 16px;
+    max-width: 1080px;
+    margin-bottom: 24px;
+  }
+  .ldMain {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    min-height: 320px;
+  }
+  .ldMain .placeholder {
+    background: repeating-linear-gradient(45deg, #f6f6f7, #f6f6f7 8px, #eef0f1 8px, #eef0f1 16px);
+    border-radius: 8px;
+    height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--subdued);
+    font-size: 12px;
+  }
+  .ldAside {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .placeholderCard {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: var(--subdued);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .placeholderCard h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 6px;
+    color: var(--text);
+  }
+  .newPill {
+    display: inline-block;
+    background: var(--green-bg);
+    color: var(--green);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-left: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  /* ==== State matrix ==== */
+  table.matrix {
+    width: 100%;
+    max-width: 1080px;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-bottom: 16px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  table.matrix th, table.matrix td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+  }
+  table.matrix th {
+    background: var(--gray-bg);
+    font-weight: 600;
+    color: var(--subdued);
+    font-size: 11px;
+  }
+  table.matrix tr:last-child td { border-bottom: none; }
+
+  /* State badge */
+  .stateBadge {
+    display: inline-block;
+    background: #1f1f1f;
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+
+  /* State showcase grid */
+  .statesGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 280px);
+    gap: 24px;
+    margin-bottom: 16px;
+  }
+
+  /* Mobile preview frame */
+  .mobileFrame {
+    width: 360px;
+    border: 8px solid #1f1f1f;
+    border-radius: 24px;
+    overflow: hidden;
+    background: white;
+    margin-bottom: 16px;
+  }
+  .mobileFrame .mobileBody { padding: 16px; }
+  .mobileFrame h4 { margin: 0 0 8px; font-size: 16px; font-weight: 600; }
+
+  /* Notes */
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 1080px;
+    margin-bottom: 16px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; color: #4a3600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 4px; }
+  .notes.locked {
+    background: #e7f7ec;
+    border-color: #a9dcb8;
+    color: #073d20;
+  }
+  .notes.locked h3 { color: #073d20; }
+</style>
+</head>
+<body>
+
+<h1>LD page — Analytics aside block · mockup v1</h1>
+<p class="intro">
+  Evolution of the analytics entry-point. Replaces the single "View analytics" header button (shipped in v1 of the analytics feature) with a sidebar card that surfaces total savings + a sparkline trend inline on the LD page, plus a "See more" button leading to <code>/app/local-delivery/analytics</code>. Lives in the right sidebar next to <em>Route Manager</em> and <em>Auto-assign accuracy</em>. Phase-2 decisions for this mockup are locked at the bottom of the file.
+</p>
+
+<!-- ============================================================ -->
+<h2 class="section">Where it lives — LD page wireframe</h2>
+<!-- ============================================================ -->
+
+<div class="ldPage">
+  <div class="ldMain">
+    <div class="placeholder">LD page main area<br/>(map · control row · routes table · all-orders table)</div>
+  </div>
+  <div class="ldAside">
+    <div class="placeholderCard">
+      <h4>Route manager</h4>
+      Existing block — route name, dispatch count, manage actions.
+    </div>
+    <div class="placeholderCard">
+      <h4>Auto-assign accuracy</h4>
+      Existing block — sanity-check %, hover-tip with details.
+    </div>
+
+    <!-- ==== THE NEW BLOCK (full-data state) ==== -->
+    <div class="asideAnalytics">
+      <div>
+        <div class="label">Total savings <span class="newPill">new</span></div>
+        <div class="value">+R$ 8,290</div>
+        <div class="delta">vs warehouse · last 90 days · <span class="arrow up">▲</span> 12% MoM</div>
+      </div>
+      <div class="sparkRow">
+        <svg class="spark" viewBox="0 0 200 28" preserveAspectRatio="none">
+          <polyline
+            fill="none"
+            stroke="#067647"
+            stroke-width="1.5"
+            points="0,22 18,20 36,18 54,16 72,14 90,15 108,12 126,10 144,11 162,8 180,6 200,5"
+          />
+          <polygon
+            fill="rgba(6, 118, 71, 0.08)"
+            points="0,22 18,20 36,18 54,16 72,14 90,15 108,12 126,10 144,11 162,8 180,6 200,5 200,28 0,28"
+          />
+        </svg>
+        <span class="sparkLabel">90d</span>
+      </div>
+      <div class="asideActions">
+        <a href="/app/local-delivery/analytics" class="seeMore">See more</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 class="section">State matrix</h2>
+<!-- ============================================================ -->
+
+<table class="matrix">
+  <thead>
+    <tr>
+      <th style="width: 6%;">#</th>
+      <th style="width: 20%;">State</th>
+      <th style="width: 28%;">Trigger</th>
+      <th style="width: 46%;">Render</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><strong>Loading</strong></td>
+      <td>Initial loader fire, before headline metric arrives</td>
+      <td>Skeleton: short label line + tall value line + flat spark bar + ghost button</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Full data (default)</strong></td>
+      <td>Analytics enabled, carrier configured, ≥ 1 day of rollup data</td>
+      <td>Headline savings number (green) · MoM trend · sparkline (90d) · See-more button</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Provocation teaser</strong></td>
+      <td>Analytics enabled but no carrier configured, OR no LD activity yet — speculative-quote available</td>
+      <td>Green-tinted card · "You could be saving ~R$ 3.2k/month" · Connect-CTA · "Use manual rates" secondary</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Conservative empty</strong></td>
+      <td>Analytics enabled, no data AND speculative-quote unavailable (Intelipost feasibility fallback)</td>
+      <td>Plain card · "Connect a warehouse carrier to see your savings" · single CTA</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><strong>Stale / partial</strong></td>
+      <td>Last rollup was &gt; 36h ago OR coverage &lt; 80% in the window</td>
+      <td>Full-data card with a small warning footnote "Last updated &lt;date&gt; · partial coverage"</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><strong>Disabled</strong></td>
+      <td>Analytics opt-in toggle is off (default for all shops)</td>
+      <td>Block hidden entirely — no DOM render</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><strong>Hover / focus on See more</strong></td>
+      <td>Pointer over See-more button OR keyboard focus</td>
+      <td>Button gets focus ring + subtle background lift, no other state change</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<h2 class="section">All states — close-up</h2>
+<!-- ============================================================ -->
+
+<div class="statesGrid">
+
+  <div>
+    <span class="stateBadge">State 1 · loading</span>
+    <div class="asideAnalytics" style="gap: 6px;">
+      <div class="skel line short"></div>
+      <div class="skel line tall"></div>
+      <div class="skel line short"></div>
+      <div class="skel spark" style="margin-top: 6px;"></div>
+      <div style="display: flex; justify-content: flex-end;">
+        <div class="skel" style="width: 78px; height: 28px; border-radius: 6px; margin-top: 4px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <span class="stateBadge">State 2 · full data (default)</span>
+    <div class="asideAnalytics">
+      <div>
+        <div class="label">Total savings</div>
+        <div class="value">+R$ 8,290</div>
+        <div class="delta">vs warehouse · last 90 days · <span class="arrow up">▲</span> 12% MoM</div>
+      </div>
+      <div class="sparkRow">
+        <svg class="spark" viewBox="0 0 200 28" preserveAspectRatio="none">
+          <polyline
+            fill="none"
+            stroke="#067647"
+            stroke-width="1.5"
+            points="0,22 18,20 36,18 54,16 72,14 90,15 108,12 126,10 144,11 162,8 180,6 200,5"
+          />
+          <polygon
+            fill="rgba(6, 118, 71, 0.08)"
+            points="0,22 18,20 36,18 54,16 72,14 90,15 108,12 126,10 144,11 162,8 180,6 200,5 200,28 0,28"
+          />
+        </svg>
+        <span class="sparkLabel">90d</span>
+      </div>
+      <div class="asideActions">
+        <a href="#" class="seeMore">See more</a>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <span class="stateBadge">State 3 · provocation teaser</span>
+    <div class="asideAnalytics provocation">
+      <div>
+        <div class="label">Estimated opportunity</div>
+        <div class="value">~R$ 3.2k / month</div>
+        <div class="helper">
+          Based on your last 90 days. Connect a carrier so we can confirm with real quotes.
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
+        <a href="#" class="ctaButton">Connect Intelipost</a>
+        <a href="#" class="ctaButton secondary">Use manual rates</a>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <span class="stateBadge">State 4 · conservative empty</span>
+    <div class="asideAnalytics">
+      <div>
+        <div class="label">Shipping savings</div>
+        <div class="value" style="font-size: 14px; color: var(--text); font-weight: 500;">
+          Connect a warehouse carrier to see what you'd save vs warehouse delivery.
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
+        <a href="#" class="ctaButton">Connect Intelipost</a>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <span class="stateBadge">State 5 · stale / partial</span>
+    <div class="asideAnalytics">
+      <div>
+        <div class="label">Total savings</div>
+        <div class="value">+R$ 8,290</div>
+        <div class="delta">vs warehouse · last 90 days · <span class="arrow up">▲</span> 12% MoM</div>
+      </div>
+      <div class="sparkRow">
+        <svg class="spark" viewBox="0 0 200 28" preserveAspectRatio="none">
+          <polyline
+            fill="none"
+            stroke="#067647"
+            stroke-width="1.5"
+            points="0,22 18,20 36,18 54,16 72,14 90,15 108,12 126,10 144,11 162,8 180,6 200,5"
+          />
+          <polygon
+            fill="rgba(6, 118, 71, 0.08)"
+            points="0,22 18,20 36,18 54,16 72,14 90,15 108,12 126,10 144,11 162,8 180,6 200,5 200,28 0,28"
+          />
+        </svg>
+        <span class="sparkLabel">90d</span>
+      </div>
+      <div class="asideActions" style="justify-content: space-between;">
+        <span style="font-size: 10px; color: var(--warning);">⚠ Last rollup 2d ago · 73% coverage</span>
+        <a href="#" class="seeMore">See more</a>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <span class="stateBadge">State 6 · disabled (no render)</span>
+    <div style="border: 1px dashed var(--border); border-radius: 12px; padding: 24px; text-align: center; color: var(--subdued); font-size: 12px; min-height: 100px; display: flex; align-items: center; justify-content: center; font-style: italic;">
+      (block is not rendered)<br/>Analytics opt-in toggle is off in Settings → Providers
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<h2 class="section">Mobile rendering</h2>
+<!-- ============================================================ -->
+
+<p class="intro" style="margin-bottom: 8px;">
+  On <code>/app/local-delivery-mobile</code> the aside collapses above the main content (per CLAUDE.md mobile layout rules: aside renders <strong>first</strong> on mobile via <code>order: -1</code>). The block uses the same internal structure but renders at full viewport width.
+</p>
+
+<div class="mobileFrame">
+  <div class="mobileBody">
+    <div style="font-size: 11px; color: var(--subdued); margin-bottom: 4px;">Local delivery</div>
+    <h4>Today</h4>
+    <div class="asideAnalytics" style="margin-bottom: 12px;">
+      <div>
+        <div class="label">Total savings</div>
+        <div class="value">+R$ 8,290</div>
+        <div class="delta">vs warehouse · last 90 days · <span class="arrow up">▲</span> 12% MoM</div>
+      </div>
+      <div class="sparkRow">
+        <svg class="spark" viewBox="0 0 200 28" preserveAspectRatio="none">
+          <polyline
+            fill="none"
+            stroke="#067647"
+            stroke-width="1.5"
+            points="0,22 18,20 36,18 54,16 72,14 90,15 108,12 126,10 144,11 162,8 180,6 200,5"
+          />
+          <polygon
+            fill="rgba(6, 118, 71, 0.08)"
+            points="0,22 18,20 36,18 54,16 72,14 90,15 108,12 126,10 144,11 162,8 180,6 200,5 200,28 0,28"
+          />
+        </svg>
+        <span class="sparkLabel">90d</span>
+      </div>
+      <div class="asideActions">
+        <a href="#" class="seeMore">See more</a>
+      </div>
+    </div>
+    <div style="background: white; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; color: var(--subdued); font-size: 12px;">
+      Active routes (placeholder)
+    </div>
+    <div style="background: white; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; color: var(--subdued); font-size: 12px;">
+      All orders (placeholder)
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<div class="notes locked">
+  <h3>Phase-2 decisions locked (2026-05-10)</h3>
+  <ul>
+    <li><strong>Placement:</strong> right sidebar of LD page, below <em>Auto-assign accuracy</em>. Same width as the existing sidebar blocks (280px in expanded layout). Inherits the mobile <code>order: -1</code> rule from the LD page so it renders first on small viewports.</li>
+    <li><strong>Content:</strong> headline savings number + MoM delta + 90-day sparkline + See-more button. ~80px tall card. No per-city breakdown — that's what the full analytics panel does.</li>
+    <li><strong>Empty state:</strong> provocation teaser ("You could be saving ~R$ X / month") mirroring state #3 of the analytics panel. Falls back to conservative empty (state #4 here) if Intelipost speculative-quote feasibility check fails.</li>
+  </ul>
+</div>
+
+<div class="notes">
+  <h3>Phase-3 follow-ups (carry into spec)</h3>
+  <ul>
+    <li><strong>Loader integration.</strong> The existing LD page loader is the slow one (14-17s baseline, perf work pending). Add a separate fetcher for the savings number so it doesn't extend the main loader's wall-clock. Loads in parallel via <code>useFetcher()</code> after the main page paints. Skeleton shows while it fetches.</li>
+    <li><strong>Sparkline data source.</strong> 12 weekly buckets of <code>LdAnalyticsDaily</code> rolled up by week. Lightweight Prisma group-by. Cache for 1h to avoid re-running on every page hit.</li>
+    <li><strong>Total savings = which framing?</strong> Match the <code>LdAnalyticsConfig.headlineFraming</code> setting. Default <code>net_cost_delta</code> (post-phase-4 pivot) — show as positive savings number when delta is negative (LD costs less than warehouse). Picker stays only in the full panel.</li>
+    <li><strong>MoM trend calc.</strong> Compare last 30 days total to previous 30 days, expressed as %. Color the arrow per CLAUDE.md status colors: green for positive trend, red for negative, neutral for ±2%.</li>
+    <li><strong>Disabled-state hide.</strong> Loader returns <code>{ analyticsAside: { kind: "hidden" } }</code> when opt-in is off, so the component returns <code>null</code>. No empty placeholder.</li>
+    <li><strong>"New" pill.</strong> Show for first 14 days after the merchant first enables analytics, then remove. Persist in <code>LdAnalyticsConfig.asideFirstSeenAt</code> (new column).</li>
+    <li><strong>Stale rule.</strong> >36h since last successful rollup → state #5 (warning footnote). >72h → drop back to state #4 (conservative empty, treat data as unreliable).</li>
+  </ul>
+</div>
+
+</body>
+</html>
