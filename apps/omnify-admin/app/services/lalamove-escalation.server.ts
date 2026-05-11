@@ -836,6 +836,72 @@ export async function autoRetryDispatchJob(
     };
   }
 
+  // ── Defensive live-status guard ──────────────────────────────────────────
+  // Before placing a duplicate Lalamove order, verify the existing one isn't
+  // still being delivered. The bug this protects against (incident 2026-05-12):
+  // the stale-ON_GOING watchdog path treats Lalamove's `422 Cannot cancel`
+  // response as "fine to proceed with retry" — but 422 actually means the
+  // order is mid-delivery (ON_GOING/PICKED_UP). Without this guard the
+  // watchdog placed duplicate Lalamove orders for routes already being
+  // delivered, costing real money.
+  if (job.lalamoveOrderId) {
+    let liveStatus: string | null = null;
+    try {
+      const details = await getLalamoveOrderDetails(
+        job.market,
+        job.lalamoveOrderId,
+        credentials,
+      );
+      liveStatus = details?.status?.trim().toUpperCase() ?? null;
+    } catch (fetchErr) {
+      const fetchMsg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
+      if (fetchMsg.startsWith("404:")) {
+        // Original order is genuinely gone — retry is correct.
+        console.info(
+          `[escalation] auto-retry GUARD job=${job.id} live-status 404 — original gone, proceeding with retry`,
+        );
+      } else {
+        // Any other fetch failure: refuse to retry. Fail-safe.
+        console.error(
+          `[escalation] auto-retry GUARD fetch FAILED job=${job.id} shop=${shop} error=${fetchMsg} — REFUSING retry to be safe`,
+        );
+        return {
+          jobId: job.id,
+          routeId: job.routeId,
+          action: { type: "reorder" },
+          success: false,
+          error: `Live status fetch failed — refusing retry to avoid duplicate: ${fetchMsg}`,
+        };
+      }
+    }
+    const happyPath = ["ON_GOING", "PICKED_UP", "COMPLETED"];
+    if (liveStatus && happyPath.includes(liveStatus)) {
+      console.warn(
+        `[escalation] auto-retry GUARD job=${job.id} shop=${shop} lalamoveOrderId=${job.lalamoveOrderId} liveStatus=${liveStatus} — REFUSING duplicate dispatch, syncing DB instead`,
+      );
+      await prismaAny.lalamoveDispatchJob
+        .update({ where: { id: job.id }, data: { status: liveStatus } })
+        .catch((e: unknown) =>
+          console.error(`[escalation] auto-retry GUARD status update failed job=${job.id}`, e),
+        );
+      await prismaAny.lalamoveDispatchOrderMap
+        .updateMany({
+          where: { shop, dispatchJobId: job.id },
+          data: { currentStatus: liveStatus },
+        })
+        .catch((e: unknown) =>
+          console.error(`[escalation] auto-retry GUARD orderMap sync failed job=${job.id}`, e),
+        );
+      return {
+        jobId: job.id,
+        routeId: job.routeId,
+        action: { type: "reorder" },
+        success: true,
+        error: `Refused duplicate — liveStatus=${liveStatus}`,
+      };
+    }
+  }
+
   // Increment retry count BEFORE attempting (prevents concurrent retries)
   await prismaAny.lalamoveDispatchJob.update({
     where: { id: job.id },
