@@ -5,3 +5,4 @@ import "./top-posts.js";
 import "./search-captions.js";
 import "./draft-caption.js";
 import "./refresh-ingest.js";
+import "./link-account.js";
