@@ -5,3 +5,4 @@ import "./shopify/index.js";
 import "./omie/index.js";
 import "./affiliates/index.js";
 import "./instagram/index.js";
+import "./brand/index.js";
