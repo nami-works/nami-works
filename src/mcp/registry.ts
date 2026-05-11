@@ -33,9 +33,9 @@ export function createMcpServerForTenant(ctx: ToolContext): McpServer {
       version: "0.1.0",
       icons: [
         {
-          src: `${PUBLIC_ISSUER}/icon.svg`,
-          mimeType: "image/svg+xml",
-          sizes: ["32x32"],
+          src: `${PUBLIC_ISSUER}/icon.png`,
+          mimeType: "image/png",
+          sizes: ["any"],
         },
       ],
     },

@@ -1,10 +1,9 @@
 import type { FastifyInstance } from "fastify";
+import { NAMI_LOGO_PNG_BASE64 } from "./nami-logo-png.js";
 
 /**
- * NAMI Works monochrome mark. Single SVG used for both the browser tab
- * favicon and the MCP server icon advertised in serverInfo.icons. Inline as
- * a string so we don't ship a binary asset that would inflate the container
- * image and require build-time copy hooks.
+ * NAMI Works monochrome mark (SVG fallback) — kept for the browser favicon
+ * route and as a transparent placeholder.
  */
 export const NAMI_WORKS_ICON_SVG = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
@@ -12,21 +11,26 @@ export const NAMI_WORKS_ICON_SVG = `<?xml version="1.0" encoding="UTF-8"?>
   <text x="16" y="22" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="14" font-weight="700" text-anchor="middle" fill="#ffffff">NW</text>
 </svg>`;
 
+const NAMI_LOGO_PNG_BUFFER = Buffer.from(NAMI_LOGO_PNG_BASE64, "base64");
+
 export function mountIconRoutes(app: FastifyInstance): void {
-  // Browsers fetching the tab icon when an operator visits mcp.nami.works
-  // directly. Modern browsers accept SVG content under the .ico filename when
-  // the response Content-Type says so.
+  // Browser tab favicon — lightweight SVG, no need for the full PNG.
   app.get("/favicon.ico", async (_req, reply) => {
     reply.header("Cache-Control", "public, max-age=86400");
     return reply.type("image/svg+xml").send(NAMI_WORKS_ICON_SVG);
   });
 
-  // The canonical icon URL referenced from MCP serverInfo.icons. Using a
-  // dedicated /icon.svg route (instead of just /favicon.ico) makes the
-  // intent explicit for MCP clients and keeps the favicon as a tiny browser
-  // affordance rather than a load-bearing endpoint.
+  // SVG variant kept for backward compatibility — MCP clients that landed
+  // on the old icon URL between deploys still resolve here.
   app.get("/icon.svg", async (_req, reply) => {
     reply.header("Cache-Control", "public, max-age=86400");
     return reply.type("image/svg+xml").send(NAMI_WORKS_ICON_SVG);
+  });
+
+  // Canonical MCP serverInfo icon — the full-color NAMI Works square mark.
+  // Referenced from src/mcp/registry.ts in the serverInfo.icons array.
+  app.get("/icon.png", async (_req, reply) => {
+    reply.header("Cache-Control", "public, max-age=86400");
+    return reply.type("image/png").send(NAMI_LOGO_PNG_BUFFER);
   });
 }
