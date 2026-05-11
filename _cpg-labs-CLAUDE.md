@@ -47,18 +47,24 @@ npx prisma migrate dev  # Create/apply migrations
 | DB schema | `prisma/schema.prisma` |
 | Data sync layers (webhooks, crons, canonical tables) | `docs/data-sync-architecture.md` |
 | Extensions | `extensions/` |
-| Infra (ECS, RDS, ALB) | `infra/terraform/` |
+| Infra (terraform, historical ECS/RDS/ALB — see Deployment section) | `infra/terraform/` |
 | Deploy scripts | `scripts/` |
 | i18n | `app/i18n/` |
 
 ### Deployment
-- **Hosting:** AWS ECS Fargate behind ALB (`us-east-1`)
-- **Database:** AWS RDS PostgreSQL
-- **Secrets:** AWS SSM Parameter Store (`/omnify/` prefix)
-- **Deploy:** `scripts/deploy.ps1 -App <key>` — unified script. Keys are registered in `scripts/apps.psd1`: `full` (CPG Labs full app at `app.cpg-labs.io`, ECS service `omnify-full-service`) and `omnify` (public Omnify at `omnify.cpg-labs.io`, ECS service `omnify-service`). Legacy `deploy-cpg-labs.ps1` / `deploy-omnify.ps1` / `deploy-storefront.ps1` were retired in Phase 7 (2026-04-29) and live in `scripts/archive/` for reference only. Do not run them.
-- **Shopify scopes (CPG Labs):** `shopify app deploy --config shopify.app.cpg-labs.toml`
-- **Shopify scopes (Omnify):** `shopify app deploy --config shopify.app.omnify.toml`
-- **Task-def image is owned by the deploy script, not terraform.** Both `aws_ecs_task_definition.app` and `aws_ecs_task_definition.gebeauty` carry `lifecycle { ignore_changes = [container_definitions] }` so a `terraform apply` never silently reverts the running image. When schema-level fields change (env vars, secrets, cpu, memory), force the update with `terraform apply -replace=aws_ecs_task_definition.gebeauty[0]` (or `.app[0]`). Without `-replace`, terraform sees no drift and the new env var won't reach the running task.
+
+**Live state (2026-05-11 cutover):** production runs on an Amazon Lightsail instance, not ECS Fargate. See `memory/project_lightsail_migration_completed.md` for the full state map; `.claude/deploy-queue.md` has the deploy mechanics in detail.
+
+- **Hosting:** Amazon Lightsail instance `cpg-labs-prod` at static IP `54.221.23.142` (medium_3_0, $24/mo, `us-east-1a`). Ubuntu 22.04 + Docker + Caddy. Containers `omnify-app:full-…` on :3000 and `omnify-app:omnify-…` on :3001, fronted by Caddy with Let's Encrypt certs.
+- **Database:** Lightsail managed Postgres `cpg-labs-db` (micro_2_0, $15/mo, Postgres 16.13). Daily automated backups, 7-day retention.
+- **Secrets:** env files on the instance at `/etc/cpg-labs/{full,omnify,cron}.env` (root-owned, 600). AWS SSM (`/omnify/` prefix) is preserved but no longer the runtime source.
+- **DNS:** managed at GoDaddy (not Route 53). A records for `app.cpg-labs.io` and `omnify.cpg-labs.io` → `54.221.23.142`, TTL 600.
+- **Crons:** Linux `crontab` (root) on the Lightsail box. 4 active lines: `lalamove-watchdog` (*/5), `retail-goals-sync` (0 * * * *), `shop-ingest-reconcile` (15 * * * *), `weekly-tone-and-diff` (0 3 * * MON UTC). EventBridge rules in `infra/terraform/*-cron.tf` are historical — all disabled and slated for teardown 2026-05-18.
+- **Deploy:** `scripts/deploy.ps1 -App <key>` was the ECS unified script (`full` / `omnify` keys in `scripts/apps.psd1`). It is **partially obsolete post-cutover** — image-build and Shopify-scope steps still apply, but the ECS task-def swap step needs replacement with `docker compose pull && docker compose up -d` over SSH. Rewrite is a pending follow-up. Until then deploys are manual: build → push to ECR → SSH `ubuntu@54.221.23.142` (key `~/.ssh/cpg-labs-lightsail.pem`) → edit `docker-compose.yml` tag → `sudo docker compose pull && sudo docker compose up -d` → verify `curl https://app.cpg-labs.io/`.
+- **Shopify scopes (CPG Labs):** `shopify app deploy --config shopify.app.cpg-labs.toml` — unchanged by cutover.
+- **Shopify scopes (Omnify):** `shopify app deploy --config shopify.app.omnify.toml` — unchanged.
+
+**Rollback target until 2026-05-18:** ECS services drained to 0, RDS `omnify-postgres` + ALB + ECR images + SSM + 4 disabled EventBridge rules all preserved. **Do NOT run `terraform apply` against `infra/terraform/`** while in the bake window — the state still owns these resources and an apply would resurrect ECS to `desiredCount=1`, pointing at the now-dead ALB. After 2026-05-18, the migrated resources will be destroyed via targeted `terraform destroy` and the config cleaned up. Emergency rollback procedure (~5 min) is documented in the completed-migration memory.
 
 ### Environment Variables
 - `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET`, `SHOPIFY_APP_URL`
@@ -634,7 +640,7 @@ Operational tooling and knowledge for the GE Beauty Shopify store moved to the `
 
 ## Logging
 
-Every server-side module (route loaders/actions, services, webhooks) **must** include structured console logs so issues can be traced via `aws logs tail /ecs/omnify-full --since 15m --region us-east-1` (CPG Labs full at `app.cpg-labs.io`) or `aws logs tail /ecs/omnify --since 15m --region us-east-1` (Omnify focused at `omnify.cpg-labs.io`). The `scripts/logs.ps1 <module>` helper wraps both with module-aware filtering.
+Every server-side module (route loaders/actions, services, webhooks) **must** include structured console logs. **Log access post-Lightsail-cutover (2026-05-11):** logs are written to the Lightsail instance under `/var/log/cpg-labs/*.log` (Docker container stdout/stderr is also captured by `docker compose logs`). To tail them: `ssh -i ~/.ssh/cpg-labs-lightsail.pem ubuntu@54.221.23.142 'sudo tail -F /var/log/cpg-labs/*.log'`, or per-cron-log via the named file (`lalamove-watchdog.log`, `retail-goals-sync.log`, etc.). The old `aws logs tail /ecs/omnify-full ...` CloudWatch path is empty post-cutover (ECS scaled to 0) and `scripts/logs.ps1` needs a rewrite — it still wraps the dead ECS log groups. Until rewritten, prefer the SSH tail.
 
 ### Pattern
 
