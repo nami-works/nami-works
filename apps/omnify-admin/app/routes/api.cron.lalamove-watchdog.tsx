@@ -5,7 +5,10 @@ import {
   autoRetryDispatchJob,
   checkAndApplyEscalations,
 } from "../services/lalamove-escalation.server";
-import { cancelLalamoveOrder } from "../services/lalamove.server";
+import {
+  cancelLalamoveOrder,
+  getLalamoveOrderDetails,
+} from "../services/lalamove.server";
 import { getRuntimeCredentialsForShop } from "../services/lalamove-credentials.server";
 import { removeRouteTags } from "../services/lalamove-sync.server";
 import type { LalamoveConfig } from "../services/carrier/lalamove-adapter.server";
@@ -166,34 +169,100 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         continue;
       }
 
+      // Check live Lalamove status BEFORE attempting cancel. The previous
+      // version treated `422 Cannot cancel order` as "fine, proceed with
+      // reorder" — but 422 actually means the order is mid-delivery
+      // (ON_GOING/PICKED_UP). That misinterpretation caused the duplicate-
+      // dispatch incident on 2026-05-12. Now: fetch live status first and
+      // branch correctly.
+      let liveStatus: string | null = null;
       try {
-        await cancelLalamoveOrder(
+        const details = await getLalamoveOrderDetails(
           job.market ?? "",
           job.lalamoveOrderId ?? "",
           credentials,
         );
-        console.info(
-          `[lalamove-watchdog] cancelled stale order=${job.lalamoveOrderId} job=${job.id}`,
-        );
-      } catch (cancelErr) {
-        const msg =
-          cancelErr instanceof Error ? cancelErr.message : String(cancelErr);
-        // If already cancelled/completed, proceed with reorder
-        if (!msg.includes("422") && !msg.includes("404")) {
+        liveStatus = details?.status?.trim().toUpperCase() ?? null;
+      } catch (fetchErr) {
+        const fetchMsg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
+        if (fetchMsg.startsWith("404:")) {
+          // Order is genuinely gone on Lalamove's side. Treat as CANCELED
+          // and let the retry path place a fresh order.
+          console.info(
+            `[lalamove-watchdog] live-status 404 job=${job.id} — original gone, proceeding with retry`,
+          );
+          liveStatus = "GONE_404";
+        } else {
           console.error(
-            `[lalamove-watchdog] cancel FAILED job=${job.id} error=${msg}`,
+            `[lalamove-watchdog] live-status fetch FAILED job=${job.id} error=${fetchMsg} — leaving job untouched for next tick`,
           );
           results.push({
             jobId: job.id,
             shop: job.shop,
             success: false,
-            error: `Cancel failed: ${msg}`,
+            error: `Live status fetch failed: ${fetchMsg}`,
           });
           continue;
         }
       }
 
-      // Update status before retry
+      const happyPath = ["ON_GOING", "PICKED_UP", "COMPLETED"];
+      if (liveStatus && happyPath.includes(liveStatus)) {
+        // Lalamove says the delivery is in progress / done. Sync DB to
+        // match and skip the retry — placing a new order would duplicate.
+        console.info(
+          `[lalamove-watchdog] job=${job.id} liveStatus=${liveStatus} → sync DB and SKIP retry (delivery in progress)`,
+        );
+        await prisma.lalamoveDispatchJob
+          .update({ where: { id: job.id }, data: { status: liveStatus } })
+          .catch((err) =>
+            console.error(
+              `[lalamove-watchdog] DB sync FAILED job=${job.id}`,
+              err,
+            ),
+          );
+        results.push({
+          jobId: job.id,
+          shop: job.shop,
+          success: true,
+          error: `Synced to liveStatus=${liveStatus}, no retry needed`,
+        });
+        continue;
+      }
+
+      // Live status indicates failure path (CANCELED/REJECTED/EXPIRED)
+      // OR 404 (order gone). Attempt cancel — best-effort — then retry.
+      if (liveStatus !== "GONE_404") {
+        try {
+          await cancelLalamoveOrder(
+            job.market ?? "",
+            job.lalamoveOrderId ?? "",
+            credentials,
+          );
+          console.info(
+            `[lalamove-watchdog] cancelled stale order=${job.lalamoveOrderId} job=${job.id}`,
+          );
+        } catch (cancelErr) {
+          const msg =
+            cancelErr instanceof Error ? cancelErr.message : String(cancelErr);
+          // Already in a non-cancelable state (terminal) — proceed with retry.
+          if (!msg.includes("422") && !msg.includes("404")) {
+            console.error(
+              `[lalamove-watchdog] cancel FAILED job=${job.id} error=${msg}`,
+            );
+            results.push({
+              jobId: job.id,
+              shop: job.shop,
+              success: false,
+              error: `Cancel failed: ${msg}`,
+            });
+            continue;
+          }
+        }
+      }
+
+      // Update status before retry. Safe now — we've confirmed via live-status
+      // that the order is NOT in a happy-path state.
       await prisma.lalamoveDispatchJob.update({
         where: { id: job.id },
         data: { status: "CANCELED" },
