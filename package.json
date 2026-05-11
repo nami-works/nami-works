@@ -21,7 +21,9 @@
     "provision-tenant": "tsx scripts/provision-tenant.ts",
     "rotate-bearer": "tsx scripts/rotate-bearer.ts",
     "suspend-tenant": "tsx scripts/suspend-tenant.ts",
-    "replace-shopify-files": "tsx scripts/replace-shopify-files.ts"
+    "replace-shopify-files": "tsx scripts/replace-shopify-files.ts",
+    "instagram-dump": "tsx scripts/instagram-dump.ts",
+    "instagram-voice-card": "tsx scripts/instagram-voice-card.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",

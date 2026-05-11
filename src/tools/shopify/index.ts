@@ -69,3 +69,7 @@ import "./list-transfers.js";
 import "./reorder-forecast.js";
 import "./audit-inventory-negatives.js";
 import "./replace-files-from-drive-folder.js";
+import "./pdp-read-template.js";
+import "./pdp-list-controlled-vocabularies.js";
+import "./pdp-diff-against-template.js";
+import "./pdp-resolve-drive-images.js";

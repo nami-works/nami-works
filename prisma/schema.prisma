@@ -18,20 +18,23 @@ enum TenantStatus {
 }
 
 model IntegrationTenant {
-  id              String       @id @default(cuid())
-  slug            String       @unique
-  displayName     String
-  brand           Brand
-  shopifyShop     String?
-  bearerTokenHash String       @unique
-  ssmPrefix       String       @unique
-  status          TenantStatus @default(active)
-  contactEmail   String
-  notes          String?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  invocations    ToolInvocationLog[]
-  affiliates     AffiliateProfile[]
+  id                   String               @id @default(cuid())
+  slug                 String               @unique
+  displayName          String
+  brand                Brand
+  shopifyShop          String?
+  bearerTokenHash      String               @unique
+  ssmPrefix            String               @unique
+  status               TenantStatus         @default(active)
+  contactEmail         String
+  notes                String?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  invocations          ToolInvocationLog[]
+  affiliates           AffiliateProfile[]
+  instagramAccount     InstagramAccount?
+  instagramPosts       InstagramPost[]
+  voiceCards           VoiceCard[]
 
   @@index([status])
 }
@@ -54,15 +57,15 @@ model ToolInvocationLog {
 // contact (name + phone) with a commission share. Ported from cpg-labs
 // `AffiliateProfile`; simplified for v1 — no claim-workflow state yet.
 model AffiliateProfile {
-  id                String   @id @default(cuid())
+  id                String             @id @default(cuid())
   tenantId          String
-  affiliateCode     String   // Shopify discount code used for attribution
+  affiliateCode     String // Shopify discount code used for attribution
   contactName       String
   phone             String?
-  commissionPercent Float    // 0.0 to 1.0 (0.10 = 10%)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  tenant            IntegrationTenant @relation(fields: [tenantId], references: [id])
+  commissionPercent Float // 0.0 to 1.0 (0.10 = 10%)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  tenant            IntegrationTenant  @relation(fields: [tenantId], references: [id])
   monthly           AffiliateMonthly[]
 
   @@unique([tenantId, affiliateCode])
@@ -73,15 +76,143 @@ model AffiliateProfile {
 // scans Shopify orders with matching discount codes. For v1 the columns
 // exist; populating is a follow-up (see DECISIONS.md).
 model AffiliateMonthly {
-  id                   String   @id @default(cuid())
-  affiliateProfileId   String
-  yearMonth            String   // e.g. "2026-04"
-  orders               Int      @default(0)
-  grossRevenueCents    Int      @default(0)
-  commissionOwedCents  Int      @default(0)
-  updatedAt            DateTime @updatedAt
-  profile              AffiliateProfile @relation(fields: [affiliateProfileId], references: [id])
+  id                  String           @id @default(cuid())
+  affiliateProfileId  String
+  yearMonth           String // e.g. "2026-04"
+  orders              Int              @default(0)
+  grossRevenueCents   Int              @default(0)
+  commissionOwedCents Int              @default(0)
+  updatedAt           DateTime         @updatedAt
+  profile             AffiliateProfile @relation(fields: [affiliateProfileId], references: [id])
 
   @@unique([affiliateProfileId, yearMonth])
   @@index([affiliateProfileId])
+}
+
+// Local Delivery Optimization Simulator — historical batch snapshot.
+// One row per (tenantId, date, locationId). Captures the orders + reconstructed
+// historical clustering for an LD location's dispatch on a given day, so the
+// simulator can render the situation on a map and let the operator tweak it
+// retrospectively for training.
+model LdSimBatch {
+  id           Int          @id @default(autoincrement())
+  tenantId     String
+  date         String // YYYY-MM-DD (archive tag suffix's date, normalized)
+  locationId   String
+  locationName String
+  pickupLat    Float?
+  pickupLng    Float?
+  payload      Json // full snapshot: orders[] + clustering + baseline quote
+  fetchedAt    DateTime     @default(now())
+  tweaks       LdSimTweak[]
+
+  @@unique([tenantId, date, locationId])
+  @@index([tenantId])
+}
+
+// A tweak the operator made on top of a historical batch. Captures their
+// proposed clustering + the live re-quote vs baseline + free-text annotation
+// + tag chips. The annotation corpus becomes the training set for Claude's
+// optimization heuristics.
+model LdSimTweak {
+  id             Int        @id @default(autoincrement())
+  batchId        Int
+  batch          LdSimBatch @relation(fields: [batchId], references: [id])
+  proposedRoutes Json // [{ routeIndex, orderIds[] }, ...]
+  proposedQuote  Json? // per-route + total from live re-quote
+  baselineQuote  Json? // per-route + total at the time the batch was originally dispatched
+  annotation     String?    @db.Text
+  tags           String? // comma-separated: water-barrier|absorption|centroid|address-issue|time-of-day|custom
+  createdAt      DateTime   @default(now())
+
+  @@index([batchId])
+}
+
+// Persistent geocode cache for the simulator. Keyed by normalized address
+// string. The vendored geocode.ts uses this transparently via the Prisma
+// stub (which is a no-op for now); the simulator's own code paths can hit
+// this directly to skip Google Geocoding calls on repeated batch fetches.
+model LdSimGeocache {
+  id         Int      @id @default(autoincrement())
+  addressKey String   @unique
+  lat        Float
+  lng        Float
+  fetchedAt  DateTime @default(now())
+}
+
+// Instagram Business / Creator account linked to a tenant. One per tenant
+// for now (1:1). Holds the Instagram-side ID + the cursor for incremental
+// ingest. Token + app credentials live in SSM under `${ssmPrefix}/instagram/`.
+model InstagramAccount {
+  id            String            @id @default(cuid())
+  tenantId      String            @unique
+  igUserId      String            @unique // Instagram Business Account ID (numeric, ~17 digits)
+  username      String?
+  lastSyncedAt  DateTime?
+  lastCursor    String? // pagination cursor from the most recent ingest
+  tokenExpiresAt DateTime? // mirror of SSM token's expiry — drives refresh alerts
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  tenant        IntegrationTenant @relation(fields: [tenantId], references: [id])
+}
+
+// One row per Instagram media item (post, reel, carousel container).
+// Captions are the primary signal for tone-of-voice extraction; engagement
+// counts let us bias the corpus toward posts that resonated.
+//
+// `children` holds the carousel slide payload as returned by the Graph API
+// (array of { id, media_type, media_url, thumbnail_url? }). `raw` is the full
+// API response for forensics — drop later if storage becomes a concern.
+//
+// `mediaUrl` and `thumbnailUrl` come from a signed CDN that **expires**.
+// Treat as transient; download to durable storage in a follow-up phase.
+model InstagramPost {
+  id             String            @id @default(cuid())
+  tenantId       String
+  igMediaId      String
+  mediaType      String // IMAGE | VIDEO | CAROUSEL_ALBUM
+  caption        String?           @db.Text
+  permalink      String?
+  mediaUrl       String?           @db.Text
+  thumbnailUrl   String?           @db.Text
+  postedAt       DateTime
+  likeCount      Int?
+  commentsCount  Int?
+  children       Json?
+  raw            Json?
+  syncedAt       DateTime          @default(now())
+  tenant         IntegrationTenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, igMediaId])
+  @@index([tenantId, postedAt])
+}
+
+// Per-tenant voice-of-brand card. Generated from a corpus (currently
+// `InstagramPost` rows) by an LLM extraction pass; consumed by copy-drafting
+// tools that need to sound like the brand. Multiple rows per tenant so we
+// can audit drift and roll back if a new card regresses; readers should
+// pick the most-recent `generatedAt` for the requested `source`.
+model VoiceCard {
+  id          String            @id @default(cuid())
+  tenantId    String
+  source      String // "instagram" for now
+  generatedAt DateTime          @default(now())
+  modelId     String // e.g. "claude-opus-4-7"
+  corpusSize  Int // number of items fed into the extractor
+  card        Json // structured voice card (see voice-card.ts schema)
+  notes       String?           @db.Text
+  tenant      IntegrationTenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, source, generatedAt])
+}
+
+// Cached encoded-polyline strings from Google Routes API. Keyed by a hash of
+// (locationId + ordered orderIds). Polylines for fixed stops never change, so
+// once cached we never re-call the Routes API for that stop sequence.
+// Cache enforces idempotency across batch reloads and multi-user sessions.
+model LdSimPolylineCache {
+  id        Int      @id @default(autoincrement())
+  routeKey  String   @unique // sha256 of "${locationId}|${orderIdsJoined}"
+  polyline  String   @db.Text // encoded polyline string from Google Routes API
+  fetchedAt DateTime @default(now())
 }

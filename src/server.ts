@@ -4,6 +4,7 @@ import sensible from "@fastify/sensible";
 import Fastify, { type FastifyBaseLogger } from "fastify";
 import { mountIconRoutes } from "./lib/icon-routes.js";
 import { rootLogger } from "./lib/logger.js";
+import { mountLocalDeliveryRoutes } from "./local-delivery/index.js";
 import { mountTenantRoute } from "./mcp/transport.js";
 import { mountOAuthRoutes } from "./oauth/index.js";
 // Side-effect import: registers every tool in the catalog at boot.
@@ -26,6 +27,10 @@ mountIconRoutes(app);
 app.get("/health", async () => ({ ok: true }));
 
 mountTenantRoute(app);
+
+if (process.env.LOCAL_DELIVERY_SIMULATOR_ENABLED === "1") {
+  await mountLocalDeliveryRoutes(app);
+}
 
 const port = Number(process.env.PORT ?? 3000);
 const host = process.env.HOST ?? "0.0.0.0";
