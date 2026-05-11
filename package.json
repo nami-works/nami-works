@@ -24,7 +24,8 @@
     "replace-shopify-files": "tsx scripts/replace-shopify-files.ts",
     "instagram-dump": "tsx scripts/instagram-dump.ts",
     "instagram-voice-card": "tsx scripts/instagram-voice-card.ts",
-    "link-instagram": "tsx scripts/link-instagram.ts"
+    "link-instagram": "tsx scripts/link-instagram.ts",
+    "feedback-review": "tsx scripts/feedback-review.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",

@@ -35,6 +35,7 @@ model IntegrationTenant {
   instagramAccount     InstagramAccount?
   instagramPosts       InstagramPost[]
   voiceCards           VoiceCard[]
+  feedback             Feedback[]
 
   @@index([status])
 }
@@ -204,6 +205,27 @@ model VoiceCard {
   tenant      IntegrationTenant @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId, source, generatedAt])
+}
+
+// Operator feedback captured through the nami_feedback MCP tool. Writes
+// happen from inside claude.ai conversations; admins review via
+// `npm run feedback-review`. Each row is a single feedback event with a
+// category, free-text message, and optional pointer to the tool that
+// triggered the feedback. `status` drives the review workflow.
+model Feedback {
+  id          String            @id @default(cuid())
+  tenantId    String
+  category    String // voice_drift | tool_bug | missing_capability | copy_quality | other
+  message     String            @db.Text
+  relatedTool String?
+  status      String            @default("new") // new | reviewing | actioned | wont_fix
+  createdAt   DateTime          @default(now())
+  reviewedAt  DateTime?
+  reviewNote  String?           @db.Text
+  tenant      IntegrationTenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, status, createdAt])
+  @@index([status, createdAt])
 }
 
 // Cached encoded-polyline strings from Google Routes API. Keyed by a hash of

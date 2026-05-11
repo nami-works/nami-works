@@ -39,7 +39,15 @@ export function createMcpServerForTenant(ctx: ToolContext): McpServer {
         },
       ],
     },
-    { capabilities: { tools: {} } },
+    {
+      capabilities: { tools: {} },
+      instructions: [
+        `NAMI Works gateway for tenant "${ctx.tenant.slug}" (${ctx.tenant.displayName}).`,
+        `Read-only and write-with-confirm tools for Shopify, Instagram, brand voice, and operations.`,
+        ``,
+        `Feedback loop: if any tool returns something off, the brand voice feels outdated, or you wish a tool worked differently, call \`nami_feedback\` with a short message describing what happened. It routes to NAMI Works for review and powers system improvements over time.`,
+      ].join("\n"),
+    },
   );
 
   for (const def of definitions) {
