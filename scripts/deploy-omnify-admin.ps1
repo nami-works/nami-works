@@ -155,9 +155,23 @@ if (-not $SkipBuild) {
 
   Write-Host ""
   Write-Host "  [ecr-login] aws ecr get-login-password -> docker login..." -ForegroundColor Cyan
-  $ecrPassword = & aws ecr get-login-password --region $Region
-  if ($LASTEXITCODE -ne 0) { throw "aws ecr get-login-password failed" }
-  $ecrPassword | & docker login --username AWS --password-stdin $EcrRegistry
+  # PS 5.1 + UTF-8 pipeline quirk: piping `aws ecr get-login-password | docker login
+  # --password-stdin` garbles the token via Windows codepage encoding, producing
+  # 400 Bad Request from ECR. Capture to a variable, trim, and pass via --password.
+  # docker's "using --password is insecure" warning is emitted to stderr; under
+  # $EAP=Stop PowerShell wraps it as NativeCommandError and aborts. Downgrade EAP
+  # to Continue for that one call. Same workaround as deploy-ecs-legacy.ps1:192.
+  $ecrPassword = (& aws ecr get-login-password --region $Region).Trim()
+  if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($ecrPassword)) {
+    throw "aws ecr get-login-password failed or returned empty"
+  }
+  $prevEap = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    & docker login --username AWS --password $ecrPassword $EcrRegistry 2>&1 | Out-Null
+  } finally {
+    $ErrorActionPreference = $prevEap
+  }
   if ($LASTEXITCODE -ne 0) { throw "docker login failed" }
 
   Write-Host ""
