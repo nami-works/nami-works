@@ -18,6 +18,7 @@ const BRAND_TO_PRISMA: Record<BrandInput, "cpg_labs"> = {
 const SLUG_RE = /^[a-z0-9-]+$/;
 const SHOP_RE = /^[a-z0-9-]+\.myshopify\.com$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const IG_USER_ID_RE = /^17841\d{8,15}$/;
 
 function die(message: string, code = 1): never {
   console.error(`[provision-tenant] ${message}`);
@@ -45,6 +46,8 @@ const { values } = parseArgs({
     contact: { type: "string" },
     notes: { type: "string" },
     "aws-region": { type: "string" },
+    "ig-user-id": { type: "string" },
+    "ig-username": { type: "string" },
   },
   strict: true,
 });
@@ -56,6 +59,8 @@ const shop = values.shop;
 const contact = values.contact;
 const notes = values.notes;
 const region = values["aws-region"] ?? process.env.AWS_REGION;
+const igUserId = values["ig-user-id"];
+const igUsername = values["ig-username"];
 
 if (!slug || !SLUG_RE.test(slug)) {
   die("--slug is required and must match /^[a-z0-9-]+$/");
@@ -72,6 +77,9 @@ if (!contact || !EMAIL_RE.test(contact)) {
 }
 if (shop && !SHOP_RE.test(shop)) {
   die("--shop must match *.myshopify.com");
+}
+if (igUserId && !IG_USER_ID_RE.test(igUserId)) {
+  die("--ig-user-id must match /^17841\\d{8,15}$/ (Instagram Business Account ID format)");
 }
 if (!region) {
   die("AWS region missing (pass --aws-region or set AWS_REGION env var)");
@@ -119,11 +127,31 @@ const tenant = await prisma.integrationTenant.create({
   },
 });
 
+// Atomic Instagram link — if --ig-user-id was passed, the tenant arrives
+// with the InstagramAccount row already in place. The first operator who
+// opens claude.ai sees Instagram pre-wired (modulo the SSM token, which
+// still has to be set with a real value before refresh works).
+if (igUserId) {
+  await prisma.instagramAccount.create({
+    data: {
+      tenantId: tenant.id,
+      igUserId,
+      ...(igUsername ? { username: igUsername } : {}),
+    },
+  });
+}
+
 const paramsToWrite = [
   `${ssmPrefix}/shopify/access_token`,
   `${ssmPrefix}/omie/app_key`,
   `${ssmPrefix}/omie/app_secret`,
   `${ssmPrefix}/google_drive/service_account_json`,
+  ...(igUserId
+    ? [
+        `${ssmPrefix}/instagram/long_lived_token`,
+        `${ssmPrefix}/instagram/token_expires_at`,
+      ]
+    : []),
 ];
 
 const failed: { name: string; reason: string }[] = [];
@@ -161,12 +189,14 @@ Bearer (SHOWN ONCE — save to password manager now):
   ${bearer}
 
 Next steps:
-  1. Fill the 3 SSM SecureString placeholders with real values:
+  1. Fill the ${paramsToWrite.length} SSM placeholders with real values:
        ${paramsToWrite.join("\n       ")}
   2. In claude.ai org settings, register the custom connector:
        URL:    https://mcp.nami.works/${tenant.slug}
        Bearer: <the value above>
-${line}
+${igUserId ? `  3. Instagram Business Account already linked (igUserId=${igUserId}${igUsername ? `, @${igUsername}` : ""}).
+     Once the long-lived token is set in SSM, the tenant can call
+     instagram_refresh_ingest from claude.ai to pull their media.\n` : ""}${line}
 `);
 
 await prisma.$disconnect();

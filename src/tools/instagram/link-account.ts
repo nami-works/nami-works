@@ -146,7 +146,7 @@ export async function instagramLinkAccountHandler(
 registerToolDefinition({
   name: "instagram_link_account",
   description:
-    "Links an Instagram Business Account to the tenant — a one-time setup action required before any other Instagram tool can do anything. Pass the igUserId from the Meta Graph API (the 17841... numeric ID), optionally the username. Two-step confirm: first call returns a preview, second call with confirm=true executes. Refuses to overwrite an existing link to a different igUserId.",
+    "[ADMIN BACKSTOP — not for normal operator use] Links an Instagram Business Account to the tenant. The primary path for tenant onboarding is `scripts/provision-tenant.ts --ig-user-id ...` run by the NAMI Works team; this tool exists only as a recovery path when an already-provisioned tenant needs to be linked after the fact. Two-step confirm. Refuses to overwrite an existing link to a different igUserId.",
   inputSchema: {
     igUserId: z
       .string()

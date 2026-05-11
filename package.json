@@ -23,7 +23,8 @@
     "suspend-tenant": "tsx scripts/suspend-tenant.ts",
     "replace-shopify-files": "tsx scripts/replace-shopify-files.ts",
     "instagram-dump": "tsx scripts/instagram-dump.ts",
-    "instagram-voice-card": "tsx scripts/instagram-voice-card.ts"
+    "instagram-voice-card": "tsx scripts/instagram-voice-card.ts",
+    "link-instagram": "tsx scripts/link-instagram.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",

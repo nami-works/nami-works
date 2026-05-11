@@ -3,6 +3,7 @@ import { parseArgs } from "node:util";
 import { prisma } from "../src/db/prisma.js";
 import { buildInstagramClient } from "../src/clients/instagram.js";
 import { ingestInstagramPosts } from "../src/services/instagram/ingest.js";
+import { getSecret } from "../src/secrets/ssm.js";
 
 /**
  * Dev-mode Instagram ingest. Bypasses SSM by reading the long-lived token
@@ -54,12 +55,26 @@ if (modeArg !== "full" && modeArg !== "incremental") {
 }
 if (!Number.isFinite(maxPages) || maxPages < 1) die("--max-pages must be a positive integer");
 
-const token = process.env.IG_LONG_LIVED_TOKEN;
-if (!token || token.length < 20) {
-  die("IG_LONG_LIVED_TOKEN env var is required (long-lived Facebook user/page token)");
+async function resolveToken(slug: string): Promise<string> {
+  const envToken = process.env.IG_LONG_LIVED_TOKEN;
+  if (envToken && envToken.length >= 20) return envToken;
+  try {
+    const ssmToken = await getSecret(
+      `/nami-works/tenants/${slug}/instagram/long_lived_token`,
+    );
+    if (ssmToken && ssmToken.length >= 20 && ssmToken !== "REPLACE_ME") {
+      return ssmToken;
+    }
+  } catch {
+    // fall through to fatal below
+  }
+  die(
+    "No long-lived token available. Either set IG_LONG_LIVED_TOKEN env var, or put the token at /nami-works/tenants/<slug>/instagram/long_lived_token in SSM.",
+  );
 }
 
 async function main(): Promise<void> {
+  const token = await resolveToken(slug!);
   const tenant = await prisma.integrationTenant.findUnique({
     where: { slug: slug! },
     include: { instagramAccount: true },
