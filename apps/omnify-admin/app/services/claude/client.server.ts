@@ -57,12 +57,20 @@ export type AltTextSuggestion = {
  * Generate an SEO-friendly alt-text suggestion for a product image.
  * Uses Claude vision with a cached brand-context system prompt so many
  * images for the same shop share the prompt cache and save tokens.
+ *
+ * Grounds the suggestion in PDP data: title + description + metafields.
+ * Claude is instructed to weave ONE contextual cue (product name + key
+ * ingredient OR primary benefit) into the visual description — never
+ * invent claims absent from both the image AND the supplied PDP context.
+ * SEO best practice for e-commerce: literal visual description PLUS one
+ * product-context cue, ≤125 chars (screen-reader truncation).
  */
 export async function generateAltTextSuggestion(input: {
   shop: string;
   imageUrl: string;
   productTitle: string | null;
   productDescription: string | null;
+  productMetafields?: Array<{ namespace: string; key: string; value: string }>;
   brandContext: ContentGenBrandContext;
 }): Promise<AltTextSuggestion | { error: string }> {
   const client = getClient();
@@ -80,21 +88,36 @@ export async function generateAltTextSuggestion(input: {
     {
       type: "text" as const,
       text: [
-        "Task: write one alt-text string for the attached product image.",
-        "Rules:",
-        "- Describe what is visually in the image, not marketing claims.",
-        "- 8-16 words.",
-        "- Include the product type or distinctive feature.",
+        "Task: write one SEO-friendly alt-text string for the attached product image.",
+        "",
+        "What to write:",
+        "- Start with a literal visual description (what is actually in the image).",
+        "- Then weave in ONE contextual cue grounded in the supplied PDP data:",
+        "    the product name + a key ingredient OR a primary benefit OR a distinctive feature.",
+        "- The contextual cue must be supported by either the visual content OR the supplied",
+        "  Description / Metafields. Never invent ingredients, benefits, or claims that aren't",
+        "  visually present or explicitly present in the PDP context.",
+        "",
+        "Style:",
+        "- 12-22 words. Hard cap 125 characters (screen-reader truncation).",
         "- No trailing period, no quotes, no markdown.",
+        "- One keyword cluster, not three — pick the most relevant context.",
         `- Respond in ${language}.`,
+        "",
         "Respond with ONLY the alt text, nothing else.",
       ].join("\n"),
     },
   ];
 
+  const metafieldLines = (input.productMetafields ?? [])
+    .map(
+      (m) => `${m.namespace}.${m.key}: ${m.value.replace(/\s+/g, " ").slice(0, 200)}`,
+    )
+    .join("\n");
+
   try {
     console.info(
-      `[claude:alt-text] generate START shop=${input.shop} imageUrl=${input.imageUrl.slice(0, 80)}`,
+      `[claude:alt-text] generate START shop=${input.shop} imageUrl=${input.imageUrl.slice(0, 80)} metafields=${input.productMetafields?.length ?? 0}`,
     );
     const response = await client.messages.create({
       model: VISION_MODEL,
@@ -113,11 +136,14 @@ export async function generateAltTextSuggestion(input: {
               text: [
                 input.productTitle ? `Product: ${input.productTitle}` : null,
                 input.productDescription
-                  ? `Description: ${input.productDescription.slice(0, 300)}`
+                  ? `Description:\n${input.productDescription.slice(0, 1500)}`
+                  : null,
+                metafieldLines.length > 0
+                  ? `Metafields (use any relevant signal grounded in context):\n${metafieldLines}`
                   : null,
               ]
                 .filter(Boolean)
-                .join("\n"),
+                .join("\n\n"),
             },
           ],
         },
@@ -294,6 +320,12 @@ export async function extractTextFromImage(input: {
   }
 }
 
+// Claude's `document` content type caps PDFs at 32MB base64-encoded.
+// Base64 expands raw bytes by ~33%, so the practical raw-byte ceiling is
+// ~24MB. The upload-side cap is 30MB to let DOCX/TXT/MD use the full
+// envelope, so we have to guard PDFs here.
+const CLAUDE_PDF_BASE64_MAX = 32 * 1024 * 1024;
+
 export async function extractTextFromPdfBuffer(input: {
   shop: string;
   pdfBase64: string;
@@ -301,6 +333,16 @@ export async function extractTextFromPdfBuffer(input: {
 }): Promise<{ text: string } | { error: string }> {
   const client = getClient();
   if (!client) return { error: "ANTHROPIC_API_KEY not configured." };
+
+  if (input.pdfBase64.length > CLAUDE_PDF_BASE64_MAX) {
+    console.warn(
+      `[claude:pdf-extract] SKIP shop=${input.shop} filename=${input.filename} reason=oversize base64=${input.pdfBase64.length}`,
+    );
+    return {
+      error:
+        "PDF too large for AI extraction (>24MB after encoding). Try a smaller file, split it into sections, or paste the URL of an online version instead.",
+    };
+  }
 
   try {
     console.info(

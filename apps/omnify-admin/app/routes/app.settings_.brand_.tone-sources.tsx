@@ -1,15 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
   ActionFunctionArgs,
   HeadersFunction,
   LoaderFunctionArgs,
 } from "react-router";
-import { useLoaderData, useFetcher, Link } from "react-router";
+import { useLoaderData, useFetcher } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { useTranslation } from "react-i18next";
-import prisma from "../db.server";
 import {
   acceptHypothesis,
   listPendingHypotheses,
@@ -61,7 +60,6 @@ const MIN_CONFIDENCE = 0.5;
 
 type LoaderData = {
   shop: string;
-  manualToneOverride: string | null;
   sources: SerializedSource[];
   pendingHypotheses: SerializedHypothesis[];
   batches: SerializedBatch[];
@@ -120,9 +118,8 @@ export const loader = async ({
   const shop = session.shop;
   console.info(`[tone-sources] loader shop=${shop}`);
 
-  const [assets, sources, pending, batches, manualRefs, mondayConfig, metaConfig] =
+  const [sources, pending, batches, manualRefs, mondayConfig, metaConfig] =
     await Promise.all([
-      prisma.brandAssets.findUnique({ where: { shop } }),
       listSourceSummaries(shop),
       listPendingHypotheses(shop, { minConfidence: MIN_CONFIDENCE }),
       listRecentBatches(shop, 5),
@@ -133,7 +130,6 @@ export const loader = async ({
 
   return {
     shop,
-    manualToneOverride: assets?.toneOfVoice ?? null,
     sources: sources.map(serializeSource),
     pendingHypotheses: pending.map(serializeHypothesis),
     batches: batches.map(serializeBatch),
@@ -235,8 +231,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (!(file instanceof File) || file.size === 0) {
       return { success: false, intent, error: "No file provided." };
     }
-    if (file.size > 10 * 1024 * 1024) {
-      return { success: false, intent, error: "File too large (>10MB)." };
+    if (file.size > 30 * 1024 * 1024) {
+      return { success: false, intent, error: "File too large (>30MB)." };
     }
     const buffer = Buffer.from(await file.arrayBuffer());
     const extracted = await extractFromBuffer({
@@ -558,7 +554,6 @@ function LinkIcon() {
 
 export default function ToneSourcesPage() {
   const {
-    manualToneOverride,
     sources,
     pendingHypotheses,
     batches,
@@ -572,6 +567,7 @@ export default function ToneSourcesPage() {
   } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
   const uploadFetcher = useFetcher<typeof action>();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const shopify = useAppBridge();
   const { t } = useTranslation("brand-settings");
 
@@ -602,10 +598,15 @@ export default function ToneSourcesPage() {
   const isSavingMeta =
     fetcher.state !== "idle" &&
     fetcher.formData?.get("intent") === "saveMetaConfig";
-  const isUploading =
+  // Decouple per-form loading state so uploading a file doesn't spin the
+  // Fetch URL button (and vice versa). One fetcher backs both forms, but
+  // each button only spins when its own intent is in flight.
+  const isFetchingUrl =
     uploadFetcher.state !== "idle" &&
-    (uploadFetcher.formData?.get("intent") === "uploadFile" ||
-      uploadFetcher.formData?.get("intent") === "addUrl");
+    uploadFetcher.formData?.get("intent") === "addUrl";
+  const isUploadingFile =
+    uploadFetcher.state !== "idle" &&
+    uploadFetcher.formData?.get("intent") === "uploadFile";
 
   useEffect(() => {
     if (!fetcher.data) return;
@@ -642,6 +643,18 @@ export default function ToneSourcesPage() {
       );
     } else if (!uploadFetcher.data.success && "error" in uploadFetcher.data) {
       shopify.toast?.show?.(uploadFetcher.data.error ?? "Upload failed.");
+    }
+    // Clear the native file input after a file-upload action completes
+    // (success OR rejection) so the merchant can try another file without
+    // the rejected filename lingering in the input.
+    const data = uploadFetcher.data;
+    if (
+      data &&
+      "intent" in data &&
+      data.intent === "uploadFile" &&
+      fileInputRef.current
+    ) {
+      fileInputRef.current.value = "";
     }
   }, [uploadFetcher.data, shopify, t]);
 
@@ -1112,7 +1125,7 @@ export default function ToneSourcesPage() {
                   <s-button
                     type="submit"
                     variant="secondary"
-                    {...(isUploading ? { loading: true, disabled: true } : {})}
+                    {...(isFetchingUrl ? { loading: true, disabled: true } : {})}
                   >
                     {t("toneSources.upload.fetchUrl", {
                       defaultValue: "Fetch URL",
@@ -1129,15 +1142,17 @@ export default function ToneSourcesPage() {
                 >
                   <input type="hidden" name="intent" value="uploadFile" />
                   <input
+                    ref={fileInputRef}
                     type="file"
                     name="file"
                     accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
                     onChange={(e) => {
-                      if (e.currentTarget.files?.length) {
-                        e.currentTarget.form?.requestSubmit();
+                      const input = e.currentTarget;
+                      if (input.files?.length) {
+                        input.form?.requestSubmit();
                       }
                     }}
-                    disabled={isUploading}
+                    disabled={isUploadingFile}
                   />
                 </uploadFetcher.Form>
               </div>
@@ -1204,30 +1219,6 @@ export default function ToneSourcesPage() {
               </p>
             )}
           </SourceItem>
-        </div>
-
-        <div className={styles.legacyToneRow}>
-          <span className={styles.legacyToneTitle}>
-            {t("toneSources.manualOverride.title", {
-              defaultValue: "Manual override (always wins)",
-            })}
-          </span>
-          <span className={styles.legacyToneBody}>
-            {manualToneOverride
-              ? `"${manualToneOverride}"`
-              : t("toneSources.manualOverride.empty", {
-                  defaultValue:
-                    "No manual tone string set. Add one on Brand settings to override the inferred tone.",
-                })}
-          </span>
-          <Link
-            to="/app/settings/brand"
-            style={{ color: "#005bd3", textDecoration: "none", fontSize: 12 }}
-          >
-            {t("toneSources.manualOverride.editLink", {
-              defaultValue: "Edit on Brand settings →",
-            })}
-          </Link>
         </div>
       </s-section>
 

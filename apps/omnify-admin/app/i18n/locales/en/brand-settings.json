@@ -131,7 +131,7 @@
     },
     "upload": {
       "title": "Add a brandbook, manifesto, or any reference",
-      "sub": "PDF, DOCX, TXT, MD up to 10MB · or paste a URL",
+      "sub": "PDF, DOCX, TXT, MD up to 30MB · or paste a URL",
       "fetchUrl": "Fetch URL",
       "or": "or",
       "referencesHeading": "Manual references"

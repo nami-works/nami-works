@@ -57,26 +57,12 @@ export function MondayLogo({ basePath, size = 32, className }: LogoProps) {
   );
 }
 
-export function ManualUploadIcon({
-  size = 32,
-  color = "#8a5a08",
-  className,
-}: {
-  size?: number;
-  color?: string;
-  className?: string;
-}) {
-  return (
-    <svg
-      viewBox="0 0 20 20"
-      width={size}
-      height={size}
-      fill={color}
-      aria-hidden="true"
-      className={className}
-    >
-      <path d="M3 13a1 1 0 0 1 1 1v3h12v-3a1 1 0 1 1 2 0v3a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3a1 1 0 0 1 1-1z" />
-      <path d="M10 1a1 1 0 0 1 .7.3l3 3a1 1 0 0 1-1.4 1.4L11 4.4V12a1 1 0 1 1-2 0V4.4L7.7 5.7a1 1 0 1 1-1.4-1.4l3-3A1 1 0 0 1 10 1z" />
-    </svg>
-  );
+export function ManualUploadIcon(
+  // Props kept for API compat with the prior inline-SVG component; size,
+  // color, and className are now inherited from the Polaris s-icon web
+  // component so the glyph tracks the design-system upstream.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _props: { size?: number; color?: string; className?: string } = {},
+) {
+  return <s-icon type="upload" tone="auto" />;
 }

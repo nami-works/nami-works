@@ -8,6 +8,107 @@ import {
 
 type AdminClient = Parameters<typeof paginateProductsWithMedia>[0];
 
+const PRODUCT_CONTEXT_QUERY = `#graphql
+  query GetProductContextForAltText($id: ID!) {
+    product(id: $id) {
+      id
+      descriptionHtml
+      metafields(first: 20) {
+        edges {
+          node {
+            namespace
+            key
+            value
+            type
+          }
+        }
+      }
+    }
+  }
+`;
+
+type ProductContext = {
+  descriptionText: string | null;
+  metafields: Array<{ namespace: string; key: string; value: string }>;
+};
+
+function stripHtml(html: string): string {
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Fetch the PDP context Claude uses to ground alt-text suggestions:
+ * the stripped description body + the product's metafields. Metafields
+ * carry the high-leverage signal (key ingredient, primary benefit,
+ * category, tags) — Claude picks the relevant ones at generation time.
+ */
+async function fetchProductContext(
+  admin: AdminClient,
+  productId: string,
+): Promise<ProductContext> {
+  try {
+    const response = await admin.graphql(PRODUCT_CONTEXT_QUERY, {
+      variables: { id: productId },
+    });
+    const json = (await response.json()) as {
+      data?: {
+        product?: {
+          descriptionHtml?: string | null;
+          metafields?: {
+            edges?: Array<{
+              node: {
+                namespace: string;
+                key: string;
+                value: string;
+                type?: string;
+              };
+            }>;
+          };
+        };
+      };
+    };
+    const product = json.data?.product;
+    if (!product) return { descriptionText: null, metafields: [] };
+
+    const descriptionText = product.descriptionHtml
+      ? stripHtml(product.descriptionHtml).slice(0, 2000)
+      : null;
+    const metafields = (product.metafields?.edges ?? [])
+      .map((e) => e.node)
+      // Drop JSON / reference / file metafields — keep simple text-like values
+      // Claude can lean on without parsing a JSON envelope.
+      .filter(
+        (m) =>
+          !m.type ||
+          (!m.type.startsWith("json") &&
+            m.type !== "file_reference" &&
+            !m.type.startsWith("list.")),
+      )
+      .map((m) => ({
+        namespace: m.namespace,
+        key: m.key,
+        value: m.value.slice(0, 400),
+      }))
+      .slice(0, 15);
+
+    return { descriptionText, metafields };
+  } catch (err) {
+    console.warn(`[alt-text:context] fetch SKIP productId=${productId}`, err);
+    return { descriptionText: null, metafields: [] };
+  }
+}
+
 const DAILY_DRAIN_LIMIT = 100;
 const SHOPIFY_WRITE_THROTTLE_MS = 500;
 
@@ -80,6 +181,7 @@ export async function auditProductImages(input: {
 }
 
 export async function generateSuggestion(input: {
+  admin: AdminClient;
   shop: string;
   suggestionId: string;
 }) {
@@ -89,11 +191,16 @@ export async function generateSuggestion(input: {
   if (!row) return { error: "Suggestion not found." };
 
   const brandContext = await getBrandContextForGeneration(input.shop);
+  const { descriptionText, metafields } = await fetchProductContext(
+    input.admin,
+    row.productId,
+  );
   const result = await generateAltTextSuggestion({
     shop: input.shop,
     imageUrl: row.imageUrl,
     productTitle: row.productTitle,
-    productDescription: null,
+    productDescription: descriptionText,
+    productMetafields: metafields,
     brandContext,
   });
 
@@ -117,6 +224,7 @@ export async function generateSuggestion(input: {
 }
 
 export async function bulkGenerate(input: {
+  admin: AdminClient;
   shop: string;
   filter: "missing" | "weak" | "missing_or_weak";
 }): Promise<{ generated: number; errors: number }> {
@@ -142,6 +250,7 @@ export async function bulkGenerate(input: {
   let errors = 0;
   for (const row of rows) {
     const result = await generateSuggestion({
+      admin: input.admin,
       shop: input.shop,
       suggestionId: row.id,
     });

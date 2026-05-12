@@ -7,6 +7,11 @@ type AdminClient = {
   ) => Promise<Response>;
 };
 
+// `Blog.articles` doesn't accept `sortKey` in current Admin API (verified
+// against the schema via shopify-dev-mcp on 2026-05-12). `reverse: true` is
+// supported and gives us newest-first default ordering, which is what we
+// want for sampling recent voice. Required scopes: read_content (already
+// on shopify.app.toml).
 const BLOGS_AND_ARTICLES_QUERY = `#graphql
   query ListBlogsWithArticles($first: Int!, $articlesFirst: Int!) {
     blogs(first: $first) {
@@ -15,7 +20,7 @@ const BLOGS_AND_ARTICLES_QUERY = `#graphql
           id
           title
           handle
-          articles(first: $articlesFirst, sortKey: PUBLISHED_AT, reverse: true) {
+          articles(first: $articlesFirst, reverse: true) {
             edges {
               node {
                 id

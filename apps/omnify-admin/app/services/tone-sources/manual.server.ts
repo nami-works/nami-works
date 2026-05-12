@@ -7,7 +7,7 @@ import {
 } from "./s3.server";
 
 const MAX_RAW_TEXT_CHARS = 80_000;
-const MAX_FETCHED_BYTES = 10 * 1024 * 1024;
+const MAX_FETCHED_BYTES = 30 * 1024 * 1024;
 
 export function stripHtml(html: string): string {
   return html
@@ -113,12 +113,12 @@ export async function extractFromUrl(input: {
     10,
   );
   if (contentLength > 0 && contentLength > MAX_FETCHED_BYTES) {
-    return { error: "Resource too large (>10MB)." };
+    return { error: "Resource too large (>30MB)." };
   }
 
   const arrayBuffer = await response.arrayBuffer();
   if (arrayBuffer.byteLength > MAX_FETCHED_BYTES) {
-    return { error: "Resource too large (>10MB)." };
+    return { error: "Resource too large (>30MB)." };
   }
   const buffer = Buffer.from(arrayBuffer);
 

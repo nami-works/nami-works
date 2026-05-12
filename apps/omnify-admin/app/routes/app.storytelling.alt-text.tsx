@@ -115,13 +115,17 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     if (intent === "generateOne") {
       const suggestionId = formData.get("suggestionId") as string;
-      const result = await generateSuggestion({ shop, suggestionId });
+      const result = await generateSuggestion({ admin, shop, suggestionId });
       if ("error" in result) return { success: false, error: result.error };
       return { success: true, intent, suggestion: result.suggestion };
     }
 
     if (intent === "bulkGenerate") {
-      const result = await bulkGenerate({ shop, filter: "missing_or_weak" });
+      const result = await bulkGenerate({
+        admin,
+        shop,
+        filter: "missing_or_weak",
+      });
       return { success: true, intent, ...result };
     }
 
