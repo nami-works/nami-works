@@ -4515,7 +4515,13 @@ export default function Index() {
 
   const routeManagerSection = (
     <s-section heading={t("routeManager.heading")}>
-      <s-stack direction="block" gap="base">
+      {/* 2026-05-12: collapsed badges + selector into a single tight column so
+          the vertical rhythm is uniform across "All locations" (selector +
+          Orders + Pick-a-location prompt) and "Specific location" (selector +
+          warnings + Orders). The previous split between s-stack-internal gap
+          and post-stack section gap made the gap between Failed-delivery and
+          Orders-to-deliver visibly larger than the other rows. */}
+      <div className={styles.routeManagerHeaderCol}>
         <s-select
           label={t("filters.location", "Location")}
           labelAccessibilityVisibility="exclusive"
@@ -4561,7 +4567,6 @@ export default function Index() {
             ) : null}
           </div>
         ) : null}
-      </s-stack>
 
       {/* Orders badge + actions menu. "Pick a location" badge moved here
           (2026-05-12) on its own row beneath "Orders to deliver" so the
@@ -4661,6 +4666,7 @@ export default function Index() {
           </s-badge>
         </div>
       ) : null}
+      </div>
       {optimizeProgress ? (
         <div className={styles.optimizeProgressWrap}>
           {/* AI optimize is unpredictable per LLM call — the ETA countdown
@@ -4817,6 +4823,12 @@ export default function Index() {
                     ? t("routeManager.costLabel", { cost: `${quoteTotal.total}${quoteTotal.currency ? ` ${quoteTotal.currency}` : ""}` })
                     : t("routeManager.costPlaceholder");
                   const metaLine2 = `${distanceStr} • ${durationStr} • ${costStr}`;
+                  // Hide the "-- • -- • Cost: --" placeholder line entirely
+                  // when none of the three values are populated (no Routes
+                  // geometry, no quote). Once any value lands the line
+                  // renders again with the populated values + placeholders
+                  // for the missing ones.
+                  const hasMetaLine2Data = hasDistance || hasDuration || Boolean(quoteTotal);
                   const lalamoveConfig = lalamoveConfigMap[route.locationId];
                   const isLalamoveReady =
                     credentialStatus.configured &&
@@ -4958,7 +4970,9 @@ export default function Index() {
                         <div className={styles.routeCardOrderStats}>
                           <s-stack direction="block" gap="small">
                             <s-text type="strong">{metaLine1}</s-text>
-                            <s-text color="subdued">{metaLine2}</s-text>
+                            {hasMetaLine2Data ? (
+                              <s-text color="subdued">{metaLine2}</s-text>
+                            ) : null}
                           </s-stack>
                         </div>
                         {hasSelectedOrders ? (
@@ -6232,8 +6246,9 @@ export default function Index() {
                                     accessibilityLabel={t("map.polylineEdit.reassign")}
                                     commandFor="polyline-reassign-popover"
                                     command="--toggle"
-                                  />
-                                  <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.reassign")}</span>
+                                  >
+                                    <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.reassign")}</span>
+                                  </s-button>
                                 </span>
                                 <s-popover id="polyline-reassign-popover">
                                   <s-menu accessibilityLabel={t("map.polylineEdit.reassign")}>
@@ -6262,8 +6277,9 @@ export default function Index() {
                                   accessibilityLabel={t("map.polylineEdit.unassign")}
                                   disabled={isRoutingBusy || undefined}
                                   onClick={handleUnassignSelected}
-                                />
-                                <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.unassign")}</span>
+                                >
+                                  <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.unassign")}</span>
+                                </s-button>
                               </span>
                             </>
                           ) : null}
@@ -6281,8 +6297,9 @@ export default function Index() {
                                   isRoutingBusy
                                 }
                                 onClick={handleAssignToNewRoute}
-                              />
-                              <span className={styles.hoverExpandLabel}>{t("map.assignToNewRoute")}</span>
+                              >
+                                <span className={styles.hoverExpandLabel}>{t("map.assignToNewRoute")}</span>
+                              </s-button>
                             </span>
                           ) : null}
                           {showClearSelection ? (
@@ -6294,8 +6311,9 @@ export default function Index() {
                                 accessibilityLabel={t("map.clearSelection")}
                                 disabled={isRoutingBusy || undefined}
                                 onClick={clearSelection}
-                              />
-                              <span className={styles.hoverExpandLabel}>{t("map.clearSelection")}</span>
+                              >
+                                <span className={styles.hoverExpandLabel}>{t("map.clearSelection")}</span>
+                              </s-button>
                             </span>
                           ) : null}
                           {showConfirm ? (
@@ -6307,8 +6325,9 @@ export default function Index() {
                                 accessibilityLabel={t("map.polylineEdit.confirm")}
                                 disabled={isRoutingBusy}
                                 onClick={confirmPolylineEditMode}
-                              />
-                              <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.confirm")}</span>
+                              >
+                                <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.confirm")}</span>
+                              </s-button>
                             </span>
                           ) : null}
                           {showExit ? (
@@ -6330,8 +6349,9 @@ export default function Index() {
                                     cancelPolylineEditMode();
                                   }
                                 }}
-                              />
-                              <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.exit")}</span>
+                              >
+                                <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.exit")}</span>
+                              </s-button>
                             </span>
                           ) : null}
                         </>

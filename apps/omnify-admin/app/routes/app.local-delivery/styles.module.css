@@ -88,18 +88,21 @@
   display: inline-block;
 }
 
-/* Hover-expand control buttons (2026-05-08 superseding the 2026-05-06 .btnLabel
-   approach). The 2026-05-06 approach kept the label as a CHILD of <s-button>
-   with max-width:0, which made the label visually invisible BUT Polaris'
-   s-button still allocated text-padding around it -- the buttons rendered
-   wider than a native icon-only button. Lucas's spec: "remove all spacing
-   so they look exactly as a regular icon-only button, while still carrying
-   the expand-on-hover behavior."
-
-   Pattern: the s-button is rendered icon-only (no children, accessibilityLabel
-   only). A sibling <span class="hoverExpandLabel"> sits next to it inside a
-   wrapper. CSS animates the sibling in on wrapper:hover. Result: collapsed-
-   state width matches a native icon-only button; hover slides the label in. */
+/* Hover-expand control buttons.
+   History:
+   - 2026-05-06 v1: label as CHILD of <s-button> with max-width:0. Width was
+     bigger than icon-only because Polaris allocated text-padding even when
+     the text span had max-width:0.
+   - 2026-05-08 v2: label moved to SIBLING of <s-button> with pointer-events:
+     none. Collapsed width matched icon-only buttons exactly, BUT clicking the
+     revealed label did nothing (click landed outside the button).
+   - 2026-05-12 v3 (current): label is a CHILD of <s-button> again, this time
+     with pointer-events restored so the revealed label IS part of the
+     button's click target. Color inherits from the button's own text color
+     (variant + tone), so a critical-tone button reveals a red label and a
+     primary-tone button reveals a white label automatically. The slight
+     collapsed-state width increase from Polaris' text-padding is the
+     accepted trade-off for a clickable label. */
 .hoverExpandWrap {
   position: relative;
   display: inline-flex;
@@ -112,9 +115,8 @@
   max-width: 0;
   margin-left: 0;
   font-size: 13px;
-  color: inherit;
+  color: inherit; /* picks up the s-button text color (variant + tone) */
   transition: max-width 0.2s ease, margin-left 0.2s ease;
-  pointer-events: none; /* hover stays on the button alone */
 }
 .hoverExpandWrap:hover .hoverExpandLabel {
   max-width: 220px;
@@ -543,7 +545,11 @@
     max-content                                /* Due */
     var(--route-col-width, 168px)              /* Route badge + Unassign */
     minmax(max-content, 1fr);                  /* Address: never truncate, absorb leftover */
-  column-gap: 8px;
+  /* 2026-05-12: bumped column-gap 8 → 18px. With max-content columns the
+     prior 8px gap left Order/Customer/Date/Due headers visibly mashed
+     together. 18px is enough to read each header as its own column while
+     still keeping the table compact (minimal padding overall). */
+  column-gap: 18px;
   padding: 8px 8px;
   align-items: center;
   font-size: 13px;
@@ -768,11 +774,20 @@
   margin-top: 16px;
 }
 
+/* 2026-05-12: single tight column for selector + warnings + status badge +
+   location-gate prompt. Replaces the prior s-stack/margin-based layout which
+   produced an uneven gap between Failed-delivery and Orders-to-deliver vs the
+   Orders-to-deliver → Pick-a-location pair. */
+.routeManagerHeaderCol {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .routeManagerStatusRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 6px 0 4px 0;
   /* Padding removed (2026-05-06): the prior `padding: 6px 4px` was offsetting
      the Orders-to-deliver badge 4px to the right of the warning badges in
      .headerBadgesRow above, creating a visible misalignment between the two
