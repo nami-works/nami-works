@@ -426,3 +426,53 @@ export async function writeAffiliateSyncProgress(
     update: { phase, progressCount: count },
   });
 }
+
+// Max wall-clock time a sync should ever take. If startedAt is older than this
+// and status is still "running", the process crashed mid-flight (container
+// restart, OOM kill, uncaught throw) and the lock is stranded — auto-recover.
+//
+// Real-world sync durations on GE Beauty (~78k orders, ~900 affiliate-tagged):
+// 3-10 min. 30 min gives 3x headroom while ensuring stale locks clear within
+// one cron cycle (cron fires hourly at :30).
+const SYNC_STALE_LOCK_MINUTES = 30;
+
+/**
+ * Reset AffiliateSyncMeta rows stuck on status='running' beyond the stale-lock
+ * threshold. Called at the start of every cron tick and at the start of any
+ * manual `backfillAffiliateOrders` call. Idempotent: returns 0 if no stale
+ * locks exist.
+ *
+ * Root cause this guards against (incident 2026-05-06 → 2026-05-12): a sync
+ * started 2026-05-06 13:07 UTC and was interrupted by a container restart
+ * (ECS task replacement, OOM, or app deploy). The `status='running'` lock
+ * stayed in the DB for 6 days. The cron's `where: { status: { not: 'running' } }`
+ * filter then skipped the shop on every subsequent tick — an invisible
+ * failure mode with no error message, no alerting.
+ */
+export async function resetStaleAffiliateLocks(
+  options?: { shop?: string },
+): Promise<{ reset: number }> {
+  const cutoff = new Date(Date.now() - SYNC_STALE_LOCK_MINUTES * 60_000);
+  const result = await prisma.affiliateSyncMeta.updateMany({
+    where: {
+      ...(options?.shop ? { shop: options.shop } : {}),
+      status: "running",
+      OR: [
+        { startedAt: { lt: cutoff } },
+        { startedAt: null },
+      ],
+    },
+    data: {
+      status: "failed",
+      errorMessage: `[stale-lock-recovery] sync stuck on status=running for >${SYNC_STALE_LOCK_MINUTES} min — auto-reset`,
+      phase: null,
+      progressCount: null,
+    },
+  });
+  if (result.count > 0) {
+    console.warn(
+      `[affiliates:stale-lock-recovery] reset=${result.count} shop=${options?.shop ?? "(all)"}`,
+    );
+  }
+  return { reset: result.count };
+}

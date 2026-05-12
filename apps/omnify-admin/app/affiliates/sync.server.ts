@@ -6,6 +6,7 @@
  */
 import prisma from "../db.server";
 import {
+  resetStaleAffiliateLocks,
   writeAffiliateSyncMeta,
   writeAffiliateSyncProgress,
 } from "./storage.server";
@@ -170,6 +171,10 @@ export async function backfillAffiliateOrders(
   );
 
   try {
+    // Belt-and-suspenders: clear any stranded 'running' lock for this shop
+    // before we set our own. Cheap, idempotent. Cron also runs this on every
+    // tick. See resetStaleAffiliateLocks for the stuck-lock incident.
+    await resetStaleAffiliateLocks({ shop });
     await writeAffiliateSyncMeta(shop, "running", { phase: "loading profiles" });
 
     // 1. Load all known affiliate codes

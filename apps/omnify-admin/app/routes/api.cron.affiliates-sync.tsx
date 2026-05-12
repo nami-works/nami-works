@@ -31,6 +31,7 @@ import {
   syncProgramCodes,
 } from "../affiliates/programs.server";
 import { invalidateAffiliateCodesCache } from "../affiliates/webhook-ingest.server";
+import { resetStaleAffiliateLocks } from "../affiliates/storage.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
@@ -45,6 +46,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   const phaseStart = Date.now();
+
+  // Recover stale locks BEFORE the skip-running-shops filter. A sync that
+  // crashed mid-flight (container restart, OOM, uncaught throw) leaves the
+  // AffiliateSyncMeta row stuck on status='running', and the filter below
+  // would skip the shop forever. See resetStaleAffiliateLocks for the full
+  // incident write-up (2026-05-06 → 2026-05-12 stuck-lock).
+  const staleRecovery = await resetStaleAffiliateLocks();
+  if (staleRecovery.reset > 0) {
+    console.info(`[affiliates-cron] stale-lock-recovery cleared=${staleRecovery.reset} before main loop`);
+  }
 
   // Seed the shop list from AffiliateSyncMeta (skip shops mid-backfill).
   // Also accept shops that have profiles but no sync meta yet — covers
