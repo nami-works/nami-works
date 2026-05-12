@@ -53,6 +53,42 @@ module.exports = {
       },
     },
 
+    // Polaris-first guards — Phase D of the multi-skill audit. Catches the
+    // most common ways non-Polaris-native UI sneaks into production.
+    // Scoped to app/routes/**/*.tsx because components/ legitimately uses
+    // lower-level primitives. Warnings (not errors) for now so we can land
+    // them without instantly breaking the build; promote to error once
+    // existing violations are migrated.
+    {
+      files: ["app/routes/**/*.{tsx,jsx}"],
+      rules: {
+        "no-restricted-syntax": [
+          "warn",
+          {
+            // Catches raw <button> elements where <s-button> is the
+            // canonical Polaris primitive. Many existing route files
+            // already use <s-button>; this guards against new regressions
+            // (the case Lucas flagged 2026-05-10: custom "link-style"
+            // button when <s-link> was the right element).
+            selector: "JSXOpeningElement[name.name='button']",
+            message:
+              "Use <s-button> (Polaris) instead of <button>. If a genuine native button is required (e.g. tab strip inside <PageTabs>), suppress with /* eslint-disable-next-line no-restricted-syntax */ and justify in the comment.",
+          },
+          {
+            // Catches raw <a href=...> in route files. <Link to> is the
+            // working React Router primitive inside the embedded Shopify
+            // iframe (per CLAUDE.md feedback memory: <a href> + <s-link>
+            // both 404 in Outlet child routes); <s-link> is acceptable
+            // for non-Outlet flat routes.
+            selector:
+              "JSXOpeningElement[name.name='a'] > JSXAttribute[name.name='href']",
+            message:
+              "Use <Link to=...> (react-router) or <s-link href=...> (Polaris) instead of raw <a href>. Plain anchors trigger full reloads inside the embedded Shopify iframe.",
+          },
+        ],
+      },
+    },
+
     // Typescript
     {
       files: ["**/*.{ts,tsx}"],

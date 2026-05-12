@@ -467,6 +467,35 @@ Compact control panels — selection bars, batch toolbars, contextual action str
 - Selected items displayed as Polaris-style badge chips with `×` remove button.
 - `margin-top: 12px` between search row and badge list.
 
+### Shopify Web Components — Common violations to grep for
+
+Before opening a PR, run these greps against your touched files. ESLint's
+`no-restricted-syntax` rule in `.eslintrc.cjs` (overrides → `app/routes/**`)
+flags the most common ones as warnings, but greps catch the rest.
+
+```bash
+# Raw <button> in route files (use <s-button>)
+git grep -nE '<button(\s|>)' -- 'app/routes/**/*.tsx'
+
+# Raw <a href=...> in route files (use <Link to> or <s-link href>)
+git grep -nE '<a [^>]*href=' -- 'app/routes/**/*.tsx'
+
+# Emoji literal in JSX likely-icon contexts
+git grep -nE '🟡|🚫|🚨|⏰|⏳|🕒|🏬|🥕|🏆|🟢|⚠|✓|✗' -- 'app/**/*.tsx'
+
+# Hardcoded hex color outside CSS modules
+git grep -nE 'color: ?#[0-9a-fA-F]{3,6}|background: ?#[0-9a-fA-F]{3,6}' \
+  -- 'app/**/*.tsx'
+```
+
+If you find a justified exception (e.g., emoji inside user-facing copy,
+not as an icon), suppress the ESLint warning with:
+```jsx
+{/* eslint-disable-next-line no-restricted-syntax */}
+<button onClick={...}>...</button>
+```
+and add a one-line reason in the comment.
+
 ### Shopify Web Components
 - **Default to native Polaris web components — and BEFORE writing any custom CSS for an interactive element, search the catalog at [shopify.dev/docs/api/app-home/web-components](https://shopify.dev/docs/api/app-home/web-components) for an existing primitive that matches the requested behavior or look.** Layout (`<s-page>`, `<s-section>`, `<s-stack>`, `<s-box>`), forms (`<s-select>`, `<s-text-field>`, `<s-checkbox>`, `<s-choice-list>`, `<s-date-field>`), feedback (`<s-banner>`, `<s-badge>`, `<s-spinner>`), navigation (`<s-link>`, `<s-button>`, `<s-modal>`), media (`<s-icon>`, `<s-image>`) and many more are all built in. Polaris primitives ship with the right tones, accessibility hooks, and Shopify-admin-native rendering for free — bespoke versions drift over time and rarely match. **If you find yourself writing CSS to make a `<button>` look like a link, or styling a `<span>` to mimic a badge, you skipped the catalog — go back and use `<s-link>` / `<s-badge>` / etc.** The 2026-05-10 incident: shipped a custom-styled `<button>` for "link-style" Map-style action when `<s-link>` was the canonical primitive. Caught in review, reshipped. If a Polaris primitive doesn't fit a specific need, document why in the PR.
 - **Icons use `<s-icon type="...">`,** not hand-rolled SVG paths or `@shopify/polaris-icons`. The `type` prop accepts named icons from Polaris's 600+-icon library (e.g. `"search"`, `"bolt"`, `"receipt-dollar"`, `"truck"`). Browse the full list inside the icon docs page. Pass `tone` (`info`/`success`/`warning`/`critical`/`auto`/`neutral`/`caution`) and `size` (`small`/`base`) instead of styling manually. Existing inline SVGs and `app/components/tab-icons.tsx` predate this rule and migrate opportunistically when a file is touched — do not bulk-rewrite.
