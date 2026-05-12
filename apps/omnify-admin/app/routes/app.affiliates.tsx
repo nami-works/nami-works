@@ -13,6 +13,7 @@ import { normalizeLocale } from "../i18n/config";
 import { formatCurrencyCompact, formatNumberCompact } from "../i18n/format";
 import styles from "./app.affiliates/styles.module.css";
 import { PageTabs, type PageTab } from "../components/page-tabs";
+import { InBlockSyncIndicator } from "../components/in-block-sync-indicator";
 import {
   readAffiliateProfiles,
   readAffiliateSyncMeta,
@@ -2164,38 +2165,27 @@ export default function AffiliatesPage() {
         ariaLabel="Affiliates tabs"
       />
       <s-section>
-        {/* ── Sync progress ─────────────────────────────────────── */}
+        {/* ── Sync progress (Option B canonical pattern) ─────────────── */}
         {syncStatus === "running" && (() => {
-          // Real progress: use the last sync's totalOrders as a rolling
-          // estimate. If we've never synced before, fall back to a gentle
-          // animated sweep at 5% so the bar at least moves.
           const estimate = syncTotalOrders ?? 0;
           const progress = syncProgressCount ?? 0;
+          // Fall back to a gentle 5% sweep so the bar still moves visibly
+          // when we don't have a prior-run estimate.
           const pct =
             estimate > 0
               ? Math.min(100, Math.max(5, (progress / estimate) * 100))
               : 5;
+          const countLabel =
+            syncProgressCount != null
+              ? `${fmtNum(progress)}${estimate > 0 ? ` / ~${fmtNum(estimate)}` : ""} ${t("sync.processed", "processed")}`
+              : undefined;
           return (
-            <div>
-              <div className={styles.syncProgressRow}>
-                <span className={styles.syncProgressPhaseLabel}>
-                  {syncPhase ?? t("sync.running", "Syncing orders...")}
-                </span>
-                {syncProgressCount != null && (
-                  <span className={styles.syncProgressPct}>
-                    {fmtNum(progress)}
-                    {estimate > 0 ? ` / ~${fmtNum(estimate)}` : ""}{" "}
-                    {t("sync.processed", "processed")}
-                  </span>
-                )}
-              </div>
-              <div className={styles.syncProgressBarBg}>
-                <div
-                  className={styles.syncProgressBarFill}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-            </div>
+            <InBlockSyncIndicator
+              status="running"
+              label={syncPhase ?? t("sync.running", "Syncing orders...")}
+              count={countLabel}
+              percent={pct}
+            />
           );
         })()}
 
