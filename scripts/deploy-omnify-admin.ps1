@@ -86,7 +86,17 @@ $Apps = @{
 
 function Invoke-LightsailSsh {
   param([Parameter(Mandatory=$true)][string]$Command)
-  & ssh -i $LightsailKey -o StrictHostKeyChecking=no -o UserKnownHostsFile=NUL $LightsailHost $Command
+  # ssh emits "Warning: Permanently added <ip> to known hosts" to stderr on
+  # first connect, which PS 5.1 wraps as NativeCommandError under EAP=Stop.
+  # Downgrade EAP while ssh runs; redirect stderr to stdout so warnings stay
+  # visible; check $LASTEXITCODE explicitly.
+  $prevEap = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    & ssh -i $LightsailKey -o StrictHostKeyChecking=no -o UserKnownHostsFile=NUL $LightsailHost $Command 2>&1 | Out-Host
+  } finally {
+    $ErrorActionPreference = $prevEap
+  }
   if ($LASTEXITCODE -ne 0) {
     throw "SSH to $LightsailHost failed (exit $LASTEXITCODE): $Command"
   }
@@ -150,8 +160,19 @@ $OmnifyImage = "${EcrRepo}:omnify-${Tag}"
 if (-not $SkipBuild) {
   Write-Host ""
   Write-Host "  [build] docker build (tagged for both apps)..." -ForegroundColor Cyan
-  & docker build -t $FullImage -t $OmnifyImage .
-  if ($LASTEXITCODE -ne 0) { throw "docker build failed" }
+  # PS 5.1 + StrictMode + EAP=Stop: BuildKit writes progress lines to stderr,
+  # which PowerShell wraps as NativeCommandError and aborts. Downgrade EAP to
+  # Continue while docker runs; redirect stderr to stdout so progress is still
+  # visible; check $LASTEXITCODE explicitly. Same workaround as docker login
+  # below and on lines 207-211 for the SSH-piped docker login.
+  $prevEap = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    & docker build -t $FullImage -t $OmnifyImage . 2>&1 | Out-Host
+  } finally {
+    $ErrorActionPreference = $prevEap
+  }
+  if ($LASTEXITCODE -ne 0) { throw "docker build failed (exit $LASTEXITCODE)" }
 
   Write-Host ""
   Write-Host "  [ecr-login] aws ecr get-login-password -> docker login..." -ForegroundColor Cyan
@@ -176,12 +197,26 @@ if (-not $SkipBuild) {
 
   Write-Host ""
   Write-Host "  [push] $FullImage" -ForegroundColor Cyan
-  & docker push $FullImage
-  if ($LASTEXITCODE -ne 0) { throw "docker push (full) failed" }
+  # Same EAP guard as docker build — `docker push` emits layer-progress to
+  # stderr which would otherwise abort under EAP=Stop.
+  $prevEap = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    & docker push $FullImage 2>&1 | Out-Host
+  } finally {
+    $ErrorActionPreference = $prevEap
+  }
+  if ($LASTEXITCODE -ne 0) { throw "docker push (full) failed (exit $LASTEXITCODE)" }
 
   Write-Host "  [push] $OmnifyImage" -ForegroundColor Cyan
-  & docker push $OmnifyImage
-  if ($LASTEXITCODE -ne 0) { throw "docker push (omnify) failed" }
+  $prevEap = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    & docker push $OmnifyImage 2>&1 | Out-Host
+  } finally {
+    $ErrorActionPreference = $prevEap
+  }
+  if ($LASTEXITCODE -ne 0) { throw "docker push (omnify) failed (exit $LASTEXITCODE)" }
 } else {
   Write-Host ""
   Write-Host "  [skip-build] using existing image $FullImage / $OmnifyImage" -ForegroundColor Yellow
