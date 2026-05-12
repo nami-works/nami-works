@@ -48,6 +48,7 @@ import { formatCustomerShort } from "../utils/format-name";
 import { computeDueBuckets, type DueBucket } from "./app.local-delivery/due-bucket";
 import { LdAnalyticsAside } from "../components/ld-analytics-aside";
 import styles from "./app.local-delivery/styles.module.css";
+import { markerIconHTML, type MarkerIconKind } from "../utils/map-marker-icons";
 
 const DEFAULT_DELIVERY_METHOD = "local";
 const DEFAULT_LOCATION_ID = "all";
@@ -1525,17 +1526,20 @@ export default function Index() {
     [orders, deliveryPromiseDays, sameDayHour, sameDayMinute, browserTimeZone, userLocale],
   );
 
-  const dueBucketEmoji = useCallback(
-    (bucket: DueBucket | undefined): string => {
+  // Returns the semantic icon kind for a due-bucket. The actual rendering
+  // is delegated to the shared `markerIconHTML` util (inline SVG, replaces
+  // emoji per CLAUDE.md Polaris-first rule).
+  const dueBucketIconKind = useCallback(
+    (bucket: DueBucket | undefined): MarkerIconKind => {
       switch (bucket) {
-        case "failed": return t("map.legend.failedEmoji");
-        case "overdue": return t("map.legend.overdueEmoji");
-        case "today": return t("map.legend.dueTodayEmoji");
-        case "tomorrow": return t("map.legend.dueTomorrowEmoji");
-        default: return t("map.legend.dueLaterEmoji");
+        case "failed": return "failed";
+        case "overdue": return "overdue";
+        case "today": return "dueToday";
+        case "tomorrow": return "dueTomorrow";
+        default: return "dueLater";
       }
     },
-    [t],
+    [],
   );
 
   // Unassigned panel groups orders by due-date urgency. Failed orders are
@@ -1723,7 +1727,7 @@ export default function Index() {
 
         const buildLabel = (
           text: string,
-          emoji: string | null,
+          iconKind: MarkerIconKind | null,
           badgeStyle?: Partial<CSSStyleDeclaration>,
         ) => {
           const wrapper = document.createElement("div");
@@ -1737,11 +1741,11 @@ export default function Index() {
           orderLine.className = styles.mapLabelOrder;
           orderLine.textContent = text;
 
-          if (emoji) {
-            const emojiLine = document.createElement("div");
-            emojiLine.className = styles.mapLabelEmoji;
-            emojiLine.textContent = emoji;
-            label.appendChild(emojiLine);
+          if (iconKind) {
+            const iconLine = document.createElement("div");
+            iconLine.className = styles.mapLabelEmoji;
+            iconLine.innerHTML = markerIconHTML(iconKind);
+            label.appendChild(iconLine);
           }
           label.appendChild(orderLine);
           if (badgeStyle) {
@@ -1765,12 +1769,12 @@ export default function Index() {
             point.kind === "order" ? dueBucketByOrderId.get(point.id) : undefined;
           const orderData = point.kind === "order" ? ordersById.get(point.id) : null;
           const hasAddressError = orderData ? !orderData.addressValidation.isValid : false;
-          const emoji =
+          const iconKind: MarkerIconKind =
             point.kind === "order"
               ? hasAddressError
-                ? "🟡"
-                : dueBucketEmoji(dueBucket)
-              : "🏬";
+                ? "addressError"
+                : dueBucketIconKind(dueBucket)
+              : "storeLocation";
           const isSelected = point.kind === "order" && selectedOrderIds.has(point.id);
           const assignedBadgeColors =
             assignedRoute?.color && point.kind === "order"
@@ -1799,7 +1803,7 @@ export default function Index() {
               badgeStyle.boxShadow = "0 0 0 3px rgba(176, 159, 218, 0.7)";
             }
           }
-          const content = buildLabel(labelText, emoji, badgeStyle);
+          const content = buildLabel(labelText, iconKind, badgeStyle);
 
           const markerTitle = point.kind === "order" && orderData?.customerName
             ? `${point.name} \u2022 ${orderData.customerName}`
@@ -2120,7 +2124,7 @@ export default function Index() {
     editableRoutes,
     assignedOrderIds,
     dueBucketByOrderId,
-    dueBucketEmoji,
+    dueBucketIconKind,
     selectedOrderIds,
     locationId,
     filters.locationId,
@@ -2211,7 +2215,7 @@ export default function Index() {
 
         const buildLabel = (
           text: string,
-          emoji: string | null,
+          iconKind: MarkerIconKind | null,
           badgeStyle?: Partial<CSSStyleDeclaration>,
         ) => {
           const wrapper = document.createElement("div");
@@ -2225,11 +2229,11 @@ export default function Index() {
           textLine.className = styles.mapLabelOrder;
           textLine.textContent = text;
 
-          if (emoji) {
-            const emojiLine = document.createElement("div");
-            emojiLine.className = styles.mapLabelEmoji;
-            emojiLine.textContent = emoji;
-            label.appendChild(emojiLine);
+          if (iconKind) {
+            const iconLine = document.createElement("div");
+            iconLine.className = styles.mapLabelEmoji;
+            iconLine.innerHTML = markerIconHTML(iconKind);
+            label.appendChild(iconLine);
           }
           label.appendChild(textLine);
           if (badgeStyle) {
@@ -2245,7 +2249,7 @@ export default function Index() {
             map: manageRouteMapInstance.current,
             position: { lat: origin.latitude, lng: origin.longitude },
             title: t("map.fulfillmentLocation"),
-            content: buildLabel(t("map.fulfillmentLabel"), "🏬"),
+            content: buildLabel(t("map.fulfillmentLabel"), "storeLocation"),
           });
           manageRouteMarkersRef.current.push({ type: "advanced", marker: originMarker });
           bounds.extend({ lat: origin.latitude, lng: origin.longitude });
@@ -2255,16 +2259,16 @@ export default function Index() {
           const coords = order.shippingCoordinates!;
           const badgeColors = deriveBadgeColors(managedRoute.color);
           const dueBucket = dueBucketByOrderId.get(order.id);
-          const routeOrderEmoji = !order.addressValidation.isValid
-            ? "🟡"
-            : dueBucketEmoji(dueBucket);
+          const routeOrderIconKind: MarkerIconKind = !order.addressValidation.isValid
+            ? "addressError"
+            : dueBucketIconKind(dueBucket);
           const marker = new AdvancedMarkerElement({
             map: manageRouteMapInstance.current,
             position: { lat: coords.latitude, lng: coords.longitude },
             title: order.customerName ? `${order.name} \u2022 ${order.customerName}` : order.name,
             content: buildLabel(
               order.name,
-              routeOrderEmoji,
+              routeOrderIconKind,
               { backgroundColor: badgeColors.bg, borderColor: "#111111" },
             ),
           });
@@ -2334,7 +2338,7 @@ export default function Index() {
     locationsById,
     mapStyle,
     dueBucketByOrderId,
-    dueBucketEmoji,
+    dueBucketIconKind,
   ]);
 
   // ── Details route modal map ──────────────────────────────────────────────
@@ -2416,7 +2420,7 @@ export default function Index() {
 
         const buildLabel = (
           text: string,
-          emoji: string | null,
+          iconKind: MarkerIconKind | null,
           badgeStyle?: Partial<CSSStyleDeclaration>,
         ) => {
           const wrapper = document.createElement("div");
@@ -2430,11 +2434,11 @@ export default function Index() {
           textLine.className = styles.mapLabelOrder;
           textLine.textContent = text;
 
-          if (emoji) {
-            const emojiLine = document.createElement("div");
-            emojiLine.className = styles.mapLabelEmoji;
-            emojiLine.textContent = emoji;
-            label.appendChild(emojiLine);
+          if (iconKind) {
+            const iconLine = document.createElement("div");
+            iconLine.className = styles.mapLabelEmoji;
+            iconLine.innerHTML = markerIconHTML(iconKind);
+            label.appendChild(iconLine);
           }
           label.appendChild(textLine);
           if (badgeStyle) {
@@ -2450,7 +2454,7 @@ export default function Index() {
             map: detailsRouteMapInstance.current,
             position: { lat: origin.latitude, lng: origin.longitude },
             title: t("map.fulfillmentLocation"),
-            content: buildLabel(t("map.fulfillmentLabel"), "🏬"),
+            content: buildLabel(t("map.fulfillmentLabel"), "storeLocation"),
           });
           detailsRouteMarkersRef.current.push({ type: "advanced", marker: originMarker });
           bounds.extend({ lat: origin.latitude, lng: origin.longitude });
@@ -2460,16 +2464,16 @@ export default function Index() {
           const coords = order.shippingCoordinates!;
           const badgeColors = deriveBadgeColors(managedRoute.color);
           const dueBucket = dueBucketByOrderId.get(order.id);
-          const routeOrderEmoji = !order.addressValidation.isValid
-            ? "🟡"
-            : dueBucketEmoji(dueBucket);
+          const routeOrderIconKind: MarkerIconKind = !order.addressValidation.isValid
+            ? "addressError"
+            : dueBucketIconKind(dueBucket);
           const marker = new AdvancedMarkerElement({
             map: detailsRouteMapInstance.current,
             position: { lat: coords.latitude, lng: coords.longitude },
             title: order.customerName ? `${order.name} \u2022 ${order.customerName}` : order.name,
             content: buildLabel(
               order.name,
-              routeOrderEmoji,
+              routeOrderIconKind,
               { backgroundColor: badgeColors.bg, borderColor: "#111111" },
             ),
           });
@@ -2537,7 +2541,7 @@ export default function Index() {
     locationsById,
     mapStyle,
     dueBucketByOrderId,
-    dueBucketEmoji,
+    dueBucketIconKind,
   ]);
 
   const toggleSelection = (orderId: string) => {

@@ -10,15 +10,19 @@
   gap: 16px;
 }
 
+/* Block-title type scale: 14px / 650 weight, always visually HEAVIER than
+   the body content underneath it. Pre-fix this was 12/600 which read
+   subdued vs the 13/400 body — inverted hierarchy. */
 .contextLabel {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 650;
   color: #067647;
   margin-bottom: 4px;
 }
 
 .contextSummary {
   font-size: 13px;
+  font-weight: 400;
   color: #303030;
 }
 
