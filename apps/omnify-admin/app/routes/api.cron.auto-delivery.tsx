@@ -4,6 +4,11 @@ import { unauthenticated } from "../shopify.server";
 import type { LalamoveConfig } from "../services/carrier/lalamove-adapter.server";
 import type { OptimizerOrderInput } from "../services/google-routes-shared.server";
 import { clusterOrders } from "../services/carrier-quotation-optimizer.server";
+import {
+  isPhase1EnabledForLocation,
+  runRouteOptimizationPipeline,
+  buildPhase1PipelineInput,
+} from "../services/route-optimization/pipeline.server";
 import { getRuntimeCredentialsForShop } from "../services/lalamove-credentials.server";
 import {
   createLalamoveQuotation,
@@ -110,6 +115,29 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   });
 };
 
+// ── Legacy cluster fallback (Clarke-Wright savings) ──
+function runLegacyCluster(
+  validOrders: EligibleOrder[],
+  locationId: string,
+  pickupLat: number,
+  pickupLng: number,
+): Array<Array<{ orderId: string }>> {
+  const optimizerOrders: OptimizerOrderInput[] = validOrders.map((o) => ({
+    orderId: o.id,
+    locationId,
+    shippingCoordinates: { latitude: o.lat, longitude: o.lng },
+    locationCoordinates: { latitude: pickupLat, longitude: pickupLng },
+  }));
+  const routeCount = Math.min(
+    MAX_ROUTES,
+    Math.max(1, Math.ceil(validOrders.length / 5)),
+  );
+  const clusters = clusterOrders(optimizerOrders, routeCount, 10);
+  return clusters
+    .filter((c) => c.length > 0)
+    .map((c) => c.map((o) => ({ orderId: o.orderId })));
+}
+
 // ── Phase A: Auto-assign ──────────────────────────────────────────────────────
 
 async function runAutoAssign(
@@ -183,22 +211,63 @@ async function runAutoAssign(
     return 0;
   }
 
-  // Cluster orders into routes
-  const optimizerOrders: OptimizerOrderInput[] = validOrders.map((o) => ({
-    orderId: o.id,
-    locationId,
-    shippingCoordinates: { latitude: o.lat, longitude: o.lng },
-    locationCoordinates: { latitude: pickupLat, longitude: pickupLng },
-  }));
+  // ── Phase 1: LLM-enabled optimizer (feature-flagged) ──
+  // Runs only when BOTH:
+  //   - process.env.ROUTE_OPTIMIZATION_PHASE_1_ENABLED === "true", AND
+  //   - LalamoveLocationConfig.data.routeOptimizationPhase1Enabled === true
+  // Falls back to legacy clusterOrders on any unrecoverable error.
+  let nonEmptyClusters: Array<Array<{ orderId: string }>>;
+  if (isPhase1EnabledForLocation(config)) {
+    try {
+      const pipelineInput = await buildPhase1PipelineInput({
+        shop,
+        locationId,
+        config: {
+          market: config.market,
+          preferredServiceType: config.preferredServiceType || "LALAGO",
+          city: config.city,
+          locationName: config.locationName,
+        },
+        pickupLat,
+        pickupLng,
+        orders: validOrders.map((o) => ({
+          id: o.id,
+          name: o.name,
+          lat: o.lat,
+          lng: o.lng,
+        })),
+        credentialsResolver: getRuntimeCredentialsForShop,
+      });
+      if (pipelineInput) {
+        const phase1Start = Date.now();
+        const result = await runRouteOptimizationPipeline(pipelineInput);
+        console.info(
+          `[auto-delivery:assign] Phase1 OK shop=${shop} decisionId=${result.decisionId} winner=${result.decision.winningCandidateId} elapsed=${Date.now() - phase1Start}ms`,
+        );
+        // Convert winningClustering (slot -> orderName[]) back to GID clusters
+        nonEmptyClusters = result.winningClustering
+          .map((slot) =>
+            slot.orderIds
+              .map((name) => validOrders.find((o) => o.name === name)?.id)
+              .filter((id): id is string => Boolean(id))
+              .map((id) => ({ orderId: id })),
+          )
+          .filter((c) => c.length > 0);
+      } else {
+        console.warn(`[auto-delivery:assign] Phase1 skipped (unknown market or missing credentials) shop=${shop} city=${config.city ?? "?"} — falling back to legacy`);
+        nonEmptyClusters = runLegacyCluster(validOrders, locationId, pickupLat, pickupLng);
+      }
+    } catch (err) {
+      console.error(
+        `[auto-delivery:assign] Phase1 FAILED shop=${shop} — falling back to legacy`,
+        err,
+      );
+      nonEmptyClusters = runLegacyCluster(validOrders, locationId, pickupLat, pickupLng);
+    }
+  } else {
+    nonEmptyClusters = runLegacyCluster(validOrders, locationId, pickupLat, pickupLng);
+  }
 
-  const routeCount = Math.min(
-    MAX_ROUTES,
-    Math.max(1, Math.ceil(validOrders.length / 5)),
-  );
-  const clusters = clusterOrders(optimizerOrders, routeCount, 10);
-
-  // Filter out empty clusters
-  const nonEmptyClusters = clusters.filter((c) => c.length > 0);
   if (nonEmptyClusters.length === 0) {
     console.warn(`[auto-delivery:assign] SKIP shop=${shop} location=${locationId} — clustering produced no routes`);
     return 0;

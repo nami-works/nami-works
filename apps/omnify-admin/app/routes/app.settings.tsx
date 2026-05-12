@@ -66,6 +66,8 @@ type LalamoveConfig = {
   autoAssignDelayMinutes?: number | null;
   autoDispatchTime?: string | null;
   retryCutoffTime?: string | null;
+  // Route Optimization Phase 1 (LLM reasoning)
+  routeOptimizationPhase1Enabled?: boolean | null;
 };
 
 const LALAMOVE_MARKETS = [
@@ -326,6 +328,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       autoAssignDelayMinutes: parseInt(String(formData.get("autoAssignDelayMinutes") ?? "15"), 10) || 15,
       autoDispatchTime: String(formData.get("autoDispatchTime") ?? "").trim() || null,
       retryCutoffTime: String(formData.get("retryCutoffTime") ?? "").trim() || null,
+      // Route Optimization Phase 1 (LLM reasoning)
+      routeOptimizationPhase1Enabled: formData.get("routeOptimizationPhase1Enabled") === "true",
     };
     await prisma.lalamoveLocationConfig.upsert({
       where: { shop_locationId: { shop, locationId } },
@@ -566,6 +570,7 @@ const defaultConfig = (userLocale: string): LalamoveConfig => ({
   autoAssignDelayMinutes: 15,
   autoDispatchTime: "14:30",
   retryCutoffTime: "17:30",
+  routeOptimizationPhase1Enabled: false,
 });
 
 type SettingsTab = "settings" | "providers" | "carriers";
@@ -851,6 +856,10 @@ export default function LocationSettings() {
     formData.append("autoAssignDelayMinutes", String(lalamoveSettings.autoAssignDelayMinutes ?? 15));
     formData.append("autoDispatchTime", lalamoveSettings.autoDispatchTime ?? "");
     formData.append("retryCutoffTime", lalamoveSettings.retryCutoffTime ?? "");
+    formData.append(
+      "routeOptimizationPhase1Enabled",
+      String(lalamoveSettings.routeOptimizationPhase1Enabled ?? false),
+    );
     lalamoveFetcher.submit(formData, { method: "post" });
   };
 
@@ -1132,6 +1141,23 @@ export default function LocationSettings() {
                 />
               </div>
             ) : null}
+
+            {/* Phase 1 LLM-enabled optimizer toggle (per-location opt-in). */}
+            <div
+              className={styles.settingsSpanFull}
+              style={{ display: "flex", alignItems: "center", gap: 8 }}
+            >
+              <s-checkbox
+                checked={lalamoveSettings.routeOptimizationPhase1Enabled ?? false}
+                onChange={(e) =>
+                  updateField(
+                    "routeOptimizationPhase1Enabled",
+                    (e.currentTarget as unknown as HTMLInputElement).checked,
+                  )
+                }
+              />
+              <s-text type="strong">Use AI-powered route optimization</s-text>
+            </div>
                   </div>
 
                   {/* Per-section Save: Delivery details */}

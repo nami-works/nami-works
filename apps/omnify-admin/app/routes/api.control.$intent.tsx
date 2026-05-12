@@ -61,6 +61,7 @@ import type { OptimizerOrderInput } from "../services/google-routes-shared.serve
 import {
   isPhase1EnabledForLocation,
   runRouteOptimizationPipeline,
+  buildPhase1PipelineInput,
 } from "../services/route-optimization/pipeline.server";
 import type { AdminApiContext } from "@shopify/shopify-app-react-router/server";
 import {
@@ -922,17 +923,10 @@ function validateAddressLine(
 }
 
 // ── Phase 1 LLM-enabled optimizer helper (feature-flagged) ─────────────────
-// Maps a Lalamove config's `city` field to the MarketKey used by the
-// route-optimization pipeline. Returns "other" for unknown cities (the
-// caller falls back to the legacy path).
-function pickMarketKey(city: string | null | undefined): "rio-de-janeiro" | "sao-paulo" | "recife" | "other" {
-  const c = (city ?? "").toLowerCase();
-  if (c.includes("rio de janeiro") || c.includes("niter")) return "rio-de-janeiro";
-  if (c.includes("são paulo") || c.includes("sao paulo")) return "sao-paulo";
-  if (c.includes("recife")) return "recife";
-  return "other";
-}
-
+// Maps a Lalamove config to the MarketKey via the shared helper in
+// pipeline.server.ts so all entry points (control API, UI, cron) stay
+// in sync. Returns null when Phase 1 can't run for this location (unknown
+// market or missing Lalamove credentials) — caller falls back to legacy.
 async function runPhase1Optimize(args: {
   shop: string;
   admin: AdminApiContext;
@@ -946,40 +940,27 @@ async function runPhase1Optimize(args: {
 }): Promise<Response | null> {
   const { shop, admin, locationGid, config, pickupLat, pickupLng, validOrders, flagged, start } = args;
 
-  const market = pickMarketKey(config.city);
-  if (market === "other") {
-    console.warn(`[control:optimize] Phase 1 skipped: unknown market for city=${config.city ?? "?"}`);
-    return null;
-  }
-  const lalamoveCredentials = await getRuntimeCredentialsForShop(shop);
-  if (!lalamoveCredentials) {
-    console.warn(`[control:optimize] Phase 1 skipped: no Lalamove credentials for shop=${shop}`);
-    return null;
-  }
-
-  // Build the CandidateOrderInput shape.
-  const ordersForPipeline = validOrders.map((o) => ({
-    name: o.name,
-    orderId: o.id,
-    coordinates: { latitude: o.lat, longitude: o.lng },
-    // Free-form neighborhood from the order address (used by corridor swap).
-    neighborhood: (o as { neighborhood?: string }).neighborhood,
-  }));
-
-  const result = await runRouteOptimizationPipeline({
+  const pipelineInput = await buildPhase1PipelineInput({
     shop,
     locationId: locationGid,
-    locationName: config.locationName ?? "Pickup",
-    market,
-    tenantKey: shop.replace(".myshopify.com", "").replace(/-cosmeticos$/, ""),
-    pickupCoordinates: { latitude: pickupLat, longitude: pickupLng },
-    orders: ordersForPipeline,
-    serviceType: config.preferredServiceType,
-    lalamoveMarket: config.market,
-    lalamoveCredentials,
-    staticMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
-    anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+    config,
+    pickupLat,
+    pickupLng,
+    orders: validOrders.map((o) => ({
+      id: o.id,
+      name: o.name,
+      lat: o.lat,
+      lng: o.lng,
+      neighborhood: (o as { neighborhood?: string }).neighborhood,
+    })),
+    credentialsResolver: getRuntimeCredentialsForShop,
   });
+  if (!pipelineInput) {
+    console.warn(`[control:optimize] Phase 1 skipped (unknown market or missing credentials) shop=${shop} city=${config.city ?? "?"}`);
+    return null;
+  }
+
+  const result = await runRouteOptimizationPipeline(pipelineInput);
 
   // Apply the winning clustering as ld_rota tags.
   const appliedRoutes: Array<{ slot: number; tag: string; orderIds: string[] }> = [];

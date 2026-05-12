@@ -305,3 +305,77 @@ export function isPhase1EnabledForLocation(
   if (process.env.ROUTE_OPTIMIZATION_PHASE_1_ENABLED !== "true") return false;
   return Boolean(config.routeOptimizationPhase1Enabled);
 }
+
+/**
+ * Map a LalamoveConfig `city` field to the MarketKey used by the geofence
+ * registry. Returns "other" for unknown cities — caller should skip
+ * Phase 1 in that case (the registry has no thresholds to apply).
+ */
+export function pickMarketKey(city: string | null | undefined): MarketKey {
+  const c = (city ?? "").toLowerCase();
+  if (c.includes("rio de janeiro") || c.includes("niter")) return "rio-de-janeiro";
+  if (c.includes("são paulo") || c.includes("sao paulo")) return "sao-paulo";
+  if (c.includes("recife")) return "recife";
+  return "other";
+}
+
+/**
+ * Build a `PipelineInput` from the shared shop/location/orders shape
+ * every entry point (control API, UI optimize-fleet, auto-delivery cron)
+ * already has on hand. Returns null when the location can't run Phase 1
+ * (unknown market or missing Lalamove credentials) — caller falls back
+ * to the legacy optimizer.
+ *
+ * Lalamove credentials are resolved via the standard shop credential
+ * helper; pass `credentialsOverride` to skip the lookup (tests / cron
+ * batch optimizations).
+ */
+export async function buildPhase1PipelineInput(args: {
+  shop: string;
+  locationId: string;
+  config: {
+    market: string;
+    preferredServiceType: string;
+    city?: string | null;
+    locationName?: string | null;
+  };
+  pickupLat: number;
+  pickupLng: number;
+  orders: {
+    id?: string;
+    name: string;
+    lat: number;
+    lng: number;
+    neighborhood?: string | null;
+  }[];
+  credentialsResolver: (shop: string) => Promise<{ apiKey: string; apiSecret: string } | null>;
+  quoterOverride?: PipelineInput["quoterOverride"];
+  reasonerOverride?: PipelineInput["reasonerOverride"];
+}): Promise<PipelineInput | null> {
+  const market = pickMarketKey(args.config.city);
+  if (market === "other") return null;
+  const credentials = await args.credentialsResolver(args.shop);
+  if (!credentials) return null;
+
+  return {
+    shop: args.shop,
+    locationId: args.locationId,
+    locationName: args.config.locationName ?? "Pickup",
+    market,
+    tenantKey: args.shop.replace(".myshopify.com", "").replace(/-cosmeticos$/, ""),
+    pickupCoordinates: { latitude: args.pickupLat, longitude: args.pickupLng },
+    orders: args.orders.map((o) => ({
+      name: o.name,
+      orderId: o.id,
+      coordinates: { latitude: o.lat, longitude: o.lng },
+      neighborhood: o.neighborhood ?? undefined,
+    })),
+    serviceType: args.config.preferredServiceType,
+    lalamoveMarket: args.config.market,
+    lalamoveCredentials: credentials,
+    staticMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
+    anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+    quoterOverride: args.quoterOverride,
+    reasonerOverride: args.reasonerOverride,
+  };
+}

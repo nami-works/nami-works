@@ -38,6 +38,11 @@ import {
   type EscalationResult,
 } from "../services/lalamove-escalation.server";
 import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
+import {
+  isPhase1EnabledForLocation,
+  runRouteOptimizationPipeline,
+  buildPhase1PipelineInput,
+} from "../services/route-optimization/pipeline.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { formatCustomerShort } from "../utils/format-name";
 import { computeDueBuckets, type DueBucket } from "./app.local-delivery/due-bucket";
@@ -3920,6 +3925,7 @@ export default function Index() {
       )
       .map((order) => ({
         orderId: order.id,
+        orderName: order.name,
         locationId: order.fulfillmentLocation.id,
         shippingCoordinates: order.shippingCoordinates!,
         locationCoordinates: order.fulfillmentLocation.coordinates!,
@@ -8541,6 +8547,166 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() || "";
     if (!mapsApiKey) {
       return { ok: false, error: "GOOGLE_MAPS_API_KEY is missing." };
+    }
+
+    // ── Phase 1: LLM-enabled optimizer (feature-flagged) ──
+    // Runs only when BOTH:
+    //   - process.env.ROUTE_OPTIMIZATION_PHASE_1_ENABLED === "true", AND
+    //   - LalamoveLocationConfig.data.routeOptimizationPhase1Enabled === true
+    // Falls back to legacy VRP on any unrecoverable error.
+    if (isPhase1EnabledForLocation(llmConfig)) {
+      try {
+        const ordersWithNames = validOrders as Array<
+          OptimizerOrderInput & { orderName?: string }
+        >;
+        const pipelineInput = await buildPhase1PipelineInput({
+          shop,
+          locationId: primaryLocationId,
+          config: {
+            market: llmConfig.market,
+            preferredServiceType:
+              carrierConfig?.lalamovePreferredServiceType ||
+              llmConfig.preferredServiceType ||
+              "LALAGO",
+            city: llmConfig.city,
+            locationName: llmConfig.locationName,
+          },
+          pickupLat: ordersWithNames[0].locationCoordinates.latitude,
+          pickupLng: ordersWithNames[0].locationCoordinates.longitude,
+          orders: ordersWithNames.map((o) => ({
+            id: o.orderId,
+            name: o.orderName || o.orderId,
+            lat: o.shippingCoordinates.latitude,
+            lng: o.shippingCoordinates.longitude,
+          })),
+          credentialsResolver: getRuntimeCredentialsForShop,
+        });
+        if (pipelineInput) {
+          const phase1Start = Date.now();
+          const result = await runRouteOptimizationPipeline(pipelineInput);
+          console.info(
+            `[local-delivery] optimize-fleet Phase1 OK shop=${shop} decisionId=${result.decisionId} winner=${result.decision.winningCandidateId} elapsed=${Date.now() - phase1Start}ms`,
+          );
+
+          // Map winning clustering back to GIDs and apply tags.
+          const allRouteTags = ROUTE_TAG_DEFINITIONS.map((d) => d.tag);
+          const tagAssignments: Array<{ orderId: string; tag: string }> = [];
+          const optimizedRoutes: Array<{
+            routeIndex: number;
+            locationId: string;
+            orderIds: string[];
+            polyline: string;
+            totalDistanceMeters: number;
+            totalDurationSeconds: number;
+          }> = [];
+          for (const slot of result.winningClustering) {
+            const routeIndex = slot.slot;
+            const tag = ROUTE_TAG_DEFINITIONS[routeIndex]?.tag;
+            if (!tag) continue;
+            const orderIds = slot.orderIds
+              .map((name) =>
+                ordersWithNames.find(
+                  (o) => (o.orderName || o.orderId) === name,
+                )?.orderId,
+              )
+              .filter((id): id is string => Boolean(id));
+            for (const orderId of orderIds) {
+              tagAssignments.push({ orderId, tag });
+            }
+            optimizedRoutes.push({
+              routeIndex,
+              locationId: primaryLocationId,
+              orderIds,
+              polyline: "",
+              totalDistanceMeters: 0,
+              totalDurationSeconds: 0,
+            });
+          }
+
+          const allOptimizedIds = optimizedRoutes.flatMap((r) => r.orderIds);
+          await batchProcess(allOptimizedIds, GQL_BATCH_SIZE, (orderId) =>
+            admin.graphql(
+              `#graphql
+                mutation RemoveOrderTag($id: ID!, $tags: [String!]!) {
+                  tagsRemove(id: $id, tags: $tags) {
+                    userErrors { message }
+                  }
+                }`,
+              { variables: { id: orderId, tags: allRouteTags } },
+            ),
+          );
+          await batchProcess(tagAssignments, GQL_BATCH_SIZE, ({ orderId, tag }) =>
+            admin.graphql(
+              `#graphql
+                mutation AddOrderTag($id: ID!, $tags: [String!]!) {
+                  tagsAdd(id: $id, tags: $tags) {
+                    userErrors { message }
+                  }
+                }`,
+              { variables: { id: orderId, tags: [tag] } },
+            ),
+          );
+
+          try {
+            const proposedRoutes = optimizedRoutes.map((r) => ({
+              routeIndex: r.routeIndex,
+              orderIds: r.orderIds,
+              serviceType:
+                carrierConfig?.lalamovePreferredServiceType ||
+                llmConfig.preferredServiceType ||
+                "LALAGO",
+              costSubunits: 0,
+            }));
+            const orderCoordinates = ordersWithNames.map((o) => ({
+              orderId: o.orderId,
+              lat: o.shippingCoordinates.latitude,
+              lng: o.shippingCoordinates.longitude,
+            }));
+            await (prisma as { routeOptimizationSnapshot: { create: (args: unknown) => Promise<unknown> } }).routeOptimizationSnapshot.create({
+              data: {
+                shop,
+                locationId: primaryLocationId,
+                proposedRoutes,
+                orderCoordinates,
+                orderCount: ordersWithNames.length,
+                routeCount: optimizedRoutes.length,
+              },
+            });
+          } catch (snapshotErr) {
+            console.warn("[local-delivery] optimize-fleet Phase1 snapshot FAILED", snapshotErr);
+          }
+
+          return {
+            ok: true,
+            optimizeLocationId: primaryLocationId,
+            optimizedRoutes,
+            summary: {
+              routeCount: optimizedRoutes.length,
+              totalDistanceMeters: 0,
+              totalDurationSeconds: 0,
+              totalOrders: ordersWithNames.length,
+              costTotal: "0",
+              costCurrency: "BRL",
+              totalLalamoveCost: "0",
+              totalWaitSurcharge: "0",
+            },
+            phase1: {
+              decisionId: result.decisionId,
+              decisionPath: result.decision.decisionPath,
+              winningCandidateId: result.decision.winningCandidateId,
+              confidence: result.decision.confidence,
+              postMortemFlags: result.decision.postMortemFlags,
+              timings: result.timings,
+            },
+          };
+        }
+        // pipelineInput === null → unknown market or missing creds, fall through.
+      } catch (err) {
+        console.error(
+          `[local-delivery] optimize-fleet Phase1 FAILED shop=${shop} — falling back to legacy VRP`,
+          err,
+        );
+      }
     }
 
     // Run VRP optimizer (Clarke-Wright savings + Google Distance Matrix)
