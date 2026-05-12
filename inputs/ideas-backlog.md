@@ -6,24 +6,15 @@ This file replaces what was conceptually planned for the **Extras** nav slot —
 
 ---
 
-## Decisions locked in (2026-05-07, nav-compliance audit)
+## Decisions locked in (2026-05-07, nav-compliance audit) — STATUS
 
-These are pre-approved by the user. When the in-flight branches from other sessions land, a single chore branch should bundle:
+**Decisions 1, 2, 3, 5 — SHIPPED 2026-05-09 in PR #26 (`7bb340c`).** Deployed as full rev 28 / omnify rev 50. See deploy-queue Deployed section for the post-deploy verification checklist. Concretely:
+- Decision 1 (drop `Extras` nav entry + dead `getHomeRoute()` export + i18n `extras` keys) — done.
+- Decision 2 (back-action slots on sub-pages) — done for the 5 sub-pages that have their own `<s-page>` (3 storytelling sub-pages + brand + tone-sources). The `app.merchandising.*` sub-pages don't have their own `<s-page>` — they render inside `app.merchandising.tsx`'s `<Outlet>`, which already owns the page header and back-action wiring, so no per-file change was needed for them.
+- Decision 3 (move brand-settings → Settings sub-route at `/app/settings/brand` with a Brand tab in the Settings tab strip) — done.
+- Decision 5 ("Story-telling" → "Storytelling") — done.
 
-1. **Drop the `Extras` nav entry.** Removes the line from `ALL_NAV_ITEMS` in [app/utils/app-identity.server.ts](../app/utils/app-identity.server.ts), drops the `extras` keys from `app/i18n/locales/{en,pt-BR}/common.json` and `app/i18n/locales/{en,pt-BR}/home.json`, and removes the dead `getHomeRoute()` export. Brings cpg-labs identity to 7 nav items, eliminating the "View more" overflow.
-2. **Add `back-action` slot to all sub-pages.** ~11 routes: `app.brand-settings*`, `app.storytelling_.{brief,learnings,review}`, `app.merchandising.{collections,discounts,metaobjects,pricing}`, `app.merchandising.sale.{$id,quick-apply}`. Mechanical change per route.
-3. **Move `brand-settings` to Settings as a new "Brand" tab** *(updated 2026-05-07; supersedes the earlier "move under Storytelling" plan)*. Reasoning: tone of voice + brand identity are cross-feature assets that future surfaces (Affiliates messaging, Local Delivery driver scripts, Retail email copy) will all want to read from. Storytelling consumes brand voice today but isn't the owner of it. Settings is the right home for cross-cutting config — same shape as Locations or Carriers being shared by multiple features. Concretely:
-   - Add a "Brand" tab to `app.settings.tsx` (5th tab alongside Delivery details / Retail filters / Delivery providers / Carriers).
-   - Move `app.brand-settings.tsx` → `app.settings_.brand.tsx` (or an inline tab section, depending on size). The whole `BrandAssets` + `BrandLearning` UI moves together — not just tone sources — so we don't end up with a split where tone sources is in Settings but the rest of the brand config is still reached from Storytelling.
-   - Move `app.brand-settings_.tone-sources.tsx` → `app.settings_.brand.tone-sources.tsx` (sub-page under the Brand tab).
-   - Update Storytelling deep-links (`s-link href="/app/brand-settings"`) to point at `/app/settings/brand`.
-   - Settings gains `back-action` on each sub-tab (covered by decision #2).
-   - Side benefit: closes the de-highlight bug that motivated the original "move under Storytelling" plan, since the parent (Settings) is in the nav.
-   - Risk: Settings tab count goes 4 → 5. Still well under the no-wrap budget per CLAUDE.md tabs convention. Worth verifying mobile width.
-4. **Fold Product Launches (`/app/goals`) into Campaigns.** Treat a product launch as a campaign with a 30-day window pinned to a product GID. The Campaigns engine (in progress per `docs/project-brief.md`) already covers time-bounded sales pushes with per-location targets and matchRule semantics — the productGid match variant is a near-zero-diff add. Once Campaigns ships, delete the `app.goals` route + drop the `GoalsConfig` and `GoalsRun` Prisma tables.
-5. **Storytelling label: one word.** Update `nav.storytelling` in `app/i18n/locales/{en,pt-BR}/common.json` from `"Story-telling"` → `"Storytelling"`. Routes, i18n namespace, and internal references already use the unhyphenated form; the nav label was the only outlier.
-
-**Held**: don't ship any of the above as a standalone PR right now; bundle into one chore branch after the in-flight session branches merge. Single sweep is easier to review and lower-risk for merge conflicts.
+**Decision 4 — NOT YET SHIPPED.** Folding `/app/goals` into Campaigns still depends on the Campaigns engine landing first. Picks up after Campaigns goes live; track under "Product Launches" below.
 
 ---
 

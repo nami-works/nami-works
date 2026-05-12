@@ -69,6 +69,12 @@
 - Expanded layout
   - Render sidebar blocks (*Route manager* and *Auto-assign accuracy*) at the same relative positions to the main block
 
+### Analytics aside block
+- Replace the simple "View analytics" button (currently in the LD page header) with a full aside block surfacing main analytics inline:
+  - Headline metric (total savings) visible without clicking through
+  - "See more" button leading to the full `/app/local-delivery/analytics` panel
+- Goal: make the value of the analytics panel obvious from the LD operational page, instead of hiding it behind a single button click
+
 ## Route dispatching
 - Verify why 'Dispatch all' button is not working and propose a fix
 - Suggest  field mapping to update order's delivery status on Shopify according to Lalamove's status
