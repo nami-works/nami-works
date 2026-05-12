@@ -68,7 +68,7 @@
   },
   "toneSources": {
     "manageLink": "Gerenciar fontes de tom de voz",
-    "pageHeading": "Fontes de tom de voz",
+    "pageHeading": "Tom de voz",
     "refreshNow": "Atualizar tom agora",
     "refreshOk": "Coletadas {{sampled}} fontes, inferidos {{inferred}} traços.",
     "sources": {

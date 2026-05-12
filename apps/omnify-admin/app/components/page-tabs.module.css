@@ -89,24 +89,25 @@
 /* In-trail variant — Option C from the settings-brand-merged-v1 mockup.
    Used when the active tab is a child of this tab (e.g. Brand is in-trail
    when on the tone-sources sub-route, with Tone of voice as the active tab).
-   Subdued + italic differentiates from regular inactive tabs. Lighter
-   underline shows the "trail" without competing with the active tab's
-   underline. */
+
+   Color sits BETWEEN inactive (#6d7175) and active (#303030): the in-trail
+   tab reads as "you came from here / clickable to return" — more weight
+   than other inactive tabs but less than the current-page indicator.
+   No italic (Lucas r2 feedback 2026-05-12). */
 .tabInTrail {
-  color: #b5b5b5;
-  font-style: italic;
+  color: #4a4a4a;
 }
 
 .tabInTrail::after {
-  background: #d9d9d9;
+  background: #b0b0b0;
 }
 
 .tabInTrail:hover {
-  color: #6d7175;
+  color: #303030;
 }
 
 .tabInTrail:hover::after {
-  background: #8c9196;
+  background: #6d7175;
 }
 
 .tabTrailChevron {

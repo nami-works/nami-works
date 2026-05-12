@@ -68,7 +68,7 @@
   },
   "toneSources": {
     "manageLink": "Manage tone sources",
-    "pageHeading": "Tone of voice sources",
+    "pageHeading": "Tone of voice",
     "refreshNow": "Refresh tone now",
     "refreshOk": "Sampled {{sampled}} articles, inferred {{inferred}} traits.",
     "sources": {
