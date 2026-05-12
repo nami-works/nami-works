@@ -206,7 +206,9 @@ function isValidSpatialReasonerOutput(
   if (typeof o.confidence !== "number" || o.confidence < 0 || o.confidence > 1) return false;
   if (typeof o.globalCommentary !== "string") return false;
   if (!Array.isArray(o.postMortemFlags)) return false;
-  if (typeof o.promptVersion !== "string") return false;
+  // `promptVersion` is metadata the reasoner injects post-parse from
+  // `ReasonerInput.promptVersion` — the LLM never sees it in the v1 prompt
+  // schema, so requiring it here causes every real call to fail validation.
   for (const c of o.candidates as unknown[]) {
     if (!c || typeof c !== "object") return false;
     const cc = c as Record<string, unknown>;

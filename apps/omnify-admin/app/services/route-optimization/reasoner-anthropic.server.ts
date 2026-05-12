@@ -94,10 +94,14 @@ export function buildAnthropicReasoner(opts: {
         };
       }
 
+      // Inject `promptVersion` server-side — it's metadata for replay/audit
+      // and not something the LLM should be responsible for emitting. The
+      // v1 prompt schema doesn't list it, so requiring it pre-injection
+      // breaks every call.
       return {
         ok: true,
         rawText,
-        parsed: parsed.value,
+        parsed: { ...parsed.value, promptVersion: input.promptVersion },
         tokensUsed: {
           input: response.usage?.input_tokens ?? 0,
           output: response.usage?.output_tokens ?? 0,

@@ -488,15 +488,23 @@ export default function Index() {
     totalLalamoveCost?: string;
     totalWaitSurcharge?: string;
   } | null>(null);
-  // Phase 1 (AI optimizer) status surfaced by the optimize-fleet action.
-  // - `null` = legacy clusterer ran (toggle off, no flag set, or AI not
-  //   attempted) — no notice rendered.
-  // - `{ ok: true, ... }` = AI ran successfully.
-  // - `{ ok: false, reason }` = AI was attempted but fell back; we render
-  //   a warning banner so the merchant isn't left guessing.
+  // AI optimizer status surfaced by the optimize-fleet action.
+  // - `null`              = no recent optimize attempt; nothing to show.
+  // - `{ ok: true }`      = AI ran successfully (banner shown only if flags raised).
+  // - `{ ok: false }`     = AI couldn't / didn't optimize; banner explains why.
   const [phase1Status, setPhase1Status] = useState<
     | { ok: true; decisionId: string; confidence: number; postMortemFlags: string[] }
-    | { ok: false; reason: "unknown_market" | "no_credentials" | "pipeline_error"; message?: string }
+    | {
+        ok: false;
+        reason:
+          | "phase1_disabled"
+          | "unknown_market"
+          | "no_credentials"
+          | "low_confidence"
+          | "pipeline_error";
+        message?: string;
+        decisionId?: string;
+      }
     | null
   >(null);
   const [isRequestDriverModalOpen, setIsRequestDriverModalOpen] = useState(false);
@@ -1194,10 +1202,48 @@ export default function Index() {
       totalDistanceMeters?: number;
       totalDurationSeconds?: number;
     }>;
+    // Surface AI optimizer status FIRST — runs even when routes are empty
+    // (AI declined to optimize → banner explains why, no routes applied).
+    type Phase1SkipReason =
+      | "phase1_disabled"
+      | "unknown_market"
+      | "no_credentials"
+      | "low_confidence"
+      | "pipeline_error";
+    const phase1 = (optimizeFetcher.data as {
+      phase1?: { decisionId: string; confidence: number; postMortemFlags: string[] };
+    }).phase1;
+    const phase1SkippedFromAction = (optimizeFetcher.data as {
+      phase1Skipped?: { reason: Phase1SkipReason; message?: string; decisionId?: string };
+    }).phase1Skipped;
+    if (phase1) {
+      setPhase1Status({
+        ok: true,
+        decisionId: phase1.decisionId,
+        confidence: phase1.confidence,
+        postMortemFlags: phase1.postMortemFlags ?? [],
+      });
+    } else if (phase1SkippedFromAction) {
+      setPhase1Status({
+        ok: false,
+        reason: phase1SkippedFromAction.reason,
+        message: phase1SkippedFromAction.message,
+        decisionId: phase1SkippedFromAction.decisionId,
+      });
+    } else {
+      setPhase1Status(null);
+    }
+
     if (
       !optimizedRoutes?.length ||
       optimizedRoutes.every((r) => !r.orderIds?.length)
     ) {
+      // AI declined to assign routes — clear stale route state so the map
+      // doesn't show last run's clustering alongside the new banner.
+      setEditableRoutes((current) =>
+        current.map((route) => ({ ...route, orderIds: [], polyline: "" })),
+      );
+      setSelectedOrderIds(new Set());
       return;
     }
     console.info("[local-delivery:optimize-response] Applying %d optimizedRoutes polylines: %s",
@@ -1231,38 +1277,6 @@ export default function Index() {
     if (optimizeFetcher.data.summary) {
       setOptimizerSummary(optimizeFetcher.data.summary as typeof optimizerSummary);
     }
-    // Surface Phase 1 (AI optimizer) result/skip-reason so the UI can show
-    // a banner. `phase1` present → success; `phase1Skipped` present → AI
-    // was attempted but fell back; neither → legacy ran (no notice).
-    const phase1 = (optimizeFetcher.data as {
-      phase1?: { decisionId: string; confidence: number; postMortemFlags: string[] };
-      phase1Skipped?: {
-        reason: "unknown_market" | "no_credentials" | "pipeline_error";
-        message?: string;
-      };
-    }).phase1;
-    const phase1SkippedFromAction = (optimizeFetcher.data as {
-      phase1Skipped?: {
-        reason: "unknown_market" | "no_credentials" | "pipeline_error";
-        message?: string;
-      };
-    }).phase1Skipped;
-    if (phase1) {
-      setPhase1Status({
-        ok: true,
-        decisionId: phase1.decisionId,
-        confidence: phase1.confidence,
-        postMortemFlags: phase1.postMortemFlags ?? [],
-      });
-    } else if (phase1SkippedFromAction) {
-      setPhase1Status({
-        ok: false,
-        reason: phase1SkippedFromAction.reason,
-        message: phase1SkippedFromAction.message,
-      });
-    } else {
-      setPhase1Status(null);
-    }
     // Populate per-route quote totals from optimizer results
     if (summary?.costTotal != null) {
       const perRouteCosts = optimizedRoutes as Array<{
@@ -1295,12 +1309,14 @@ export default function Index() {
       const elapsed = Date.now() - startedAt;
       const rawPct = Math.min(95, (elapsed / estimatedMs) * 100);
       let phase: string;
-      if (rawPct < 5) phase = "Building distance matrix...";
-      else if (rawPct < 10) phase = "Computing route assignments...";
-      else if (rawPct < 40) phase = "Quoting routes with Lalamove...";
-      else if (rawPct < 65) phase = "Rendering driving paths...";
-      else if (rawPct < 95) phase = "Fine-tuning assignments...";
-      else phase = "Finalizing...";
+      // AI pipeline stages: candidate-generator → rule-engine → quote-engine
+      // → spatial-reasoner (LLM) → decision-arbiter. Reflected here as
+      // user-facing phase labels.
+      if (rawPct < 10) phase = "Generating candidate clusterings...";
+      else if (rawPct < 25) phase = "Evaluating against geofence rules...";
+      else if (rawPct < 50) phase = "Quoting candidates with Lalamove...";
+      else if (rawPct < 85) phase = "AI reviewing spatial trade-offs...";
+      else phase = "Finalizing AI decision...";
       setOptimizeProgress((prev) => prev ? { ...prev, pct: rawPct, phase } : null);
     };
     tick();
@@ -2089,63 +2105,15 @@ export default function Index() {
           });
         }
 
+        // Removed 2026-05-12: straight-line connectors between pickup and
+        // selected orders. With AI-only optimization, those lines implied
+        // a route order the LLM had not yet decided on — the merchant saw
+        // a path before it existed. Still clear any stale renderers from a
+        // previous run.
         selectedRouteRenderersRef.current.forEach((renderer) =>
           renderer.setMap(null),
         );
         selectedRouteRenderersRef.current = [];
-
-        const selectedOrders = Array.from(selectedOrderIds)
-          .map((orderId) => ordersById.get(orderId))
-          .filter(
-            (order): order is LoaderOrder =>
-              Boolean(
-                order?.shippingCoordinates &&
-                  order?.fulfillmentLocation?.coordinates,
-              ),
-          );
-        const selectedByLocation: globalThis.Map<
-          string,
-          { origin: { latitude: number; longitude: number }; orders: LoaderOrder[] }
-        > = new globalThis.Map();
-        selectedOrders.forEach((order) => {
-          const origin = order.fulfillmentLocation?.coordinates;
-          if (!origin) return;
-          const group = selectedByLocation.get(order.fulfillmentLocation.id);
-          if (group) {
-            group.orders.push(order);
-          } else {
-            selectedByLocation.set(order.fulfillmentLocation.id, {
-              origin,
-              orders: [order],
-            });
-          }
-        });
-
-        selectedByLocation.forEach((group: { origin: { latitude: number; longitude: number }; orders: LoaderOrder[] }) => {
-          if (group.orders.length === 0) return;
-          const ordered = group.orders.filter((order: LoaderOrder) => order.shippingCoordinates);
-          if (ordered.length === 0) return;
-
-          // Straight-line connectors for selected orders (free, no API call)
-          const path = [
-            { lat: group.origin.latitude, lng: group.origin.longitude },
-            ...ordered.map((order: LoaderOrder) => ({
-              lat: order.shippingCoordinates!.latitude,
-              lng: order.shippingCoordinates!.longitude,
-            })),
-          ];
-          const polyline = new googleMaps.Polyline({
-            path,
-            // Signature lavender (midpoint of the holographic gradient) at
-            // 25% alpha. Replaces the legacy #ff7a00 selection overlay which
-            // collided with route palette index 4 (#FF7A00).
-            strokeColor: "#b09fda",
-            strokeOpacity: 0.25,
-            strokeWeight: 4,
-            map: mapRef.current,
-          });
-          selectedRouteRenderersRef.current.push(polyline);
-        });
       })
       .catch((error) => {
         if (!isMounted) return;
@@ -3988,7 +3956,7 @@ export default function Index() {
     );
     optimizeLocationRef.current = locationId;
     setOptimizeProgress({
-      phase: "Building distance matrix...",
+      phase: "Generating candidate clusterings...",
       pct: 0,
       startedAt: Date.now(),
       estimatedMs: Math.max(8000, candidates.length * 1600),
@@ -4548,18 +4516,6 @@ export default function Index() {
   const routeManagerSection = (
     <s-section heading={t("routeManager.heading")}>
       <s-stack direction="block" gap="base">
-        {/* All-locations gate badge (2026-05-08): shown right below the
-            section heading + above the location selector. Default grey
-            tone (no `tone` prop -> neutral) per Lucas's note: this is a
-            soft prompt, not an info-blue banner. Replaces the page-top
-            <s-banner tone="info"> that previously sat above <s-section>. */}
-        {locationId === DEFAULT_LOCATION_ID ? (
-          <div className={styles.locationGateBadgeRow}>
-            <s-badge icon="info">
-              {t("map.locationGate.shortHeading")}
-            </s-badge>
-          </div>
-        ) : null}
         <s-select
           label={t("filters.location", "Location")}
           labelAccessibilityVisibility="exclusive"
@@ -4607,7 +4563,9 @@ export default function Index() {
         ) : null}
       </s-stack>
 
-      {/* Orders badge + actions menu */}
+      {/* Orders badge + actions menu. "Pick a location" badge moved here
+          (2026-05-12) on its own row beneath "Orders to deliver" so the
+          merchant sees the count first, then the prompt to refine. */}
       <div className={styles.routeManagerStatusRow}>
         <s-badge tone="info" icon="package">
           {t("filters.ordersToDeliver", { count: mapData.orders.length })}
@@ -4696,11 +4654,20 @@ export default function Index() {
           )
         ) : null}
       </div>
+      {locationId === DEFAULT_LOCATION_ID ? (
+        <div className={styles.locationGateBadgeRow}>
+          <s-badge icon="info">
+            {t("map.locationGate.shortHeading")}
+          </s-badge>
+        </div>
+      ) : null}
       {optimizeProgress ? (
         <div className={styles.optimizeProgressWrap}>
+          {/* AI optimize is unpredictable per LLM call — the ETA countdown
+              was misleading. Stretch the phase message across the whole
+              header row instead so it's readable at a glance. */}
           <div className={styles.optimizeProgressHeader}>
-            <span>{optimizeProgress.phase}</span>
-            <span>~{Math.max(0, Math.ceil((optimizeProgress.estimatedMs - (Date.now() - optimizeProgress.startedAt)) / 1000))}s remaining</span>
+            <span className={styles.optimizeProgressPhase}>{optimizeProgress.phase}</span>
           </div>
           <div className={styles.optimizeProgressBar}>
             <div className={styles.optimizeProgressFill} style={{ width: `${optimizeProgress.pct}%` }} />
@@ -6113,30 +6080,6 @@ export default function Index() {
           {polylineEditCapBanner}
         </s-banner>
       ) : null}
-      {phase1Status?.ok === false ? (
-        <s-banner
-          tone="warning"
-          heading="AI route optimization unavailable"
-          dismissible
-          onDismiss={() => setPhase1Status(null)}
-        >
-          {phase1Status.reason === "unknown_market"
-            ? "This location's city isn't supported by the AI optimizer yet (supported: São Paulo, Rio de Janeiro, Niterói, Recife). Routes were assigned by the standard clusterer instead."
-            : phase1Status.reason === "no_credentials"
-              ? "Lalamove credentials are missing — the AI optimizer needs live quotes. Routes were assigned by the standard clusterer instead. Check Settings > Carriers."
-              : `The AI optimizer failed (${phase1Status.message ?? "unknown error"}). Routes were assigned by the standard clusterer instead. Try again in a minute or check the server logs.`}
-        </s-banner>
-      ) : null}
-      {phase1Status?.ok === true && phase1Status.postMortemFlags.length > 0 ? (
-        <s-banner
-          tone="info"
-          heading="AI suggested routes — review recommended"
-          dismissible
-          onDismiss={() => setPhase1Status(null)}
-        >
-          {`Confidence ${(phase1Status.confidence * 100).toFixed(0)}%. Open the post-mortem panel for this decision (${phase1Status.decisionId}) to review the flagged choices.`}
-        </s-banner>
-      ) : null}
       {!mapsApiKey ? (
         <s-banner tone="warning" heading={t("banners.mapsKeyMissing")}>
           {t("banners.mapsKeyDescription")}
@@ -6447,6 +6390,40 @@ export default function Index() {
 
       {!isFullscreen ? (
         <div slot="aside" className={styles.routeManagerBlock}>
+          {phase1Status ? (
+            <s-banner
+              tone={phase1Status.ok ? "info" : "warning"}
+              heading={
+                phase1Status.ok
+                  ? "AI route optimization succeeded"
+                  : phase1Status.reason === "phase1_disabled"
+                    ? "AI route optimization is off"
+                    : phase1Status.reason === "unknown_market"
+                      ? "AI doesn't support this city yet"
+                      : phase1Status.reason === "no_credentials"
+                        ? "Lalamove credentials missing"
+                        : phase1Status.reason === "low_confidence"
+                          ? "AI declined to optimize"
+                          : "AI optimization failed"
+              }
+              dismissible
+              onDismiss={() => setPhase1Status(null)}
+            >
+              {phase1Status.ok
+                ? phase1Status.postMortemFlags.length > 0
+                  ? `Routes applied. Confidence ${(phase1Status.confidence * 100).toFixed(0)}% — review the post-mortem panel for flagged choices (${phase1Status.decisionId}).`
+                  : `Routes applied at ${(phase1Status.confidence * 100).toFixed(0)}% confidence.`
+                : phase1Status.reason === "phase1_disabled"
+                  ? "Turn on \"Use AI-powered route optimization\" in Settings > Local delivery for this location, then try again."
+                  : phase1Status.reason === "unknown_market"
+                    ? "Supported cities: São Paulo, Rio de Janeiro, Niterói, Recife. This location isn't covered yet — assign orders to routes manually."
+                    : phase1Status.reason === "no_credentials"
+                      ? "AI needs live Lalamove quotes to reason about cost. Add credentials in Settings > Carriers and try again."
+                      : phase1Status.reason === "low_confidence"
+                        ? `${phase1Status.message ?? "AI could not form a confident decision."} Try again in a moment, or assign orders manually. Decision id: ${phase1Status.decisionId ?? "—"}.`
+                        : `${phase1Status.message ?? "Unknown error."} No routes were assigned — try again or assign orders manually.`}
+            </s-banner>
+          ) : null}
           {routeManagerSection}
           {accuracyBlock}
           <LdAnalyticsAside />
@@ -8564,6 +8541,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return { ok: true };
   }
 
+  // Shared empty-summary helper for AI-only optimize fallback responses
+  // (used when the LLM pipeline can't or won't propose routes — the action
+  // returns ok=true with empty routes + `phase1Skipped`, and the UI uses
+  // `phase1Skipped` to render a banner explaining why).
+  const zeroSummary = (totalOrders: number) => ({
+    routeCount: 0,
+    totalDistanceMeters: 0,
+    totalDurationSeconds: 0,
+    totalOrders,
+    costTotal: "0",
+    costCurrency: "BRL",
+    totalLalamoveCost: "0",
+    totalWaitSurcharge: "0",
+  });
+
   if (intent === "optimize-fleet") {
     const payload = formData.get("ordersPayload");
     if (typeof payload !== "string" || !payload.trim()) {
@@ -8621,218 +8613,170 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return { ok: false, error: "GOOGLE_MAPS_API_KEY is missing." };
     }
 
-    // ── Phase 1: LLM-enabled optimizer (feature-flagged) ──
-    // Runs only when BOTH:
-    //   - process.env.ROUTE_OPTIMIZATION_PHASE_1_ENABLED === "true", AND
-    //   - LalamoveLocationConfig.data.routeOptimizationPhase1Enabled === true
-    // Falls back to legacy VRP on any unrecoverable error. The fallback
-    // path attaches `phase1Skipped: { reason, message? }` to the response
-    // so the UI can surface a banner instead of silently degrading.
-    let phase1Skipped:
-      | { reason: "unknown_market" | "no_credentials" | "pipeline_error"; message?: string }
-      | undefined;
-    if (isPhase1EnabledForLocation(llmConfig)) {
-      const market = pickMarketKey(llmConfig.city);
-      if (market === "other") {
-        phase1Skipped = { reason: "unknown_market" };
-        console.warn(`[local-delivery] optimize-fleet Phase1 skipped (unknown_market) shop=${shop} city=${llmConfig.city ?? "?"}`);
-      } else try {
-        const ordersWithNames = validOrders as Array<
-          OptimizerOrderInput & { orderName?: string }
-        >;
-        const pipelineInput = await buildPhase1PipelineInput({
-          shop,
-          locationId: primaryLocationId,
-          config: {
-            market: llmConfig.market,
-            preferredServiceType:
-              carrierConfig?.lalamovePreferredServiceType ||
-              llmConfig.preferredServiceType ||
-              "LALAGO",
-            city: llmConfig.city,
-            locationName: llmConfig.locationName,
-          },
-          pickupLat: ordersWithNames[0].locationCoordinates.latitude,
-          pickupLng: ordersWithNames[0].locationCoordinates.longitude,
-          orders: ordersWithNames.map((o) => ({
-            id: o.orderId,
-            name: o.orderName || o.orderId,
-            lat: o.shippingCoordinates.latitude,
-            lng: o.shippingCoordinates.longitude,
-          })),
-          credentialsResolver: getRuntimeCredentialsForShop,
-        });
-        if (pipelineInput) {
-          const phase1Start = Date.now();
-          const result = await runRouteOptimizationPipeline(pipelineInput);
-          console.info(
-            `[local-delivery] optimize-fleet Phase1 OK shop=${shop} decisionId=${result.decisionId} winner=${result.decision.winningCandidateId} elapsed=${Date.now() - phase1Start}ms`,
-          );
-
-          // Map winning clustering back to GIDs and apply tags.
-          const allRouteTags = ROUTE_TAG_DEFINITIONS.map((d) => d.tag);
-          const tagAssignments: Array<{ orderId: string; tag: string }> = [];
-          const optimizedRoutes: Array<{
-            routeIndex: number;
-            locationId: string;
-            orderIds: string[];
-            polyline: string;
-            totalDistanceMeters: number;
-            totalDurationSeconds: number;
-          }> = [];
-          for (const slot of result.winningClustering) {
-            const routeIndex = slot.slot;
-            const tag = ROUTE_TAG_DEFINITIONS[routeIndex]?.tag;
-            if (!tag) continue;
-            const orderIds = slot.orderIds
-              .map((name) =>
-                ordersWithNames.find(
-                  (o) => (o.orderName || o.orderId) === name,
-                )?.orderId,
-              )
-              .filter((id): id is string => Boolean(id));
-            for (const orderId of orderIds) {
-              tagAssignments.push({ orderId, tag });
-            }
-            optimizedRoutes.push({
-              routeIndex,
-              locationId: primaryLocationId,
-              orderIds,
-              polyline: "",
-              totalDistanceMeters: 0,
-              totalDurationSeconds: 0,
-            });
-          }
-
-          const allOptimizedIds = optimizedRoutes.flatMap((r) => r.orderIds);
-          await batchProcess(allOptimizedIds, GQL_BATCH_SIZE, (orderId) =>
-            admin.graphql(
-              `#graphql
-                mutation RemoveOrderTag($id: ID!, $tags: [String!]!) {
-                  tagsRemove(id: $id, tags: $tags) {
-                    userErrors { message }
-                  }
-                }`,
-              { variables: { id: orderId, tags: allRouteTags } },
-            ),
-          );
-          await batchProcess(tagAssignments, GQL_BATCH_SIZE, ({ orderId, tag }) =>
-            admin.graphql(
-              `#graphql
-                mutation AddOrderTag($id: ID!, $tags: [String!]!) {
-                  tagsAdd(id: $id, tags: $tags) {
-                    userErrors { message }
-                  }
-                }`,
-              { variables: { id: orderId, tags: [tag] } },
-            ),
-          );
-
-          try {
-            const proposedRoutes = optimizedRoutes.map((r) => ({
-              routeIndex: r.routeIndex,
-              orderIds: r.orderIds,
-              serviceType:
-                carrierConfig?.lalamovePreferredServiceType ||
-                llmConfig.preferredServiceType ||
-                "LALAGO",
-              costSubunits: 0,
-            }));
-            const orderCoordinates = ordersWithNames.map((o) => ({
-              orderId: o.orderId,
-              lat: o.shippingCoordinates.latitude,
-              lng: o.shippingCoordinates.longitude,
-            }));
-            await (prisma as { routeOptimizationSnapshot: { create: (args: unknown) => Promise<unknown> } }).routeOptimizationSnapshot.create({
-              data: {
-                shop,
-                locationId: primaryLocationId,
-                proposedRoutes,
-                orderCoordinates,
-                orderCount: ordersWithNames.length,
-                routeCount: optimizedRoutes.length,
-              },
-            });
-          } catch (snapshotErr) {
-            console.warn("[local-delivery] optimize-fleet Phase1 snapshot FAILED", snapshotErr);
-          }
-
-          return {
-            ok: true,
-            optimizeLocationId: primaryLocationId,
-            optimizedRoutes,
-            summary: {
-              routeCount: optimizedRoutes.length,
-              totalDistanceMeters: 0,
-              totalDurationSeconds: 0,
-              totalOrders: ordersWithNames.length,
-              costTotal: "0",
-              costCurrency: "BRL",
-              totalLalamoveCost: "0",
-              totalWaitSurcharge: "0",
-            },
-            phase1: {
-              decisionId: result.decisionId,
-              decisionPath: result.decision.decisionPath,
-              winningCandidateId: result.decision.winningCandidateId,
-              confidence: result.decision.confidence,
-              postMortemFlags: result.decision.postMortemFlags,
-              timings: result.timings,
-            },
-          };
-        } else {
-          // pipelineInput === null after we already confirmed the market is
-          // known → must be missing Lalamove credentials.
-          phase1Skipped = { reason: "no_credentials" };
-          console.warn(`[local-delivery] optimize-fleet Phase1 skipped (no_credentials) shop=${shop}`);
-        }
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        phase1Skipped = { reason: "pipeline_error", message };
-        console.error(
-          `[local-delivery] optimize-fleet Phase1 FAILED shop=${shop} — falling back to legacy VRP`,
-          err,
-        );
-      }
+    // ── AI-only optimizer ─────────────────────────────────────────────────
+    // The legacy VRP (Clarke-Wright + Google Distance Matrix) fallback was
+    // removed 2026-05-12. The optimizer is now AI-only: the LLM pipeline
+    // either produces a confident clustering OR the action returns
+    // `phase1Skipped: { reason }` with NO routes applied. The UI surfaces
+    // a banner explaining why, and the merchant decides whether to retry,
+    // adjust settings, or hand-cluster.
+    //
+    // Skip reasons:
+    //   - phase1_disabled  → "Use AI-powered route optimization" toggle off
+    //   - unknown_market   → location's city isn't in the geofence registry
+    //   - no_credentials   → Lalamove credentials missing (needed for quotes)
+    //   - low_confidence   → pipeline ran but arbiter chose `exclude-from-optimize`
+    //                        (typically Anthropic API or schema validation failure)
+    //   - pipeline_error   → unrecoverable exception in the pipeline
+    if (!isPhase1EnabledForLocation(llmConfig)) {
+      console.warn(`[local-delivery] optimize-fleet Phase1 disabled shop=${shop} location=${primaryLocationId} — AI toggle off`);
+      return {
+        ok: true,
+        optimizeLocationId: primaryLocationId,
+        optimizedRoutes: [],
+        phase1Skipped: { reason: "phase1_disabled" as const },
+        summary: zeroSummary(validOrders.length),
+      };
     }
 
-    // Run VRP optimizer (Clarke-Wright savings + Google Distance Matrix)
-    const { optimizeByVRP } = await import(
-      "../services/carrier-quotation-optimizer.server"
-    );
-    const primaryVehicle =
-      carrierConfig?.lalamovePreferredServiceType ||
-      llmConfig.preferredServiceType ||
-      "LALAGO";
-    const secondaryVehicle =
-      carrierConfig?.lalamoveSecondaryServiceType || undefined;
-    const maxPerRoute = carrierConfig?.lalamoveMaxOrdersPerRoute ?? 10;
-
-    // Resolve configured special requests for this shop+market+city.
-    const resolvedSpecialRequests = await resolveConfiguredSpecialRequests(
-      shop,
-      llmConfig,
-      credentials,
-    );
-
-    const result = await optimizeByVRP(
-      validOrders,
-      llmConfig,
-      credentials,
-      mapsApiKey,
-      shop,
-      ROUTE_TAG_DEFINITIONS.length,
-      { primary: primaryVehicle, secondary: secondaryVehicle },
-      maxPerRoute,
-      resolvedSpecialRequests,
-    );
-    if (!result.ok) {
-      return { ok: false, error: result.error };
+    const market = pickMarketKey(llmConfig.city);
+    if (market === "other") {
+      console.warn(`[local-delivery] optimize-fleet Phase1 skipped (unknown_market) shop=${shop} city=${llmConfig.city ?? "?"}`);
+      return {
+        ok: true,
+        optimizeLocationId: primaryLocationId,
+        optimizedRoutes: [],
+        phase1Skipped: { reason: "unknown_market" as const },
+        summary: zeroSummary(validOrders.length),
+      };
     }
 
-    // Apply order tags in batches to avoid Shopify rate limits / gateway timeouts
+    const ordersWithNames = validOrders as Array<
+      OptimizerOrderInput & { orderName?: string }
+    >;
+
+    let pipelineInput: Awaited<ReturnType<typeof buildPhase1PipelineInput>>;
+    try {
+      pipelineInput = await buildPhase1PipelineInput({
+        shop,
+        locationId: primaryLocationId,
+        config: {
+          market: llmConfig.market,
+          preferredServiceType:
+            carrierConfig?.lalamovePreferredServiceType ||
+            llmConfig.preferredServiceType ||
+            "LALAGO",
+          city: llmConfig.city,
+          locationName: llmConfig.locationName,
+        },
+        pickupLat: ordersWithNames[0].locationCoordinates.latitude,
+        pickupLng: ordersWithNames[0].locationCoordinates.longitude,
+        orders: ordersWithNames.map((o) => ({
+          id: o.orderId,
+          name: o.orderName || o.orderId,
+          lat: o.shippingCoordinates.latitude,
+          lng: o.shippingCoordinates.longitude,
+        })),
+        credentialsResolver: getRuntimeCredentialsForShop,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[local-delivery] optimize-fleet Phase1 input-build FAILED shop=${shop}`, err);
+      return {
+        ok: true,
+        optimizeLocationId: primaryLocationId,
+        optimizedRoutes: [],
+        phase1Skipped: { reason: "pipeline_error" as const, message },
+        summary: zeroSummary(validOrders.length),
+      };
+    }
+    if (!pipelineInput) {
+      console.warn(`[local-delivery] optimize-fleet Phase1 skipped (no_credentials) shop=${shop}`);
+      return {
+        ok: true,
+        optimizeLocationId: primaryLocationId,
+        optimizedRoutes: [],
+        phase1Skipped: { reason: "no_credentials" as const },
+        summary: zeroSummary(validOrders.length),
+      };
+    }
+
+    let pipelineResult: Awaited<ReturnType<typeof runRouteOptimizationPipeline>>;
+    try {
+      const phase1Start = Date.now();
+      pipelineResult = await runRouteOptimizationPipeline(pipelineInput);
+      console.info(
+        `[local-delivery] optimize-fleet Phase1 OK shop=${shop} decisionId=${pipelineResult.decisionId} winner=${pipelineResult.decision.winningCandidateId} path=${pipelineResult.decision.decisionPath} elapsed=${Date.now() - phase1Start}ms`,
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[local-delivery] optimize-fleet Phase1 pipeline FAILED shop=${shop}`, err);
+      return {
+        ok: true,
+        optimizeLocationId: primaryLocationId,
+        optimizedRoutes: [],
+        phase1Skipped: { reason: "pipeline_error" as const, message },
+        summary: zeroSummary(validOrders.length),
+      };
+    }
+
+    // Decision-arbiter chose to NOT assign any routes (typically because the
+    // spatial reasoner failed validation, low confidence, or no eligible
+    // candidate). Surface the reasoner's reasoning text so the merchant has
+    // a concrete explanation in the banner.
+    if (pipelineResult.decision.decisionPath === "exclude-from-optimize") {
+      const flagReason =
+        pipelineResult.decision.postMortemFlags[0]?.reasoning ||
+        "AI could not form a confident routing decision.";
+      console.warn(`[local-delivery] optimize-fleet Phase1 exclude-from-optimize shop=${shop} decisionId=${pipelineResult.decisionId} — ${flagReason}`);
+      return {
+        ok: true,
+        optimizeLocationId: primaryLocationId,
+        optimizedRoutes: [],
+        phase1Skipped: {
+          reason: "low_confidence" as const,
+          message: flagReason,
+          decisionId: pipelineResult.decisionId,
+        },
+        summary: zeroSummary(validOrders.length),
+      };
+    }
+
+    // AI produced a confident clustering — apply ld_rota tags + persist snapshot.
     const allRouteTags = ROUTE_TAG_DEFINITIONS.map((d) => d.tag);
-    const allOptimizedIds = result.routes.flatMap((r) => r.orderIds);
+    const tagAssignments: Array<{ orderId: string; tag: string }> = [];
+    const optimizedRoutes: Array<{
+      routeIndex: number;
+      locationId: string;
+      orderIds: string[];
+      polyline: string;
+      totalDistanceMeters: number;
+      totalDurationSeconds: number;
+    }> = [];
+    for (const slot of pipelineResult.winningClustering) {
+      const routeIndex = slot.slot;
+      const tag = ROUTE_TAG_DEFINITIONS[routeIndex]?.tag;
+      if (!tag) continue;
+      const orderIds = slot.orderIds
+        .map((name) =>
+          ordersWithNames.find((o) => (o.orderName || o.orderId) === name)
+            ?.orderId,
+        )
+        .filter((id): id is string => Boolean(id));
+      for (const orderId of orderIds) {
+        tagAssignments.push({ orderId, tag });
+      }
+      optimizedRoutes.push({
+        routeIndex,
+        locationId: primaryLocationId,
+        orderIds,
+        polyline: "",
+        totalDistanceMeters: 0,
+        totalDurationSeconds: 0,
+      });
+    }
+
+    const allOptimizedIds = optimizedRoutes.flatMap((r) => r.orderIds);
     await batchProcess(allOptimizedIds, GQL_BATCH_SIZE, (orderId) =>
       admin.graphql(
         `#graphql
@@ -8844,10 +8788,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         { variables: { id: orderId, tags: allRouteTags } },
       ),
     );
-    const tagAssignments = result.routes.flatMap((route) => {
-      const tag = ROUTE_TAG_DEFINITIONS[route.routeIndex]?.tag;
-      return tag ? route.orderIds.map((orderId) => ({ orderId, tag })) : [];
-    });
     await batchProcess(tagAssignments, GQL_BATCH_SIZE, ({ orderId, tag }) =>
       admin.graphql(
         `#graphql
@@ -8860,56 +8800,56 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       ),
     );
 
-    // ── Persist optimization snapshot for correction tracking ──
     try {
-      const proposedRoutes = result.routes.map((r) => ({
+      const proposedRoutes = optimizedRoutes.map((r) => ({
         routeIndex: r.routeIndex,
         orderIds: r.orderIds,
-        serviceType: r.serviceType,
-        costSubunits: r.costSubunits,
+        serviceType:
+          carrierConfig?.lalamovePreferredServiceType ||
+          llmConfig.preferredServiceType ||
+          "LALAGO",
+        costSubunits: 0,
       }));
-      const orderCoordinates = validOrders.map((o) => ({
+      const orderCoordinates = ordersWithNames.map((o) => ({
         orderId: o.orderId,
         lat: o.shippingCoordinates.latitude,
         lng: o.shippingCoordinates.longitude,
       }));
-      await (prisma as any).routeOptimizationSnapshot.create({
+      await (prisma as { routeOptimizationSnapshot: { create: (args: unknown) => Promise<unknown> } }).routeOptimizationSnapshot.create({
         data: {
           shop,
           locationId: primaryLocationId,
           proposedRoutes,
           orderCoordinates,
-          orderCount: validOrders.length,
-          routeCount: result.routes.length,
+          orderCount: ordersWithNames.length,
+          routeCount: optimizedRoutes.length,
         },
       });
-      console.info(`[local-delivery] optimize-fleet snapshot saved shop=${shop} routes=${result.routes.length} orders=${validOrders.length}`);
     } catch (snapshotErr) {
-      console.warn("[local-delivery] optimize-fleet snapshot FAILED", snapshotErr);
+      console.warn("[local-delivery] optimize-fleet Phase1 snapshot FAILED", snapshotErr);
     }
 
-    console.info(`[local-delivery] optimize-fleet OK routes=${result.summary.routeCount} orders=${result.summary.totalOrders}`);
     return {
       ok: true,
       optimizeLocationId: primaryLocationId,
-      optimizedRoutes: result.routes.map((r) => ({
-        routeIndex: r.routeIndex,
-        locationId: r.locationId,
-        orderIds: r.orderIds,
-        polyline: r.corridorPolyline,
-        totalDistanceMeters: 0,
-        totalDurationSeconds: 0,
-      })),
-      phase1Skipped,
+      optimizedRoutes,
       summary: {
-        routeCount: result.summary.routeCount,
+        routeCount: optimizedRoutes.length,
         totalDistanceMeters: 0,
         totalDurationSeconds: 0,
-        totalOrders: result.summary.totalOrders,
-        costTotal: result.summary.totalCost,
-        costCurrency: result.summary.costCurrency,
-        totalLalamoveCost: result.summary.totalLalamoveCost,
-        totalWaitSurcharge: result.summary.totalWaitSurcharge,
+        totalOrders: ordersWithNames.length,
+        costTotal: "0",
+        costCurrency: "BRL",
+        totalLalamoveCost: "0",
+        totalWaitSurcharge: "0",
+      },
+      phase1: {
+        decisionId: pipelineResult.decisionId,
+        decisionPath: pipelineResult.decision.decisionPath,
+        winningCandidateId: pipelineResult.decision.winningCandidateId,
+        confidence: pipelineResult.decision.confidence,
+        postMortemFlags: pipelineResult.decision.postMortemFlags,
+        timings: pipelineResult.timings,
       },
     };
   }

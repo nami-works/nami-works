@@ -1496,10 +1496,21 @@
 
 .optimizeProgressHeader {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   font-size: 13px;
   color: #6d7175;
+}
+
+/* AI optimize phase label spans the whole header row (replaces the prior
+   two-column layout with phase + ETA — the ETA was misleading with LLM
+   variability). */
+.optimizeProgressPhase {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .optimizeProgressBar {
