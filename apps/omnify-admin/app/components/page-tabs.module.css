@@ -17,29 +17,26 @@
   border-bottom: 1px solid #e1e3e5;
   margin: 0 0 16px;
   padding: 0;
-  /* F2 alignment fix: extend the divider visually so it spans BOTH main and
-     aside columns. Polaris <s-page> renders default-slot children inside a
-     narrower "main" grid track (the aside slot is a separate grid track to
-     the right). Without the negative right-margin, the divider stops at
-     main's right edge — the aside column starts at the SAME y as the tab
-     strip's top, not at its bottom (i.e., aside ignores the tab row).
-     Pulling the right edge into the aside-column gutter via negative margin
-     makes the divider visually span the full content width, and the aside
-     column visually receives the tab-row's vertical space.
-     Value is conservative: Polaris's aside-column width + grid-gap is
-     typically 320–340px. If a route doesn't render aside, the extra width
-     overflows into <s-page>'s right padding harmlessly. */
-  margin-right: -340px;
-  padding-right: 340px;
+}
+
+/* Paired aside-column spacer (rendered from inside <PageTabs>).
+   Polaris <s-page> aside-slot children are in a separate grid cell from
+   default-slot children, with their own overflow boundary. The tabs row
+   above main does NOT push aside down in document flow. This invisible
+   spacer occupies the same vertical space the tabs row contributes to
+   main (tab content + 1px divider + 16px margin-bottom ≈ 55px), making
+   aside's first block align with main's first block. F2 (PR #65)
+   attempted negative-margin to extend the row visually — Polaris's grid
+   clipped it. This is the working fix.
+   On mobile (≤768px) aside stacks ABOVE main per CLAUDE.md, so the
+   spacer is hidden — it would just add dead vertical space. */
+.tabsAsideSpacer {
+  height: 55px;
 }
 
 @media (max-width: 768px) {
-  /* On mobile, aside stacks above main (order: -1 per CLAUDE.md). The
-     "extend the divider over aside" trick doesn't apply because columns are
-     no longer side-by-side. Reset to normal full-width. */
-  .tabsRow {
-    margin-right: 0;
-    padding-right: 0;
+  .tabsAsideSpacer {
+    display: none;
   }
 }
 

@@ -56,8 +56,9 @@ type Props = {
 
 export function PageTabs({ activeKey, tabs, rightSlot, ariaLabel }: Props) {
   return (
-    <div className={styles.tabsRow} role="tablist" aria-label={ariaLabel}>
-      {tabs.map((tab) => {
+    <>
+      <div className={styles.tabsRow} role="tablist" aria-label={ariaLabel}>
+        {tabs.map((tab) => {
         const isActive = tab.key === activeKey;
         const isInTrail = tab.variant === "in-trail";
         const className = [
@@ -109,7 +110,24 @@ export function PageTabs({ activeKey, tabs, rightSlot, ariaLabel }: Props) {
           </Fragment>
         );
       })}
-      {rightSlot ? <div className={styles.tabsRightGroup}>{rightSlot}</div> : null}
-    </div>
+        {rightSlot ? <div className={styles.tabsRightGroup}>{rightSlot}</div> : null}
+      </div>
+      {/* Paired aside-column spacer.
+          Polaris <s-page> renders default-slot children (the tabs row above)
+          in a "main" grid cell with overflow clipping, and slot="aside"
+          children in a SEPARATE grid cell that doesn't pay the main's flow
+          margins. Without this spacer, aside content starts at the top of
+          the body region while main content starts BELOW the tabs row — the
+          two columns are misaligned by exactly the tabs row's height.
+          Rendering an invisible spacer into the aside slot pushes the first
+          real <s-section slot="aside"> down to the same Y as main's first
+          block. F2's negative-margin trick (attempted in PR #65) was clipped
+          by Polaris's grid; this spacer is the working fix. */}
+      <div
+        slot="aside"
+        className={styles.tabsAsideSpacer}
+        aria-hidden="true"
+      />
+    </>
   );
 }
