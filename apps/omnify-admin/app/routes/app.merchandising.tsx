@@ -1,21 +1,12 @@
 import type { HeadersFunction } from "react-router";
-import { Link, Outlet, useLocation } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { useTranslation } from "react-i18next";
-import styles from "./app.merchandising/styles.module.css";
+import { PageTabs, type PageTab } from "../components/page-tabs";
 
 export default function MerchandisingLayout() {
   const { t } = useTranslation("merchandising");
   const location = useLocation();
-
-  const tabs = [
-    { id: "overview", label: t("tabs.overview"), href: "/app/merchandising" },
-    { id: "metaobjects", label: t("tabs.metaobjects"), href: "/app/merchandising/metaobjects" },
-    { id: "discounts", label: t("tabs.discounts"), href: "/app/merchandising/discounts" },
-    { id: "pricing", label: t("tabs.pricing"), href: "/app/merchandising/pricing" },
-    { id: "collections", label: t("tabs.collections"), href: "/app/merchandising/collections" },
-    { id: "sale", label: t("tabs.sale"), href: "/app/merchandising/sale" },
-  ];
 
   const activeId =
     location.pathname.includes("/metaobjects") ? "metaobjects"
@@ -25,19 +16,18 @@ export default function MerchandisingLayout() {
     : location.pathname.includes("/sale") ? "sale"
     : "overview";
 
+  const merchandisingPageTabs: PageTab[] = [
+    { key: "overview", label: t("tabs.overview"), to: "/app/merchandising" },
+    { key: "metaobjects", label: t("tabs.metaobjects"), to: "/app/merchandising/metaobjects" },
+    { key: "discounts", label: t("tabs.discounts"), to: "/app/merchandising/discounts" },
+    { key: "pricing", label: t("tabs.pricing"), to: "/app/merchandising/pricing" },
+    { key: "collections", label: t("tabs.collections"), to: "/app/merchandising/collections" },
+    { key: "sale", label: t("tabs.sale"), to: "/app/merchandising/sale" },
+  ];
+
   return (
     <s-page heading={t("heading")}>
-      <div className={styles.tabsRow}>
-        {tabs.map((tab) => (
-          <Link
-            key={tab.id}
-            to={tab.href}
-            className={`${styles.tab}${tab.id === activeId ? ` ${styles.tabActive}` : ""}`}
-          >
-            {tab.label}
-          </Link>
-        ))}
-      </div>
+      <PageTabs activeKey={activeId} tabs={merchandisingPageTabs} ariaLabel={t("heading") as string} />
       <Outlet />
     </s-page>
   );

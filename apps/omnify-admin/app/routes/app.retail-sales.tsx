@@ -15,6 +15,7 @@ import {
   formatMonthLabel as fmtMonthBase,
 } from "../i18n/format";
 import styles from "./app.retail-sales/styles.module.css";
+import { PageTabs, type PageTab } from "../components/page-tabs";
 import {
   filterCandidateLocations,
   monthKey,
@@ -2313,22 +2314,21 @@ export default function SalesGoalsPage() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
+  // Off-block tab strip via shared <PageTabs>.
+  const retailSalesPageTabs: PageTab[] = TAB_IDS.map((tabId) => ({
+    key: tabId,
+    label: t(`tabs.${tabId}`),
+    onClick: () => setActiveTab(tabId),
+  }));
+
   return (
     <s-page heading={t("pageHeading")}>
+      <PageTabs
+        activeKey={activeTab}
+        tabs={retailSalesPageTabs}
+        ariaLabel={t("pageHeading") as string}
+      />
       <s-section>
-        <div className={styles.tabsRow}>
-          {TAB_IDS.map((tabId) => (
-            <button
-              key={tabId}
-              type="button"
-              className={`${styles.tab}${activeTab === tabId ? ` ${styles.tabActive}` : ""}`}
-              onClick={() => setActiveTab(tabId)}
-            >
-              {t(`tabs.${tabId}`)}
-            </button>
-          ))}
-        </div>
-
         <s-stack direction="block" gap="base">
           {/* ── Dashboard ──────────────────────────────────────────────── */}
           {activeTab === "dashboard" ? (

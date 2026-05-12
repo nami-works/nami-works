@@ -1,0 +1,85 @@
+/* Off-block page tabs — Shopify-native flat/underline.
+   Lives OUTSIDE any <s-section>, directly under <s-page>. Standardizes the
+   tab idiom across Affiliates, Settings, Retail Sales, Storytelling,
+   Merchandising. Replaces the previous on-block-with-bleed-margins
+   approach that had two problems: (a) "gap vs overlap" at the active-tab
+   underline when tabs had different heights (e.g. badge in one), and
+   (b) main+aside misalignment because tabs were chrome on the main card
+   only, pushing main's body down while aside started at the original Y.
+
+   Reference: app.storytelling.tsx pattern, formalized.
+*/
+
+.tabsRow {
+  display: flex;
+  align-items: stretch;
+  gap: 7px;
+  border-bottom: 1px solid #e1e3e5;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 0;
+  background: none;
+  color: #6d7175;
+  font-weight: 400;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s ease;
+  position: relative;
+}
+
+.tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.tab:hover {
+  color: #303030;
+}
+
+.tab:hover::after {
+  background: #8c9196;
+}
+
+.tabActive {
+  color: #303030;
+  font-weight: 500;
+}
+
+.tabActive::after {
+  background: #303030;
+}
+
+.tabsRightGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .tabsRow {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .tabsRightGroup {
+    flex-basis: 100%;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+}

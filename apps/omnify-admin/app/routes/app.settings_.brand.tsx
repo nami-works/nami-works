@@ -22,6 +22,7 @@ import {
   ManualUploadIcon,
 } from "../components/brand-icons";
 import styles from "./app.settings_.brand/styles.module.css";
+import { PageTabs, type PageTab } from "../components/page-tabs";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
@@ -229,11 +230,39 @@ export default function BrandSettingsPage() {
     settings?.lastExportedAt ? String(settings.lastExportedAt) : null,
   );
 
+  // Sibling Settings tab strip rendered ABOVE the page body so users always
+  // see the full Settings IA while on the Brand sub-route. Non-Brand tabs are
+  // Links back to /app/settings (the in-place activeTab state lives there and
+  // defaults to Locations).
+  const brandPageTabs: PageTab[] = [
+    {
+      key: "settings",
+      label: t("settings:tabs.locations", { defaultValue: "Locations" }),
+      to: "/app/settings",
+    },
+    {
+      key: "providers",
+      label: t("settings:tabs.providers", { defaultValue: "Delivery providers" }),
+      to: "/app/settings",
+    },
+    {
+      key: "carriers",
+      label: t("settings:tabs.carriers", { defaultValue: "Carriers" }),
+      to: "/app/settings",
+    },
+    {
+      key: "brand",
+      label: t("settings:tabs.brand", { defaultValue: "Brand" }),
+      to: "/app/settings/brand",
+    },
+  ];
+
   return (
     <s-page heading={t("pageHeading")}>
       <s-button slot="back-action" {...{ href: "/app/settings", accessibilityLabel: t("common:button.back") } as Record<string, string>}>
         <s-icon type="chevron-left" />
       </s-button>
+      <PageTabs activeKey="brand" tabs={brandPageTabs} ariaLabel="Settings" />
       <s-stack direction="inline" slot="secondary-actions" gap="base">
         <s-button variant="tertiary">
           <Link

@@ -3,7 +3,8 @@ import type {
   ActionFunctionArgs,
   LoaderFunctionArgs,
 } from "react-router";
-import { Link, useLoaderData, useFetcher } from "react-router";
+import { useLoaderData, useFetcher } from "react-router";
+import { PageTabs, type PageTab } from "../components/page-tabs";
 import { useTranslation } from "react-i18next";
 import { loadGoogleMaps } from "../utils/load-google-maps.client";
 import { authenticate } from "../shopify.server";
@@ -853,30 +854,29 @@ export default function LocationSettings() {
     lalamoveFetcher.submit(formData, { method: "post" });
   };
 
+  // Off-block tab strip via shared <PageTabs>. Settings in-place tabs +
+  // Brand as a Link tab to the sibling sub-route (`/app/settings/brand`).
+  const settingsPageTabs: PageTab[] = [
+    ...tabs.map((tab): PageTab => ({
+      key: tab.id,
+      label: tab.label,
+      onClick: () => setActiveTab(tab.id),
+    })),
+    {
+      key: "brand",
+      label: t("tabs.brand", { defaultValue: "Brand" }),
+      to: "/app/settings/brand",
+    },
+  ];
+
   return (
     <s-page heading={t("pageHeading")} inlineSize="base">
+      <PageTabs
+        activeKey={activeTab}
+        tabs={settingsPageTabs}
+        ariaLabel={t("pageHeading") as string}
+      />
       <s-section>
-        <div className={styles.settingsTabsRow}>
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              className={`${styles.settingsTab}${tab.id === activeTab ? ` ${styles.settingsTabActive}` : ""}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
-            </button>
-          ))}
-          {/* Brand is a sibling sub-route (`/app/settings/brand`), not an in-place tab.
-              Lives inside the same tab strip so users see the full Settings IA. */}
-          <Link
-            to="/app/settings/brand"
-            className={styles.settingsTab}
-            style={{ textDecoration: "none" }}
-          >
-            {t("tabs.brand", { defaultValue: "Brand" })}
-          </Link>
-        </div>
         {activeTab === "settings" && (
         <s-stack direction="block" gap="base">
           {saveError && (

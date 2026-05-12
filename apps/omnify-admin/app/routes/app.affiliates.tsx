@@ -12,6 +12,7 @@ import prisma from "../db.server";
 import { normalizeLocale } from "../i18n/config";
 import { formatCurrencyCompact, formatNumberCompact } from "../i18n/format";
 import styles from "./app.affiliates/styles.module.css";
+import { PageTabs, type PageTab } from "../components/page-tabs";
 import {
   readAffiliateProfiles,
   readAffiliateSyncMeta,
@@ -2000,73 +2001,52 @@ export default function AffiliatesPage() {
   };
 
   // ─── JSX ────────────────────────────────────────────────────────────
-  return (
-    <s-page heading={t("page.title", "Affiliates")}>
-      <s-section>
-        {/* ── Tabs — left-aligned, divider bleeds to section edges
-            (matches Settings page pattern). Badge + actions sit far-right
-            on the same row, pushed by margin-left: auto. ── */}
-        <div className={styles.tabsRow} role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "overview"}
-            className={`${styles.tab}${activeTab === "overview" ? ` ${styles.tabActive}` : ""}`}
-            onClick={() => setActiveTab("overview")}
-          >
-            {t("tab.overview", "Overview")}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "profiles"}
-            className={`${styles.tab}${activeTab === "profiles" ? ` ${styles.tabActive}` : ""}`}
-            onClick={() => {
-              setActiveTab("profiles");
-              setProfileDetailCode(null);
-            }}
-          >
-            {t("tab.affiliates", "Affiliates")}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "attribution"}
-            className={`${styles.tab}${activeTab === "attribution" ? ` ${styles.tabActive}` : ""}`}
-            onClick={() => setActiveTab("attribution")}
-          >
-            {t("tab.attributionQueue", "Attribution queue")}
-            {(attributionMeta?.claimedPendingCount ?? 0) +
-              (attributionMeta?.forgottenCount ?? 0) >
-              0 && (
-              <>
-                {" "}
-                <s-badge
-                  tone={
-                    (attributionMeta?.forgottenCount ?? 0) > 0
-                      ? "warning"
-                      : "info"
-                  }
-                >
-                  {(attributionMeta?.claimedPendingCount ?? 0) +
-                    (attributionMeta?.forgottenCount ?? 0)}
-                </s-badge>
-              </>
-            )}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "settings"}
-            className={`${styles.tab}${activeTab === "settings" ? ` ${styles.tabActive}` : ""}`}
-            onClick={() => setActiveTab("settings")}
-          >
-            {t("tabs.settings", "Settings")}
-          </button>
+  // Off-block tab strip — renders OUTSIDE the section card per the
+  // standardized <PageTabs> idiom (Phase A of the UI-conventions batch,
+  // 2026-05-12). Builds tabs array + rightSlot for freshness chip + ⋯ menu.
+  const attributionBadgeCount =
+    (attributionMeta?.claimedPendingCount ?? 0) +
+    (attributionMeta?.forgottenCount ?? 0);
 
-          {/* Right group: freshness chip + ⋯ More overflow menu. */}
-          <div className={styles.tabsRightGroup}>
-            {(() => {
+  const affiliateTabs: PageTab[] = [
+    {
+      key: "overview",
+      label: t("tab.overview", "Overview"),
+      onClick: () => setActiveTab("overview"),
+    },
+    {
+      key: "profiles",
+      label: t("tab.affiliates", "Affiliates"),
+      onClick: () => {
+        setActiveTab("profiles");
+        setProfileDetailCode(null);
+      },
+    },
+    {
+      key: "attribution",
+      label: t("tab.attributionQueue", "Attribution queue"),
+      onClick: () => setActiveTab("attribution"),
+      badge:
+        attributionBadgeCount > 0 ? (
+          <s-badge
+            tone={
+              (attributionMeta?.forgottenCount ?? 0) > 0 ? "warning" : "info"
+            }
+          >
+            {attributionBadgeCount}
+          </s-badge>
+        ) : undefined,
+    },
+    {
+      key: "settings",
+      label: t("tabs.settings", "Settings"),
+      onClick: () => setActiveTab("settings"),
+    },
+  ];
+
+  const tabsRightSlot = (
+    <>
+      {(() => {
               const ageIso = cronHealth.lastSuccessAt;
               const distance = formatDistanceShort(ageIso);
               if (cronHealth.status === "fresh") {
@@ -2172,9 +2152,18 @@ export default function AffiliatesPage() {
                 </div>
               )}
             </div>
-          </div>
-        </div>
+    </>
+  );
 
+  return (
+    <s-page heading={t("page.title", "Affiliates")}>
+      <PageTabs
+        activeKey={activeTab}
+        tabs={affiliateTabs}
+        rightSlot={tabsRightSlot}
+        ariaLabel="Affiliates tabs"
+      />
+      <s-section>
         {/* ── Sync progress ─────────────────────────────────────── */}
         {syncStatus === "running" && (() => {
           // Real progress: use the last sync's totalOrders as a rolling

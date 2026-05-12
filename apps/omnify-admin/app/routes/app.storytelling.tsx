@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import prisma from "../db.server";
 import { listRecentJobs } from "../services/storytelling/blog-post-job.server";
 import styles from "./app.storytelling/styles.module.css";
+import { PageTabs, type PageTab } from "../components/page-tabs";
 
 type RecentJob = {
   jobId: string;
@@ -90,30 +91,20 @@ export default function StorytellingLayout() {
   const { pendingDiffsCount, recentJobs } =
     useLoaderData<typeof loader>();
 
-  const tabs = [
-    { id: "blog-posts", label: t("tabs.blogPosts"), to: "/app/storytelling" },
-    { id: "alt-text", label: t("tabs.altText"), to: "/app/storytelling/alt-text" },
-  ];
-
   const activeId = location.pathname.includes("/alt-text")
     ? "alt-text"
     : "blog-posts";
+
+  const storytellingPageTabs: PageTab[] = [
+    { key: "blog-posts", label: t("tabs.blogPosts"), to: "/app/storytelling" },
+    { key: "alt-text", label: t("tabs.altText"), to: "/app/storytelling/alt-text" },
+  ];
 
   const isBlogPostsTab = activeId === "blog-posts";
 
   return (
     <s-page heading={t("pageHeading")}>
-      <div className={styles.tabsRow}>
-        {tabs.map((tab) => (
-          <Link
-            key={tab.id}
-            to={tab.to}
-            className={`${styles.tab}${tab.id === activeId ? ` ${styles.tabActive}` : ""}`}
-          >
-            {tab.label}
-          </Link>
-        ))}
-      </div>
+      <PageTabs activeKey={activeId} tabs={storytellingPageTabs} ariaLabel={t("pageHeading") as string} />
 
       {isBlogPostsTab && pendingDiffsCount > 0 && (
         <div className={styles.pendingDiffsBanner}>
