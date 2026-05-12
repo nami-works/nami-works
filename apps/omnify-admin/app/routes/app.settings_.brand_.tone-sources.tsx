@@ -707,7 +707,12 @@ export default function ToneSourcesPage() {
   ];
 
   return (
-    <s-page heading={t("toneSources.pageHeading", { defaultValue: "Tone of voice sources" })}>
+    // Heading is "Settings" (not "Tone of voice") because the Shopify-chrome
+    // breadcrumb above <s-page> reads from this prop — it must match the
+    // top-level nav item ("Settings") regardless of which Settings sub-tab
+    // we're on. The active sub-tab (Tone of voice, with Brand in-trail) is
+    // communicated by the <PageTabs> below.
+    <s-page heading={t("settings:pageHeading", { defaultValue: "Settings" })}>
       <PageTabs activeKey="tone-of-voice" tabs={toneSourcesTabs} ariaLabel="Settings" />
       <fetcher.Form method="POST" slot="primary-action">
         <input type="hidden" name="intent" value="refreshShopify" />

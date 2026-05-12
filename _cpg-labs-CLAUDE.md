@@ -395,6 +395,27 @@ Cards inside aside panels (e.g. Route Manager in Local Delivery, Expansion Proje
 </div>
 ```
 
+### Block padding tokens
+
+CLAUDE.md's "4px spacing grid" needed a concrete 3-token mapping to Polaris's `padding="..."` prop on `<s-box>` / `<s-section>`. This is what we use everywhere; new code MUST pick one of these instead of hardcoding `padding: 12px` / `16px` / `20px` in CSS modules.
+
+| Token | Polaris prop | Pixel value | Use case |
+|---|---|---|---|
+| **Tight** | `padding="tight"` | 12px | Aside cards, table cells, compact filter rows, route-manager cards, auto-assign accuracy block |
+| **Base** | `padding="base"` | 16px | Default — main content blocks, `<s-section>`, KPI cards, brand-configuration form |
+| **Loose** | `padding="loose"` | 20px | Wide hero blocks, modal bodies, full-width feature blocks (Affiliates Program overview, drilldown chart panels) |
+
+**Hard rules:**
+- **Prefer the Polaris prop, not custom CSS.** `<s-box padding="base">` is correct; `.myBlock { padding: 16px }` is a regression.
+- **No hardcoded padding values in `app/routes/**/*.module.css`.** Justified exceptions (full-bleed map, modal-positioning custom) get a comment explaining why.
+- **Auditing:** if you touch a block and find it uses raw padding, swap to the Polaris prop in the same PR. Don't bulk-rewrite — opportunistic migration.
+
+**Padding violations to grep for:**
+```bash
+git grep -nE 'padding: ?[0-9]+px|padding-(top|bottom|left|right): ?[0-9]+px' \
+  -- 'app/routes/**/*.module.css'
+```
+
 ### Form Inputs
 Polaris `<s-select>`, `<s-text-field>`, `<s-date-field>` render a compact-when-possible internal label. The convention in this codebase is to make the label external so multiple inputs in a row stay visually aligned and so the label can carry additional context without crowding the control itself.
 

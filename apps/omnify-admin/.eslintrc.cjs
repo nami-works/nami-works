@@ -56,9 +56,12 @@ module.exports = {
     // Polaris-first guards — Phase D of the multi-skill audit. Catches the
     // most common ways non-Polaris-native UI sneaks into production.
     // Scoped to app/routes/**/*.tsx because components/ legitimately uses
-    // lower-level primitives. Warnings (not errors) for now so we can land
-    // them without instantly breaking the build; promote to error once
-    // existing violations are migrated.
+    // lower-level primitives. Kept at "warn" — a full sweep on 2026-05-12
+    // surfaced ~80 existing violations across the route files (many are
+    // legitimate native buttons with structured content that can't render
+    // inside <s-button>). Promotion to "error" is deferred until a separate
+    // cleanup PR migrates the genuine swaps and adds eslint-disable-next-line
+    // justifications on the rest.
     {
       files: ["app/routes/**/*.{tsx,jsx}"],
       rules: {

@@ -258,7 +258,11 @@ export default function BrandSettingsPage() {
   ];
 
   return (
-    <s-page heading={t("pageHeading")}>
+    // Heading is "Settings" (not "Brand Assets") because the Shopify-chrome
+    // breadcrumb above <s-page> reads from this prop — it must match the
+    // top-level nav item ("Settings") regardless of which Settings sub-tab
+    // we're on. The active sub-tab is communicated by the <PageTabs> below.
+    <s-page heading={t("settings:pageHeading", { defaultValue: "Settings" })}>
       {/* No back-action — Settings tab strip provides nav. Removing the back-action band
           also fixes the main+aside Y misalignment regression (was pushing main down while
           aside stayed pinned). */}
