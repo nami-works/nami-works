@@ -4,7 +4,7 @@ import type {
   HeadersFunction,
   LoaderFunctionArgs,
 } from "react-router";
-import { useLoaderData, useFetcher, Link } from "react-router";
+import { useLoaderData, useFetcher } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
@@ -259,22 +259,10 @@ export default function BrandSettingsPage() {
 
   return (
     <s-page heading={t("pageHeading")}>
-      <s-button slot="back-action" {...{ href: "/app/settings", accessibilityLabel: t("common:button.back") } as Record<string, string>}>
-        <s-icon type="chevron-left" />
-      </s-button>
+      {/* No back-action — Settings tab strip provides nav. Removing the back-action band
+          also fixes the main+aside Y misalignment regression (was pushing main down while
+          aside stayed pinned). */}
       <PageTabs activeKey="brand" tabs={brandPageTabs} ariaLabel="Settings" />
-      <s-stack direction="inline" slot="secondary-actions" gap="base">
-        <s-button variant="tertiary">
-          <Link
-            to="/app/settings/brand/tone-sources"
-            style={{ color: "inherit", textDecoration: "none" }}
-          >
-            {t("toneSources.manageLink", {
-              defaultValue: "Manage tone sources",
-            })}
-          </Link>
-        </s-button>
-      </s-stack>
       <s-button
         variant="primary"
         slot="primary-action"
@@ -393,7 +381,10 @@ export default function BrandSettingsPage() {
         </fetcher.Form>
       </s-section>
 
-      <s-section heading={t("toneSummary.heading", { defaultValue: "Tone of voice — sources" })}>
+      {/* Tone of voice — sources. Moved from main column to FIRST aside block in r2
+          (2026-05-12) per Lucas's feedback. It unlocks ALL AI writing — placement
+          reflects that importance (above-the-fold in the aside column). */}
+      <s-section slot="aside" heading={t("toneSummary.heading", { defaultValue: "Tone of voice" })}>
         <div className={styles.toneSummaryBand}>
           <div className={styles.toneSummaryHeader}>
             <h3 className={styles.toneSummaryTitle}>
@@ -426,7 +417,7 @@ export default function BrandSettingsPage() {
               language: settings?.contentLanguage ?? "en_US",
             })}
           </p>
-          <div className={styles.toneSummaryPills}>
+          <div className={`${styles.toneSummaryPills} ${styles.toneSummaryPillsStacked}`}>
             <span className={styles.toneSummaryPill}>
               <ShopifyLogo basePath={basePath} size={14} />
               {t("toneSummary.pillShopify", {
@@ -457,10 +448,14 @@ export default function BrandSettingsPage() {
               })}
             </span>
           </div>
+          {/* "Manage sources" → primary Polaris button (was custom outlined link in v1).
+              Right-aligned per CLAUDE.md "all button rows must be right-aligned" rule.
+              Polaris s-button supports a typed-as-Record-of-string `href` for App-Bridge-
+              intercepted client-side navigation; same pattern as affiliates.onboarding. */}
           <div className={styles.toneSummaryActions}>
-            <Link to="/app/settings/brand/tone-sources" className={styles.toneSummaryLink}>
-              {t("toneSummary.manageLink", { defaultValue: "Manage sources →" })}
-            </Link>
+            <s-button {...{ href: "/app/settings/brand/tone-sources", variant: "primary" } as Record<string, string>}>
+              {t("toneSummary.manageLink", { defaultValue: "Manage sources" })}
+            </s-button>
           </div>
         </div>
       </s-section>

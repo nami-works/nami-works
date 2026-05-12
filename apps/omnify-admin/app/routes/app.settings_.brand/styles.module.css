@@ -56,6 +56,14 @@
   margin: 0 0 12px;
 }
 
+/* When the block lives in the aside column (r2 placement), the column is
+   narrower than main — pills wrap into multiple rows and read better as a
+   vertical stack. */
+.toneSummaryPillsStacked {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 .toneSummaryPill {
   display: inline-flex;
   align-items: center;
@@ -71,6 +79,7 @@
 .toneSummaryActions {
   display: flex;
   gap: 8px;
+  justify-content: flex-end;
 }
 
 .toneSummaryLink {

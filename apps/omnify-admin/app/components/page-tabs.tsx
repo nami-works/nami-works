@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { Link } from "react-router";
 import styles from "./page-tabs.module.css";
 
@@ -17,12 +17,22 @@ import styles from "./page-tabs.module.css";
  * Each tab can carry an optional `badge` (e.g. <s-badge>18</s-badge>).
  * `rightSlot` renders far-right for adjacent controls (freshness chip,
  * ⋯ overflow menu) — example: Affiliates.
+ *
+ * Per-tab `variant`:
+ *   - `"default"` (omit) — regular tab.
+ *   - `"in-trail"` — subdued + italic tab with an auto-appended "›" separator
+ *     after it. Used when the active tab is a CHILD of this tab — e.g. on
+ *     `/app/settings/brand/tone-sources` the `brand` tab is in-trail and
+ *     the `tone-of-voice` tab is active. Doubles as a breadcrumb-style
+ *     "you came from here" indicator without stacking a separate breadcrumb
+ *     row above the tab strip.
  */
 
 type TabBase = {
   key: string;
   label: ReactNode;
   badge?: ReactNode;
+  variant?: "default" | "in-trail";
 };
 
 type ButtonTab = TabBase & {
@@ -48,7 +58,15 @@ export function PageTabs({ activeKey, tabs, rightSlot, ariaLabel }: Props) {
   return (
     <div className={styles.tabsRow} role="tablist" aria-label={ariaLabel}>
       {tabs.map((tab) => {
-        const className = `${styles.tab}${tab.key === activeKey ? ` ${styles.tabActive}` : ""}`;
+        const isActive = tab.key === activeKey;
+        const isInTrail = tab.variant === "in-trail";
+        const className = [
+          styles.tab,
+          isActive ? styles.tabActive : null,
+          isInTrail ? styles.tabInTrail : null,
+        ]
+          .filter(Boolean)
+          .join(" ");
         const content = (
           <>
             {tab.label}
@@ -56,31 +74,39 @@ export function PageTabs({ activeKey, tabs, rightSlot, ariaLabel }: Props) {
           </>
         );
 
-        if ("to" in tab && tab.to !== undefined) {
-          return (
+        const tabEl =
+          "to" in tab && tab.to !== undefined ? (
             <Link
               key={tab.key}
               to={tab.to}
               className={className}
               role="tab"
-              aria-selected={tab.key === activeKey}
+              aria-selected={isActive}
             >
               {content}
             </Link>
+          ) : (
+            <button
+              key={tab.key}
+              type="button"
+              className={className}
+              role="tab"
+              aria-selected={isActive}
+              onClick={"onClick" in tab && tab.onClick ? tab.onClick : undefined}
+            >
+              {content}
+            </button>
           );
-        }
 
         return (
-          <button
-            key={tab.key}
-            type="button"
-            className={className}
-            role="tab"
-            aria-selected={tab.key === activeKey}
-            onClick={tab.onClick}
-          >
-            {content}
-          </button>
+          <Fragment key={tab.key}>
+            {tabEl}
+            {isInTrail ? (
+              <span className={styles.tabTrailChevron} aria-hidden="true">
+                ›
+              </span>
+            ) : null}
+          </Fragment>
         );
       })}
       {rightSlot ? <div className={styles.tabsRightGroup}>{rightSlot}</div> : null}

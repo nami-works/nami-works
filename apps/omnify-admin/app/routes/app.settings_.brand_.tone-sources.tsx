@@ -55,6 +55,7 @@ import {
   MondayLogo,
   ManualUploadIcon,
 } from "../components/brand-icons";
+import { PageTabs, type PageTab } from "../components/page-tabs";
 
 const MIN_CONFIDENCE = 0.5;
 
@@ -671,11 +672,43 @@ export default function ToneSourcesPage() {
     setExpandedRow((prev) => (prev === id ? null : id));
   };
 
+  // Option-C tab strip: extends the Settings tab strip with "Tone of voice"
+  // as the active tab and "Brand" rendered in-trail (subdued + italic + "›"
+  // separator after it). Replaces the chevron back-action — the in-trail
+  // Brand tab IS the "back" affordance, AND the Settings tabs remain
+  // available for switching to sibling Settings concepts.
+  const toneSourcesTabs: PageTab[] = [
+    {
+      key: "settings",
+      label: t("settings:tabs.locations", { defaultValue: "Locations" }),
+      to: "/app/settings",
+    },
+    {
+      key: "providers",
+      label: t("settings:tabs.providers", { defaultValue: "Delivery providers" }),
+      to: "/app/settings",
+    },
+    {
+      key: "carriers",
+      label: t("settings:tabs.carriers", { defaultValue: "Carriers" }),
+      to: "/app/settings",
+    },
+    {
+      key: "brand",
+      label: t("settings:tabs.brand", { defaultValue: "Brand" }),
+      to: "/app/settings/brand",
+      variant: "in-trail",
+    },
+    {
+      key: "tone-of-voice",
+      label: t("toneSources.pageHeading", { defaultValue: "Tone of voice sources" }),
+      to: "/app/settings/brand/tone-sources",
+    },
+  ];
+
   return (
     <s-page heading={t("toneSources.pageHeading", { defaultValue: "Tone of voice sources" })}>
-      <s-button slot="back-action" {...{ href: "/app/settings/brand", accessibilityLabel: t("common:button.back", { defaultValue: "Back" }) } as Record<string, string>}>
-        <s-icon type="chevron-left" />
-      </s-button>
+      <PageTabs activeKey="tone-of-voice" tabs={toneSourcesTabs} ariaLabel="Settings" />
       <fetcher.Form method="POST" slot="primary-action">
         <input type="hidden" name="intent" value="refreshShopify" />
         <s-button

@@ -53,7 +53,7 @@
   },
   "settingsSaved": "Settings saved",
   "toneSummary": {
-    "heading": "Tone of voice — sources",
+    "heading": "Tone of voice",
     "title": "Brand voice evidence base",
     "syncedAt": "✓ Last sampled {{when}}",
     "neverSynced": "Never sampled",
@@ -64,7 +64,7 @@
     "pillMeta": "Meta · {{count}} posts",
     "pillMonday": "Monday.com · {{count}} briefs",
     "pillManual": "Manual · {{count}} reference{{plural}}",
-    "manageLink": "Manage sources →"
+    "manageLink": "Manage sources"
   },
   "toneSources": {
     "manageLink": "Manage tone sources",

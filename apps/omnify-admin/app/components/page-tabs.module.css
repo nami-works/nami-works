@@ -17,6 +17,30 @@
   border-bottom: 1px solid #e1e3e5;
   margin: 0 0 16px;
   padding: 0;
+  /* F2 alignment fix: extend the divider visually so it spans BOTH main and
+     aside columns. Polaris <s-page> renders default-slot children inside a
+     narrower "main" grid track (the aside slot is a separate grid track to
+     the right). Without the negative right-margin, the divider stops at
+     main's right edge — the aside column starts at the SAME y as the tab
+     strip's top, not at its bottom (i.e., aside ignores the tab row).
+     Pulling the right edge into the aside-column gutter via negative margin
+     makes the divider visually span the full content width, and the aside
+     column visually receives the tab-row's vertical space.
+     Value is conservative: Polaris's aside-column width + grid-gap is
+     typically 320–340px. If a route doesn't render aside, the extra width
+     overflows into <s-page>'s right padding harmlessly. */
+  margin-right: -340px;
+  padding-right: 340px;
+}
+
+@media (max-width: 768px) {
+  /* On mobile, aside stacks above main (order: -1 per CLAUDE.md). The
+     "extend the divider over aside" trick doesn't apply because columns are
+     no longer side-by-side. Reset to normal full-width. */
+  .tabsRow {
+    margin-right: 0;
+    padding-right: 0;
+  }
 }
 
 .tab {
@@ -63,6 +87,37 @@
 
 .tabActive::after {
   background: #303030;
+}
+
+/* In-trail variant — Option C from the settings-brand-merged-v1 mockup.
+   Used when the active tab is a child of this tab (e.g. Brand is in-trail
+   when on the tone-sources sub-route, with Tone of voice as the active tab).
+   Subdued + italic differentiates from regular inactive tabs. Lighter
+   underline shows the "trail" without competing with the active tab's
+   underline. */
+.tabInTrail {
+  color: #b5b5b5;
+  font-style: italic;
+}
+
+.tabInTrail::after {
+  background: #d9d9d9;
+}
+
+.tabInTrail:hover {
+  color: #6d7175;
+}
+
+.tabInTrail:hover::after {
+  background: #8c9196;
+}
+
+.tabTrailChevron {
+  align-self: center;
+  color: #b5b5b5;
+  font-size: 12px;
+  padding: 0 2px;
+  user-select: none;
 }
 
 .tabsRightGroup {
