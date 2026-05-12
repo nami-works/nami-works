@@ -1,54 +1,9 @@
-/* ── Sync progress banner ──────────────────────────────────────────── */
-.syncProgressRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 10px;
-  margin-bottom: 6px;
-}
-
-.syncProgressPhaseLabel {
-  font-size: 13px;
-  font-weight: 500;
-  color: #3a3a3a;
-}
-
-.syncProgressPct {
-  font-size: 13px;
-  font-weight: 600;
-  color: #3a3a3a;
-}
-
-.syncProgressBarBg {
-  width: 100%;
-  height: 4px;
-  background: rgba(0, 0, 0, 0.08);
-  border-radius: 99px;
-  overflow: hidden;
-}
-
-.syncProgressBarFill {
-  height: 100%;
-  border-radius: 99px;
-  background: linear-gradient(90deg, #5ecece, #b09fda, #d4a8d4, #5ecece);
-  background-size: 200% 100%;
-  animation: omnify-holo-bar 1.4s linear infinite;
-  transition: width 0.6s ease;
-}
-
-.syncProgressMeta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 6px;
-  font-size: 12px;
-  color: #6d7175;
-}
-
-@keyframes omnify-holo-bar {
-  0% { background-position: 200% 0; }
-  100% { background-position: 0 0; }
-}
+/* Sync UI: the .syncProgress* classes + holo @keyframes that used to
+   live here were dead-code as of PR #67 (2026-05-12), once the
+   InBlockSyncIndicator component took over rendering. Removed in the
+   holo-sweep PR (2026-05-12) along with the .onboarding::before holo
+   strip. New sync UI consumers should use <InBlockSyncIndicator> from
+   app/components/in-block-sync-indicator.tsx — its CSS is co-located. */
 
 /* ── Overview grid (KPI cards) ──────────────────────────────────────── */
 
@@ -222,14 +177,16 @@
   border-bottom-color: #303030;
 }
 
-/* ── Header strip (mirrors Retail Footprint's overviewStrip) ───────── */
-/* Gradient accent: CPG Labs palette (cyan → lavender → pink → white). */
+/* ── Tab header (flat — no nested gradient block) ─────────────────────
+   Pre-2026-05-12 this lived inside a gradient-tinted .overviewStrip
+   card. Lucas asked for the decorative wrapper to be dropped so the
+   tab heading + period chip + subtitle sit directly on the default
+   main block. The classes `.overviewStripHeader/Heading/Subtitle` are
+   still in use — they style the contents, not the (now removed)
+   wrapper. The new wrapper class `.overviewHeaderFlat` just owns the
+   bottom margin so the period bar below has breathing room. */
 
-.overviewStrip {
-  padding: 20px;
-  border: 1px solid #e1e3e5;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #e8f5fa 0%, #fce4f0 30%, #fff 65%);
+.overviewHeaderFlat {
   margin-bottom: 16px;
 }
 
@@ -814,17 +771,9 @@ a.affiliateHandle:hover {
   overflow: hidden;
 }
 
-.onboarding::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #5ecece, #b09fda, #d4a8d4, #5ecece);
-  background-size: 200% 100%;
-  animation: omnify-holo-bar 3s linear infinite;
-}
+/* The 3px holographic top-edge strip that used to sit on .onboarding
+   was removed 2026-05-12 per Lucas's "holo signature only on loading
+   bars" rule. The onboarding card now reads as a flat Polaris card. */
 
 .onboardingHeader {
   text-align: center;

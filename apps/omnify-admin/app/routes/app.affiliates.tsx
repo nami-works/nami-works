@@ -2241,10 +2241,15 @@ export default function AffiliatesPage() {
           </s-banner>
         )}
 
-        {/* ── Overview header strip (mirrors Retail Footprint) ── */}
+        {/* ── Overview tab header (flat) ──
+            Heading + period chip + subtitle render directly inside the
+            outer <s-section>. Pre-2026-05-12 these were wrapped in a
+            gradient-tinted .overviewStrip card; Lucas asked to drop the
+            decorative wrapper so the content sits on the default main
+            block. */}
         {activeTab === "overview" && hasData && (
           <>
-            <div className={styles.overviewStrip}>
+            <div className={styles.overviewHeaderFlat}>
               <div className={styles.overviewStripHeader}>
                 <h2 className={styles.overviewStripHeading}>
                   {t("overview.heading", "Program overview")}
@@ -2930,10 +2935,13 @@ export default function AffiliatesPage() {
           </div>
         )}
 
-        {/* ── Affiliates tab header strip ─────────────────────── */}
+        {/* ── Affiliates tab header (flat) ──
+            Same flatten as the Overview tab — gradient .overviewStrip
+            wrapper dropped; heading + period chip + subtitle render
+            directly on the outer <s-section>. */}
         {activeTab === "profiles" && !profileDetailCode && (
           <>
-            <div className={styles.overviewStrip}>
+            <div className={styles.overviewHeaderFlat}>
               <div className={styles.overviewStripHeader}>
                 <h2 className={styles.overviewStripHeading}>
                   {t("profiles.heading", "Affiliate ranking")}

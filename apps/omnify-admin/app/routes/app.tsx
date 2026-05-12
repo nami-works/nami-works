@@ -160,15 +160,10 @@ export default function App() {
                 letter-spacing: 0.1px;
                 text-align: center;
               }
-              .cpg-holo-signature {
-                background: linear-gradient(90deg, #5ecece, #b09fda, #d4a8d4, #5ecece);
-                background-size: 200% 100%;
-                background-clip: text;
-                -webkit-background-clip: text;
-                color: transparent;
-                -webkit-text-fill-color: transparent;
-                animation: omnify-holo-bar 1.4s linear infinite;
-              }
+              /* .cpg-holo-signature text-clip rule removed 2026-05-12 —
+                 was defined but never used anywhere in the codebase. Per
+                 Lucas's "holo signature only on loading bars" rule, the
+                 in-block bar (.cpg-holo-bar) stays and text-treatments go. */
             `}</style>
           </div>
         )}

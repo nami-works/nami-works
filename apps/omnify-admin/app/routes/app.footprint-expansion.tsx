@@ -9,6 +9,7 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 import { useTranslation } from "react-i18next";
 import { authenticate } from "../shopify.server";
 import { normalizeLocale } from "../i18n/config";
+import { InBlockSyncIndicator } from "../components/in-block-sync-indicator";
 import styles from "./app.footprint-expansion/styles.module.css";
 import {
   deleteProposal,
@@ -2981,6 +2982,15 @@ export default function RetailLocatorRoute() {
           {mapsLoadError}
         </s-banner>
       ) : null}
+      {/* Sync status — canonical InBlockSyncIndicator pattern (matches
+          Affiliates 1:1). Three states fold into one component:
+          - running → indicator running with bar at computed %
+          - failed  → indicator error with Retry action
+          - stale   → indicator stale with Sync now action (last sync had
+                      an issue but data exists, was previously a separate
+                      dismissible warning banner)
+          The "No geocoded records" empty-state stays as its own critical
+          banner below — it's a blocking empty state, not a sync status. */}
       {syncStatus === "running" ? (() => {
         const completedRecords = syncPhase === "orders"
           ? (syncTotalCustomers ?? 0) + (syncProgressCount ?? 0)
@@ -2990,62 +3000,26 @@ export default function RetailLocatorRoute() {
           : null;
         const progressPct = totalEstimate && totalEstimate > 0 && completedRecords > 0
           ? Math.min(98, Math.round((completedRecords / totalEstimate) * 100))
-          : null;
-        const elapsedMs = syncStartedAt ? Date.now() - new Date(syncStartedAt).getTime() : null;
-        const ratePerMs = elapsedMs && elapsedMs > 5000 && completedRecords > 0
-          ? completedRecords / elapsedMs
-          : null;
-        const etaMin = ratePerMs && totalEstimate && totalEstimate > completedRecords
-          ? Math.ceil((totalEstimate - completedRecords) / ratePerMs / 60000)
-          : null;
+          : 5;
+        const countLabel = syncProgressCount != null
+          ? `${completedRecords.toLocaleString(userLocale)}${totalEstimate ? ` / ~${totalEstimate.toLocaleString(userLocale)}` : ""} ${t("banners.processed", { defaultValue: "processed" })}`
+          : undefined;
         return (
-          <s-banner tone="warning" heading={t("banners.analyticsBuildInProgress")}>
-            <div>{t("banners.analyticsBuildDescription")}</div>
-            <div className={styles.syncProgressRow}>
-              <span className={styles.syncProgressPhaseLabel}>
-                {syncPhase === "customers"
-                  ? t("banners.phaseCustomers")
-                  : syncPhase === "orders"
-                  ? t("banners.phaseOrders")
-                  : t("banners.phaseStarting")}
-              </span>
-              {progressPct !== null && (
-                <span className={styles.syncProgressPct}>{progressPct}%</span>
-              )}
-            </div>
-            <div className={styles.syncProgressBarBg}>
-              {progressPct !== null ? (
-                <div
-                  className={styles.syncProgressBarFill}
-                  style={{ width: `${progressPct}%` }}
-                />
-              ) : (
-                <div className={styles.syncProgressBarFill} />
-              )}
-            </div>
-            <div className={styles.syncProgressMeta}>
-              {syncProgressCount != null && (
-                <span>{t("banners.progressRecords", { count: completedRecords })}</span>
-              )}
-              {etaMin !== null && (
-                <span>{t("banners.progressEta", { minutes: etaMin })}</span>
-              )}
-            </div>
-            <style>{`@keyframes omnify-holo-bar { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }`}</style>
-          </s-banner>
+          <InBlockSyncIndicator
+            status="running"
+            label={t("banners.analyticsBuildInProgress")}
+            count={countLabel}
+            percent={progressPct}
+          />
         );
       })() : syncStatus === "failed" ? (
-        <s-banner tone="critical" heading={t("banners.analyticsIssue")}>
-          {syncError}
-          <div style={{ marginTop: 8 }}>
-            <s-button
-              variant="secondary"
-              onClick={() => fetcher.submit({ intent: "sync-analytics" }, { method: "post" })}
-            >
-              Retry sync
-            </s-button>
-          </div>
-        </s-banner>
+        <InBlockSyncIndicator
+          status="error"
+          label={t("banners.analyticsIssue")}
+          count={syncError ?? undefined}
+          actionLabel={t("banners.retrySync", { defaultValue: "Retry sync" })}
+          onAction={() => fetcher.submit({ intent: "sync-analytics" }, { method: "post" })}
+        />
       ) : null}
       {syncStatus === "idle" && loaderHeatmapBuckets.length === 0 && cityRankings.length === 0 && !syncTotalOrders ? (
         <s-banner tone="critical" heading={t("banners.noGeocodedRecords")}>
@@ -3053,11 +3027,15 @@ export default function RetailLocatorRoute() {
         </s-banner>
       ) : null}
 
-      {/* Sync warning (non-blocking — last sync failed but data exists) */}
+      {/* Stale: last sync failed but data exists. Folded into the in-block
+          indicator pattern (was a dismissible warning banner pre-2026-05-12). */}
       {syncWarning && syncStatus === "idle" && (
-        <s-banner tone="warning" heading="Last sync encountered an issue" dismissible>
-          {syncWarning}. Data shown may be slightly outdated.
-        </s-banner>
+        <InBlockSyncIndicator
+          status="stale"
+          label={t("banners.lastSyncStale", { defaultValue: "Last sync encountered an issue. Data shown may be slightly outdated." })}
+          actionLabel={t("banners.syncNow", { defaultValue: "Sync now" })}
+          onAction={() => fetcher.submit({ intent: "sync-analytics" }, { method: "post" })}
+        />
       )}
 
       {/* ── Overview Stats Strip ── */}
