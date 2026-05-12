@@ -12,7 +12,7 @@
  */
 
 import { useEffect } from "react";
-import { Link, useFetcher } from "react-router";
+import { Link, useFetcher, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import type { AsideData, WeeklyPoint } from "../services/ld-analytics/aside.server";
 import styles from "./ld-analytics-aside.module.css";
@@ -93,37 +93,45 @@ function FullCard({
   stale?: boolean;
 }) {
   const { t } = useTranslation("ld-analytics");
+  const navigate = useNavigate();
   const { total, momPercent, sparkline, currency, isNew } = data;
 
+  // 2026-05-12 parity refactor (Lucas): visual at top (sparkline above stat
+  // line), title as a real heading (s-section pattern), "New" badge as a real
+  // s-badge, period footer subdued at the bottom, See-more as s-button
+  // variant=secondary right-aligned. Mirrors the Auto-assign accuracy block
+  // shape. Spec: inputs/mockups/ld-stat-blocks-parity-v1.html.
   return (
-    <div className={styles.card}>
-      <div>
-        <div className={styles.label}>
-          {t("aside.label")}
-          {isNew && <span className={styles.newPill}>{t("aside.newPill")}</span>}
-        </div>
-        <div className={styles.value}>{formatSignedCurrencyShort(total, currency)}</div>
-        <div className={styles.delta}>
-          {renderDelta(momPercent, t)}
-        </div>
+    <s-section>
+      <div className={styles.titleRow}>
+        <span className={styles.title}>{t("aside.label")}</span>
+        {isNew && <s-badge tone="success">{t("aside.newPill")}</s-badge>}
       </div>
       <Sparkline points={sparkline} />
-      <div
-        className={`${styles.actions} ${stale ? styles.actionsSpread : ""}`}
-      >
-        {stale && "staleAgeHours" in data && (
-          <span className={styles.staleFootnote}>
-            {t("aside.staleFootnoteTemplate", {
-              age: formatStaleAge(data.staleAgeHours),
-              coverage: data.coveragePercent,
-            })}
-          </span>
-        )}
-        <Link to="/app/local-delivery/analytics" className={styles.seeMore}>
-          {t("aside.seeMore")}
-        </Link>
+      <div className={styles.statRow}>
+        <span className={styles.value}>{formatSignedCurrencyShort(total, currency)}</span>
+        <span className={styles.descriptor}>{t("aside.descriptor")}</span>
       </div>
-    </div>
+      <div className={styles.periodFooter}>
+        {renderPeriodFooter(momPercent, t)}
+      </div>
+      {stale && "staleAgeHours" in data && (
+        <div className={styles.staleFootnote}>
+          {t("aside.staleFootnoteTemplate", {
+            age: formatStaleAge(data.staleAgeHours),
+            coverage: data.coveragePercent,
+          })}
+        </div>
+      )}
+      <div className={styles.ctaRowRight}>
+        <s-button
+          variant="secondary"
+          onClick={() => navigate("/app/local-delivery/analytics")}
+        >
+          {t("aside.seeMore")}
+        </s-button>
+      </div>
+    </s-section>
   );
 }
 
@@ -259,8 +267,11 @@ function formatStaleAge(hours: number): string {
   return `${hours}h`;
 }
 
-/** ±2% threshold per spec §5.2. Renders the delta line with a colored arrow. */
-function renderDelta(
+/** ±2% threshold per spec §5.2. Renders the period footer with a colored arrow.
+ *  Renamed from renderDelta 2026-05-12 — the inline-with-descriptor format
+ *  was split into a separate descriptor line and a period footer for parity
+ *  with the Auto-assign accuracy block. */
+function renderPeriodFooter(
   momPercent: number,
   t: (key: string, opts?: Record<string, unknown>) => string,
 ) {
@@ -276,7 +287,7 @@ function renderDelta(
       : momPercent < -2
         ? styles.arrowDown
         : styles.arrowFlat;
-  const template = t("aside.deltaTemplate", {
+  const template = t("aside.periodFooter", {
     trend: "__TREND__",
     percent: Math.abs(momPercent),
   });

@@ -16,18 +16,65 @@
   gap: 8px;
 }
 
+/* 2026-05-12 parity refactor: title row mirrors <s-section heading> rhythm
+   while leaving room for the inline "New" s-badge next to the title text. */
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303030;
+  line-height: 1.4;
+}
+
+/* Legacy class kept so other states that still use it (provocation, empty)
+   render unchanged. The full/stale states now use .titleRow + .title above. */
 .label {
   font-size: 12px;
   color: #6d7175;
   font-weight: 500;
 }
 
+/* Primary stat line — value + secondary descriptor on the same baseline.
+   Mirrors the Auto-assign accuracy block's "37%  112 of 303 orders" shape. */
+.statRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 4px;
+}
+
 .value {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: #067647;
   line-height: 1.1;
+}
+
+.descriptor {
+  font-size: 12px;
+  color: #303030;
+  line-height: 1.35;
+}
+
+/* Period footer — subdued single line at the bottom of the block. */
+.periodFooter {
+  font-size: 12px;
+  color: #6d7175;
+  margin-top: 4px;
+}
+
+/* Right-aligned secondary CTA row. */
+.ctaRowRight {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
 }
 
 .delta {

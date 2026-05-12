@@ -103,7 +103,10 @@ export default function App() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: 0,
+              // 2026-05-12: 12pt (16px) min padding between logo and the
+              // loading bar. Prior gap:0 had the bar visually crowding the
+              // logo.
+              gap: 16,
               background: "#f6f6f7",
               // Inline so it applies even before the <style> block is parsed
               // and even if the Shopify CDN Inter stylesheet hasn't loaded.
@@ -132,12 +135,24 @@ export default function App() {
                 0%   { background-position: 100% 0; }
                 100% { background-position: -100% 0; }
               }
+              /* 2026-05-12: bar renders as FILLING (left-to-right progress
+                 sweep) instead of the prior indeterminate shimmer. Matches
+                 the optimize-route progress bar's holo fill. The width
+                 animates 0%→100% and loops; the gradient still scrolls so
+                 the fill keeps the signature holographic feel. */
+              @keyframes omnify-bar-fill {
+                0%   { width: 0%; }
+                90%  { width: 100%; }
+                100% { width: 100%; }
+              }
               .cpg-holo-bar {
                 height: 100%;
+                width: 0%;
                 border-radius: 99px;
                 background: linear-gradient(90deg, #5ecece, #b09fda, #d4a8d4, #5ecece);
                 background-size: 200% 100%;
-                animation: omnify-holo-bar 1.4s linear infinite;
+                animation: omnify-bar-fill 1.8s ease-out infinite,
+                           omnify-holo-bar 1.4s linear infinite;
               }
               .cpg-loading-msg {
                 font-size: 13px;

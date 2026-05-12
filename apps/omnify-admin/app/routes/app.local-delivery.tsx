@@ -1836,16 +1836,23 @@ export default function Index() {
                 : dueBucketIconKind(dueBucket)
               : "storeLocation";
           const isSelected = point.kind === "order" && selectedOrderIds.has(point.id);
+          // Map markers use the deeper 55% white-mix so per-route pastels
+          // remain readable on dark Google Maps tiles. Side-panel cards stay
+          // on 78% via the plain deriveBadgeColors() helper. 2026-05-12.
           const assignedBadgeColors =
             assignedRoute?.color && point.kind === "order"
-              ? deriveBadgeColors(assignedRoute.color)
+              ? deriveBadgeColorsForMap(assignedRoute.color)
               : null;
           const badgeStyle: Partial<CSSStyleDeclaration> = {};
           if (assignedBadgeColors) {
             badgeStyle.backgroundColor = assignedBadgeColors.bg;
-          }
-          if (!isSelected) {
-            badgeStyle.borderColor = "#111111";
+            badgeStyle.color = assignedBadgeColors.text;
+          } else if (point.kind === "order") {
+            // Polaris-neutral pairing for unassigned order markers (no route
+            // color). Drops the prior pure-white fallback so unassigned
+            // markers still read as "a badge" rather than a blank pill.
+            badgeStyle.backgroundColor = "#e4e5e7";
+            badgeStyle.color = "#303030";
           }
           if (isSelected) {
             // Signature holographic gradient at 55% alpha (was 25% — too
@@ -3614,21 +3621,25 @@ export default function Index() {
     });
   };
 
+  // 2026-05-12: Due column badges switched from emoji-as-text to Polaris
+  // `<s-icon>` via the `icon` prop on `<s-badge>`. dueToday's icon was the
+  // hourglass; replaced with `bolt` for consistency with the "act now"
+  // affordance used elsewhere in the admin.
   const renderDueBadge = (orderId: string) => {
     const bucket = dueBucketByOrderId.get(orderId);
     if (bucket === "failed") {
-      return <s-badge tone="critical">{t("map.legend.failedEmoji")}</s-badge>;
+      return <s-badge tone="critical" icon="x-circle" />;
     }
     if (bucket === "overdue") {
-      return <s-badge tone="critical">{t("map.legend.overdueEmoji")}</s-badge>;
+      return <s-badge tone="critical" icon="alert-triangle" />;
     }
     if (bucket === "today") {
-      return <s-badge tone="info">{t("map.legend.dueTodayEmoji")}</s-badge>;
+      return <s-badge tone="warning" icon="bolt" />;
     }
     if (bucket === "tomorrow") {
-      return <s-badge tone="warning">{t("map.legend.dueTomorrowEmoji")}</s-badge>;
+      return <s-badge tone="info" icon="clock" />;
     }
-    return <s-badge>{t("map.legend.dueLaterEmoji")}</s-badge>;
+    return <s-badge icon="clock" />;
   };
 
   const renderRouteNotification = (route: PrecomputedRoute) => {
@@ -6169,28 +6180,45 @@ export default function Index() {
                 ) : null}
                 <div className={styles.mapMetaRow}>
                   <div className={styles.mapLegendOutside}>
+                    {/* 2026-05-12: legend pills switched from emoji-as-text to
+                        Polaris `<s-icon>`. dueToday icon changed from hourglass
+                        to bolt to match the rest of the admin's "act now"
+                        affordance. Same icon family used in the map markers
+                        themselves and in the Due column of the orders table. */}
                     <span className={styles.legendPill}>
-                      <span className={styles.legendPillEmoji}>{t("map.legend.failedEmoji")}</span>
+                      <span className={styles.legendPillEmoji}>
+                        <s-icon type="x-circle" tone="critical" size="small" />
+                      </span>
                       <span className={styles.legendPillText}>{t("map.legend.failed")}</span>
                     </span>
                     <span className={styles.legendPill}>
-                      <span className={styles.legendPillEmoji}>{t("map.legend.overdueEmoji")}</span>
+                      <span className={styles.legendPillEmoji}>
+                        <s-icon type="alert-triangle" tone="critical" size="small" />
+                      </span>
                       <span className={styles.legendPillText}>{t("map.legend.overdue")}</span>
                     </span>
                     <span className={styles.legendPill}>
-                      <span className={styles.legendPillEmoji}>{t("map.legend.dueTodayEmoji")}</span>
+                      <span className={styles.legendPillEmoji}>
+                        <s-icon type="bolt" tone="caution" size="small" />
+                      </span>
                       <span className={styles.legendPillText}>{t("map.legend.dueToday")}</span>
                     </span>
                     <span className={styles.legendPill}>
-                      <span className={styles.legendPillEmoji}>{t("map.legend.dueTomorrowEmoji")}</span>
+                      <span className={styles.legendPillEmoji}>
+                        <s-icon type="clock" tone="info" size="small" />
+                      </span>
                       <span className={styles.legendPillText}>{t("map.legend.dueTomorrow")}</span>
                     </span>
                     <span className={styles.legendPill}>
-                      <span className={styles.legendPillEmoji}>{t("map.legend.dueLaterEmoji")}</span>
+                      <span className={styles.legendPillEmoji}>
+                        <s-icon type="clock" tone="neutral" size="small" />
+                      </span>
                       <span className={styles.legendPillText}>{t("map.legend.dueLater")}</span>
                     </span>
                     <span className={styles.legendPill}>
-                      <span className={styles.legendPillEmoji}>{t("map.legend.addressErrorEmoji")}</span>
+                      <span className={styles.legendPillEmoji}>
+                        <s-icon type="alert-triangle" tone="caution" size="small" />
+                      </span>
                       <span className={styles.legendPillText}>{t("map.legend.addressError")}</span>
                     </span>
                   </div>
@@ -7368,7 +7396,12 @@ const toRgbString = (rgb: { r: number; g: number; b: number }) =>
 const mix = (value: number, target: number, ratio: number) =>
   Math.round(value + (target - value) * ratio);
 
-const deriveBadgeColors = (hexColor: string) => {
+// 78% white-mix produces a Polaris-pastel bg readable on the white side-panel
+// cards. The map markers need a more saturated mix because the dark Google
+// Maps tiles wash out anything that pale. Per 2026-05-12 Lucas decision
+// (inputs/mockups/ld-map-pills-polaris-v1.html), the map gets its own
+// 55%-mix derivation while side-panel cards keep 78%.
+const deriveBadgeColorsAt = (hexColor: string, bgRatio: number) => {
   const rgb = hexToRgb(hexColor);
   if (!rgb) {
     return {
@@ -7377,9 +7410,9 @@ const deriveBadgeColors = (hexColor: string) => {
     };
   }
   const bg = {
-    r: mix(rgb.r, 255, 0.78),
-    g: mix(rgb.g, 255, 0.78),
-    b: mix(rgb.b, 255, 0.78),
+    r: mix(rgb.r, 255, bgRatio),
+    g: mix(rgb.g, 255, bgRatio),
+    b: mix(rgb.b, 255, bgRatio),
   };
   const text = {
     r: mix(rgb.r, 0, 0.35),
@@ -7399,6 +7432,9 @@ const deriveBadgeColors = (hexColor: string) => {
     }),
   };
 };
+
+const deriveBadgeColors = (hexColor: string) => deriveBadgeColorsAt(hexColor, 0.78);
+const deriveBadgeColorsForMap = (hexColor: string) => deriveBadgeColorsAt(hexColor, 0.55);
 const LALAMOVE_SERVICE_TYPES = [
   { value: "CAR", label: "CAR" },
   { value: "CARFOURH", label: "CARFOURH" },

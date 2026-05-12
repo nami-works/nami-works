@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — LD map pills (Polaris parity)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --text: #303030;
+    --subdued: #6d7175;
+    /* Polaris-neutral pairing (for unassigned markers) */
+    --neutral-bg: #e4e5e7;
+    --neutral-text: #303030;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg); color: var(--text);
+  }
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+  h2 { font-size: 15px; font-weight: 600; margin: 0 0 12px; color: var(--text); }
+  h3 { font-size: 13px; font-weight: 600; margin: 20px 0 8px; color: var(--text); }
+  p.intro {
+    font-size: 13px; color: var(--subdued);
+    max-width: 880px; margin-bottom: 24px;
+  }
+
+  /* ============ Notes panel ============ */
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 1100px;
+    margin-bottom: 20px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; color: #4a3600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 3px; }
+
+  /* ============ Comparison grid ============ */
+  .comparisonGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+    max-width: 1400px;
+  }
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .panel h2 { font-size: 13px; }
+  .panelTag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .panelTag.current { background: #fde2dd; color: #d72c0d; }
+  .panelTag.optA { background: #e0f2eb; color: #067647; }
+  .panelTag.optB { background: #dfeafe; color: #005bd3; }
+  .panelDesc { font-size: 11px; color: var(--subdued); margin: 0 0 12px; line-height: 1.45; }
+
+  /* ============ Map tile mocks ============ */
+  /* Dark-map background mimics Shopify/Google "night" style we use today */
+  .mapTile {
+    position: relative;
+    width: 100%;
+    border-radius: 8px;
+    padding: 18px 14px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .mapTile.dark {
+    background: linear-gradient(135deg, #1f2933 0%, #2a3641 50%, #1c2730 100%);
+    color: #d6b988;
+  }
+  .mapTile.light {
+    background: linear-gradient(135deg, #f0eee5 0%, #e6e3d8 50%, #ede8dc 100%);
+    color: #8c8266;
+  }
+  .mapTile .tileLabel {
+    position: absolute;
+    top: 8px; right: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    opacity: 0.65;
+    pointer-events: none;
+  }
+  .pillRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 4px;
+  }
+  .pillRow + .pillRow { margin-top: 4px; }
+
+  /* ============ Map pill — CURRENT (what ships today) ============ */
+  /* 14px / weight 700 / 1.5px black border / radius 999px / bg only */
+  .pillCurrent {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1.5px solid #111111;
+    background: #ffffff;
+    color: #1f2933;
+  }
+  .pillCurrent .icon { font-size: 16px; line-height: 1; display: inline-flex; }
+
+  /* ============ Map pill — OPTION A (deeper mix on map only) ============ */
+  /* 12px / weight 600 / no border / radius 10px / box-shadow / bg+text pairing */
+  .pillNew {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--neutral-bg);
+    color: var(--neutral-text);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  }
+  .pillNew .icon { display: inline-flex; align-items: center; }
+  /* Polaris-style inline SVG icon — 12px, currentColor */
+  .pillNew .icon svg { width: 12px; height: 12px; }
+
+  /* Per-route tone pairings (Option A — bg mixed 55% toward white for map legibility) */
+  .pillNew.route01 { background: rgb(160, 190, 232); color: rgb(15, 38, 70); }  /* blue */
+  .pillNew.route02 { background: rgb(140, 198, 183); color: rgb(0, 83, 62); }   /* green */
+  .pillNew.route03 { background: rgb(216, 202, 140); color: rgb(75, 56, 0); }   /* gold */
+
+  /* Per-route tone pairings (Option B — same 78% mix as side panel) */
+  .pillNew.route01.optB { background: rgb(216, 226, 244); color: rgb(15, 38, 70); }
+  .pillNew.route02.optB { background: rgb(199, 227, 220); color: rgb(0, 83, 62); }
+  .pillNew.route03.optB { background: rgb(245, 234, 199); color: rgb(75, 56, 0); }
+
+  /* Pickup / storefront marker — Polaris-neutral pairing */
+  .pillNew.pickup { background: rgb(228, 229, 231); color: rgb(48, 48, 48); }
+
+  /* Selected (holographic) — load-bearing UX kept as-is */
+  .pillNew.selected {
+    background: linear-gradient(90deg,
+      rgba(94,206,206,0.55),
+      rgba(176,159,218,0.55),
+      rgba(212,168,212,0.55),
+      rgba(94,206,206,0.55));
+    color: #ffffff;
+  }
+  .pillNew.selected.editMode {
+    box-shadow: 0 0 0 3px rgba(176, 159, 218, 0.7),
+                0 1px 2px rgba(0, 0, 0, 0.25);
+  }
+
+  /* ============ Side-panel reference card ============ */
+  .sideRef {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 14px;
+    font-size: 12px;
+  }
+  .sideRef .sideTitle { font-size: 11px; color: var(--subdued); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; }
+  .routeBadge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0 4px 4px 0;
+  }
+  .routeBadge.r01 { background: rgb(216, 226, 244); color: rgb(15, 38, 70); }
+  .routeBadge.r02 { background: rgb(199, 227, 220); color: rgb(0, 83, 62); }
+  .routeBadge.r03 { background: rgb(245, 234, 199); color: rgb(75, 56, 0); }
+
+  /* ============ Typography comparison ============ */
+  .typoBlock {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    max-width: 880px;
+  }
+  .typoRow {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 16px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f1f1;
+  }
+  .typoRow:last-child { border-bottom: none; }
+  .typoLabel { font-size: 11px; color: var(--subdued); }
+  .typoValue { display: inline-flex; gap: 8px; align-items: center; }
+
+  /* ============ Icon strip ============ */
+  .iconStrip {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .iconCell {
+    text-align: center;
+    padding: 10px 6px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 10px;
+    color: var(--subdued);
+  }
+  .iconCell .iconCellRender { font-size: 18px; margin-bottom: 4px; display: inline-flex; align-items: center; justify-content: center; height: 22px; }
+  .iconCell .iconCellRender svg { width: 18px; height: 18px; }
+
+  /* Polaris SVG paths — simplified to match what <s-icon> renders */
+  .polarisBolt { color: #d99a0a; }
+  .polarisAlertTriangle { color: #d72c0d; }
+  .polarisCircleCancel { color: #d72c0d; }
+  .polarisClockBlue { color: #005bd3; }
+  .polarisClockGray { color: #6d7175; }
+  .polarisAlertTriangleGold { color: #d99a0a; }
+  .polarisStore { color: #303030; }
+</style>
+</head>
+<body>
+
+<h1>Local Delivery — map pills, Polaris parity (mockup v1)</h1>
+<p class="intro">
+  The current map pills don't show their per-route tone pairing on dark map tiles — the 78% white-mix bg used everywhere washes out against the dark slate background, even though it reads cleanly on the white side-panel route cards. This mockup compares the current state vs two ways to fix it.
+</p>
+
+<div class="notes">
+  <h3>What's changing</h3>
+  <ul>
+    <li><strong>Typography</strong> — 14px/700 sans-serif → 12px/600 Polaris stack (matches the side-panel <code>.routeBadge</code>).</li>
+    <li><strong>Border</strong> — 1.5px solid #111 removed → replaced with <code>box-shadow: 0 1px 2px rgba(0,0,0,.25)</code> for elevation against any map style.</li>
+    <li><strong>Radius</strong> — 999px (full pill) → 10px (matches Polaris s-badge family and the side-panel card).</li>
+    <li><strong>Tone pairing</strong> — apply BOTH <code>bg</code> AND <code>text</code> from <code>deriveBadgeColors</code> (today only <code>bg</code> is applied; text stays default #1f2933).</li>
+    <li><strong>Unassigned markers</strong> — fall through to Polaris-neutral pairing (#e4e5e7 / #303030) instead of pure white.</li>
+    <li><strong>Icons</strong> — hand-rolled SVG → Polaris <code>&lt;s-icon&gt;</code>; hourglass (due-today) → bolt (lightning).</li>
+    <li><strong>Selected state</strong> — holographic gradient + edit-mode ring kept as-is (no Polaris equivalent and it's load-bearing UX).</li>
+  </ul>
+</div>
+
+<h2>Side-by-side comparison</h2>
+
+<div class="comparisonGrid">
+
+  <!-- ============== Panel 1 — CURRENT ============== -->
+  <div class="panel">
+    <h2><span class="panelTag current">Current</span>What ships today</h2>
+    <p class="panelDesc">
+      White bg fallback + dark text + 1.5px black border + 14px/700. Route-color bg is technically applied but washes out on dark map tiles. No text-color pairing.
+    </p>
+
+    <div class="mapTile dark">
+      <span class="tileLabel">Dark map</span>
+      <div class="pillRow">
+        <span class="pillCurrent" title="Pickup"><span class="icon">🏬</span></span>
+        <span class="pillCurrent" title="Route 02 — unreadable">
+          <span class="icon">⏳</span>80206
+        </span>
+        <span class="pillCurrent" title="Route 02 — unreadable">
+          <span class="icon">⏳</span>80198
+        </span>
+        <span class="pillCurrent" title="Unassigned">
+          <span class="icon">⏳</span>80131
+        </span>
+      </div>
+      <div class="pillRow">
+        <span class="pillCurrent" title="Address error">
+          <span class="icon">🟡</span>80167
+        </span>
+        <span class="pillCurrent" title="Failed">
+          <span class="icon">🚫</span>79640
+        </span>
+      </div>
+    </div>
+
+    <div class="mapTile light">
+      <span class="tileLabel">Light map</span>
+      <div class="pillRow">
+        <span class="pillCurrent"><span class="icon">🏬</span></span>
+        <span class="pillCurrent">
+          <span class="icon">⏳</span>80206
+        </span>
+        <span class="pillCurrent">
+          <span class="icon">⏳</span>80198
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== Panel 2 — OPTION A ============== -->
+  <div class="panel">
+    <h2><span class="panelTag optA">Option A</span>Deeper mix on map only</h2>
+    <p class="panelDesc">
+      Map markers use a 55% white-mix bg (more saturated) so pastels survive on dark tiles. Side-panel cards keep the 78% mix unchanged. Slight shade difference between map and side panel.
+    </p>
+
+    <div class="mapTile dark">
+      <span class="tileLabel">Dark map</span>
+      <div class="pillRow">
+        <span class="pillNew pickup">
+          <span class="icon polarisStore" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 8l2-4h10l2 4v9H3z"/><rect x="7.5" y="11.5" width="5" height="5.5" fill="#ffffff"/></svg></span>
+        </span>
+        <span class="pillNew route02">
+          <span class="icon polarisBolt" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80206
+        </span>
+        <span class="pillNew route02">
+          <span class="icon polarisBolt" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80198
+        </span>
+        <span class="pillNew">
+          <span class="icon polarisBolt" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80131
+        </span>
+      </div>
+      <div class="pillRow">
+        <span class="pillNew">
+          <span class="icon polarisAlertTriangleGold" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2 L19 18 L1 18 Z"/></svg></span>
+          80167
+        </span>
+        <span class="pillNew">
+          <span class="icon polarisCircleCancel" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8"/><line x1="5" y1="5" x2="15" y2="15" stroke="#fff" stroke-width="2.4"/></svg></span>
+          79640
+        </span>
+      </div>
+      <div class="pillRow">
+        <span class="pillNew route01">
+          <span class="icon polarisBolt" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80169
+        </span>
+        <span class="pillNew route03">
+          <span class="icon polarisBolt" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80111
+        </span>
+        <span class="pillNew selected">
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80164
+        </span>
+        <span class="pillNew selected editMode">
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80158
+        </span>
+      </div>
+    </div>
+
+    <div class="mapTile light">
+      <span class="tileLabel">Light map</span>
+      <div class="pillRow">
+        <span class="pillNew pickup">
+          <span class="icon polarisStore" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 8l2-4h10l2 4v9H3z"/><rect x="7.5" y="11.5" width="5" height="5.5" fill="#ffffff"/></svg></span>
+        </span>
+        <span class="pillNew route02">
+          <span class="icon polarisBolt" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80206
+        </span>
+        <span class="pillNew route01">
+          <span class="icon polarisBolt" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80169
+        </span>
+      </div>
+    </div>
+
+    <div class="sideRef">
+      <div class="sideTitle">Side panel (unchanged — 78% mix)</div>
+      <span class="routeBadge r01">Route 01</span>
+      <span class="routeBadge r02">Route 02</span>
+      <span class="routeBadge r03">Route 03</span>
+    </div>
+  </div>
+
+  <!-- ============== Panel 3 — OPTION B ============== -->
+  <div class="panel">
+    <h2><span class="panelTag optB">Option B</span>Same mix · force light map</h2>
+    <p class="panelDesc">
+      Map markers use the same 78% mix as the side panel — pixel-identical parity. Requires defaulting the map style to "light". Loses the dark map aesthetic but matches the side panel exactly.
+    </p>
+
+    <div class="mapTile dark">
+      <span class="tileLabel">Dark map (NOT supported in Option B)</span>
+      <div class="pillRow">
+        <span class="pillNew pickup">
+          <span class="icon polarisStore" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 8l2-4h10l2 4v9H3z"/><rect x="7.5" y="11.5" width="5" height="5.5" fill="#ffffff"/></svg></span>
+        </span>
+        <span class="pillNew route02 optB">
+          <span class="icon polarisBolt" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80206
+        </span>
+        <span class="pillNew route02 optB">
+          <span class="icon polarisBolt" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80198
+        </span>
+      </div>
+      <p class="panelDesc" style="margin-top: 6px; color: #fde2dd; opacity: 0.9;">Pastel bg still washes out on dark — Option B requires switching default map to light.</p>
+    </div>
+
+    <div class="mapTile light">
+      <span class="tileLabel">Light map (default in Option B)</span>
+      <div class="pillRow">
+        <span class="pillNew pickup">
+          <span class="icon polarisStore" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 8l2-4h10l2 4v9H3z"/><rect x="7.5" y="11.5" width="5" height="5.5" fill="#ffffff"/></svg></span>
+        </span>
+        <span class="pillNew route02 optB">
+          <span class="icon polarisBolt" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80206
+        </span>
+        <span class="pillNew route02 optB">
+          <span class="icon polarisBolt" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80198
+        </span>
+        <span class="pillNew route01 optB">
+          <span class="icon polarisBolt" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80169
+        </span>
+        <span class="pillNew route03 optB">
+          <span class="icon polarisBolt" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80111
+        </span>
+      </div>
+      <div class="pillRow">
+        <span class="pillNew">
+          <span class="icon polarisAlertTriangleGold" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2 L19 18 L1 18 Z"/></svg></span>
+          80167
+        </span>
+        <span class="pillNew">
+          <span class="icon polarisCircleCancel" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8"/><line x1="5" y1="5" x2="15" y2="15" stroke="#fff" stroke-width="2.4"/></svg></span>
+          79640
+        </span>
+        <span class="pillNew selected">
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+          80164
+        </span>
+      </div>
+    </div>
+
+    <div class="sideRef">
+      <div class="sideTitle">Side panel (78% mix — matches map)</div>
+      <span class="routeBadge r01">Route 01</span>
+      <span class="routeBadge r02">Route 02</span>
+      <span class="routeBadge r03">Route 03</span>
+    </div>
+  </div>
+
+</div>
+
+<h2>Typography & shape — before vs after</h2>
+
+<div class="typoBlock">
+  <div class="typoRow">
+    <span class="typoLabel">Current</span>
+    <span class="typoValue">
+      <span class="pillCurrent"><span class="icon">⏳</span>80206</span>
+      <span style="font-size: 11px; color: var(--subdued); margin-left: 12px;">14px · weight 700 · 1.5px #111 border · radius 999px · sans-serif fallback</span>
+    </span>
+  </div>
+  <div class="typoRow">
+    <span class="typoLabel">After (both options)</span>
+    <span class="typoValue">
+      <span class="pillNew route02">
+        <span class="icon polarisBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>
+        80206
+      </span>
+      <span style="font-size: 11px; color: var(--subdued); margin-left: 12px;">12px · weight 600 · no border · box-shadow · radius 10px · Polaris font stack</span>
+    </span>
+  </div>
+</div>
+
+<h2>Icon mapping — all surfaces (map markers, orders table, map legend)</h2>
+
+<p class="intro" style="margin-bottom: 8px;">
+  Every icon below switches from hand-rolled SVG (or emoji) to Polaris <code>&lt;s-icon type="..."&gt;</code>. The "due today" icon also changes from hourglass to bolt. Same icon for the same meaning, everywhere it appears.
+</p>
+
+<div class="iconStrip">
+  <div class="iconCell">
+    <div class="iconCellRender polarisCircleCancel"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8"/><line x1="5" y1="5" x2="15" y2="15" stroke="#fff" stroke-width="2.4"/></svg></div>
+    <code>circle-cancel</code><br>Failed delivery
+  </div>
+  <div class="iconCell">
+    <div class="iconCellRender polarisAlertTriangle"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2 L19 18 L1 18 Z"/></svg></div>
+    <code>alert-triangle</code><br>Overdue
+  </div>
+  <div class="iconCell" style="background: #fffbea; border-color: #f4e3a1;">
+    <div class="iconCellRender polarisBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></div>
+    <code>bolt</code><br>Due today<br><span style="color: #d72c0d; font-weight: 600;">(was hourglass)</span>
+  </div>
+  <div class="iconCell">
+    <div class="iconCellRender polarisClockBlue"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="7.5"/><path d="M10 5.5 L10 10 L13 12" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+    <code>clock</code><br>Due tomorrow
+  </div>
+  <div class="iconCell">
+    <div class="iconCellRender polarisClockGray"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.5"/><path d="M10 5.5 L10 10 L13 12" stroke-linecap="round"/></svg></div>
+    <code>clock</code> (subdued)<br>Due later
+  </div>
+  <div class="iconCell">
+    <div class="iconCellRender polarisAlertTriangleGold"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2 L19 18 L1 18 Z"/></svg></div>
+    <code>alert-triangle</code><br>Address error
+  </div>
+  <div class="iconCell">
+    <div class="iconCellRender polarisStore"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 8l2-4h10l2 4v9H3z"/><rect x="7.5" y="11.5" width="5" height="5.5" fill="#ffffff"/></svg></div>
+    <code>store</code><br>Pickup
+  </div>
+</div>
+
+<div class="notes" style="margin-top: 24px;">
+  <h3>Decision needed (from chat)</h3>
+  <ul>
+    <li><strong>Option A — Deeper mix on map only.</strong> Map markers get a more saturated bg (rgb(140,198,183) for green Route 02). Side panel stays at 78% mix (rgb(199,227,220)). Map readable on dark or light tiles. Slight family-of-shades difference between map and side panel.</li>
+    <li><strong>Option B — Same mix + force light map.</strong> Map and side panel use identical pastel. Requires default map style = light. Loses the dark map aesthetic. Pixel-identical parity.</li>
+  </ul>
+</div>
+
+<div class="notes">
+  <h3>Out of scope (handled separately, listed for context)</h3>
+  <ul>
+    <li>Stats-block parity (Auto-assign accuracy vs Total savings) — separate mockup.</li>
+    <li>Loading screen padding + bar fill — separate change.</li>
+    <li>Polaris icons inside the Orders table Due column and map legend — same Polaris icons swap, applied in the same PR as the map pills.</li>
+  </ul>
+</div>
+
+</body>
+</html>

@@ -7,10 +7,12 @@
  * map markers count even though they're rendered by Google Maps' DOM, not
  * Polaris, because they're inside the admin UI and read as iconography.
  *
- * Each icon is a 14×14 viewBox=0 0 20 20 SVG with semantic colors:
- * - failed (was 🚫): red strike-through circle
+ * Each icon is a 12×12 viewBox=0 0 20 20 SVG with semantic colors:
+ * - failed (was 🚫): red strike-through circle (circle-cancel)
  * - overdue (was 🚨): red alert triangle
- * - dueToday (was ⏳): gold hourglass
+ * - dueToday (was ⏳ hourglass): gold bolt — changed 2026-05-12 for parity
+ *   with the bolt icon used across the admin for time-sensitive
+ *   "act now" affordances. Matches `<s-icon type="bolt">`.
  * - dueTomorrow (was ⏰): blue clock
  * - dueLater (was 🕒): subdued clock
  * - addressError (was 🟡): gold alert triangle
@@ -26,7 +28,7 @@ export type MarkerIconKind =
   | "addressError"
   | "storeLocation";
 
-const SIZE = 14;
+const SIZE = 12;
 
 const svg = (paths: string, color: string): string =>
   `<svg width="${SIZE}" height="${SIZE}" viewBox="0 0 20 20" fill="none" aria-hidden="true">` +
@@ -48,12 +50,12 @@ const ICONS: Record<MarkerIconKind, string> = {
       `<circle cx="10" cy="15.2" r="0.9" fill="white"/>`,
     "#d72c0d",
   ),
-  // Due today: gold hourglass
+  // Due today: gold bolt (was hourglass — replaced 2026-05-12). Path matches
+  // Polaris `<s-icon type="bolt">` proportions: lightning bolt centered in
+  // the 20x20 viewBox.
   dueToday: svg(
-    `<path d="M5 3 L15 3 L15 6 L11.5 10 L15 14 L15 17 L5 17 L5 14 L8.5 10 L5 6 Z" ` +
-      `fill="currentColor" stroke="currentColor" stroke-width="0.6" stroke-linejoin="round"/>` +
-      `<rect x="5" y="3" width="10" height="0.8" fill="#5b4109"/>` +
-      `<rect x="5" y="16.2" width="10" height="0.8" fill="#5b4109"/>`,
+    `<path d="M11.5 2 L4 11 L9 11 L8.5 18 L16 9 L11 9 Z" ` +
+      `fill="currentColor" stroke="currentColor" stroke-width="0.4" stroke-linejoin="round"/>`,
     "#d99a0a",
   ),
   // Due tomorrow: blue clock

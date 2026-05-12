@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — LD stat blocks (Auto-assign accuracy + Total savings parity)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --text: #303030;
+    --subdued: #6d7175;
+    --green: #067647;
+    --green-pastel: #d4f0e2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg); color: var(--text);
+  }
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+  h2 { font-size: 15px; font-weight: 600; margin: 0 0 14px; color: var(--text); }
+  p.intro {
+    font-size: 13px; color: var(--subdued);
+    max-width: 880px; margin-bottom: 24px;
+  }
+
+  /* ============ Notes panel ============ */
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 1100px;
+    margin-bottom: 20px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; color: #4a3600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 3px; }
+  .notes code { background: #fff3c8; padding: 1px 4px; border-radius: 3px; }
+
+  /* ============ Comparison rail (column = current, column = after) ============ */
+  .comparisonRail {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 1100px;
+    margin-bottom: 32px;
+  }
+  .lane h2 { display: flex; align-items: center; gap: 8px; }
+  .laneTag {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+  .laneTag.current { background: #fde2dd; color: #d72c0d; }
+  .laneTag.after { background: #e0f2eb; color: #067647; }
+
+  /* ============ Stat block (mimics <s-section padding="base">) ============ */
+  .statBlock {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    max-width: 340px;
+  }
+  .statBlock + .statBlock { margin-top: 16px; }
+
+  /* Polaris s-section heading style — 14px / weight 600 */
+  .blockHeading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .blockHeading .title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+  }
+
+  /* "NEW" badge — Polaris s-badge equivalent */
+  .badgeNew {
+    background: var(--green-pastel);
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 8px;
+    line-height: 1.4;
+  }
+
+  /* ============ CURRENT renders ============ */
+
+  /* Auto-assign accuracy — current (mostly correct already) */
+  .cur-accuracy .barWrap {
+    width: 100%; height: 6px;
+    background: #e8e9eb;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .cur-accuracy .barFill {
+    width: 37%; height: 100%;
+    background: linear-gradient(90deg, #5ecece, #b09fda, #d4a8d4);
+    border-radius: 999px;
+  }
+  .cur-accuracy .pctRow {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .cur-accuracy .pct {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .cur-accuracy .descriptor {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.35;
+  }
+  .cur-accuracy .period {
+    font-size: 12px;
+    color: var(--subdued);
+    margin-top: 4px;
+  }
+
+  /* Total savings — current (broken parity) */
+  .cur-savings .labelRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .cur-savings .label {
+    /* Custom <div class="label"> — looks lighter, smaller than Polaris heading */
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--subdued);
+    margin: 0;
+  }
+  .cur-savings .badgeNew-old {
+    background: var(--green-pastel);
+    color: var(--green);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .cur-savings .value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--green);
+    margin-bottom: 4px;
+  }
+  .cur-savings .delta {
+    font-size: 12px;
+    color: var(--subdued);
+    line-height: 1.35;
+    margin-bottom: 12px;
+  }
+  .cur-savings .sparkRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .cur-savings .spark {
+    flex: 1;
+    height: 28px;
+  }
+  .cur-savings .sparkLabel {
+    font-size: 11px;
+    color: var(--subdued);
+  }
+  .cur-savings .seeMoreOld {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text);
+    text-decoration: none;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #ffffff;
+  }
+  .cur-savings .seeMoreFooter {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* ============ AFTER renders ============ */
+
+  /* Both blocks share the same shape: heading → visual → primary stat + descriptor → period footer → CTA right */
+  .after .visualRow {
+    margin-bottom: 12px;
+  }
+  .after .barWrap {
+    width: 100%; height: 6px;
+    background: #e8e9eb;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .after .barFill {
+    width: 37%; height: 100%;
+    background: linear-gradient(90deg, #5ecece, #b09fda, #d4a8d4);
+    border-radius: 999px;
+  }
+  .after .sparkWrap { width: 100%; height: 28px; }
+
+  .after .primaryStat {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+  .after .primaryValue {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .after .primaryValue.negative { color: var(--green); /* savings is positive money, "negative" delta */ }
+  .after .descriptor {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.35;
+  }
+  .after .period {
+    font-size: 12px;
+    color: var(--subdued);
+    margin-top: 8px;
+    line-height: 1.4;
+  }
+  .after .ctaRow {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 14px;
+  }
+  .after .btnSecondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    text-decoration: none;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #ffffff;
+    cursor: pointer;
+  }
+  .after .btnSecondary:hover { background: #f6f6f7; }
+
+  /* ============ Anatomy diagram ============ */
+  .anatomy {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    max-width: 880px;
+    margin-bottom: 24px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .anatomyDiagram {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .anatomyDiagram pre {
+    margin: 0;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 11px;
+    line-height: 1.55;
+    background: #f8f9fa;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    color: var(--text);
+  }
+  .anatomyDiagram .rowList { margin: 0; padding: 0; list-style: none; }
+  .anatomyDiagram .rowList li { padding: 4px 0; border-bottom: 1px dashed #eee; }
+  .anatomyDiagram .rowList li:last-child { border-bottom: none; }
+  .anatomyDiagram .slot {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    background: #f1f2f3;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+    color: #1a1a1a;
+  }
+</style>
+</head>
+<body>
+
+<h1>Local Delivery — stat blocks parity (mockup v1)</h1>
+<p class="intro">
+  The Auto-assign accuracy block and the Total savings block live next to each other in the LD sidebar but were built in different sessions with different primitives. They show information at different weights, place the period in different positions, and use different CTA styles. This mockup proposes a unified shape both blocks honor.
+</p>
+
+<div class="notes">
+  <h3>The five deltas</h3>
+  <ul>
+    <li><strong>Title</strong> — Total savings uses a custom <code>&lt;div class="label"&gt;</code> at 12px/500 subdued. Auto-assign uses real <code>&lt;s-section heading&gt;</code> at 14px/600. Fix: both use <code>&lt;s-section heading&gt;</code>.</li>
+    <li><strong>Period placement</strong> — Auto-assign has it at the bottom as a single subdued line. Total savings has it mixed into the delta inline. Fix: both put period at the bottom as a single subdued line.</li>
+    <li><strong>Visual position</strong> — Auto-assign bar is at the top, above the stat. Total savings sparkline is at the bottom, below the stat. Fix: both put the visual indicator at the top.</li>
+    <li><strong>CTA</strong> — Auto-assign has none. Total savings has a custom text-style <code>&lt;Link class="seeMore"&gt;</code>. Fix: <code>&lt;s-button variant="secondary"&gt;</code> right-aligned at the bottom (Total savings only — Auto-assign has nothing to link to yet).</li>
+    <li><strong>"New" badge</strong> — Custom green pill rendered as <code>NEW</code> all-caps. Fix: real <code>&lt;s-badge tone="success"&gt;</code> with title-case "New" next to the heading.</li>
+  </ul>
+</div>
+
+<h2>Anatomy — the shape both blocks honor</h2>
+
+<div class="anatomy">
+  <div class="anatomyDiagram">
+    <pre>
+┌─────────────────────────────┐
+│ Heading        [optional]   │ ← s-section heading + optional s-badge
+│                             │
+│ ▰▰▰▰▰░░░░░░░░░░░░░░░░░░░░░  │ ← Visual at top (bar / sparkline)
+│                             │
+│ 37%   descriptor text       │ ← Primary stat + secondary descriptor
+│                             │
+│ Period · count or unit      │ ← Period footer, subdued, single line
+│                             │
+│                  [See more] │ ← Right-aligned secondary button
+└─────────────────────────────┘</pre>
+    <ul class="rowList">
+      <li><strong>Heading</strong> — <span class="slot">&lt;s-section heading={...}&gt;</span> · optional <span class="slot">&lt;s-badge tone="success"&gt;NEW&lt;/s-badge&gt;</span> rendered next to heading text</li>
+      <li><strong>Visual</strong> — Progress bar (Auto-assign) or sparkline (Total savings), full width</li>
+      <li><strong>Primary stat</strong> — Large numeric value + secondary descriptor on the same baseline, e.g. <em>"37% &nbsp; 112 of 303 orders accurately assigned"</em> or <em>"−R$ 146 &nbsp; vs warehouse"</em></li>
+      <li><strong>Period footer</strong> — Subdued single line, e.g. <em>"Last 30 days · 40 optimizations"</em> or <em>"Last 90 days · 0% MoM"</em></li>
+      <li><strong>CTA</strong> — Optional <span class="slot">&lt;s-button variant="secondary"&gt;See more&lt;/s-button&gt;</span> right-aligned</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Current vs After — side by side</h2>
+
+<div class="comparisonRail">
+
+  <!-- ============ LEFT LANE — CURRENT ============ -->
+  <div class="lane">
+    <h2><span class="laneTag current">Current</span>What ships today</h2>
+
+    <!-- Auto-assign accuracy (already mostly correct) -->
+    <div class="statBlock cur-accuracy">
+      <div class="blockHeading">
+        <h3 class="title">Auto-assign accuracy</h3>
+      </div>
+      <div class="barWrap">
+        <div class="barFill"></div>
+      </div>
+      <div class="pctRow">
+        <span class="pct">37%</span>
+        <span class="descriptor">112 of 303 orders<br>accurately assigned</span>
+      </div>
+      <div class="period">Last 30 days · 40 optimization(s)</div>
+      <p style="font-size: 11px; color: #d72c0d; margin: 6px 0 0; font-style: italic;">
+        ↑ Verbose descriptor + parenthetical pluralization
+      </p>
+    </div>
+
+    <!-- Total savings (broken parity) -->
+    <div class="statBlock cur-savings">
+      <div class="labelRow">
+        <span class="label">Total savings</span>
+        <span class="badgeNew-old">NEW</span>
+      </div>
+      <div class="value">−R$ 146</div>
+      <div class="delta">vs warehouse · last 90 days · — 0% MoM</div>
+      <div class="sparkRow">
+        <svg class="spark" viewBox="0 0 200 28" preserveAspectRatio="none" aria-hidden="true">
+          <polyline fill="none" stroke="#067647" stroke-width="1.5" points="0,26 18,25 36,24 54,24 72,23 90,23 108,22 126,21 144,19 162,16 180,12 200,8" />
+          <polygon fill="rgba(6, 118, 71, 0.08)" points="0,26 18,25 36,24 54,24 72,23 90,23 108,22 126,21 144,19 162,16 180,12 200,8 200,28 0,28" />
+        </svg>
+        <span class="sparkLabel">90d</span>
+      </div>
+      <div class="seeMoreFooter">
+        <a href="#" class="seeMoreOld">See more ›</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RIGHT LANE — AFTER ============ -->
+  <div class="lane after">
+    <h2><span class="laneTag after">After</span>Parity applied</h2>
+
+    <!-- Auto-assign accuracy — Option C descriptor compression -->
+    <div class="statBlock">
+      <div class="blockHeading">
+        <h3 class="title">Auto-assign accuracy</h3>
+      </div>
+      <div class="visualRow">
+        <div class="barWrap">
+          <div class="barFill"></div>
+        </div>
+      </div>
+      <div class="primaryStat">
+        <span class="primaryValue">37%</span>
+        <span class="descriptor">112 of 303 orders</span>
+      </div>
+      <div class="period">Last 30 days · 40 optimizations</div>
+    </div>
+
+    <!-- Total savings — refactored to the same shape -->
+    <div class="statBlock">
+      <div class="blockHeading">
+        <h3 class="title">Total savings</h3>
+        <span class="badgeNew">New</span>
+      </div>
+      <div class="visualRow">
+        <div class="sparkWrap">
+          <svg viewBox="0 0 200 28" preserveAspectRatio="none" aria-hidden="true" style="width: 100%; height: 100%;">
+            <polyline fill="none" stroke="#067647" stroke-width="1.5" points="0,26 18,25 36,24 54,24 72,23 90,23 108,22 126,21 144,19 162,16 180,12 200,8" />
+            <polygon fill="rgba(6, 118, 71, 0.08)" points="0,26 18,25 36,24 54,24 72,23 90,23 108,22 126,21 144,19 162,16 180,12 200,8 200,28 0,28" />
+          </svg>
+        </div>
+      </div>
+      <div class="primaryStat">
+        <span class="primaryValue negative">−R$ 146</span>
+        <span class="descriptor">vs warehouse</span>
+      </div>
+      <div class="period">Last 90 days · 0% MoM</div>
+      <div class="ctaRow">
+        <a href="#" class="btnSecondary">See more</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Trade-offs to call out</h3>
+  <ul>
+    <li><strong>Total savings gets taller.</strong> Splitting the inline <em>"vs warehouse · last 90 days · — 0% MoM"</em> into descriptor + footer adds one extra line (~14px). The CTA button is also slightly taller than the previous text link. Acceptable IMO — readability + parity win.</li>
+    <li><strong>Sparkline moves to the top.</strong> Currently the eye lands on the absolute number first. After the change the eye lands on the trend first. Matches Auto-assign (which leads with the bar). If you want value-first ordering, we keep the current order but still apply the heading + footer fixes.</li>
+    <li><strong>"NEW" badge stays.</strong> No defined retirement date — leaving it in place but rendered as a real <code>&lt;s-badge tone="success"&gt;</code>. Easy to remove later.</li>
+  </ul>
+</div>
+
+<div class="notes">
+  <h3>Open question for Lucas</h3>
+  <ul>
+    <li>Sparkline at the top (as drawn here, mirrors Auto-assign), or sparkline at the bottom (current Total-savings position, value-first reading)? The rest of the parity fixes apply either way.</li>
+  </ul>
+</div>
+
+</body>
+</html>

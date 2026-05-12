@@ -189,7 +189,8 @@
 }
 
 .legendPillEmoji {
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
   flex-shrink: 0;
 }
 
@@ -1205,31 +1206,37 @@
   text-align: center;
 }
 
+/* Polaris s-badge / side-panel routeBadge parity (2026-05-12). Drops the
+   prior 14px / weight 700 / 1.5px black border / radius 999px in favor of
+   the Polaris-canonical 12px / 600 / no border / radius 10px shape. Per-route
+   bg+text pairing is applied inline by buildLabel via deriveBadgeColorsForMap.
+   Spec: inputs/mockups/ld-map-pills-polaris-v1.html. */
 .mapLabelText {
   color: #1f2933;
-  font-size: 14px;
-  font-weight: 700;
-  font-family: sans-serif;
-  line-height: 1.2;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1.4;
   display: inline-flex;
   flex-direction: row;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .mapLabelEmoji {
-  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .mapLabelOrder {
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .mapLabelBadge {
-  border: 1.5px solid #111111;
-  border-radius: 999px;
-  padding: 4px 8px;
-  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 2px 8px;
+  background-color: #e4e5e7;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 
