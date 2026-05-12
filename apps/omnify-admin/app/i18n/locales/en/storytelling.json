@@ -7,7 +7,7 @@
   "index": {
     "seoSection": "Generate SEO blog posts",
     "seoDescription": "Create structured briefs and generate SEO-optimized blog content using AI. Review drafts and publish to your Shopify blog.",
-    "createBrief": "Create brief",
+    "createBrief": "New brief",
     "configureBrand": "Configure brand settings",
     "getStarted": "Get started",
     "stepBrand": "(about, tone of voice, editorial guidelines)",
@@ -15,7 +15,7 @@
     "stepGenerate": "Generate content and review before publishing"
   },
   "brief": {
-    "pageHeading": "Create brief",
+    "pageHeading": "New brief",
     "briefConfig": "Brief configuration",
     "configureBrandFirst": "Configure your brand in",
     "beforeGenerating": "before generating.",

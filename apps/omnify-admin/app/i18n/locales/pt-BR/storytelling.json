@@ -7,7 +7,7 @@
   "index": {
     "seoSection": "Gerar posts de blog SEO",
     "seoDescription": "Crie briefings estruturados e gere conteúdo de blog otimizado para SEO usando IA. Revise rascunhos e publique diretamente no seu blog Shopify.",
-    "createBrief": "Criar briefing",
+    "createBrief": "Novo briefing",
     "configureBrand": "Configurar marca",
     "getStarted": "Começar",
     "stepBrand": "(sobre, tom de voz, diretrizes editoriais)",
@@ -15,7 +15,7 @@
     "stepGenerate": "Gere conteúdo e revise antes de publicar"
   },
   "brief": {
-    "pageHeading": "Criar briefing",
+    "pageHeading": "Novo briefing",
     "briefConfig": "Configuração do briefing",
     "configureBrandFirst": "Configure sua marca em",
     "beforeGenerating": "antes de gerar.",

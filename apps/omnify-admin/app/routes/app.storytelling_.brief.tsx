@@ -18,6 +18,7 @@ import {
 } from "../services/brand-assets/service.server";
 import { createJob } from "../services/storytelling/blog-post-job.server";
 import prisma from "../db.server";
+import { PageTabs, type PageTab } from "../components/page-tabs";
 import styles from "./app.storytelling_.brief/styles.module.css";
 
 const PRODUCTS_QUERY = `#graphql
@@ -547,11 +548,28 @@ export default function BriefPage() {
 
   const hasInvalidTheme = brief.themes.some((t) => !t.title.trim());
 
+  // Option-C tab strip (same pattern as Settings > Brand > Tone of voice):
+  // extends the parent Storytelling tabs with "New brief" as the active tab
+  // and "Blog posts" rendered in-trail (subdued + "›" separator after it).
+  // Replaces the chevron back-action — the in-trail Blog posts tab IS the
+  // "back" affordance, AND the parent tabs remain available for switching to
+  // sibling sections (Alt-text). Order is reshuffled so the in-trail parent
+  // sits immediately before the active sub-tab; the chevron then "leads
+  // into" the active tab semantically.
+  const briefTabs: PageTab[] = [
+    { key: "alt-text", label: t("tabs.altText"), to: "/app/storytelling/alt-text" },
+    { key: "blog-posts", label: t("tabs.blogPosts"), to: "/app/storytelling", variant: "in-trail" },
+    { key: "new-brief", label: t("brief.pageHeading"), to: "/app/storytelling/brief" },
+  ];
+
   return (
-    <s-page heading={t("brief.pageHeading")}>
-      <s-button slot="back-action" {...{ href: "/app/storytelling", accessibilityLabel: t("common:button.back") } as Record<string, string>}>
-        <s-icon type="chevron-left" />
-      </s-button>
+    // Heading is "Storytelling" (not "New brief") because the Shopify-chrome
+    // breadcrumb above <s-page> reads from this prop — it must match the
+    // top-level nav item ("Storytelling") regardless of which sub-page we're
+    // on. The active sub-tab (New brief, with Blog posts in-trail) is
+    // communicated by the <PageTabs> below.
+    <s-page heading={t("pageHeading")}>
+      <PageTabs activeKey="new-brief" tabs={briefTabs} ariaLabel={t("pageHeading") as string} />
       <div slot="primary-action" className={styles.headerActions}>
         <s-button variant="tertiary" onClick={toggleJsonView}>
           {showRawJson
