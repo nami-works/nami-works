@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-12",
+  "scope": "global",
+  "country": "BR",
+  "purpose": "Deterministic geofence registry for the rule engine. Each entry is a barrier (physical or operational) that should influence route clustering. Hard barriers block crossings; soft barriers add cost/time penalties and trigger split-route consideration. LLM spatial reasoner is advisory ON TOP of this; it never overrides what the registry says.",
+  "schema": {
+    "barriers": "Array of geographic constraints (water, mountains, highway chokepoints, slow-corridor pairs).",
+    "outlierThresholds": "Per-region distance thresholds for outlier detection (used by candidate generator's split-outliers variant).",
+    "absorptionThresholds": "Per-region thresholds for the absorption test (≤N-order routes with ≥Xkm spread are candidates).",
+    "sparseVolumeLocations": "Locations where solo-order postponement should be considered (low order/day average)."
+  },
+
+  "barriers": [
+    {
+      "id": "rio-guanabara-bay",
+      "name": "Guanabara Bay (Rio↔Niterói)",
+      "type": "water",
+      "severity": "soft",
+      "citation": "playbook §6.2",
+      "explanation": "Rio-Niterói Bridge (Ponte Costa e Silva) is the only road crossing. Typical crossing: 13.3 km, 25-45 min, can hit 60+ in peak. Ferry alternative exists but Lalamove uses road.",
+      "addsMinutesTypical": 35,
+      "addsMinutesPeak": 60,
+      "rule": "If route contains stops on opposite sides of this barrier, flag soft-rule violation. Propose split-by-side alternative. Operator override accepted with logged reasoning.",
+      "sides": {
+        "rio-side": {
+          "neighborhoods": ["Botafogo", "Flamengo", "Glória", "Centro", "Lapa", "Santa Teresa", "Catete", "Laranjeiras", "Copacabana", "Ipanema", "Leblon", "Lagoa", "Gávea", "São Conrado", "Barra da Tijuca", "Recreio", "Jacarepaguá", "Tijuca", "Vila Isabel", "Andaraí", "Grajaú", "Méier", "Madureira", "Penha", "Ilha do Governador"],
+          "boundingBox": { "minLat": -23.10, "maxLat": -22.75, "minLng": -43.80, "maxLng": -43.15 }
+        },
+        "niteroi-side": {
+          "neighborhoods": ["Centro Niterói", "Icaraí", "São Francisco", "Charitas", "Jurujuba", "Itaipu", "Itacoatiara", "Camboinhas", "Maravista", "Piratininga", "Cafubá"],
+          "boundingBox": { "minLat": -23.05, "maxLat": -22.85, "minLng": -43.15, "maxLng": -42.85 }
+        }
+      },
+      "evidenceFromCases": ["rio-niteroi-pairing-2026-05-10"]
+    },
+
+    {
+      "id": "sp-tiete-river-crossings",
+      "name": "Tietê River (SP Marginal Tietê crossings)",
+      "type": "highway-chokepoint",
+      "severity": "soft",
+      "citation": "playbook §6.2",
+      "explanation": "Marginal Tietê is a major north-south chokepoint in São Paulo. Crossings via Ponte Vila Maria, Ponte da Casa Verde, Ponte do Limão, etc. Traffic-dependent. Add 15-30 min in rush hour.",
+      "addsMinutesTypical": 15,
+      "addsMinutesPeak": 35,
+      "rule": "Cross-river pairings flagged only if also outliers or low-spread candidates. Not blocking for normal SP routes (river crossing is too common to block).",
+      "sides": {
+        "south-of-tiete": {
+          "description": "Central SP, Pinheiros, Vila Madalena, Jardins, Vila Mariana, Mooca, Tatuapé, etc.",
+          "boundingBox": { "minLat": -23.70, "maxLat": -23.55, "minLng": -46.80, "maxLng": -46.50 }
+        },
+        "north-of-tiete": {
+          "description": "Casa Verde, Santana, Tucuruvi, Vila Maria, Lapa.",
+          "boundingBox": { "minLat": -23.55, "maxLat": -23.40, "minLng": -46.80, "maxLng": -46.50 }
+        }
+      }
+    },
+
+    {
+      "id": "sp-rio-niteroi-bridge-as-corridor",
+      "name": "Ponte Rio-Niterói (physical barrier, modeled as time-cost)",
+      "type": "bridge-corridor",
+      "severity": "soft",
+      "citation": "playbook §6.2",
+      "explanation": "Already covered by rio-guanabara-bay; this entry exists so the rule engine can apply per-bridge time-cost overrides if data warrants. Reserved.",
+      "rule": "Reserved — defer to rio-guanabara-bay barrier."
+    },
+
+    {
+      "id": "recife-rivers-capibaribe-beberibe",
+      "name": "Recife rivers (Capibaribe + Beberibe)",
+      "type": "water",
+      "severity": "info-only",
+      "citation": "operator knowledge",
+      "explanation": "Recife has multiple river crossings. Per current operator experience, none rise to barrier-status under normal conditions (bridges are short, traffic moderate). Tracked for future tuning if operator feedback suggests otherwise.",
+      "addsMinutesTypical": 5,
+      "rule": "Informational only. No automatic split-flagging. Promote to soft-severity if 3+ operator feedbacks cite Recife bridge delays."
+    },
+
+    {
+      "id": "sp-alphaville-corridor",
+      "name": "SP→Alphaville/Santana de Parnaíba corridor",
+      "type": "distance-corridor",
+      "severity": "outlier-pattern",
+      "citation": "playbook §6.3 + outlier-detection from sale.merchandising routes",
+      "explanation": "Alphaville is ~30 km west of central SP via Castelo Branco highway. Driver flow is natural (single direction, predictable traffic). Pattern: combined-with-SP-cluster wins over split-as-solo due to Lalamove multi-stop pricing.",
+      "rule": "Orders to Alphaville/Santana de Parnaíba neighborhoods should NOT be auto-split as solo routes when paired with 2-3+ SP-central orders. Trigger outlier-flag for operator visibility but recommend keep-combined.",
+      "neighborhoods": ["Alphaville", "Santana de Parnaíba", "Barueri", "Tamboré", "Aldeia da Serra"],
+      "evidenceFromCases": ["sp-alphaville-outlier-2026-05-10", "sp-guarulhos-outlier-2026-05-09"]
+    }
+  ],
+
+  "outlierThresholds": {
+    "default": {
+      "multiplierOverMedianCentroidDistance": 2.0,
+      "minimumAbsoluteDistanceKm": 10.0,
+      "explanation": "An order is flagged as outlier if its distance from cluster centroid is BOTH > 2× the median AND > 10 km absolute. Both conditions prevent false positives on small dense clusters."
+    },
+    "byMetro": {
+      "rio-de-janeiro": {
+        "multiplierOverMedianCentroidDistance": 1.8,
+        "minimumAbsoluteDistanceKm": 8.0,
+        "explanation": "Rio's geography is constrained by water+mountains; outliers stand out more sharply."
+      },
+      "sao-paulo": {
+        "multiplierOverMedianCentroidDistance": 2.0,
+        "minimumAbsoluteDistanceKm": 12.0,
+        "explanation": "SP's sprawl means 'far' is larger; threshold tuned to catch only true outliers."
+      },
+      "recife": {
+        "multiplierOverMedianCentroidDistance": 2.0,
+        "minimumAbsoluteDistanceKm": 8.0
+      }
+    }
+  },
+
+  "absorptionThresholds": {
+    "default": {
+      "maxOrdersPerCandidateRoute": 2,
+      "minSpreadKm": 5.0,
+      "explanation": "Routes with ≤2 orders AND ≥5 km internal spread are absorption candidates: try absorbing each stop into nearest other route, quote each variant, pick cheapest grand-total. Catches Lalamove's pricing-vs-tour-length blindspot."
+    },
+    "evidenceFromCases": ["rio-absorption-test-2026-04-23"]
+  },
+
+  "sparseVolumeLocations": {
+    "criterionAvgOrdersPerDay": 1.5,
+    "criterionConsecutiveSingleOrderDays": 2,
+    "explanation": "A location qualifies as 'sparse-volume' if its 30-day rolling avg is ≤1.5 orders/day OR it has had 2+ consecutive single-order days. Solo-order postponement heuristic applies.",
+    "knownSparseLocationsByTenant": {
+      "ge-beauty": {
+        "97397014848": {
+          "name": "Shopping Recife",
+          "avgOrdersPerDay30d": 0.8,
+          "rationale": "Recife is the lowest-volume GE Beauty location. Min-fare dominance means solo dispatches are ~R$24+ regardless of distance."
+        }
+      }
+    }
+  },
+
+  "corridorPairs": {
+    "explanation": "Pairs of (pickup-neighborhood, distant-cluster-neighborhood) where intermediate orders should be absorbed into the distant cluster's route. Currently sparse — populated as the corridor-from-pickup heuristic accumulates validations.",
+    "pairs": [
+      {
+        "id": "rio-botafogo-to-tijuca",
+        "pickupNeighborhood": "Botafogo",
+        "distantClusterNeighborhood": "Tijuca",
+        "intermediateNeighborhoods": ["Flamengo", "Glória", "Catete", "Laranjeiras"],
+        "evidenceFromCases": ["rio-corridor-from-pickup-2026-05-09"],
+        "validationsObserved": 1,
+        "validationsRequiredForPromotion": 3,
+        "status": "candidate"
+      }
+    ]
+  },
+
+  "changelog": [
+    {
+      "version": 1,
+      "date": "2026-05-12",
+      "summary": "Initial Brazil registry. Barriers: Guanabara Bay (Rio↔Niterói), Tietê river crossings (SP), Recife rivers (info-only), Alphaville corridor pattern. Outlier thresholds per-metro. Absorption defaults. Sparse-volume locations seeded for Recife. One corridor pair (Botafogo→Tijuca) at candidate status."
+    }
+  ]
+}

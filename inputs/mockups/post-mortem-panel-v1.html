@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Post-mortem panel — Local Delivery autonomy review</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --border-light: #f1f1f1;
+    --text: #303030;
+    --subdued: #6d7175;
+    --axis: #8c9196;
+    --blue-primary: #005bd3;
+    --green: #008060;
+    --green-bg: #e2f5ec;
+    --amber: #d99a0a;
+    --amber-bg: #fdf2d6;
+    --red: #d72c0d;
+    --red-bg: #fde7e2;
+    --grey-bg: #f0f0f0;
+    --hover: #f6f6f7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .container { max-width: 1280px; margin: 0 auto; }
+
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .page-header h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .page-header .lede { font-size: 13px; color: var(--subdued); margin: 0; max-width: 720px; }
+  .backlink { display: inline-block; margin-bottom: 6px; font-size: 12px; color: var(--blue-primary); text-decoration: none; }
+  .backlink:hover { text-decoration: underline; }
+  .backlink::before { content: "← "; }
+
+  /* Filter bar */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 16px;
+  }
+  .filter-control {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 180px;
+  }
+  .filter-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--subdued);
+  }
+  .filter-select {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .filter-chip-row { display: flex; gap: 8px; align-items: center; }
+  .filter-chip {
+    height: 28px;
+    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .filter-chip:hover { background: var(--hover); }
+  .filter-chip.active { background: #303030; color: white; border-color: #303030; }
+  .filter-chip .count { font-size: 11px; opacity: 0.7; }
+  .filter-chip.active .count { opacity: 1; color: white; }
+
+  /* Layout: list + drawer */
+  .panel { display: grid; grid-template-columns: 1fr 460px; gap: 16px; align-items: flex-start; }
+
+  /* List */
+  .list { display: flex; flex-direction: column; gap: 10px; }
+  .row {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: border-color 0.12s, box-shadow 0.12s;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 16px;
+    align-items: start;
+  }
+  .row:hover { border-color: var(--axis); }
+  .row.selected { border-color: var(--blue-primary); box-shadow: 0 0 0 2px rgba(0, 91, 211, 0.12); }
+
+  .row-meta { display: flex; flex-direction: column; gap: 4px; }
+  .row-top { font-size: 13px; color: var(--text); display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+  .row-top .ts { color: var(--subdued); font-variant-numeric: tabular-nums; }
+  .row-top .loc { font-weight: 500; }
+  .row-top .route { color: var(--subdued); }
+  .row-top .cost { font-variant-numeric: tabular-nums; }
+  .row-commentary { font-size: 12px; color: var(--subdued); line-height: 1.5; }
+
+  .row-tags { display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; align-content: start; }
+
+  /* Status chips */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 9px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .chip-green { background: var(--green-bg); color: var(--green); }
+  .chip-amber { background: var(--amber-bg); color: var(--amber); }
+  .chip-red { background: var(--red-bg); color: var(--red); }
+  .chip-blue { background: #e8f1ff; color: var(--blue-primary); }
+  .chip-grey { background: var(--grey-bg); color: var(--subdued); }
+
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    background: var(--card);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    color: var(--subdued);
+    font-size: 13px;
+  }
+  .empty h3 { margin: 0 0 6px; font-size: 15px; color: var(--text); }
+
+  /* Detail drawer */
+  .drawer {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    position: sticky;
+    top: 24px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+  }
+  .drawer-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .drawer-title { font-size: 14px; font-weight: 600; margin: 0; }
+  .drawer-sub { font-size: 12px; color: var(--subdued); margin: 2px 0 0; font-variant-numeric: tabular-nums; }
+  .drawer-close {
+    width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--card); cursor: pointer; font-size: 16px; line-height: 1; color: var(--subdued);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .drawer-close:hover { background: var(--hover); color: var(--text); }
+
+  .section { margin-bottom: 16px; }
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 6px;
+  }
+  .section p { margin: 0; font-size: 13px; line-height: 1.5; }
+  .section .pair {
+    display: grid; grid-template-columns: 100px 1fr; gap: 4px 12px;
+    font-size: 12px; line-height: 1.6;
+  }
+  .section .pair dt { color: var(--subdued); font-weight: 500; margin: 0; }
+  .section .pair dd { color: var(--text); margin: 0; font-variant-numeric: tabular-nums; }
+
+  .reasoning {
+    font-size: 13px; line-height: 1.55; color: var(--text);
+    background: var(--grey-bg); border-radius: 6px; padding: 10px 12px;
+  }
+
+  .rule-list { list-style: none; padding: 0; margin: 0; }
+  .rule-list li {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 12px;
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 12px;
+  }
+  .rule-list li:last-child { border-bottom: none; }
+  .rule-name { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 11px; color: var(--text); }
+  .rule-desc { color: var(--subdued); }
+
+  /* Candidates table */
+  .cand-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .cand-table th, .cand-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border-light);
+    text-align: left;
+  }
+  .cand-table th {
+    background: var(--grey-bg); color: var(--subdued); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.04em; font-size: 10px;
+  }
+  .cand-table tr.winner td { background: var(--green-bg); }
+  .cand-table .cost-col, .cand-table .score-col { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .map-placeholder {
+    background: var(--grey-bg);
+    border-radius: 6px;
+    height: 200px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--subdued);
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  /* Verdict capture */
+  .verdict {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 8px;
+  }
+  .verdict h3 { font-size: 13px; font-weight: 600; margin: 0 0 10px; }
+  .verdict-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .verdict-option {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+  }
+  .verdict-option:hover { background: var(--hover); }
+  .verdict-option.selected { border-color: var(--blue-primary); background: #f0f6ff; }
+  .verdict-option input { margin: 0; accent-color: var(--blue-primary); }
+  .verdict-option .label { font-size: 13px; font-weight: 500; }
+  .verdict-option .help { font-size: 11px; color: var(--subdued); margin-left: 6px; }
+
+  .verdict-comment {
+    width: 100%;
+    min-height: 72px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text);
+    resize: vertical;
+  }
+  .verdict-comment-required {
+    font-size: 11px;
+    color: var(--red);
+    margin-top: 4px;
+    display: none;
+  }
+  .verdict-actions { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 12px; }
+  .btn {
+    height: 32px; padding: 0 14px;
+    font-size: 13px; font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1px solid transparent;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary { background: var(--text); color: white; border-color: var(--text); }
+  .btn-primary:hover { background: #4a4a4a; border-color: #4a4a4a; }
+  .btn-primary:disabled { background: var(--axis); border-color: var(--axis); cursor: not-allowed; }
+  .btn-saved { background: var(--green); color: white; border-color: var(--green); cursor: default; }
+  .btn-loading::before {
+    content: "";
+    width: 12px; height: 12px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* State matrix card (mockup-only — not in production) */
+  .matrix-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    border-left: 4px solid var(--amber);
+  }
+  .matrix-card h3 { margin: 0 0 6px; font-size: 13px; }
+  .matrix-card .lede-mini { font-size: 12px; color: var(--subdued); margin: 0 0 10px; }
+  .matrix-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .matrix-table th, .matrix-table td {
+    padding: 6px 8px; text-align: left;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .matrix-table th {
+    background: var(--grey-bg); color: var(--subdued); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.04em; font-size: 10px;
+  }
+  .matrix-table .cell-hidden { color: var(--subdued); font-style: italic; }
+  .matrix-table .cell-visible { color: var(--text); }
+  .matrix-table .cell-disabled { color: var(--amber); font-weight: 600; }
+
+  /* ── Main+Aside layout (always 2-column on desktop, mirrors local-delivery) ── */
+  .body {
+    display: grid;
+    grid-template-columns: 1fr 480px;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  /* Main area: map (when selected) OR empty placeholder (when nothing selected) */
+  .main {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    height: calc(100vh - 200px);
+    min-height: 480px;
+    position: relative;
+  }
+  .main-empty {
+    height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--subdued); font-size: 13px;
+    padding: 40px 20px; text-align: center;
+  }
+  .main-empty h3 { margin: 0 0 6px; font-size: 15px; color: var(--text); font-weight: 600; }
+  .map-frame {
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, #e8eef5 0%, #d8e4f0 100%);
+    position: relative;
+  }
+  .map-frame .map-caption {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.6); color: white;
+    font-size: 12px; padding: 6px 12px; border-radius: 6px;
+  }
+  .map-frame .mock-marker {
+    position: absolute;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 11px; font-weight: 700;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    border: 2px solid white;
+  }
+  .map-frame .mock-marker.pickup { background: #303030; }
+  .map-frame .mock-marker.r1 { background: #EF4444; }
+  .map-frame .mock-marker.r2 { background: #3B82F6; }
+  .map-frame .mock-marker.r3 { background: #10B981; }
+
+  /* Aside: list + (when selected) detail blocks stacked below */
+  .aside {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+  }
+
+  .aside-section-header {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0 2px;
+    margin: 4px 0 -4px;
+  }
+
+  /* Back-row: back link · paginator · primary action (3-column flex) */
+  .back-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 4px;
+    flex-wrap: wrap;
+  }
+  .back-to-list {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+    font-family: inherit;
+  }
+  .back-to-list:hover { background: var(--hover); border-color: var(--axis); }
+  .back-to-list::before { content: "←"; color: var(--subdued); margin-right: 2px; }
+
+  /* Paginator triad: prev arrow · counter · next arrow */
+  .paginator {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .paginator-btn {
+    width: 28px; height: 28px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    font-family: inherit;
+    font-size: 14px; line-height: 1;
+    color: var(--text);
+    padding: 0;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+  }
+  .paginator-btn:hover { background: var(--hover); border-color: var(--axis); }
+  .paginator-btn:disabled,
+  .paginator-btn[aria-disabled="true"] {
+    color: var(--border); cursor: not-allowed;
+    background: var(--card); border-color: var(--border-light);
+  }
+  .paginator-btn:disabled:hover,
+  .paginator-btn[aria-disabled="true"]:hover {
+    background: var(--card); border-color: var(--border-light);
+  }
+  .paginator-count {
+    padding: 0 10px;
+    font-variant-numeric: tabular-nums;
+    color: var(--subdued);
+    font-size: 12px;
+    min-width: 60px;
+    text-align: center;
+  }
+  .paginator-count strong { color: var(--text); font-weight: 600; }
+
+  /* Approve / Save-changes button (top-right of back-row, actionable) */
+  .btn-approve {
+    height: 32px; padding: 0 14px;
+    font-size: 13px; font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1px solid var(--text);
+    background: var(--text);
+    color: white;
+    display: inline-flex;
+    align-items: center; gap: 6px;
+    transition: background 0.12s;
+  }
+  .btn-approve:hover { background: #4a4a4a; border-color: #4a4a4a; }
+  .btn-approve.with-check::before {
+    content: "✓"; font-weight: 700; opacity: 0.85;
+  }
+
+  /* Subdued "Reviewed" badge (top-right when already-reviewed, no edits — NOT actionable) */
+  .badge-reviewed {
+    height: 32px; padding: 0 14px;
+    font-size: 12px; font-weight: 500;
+    border-radius: 6px;
+    border: 1px solid var(--border-light);
+    background: var(--grey-bg);
+    color: var(--subdued);
+    display: inline-flex;
+    align-items: center; gap: 6px;
+    cursor: default;
+    user-select: none;
+  }
+  .badge-reviewed::before {
+    content: "✓"; font-weight: 700; opacity: 0.55;
+  }
+
+  /* Unsaved-changes modal */
+  .modal-backdrop {
+    position: relative;
+    background: rgba(48, 48, 48, 0.45);
+    border-radius: 12px;
+    padding: 80px 40px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-card {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 24px 28px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+  }
+  .modal-card h3 {
+    font-size: 16px; font-weight: 600; margin: 0 0 8px;
+  }
+  .modal-card .modal-body {
+    font-size: 13px; line-height: 1.55; color: var(--text);
+    margin-bottom: 20px;
+  }
+  .modal-card .modal-body p { margin: 0 0 8px; }
+  .modal-card .modal-body p:last-child { margin: 0; }
+  .modal-card .modal-actions {
+    display: flex; align-items: center; gap: 8px;
+    justify-content: space-between;
+  }
+  .modal-actions .left-cluster, .modal-actions .right-cluster {
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-secondary {
+    height: 32px; padding: 0 14px;
+    font-size: 13px; font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+  }
+  .btn-secondary:hover { background: var(--hover); border-color: var(--axis); }
+  .btn-secondary.critical { color: var(--red); }
+  .btn-secondary.critical:hover { border-color: var(--red); background: var(--red-bg); }
+
+  /* Success toast above the list (after approving the last in filter) */
+  .toast-banner {
+    background: var(--green-bg);
+    border: 1px solid #b8e0ce;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--green);
+    display: flex;
+    align-items: center; gap: 8px;
+    margin-bottom: 12px;
+  }
+  .toast-banner::before {
+    content: "✓"; font-weight: 700;
+  }
+  .toast-banner strong { font-weight: 600; }
+
+  /* Compact row variant for the sidebar list */
+  .row-compact {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: border-color 0.12s, box-shadow 0.12s;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .row-compact:hover { border-color: var(--axis); }
+  .row-compact.selected { border-color: var(--blue-primary); box-shadow: 0 0 0 2px rgba(0, 91, 211, 0.12); }
+  .row-compact-top {
+    display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline;
+    font-size: 12px;
+  }
+  .row-compact-top .ts { color: var(--subdued); font-variant-numeric: tabular-nums; }
+  .row-compact-top .loc { font-weight: 500; color: var(--text); }
+  .row-compact-summary { font-size: 11px; color: var(--subdued); line-height: 1.4; }
+  .row-compact-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 2px; }
+
+  /* Decision header block (only when a row is selected) */
+  .decision-header-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 8px;
+  }
+  .decision-header-block h3 {
+    font-size: 13px; font-weight: 600; margin: 0 0 4px;
+  }
+  .decision-header-block .meta {
+    font-size: 11px; color: var(--subdued);
+    display: flex; flex-wrap: wrap; gap: 4px 8px;
+  }
+  .decision-header-block .meta .sep { color: var(--axis); }
+  .decision-header-block .meta code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 10px;
+    background: var(--grey-bg);
+    padding: 1px 5px; border-radius: 3px;
+  }
+  .decision-header-block .chips-row {
+    display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+  }
+
+  @media (max-width: 1100px) {
+    .body { grid-template-columns: 1fr; }
+    .main { height: 360px; min-height: 360px; }
+    .aside { max-height: none; }
+  }
+
+  /* Mockup variant labels */
+  .variant-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 24px 0 8px;
+  }
+  .variant-block { margin-bottom: 36px; padding: 16px; background: white; border: 1px dashed var(--axis); border-radius: 12px; }
+
+  @media (max-width: 1100px) {
+    .panel { grid-template-columns: 1fr; }
+    .drawer { position: static; max-height: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <a class="backlink" href="#">Local Delivery</a>
+  <div class="page-header">
+    <div>
+      <h1>Post-mortem panel</h1>
+      <p class="lede">Review yesterday's auto-dispatched routes. Mark wrong calls so the system learns the rule. Verdicts feed the rule-promotion-gate; 3 same-direction wrong calls within 90 days propose a rule update.</p>
+    </div>
+  </div>
+
+  <!-- =========================================================== -->
+  <!-- State matrix (Phase 3.5) — required for interactive surfaces -->
+  <!-- =========================================================== -->
+  <div class="matrix-card">
+    <h3>State matrix · back-row controls (drilldown)</h3>
+    <p class="lede-mini">The drilldown back-row carries three control groups: back link · paginator · primary action. Paginator counter is filter-aware ("3 of 12" within the active filter chip). Prev/next disabled at boundaries (greyed, no hover). Approve button hidden once the decision is already reviewed.</p>
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th>State</th>
+          <th>Back link</th>
+          <th>Prev arrow</th>
+          <th>Counter</th>
+          <th>Next arrow</th>
+          <th>Approve button</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Middle of filter list, unreviewed</td>
+          <td class="cell-visible">visible</td>
+          <td class="cell-visible">enabled</td>
+          <td class="cell-visible">"3 of 12"</td>
+          <td class="cell-visible">enabled</td>
+          <td class="cell-visible">visible, enabled</td>
+        </tr>
+        <tr>
+          <td>First in filter, unreviewed</td>
+          <td class="cell-visible">visible</td>
+          <td class="cell-disabled">DISABLED</td>
+          <td class="cell-visible">"1 of 12"</td>
+          <td class="cell-visible">enabled</td>
+          <td class="cell-visible">visible, enabled</td>
+        </tr>
+        <tr>
+          <td>Last in filter, unreviewed</td>
+          <td class="cell-visible">visible</td>
+          <td class="cell-visible">enabled</td>
+          <td class="cell-visible">"12 of 12"</td>
+          <td class="cell-disabled">DISABLED</td>
+          <td class="cell-visible">visible, enabled · click → toast + nav to list</td>
+        </tr>
+        <tr>
+          <td>Only one in filter (1 of 1)</td>
+          <td class="cell-visible">visible</td>
+          <td class="cell-disabled">DISABLED</td>
+          <td class="cell-visible">"1 of 1"</td>
+          <td class="cell-disabled">DISABLED</td>
+          <td class="cell-visible">visible · click → toast + nav to list</td>
+        </tr>
+        <tr>
+          <td>Already-reviewed, no edits (revisiting)</td>
+          <td class="cell-visible">visible</td>
+          <td class="cell-visible">enabled</td>
+          <td class="cell-visible">"3 of 12"</td>
+          <td class="cell-visible">enabled</td>
+          <td class="cell-disabled">subdued "Reviewed" badge · NOT clickable · header chip carries state</td>
+        </tr>
+        <tr>
+          <td>Already-reviewed, edits in progress (dirty)</td>
+          <td class="cell-visible">visible · triggers modal if clicked</td>
+          <td class="cell-visible">enabled · triggers modal</td>
+          <td class="cell-visible">"3 of 12"</td>
+          <td class="cell-visible">enabled · triggers modal</td>
+          <td class="cell-visible">"Save changes" button · enabled · header chips include "unsaved edits"</td>
+        </tr>
+        <tr>
+          <td>Approving / Saving (in-flight)</td>
+          <td class="cell-visible">visible, locked</td>
+          <td class="cell-visible">locked</td>
+          <td class="cell-visible">locked</td>
+          <td class="cell-visible">locked</td>
+          <td class="cell-visible">"Approving…" / "Saving…" with spinner</td>
+        </tr>
+        <tr>
+          <td>Approve / Save failed (network/server)</td>
+          <td class="cell-visible">visible</td>
+          <td class="cell-visible">enabled</td>
+          <td class="cell-visible">unchanged</td>
+          <td class="cell-visible">enabled</td>
+          <td class="cell-visible">re-enabled · red banner above offers Retry</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="matrix-card">
+    <h3>State matrix · unsaved-changes modal</h3>
+    <p class="lede-mini">Fires when any navigation control is clicked while the verdict form has unsaved edits on an already-reviewed decision (Variant F state). Modal blocks the navigation until the operator picks an outcome. Three actions; primary "Save & continue" is rightmost per Polaris convention.</p>
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th>Navigation trigger</th>
+          <th>Behavior</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Click "Back to all decisions"</td><td>Modal opens. Save&amp;continue → submit then nav to list. Discard → nav to list, lose edits. Cancel → stay.</td></tr>
+        <tr><td>Click prev / next paginator arrow</td><td>Same modal. Save&amp;continue → submit then nav to neighbor. Discard → nav, lose edits. Cancel → stay.</td></tr>
+        <tr><td>Click a different decision row (in list — only reachable if list visible elsewhere)</td><td>Same modal targeting the new <code>?selected=&lt;id&gt;</code>.</td></tr>
+        <tr><td>Change a filter chip while drilled-in</td><td>Same modal; on Save&amp;continue or Discard, also applies the filter change.</td></tr>
+        <tr><td>Browser back / forward button</td><td>Use <code>beforeunload</code> / blocker → modal. Same outcomes.</td></tr>
+        <tr><td>Refresh the page</td><td>Native browser "Leave site?" dialog (we can't override).</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="matrix-card">
+    <h3>State matrix · verdict-capture form controls (in aside, below detail)</h3>
+    <p class="lede-mini">"Save verdict" follows the hide-don't-disable rule. Hidden when no verdict is selected (unreviewed case) OR when the form is clean (already-reviewed, no edits). Disabled only when comment is required-but-missing. On save, auto-advances to next decision (same auto-next behavior as Approve).</p>
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th>State</th>
+          <th>Verdict radio</th>
+          <th>Reason textarea</th>
+          <th>Save verdict button</th>
+          <th>After submit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Unreviewed · no verdict picked</td>
+          <td class="cell-visible">visible, none selected</td>
+          <td class="cell-visible">visible, empty</td>
+          <td class="cell-hidden">hidden</td>
+          <td>n/a</td>
+        </tr>
+        <tr>
+          <td>Already-reviewed · no edits (clean)</td>
+          <td class="cell-visible">visible, saved verdict pre-selected</td>
+          <td class="cell-visible">visible, saved comment shown</td>
+          <td class="cell-hidden">hidden · nothing to save</td>
+          <td>n/a</td>
+        </tr>
+        <tr>
+          <td>"Correct" selected</td>
+          <td class="cell-visible">visible, "Correct" lit</td>
+          <td class="cell-visible">visible, optional</td>
+          <td class="cell-visible">enabled</td>
+          <td>auto-next; toast at boundary</td>
+        </tr>
+        <tr>
+          <td>"Wrong call" selected, no reason</td>
+          <td class="cell-visible">visible</td>
+          <td class="cell-visible">empty (red asterisk)</td>
+          <td class="cell-disabled">DISABLED · tooltip "Reason required"</td>
+          <td>n/a</td>
+        </tr>
+        <tr>
+          <td>"Wrong call" selected, reason filled</td>
+          <td class="cell-visible">visible</td>
+          <td class="cell-visible">has text</td>
+          <td class="cell-visible">enabled</td>
+          <td>auto-next; toast at boundary</td>
+        </tr>
+        <tr>
+          <td>"Edge case" selected, no reason</td>
+          <td class="cell-visible">visible</td>
+          <td class="cell-visible">empty (red asterisk)</td>
+          <td class="cell-disabled">DISABLED · tooltip "Reason required"</td>
+          <td>n/a</td>
+        </tr>
+        <tr>
+          <td>"Edge case" selected, reason filled</td>
+          <td class="cell-visible">visible</td>
+          <td class="cell-visible">has text</td>
+          <td class="cell-visible">enabled</td>
+          <td>auto-next; toast at boundary</td>
+        </tr>
+        <tr>
+          <td>Submitting</td>
+          <td class="cell-visible">locked</td>
+          <td class="cell-visible">locked</td>
+          <td class="cell-visible">"Saving…" with spinner</td>
+          <td>n/a</td>
+        </tr>
+        <tr>
+          <td>Submit failed</td>
+          <td class="cell-visible">visible</td>
+          <td class="cell-visible">visible</td>
+          <td class="cell-visible">re-enabled · red banner offers Retry</td>
+          <td>n/a</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- =========================================================== -->
+  <!-- Variant A — populated list, drawer closed                    -->
+  <!-- =========================================================== -->
+  <div class="variant-label">Variant A — Populated list, no row selected</div>
+  <div class="variant-block">
+
+  <div class="filters">
+    <div class="filter-control">
+      <span class="filter-label">Period</span>
+      <select class="filter-select">
+        <option>Last 7 days</option>
+        <option>Last 30 days</option>
+        <option>This quarter</option>
+      </select>
+    </div>
+    <div class="filter-control">
+      <span class="filter-label">Location</span>
+      <select class="filter-select">
+        <option>All locations</option>
+        <option>Shops Jardins (SP)</option>
+        <option>RioSul</option>
+        <option>Shopping Recife</option>
+      </select>
+    </div>
+    <div class="filter-chip-row">
+      <button class="filter-chip active">All <span class="count">12</span></button>
+      <button class="filter-chip">Unreviewed <span class="count">5</span></button>
+      <button class="filter-chip">Wrong calls <span class="count">2</span></button>
+      <button class="filter-chip">Clean <span class="count">7</span></button>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- Main area: empty (no decision selected) -->
+    <div class="main">
+      <div class="main-empty">
+        <h3>Pick a decision to inspect</h3>
+        <p>The route map for the selected decision renders here. Pick one from the side panel →</p>
+      </div>
+    </div>
+
+    <!-- Aside: list only (no detail blocks when nothing selected) -->
+    <div class="aside">
+      <div class="aside-section-header">Decisions (12)</div>
+
+      <div class="row-compact">
+        <div class="row-compact-top">
+          <span class="ts">May 13 · 09:42</span>
+          <span class="loc">Shops Jardins</span>
+          <span>· 3 stops · R$64.64</span>
+        </div>
+        <div class="row-compact-summary">Crosses Guanabara Bay; chose split-by-side over combined.</div>
+        <div class="row-compact-tags">
+          <span class="chip chip-amber">post-mortem flag</span>
+          <span class="chip chip-blue">unreviewed</span>
+        </div>
+      </div>
+
+      <div class="row-compact">
+        <div class="row-compact-top">
+          <span class="ts">May 13 · 09:38</span>
+          <span class="loc">Shops Jardins</span>
+          <span>· 4 stops · R$63.24</span>
+        </div>
+        <div class="row-compact-summary">Clean clustering — no flags.</div>
+        <div class="row-compact-tags">
+          <span class="chip chip-green">auto-dispatched</span>
+          <span class="chip chip-blue">unreviewed</span>
+        </div>
+      </div>
+
+      <div class="row-compact">
+        <div class="row-compact-top">
+          <span class="ts">May 13 · 09:35</span>
+          <span class="loc">RioSul</span>
+          <span>· 3 stops · R$56.37</span>
+        </div>
+        <div class="row-compact-summary">Corridor match: julia rode with Niterói route via the bridge.</div>
+        <div class="row-compact-tags">
+          <span class="chip chip-green">auto-dispatched</span>
+          <span class="chip chip-grey">corridor matched</span>
+          <span class="chip chip-blue">unreviewed</span>
+        </div>
+      </div>
+
+      <div class="row-compact">
+        <div class="row-compact-top">
+          <span class="ts">May 13 · 09:33</span>
+          <span class="loc">Shopping Recife</span>
+          <span>· postponed</span>
+        </div>
+        <div class="row-compact-summary">Solo order at sparse-volume location; promise allows postponement.</div>
+        <div class="row-compact-tags">
+          <span class="chip chip-amber">postponed</span>
+          <span class="chip chip-blue">unreviewed</span>
+        </div>
+      </div>
+
+      <div class="row-compact">
+        <div class="row-compact-top">
+          <span class="ts">May 12 · 16:48</span>
+          <span class="loc">Shops Jardins</span>
+          <span>· 3 stops · R$64.64</span>
+        </div>
+        <div class="row-compact-summary">Alphaville outlier kept on combined SP route.</div>
+        <div class="row-compact-tags">
+          <span class="chip chip-green">auto-dispatched</span>
+          <span class="chip chip-green">reviewed · correct</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  </div>
+
+  <!-- =========================================================== -->
+  <!-- Variant B — Decision selected: map in main, list+detail in aside -->
+  <!-- "Wrong call" pre-selected, reason empty → Save disabled.      -->
+  <!-- =========================================================== -->
+  <div class="variant-label">Variant B — Decision selected · map main, list+detail aside · "Wrong call" selected · reason empty (Save disabled)</div>
+  <div class="variant-block">
+
+  <div class="body">
+
+    <div class="main">
+      <div class="map-frame">
+        <span class="map-caption">Google Static Maps · pickup + 3 colored stops</span>
+        <span class="mock-marker pickup" style="left: 48%; top: 78%;">P</span>
+        <span class="mock-marker r1" style="left: 28%; top: 68%;">A</span>
+        <span class="mock-marker r1" style="left: 22%; top: 58%;">B</span>
+        <span class="mock-marker r1" style="left: 18%; top: 50%;">C</span>
+        <span class="mock-marker r2" style="left: 68%; top: 38%;">A</span>
+        <span class="mock-marker r2" style="left: 72%; top: 32%;">B</span>
+      </div>
+    </div>
+
+    <div class="aside">
+
+      <!-- ── Drilldown back-row: back link · paginator · primary action ── -->
+      <div class="back-row">
+        <a class="back-to-list" href="#">Back to all decisions</a>
+        <div class="paginator" role="navigation" aria-label="Decision pagination">
+          <button class="paginator-btn" type="button" aria-label="Previous decision">‹</button>
+          <span class="paginator-count" title="Filter: Unreviewed">
+            <strong>3</strong> of 12
+          </span>
+          <button class="paginator-btn" type="button" aria-label="Next decision">›</button>
+        </div>
+        <button class="btn-approve with-check" type="button">Mark approved</button>
+      </div>
+
+      <!-- ── Decision header for the selected row ─────────────────── -->
+      <div class="decision-header-block">
+        <h3>Decision · May 13, 09:42</h3>
+        <div class="meta">
+          <span><strong>Shops Jardins</strong></span>
+          <span class="sep">·</span>
+          <span>3 stops</span>
+          <span class="sep">·</span>
+          <span>R$117.05 · split-by-side</span>
+          <span class="sep">·</span>
+          <code>cmp1iwods00x0ob2zq4y2aqgt</code>
+        </div>
+        <div class="chips-row">
+          <span class="chip chip-amber">post-mortem flag</span>
+          <span class="chip chip-grey">confidence 0.78</span>
+          <span class="chip chip-blue">unreviewed</span>
+        </div>
+      </div>
+
+      <!-- ── Detail blocks (below the decision header) ────────────── -->
+      <div class="section">
+        <h3 class="section-title">What the AI did</h3>
+        <dl class="pair">
+          <dt>Path</dt><dd>auto-dispatched-with-post-mortem-flag</dd>
+          <dt>Winner</dt><dd>split-by-side</dd>
+          <dt>Confidence</dt><dd>0.78 (medium)</dd>
+          <dt>Cost</dt><dd>R$117.05</dd>
+          <dt>Model</dt><dd>Haiku → Sonnet (escalated on low confidence)</dd>
+        </dl>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title">Reasoning</h3>
+        <p class="reasoning">Route crosses Guanabara Bay (rio-guanabara-bay soft-rule violation). Cost-delta vs combined is 27% (R$117.05 split vs R$92.40 combined) which is above the 25% barrier-tolerance threshold; bridge addsMinutesTypical of 35 min is at the ceiling. Recommended split.</p>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title">Rules triggered</h3>
+        <ul class="rule-list">
+          <li>
+            <span class="rule-name">rio-guanabara-bay</span>
+            <span class="rule-desc">soft · Slot 0 crosses Guanabara Bay (rio-side, niteroi-side)</span>
+          </li>
+          <li>
+            <span class="rule-name">outlier-detected</span>
+            <span class="rule-desc">soft · #80087 sits 7.2km from centroid (&gt; 1.8× median + 8km)</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title">Candidates considered</h3>
+        <table class="cand-table">
+          <thead>
+            <tr>
+              <th>Candidate</th>
+              <th class="cost-col">Cost</th>
+              <th class="score-col">Score</th>
+              <th>Verdict</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="winner">
+              <td>split-by-side</td>
+              <td class="cost-col">R$117.05</td>
+              <td class="score-col">0.78</td>
+              <td><span class="chip chip-green">winner</span></td>
+            </tr>
+            <tr>
+              <td>combined-all-4</td>
+              <td class="cost-col">R$92.40</td>
+              <td class="score-col">0.42</td>
+              <td><span class="chip chip-amber">soft viol.</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="verdict">
+        <h3>Your verdict</h3>
+        <div class="verdict-options">
+          <label class="verdict-option">
+            <input type="radio" name="verdict-b">
+            <span class="label">Correct</span>
+            <span class="help">The AI made the right call.</span>
+          </label>
+          <label class="verdict-option selected">
+            <input type="radio" name="verdict-b" checked>
+            <span class="label">Wrong call</span>
+            <span class="help">The AI's choice was suboptimal.</span>
+          </label>
+          <label class="verdict-option">
+            <input type="radio" name="verdict-b">
+            <span class="label">Edge case</span>
+            <span class="help">Right but unusual; worth tracking.</span>
+          </label>
+        </div>
+        <textarea class="verdict-comment" placeholder="Reason (required for wrong-call or edge-case)"></textarea>
+        <div class="verdict-actions">
+          <button class="btn btn-primary" disabled title="Reason required">Save verdict</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  </div>
+
+  <!-- =========================================================== -->
+  <!-- Variant C — Revisiting a reviewed decision · no edits        -->
+  <!-- Approve button replaced by subdued "Reviewed" badge.         -->
+  <!-- Form pre-populated with the saved verdict (editable but       -->
+  <!-- clean — Save Verdict hidden until the user changes something).-->
+  <!-- =========================================================== -->
+  <div class="variant-label">Variant C — Revisiting a reviewed decision · no edits · subdued "Reviewed" badge replaces Approve</div>
+  <div class="variant-block">
+
+  <div class="body">
+
+    <div class="main">
+      <div class="map-frame">
+        <span class="map-caption">Google Static Maps · pickup + 3 colored stops</span>
+        <span class="mock-marker pickup" style="left: 48%; top: 78%;">P</span>
+        <span class="mock-marker r1" style="left: 28%; top: 68%;">A</span>
+        <span class="mock-marker r1" style="left: 22%; top: 58%;">B</span>
+        <span class="mock-marker r1" style="left: 18%; top: 50%;">C</span>
+        <span class="mock-marker r2" style="left: 68%; top: 38%;">A</span>
+        <span class="mock-marker r2" style="left: 72%; top: 32%;">B</span>
+      </div>
+    </div>
+
+    <div class="aside">
+
+      <!-- ── Back-row: subdued Reviewed badge replaces Approve ───── -->
+      <div class="back-row">
+        <a class="back-to-list" href="#">Back to all decisions</a>
+        <div class="paginator" role="navigation" aria-label="Decision pagination">
+          <button class="paginator-btn" type="button" aria-label="Previous decision">‹</button>
+          <span class="paginator-count" title="Filter: All">
+            <strong>3</strong> of 12
+          </span>
+          <button class="paginator-btn" type="button" aria-label="Next decision">›</button>
+        </div>
+        <span class="badge-reviewed" aria-label="Already reviewed">Reviewed</span>
+      </div>
+
+      <!-- ── Decision header ────────────────────────────────────── -->
+      <div class="decision-header-block">
+        <h3>Decision · May 13, 09:42</h3>
+        <div class="meta">
+          <span><strong>Shops Jardins</strong></span>
+          <span class="sep">·</span>
+          <span>3 stops</span>
+          <span class="sep">·</span>
+          <span>R$117.05 · split-by-side</span>
+          <span class="sep">·</span>
+          <code>cmp1iwods00x0ob2zq4y2aqgt</code>
+        </div>
+        <div class="chips-row">
+          <span class="chip chip-amber">post-mortem flag</span>
+          <span class="chip chip-red">reviewed · wrong call</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title">What the AI did</h3>
+        <dl class="pair">
+          <dt>Path</dt><dd>auto-dispatched-with-post-mortem-flag</dd>
+          <dt>Winner</dt><dd>split-by-side</dd>
+          <dt>Confidence</dt><dd>0.78 (medium)</dd>
+        </dl>
+      </div>
+
+      <!-- ── Verdict pre-populated · editable but clean ──────────── -->
+      <div class="verdict">
+        <h3>Your verdict</h3>
+        <div class="verdict-options">
+          <label class="verdict-option">
+            <input type="radio" name="verdict-c">
+            <span class="label">Correct</span>
+            <span class="help">The AI made the right call.</span>
+          </label>
+          <label class="verdict-option selected">
+            <input type="radio" name="verdict-c" checked>
+            <span class="label">Wrong call</span>
+            <span class="help">The AI's choice was suboptimal.</span>
+          </label>
+          <label class="verdict-option">
+            <input type="radio" name="verdict-c">
+            <span class="label">Edge case</span>
+            <span class="help">Right but unusual; worth tracking.</span>
+          </label>
+        </div>
+        <textarea class="verdict-comment">Only 4 orders today, R$24 cost overhead from split isn't worth dodging the bay. Combined is fine when total daily volume ≤ 4 orders.</textarea>
+        <!-- No Save Verdict button — form is clean. Editing any field flips
+             to Variant F (dirty state) and the button reappears. -->
+      </div>
+
+    </div>
+
+  </div>
+
+  </div>
+
+  <!-- =========================================================== -->
+  <!-- Variant F — Reviewed decision · operator edited the verdict  -->
+  <!-- Form is dirty: "Reviewed" badge becomes "Save changes" button. -->
+  <!-- Bottom Save Verdict reappears.                                -->
+  <!-- =========================================================== -->
+  <div class="variant-label">Variant F — Revisiting a reviewed decision · operator edited the verdict (dirty) · "Save changes" button active</div>
+  <div class="variant-block">
+
+  <div class="body">
+
+    <div class="main">
+      <div class="map-frame">
+        <span class="map-caption">Google Static Maps · pickup + 3 colored stops</span>
+        <span class="mock-marker pickup" style="left: 48%; top: 78%;">P</span>
+        <span class="mock-marker r1" style="left: 28%; top: 68%;">A</span>
+        <span class="mock-marker r1" style="left: 22%; top: 58%;">B</span>
+        <span class="mock-marker r1" style="left: 18%; top: 50%;">C</span>
+        <span class="mock-marker r2" style="left: 68%; top: 38%;">A</span>
+        <span class="mock-marker r2" style="left: 72%; top: 32%;">B</span>
+      </div>
+    </div>
+
+    <div class="aside">
+
+      <!-- ── Back-row: Save changes button replaces Reviewed badge ─ -->
+      <div class="back-row">
+        <a class="back-to-list" href="#">Back to all decisions</a>
+        <div class="paginator" role="navigation" aria-label="Decision pagination">
+          <button class="paginator-btn" type="button" aria-label="Previous decision">‹</button>
+          <span class="paginator-count" title="Filter: All">
+            <strong>3</strong> of 12
+          </span>
+          <button class="paginator-btn" type="button" aria-label="Next decision">›</button>
+        </div>
+        <button class="btn-approve" type="button">Save changes</button>
+      </div>
+
+      <div class="decision-header-block">
+        <h3>Decision · May 13, 09:42</h3>
+        <div class="meta">
+          <span><strong>Shops Jardins</strong></span>
+          <span class="sep">·</span>
+          <span>3 stops</span>
+          <span class="sep">·</span>
+          <span>R$117.05 · split-by-side</span>
+          <span class="sep">·</span>
+          <code>cmp1iwods00x0ob2zq4y2aqgt</code>
+        </div>
+        <div class="chips-row">
+          <span class="chip chip-amber">post-mortem flag</span>
+          <span class="chip chip-red">reviewed · wrong call</span>
+          <span class="chip chip-amber">unsaved edits</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title">What the AI did</h3>
+        <dl class="pair">
+          <dt>Path</dt><dd>auto-dispatched-with-post-mortem-flag</dd>
+          <dt>Winner</dt><dd>split-by-side</dd>
+          <dt>Confidence</dt><dd>0.78 (medium)</dd>
+        </dl>
+      </div>
+
+      <!-- ── Verdict edited · form is dirty · Save Verdict reappears ─ -->
+      <div class="verdict">
+        <h3>Your verdict</h3>
+        <div class="verdict-options">
+          <label class="verdict-option">
+            <input type="radio" name="verdict-f">
+            <span class="label">Correct</span>
+            <span class="help">The AI made the right call.</span>
+          </label>
+          <label class="verdict-option">
+            <input type="radio" name="verdict-f">
+            <span class="label">Wrong call</span>
+            <span class="help">The AI's choice was suboptimal.</span>
+          </label>
+          <label class="verdict-option selected">
+            <input type="radio" name="verdict-f" checked>
+            <span class="label">Edge case</span>
+            <span class="help">Right but unusual; worth tracking.</span>
+          </label>
+        </div>
+        <textarea class="verdict-comment">Only 4 orders today, R$24 cost overhead from split isn't worth dodging the bay. Combined is fine when total daily volume ≤ 4 orders. EDIT: actually this is a recurring low-volume pattern, treat as edge-case so the rule-promotion-gate accumulates it.</textarea>
+        <div class="verdict-actions">
+          <button class="btn btn-primary">Save verdict</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  </div>
+
+  <!-- =========================================================== -->
+  <!-- Variant G — Unsaved-changes modal                            -->
+  <!-- Fires when the operator tries to navigate (prev/next/back/   -->
+  <!-- click another row / change filter) while the verdict form    -->
+  <!-- has unsaved edits.                                            -->
+  <!-- =========================================================== -->
+  <div class="variant-label">Variant G — Unsaved-changes modal · navigation while form is dirty</div>
+  <div class="variant-block">
+
+  <div class="modal-backdrop">
+    <div class="modal-card">
+      <h3>Save changes before leaving?</h3>
+      <div class="modal-body">
+        <p>You've edited this decision's verdict but haven't saved yet. Leaving now will discard your edits.</p>
+        <p class="subtle">Pending: verdict <strong>wrong call → edge case</strong> · comment updated.</p>
+      </div>
+      <div class="modal-actions">
+        <div class="left-cluster">
+          <button class="btn-secondary critical" type="button">Discard changes</button>
+        </div>
+        <div class="right-cluster">
+          <button class="btn-secondary" type="button">Cancel</button>
+          <button class="btn-approve" type="button">Save &amp; continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- =========================================================== -->
+  <!-- Variant D — empty state                                      -->
+  <!-- =========================================================== -->
+  <div class="variant-label">Variant D — Empty state (no decisions in window)</div>
+  <div class="variant-block">
+
+  <div class="filters">
+    <div class="filter-control">
+      <span class="filter-label">Period</span>
+      <select class="filter-select"><option>Last 7 days</option></select>
+    </div>
+    <div class="filter-control">
+      <span class="filter-label">Location</span>
+      <select class="filter-select"><option>All locations</option></select>
+    </div>
+    <div class="filter-chip-row">
+      <button class="filter-chip active">All <span class="count">0</span></button>
+    </div>
+  </div>
+
+  <div class="empty">
+    <h3>No auto-dispatched decisions yet</h3>
+    <p>Decisions appear here within seconds of being made by the LLM-enabled optimizer. Make sure <code>routeOptimizationPhase1Enabled</code> is on for at least one location in Settings.</p>
+  </div>
+
+  </div>
+
+  <!-- =========================================================== -->
+  <!-- Variant E — Just approved the last unreviewed in filter      -->
+  <!-- Auto-navigated back to list; success toast at the top.       -->
+  <!-- =========================================================== -->
+  <div class="variant-label">Variant E — Approved last in filter · auto-navigated back to list with success toast</div>
+  <div class="variant-block">
+
+  <div class="filters">
+    <div class="filter-control">
+      <span class="filter-label">Period</span>
+      <select class="filter-select">
+        <option>Last 7 days</option>
+      </select>
+    </div>
+    <div class="filter-control">
+      <span class="filter-label">Location</span>
+      <select class="filter-select">
+        <option>All locations</option>
+      </select>
+    </div>
+    <div class="filter-chip-row">
+      <button class="filter-chip">All <span class="count">12</span></button>
+      <button class="filter-chip active">Unreviewed <span class="count">0</span></button>
+      <button class="filter-chip">Wrong calls <span class="count">2</span></button>
+      <button class="filter-chip">Clean <span class="count">10</span></button>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <div class="main">
+      <div class="main-empty">
+        <h3>Pick a decision to inspect</h3>
+        <p>The route map renders here. Pick one from the side panel →</p>
+      </div>
+    </div>
+
+    <div class="aside">
+
+      <div class="toast-banner">
+        <span><strong>All caught up.</strong> Every decision in this view has been reviewed.</span>
+      </div>
+
+      <div class="aside-section-header">Decisions (0 unreviewed · switch to "All" for history)</div>
+
+      <div class="empty" style="padding: 20px 16px; font-size: 12px;">
+        <p style="margin: 0;">No unreviewed decisions in this view. Switch the filter chip to <strong>All</strong> to revisit reviewed ones.</p>
+      </div>
+
+    </div>
+  </div>
+
+  </div>
+
+  <!-- =========================================================== -->
+  <!-- Notes panel                                                  -->
+  <!-- =========================================================== -->
+  <div class="matrix-card" style="border-left-color: var(--blue-primary);">
+    <h3>Mockup notes (delete in production)</h3>
+    <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: var(--text); line-height: 1.6;">
+      <li><strong>Data source</strong>: reads from <code>RouteOptimizationDecision</code> (Phase 1.6 Prisma model). Filters compose into a WHERE clause; pagination is offset-based, 20 rows per page.</li>
+      <li><strong>Filters</strong>: Period (last 7 / 30 / quarter), Location, plus filter chips (All / Unreviewed / Wrong calls / Clean). Chips drive <code>operatorReviewed</code> + <code>operatorVerdict</code> filtering; counts reflect current period + location scope.</li>
+      <li><strong>Status chips on rows</strong>: derived from <code>decisionPath</code> + <code>postMortemFlags[]</code> + <code>operatorReviewed</code>. A row CAN have multiple (e.g. "auto-dispatched" + "post-mortem flag" + "unreviewed"). Cap visible chips at 3; rest available in detail.</li>
+      <li><strong>2-column layout (mirrors local-delivery) with drill-down on selection</strong>: Main area always holds the map (or an empty placeholder when nothing is selected). Aside default state holds the list of decisions. Clicking a row drills down — URL gains <code>?selected=&lt;id&gt;</code>, the OTHER rows are suppressed (aside renders only the selected decision's detail), and a back-row appears at the top with three control groups: <strong>back link · paginator · primary action</strong>. Back button clears <code>?selected=</code>. Mobile (≤1100px) collapses to single column, map first then aside.</li>
+      <li><strong>Paginator (filter-aware)</strong>: Compact triad <code>‹ N of total ›</code> in the center of the back-row. N and total are computed over the <em>current filtered list at click time</em>, not the global decision set. On "Unreviewed" filter with 12 items, counter reads "3 of 12"; after approving the current one, the list refreshes and counter becomes "3 of 11" pointing at the new 3rd item (operator never goes backward through reviewed work). Prev/next disabled (greyed, no hover) at boundaries — first decision disables prev, last disables next, single-item disables both. Hover-tooltip shows the active filter: <em>"Filter: Unreviewed"</em>.</li>
+      <li><strong>Auto-next on both verdict paths</strong>: Top "Mark approved" AND bottom form's "Save verdict" both submit + auto-load the next decision in the filtered list. Same end behavior. If there's no next (last in filter), navigate back to the list view and render a success toast banner at the top: <em>"All caught up. Every decision in this view has been reviewed."</em> List itself shows all chips green for that filter. Switching to "All" filter restores the historical browse.</li>
+      <li><strong>"Mark approved" backend trigger</strong>: Single DB write — <code>UPDATE RouteOptimizationDecision SET operatorReviewed=true, operatorVerdict='correct', operatorComment=NULL, updatedAt=NOW() WHERE id=$1 AND shop=$2</code>. No dispatch mutation, no LLM call, no webhook, no notification. Log line tagged <code>via=fast-pass</code> for later analytics.</li>
+      <li><strong>Top-right element lifecycle</strong>: The button on the right of the back-row changes over the decision's review lifecycle:
+        <ol>
+          <li><em>Unreviewed</em> → <code>[Mark approved]</code> primary button (fast-pass for verdict=correct).</li>
+          <li><em>Click Mark approved or Save verdict</em> → submits + auto-navigates to next decision in the filter. No "Saved ✓" state in-place — the operator's already on the next item.</li>
+          <li><em>Revisiting a reviewed decision, no edits</em> → subdued <code>Reviewed</code> badge (gray pill, not clickable). Header chip carries the actual verdict (<code>reviewed · correct</code> / <code>· wrong call</code> / <code>· edge case</code>).</li>
+          <li><em>Operator edits the form (changes radio or comment) on a reviewed decision</em> → badge transforms back into a <code>[Save changes]</code> primary button. Header gains an <code>unsaved edits</code> amber chip. The form's <code>Save verdict</code> button at the bottom also reappears. Both buttons submit the same form.</li>
+        </ol>
+      </li>
+      <li><strong>Dirty-state guard (unsaved-changes modal)</strong>: When the form is dirty (Variant F state) and the operator clicks any navigation control (back, prev, next, a filter chip, the browser back button), a modal blocks the navigation. Three options: <em>Save &amp; continue</em> (submit then navigate to the intended target), <em>Discard changes</em> (navigate, lose edits), <em>Cancel</em> (close modal, stay on current decision). Page refresh falls back to the native browser dialog. <code>Save changes</code> and <code>Save verdict</code> buttons in the dirty state do NOT trigger the modal — they're the explicit save path.</li>
+      <li><strong>URL state</strong>: Every navigation updates <code>?selected=&lt;id&gt;</code> in place. Browser back/forward work naturally; a specific decision is shareable via copy-link; mid-review refresh preserves position.</li>
+      <li><strong>In-progress verdict-form draft preservation across paginator navigation</strong>: NOT preserved in MVP. If operator picks "Wrong call" + types a reason but clicks paginator before saving, the text is lost. The auto-next on Save makes this rare in practice. Add <code>sessionStorage</code> keyed by decisionId if it bites; defer.</li>
+      <li><strong>Keyboard shortcuts (deferred)</strong>: <kbd>←</kbd>/<kbd>→</kbd> prev/next, <kbd>A</kbd> approve, <kbd>Esc</kbd> back. Ship after the mouse flow is validated.</li>
+      <li><strong>Verdict workflow</strong>: state matrix at top governs. "Save verdict" hidden until radio picked; disabled-with-tooltip when comment required but missing. Posts to <code>/api/control/post-mortem-verdict</code> with body <code>{decisionId, verdict, comment}</code>; success flips the button to "Saved ✓" and adds the chip on the list row.</li>
+      <li><strong>CLI parity</strong>: <code>nami_control.py post-mortem-list</code> + <code>post-mortem-verdict --decision-id &lt;id&gt; --verdict wrong-call --reason "..."</code> mirror the UI for headless use.</li>
+      <li><strong>Rule-promotion-gate hook</strong>: 3 same-direction wrong calls within 90 days OR 5 across tenants triggers an operator notice ("This pattern keeps surfacing; propose a registry update?"). Future Phase 4 work — out of scope for this PR.</li>
+      <li><strong>Polaris translation</strong>: rows → custom div + click handler (no <code>&lt;s-resource-list&gt;</code> — too rigid for our chip-heavy layout). Filter selects → <code>&lt;s-select&gt;</code> with external label pattern. Map frame → Google Static Maps PNG fetched via the same builder used by handleRenderRoutes (server-side fetch, base64-encoded into the response; client receives a data URL). Detail aside → custom sticky div (Polaris <code>&lt;s-modal&gt;</code> would over-promise the close-button + escape semantics; sticky aside is closer to how local-delivery's route-manager cards behave).</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

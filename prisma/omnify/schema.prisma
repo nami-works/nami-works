@@ -1331,3 +1331,55 @@ model LdAnalyticsConfig {
   createdAt                    DateTime  @default(now())
   updatedAt                    DateTime  @updatedAt
 }
+
+/// Persists one full route-optimization decision for replay + post-mortem
+/// feedback. Written once per `handleOptimize` call (Phase 1.7+); read by
+/// the post-mortem panel (Phase 3) where operators mark decisions as
+/// "correct" / "wrong call" / "edge case" and the system mines feedback
+/// to update the rule registry.
+model RouteOptimizationDecision {
+  id                  String   @id @default(cuid())
+  shop                String
+  locationId          String
+  market              String
+  /// Snapshot of the unassigned-orders set at decision time.
+  ordersDataJson      Json
+  /// Snapshot of all candidates emitted by the generator.
+  candidatesJson      Json
+  /// Per-candidate rule-engine output.
+  ruleResultsJson     Json
+  /// Per-candidate quote results.
+  quoteResultsJson    Json
+  /// Spatial-reasoner output (null when path didn't reach the LLM, e.g.
+  /// synthetic fallback or feature flag off).
+  reasonerOutputJson  Json?
+  /// The chosen candidate id from the arbiter.
+  winningCandidateId  String
+  decisionPath        String
+  rationale           String
+  costSubunits        Int
+  costCurrency        String
+  /// End-to-end confidence (0.0–1.0), combines reasoner + rule + cost factors.
+  confidence          Float
+  /// Post-mortem flags attached to this decision (carried through to the panel).
+  postMortemFlagsJson Json
+  /// Immutable version stamps for replay parity.
+  promptVersion       String
+  arbiterVersion      String
+  /// Set true when the operator has reviewed this decision in the post-mortem
+  /// panel; never written by the auto-dispatch path.
+  operatorReviewed    Boolean  @default(false)
+  /// Operator verdict captured from the post-mortem panel.
+  /// Values: "correct" | "wrong-call" | "edge-case" | null.
+  operatorVerdict     String?
+  /// Free-text reason supplied by the operator when marking the decision.
+  operatorComment     String?
+  /// Link to the Lalamove dispatch job (when this decision actually dispatched).
+  dispatchJobId       String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([shop, locationId, createdAt])
+  @@index([shop, operatorReviewed, createdAt])
+  @@index([shop, decisionPath, createdAt])
+}

@@ -59,6 +59,11 @@ import { LD_ADDRESS_CONFIRM_TAG, getAllAutoAssignSkipTags } from "../services/la
 import { applyAddressRepairOrTag } from "../services/address-repair.server";
 import type { OptimizerOrderInput } from "../services/google-routes-shared.server";
 import {
+  isPhase1EnabledForLocation,
+  runRouteOptimizationPipeline,
+} from "../services/route-optimization/pipeline.server";
+import type { AdminApiContext } from "@shopify/shopify-app-react-router/server";
+import {
   summarizeRoutePOD,
   bucketRouteForFulfillment,
   REDELIVERY_TAG,
@@ -379,6 +384,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         archiveTags: false,
         cancelPendingLalamove: false,
       });
+    case "post-mortem-list":
+      // List recent RouteOptimizationDecision rows for headless review.
+      return handlePostMortemList(auth.shop, body);
+    case "post-mortem-verdict":
+      // Capture operator verdict on one decision. Body: {decisionId, verdict, comment?}.
+      return handlePostMortemVerdict(auth.shop, body);
     default:
       return jsonResponse(
         { ok: false, error: `Unknown or not-yet-implemented POST intent: ${intent}` },
@@ -910,6 +921,106 @@ function validateAddressLine(
   return { isValid: true, issue: null };
 }
 
+// ── Phase 1 LLM-enabled optimizer helper (feature-flagged) ─────────────────
+// Maps a Lalamove config's `city` field to the MarketKey used by the
+// route-optimization pipeline. Returns "other" for unknown cities (the
+// caller falls back to the legacy path).
+function pickMarketKey(city: string | null | undefined): "rio-de-janeiro" | "sao-paulo" | "recife" | "other" {
+  const c = (city ?? "").toLowerCase();
+  if (c.includes("rio de janeiro") || c.includes("niter")) return "rio-de-janeiro";
+  if (c.includes("são paulo") || c.includes("sao paulo")) return "sao-paulo";
+  if (c.includes("recife")) return "recife";
+  return "other";
+}
+
+async function runPhase1Optimize(args: {
+  shop: string;
+  admin: AdminApiContext;
+  locationGid: string;
+  config: LalamoveConfig;
+  pickupLat: number;
+  pickupLng: number;
+  validOrders: EligibleOrderForOptimize[];
+  flagged: Array<{ orderId: string; name: string; issue: string }>;
+  start: number;
+}): Promise<Response | null> {
+  const { shop, admin, locationGid, config, pickupLat, pickupLng, validOrders, flagged, start } = args;
+
+  const market = pickMarketKey(config.city);
+  if (market === "other") {
+    console.warn(`[control:optimize] Phase 1 skipped: unknown market for city=${config.city ?? "?"}`);
+    return null;
+  }
+  const lalamoveCredentials = await getRuntimeCredentialsForShop(shop);
+  if (!lalamoveCredentials) {
+    console.warn(`[control:optimize] Phase 1 skipped: no Lalamove credentials for shop=${shop}`);
+    return null;
+  }
+
+  // Build the CandidateOrderInput shape.
+  const ordersForPipeline = validOrders.map((o) => ({
+    name: o.name,
+    orderId: o.id,
+    coordinates: { latitude: o.lat, longitude: o.lng },
+    // Free-form neighborhood from the order address (used by corridor swap).
+    neighborhood: (o as { neighborhood?: string }).neighborhood,
+  }));
+
+  const result = await runRouteOptimizationPipeline({
+    shop,
+    locationId: locationGid,
+    locationName: config.locationName ?? "Pickup",
+    market,
+    tenantKey: shop.replace(".myshopify.com", "").replace(/-cosmeticos$/, ""),
+    pickupCoordinates: { latitude: pickupLat, longitude: pickupLng },
+    orders: ordersForPipeline,
+    serviceType: config.preferredServiceType,
+    lalamoveMarket: config.market,
+    lalamoveCredentials,
+    staticMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
+    anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+  });
+
+  // Apply the winning clustering as ld_rota tags.
+  const appliedRoutes: Array<{ slot: number; tag: string; orderIds: string[] }> = [];
+  for (const slot of result.winningClustering) {
+    const tag = routeTagForSlot(slot.slot);
+    const orderIds = slot.orderIds
+      .map((name) => validOrders.find((o) => o.name === name)?.id)
+      .filter((id): id is string => Boolean(id));
+    for (const orderId of orderIds) {
+      try {
+        await addTags(admin, orderId, [tag]);
+      } catch (tagErr) {
+        console.warn(`[control:optimize] Phase 1 tag failed order=${orderId} tag=${tag}`, tagErr);
+      }
+    }
+    appliedRoutes.push({ slot: slot.slot, tag, orderIds });
+  }
+
+  const elapsed = Date.now() - start;
+  console.info(
+    `[control] optimize Phase1 OK shop=${shop} location=${locationGid} decisionId=${result.decisionId} winner=${result.decision.winningCandidateId} path=${result.decision.decisionPath} flags=${result.decision.postMortemFlags.length} elapsed=${elapsed}ms`,
+  );
+
+  return jsonResponse({
+    ok: true,
+    location: locationGid,
+    orders: validOrders.length,
+    flagged,
+    routes: appliedRoutes,
+    elapsedMs: elapsed,
+    phase1: {
+      decisionId: result.decisionId,
+      decisionPath: result.decision.decisionPath,
+      winningCandidateId: result.decision.winningCandidateId,
+      confidence: result.decision.confidence,
+      postMortemFlags: result.decision.postMortemFlags,
+      timings: result.timings,
+    },
+  });
+}
+
 async function handleOptimize(shop: string, body: Record<string, unknown>): Promise<Response> {
   const locationIdRaw = typeof body.locationId === "string" ? body.locationId : null;
   if (!locationIdRaw) {
@@ -990,7 +1101,36 @@ async function handleOptimize(shop: string, body: Record<string, unknown>): Prom
       });
     }
 
-    // 4. Cluster orders into routes
+    // 3b. Phase 1: LLM-enabled optimizer (feature-flagged).
+    // Runs only when BOTH:
+    //   - process.env.ROUTE_OPTIMIZATION_PHASE_1_ENABLED === "true", AND
+    //   - LalamoveLocationConfig.data.routeOptimizationPhase1Enabled === true
+    // Falls back to the legacy clusterOrders path on any unrecoverable error.
+    if (isPhase1EnabledForLocation(config)) {
+      try {
+        const phase1Response = await runPhase1Optimize({
+          shop,
+          admin,
+          locationGid,
+          config,
+          pickupLat,
+          pickupLng,
+          validOrders,
+          flagged,
+          start,
+        });
+        if (phase1Response) return phase1Response;
+        // null returned means "phase 1 not appropriate, fall through" (e.g.
+        // unknown market or missing credentials).
+      } catch (err) {
+        console.error(
+          `[control:optimize] Phase 1 pipeline failed shop=${shop} — falling back to legacy`,
+          err,
+        );
+      }
+    }
+
+    // 4. Cluster orders into routes (legacy path).
     const optimizerInput: OptimizerOrderInput[] = validOrders.map((o) => ({
       orderId: o.id,
       locationId: locationGid,
@@ -2844,6 +2984,201 @@ async function handleMarkAllToday(shop: string, body: Record<string, unknown>): 
     console.error(`[control] mark-all-today FAILED shop=${shop} location=${locationGid}`, err);
     return jsonResponse(
       { ok: false, error: err instanceof Error ? err.message : "mark-all-today failed" },
+      500,
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// POST /api/control/post-mortem-list — headless mirror of the post-mortem
+// panel list view.
+// Body: { period?: "7d" | "30d" | "quarter", locationId?, limit?, reviewedOnly?, unreviewedOnly? }
+// Returns recent RouteOptimizationDecision rows scoped to this shop.
+// ──────────────────────────────────────────────────────────────────────
+async function handlePostMortemList(
+  shop: string,
+  body: Record<string, unknown>,
+): Promise<Response> {
+  const periodRaw = typeof body.period === "string" ? body.period : "7d";
+  const period: "7d" | "30d" | "quarter" =
+    periodRaw === "30d" ? "30d" : periodRaw === "quarter" ? "quarter" : "7d";
+  const locationId = typeof body.locationId === "string" ? body.locationId : null;
+  const limit =
+    typeof body.limit === "number" && body.limit > 0 && body.limit <= 200
+      ? body.limit
+      : 80;
+  const unreviewedOnly = body.unreviewedOnly === true;
+  const reviewedOnly = body.reviewedOnly === true;
+
+  const now = Date.now();
+  const since = new Date(
+    period === "quarter"
+      ? now - 92 * 86_400_000
+      : period === "30d"
+        ? now - 30 * 86_400_000
+        : now - 7 * 86_400_000,
+  );
+
+  console.info(
+    `[control] post-mortem-list START shop=${shop} period=${period} location=${locationId ?? "all"} limit=${limit}`,
+  );
+
+  try {
+    const prismaAny = prisma as unknown as {
+      routeOptimizationDecision: {
+        findMany: (args: Record<string, unknown>) => Promise<unknown[]>;
+      };
+    };
+    const where: Record<string, unknown> = { shop, createdAt: { gte: since } };
+    if (locationId) where.locationId = locationId;
+    if (unreviewedOnly) where.operatorReviewed = false;
+    if (reviewedOnly) where.operatorReviewed = true;
+
+    const rows = (await prismaAny.routeOptimizationDecision.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      select: {
+        id: true,
+        createdAt: true,
+        locationId: true,
+        market: true,
+        decisionPath: true,
+        winningCandidateId: true,
+        costSubunits: true,
+        costCurrency: true,
+        confidence: true,
+        rationale: true,
+        postMortemFlagsJson: true,
+        operatorReviewed: true,
+        operatorVerdict: true,
+        operatorComment: true,
+      },
+    })) as Array<{
+      id: string;
+      createdAt: Date;
+      locationId: string;
+      market: string;
+      decisionPath: string;
+      winningCandidateId: string;
+      costSubunits: number;
+      costCurrency: string;
+      confidence: number;
+      rationale: string;
+      postMortemFlagsJson: unknown;
+      operatorReviewed: boolean;
+      operatorVerdict: string | null;
+      operatorComment: string | null;
+    }>;
+
+    console.info(`[control] post-mortem-list OK shop=${shop} rows=${rows.length}`);
+    return jsonResponse({
+      ok: true,
+      period,
+      locationId,
+      count: rows.length,
+      decisions: rows.map((r) => ({
+        id: r.id,
+        createdAt: r.createdAt.toISOString(),
+        locationId: r.locationId,
+        market: r.market,
+        decisionPath: r.decisionPath,
+        winningCandidateId: r.winningCandidateId,
+        cost: { subunits: r.costSubunits, currency: r.costCurrency, display: (r.costSubunits / 100).toFixed(2) },
+        confidence: r.confidence,
+        rationale: r.rationale,
+        postMortemFlags: r.postMortemFlagsJson,
+        operatorReviewed: r.operatorReviewed,
+        operatorVerdict: r.operatorVerdict,
+        operatorComment: r.operatorComment,
+      })),
+    });
+  } catch (err) {
+    console.error(`[control] post-mortem-list FAILED shop=${shop}`, err);
+    return jsonResponse(
+      { ok: false, error: err instanceof Error ? err.message : "post-mortem-list failed" },
+      500,
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// POST /api/control/post-mortem-verdict — capture an operator verdict.
+// Body: { decisionId, verdict: "correct" | "wrong-call" | "edge-case", comment? }
+// Comment is required when verdict is "wrong-call" or "edge-case".
+// ──────────────────────────────────────────────────────────────────────
+async function handlePostMortemVerdict(
+  shop: string,
+  body: Record<string, unknown>,
+): Promise<Response> {
+  const decisionId = typeof body.decisionId === "string" ? body.decisionId : null;
+  const verdict = typeof body.verdict === "string" ? body.verdict : null;
+  const comment = typeof body.comment === "string" ? body.comment.trim() : "";
+
+  if (!decisionId) {
+    return jsonResponse({ ok: false, error: "decisionId required" }, 400);
+  }
+  if (!verdict || !["correct", "wrong-call", "edge-case"].includes(verdict)) {
+    return jsonResponse(
+      { ok: false, error: 'verdict must be "correct" | "wrong-call" | "edge-case"' },
+      400,
+    );
+  }
+  if ((verdict === "wrong-call" || verdict === "edge-case") && comment.length === 0) {
+    return jsonResponse(
+      { ok: false, error: `comment required for verdict=${verdict}` },
+      400,
+    );
+  }
+
+  console.info(
+    `[control] post-mortem-verdict START shop=${shop} decisionId=${decisionId} verdict=${verdict} commentLen=${comment.length}`,
+  );
+
+  try {
+    const prismaAny = prisma as unknown as {
+      routeOptimizationDecision: {
+        findUnique: (args: Record<string, unknown>) => Promise<unknown | null>;
+        update: (args: Record<string, unknown>) => Promise<unknown>;
+      };
+    };
+
+    const existing = (await prismaAny.routeOptimizationDecision.findUnique({
+      where: { id: decisionId },
+      select: { shop: true },
+    })) as null | { shop: string };
+
+    if (!existing) {
+      console.warn(`[control] post-mortem-verdict not found decisionId=${decisionId}`);
+      return jsonResponse({ ok: false, error: "decision not found" }, 404);
+    }
+    if (existing.shop !== shop) {
+      console.warn(
+        `[control] post-mortem-verdict wrong shop decisionId=${decisionId} expected=${shop} actual=${existing.shop}`,
+      );
+      return jsonResponse({ ok: false, error: "decision belongs to a different shop" }, 403);
+    }
+
+    await prismaAny.routeOptimizationDecision.update({
+      where: { id: decisionId },
+      data: {
+        operatorReviewed: true,
+        operatorVerdict: verdict,
+        operatorComment: comment.length > 0 ? comment : null,
+      },
+    });
+
+    console.info(`[control] post-mortem-verdict OK shop=${shop} decisionId=${decisionId} verdict=${verdict}`);
+    return jsonResponse({
+      ok: true,
+      decisionId,
+      verdict,
+      commentSaved: comment.length > 0,
+    });
+  } catch (err) {
+    console.error(`[control] post-mortem-verdict FAILED shop=${shop} decisionId=${decisionId}`, err);
+    return jsonResponse(
+      { ok: false, error: err instanceof Error ? err.message : "post-mortem-verdict failed" },
       500,
     );
   }

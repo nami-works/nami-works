@@ -1,0 +1,630 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-12",
+  "extractedFromSessions": "2026-04-21 through 2026-05-10",
+  "purpose": "Regression baseline for the spatial-reasoner LLM prompt + the rule engine. Every case has a verified-correct expected decision drawn from operator decisions in production dispatches. New prompt versions must achieve ≥ baseline pass rate on this set before promotion. Cases are tagged with the rule(s) they exercise so we can compute per-rule coverage.",
+  "architecturalPremise": "The system is FULLY AUTONOMOUS at dispatch time. There is no real-time operator review queue, no human gate on soft-rule violations, no 'queued-for-review' decision path. The LLM + rule engine always commit to a decision (dispatch a specific candidate, or postpone). Soft-rule violations and edge cases emit a `postMortemFlag` that surfaces in the on-demand post-mortem panel where the operator can mark the decision wrong and provide reasoning. Operator feedback is the ONLY correction surface, and it acts retroactively — feeding the rule-promotion-gate to tune thresholds over time. This premise was set by the user on 2026-05-12 as the explicit architectural target.",
+  "passRateNotes": "Pass = the system's autonomous decision matches expectedDecision.chosenCandidateId AND surfaces the rule citations listed in rulesExercised AND emits the expected postMortemFlag (when applicable). The system always dispatches (or always postpones) — there is no operator-review queue at decision time. Operator feedback enters via the post-mortem panel and only retroactively informs the rule registry.",
+
+  "cases": [
+    {
+      "id": "rio-niteroi-pairing-2026-05-10",
+      "scenarioName": "Niterói + Copacabana pairing across Guanabara Bay",
+      "description": "Two Rio orders today: Copacabana (~3km south of Botafogo pickup) and Niterói Centro (across the bay). Optimizer combined them into one route. Playbook §6.2 warns against pairing Niterói with Zona Sul orders due to the Rio-Niterói bridge adding 40+ min in traffic. The system is autonomous: it must REASON THROUGH the trade-off (soft-barrier cost vs split-cost overhead) and DISPATCH, then surface the soft-rule violation in the post-mortem panel for operator review. Here the cost-delta is R$20.14 / R$65.09 split = 31% > the 25% barrier-tolerance threshold, AND the barrier's addsMinutesTypical (35 min) is ≤ 30-min ceiling (acceptable at the bound), so the heuristic resolves to combined-dispatch with a high-visibility post-mortem flag.",
+      "category": "soft-rule-violation-with-override",
+      "tenant": "ge-beauty",
+      "globalApplicability": "any-route-crossing-named-barrier",
+      "inputSnapshot": {
+        "locationName": "RioSul",
+        "locationId": "gid://shopify/Location/101298569536",
+        "pickupCoordinates": { "lat": -22.957, "lng": -43.176 },
+        "pickupAddress": "Shopping RioSul, Botafogo, Rio de Janeiro",
+        "orders": [
+          {
+            "name": "79960",
+            "customer": "Renata Pinho",
+            "address1": "Avenida Epitácio Pessoa, 4500",
+            "city": "Rio de Janeiro",
+            "coordinates": { "lat": -22.97, "lng": -43.21 },
+            "neighborhood": "Lagoa/Ipanema",
+            "totalBRL": 307.7
+          },
+          {
+            "name": "79964",
+            "customer": "Carolina Dias",
+            "address1": "Rua Machado de Assis, 20",
+            "city": "Niterói",
+            "coordinates": { "lat": -22.89, "lng": -43.12 },
+            "neighborhood": "Niterói Centro",
+            "totalBRL": 184.0
+          }
+        ],
+        "marketContext": "Rio de Janeiro metro. Guanabara Bay separates Rio (Zona Sul) from Niterói. Rio-Niterói Bridge (Ponte Costa e Silva) is the only road crossing; ferry alternative exists but Lalamove uses road. Bridge crossing: 13.3 km, typical 25-45 min depending on hour. Time-of-day matters: peak hours can hit 60+ min."
+      },
+      "candidates": [
+        {
+          "candidateId": "combined",
+          "candidateType": "optimizer-base",
+          "clustering": [{ "slot": 0, "orderNames": ["79960", "79964"] }],
+          "quotedTotalBRL": 44.95,
+          "quotedDistanceMeters": 29800,
+          "ruleViolations": [
+            {
+              "ruleId": "rio-guanabara-bay-barrier",
+              "severity": "soft",
+              "explanation": "Route crosses Guanabara Bay via Rio-Niterói bridge. Playbook §6.2 advises against pairing Niterói with Zona Sul orders.",
+              "citation": "playbook §6.2"
+            }
+          ]
+        },
+        {
+          "candidateId": "split-bay-crossing",
+          "candidateType": "rule-fallback",
+          "clustering": [
+            { "slot": 0, "orderNames": ["79960"] },
+            { "slot": 1, "orderNames": ["79964"] }
+          ],
+          "quotedTotalBRL": 65.09,
+          "quotedDistanceMeters": 31100,
+          "ruleViolations": []
+        }
+      ],
+      "expectedDecision": {
+        "decisionPath": "auto-dispatched-with-post-mortem-flag",
+        "chosenCandidateId": "combined",
+        "rationale": "Soft-barrier crossing accepted because: cost-delta R$20.14 / R$65.09 split = 31% > 25% barrier-tolerance threshold AND barrier's addsMinutesTypical (35 min) is at the ceiling of acceptable. System auto-dispatches combined and emits a post-mortem flag tagged `rio-guanabara-bay-barrier` for operator review. Operator has NO real-time gate — post-mortem feedback is the only correction surface.",
+        "minimumConfidence": 0.75,
+        "maximumConfidence": 0.85,
+        "postMortemFlag": {
+          "category": "soft-rule-violation",
+          "barrierId": "rio-guanabara-bay-barrier",
+          "operatorFeedbackInvited": "If operator marks this dispatch as 'wrong call' in post-mortem panel, the override is logged against §6.2's cost-tolerance threshold. 3+ same-direction feedbacks within 90 days escalate to rule-promotion-gate for threshold tuning."
+        }
+      },
+      "rulesExercised": ["rio-guanabara-bay-barrier", "barrier-crossing-cost-tolerance", "autonomous-dispatch-with-post-mortem-flag"],
+      "source": {
+        "sessionDate": "2026-05-10",
+        "operatorReasoning": "Only 2 Rio orders today, splitting means 2 solo routes with R$20 cost overhead; bridge crossing is acceptable when the cost delta is high.",
+        "actualOutcome": "Combined dispatch fired R$44.95, COMPLETED, no driver issues reported."
+      }
+    },
+
+    {
+      "id": "sp-alphaville-outlier-2026-05-10",
+      "scenarioName": "Alphaville outlier kept on combined SP route",
+      "description": "Four SP orders today: three clustered south of Jardins pickup, one in Santana de Parnaíba (Alphaville), ~30 km west. Optimizer combined all 4. The outlier is > 2× the median distance from cluster centroid. System must flag, but Lalamove's multi-stop pricing (small multi-stop surcharge) makes combined cheaper than splitting Alphaville into a solo route. This is the canonical 'outlier-but-keep' case: a distant stop rides as a 4th stop more cheaply than a solo dispatch.",
+      "category": "outlier-detection-keep-combined",
+      "tenant": "ge-beauty",
+      "globalApplicability": "lalamove-multi-stop-pricing",
+      "inputSnapshot": {
+        "locationName": "Shops Jardins",
+        "locationId": "gid://shopify/Location/97784398144",
+        "pickupCoordinates": { "lat": -23.5645, "lng": -46.6690 },
+        "pickupAddress": "Rua Haddock Lobo, 1626, São Paulo (Jardins)",
+        "orders": [
+          {
+            "name": "79900",
+            "customer": "Renata Gonçalves",
+            "address1": "Rua Ibirajá, 244",
+            "city": "São Paulo",
+            "coordinates": { "lat": -23.632, "lng": -46.640 },
+            "neighborhood": "Mirandópolis/Vila Mariana"
+          },
+          {
+            "name": "79966",
+            "customer": "Paula Haddad",
+            "address1": "Rua Mário Gonçalves de Oliveira",
+            "city": "São Paulo",
+            "coordinates": { "lat": -23.612, "lng": -46.715 },
+            "neighborhood": "Chácara Santo Antonio"
+          },
+          {
+            "name": "79976",
+            "customer": "Anne Teixeira Mendonça",
+            "address1": "Rua Casa do Ator, 90",
+            "city": "São Paulo",
+            "coordinates": { "lat": -23.600, "lng": -46.674 },
+            "neighborhood": "Vila Olímpia"
+          },
+          {
+            "name": "79981",
+            "customer": "Ligia Raveli",
+            "address1": "Alameda Mongaguá, 29",
+            "city": "Santana de Parnaíba",
+            "coordinates": { "lat": -23.476, "lng": -46.860 },
+            "neighborhood": "Alphaville/Santana de Parnaíba",
+            "isOutlier": true,
+            "distanceFromPickupKm": 30.2
+          }
+        ],
+        "marketContext": "São Paulo metro. Alphaville is the canonical 'outlier' shape — geographically far but on a clear corridor (Castelo Branco highway). Driver naturally returns westbound after pickup; Alphaville as the last/first stop on a combined route adds ~10-15 min over a 3-stop SP-only route."
+      },
+      "candidates": [
+        {
+          "candidateId": "combined-all-4",
+          "candidateType": "optimizer-base",
+          "clustering": [{ "slot": 0, "orderNames": ["79900", "79966", "79976", "79981"] }],
+          "quotedTotalBRL": 101.03,
+          "quotedDistanceMeters": 51300,
+          "ruleViolations": [
+            {
+              "ruleId": "outlier-detected",
+              "severity": "soft",
+              "explanation": "Order #79981 is > 2× the median cluster-centroid distance (30.2 km vs median ~6 km). Consider split-as-solo alternative.",
+              "citation": "playbook §6.3 outlier-detection"
+            }
+          ]
+        },
+        {
+          "candidateId": "split-alphaville-solo",
+          "candidateType": "split-outliers",
+          "clustering": [
+            { "slot": 0, "orderNames": ["79900", "79966", "79976"] },
+            { "slot": 1, "orderNames": ["79981"] }
+          ],
+          "quotedTotalBRL": 132.13,
+          "quotedDistanceMeters": 46600,
+          "ruleViolations": []
+        }
+      ],
+      "expectedDecision": {
+        "decisionPath": "auto-dispatch-eligible",
+        "rationale": "Combined wins on cost by R$31.10 (~31% saving). Lalamove's multiStopSurcharge (~R$3.33 for 4 stops) is dramatically cheaper than a second base fare (~R$22-25). Outlier flag is informational; pricing model dominates. Auto-dispatch is appropriate.",
+        "chosenCandidateId": "combined-all-4",
+        "minimumConfidence": 0.85,
+        "maximumConfidence": 0.95,
+        "operatorOverrideAccepted": true,
+        "ifOperatorPicksSplit": "Operator may have non-cost reason (driver feedback, customer timing). Log the override; if 5+ overrides accumulate in 90 days from this rule, propose split-threshold tightening."
+      },
+      "rulesExercised": ["outlier-detection", "lalamove-multi-stop-pricing-dominance", "cost-vs-time-tradeoff"],
+      "source": {
+        "sessionDate": "2026-05-10",
+        "operatorReasoning": "Lalamove rewards multi-stop; saved R$31; outlier rides on naturally-westbound driver flow.",
+        "actualOutcome": "Combined dispatch fired R$101.03 (matched quote exactly), COMPLETED, no issues."
+      }
+    },
+
+    {
+      "id": "sp-guarulhos-outlier-2026-05-09",
+      "scenarioName": "Guarulhos outlier kept on combined SP route (same shape as Alphaville)",
+      "description": "Same family as the Alphaville case but with Guarulhos (north-east SP outlier, ~30 km from Jardins pickup) on a 3-order route with two Pinheiros orders. Confirms the rule generalizes: outlier-keep-combined when multi-stop pricing dominates. The two Pinheiros orders sit closer to pickup than the outlier; driver flow is natural.",
+      "category": "outlier-detection-keep-combined",
+      "tenant": "ge-beauty",
+      "globalApplicability": "lalamove-multi-stop-pricing",
+      "inputSnapshot": {
+        "locationName": "Shops Jardins",
+        "locationId": "gid://shopify/Location/97784398144",
+        "pickupCoordinates": { "lat": -23.5645, "lng": -46.6690 },
+        "orders": [
+          {
+            "name": "79823",
+            "customer": "Dangela Lopes Maia",
+            "address1": "Avenida Benjamin Harris Hunnicutt, 2399",
+            "city": "Guarulhos",
+            "coordinates": { "lat": -23.427, "lng": -46.541 },
+            "neighborhood": "Portal Gramados, Guarulhos",
+            "isOutlier": true,
+            "distanceFromPickupKm": 21.5
+          },
+          {
+            "name": "79826",
+            "customer": "Nayla Khaznadar",
+            "city": "São Paulo",
+            "coordinates": { "lat": -23.549, "lng": -46.687 },
+            "neighborhood": "Jardim das Bandeiras (Pinheiros)"
+          },
+          {
+            "name": "79859",
+            "customer": "Maíra Sarmento",
+            "city": "São Paulo",
+            "coordinates": { "lat": -23.564, "lng": -46.695 },
+            "neighborhood": "Pinheiros"
+          }
+        ],
+        "marketContext": "São Paulo metro. Guarulhos is north-east of Jardins (vs Alphaville which is west) — confirms the rule is direction-agnostic, depends on Lalamove pricing not geography per se."
+      },
+      "candidates": [
+        {
+          "candidateId": "combined-all-3",
+          "candidateType": "optimizer-base",
+          "clustering": [{ "slot": 0, "orderNames": ["79823", "79826", "79859"] }],
+          "quotedTotalBRL": 64.72,
+          "quotedDistanceMeters": 33400,
+          "ruleViolations": [
+            {
+              "ruleId": "outlier-detected",
+              "severity": "soft",
+              "explanation": "Order #79823 is > 2× median centroid distance.",
+              "citation": "playbook §6.3"
+            }
+          ]
+        }
+      ],
+      "expectedDecision": {
+        "decisionPath": "auto-dispatch-eligible",
+        "rationale": "Same family as Alphaville case; combined wins decisively on cost. Confirms the outlier-keep rule generalizes beyond a single direction.",
+        "chosenCandidateId": "combined-all-3",
+        "minimumConfidence": 0.85,
+        "maximumConfidence": 0.95
+      },
+      "rulesExercised": ["outlier-detection", "lalamove-multi-stop-pricing-dominance"],
+      "source": {
+        "sessionDate": "2026-05-09",
+        "actualOutcome": "Combined fired R$64.72, COMPLETED."
+      }
+    },
+
+    {
+      "id": "rio-absorption-test-2026-04-23",
+      "scenarioName": "Low-spread 2-order route absorbed for R$8.65 savings",
+      "description": "Optimizer produced a costly 2-order route spanning 8.3 km between Grajaú (Zona Norte) and São Conrado (Zona Sul). Operator manually tested absorbing São Conrado into the south-corridor route and Humaitá+Botafogo into the north outliers. Saved R$8.65 against the optimizer's pick. Validates the absorption test: ≤2-order routes with ≥5km spread are absorption candidates; quote all absorptions; pick cheapest.",
+      "category": "absorption-test-positive",
+      "tenant": "ge-beauty",
+      "globalApplicability": "lalamove-pricing-rewards-tight-clusters",
+      "inputSnapshot": {
+        "locationName": "RioSul",
+        "locationId": "gid://shopify/Location/101298569536",
+        "pickupCoordinates": { "lat": -22.957, "lng": -43.176 },
+        "originalOptimizerClustering": [
+          { "slot": 0, "orderNames": ["grajau-1", "saoconrado-1"], "spreadKm": 8.3, "costBRL": 47.5 },
+          { "slot": 1, "orderNames": ["humaita-1", "botafogo-1"], "costBRL": 38.2 }
+        ],
+        "absorptionVariantClustering": [
+          { "slot": 0, "orderNames": ["saoconrado-1", "ipanema-corridor-1"], "costBRL": 28.4 },
+          { "slot": 1, "orderNames": ["humaita-1", "botafogo-1", "grajau-1"], "costBRL": 48.6 }
+        ],
+        "savings": 8.65
+      },
+      "candidates": [
+        {
+          "candidateId": "optimizer-base",
+          "candidateType": "optimizer-base",
+          "ruleViolations": [
+            {
+              "ruleId": "absorption-test-candidate",
+              "severity": "soft",
+              "explanation": "rota-0 is a 2-order route with 8.3 km spread (≥5km threshold). Absorption test should fire.",
+              "citation": "playbook §6.3 absorption-test"
+            }
+          ]
+        },
+        {
+          "candidateId": "absorption-variant",
+          "candidateType": "absorb-low-spread",
+          "ruleViolations": []
+        }
+      ],
+      "expectedDecision": {
+        "decisionPath": "auto-dispatch-eligible",
+        "chosenCandidateId": "absorption-variant",
+        "rationale": "Absorption variant cheaper by R$8.65. No rule violations. Confidence high.",
+        "minimumConfidence": 0.85
+      },
+      "rulesExercised": ["absorption-test", "low-spread-route-detection"],
+      "source": {
+        "sessionDate": "2026-04-23",
+        "operatorReasoning": "2-order route with high spread is the dominant avoidable inefficiency — Lalamove's optimizer cost function doesn't see traversal-order properly.",
+        "actualOutcome": "Absorption variant dispatched, R$8.65 saved vs optimizer."
+      }
+    },
+
+    {
+      "id": "rio-corridor-from-pickup-2026-05-09",
+      "scenarioName": "Flamengo orders on path between Botafogo pickup and Tijuca cluster",
+      "description": "Rio batch had 2 Flamengo orders, 2 Tijuca orders, Ipanema, Leblon. Optimizer paired Flamengo with Ipanema (perpendicular to pickup→Tijuca corridor). Corrected: Flamengo orders sit geographically on the path from Botafogo pickup to Tijuca, so they should join the Tijuca route as drive-by stops. R$2.15 savings (within quote noise) but better geography + driver experience. The corridor-from-pickup heuristic generalizes: an order on the line between pickup and a distant cluster's centroid belongs with that distant cluster.",
+      "category": "corridor-from-pickup",
+      "tenant": "ge-beauty",
+      "globalApplicability": "all-multi-cluster-routing",
+      "inputSnapshot": {
+        "locationName": "RioSul",
+        "pickupCoordinates": { "lat": -22.957, "lng": -43.176 },
+        "orders": [
+          { "name": "rio-flamengo-1", "neighborhood": "Flamengo", "coordinates": { "lat": -22.93, "lng": -43.176 }, "corridorPosition": "between pickup and Tijuca cluster" },
+          { "name": "rio-flamengo-2", "neighborhood": "Flamengo", "coordinates": { "lat": -22.94, "lng": -43.176 }, "corridorPosition": "between pickup and Tijuca cluster" },
+          { "name": "rio-tijuca-1", "neighborhood": "Tijuca", "coordinates": { "lat": -22.92, "lng": -43.23 } },
+          { "name": "rio-tijuca-2", "neighborhood": "Tijuca", "coordinates": { "lat": -22.93, "lng": -43.24 } },
+          { "name": "rio-ipanema-1", "neighborhood": "Ipanema", "coordinates": { "lat": -22.98, "lng": -43.20 } },
+          { "name": "rio-leblon-1", "neighborhood": "Leblon", "coordinates": { "lat": -22.99, "lng": -43.22 } }
+        ]
+      },
+      "candidates": [
+        {
+          "candidateId": "optimizer-paired-flamengo-with-ipanema",
+          "candidateType": "optimizer-base",
+          "ruleViolations": [
+            {
+              "ruleId": "corridor-from-pickup",
+              "severity": "soft",
+              "explanation": "Flamengo orders sit on the path between pickup and Tijuca cluster; should be added to the Tijuca route, not the perpendicular Ipanema/Leblon route.",
+              "citation": "feedback_corridor_pickup_check"
+            }
+          ]
+        },
+        {
+          "candidateId": "corridor-swap-flamengo-to-tijuca",
+          "candidateType": "corridor-from-pickup-swap",
+          "ruleViolations": []
+        }
+      ],
+      "expectedDecision": {
+        "decisionPath": "auto-dispatch-eligible",
+        "chosenCandidateId": "corridor-swap-flamengo-to-tijuca",
+        "rationale": "Corridor swap respects geography and driver flow even when cost-delta is within quote noise (R$2-5).",
+        "minimumConfidence": 0.80
+      },
+      "rulesExercised": ["corridor-from-pickup"],
+      "source": {
+        "sessionDate": "2026-05-09 post-mortem",
+        "operatorReasoning": "When an order sits on the line between pickup and a more-distant cluster's centroid, prefer absorption into that distant cluster's route.",
+        "rulePromotionCandidate": "Currently has 1 validation; needs 2-3 more before global promotion. See feedback_corridor_pickup_check.md."
+      }
+    },
+
+    {
+      "id": "recife-solo-postpone-2026-05-10",
+      "scenarioName": "Single-order route at sparse-volume location",
+      "description": "Recife optimize returned 1 order (Tamarineira). Solo dispatch costs R$24.22 due to Lalamove's minimum-fare floor. The system autonomously postpones — the order's delivery promise (3d) easily allows batching with tomorrow's incoming Recife orders, AND Recife is registered in geofences/brazil.json as a sparse-volume location (0.8 orders/day). When promise-window AND sparse-location both apply with margin, postponement is the right autonomous call. Post-mortem panel exposes the deferral for operator review; if operator marks 'should have dispatched today', the feedback informs the postponement-margin heuristic.",
+      "category": "solo-order-postponement",
+      "tenant": "ge-beauty",
+      "globalApplicability": "any-sparse-volume-location",
+      "inputSnapshot": {
+        "locationName": "Shopping Recife",
+        "locationId": "gid://shopify/Location/97397014848",
+        "orders": [
+          {
+            "name": "79995",
+            "customer": "Priscila de Araújo",
+            "address1": "Rua Engenheiro Nestor Moreira Reis",
+            "city": "Recife",
+            "neighborhood": "Tamarineira",
+            "deliveryPromiseDays": 3,
+            "todayDay": 1
+          }
+        ],
+        "locationVolumeContext": "Recife averages 0-2 orders/day, often single orders. Min-fare dominance: R$24 solo vs ~R$30 for 2 orders combined."
+      },
+      "candidates": [
+        {
+          "candidateId": "dispatch-solo",
+          "candidateType": "optimizer-base",
+          "quotedTotalBRL": 24.22,
+          "ruleViolations": [
+            {
+              "ruleId": "solo-order-postponement-candidate",
+              "severity": "soft",
+              "explanation": "Single-order route at sparse-volume location. Delivery promise allows postponement (promise=3d, today=day1).",
+              "citation": "feedback_postpone_solo_orders"
+            }
+          ]
+        },
+        {
+          "candidateId": "postpone-tomorrow",
+          "candidateType": "deferred",
+          "quotedTotalBRL": 0
+        }
+      ],
+      "expectedDecision": {
+        "decisionPath": "auto-postponed-with-post-mortem-flag",
+        "chosenCandidateId": "postpone-tomorrow",
+        "rationale": "Sparse-volume location (0.8 orders/day, registered in geofences/brazil.json) + delivery promise margin (promise=3d, today=day1, 2-day buffer remaining) + min-fare-dominance (solo R$24 vs batched ~R$15/order). All three conditions met → autonomous postponement. Post-mortem flag emitted so operator sees the deferral and can mark it wrong if customer expectations shifted.",
+        "minimumConfidence": 0.80,
+        "postMortemFlag": {
+          "category": "autonomous-postponement",
+          "rules": ["sparse-volume-location", "delivery-promise-margin", "min-fare-dominance"],
+          "operatorFeedbackInvited": "If operator marks 'should have dispatched today', log against the postponement-margin heuristic. 3+ same-direction feedbacks in 90 days tighten the required promise-margin (e.g. require ≥3 days buffer instead of ≥2)."
+        }
+      },
+      "rulesExercised": ["solo-order-postponement", "sparse-volume-location-detection", "autonomous-postponement-with-post-mortem-flag"],
+      "source": {
+        "sessionDate": "2026-05-10",
+        "operatorReasoning": "Not due today; batching with tomorrow's orders halves per-order cost.",
+        "actualOutcome": "Order unassigned, swept into 2026-05-11 optimize."
+      }
+    },
+
+    {
+      "id": "ge-beauty-failed-delivery-exclusion-continuous",
+      "scenarioName": "ld_failed-delivery tagged orders never on routes",
+      "description": "Orders tagged ld_failed-delivery represent prior failed delivery attempts. They must NEVER appear on a new route — operator needs to handle them manually (address fix, customer contact, etc.). Server-side exclusion landed in PR #27 (2026-05-09). Eval ensures the optimizer's order-fetch filter still excludes these tags.",
+      "category": "hard-exclusion-rule",
+      "tenant": "ge-beauty",
+      "globalApplicability": "all-tenants-with-failed-delivery-tag",
+      "inputSnapshot": {
+        "locationName": "any",
+        "ordersInPool": [
+          { "name": "test-1", "tags": ["LOCAL"], "expectedInOptimize": true },
+          { "name": "test-2", "tags": ["LOCAL", "ld_failed-delivery"], "expectedInOptimize": false },
+          { "name": "test-3", "tags": ["LOCAL", "Failed delivery"], "expectedInOptimize": false },
+          { "name": "test-4", "tags": ["LOCAL", "ld_address-confirm"], "expectedInOptimize": false },
+          { "name": "test-5", "tags": ["LOCAL", "ld_rota-01"], "expectedInOptimize": false }
+        ]
+      },
+      "expectedDecision": {
+        "decisionPath": "exclude-from-optimize",
+        "rationale": "Hard rule. Server-side filter in fetchUnassignedOrdersForLocation must exclude any order carrying any of: ld_failed-delivery, Failed delivery (state-machine), ld_address-confirm, ld_number-confirm, ld_rota-*.",
+        "minimumConfidence": 1.0
+      },
+      "rulesExercised": ["hard-tag-exclusion-failed-delivery", "hard-tag-exclusion-address-review", "hard-tag-exclusion-already-routed"],
+      "source": {
+        "sessionDate": "2026-05-09",
+        "shippedIn": "PR #27 (squash 95585f4)"
+      }
+    },
+
+    {
+      "id": "address-pattern2-jammed-building-79823",
+      "scenarioName": "Pattern 2 jammed-segment building-number preservation",
+      "description": "Real address (#79823 Dangela): a1 = 'Avenida Benjamin Harris Hunnicutt, 2399 Casa 52', a2 = 'Casa 52, Portal gramados'. Building number 2399 and apt indicator 'Casa 52' are jammed in the same comma-segment with no separator. Pre-fix Pattern 2 stripped the entire segment, losing the building number. Post-fix preserves the bare building number prefix.",
+      "category": "address-autofix-pattern-2-edge-case",
+      "tenant": null,
+      "globalApplicability": "all-brazilian-shopify-addresses",
+      "inputSnapshot": {
+        "address1": "Avenida Benjamin Harris Hunnicutt, 2399 Casa 52",
+        "address2": "Casa 52, Portal gramados",
+        "city": "Guarulhos"
+      },
+      "expectedDecision": {
+        "decisionPath": "auto-fix-and-include",
+        "chosenAutofix": {
+          "address1": "Avenida Benjamin Harris Hunnicutt, 2399",
+          "address2": "Casa 52, Portal gramados",
+          "pattern": "p2",
+          "confidence": "high"
+        },
+        "rationale": "Pattern 2 detects apt-indicator + matching number in a2. Building-number-prefix detection preserves '2399' instead of dropping the whole segment.",
+        "minimumConfidence": 0.95
+      },
+      "rulesExercised": ["address-autofix-pattern-2", "building-number-prefix-preservation", "shopify-order-update-userErrors-check"],
+      "source": {
+        "sessionDate": "2026-05-09",
+        "shippedIn": "PRs #27 (fix) + #28 (userErrors check)"
+      }
+    },
+
+    {
+      "id": "hard-7-cap-rule-cannot-be-overridden",
+      "scenarioName": "7-order-per-route hard cap regardless of cost savings",
+      "description": "8+ orders sharing geography do NOT belong on one route — driver carry/identification/pickup-time constraint. Even when Lalamove pricing makes 8-stop cheaper than 4+4, the system must split. Hard rule, no operator override allowed.",
+      "category": "hard-cap",
+      "tenant": null,
+      "globalApplicability": "all-tenants-using-lalamove-or-similar-carrier",
+      "inputSnapshot": {
+        "ordersInCluster": 8,
+        "allInSameNeighborhood": true,
+        "centroidDistanceMaxKm": 2.5
+      },
+      "candidates": [
+        {
+          "candidateId": "single-8-route",
+          "ruleViolations": [
+            {
+              "ruleId": "hard-7-cap",
+              "severity": "hard",
+              "explanation": "Driver cannot reliably carry/identify >7 packages per route.",
+              "citation": "playbook §6.1"
+            }
+          ]
+        },
+        {
+          "candidateId": "split-4-4",
+          "ruleViolations": []
+        }
+      ],
+      "expectedDecision": {
+        "decisionPath": "auto-dispatch-eligible",
+        "chosenCandidateId": "split-4-4",
+        "rationale": "Hard cap. No exceptions even at cost penalty.",
+        "minimumConfidence": 1.0,
+        "operatorOverrideAccepted": false
+      },
+      "rulesExercised": ["hard-7-cap"],
+      "source": {
+        "operatorReasoning": "GE Beauty operational constraint, 2026-04-23."
+      }
+    },
+
+    {
+      "id": "clean-clustering-no-flags-baseline",
+      "scenarioName": "Clean 3-order cluster, no rules fire, auto-dispatch eligible",
+      "description": "Negative case: 3 orders within 5 km of each other, all in the same SP zone, no barriers, no outliers. System should accept the optimizer's clustering, fire zero rules, mark high confidence, and proceed to auto-dispatch. Tests that the rule engine doesn't false-positive on normal cases.",
+      "category": "baseline-clean",
+      "tenant": null,
+      "globalApplicability": "all",
+      "inputSnapshot": {
+        "locationName": "Shops Jardins",
+        "pickupCoordinates": { "lat": -23.5645, "lng": -46.6690 },
+        "orders": [
+          { "name": "clean-1", "coordinates": { "lat": -23.580, "lng": -46.680 }, "neighborhood": "Jardins" },
+          { "name": "clean-2", "coordinates": { "lat": -23.585, "lng": -46.675 }, "neighborhood": "Jardins" },
+          { "name": "clean-3", "coordinates": { "lat": -23.590, "lng": -46.685 }, "neighborhood": "Vila Olímpia" }
+        ]
+      },
+      "expectedDecision": {
+        "decisionPath": "auto-dispatch-eligible",
+        "chosenCandidateId": "optimizer-base",
+        "rationale": "No outliers, no barriers, no absorption candidates. Optimizer's clustering is correct. High confidence.",
+        "minimumConfidence": 0.92
+      },
+      "rulesExercised": [],
+      "source": {
+        "purpose": "Negative case to catch rule-engine false positives."
+      }
+    },
+
+    {
+      "id": "address-pattern1-trailing-duplicate-2026-04-25",
+      "scenarioName": "Pattern 1 trailing pure-number duplicate (real Dyandra address)",
+      "description": "Real address (#78065): a1 = 'Avenida Miguel Estefno, 2800, ap 24, ⁠2800', a2 = 'ap 24, ⁠Saúde'. Shopify auto-appended '2800' to a1; Pattern 1 detects and strips it.",
+      "category": "address-autofix-pattern-1",
+      "tenant": null,
+      "globalApplicability": "all-brazilian-shopify-addresses",
+      "inputSnapshot": {
+        "address1": "Avenida Miguel Estefno, 2800, ap 24, ⁠2800",
+        "address2": "ap 24, ⁠Saúde"
+      },
+      "expectedDecision": {
+        "decisionPath": "auto-fix-and-include",
+        "chosenAutofix": {
+          "address1": "Avenida Miguel Estefno, 2800, ap 24",
+          "address2": "ap 24, ⁠Saúde",
+          "pattern": "p1",
+          "confidence": "high"
+        },
+        "minimumConfidence": 0.95
+      },
+      "rulesExercised": ["address-autofix-pattern-1"],
+      "source": {
+        "sessionDate": "2026-04-25 (Dyandra real-world)",
+        "shippedIn": "Already in address_repair.py test suite"
+      }
+    },
+
+    {
+      "id": "rio-low-volume-keep-niteroi-combined-operator-override-2026-05-10",
+      "scenarioName": "Operator override pattern: low-volume Rio days accept Niterói combined",
+      "description": "Same input as rio-niteroi-pairing case, but eval expectation is the AFTER-OVERRIDE state. System tracked operator's combined choice, didn't try to 'correct' it post-hoc, captured override reasoning for future rule tuning. Tests the operator-feedback ingestion path: a single override doesn't propose a new rule; need 3+ similar overrides across tenants before rule-promotion-gate consideration.",
+      "category": "operator-override-tracking",
+      "tenant": "ge-beauty",
+      "globalApplicability": "all-soft-rule-overrides",
+      "inputSnapshot": {
+        "decisionId": "see rio-niteroi-pairing-2026-05-10",
+        "operatorAction": {
+          "chosenCandidate": "combined",
+          "reasoning": "Only 2 orders today; R$20 split cost is meaningful overhead; bridge accepted.",
+          "tags": ["low-volume-day", "cost-trade-off"]
+        }
+      },
+      "expectedDecision": {
+        "decisionPath": "log-override-no-rule-proposal",
+        "rationale": "Single override is insufficient evidence. Log to RoutePostMortem with structured tags. If 3+ similar overrides from this tenant OR 5+ across tenants accumulate in 90 days, escalate to rule-promotion-gate for soft-rule tuning (e.g. 'when only 2 Rio orders AND barrier-crossing cost-delta > R$15, accept combined').",
+        "minimumConfidence": 0.90
+      },
+      "rulesExercised": ["operator-override-tracking", "rule-proposal-threshold"],
+      "source": {
+        "sessionDate": "2026-05-10",
+        "purpose": "Tests that the feedback ingestion doesn't over-react to a single operator decision."
+      }
+    }
+  ],
+
+  "passRatePolicy": {
+    "production-prompt-promotion": "Candidate prompt must achieve ≥ current production prompt's pass rate on this set, AND on a held-out validation set of equal size, BEFORE 100% rollout. A/B at 10% rollout is acceptable while accumulating signal.",
+    "rule-engine-modification": "Any rule engine change must pass all 'hard' cases (7-cap, failed-delivery exclusion). Soft-rule changes may flip 'soft' case outcomes IF accompanied by a rule-promotion-gate proposal with operator approval.",
+    "regression-policy": "Any case that flips from PASS to FAIL across prompt versions must be reviewed; if FAIL is operator-validated as correct, update the case's expectedDecision and document the change in this file's changelog."
+  },
+
+  "changelog": [
+    {
+      "version": 1,
+      "date": "2026-05-12",
+      "author": "lucas@nami.works + Claude",
+      "summary": "Initial eval set extraction from sessions 2026-04-21 through 2026-05-10. 12 cases covering: barrier-crossing soft-rule, outlier-keep-combined (×2), absorption test, corridor-from-pickup, solo-order postpone, hard-tag exclusion, address autofix patterns 1+2, hard 7-cap, clean baseline, operator-override tracking."
+    },
+    {
+      "version": 1.1,
+      "date": "2026-05-12",
+      "author": "lucas@nami.works + Claude",
+      "summary": "Architectural pivot to fully-autonomous-with-post-mortem-only model. Operator review queue removed entirely; replaced with postMortemFlag on dispatched decisions. Cases 1 (rio-niteroi-pairing) and 6 (recife-solo-postpone) rewritten: their `queued-for-review` decision path replaced with `auto-dispatched-with-post-mortem-flag` and `auto-postponed-with-post-mortem-flag` respectively, including the autonomous heuristic that resolves each trade-off. passRateNotes and the new architecturalPremise field codify that the system always commits to a decision; operator feedback is retroactive."
+    }
+  ]
+}

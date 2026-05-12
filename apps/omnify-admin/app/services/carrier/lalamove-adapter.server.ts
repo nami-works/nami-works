@@ -41,6 +41,18 @@ export type LalamoveConfig = {
   autoDispatchTime?: string | null;
   /** No new retries after this time "HH:mm" e.g. "17:30". */
   retryCutoffTime?: string | null;
+
+  // ── Route Optimization Phase 1 (LLM reasoning) ──────────────────────────
+  /**
+   * Per-location opt-in for the Phase 1 LLM-enabled optimizer
+   * (candidate-generator → rule-engine → quote-engine → spatial-reasoner
+   * → decision-arbiter). When true AND the global env flag
+   * `ROUTE_OPTIMIZATION_PHASE_1_ENABLED` is also "true", `/api/control/optimize`
+   * uses the new pipeline and persists a RouteOptimizationDecision row.
+   * When false (default), falls through to the legacy clusterOrders path.
+   * See docs/okrs/local-delivery.html for the roadmap context.
+   */
+  routeOptimizationPhase1Enabled?: boolean | null;
 };
 
 function normalizeForMatch(s: string): string {
