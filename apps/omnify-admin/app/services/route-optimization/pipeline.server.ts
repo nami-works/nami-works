@@ -16,11 +16,8 @@
  * should catch and fall back to the legacy path.
  */
 
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
-
 import prisma from "../../db.server";
+import brazilGeofences from "./geofences/brazil.json";
 import type { LalamoveCredentials } from "../lalamove.server";
 import { generateCandidates } from "./candidate-generator.server";
 import { evaluateCandidates } from "./rule-engine.server";
@@ -46,18 +43,14 @@ import type {
   SpatialReasonerOutput,
 } from "./types";
 
-// ── Geofence registry loader (singleton) ───────────────────────────────────
-
-let cachedRegistry: GeofenceRegistry | null = null;
+// ── Geofence registry (bundled at build time) ──────────────────────────────
+// JSON is imported via Vite + tsconfig `resolveJsonModule`. Avoids the
+// runtime `readFileSync(__dirname/geofences/brazil.json)` path that broke
+// in production after the bundler flattened the server output and the
+// sibling JSON wasn't carried along.
 
 function loadGeofenceRegistry(): GeofenceRegistry {
-  if (cachedRegistry) return cachedRegistry;
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  const path = join(__dirname, "geofences", "brazil.json");
-  const raw = readFileSync(path, "utf8");
-  cachedRegistry = JSON.parse(raw) as GeofenceRegistry;
-  return cachedRegistry;
+  return brazilGeofences as GeofenceRegistry;
 }
 
 // ── Input ──────────────────────────────────────────────────────────────────

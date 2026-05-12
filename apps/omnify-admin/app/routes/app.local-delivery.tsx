@@ -42,6 +42,7 @@ import {
   isPhase1EnabledForLocation,
   runRouteOptimizationPipeline,
   buildPhase1PipelineInput,
+  pickMarketKey,
 } from "../services/route-optimization/pipeline.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { formatCustomerShort } from "../utils/format-name";
@@ -487,6 +488,17 @@ export default function Index() {
     totalLalamoveCost?: string;
     totalWaitSurcharge?: string;
   } | null>(null);
+  // Phase 1 (AI optimizer) status surfaced by the optimize-fleet action.
+  // - `null` = legacy clusterer ran (toggle off, no flag set, or AI not
+  //   attempted) — no notice rendered.
+  // - `{ ok: true, ... }` = AI ran successfully.
+  // - `{ ok: false, reason }` = AI was attempted but fell back; we render
+  //   a warning banner so the merchant isn't left guessing.
+  const [phase1Status, setPhase1Status] = useState<
+    | { ok: true; decisionId: string; confidence: number; postMortemFlags: string[] }
+    | { ok: false; reason: "unknown_market" | "no_credentials" | "pipeline_error"; message?: string }
+    | null
+  >(null);
   const [isRequestDriverModalOpen, setIsRequestDriverModalOpen] = useState(false);
   const [quotePreview, setQuotePreview] = useState<{
     routeId: string;
@@ -1218,6 +1230,38 @@ export default function Index() {
 
     if (optimizeFetcher.data.summary) {
       setOptimizerSummary(optimizeFetcher.data.summary as typeof optimizerSummary);
+    }
+    // Surface Phase 1 (AI optimizer) result/skip-reason so the UI can show
+    // a banner. `phase1` present → success; `phase1Skipped` present → AI
+    // was attempted but fell back; neither → legacy ran (no notice).
+    const phase1 = (optimizeFetcher.data as {
+      phase1?: { decisionId: string; confidence: number; postMortemFlags: string[] };
+      phase1Skipped?: {
+        reason: "unknown_market" | "no_credentials" | "pipeline_error";
+        message?: string;
+      };
+    }).phase1;
+    const phase1SkippedFromAction = (optimizeFetcher.data as {
+      phase1Skipped?: {
+        reason: "unknown_market" | "no_credentials" | "pipeline_error";
+        message?: string;
+      };
+    }).phase1Skipped;
+    if (phase1) {
+      setPhase1Status({
+        ok: true,
+        decisionId: phase1.decisionId,
+        confidence: phase1.confidence,
+        postMortemFlags: phase1.postMortemFlags ?? [],
+      });
+    } else if (phase1SkippedFromAction) {
+      setPhase1Status({
+        ok: false,
+        reason: phase1SkippedFromAction.reason,
+        message: phase1SkippedFromAction.message,
+      });
+    } else {
+      setPhase1Status(null);
     }
     // Populate per-route quote totals from optimizer results
     if (summary?.costTotal != null) {
@@ -6069,6 +6113,30 @@ export default function Index() {
           {polylineEditCapBanner}
         </s-banner>
       ) : null}
+      {phase1Status?.ok === false ? (
+        <s-banner
+          tone="warning"
+          heading="AI route optimization unavailable"
+          dismissible
+          onDismiss={() => setPhase1Status(null)}
+        >
+          {phase1Status.reason === "unknown_market"
+            ? "This location's city isn't supported by the AI optimizer yet (supported: São Paulo, Rio de Janeiro, Niterói, Recife). Routes were assigned by the standard clusterer instead."
+            : phase1Status.reason === "no_credentials"
+              ? "Lalamove credentials are missing — the AI optimizer needs live quotes. Routes were assigned by the standard clusterer instead. Check Settings > Carriers."
+              : `The AI optimizer failed (${phase1Status.message ?? "unknown error"}). Routes were assigned by the standard clusterer instead. Try again in a minute or check the server logs.`}
+        </s-banner>
+      ) : null}
+      {phase1Status?.ok === true && phase1Status.postMortemFlags.length > 0 ? (
+        <s-banner
+          tone="info"
+          heading="AI suggested routes — review recommended"
+          dismissible
+          onDismiss={() => setPhase1Status(null)}
+        >
+          {`Confidence ${(phase1Status.confidence * 100).toFixed(0)}%. Open the post-mortem panel for this decision (${phase1Status.decisionId}) to review the flagged choices.`}
+        </s-banner>
+      ) : null}
       {!mapsApiKey ? (
         <s-banner tone="warning" heading={t("banners.mapsKeyMissing")}>
           {t("banners.mapsKeyDescription")}
@@ -8557,9 +8625,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     // Runs only when BOTH:
     //   - process.env.ROUTE_OPTIMIZATION_PHASE_1_ENABLED === "true", AND
     //   - LalamoveLocationConfig.data.routeOptimizationPhase1Enabled === true
-    // Falls back to legacy VRP on any unrecoverable error.
+    // Falls back to legacy VRP on any unrecoverable error. The fallback
+    // path attaches `phase1Skipped: { reason, message? }` to the response
+    // so the UI can surface a banner instead of silently degrading.
+    let phase1Skipped:
+      | { reason: "unknown_market" | "no_credentials" | "pipeline_error"; message?: string }
+      | undefined;
     if (isPhase1EnabledForLocation(llmConfig)) {
-      try {
+      const market = pickMarketKey(llmConfig.city);
+      if (market === "other") {
+        phase1Skipped = { reason: "unknown_market" };
+        console.warn(`[local-delivery] optimize-fleet Phase1 skipped (unknown_market) shop=${shop} city=${llmConfig.city ?? "?"}`);
+      } else try {
         const ordersWithNames = validOrders as Array<
           OptimizerOrderInput & { orderName?: string }
         >;
@@ -8703,9 +8780,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
               timings: result.timings,
             },
           };
+        } else {
+          // pipelineInput === null after we already confirmed the market is
+          // known → must be missing Lalamove credentials.
+          phase1Skipped = { reason: "no_credentials" };
+          console.warn(`[local-delivery] optimize-fleet Phase1 skipped (no_credentials) shop=${shop}`);
         }
-        // pipelineInput === null → unknown market or missing creds, fall through.
       } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        phase1Skipped = { reason: "pipeline_error", message };
         console.error(
           `[local-delivery] optimize-fleet Phase1 FAILED shop=${shop} — falling back to legacy VRP`,
           err,
@@ -8817,6 +8900,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         totalDistanceMeters: 0,
         totalDurationSeconds: 0,
       })),
+      phase1Skipped,
       summary: {
         routeCount: result.summary.routeCount,
         totalDistanceMeters: 0,

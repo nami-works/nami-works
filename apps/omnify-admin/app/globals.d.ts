@@ -5,6 +5,15 @@
 
 declare module "*.css";
 
+// Vite's `?raw` query — returns the file's text contents as a string.
+// Used by the route-optimization prompt loader to inline the markdown
+// prompt into the server bundle (avoids runtime fs reads against paths
+// that don't survive the build's flattening).
+declare module "*?raw" {
+  const content: string;
+  export default content;
+}
+
 declare global {
   interface Window {
     /**
