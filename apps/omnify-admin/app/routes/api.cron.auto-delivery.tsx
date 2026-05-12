@@ -202,6 +202,7 @@ async function runAutoAssign(
       locationId,
       config: {
         market: config.market,
+        language: config.language,
         preferredServiceType: config.preferredServiceType || "LALAGO",
         city: config.city,
         locationName: config.locationName,

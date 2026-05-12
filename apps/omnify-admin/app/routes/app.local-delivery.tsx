@@ -8662,6 +8662,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         locationId: primaryLocationId,
         config: {
           market: llmConfig.market,
+          language: llmConfig.language,
           preferredServiceType:
             carrierConfig?.lalamovePreferredServiceType ||
             llmConfig.preferredServiceType ||

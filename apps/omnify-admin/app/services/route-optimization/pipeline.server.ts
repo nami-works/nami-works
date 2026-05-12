@@ -67,6 +67,13 @@ export type PipelineInput = {
   serviceType: string;
   /** Market string accepted by Lalamove (e.g. "BR" — not the MarketKey above). */
   lalamoveMarket: string;
+  /**
+   * Lalamove-accepted locale (e.g. "pt_BR", "en_BR"). Required — Lalamove's
+   * quotation endpoint rejects calls with 422 if `language` isn't one of its
+   * market-specific codes. We default to a sensible per-market value when
+   * buildPhase1PipelineInput is called without one.
+   */
+  lalamoveLanguage: string;
   lalamoveCredentials: LalamoveCredentials;
   /** Optional: when present + ANTHROPIC_API_KEY also set, the LLM is called. */
   staticMapsApiKey?: string;
@@ -158,7 +165,10 @@ export async function runRouteOptimizationPipeline(
   // 3. Quoting.
   const quoter =
     input.quoterOverride ??
-    buildLalamoveQuoter({ credentials: input.lalamoveCredentials });
+    buildLalamoveQuoter({
+      credentials: input.lalamoveCredentials,
+      language: input.lalamoveLanguage,
+    });
   const quoteStart = Date.now();
   const quoteResults = await quoteCandidates({
     candidates,
@@ -323,11 +333,37 @@ export function pickMarketKey(city: string | null | undefined): MarketKey {
  * helper; pass `credentialsOverride` to skip the lookup (tests / cron
  * batch optimizations).
  */
+/**
+ * Lalamove-accepted locale per market. Lalamove rejects calls with 422 if
+ * `language` isn't on the per-market allow-list — e.g. BR market requires
+ * "en_BR" or "pt_BR". When the caller doesn't pass an explicit language we
+ * pick a Portuguese-first default for BR (the only market we currently
+ * support) and fall back to English elsewhere; extend as we add markets.
+ */
+function defaultLalamoveLanguageForMarket(market: string): string {
+  switch (market.toUpperCase()) {
+    case "BR": return "pt_BR";
+    case "JP": return "ja_JP";
+    case "HK": return "zh_HK";
+    case "ID": return "id_ID";
+    case "MY": return "ms_MY";
+    case "MX": return "es_MX";
+    case "PH": return "en_PH";
+    case "SG": return "en_SG";
+    case "TW": return "zh_TW";
+    case "TH": return "th_TH";
+    case "VN": return "vi_VN";
+    default: return "en_US";
+  }
+}
+
 export async function buildPhase1PipelineInput(args: {
   shop: string;
   locationId: string;
   config: {
     market: string;
+    /** Lalamove locale (e.g. "pt_BR"). Optional — derived from market when omitted. */
+    language?: string | null;
     preferredServiceType: string;
     city?: string | null;
     locationName?: string | null;
@@ -365,6 +401,8 @@ export async function buildPhase1PipelineInput(args: {
     })),
     serviceType: args.config.preferredServiceType,
     lalamoveMarket: args.config.market,
+    lalamoveLanguage:
+      args.config.language?.trim() || defaultLalamoveLanguageForMarket(args.config.market),
     lalamoveCredentials: credentials,
     staticMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
     anthropicApiKey: process.env.ANTHROPIC_API_KEY,
