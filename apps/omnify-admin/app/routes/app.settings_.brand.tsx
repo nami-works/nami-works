@@ -262,7 +262,7 @@ export default function BrandSettingsPage() {
       {/* No back-action — Settings tab strip provides nav. Removing the back-action band
           also fixes the main+aside Y misalignment regression (was pushing main down while
           aside stayed pinned). */}
-      <PageTabs activeKey="brand" tabs={brandPageTabs} ariaLabel="Settings" />
+      <PageTabs activeKey="brand" tabs={brandPageTabs} ariaLabel="Settings" hasAside />
       <s-button
         variant="primary"
         slot="primary-action"

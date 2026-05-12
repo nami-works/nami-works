@@ -104,7 +104,7 @@ export default function StorytellingLayout() {
 
   return (
     <s-page heading={t("pageHeading")}>
-      <PageTabs activeKey={activeId} tabs={storytellingPageTabs} ariaLabel={t("pageHeading") as string} />
+      <PageTabs activeKey={activeId} tabs={storytellingPageTabs} ariaLabel={t("pageHeading") as string} hasAside />
 
       {isBlogPostsTab && pendingDiffsCount > 0 && (
         <div className={styles.pendingDiffsBanner}>

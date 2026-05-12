@@ -52,9 +52,21 @@ type Props = {
   tabs: PageTab[];
   rightSlot?: ReactNode;
   ariaLabel?: string;
+  /**
+   * Set to `true` when the host route renders `<s-section slot="aside">`
+   * content. Adds the paired aside-spacer (~55px) so aside's first block
+   * aligns with main's first block under the tabs row.
+   *
+   * Default `false` — without aside content, rendering the spacer would
+   * trigger Polaris `<s-page>` to allocate an empty aside column anyway,
+   * shrinking the main column width on routes that should be full-width
+   * (Affiliates / Merchandising / Settings root / Retail Sales / etc.).
+   * Caught post-deploy of PR #66 by Lucas.
+   */
+  hasAside?: boolean;
 };
 
-export function PageTabs({ activeKey, tabs, rightSlot, ariaLabel }: Props) {
+export function PageTabs({ activeKey, tabs, rightSlot, ariaLabel, hasAside = false }: Props) {
   return (
     <>
       <div className={styles.tabsRow} role="tablist" aria-label={ariaLabel}>
@@ -112,22 +124,21 @@ export function PageTabs({ activeKey, tabs, rightSlot, ariaLabel }: Props) {
       })}
         {rightSlot ? <div className={styles.tabsRightGroup}>{rightSlot}</div> : null}
       </div>
-      {/* Paired aside-column spacer.
-          Polaris <s-page> renders default-slot children (the tabs row above)
-          in a "main" grid cell with overflow clipping, and slot="aside"
-          children in a SEPARATE grid cell that doesn't pay the main's flow
-          margins. Without this spacer, aside content starts at the top of
-          the body region while main content starts BELOW the tabs row — the
-          two columns are misaligned by exactly the tabs row's height.
-          Rendering an invisible spacer into the aside slot pushes the first
-          real <s-section slot="aside"> down to the same Y as main's first
-          block. F2's negative-margin trick (attempted in PR #65) was clipped
-          by Polaris's grid; this spacer is the working fix. */}
-      <div
-        slot="aside"
-        className={styles.tabsAsideSpacer}
-        aria-hidden="true"
-      />
+      {/* Paired aside-column spacer — only rendered when the host route
+          has aside content (via `hasAside` prop). Polaris <s-page>'s aside
+          slot is a separate grid cell that doesn't see the tab row above,
+          so without this spacer aside content starts at the same Y as the
+          tab row's top. With it, aside aligns with main's first block.
+          On routes WITHOUT aside content, rendering an empty slot="aside"
+          element still triggers Polaris to allocate an aside column —
+          shrinking the main region. So we opt-in per-route. */}
+      {hasAside ? (
+        <div
+          slot="aside"
+          className={styles.tabsAsideSpacer}
+          aria-hidden="true"
+        />
+      ) : null}
     </>
   );
 }
