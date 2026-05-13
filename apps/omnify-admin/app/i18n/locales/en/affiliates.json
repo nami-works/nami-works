@@ -199,7 +199,7 @@
   },
   "tab": {
     "overview": "Overview",
-    "affiliates": "Affiliates",
+    "affiliates": "Ranking",
     "attributionQueue": "Attribution queue"
   },
   "attributionQueue": {
@@ -269,7 +269,7 @@
     }
   },
   "tabs": {
-    "settings": "Settings"
+    "settings": "Programs"
   },
   "freshChip": {
     "fresh": "Updated {{when}}",

@@ -199,7 +199,7 @@
   },
   "tab": {
     "overview": "Visao geral",
-    "affiliates": "Afiliadas",
+    "affiliates": "Ranking",
     "attributionQueue": "Fila de atribuicao"
   },
   "attributionQueue": {
@@ -269,7 +269,7 @@
     }
   },
   "tabs": {
-    "settings": "Configurações"
+    "settings": "Programas"
   },
   "freshChip": {
     "fresh": "Atualizado há {{when}}",

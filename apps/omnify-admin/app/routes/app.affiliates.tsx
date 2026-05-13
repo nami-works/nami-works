@@ -2017,7 +2017,7 @@ export default function AffiliatesPage() {
     },
     {
       key: "profiles",
-      label: t("tab.affiliates", "Affiliates"),
+      label: t("tab.affiliates", "Ranking"),
       onClick: () => {
         setActiveTab("profiles");
         setProfileDetailCode(null);
@@ -2040,7 +2040,7 @@ export default function AffiliatesPage() {
     },
     {
       key: "settings",
-      label: t("tabs.settings", "Settings"),
+      label: t("tabs.settings", "Programs"),
       onClick: () => setActiveTab("settings"),
     },
   ];
@@ -3025,7 +3025,25 @@ export default function AffiliatesPage() {
 
         {/* ── Attribution queue tab ── */}
         {activeTab === "attribution" && attributionMeta && (
-          <AttributionQueue
+          <>
+            {/* Flat header parity with Overview + Ranking tabs (heading +
+                subtitle). The other tabs render a period chip alongside
+                the heading; Attribution queue intentionally omits it
+                because the queue is point-in-time (no date filter). */}
+            <div className={styles.overviewHeaderFlat}>
+              <div className={styles.overviewStripHeader}>
+                <h2 className={styles.overviewStripHeading}>
+                  {t("attributionQueue.heading", "Attribution queue")}
+                </h2>
+              </div>
+              <div className={styles.overviewStripSubtitle}>
+                {t(
+                  "attributionQueue.subtitle",
+                  "Orders from non-BixGrow channels (IGLU POS, WhatsApp) that need manual entry in BixGrow",
+                )}
+              </div>
+            </div>
+            <AttributionQueue
             shop={shop}
             meta={attributionMeta}
             userLocale={userLocale}
@@ -3056,6 +3074,7 @@ export default function AffiliatesPage() {
                 : null
             }
           />
+          </>
         )}
 
         {/* ── Settings tab (affiliate programs registry) ── */}

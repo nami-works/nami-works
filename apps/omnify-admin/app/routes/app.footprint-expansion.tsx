@@ -2989,6 +2989,10 @@ export default function RetailLocatorRoute() {
           - stale   → indicator stale with Sync now action (last sync had
                       an issue but data exists, was previously a separate
                       dismissible warning banner)
+          Each render is wrapped in its own <s-section> so the indicator
+          has Polaris card chrome (border + radius + padding) instead of
+          floating loose on the admin background — the indicator was
+          designed to live INSIDE a section, not directly under <s-page>.
           The "No geocoded records" empty-state stays as its own critical
           banner below — it's a blocking empty state, not a sync status. */}
       {syncStatus === "running" ? (() => {
@@ -3005,21 +3009,25 @@ export default function RetailLocatorRoute() {
           ? `${completedRecords.toLocaleString(userLocale)}${totalEstimate ? ` / ~${totalEstimate.toLocaleString(userLocale)}` : ""} ${t("banners.processed", { defaultValue: "processed" })}`
           : undefined;
         return (
-          <InBlockSyncIndicator
-            status="running"
-            label={t("banners.analyticsBuildInProgress")}
-            count={countLabel}
-            percent={progressPct}
-          />
+          <s-section>
+            <InBlockSyncIndicator
+              status="running"
+              label={t("banners.analyticsBuildInProgress")}
+              count={countLabel}
+              percent={progressPct}
+            />
+          </s-section>
         );
       })() : syncStatus === "failed" ? (
-        <InBlockSyncIndicator
-          status="error"
-          label={t("banners.analyticsIssue")}
-          count={syncError ?? undefined}
-          actionLabel={t("banners.retrySync", { defaultValue: "Retry sync" })}
-          onAction={() => fetcher.submit({ intent: "sync-analytics" }, { method: "post" })}
-        />
+        <s-section>
+          <InBlockSyncIndicator
+            status="error"
+            label={t("banners.analyticsIssue")}
+            count={syncError ?? undefined}
+            actionLabel={t("banners.retrySync", { defaultValue: "Retry sync" })}
+            onAction={() => fetcher.submit({ intent: "sync-analytics" }, { method: "post" })}
+          />
+        </s-section>
       ) : null}
       {syncStatus === "idle" && loaderHeatmapBuckets.length === 0 && cityRankings.length === 0 && !syncTotalOrders ? (
         <s-banner tone="critical" heading={t("banners.noGeocodedRecords")}>
@@ -3030,12 +3038,14 @@ export default function RetailLocatorRoute() {
       {/* Stale: last sync failed but data exists. Folded into the in-block
           indicator pattern (was a dismissible warning banner pre-2026-05-12). */}
       {syncWarning && syncStatus === "idle" && (
-        <InBlockSyncIndicator
-          status="stale"
-          label={t("banners.lastSyncStale", { defaultValue: "Last sync encountered an issue. Data shown may be slightly outdated." })}
-          actionLabel={t("banners.syncNow", { defaultValue: "Sync now" })}
-          onAction={() => fetcher.submit({ intent: "sync-analytics" }, { method: "post" })}
-        />
+        <s-section>
+          <InBlockSyncIndicator
+            status="stale"
+            label={t("banners.lastSyncStale", { defaultValue: "Last sync encountered an issue. Data shown may be slightly outdated." })}
+            actionLabel={t("banners.syncNow", { defaultValue: "Sync now" })}
+            onAction={() => fetcher.submit({ intent: "sync-analytics" }, { method: "post" })}
+          />
+        </s-section>
       )}
 
       {/* ── Overview Stats Strip ── */}
