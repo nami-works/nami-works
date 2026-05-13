@@ -595,6 +595,7 @@ async function fetchEligibleOrders(
   let cursor: string | null = null;
   const allOrders: EligibleOrder[] = [];
   const seenIds = new Set<string>();
+  let skippedFulfilled = 0;
 
   for (let page = 0; page < 10; page++) {
     const res = await admin.graphql(
@@ -607,6 +608,7 @@ async function fetchEligibleOrders(
                 id
                 name
                 tags
+                displayFulfillmentStatus
                 shippingAddress {
                   address1
                   address2
@@ -645,6 +647,20 @@ async function fetchEligibleOrders(
       const order = edge.node;
       if (!order?.id || seenIds.has(order.id)) continue;
       seenIds.add(order.id);
+
+      // GUARDRAIL — Shopify fulfillment status is the authoritative idempotency
+      // check. If Shopify reports the order as anything other than UNFULFILLED
+      // (i.e. FULFILLED, PARTIALLY_FULFILLED, IN_PROGRESS, ON_HOLD, RESTOCKED,
+      // SCHEDULED, PENDING_FULFILLMENT, OPEN), we MUST NOT route it again — no
+      // matter what tags, internal DB state, or prior dispatch history say.
+      // This single check is what prevents the 2026-05-13 class of incidents
+      // where the `fulfillment_status:unshipped` search filter, the
+      // `ld_rota-NN` tag regex, and the LalamoveDispatchOrderMap all failed
+      // independently and let already-delivered orders flow back into routing.
+      if (order.displayFulfillmentStatus !== "UNFULFILLED") {
+        skippedFulfilled += 1;
+        continue;
+      }
 
       // Skip orders already assigned to a route
       const tags: string[] = order.tags ?? [];
@@ -698,6 +714,9 @@ async function fetchEligibleOrders(
     if (!cursor) break;
   }
 
+  console.info(
+    `[auto-delivery] fetchEligibleOrders location=${locationId} eligible=${allOrders.length} skippedFulfilled=${skippedFulfilled} totalScanned=${seenIds.size}`,
+  );
   return allOrders;
 }
 
