@@ -3855,7 +3855,10 @@ export default function Index() {
                       </span>
                     ) : null}
                     <span className={styles.dueOrdersOrderName}>{row.name}</span>
-                    <span>
+                    {/* Customer + Address cells truncate with ellipsis at
+                        their fixed column width; title= exposes the full
+                        value on hover. v3 fixed-width grid (2026-05-12). */}
+                    <span title={row.customerName ?? t("customer.guest")}>
                       {formatCustomerShort(row.customerName, t("customer.guest"))}
                     </span>
                     <span>{formatOrderDateShort(row.processedAt)}</span>
@@ -3891,7 +3894,9 @@ export default function Index() {
                         <span className={styles.routeUnassignedDash}>—</span>
                       )}
                     </span>
-                    <span>{row.address1 ?? t("routeManager.noAddressLine1")}</span>
+                    <span title={row.address1 ?? undefined}>
+                      {row.address1 ?? t("routeManager.noAddressLine1")}
+                    </span>
                   </div>
                 );
               })}

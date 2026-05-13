@@ -16,8 +16,19 @@
   gap: 8px;
 }
 
-/* 2026-05-12 parity refactor: title row mirrors <s-section heading> rhythm
-   while leaving room for the inline "New" s-badge next to the title text. */
+/* 2026-05-12 v2: heading is rendered via the native `<s-section heading>` prop
+   for parity with the Auto-assign accuracy block. The "New" badge moves to
+   its own top-of-body row so it doesn't fight Polaris's heading slot. */
+.newBadgeRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+/* Legacy .titleRow / .title classes from v1 are no longer used by FullCard
+   — kept here for any consumer that might still reference them. Provocation
+   and conservative-empty states still render their own custom title using
+   .label below, so nothing else is affected. */
 .titleRow {
   display: flex;
   align-items: center;

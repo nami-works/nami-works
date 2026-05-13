@@ -1,22 +1,27 @@
 /**
- * Map marker icons — inline SVG replacements for the emoji that previously
- * lived in Google Maps `AdvancedMarkerElement` content.
+ * Map marker icons — Polaris `<s-icon>` elements injected as HTML into
+ * Google Maps `AdvancedMarkerElement` DOM.
  *
- * Returns plain SVG string suitable for `element.innerHTML = ...`. CLAUDE.md
- * bans emoji-as-icon in elements that intend to resemble native Polaris;
- * map markers count even though they're rendered by Google Maps' DOM, not
- * Polaris, because they're inside the admin UI and read as iconography.
+ * 2026-05-12 v2: swapped from hand-rolled inline SVG strings to real Polaris
+ * `<s-icon>` web components. The custom element is registered globally by
+ * App Bridge once the admin shell loads, so the element upgrades correctly
+ * even though it's rendered inside Google Maps' marker DOM (not a Polaris
+ * descendant). The map renders AFTER App Bridge has registered, so the
+ * upgrade timing is safe in practice.
  *
- * Each icon is a 12×12 viewBox=0 0 20 20 SVG with semantic colors:
- * - failed (was 🚫): red strike-through circle (circle-cancel)
- * - overdue (was 🚨): red alert triangle
- * - dueToday (was ⏳ hourglass): gold bolt — changed 2026-05-12 for parity
- *   with the bolt icon used across the admin for time-sensitive
- *   "act now" affordances. Matches `<s-icon type="bolt">`.
- * - dueTomorrow (was ⏰): blue clock
- * - dueLater (was 🕒): subdued clock
- * - addressError (was 🟡): gold alert triangle
- * - storeLocation (was 🏬): neutral storefront
+ * Returns the element-as-HTML-string for `element.innerHTML = ...`. CLAUDE.md
+ * "Polaris primitives first, hand-rolled UI never" — map markers count, even
+ * though they're rendered by Google Maps DOM. The previous inline-SVG carve-
+ * out was a workaround; this restores parity with the rest of the admin.
+ *
+ * Icon mapping:
+ * - failed (was 🚫): x-circle, critical
+ * - overdue (was 🚨): alert-triangle, critical
+ * - dueToday (was ⏳ hourglass): bolt, caution
+ * - dueTomorrow (was ⏰): clock, info
+ * - dueLater (was 🕒): clock, neutral
+ * - addressError (was 🟡): alert-triangle, caution
+ * - storeLocation (was 🏬): store, neutral
  */
 
 export type MarkerIconKind =
@@ -28,69 +33,34 @@ export type MarkerIconKind =
   | "addressError"
   | "storeLocation";
 
-const SIZE = 12;
+type PolarisIconTone =
+  | "info"
+  | "warning"
+  | "success"
+  | "critical"
+  | "auto"
+  | "neutral"
+  | "caution";
 
-const svg = (paths: string, color: string): string =>
-  `<svg width="${SIZE}" height="${SIZE}" viewBox="0 0 20 20" fill="none" aria-hidden="true">` +
-  `<g style="color:${color}">` +
-  paths +
-  `</g></svg>`;
+type IconSpec = { type: string; tone?: PolarisIconTone };
 
-const ICONS: Record<MarkerIconKind, string> = {
-  // Banned / failed: red filled circle with a diagonal slash
-  failed: svg(
-    `<circle cx="10" cy="10" r="8" fill="currentColor"/>` +
-      `<line x1="5" y1="5" x2="15" y2="15" stroke="white" stroke-width="2.4" stroke-linecap="round"/>`,
-    "#d72c0d",
-  ),
-  // Overdue: red triangle with exclamation
-  overdue: svg(
-    `<path d="M10 2 L19 18 L1 18 Z" fill="currentColor"/>` +
-      `<rect x="9.2" y="7" width="1.6" height="6" rx="0.4" fill="white"/>` +
-      `<circle cx="10" cy="15.2" r="0.9" fill="white"/>`,
-    "#d72c0d",
-  ),
-  // Due today: gold bolt (was hourglass — replaced 2026-05-12). Path matches
-  // Polaris `<s-icon type="bolt">` proportions: lightning bolt centered in
-  // the 20x20 viewBox.
-  dueToday: svg(
-    `<path d="M11.5 2 L4 11 L9 11 L8.5 18 L16 9 L11 9 Z" ` +
-      `fill="currentColor" stroke="currentColor" stroke-width="0.4" stroke-linejoin="round"/>`,
-    "#d99a0a",
-  ),
-  // Due tomorrow: blue clock
-  dueTomorrow: svg(
-    `<circle cx="10" cy="10.5" r="7.2" fill="currentColor"/>` +
-      `<path d="M10 6 L10 10.5 L13.2 12.2" stroke="white" stroke-width="1.7" stroke-linecap="round" fill="none"/>` +
-      `<path d="M6.5 2.5 L4 5 M13.5 2.5 L16 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>`,
-    "#005bd3",
-  ),
-  // Due later: subdued clock
-  dueLater: svg(
-    `<circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/>` +
-      `<path d="M10 5.5 L10 10 L13 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/>`,
-    "#6d7175",
-  ),
-  // Address validation error: gold alert triangle (warning, not blocking)
-  addressError: svg(
-    `<path d="M10 2 L19 18 L1 18 Z" fill="currentColor"/>` +
-      `<rect x="9.2" y="7" width="1.6" height="6" rx="0.4" fill="#5b4109"/>` +
-      `<circle cx="10" cy="15.2" r="0.9" fill="#5b4109"/>`,
-    "#d99a0a",
-  ),
-  // Pickup location: neutral storefront
-  storeLocation: svg(
-    `<path d="M3 8 L17 8 L17 17 L3 17 Z" fill="currentColor"/>` +
-      `<path d="M3 8 L5 4 L15 4 L17 8 Z" fill="currentColor" stroke="currentColor" stroke-width="0.8" stroke-linejoin="round"/>` +
-      `<rect x="7.5" y="11.5" width="5" height="5.5" fill="white"/>`,
-    "#303030",
-  ),
+const ICONS: Record<MarkerIconKind, IconSpec> = {
+  failed: { type: "x-circle", tone: "critical" },
+  overdue: { type: "alert-triangle", tone: "critical" },
+  dueToday: { type: "bolt", tone: "caution" },
+  dueTomorrow: { type: "clock", tone: "info" },
+  dueLater: { type: "clock", tone: "neutral" },
+  addressError: { type: "alert-triangle", tone: "caution" },
+  storeLocation: { type: "store", tone: "neutral" },
 };
 
 /**
- * Returns the SVG markup as a string for `innerHTML` assignment to a DOM
- * element rendered by Google Maps' `AdvancedMarkerElement`.
+ * Returns the `<s-icon>` HTML string for `innerHTML` assignment to a DOM
+ * element rendered by Google Maps' `AdvancedMarkerElement`. `size="small"`
+ * is the Polaris token closest to the 12px target inside the marker pill.
  */
 export function markerIconHTML(kind: MarkerIconKind): string {
-  return ICONS[kind];
+  const { type, tone } = ICONS[kind];
+  const toneAttr = tone ? ` tone="${tone}"` : "";
+  return `<s-icon type="${type}"${toneAttr} size="small"></s-icon>`;
 }

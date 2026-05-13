@@ -522,35 +522,27 @@
 .dueOrdersHeader,
 .dueOrdersRow {
   display: grid;
-  /* Columns: checkbox, order#, customer, date, due, route+unassign, address.
-     2026-05-10 r2 -- fail-proof rebuild after r1 still showed truncated
-     addresses + excess whitespace. Approach:
-       - Content columns use `max-content` so they fit content (header or
-         widest cell, whichever is bigger) and IGNORE child min-width:0.
-       - Address uses `minmax(max-content, 1fr)`. Floor = max-content so
-         the address NEVER truncates. Ceiling = 1fr so when leftover
-         viewport space exists, the address absorbs it (no excessive
-         whitespace at the right edge). When the natural sum exceeds the
-         viewport, `overflow-x: auto` on .dueOrdersTable kicks in.
-       - Route column keeps its var-width exception (badge centering +
-         X-unassign right-attached layout).
-       - Removed the blanket `overflow:hidden + text-overflow:ellipsis +
-         min-width:0` rule. That rule was the root cause of r1's bug:
-         `min-width: 0` on cells let `1fr` (= `minmax(auto, 1fr)`) squash
-         the address column below its content. */
+  /* 2026-05-12 v3: FIXED column widths so the grid reads as a real table.
+     Each column is a uniform vertical lane regardless of content width.
+     Customer + Address truncate with ellipsis (CSS rule below); their full
+     value is exposed via `title=` attribute on the JSX side.
+
+     Prior versions:
+     - v1 (2026-05-10): max-content + 8px column-gap. Narrow columns mashed
+       on the left, Route/Address sat far apart on the right; didn't read
+       like a table.
+     - v2 (2026-05-12): bumped column-gap 8 → 18px. Helped the headers
+       breathe but column widths still drifted with content. Lucas flagged
+       "doesn't behave as a table" — switched to fixed widths in v3. */
   grid-template-columns:
     24px                                       /* Checkbox */
-    max-content                                /* Order # */
-    max-content                                /* Customer */
-    max-content                                /* Date */
-    max-content                                /* Due */
+    70px                                       /* Order # */
+    var(--customer-col-width, 140px)           /* Customer (ellipsis) */
+    110px                                      /* Date */
+    52px                                       /* Due (icon-only, centered) */
     var(--route-col-width, 168px)              /* Route badge + Unassign */
-    minmax(max-content, 1fr);                  /* Address: never truncate, absorb leftover */
-  /* 2026-05-12: bumped column-gap 8 → 18px. With max-content columns the
-     prior 8px gap left Order/Customer/Date/Due headers visibly mashed
-     together. 18px is enough to read each header as its own column while
-     still keeping the table compact (minimal padding overall). */
-  column-gap: 18px;
+    minmax(160px, 1fr);                        /* Address (ellipsis, absorbs leftover) */
+  column-gap: 12px;
   padding: 8px 8px;
   align-items: center;
   font-size: 13px;
@@ -562,21 +554,24 @@
 .dueOrdersTable[data-no-cb="true"] .dueOrdersHeader,
 .dueOrdersTable[data-no-cb="true"] .dueOrdersRow {
   grid-template-columns:
-    max-content
-    max-content
-    max-content
-    max-content
+    70px
+    var(--customer-col-width, 140px)
+    110px
+    52px
     var(--route-col-width, 168px)
-    minmax(max-content, 1fr);
+    minmax(160px, 1fr);
 }
 
-/* Content cells: nowrap keeps each cell on one line so max-content tracking
-   measures the full string. No truncation -- if total table width exceeds
-   the viewport, the parent .dueOrdersTable scrolls horizontally. */
+/* Content cells: nowrap + overflow handling. Customer + Address use ellipsis
+   truncation (their truncate-friendly classes below); other cells are
+   nowrap-only since their content fits the fixed width. */
 .dueOrdersHeader > span,
 .dueOrdersRow > span,
 .dueOrdersRow > s-link {
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .dueOrdersHeader {

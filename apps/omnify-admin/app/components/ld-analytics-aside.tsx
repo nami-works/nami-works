@@ -96,17 +96,20 @@ function FullCard({
   const navigate = useNavigate();
   const { total, momPercent, sparkline, currency, isNew } = data;
 
-  // 2026-05-12 parity refactor (Lucas): visual at top (sparkline above stat
-  // line), title as a real heading (s-section pattern), "New" badge as a real
-  // s-badge, period footer subdued at the bottom, See-more as s-button
-  // variant=secondary right-aligned. Mirrors the Auto-assign accuracy block
-  // shape. Spec: inputs/mockups/ld-stat-blocks-parity-v1.html.
+  // 2026-05-12 v2 parity refactor: use native `<s-section heading={...}>` prop
+  // (was a custom `<span class="title">` — diverged from the Auto-assign block
+  // visually because Polaris's internal heading rendering uses different
+  // font/letter-spacing). The "New" badge moves to a small top row at the
+  // start of the section body so it doesn't fight the native heading slot.
+  // Mirror of Auto-assign accuracy: heading -> visual -> primary stat +
+  // descriptor -> period footer -> right-aligned secondary CTA.
   return (
-    <s-section>
-      <div className={styles.titleRow}>
-        <span className={styles.title}>{t("aside.label")}</span>
-        {isNew && <s-badge tone="success">{t("aside.newPill")}</s-badge>}
-      </div>
+    <s-section heading={t("aside.label")}>
+      {isNew && (
+        <div className={styles.newBadgeRow}>
+          <s-badge tone="success">{t("aside.newPill")}</s-badge>
+        </div>
+      )}
       <Sparkline points={sparkline} />
       <div className={styles.statRow}>
         <span className={styles.value}>{formatSignedCurrencyShort(total, currency)}</span>
