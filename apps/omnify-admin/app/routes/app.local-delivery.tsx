@@ -33,10 +33,7 @@ import {
 import type { OptimizerOrderInput } from "../services/google-routes-shared.server";
 import { LD_ADDRESS_CONFIRM_TAG, LD_FAILED_DELIVERY_TAG, LD_NUMBER_CONFIRM_TAG, getAllFailedDeliveryTags } from "../services/lalamove-tags";
 import { runCarrierQuotationForOrderId } from "../services/auto-routing.server";
-import {
-  checkAndApplyEscalations,
-  type EscalationResult,
-} from "../services/lalamove-escalation.server";
+import { type EscalationResult } from "../services/lalamove-escalation.server";
 import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
 import {
   isPhase1EnabledForLocation,
@@ -1087,20 +1084,13 @@ export default function Index() {
     });
   }, [escalationFetcher.data]);
 
-  // Poll for escalation actions every 2 minutes
-  useEffect(() => {
-    escalationFetcher.submit(
-      { intent: "lalamove-check-escalation" },
-      { method: "post" },
-    );
-    const interval = window.setInterval(() => {
-      escalationFetcher.submit(
-        { intent: "lalamove-check-escalation" },
-        { method: "post" },
-      );
-    }, 120_000);
-    return () => window.clearInterval(interval);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Escalation is now driven exclusively by the lalamove-watchdog cron
+  // (every 5 min). The previous 120 s page-poller fired identical
+  // checkAndApplyEscalations side effects from every open Local Delivery
+  // tab — it duplicated cron work, amplified per-tab, raced with operator
+  // actions, and was a major contributor to the 2026-05-13 cancellation
+  // loop (29 of 56 loop reorders came from this path). Removed in favour
+  // of the cron-only single-driver model.
 
   useEffect(() => {
     const data = assignFetcher.data as { ok?: boolean } | undefined;
@@ -10768,12 +10758,9 @@ if (intent === "lalamove-place-order") {
     }
   }
 
-  if (intent === "lalamove-check-escalation") {
-    console.info(`[local-delivery] lalamove-check-escalation shop=${shop}`);
-    const results = await checkAndApplyEscalations(shop, admin);
-    console.info(`[local-delivery] lalamove-check-escalation OK shop=${shop} results=${results.length}`);
-    return { ok: true, intent: "lalamove-check-escalation", results };
-  }
+  // Removed: `lalamove-check-escalation` intent. Escalation is now exclusively
+  // driven by the lalamove-watchdog cron. The page poller that fired this
+  // intent has been removed (see comment near the previous useEffect call).
 
   if (intent === "lalamove-reconcile-status") {
     const lalamoveOrderId = formData.get("lalamoveOrderId");

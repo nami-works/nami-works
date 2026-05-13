@@ -287,16 +287,24 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     }
   }
 
-  // ── 2. Retry failed jobs (CANCELED/REJECTED/EXPIRED) that webhook missed ──
+  // ── 2. Retry failed jobs (REJECTED/EXPIRED) that webhook missed ──────────
   // Safety net: if the webhook auto-retry didn't fire (e.g. missing dispatchJobId
   // in metadata), pick up recently failed jobs that still have retries left.
+  //
+  // CANCELED is intentionally EXCLUDED — per Lalamove's status semantics,
+  // CANCELED means "user has canceled the order" (us via DELETE, or Lalamove
+  // ops). Retrying an operator-initiated cancel was the loop driver in the
+  // 2026-05-13 mass-cancel incident, where my force-DB CANCELED writes
+  // exactly matched this query and the watchdog kept placing replacement
+  // orders. REJECTED (drivers bailed) and EXPIRED (no supply) still warrant
+  // a fresh attempt.
   const FAILED_RETRY_WINDOW_MINUTES = 30;
   const failedCutoff = new Date(Date.now() - FAILED_RETRY_WINDOW_MINUTES * 60_000);
   let failedRetryCount = 0;
   try {
     const failedJobs = await prisma.lalamoveDispatchJob.findMany({
       where: {
-        status: { in: ["CANCELED", "REJECTED", "EXPIRED"] },
+        status: { in: ["REJECTED", "EXPIRED"] },
         retryCount: { lt: MAX_AUTO_RETRIES },
         updatedAt: { gte: failedCutoff },
       },

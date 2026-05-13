@@ -238,8 +238,17 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   // ── Auto-retry on terminal failure ─────────────────────────────────────────
+  // Lalamove's status enum encodes the cancellation source (their docs):
+  //   CANCELED → "user has canceled the order" (us via DELETE, or Lalamove ops)
+  //   REJECTED → "matched and rejected twice by two drivers in a row"
+  //   EXPIRED  → "order expired as no drivers accepted the order"
+  // We retry only the non-CANCELED cases — CANCELED reflects a deliberate
+  // human decision (operator or Lalamove ops) and auto-retrying it would
+  // override that intent. This is the fix for the 2026-05-13 mass-cancel
+  // feedback loop, where every operator cancel triggered a fresh dispatch.
+  const isRetryableFailure = mapped === "rejected" || mapped === "expired";
 
-  if (isFailure && effectiveDispatchJobId) {
+  if (isRetryableFailure && effectiveDispatchJobId) {
     try {
       const jobForRetry = await prisma.lalamoveDispatchJob.findUnique({
         where: { id: effectiveDispatchJobId },
