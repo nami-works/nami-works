@@ -33,9 +33,12 @@ import {
 } from "../services/tone-sources/manual.server";
 import {
   clearMondayConfig,
+  fetchMondaySchema,
   getMondayConfig,
   ingestMonday,
   saveMondayConfig,
+  type MondayBoardSchema,
+  type MondayFilterRule,
 } from "../services/tone-sources/monday.server";
 import {
   clearMetaConfig,
@@ -66,6 +69,7 @@ type LoaderData = {
   manualReferences: SerializedManualReference[];
   mondayConfigured: boolean;
   mondayBoardIds: string[];
+  mondayFilters: MondayFilterRule[];
   metaConfigured: boolean;
   metaIgBusinessId: string | null;
   metaFbPageId: string | null;
@@ -145,6 +149,7 @@ export const loader = async ({
     })),
     mondayConfigured: mondayConfig !== null,
     mondayBoardIds: mondayConfig?.boardIds ?? [],
+    mondayFilters: mondayConfig?.filters ?? [],
     metaConfigured: metaConfig !== null,
     metaIgBusinessId: metaConfig?.igBusinessId ?? null,
     metaFbPageId: metaConfig?.fbPageId ?? null,
@@ -343,7 +348,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (intent === "saveMondayConfig") {
     const apiKey = formData.get("mondayApiKey") as string | null;
     const boardIdsRaw = formData.get("mondayBoardIds") as string | null;
-    if (!apiKey || !boardIdsRaw) {
+    const existingConfig = await getMondayConfig(shop);
+    // API key is optional on re-save when one is already stored (lets the
+    // merchant tweak board IDs without re-typing the key).
+    const effectiveApiKey =
+      apiKey && apiKey.trim().length > 0 ? apiKey : existingConfig?.apiKey;
+    if (!effectiveApiKey || !boardIdsRaw) {
       return {
         success: false,
         intent,
@@ -358,13 +368,84 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return { success: false, intent, error: "At least one board ID is required." };
     }
     try {
-      await saveMondayConfig({ shop, apiKey, boardIds });
+      await saveMondayConfig({
+        shop,
+        apiKey: effectiveApiKey,
+        boardIds,
+        // Preserve existing filters when API key / boards change.
+        filters: existingConfig?.filters ?? [],
+      });
       return { success: true, intent };
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to save Monday.com config.";
       return { success: false, intent, error: message };
     }
+  }
+
+  if (intent === "saveMondayFilters") {
+    const filtersRaw = formData.get("mondayFiltersJson") as string | null;
+    const config = await getMondayConfig(shop);
+    if (!config) {
+      return {
+        success: false,
+        intent,
+        error: "Connect Monday.com first.",
+      };
+    }
+    let filters: MondayFilterRule[] = [];
+    if (filtersRaw) {
+      try {
+        const parsed = JSON.parse(filtersRaw);
+        if (!Array.isArray(parsed)) throw new Error("Filters must be an array");
+        filters = parsed.filter(
+          (r): r is MondayFilterRule =>
+            typeof r === "object" &&
+            r !== null &&
+            typeof r.column === "string" &&
+            typeof r.op === "string" &&
+            Array.isArray(r.values),
+        );
+      } catch (err) {
+        return {
+          success: false,
+          intent,
+          error: err instanceof Error ? err.message : "Invalid filter payload.",
+        };
+      }
+    }
+    try {
+      await saveMondayConfig({
+        shop,
+        apiKey: config.apiKey,
+        boardIds: config.boardIds,
+        filters,
+      });
+      return { success: true, intent, ruleCount: filters.length };
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to save Monday.com filters.";
+      return { success: false, intent, error: message };
+    }
+  }
+
+  if (intent === "fetchMondaySchema") {
+    const config = await getMondayConfig(shop);
+    if (!config) {
+      return {
+        success: false,
+        intent,
+        error: "Connect Monday.com first.",
+      };
+    }
+    const result = await fetchMondaySchema({
+      apiKey: config.apiKey,
+      boardIds: config.boardIds,
+    });
+    if ("error" in result) {
+      return { success: false, intent, error: result.error };
+    }
+    return { success: true, intent, schema: result };
   }
 
   if (intent === "clearMondayConfig") {
@@ -560,6 +641,7 @@ export default function ToneSourcesPage() {
     manualReferences,
     mondayConfigured,
     mondayBoardIds,
+    mondayFilters,
     metaConfigured,
     metaIgBusinessId,
     metaFbPageId,
@@ -579,9 +661,25 @@ export default function ToneSourcesPage() {
   const [mondayBoardIdsInput, setMondayBoardIdsInput] = useState(
     mondayBoardIds.join(", "),
   );
+  // Monday filter UI — 4 phases: connect → columns → rules → preview.
+  // Returning users (configured + has filters) land on preview; otherwise connect.
+  const [mondayPhase, setMondayPhase] = useState<
+    "connect" | "columns" | "rules" | "preview"
+  >(mondayConfigured && mondayFilters.length > 0 ? "preview" : "connect");
+  const [mondaySchema, setMondaySchema] = useState<MondayBoardSchema[] | null>(
+    null,
+  );
+  const [mondayRules, setMondayRules] = useState<MondayFilterRule[]>(
+    mondayFilters,
+  );
   const [metaTokenInput, setMetaTokenInput] = useState("");
   const [metaIgInput, setMetaIgInput] = useState(metaIgBusinessId ?? "");
   const [metaFbInput, setMetaFbInput] = useState(metaFbPageId ?? "");
+  // Meta in-block phased flow (parity with the Monday filter UI).
+  // Tabs: "what" (intro + trust strip) → "generate" (token steps) → "paste" (form).
+  const [metaPhase, setMetaPhase] = useState<
+    "what" | "generate" | "paste"
+  >("what");
 
   const isRefreshingShopify =
     fetcher.state !== "idle" &&
@@ -592,6 +690,12 @@ export default function ToneSourcesPage() {
   const isSavingMonday =
     fetcher.state !== "idle" &&
     fetcher.formData?.get("intent") === "saveMondayConfig";
+  const isFetchingSchema =
+    fetcher.state !== "idle" &&
+    fetcher.formData?.get("intent") === "fetchMondaySchema";
+  const isSavingFilters =
+    fetcher.state !== "idle" &&
+    fetcher.formData?.get("intent") === "saveMondayFilters";
   const isRefreshingMeta =
     fetcher.state !== "idle" &&
     fetcher.formData?.get("intent") === "refreshMeta";
@@ -625,6 +729,30 @@ export default function ToneSourcesPage() {
       shopify.toast?.show?.(fetcher.data.error ?? "Action failed.");
     }
   }, [fetcher.data, shopify, t]);
+
+  // Monday-specific: capture the schema response and advance to phase B
+  // (Choose columns) automatically. Also reset rule selections if the user
+  // re-connects with new board IDs.
+  useEffect(() => {
+    if (!fetcher.data) return;
+    if (
+      fetcher.data.success &&
+      "intent" in fetcher.data &&
+      fetcher.data.intent === "fetchMondaySchema" &&
+      "schema" in fetcher.data
+    ) {
+      setMondaySchema(fetcher.data.schema as MondayBoardSchema[]);
+      setMondayPhase("columns");
+    }
+    if (
+      fetcher.data.success &&
+      "intent" in fetcher.data &&
+      fetcher.data.intent === "saveMondayFilters"
+    ) {
+      // Filters saved — show preview state as the resting view.
+      setMondayPhase("preview");
+    }
+  }, [fetcher.data]);
 
   useEffect(() => {
     if (!uploadFetcher.data) return;
@@ -667,8 +795,6 @@ export default function ToneSourcesPage() {
   const igSource = sourceMap.get("meta_ig");
   const fbSource = sourceMap.get("meta_fb");
   const mondaySource = sourceMap.get("monday");
-  const uploadSource = sourceMap.get("manual_upload");
-  const urlSource = sourceMap.get("manual_url");
 
   const metaSampleCount =
     (igSource?.sampleCount ?? 0) + (fbSource?.sampleCount ?? 0);
@@ -677,9 +803,6 @@ export default function ToneSourcesPage() {
       .filter((x): x is string => Boolean(x))
       .sort()
       .pop() ?? null;
-
-  const manualSampleCount =
-    (uploadSource?.sampleCount ?? 0) + (urlSource?.sampleCount ?? 0);
 
   const toggleRow = (id: DisplayRowId) => {
     setExpandedRow((prev) => (prev === id ? null : id));
@@ -824,117 +947,32 @@ export default function ToneSourcesPage() {
                   })
             }
           >
-            <p className={styles.bodyHelp}>
-              {t("toneSources.meta.description", {
-                defaultValue:
-                  "Generate a long-lived Page Access Token in Meta Business Suite (Settings → Users → System Users → Generate token). Provide the IG Business ID and/or FB Page ID for accounts you want sampled.",
-              })}
-            </p>
-            <fetcher.Form method="POST">
-              <input type="hidden" name="intent" value="saveMetaConfig" />
-              <div className={styles.field}>
-                <label className={styles.fieldLabel}>
-                  {t("toneSources.meta.token", {
-                    defaultValue: "Long-lived Page Access Token",
-                  })}
-                </label>
-                <input
-                  className={styles.fieldInput}
-                  type="password"
-                  name="metaAccessToken"
-                  value={metaTokenInput}
-                  onChange={(e) => setMetaTokenInput(e.target.value)}
-                  placeholder={
-                    metaConfigured
-                      ? t("toneSources.meta.tokenPlaceholderConfigured", {
-                          defaultValue: "(stored — leave blank to keep current)",
-                        })
-                      : "EAAB..."
-                  }
-                />
-              </div>
-              <div className={styles.fieldRow2}>
-                <div className={styles.field}>
-                  <label className={styles.fieldLabel}>
-                    {t("toneSources.meta.igBusinessId", {
-                      defaultValue: "Instagram Business ID",
-                    })}
-                  </label>
-                  <input
-                    className={styles.fieldInput}
-                    type="text"
-                    name="metaIgBusinessId"
-                    value={metaIgInput}
-                    onChange={(e) => setMetaIgInput(e.target.value)}
-                    placeholder="17841400000000000"
-                  />
-                </div>
-                <div className={styles.field}>
-                  <label className={styles.fieldLabel}>
-                    {t("toneSources.meta.fbPageId", {
-                      defaultValue: "Facebook Page ID",
-                    })}
-                  </label>
-                  <input
-                    className={styles.fieldInput}
-                    type="text"
-                    name="metaFbPageId"
-                    value={metaFbInput}
-                    onChange={(e) => setMetaFbInput(e.target.value)}
-                    placeholder="100000000000000"
-                  />
-                </div>
-              </div>
-              {metaConfigured ? (
-                <div className={styles.bodyActionsSplit}>
-                  <fetcher.Form method="POST">
-                    <input type="hidden" name="intent" value="clearMetaConfig" />
-                    <s-button type="submit" variant="tertiary" tone="critical">
-                      {t("toneSources.meta.disconnect", {
-                        defaultValue: "Disconnect",
-                      })}
-                    </s-button>
-                  </fetcher.Form>
-                  <div className={styles.bodyActionsRight}>
-                    <fetcher.Form method="POST">
-                      <input type="hidden" name="intent" value="refreshMeta" />
-                      <s-button
-                        type="submit"
-                        variant="secondary"
-                        {...(isRefreshingMeta
-                          ? { loading: true, disabled: true }
-                          : {})}
-                      >
-                        {t("toneSources.actions.refreshNow", {
-                          defaultValue: "Refresh now",
-                        })}
-                      </s-button>
-                    </fetcher.Form>
-                    <s-button
-                      type="submit"
-                      variant="primary"
-                      {...(isSavingMeta ? { loading: true, disabled: true } : {})}
-                    >
-                      {t("toneSources.meta.save", {
-                        defaultValue: "Save Meta config",
-                      })}
-                    </s-button>
-                  </div>
-                </div>
-              ) : (
-                <div className={styles.bodyActions}>
-                  <s-button
-                    type="submit"
-                    variant="primary"
-                    {...(isSavingMeta ? { loading: true, disabled: true } : {})}
-                  >
-                    {t("toneSources.meta.save", {
-                      defaultValue: "Save Meta config",
-                    })}
-                  </s-button>
-                </div>
-              )}
-            </fetcher.Form>
+            {metaConfigured ? (
+              <MetaEditView
+                fetcher={fetcher}
+                metaIgInput={metaIgInput}
+                setMetaIgInput={setMetaIgInput}
+                metaFbInput={metaFbInput}
+                setMetaFbInput={setMetaFbInput}
+                metaTokenInput={metaTokenInput}
+                setMetaTokenInput={setMetaTokenInput}
+                isSavingMeta={isSavingMeta}
+                isRefreshingMeta={isRefreshingMeta}
+              />
+            ) : (
+              <MetaTabbedFlow
+                phase={metaPhase}
+                setPhase={setMetaPhase}
+                fetcher={fetcher}
+                metaIgInput={metaIgInput}
+                setMetaIgInput={setMetaIgInput}
+                metaFbInput={metaFbInput}
+                setMetaFbInput={setMetaFbInput}
+                metaTokenInput={metaTokenInput}
+                setMetaTokenInput={setMetaTokenInput}
+                isSavingMeta={isSavingMeta}
+              />
+            )}
           </SourceItem>
 
           {/* ───── MONDAY ───── */}
@@ -962,101 +1000,23 @@ export default function ToneSourcesPage() {
                   })
             }
           >
-            <p className={styles.bodyHelp}>
-              {t("toneSources.monday.description", {
-                defaultValue:
-                  "Generate an API key in Monday.com (Profile → Admin → API). Paste your board IDs comma-separated.",
-              })}
-            </p>
-            <fetcher.Form method="POST">
-              <input type="hidden" name="intent" value="saveMondayConfig" />
-              <div className={styles.fieldRow2}>
-                <div className={styles.field}>
-                  <label className={styles.fieldLabel}>
-                    {t("toneSources.monday.apiKey", { defaultValue: "API key" })}
-                  </label>
-                  <input
-                    className={styles.fieldInput}
-                    type="password"
-                    name="mondayApiKey"
-                    value={mondayApiKeyInput}
-                    onChange={(e) => setMondayApiKeyInput(e.target.value)}
-                    placeholder={
-                      mondayConfigured
-                        ? t("toneSources.monday.apiKeyPlaceholderConfigured", {
-                            defaultValue:
-                              "(stored — leave blank to keep current)",
-                          })
-                        : "eyJ0eX..."
-                    }
-                  />
-                </div>
-                <div className={styles.field}>
-                  <label className={styles.fieldLabel}>
-                    {t("toneSources.monday.boardIds", {
-                      defaultValue: "Board IDs (comma-separated)",
-                    })}
-                  </label>
-                  <input
-                    className={styles.fieldInput}
-                    type="text"
-                    name="mondayBoardIds"
-                    value={mondayBoardIdsInput}
-                    onChange={(e) => setMondayBoardIdsInput(e.target.value)}
-                    placeholder="123456789, 987654321"
-                  />
-                </div>
-              </div>
-              {mondayConfigured ? (
-                <div className={styles.bodyActionsSplit}>
-                  <fetcher.Form method="POST">
-                    <input type="hidden" name="intent" value="clearMondayConfig" />
-                    <s-button type="submit" variant="tertiary" tone="critical">
-                      {t("toneSources.monday.disconnect", {
-                        defaultValue: "Disconnect",
-                      })}
-                    </s-button>
-                  </fetcher.Form>
-                  <div className={styles.bodyActionsRight}>
-                    <fetcher.Form method="POST">
-                      <input type="hidden" name="intent" value="refreshMonday" />
-                      <s-button
-                        type="submit"
-                        variant="secondary"
-                        {...(isRefreshingMonday
-                          ? { loading: true, disabled: true }
-                          : {})}
-                      >
-                        {t("toneSources.actions.refreshNow", {
-                          defaultValue: "Refresh now",
-                        })}
-                      </s-button>
-                    </fetcher.Form>
-                    <s-button
-                      type="submit"
-                      variant="primary"
-                      {...(isSavingMonday ? { loading: true, disabled: true } : {})}
-                    >
-                      {t("toneSources.monday.save", {
-                        defaultValue: "Save Monday.com config",
-                      })}
-                    </s-button>
-                  </div>
-                </div>
-              ) : (
-                <div className={styles.bodyActions}>
-                  <s-button
-                    type="submit"
-                    variant="primary"
-                    {...(isSavingMonday ? { loading: true, disabled: true } : {})}
-                  >
-                    {t("toneSources.monday.save", {
-                      defaultValue: "Save Monday.com config",
-                    })}
-                  </s-button>
-                </div>
-              )}
-            </fetcher.Form>
+            <MondayTabbedFlow
+              phase={mondayPhase}
+              setPhase={setMondayPhase}
+              fetcher={fetcher}
+              mondayConfigured={mondayConfigured}
+              mondayApiKeyInput={mondayApiKeyInput}
+              setMondayApiKeyInput={setMondayApiKeyInput}
+              mondayBoardIdsInput={mondayBoardIdsInput}
+              setMondayBoardIdsInput={setMondayBoardIdsInput}
+              mondaySchema={mondaySchema}
+              mondayRules={mondayRules}
+              setMondayRules={setMondayRules}
+              isSavingMonday={isSavingMonday}
+              isRefreshingMonday={isRefreshingMonday}
+              isFetchingSchema={isFetchingSchema}
+              isSavingFilters={isSavingFilters}
+            />
           </SourceItem>
 
           {/* ───── MANUAL REFERENCES (merged file + URL) ───── */}
@@ -1095,69 +1055,74 @@ export default function ToneSourcesPage() {
                   })
             }
           >
-            <div className={styles.uploadDropzone}>
-              <div className={styles.uploadDropzoneCenter}>
-                <div className={styles.uploadDropzoneTitle}>
-                  {t("toneSources.upload.title", {
-                    defaultValue:
-                      "Add a brandbook, manifesto, or any reference",
-                  })}
-                </div>
-                <div className={styles.uploadDropzoneSub}>
-                  {t("toneSources.upload.sub", {
-                    defaultValue:
-                      "PDF, DOCX, TXT, MD up to 10MB · or paste a URL",
-                  })}
-                </div>
-              </div>
-              <div className={styles.uploadDropzoneRow}>
-                <uploadFetcher.Form
-                  method="POST"
-                  style={{ display: "flex", gap: 8, flex: 1 }}
-                >
-                  <input type="hidden" name="intent" value="addUrl" />
-                  <input
-                    className={styles.uploadDropzoneInput}
-                    type="text"
-                    name="url"
-                    placeholder="https://..."
-                  />
-                  <s-button
-                    type="submit"
-                    variant="secondary"
-                    {...(isFetchingUrl ? { loading: true, disabled: true } : {})}
-                  >
-                    {t("toneSources.upload.fetchUrl", {
-                      defaultValue: "Fetch URL",
-                    })}
-                  </s-button>
-                </uploadFetcher.Form>
-                <span className={styles.uploadDropzoneOr}>
-                  {t("toneSources.upload.or", { defaultValue: "or" })}
-                </span>
-                <uploadFetcher.Form
-                  method="POST"
-                  encType="multipart/form-data"
-                  style={{ display: "flex", gap: 8 }}
-                >
-                  <input type="hidden" name="intent" value="uploadFile" />
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    name="file"
-                    accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
-                    onChange={(e) => {
-                      const input = e.currentTarget;
-                      if (input.files?.length) {
-                        input.form?.requestSubmit();
-                      }
-                    }}
-                    disabled={isUploadingFile}
-                  />
-                </uploadFetcher.Form>
-              </div>
-            </div>
+            {/* Hidden file input — triggered by the Polaris "Choose file"
+                button below. Replaces the native browser file picker so
+                the i18n label stays ours (no "Escolher arquivo" leaks). */}
+            <uploadFetcher.Form
+              method="POST"
+              encType="multipart/form-data"
+              id="manual-upload-form"
+              style={{ display: "none" }}
+            >
+              <input type="hidden" name="intent" value="uploadFile" />
+              <input
+                ref={fileInputRef}
+                type="file"
+                name="file"
+                accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
+                onChange={(e) => {
+                  const input = e.currentTarget;
+                  if (input.files?.length) {
+                    input.form?.requestSubmit();
+                  }
+                }}
+                disabled={isUploadingFile}
+              />
+            </uploadFetcher.Form>
 
+            {/* Upload progress strip — only during a file upload */}
+            {isUploadingFile && (
+              <div className={styles.uploadStrip}>
+                <div className={styles.uploadStripIcon}>
+                  <FileIcon />
+                </div>
+                <div>
+                  <div className={styles.uploadStripName}>
+                    {(uploadFetcher.formData?.get("file") as File | null)
+                      ?.name ??
+                      t("toneSources.upload.uploadingFallbackName", {
+                        defaultValue: "Uploading…",
+                      })}
+                  </div>
+                  <div className={styles.uploadStripStatus}>
+                    {t("toneSources.upload.extractingStatus", {
+                      defaultValue: "Extracting text via Claude…",
+                    })}
+                  </div>
+                  <div className={styles.uploadStripProgress} />
+                </div>
+              </div>
+            )}
+
+            {/* Per-form error banner — only for the upload fetcher */}
+            {uploadFetcher.data &&
+              !uploadFetcher.data.success &&
+              "error" in uploadFetcher.data &&
+              uploadFetcher.data.error && (
+                <div className={styles.errBanner}>
+                  <span aria-hidden="true">⚠</span>
+                  <div>
+                    <strong>
+                      {t("toneSources.upload.failedLabel", {
+                        defaultValue: "Upload rejected.",
+                      })}
+                    </strong>{" "}
+                    {uploadFetcher.data.error}
+                  </div>
+                </div>
+              )}
+
+            {/* Reference list — top of the body when refs exist */}
             {manualReferences.length > 0 && (
               <div className={styles.referenceList}>
                 {manualReferences.map((r) => (
@@ -1210,14 +1175,67 @@ export default function ToneSourcesPage() {
                 ))}
               </div>
             )}
-            {manualSampleCount === 0 && (
-              <p className={styles.bodyHelp} style={{ marginTop: 12 }}>
-                {t("toneSources.manual.emptyHint", {
+
+            {/* Dropzone — visual emphasis when empty, compact when has refs */}
+            <div
+              className={`${styles.dropzone}${manualReferences.length > 0 ? ` ${styles.dropzoneCompact}` : ""}${isUploadingFile ? ` ${styles.dropzoneDisabled}` : ""}`}
+            >
+              {manualReferences.length === 0 && (
+                <div className={styles.dropzoneIcon} aria-hidden="true">
+                  <s-icon type="upload" tone="neutral" />
+                </div>
+              )}
+              <div className={styles.dropzoneTitle}>
+                {manualReferences.length === 0
+                  ? t("toneSources.upload.title", {
+                      defaultValue:
+                        "Drop a brandbook, manifesto, or any reference",
+                    })
+                  : t("toneSources.upload.addAnother", {
+                      defaultValue: "Add another reference",
+                    })}
+              </div>
+              <div className={styles.dropzoneSub}>
+                {t("toneSources.upload.sub", {
                   defaultValue:
-                    "No references yet. Drop a file or paste a URL above to add one.",
+                    "PDF, DOCX, TXT, MD up to 30MB · click below or drag a file here",
                 })}
-              </p>
-            )}
+              </div>
+              <div className={styles.dropzoneButtons}>
+                <s-button
+                  variant={manualReferences.length === 0 ? "primary" : "secondary"}
+                  onClick={() => fileInputRef.current?.click()}
+                  {...(isUploadingFile ? { loading: true, disabled: true } : {})}
+                >
+                  {t("toneSources.upload.chooseFile", {
+                    defaultValue: "Choose file",
+                  })}
+                </s-button>
+              </div>
+            </div>
+
+            {/* URL row — separate sibling intake method */}
+            <uploadFetcher.Form method="POST" className={styles.urlRow}>
+              <input type="hidden" name="intent" value="addUrl" />
+              <input
+                className={styles.urlRowInput}
+                type="text"
+                name="url"
+                placeholder={t("toneSources.upload.urlPlaceholder", {
+                  defaultValue:
+                    "…or paste a URL (https://…) to fetch reference copy from a web page",
+                })}
+              />
+              <s-button
+                type="submit"
+                variant="secondary"
+                {...(isFetchingUrl ? { loading: true, disabled: true } : {})}
+              >
+                {t("toneSources.upload.fetchUrl", {
+                  defaultValue: "Fetch URL",
+                })}
+              </s-button>
+            </uploadFetcher.Form>
           </SourceItem>
         </div>
       </s-section>
@@ -1444,6 +1462,969 @@ function formatDetail(detail: string | null, lastSampledAt: string | null): stri
 function formatSampledRelative(iso: string | null): string {
   const rel = iso ? formatRelative(iso) : null;
   return rel ? `· sampled ${rel}` : "";
+}
+
+/* ============================================================
+ * Meta in-block tabbed flow (parity with Monday filter UI)
+ * 3 tabs: What we sample · Generate token · Paste & connect
+ * ============================================================ */
+type MetaPhase = "what" | "generate" | "paste";
+type MetaFetcher = ReturnType<typeof useFetcher<typeof action>>;
+
+function MetaTabbedFlow({
+  phase,
+  setPhase,
+  fetcher,
+  metaIgInput,
+  setMetaIgInput,
+  metaFbInput,
+  setMetaFbInput,
+  metaTokenInput,
+  setMetaTokenInput,
+  isSavingMeta,
+}: {
+  phase: MetaPhase;
+  setPhase: (p: MetaPhase) => void;
+  fetcher: MetaFetcher;
+  metaIgInput: string;
+  setMetaIgInput: (v: string) => void;
+  metaFbInput: string;
+  setMetaFbInput: (v: string) => void;
+  metaTokenInput: string;
+  setMetaTokenInput: (v: string) => void;
+  isSavingMeta: boolean;
+}) {
+  const { t } = useTranslation("brand-settings");
+  return (
+    <>
+      <div className={styles.phaseTabs}>
+        <button
+          type="button"
+          className={`${styles.phaseTab}${phase === "what" ? ` ${styles.phaseTabActive}` : ` ${styles.phaseTabDone}`}`}
+          onClick={() => setPhase("what")}
+        >
+          {t("toneSources.metaPhases.what", {
+            defaultValue: "A. What we sample",
+          })}
+        </button>
+        <button
+          type="button"
+          className={`${styles.phaseTab}${phase === "generate" ? ` ${styles.phaseTabActive}` : phase === "paste" ? ` ${styles.phaseTabDone}` : ""}`}
+          onClick={() => setPhase("generate")}
+        >
+          {t("toneSources.metaPhases.generate", {
+            defaultValue: "B. Generate token",
+          })}
+        </button>
+        <button
+          type="button"
+          className={`${styles.phaseTab}${phase === "paste" ? ` ${styles.phaseTabActive}` : ""}`}
+          onClick={() => setPhase("paste")}
+        >
+          {t("toneSources.metaPhases.paste", {
+            defaultValue: "C. Paste & connect",
+          })}
+        </button>
+      </div>
+
+      {phase === "what" && (
+        <>
+          <p className={styles.bodyHelp}>
+            {t("toneSources.meta.whatIntro", {
+              defaultValue:
+                "Every Monday we sample your most recent Instagram & Facebook posts (captions plus any text rendered inside images) and pass them to the tone-of-voice inference engine alongside Shopify and Monday.com sources.",
+            })}
+          </p>
+          <div className={styles.metaTrust}>
+            <div className={styles.metaTrustItem}>
+              <span className={styles.metaTrustIcon}>✓</span>
+              {t("toneSources.meta.trust1", {
+                defaultValue:
+                  "Read-only access to posts on the IG/FB accounts you choose.",
+              })}
+            </div>
+            <div className={styles.metaTrustItem}>
+              <span className={styles.metaTrustIcon}>✓</span>
+              {t("toneSources.meta.trust2", {
+                defaultValue:
+                  "Captions and image-text only. No DMs, ads, audience data, or insights.",
+              })}
+            </div>
+            <div className={styles.metaTrustItem}>
+              <span className={styles.metaTrustIcon}>✓</span>
+              {t("toneSources.meta.trust3", {
+                defaultValue:
+                  "You generate the token in Meta Business Suite. We never see your Facebook password.",
+              })}
+            </div>
+            <div className={styles.metaTrustItem}>
+              <span className={styles.metaTrustIcon}>✓</span>
+              {t("toneSources.meta.trust4", {
+                defaultValue:
+                  "Token is encrypted at rest. Disconnect at any time.",
+              })}
+            </div>
+          </div>
+          <p className={styles.bodyHelp} style={{ marginBottom: 0 }}>
+            {t("toneSources.meta.whatOutro", {
+              defaultValue:
+                "The next tab walks you through generating the token in Meta Business Suite — about 2 minutes.",
+            })}
+          </p>
+          <div className={styles.bodyActions}>
+            <s-button variant="primary" onClick={() => setPhase("generate")}>
+              {t("common:button.continue", { defaultValue: "Continue" })}
+            </s-button>
+          </div>
+        </>
+      )}
+
+      {phase === "generate" && (
+        <>
+          <p className={styles.bodyHelp}>
+            {t("toneSources.meta.generateIntro", {
+              defaultValue:
+                "Open Meta Business Suite in a new tab, then follow these 3 steps. We'll wait here while you do.",
+            })}
+          </p>
+          <ol className={styles.metaSteps}>
+            <li>
+              <strong>
+                {t("toneSources.meta.step1Title", {
+                  defaultValue:
+                    "business.facebook.com → Settings → Users → System Users.",
+                })}
+              </strong>
+              <div className={styles.metaStepHint}>
+                {t("toneSources.meta.step1Hint", {
+                  defaultValue:
+                    "Don't have a System User yet? Add → name it 'Omnify tone access' → role Admin.",
+                })}
+              </div>
+            </li>
+            <li>
+              <strong>
+                {t("toneSources.meta.step2Title", {
+                  defaultValue:
+                    "Generate New Token. Choose permissions: pages_read_engagement, instagram_basic, pages_show_list.",
+                })}
+              </strong>
+              <div className={styles.metaStepHint}>
+                {t("toneSources.meta.step2Hint", {
+                  defaultValue:
+                    "Token expiration: select 'Never' for the long-lived flow.",
+                })}
+              </div>
+            </li>
+            <li>
+              <strong>
+                {t("toneSources.meta.step3Title", {
+                  defaultValue:
+                    "Copy the token shown on screen, then come back here.",
+                })}
+              </strong>
+              <div className={styles.metaStepHint}>
+                {t("toneSources.meta.step3Hint", {
+                  defaultValue:
+                    "You'll also need your IG Business ID and/or FB Page ID — both visible in Settings → Accounts.",
+                })}
+              </div>
+            </li>
+          </ol>
+          <div className={styles.bodyActionsSplit}>
+            <s-button variant="tertiary" onClick={() => setPhase("what")}>
+              {t("common:button.back", { defaultValue: "Back" })}
+            </s-button>
+            <s-button variant="primary" onClick={() => setPhase("paste")}>
+              {t("toneSources.meta.haveToken", {
+                defaultValue: "I have my token",
+              })}
+            </s-button>
+          </div>
+        </>
+      )}
+
+      {phase === "paste" && (
+        <fetcher.Form method="POST">
+          <input type="hidden" name="intent" value="saveMetaConfig" />
+          <p className={styles.bodyHelp}>
+            {t("toneSources.meta.pasteIntro", {
+              defaultValue:
+                "Token gets encrypted before being stored. Provide at least one of IG Business ID or FB Page ID.",
+            })}
+          </p>
+          <div className={styles.field}>
+            <label className={styles.fieldLabel}>
+              {t("toneSources.meta.token", {
+                defaultValue: "Long-lived Page Access Token",
+              })}
+            </label>
+            <input
+              className={styles.fieldInput}
+              type="password"
+              name="metaAccessToken"
+              value={metaTokenInput}
+              onChange={(e) => setMetaTokenInput(e.target.value)}
+              placeholder="EAAB..."
+            />
+          </div>
+          <div className={styles.fieldRow2}>
+            <div className={styles.field}>
+              <label className={styles.fieldLabel}>
+                {t("toneSources.meta.igBusinessId", {
+                  defaultValue: "Instagram Business ID",
+                })}
+              </label>
+              <input
+                className={styles.fieldInput}
+                type="text"
+                name="metaIgBusinessId"
+                value={metaIgInput}
+                onChange={(e) => setMetaIgInput(e.target.value)}
+                placeholder="17841400000000000"
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.fieldLabel}>
+                {t("toneSources.meta.fbPageId", {
+                  defaultValue: "Facebook Page ID",
+                })}
+              </label>
+              <input
+                className={styles.fieldInput}
+                type="text"
+                name="metaFbPageId"
+                value={metaFbInput}
+                onChange={(e) => setMetaFbInput(e.target.value)}
+                placeholder="100000000000000"
+              />
+            </div>
+          </div>
+          <div className={styles.bodyActionsSplit}>
+            <s-button
+              type="button"
+              variant="tertiary"
+              onClick={() => setPhase("generate")}
+            >
+              {t("common:button.back", { defaultValue: "Back" })}
+            </s-button>
+            <s-button
+              type="submit"
+              variant="primary"
+              {...(isSavingMeta ? { loading: true, disabled: true } : {})}
+            >
+              {t("toneSources.meta.connectCta", { defaultValue: "Connect" })}
+            </s-button>
+          </div>
+        </fetcher.Form>
+      )}
+    </>
+  );
+}
+
+/* Condensed edit view for already-configured Meta merchants. */
+function MetaEditView({
+  fetcher,
+  metaIgInput,
+  setMetaIgInput,
+  metaFbInput,
+  setMetaFbInput,
+  metaTokenInput,
+  setMetaTokenInput,
+  isSavingMeta,
+  isRefreshingMeta,
+}: {
+  fetcher: MetaFetcher;
+  metaIgInput: string;
+  setMetaIgInput: (v: string) => void;
+  metaFbInput: string;
+  setMetaFbInput: (v: string) => void;
+  metaTokenInput: string;
+  setMetaTokenInput: (v: string) => void;
+  isSavingMeta: boolean;
+  isRefreshingMeta: boolean;
+}) {
+  const { t } = useTranslation("brand-settings");
+  return (
+    <fetcher.Form method="POST">
+      <input type="hidden" name="intent" value="saveMetaConfig" />
+      <p className={styles.bodyHelp}>
+        {t("toneSources.meta.connectedHelp", {
+          defaultValue:
+            "Connected. Token rotates every 60 days — we'll prompt you ahead of expiry.",
+        })}
+      </p>
+      <div className={styles.field}>
+        <label className={styles.fieldLabel}>
+          {t("toneSources.meta.token", {
+            defaultValue: "Long-lived Page Access Token",
+          })}
+        </label>
+        <input
+          className={styles.fieldInput}
+          type="password"
+          name="metaAccessToken"
+          value={metaTokenInput}
+          onChange={(e) => setMetaTokenInput(e.target.value)}
+          placeholder={t("toneSources.meta.tokenPlaceholderConfigured", {
+            defaultValue: "(stored — leave blank to keep current)",
+          })}
+        />
+      </div>
+      <div className={styles.fieldRow2}>
+        <div className={styles.field}>
+          <label className={styles.fieldLabel}>
+            {t("toneSources.meta.igBusinessId", {
+              defaultValue: "Instagram Business ID",
+            })}
+          </label>
+          <input
+            className={styles.fieldInput}
+            type="text"
+            name="metaIgBusinessId"
+            value={metaIgInput}
+            onChange={(e) => setMetaIgInput(e.target.value)}
+            placeholder="17841400000000000"
+          />
+        </div>
+        <div className={styles.field}>
+          <label className={styles.fieldLabel}>
+            {t("toneSources.meta.fbPageId", {
+              defaultValue: "Facebook Page ID",
+            })}
+          </label>
+          <input
+            className={styles.fieldInput}
+            type="text"
+            name="metaFbPageId"
+            value={metaFbInput}
+            onChange={(e) => setMetaFbInput(e.target.value)}
+            placeholder="100000000000000"
+          />
+        </div>
+      </div>
+      <div className={styles.bodyActionsSplit}>
+        <fetcher.Form method="POST">
+          <input type="hidden" name="intent" value="clearMetaConfig" />
+          <s-button type="submit" variant="tertiary" tone="critical">
+            {t("toneSources.meta.disconnect", {
+              defaultValue: "Disconnect",
+            })}
+          </s-button>
+        </fetcher.Form>
+        <div className={styles.bodyActionsRight}>
+          <fetcher.Form method="POST">
+            <input type="hidden" name="intent" value="refreshMeta" />
+            <s-button
+              type="submit"
+              variant="secondary"
+              {...(isRefreshingMeta ? { loading: true, disabled: true } : {})}
+            >
+              {t("toneSources.actions.refreshNow", {
+                defaultValue: "Refresh now",
+              })}
+            </s-button>
+          </fetcher.Form>
+          <s-button
+            type="submit"
+            variant="primary"
+            {...(isSavingMeta ? { loading: true, disabled: true } : {})}
+          >
+            {t("toneSources.meta.save", { defaultValue: "Save changes" })}
+          </s-button>
+        </div>
+      </div>
+    </fetcher.Form>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// Monday filter UI — 4 phases (A: connect, B: choose columns, C: filter
+// rules, D: preview & save). Rules within a column combine with OR;
+// rules across columns combine with AND. Status columns expose discrete
+// values from `settings_str`; the synthetic "_group_" column references
+// board groups.
+// ────────────────────────────────────────────────────────────────────────
+
+type MondayPhase = "connect" | "columns" | "rules" | "preview";
+type MondayFetcher = ReturnType<typeof useFetcher<typeof action>>;
+
+function MondayTabbedFlow({
+  phase,
+  setPhase,
+  fetcher,
+  mondayConfigured,
+  mondayApiKeyInput,
+  setMondayApiKeyInput,
+  mondayBoardIdsInput,
+  setMondayBoardIdsInput,
+  mondaySchema,
+  mondayRules,
+  setMondayRules,
+  isSavingMonday,
+  isRefreshingMonday,
+  isFetchingSchema,
+  isSavingFilters,
+}: {
+  phase: MondayPhase;
+  setPhase: (p: MondayPhase) => void;
+  fetcher: MondayFetcher;
+  mondayConfigured: boolean;
+  mondayApiKeyInput: string;
+  setMondayApiKeyInput: (v: string) => void;
+  mondayBoardIdsInput: string;
+  setMondayBoardIdsInput: (v: string) => void;
+  mondaySchema: MondayBoardSchema[] | null;
+  mondayRules: MondayFilterRule[];
+  setMondayRules: (rules: MondayFilterRule[]) => void;
+  isSavingMonday: boolean;
+  isRefreshingMonday: boolean;
+  isFetchingSchema: boolean;
+  isSavingFilters: boolean;
+}) {
+  const { t } = useTranslation("brand-settings");
+
+  // Build the catalog of filterable columns (status + the synthetic group
+  // sentinel). Each entry exposes the column id, label and allowed values.
+  type FilterableColumn = {
+    id: string;
+    label: string;
+    values: string[];
+    boardName?: string;
+  };
+  const filterableColumns: FilterableColumn[] = [];
+  if (mondaySchema) {
+    const groupTitles = new Set<string>();
+    for (const board of mondaySchema) {
+      for (const g of board.groups) {
+        if (g.title) groupTitles.add(g.title);
+      }
+      for (const c of board.columns) {
+        if (c.filterable) {
+          filterableColumns.push({
+            id: c.id,
+            label: c.title,
+            values: c.values ?? [],
+            boardName: board.name,
+          });
+        }
+      }
+    }
+    if (groupTitles.size > 0) {
+      filterableColumns.unshift({
+        id: "_group_",
+        label: t("toneSources.monday.groupColumnLabel", {
+          defaultValue: "Group (board section)",
+        }),
+        values: Array.from(groupTitles),
+      });
+    }
+  }
+
+  function addRule() {
+    const first = filterableColumns[0];
+    if (!first) return;
+    setMondayRules([
+      ...mondayRules,
+      { column: first.id, op: "is_one_of", values: [] },
+    ]);
+  }
+  function updateRule(idx: number, patch: Partial<MondayFilterRule>) {
+    const next = mondayRules.map((r, i) => (i === idx ? { ...r, ...patch } : r));
+    setMondayRules(next);
+  }
+  function removeRule(idx: number) {
+    setMondayRules(mondayRules.filter((_, i) => i !== idx));
+  }
+  function toggleRuleValue(idx: number, value: string) {
+    const rule = mondayRules[idx];
+    if (!rule) return;
+    const has = rule.values.includes(value);
+    const nextValues = has
+      ? rule.values.filter((v) => v !== value)
+      : [...rule.values, value];
+    updateRule(idx, { values: nextValues });
+  }
+
+  const totalItems = mondaySchema?.reduce((sum, b) => sum + b.itemsCount, 0) ?? 0;
+
+  return (
+    <>
+      <div className={styles.phaseTabs}>
+        <button
+          type="button"
+          className={`${styles.phaseTab}${phase === "connect" ? ` ${styles.phaseTabActive}` : ` ${styles.phaseTabDone}`}`}
+          onClick={() => setPhase("connect")}
+        >
+          {t("toneSources.mondayPhases.connect", {
+            defaultValue: "A. Connect",
+          })}
+        </button>
+        <button
+          type="button"
+          className={`${styles.phaseTab}${phase === "columns" ? ` ${styles.phaseTabActive}` : phase === "rules" || phase === "preview" ? ` ${styles.phaseTabDone}` : ""}`}
+          onClick={() => {
+            if (mondaySchema) setPhase("columns");
+          }}
+          disabled={!mondaySchema}
+        >
+          {t("toneSources.mondayPhases.columns", {
+            defaultValue: "B. Choose columns",
+          })}
+        </button>
+        <button
+          type="button"
+          className={`${styles.phaseTab}${phase === "rules" ? ` ${styles.phaseTabActive}` : phase === "preview" ? ` ${styles.phaseTabDone}` : ""}`}
+          onClick={() => {
+            if (mondaySchema) setPhase("rules");
+          }}
+          disabled={!mondaySchema}
+        >
+          {t("toneSources.mondayPhases.rules", {
+            defaultValue: "C. Filter rules",
+          })}
+        </button>
+        <button
+          type="button"
+          className={`${styles.phaseTab}${phase === "preview" ? ` ${styles.phaseTabActive}` : ""}`}
+          onClick={() => {
+            if (mondaySchema) setPhase("preview");
+          }}
+          disabled={!mondaySchema}
+        >
+          {t("toneSources.mondayPhases.preview", {
+            defaultValue: "D. Preview & save",
+          })}
+        </button>
+      </div>
+
+      {phase === "connect" && (
+        <fetcher.Form method="POST">
+          <input
+            type="hidden"
+            name="intent"
+            value={
+              mondayConfigured ? "fetchMondaySchema" : "saveMondayConfig"
+            }
+          />
+          <p className={styles.bodyHelp}>
+            {t("toneSources.monday.description", {
+              defaultValue:
+                "Generate an API key in Monday.com (Profile → Admin → API). Paste your board IDs comma-separated.",
+            })}
+          </p>
+          <div className={styles.fieldRow2}>
+            <div className={styles.field}>
+              <label className={styles.fieldLabel}>
+                {t("toneSources.monday.apiKey", { defaultValue: "API key" })}
+              </label>
+              <input
+                className={styles.fieldInput}
+                type="password"
+                name="mondayApiKey"
+                value={mondayApiKeyInput}
+                onChange={(e) => setMondayApiKeyInput(e.target.value)}
+                placeholder={
+                  mondayConfigured
+                    ? t("toneSources.monday.apiKeyPlaceholderConfigured", {
+                        defaultValue: "(stored — leave blank to keep current)",
+                      })
+                    : "eyJ0eX..."
+                }
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.fieldLabel}>
+                {t("toneSources.monday.boardIds", {
+                  defaultValue: "Board IDs (comma-separated)",
+                })}
+              </label>
+              <input
+                className={styles.fieldInput}
+                type="text"
+                name="mondayBoardIds"
+                value={mondayBoardIdsInput}
+                onChange={(e) => setMondayBoardIdsInput(e.target.value)}
+                placeholder="123456789, 987654321"
+              />
+            </div>
+          </div>
+          <div className={styles.bodyActions}>
+            {mondayConfigured && (
+              <fetcher.Form method="POST">
+                <input
+                  type="hidden"
+                  name="intent"
+                  value="clearMondayConfig"
+                />
+                <s-button type="submit" variant="tertiary" tone="critical">
+                  {t("toneSources.monday.disconnect", {
+                    defaultValue: "Disconnect",
+                  })}
+                </s-button>
+              </fetcher.Form>
+            )}
+            <s-button
+              type="submit"
+              variant="primary"
+              {...(isSavingMonday || isFetchingSchema
+                ? { loading: true, disabled: true }
+                : {})}
+            >
+              {mondayConfigured
+                ? t("toneSources.monday.fetchSchema", {
+                    defaultValue: "Fetch schema",
+                  })
+                : t("toneSources.monday.connectCta", {
+                    defaultValue: "Connect",
+                  })}
+            </s-button>
+          </div>
+        </fetcher.Form>
+      )}
+
+      {phase === "columns" && mondaySchema && (
+        <>
+          <p className={styles.bodyHelp}>
+            {t("toneSources.monday.columnsIntro", {
+              defaultValue:
+                "We found these columns on your boards. Status columns expose discrete values you can filter on. Text columns are always included as content sources.",
+            })}
+          </p>
+
+          <div className={styles.boardSummary}>
+            {mondaySchema.map((b) => (
+              <div className={styles.boardSummaryRow} key={b.id}>
+                <div className={styles.boardName}>{b.name}</div>
+                <span className={styles.boardCount}>
+                  {t("toneSources.monday.boardStat", {
+                    items: b.itemsCount,
+                    columns: b.columns.length,
+                    groups: b.groups.length,
+                    defaultValue: `${b.itemsCount} items · ${b.columns.length} columns · ${b.groups.length} groups`,
+                  })}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.columnList}>
+            {filterableColumns.length === 0 && (
+              <div className={styles.columnRow}>
+                <span />
+                <div className={styles.columnLeft}>
+                  <div className={styles.columnName}>
+                    {t("toneSources.monday.noFilterableColumns", {
+                      defaultValue:
+                        "No filterable columns (status / group) found.",
+                    })}
+                  </div>
+                  <div className={styles.columnType}>
+                    {t("toneSources.monday.noFilterableHint", {
+                      defaultValue:
+                        "Sampling will include every item from these boards.",
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+            {filterableColumns.map((col) => (
+              <div
+                className={`${styles.columnRow} ${styles.columnRowIncluded}`}
+                key={col.id}
+              >
+                <span className={styles.chip + " " + styles.chipSuccess}>
+                  ✓
+                </span>
+                <div className={styles.columnLeft}>
+                  <div className={styles.columnName}>{col.label}</div>
+                  <div className={styles.columnType}>
+                    {col.id === "_group_"
+                      ? t("toneSources.monday.builtInGroupHint", {
+                          values: col.values.join(", "),
+                          defaultValue: `built-in · values: ${col.values.join(", ")}`,
+                        })
+                      : t("toneSources.monday.statusColumnHint", {
+                          values: col.values.join(", "),
+                          defaultValue: `status · values: ${col.values.join(", ")}`,
+                        })}
+                  </div>
+                </div>
+                <span className={styles.chip}>
+                  {t("toneSources.monday.filterableChip", {
+                    defaultValue: "filterable",
+                  })}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.bodyActionsSplit}>
+            <s-button variant="tertiary" onClick={() => setPhase("connect")}>
+              {t("common:button.back", { defaultValue: "Back" })}
+            </s-button>
+            <div className={styles.bodyActionsRight}>
+              <s-button
+                variant="secondary"
+                onClick={() => {
+                  setMondayRules([]);
+                  setPhase("preview");
+                }}
+              >
+                {t("toneSources.monday.skipFiltering", {
+                  defaultValue: "Skip filtering",
+                })}
+              </s-button>
+              <s-button
+                variant="primary"
+                onClick={() => setPhase("rules")}
+                {...(filterableColumns.length === 0
+                  ? { disabled: true }
+                  : {})}
+              >
+                {t("common:button.continue", { defaultValue: "Continue" })}
+              </s-button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {phase === "rules" && mondaySchema && (
+        <>
+          <p className={styles.bodyHelp}>
+            {t("toneSources.monday.rulesIntro", {
+              defaultValue:
+                "Multiple values inside one rule combine with OR. Multiple rules combine with AND.",
+            })}
+          </p>
+
+          <div className={styles.filterRuleList}>
+            {mondayRules.length === 0 && (
+              <div className={styles.bodyHelp}>
+                {t("toneSources.monday.noRulesYet", {
+                  defaultValue:
+                    "No rules yet — add one to filter which items get sampled.",
+                })}
+              </div>
+            )}
+            {mondayRules.map((rule, idx) => {
+              const col = filterableColumns.find((c) => c.id === rule.column);
+              const isNeg = rule.op === "is_not_one_of";
+              return (
+                <div className={styles.filterRuleRow} key={idx}>
+                  <select
+                    className={styles.filterRuleSelect}
+                    value={rule.column}
+                    onChange={(e) =>
+                      updateRule(idx, { column: e.currentTarget.value, values: [] })
+                    }
+                  >
+                    {filterableColumns.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    className={styles.filterRuleSelect}
+                    value={rule.op}
+                    onChange={(e) =>
+                      updateRule(idx, {
+                        op: e.currentTarget.value as MondayFilterRule["op"],
+                      })
+                    }
+                  >
+                    <option value="is_one_of">
+                      {t("toneSources.monday.opIsOneOf", {
+                        defaultValue: "is one of",
+                      })}
+                    </option>
+                    <option value="is_not_one_of">
+                      {t("toneSources.monday.opIsNotOneOf", {
+                        defaultValue: "is not one of",
+                      })}
+                    </option>
+                    <option value="is_empty">
+                      {t("toneSources.monday.opIsEmpty", {
+                        defaultValue: "is empty",
+                      })}
+                    </option>
+                  </select>
+                  <div className={styles.filterRuleValues}>
+                    {rule.op === "is_empty" ? (
+                      <span className={styles.chip + " " + styles.chipMuted}>
+                        {t("toneSources.monday.noValuesNeeded", {
+                          defaultValue: "(no values needed)",
+                        })}
+                      </span>
+                    ) : col && col.values.length > 0 ? (
+                      col.values.map((v) => {
+                        const active = rule.values.includes(v);
+                        const chipClass = active
+                          ? `${styles.filterValueChip} ${styles.filterValueChipActive}${isNeg ? ` ${styles.filterValueChipNegative}` : ""}`
+                          : styles.filterValueChip;
+                        return (
+                          <span
+                            className={chipClass}
+                            key={v}
+                            onClick={() => toggleRuleValue(idx, v)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                toggleRuleValue(idx, v);
+                              }
+                            }}
+                            role="button"
+                            tabIndex={0}
+                          >
+                            {v}
+                          </span>
+                        );
+                      })
+                    ) : (
+                      <span className={styles.chip + " " + styles.chipMuted}>
+                        {t("toneSources.monday.noValuesAvailable", {
+                          defaultValue: "(no values available)",
+                        })}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.iconBtn}
+                    onClick={() => removeRule(idx)}
+                    aria-label={t("toneSources.monday.removeRule", {
+                      defaultValue: "Remove rule",
+                    })}
+                  >
+                    <svg
+                      viewBox="0 0 16 16"
+                      width="12"
+                      height="12"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path d="M3 4h10v1H3V4zm1 2h8l-.5 8a1 1 0 0 1-1 .9H5.5a1 1 0 0 1-1-.9L4 6zm2-3h4l.5 1H5.5l.5-1z" />
+                    </svg>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className={styles.filterAddRow}>
+            <s-button
+              variant="secondary"
+              onClick={addRule}
+              {...(filterableColumns.length === 0 ? { disabled: true } : {})}
+            >
+              {t("toneSources.monday.addRule", {
+                defaultValue: "Add another rule",
+              })}
+            </s-button>
+          </div>
+
+          <div className={styles.bodyActionsSplit}>
+            <s-button variant="tertiary" onClick={() => setPhase("columns")}>
+              {t("common:button.back", { defaultValue: "Back" })}
+            </s-button>
+            <s-button variant="primary" onClick={() => setPhase("preview")}>
+              {t("toneSources.monday.previewCta", {
+                defaultValue: "Preview",
+              })}
+            </s-button>
+          </div>
+        </>
+      )}
+
+      {phase === "preview" && (
+        <fetcher.Form method="POST">
+          <input type="hidden" name="intent" value="saveMondayFilters" />
+          <input
+            type="hidden"
+            name="mondayFiltersJson"
+            value={JSON.stringify(mondayRules)}
+          />
+
+          <div className={styles.previewBlock}>
+            <div className={styles.previewSummary}>
+              {mondayRules.length === 0
+                ? t("toneSources.monday.previewNoRules", {
+                    items: totalItems,
+                    defaultValue: `No filters — sampling all ${totalItems} items.`,
+                  })
+                : t("toneSources.monday.previewRuleCount", {
+                    count: mondayRules.length,
+                    defaultValue: `${mondayRules.length} filter rule${mondayRules.length === 1 ? "" : "s"} — items must satisfy every rule.`,
+                  })}
+            </div>
+            {mondayRules.map((rule, idx) => {
+              const col = filterableColumns.find((c) => c.id === rule.column);
+              return (
+                <div className={styles.previewRuleLine} key={idx}>
+                  <code>
+                    <strong>{col?.label ?? rule.column}</strong>{" "}
+                    {rule.op === "is_one_of"
+                      ? t("toneSources.monday.opIsOneOf", {
+                          defaultValue: "is one of",
+                        })
+                      : rule.op === "is_not_one_of"
+                        ? t("toneSources.monday.opIsNotOneOf", {
+                            defaultValue: "is not one of",
+                          })
+                        : t("toneSources.monday.opIsEmpty", {
+                            defaultValue: "is empty",
+                          })}{" "}
+                    {rule.op !== "is_empty" && rule.values.join(", ")}
+                  </code>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className={styles.bodyActionsSplit}>
+            <s-button
+              type="button"
+              variant="tertiary"
+              onClick={() => setPhase("rules")}
+            >
+              {t("toneSources.monday.editRules", {
+                defaultValue: "Edit rules",
+              })}
+            </s-button>
+            <div className={styles.bodyActionsRight}>
+              <s-button
+                type="submit"
+                variant="secondary"
+                {...(isSavingFilters ? { loading: true, disabled: true } : {})}
+              >
+                {t("toneSources.monday.saveFilters", {
+                  defaultValue: "Save filters",
+                })}
+              </s-button>
+              <fetcher.Form
+                method="POST"
+                style={{ display: "inline-flex" }}
+              >
+                <input type="hidden" name="intent" value="refreshMonday" />
+                <s-button
+                  type="submit"
+                  variant="primary"
+                  {...(isRefreshingMonday
+                    ? { loading: true, disabled: true }
+                    : {})}
+                >
+                  {t("toneSources.monday.saveAndRefresh", {
+                    defaultValue: "Refresh now",
+                  })}
+                </s-button>
+              </fetcher.Form>
+            </div>
+          </div>
+        </fetcher.Form>
+      )}
+    </>
+  );
 }
 
 export const headers: HeadersFunction = (headersArgs) =>

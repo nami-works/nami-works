@@ -232,51 +232,469 @@
   gap: 8px;
 }
 
-/* Manual references body */
-.uploadDropzone {
-  padding: 16px;
-  border: 1px dashed #e1e3e5;
-  border-radius: 8px;
-  background: #fafafa;
-  margin-bottom: 12px;
-}
+/* Manual references body — reframe (mockup
+   inputs/mockups/storytelling-manual-references-v1.html) */
 
-.uploadDropzoneCenter {
+.dropzone {
+  position: relative;
+  padding: 28px 20px;
+  border: 1px dashed #b8bcc0;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #fbfbfc 0%, #f4f5f6 100%);
   text-align: center;
+  transition: all 0.15s ease;
+  margin-bottom: 14px;
 }
 
-.uploadDropzoneTitle {
-  font-size: 13px;
-  font-weight: 500;
+.dropzone:hover {
+  border-color: #005bd3;
+  background: #f1f8ff;
+}
+
+.dropzoneCompact { padding: 18px 16px; }
+
+.dropzoneDisabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.dropzoneIcon {
+  font-size: 24px;
+  color: #6d7175;
+  margin-bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropzoneTitle {
+  font-size: 14px;
+  font-weight: 600;
   margin-bottom: 4px;
+  color: #303030;
 }
 
-.uploadDropzoneSub {
+.dropzoneSub {
   font-size: 12px;
   color: #6d7175;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
-.uploadDropzoneRow {
+.dropzoneButtons {
   display: flex;
   gap: 8px;
-  align-items: center;
-  max-width: 600px;
-  margin: 0 auto;
+  justify-content: center;
 }
 
-.uploadDropzoneInput {
+.urlRow {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  margin-bottom: 14px;
+}
+
+.urlRowInput {
   flex: 1;
-  padding: 7px 10px;
+  padding: 8px 12px;
   border: 1px solid #e1e3e5;
   border-radius: 6px;
   font-size: 13px;
   font-family: inherit;
+  background: white;
 }
 
-.uploadDropzoneOr {
-  color: #6d7175;
+.uploadStrip {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  border: 1px solid #005bd3;
+  border-radius: 6px;
+  background: #f1f8ff;
+  margin-bottom: 12px;
+}
+
+.uploadStripIcon {
+  color: #005bd3;
+  padding-top: 2px;
+}
+
+.uploadStripName {
   font-size: 12px;
+  color: #303030;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.uploadStripStatus {
+  font-size: 11px;
+  color: #005bd3;
+  margin-top: 2px;
+}
+
+.uploadStripProgress {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(0, 91, 211, 0.18);
+  overflow: hidden;
+  position: relative;
+  margin-top: 6px;
+}
+
+.uploadStripProgress::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 30%;
+  background: #005bd3;
+  border-radius: 2px;
+  animation: uploadProgressSweep 1.6s ease-in-out infinite;
+}
+
+@keyframes uploadProgressSweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+
+.errBanner {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  border: 1px solid #f6c6c1;
+  border-radius: 6px;
+  background: #fbeae5;
+  color: #842029;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.errBanner strong { color: #842029; }
+
+/* ============================================================
+   Phase tabs — shared by Meta and Monday in-block flows
+   (mockups: storytelling-meta-onboarding-v1 + storytelling-monday-filters-v1)
+   ============================================================ */
+.phaseTabs {
+  display: flex;
+  border-bottom: 1px solid #ebebeb;
+  margin: 0 0 14px;
+  gap: 7px;
+}
+
+.phaseTab {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  border-bottom: 2px solid transparent;
+  color: #6d7175;
+  font-weight: 400;
+  font-size: 13px;
+  cursor: pointer;
+  margin-bottom: -1px;
+  font-family: inherit;
+}
+
+.phaseTab:hover {
+  color: #303030;
+}
+
+.phaseTabActive {
+  color: #303030;
+  font-weight: 500;
+  border-bottom-color: #303030;
+}
+
+.phaseTabDone {
+  color: #067647;
+}
+
+.phaseTabDone::before {
+  content: "✓ ";
+}
+
+/* Meta-specific (trust strip + numbered steps for Generate-token tab) */
+.metaTrust {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f1f8ff;
+  border: 1px solid #c0d6f3;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+.metaTrustItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: #1a3d6e;
+  line-height: 1.5;
+}
+
+.metaTrustIcon {
+  flex: 0 0 14px;
+  color: #067647;
+  font-weight: 700;
+}
+
+.metaSteps {
+  margin: 0 0 16px;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.metaSteps li {
+  font-size: 13px;
+  color: #303030;
+  line-height: 1.5;
+}
+
+.metaSteps strong {
+  font-weight: 500;
+}
+
+.metaStepHint {
+  font-size: 11px;
+  color: #6d7175;
+  margin-top: 4px;
+}
+
+/* ── Monday phased flow (Phase B/C/D) ─────────────────────── */
+
+.boardSummary {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  background: white;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.boardSummaryRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #ebebeb;
+  font-size: 12px;
+}
+
+.boardSummaryRow:last-child {
+  border-bottom: none;
+}
+
+.boardName {
+  flex: 1;
+  color: #303030;
+  font-weight: 500;
+}
+
+.boardCount {
+  color: #6d7175;
+  font-size: 11px;
+}
+
+.columnList {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.columnRow {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #ebebeb;
+  background: white;
+}
+
+.columnRow:last-child {
+  border-bottom: none;
+}
+
+.columnRowIncluded {
+  background: #f0f7ff;
+}
+
+.columnRowDisabled {
+  background: #f6f6f7;
+  color: #6d7175;
+}
+
+.columnLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.columnName {
+  font-size: 13px;
+  font-weight: 500;
+  color: #303030;
+}
+
+.columnType {
+  font-size: 11px;
+  color: #6d7175;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #e4e5e7;
+  color: #303030;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.chipSuccess {
+  background: #d4f4dd;
+  color: #0a6c39;
+}
+
+.chipDanger {
+  background: #fde2e0;
+  color: #8a1f15;
+}
+
+.chipMuted {
+  background: #f1f1f1;
+  color: #6d7175;
+}
+
+.filterRuleList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filterRuleRow {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(120px, 0.7fr) 2fr auto;
+  align-items: start;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  background: white;
+}
+
+.filterRuleSelect {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #c9cccf;
+  border-radius: 6px;
+  background: white;
+  font-size: 12px;
+}
+
+.filterRuleValues {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.filterValueChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: #e4e5e7;
+  color: #303030;
+  font-size: 11px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  user-select: none;
+}
+
+.filterValueChip:hover {
+  background: #d9dbde;
+}
+
+.filterValueChipActive {
+  background: #d4f4dd;
+  color: #0a6c39;
+  border-color: #2c8a55;
+}
+
+.filterValueChipActive.filterValueChipNegative {
+  background: #fde2e0;
+  color: #8a1f15;
+  border-color: #c3372a;
+}
+
+.iconBtn {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px;
+  color: #6d7175;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconBtn:hover {
+  color: #d72c0d;
+  background: #fde2e0;
+}
+
+.filterAddRow {
+  margin-bottom: 12px;
+}
+
+.previewBlock {
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  background: #f6f6f7;
+  padding: 12px;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.previewBlock code {
+  background: white;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 11px;
+  color: #303030;
+}
+
+.previewSummary {
+  font-weight: 600;
+  color: #303030;
+  margin-bottom: 6px;
+}
+
+.previewRuleLine {
+  color: #4a4a4a;
+  margin-bottom: 2px;
 }
 
 .referenceList {

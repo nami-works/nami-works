@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Storytelling Meta IG/FB onboarding (in-block tabbed)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --grid: #ebebeb;
+    --text: #303030;
+    --subdued: #6d7175;
+    --blue-primary: #005bd3;
+    --blue-bg: #f1f8ff;
+    --green: #067647;
+    --green-bg: #e6f4ec;
+    --red: #d72c0d;
+    --red-bg: #fbeae5;
+    --yellow: #d99a0a;
+    --yellow-bg: #fff5d9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 8px; }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 880px;
+    margin-bottom: 24px;
+  }
+  .sectionTitle {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--subdued);
+    margin: 32px 0 12px;
+  }
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 880px;
+    margin-bottom: 24px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; color: #4a3600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 4px; }
+
+  /* Source row body (accordion already approved — this is the EXPANDED body) */
+  .sourceWrapper {
+    border: 1px solid #c9d4e0;
+    border-radius: 8px;
+    background: var(--card);
+    max-width: 880px;
+    margin-bottom: 32px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+  .sourceHeader {
+    display: grid;
+    grid-template-columns: 36px 1fr auto 24px;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #fafbfc;
+    border-bottom: 1px solid var(--grid);
+  }
+  .sourceIcon {
+    width: 32px; height: 32px;
+    border-radius: 7px;
+    background: #fff;
+    border: 1px solid #ececec;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  /* Meta logo placeholder — in production this maps to <MetaLogo basePath={...} size={20} />
+     which renders /meta-logo.png. The mockup uses an inline SVG fallback so the file
+     renders standalone without a server. */
+  .metaLogoFauxImg {
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    color: #0866FF;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: -0.5px;
+    font-family: "Inter", sans-serif;
+  }
+  .sourceMeta { display: flex; flex-direction: column; gap: 2px; }
+  .sourceName { font-weight: 600; font-size: 13px; }
+  .sourceDetail { font-size: 12px; color: var(--subdued); }
+  .sourceStatus {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--green);
+    white-space: nowrap;
+  }
+  .sourceStatusDot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+  .sourceStatus.idle { color: var(--subdued); }
+  .sourceStatus.idle .sourceStatusDot { background: #c9cccf; }
+  .chevron {
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--subdued);
+    transform: rotate(180deg);
+  }
+  .sourceBody { padding: 16px 18px 18px; }
+
+  .bodyHelp {
+    font-size: 12px;
+    color: var(--subdued);
+    margin: 0 0 14px;
+    line-height: 1.55;
+  }
+  .bodyHelp code {
+    background: #eceeef;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+
+  /* Phased tabbed flow (mirrors Monday mockup for parity) */
+  .phaseTabs {
+    display: flex;
+    border-bottom: 1px solid var(--grid);
+    margin: 0 0 14px;
+  }
+  .phaseTab {
+    padding: 8px 16px;
+    border-bottom: 2px solid transparent;
+    color: var(--subdued);
+    font-weight: 400;
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: -1px;
+  }
+  .phaseTabActive {
+    color: var(--text);
+    font-weight: 500;
+    border-bottom-color: var(--text);
+  }
+  .phaseTabDone { color: var(--green); }
+  .phaseTabDone::before { content: "✓ "; }
+
+  /* Trust strip — kept from screen 1 */
+  .trustStrip {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--blue-bg);
+    border: 1px solid #c0d6f3;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+  }
+  .trustItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12px;
+    color: #1a3d6e;
+  }
+  .trustIcon {
+    flex: 0 0 14px;
+    color: var(--green);
+    font-weight: 700;
+  }
+
+  /* Numbered steps */
+  .stepList {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .stepItem {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .stepNumber {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--blue-bg);
+    color: var(--blue-primary);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stepCopy {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .stepCopy code {
+    background: #eceeef;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+  .stepHint {
+    font-size: 11px;
+    color: var(--subdued);
+    margin-top: 4px;
+  }
+  .stepLink {
+    color: var(--blue-primary);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* Faux Meta screenshot for step 3 */
+  .fauxScreenshot {
+    background: linear-gradient(135deg, #efeff0 0%, #e3e4e6 100%);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 10px;
+    font-family: ui-monospace, monospace;
+    color: var(--subdued);
+    line-height: 1.4;
+    margin-top: 6px;
+  }
+  .fauxScreenshot strong { color: var(--text); }
+
+  /* Form fields */
+  .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+  .fieldLabel {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .fieldInput {
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    background: white;
+    color: var(--text);
+  }
+  .fieldRow2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .fieldRow2 .field { margin-bottom: 0; }
+  .fieldHelp {
+    font-size: 11px;
+    color: var(--subdued);
+    margin-top: 4px;
+  }
+
+  /* Action footer rows */
+  .bodyActions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 6px;
+    padding-top: 12px;
+    border-top: 1px solid var(--grid);
+  }
+  .bodyActionsSplit {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+    padding-top: 12px;
+    border-top: 1px solid var(--grid);
+  }
+  .bodyActionsRight { display: flex; gap: 8px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text);
+  }
+  .btnPrimary {
+    background: var(--blue-primary);
+    color: white;
+    border-color: var(--blue-primary);
+  }
+  .btnTertiary { background: transparent; border-color: transparent; color: var(--subdued); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* chips for connected state summary */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    background: #ececec;
+    color: var(--text);
+    margin-right: 4px;
+  }
+  .chip.success { background: var(--green-bg); color: var(--green); }
+  .chip.warn { background: var(--yellow-bg); color: var(--yellow); }
+
+  /* state matrix */
+  .matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    max-width: 880px;
+  }
+  .matrix th, .matrix td {
+    border: 1px solid var(--border);
+    padding: 6px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .matrix th {
+    background: #fafbfc;
+    font-weight: 600;
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+
+<h1>Meta IG/FB onboarding — mockup v1 (in-block tabbed)</h1>
+<p class="intro">
+  Iterated to use the <strong>same in-block tabbed flow as the Monday.com source row</strong> — for parity across all configurable integrations. The Meta row's accordion body holds 3 phase tabs (A: What we sample · B: Generate token · C: Paste &amp; connect) plus an Edit view for already-configured merchants. No modal. Brand mark uses the existing <code>MetaLogo</code> component (the single Meta corporate wordmark) instead of re-rendering the IG + FB glyphs from the row list.
+</p>
+
+<div class="notes">
+  <h3>What this iteration changes (vs. earlier modal version)</h3>
+  <ul>
+    <li><strong>Modal removed</strong> — the 3 screens become 3 tabs inside the accordion body. Same content, no overlay, parity with Monday.com.</li>
+    <li><strong>Brand mark</strong> uses the existing <code>MetaLogo</code> component (the Meta wordmark already shipped in <code>app/components/brand-icons.tsx</code>). The duplicated inline IG + FB glyphs are gone.</li>
+    <li><strong>Tab structure mirrors Monday's</strong>: phaseTabs row with active / done / pending states. ✓-prefix on done tabs.</li>
+    <li><strong>Trust strip</strong> moves from Screen 1 into Tab A's body. Still calms fear before the merchant invests time on Meta's side.</li>
+    <li><strong>Edit view</strong>: condensed single-section under the accordion body — same shape as Monday's edit view.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ TAB A — WHAT WE SAMPLE -->
+
+<div class="sectionTitle">Tab A · What we sample (fresh-connect default tab)</div>
+
+<div class="sourceWrapper">
+  <div class="sourceHeader">
+    <div class="sourceIcon">
+      <div class="metaLogoFauxImg">Meta</div>
+    </div>
+    <div class="sourceMeta">
+      <div class="sourceName">Instagram &amp; Facebook</div>
+      <div class="sourceDetail">Connect to pull captions + image text via Meta Graph API.</div>
+    </div>
+    <span class="sourceStatus idle"><span class="sourceStatusDot"></span>Not configured</span>
+    <div class="chevron">↑</div>
+  </div>
+  <div class="sourceBody">
+    <div class="phaseTabs">
+      <div class="phaseTab phaseTabActive">A. What we sample</div>
+      <div class="phaseTab">B. Generate token</div>
+      <div class="phaseTab">C. Paste &amp; connect</div>
+    </div>
+
+    <p class="bodyHelp">
+      Every Monday we sample your most recent Instagram &amp; Facebook posts (captions plus any text rendered inside images) and pass them to the tone-of-voice inference engine alongside Shopify and Monday.com sources.
+    </p>
+
+    <div class="trustStrip">
+      <div class="trustItem"><span class="trustIcon">✓</span> Read-only access to posts on the IG/FB accounts you choose.</div>
+      <div class="trustItem"><span class="trustIcon">✓</span> Captions and image-text only. No DMs, ads, audience data, or insights.</div>
+      <div class="trustItem"><span class="trustIcon">✓</span> You generate the token in Meta Business Suite. We never see your Facebook password.</div>
+      <div class="trustItem"><span class="trustIcon">✓</span> Token is encrypted at rest. Disconnect at any time.</div>
+    </div>
+
+    <p class="bodyHelp" style="margin-bottom: 0;">
+      The next tab walks you through generating the token in Meta Business Suite — about 2 minutes.
+    </p>
+
+    <div class="bodyActions">
+      <button class="btn btnPrimary">Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ TAB B — GENERATE TOKEN -->
+
+<div class="sectionTitle">Tab B · Where to generate the token (numbered steps with hints)</div>
+
+<div class="sourceWrapper">
+  <div class="sourceHeader">
+    <div class="sourceIcon">
+      <div class="metaLogoFauxImg">Meta</div>
+    </div>
+    <div class="sourceMeta">
+      <div class="sourceName">Instagram &amp; Facebook</div>
+      <div class="sourceDetail">Connect to pull captions + image text via Meta Graph API.</div>
+    </div>
+    <span class="sourceStatus idle"><span class="sourceStatusDot"></span>Not configured</span>
+    <div class="chevron">↑</div>
+  </div>
+  <div class="sourceBody">
+    <div class="phaseTabs">
+      <div class="phaseTab phaseTabDone">What we sample</div>
+      <div class="phaseTab phaseTabActive">B. Generate token</div>
+      <div class="phaseTab">C. Paste &amp; connect</div>
+    </div>
+
+    <p class="bodyHelp">
+      Open Meta Business Suite in a new tab, then follow these 3 steps. We'll wait here while you do.
+    </p>
+
+    <div class="stepList">
+      <div class="stepItem">
+        <div class="stepNumber">1</div>
+        <div>
+          <div class="stepCopy">
+            In <a href="https://business.facebook.com" class="stepLink" target="_blank">business.facebook.com</a> → <strong>Settings</strong> → <strong>Users</strong> → <strong>System Users</strong>.
+          </div>
+          <div class="stepHint">Don't have a System User yet? Click <strong>Add</strong>, name it "Omnify tone access", role <strong>Admin</strong>.</div>
+        </div>
+      </div>
+
+      <div class="stepItem">
+        <div class="stepNumber">2</div>
+        <div>
+          <div class="stepCopy">
+            Click <strong>Generate New Token</strong>. Select your IG/FB asset, choose permissions:
+            <code>pages_read_engagement</code>, <code>instagram_basic</code>, <code>pages_show_list</code>.
+          </div>
+          <div class="stepHint">Token expiration: select <strong>Never</strong> for the long-lived flow.</div>
+        </div>
+      </div>
+
+      <div class="stepItem">
+        <div class="stepNumber">3</div>
+        <div>
+          <div class="stepCopy">
+            Copy the token shown on the screen. Then come back here.
+          </div>
+          <div class="fauxScreenshot">
+            ┌──────────────────────────────────────────────┐<br/>
+            │ <strong>Token generated</strong>                          │<br/>
+            │ <strong>EAAB...</strong>                                  │<br/>
+            │ [📋 Copy] [Close]                            │<br/>
+            └──────────────────────────────────────────────┘
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="bodyHelp" style="margin-bottom: 0;">
+      You'll also need your <strong>Instagram Business ID</strong> and/or <strong>Facebook Page ID</strong>, both visible in <strong>Settings → Accounts</strong>.
+    </p>
+
+    <div class="bodyActionsSplit">
+      <button class="btn btnTertiary">Back</button>
+      <button class="btn btnPrimary">I have my token</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ TAB C — PASTE & CONNECT -->
+
+<div class="sectionTitle">Tab C · Paste &amp; connect</div>
+
+<div class="sourceWrapper">
+  <div class="sourceHeader">
+    <div class="sourceIcon">
+      <div class="metaLogoFauxImg">Meta</div>
+    </div>
+    <div class="sourceMeta">
+      <div class="sourceName">Instagram &amp; Facebook</div>
+      <div class="sourceDetail">Connect to pull captions + image text via Meta Graph API.</div>
+    </div>
+    <span class="sourceStatus idle"><span class="sourceStatusDot"></span>Not configured</span>
+    <div class="chevron">↑</div>
+  </div>
+  <div class="sourceBody">
+    <div class="phaseTabs">
+      <div class="phaseTab phaseTabDone">What we sample</div>
+      <div class="phaseTab phaseTabDone">Generate token</div>
+      <div class="phaseTab phaseTabActive">C. Paste &amp; connect</div>
+    </div>
+
+    <p class="bodyHelp">
+      Token gets encrypted before being stored. Provide at least one of IG Business ID or FB Page ID.
+    </p>
+
+    <div class="field">
+      <label class="fieldLabel">Long-lived Page Access Token *</label>
+      <input class="fieldInput" type="password" placeholder="EAAB..." />
+      <span class="fieldHelp">Starts with <code>EAA</code> · pasted from Meta Business Suite</span>
+    </div>
+
+    <div class="fieldRow2">
+      <div class="field">
+        <label class="fieldLabel">Instagram Business ID</label>
+        <input class="fieldInput" type="text" placeholder="17841400000000000" />
+      </div>
+      <div class="field">
+        <label class="fieldLabel">Facebook Page ID</label>
+        <input class="fieldInput" type="text" placeholder="100000000000000" />
+      </div>
+    </div>
+
+    <p class="bodyHelp" style="font-size: 11px; margin-bottom: 0;">
+      At least one ID is required. Both can be set if you want IG and FB sampled together.
+    </p>
+
+    <div class="bodyActionsSplit">
+      <button class="btn btnTertiary">Back</button>
+      <button class="btn btnPrimary">Connect</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ EDIT VIEW (re-entry) -->
+
+<div class="sectionTitle">Edit view · already-configured merchants get this condensed body</div>
+
+<div class="sourceWrapper">
+  <div class="sourceHeader">
+    <div class="sourceIcon">
+      <div class="metaLogoFauxImg">Meta</div>
+    </div>
+    <div class="sourceMeta">
+      <div class="sourceName">Instagram &amp; Facebook</div>
+      <div class="sourceDetail">@gebeauty_oficial · 50 posts (captions + image OCR) · sampled 14h ago</div>
+    </div>
+    <span class="sourceStatus"><span class="sourceStatusDot"></span>Connected</span>
+    <div class="chevron">↑</div>
+  </div>
+  <div class="sourceBody">
+    <p class="bodyHelp">
+      Connected. Token rotates every 60 days — we'll prompt you to refresh ahead of expiry.
+    </p>
+
+    <div style="margin-bottom: 14px;">
+      <span class="chip success">IG Business · 17841423297702015</span>
+      <span class="chip" style="background: #f5f5f5;">FB Page · not set</span>
+    </div>
+
+    <div class="field">
+      <label class="fieldLabel">Long-lived Page Access Token</label>
+      <input class="fieldInput" type="password" placeholder="(stored — leave blank to keep current)" />
+      <span class="fieldHelp">Replace only if you've regenerated the token in Meta Business Suite.</span>
+    </div>
+
+    <div class="fieldRow2">
+      <div class="field">
+        <label class="fieldLabel">Instagram Business ID</label>
+        <input class="fieldInput" type="text" value="17841423297702015" />
+      </div>
+      <div class="field">
+        <label class="fieldLabel">Facebook Page ID</label>
+        <input class="fieldInput" type="text" placeholder="(not set)" />
+      </div>
+    </div>
+
+    <div class="bodyActionsSplit">
+      <button class="btn" style="color: var(--red); border-color: var(--border);">Disconnect</button>
+      <div class="bodyActionsRight">
+        <button class="btn">Refresh now</button>
+        <button class="btn btnPrimary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ STATE MATRIX -->
+
+<div class="sectionTitle">State matrix · in-block tabbed flow</div>
+
+<table class="matrix">
+  <thead>
+    <tr>
+      <th style="width: 22%;">State</th>
+      <th>Default tab</th>
+      <th>Tabs visible</th>
+      <th>Primary action</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Fresh connect (not configured)</strong></td>
+      <td>A. What we sample</td>
+      <td>A · B · C (in order)</td>
+      <td>"Continue" → B → "I have my token" → C → "Connect &amp; refresh tone"</td>
+      <td>Token typed state preserved across A→B→C; Back step preserves typed values</td>
+    </tr>
+    <tr>
+      <td><strong>Edit existing (connected)</strong></td>
+      <td>Edit view (no tabs)</td>
+      <td>Tabs hidden; the connected condensed view shows directly</td>
+      <td>"Save changes" (fires saveMetaConfig)</td>
+      <td>Click <em>Edit credentials</em> link in the connected summary to re-enter the 3-tab flow</td>
+    </tr>
+    <tr>
+      <td><strong>Token expired</strong></td>
+      <td>C. Paste &amp; connect (jumps straight there)</td>
+      <td>A · B · C visible · A &amp; B grayed (already done historically)</td>
+      <td>"Save new token"</td>
+      <td>Inline red banner above C: "Your token expired. Generate a new one and paste below."</td>
+    </tr>
+    <tr>
+      <td><strong>Saving (mid-flight)</strong></td>
+      <td>(unchanged from current tab)</td>
+      <td>Tabs disabled · inputs disabled · primary button shows loading spinner</td>
+      <td>n/a (already firing)</td>
+      <td>Back button hidden</td>
+    </tr>
+    <tr>
+      <td><strong>Save failed</strong></td>
+      <td>C. Paste &amp; connect (where the save fired)</td>
+      <td>A · B · C visible · A &amp; B done</td>
+      <td>"Save" re-enabled</td>
+      <td>Inline red banner with reason · stay on C</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ NOTES -->
+
+<div class="notes" style="margin-top: 32px;">
+  <h3>Decisions baked in</h3>
+  <ul>
+    <li>✅ <strong>In-block tabbed flow</strong> matching the Monday.com mockup. 3 tabs: A (What we sample) · B (Generate token) · C (Paste &amp; connect). Same component, same CSS classes.</li>
+    <li>✅ <strong>Brand mark via <code>MetaLogo</code></strong> from the existing brand-icons component — single Meta wordmark, no duplicated IG/FB glyphs inside the source body.</li>
+    <li>✅ <strong>Trust strip migrates into Tab A</strong> — calms fear before the merchant invests time on Meta's side.</li>
+    <li>✅ <strong>Edit view is condensed</strong> (no tabs) — already-onboarded merchants get a summary chip row + form fields + actions. Mirrors Monday's edit view shape.</li>
+    <li>✅ <strong>Back button preserves state</strong> across tabs.</li>
+    <li>✅ <strong>Faux Meta screenshot in Tab B step 3</strong> kept as a confidence-builder for "what the merchant should be looking for."</li>
+  </ul>
+</div>
+
+<div class="notes" style="background: #f1f8ff; border-color: #c0d6f3; color: #1a3d6e;">
+  <h3>Deferred</h3>
+  <ul>
+    <li>Real screenshots of Meta Business Suite (need to capture from a live account). v1 ships with ASCII placeholders; replace before launch.</li>
+    <li>Per-account scoping (currently 1 IG + 1 FB max). Multi-account sampling deferred to v2.</li>
+    <li>Auto-refresh-before-expiry — the token has a 60-day lifecycle; a notification 7 days before expiry is post-v1.</li>
+    <li>Real OAuth (no paste) — would need the app to register as a Meta App and run the full handshake. Deferred per the earlier "paste credentials" decision.</li>
+  </ul>
+</div>
+
+</body>
+</html>
