@@ -30,6 +30,14 @@ export const LD_ADDRESS_CONFIRM_TAG = "ld_address-confirm";
 // Auto-assign already skips orders carrying this tag.
 export const LD_NUMBER_CONFIRM_TAG = "ld_number-confirm";
 
+// Operator-namespaced tag applied when an order whose Shopify deliveryMethod
+// is not LOCAL (e.g. SHIPPING — originally placed for warehouse fulfillment)
+// is dispatched through Local Delivery via operator override. Written at
+// dispatch time alongside LalamoveDispatchJob.methodOverride=true. Tag is
+// permanent on the order for audit. Auto-cron skips orders carrying it so the
+// override path can never be picked up by autonomous routing on a later tick.
+export const LD_METHOD_OVERRIDE_TAG = "ld_method-override";
+
 // Returns the canonical operator tag. Both the UI and cron compare order
 // tags against the result of this getter AND the state-machine tag below.
 export const getFailedDeliveryTag = () => LD_FAILED_DELIVERY_TAG;
@@ -44,10 +52,17 @@ export const getAllFailedDeliveryTags = (): readonly string[] => [
 // Returns every operator tag that excludes an order from auto-assignment.
 // Centralizes the skip-list so new "needs operator action" tags land in one
 // place. Today: failed-delivery (both variants), address-confirm,
-// number-confirm.
+// number-confirm, method-override.
+//
+// LD_METHOD_OVERRIDE_TAG is in this list because once an order has been
+// dispatched via warehouse-method override, autonomous routing must never
+// pick it up on subsequent cron ticks. The override is a deliberate operator
+// action; auto-cron stays strict LOCAL-only and treats overridden orders as
+// already-handled.
 export const getAllAutoAssignSkipTags = (): readonly string[] => [
   LD_FAILED_DELIVERY_TAG,
   FAILED_DELIVERY_TAG,
   LD_ADDRESS_CONFIRM_TAG,
   LD_NUMBER_CONFIRM_TAG,
+  LD_METHOD_OVERRIDE_TAG,
 ];

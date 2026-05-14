@@ -284,6 +284,11 @@ model LalamoveDispatchJob {
   partialDelivery       Boolean   @default(false)
   /// Timestamp of the last podBucket update.
   lastBucketingAt       DateTime?
+  /// True when this dispatch was placed via the warehouse-method override flow
+  /// (operator dispatched an order whose Shopify deliveryMethod is not LOCAL).
+  /// Set at create time alongside the `ld_method-override` tag on the order.
+  /// Filterable for audit / dashboards.
+  methodOverride        Boolean   @default(false)
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 

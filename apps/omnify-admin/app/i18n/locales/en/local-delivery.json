@@ -16,7 +16,10 @@
     "dayPlus2": "Day +2",
     "dayPlus3": "Day +3",
     "dayPlus4": "Day +4",
-    "presaleWarning": "⚠️ There are unfulfilled pre-sale orders"
+    "presaleWarning": "⚠️ There are unfulfilled pre-sale orders",
+    "includeWarehouse": "Include warehouse orders",
+    "warehouseCount": "Routed from warehouse: {{count}}",
+    "warehouseCountShow": "Routed from warehouse: {{count}} — show"
   },
   "map": {
     "legend": {
@@ -223,6 +226,14 @@
       "estimatedTotal": "Estimated total: {{amount}}",
       "ordersInRoute": "Orders in route: {{count}}",
       "close": "Close"
+    },
+    "methodOverride": {
+      "heading": "Confirm warehouse override dispatch",
+      "body": "You're dispatching {{count}} orders originally placed for warehouse fulfillment via Local Delivery from {{location}}. The customer's order record won't change — they'll receive the same tracking emails as usual.",
+      "detailsToggle": "Show technical details",
+      "details": "The Shopify delivery method on each order stays as SHIPPING — only how we fulfill it changes. A tag ld_method-override is applied to each affected order. The dispatch job is recorded with methodOverride=true for audit and dashboard filtering.",
+      "confirm": "Confirm dispatch",
+      "cancel": "Cancel"
     },
     "tagFilter": {
       "heading": "Select which tags to include in routes:",

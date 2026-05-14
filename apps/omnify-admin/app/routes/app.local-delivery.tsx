@@ -6,7 +6,7 @@ import type {
   HeadersFunction,
   LoaderFunctionArgs,
 } from "react-router";
-import { useFetcher, useLoaderData, useNavigate, useRevalidator, useSubmit } from "react-router";
+import { useFetcher, useLoaderData, useNavigate, useRevalidator, useSearchParams, useSubmit } from "react-router";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
 import {
@@ -31,7 +31,7 @@ import {
   getMaxZoneRadiusKm,
 } from "../services/carrier/sample-rate-db.server";
 import type { OptimizerOrderInput } from "../services/google-routes-shared.server";
-import { LD_ADDRESS_CONFIRM_TAG, LD_FAILED_DELIVERY_TAG, LD_NUMBER_CONFIRM_TAG, getAllFailedDeliveryTags } from "../services/lalamove-tags";
+import { LD_ADDRESS_CONFIRM_TAG, LD_FAILED_DELIVERY_TAG, LD_METHOD_OVERRIDE_TAG, LD_NUMBER_CONFIRM_TAG, getAllFailedDeliveryTags } from "../services/lalamove-tags";
 import { runCarrierQuotationForOrderId } from "../services/auto-routing.server";
 import { type EscalationResult } from "../services/lalamove-escalation.server";
 import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
@@ -197,6 +197,7 @@ export default function Index() {
     availablePresaleTags,
     hasUnfulfilledPresaleOrders,
     failedDeliveryCount,
+    warehouseOrdersCount,
     activeDispatchData,
     optimizerAccuracy,
   } =
@@ -221,6 +222,21 @@ export default function Index() {
   const trackingRouteRef = useRef<string | null>(null);
   const submit = useSubmit();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Warehouse-method override toggle. Reflects `?includeWarehouse=1` in the
+  // URL and drives the loader's eligibility filter. Off by default — flipping
+  // it triggers a revalidation that re-runs the loader without the LOCAL
+  // method filter.
+  const includeWarehouse = filters.includeWarehouse ?? false;
+  const handleToggleIncludeWarehouse = useCallback(() => {
+    const next = new URLSearchParams(searchParams);
+    if (includeWarehouse) {
+      next.delete("includeWarehouse");
+    } else {
+      next.set("includeWarehouse", "1");
+    }
+    setSearchParams(next, { preventScrollReset: true });
+  }, [includeWarehouse, searchParams, setSearchParams]);
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -1574,6 +1590,20 @@ export default function Index() {
         failedDeliveryTags: getAllFailedDeliveryTags(),
       }),
     [orders, deliveryPromiseDays, sameDayHour, sameDayMinute, browserTimeZone, userLocale],
+  );
+
+  // Order IDs whose Shopify deliveryMethod is not LOCAL. Surfaced via the
+  // `includeWarehouse` toggle. These rows show the `package` icon in the Due
+  // column (replacing the bucket-driven icon) and trigger the warehouse-
+  // override confirmation modal on dispatch.
+  const warehouseOrderIds = useMemo(
+    () =>
+      new Set(
+        orders
+          .filter((o) => o.methodType && o.methodType !== "LOCAL")
+          .map((o) => o.id),
+      ),
+    [orders],
   );
 
   // Returns the semantic icon kind for a due-bucket. The actual rendering
@@ -3615,7 +3645,17 @@ export default function Index() {
   // `<s-icon>` via the `icon` prop on `<s-badge>`. dueToday's icon was the
   // hourglass; replaced with `bolt` for consistency with the "act now"
   // affordance used elsewhere in the admin.
+  //
+  // 2026-05-14: warehouse-method override — orders whose Shopify deliveryMethod
+  // is not LOCAL (surfaced via the `includeWarehouse` toggle) replace the
+  // bucket-driven icon with the `package` icon (Polaris `warning` tone =
+  // orange — the "operator attention required" hue used elsewhere on this
+  // page). Single column, dual semantic: due state for LOCAL orders,
+  // warehouse-origin marker for non-LOCAL orders.
   const renderDueBadge = (orderId: string) => {
+    if (warehouseOrderIds.has(orderId)) {
+      return <s-badge tone="warning" icon="package" />;
+    }
     const bucket = dueBucketByOrderId.get(orderId);
     if (bucket === "failed") {
       return <s-badge tone="critical" icon="x-circle" />;
@@ -4181,6 +4221,13 @@ export default function Index() {
           if (quoteRes.deliveryAssignments) {
             placeForm.append("deliveryAssignments", JSON.stringify(quoteRes.deliveryAssignments));
           }
+          if (
+            (quoteRes.orderIds ?? route.orderIds).some((id: string) =>
+              warehouseOrderIds.has(id),
+            )
+          ) {
+            placeForm.append("methodOverride", "1");
+          }
           await postIntent(placeForm);
         }
       } catch (err) {
@@ -4327,6 +4374,16 @@ export default function Index() {
     formData.append("deliveryAssignments", JSON.stringify(quotePreview.deliveryAssignments));
     const confirmedRouteTag = ROUTE_TAG_DEFINITIONS[routeIndex]?.tag ?? null;
     if (confirmedRouteTag) formData.append("routeTag", confirmedRouteTag);
+    // Warehouse-method override: flag the dispatch if any of the orders in this
+    // route originated as non-LOCAL (surfaced via the includeWarehouse toggle).
+    // The action handler reads this and writes both LalamoveDispatchJob.methodOverride
+    // and the ld_method-override Shopify tag on each warehouse-method order.
+    const routeContainsWarehouseOrder = quotePreview.orderIds.some((id) =>
+      warehouseOrderIds.has(id),
+    );
+    if (routeContainsWarehouseOrder) {
+      formData.append("methodOverride", "1");
+    }
     setLalamoveBusyRouteId(route.id);
     lalamoveFetcher.submit(formData, { method: "post" });
   };
@@ -4517,7 +4574,15 @@ export default function Index() {
     (failedDeliveryCount > 0 ||
       hasUnfulfilledPresaleOrders ||
       pendingReturnPickups.length > 0);
-  const hasWarnings = hasLocationScopedWarnings || addressErrorOrders.length > 0;
+  // Warehouse-method override marker is location-scoped (only meaningful at a
+  // specific store location) and only appears when the toggle is on AND the
+  // current view actually contains warehouse-method orders.
+  const showWarehouseBadge =
+    isLocationSelected && includeWarehouse && (warehouseOrdersCount ?? 0) > 0;
+  const hasWarnings =
+    hasLocationScopedWarnings ||
+    addressErrorOrders.length > 0 ||
+    showWarehouseBadge;
 
   const routeManagerSection = (
     <s-section heading={t("routeManager.heading")}>
@@ -4570,6 +4635,11 @@ export default function Index() {
                   {t("warnings.returnPickups", { count: pendingReturnPickups.length })}
                 </s-badge>
               </span>
+            ) : null}
+            {showWarehouseBadge ? (
+              <s-badge tone="warning" icon="package">
+                {t("filters.warehouseCount", { count: warehouseOrdersCount ?? 0 })}
+              </s-badge>
             ) : null}
           </div>
         ) : null}
@@ -4672,6 +4742,33 @@ export default function Index() {
           </s-badge>
         </div>
       ) : null}
+      {/* Warehouse-method override toggle. Reflects `?includeWarehouse=1` in
+          the URL. When on, the loader surfaces orders whose Shopify
+          deliveryMethod is not LOCAL (originally placed for warehouse
+          fulfillment). Operator must move each order's FulfillmentOrder to the
+          target store in Shopify admin first; this toggle then makes them
+          visible here for Lalamove dispatch. Off by default — flipping it is a
+          deliberate per-session action; the toggle does not persist. */}
+      <div
+        className={`${styles.warehouseToggleRow}${includeWarehouse ? ` ${styles.warehouseToggleRowOn}` : ""}`}
+        onClick={handleToggleIncludeWarehouse}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleToggleIncludeWarehouse();
+          }
+        }}
+      >
+        <s-checkbox
+          checked={includeWarehouse || undefined}
+          onChange={handleToggleIncludeWarehouse}
+        />
+        <span className={styles.warehouseToggleLabel}>
+          {t("filters.includeWarehouse")}
+        </span>
+      </div>
       </div>
       {optimizeProgress ? (
         <div className={styles.optimizeProgressWrap}>
@@ -5574,6 +5671,11 @@ export default function Index() {
                   const confirmedRouteIdx = editableRoutes.findIndex((r) => r.id === quotePreview.routeId);
                   const confirmedRouteTag = confirmedRouteIdx >= 0 ? (ROUTE_TAG_DEFINITIONS[confirmedRouteIdx]?.tag ?? null) : null;
                   if (confirmedRouteTag) formData.append("routeTag", confirmedRouteTag);
+                  if (
+                    quotePreview.orderIds.some((id) => warehouseOrderIds.has(id))
+                  ) {
+                    formData.append("methodOverride", "1");
+                  }
                   lalamoveFetcher.submit(formData, { method: "post" });
                 }}
               >
@@ -5957,6 +6059,11 @@ export default function Index() {
                   const routeTag = routeIdx >= 0 ? (ROUTE_TAG_DEFINITIONS[routeIdx]?.tag ?? null) : null;
                   if (routeTag) formData.append("routeTag", routeTag);
                   formData.append("skipPhoneWarning", "true");
+                  if (
+                    quotePreview.orderIds.some((id) => warehouseOrderIds.has(id))
+                  ) {
+                    formData.append("methodOverride", "1");
+                  }
                   lalamoveFetcher.submit(formData, { method: "post" });
                   hideModal("foreign-phone-modal");
                   setForeignPhoneWarning(null);
@@ -6780,6 +6887,11 @@ type LoaderOrder = {
     name: string;
     coordinates: { latitude: number; longitude: number } | null;
   };
+  /// Shopify fulfillmentOrders.deliveryMethod.methodType for the FulfillmentOrder
+  /// matched at this location. "LOCAL" for native local-delivery orders;
+  /// "SHIPPING" / "PICK_UP" / "RETAIL" / "NONE" for orders surfaced via the
+  /// includeWarehouse override. Drives the warehouse marker in the Due column.
+  methodType: string;
   tags: string[];
   lineItems: Array<{ id: string; title: string; quantity: number }>;
 };
@@ -7469,10 +7581,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const debugEnabled = url.searchParams.get("debugLocalDelivery") === "1";
   const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() || "";
-  const deliveryMethod = toQueryValue(
-    url.searchParams.get("deliveryMethod"),
-    DEFAULT_DELIVERY_METHOD,
-  );
+  // Warehouse-method override toggle. When set to "1", the loader surfaces
+  // orders whose Shopify deliveryMethod is not LOCAL (e.g. SHIPPING) so the
+  // operator can dispatch them via Lalamove from the store location where
+  // their FulfillmentOrder has been moved (in Shopify admin, separately).
+  // Off by default — deliberate operator action required to surface them.
+  const includeWarehouse = url.searchParams.get("includeWarehouse") === "1";
+  const deliveryMethod = includeWarehouse
+    ? "all"
+    : toQueryValue(
+        url.searchParams.get("deliveryMethod"),
+        DEFAULT_DELIVERY_METHOD,
+      );
   const locationId = toQueryValue(
     url.searchParams.get("locationId"),
     DEFAULT_LOCATION_ID,
@@ -8046,6 +8166,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           name: matchingFulfillment.assignedLocation.name,
           coordinates: locationCoordinates,
         },
+        methodType:
+          (matchingFulfillment.deliveryMethod?.methodType ?? "UNKNOWN").toUpperCase(),
         tags: order.tags ?? [],
         lineItems: (order.lineItems?.nodes ?? []).map((li: { id: string; title: string; quantity: number }) => ({
           id: li.id,
@@ -8115,6 +8237,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const failedDeliveryTagSet = new Set(getAllFailedDeliveryTags());
   const failedDeliveryCount = filteredOrders.filter((order) =>
     order.tags.some((t) => failedDeliveryTagSet.has(t)),
+  ).length;
+  // Count of warehouse-method orders that flowed in because includeWarehouse
+  // was on (their methodType is non-LOCAL). When the toggle is off the
+  // Shopify query already filtered to LOCAL-only so this stays 0.
+  const warehouseOrdersCount = filteredOrders.filter(
+    (order) => order.methodType !== "LOCAL",
   ).length;
 
   const normalizedLocations: LoaderLocation[] = locations.map((location) => {
@@ -8364,7 +8492,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   );
 
   console.info(
-    `[local-delivery] loader OK durationMs=${Date.now() - loaderT0} shop=${shop} location=${effectiveLocationId} ordersFetched=${orders.length} ordersKept=${filteredOrders.length} pages=${pagesFetched} dispatches=${activeDispatchData.length}`,
+    `[local-delivery] loader OK durationMs=${Date.now() - loaderT0} shop=${shop} location=${effectiveLocationId} ordersFetched=${orders.length} ordersKept=${filteredOrders.length} includeWarehouse=${includeWarehouse} warehouseOrdersCount=${warehouseOrdersCount} pages=${pagesFetched} dispatches=${activeDispatchData.length}`,
   );
 
   return {
@@ -8376,6 +8504,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       startDate: startDateKey,
       deliveryPromiseDays,
       selectedPresaleTags,
+      includeWarehouse,
     },
     ordersError,
     mapsApiKey,
@@ -8391,6 +8520,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     availablePresaleTags,
     hasUnfulfilledPresaleOrders: availablePresaleTags.length > 0,
     failedDeliveryCount,
+    warehouseOrdersCount,
     activeDispatchData,
     optimizerAccuracy,
   };
@@ -10390,6 +10520,12 @@ if (intent === "lalamove-place-order") {
         phone: string;
       } => stop !== null);
 
+    // Warehouse-method override flag — set by the client whenever the route
+    // being dispatched contains at least one order whose Shopify deliveryMethod
+    // is not LOCAL. Drives both LalamoveDispatchJob.methodOverride and the
+    // `ld_method-override` Shopify tag application below.
+    const methodOverride = formData.get("methodOverride") === "1";
+
     const prismaAny = prisma as any;
     try {
       const dispatchJob = await prismaAny.lalamoveDispatchJob.create({
@@ -10404,6 +10540,7 @@ if (intent === "lalamove-place-order") {
           serviceType: configWithLocation.preferredServiceType,
           quotationTotal,
           quotationCurrency,
+          methodOverride,
           ordersData:
             orderedStopsSnapshot.length === assignmentOrderIds.length
               ? orderedStopsSnapshot
@@ -10485,9 +10622,19 @@ if (intent === "lalamove-place-order") {
       console.error(`[local-delivery] lalamove-place-order FAILED DB write (order was placed) shop=${shop} route=${routeId} orderId=${placeResponse.orderId}`, dbError);
     }
 
-    // B6: Add ld_rota-NN tag to dispatched orders to confirm route assignment
+    // B6: Add ld_rota-NN tag to dispatched orders to confirm route assignment.
+    // 2026-05-14: when the route is a warehouse-method override, also apply
+    // ld_method-override to every order so future auto-cron ticks treat them
+    // as already-handled (getAllAutoAssignSkipTags() includes this tag).
     const routeTag = formData.get("routeTag");
+    const tagsToApply: string[] = [];
     if (typeof routeTag === "string" && /^ld_rota-\d+$/.test(routeTag)) {
+      tagsToApply.push(routeTag);
+    }
+    if (methodOverride) {
+      tagsToApply.push(LD_METHOD_OVERRIDE_TAG);
+    }
+    if (tagsToApply.length > 0) {
       await batchProcess(assignmentOrderIds, GQL_BATCH_SIZE, (id) =>
         admin.graphql(
           `#graphql
@@ -10496,12 +10643,12 @@ if (intent === "lalamove-place-order") {
                 userErrors { message }
               }
             }`,
-          { variables: { id, tags: [routeTag] } },
+          { variables: { id, tags: tagsToApply } },
         ),
       );
     }
 
-    console.info(`[local-delivery] lalamove-place-order OK shop=${shop} route=${routeId} orderId=${placeResponse.orderId} orders=${assignmentOrderIds.length}`);
+    console.info(`[local-delivery] lalamove-place-order OK shop=${shop} route=${routeId} orderId=${placeResponse.orderId} orders=${assignmentOrderIds.length} methodOverride=${methodOverride}`);
     return {
       ok: true,
       routeId,

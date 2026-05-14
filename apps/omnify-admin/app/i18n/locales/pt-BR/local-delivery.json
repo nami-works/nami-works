@@ -16,7 +16,10 @@
     "dayPlus2": "Dia +2",
     "dayPlus3": "Dia +3",
     "dayPlus4": "Dia +4",
-    "presaleWarning": "⚠️ Há pedidos de pré-venda não cumpridos"
+    "presaleWarning": "⚠️ Há pedidos de pré-venda não cumpridos",
+    "includeWarehouse": "Incluir pedidos do armazém",
+    "warehouseCount": "Roteados do armazém: {{count}}",
+    "warehouseCountShow": "Roteados do armazém: {{count}} — mostrar"
   },
   "map": {
     "legend": {
@@ -218,6 +221,14 @@
       "estimatedTotal": "Total estimado: {{amount}}",
       "ordersInRoute": "Pedidos na rota: {{count}}",
       "close": "Fechar"
+    },
+    "methodOverride": {
+      "heading": "Confirmar despacho com override de armazém",
+      "body": "Você está despachando {{count}} pedidos originalmente para fulfillment de armazém via Entrega Local a partir de {{location}}. O registro do pedido do cliente não muda, ele receberá os mesmos e-mails de rastreamento.",
+      "detailsToggle": "Mostrar detalhes técnicos",
+      "details": "O método de entrega do Shopify em cada pedido permanece SHIPPING. Apenas como cumprimos muda. Uma tag ld_method-override é aplicada a cada pedido. O job de despacho é registrado com methodOverride=true para auditoria e filtragem em dashboards.",
+      "confirm": "Confirmar despacho",
+      "cancel": "Cancelar"
     },
     "tagFilter": {
       "heading": "Selecione quais tags incluir nas rotas:",
