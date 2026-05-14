@@ -8336,20 +8336,21 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       "FULFILLED",
       "COMPLETED", "completed", "delivered", "DELIVERED",
     ];
-    // Active in-flight dispatches PLUS recently-FULFILLED dispatches whose
-    // bucket has been computed in the last 24h. The latter keep the bucket
-    // badge + partialDelivery banner visible on the route card after the cron
-    // closes a route, so the operator can see what happened (Yasmin scenario).
-    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+    // Active in-flight dispatches only. The previous OR-branch that surfaced
+    // recently-bucketed terminal dispatches for 6h post-close (the "Yasmin
+    // visibility window") was removed 2026-05-14: route slots recycle daily,
+    // and yesterday's bucketed dispatch on the same slot was colliding with
+    // today's freshly auto-assigned route to render a stale "All delivered"
+    // badge. Per-stop bucketing keeps the correctness guard for FAILED stops
+    // (ld_redelivery_pending tag on the Shopify order); the immediate UI
+    // post-close visibility moves to the failed-delivery counter at the top
+    // of the page + the order tag itself, both of which are slot-reuse-immune.
     const allDispatches = activeRouteIds.length > 0
       ? await (prisma as any).lalamoveDispatchJob.findMany({
           where: {
             shop,
             routeId: { in: activeRouteIds },
-            OR: [
-              { status: { notIn: terminalExclude } },
-              { podBucket: { not: null }, lastBucketingAt: { gte: sixHoursAgo } },
-            ],
+            status: { notIn: terminalExclude },
           },
           select: {
             id: true,
