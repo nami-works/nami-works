@@ -117,7 +117,20 @@ const classifyPodStatus = (
   fallback: DispatchOrderMapRow | undefined,
 ): { outcome: StopOutcome; reason: string | null } => {
   const raw = (stop.POD?.status ?? "").trim().toUpperCase();
-  if (raw === "DELIVERED" || raw === "COMPLETED" || raw === "SUCCESS") {
+  // Lalamove POD outcomes that mean "the recipient got it":
+  //   DELIVERED  — generic dropoff
+  //   COMPLETED  — terminal state when no specific POD captured
+  //   SUCCESS    — alias seen on some routes
+  //   SIGNED     — signature captured at the doorstep (Lalamove BR emits this
+  //                when the driver collects a signature). Missing from this
+  //                set caused the 2026-05-13 Recife dispatch to bucket as
+  //                "held" despite being fully delivered.
+  if (
+    raw === "DELIVERED" ||
+    raw === "COMPLETED" ||
+    raw === "SUCCESS" ||
+    raw === "SIGNED"
+  ) {
     return { outcome: "DELIVERED", reason: null };
   }
   if (raw === "FAILED" || raw === "FAIL" || raw === "REJECTED") {
