@@ -1669,6 +1669,340 @@ async function persistBucketingResults(args: {
   }
 }
 
+// ──────────────────────────────────────────────────────────────────────
+// reconcileRouteFulfillment — the shared post-dispatch reconciliation flow.
+//
+// Translates a Lalamove dispatch's per-stop POD outcomes into Shopify
+// fulfillment events: DELIVERED stops get a Shopify Fulfillment + DELIVERED
+// event; FAILED stops get the `ld_redelivery_pending` tag for operator
+// triage; PENDING/MISSING stops put the whole route in `held` bucket with no
+// writes. Used by:
+//   - `handleMarkDelivered` (operator-triggered POST /api/control/mark-delivered)
+//   - `webhooks.lalamove.tsx` terminal-state branches (COMPLETED/CANCELED/
+//     REJECTED/EXPIRED) — wired 2026-05-14 to close the long-standing gap
+//     where Lalamove deliveries were not automatically reflected in Shopify
+//     fulfillments without an operator manually invoking mark-delivered.
+//
+// Idempotent: `fulfillOrderWithVerification` short-circuits on
+// `displayStatus === DELIVERED`, so repeat invocations (e.g. webhook + manual
+// call colliding) are safe.
+// ──────────────────────────────────────────────────────────────────────
+
+export type ReconcileRouteOptions = {
+  /** Default false. Skip the cancel step when the caller already knows the
+   *  Lalamove order is in a terminal state (webhook calls on COMPLETED etc.). */
+  cancelPendingLalamove?: boolean;
+  /** Default true. The Phase B flows pass false. */
+  createShopifyFulfillment?: boolean;
+  /** Default true. */
+  archiveTags?: boolean;
+  /** Default false. Customers don't get Shopify-generated "delivered" email. */
+  notifyCustomer?: boolean;
+};
+
+export type ReconcileRouteResult = {
+  ok: boolean;
+  status?: "held" | "manual-review";
+  bucket: RouteBucket;
+  partialDelivery: boolean;
+  routeId: string;
+  jobId: string;
+  lalamoveOrderId: string | null;
+  ordersDelivered: number;
+  ordersFlaggedForRedelivery: string[];
+  tagsArchivedOn: string | null;
+  archiveFailures: number;
+  lalamove: string;
+  shopifyFulfilled: number;
+  deliveredEventsCreated: number;
+  redeliveryTagged: number;
+  redeliveryTagFailures: Array<{ orderId: string; reason: string }>;
+  fulfillmentFailures: Array<{ orderId: string; reason: string }>;
+  summary: StopSummary[];
+  unmatchedStopIndexes: number[];
+  retryAfter?: string;
+};
+
+type DispatchJobForReconcile = {
+  id: string;
+  market: string;
+  lalamoveOrderId: string | null;
+  locationId: string;
+  routeId: string;
+  requestedAt: Date;
+  status: string;
+  ordersData: unknown;
+};
+
+export async function reconcileRouteFulfillment(args: {
+  shop: string;
+  job: DispatchJobForReconcile;
+  admin: AdminApiContext;
+  options?: ReconcileRouteOptions;
+}): Promise<ReconcileRouteResult> {
+  const { shop, job, admin } = args;
+  const opts = args.options ?? {};
+  const cancelPendingLalamove = opts.cancelPendingLalamove === true;
+  const createShopifyFulfillment = opts.createShopifyFulfillment !== false;
+  const archiveTags = opts.archiveTags !== false;
+  const notifyCustomer = opts.notifyCustomer === true;
+  const routeId = job.routeId;
+  const locationGid = job.locationId;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- matches the file-wide pattern for Prisma untyped models
+  const prismaAny = prisma as any;
+
+  // 1. Optionally cancel at Lalamove if still in a non-terminal state.
+  const terminalStatuses = new Set([
+    "COMPLETED", "completed",
+    "CANCELED", "CANCELLED", "cancelled",
+    "REJECTED", "rejected",
+    "EXPIRED", "expired",
+    "FULFILLED", "delivered", "DELIVERED",
+  ]);
+  let lalamoveCancelNote = "skipped";
+  if (cancelPendingLalamove && !terminalStatuses.has(String(job.status))) {
+    try {
+      const credentials = await getRuntimeCredentialsForShop(shop);
+      if (credentials && job.lalamoveOrderId) {
+        await cancelLalamoveOrder(job.market, job.lalamoveOrderId, credentials);
+        lalamoveCancelNote = "cancelled-at-lalamove";
+      } else {
+        lalamoveCancelNote = "no-credentials-skipped";
+      }
+    } catch (cancelErr) {
+      const msg = cancelErr instanceof Error ? cancelErr.message : String(cancelErr);
+      if (msg.includes("422") || msg.startsWith("404:")) {
+        lalamoveCancelNote = "already-terminal-at-lalamove";
+      } else {
+        lalamoveCancelNote = `cancel-error: ${msg.slice(0, 120)}`;
+        console.warn(`[reconcile] cancel non-fatal`, msg);
+      }
+    }
+  }
+
+  // 2. Load order maps + ordersData snapshot for stop-to-order matching.
+  const orderMaps = await prismaAny.lalamoveDispatchOrderMap.findMany({
+    where: { shop, dispatchJobId: job.id },
+    select: { shopifyOrderId: true, currentStatus: true, failureReason: true },
+  });
+  const orderIds = (orderMaps as Array<{ shopifyOrderId: string }>).map((m) => m.shopifyOrderId);
+  const ordersData: DispatchOrderSnapshot[] = Array.isArray(job.ordersData)
+    ? (job.ordersData as DispatchOrderSnapshot[])
+    : [];
+
+  // 3. Fetch live Lalamove stops + POD (best-effort; bucketing tolerates empty).
+  let lalamoveStops: LalamoveStop[] = [];
+  try {
+    const credentials = await getRuntimeCredentialsForShop(shop);
+    if (credentials && job.lalamoveOrderId) {
+      const details = await getLalamoveOrderDetails(job.market, job.lalamoveOrderId, credentials);
+      lalamoveStops = (details.stops ?? []) as LalamoveStop[];
+    }
+  } catch (err) {
+    console.warn(
+      `[reconcile] stop fetch failed lalamove=${job.lalamoveOrderId ?? "?"}`,
+      err instanceof Error ? err.message : String(err),
+    );
+  }
+
+  // 4. Bucket the route per per-stop POD outcomes.
+  const summary = summarizeRoutePOD(
+    lalamoveStops,
+    ordersData,
+    orderMaps as DispatchOrderMapRow[],
+  );
+  const decision = bucketRouteForFulfillment(summary);
+
+  console.info(
+    `[reconcile] bucket=${decision.bucket} shop=${shop} route=${routeId} stops=${lalamoveStops.length} fulfill=${decision.ordersToFulfill.length} redeliver=${decision.ordersToRedeliver.length} unmatched=${decision.unmatchedStopIndexes.length}`,
+  );
+
+  const isoBrt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(job.requestedAt));
+  const [yy, mm, dd] = isoBrt.split("-");
+  const dateStr = `${yy!.slice(-2)}.${mm}.${dd}`;
+
+  // 5. Held / skip — persist bucket and bail before any Shopify writes.
+  if (decision.bucket === "held") {
+    await persistBucketingResults({
+      shop,
+      jobId: job.id,
+      bucket: decision.bucket,
+      partialDelivery: false,
+      summary,
+    });
+    console.info(
+      `[reconcile] HOLD shop=${shop} route=${routeId} pending=${
+        summary.filter((s) => !s.isPickup && s.outcome === "PENDING").length
+      } unmatched=${decision.unmatchedStopIndexes.length}`,
+    );
+    return {
+      ok: false,
+      status: "held",
+      bucket: decision.bucket,
+      partialDelivery: false,
+      routeId,
+      jobId: job.id,
+      lalamoveOrderId: job.lalamoveOrderId,
+      ordersDelivered: 0,
+      ordersFlaggedForRedelivery: [],
+      tagsArchivedOn: null,
+      archiveFailures: 0,
+      lalamove: lalamoveCancelNote,
+      shopifyFulfilled: 0,
+      deliveredEventsCreated: 0,
+      redeliveryTagged: 0,
+      redeliveryTagFailures: [],
+      fulfillmentFailures: [],
+      summary,
+      unmatchedStopIndexes: decision.unmatchedStopIndexes,
+      retryAfter: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+    };
+  }
+
+  if (decision.bucket === "skip") {
+    await persistBucketingResults({
+      shop,
+      jobId: job.id,
+      bucket: decision.bucket,
+      partialDelivery: false,
+      summary,
+    });
+    console.info(`[reconcile] SKIP shop=${shop} route=${routeId} reason=no-delivered-stops`);
+    return {
+      ok: false,
+      status: "manual-review",
+      bucket: decision.bucket,
+      partialDelivery: false,
+      routeId,
+      jobId: job.id,
+      lalamoveOrderId: job.lalamoveOrderId,
+      ordersDelivered: 0,
+      ordersFlaggedForRedelivery: decision.ordersToRedeliver,
+      tagsArchivedOn: null,
+      archiveFailures: 0,
+      lalamove: lalamoveCancelNote,
+      shopifyFulfilled: 0,
+      deliveredEventsCreated: 0,
+      redeliveryTagged: 0,
+      redeliveryTagFailures: [],
+      fulfillmentFailures: [],
+      summary,
+      unmatchedStopIndexes: decision.unmatchedStopIndexes,
+    };
+  }
+
+  // 6. Clean / mixed — archive tags + mark DB job FULFILLED.
+  let archived = 0;
+  let archiveFailures = 0;
+  if (archiveTags) {
+    const archiveResults = await Promise.allSettled(
+      orderIds.map((id) => renameRouteTagsToArchive(admin, id, dateStr)),
+    );
+    archived = archiveResults.filter((r) => r.status === "fulfilled").length;
+    archiveFailures = archiveResults.length - archived;
+    if (archiveFailures > 0) {
+      console.warn(`[reconcile] ${archiveFailures} tag-archive failures (non-fatal)`);
+    }
+  }
+
+  await prismaAny.lalamoveDispatchJob.update({
+    where: { id: job.id },
+    data: { status: "FULFILLED" },
+  });
+  await prismaAny.lalamoveDispatchOrderMap.updateMany({
+    where: { shop, dispatchJobId: job.id },
+    data: { currentStatus: "delivered" },
+  });
+
+  // 7. Fulfill DELIVERED stops only.
+  let shopifyFulfilled = 0;
+  let deliveredEventsCreated = 0;
+  const fulfillmentFailures: Array<{ orderId: string; reason: string }> = [];
+  const trackingNumber = (job.lalamoveOrderId ?? null) as string | null;
+
+  if (createShopifyFulfillment) {
+    for (const shopifyOrderId of decision.ordersToFulfill) {
+      try {
+        const result = await fulfillOrderWithVerification({
+          admin,
+          shopifyOrderId,
+          locationGid,
+          trackingNumber,
+          notifyCustomer,
+        });
+        if (result.deliveredEventCreated) deliveredEventsCreated += 1;
+        if (result.ok) {
+          shopifyFulfilled += 1;
+        } else {
+          fulfillmentFailures.push({
+            orderId: shopifyOrderId,
+            reason: result.reason ?? `displayStatus=${result.finalDisplayStatus ?? "null"}`,
+          });
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        fulfillmentFailures.push({ orderId: shopifyOrderId, reason: msg.slice(0, 150) });
+        console.warn(`[reconcile] order-loop exception order=${shopifyOrderId}`, msg);
+      }
+    }
+  }
+
+  // 8. Tag FAILED stops for re-delivery; never email these customers.
+  let redeliveryTagged = 0;
+  const redeliveryTagFailures: Array<{ orderId: string; reason: string }> = [];
+  for (const shopifyOrderId of decision.ordersToRedeliver) {
+    const tagResult = await tagOrderForRedelivery(admin, shopifyOrderId);
+    if (tagResult.ok) {
+      redeliveryTagged += 1;
+    } else {
+      redeliveryTagFailures.push({
+        orderId: shopifyOrderId,
+        reason: tagResult.reason ?? "tag failed",
+      });
+    }
+  }
+
+  // 9. Persist bucketing results + partialDelivery flag.
+  const partialDelivery = shopifyFulfilled !== deliveredEventsCreated;
+  await persistBucketingResults({
+    shop,
+    jobId: job.id,
+    bucket: decision.bucket,
+    partialDelivery,
+    summary,
+  });
+
+  console.info(
+    `[reconcile] OK shop=${shop} route=${routeId} job=${job.id} bucket=${decision.bucket} orders=${orderIds.length} archived=${archived} lalamove=${lalamoveCancelNote} shopifyFulfilled=${shopifyFulfilled}/${decision.ordersToFulfill.length} delivered=${deliveredEventsCreated} redeliveryTagged=${redeliveryTagged} partial=${partialDelivery}`,
+  );
+
+  return {
+    ok: true,
+    bucket: decision.bucket,
+    partialDelivery,
+    routeId,
+    jobId: job.id,
+    lalamoveOrderId: job.lalamoveOrderId,
+    ordersDelivered: decision.ordersToFulfill.length,
+    ordersFlaggedForRedelivery: decision.ordersToRedeliver,
+    tagsArchivedOn: `${dateStr} (YY.MM.DD)`,
+    archiveFailures,
+    lalamove: lalamoveCancelNote,
+    shopifyFulfilled,
+    deliveredEventsCreated,
+    redeliveryTagged,
+    redeliveryTagFailures,
+    fulfillmentFailures,
+    summary,
+    unmatchedStopIndexes: decision.unmatchedStopIndexes,
+  };
+}
+
 async function handleMarkDelivered(shop: string, body: Record<string, unknown>): Promise<Response> {
   const locationIdRaw = typeof body.locationId === "string" ? body.locationId : null;
   const routeIndexRaw = body.routeIndex;
@@ -1688,6 +2022,7 @@ async function handleMarkDelivered(shop: string, body: Record<string, unknown>):
   }
   const { gid: locationGid } = normalizeLocationId(locationIdRaw);
   const routeId = `${locationGid}-${routeIndex}`;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- matches the file-wide pattern for Prisma untyped models
   const prismaAny = prisma as any;
 
   console.info(`[control] mark-delivered START shop=${shop} route=${routeId}`);
@@ -1710,253 +2045,21 @@ async function handleMarkDelivered(shop: string, body: Record<string, unknown>):
       return jsonResponse({ ok: false, error: "No dispatch job found for this route today." }, 404);
     }
 
-    // 2. Optionally cancel at Lalamove if still in a non-terminal state
-    const terminalStatuses = new Set([
-      "COMPLETED", "completed",
-      "CANCELED", "CANCELLED", "cancelled",
-      "REJECTED", "rejected",
-      "EXPIRED", "expired",
-      "FULFILLED", "delivered", "DELIVERED",
-    ]);
-    let lalamoveCancelNote = "skipped";
-    if (cancelPendingLalamove && !terminalStatuses.has(String(job.status))) {
-      try {
-        const credentials = await getRuntimeCredentialsForShop(shop);
-        if (credentials) {
-          await cancelLalamoveOrder(job.market, job.lalamoveOrderId, credentials);
-          lalamoveCancelNote = "cancelled-at-lalamove";
-        } else {
-          lalamoveCancelNote = "no-credentials-skipped";
-        }
-      } catch (cancelErr) {
-        const msg = cancelErr instanceof Error ? cancelErr.message : String(cancelErr);
-        if (msg.includes("422") || msg.startsWith("404:")) {
-          lalamoveCancelNote = "already-terminal-at-lalamove";
-        } else {
-          lalamoveCancelNote = `cancel-error: ${msg.slice(0, 120)}`;
-          console.warn(`[control] mark-delivered: cancel non-fatal`, msg);
-        }
-      }
-    }
-
-    // 3. Load order maps + ordersData snapshot for stop-to-order matching.
-    const orderMaps = await prismaAny.lalamoveDispatchOrderMap.findMany({
-      where: { shop, dispatchJobId: job.id },
-      select: {
-        shopifyOrderId: true,
-        currentStatus: true,
-        failureReason: true,
-      },
-    });
-    const orderIds = (orderMaps as Array<{ shopifyOrderId: string }>).map((m) => m.shopifyOrderId);
-    const ordersData: DispatchOrderSnapshot[] = Array.isArray(job.ordersData)
-      ? (job.ordersData as DispatchOrderSnapshot[])
-      : [];
-
-    // 4. Fetch live Lalamove stops + POD (best-effort; bucketing tolerates empty).
-    let lalamoveStops: LalamoveStop[] = [];
-    try {
-      const credentials = await getRuntimeCredentialsForShop(shop);
-      if (credentials && job.lalamoveOrderId) {
-        const details = await getLalamoveOrderDetails(job.market, job.lalamoveOrderId, credentials);
-        lalamoveStops = (details.stops ?? []) as LalamoveStop[];
-      }
-    } catch (err) {
-      console.warn(
-        `[control] mark-delivered: stop fetch failed lalamove=${job.lalamoveOrderId}`,
-        err instanceof Error ? err.message : String(err),
-      );
-    }
-
-    // 5. Bucket the route per per-stop POD outcomes.
-    const summary = summarizeRoutePOD(
-      lalamoveStops,
-      ordersData,
-      orderMaps as DispatchOrderMapRow[],
-    );
-    const decision = bucketRouteForFulfillment(summary);
-
-    console.info(
-      `[control] mark-delivered bucket=${decision.bucket} shop=${shop} route=${routeId} stops=${lalamoveStops.length} fulfill=${decision.ordersToFulfill.length} redeliver=${decision.ordersToRedeliver.length} unmatched=${decision.unmatchedStopIndexes.length}`,
-    );
-
-    const isoBrt = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "America/Sao_Paulo",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date(job.requestedAt));
-    const [yy, mm, dd] = isoBrt.split("-");
-    const dateStr = `${yy!.slice(-2)}.${mm}.${dd}`;
-
     const { admin } = await unauthenticated.admin(shop);
 
-    // 6. Held / skip — persist bucket and bail out before any Shopify writes.
-    if (decision.bucket === "held") {
-      await persistBucketingResults({
-        shop,
-        jobId: job.id,
-        bucket: decision.bucket,
-        partialDelivery: false,
-        summary,
-      });
-      console.info(
-        `[control] mark-delivered HOLD shop=${shop} route=${routeId} pending=${
-          summary.filter((s) => !s.isPickup && s.outcome === "PENDING").length
-        } unmatched=${decision.unmatchedStopIndexes.length}`,
-      );
-      return jsonResponse({
-        ok: false,
-        status: "held",
-        bucket: decision.bucket,
-        routeId,
-        jobId: job.id,
-        retryAfter: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-        summary,
-        unmatchedStopIndexes: decision.unmatchedStopIndexes,
-        lalamove: lalamoveCancelNote,
-      });
-    }
-
-    if (decision.bucket === "skip") {
-      await persistBucketingResults({
-        shop,
-        jobId: job.id,
-        bucket: decision.bucket,
-        partialDelivery: false,
-        summary,
-      });
-      console.info(
-        `[control] mark-delivered SKIP shop=${shop} route=${routeId} reason=no-delivered-stops`,
-      );
-      return jsonResponse({
-        ok: false,
-        status: "manual-review",
-        bucket: decision.bucket,
-        routeId,
-        jobId: job.id,
-        summary,
-        unmatchedStopIndexes: decision.unmatchedStopIndexes,
-        lalamove: lalamoveCancelNote,
-      });
-    }
-
-    // 7. Clean / mixed — archive tags + mark DB job FULFILLED.
-    let archived = 0;
-    let archiveFailures = 0;
-    if (archiveTags) {
-      const archiveResults = await Promise.allSettled(
-        orderIds.map((id) => renameRouteTagsToArchive(admin, id, dateStr)),
-      );
-      archived = archiveResults.filter((r) => r.status === "fulfilled").length;
-      archiveFailures = archiveResults.length - archived;
-      if (archiveFailures > 0) {
-        console.warn(`[control] mark-delivered: ${archiveFailures} tag-archive failures (non-fatal)`);
-      }
-    }
-
-    await prismaAny.lalamoveDispatchJob.update({
-      where: { id: job.id },
-      data: { status: "FULFILLED" },
-    });
-    await prismaAny.lalamoveDispatchOrderMap.updateMany({
-      where: { shop, dispatchJobId: job.id },
-      data: { currentStatus: "delivered" },
-    });
-
-    // 8. Fulfill DELIVERED stops only. shopifyFulfilled increments only on
-    //    full success (fulfillment AND DELIVERED-event AND displayStatus
-    //    promoted). deliveredEventsCreated tracks the inner half.
-    let shopifyFulfilled = 0;
-    let deliveredEventsCreated = 0;
-    const fulfillmentFailures: Array<{ orderId: string; reason: string }> = [];
-    const trackingNumber = (job.lalamoveOrderId ?? null) as string | null;
-
-    if (createShopifyFulfillment) {
-      // FAILED stops are not in ordersToFulfill (the Yasmin protection),
-      // so the only customers reachable here are DELIVERED ones. They get
-      // the caller's notifyCustomer preference regardless of bucket — a
-      // mixed route's clean stops still deserve their delivered email.
-      const effectiveNotify = notifyCustomer;
-
-      for (const shopifyOrderId of decision.ordersToFulfill) {
-        try {
-          const result = await fulfillOrderWithVerification({
-            admin,
-            shopifyOrderId,
-            locationGid,
-            trackingNumber,
-            notifyCustomer: effectiveNotify,
-          });
-          if (result.deliveredEventCreated) deliveredEventsCreated += 1;
-          if (result.ok) {
-            shopifyFulfilled += 1;
-          } else {
-            fulfillmentFailures.push({
-              orderId: shopifyOrderId,
-              reason: result.reason ?? `displayStatus=${result.finalDisplayStatus ?? "null"}`,
-            });
-          }
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : String(err);
-          fulfillmentFailures.push({ orderId: shopifyOrderId, reason: msg.slice(0, 150) });
-          console.warn(
-            `[control] mark-delivered order-loop exception order=${shopifyOrderId}`,
-            msg,
-          );
-        }
-      }
-    }
-
-    // 9. Tag FAILED stops for re-delivery; never email these customers.
-    let redeliveryTagged = 0;
-    const redeliveryTagFailures: Array<{ orderId: string; reason: string }> = [];
-    for (const shopifyOrderId of decision.ordersToRedeliver) {
-      const tagResult = await tagOrderForRedelivery(admin, shopifyOrderId);
-      if (tagResult.ok) {
-        redeliveryTagged += 1;
-      } else {
-        redeliveryTagFailures.push({
-          orderId: shopifyOrderId,
-          reason: tagResult.reason ?? "tag failed",
-        });
-      }
-    }
-
-    // 10. Persist bucketing results + partialDelivery flag.
-    const partialDelivery = shopifyFulfilled !== deliveredEventsCreated;
-    await persistBucketingResults({
+    const result = await reconcileRouteFulfillment({
       shop,
-      jobId: job.id,
-      bucket: decision.bucket,
-      partialDelivery,
-      summary,
+      job,
+      admin,
+      options: {
+        cancelPendingLalamove,
+        createShopifyFulfillment,
+        archiveTags,
+        notifyCustomer,
+      },
     });
 
-    console.info(
-      `[control] mark-delivered OK shop=${shop} route=${routeId} job=${job.id} bucket=${decision.bucket} orders=${orderIds.length} archived=${archived} lalamove=${lalamoveCancelNote} shopifyFulfilled=${shopifyFulfilled}/${decision.ordersToFulfill.length} delivered=${deliveredEventsCreated} redeliveryTagged=${redeliveryTagged} partial=${partialDelivery}`,
-    );
-
-    return jsonResponse({
-      ok: true,
-      bucket: decision.bucket,
-      partialDelivery,
-      routeId,
-      jobId: job.id,
-      lalamoveOrderId: job.lalamoveOrderId,
-      ordersDelivered: decision.ordersToFulfill.length,
-      ordersFlaggedForRedelivery: decision.ordersToRedeliver,
-      tagsArchivedOn: `${dateStr} (YY.MM.DD)`,
-      archiveFailures,
-      lalamove: lalamoveCancelNote,
-      shopifyFulfilled,
-      deliveredEventsCreated,
-      redeliveryTagged,
-      redeliveryTagFailures,
-      fulfillmentFailures,
-      summary,
-      unmatchedStopIndexes: decision.unmatchedStopIndexes,
-    });
+    return jsonResponse(result, 200);
   } catch (err) {
     console.error(`[control] mark-delivered FAILED shop=${shop} route=${routeId}`, err);
     return jsonResponse(

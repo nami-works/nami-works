@@ -4,6 +4,7 @@ import prisma from "../db.server";
 import { unauthenticated } from "../shopify.server";
 import { applyLalamoveDeliveryState, renameRouteTagsToArchive } from "../services/lalamove-sync.server";
 import { syncLalamoveStatusToShopify } from "../services/lalamove-shopify-sync.server";
+import { reconcileRouteFulfillment } from "./api.control.$intent";
 
 const verifySignature = (rawBody: string, signatureHeader: string | null) => {
   const secret = process.env.LALAMOVE_WEBHOOK_SECRET?.trim();
@@ -329,30 +330,63 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     );
   };
 
-  // On COMPLETED: rename route tags to archived format (ld_rota-## → ld_rota-##_YY.MM.DD)
+  // On COMPLETED: archive route tags AND reconcile per-stop POD outcomes into
+  // Shopify fulfillments. Prior to 2026-05-14 this only did tag archival +
+  // FULFILLED status; Shopify fulfillment events were operator-triggered via
+  // /api/control/mark-delivered. reconcileRouteFulfillment closes that gap —
+  // DELIVERED stops get a Shopify Fulfillment + DELIVERED event, FAILED stops
+  // get the redelivery tag, PENDING/MISSING stops put the route in `held` so
+  // we try again on the next webhook tick.
   if (mapped === "delivered") {
     try {
       const adminClient = await unauthenticated.admin(shop);
-      const orderIds = orderMaps.map((item: { shopifyOrderId: string }) => item.shopifyOrderId);
-      const now = new Date();
-      const dateStr = `${String(now.getFullYear()).slice(-2)}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(now.getDate()).padStart(2, "0")}`;
-      await Promise.all(orderIds.map((id: string) => renameRouteTagsToArchive(adminClient.admin, id, dateStr)));
-      // Mark dispatch job as FULFILLED so it's excluded from future loads
       if (effectiveDispatchJobId) {
-        await prisma.lalamoveDispatchJob.updateMany({
-          where: { shop, id: effectiveDispatchJobId },
-          data: { status: "FULFILLED" },
+        const job = await prisma.lalamoveDispatchJob.findUnique({
+          where: { id: effectiveDispatchJobId },
         });
+        if (job) {
+          const result = await reconcileRouteFulfillment({
+            shop,
+            job: job as Parameters<typeof reconcileRouteFulfillment>[0]["job"],
+            admin: adminClient.admin,
+            options: {
+              cancelPendingLalamove: false, // Lalamove already reports COMPLETED
+              notifyCustomer: false,
+            },
+          });
+          console.info(
+            `[local-delivery:webhook] COMPLETED reconcile shop=${shop} orderId=${lalamoveOrderId} bucket=${result.bucket} fulfilled=${result.shopifyFulfilled}/${result.ordersDelivered} archived=${result.tagsArchivedOn ?? "none"}`,
+          );
+        } else {
+          console.warn(
+            `[local-delivery:webhook] COMPLETED dispatchJobId=${effectiveDispatchJobId} not found in DB — skipping reconcile`,
+          );
+        }
+      } else {
+        // Fallback: no dispatchJobId resolvable (legacy/race) — at least
+        // archive the operator route tags so the orders fall out of the
+        // active-routes UI. This mirrors the pre-2026-05-14 behaviour for
+        // the unusual no-job path.
+        const orderIds = orderMaps.map((item: { shopifyOrderId: string }) => item.shopifyOrderId);
+        const now = new Date();
+        const dateStr = `${String(now.getFullYear()).slice(-2)}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(now.getDate()).padStart(2, "0")}`;
+        await Promise.all(orderIds.map((id: string) => renameRouteTagsToArchive(adminClient.admin, id, dateStr)));
+        console.info(
+          `[local-delivery:webhook] COMPLETED — tags archived (no job) shop=${shop} orderId=${lalamoveOrderId} date=${dateStr}`,
+        );
       }
-      console.info(`[local-delivery:webhook] COMPLETED — tags archived shop=${shop} orderId=${lalamoveOrderId} date=${dateStr}`);
       await mirrorStatusToShopify(adminClient);
     } catch (error) {
-      console.error(`[local-delivery:webhook] tag rename FAILED shop=${shop} orderId=${lalamoveOrderId}`, error);
+      console.error(`[local-delivery:webhook] COMPLETED reconcile FAILED shop=${shop} orderId=${lalamoveOrderId}`, error);
     }
     return new Response("OK");
   }
 
-  // On failure: add failure tags (no fulfillment mutations)
+  // On failure: apply failure tags AND reconcile per-stop POD outcomes. The
+  // reconcile call catches partial-success cases — e.g. a CANCELED route
+  // where some stops were already DELIVERED before driver gave up. Those
+  // stops still need to flow into Shopify as fulfilled. PODs for stops that
+  // never made it stay PENDING/MISSING → bucket=held, no Shopify writes.
   if (isFailure) {
     try {
       const adminClient = await unauthenticated.admin(shop);
@@ -363,8 +397,29 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         reason: resolvedFailureReason ?? `Delivery ${mapped}`,
       });
       await mirrorStatusToShopify(adminClient);
+
+      // Reconcile any per-stop deliveries that happened before failure.
+      if (effectiveDispatchJobId) {
+        const job = await prisma.lalamoveDispatchJob.findUnique({
+          where: { id: effectiveDispatchJobId },
+        });
+        if (job) {
+          const result = await reconcileRouteFulfillment({
+            shop,
+            job: job as Parameters<typeof reconcileRouteFulfillment>[0]["job"],
+            admin: adminClient.admin,
+            options: {
+              cancelPendingLalamove: false, // already terminal at Lalamove
+              notifyCustomer: false,
+            },
+          });
+          console.info(
+            `[local-delivery:webhook] ${externalStatus} reconcile shop=${shop} orderId=${lalamoveOrderId} bucket=${result.bucket} fulfilled=${result.shopifyFulfilled}/${result.ordersDelivered} redeliveryTagged=${result.redeliveryTagged}`,
+          );
+        }
+      }
     } catch (error) {
-      console.error(`[local-delivery:webhook] failure tags FAILED shop=${shop} orderId=${lalamoveOrderId} status=${externalStatus}`, error);
+      console.error(`[local-delivery:webhook] failure reconcile FAILED shop=${shop} orderId=${lalamoveOrderId} status=${externalStatus}`, error);
     }
   } else {
     // Non-terminal mapped status (assigning / heading_to_pickup / in_progress):
