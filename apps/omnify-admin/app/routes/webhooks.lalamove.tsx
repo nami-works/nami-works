@@ -4,7 +4,7 @@ import prisma from "../db.server";
 import { unauthenticated } from "../shopify.server";
 import { applyLalamoveDeliveryState, renameRouteTagsToArchive } from "../services/lalamove-sync.server";
 import { syncLalamoveStatusToShopify } from "../services/lalamove-shopify-sync.server";
-import { reconcileRouteFulfillment } from "./api.control.$intent";
+import { reconcileRouteFulfillment } from "../services/lalamove-reconcile.server";
 
 const verifySignature = (rawBody: string, signatureHeader: string | null) => {
   const secret = process.env.LALAMOVE_WEBHOOK_SECRET?.trim();
