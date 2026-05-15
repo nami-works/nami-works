@@ -8105,25 +8105,36 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       // ── Warehouse-method override eligibility ──────────────────────────────
       // Non-LOCAL orders surfaced via the `includeWarehouse` toggle have
       // stricter gates than native LOCAL rows. Per Lucas (2026-05-15):
-      //   1. Drop if `displayFulfillmentStatus` is anything other than
+      //   1. methodType must be exactly `LOCAL` (native local delivery — not
+      //      gated by this block) or `SHIPPING` (warehouse-bound, what the
+      //      override surface is for). `PICK_UP` (customer collects at the
+      //      store), `RETAIL` (in-person POS), and `NONE` (digital goods /
+      //      gift cards / no-fulfillment-needed) are never deliverable via
+      //      Lalamove and are dropped regardless of toggle state. Anything
+      //      else (future Shopify enum value) is also dropped — fail closed.
+      //   2. Drop if `displayFulfillmentStatus` is anything other than
       //      `UNFULFILLED` or `PARTIALLY_FULFILLED`. The existing FULFILLED-
       //      + delivered-fulfillment check above is too permissive for
       //      non-LOCAL: a FULFILLED order without a DELIVERED fulfillment
       //      record was leaking through (warehouse already shipped → not a
       //      local-delivery candidate).
-      //   2. Drop unless `sourceName` is in the allowlist — only Online Store
+      //   3. Drop unless `sourceName` is in the allowlist — only Online Store
       //      (`web`), completed drafts (`shopify_draft_order`), and Hexagon
       //      (numeric app ID `316281618433`) are eligible. POS-style channels
       //      (IGLU POS = `206755758081`, future Shopify POS, etc.) are
       //      excluded because they represent in-store purchases that should
       //      never be routed for delivery.
       //
-      // LOCAL rows are untouched by this block — their existing eligibility
-      // rules remain. This filter only fires for warehouse-bound surfaces.
-      const isWarehouseBound =
-        (matchingFulfillment.deliveryMethod?.methodType ?? "").toUpperCase() !==
-        "LOCAL";
-      if (isWarehouseBound) {
+      // LOCAL rows are untouched by gates 2 and 3 — their existing
+      // eligibility rules remain. Gate 1 (methodType allowlist) applies to
+      // ALL rows: even when the toggle is on, a PICK_UP / RETAIL / NONE row
+      // would never be a delivery candidate.
+      const methodType =
+        (matchingFulfillment.deliveryMethod?.methodType ?? "").toUpperCase();
+      if (methodType !== "LOCAL" && methodType !== "SHIPPING") {
+        return null;
+      }
+      if (methodType === "SHIPPING") {
         const WAREHOUSE_SOURCE_ALLOWLIST = new Set([
           "",                       // empty / unset
           "web",                    // Online Store
