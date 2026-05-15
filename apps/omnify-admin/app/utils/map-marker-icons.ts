@@ -22,6 +22,10 @@
  * - dueLater (was 🕒): clock, neutral
  * - addressError (was 🟡): alert-triangle, caution
  * - storeLocation (was 🏬): store, neutral
+ * - warehouse (added 2026-05-15): package, warning. Used for any order whose
+ *   Shopify deliveryMethod is not LOCAL (surfaced via the `includeWarehouse`
+ *   toggle). Overrides ALL other icon-kind signals at the marker level —
+ *   warehouse origin is the dominant operational fact for these rows.
  */
 
 export type MarkerIconKind =
@@ -31,7 +35,8 @@ export type MarkerIconKind =
   | "dueTomorrow"
   | "dueLater"
   | "addressError"
-  | "storeLocation";
+  | "storeLocation"
+  | "warehouse";
 
 type PolarisIconTone =
   | "info"
@@ -52,6 +57,7 @@ const ICONS: Record<MarkerIconKind, IconSpec> = {
   dueLater: { type: "clock", tone: "neutral" },
   addressError: { type: "alert-triangle", tone: "caution" },
   storeLocation: { type: "store", tone: "neutral" },
+  warehouse: { type: "package", tone: "warning" },
 };
 
 /**

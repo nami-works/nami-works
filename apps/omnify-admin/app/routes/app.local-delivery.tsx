@@ -1849,11 +1849,20 @@ export default function Index() {
             point.kind === "order" ? dueBucketByOrderId.get(point.id) : undefined;
           const orderData = point.kind === "order" ? ordersById.get(point.id) : null;
           const hasAddressError = orderData ? !orderData.addressValidation.isValid : false;
+          // Warehouse-origin rows force the `warehouse` icon at the marker
+          // level, overriding addressError + due-bucket signals. Per Lucas
+          // (2026-05-15): ALL warehouse orders show the package icon on the
+          // map regardless of anything else. List-side override is in
+          // `renderDueBadge`; this is the map equivalent.
+          const isWarehouseOrder =
+            point.kind === "order" && warehouseOrderIds.has(point.id);
           const iconKind: MarkerIconKind =
             point.kind === "order"
-              ? hasAddressError
-                ? "addressError"
-                : dueBucketIconKind(dueBucket)
+              ? isWarehouseOrder
+                ? "warehouse"
+                : hasAddressError
+                  ? "addressError"
+                  : dueBucketIconKind(dueBucket)
               : "storeLocation";
           const isSelected = point.kind === "order" && selectedOrderIds.has(point.id);
           // Map markers use the deeper 55% white-mix so per-route pastels
@@ -2164,6 +2173,7 @@ export default function Index() {
     assignedOrderIds,
     dueBucketByOrderId,
     dueBucketIconKind,
+    warehouseOrderIds,
     selectedOrderIds,
     locationId,
     filters.locationId,
@@ -2298,9 +2308,13 @@ export default function Index() {
           const coords = order.shippingCoordinates!;
           const badgeColors = deriveBadgeColors(managedRoute.color);
           const dueBucket = dueBucketByOrderId.get(order.id);
-          const routeOrderIconKind: MarkerIconKind = !order.addressValidation.isValid
-            ? "addressError"
-            : dueBucketIconKind(dueBucket);
+          // Warehouse-origin rows force the `warehouse` icon — overrides
+          // addressError + due-bucket. Same rule as the main-map markers.
+          const routeOrderIconKind: MarkerIconKind = warehouseOrderIds.has(order.id)
+            ? "warehouse"
+            : !order.addressValidation.isValid
+              ? "addressError"
+              : dueBucketIconKind(dueBucket);
           const marker = new AdvancedMarkerElement({
             map: manageRouteMapInstance.current,
             position: { lat: coords.latitude, lng: coords.longitude },
@@ -2378,6 +2392,7 @@ export default function Index() {
     mapStyle,
     dueBucketByOrderId,
     dueBucketIconKind,
+    warehouseOrderIds,
   ]);
 
   // ── Details route modal map ──────────────────────────────────────────────
@@ -2503,9 +2518,13 @@ export default function Index() {
           const coords = order.shippingCoordinates!;
           const badgeColors = deriveBadgeColors(managedRoute.color);
           const dueBucket = dueBucketByOrderId.get(order.id);
-          const routeOrderIconKind: MarkerIconKind = !order.addressValidation.isValid
-            ? "addressError"
-            : dueBucketIconKind(dueBucket);
+          // Warehouse-origin rows force the `warehouse` icon — overrides
+          // addressError + due-bucket. Same rule as the main-map markers.
+          const routeOrderIconKind: MarkerIconKind = warehouseOrderIds.has(order.id)
+            ? "warehouse"
+            : !order.addressValidation.isValid
+              ? "addressError"
+              : dueBucketIconKind(dueBucket);
           const marker = new AdvancedMarkerElement({
             map: detailsRouteMapInstance.current,
             position: { lat: coords.latitude, lng: coords.longitude },
@@ -2581,6 +2600,7 @@ export default function Index() {
     mapStyle,
     dueBucketByOrderId,
     dueBucketIconKind,
+    warehouseOrderIds,
   ]);
 
   const toggleSelection = (orderId: string) => {
