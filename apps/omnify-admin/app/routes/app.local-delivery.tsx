@@ -7807,14 +7807,35 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       : locationId;
 
   const orderFilters: string[] = [];
-  if (deliveryMethod !== "all") {
+  if (deliveryMethod === "all") {
+    // Warehouse-override toggle on — narrow the server-side query to the
+    // only two methodTypes that ever reach the page (LOCAL natively + SHIPPING
+    // for warehouse-bound rows) AND drop fully-FULFILLED orders. Prior to
+    // 2026-05-15 the toggle-on path dropped the delivery_method filter
+    // entirely, which caused the loader to page through ~2000 orders for a
+    // typical ge-beauty session (PICK_UP + RETAIL + NONE + already-shipped
+    // FULFILLED rows all came back). Concurrent loader revalidations then
+    // tripped Shopify's cost-based GraphQL rate limit → application errors.
+    //
+    // Why `-fulfillment_status:fulfilled` instead of `fulfillment_status:unshipped`:
+    // negation drops ONLY fully fulfilled rows. UNFULFILLED, PARTIALLY_FULFILLED,
+    // IN_PROGRESS, ON_HOLD, SCHEDULED, PENDING_FULFILLMENT, RESTOCKED all
+    // still pass, which keeps the failed-Lalamove-delivery retry path intact
+    // (those orders sit at `UNFULFILLED` with a `Failed delivery` tag — never
+    // FULFILLED at the Shopify level). Client-side per-row gates in the
+    // warehouse-bound block (channel allowlist + UNFULFILLED/PARTIALLY) are
+    // unchanged.
+    orderFilters.push("(delivery_method:local OR delivery_method:shipping)");
+    orderFilters.push("-fulfillment_status:fulfilled");
+  } else {
     orderFilters.push(`delivery_method:${toDeliveryMethodType(deliveryMethod)}`);
   }
   if (effectiveLocationId !== DEFAULT_LOCATION_ID) {
     const legacyId = toLegacyLocationId(effectiveLocationId);
     orderFilters.push(`fulfillment_location_id:${legacyId}`);
   }
-  // Include all fulfillment statuses, then exclude delivered/cancelled in post-filter.
+  // Toggle-off: include all fulfillment statuses, then exclude delivered /
+  // cancelled in post-filter. Preserves the retry-failed-LOCAL-delivery path.
   orderFilters.push("-status:cancelled");
   orderFilters.push(`created_at:>=${startDateKey}`);
   const query = orderFilters.length > 0 ? orderFilters.join(" ") : undefined;
@@ -8028,6 +8049,20 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     if (message.includes("not approved to access the Order object")) {
       ordersError =
         "This app needs protected customer data approval to access orders. Request approval in the Shopify Partner Dashboard, then reinstall the app.";
+    } else if (
+      // Shopify GraphQL cost-based throttle. Returns `GraphqlQueryError:
+      // Throttled` when concurrent paginations exceed the bucket. Surface as
+      // a recoverable banner instead of throwing to React Router's error
+      // boundary — the user sees an actionable message + can retry, rather
+      // than the generic "Application error" wall.
+      error instanceof Error &&
+      (error.name === "GraphqlQueryError" || message.includes("Throttled"))
+    ) {
+      console.warn(
+        `[local-delivery] orders-graphql-pagination THROTTLED shop=${shop} pages=${pagesFetched} message=${message}`,
+      );
+      ordersError =
+        "Shopify rate-limited the request. Please wait a few seconds and refresh.";
     } else {
       throw error;
     }
