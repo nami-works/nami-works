@@ -7802,6 +7802,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     name: string;
     processedAt: string | null;
     displayFulfillmentStatus: string;
+    /// Channel origin — used by the warehouse-method override eligibility
+    /// filter. `web` = Online Store, `shopify_draft_order` = completed draft,
+    /// numeric app ID = third-party channel (e.g. `316281618433` = Hexagon,
+    /// `206755758081` = IGLU POS). Empty / null on some pre-channel orders.
+    sourceName: string | null;
     tags: string[];
     email: string | null;
     phone: string | null;
@@ -7911,6 +7916,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
               name
               processedAt
               displayFulfillmentStatus
+              sourceName
               tags
               email
               phone
@@ -8094,6 +8100,47 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       );
       if (isFulfilled && hasDeliveredFulfillment) {
         return null;
+      }
+
+      // ── Warehouse-method override eligibility ──────────────────────────────
+      // Non-LOCAL orders surfaced via the `includeWarehouse` toggle have
+      // stricter gates than native LOCAL rows. Per Lucas (2026-05-15):
+      //   1. Drop if `displayFulfillmentStatus` is anything other than
+      //      `UNFULFILLED` or `PARTIALLY_FULFILLED`. The existing FULFILLED-
+      //      + delivered-fulfillment check above is too permissive for
+      //      non-LOCAL: a FULFILLED order without a DELIVERED fulfillment
+      //      record was leaking through (warehouse already shipped → not a
+      //      local-delivery candidate).
+      //   2. Drop unless `sourceName` is in the allowlist — only Online Store
+      //      (`web`), completed drafts (`shopify_draft_order`), and Hexagon
+      //      (numeric app ID `316281618433`) are eligible. POS-style channels
+      //      (IGLU POS = `206755758081`, future Shopify POS, etc.) are
+      //      excluded because they represent in-store purchases that should
+      //      never be routed for delivery.
+      //
+      // LOCAL rows are untouched by this block — their existing eligibility
+      // rules remain. This filter only fires for warehouse-bound surfaces.
+      const isWarehouseBound =
+        (matchingFulfillment.deliveryMethod?.methodType ?? "").toUpperCase() !==
+        "LOCAL";
+      if (isWarehouseBound) {
+        const WAREHOUSE_SOURCE_ALLOWLIST = new Set([
+          "",                       // empty / unset
+          "web",                    // Online Store
+          "shopify_draft_order",    // Completed Draft Orders
+          "316281618433",           // Hexagon app
+        ]);
+        const channelEligible =
+          !order.sourceName || WAREHOUSE_SOURCE_ALLOWLIST.has(order.sourceName);
+        if (!channelEligible) {
+          return null;
+        }
+        const warehouseFulfillmentEligible =
+          order.displayFulfillmentStatus === "UNFULFILLED" ||
+          order.displayFulfillmentStatus === "PARTIALLY_FULFILLED";
+        if (!warehouseFulfillmentEligible) {
+          return null;
+        }
       }
 
       const locationAddress = matchingFulfillment.assignedLocation.location
