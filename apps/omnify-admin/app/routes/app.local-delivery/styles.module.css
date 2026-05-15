@@ -799,36 +799,22 @@
   align-items: center;
 }
 
-/* Warehouse-method override toggle. Sits below the Route Manager status row
-   as a deliberate "opt-in" surface — off by default, blue background when on
-   so the operator sees at a glance that they're in override mode. Click
-   anywhere on the row toggles the s-checkbox via the onClick wrapper. */
-.warehouseToggleRow {
+/* Warehouse-method override toggle (inline form). Sits between the location
+   selector and the warning badges inside .routeManagerHeaderCol as a flat
+   row — no background, no border — to read as part of the section's native
+   controls. Matches the Shopify-admin convention of stacking simple inputs
+   without per-element boxing. Click anywhere on the row toggles the
+   s-checkbox via the onClick wrapper. */
+.warehouseToggleInline {
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
   user-select: none;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: #fafbfb;
-  border: 1px solid #f1f1f1;
-  margin-top: 8px;
-}
-.warehouseToggleRow:hover {
-  background: #f1f1f2;
-}
-.warehouseToggleRowOn {
-  background: #f1f7ff;
-  border-color: #c8defc;
-}
-.warehouseToggleRowOn:hover {
-  background: #e6f0fd;
 }
 .warehouseToggleLabel {
   font-size: 13px;
   color: #303030;
-  font-weight: 500;
 }
 
 /* Route card action row — right-aligned, used for both pre-dispatch

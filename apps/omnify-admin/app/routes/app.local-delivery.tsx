@@ -4628,6 +4628,36 @@ export default function Index() {
           ))}
         </s-select>
 
+        {/* Warehouse-method override toggle. Sits between the location selector
+            and the warning badges so it reads as part of the section's native
+            controls (not a separate boxed surface). Reflects `?includeWarehouse=1`
+            in the URL. When on, the loader surfaces orders whose Shopify
+            deliveryMethod is not LOCAL (originally placed for warehouse
+            fulfillment). Operator must move each order's FulfillmentOrder to the
+            target store in Shopify admin first; this toggle then makes them
+            visible here for Lalamove dispatch. Off by default — flipping it is
+            a deliberate per-session action; the toggle does not persist. */}
+        <div
+          className={styles.warehouseToggleInline}
+          onClick={handleToggleIncludeWarehouse}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleToggleIncludeWarehouse();
+            }
+          }}
+        >
+          <s-checkbox
+            checked={includeWarehouse || undefined}
+            onChange={handleToggleIncludeWarehouse}
+          />
+          <span className={styles.warehouseToggleLabel}>
+            {t("filters.includeWarehouse")}
+          </span>
+        </div>
+
         {hasWarnings ? (
           <div className={styles.headerBadgesRow}>
             {isLocationSelected && failedDeliveryCount > 0 ? (
@@ -4762,33 +4792,6 @@ export default function Index() {
           </s-badge>
         </div>
       ) : null}
-      {/* Warehouse-method override toggle. Reflects `?includeWarehouse=1` in
-          the URL. When on, the loader surfaces orders whose Shopify
-          deliveryMethod is not LOCAL (originally placed for warehouse
-          fulfillment). Operator must move each order's FulfillmentOrder to the
-          target store in Shopify admin first; this toggle then makes them
-          visible here for Lalamove dispatch. Off by default — flipping it is a
-          deliberate per-session action; the toggle does not persist. */}
-      <div
-        className={`${styles.warehouseToggleRow}${includeWarehouse ? ` ${styles.warehouseToggleRowOn}` : ""}`}
-        onClick={handleToggleIncludeWarehouse}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            handleToggleIncludeWarehouse();
-          }
-        }}
-      >
-        <s-checkbox
-          checked={includeWarehouse || undefined}
-          onChange={handleToggleIncludeWarehouse}
-        />
-        <span className={styles.warehouseToggleLabel}>
-          {t("filters.includeWarehouse")}
-        </span>
-      </div>
       </div>
       {optimizeProgress ? (
         <div className={styles.optimizeProgressWrap}>
