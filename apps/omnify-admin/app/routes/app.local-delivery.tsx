@@ -6305,52 +6305,54 @@ export default function Index() {
                 ) : null}
                 <div className={styles.mapMetaRow}>
                   <div className={styles.mapLegendOutside}>
-                    {/* 2026-05-12: legend pills switched from emoji-as-text to
-                        Polaris `<s-icon>`. dueToday icon changed from hourglass
-                        to bolt to match the rest of the admin's "act now"
-                        affordance. Same icon family used in the map markers
-                        themselves and in the Due column of the orders table. */}
-                    <span className={styles.legendPill}>
-                      <span className={styles.legendPillEmoji}>
-                        <s-icon type="x-circle" tone="critical" size="small" />
+                    {/* 2026-05-15: six pills → single book-open chip with hover/focus
+                        popover. Frees horizontal room for the always-expanded
+                        control buttons below. Spec: inputs/mockups/local-delivery-
+                        control-row-v1.html → "Legend chip + always-expanded control
+                        buttons" section. */}
+                    <span
+                      className={styles.legendChip}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={t("map.legend.chipLabel")}
+                    >
+                      <span className={styles.legendChipIcon} aria-hidden="true">
+                        <s-icon type="book-open" size="small" />
                       </span>
-                      <span className={styles.legendPillText}>{t("map.legend.failed")}</span>
-                    </span>
-                    <span className={styles.legendPill}>
-                      <span className={styles.legendPillEmoji}>
-                        <s-icon type="alert-triangle" tone="critical" size="small" />
+                      {t("map.legend.chipLabel")}
+                      <span className={styles.legendPop} role="list">
+                        <span className={styles.legendPopItem} role="listitem">
+                          <s-icon type="x-circle" tone="critical" size="small" />
+                          {t("map.legend.failed")}
+                        </span>
+                        <span className={styles.legendPopItem} role="listitem">
+                          <s-icon type="alert-triangle" tone="critical" size="small" />
+                          {t("map.legend.overdue")}
+                        </span>
+                        <span className={styles.legendPopItem} role="listitem">
+                          <s-icon type="bolt" tone="caution" size="small" />
+                          {t("map.legend.dueToday")}
+                        </span>
+                        <span className={styles.legendPopItem} role="listitem">
+                          <s-icon type="clock" tone="info" size="small" />
+                          {t("map.legend.dueTomorrow")}
+                        </span>
+                        <span className={styles.legendPopItem} role="listitem">
+                          <s-icon type="clock" tone="neutral" size="small" />
+                          {t("map.legend.dueLater")}
+                        </span>
+                        <span className={styles.legendPopItem} role="listitem">
+                          <s-icon type="alert-triangle" tone="caution" size="small" />
+                          {t("map.legend.addressError")}
+                        </span>
                       </span>
-                      <span className={styles.legendPillText}>{t("map.legend.overdue")}</span>
-                    </span>
-                    <span className={styles.legendPill}>
-                      <span className={styles.legendPillEmoji}>
-                        <s-icon type="bolt" tone="caution" size="small" />
-                      </span>
-                      <span className={styles.legendPillText}>{t("map.legend.dueToday")}</span>
-                    </span>
-                    <span className={styles.legendPill}>
-                      <span className={styles.legendPillEmoji}>
-                        <s-icon type="clock" tone="info" size="small" />
-                      </span>
-                      <span className={styles.legendPillText}>{t("map.legend.dueTomorrow")}</span>
-                    </span>
-                    <span className={styles.legendPill}>
-                      <span className={styles.legendPillEmoji}>
-                        <s-icon type="clock" tone="neutral" size="small" />
-                      </span>
-                      <span className={styles.legendPillText}>{t("map.legend.dueLater")}</span>
-                    </span>
-                    <span className={styles.legendPill}>
-                      <span className={styles.legendPillEmoji}>
-                        <s-icon type="alert-triangle" tone="caution" size="small" />
-                      </span>
-                      <span className={styles.legendPillText}>{t("map.legend.addressError")}</span>
                     </span>
                   </div>
                   {/* Unified state-driven control row (2026-05-06 review).
-                      Buttons render only when in-context. Collapsed map block
-                      shows icons only with hover-to-expand labels (Fix #1);
-                      fullscreen keeps labels permanently expanded.
+                      Buttons render only when in-context. 2026-05-15: dropped
+                      the hover-expand pattern — labels now render permanently
+                      in BOTH collapsed map block and fullscreen (legend
+                      compaction frees the horizontal budget).
                       Spec: inputs/mockups/local-delivery-control-row-v1.html */}
                   <div
                     className={`${styles.mapBlockFooterRight}${
@@ -6391,26 +6393,27 @@ export default function Index() {
                           {showReassignCluster ? (
                             <>
                               <div className={styles.polylineReassignPopover}>
-                                <span className={styles.hoverExpandWrap}>
-                                  <s-button
-                                    key="reassign-trigger"
-                                    variant="secondary"
-                                    icon="exchange"
-                                    accessibilityLabel={t("map.polylineEdit.reassign")}
-                                    commandFor="polyline-reassign-popover"
-                                    command="--toggle"
-                                  >
-                                    <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.reassign")}</span>
-                                  </s-button>
-                                </span>
+                                <s-button
+                                  key="reassign-trigger"
+                                  variant="secondary"
+                                  icon="exchange"
+                                  accessibilityLabel={t("map.polylineEdit.reassign")}
+                                  commandFor="polyline-reassign-popover"
+                                  command="--toggle"
+                                >
+                                  {t("map.polylineEdit.reassign")}
+                                </s-button>
                                 <s-popover id="polyline-reassign-popover">
                                   <s-menu accessibilityLabel={t("map.polylineEdit.reassign")}>
                                     {routesAtLocation.map(({ route, index }) => (
                                       <s-button
                                         key={`reassign-target-${route.id}`}
-                                        commandFor="polyline-reassign-popover"
-                                        command="--hide"
-                                        onClick={() => handleMoveSelectedToRoute(route.id)}
+                                        onClick={() => {
+                                          handleMoveSelectedToRoute(route.id);
+                                          // CLAUDE.md: combining commandFor=--hide with
+                                          // onClick races; dismiss programmatically instead.
+                                          document.getElementById("polyline-reassign-popover")?.removeAttribute("open");
+                                        }}
                                       >
                                         {t("map.polylineEdit.routeOptionLabel", {
                                           routeName: t("routeManager.routeLabel", { number: index + 1 }),
@@ -6421,91 +6424,81 @@ export default function Index() {
                                   </s-menu>
                                 </s-popover>
                               </div>
-                              <span className={styles.hoverExpandWrap}>
-                                <s-button
-                                  key="unassign"
-                                  variant="secondary"
-                                  tone="critical"
-                                  icon="delete"
-                                  accessibilityLabel={t("map.polylineEdit.unassign")}
-                                  disabled={isRoutingBusy || undefined}
-                                  onClick={handleUnassignSelected}
-                                >
-                                  <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.unassign")}</span>
-                                </s-button>
-                              </span>
+                              <s-button
+                                key="unassign"
+                                variant="secondary"
+                                tone="critical"
+                                icon="delete"
+                                accessibilityLabel={t("map.polylineEdit.unassign")}
+                                disabled={isRoutingBusy || undefined}
+                                onClick={handleUnassignSelected}
+                              >
+                                {t("map.polylineEdit.unassign")}
+                              </s-button>
                             </>
                           ) : null}
                           {showAssignToNew ? (
-                            <span className={styles.hoverExpandWrap}>
-                              <s-button
-                                key="assign-to-new"
-                                variant="primary"
-                                icon="arrow-right-circle"
-                                accessibilityLabel={t("map.assignToNewRoute")}
-                                loading={isRoutingBusy}
-                                disabled={
-                                  selectedOrderIds.size === 0 ||
-                                  routesWithOrdersCount >= ROUTE_TAGS.size ||
-                                  isRoutingBusy
-                                }
-                                onClick={handleAssignToNewRoute}
-                              >
-                                <span className={styles.hoverExpandLabel}>{t("map.assignToNewRoute")}</span>
-                              </s-button>
-                            </span>
+                            <s-button
+                              key="assign-to-new"
+                              variant="primary"
+                              icon="arrow-right-circle"
+                              accessibilityLabel={t("map.assignToNewRoute")}
+                              loading={isRoutingBusy}
+                              disabled={
+                                selectedOrderIds.size === 0 ||
+                                routesWithOrdersCount >= ROUTE_TAGS.size ||
+                                isRoutingBusy
+                              }
+                              onClick={handleAssignToNewRoute}
+                            >
+                              {t("map.assignToNewRoute")}
+                            </s-button>
                           ) : null}
                           {showClearSelection ? (
-                            <span className={styles.hoverExpandWrap}>
-                              <s-button
-                                key="clear-selection"
-                                variant="secondary"
-                                icon="minus-circle"
-                                accessibilityLabel={t("map.clearSelection")}
-                                disabled={isRoutingBusy || undefined}
-                                onClick={clearSelection}
-                              >
-                                <span className={styles.hoverExpandLabel}>{t("map.clearSelection")}</span>
-                              </s-button>
-                            </span>
+                            <s-button
+                              key="clear-selection"
+                              variant="secondary"
+                              icon="minus-circle"
+                              accessibilityLabel={t("map.clearSelection")}
+                              disabled={isRoutingBusy || undefined}
+                              onClick={clearSelection}
+                            >
+                              {t("map.clearSelection")}
+                            </s-button>
                           ) : null}
                           {showConfirm ? (
-                            <span className={styles.hoverExpandWrap}>
-                              <s-button
-                                key="confirm"
-                                variant="primary"
-                                icon="check-circle"
-                                accessibilityLabel={t("map.polylineEdit.confirm")}
-                                disabled={isRoutingBusy}
-                                onClick={confirmPolylineEditMode}
-                              >
-                                <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.confirm")}</span>
-                              </s-button>
-                            </span>
+                            <s-button
+                              key="confirm"
+                              variant="primary"
+                              icon="check-circle"
+                              accessibilityLabel={t("map.polylineEdit.confirm")}
+                              disabled={isRoutingBusy}
+                              onClick={confirmPolylineEditMode}
+                            >
+                              {t("map.polylineEdit.confirm")}
+                            </s-button>
                           ) : null}
                           {showExit ? (
-                            <span className={styles.hoverExpandWrap}>
-                              <s-button
-                                key="exit"
-                                variant="secondary"
-                                icon="x"
-                                accessibilityLabel={t("map.polylineEdit.exit")}
-                                onClick={() => {
-                                  // Exit-confirm gate: when changes are
-                                  // pending (States D / D' / G in the matrix),
-                                  // open the confirmation modal first. State B
-                                  // (no work pending) exits immediately. Spec:
-                                  // inputs/mockups/local-delivery-control-row-v1.html
-                                  if (hasChangesPending) {
-                                    setExitConfirmOpen(true);
-                                  } else {
-                                    cancelPolylineEditMode();
-                                  }
-                                }}
-                              >
-                                <span className={styles.hoverExpandLabel}>{t("map.polylineEdit.exit")}</span>
-                              </s-button>
-                            </span>
+                            <s-button
+                              key="exit"
+                              variant="secondary"
+                              icon="x"
+                              accessibilityLabel={t("map.polylineEdit.exit")}
+                              onClick={() => {
+                                // Exit-confirm gate: when changes are
+                                // pending (States D / D' / G in the matrix),
+                                // open the confirmation modal first. State B
+                                // (no work pending) exits immediately. Spec:
+                                // inputs/mockups/local-delivery-control-row-v1.html
+                                if (hasChangesPending) {
+                                  setExitConfirmOpen(true);
+                                } else {
+                                  cancelPolylineEditMode();
+                                }
+                              }}
+                            >
+                              {t("map.polylineEdit.exit")}
+                            </s-button>
                           ) : null}
                         </>
                       );

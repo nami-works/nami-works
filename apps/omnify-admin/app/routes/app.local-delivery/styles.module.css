@@ -88,46 +88,6 @@
   display: inline-block;
 }
 
-/* Hover-expand control buttons.
-   History:
-   - 2026-05-06 v1: label as CHILD of <s-button> with max-width:0. Width was
-     bigger than icon-only because Polaris allocated text-padding even when
-     the text span had max-width:0.
-   - 2026-05-08 v2: label moved to SIBLING of <s-button> with pointer-events:
-     none. Collapsed width matched icon-only buttons exactly, BUT clicking the
-     revealed label did nothing (click landed outside the button).
-   - 2026-05-12 v3 (current): label is a CHILD of <s-button> again, this time
-     with pointer-events restored so the revealed label IS part of the
-     button's click target. Color inherits from the button's own text color
-     (variant + tone), so a critical-tone button reveals a red label and a
-     primary-tone button reveals a white label automatically. The slight
-     collapsed-state width increase from Polaris' text-padding is the
-     accepted trade-off for a clickable label. */
-.hoverExpandWrap {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-.hoverExpandLabel {
-  display: inline-block;
-  white-space: nowrap;
-  overflow: hidden;
-  max-width: 0;
-  margin-left: 0;
-  font-size: 13px;
-  color: inherit; /* picks up the s-button text color (variant + tone) */
-  transition: max-width 0.2s ease, margin-left 0.2s ease;
-}
-.hoverExpandWrap:hover .hoverExpandLabel {
-  max-width: 220px;
-  margin-left: 4px;
-}
-/* 2026-05-10 r2 update: Lucas liked the hover-expand effect, so keep it
-   on BOTH collapsed and fullscreen views (was permanently-expanded in
-   fullscreen until now). Removed the
-   `.mapBlockFooterRightFullscreen .hoverExpandLabel { max-width: 220px }`
-   override -- the universal :hover rule above now covers both modes. */
-
 /* Legacy class kept as a no-op alias so any leftover usage doesn't break. */
 .btnLabel {
   display: none;
@@ -172,41 +132,74 @@
   gap: 8px;
 }
 
-.legendPill {
+/* Legend chip — collapsed single trigger that reveals the full legend on
+   hover/focus. Replaces the 2026-05-12 six-pill strip. Pure CSS reveal via
+   :hover + :focus-within (no JS) so it works for both pointer and keyboard.
+   The popover anchors above the chip (bottom-up) because the meta row sits
+   at the bottom of the map block. Spec: inputs/mockups/local-delivery-
+   control-row-v1.html. */
+.legendChip {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0;
-  background: #f1f2f3;
-  border-radius: 16px;
-  padding: 4px 8px;
-  cursor: default;
-  transition: gap 0.2s ease;
-  overflow: hidden;
-}
-
-.legendPill:hover {
-  gap: 4px;
-}
-
-.legendPillEmoji {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.legendPillText {
-  font-size: 12px;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 99px;
   color: #6d7175;
-  max-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  opacity: 0;
-  transition: max-width 0.25s ease, opacity 0.2s ease;
+  font-size: 12px;
+  cursor: default;
+  user-select: none;
+  outline: none;
 }
 
-.legendPill:hover .legendPillText {
-  max-width: 120px;
-  opacity: 1;
+.legendChip:hover,
+.legendChip:focus-within {
+  color: #303030;
+  border-color: #8c9196;
+}
+
+.legendChipIcon {
+  display: inline-flex;
+  align-items: center;
+  color: #6d7175;
+}
+
+.legendChip:hover .legendChipIcon,
+.legendChip:focus-within .legendChipIcon {
+  color: #303030;
+}
+
+.legendPop {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  min-width: 320px;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  display: none;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 16px;
+  row-gap: 8px;
+  z-index: 10;
+}
+
+.legendChip:hover .legendPop,
+.legendChip:focus-within .legendPop {
+  display: grid;
+}
+
+.legendPopItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #303030;
+  white-space: nowrap;
 }
 
 .mapPoint {

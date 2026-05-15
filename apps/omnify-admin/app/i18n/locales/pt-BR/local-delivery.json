@@ -34,7 +34,8 @@
       "failed": "Falhou",
       "failedEmoji": "🚫",
       "addressErrorEmoji": "🟡",
-      "addressError": "Problema no endereço"
+      "addressError": "Problema no endereço",
+      "chipLabel": "Legenda"
     },
     "noMapAvailable": "Mapa não disponível.",
     "locationGate": {
