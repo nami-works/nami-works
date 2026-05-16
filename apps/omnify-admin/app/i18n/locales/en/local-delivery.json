@@ -257,14 +257,13 @@
       "noErrors": "No address errors found.",
       "footer": "These orders may have incomplete or invalid delivery addresses.",
       "fixAddress": "Fix address in Shopify",
-      "fixAddresses": "Fix addresses",
+      "fixAddresses": "Fix on Orders page",
       "openInShopify": "Open in Shopify",
       "close": "Close",
       "apartmentInAddress": "Apartment/unit details likely in address line 1.",
       "duplicateNumber": "Potential duplicate number across address lines.",
       "multipleNumbers": "Multiple numbers found in address line 1 — possible formatting error.",
-      "reviewNeeded": "Address needs confirmation.",
-      "instruction": "Open the order, then use Customer > ... > Edit shipping address."
+      "reviewNeeded": "Address needs confirmation."
     },
     "addressWarn": {
       "heading": "Potential address errors in this route",

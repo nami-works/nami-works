@@ -252,14 +252,13 @@
       "noErrors": "Nenhum erro de endereço encontrado.",
       "footer": "Estes pedidos podem ter endereços de entrega incompletos ou inválidos.",
       "fixAddress": "Corrigir endereço no Shopify",
-      "fixAddresses": "Corrigir endereços",
+      "fixAddresses": "Corrigir na página de pedidos",
       "openInShopify": "Abrir no Shopify",
       "close": "Fechar",
       "apartmentInAddress": "Detalhes de apartamento/unidade provavelmente na linha 1 do endereço.",
       "duplicateNumber": "Possível número duplicado entre as linhas do endereço.",
       "multipleNumbers": "Múltiplos números encontrados na linha 1 do endereço — possível erro de formatação.",
-      "reviewNeeded": "Endereço precisa de confirmação.",
-      "instruction": "Abra o pedido, depois use Cliente > ... > Editar endereço de entrega."
+      "reviewNeeded": "Endereço precisa de confirmação."
     },
     "addressWarn": {
       "heading": "Possíveis erros de endereço nesta rota",

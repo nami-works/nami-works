@@ -5841,31 +5841,31 @@ export default function Index() {
               </s-box>
             ))
           )}
-          <s-text color="subdued">
-            {t("modals.addressErrors.instruction")}
-          </s-text>
           <div className={styles.assignModalFooter}>
             <s-button
               variant="secondary"
-              commandFor="address-errors-modal"
-              command="--hide"
-              onClick={() => setIsAddressErrorsModalOpen(false)}
+              onClick={() => {
+                setIsAddressErrorsModalOpen(false);
+                document
+                  .getElementById("address-errors-modal")
+                  ?.removeAttribute("open");
+              }}
             >
               {t("modals.addressErrors.close")}
             </s-button>
             {addressErrorOrders.length > 0 ? (
               <s-button
                 variant="primary"
-                onClick={() => {
-                  // Deep-link to Shopify's order list filtered by ld_address-confirm.
-                  // Note: orders carrying ld_number-confirm (Track 4 Pattern 3)
-                  // are also surfaced in the badge — operator can toggle the
-                  // tag filter inside Shopify after landing.
-                  const url = `https://${shop}/admin/orders?query=tag%3Ald_address-confirm`;
-                  if (typeof window !== "undefined") {
-                    window.open(url, "_blank", "noopener,noreferrer");
-                  }
-                }}
+                href={
+                  // Shopify orders index, filtered by ld_address-confirm,
+                  // forced to "All locations" via selectedView=all so the
+                  // operator's last-used location filter doesn't hide results.
+                  // Polaris-native href (App-Bridge-aware) avoids the
+                  // window.open store-prefix duplication we hit on the
+                  // Order details modal (fix landed 2026-05-16).
+                  `https://admin.shopify.com/store/${toAdminStoreHandle(shop)}/orders?query=${encodeURIComponent("tag:ld_address-confirm")}&selectedView=all`
+                }
+                target="_blank"
               >
                 {t("modals.addressErrors.fixAddresses")}
               </s-button>
@@ -8298,6 +8298,45 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     })
     .filter((order): order is LoaderOrder => Boolean(order));
   endFilterMap(`fetched=${orders.length} kept=${filteredOrders.length}`);
+
+  // 2026-05-16: persist the runtime address-validation flag as a Shopify tag.
+  // Any order the loader flagged as `addressValidation.isValid === false` AND
+  // not already carrying LD_ADDRESS_CONFIRM_TAG gets tagged in the background.
+  // Fire-and-forget — the loader response doesn't wait, and idempotent addTags
+  // means concurrent loads can't double-write. Goal: keep the tag visible to
+  // operators across surfaces (Shopify Orders page filter, Order details modal,
+  // automated dispatch skip-list) without depending on the auto-delivery cron
+  // having seen the order first.
+  const ordersNeedingAddressTag = filteredOrders.filter(
+    (o) =>
+      !o.addressValidation.isValid &&
+      !(o.tags ?? []).includes(LD_ADDRESS_CONFIRM_TAG),
+  );
+  if (ordersNeedingAddressTag.length > 0) {
+    void (async () => {
+      try {
+        const { addTags } = await import("../services/lalamove-sync.server");
+        for (const o of ordersNeedingAddressTag) {
+          try {
+            await addTags(admin, o.id, [LD_ADDRESS_CONFIRM_TAG]);
+          } catch (err) {
+            console.warn(
+              `[local-delivery:address-tag-sync] failed order=${o.id} shop=${shop}`,
+              err,
+            );
+          }
+        }
+        console.info(
+          `[local-delivery:address-tag-sync] OK shop=${shop} tagged=${ordersNeedingAddressTag.length}`,
+        );
+      } catch (err) {
+        console.warn(
+          `[local-delivery:address-tag-sync] FAILED shop=${shop}`,
+          err,
+        );
+      }
+    })();
+  }
 
   const endRouteStats = timeStep("route-stats-build");
   const routeStats = ROUTE_TAG_DEFINITIONS.map((route) => {
