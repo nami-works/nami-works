@@ -198,22 +198,34 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
-  font-size: 12px;
-  color: #6d7175;
-  font-weight: 500;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
+/* Polaris-native card title: 14px / 600 / #303030, matches the heading
+   weight used by <s-section heading={...}> across the admin (Auto-assign
+   accuracy, LD Analytics aside, etc.). Was 12px / 500 / #6d7175 — that's
+   the metadata color, not a title color. */
 .metricLabelLeft {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  font-size: 14px;
+  color: #303030;
+  font-weight: 600;
+  line-height: 1;
 }
 
+/* Icon sits on the title's optical center: 16px to pair with 14px text,
+   display: block + line-height: 0 to drop the inline-baseline offset
+   <s-icon> inherits from its host's font-metrics (was visibly higher
+   than the title's x-height at 14px / 14px-icon). */
 .metricLabelLeft s-icon {
-  width: 14px;
-  height: 14px;
-  color: #8c9196;
+  width: 16px;
+  height: 16px;
+  color: #303030;
+  display: block;
+  line-height: 0;
 }
 
 .metricRange {
@@ -307,14 +319,20 @@
   border-radius: 8px;
   background: #ebf2ff;
   color: #005bd3;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  /* display: grid + place-items: center is the bulletproof centering for
+     web-component children: <s-icon> inherits inline-baseline metrics
+     from its host's font-size which made inline-flex+align/justify-center
+     render the glyph ~2px above true center. Grid places the cell at
+     true geometric center regardless of intrinsic line-height. */
+  display: grid;
+  place-items: center;
 }
 
 .jumpIcon s-icon {
   width: 16px;
   height: 16px;
+  display: block;
+  line-height: 0;
 }
 
 .jumpBody {
