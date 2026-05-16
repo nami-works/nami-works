@@ -35,7 +35,8 @@
       "failedEmoji": "🚫",
       "addressErrorEmoji": "🟡",
       "addressError": "Address issue",
-      "chipLabel": "Legend"
+      "chipLabel": "Legend",
+      "routedFromWarehouse": "Routed from warehouse"
     },
     "noMapAvailable": "Map not available.",
     "locationGate": {

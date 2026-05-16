@@ -132,38 +132,40 @@
   gap: 8px;
 }
 
-/* Legend chip — collapsed single trigger that reveals the full legend on
-   hover/focus. Replaces the 2026-05-12 six-pill strip. Pure CSS reveal via
-   :hover + :focus-within (no JS) so it works for both pointer and keyboard.
-   The popover anchors above the chip (bottom-up) because the meta row sits
-   at the bottom of the map block. Spec: inputs/mockups/local-delivery-
-   control-row-v1.html. */
+/* Legend chip — single trigger that reveals the full legend on hover/focus.
+   Replaces the 2026-05-12 six-pill strip. Visual mirrors a Polaris secondary
+   <s-button> icon-only button at rest; on hover/focus the "Legend" label
+   slides out next to the icon AND the popover opens above. Spec:
+   inputs/mockups/local-delivery-control-row-v1.html. */
 .legendChip {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
+  gap: 0;
+  padding: 6px 8px;
   background: #ffffff;
-  border: 1px solid #e1e3e5;
-  border-radius: 99px;
+  border: 1px solid #babfc4;
+  border-radius: 8px;
   color: #6d7175;
-  font-size: 12px;
+  font-size: 13px;
   cursor: default;
   user-select: none;
   outline: none;
+  transition: gap 0.2s ease;
 }
 
 .legendChip:hover,
 .legendChip:focus-within {
   color: #303030;
   border-color: #8c9196;
+  gap: 6px;
 }
 
 .legendChipIcon {
   display: inline-flex;
   align-items: center;
   color: #6d7175;
+  flex-shrink: 0;
 }
 
 .legendChip:hover .legendChipIcon,
@@ -171,26 +173,46 @@
   color: #303030;
 }
 
+/* "Legend" label — slides out from max-width:0 on hover/focus. Same mechanic
+   the deleted .hoverExpandLabel used on the control buttons. */
+.legendChipLabel {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 0;
+  color: inherit;
+  transition: max-width 0.2s ease;
+}
+
+.legendChip:hover .legendChipLabel,
+.legendChip:focus-within .legendChipLabel {
+  max-width: 100px;
+}
+
 .legendPop {
   position: absolute;
   bottom: calc(100% + 8px);
   left: 0;
-  min-width: 320px;
   padding: 10px 12px;
   background: #ffffff;
   border: 1px solid #e1e3e5;
   border-radius: 8px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
   display: none;
-  grid-template-columns: 1fr 1fr;
-  column-gap: 16px;
-  row-gap: 8px;
+  gap: 4px;
   z-index: 10;
 }
 
 .legendChip:hover .legendPop,
 .legendChip:focus-within .legendPop {
-  display: grid;
+  display: flex;
+}
+
+.legendPopCol {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 140px;
 }
 
 .legendPopItem {

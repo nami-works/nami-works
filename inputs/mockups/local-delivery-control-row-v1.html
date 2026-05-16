@@ -406,27 +406,47 @@
   .copy-variant .body-line { color: var(--text); line-height: 1.45; }
 
   /* ==== Legend chip (compacted, hover/focus reveals popover) ==== */
+  /* Chip mimics a Polaris secondary <s-button> icon-only at rest. Word "Legend"
+     is rendered with max-width:0 + transition so it slides out on hover/focus
+     — same mechanic the old .hoverExpandLabel used on the control buttons. */
   .legend-chip {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
+    gap: 0;
+    padding: 6px 8px;
     background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 99px;
+    border: 1px solid #babfc4;
+    border-radius: 8px;
     color: var(--subdued);
-    font-size: 12px;
+    font-size: 13px;
     cursor: default;
     position: relative;
     user-select: none;
+    transition: gap 0.2s ease;
+    outline: none;
   }
   .legend-chip:hover,
-  .legend-chip:focus-within { color: var(--text); border-color: #8c9196; }
+  .legend-chip:focus-within {
+    color: var(--text);
+    border-color: #8c9196;
+    gap: 6px;
+  }
+  .legend-chip > span:not(.legend-chip-icon):not(.legend-pop) {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 0;
+    transition: max-width 0.2s ease;
+  }
+  .legend-chip:hover > span:not(.legend-chip-icon):not(.legend-pop),
+  .legend-chip:focus-within > span:not(.legend-chip-icon):not(.legend-pop) {
+    max-width: 100px;
+  }
   .legend-chip-icon {
     display: inline-flex;
     align-items: center;
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     color: var(--subdued);
   }
   .legend-chip:hover .legend-chip-icon,
@@ -435,20 +455,23 @@
     position: absolute;
     bottom: calc(100% + 8px);
     left: 0;
-    min-width: 320px;
     padding: 10px 12px;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 8px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
     display: none;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 16px;
-    row-gap: 8px;
+    gap: 4px;
     z-index: 10;
   }
   .legend-chip:hover .legend-pop,
-  .legend-chip:focus-within .legend-pop { display: grid; }
+  .legend-chip:focus-within .legend-pop { display: flex; }
+  .legend-pop-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 140px;
+  }
   .legend-pop-item {
     display: inline-flex;
     align-items: center;
@@ -546,11 +569,11 @@
   <h3 style="text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--text); margin: 18px 0 6px;">Meta row rendering</h3>
   <div style="display: grid; grid-template-columns: 1fr; gap: 10px; max-width: 880px;">
     <div>
-      <div class="form-label" style="margin: 0 0 4px;"><h3>Idle state</h3><span class="badge">One chip + always-expanded buttons</span></div>
+      <div class="form-label" style="margin: 0 0 4px;"><h3>Idle state</h3><span class="badge">Icon-only chip + always-expanded buttons</span></div>
       <div class="map-footer">
         <div class="legend">
-          <span class="legend-chip" tabindex="0" aria-label="Legend">
-            <span class="legend-chip-icon" aria-hidden="true">📖</span> Legend
+          <span class="legend-chip" tabindex="0" aria-label="Legend" title="Legend">
+            <span class="legend-chip-icon" aria-hidden="true">📖</span>
           </span>
         </div>
         <div class="actions">
@@ -560,23 +583,29 @@
           <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
         </div>
       </div>
-      <p style="font-size: 11px; color: var(--ok); margin: 4px 0 0;">↑ Single legend chip (icon + word "Legend") + buttons rendered with icon + label permanently. Legend popover opens on hover/focus. Buttons readable at a glance; legend discoverable as a single affordance.</p>
+      <p style="font-size: 11px; color: var(--ok); margin: 4px 0 0;">↑ At rest: legend trigger is icon-only (just the <code>book-open</code> icon), styled to mirror a Polaris secondary <code>&lt;s-button&gt;</code> (white background, gray border). Word "Legend" is hidden until hover/focus. Action buttons stay always-expanded.</p>
     </div>
 
     <div style="margin-top: 14px;">
-      <div class="form-label" style="margin: 0 0 4px;"><h3>Popover open — hover/focus state</h3><span class="badge">2 items per row · 3 rows</span></div>
+      <div class="form-label" style="margin: 0 0 4px;"><h3>Hover/focus state</h3><span class="badge">Label expands + popover opens</span></div>
       <div style="position: relative; max-width: 880px;">
         <div class="map-footer">
           <div class="legend">
             <span class="legend-chip" style="border-color: #8c9196; color: var(--text);" aria-label="Legend (open)">
-              <span class="legend-chip-icon" style="color: var(--text);" aria-hidden="true">📖</span> Legend
-              <span class="legend-pop" style="display: grid; position: absolute; bottom: 100%; margin-bottom: 8px;">
-                <span class="legend-pop-item critical"><span class="swatch">⊗</span> Failed</span>
-                <span class="legend-pop-item critical"><span class="swatch">⚠</span> Overdue</span>
-                <span class="legend-pop-item caution"><span class="swatch">⚡</span> Due today</span>
-                <span class="legend-pop-item info"><span class="swatch">⏱</span> Due tomorrow</span>
-                <span class="legend-pop-item neutral"><span class="swatch">⏱</span> Due later</span>
-                <span class="legend-pop-item caution"><span class="swatch">⚠</span> Address error</span>
+              <span class="legend-chip-icon" style="color: var(--text);" aria-hidden="true">📖</span>
+              <span style="margin-left: 6px;">Legend</span>
+              <span class="legend-pop" style="display: flex; position: absolute; bottom: 100%; margin-bottom: 8px;">
+                <span class="legend-pop-col">
+                  <span class="legend-pop-item critical"><span class="swatch">⚠</span> Overdue</span>
+                  <span class="legend-pop-item caution"><span class="swatch">⚡</span> Due today</span>
+                  <span class="legend-pop-item info"><span class="swatch">⏱</span> Due tomorrow</span>
+                  <span class="legend-pop-item neutral"><span class="swatch">⏱</span> Due later</span>
+                </span>
+                <span class="legend-pop-col">
+                  <span class="legend-pop-item caution"><span class="swatch">⚠</span> Address error</span>
+                  <span class="legend-pop-item critical"><span class="swatch">⊗</span> Failed</span>
+                  <span class="legend-pop-item neutral"><span class="swatch">📦</span> Routed from warehouse</span>
+                </span>
               </span>
             </span>
           </div>
@@ -588,52 +617,57 @@
           </div>
         </div>
       </div>
-      <p style="font-size: 11px; color: var(--subdued); margin: 4px 0 0;">↑ Popover anchored above the chip (bottom-up), aligned to chip's left edge. Width: <code>min-width: 320px</code>. Grid: <code>1fr 1fr</code>, gap 16/8. Stays open while pointer or focus is on chip OR popover (CSS <code>:focus-within</code>). Closes on <code>blur</code> + <code>mouseleave</code>.</p>
+      <p style="font-size: 11px; color: var(--subdued); margin: 4px 0 0;">↑ On hover (or keyboard focus, via <code>:focus-within</code> + <code>tabindex="0"</code>): the "Legend" word slides out next to the icon AND the popover opens above the chip. Popover has <strong>two unlabeled columns</strong>: time-sensitive (chronological worst-first) on the left, others (alphabetical) on the right. Column gap reduced from 16px → <strong>4px</strong> for a tighter group.</p>
     </div>
   </div>
 
-  <h3 style="text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--text); margin: 22px 0 6px;">Legend contents — six items, locked to map-marker icons</h3>
+  <h3 style="text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--text); margin: 22px 0 6px;">Legend contents — seven items in two unlabeled columns</h3>
   <table style="width: 100%; max-width: 880px; border-collapse: collapse; font-size: 12px;">
     <thead>
       <tr style="background: #fafafa; color: var(--subdued); text-transform: uppercase; letter-spacing: 0.3px; font-size: 11px;">
         <th style="padding: 6px 8px; text-align: left; border-bottom: 2px solid var(--border);">Row</th>
-        <th style="padding: 6px 8px; text-align: left; border-bottom: 2px solid var(--border);">Col 1 (left)</th>
-        <th style="padding: 6px 8px; text-align: left; border-bottom: 2px solid var(--border);">Col 2 (right)</th>
+        <th style="padding: 6px 8px; text-align: left; border-bottom: 2px solid var(--border);">Col 1 — time-sensitive (chronological)</th>
+        <th style="padding: 6px 8px; text-align: left; border-bottom: 2px solid var(--border);">Col 2 — others (alphabetical)</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td style="padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--subdued);">1</td>
-        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>x-circle</code> · critical · <strong>Failed</strong></td>
         <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>alert-triangle</code> · critical · <strong>Overdue</strong></td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>alert-triangle</code> · caution · <strong>Address error</strong></td>
       </tr>
       <tr>
         <td style="padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--subdued);">2</td>
         <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>bolt</code> · caution · <strong>Due today</strong></td>
-        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>clock</code> · info · <strong>Due tomorrow</strong></td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>x-circle</code> · critical · <strong>Failed</strong></td>
       </tr>
       <tr>
         <td style="padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--subdued);">3</td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>clock</code> · info · <strong>Due tomorrow</strong></td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>package</code> · neutral · <strong>Routed from warehouse</strong> (NEW)</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--subdued);">4</td>
         <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>clock</code> · neutral · <strong>Due later</strong></td>
-        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>alert-triangle</code> · caution · <strong>Address error</strong></td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--subdued); font-style: italic;">(empty)</td>
       </tr>
     </tbody>
   </table>
-  <p style="font-size: 11px; color: var(--subdued); margin: 6px 0 0;">Order matches production (worst-first severity reading down-then-right). Tones are Polaris <code>&lt;s-icon tone&gt;</code> values, not custom colors. Same icon+tone combination used on the map markers themselves and in the Due column of the orders table — single source-of-truth for marker semantics.</p>
+  <p style="font-size: 11px; color: var(--subdued); margin: 6px 0 0;">Two unlabeled columns, separated visually only (no column headers in the rendered popover). Time-sensitive items sorted by urgency (worst first). "Others" sorted alphabetically by English label. The new "Routed from warehouse" row uses the Polaris <code>package</code> icon at neutral tone — it's an origin marker (the order came from the warehouse rather than from a store location), not a status. Mirrors the package-icon treatment already on the map markers themselves for warehouse-origin orders.</p>
 
   <div class="notes" style="max-width: none; margin-top: 14px;">
     <h3>Notes &amp; tradeoffs — legend chip + always-expanded buttons</h3>
     <ul>
       <li><strong>Why <code>book-open</code> for the chip.</strong> Lucas picked this from the Polaris <code>IconType</code> union. Semantically reads as "reference / look up what these mean" — matches the chip's purpose. Verified to exist in <code>node_modules/@shopify/polaris-types/dist/polaris.d.ts</code>. Render via <code>&lt;s-icon type="book-open" size="small"&gt;</code>.</li>
-      <li><strong>The literal word "Legend" stays on the chip.</strong> Icon alone is discoverable but ambiguous (could read as "open documentation"). The word "Legend" pinned next to the icon disambiguates and is bilingual-friendly via <code>map.legend.chipLabel</code> ("Legend" / "Legenda").</li>
-      <li><strong>Why hover/focus + pure CSS, not a Polaris <code>&lt;s-popover&gt;</code>.</strong> The popover needs to open on hover (Polaris popovers are click-toggle). Pure CSS <code>:hover</code> + <code>:focus-within</code> is the same pattern already used by the existing six pills (<code>.legendPill:hover .legendPillText</code>) — consistent with what's there, no new component. Keyboard users tab to the chip; <code>:focus-within</code> + <code>tabindex="0"</code> on the chip keeps the popover open while focus is anywhere inside.</li>
-      <li><strong>Why the chip uses <code>:focus-within</code> not <code>:focus</code>.</strong> Some assistive-tech focus rings land on individual popover items. <code>:focus-within</code> on the outer chip element keeps the popover open as focus moves between the chip and its items.</li>
-      <li><strong>Popover position: above the chip (bottom-up).</strong> The meta row sits at the bottom of the map block. Anchoring above keeps the popover from being clipped by anything below. <code>bottom: calc(100% + 8px); left: 0;</code> aligns the popover to the chip's left edge so it visually "grows up" from the trigger.</li>
-      <li><strong>Mobile.</strong> Hover doesn't exist on touch. <code>:focus-within</code> still fires on tap (chip is <code>tabindex="0"</code>). Tapping the chip focuses it → popover opens; tap elsewhere → blur → popover closes. Acceptable. If iOS Safari blur quirks surface, fall back to a click-toggle backed by a small <code>useState</code> — but try CSS-only first.</li>
-      <li><strong>Always-expanded buttons.</strong> Drop <code>.hoverExpandWrap</code> / <code>.hoverExpandLabel</code> usage in the control-row buttons; render <code>&lt;s-button&gt;</code> with icon + label inline. The CSS classes can stay (used elsewhere) but the route stops applying them to the control cluster. Reassign-popover trigger keeps the popover affordance, just no longer hidden behind a hover label.</li>
-      <li><strong>What this fixes operationally.</strong> Three regressions reported since the hover-expand shipped: (1) operators not realizing what each icon means until they hover — slow scanning; (2) on touch laptops, hover-discoverability is unreliable; (3) screen-readers announce the button without context until tabbed-into. Always-expanded labels solve all three.</li>
-      <li><strong>What this does NOT change.</strong> The Reassign-to ▾ popover (the route-target picker that's the subject of this branch's other fix) stays a click-popover, not hover. Same for ⋯ More actions. Only the legend trigger gets the hover-expand pattern.</li>
-      <li><strong>i18n keys to add.</strong> <code>map.legend.chipLabel</code> (en: "Legend" / pt-BR: "Legenda"). The six legend item labels (<code>map.legend.failed</code>, <code>.overdue</code>, <code>.dueToday</code>, <code>.dueTomorrow</code>, <code>.dueLater</code>, <code>.addressError</code>) already exist and are reused inside the popover.</li>
+      <li><strong>Chip visual mirrors a Polaris secondary <code>&lt;s-button&gt;</code>.</strong> White background, light-gray border, 6/8px padding, font 13px. At rest the chip is icon-only (the word "Legend" is hidden via the same <code>max-width: 0</code> + <code>:hover</code>/<code>:focus-within</code> reveal pattern that previously sat on <code>.hoverExpandWrap</code>/<code>.hoverExpandLabel</code> for the control buttons). Lucas explicitly asked for this hover-expand treatment on the legend trigger only — the control buttons stay always-expanded.</li>
+      <li><strong>The "Legend" word reveals on hover, not at rest.</strong> Icon alone is ambiguous (could read as "open documentation") but the chip already mimics a Polaris button, which gives merchants the affordance cue. Hovering surfaces the explicit label + opens the popover in one step. Bilingual via <code>map.legend.chipLabel</code> ("Legend" / "Legenda").</li>
+      <li><strong>Popover layout: two unlabeled columns.</strong> Time-sensitive on the left (Overdue → Due today → Due tomorrow → Due later, worst-first chronological), others on the right (Address error → Failed → Routed from warehouse, alphabetical). Column gap reduced from 16px → 4px for a tighter group. Row gap stays at 8px. No column headers — the categorical separation is visual only.</li>
+      <li><strong>Routed-from-warehouse is an origin marker, not a status.</strong> Mirrors the existing map-marker treatment for warehouse-origin orders (already shipped 2026-05-14 in <code>eab4a01</code>). Lives in the "others" column, sorted alphabetically. Polaris <code>package</code> icon at <code>neutral</code> tone — same icon+tone used on the marker itself.</li>
+      <li><strong>Why hover/focus + pure CSS, not a Polaris <code>&lt;s-popover&gt;</code>.</strong> The popover needs to open on hover; Polaris popovers are click-toggle. Pure CSS <code>:hover</code> + <code>:focus-within</code> on the chip wrapper handles both pointer and keyboard. <code>:focus-within</code> + <code>tabindex="0"</code> on the chip keeps the popover open while focus is anywhere inside (so a screen-reader user tabbing through items stays inside the popover).</li>
+      <li><strong>Popover position: above the chip (bottom-up).</strong> The meta row sits at the bottom of the map block. Anchoring above keeps the popover from being clipped. <code>bottom: calc(100% + 8px); left: 0;</code> aligns to the chip's left edge so it visually "grows up" from the trigger.</li>
+      <li><strong>Mobile.</strong> Hover doesn't exist on touch. <code>:focus-within</code> still fires on tap (chip is <code>tabindex="0"</code>). Tapping focuses it → popover opens; tap elsewhere → blur → popover closes.</li>
+      <li><strong>What this does NOT change.</strong> The Reassign-to ▾ popover (route-target picker) stays click-toggle, not hover. Same for ⋯ More actions. Only the legend trigger gets the hover-expand pattern.</li>
+      <li><strong>i18n keys.</strong> Already shipped: <code>map.legend.chipLabel</code>, <code>.failed</code>, <code>.overdue</code>, <code>.dueToday</code>, <code>.dueTomorrow</code>, <code>.dueLater</code>, <code>.addressError</code>. New in this iteration: <code>map.legend.routedFromWarehouse</code> (en: "Routed from warehouse" / pt-BR: "Roteado do armazém" — matches the existing "Roteados do armazém" plural form used in the warehouse counter at <code>filters.warehouseCount</code>).</li>
     </ul>
   </div>
 </div>
@@ -1204,7 +1238,8 @@
       <tr><td>Clear selection</td><td><code>minus-circle</code></td><td>⊖</td><td>Single icon across States C / D' / E. Now visually distinct from Unassign (🗑). Neutral tone — reads as "drop selection".</td></tr>
       <tr><td>Assign to new route</td><td><code>arrow-right-circle</code></td><td>⊕</td><td>"Add new route from these orders".</td></tr>
       <tr><td>⋯ More actions</td><td><code>menu-horizontal</code></td><td>⋯</td><td>Already used for the per-route overflow menu — consistent. Current contents: Map style (only). See "⋯ More actions menu — contents contract" section.</td></tr>
-      <tr class="changed"><td>Legend chip (NEW)</td><td><code>book-open</code></td><td>📖</td><td><strong>Added this iteration.</strong> Single chip replaces the six-pill legend strip. Polaris-native, verified to exist in the <code>IconType</code> union. Renders as <code>&lt;s-icon type="book-open" size="small"&gt;</code>. Word "Legend" stays inline next to the icon for clarity; hover/focus opens the 2-per-row popover with the six legend items.</td></tr>
+      <tr class="changed"><td>Legend chip</td><td><code>book-open</code></td><td>📖</td><td>Single chip replaces the six-pill legend strip. Polaris-native, verified to exist in the <code>IconType</code> union. Renders as <code>&lt;s-icon type="book-open" size="small"&gt;</code>. Chip is <strong>icon-only at rest</strong> (styled like a Polaris secondary <code>&lt;s-button&gt;</code>); hover/focus reveals the "Legend" label inline AND opens the popover anchored above.</td></tr>
+      <tr class="changed"><td>Routed from warehouse (NEW)</td><td><code>package</code></td><td>📦</td><td><strong>Added in legend-tweaks iteration.</strong> New legend item for the "others" column. Mirrors the package-icon marker treatment already on the map for warehouse-origin orders (shipped 2026-05-14 in <code>eab4a01</code>). Tone: <code>neutral</code> — it's an origin marker, not a status. Sorted alphabetically inside its column (last item, after "Address error" and "Failed").</td></tr>
     </tbody>
   </table>
   <p style="margin-top: 12px; font-size: 11px; color: var(--subdued);">

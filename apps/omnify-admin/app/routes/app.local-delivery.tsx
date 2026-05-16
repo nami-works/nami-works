@@ -6305,11 +6305,13 @@ export default function Index() {
                 ) : null}
                 <div className={styles.mapMetaRow}>
                   <div className={styles.mapLegendOutside}>
-                    {/* 2026-05-15: six pills → single book-open chip with hover/focus
-                        popover. Frees horizontal room for the always-expanded
-                        control buttons below. Spec: inputs/mockups/local-delivery-
-                        control-row-v1.html → "Legend chip + always-expanded control
-                        buttons" section. */}
+                    {/* 2026-05-15 v2: chip is icon-only at rest (mimics Polaris
+                        secondary <s-button>); hover/focus reveals the "Legend"
+                        label inline AND opens the popover. Popover has two
+                        unlabeled columns: time-sensitive (chronological) | others
+                        (alphabetical). Spec: inputs/mockups/local-delivery-
+                        control-row-v1.html → "Legend chip + always-expanded
+                        control buttons" section. */}
                     <span
                       className={styles.legendChip}
                       tabIndex={0}
@@ -6319,31 +6321,39 @@ export default function Index() {
                       <span className={styles.legendChipIcon} aria-hidden="true">
                         <s-icon type="book-open" size="small" />
                       </span>
-                      {t("map.legend.chipLabel")}
-                      <span className={styles.legendPop} role="list">
-                        <span className={styles.legendPopItem} role="listitem">
-                          <s-icon type="x-circle" tone="critical" size="small" />
-                          {t("map.legend.failed")}
+                      <span className={styles.legendChipLabel}>{t("map.legend.chipLabel")}</span>
+                      <span className={styles.legendPop}>
+                        <span className={styles.legendPopCol}>
+                          <span className={styles.legendPopItem}>
+                            <s-icon type="alert-triangle" tone="critical" size="small" />
+                            {t("map.legend.overdue")}
+                          </span>
+                          <span className={styles.legendPopItem}>
+                            <s-icon type="bolt" tone="caution" size="small" />
+                            {t("map.legend.dueToday")}
+                          </span>
+                          <span className={styles.legendPopItem}>
+                            <s-icon type="clock" tone="info" size="small" />
+                            {t("map.legend.dueTomorrow")}
+                          </span>
+                          <span className={styles.legendPopItem}>
+                            <s-icon type="clock" tone="neutral" size="small" />
+                            {t("map.legend.dueLater")}
+                          </span>
                         </span>
-                        <span className={styles.legendPopItem} role="listitem">
-                          <s-icon type="alert-triangle" tone="critical" size="small" />
-                          {t("map.legend.overdue")}
-                        </span>
-                        <span className={styles.legendPopItem} role="listitem">
-                          <s-icon type="bolt" tone="caution" size="small" />
-                          {t("map.legend.dueToday")}
-                        </span>
-                        <span className={styles.legendPopItem} role="listitem">
-                          <s-icon type="clock" tone="info" size="small" />
-                          {t("map.legend.dueTomorrow")}
-                        </span>
-                        <span className={styles.legendPopItem} role="listitem">
-                          <s-icon type="clock" tone="neutral" size="small" />
-                          {t("map.legend.dueLater")}
-                        </span>
-                        <span className={styles.legendPopItem} role="listitem">
-                          <s-icon type="alert-triangle" tone="caution" size="small" />
-                          {t("map.legend.addressError")}
+                        <span className={styles.legendPopCol}>
+                          <span className={styles.legendPopItem}>
+                            <s-icon type="alert-triangle" tone="caution" size="small" />
+                            {t("map.legend.addressError")}
+                          </span>
+                          <span className={styles.legendPopItem}>
+                            <s-icon type="x-circle" tone="critical" size="small" />
+                            {t("map.legend.failed")}
+                          </span>
+                          <span className={styles.legendPopItem}>
+                            <s-icon type="package" tone="neutral" size="small" />
+                            {t("map.legend.routedFromWarehouse")}
+                          </span>
                         </span>
                       </span>
                     </span>
