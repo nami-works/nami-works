@@ -478,9 +478,36 @@ export default function Index() {
     [],
   );
   const detailsRouteRenderersRef = useRef<any[]>([]);
-  const markersRef = useRef<Array<{ type: "marker" | "advanced"; marker: any }>>(
-    [],
-  );
+  // Diff-based marker registry (2026-05-16). Keyed by `${kind}:${id}` so the
+  // map effect can reconcile against the desired set instead of tearing down
+  // every marker on every effect run. The previous full-rebuild caused the
+  // badges to visibly flicker every time the loader revalidated (e.g. after
+  // auto-assign), because each fresh `editableRoutes` / `orders` reference
+  // triggered the effect, which called `marker.map = null` followed by
+  // `new AdvancedMarkerElement(...)` — the gap between the two is the flash.
+  //
+  // `signature` is a cheap pre-computed string snapshot of everything the
+  // marker's visual depends on; when it matches the prior value we skip the
+  // DOM mutation entirely. Listeners are removed + re-added unconditionally
+  // (closure values change every render) but listener swaps don't flash.
+  const markersRef = useRef<
+    Map<
+      string,
+      {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- google.maps.marker.AdvancedMarkerElement; SDK types resolved at runtime via importLibrary.
+        marker: any;
+        wrapper: HTMLElement;
+        label: HTMLElement;
+        orderLine: HTMLElement;
+        iconLine: HTMLElement | null;
+        currentIconKind: MarkerIconKind | null;
+        listenerHandles: Array<{ remove: () => void }>;
+        contextmenuHandler: ((e: Event) => void) | null;
+        contextmenuTarget: HTMLElement | null;
+        signature: string;
+      }
+    >
+  >(new Map());
   const assignedRouteRenderersRef = useRef<any[]>([]);
   const selectedRouteRenderersRef = useRef<any[]>([]);
   const precomputedRoutePolylinesRef = useRef<any[]>([]);
@@ -1782,14 +1809,9 @@ export default function Index() {
           });
         }
 
-        markersRef.current.forEach(({ type, marker }) => {
-          if (type === "advanced") {
-            marker.map = null;
-          } else {
-            marker.setMap(null);
-          }
-        });
-        markersRef.current = [];
+        // Diff reconciliation (markers): we no longer tear down all markers
+        // here. Markers that survive into the new desired set are mutated
+        // in place below; markers that drop out get cleared at the end.
         precomputedRoutePolylinesRef.current.forEach((polyline) =>
           polyline.setMap(null),
         );
@@ -1806,7 +1828,10 @@ export default function Index() {
         // Bounds always comprehend all orders at this location (never shrink after assignment)
         const boundsPoints = allPoints;
 
-        const buildLabel = (
+        // Returns the wrapper plus its mutable parts so the diff-reconciler
+        // can update text / icon / style in place rather than recreating the
+        // whole DOM tree on every effect run.
+        const buildLabelParts = (
           text: string,
           iconKind: MarkerIconKind | null,
           badgeStyle?: Partial<CSSStyleDeclaration>,
@@ -1822,8 +1847,9 @@ export default function Index() {
           orderLine.className = styles.mapLabelOrder;
           orderLine.textContent = text;
 
+          let iconLine: HTMLElement | null = null;
           if (iconKind) {
-            const iconLine = document.createElement("div");
+            iconLine = document.createElement("div");
             iconLine.className = styles.mapLabelEmoji;
             iconLine.innerHTML = markerIconHTML(iconKind);
             label.appendChild(iconLine);
@@ -1834,14 +1860,29 @@ export default function Index() {
           }
 
           wrapper.appendChild(label);
-          return wrapper;
+          return { wrapper, label, orderLine, iconLine };
+        };
+
+        // Reset every style property the diff path touches. The previous
+        // marker style might have set bg/color/border/boxShadow; clearing
+        // them here lets `Object.assign(badgeStyle)` overwrite cleanly
+        // without leaving stale properties from the prior render.
+        const resetBadgeStyleProperties = (label: HTMLElement) => {
+          label.style.backgroundColor = "";
+          label.style.background = "";
+          label.style.color = "";
+          label.style.borderColor = "";
+          label.style.boxShadow = "";
         };
 
         const getRouteDefinitionForOrder = (orderId: string) => {
           return orderRouteMap.get(orderId) ?? null;
         };
 
+        const desiredIds = new Set<string>();
         allPoints.forEach((point) => {
+          const recordKey = `${point.kind}:${point.id}`;
+          desiredIds.add(recordKey);
           const position = { lat: point.latitude, lng: point.longitude };
           const labelText = point.name;
           const assignedRoute =
@@ -1900,100 +1941,201 @@ export default function Index() {
               badgeStyle.boxShadow = "0 0 0 3px rgba(176, 159, 218, 0.7)";
             }
           }
-          const content = buildLabel(labelText, iconKind, badgeStyle);
-
           const markerTitle = point.kind === "order" && orderData?.customerName
             ? `${point.name} \u2022 ${orderData.customerName}`
             : point.name;
-          const advancedMarker = new AdvancedMarkerElement({
-            map: mapRef.current!,
-            position,
-            title: markerTitle,
-            content,
-          });
+
+          // Visual signature for diff: every input that affects rendering.
+          // When this matches the previous render we skip DOM mutation
+          // entirely and only refresh the event listeners (closures change
+          // every render but listener swaps don't cause visual flash).
+          const styleSignature = JSON.stringify([
+            badgeStyle.backgroundColor ?? null,
+            badgeStyle.background ?? null,
+            badgeStyle.color ?? null,
+            badgeStyle.borderColor ?? null,
+            badgeStyle.boxShadow ?? null,
+          ]);
+          const signature = [
+            position.lat.toFixed(7),
+            position.lng.toFixed(7),
+            iconKind,
+            labelText,
+            markerTitle,
+            styleSignature,
+          ].join("|");
+
+          let record = markersRef.current.get(recordKey);
+          if (!record) {
+            // First render of this marker \u2014 create from scratch.
+            const parts = buildLabelParts(labelText, iconKind, badgeStyle);
+            const advancedMarker = new AdvancedMarkerElement({
+              map: mapRef.current!,
+              position,
+              title: markerTitle,
+              content: parts.wrapper,
+            });
+            record = {
+              marker: advancedMarker,
+              wrapper: parts.wrapper,
+              label: parts.label,
+              orderLine: parts.orderLine,
+              iconLine: parts.iconLine,
+              currentIconKind: iconKind,
+              listenerHandles: [],
+              contextmenuHandler: null,
+              contextmenuTarget: null,
+              signature,
+            };
+            markersRef.current.set(recordKey, record);
+          } else if (record.signature !== signature) {
+            // Visual changed \u2014 mutate in place rather than recreating.
+            const m = record.marker;
+            const prevPos = m.position;
+            if (
+              !prevPos ||
+              prevPos.lat !== position.lat ||
+              prevPos.lng !== position.lng
+            ) {
+              m.position = position;
+            }
+            if (m.title !== markerTitle) m.title = markerTitle;
+            if (record.orderLine.textContent !== labelText) {
+              record.orderLine.textContent = labelText;
+            }
+            // Icon swap: only touch the DOM when the icon kind actually changed.
+            if (iconKind !== record.currentIconKind) {
+              if (record.iconLine) {
+                record.iconLine.remove();
+                record.iconLine = null;
+              }
+              if (iconKind) {
+                const iconLine = document.createElement("div");
+                iconLine.className = styles.mapLabelEmoji;
+                iconLine.innerHTML = markerIconHTML(iconKind);
+                record.label.insertBefore(iconLine, record.orderLine);
+                record.iconLine = iconLine;
+              }
+              record.currentIconKind = iconKind;
+            }
+            resetBadgeStyleProperties(record.label);
+            Object.assign(record.label.style, badgeStyle);
+            record.signature = signature;
+          }
+          // (else signature unchanged \u2192 skip DOM update entirely)
+
+          // Listener refresh: tear down + re-bind every render. Closures
+          // depend on `polylineEditMode`, `ordersById`, `editableRoutes`,
+          // `unassignSingleOrderFromRoute`, etc. \u2014 all of which can change
+          // between renders. Listener swaps are cheap and don't flash.
+          record.listenerHandles.forEach((h) => h.remove());
+          record.listenerHandles = [];
+          if (record.contextmenuHandler && record.contextmenuTarget) {
+            record.contextmenuTarget.removeEventListener(
+              "contextmenu",
+              record.contextmenuHandler,
+            );
+            record.contextmenuHandler = null;
+            record.contextmenuTarget = null;
+          }
+          const advancedMarker = record.marker;
 
           if (point.kind === "order" && !assignedRoute) {
-            advancedMarker.addListener("click", () => {
-              // Location gate: when no specific location is selected, marker
-              // clicks are no-op. The control row is hidden anyway (line
-              // 5881) so any selection would be a ghost — early-return keeps
-              // the affordance off. Banner above the page explains why.
-              if (locationId === DEFAULT_LOCATION_ID) return;
-              // Bug 4 fix (2026-05-08): selection alone no longer enters
-              // edit mode. EDIT MODE is triggered by writes only (assign /
-              // unassign / move / clear), via the dirty-set watcher.
-              // Marker click is just selection.
-              // EDIT MODE timer reset: any marker click while in editMode
-              // resets the 5s idle countdown.
-              if (polylineEditMode) resetEditModeIdleTimer();
-              toggleSelection(point.id);
-              const orderDetails = ordersById.get(point.id);
-              if (!orderDetails) return;
-              infoWindowRef.current?.setContent(
-                getOrderInfoContent(orderDetails, t("customer.guest"), t("customer.noShippingAddress")),
-              );
-              infoWindowRef.current?.open({
-                map: mapRef.current!,
-                anchor: advancedMarker,
-                shouldFocus: false,
-              });
-            });
-            advancedMarker.addListener("mouseover", () => {
-              const orderDetails = ordersById.get(point.id);
-              if (!orderDetails) return;
-              infoWindowRef.current?.setContent(
-                getOrderInfoContent(orderDetails, t("customer.guest"), t("customer.noShippingAddress")),
-              );
-              infoWindowRef.current?.open({
-                map: mapRef.current!,
-                anchor: advancedMarker,
-                shouldFocus: false,
-              });
-            });
-            advancedMarker.addListener("mouseout", () => {
-              infoWindowRef.current?.close();
-            });
+            record.listenerHandles.push(
+              advancedMarker.addListener("click", () => {
+                // Location gate: when no specific location is selected, marker
+                // clicks are no-op. The control row is hidden anyway (line
+                // 5881) so any selection would be a ghost — early-return keeps
+                // the affordance off. Banner above the page explains why.
+                if (locationId === DEFAULT_LOCATION_ID) return;
+                // Bug 4 fix (2026-05-08): selection alone no longer enters
+                // edit mode. EDIT MODE is triggered by writes only (assign /
+                // unassign / move / clear), via the dirty-set watcher.
+                // Marker click is just selection.
+                // EDIT MODE timer reset: any marker click while in editMode
+                // resets the 5s idle countdown.
+                if (polylineEditMode) resetEditModeIdleTimer();
+                toggleSelection(point.id);
+                const orderDetails = ordersById.get(point.id);
+                if (!orderDetails) return;
+                infoWindowRef.current?.setContent(
+                  getOrderInfoContent(orderDetails, t("customer.guest"), t("customer.noShippingAddress")),
+                );
+                infoWindowRef.current?.open({
+                  map: mapRef.current!,
+                  anchor: advancedMarker,
+                  shouldFocus: false,
+                });
+              }),
+            );
+            record.listenerHandles.push(
+              advancedMarker.addListener("mouseover", () => {
+                const orderDetails = ordersById.get(point.id);
+                if (!orderDetails) return;
+                infoWindowRef.current?.setContent(
+                  getOrderInfoContent(orderDetails, t("customer.guest"), t("customer.noShippingAddress")),
+                );
+                infoWindowRef.current?.open({
+                  map: mapRef.current!,
+                  anchor: advancedMarker,
+                  shouldFocus: false,
+                });
+              }),
+            );
+            record.listenerHandles.push(
+              advancedMarker.addListener("mouseout", () => {
+                infoWindowRef.current?.close();
+              }),
+            );
           } else if (point.kind === "order" && assignedRoute) {
             // Left-click: toggle multiselection (same as unassigned orders)
-            advancedMarker.addListener("click", () => {
-              // Location gate — see unassigned-marker handler above for
-              // rationale.
-              if (locationId === DEFAULT_LOCATION_ID) return;
-              // Bug 4 fix (2026-05-08): selection alone no longer enters
-              // edit mode (rolled back from rev-21). Marker click resets
-              // the EDIT MODE idle timer when already in edit mode.
-              if (polylineEditMode) resetEditModeIdleTimer();
-              toggleSelection(point.id);
-              const orderDetails = ordersById.get(point.id);
-              if (!orderDetails) return;
-              infoWindowRef.current?.setContent(
-                getOrderInfoContent(orderDetails, t("customer.guest"), t("customer.noShippingAddress")),
-              );
-              infoWindowRef.current?.open({
-                map: mapRef.current!,
-                anchor: advancedMarker,
-                shouldFocus: false,
-              });
-            });
+            record.listenerHandles.push(
+              advancedMarker.addListener("click", () => {
+                // Location gate — see unassigned-marker handler above for
+                // rationale.
+                if (locationId === DEFAULT_LOCATION_ID) return;
+                // Bug 4 fix (2026-05-08): selection alone no longer enters
+                // edit mode (rolled back from rev-21). Marker click resets
+                // the EDIT MODE idle timer when already in edit mode.
+                if (polylineEditMode) resetEditModeIdleTimer();
+                toggleSelection(point.id);
+                const orderDetails = ordersById.get(point.id);
+                if (!orderDetails) return;
+                infoWindowRef.current?.setContent(
+                  getOrderInfoContent(orderDetails, t("customer.guest"), t("customer.noShippingAddress")),
+                );
+                infoWindowRef.current?.open({
+                  map: mapRef.current!,
+                  anchor: advancedMarker,
+                  shouldFocus: false,
+                });
+              }),
+            );
             // Hover preview (same as unassigned orders)
-            advancedMarker.addListener("mouseover", () => {
-              const orderDetails = ordersById.get(point.id);
-              if (!orderDetails) return;
-              infoWindowRef.current?.setContent(
-                getOrderInfoContent(orderDetails, t("customer.guest"), t("customer.noShippingAddress")),
-              );
-              infoWindowRef.current?.open({
-                map: mapRef.current!,
-                anchor: advancedMarker,
-                shouldFocus: false,
-              });
-            });
-            advancedMarker.addListener("mouseout", () => {
-              infoWindowRef.current?.close();
-            });
-            // Right-click: show unassign balloon
+            record.listenerHandles.push(
+              advancedMarker.addListener("mouseover", () => {
+                const orderDetails = ordersById.get(point.id);
+                if (!orderDetails) return;
+                infoWindowRef.current?.setContent(
+                  getOrderInfoContent(orderDetails, t("customer.guest"), t("customer.noShippingAddress")),
+                );
+                infoWindowRef.current?.open({
+                  map: mapRef.current!,
+                  anchor: advancedMarker,
+                  shouldFocus: false,
+                });
+              }),
+            );
+            record.listenerHandles.push(
+              advancedMarker.addListener("mouseout", () => {
+                infoWindowRef.current?.close();
+              }),
+            );
+            // Right-click: show unassign balloon. Stored on `record` so the
+            // next render's listener-refresh can remove it before re-binding
+            // (preserves the marker, swaps only the handler closure).
             if (advancedMarker.element) {
-              advancedMarker.element.addEventListener("contextmenu", (e: Event) => {
+              const contextmenuHandler = (e: Event) => {
                 e.preventDefault();
                 // Location gate — same rationale as the click handlers above.
                 if (locationId === DEFAULT_LOCATION_ID) return;
@@ -2029,12 +2171,27 @@ export default function Index() {
                 } else {
                   setTimeout(attachUnassignHandler, 100);
                 }
-              });
+              };
+              advancedMarker.element.addEventListener("contextmenu", contextmenuHandler);
+              record.contextmenuHandler = contextmenuHandler;
+              record.contextmenuTarget = advancedMarker.element as HTMLElement;
             }
           }
-
-          markersRef.current.push({ type: "advanced", marker: advancedMarker });
         });
+
+        // Remove markers no longer in the desired set.
+        for (const [recordKey, record] of markersRef.current) {
+          if (desiredIds.has(recordKey)) continue;
+          record.listenerHandles.forEach((h) => h.remove());
+          if (record.contextmenuHandler && record.contextmenuTarget) {
+            record.contextmenuTarget.removeEventListener(
+              "contextmenu",
+              record.contextmenuHandler,
+            );
+          }
+          record.marker.map = null;
+          markersRef.current.delete(recordKey);
+        }
 
         if (boundsPoints.length > 0) {
           if (
