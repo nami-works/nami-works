@@ -133,44 +133,37 @@
 }
 
 /* Legend chip — single trigger that reveals the full legend on hover/focus.
-   Replaces the 2026-05-12 six-pill strip. Visual mirrors a Polaris secondary
-   <s-button> icon-only button at rest; on hover/focus the "Legend" label
-   slides out next to the icon AND the popover opens above. Spec:
-   inputs/mockups/local-delivery-control-row-v1.html. */
+   Replaces the 2026-05-12 six-pill strip. Visual mirrors a Polaris
+   default-tone <s-badge> at rest: gray pill, no border, font-size 12px.
+   On hover/focus the "Legend" label slides out next to the icon AND the
+   popover opens above. Spec: inputs/mockups/local-delivery-control-row-v1.html. */
 .legendChip {
   position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0;
-  padding: 6px 8px;
-  background: #ffffff;
-  border: 1px solid #babfc4;
-  border-radius: 8px;
-  color: #6d7175;
-  font-size: 13px;
+  padding: 4px 8px;
+  background: #e4e5e7;
+  border-radius: 99px;
+  color: #303030;
+  font-size: 12px;
   cursor: default;
   user-select: none;
   outline: none;
-  transition: gap 0.2s ease;
+  transition: gap 0.2s ease, background 0.15s ease;
 }
 
 .legendChip:hover,
 .legendChip:focus-within {
-  color: #303030;
-  border-color: #8c9196;
+  background: #d2d5d8;
   gap: 6px;
 }
 
 .legendChipIcon {
   display: inline-flex;
   align-items: center;
-  color: #6d7175;
-  flex-shrink: 0;
-}
-
-.legendChip:hover .legendChipIcon,
-.legendChip:focus-within .legendChipIcon {
   color: #303030;
+  flex-shrink: 0;
 }
 
 /* "Legend" label — slides out from max-width:0 on hover/focus. Same mechanic

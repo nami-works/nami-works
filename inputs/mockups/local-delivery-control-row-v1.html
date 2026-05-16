@@ -406,29 +406,28 @@
   .copy-variant .body-line { color: var(--text); line-height: 1.45; }
 
   /* ==== Legend chip (compacted, hover/focus reveals popover) ==== */
-  /* Chip mimics a Polaris secondary <s-button> icon-only at rest. Word "Legend"
-     is rendered with max-width:0 + transition so it slides out on hover/focus
-     — same mechanic the old .hoverExpandLabel used on the control buttons. */
+  /* Chip mimics a Polaris default-tone <s-badge> at rest: gray pill, no border,
+     12px font. Word "Legend" is rendered with max-width:0 + transition so it
+     slides out on hover/focus — same mechanic the old .hoverExpandLabel used
+     on the control buttons. */
   .legend-chip {
     display: inline-flex;
     align-items: center;
     gap: 0;
-    padding: 6px 8px;
-    background: var(--bg);
-    border: 1px solid #babfc4;
-    border-radius: 8px;
-    color: var(--subdued);
-    font-size: 13px;
+    padding: 4px 8px;
+    background: #e4e5e7;
+    border-radius: 99px;
+    color: var(--text);
+    font-size: 12px;
     cursor: default;
     position: relative;
     user-select: none;
-    transition: gap 0.2s ease;
+    transition: gap 0.2s ease, background 0.15s ease;
     outline: none;
   }
   .legend-chip:hover,
   .legend-chip:focus-within {
-    color: var(--text);
-    border-color: #8c9196;
+    background: #d2d5d8;
     gap: 6px;
   }
   .legend-chip > span:not(.legend-chip-icon):not(.legend-pop) {
@@ -659,7 +658,7 @@
     <h3>Notes &amp; tradeoffs — legend chip + always-expanded buttons</h3>
     <ul>
       <li><strong>Why <code>book-open</code> for the chip.</strong> Lucas picked this from the Polaris <code>IconType</code> union. Semantically reads as "reference / look up what these mean" — matches the chip's purpose. Verified to exist in <code>node_modules/@shopify/polaris-types/dist/polaris.d.ts</code>. Render via <code>&lt;s-icon type="book-open" size="small"&gt;</code>.</li>
-      <li><strong>Chip visual mirrors a Polaris secondary <code>&lt;s-button&gt;</code>.</strong> White background, light-gray border, 6/8px padding, font 13px. At rest the chip is icon-only (the word "Legend" is hidden via the same <code>max-width: 0</code> + <code>:hover</code>/<code>:focus-within</code> reveal pattern that previously sat on <code>.hoverExpandWrap</code>/<code>.hoverExpandLabel</code> for the control buttons). Lucas explicitly asked for this hover-expand treatment on the legend trigger only — the control buttons stay always-expanded.</li>
+      <li><strong>Chip visual mirrors a Polaris default-tone <code>&lt;s-badge&gt;</code>.</strong> Gray pill (<code>background: #e4e5e7</code>), no border, padding 4/8px, font 12px, fully rounded. At rest the chip is icon-only (the word "Legend" is hidden via the same <code>max-width: 0</code> + <code>:hover</code>/<code>:focus-within</code> reveal pattern that previously sat on <code>.hoverExpandWrap</code>/<code>.hoverExpandLabel</code> for the control buttons). On hover/focus the bg darkens to <code>#d2d5d8</code> for a subtle "interactive" cue. Lucas explicitly asked for the badge look (not a button look) — the control buttons stay always-expanded with their own styling.</li>
       <li><strong>The "Legend" word reveals on hover, not at rest.</strong> Icon alone is ambiguous (could read as "open documentation") but the chip already mimics a Polaris button, which gives merchants the affordance cue. Hovering surfaces the explicit label + opens the popover in one step. Bilingual via <code>map.legend.chipLabel</code> ("Legend" / "Legenda").</li>
       <li><strong>Popover layout: two unlabeled columns.</strong> Time-sensitive on the left (Overdue → Due today → Due tomorrow → Due later, worst-first chronological), others on the right (Address error → Failed → Routed from warehouse, alphabetical). Column gap reduced from 16px → 4px for a tighter group. Row gap stays at 8px. No column headers — the categorical separation is visual only.</li>
       <li><strong>Routed-from-warehouse is an origin marker, not a status.</strong> Mirrors the existing map-marker treatment for warehouse-origin orders (already shipped 2026-05-14 in <code>eab4a01</code>). Lives in the "others" column, sorted alphabetically. Polaris <code>package</code> icon at <code>neutral</code> tone — same icon+tone used on the marker itself.</li>
@@ -1238,7 +1237,7 @@
       <tr><td>Clear selection</td><td><code>minus-circle</code></td><td>⊖</td><td>Single icon across States C / D' / E. Now visually distinct from Unassign (🗑). Neutral tone — reads as "drop selection".</td></tr>
       <tr><td>Assign to new route</td><td><code>arrow-right-circle</code></td><td>⊕</td><td>"Add new route from these orders".</td></tr>
       <tr><td>⋯ More actions</td><td><code>menu-horizontal</code></td><td>⋯</td><td>Already used for the per-route overflow menu — consistent. Current contents: Map style (only). See "⋯ More actions menu — contents contract" section.</td></tr>
-      <tr class="changed"><td>Legend chip</td><td><code>book-open</code></td><td>📖</td><td>Single chip replaces the six-pill legend strip. Polaris-native, verified to exist in the <code>IconType</code> union. Renders as <code>&lt;s-icon type="book-open" size="small"&gt;</code>. Chip is <strong>icon-only at rest</strong> (styled like a Polaris secondary <code>&lt;s-button&gt;</code>); hover/focus reveals the "Legend" label inline AND opens the popover anchored above.</td></tr>
+      <tr class="changed"><td>Legend chip</td><td><code>book-open</code></td><td>📖</td><td>Single chip replaces the six-pill legend strip. Polaris-native, verified to exist in the <code>IconType</code> union. Renders as <code>&lt;s-icon type="book-open" size="small"&gt;</code>. Chip is <strong>icon-only at rest</strong>, styled like a Polaris default-tone <code>&lt;s-badge&gt;</code> (gray pill, no border, 12px font); hover/focus darkens the bg, slides the "Legend" word out next to the icon, AND opens the popover anchored above.</td></tr>
       <tr class="changed"><td>Routed from warehouse (NEW)</td><td><code>package</code></td><td>📦</td><td><strong>Added in legend-tweaks iteration.</strong> New legend item for the "others" column. Mirrors the package-icon marker treatment already on the map for warehouse-origin orders (shipped 2026-05-14 in <code>eab4a01</code>). Tone: <code>neutral</code> — it's an origin marker, not a status. Sorted alphabetically inside its column (last item, after "Address error" and "Failed").</td></tr>
     </tbody>
   </table>
