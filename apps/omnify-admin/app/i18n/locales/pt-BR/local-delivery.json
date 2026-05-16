@@ -112,6 +112,7 @@
     "requestingDriver": "Despachando…",
     "requestQuote": "Solicitar cotação",
     "requestingQuote": "Solicitando…",
+    "review": "Revisar",
     "moreActions": "Mais ações",
     "assignToRoute": "Atribuir à rota",
     "newRoute": "Nova rota",
@@ -536,17 +537,41 @@
       "delivered": "Entregue",
       "failed": "Falhou",
       "pending": "Pendente",
-      "unknown": "Desconhecido"
+      "unknown": "Desconhecido",
+      "suspect": "A verificar"
     },
     "bucket": {
       "clean": "Todos entregues · {{delivered}} de {{total}}",
       "mixed": "Parcial · {{delivered}} de {{total}} entregues",
       "held": "Em revisão",
-      "skip": "Revisão manual necessária"
+      "skip": "Revisão manual necessária",
+      "needs-review": "Precisa de revisão"
     },
     "partialBanner": {
       "title": "{{fulfilled}} de {{total}} paradas concluídas.",
       "body": "A Shopify ainda não confirmou a entrega das demais. Tente novamente mais tarde ou verifique a timeline do pedido."
+    },
+    "needsReview": {
+      "return-stop-detected": {
+        "title": "Parada de retorno detectada — a última entrega pode ter falhado",
+        "hint": "A rota da Lalamove terminou no ponto de coleta, o que normalmente significa que o motorista trouxe itens de volta. Confirme com a equipe em campo quais paradas realmente foram entregues e resolva pelo CLI."
+      },
+      "cancelled-with-partial-success": {
+        "title": "A Lalamove cancelou esta rota no meio da entrega",
+        "hint": "Algumas paradas têm comprovante de entrega; outras não. Confirme com a equipe quais foram efetivamente concluídas antes do cancelamento e resolva cada uma pelo CLI."
+      },
+      "unknown-pod-status": {
+        "title": "Resultado de entrega desconhecido",
+        "hint": "A Lalamove retornou um status que não reconhecemos em uma ou mais paradas. Confirme o desfecho com a equipe e resolva cada parada suspeita pelo CLI."
+      },
+      "empty-pod-after-retries": {
+        "title": "Nenhum comprovante de entrega recebido",
+        "hint": "Esta rota já está em status terminal mas a Lalamove não retornou dados de POD por parada. Confirme com a equipe se as entregas realmente aconteceram e resolva pelo CLI."
+      },
+      "unknown": {
+        "title": "Rota precisa de revisão",
+        "hint": "O watchdog sinalizou esta rota para revisão humana. Confirme os desfechos com a equipe e resolva pelo CLI."
+      }
     }
   },
   "orderDetailsModal": {

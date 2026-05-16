@@ -278,8 +278,14 @@ model LalamoveDispatchJob {
   /// Snapshot of order stops at dispatch time so escalation reorder does not depend on PendingDeliveryRoute.
   /// Shape: Array<{ shopifyOrderId: string; lat: number; lng: number; address: string; name: string; phone: string }>
   ordersData            Json?
-  /// Per-stop POD bucket: clean | mixed | held | skip. Set by handleMarkDelivered.
+  /// Per-stop POD bucket: clean | mixed | held | skip | needs-review.
+  /// Set by reconcileRouteFulfillment (operator-triggered via /api/control,
+  /// webhook-triggered, or watchdog-cron-triggered).
   podBucket             String?
+  /// When podBucket = "needs-review", which detection rule fired:
+  /// return-stop-detected | cancelled-with-partial-success |
+  /// unknown-pod-status | empty-pod-after-retries.
+  needsReviewReason     String?
   /// True when shopifyFulfilled !== deliveredEventsCreated on the last mark-delivered run.
   partialDelivery       Boolean   @default(false)
   /// Timestamp of the last podBucket update.
@@ -1387,4 +1393,124 @@ model RouteOptimizationDecision {
   @@index([shop, locationId, createdAt])
   @@index([shop, operatorReviewed, createdAt])
   @@index([shop, decisionPath, createdAt])
+}
+
+// =============================================================================
+// Loyalty A/B Test (GE Beauty post-purchase retention)
+// =============================================================================
+// 3-arm post-purchase loyalty test. Brief: inputs/growth-gebeauty-loyalty-ab-test-2026-05-16.md
+//
+// Arm A (45%): tapering store credit, 20%/15%/10% of order, 3 tranches with
+//              day-30/60/90 expiries. Tranche state lives in Shopify natively
+//              (storeCreditAccountTransaction with expiresAt + remainingAmount).
+// Arm B (45%): tapering discount code, 20% → 15% → 10% across 90d via
+//              cron-driven discountCodeBasicUpdate flips. Code state lives in
+//              Shopify natively (codeDiscountNode).
+// Arm C (10%): flat 20% discount, 45d validity, 25% cart cap — CRM Bonus replica.
+//
+// We do NOT duplicate Shopify-tracked state (tranche amounts, code values,
+// expiries). We only store data Shopify doesn't model: arm assignment, test
+// clock, abuse audit hash, cron scheduling, message dispatch log, redemption
+// cross-references for post-test analytics.
+
+/// Root record for each enrollment in the loyalty A/B test.
+/// One row per (customer × triggering order). Active-enrollment guard prevents
+/// re-enrollment of the same customer until windowEndsAt passes.
+model LoyaltyEnrollment {
+  id                    String   @id @default(cuid())
+  shop                  String
+  /// Shopify customer GID — "gid://shopify/Customer/..."
+  customerId            String
+  /// Test arm: "A" | "B" | "C". Sticky per customer (deterministic hash).
+  arm                   String
+  /// Shopify order GID of the order that triggered enrollment.
+  originalOrderId       String
+  /// Total of the triggering order, in originalOrderCurrency.
+  originalOrderAmount   Float
+  originalOrderCurrency String   @default("BRL")
+  enrolledAt            DateTime @default(now())
+  /// When the bonus expires. 90d for Arms A+B, 45d for Arm C.
+  windowEndsAt          DateTime
+  /// "ACTIVE" | "COMPLETED" | "EXPIRED" | "CANCELLED".
+  status                String   @default("ACTIVE")
+  /// Free-text reason when status != ACTIVE (e.g., "refunded", "manual-cancel").
+  statusReason          String?
+  /// SHA-256 of normalized shipping address. For abuse audit ONLY — enrollment
+  /// does NOT block on duplicates (log-only per 2026-05-16 design decision).
+  shippingAddressHash   String?
+  /// Next scheduled action for the daily orchestrator cron:
+  /// day-30/60 priceRule flip (Arm B) or reminder send (all arms).
+  /// Null when no action pending. Cron query: WHERE status='ACTIVE' AND nextActionAt <= now().
+  nextActionAt          DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  redemptions LoyaltyRedemption[]
+  messageLogs LoyaltyMessageLog[]
+
+  @@index([customerId])
+  @@index([shop, status, nextActionAt])
+  @@index([shippingAddressHash])
+}
+
+/// Redemption events. N rows per enrollment.
+/// Written when an order is detected to have used either the Arm A store
+/// credit or the Arm B/C discount code (via orders/paid webhook).
+model LoyaltyRedemption {
+  id                        String    @id @default(cuid())
+  enrollmentId              String
+  /// Shopify order GID of the order that redeemed.
+  shopifyOrderId            String
+  /// Total of the redeeming order.
+  shopifyOrderAmount        Float
+  /// Actual value of the redemption applied to the order.
+  amountRedeemed            Float
+  redeemedAt                DateTime
+  /// Which window the redemption fell in: 1, 2, or 3 (always 1 for Arm C).
+  windowAtRedemption        Int
+  /// For Arm A: the StoreCreditAccountDebitTransaction GID, for cross-reference
+  /// with Shopify's per-tranche depletion. Null for Arms B and C.
+  shopifyDebitTransactionId String?
+  /// Set when the redeeming order is refunded — redemption is reverted.
+  /// For Arm A, Shopify auto-creates StoreCreditAccountDebitRevertTransaction.
+  revertedAt                DateTime?
+  createdAt                 DateTime  @default(now())
+
+  enrollment LoyaltyEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@index([enrollmentId])
+  @@index([shopifyOrderId])
+  @@index([redeemedAt])
+}
+
+/// Message dispatch audit trail. Up to ~12 rows per enrollment
+/// (6 message types × 2 channels). Written by MessageDispatcher before send;
+/// updated on delivery status webhook from Klaviyo / Zoko.
+model LoyaltyMessageLog {
+  id                        String    @id @default(cuid())
+  enrollmentId              String
+  /// "EMAIL" | "WHATSAPP".
+  channel                   String
+  /// "ENROLLMENT" | "REMINDER_T25" | "REMINDER_T40" | "REMINDER_T55" | "REMINDER_T85" | "CANCELLATION".
+  messageType               String
+  /// "PT" | "EN".
+  language                  String
+  /// Email or phone (for debugging only — providers resolve from Shopify customer).
+  recipientHandle           String?
+  sentAt                    DateTime?
+  /// "PENDING" | "SENT" | "DELIVERED" | "FAILED" | "BOUNCED" | "OPTED_OUT".
+  deliveryStatus            String    @default("PENDING")
+  deliveryError             String?
+  /// Klaviyo event ID or Zoko message ID, for cross-reference with provider dashboard.
+  providerMessageId         String?
+  providerWebhookReceivedAt DateTime?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  enrollment LoyaltyEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  /// Dedupe key — never send the same message twice on the same channel.
+  @@unique([enrollmentId, channel, messageType])
+  @@index([enrollmentId])
+  @@index([sentAt])
 }

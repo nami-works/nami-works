@@ -55,7 +55,7 @@ import {
 import { resolveConfiguredSpecialRequests } from "../services/lalamove-special-requests.server";
 import { clusterOrders } from "../services/carrier-quotation-optimizer.server";
 import { addTags, renameRouteTagsToArchive } from "../services/lalamove-sync.server";
-import { LD_ADDRESS_CONFIRM_TAG, getAllAutoAssignSkipTags } from "../services/lalamove-tags";
+import { LD_ADDRESS_CONFIRM_TAG, LD_FAILED_DELIVERY_TAG, getAllAutoAssignSkipTags } from "../services/lalamove-tags";
 import { applyAddressRepairOrTag } from "../services/address-repair.server";
 import type { OptimizerOrderInput } from "../services/google-routes-shared.server";
 import {
@@ -366,6 +366,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       return handleMarkDelivered(auth.shop, body);
     case "mark-stop-delivered":
       return handleMarkStopDelivered(auth.shop, body);
+    case "mark-stop-failed":
+      return handleMarkStopFailed(auth.shop, body);
+    case "clear-needs-review":
+      return handleClearNeedsReview(auth.shop, body);
     case "mark-all-today":
       return handleMarkAllToday(auth.shop, body);
     case "quote":
@@ -1520,6 +1524,145 @@ async function handleMarkStopDelivered(
     console.error(`[control] mark-stop-delivered FAILED shop=${shop} order=${orderId}`, err);
     return jsonResponse(
       { ok: false, error: err instanceof Error ? err.message : "mark-stop-delivered failed" },
+      500,
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// POST /api/control/mark-stop-failed — surgical single-order failure tag.
+// Mirrors mark-stop-delivered but on the failure path. Used by operators
+// resolving a needs-review route from the CLI: mark the stops that DID
+// deliver via mark-stop-delivered, then mark the failed stop here. After
+// every stop is resolved, call clear-needs-review to reset the bucket.
+//
+// Body: { orderId, dispatchJobId?, reason?: string }
+// Idempotent: re-tagging is a no-op at Shopify; DB stopOutcome upserts.
+// ──────────────────────────────────────────────────────────────────────
+
+async function handleMarkStopFailed(
+  shop: string,
+  body: Record<string, unknown>,
+): Promise<Response> {
+  const orderId = typeof body.orderId === "string" ? body.orderId : null;
+  const dispatchJobId = typeof body.dispatchJobId === "string" ? body.dispatchJobId : null;
+  const reason = typeof body.reason === "string" ? body.reason : "operator-marked-failed";
+
+  if (!orderId) {
+    return jsonResponse({ ok: false, error: "orderId required" }, 400);
+  }
+
+  console.info(
+    `[control] mark-stop-failed START shop=${shop} order=${orderId} reason=${reason}`,
+  );
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- matches the file-wide pattern for Prisma untyped models
+    const prismaAny = prisma as any;
+    const { admin } = await unauthenticated.admin(shop);
+
+    // Tag the order for redelivery. addTags uses tagsAdd which is the
+    // CLAUDE.md-mandated non-destructive path (orderUpdate(input:{tags}) is
+    // banned by scripts/check-no-order-update-tags.ts).
+    await addTags(admin, orderId, [LD_FAILED_DELIVERY_TAG, REDELIVERY_TAG]);
+
+    // Resolve dispatchJobId if the caller didn't supply one.
+    let resolvedJobId = dispatchJobId;
+    if (!resolvedJobId) {
+      const orderMap = await prismaAny.lalamoveDispatchOrderMap.findFirst({
+        where: { shop, shopifyOrderId: orderId },
+        orderBy: { updatedAt: "desc" },
+      });
+      resolvedJobId = orderMap?.dispatchJobId ?? null;
+    }
+
+    if (resolvedJobId) {
+      await prismaAny.lalamoveDispatchOrderMap
+        .updateMany({
+          where: { shop, dispatchJobId: resolvedJobId, shopifyOrderId: orderId },
+          data: { stopOutcome: "FAILED", stopFailureReason: reason, currentStatus: "failed" },
+        })
+        .catch(() => {});
+    }
+
+    console.info(
+      `[control] mark-stop-failed OK shop=${shop} order=${orderId} jobId=${resolvedJobId ?? "?"}`,
+    );
+
+    return jsonResponse({
+      ok: true,
+      orderId,
+      dispatchJobId: resolvedJobId,
+      reason,
+      tagsApplied: [LD_FAILED_DELIVERY_TAG, REDELIVERY_TAG],
+    });
+  } catch (err) {
+    console.error(`[control] mark-stop-failed FAILED shop=${shop} order=${orderId}`, err);
+    return jsonResponse(
+      { ok: false, error: err instanceof Error ? err.message : "mark-stop-failed failed" },
+      500,
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// POST /api/control/clear-needs-review — operator signals they've resolved
+// a needs-review route. Clears podBucket + needsReviewReason so the
+// watchdog cron re-evaluates on the next tick based on the (now-updated)
+// stopOutcome values that the operator set via mark-stop-delivered /
+// mark-stop-failed.
+//
+// Body: { dispatchJobId } — required.
+// ──────────────────────────────────────────────────────────────────────
+
+async function handleClearNeedsReview(
+  shop: string,
+  body: Record<string, unknown>,
+): Promise<Response> {
+  const dispatchJobId = typeof body.dispatchJobId === "string" ? body.dispatchJobId : null;
+  if (!dispatchJobId) {
+    return jsonResponse({ ok: false, error: "dispatchJobId required" }, 400);
+  }
+
+  console.info(`[control] clear-needs-review START shop=${shop} jobId=${dispatchJobId}`);
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- matches the file-wide pattern for Prisma untyped models
+    const prismaAny = prisma as any;
+    const job = await prismaAny.lalamoveDispatchJob.findFirst({
+      where: { id: dispatchJobId, shop },
+    });
+    if (!job) {
+      return jsonResponse({ ok: false, error: "dispatch job not found" }, 404);
+    }
+    if (job.podBucket !== "needs-review") {
+      return jsonResponse(
+        {
+          ok: false,
+          error: `dispatch job podBucket is "${job.podBucket ?? "null"}" not "needs-review"`,
+        },
+        409,
+      );
+    }
+
+    await prismaAny.lalamoveDispatchJob.update({
+      where: { id: dispatchJobId },
+      data: { podBucket: null, needsReviewReason: null, lastBucketingAt: null },
+    });
+
+    console.info(
+      `[control] clear-needs-review OK shop=${shop} jobId=${dispatchJobId} previousReason=${job.needsReviewReason ?? "?"}`,
+    );
+
+    return jsonResponse({
+      ok: true,
+      dispatchJobId,
+      clearedReason: job.needsReviewReason ?? null,
+    });
+  } catch (err) {
+    console.error(`[control] clear-needs-review FAILED shop=${shop} jobId=${dispatchJobId}`, err);
+    return jsonResponse(
+      { ok: false, error: err instanceof Error ? err.message : "clear-needs-review failed" },
       500,
     );
   }

@@ -11,6 +11,10 @@ import {
 } from "../services/lalamove.server";
 import { getRuntimeCredentialsForShop } from "../services/lalamove-credentials.server";
 import { removeRouteTags } from "../services/lalamove-sync.server";
+import {
+  reconcileRouteFulfillment,
+  type DispatchJobForReconcile,
+} from "../services/lalamove-reconcile.server";
 import type { LalamoveConfig } from "../services/carrier/lalamove-adapter.server";
 
 /**
@@ -396,8 +400,88 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     console.error("[lalamove-watchdog] escalation query FAILED", err);
   }
 
+  // ── 4. Mark-as-delivered reconcile sweep ─────────────────────────────────
+  // Terminal-status dispatches that nobody has reconciled yet get processed
+  // through pod-bucketing here. Covers the gap when:
+  //   - the COMPLETED / CANCELED / REJECTED / EXPIRED webhook never fired
+  //   - the webhook arrived before the dispatch row finished persisting
+  //   - the operator never ran the CLI mark-delivered command
+  //
+  // Per-stop POD is the source of truth, not the Lalamove order-level status.
+  // Routes flagged needs-review wait for human input — the cron does NOT
+  // retry them automatically (would loop forever). Operators clear them via
+  // the /api/control/clear-needs-review CLI intent after resolution.
+  const RECONCILE_BATCH_LIMIT = 50;
+  const RECONCILE_TERMINAL_STATUSES = [
+    "COMPLETED", "completed",
+    "CANCELED", "CANCELLED", "cancelled",
+    "REJECTED", "rejected",
+    "EXPIRED", "expired",
+    "DELIVERED", "delivered",
+    "FULFILLED",
+  ];
+  let reconcileAttempts = 0;
+  let reconcileSucceeded = 0;
+  let reconcileNeedsReview = 0;
+  let reconcileHeld = 0;
+  try {
+    const reconcileCandidates = await prisma.lalamoveDispatchJob.findMany({
+      where: {
+        status: { in: RECONCILE_TERMINAL_STATUSES },
+        podBucket: null,
+      },
+      take: RECONCILE_BATCH_LIMIT,
+      orderBy: { updatedAt: "asc" },
+    });
+
+    console.info(
+      `[lalamove-watchdog:reconcile] candidates=${reconcileCandidates.length} batch=${RECONCILE_BATCH_LIMIT}`,
+    );
+
+    for (const job of reconcileCandidates) {
+      reconcileAttempts += 1;
+      try {
+        const adminClient = await unauthenticated.admin(job.shop);
+        const result = await reconcileRouteFulfillment({
+          shop: job.shop,
+          admin: adminClient.admin,
+          job: {
+            id: job.id,
+            market: job.market ?? "",
+            lalamoveOrderId: job.lalamoveOrderId,
+            locationId: job.locationId,
+            routeId: job.routeId,
+            requestedAt: job.requestedAt,
+            status: job.status,
+            ordersData: job.ordersData,
+            lastBucketingAt: job.lastBucketingAt ?? null,
+          } as DispatchJobForReconcile,
+          options: {
+            cancelPendingLalamove: false,
+            createShopifyFulfillment: true,
+            archiveTags: true,
+            notifyCustomer: false,
+          },
+        });
+        if (result.bucket === "needs-review") reconcileNeedsReview += 1;
+        else if (result.bucket === "held") reconcileHeld += 1;
+        else if (result.ok) reconcileSucceeded += 1;
+        console.info(
+          `[lalamove-watchdog:reconcile] job=${job.id} shop=${job.shop} bucket=${result.bucket} fulfilled=${result.shopifyFulfilled} redelivered=${result.redeliveryTagged}`,
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(
+          `[lalamove-watchdog:reconcile] job=${job.id} shop=${job.shop} FAILED ${msg.slice(0, 200)}`,
+        );
+      }
+    }
+  } catch (err) {
+    console.error("[lalamove-watchdog:reconcile] sweep query FAILED", err);
+  }
+
   console.info(
-    `[lalamove-watchdog] cron completed staleProcessed=${staleJobs.length} failedRetries=${failedRetryCount} escalationActions=${escalationCount} totalResults=${results.length} successes=${results.filter((r) => r.success).length}`,
+    `[lalamove-watchdog] cron completed staleProcessed=${staleJobs.length} failedRetries=${failedRetryCount} escalationActions=${escalationCount} reconcileAttempts=${reconcileAttempts} reconcileOk=${reconcileSucceeded} reconcileNeedsReview=${reconcileNeedsReview} reconcileHeld=${reconcileHeld} totalResults=${results.length} successes=${results.filter((r) => r.success).length}`,
   );
 
   return new Response(
@@ -408,6 +492,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       processed: results.length,
       results,
       escalationActions: escalationCount,
+      reconcileAttempts,
+      reconcileSucceeded,
+      reconcileNeedsReview,
+      reconcileHeld,
     }),
     {
       status: 200,

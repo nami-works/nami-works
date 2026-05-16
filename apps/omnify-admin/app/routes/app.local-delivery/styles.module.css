@@ -1653,6 +1653,17 @@
   border-color: #d4d6d8;
 }
 
+/* needs-review variant of the per-stop pill. Same visual weight as the
+   warning chips elsewhere; "Suspect" copy comes from i18n. Used in the
+   Route details modal when the route was flagged by the watchdog
+   reconciler (return-stop, cancelled-with-partial, unknown POD, empty
+   POD after retries). */
+.podStopPill_suspect {
+  background: #fff4d6;
+  color: #b88500;
+  border-color: #f0d68a;
+}
+
 /* Bucket badge sits inline below the route header. */
 .podBucketBadge {
   display: inline-flex;
@@ -1683,6 +1694,75 @@
   background: #fde2dd;
   color: #d72c0d;
   border-color: #f3b8ad;
+}
+
+/* Watchdog reconciler verdict. Hyphen in the bucket value
+   ("needs-review") is normalized to underscore at the lookup site
+   (see app.local-delivery.tsx → podBucketBadge render). */
+.podBucket_needs_review {
+  background: #fff4d6;
+  color: #b88500;
+  border-color: #f0d68a;
+}
+
+/* Route card wrapper accent — the 3px left rail on cards flagged
+   needs-review so the operator can spot them in the right rail without
+   opening the modal. Sits inside the existing borderRadius so the rail
+   tucks behind the rounded corner. */
+.routeCardNeedsReview > :global(s-box) {
+  border-left: 3px solid #b88500;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* Banner that surfaces inside the Route details modal when the
+   reconciler flagged the route. Title + plain-language hint;
+   no literal CLI command. */
+.needsReviewBanner {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #fff8e1;
+  border: 1px solid #f0d68a;
+  color: #5b4700;
+  margin-bottom: 14px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.needsReviewBannerIcon {
+  font-weight: 700;
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.needsReviewBannerContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.needsReviewBannerTitle {
+  font-weight: 600;
+  color: #5b4700;
+}
+
+.needsReviewBannerHint {
+  color: #5b4700;
+  opacity: 0.85;
+  font-size: 12px;
+}
+
+/* Suspect row treatment inside the stops table — light orange tint
+   + thicker left edge so the operator's eye lands on the rows that
+   need verification. */
+.dueOrdersRowSuspect {
+  background: #fff8f0;
+  box-shadow: inset 3px 0 0 0 #b88500;
 }
 
 /* Persistent yellow banner for partialDelivery state. */

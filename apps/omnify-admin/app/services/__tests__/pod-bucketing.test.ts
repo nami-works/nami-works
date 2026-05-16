@@ -92,17 +92,150 @@ test("FAILED / FAIL / REJECTED classify as FAILED", () => {
   }
 });
 
-test("unknown POD status with no fallback → MISSING (bucket=held)", () => {
+test("unknown POD status with no fallback → UNKNOWN (bucket=needs-review)", () => {
   const summary = summarizeRoutePOD(
     [PICKUP_STOP, makeDeliveryStop("WAITING_FOR_SIGNATURE")],
     ORDERS_DATA,
     EMPTY_MAPS,
   );
   const deliveryStop = summary.find((s) => !s.isPickup);
-  // Even though the order matched, an unrecognised POD status with no
-  // currentStatus fallback yields MISSING for the stop.
-  assert.equal(deliveryStop?.outcome, "MISSING");
+  // Watchdog refactor 2026-05-16: a non-empty POD.status we don't classify
+  // now bubbles up as UNKNOWN so the route flips to needs-review for human
+  // validation. Old behaviour (MISSING → held) silently waited forever.
+  assert.equal(deliveryStop?.outcome, "UNKNOWN");
 
   const decision = bucketRouteForFulfillment(summary);
+  assert.equal(decision.bucket, "needs-review");
+  assert.equal(decision.needsReviewReason, "unknown-pod-status");
+  assert.deepEqual(decision.needsReviewStopIndexes, [1]);
+});
+
+// ───────────────────────────────────────────────────────────────────
+// needs-review detection rules — watchdog refactor 2026-05-16
+// ───────────────────────────────────────────────────────────────────
+
+test("return-stop signature (address match) → needs-review", () => {
+  // Last stop's address matches the pickup — classic return-to-sender.
+  const stops: LalamoveStop[] = [
+    { ...PICKUP_STOP, address: "Rua Joana 100, Botafogo" },
+    makeDeliveryStop("DELIVERED"),
+    { ...PICKUP_STOP, address: "Rua Joana 100, Botafogo" },
+  ];
+  const ordersData: DispatchOrderSnapshot[] = [
+    ORDERS_DATA[0]!,
+    {
+      shopifyOrderId: "gid://shopify/Order/X",
+      lat: -22.95,
+      lng: -43.18,
+      address: "Rua Joana 100",
+      name: "Bystander",
+      phone: "+5521900000000",
+    },
+  ];
+  const summary = summarizeRoutePOD(stops, ordersData, EMPTY_MAPS);
+  const decision = bucketRouteForFulfillment(summary, stops);
+  assert.equal(decision.bucket, "needs-review");
+  assert.equal(decision.needsReviewReason, "return-stop-detected");
+  assert.ok(decision.needsReviewStopIndexes && decision.needsReviewStopIndexes.length > 0);
+  assert.deepEqual(decision.ordersToFulfill, []);
+});
+
+test("return-stop signature (stop count anomaly) → needs-review", () => {
+  // Two delivery stops in the route but only one order dispatched — Lalamove
+  // inserted an extra leg.
+  const stops: LalamoveStop[] = [
+    PICKUP_STOP,
+    makeDeliveryStop("DELIVERED"),
+    { ...PICKUP_STOP, address: "Extra stop somewhere else" },
+  ];
+  const summary = summarizeRoutePOD(stops, ORDERS_DATA, EMPTY_MAPS);
+  const decision = bucketRouteForFulfillment(summary, stops, {
+    expectedDeliveryStops: 1,
+  });
+  assert.equal(decision.bucket, "needs-review");
+  assert.equal(decision.needsReviewReason, "return-stop-detected");
+});
+
+test("cancelled order + ≥1 DELIVERED POD → needs-review (edge case 2)", () => {
+  const summary = summarizeRoutePOD(
+    [PICKUP_STOP, makeDeliveryStop("DELIVERED")],
+    ORDERS_DATA,
+    EMPTY_MAPS,
+  );
+  const decision = bucketRouteForFulfillment(summary, undefined, {
+    orderLevelStatus: "CANCELED",
+  });
+  assert.equal(decision.bucket, "needs-review");
+  assert.equal(decision.needsReviewReason, "cancelled-with-partial-success");
+  assert.deepEqual(decision.ordersToFulfill, []);
+});
+
+test("cancelled order + no DELIVERED PODs → skip (not needs-review)", () => {
+  const summary = summarizeRoutePOD(
+    [PICKUP_STOP, makeDeliveryStop("FAILED")],
+    ORDERS_DATA,
+    EMPTY_MAPS,
+  );
+  const decision = bucketRouteForFulfillment(summary, undefined, {
+    orderLevelStatus: "CANCELED",
+  });
+  // Without any DELIVERED stop, edge case 2 isn't the right framing — fall
+  // through to skip so manual review picks up the route.
+  assert.notEqual(decision.bucket, "needs-review");
+});
+
+test("empty POD on terminal order — first attempt buckets as held", () => {
+  // No POD object at all, order at COMPLETED, never been bucketed before.
+  // Expected: held (give it more chances) on the first pass.
+  const stop: LalamoveStop = {
+    stopId: "delivery-1",
+    address: "Rua Domingos Bastos 227, Apto 602",
+    name: DELIVERY_NAME,
+    phone: DELIVERY_PHONE,
+  };
+  const summary = summarizeRoutePOD(
+    [PICKUP_STOP, stop],
+    ORDERS_DATA,
+    EMPTY_MAPS,
+  );
+  const decision = bucketRouteForFulfillment(summary, [PICKUP_STOP, stop], {
+    orderLevelStatus: "COMPLETED",
+    lastBucketingAt: null,
+  });
   assert.equal(decision.bucket, "held");
+});
+
+test("empty POD on terminal order — older than 24h flips to needs-review", () => {
+  const stop: LalamoveStop = {
+    stopId: "delivery-1",
+    address: "Rua Domingos Bastos 227, Apto 602",
+    name: DELIVERY_NAME,
+    phone: DELIVERY_PHONE,
+  };
+  const summary = summarizeRoutePOD(
+    [PICKUP_STOP, stop],
+    ORDERS_DATA,
+    EMPTY_MAPS,
+  );
+  const now = new Date("2026-05-17T12:00:00Z");
+  const oneDayAgo = new Date(now.getTime() - 25 * 60 * 60 * 1000);
+  const decision = bucketRouteForFulfillment(summary, [PICKUP_STOP, stop], {
+    orderLevelStatus: "COMPLETED",
+    lastBucketingAt: oneDayAgo,
+    reconcileNow: now,
+  });
+  assert.equal(decision.bucket, "needs-review");
+  assert.equal(decision.needsReviewReason, "empty-pod-after-retries");
+});
+
+test("clean route still buckets as clean when stops + context provided", () => {
+  // Regression guard: passing the new params on a happy-path route must not
+  // change the existing bucket assignment.
+  const stops: LalamoveStop[] = [PICKUP_STOP, makeDeliveryStop("DELIVERED")];
+  const summary = summarizeRoutePOD(stops, ORDERS_DATA, EMPTY_MAPS);
+  const decision = bucketRouteForFulfillment(summary, stops, {
+    orderLevelStatus: "COMPLETED",
+  });
+  assert.equal(decision.bucket, "clean");
+  assert.deepEqual(decision.ordersToFulfill, ["gid://shopify/Order/7222391898432"]);
 });

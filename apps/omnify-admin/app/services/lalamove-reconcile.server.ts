@@ -39,6 +39,7 @@ import {
   type DispatchOrderSnapshot,
   type DispatchOrderMapRow,
   type RouteBucket,
+  type NeedsReviewReason,
   type StopSummary,
 } from "./pod-bucketing.server";
 
@@ -370,6 +371,7 @@ export async function persistBucketingResults(args: {
   bucket: RouteBucket;
   partialDelivery: boolean;
   summary: StopSummary[];
+  needsReviewReason?: NeedsReviewReason | null;
 }): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma untyped models
   const prismaAny = prisma as any;
@@ -380,6 +382,10 @@ export async function persistBucketingResults(args: {
         podBucket: args.bucket,
         partialDelivery: args.partialDelivery,
         lastBucketingAt: new Date(),
+        // Set on needs-review buckets; cleared otherwise so re-bucketed routes
+        // don't carry stale reason text after operator resolution.
+        needsReviewReason:
+          args.bucket === "needs-review" ? (args.needsReviewReason ?? null) : null,
       },
     });
     for (const stop of args.summary) {
@@ -415,7 +421,7 @@ export type ReconcileRouteOptions = {
 
 export type ReconcileRouteResult = {
   ok: boolean;
-  status?: "held" | "manual-review";
+  status?: "held" | "manual-review" | "needs-review";
   bucket: RouteBucket;
   partialDelivery: boolean;
   routeId: string;
@@ -434,6 +440,9 @@ export type ReconcileRouteResult = {
   summary: StopSummary[];
   unmatchedStopIndexes: number[];
   retryAfter?: string;
+  /** Present when bucket === "needs-review". */
+  needsReviewReason?: NeedsReviewReason;
+  needsReviewStopIndexes?: number[];
 };
 
 export type DispatchJobForReconcile = {
@@ -445,6 +454,9 @@ export type DispatchJobForReconcile = {
   requestedAt: Date;
   status: string;
   ordersData: unknown;
+  /** Optional. When present (passed by the watchdog cron sweep), drives the
+   *  empty-pod-after-retries detection rule. */
+  lastBucketingAt?: Date | null;
 };
 
 export async function reconcileRouteFulfillment(args: {
@@ -502,11 +514,13 @@ export async function reconcileRouteFulfillment(args: {
     : [];
 
   let lalamoveStops: LalamoveStop[] = [];
+  let lalamoveOrderStatus: string | null = null;
   try {
     const credentials = await getRuntimeCredentialsForShop(shop);
     if (credentials && job.lalamoveOrderId) {
       const details = await getLalamoveOrderDetails(job.market, job.lalamoveOrderId, credentials);
       lalamoveStops = (details.stops ?? []) as LalamoveStop[];
+      lalamoveOrderStatus = (details.status ?? null) as string | null;
     }
   } catch (err) {
     console.warn(
@@ -520,10 +534,14 @@ export async function reconcileRouteFulfillment(args: {
     ordersData,
     orderMaps as DispatchOrderMapRow[],
   );
-  const decision = bucketRouteForFulfillment(summary);
+  const decision = bucketRouteForFulfillment(summary, lalamoveStops, {
+    orderLevelStatus: lalamoveOrderStatus ?? job.status,
+    lastBucketingAt: job.lastBucketingAt ?? null,
+    expectedDeliveryStops: orderMaps.length,
+  });
 
   console.info(
-    `[reconcile] bucket=${decision.bucket} shop=${shop} route=${routeId} stops=${lalamoveStops.length} fulfill=${decision.ordersToFulfill.length} redeliver=${decision.ordersToRedeliver.length} unmatched=${decision.unmatchedStopIndexes.length}`,
+    `[reconcile] bucket=${decision.bucket} shop=${shop} route=${routeId} stops=${lalamoveStops.length} fulfill=${decision.ordersToFulfill.length} redeliver=${decision.ordersToRedeliver.length} unmatched=${decision.unmatchedStopIndexes.length}${decision.needsReviewReason ? ` reason=${decision.needsReviewReason}` : ""}`,
   );
 
   const isoBrt = new Intl.DateTimeFormat("en-CA", {
@@ -569,6 +587,43 @@ export async function reconcileRouteFulfillment(args: {
       summary,
       unmatchedStopIndexes: decision.unmatchedStopIndexes,
       retryAfter: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+    };
+  }
+
+  if (decision.bucket === "needs-review") {
+    await persistBucketingResults({
+      shop,
+      jobId: job.id,
+      bucket: decision.bucket,
+      partialDelivery: false,
+      summary,
+      needsReviewReason: decision.needsReviewReason ?? null,
+    });
+    console.info(
+      `[reconcile] NEEDS-REVIEW shop=${shop} route=${routeId} reason=${decision.needsReviewReason ?? "?"} suspect=${(decision.needsReviewStopIndexes ?? []).join(",")}`,
+    );
+    return {
+      ok: false,
+      status: "needs-review",
+      bucket: decision.bucket,
+      partialDelivery: false,
+      routeId,
+      jobId: job.id,
+      lalamoveOrderId: job.lalamoveOrderId,
+      ordersDelivered: 0,
+      ordersFlaggedForRedelivery: [],
+      tagsArchivedOn: null,
+      archiveFailures: 0,
+      lalamove: lalamoveCancelNote,
+      shopifyFulfilled: 0,
+      deliveredEventsCreated: 0,
+      redeliveryTagged: 0,
+      redeliveryTagFailures: [],
+      fulfillmentFailures: [],
+      summary,
+      unmatchedStopIndexes: decision.unmatchedStopIndexes,
+      needsReviewReason: decision.needsReviewReason,
+      needsReviewStopIndexes: decision.needsReviewStopIndexes,
     };
   }
 

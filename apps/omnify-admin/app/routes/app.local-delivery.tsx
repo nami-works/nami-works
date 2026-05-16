@@ -371,6 +371,7 @@ export default function Index() {
       lalamoveOrderId?: string;
       market?: string;
       podBucket?: string | null;
+      needsReviewReason?: string | null;
       partialDelivery?: boolean;
       stops?: Array<{
         shopifyOrderId: string;
@@ -386,6 +387,7 @@ export default function Index() {
       lalamoveOrderId?: string;
       market?: string;
       podBucket?: string | null;
+      needsReviewReason?: string | null;
       partialDelivery?: boolean;
       stops?: Array<{
         shopifyOrderId: string;
@@ -401,6 +403,7 @@ export default function Index() {
         lalamoveOrderId: d.lalamoveOrderId ?? undefined,
         market: d.market ?? undefined,
         podBucket: d.podBucket ?? null,
+        needsReviewReason: d.needsReviewReason ?? null,
         partialDelivery: !!d.partialDelivery,
         stops: d.stops ?? [],
       };
@@ -1071,6 +1074,7 @@ export default function Index() {
           lalamoveOrderId: d.lalamoveOrderId ?? prev[d.routeId]?.lalamoveOrderId,
           market: d.market ?? prev[d.routeId]?.market,
           podBucket: d.podBucket ?? null,
+          needsReviewReason: d.needsReviewReason ?? null,
           partialDelivery: !!d.partialDelivery,
           stops: d.stops ?? [],
         };
@@ -5103,9 +5107,19 @@ export default function Index() {
                     ? formatDurationSummary(route.totalDurationSeconds!)
                     : "--";
                   const quoteTotal = routeQuoteTotals[route.id];
-                  const costStr = quoteTotal
-                    ? t("routeManager.costLabel", { cost: `${quoteTotal.total}${quoteTotal.currency ? ` ${quoteTotal.currency}` : ""}` })
-                    : t("routeManager.costPlaceholder");
+                  // Format the lalamove quote total through the same currency
+                  // helper as the shipping line so both render "R$55,32" not
+                  // "55.32 BRL" (per backlog 2026-05-16). If the API ever
+                  // returns a non-numeric total fall back to the raw string.
+                  const costStr = (() => {
+                    if (!quoteTotal) return t("routeManager.costPlaceholder");
+                    const parsedAmount = Number(quoteTotal.total);
+                    const currency = quoteTotal.currency || "BRL";
+                    const formatted = Number.isFinite(parsedAmount)
+                      ? formatCurrency(parsedAmount, currency, userLocale)
+                      : `${quoteTotal.total}${quoteTotal.currency ? ` ${quoteTotal.currency}` : ""}`;
+                    return t("routeManager.costLabel", { cost: formatted });
+                  })();
                   const metaLine2 = `${distanceStr} • ${durationStr} • ${costStr}`;
                   // Hide the "-- • -- • Cost: --" placeholder line entirely
                   // when none of the three values are populated (no Routes
@@ -5145,10 +5159,12 @@ export default function Index() {
                     !hasSelectedOrders && !isPostDispatchActive;
                   const inlineNotification = isPreDispatchRow ? notification : null;
                   const belowNotification = isPreDispatchRow ? null : notification;
+                  const isNeedsReviewCard =
+                    dispatchedRoutes[route.id]?.podBucket === "needs-review";
                   return (
                     <div
                       key={route.id}
-                      className={`${styles.routeCard}${isOtherRouteBusy ? ` ${styles.routeCardSubdued}` : ""}`}
+                      className={`${styles.routeCard}${isOtherRouteBusy ? ` ${styles.routeCardSubdued}` : ""}${isNeedsReviewCard ? ` ${styles.routeCardNeedsReview}` : ""}`}
                     >
                       <s-box
                         padding="base"
@@ -5243,14 +5259,22 @@ export default function Index() {
                             </span>
                           </div>
                         ) : null}
-                        {dispatchedRoutes[route.id]?.podBucket ? (
-                          <div className={`${styles.podBucketBadge} ${styles[`podBucket_${dispatchedRoutes[route.id]!.podBucket}`] ?? ""}`}>
-                            {t(`pod.bucket.${dispatchedRoutes[route.id]!.podBucket}`, {
-                              delivered: (dispatchedRoutes[route.id]?.stops ?? []).filter((s) => s.stopOutcome === "DELIVERED").length,
-                              total: (dispatchedRoutes[route.id]?.stops ?? []).length,
-                            })}
-                          </div>
-                        ) : null}
+                        {dispatchedRoutes[route.id]?.podBucket ? (() => {
+                          const bucket = dispatchedRoutes[route.id]!.podBucket as string;
+                          // CSS modules don't expose hyphenated class names
+                          // through bracket-lookup reliably; normalize to
+                          // underscores so podBucket_needs-review resolves to
+                          // .podBucket_needs_review in the stylesheet.
+                          const classKey = bucket.replace(/-/g, "_");
+                          return (
+                            <div className={`${styles.podBucketBadge} ${styles[`podBucket_${classKey}`] ?? ""}`}>
+                              {t(`pod.bucket.${bucket}`, {
+                                delivered: (dispatchedRoutes[route.id]?.stops ?? []).filter((s) => s.stopOutcome === "DELIVERED").length,
+                                total: (dispatchedRoutes[route.id]?.stops ?? []).length,
+                              })}
+                            </div>
+                          );
+                        })() : null}
                         <div className={styles.routeCardOrderStats}>
                           <s-stack direction="block" gap="small">
                             <s-text type="strong">{metaLine1}</s-text>
@@ -5276,6 +5300,20 @@ export default function Index() {
                             <s-badge tone={getStatusBadgeTone(dispatchedRoutes[route.id]?.status ?? "")}>
                               {t(`routeManager.status.${dispatchedRoutes[route.id]?.status ?? "requested"}`)}
                             </s-badge>
+                          </div>
+                        ) : dispatchedRoutes[route.id]?.podBucket === "needs-review" ? (
+                          // Needs-review action row: terminal dispatch flagged by
+                          // the watchdog reconciler. The Review button opens the
+                          // details modal, which surfaces the warning banner +
+                          // suspect-row highlights. Operator resolves via CLI
+                          // (mark-stop-delivered / mark-stop-failed / clear-needs-review).
+                          <div className={styles.routeCardActionsRow}>
+                            <s-button
+                              variant="primary"
+                              onClick={() => openDetailsRouteModal(route, routeIndex)}
+                            >
+                              {t("routeManager.review")}
+                            </s-button>
                           </div>
                         ) : (
                           // Pre-dispatch action row: notification (e.g. "Ready
@@ -5424,14 +5462,13 @@ export default function Index() {
         heading={activeRouteIndex != null ? getRouteLabel(editableRoutes[activeRouteIndex] ?? { id: "", locationId: "", polyline: "", color: "", orderIds: [] }, activeRouteIndex) : ""}
       >
         <s-stack direction="block" gap="base">
-          <div className={styles.manageRouteLayout}>
-            <div className={styles.mapCanvasWrap}>
-              <div
-                ref={manageRouteMapRef}
-                className={`${styles.mapCanvas} ${styles.manageRouteMapCanvas}`}
-              />
-            </div>
-            <div className={styles.manageRouteTableRow}>
+          {/* Map removed 2026-05-16 (watchdog mark-as-delivered refactor):
+              this modal is for unassigning orders from a route. The geographic
+              context lives in the main page map; duplicating it inside the
+              modal added load and didn't change operator behavior. The
+              effect that initializes manageRouteMapRef no-ops when the ref
+              is never attached. */}
+          <div className={styles.manageRouteTableRow}>
               {activeManagedRouteOrders.length > 0 ? (
                 <div className={styles.dueOrdersTable}>
                   <div className={styles.dueOrdersHeader}>
@@ -5471,7 +5508,6 @@ export default function Index() {
               ) : (
                 <s-text color="subdued">{t("modals.routeDetails.noOrders")}</s-text>
               )}
-            </div>
           </div>
           <div className={styles.assignModalFooter}>
             <s-button
@@ -5500,71 +5536,100 @@ export default function Index() {
         heading={activeRouteIndex != null ? t("modals.routeDetails.heading", { number: activeRouteIndex + 1 }) : ""}
       >
         <s-stack direction="block" gap="base">
-          <div className={styles.manageRouteLayout}>
-            <div className={styles.mapCanvasWrap}>
-              <div
-                ref={detailsRouteMapRef}
-                className={`${styles.mapCanvas} ${styles.manageRouteMapCanvas}`}
-              />
-            </div>
-            <div className={styles.manageRouteTableRow}>
-              {activeManagedRouteOrders.length > 0 ? (
-                (() => {
-                  const activeRouteId =
-                    activeRouteIndex != null ? editableRoutes[activeRouteIndex]?.id ?? null : null;
-                  const stopByOrderId = new Map<string, { stopOutcome: string | null; stopFailureReason: string | null }>();
-                  if (activeRouteId) {
-                    for (const stop of dispatchedRoutes[activeRouteId]?.stops ?? []) {
-                      stopByOrderId.set(stop.shopifyOrderId, {
-                        stopOutcome: stop.stopOutcome,
-                        stopFailureReason: stop.stopFailureReason,
-                      });
-                    }
-                  }
-                  const hasAnyOutcome = Array.from(stopByOrderId.values()).some((s) => !!s.stopOutcome);
-                  return (
-                    <div className={`${styles.dueOrdersTable}${hasAnyOutcome ? ` ${styles.dueOrdersTableWithStatus}` : ""}`}>
-                      <div className={styles.dueOrdersHeader}>
+          {/* Map removed 2026-05-16 (watchdog mark-as-delivered refactor):
+              this is a status-review surface — the operator wants per-stop
+              POD info, not the route shape. detailsRouteMapRef no-ops when
+              the ref is never attached. */}
+          {(() => {
+            const activeRouteId =
+              activeRouteIndex != null ? editableRoutes[activeRouteIndex]?.id ?? null : null;
+            const dispatch = activeRouteId ? dispatchedRoutes[activeRouteId] : null;
+            const isNeedsReview = dispatch?.podBucket === "needs-review";
+            const reasonKey = dispatch?.needsReviewReason ?? "unknown";
+            if (!isNeedsReview) return null;
+            return (
+              <div className={styles.needsReviewBanner} role="status">
+                <span className={styles.needsReviewBannerIcon} aria-hidden="true">⚠</span>
+                <div className={styles.needsReviewBannerContent}>
+                  <div className={styles.needsReviewBannerTitle}>
+                    {t(`pod.needsReview.${reasonKey}.title`)}
+                  </div>
+                  <div className={styles.needsReviewBannerHint}>
+                    {t(`pod.needsReview.${reasonKey}.hint`)}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+          {activeManagedRouteOrders.length > 0 ? (
+            (() => {
+              const activeRouteId =
+                activeRouteIndex != null ? editableRoutes[activeRouteIndex]?.id ?? null : null;
+              const dispatch = activeRouteId ? dispatchedRoutes[activeRouteId] : null;
+              const isNeedsReview = dispatch?.podBucket === "needs-review";
+              const stopByOrderId = new Map<string, { stopOutcome: string | null; stopFailureReason: string | null }>();
+              if (activeRouteId) {
+                for (const stop of dispatch?.stops ?? []) {
+                  stopByOrderId.set(stop.shopifyOrderId, {
+                    stopOutcome: stop.stopOutcome,
+                    stopFailureReason: stop.stopFailureReason,
+                  });
+                }
+              }
+              const hasAnyOutcome = Array.from(stopByOrderId.values()).some((s) => !!s.stopOutcome);
+              const showStatusColumn = hasAnyOutcome || isNeedsReview;
+              return (
+                <div className={`${styles.dueOrdersTable}${showStatusColumn ? ` ${styles.dueOrdersTableWithStatus}` : ""}`}>
+                  <div className={styles.dueOrdersHeader}>
+                    <span />
+                    <span>{t("routeManager.table.order")}</span>
+                    <span>{t("routeManager.table.customer")}</span>
+                    <span>{t("routeManager.table.address")}</span>
+                    {showStatusColumn ? <span>{t("pod.table.status")}</span> : null}
+                  </div>
+                  {activeManagedRouteOrders.map((order) => {
+                    const stop = stopByOrderId.get(order.id);
+                    const outcome = stop?.stopOutcome ?? null;
+                    // When the route is flagged needs-review, every stop that
+                    // hasn't been confirmed DELIVERED is a suspect — surfaces
+                    // a warning-toned pill so the operator knows which rows
+                    // need verification. The plain delivered/failed/pending
+                    // pills only show on routes where outcomes are trusted.
+                    const isSuspect = isNeedsReview && outcome !== "DELIVERED";
+                    const pillKey = isSuspect
+                      ? "suspect"
+                      : outcome === "DELIVERED" ? "delivered"
+                      : outcome === "FAILED" ? "failed"
+                      : outcome === "PENDING" ? "pending"
+                      : "unknown";
+                    return (
+                      <div
+                        key={order.id}
+                        className={`${styles.dueOrdersRow}${isSuspect ? ` ${styles.dueOrdersRowSuspect}` : ""}`}
+                      >
                         <span />
-                        <span>{t("routeManager.table.order")}</span>
-                        <span>{t("routeManager.table.customer")}</span>
-                        <span>{t("routeManager.table.address")}</span>
-                        {hasAnyOutcome ? <span>{t("pod.table.status")}</span> : null}
+                        <s-link href={order.adminOrderUrl} target="_blank">
+                          {order.name}
+                        </s-link>
+                        <span>{formatCustomerShort(order.customerName, t("customer.guest"))}</span>
+                        <span>{order.address1 ?? t("routeManager.noAddressLine1")}</span>
+                        {showStatusColumn ? (
+                          <span
+                            className={`${styles.podStopPill} ${styles[`podStopPill_${pillKey}`] ?? ""}`}
+                            title={stop?.stopFailureReason ?? undefined}
+                          >
+                            {t(`pod.stopPill.${pillKey}`)}
+                          </span>
+                        ) : null}
                       </div>
-                      {activeManagedRouteOrders.map((order) => {
-                        const stop = stopByOrderId.get(order.id);
-                        const outcome = stop?.stopOutcome ?? null;
-                        const pillKey = outcome === "DELIVERED" ? "delivered"
-                          : outcome === "FAILED" ? "failed"
-                          : outcome === "PENDING" ? "pending"
-                          : "unknown";
-                        return (
-                          <div key={order.id} className={styles.dueOrdersRow}>
-                            <span />
-                            <s-link href={order.adminOrderUrl} target="_blank">
-                              {order.name}
-                            </s-link>
-                            <span>{formatCustomerShort(order.customerName, t("customer.guest"))}</span>
-                            <span>{order.address1 ?? t("routeManager.noAddressLine1")}</span>
-                            {hasAnyOutcome ? (
-                              <span
-                                className={`${styles.podStopPill} ${styles[`podStopPill_${pillKey}`] ?? ""}`}
-                                title={stop?.stopFailureReason ?? undefined}
-                              >
-                                {t(`pod.stopPill.${pillKey}`)}
-                              </span>
-                            ) : null}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()
-              ) : (
-                <s-text color="subdued">{t("modals.routeDetails.noOrders")}</s-text>
-              )}
-            </div>
-          </div>
+                    );
+                  })}
+                </div>
+              );
+            })()
+          ) : (
+            <s-text color="subdued">{t("modals.routeDetails.noOrders")}</s-text>
+          )}
           <div className={styles.assignModalFooter}>
             <s-button
               variant="secondary"
@@ -7498,11 +7563,17 @@ const formatMoney = (amount: string, currencyCode: string) =>
 
 const formatCurrency = (amount: number, currencyCode: string, userLocale: string) => {
   const locale = userLocale.replace("_", "-");
+  // Per backlog 2026-05-16: the route-card cost + shipping line must read
+  // "R$31,66" not "R$ 31,66". Intl.NumberFormat for pt-BR always inserts a
+  // narrow no-break space between symbol and digits — strip it so the route
+  // card and lalamove quote share one consistent currency format.
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: currencyCode,
     minimumFractionDigits: 2,
-  }).format(amount);
+  })
+    .format(amount)
+    .replace(/(\D)\s+(\d)/, "$1$2");
 };
 
 function formatOrderDateShort(iso: string | null): string {
@@ -8675,6 +8746,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     lalamoveOrderId: string;
     market: string;
     podBucket: string | null;
+    needsReviewReason: string | null;
     partialDelivery: boolean;
     stops: Array<{
       shopifyOrderId: string;
@@ -8724,6 +8796,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             status: true,
             requestedAt: true,
             podBucket: true,
+            needsReviewReason: true,
             partialDelivery: true,
           },
           orderBy: { createdAt: "desc" },
@@ -8846,6 +8919,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       lalamoveOrderId: d.lalamoveOrderId as string,
       market: (d.market ?? "BR_SAO") as string,
       podBucket: (d.podBucket ?? null) as string | null,
+      needsReviewReason: (d.needsReviewReason ?? null) as string | null,
       partialDelivery: !!d.partialDelivery,
       stops: stopsByJob.get(d.id) ?? [],
     }));

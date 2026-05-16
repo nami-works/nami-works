@@ -112,6 +112,7 @@
     "requestingDriver": "Dispatching…",
     "requestQuote": "Request quote",
     "requestingQuote": "Requesting…",
+    "review": "Review",
     "moreActions": "More actions",
     "assignToRoute": "Assign to route",
     "newRoute": "New route",
@@ -541,17 +542,41 @@
       "delivered": "Delivered",
       "failed": "Failed",
       "pending": "Pending",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "suspect": "Suspect"
     },
     "bucket": {
       "clean": "All delivered · {{delivered}} of {{total}}",
       "mixed": "Partial · {{delivered}} of {{total}} delivered",
       "held": "Hold for review",
-      "skip": "Manual review needed"
+      "skip": "Manual review needed",
+      "needs-review": "Needs review"
     },
     "partialBanner": {
       "title": "{{fulfilled}} of {{total}} stops fulfilled.",
       "body": "Shopify hasn't confirmed delivery on the rest. Try again later or check the order timeline."
+    },
+    "needsReview": {
+      "return-stop-detected": {
+        "title": "Return stop detected — last delivery may have failed",
+        "hint": "Lalamove's route ended at the pickup location, which usually means the driver brought items back. Confirm with the team on the ground which stops actually delivered, then resolve from the CLI."
+      },
+      "cancelled-with-partial-success": {
+        "title": "Lalamove cancelled this route mid-delivery",
+        "hint": "Some stops have proof-of-delivery on file; others don't. Confirm with the team which stops were actually completed before this route was cancelled, then resolve each from the CLI."
+      },
+      "unknown-pod-status": {
+        "title": "Unknown delivery outcome",
+        "hint": "Lalamove reported a delivery status we don't recognise on one or more stops. Confirm the outcome with the team, then resolve each suspect stop from the CLI."
+      },
+      "empty-pod-after-retries": {
+        "title": "No proof-of-delivery received",
+        "hint": "This route is past its terminal status but Lalamove never returned per-stop POD data. Confirm with the team whether the deliveries actually happened, then resolve from the CLI."
+      },
+      "unknown": {
+        "title": "Route needs review",
+        "hint": "The watchdog flagged this route for human review. Confirm outcomes with the team, then resolve from the CLI."
+      }
     }
   },
   "orderDetailsModal": {
