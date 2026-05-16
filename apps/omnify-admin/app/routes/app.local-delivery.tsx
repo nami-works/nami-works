@@ -6,7 +6,7 @@ import type {
   HeadersFunction,
   LoaderFunctionArgs,
 } from "react-router";
-import { useFetcher, useLoaderData, useNavigate, useRevalidator, useSearchParams, useSubmit } from "react-router";
+import { Link, useFetcher, useLoaderData, useNavigate, useRevalidator, useSearchParams, useSubmit } from "react-router";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
 import {
@@ -200,6 +200,7 @@ export default function Index() {
     warehouseOrdersCount,
     activeDispatchData,
     optimizerAccuracy,
+    pendingPostMortemReviewCount,
   } =
     useLoaderData<typeof loader>();
   const { t } = useTranslation("local-delivery");
@@ -5207,6 +5208,30 @@ export default function Index() {
 
   const accuracyBlock = (optimizerAccuracy && optimizerAccuracy.optimizations > 0) ? (
     <s-section heading={t("routeManager.autoAssignAccuracy")}>
+      {/* Post-mortem entry point. When unreviewed flagged decisions exist,
+          render an attention-toned badge alongside the link. Otherwise just
+          the silent "Review decisions →" link in the section heading row.
+          Routes to /app/local-delivery/post-mortem (filter=needs-review when
+          we have flagged rows to take the operator straight to them). */}
+      <div slot="primary-action" className={styles.accuracyHeaderActions}>
+        {pendingPostMortemReviewCount > 0 ? (
+          <Link
+            to="/app/local-delivery/post-mortem?chip=unreviewed"
+            className={styles.accuracyReviewLink}
+          >
+            <s-badge tone="warning">
+              {t("routeManager.postMortemPending", { count: pendingPostMortemReviewCount })}
+            </s-badge>
+          </Link>
+        ) : (
+          <Link
+            to="/app/local-delivery/post-mortem"
+            className={styles.accuracyReviewLink}
+          >
+            {t("routeManager.reviewDecisions")} →
+          </Link>
+        )}
+      </div>
       {(() => {
         const accurate = optimizerAccuracy.totalDispatched - optimizerAccuracy.totalReassigned;
         const pct = optimizerAccuracy.totalDispatched > 0
@@ -7921,6 +7946,28 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     totalReassigned: number;
   };
   const endOrdersFetch = timeStep("orders-graphql-pagination");
+  // Count AI decisions that need operator review — unreviewed rows that
+  // carry at least one postMortemFlag. Surfaces inside the Auto-assign
+  // accuracy section as a "N decisions to review" badge + link to the
+  // post-mortem panel.
+  const pendingPostMortemReviewCountPromise: Promise<number> = (async () => {
+    try {
+      const rows = await (prisma as {
+        routeOptimizationDecision: {
+          findMany: (args: unknown) => Promise<Array<{ postMortemFlagsJson: unknown }>>;
+        };
+      }).routeOptimizationDecision.findMany({
+        where: { shop, operatorReviewed: false },
+        select: { postMortemFlagsJson: true },
+      });
+      return rows.filter((r) => {
+        const flags = r.postMortemFlagsJson;
+        return Array.isArray(flags) && flags.length > 0;
+      }).length;
+    } catch {
+      return 0;
+    }
+  })();
   const optimizerAccuracyPromise: Promise<OptimizerAccuracy | null> = (async () => {
     try {
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -8076,6 +8123,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // Wait for the optimizer-accuracy lookup if it hasn't completed yet
   // (typically much faster than orders pagination, but await to be safe).
   const optimizerAccuracy = await optimizerAccuracyPromise;
+  const pendingPostMortemReviewCount = await pendingPostMortemReviewCountPromise;
 
   const normalizedDeliveryMethod =
     deliveryMethod === "all" ? null : toDeliveryMethodType(deliveryMethod);
@@ -8683,6 +8731,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     warehouseOrdersCount,
     activeDispatchData,
     optimizerAccuracy,
+    pendingPostMortemReviewCount,
   };
 };
 

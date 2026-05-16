@@ -870,6 +870,29 @@
   gap: 10px;
 }
 
+/* Section heading primary-action slot: holds the post-mortem entry point
+   (silent "Review decisions →" by default; warning badge wrapping a link
+   when unreviewed flagged decisions exist). */
+.accuracyHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.accuracyReviewLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #005bd3;
+  text-decoration: none;
+}
+
+.accuracyReviewLink:hover {
+  text-decoration: underline;
+}
+
 .accuracyBarWrap {
   width: 100%;
   height: 10px;
