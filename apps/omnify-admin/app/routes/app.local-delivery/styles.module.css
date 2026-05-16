@@ -1963,15 +1963,6 @@
    to the right edge by zeroing the left margin/padding the modal slot
    adds and by using justify-content: flex-end). The "Open full order"
    button is secondary, Close is primary, both anchor to the right edge. */
-.orderModalFooter {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-}
 
 /* Generic right-aligned modal footer (2026-05-10 r2). Drop-in container
    for <div slot="footer"> in any s-modal. Buttons hug the right edge.

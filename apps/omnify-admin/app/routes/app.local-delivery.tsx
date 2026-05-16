@@ -6855,31 +6855,32 @@ export default function Index() {
           </div>
         ) : null}
 
-        {/* Footer (2026-05-08 reformat per Lucas):
-              - All buttons right-aligned (justify-content: flex-end on .orderModalFooter).
-              - "Open full order" is now a Polaris secondary button (no
-                diagonal arrow, no anchor link styling).
-              - Close stays primary on the right. */}
-        <div className={styles.orderModalFooter} slot="footer">
+        {/* Footer — right-aligned buttons via shared .modalFooterRight class.
+            2026-05-16: switched "Open full order" from <s-button onClick={window.open}>
+            to <s-button href target="_blank"> because window.open() inside the
+            Shopify Admin iframe was being intercepted by App Bridge and
+            re-prefixed with the current store-scoped path, producing URLs that
+            duplicated the `store/<handle>/` segment. Polaris-native href is
+            App-Bridge-aware. Close button drops the `commandFor`/`command` race
+            with onClick (CLAUDE.md rule) — dismiss programmatically. */}
+        <div className={styles.modalFooterRight} slot="footer">
           {orderDetailsModalOrder ? (
             <s-button
               variant="secondary"
-              onClick={() => {
-                window.open(
-                  orderDetailsModalOrder.adminOrderUrl,
-                  "_blank",
-                  "noopener,noreferrer",
-                );
-              }}
+              href={orderDetailsModalOrder.adminOrderUrl}
+              target="_blank"
             >
               {t("orderDetailsModal.openInShopify")}
             </s-button>
           ) : null}
           <s-button
             variant="primary"
-            commandFor="order-details-modal"
-            command="--hide"
-            onClick={() => setOrderDetailsModalOrderId(null)}
+            onClick={() => {
+              setOrderDetailsModalOrderId(null);
+              document
+                .getElementById("order-details-modal")
+                ?.removeAttribute("open");
+            }}
           >
             {t("orderDetailsModal.close")}
           </s-button>
