@@ -420,6 +420,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     "DELIVERED", "delivered",
     "FULFILLED",
   ];
+  // Held jobs are retried on a 1h cadence so they can transition into either
+  // a real bucket (POD finally arrived) or `needs-review` via the empty-
+  // pod-after-retries rule (>24h with no POD). Without this, a job bucketed
+  // `held` on its first sweep was orphaned forever — the query excluded it
+  // from re-sweep but no other code path retries it.
+  const HELD_RETRY_MIN_AGE_MS = 60 * 60 * 1000;
+  const heldRetryCutoff = new Date(Date.now() - HELD_RETRY_MIN_AGE_MS);
   let reconcileAttempts = 0;
   let reconcileSucceeded = 0;
   let reconcileNeedsReview = 0;
@@ -428,10 +435,19 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const reconcileCandidates = await prisma.lalamoveDispatchJob.findMany({
       where: {
         status: { in: RECONCILE_TERMINAL_STATUSES },
-        podBucket: null,
+        OR: [
+          { podBucket: null },
+          {
+            podBucket: "held",
+            lastBucketingAt: { lt: heldRetryCutoff },
+          },
+        ],
       },
       take: RECONCILE_BATCH_LIMIT,
-      orderBy: { updatedAt: "asc" },
+      // Newest first — operationally critical recent dispatches get
+      // reconciled before the watchdog grinds through historical backlog.
+      // The held-retry path keeps the long tail moving in the background.
+      orderBy: { updatedAt: "desc" },
     });
 
     console.info(
