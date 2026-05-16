@@ -12,7 +12,7 @@
  */
 
 import { useEffect } from "react";
-import { Link, useFetcher, useNavigate } from "react-router";
+import { useFetcher, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import type { AsideData, WeeklyPoint } from "../services/ld-analytics/aside.server";
 import styles from "./ld-analytics-aside.module.css";
@@ -148,26 +148,30 @@ function ProvocationCard({
   data: Extract<AsideData, { kind: "provocation" }>;
 }) {
   const { t } = useTranslation("ld-analytics");
+  const navigate = useNavigate();
   return (
-    <div className={`${styles.card} ${styles.provocation}`}>
-      <div>
-        <div className={styles.label}>{t("aside.labelProvocation")}</div>
-        <div className={styles.value}>
-          {t("aside.provocationValueTemplate", {
-            amount: formatCompactCurrency(data.estimatedMonthlySavings, data.currency),
-          })}
-        </div>
-        <div className={styles.helper}>{t("aside.provocationHelper")}</div>
+    <s-section heading={t("aside.labelProvocation")}>
+      <div className={styles.value}>
+        {t("aside.provocationValueTemplate", {
+          amount: formatCompactCurrency(data.estimatedMonthlySavings, data.currency),
+        })}
       </div>
-      <div className={styles.ctaRow}>
-        <Link to="/app/settings?tab=providers" className={styles.ctaPrimary}>
-          {t("aside.provocationConnect")}
-        </Link>
-        <Link to="/app/settings?tab=providers" className={styles.ctaSecondary}>
+      <div className={styles.helper}>{t("aside.provocationHelper")}</div>
+      <div className={styles.ctaRowRight}>
+        <s-button
+          variant="secondary"
+          onClick={() => navigate("/app/settings?tab=providers")}
+        >
           {t("aside.provocationManual")}
-        </Link>
+        </s-button>
+        <s-button
+          variant="primary"
+          onClick={() => navigate("/app/settings?tab=providers")}
+        >
+          {t("aside.provocationConnect")}
+        </s-button>
       </div>
-    </div>
+    </s-section>
   );
 }
 
@@ -177,18 +181,19 @@ function ProvocationCard({
 
 function ConservativeEmptyCard() {
   const { t } = useTranslation("ld-analytics");
+  const navigate = useNavigate();
   return (
-    <div className={styles.card}>
-      <div>
-        <div className={styles.label}>{t("aside.labelEmpty")}</div>
-        <div className={styles.conservativeBody}>{t("aside.conservativeBody")}</div>
-      </div>
-      <div className={styles.ctaRow}>
-        <Link to="/app/settings?tab=providers" className={styles.ctaPrimary}>
+    <s-section heading={t("aside.labelEmpty")}>
+      <div className={styles.conservativeBody}>{t("aside.conservativeBody")}</div>
+      <div className={styles.ctaRowRight}>
+        <s-button
+          variant="primary"
+          onClick={() => navigate("/app/settings?tab=providers")}
+        >
           {t("aside.conservativeConnect")}
-        </Link>
+        </s-button>
       </div>
-    </div>
+    </s-section>
   );
 }
 

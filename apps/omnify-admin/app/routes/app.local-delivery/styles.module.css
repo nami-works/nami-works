@@ -473,6 +473,14 @@
   padding-bottom: 8px;
 }
 
+/* 2026-05-16: route cards (and other s-box containers) in the fullscreen
+   aside pane render against the gray overlay (#f1f1f1 on .fullscreenOverlay).
+   Force white background so they read as elevated cards — mirrors how
+   non-fullscreen mode renders them against the white admin chrome. */
+.fullscreenAsidePane :global(s-box) {
+  background: #ffffff;
+}
+
 .fullscreenMapPane {
   min-width: 0;
   display: flex;

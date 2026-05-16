@@ -6,6 +6,9 @@
  * (no DOM), focus on See-more (CSS pseudo-class).
  */
 
+/* Skeleton uses a plain bordered card (no <s-section> wrapper because the
+   "heading" slot wouldn't have content yet). FullCard / ProvocationCard /
+   ConservativeEmptyCard all render through <s-section heading=...> instead. */
 .card {
   background: #ffffff;
   border: 1px solid #e1e3e5;
@@ -16,39 +19,12 @@
   gap: 8px;
 }
 
-/* 2026-05-12 v2: heading is rendered via the native `<s-section heading>` prop
-   for parity with the Auto-assign accuracy block. The "New" badge moves to
-   its own top-of-body row so it doesn't fight Polaris's heading slot. */
+/* "New" badge sits in its own row at the top of FullCard's body — Polaris
+   <s-section heading> owns the title slot, so the badge can't share it. */
 .newBadgeRow {
   display: flex;
   align-items: center;
   margin-bottom: 4px;
-}
-
-/* Legacy .titleRow / .title classes from v1 are no longer used by FullCard
-   — kept here for any consumer that might still reference them. Provocation
-   and conservative-empty states still render their own custom title using
-   .label below, so nothing else is affected. */
-.titleRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #303030;
-  line-height: 1.4;
-}
-
-/* Legacy class kept so other states that still use it (provocation, empty)
-   render unchanged. The full/stale states now use .titleRow + .title above. */
-.label {
-  font-size: 12px;
-  color: #6d7175;
-  font-weight: 500;
 }
 
 /* Primary stat line — value + secondary descriptor on the same baseline.
@@ -81,16 +57,14 @@
   margin-top: 4px;
 }
 
-/* Right-aligned secondary CTA row. */
+/* Right-aligned CTA row. Per CLAUDE.md "All button rows must be right-aligned":
+   secondary on the left, primary on the right when both are present. */
 .ctaRowRight {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
   margin-top: 10px;
-}
-
-.delta {
-  font-size: 11px;
-  color: #6d7175;
 }
 
 .arrowUp { color: #067647; }
@@ -116,124 +90,17 @@
   flex-shrink: 0;
 }
 
-/* Action row (See-more, etc.) */
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-top: 4px;
-}
-
-.actionsSpread {
-  justify-content: space-between;
-}
-
-.seeMore {
-  background: white;
-  border: 1px solid #e1e3e5;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  color: #303030;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.seeMore::after {
-  content: "›";
-  color: #6d7175;
-}
-
-.seeMore:hover,
-.seeMore:focus-visible {
-  background: #f6f6f7;
-  border-color: #c9cccf;
-  outline: none;
-}
-
-.seeMore:focus-visible {
-  box-shadow: 0 0 0 2px rgba(0, 91, 211, 0.4);
-}
-
-/* Stale footnote (aligned left of See-more) */
+/* Stale footnote (rendered above the CTA row in FullCard when data is stale). */
 .staleFootnote {
   font-size: 10px;
   color: #b98900;
 }
 
-/* Provocation (state 3) */
-.provocation {
-  background: linear-gradient(180deg, #f3fbf5 0%, #ffffff 100%);
-  border-color: #c8ebd1;
-}
-
-.provocation .label {
-  color: #067647;
-}
-
-.provocation .value {
-  font-size: 16px;
-  line-height: 1.3;
-}
-
+/* Provocation helper text — small subdued paragraph below the value. */
 .helper {
   font-size: 11px;
   color: #6d7175;
   line-height: 1.4;
-}
-
-/* Provocation / conservative empty CTAs */
-.ctaRow {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 4px;
-}
-
-.ctaPrimary {
-  background: #005bd3;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 7px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.ctaPrimary:hover,
-.ctaPrimary:focus-visible {
-  background: #004cb0;
-  outline: none;
-}
-
-.ctaSecondary {
-  background: white;
-  color: #303030;
-  border: 1px solid #e1e3e5;
-  border-radius: 6px;
-  padding: 7px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.ctaSecondary:hover,
-.ctaSecondary:focus-visible {
-  background: #f6f6f7;
-  outline: none;
 }
 
 /* Conservative empty body block */
@@ -242,20 +109,6 @@
   color: #303030;
   font-weight: 500;
   line-height: 1.4;
-}
-
-/* "New" pill */
-.newPill {
-  display: inline-block;
-  background: #e3f5e1;
-  color: #067647;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 8px;
-  margin-left: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
 }
 
 /* Skeleton (state 1) */
