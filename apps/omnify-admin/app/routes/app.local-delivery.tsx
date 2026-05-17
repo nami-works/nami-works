@@ -225,19 +225,66 @@ export default function Index() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   // Warehouse-method override toggle. Reflects `?includeWarehouse=1` in the
-  // URL and drives the loader's eligibility filter. Off by default — flipping
-  // it triggers a revalidation that re-runs the loader without the LOCAL
-  // method filter.
+  // URL and drives the loader's eligibility filter. Per-location preference
+  // persisted in localStorage (key: `ld-include-warehouse:<locationId>`) so
+  // switching to another store and back restores the operator's last choice
+  // instead of resetting to default. The auto-restore effect below reads the
+  // stored value on location change and updates the URL param to match.
   const includeWarehouse = filters.includeWarehouse ?? false;
   const handleToggleIncludeWarehouse = useCallback(() => {
     const next = new URLSearchParams(searchParams);
-    if (includeWarehouse) {
-      next.delete("includeWarehouse");
-    } else {
+    const nextValue = !includeWarehouse;
+    if (nextValue) {
       next.set("includeWarehouse", "1");
+    } else {
+      next.delete("includeWarehouse");
+    }
+    // Persist per-location. Skip for "all locations" (no operator workflow
+    // there) and skip silently if localStorage is unavailable.
+    if (
+      typeof window !== "undefined" &&
+      filters.locationId &&
+      filters.locationId !== DEFAULT_LOCATION_ID
+    ) {
+      try {
+        window.localStorage.setItem(
+          `ld-include-warehouse:${filters.locationId}`,
+          nextValue ? "1" : "0",
+        );
+      } catch {
+        // localStorage disabled / quota exceeded — non-fatal
+      }
     }
     setSearchParams(next, { preventScrollReset: true });
-  }, [includeWarehouse, searchParams, setSearchParams]);
+  }, [includeWarehouse, searchParams, setSearchParams, filters.locationId]);
+
+  // Auto-restore the toggle when locationId changes. Reads the per-location
+  // preference from localStorage and rewrites the URL param if the current
+  // state doesn't match. Without this, switching from store A (toggle ON) to
+  // store B and back to A would reset A's toggle to OFF — and any warehouse
+  // orders in A's routes would silently drop out of the dispatch payload.
+  // 2026-05-15 incident.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!filters.locationId || filters.locationId === DEFAULT_LOCATION_ID) return;
+    let stored: string | null = null;
+    try {
+      stored = window.localStorage.getItem(
+        `ld-include-warehouse:${filters.locationId}`,
+      );
+    } catch {
+      return;
+    }
+    if (stored === null) return; // no stored preference yet — leave URL as-is
+    const shouldBeOn = stored === "1";
+    if (shouldBeOn === includeWarehouse) return;
+    const next = new URLSearchParams(searchParams);
+    if (shouldBeOn) next.set("includeWarehouse", "1");
+    else next.delete("includeWarehouse");
+    setSearchParams(next, { preventScrollReset: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.locationId]);
+
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -10697,6 +10744,68 @@ if (intent === "lalamove-place-order") {
       };
     }
     console.info(`[local-delivery] lalamove-place-order assignment resolved route=${routeId} stops=${recipientStopIds.length} source=${deliveryAssignments.length > 0 ? "deliveryAssignments" : "legacyOrderIds"}`);
+
+    // ── Dispatch-vs-route drift guard ──────────────────────────────────────
+    // Query Shopify for every order tagged with this route at this location
+    // (no methodType filter — tags are the source of truth) and refuse the
+    // dispatch if any are missing from assignmentOrderIds. This catches a
+    // class of bug Lucas hit 2026-05-15: the includeWarehouse toggle reset
+    // on location switch, the route card silently re-derived from the now-
+    // filtered order pool, and the dispatch sent a strict subset of the
+    // route's real contents (warehouse-method rows dropped without warning).
+    // The toggle continues to gate both viewing AND the dispatch payload by
+    // design; this gate ensures the dispatch path can never silently send
+    // less than what's actually in the route.
+    try {
+      const routeIndex = Number.parseInt(routeId.split("-").pop() ?? "", 10);
+      const routeTag = Number.isFinite(routeIndex)
+        ? ROUTE_TAG_DEFINITIONS[routeIndex]?.tag
+        : null;
+      if (routeTag) {
+        const locationLegacy = locationId.replace("gid://shopify/Location/", "");
+        const driftQuery = `fulfillment_location_id:${locationLegacy} tag:${routeTag} fulfillment_status:unshipped status:open`;
+        const driftRes = await admin.graphql(
+          `#graphql
+            query DispatchDriftCheck($query: String!) {
+              orders(query: $query, first: 100) {
+                nodes { id name displayFulfillmentStatus }
+              }
+            }`,
+          { variables: { query: driftQuery } },
+        );
+        const driftJson = (await driftRes.json()) as {
+          data?: { orders?: { nodes?: Array<{ id: string; name: string; displayFulfillmentStatus?: string }> } };
+        };
+        const expected = (driftJson?.data?.orders?.nodes ?? []).filter(
+          (n) =>
+            n.displayFulfillmentStatus === "UNFULFILLED" ||
+            n.displayFulfillmentStatus === "PARTIALLY_FULFILLED",
+        );
+        const dispatchedSet = new Set(assignmentOrderIds);
+        const missing = expected.filter((n) => !dispatchedSet.has(n.id));
+        if (missing.length > 0) {
+          const missingNames = missing.slice(0, 5).map((m) => m.name).join(", ");
+          const tail = missing.length > 5 ? ` (+${missing.length - 5} more)` : "";
+          console.warn(
+            `[local-delivery] lalamove-place-order DRIFT shop=${shop} route=${routeId} expected=${expected.length} dispatched=${assignmentOrderIds.length} missing=${missing.length}`,
+          );
+          return {
+            ok: false,
+            error:
+              `This route has ${expected.length} order(s) tagged ${routeTag} at this location, but only ${assignmentOrderIds.length} are in the dispatch. ` +
+              `Missing: ${missingNames}${tail}. ` +
+              `If you've moved orders from a warehouse location, enable "Include warehouse" and request a new quote.`,
+            routeId,
+          };
+        }
+      }
+    } catch (err) {
+      // Drift check is defense-in-depth — log but don't block on its own failure.
+      console.warn(
+        `[local-delivery] lalamove-place-order drift check FAILED shop=${shop} route=${routeId}`,
+        err instanceof Error ? err.message : String(err),
+      );
+    }
 
     const ordersResponse = await admin.graphql(
       `#graphql
