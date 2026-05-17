@@ -38,6 +38,15 @@ export const LD_NUMBER_CONFIRM_TAG = "ld_number-confirm";
 // override path can never be picked up by autonomous routing on a later tick.
 export const LD_METHOD_OVERRIDE_TAG = "ld_method-override";
 
+// Operator-namespaced tag applied by the watchdog when a dispatch reached
+// the location's retry cutoff time without ever delivering — typically
+// because no driver was assigned (ASSIGNING_DRIVER → EXPIRED) or every
+// driver bailed before pickup (REJECTED). Distinct from ld_failed-delivery
+// (which implies the driver tried but the delivery failed at the doorstep).
+// Auto-assign skips orders carrying this tag; the operator decides whether
+// to retry tomorrow, re-route, or refund.
+export const LD_FAILED_DISPATCH_TAG = "ld_failed-dispatch";
+
 // Returns the canonical operator tag. Both the UI and cron compare order
 // tags against the result of this getter AND the state-machine tag below.
 export const getFailedDeliveryTag = () => LD_FAILED_DELIVERY_TAG;
@@ -65,4 +74,5 @@ export const getAllAutoAssignSkipTags = (): readonly string[] => [
   LD_ADDRESS_CONFIRM_TAG,
   LD_NUMBER_CONFIRM_TAG,
   LD_METHOD_OVERRIDE_TAG,
+  LD_FAILED_DISPATCH_TAG,
 ];

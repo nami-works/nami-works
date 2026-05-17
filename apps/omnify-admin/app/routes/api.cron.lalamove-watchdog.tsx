@@ -10,12 +10,14 @@ import {
   getLalamoveOrderDetails,
 } from "../services/lalamove.server";
 import { getRuntimeCredentialsForShop } from "../services/lalamove-credentials.server";
-import { removeRouteTags } from "../services/lalamove-sync.server";
+import { addTags, removeRouteTags } from "../services/lalamove-sync.server";
 import {
   reconcileRouteFulfillment,
   type DispatchJobForReconcile,
 } from "../services/lalamove-reconcile.server";
+import { LD_FAILED_DISPATCH_TAG } from "../services/lalamove-tags";
 import type { LalamoveConfig } from "../services/carrier/lalamove-adapter.server";
+import type { AdminApiContext } from "@shopify/shopify-app-react-router/server";
 
 /**
  * Get current hour and minute in a given IANA timezone.
@@ -57,6 +59,136 @@ async function isPastRetryCutoff(shop: string, locationId: string): Promise<bool
 
 const STALE_ON_GOING_MINUTES = 30;
 const MAX_AUTO_RETRIES = 2;
+
+/**
+ * Cutoff handling — reconcile-first policy (2026-05-17).
+ *
+ * Replaces the old "blindly removeRouteTags + flip to EXPIRED_CUTOFF" behaviour
+ * which silently lost tags on dispatches that had actually been delivered (the
+ * ground team completed the delivery but Lalamove's order-level status read
+ * REJECTED/EXPIRED — a known status mismatch we documented in the watchdog
+ * design conversation 2026-05-16).
+ *
+ * Flow now:
+ *   1. Run reconcileRouteFulfillment first. It inspects per-stop POD and
+ *      decides bucket: clean / mixed / held / needs-review / skip.
+ *      - clean / mixed → orders that DID deliver get Shopify fulfillment +
+ *        tags archived. We're done; nothing more to do at cutoff.
+ *      - held         → POD pending. Leave tags, let next tick / next-day
+ *        operator-attention pick it up.
+ *      - needs-review → operator must resolve via CLI. Leave tags.
+ *      - skip         → no deliveries happened (no driver assigned, or
+ *        driver bailed before pickup). NOW we can safely remove route
+ *        tags and add ld_failed-dispatch.
+ *   2. Only when bucket === "skip" do we apply the destructive removal.
+ *      The ld_failed-dispatch tag is distinct from ld_failed-delivery —
+ *      the latter implies the driver tried, the former implies no driver
+ *      ever picked up.
+ */
+async function handleCutoffWithReconcile(args: {
+  shop: string;
+  job: {
+    id: string;
+    routeId: string;
+    locationId: string;
+    market: string | null;
+    lalamoveOrderId: string | null;
+    requestedAt: Date;
+    status: string;
+    ordersData: unknown;
+    lastBucketingAt?: Date | null;
+  };
+  admin: AdminApiContext;
+  reason: string;
+}): Promise<{ removedTags: boolean; failedDispatchTagged: number; bucket: string }> {
+  const { shop, job, admin, reason } = args;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma untyped models
+  const prismaAny = prisma as any;
+
+  let bucket = "skip";
+  let removedTags = false;
+  let failedDispatchTagged = 0;
+
+  try {
+    const result = await reconcileRouteFulfillment({
+      shop,
+      admin,
+      job: {
+        id: job.id,
+        market: job.market ?? "",
+        lalamoveOrderId: job.lalamoveOrderId,
+        locationId: job.locationId,
+        routeId: job.routeId,
+        requestedAt: job.requestedAt,
+        status: job.status,
+        ordersData: job.ordersData,
+        lastBucketingAt: job.lastBucketingAt ?? null,
+      } as DispatchJobForReconcile,
+      options: {
+        cancelPendingLalamove: false,
+        createShopifyFulfillment: true,
+        archiveTags: true,
+        notifyCustomer: false,
+      },
+    });
+    bucket = result.bucket;
+    console.info(
+      `[lalamove-watchdog] CUTOFF reconcile job=${job.id} bucket=${bucket} fulfilled=${result.shopifyFulfilled} reason=${reason}`,
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn(
+      `[lalamove-watchdog] CUTOFF reconcile FAILED job=${job.id} error=${msg.slice(0, 200)} — treating as skip`,
+    );
+    bucket = "skip";
+  }
+
+  // Only the skip bucket triggers the destructive tag removal + failed-dispatch
+  // tagging. clean / mixed already archived the tags inside reconcile.
+  // held / needs-review leave tags in place by design.
+  if (bucket === "skip") {
+    try {
+      const orderMaps = await prismaAny.lalamoveDispatchOrderMap.findMany({
+        where: { shop, dispatchJobId: job.id },
+        select: { shopifyOrderId: true },
+      });
+      const orderIds = (orderMaps as Array<{ shopifyOrderId: string }>).map(
+        (m) => m.shopifyOrderId,
+      );
+      await Promise.all(orderIds.map((id) => removeRouteTags(admin, id)));
+      await Promise.all(
+        orderIds.map((id) =>
+          addTags(admin, id, [LD_FAILED_DISPATCH_TAG]).catch((tagErr) => {
+            console.warn(
+              `[lalamove-watchdog] CUTOFF add ld_failed-dispatch FAILED order=${id}`,
+              tagErr instanceof Error ? tagErr.message : String(tagErr),
+            );
+          }),
+        ),
+      );
+      removedTags = orderIds.length > 0;
+      failedDispatchTagged = orderIds.length;
+      console.info(
+        `[lalamove-watchdog] CUTOFF tags-removed+failed-dispatch job=${job.id} orders=${orderIds.length} reason=${reason}`,
+      );
+    } catch (tagErr) {
+      console.error(
+        `[lalamove-watchdog] CUTOFF tag-rewrite FAILED job=${job.id}`,
+        tagErr,
+      );
+    }
+    await prismaAny.lalamoveDispatchJob.update({
+      where: { id: job.id },
+      data: { status: "EXPIRED_CUTOFF" },
+    });
+  } else {
+    console.info(
+      `[lalamove-watchdog] CUTOFF tags-preserved job=${job.id} bucket=${bucket} reason=${reason}`,
+    );
+  }
+
+  return { removedTags, failedDispatchTagged, bucket };
+}
 
 /**
  * Cron endpoint for Lalamove delivery watchdog.
@@ -120,26 +252,32 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     try {
       // ── Retry cutoff check ──────────────────────────────────────────────
       if (await isPastRetryCutoff(job.shop, job.locationId)) {
-        console.info(`[lalamove-watchdog] CUTOFF job=${job.id} past retry cutoff — removing route tags`);
-        try {
-          const adminClient = await unauthenticated.admin(job.shop);
-          const orderMaps = await prisma.lalamoveDispatchOrderMap.findMany({
-            where: { shop: job.shop, dispatchJobId: job.id },
-            select: { shopifyOrderId: true },
-          });
-          await Promise.all(
-            orderMaps.map((m: { shopifyOrderId: string }) =>
-              removeRouteTags(adminClient.admin, m.shopifyOrderId),
-            ),
-          );
-        } catch (tagErr) {
-          console.error(`[lalamove-watchdog] CUTOFF tag removal failed job=${job.id}`, tagErr);
-        }
-        await prisma.lalamoveDispatchJob.update({
-          where: { id: job.id },
-          data: { status: "EXPIRED_CUTOFF" },
+        // Reconcile-first policy (2026-05-17): NEVER blindly remove tags at
+        // cutoff. Run pod-bucketing first so any orders the team actually
+        // delivered get marked delivered in Shopify before we touch tags.
+        const adminClient = await unauthenticated.admin(job.shop);
+        const outcome = await handleCutoffWithReconcile({
+          shop: job.shop,
+          job: {
+            id: job.id,
+            routeId: job.routeId,
+            locationId: job.locationId,
+            market: job.market,
+            lalamoveOrderId: job.lalamoveOrderId,
+            requestedAt: job.requestedAt,
+            status: job.status,
+            ordersData: job.ordersData,
+            lastBucketingAt: job.lastBucketingAt ?? null,
+          },
+          admin: adminClient.admin,
+          reason: "stale-on-going",
         });
-        results.push({ jobId: job.id, shop: job.shop, success: true, error: "Past retry cutoff" });
+        results.push({
+          jobId: job.id,
+          shop: job.shop,
+          success: true,
+          error: `Past retry cutoff (bucket=${outcome.bucket})`,
+        });
         continue;
       }
 
@@ -320,26 +458,34 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       try {
         // ── Retry cutoff check ──────────────────────────────────────────
         if (await isPastRetryCutoff(job.shop, job.locationId)) {
-          console.info(`[lalamove-watchdog] CUTOFF failed-retry job=${job.id} past retry cutoff — removing route tags`);
-          try {
-            const cutoffAdmin = await unauthenticated.admin(job.shop);
-            const orderMaps = await prisma.lalamoveDispatchOrderMap.findMany({
-              where: { shop: job.shop, dispatchJobId: job.id },
-              select: { shopifyOrderId: true },
-            });
-            await Promise.all(
-              orderMaps.map((m: { shopifyOrderId: string }) =>
-                removeRouteTags(cutoffAdmin.admin, m.shopifyOrderId),
-              ),
-            );
-          } catch (tagErr) {
-            console.error(`[lalamove-watchdog] CUTOFF tag removal failed job=${job.id}`, tagErr);
-          }
-          await prisma.lalamoveDispatchJob.update({
-            where: { id: job.id },
-            data: { status: "EXPIRED_CUTOFF" },
+          // Reconcile-first policy (2026-05-17): same rationale as section 1.
+          // This is the path that lost tags on 11 dispatches at 19:00 BRT on
+          // 2026-05-16 — Lalamove status read REJECTED/EXPIRED but the team
+          // had actually delivered. Bucketing per-stop POD first means those
+          // orders now get fulfilled before tags are touched.
+          const cutoffAdmin = await unauthenticated.admin(job.shop);
+          const outcome = await handleCutoffWithReconcile({
+            shop: job.shop,
+            job: {
+              id: job.id,
+              routeId: job.routeId,
+              locationId: job.locationId,
+              market: job.market,
+              lalamoveOrderId: job.lalamoveOrderId,
+              requestedAt: job.requestedAt,
+              status: job.status,
+              ordersData: job.ordersData,
+              lastBucketingAt: job.lastBucketingAt ?? null,
+            },
+            admin: cutoffAdmin.admin,
+            reason: "failed-retry",
           });
-          results.push({ jobId: job.id, shop: job.shop, success: true, error: "Past retry cutoff" });
+          results.push({
+            jobId: job.id,
+            shop: job.shop,
+            success: true,
+            error: `Past retry cutoff (bucket=${outcome.bucket})`,
+          });
           continue;
         }
 
