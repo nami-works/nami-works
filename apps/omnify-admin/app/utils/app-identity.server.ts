@@ -38,7 +38,6 @@ const IDENTITY_ROUTES: Record<Exclude<AppIdentity, "cpg-labs">, string[]> = {
     "api.kpi",
     "api.cron.retail-analytics",
     "api.retail-proposal-file",
-    "app.affiliates",
   ],
   storytelling: [
     "app.storytelling",
@@ -104,7 +103,6 @@ const IDENTITY_NAV: Record<Exclude<AppIdentity, "cpg-labs">, string[]> = {
     "/app/local-delivery",
     "/app/footprint-expansion",
     "/app/retail-sales",
-    "/app/affiliates",
     "/app/settings",
   ],
   storytelling: ["/app/storytelling"],
