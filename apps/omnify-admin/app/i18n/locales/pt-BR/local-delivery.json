@@ -327,7 +327,8 @@
   },
   "warnings": {
     "addressErrors": "Possíveis erros de endereço: {{count}}",
-    "returnPickups": "Devoluções pendentes ({{count}})"
+    "returnPickups": "Devoluções pendentes ({{count}})",
+    "warehouseHidden": "{{count}} pedidos do CD ocultos"
   },
   "banners": {
     "mapsKeyMissing": "Chave da API do Google Maps ausente",

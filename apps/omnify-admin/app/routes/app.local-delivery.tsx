@@ -198,6 +198,7 @@ export default function Index() {
     hasUnfulfilledPresaleOrders,
     failedDeliveryCount,
     warehouseOrdersCount,
+    warehouseOrdersHiddenCount,
     activeDispatchData,
     optimizerAccuracy,
     pendingPostMortemReviewCount,
@@ -4808,10 +4809,18 @@ export default function Index() {
   // current view actually contains warehouse-method orders.
   const showWarehouseBadge =
     isLocationSelected && includeWarehouse && (warehouseOrdersCount ?? 0) > 0;
+  // Hint badge: toggle is OFF but warehouse-located unfulfilled orders exist
+  // at the current store. Clicking flips the toggle ON so the operator sees
+  // them in the route manager. Avoids the dispatch-drift class of bug where
+  // a session navigates away, toggle resets to OFF, and warehouse-rerouted
+  // orders silently disappear from the eligible set.
+  const showWarehouseHiddenBadge =
+    isLocationSelected && !includeWarehouse && (warehouseOrdersHiddenCount ?? 0) > 0;
   const hasWarnings =
     hasLocationScopedWarnings ||
     addressErrorOrders.length > 0 ||
-    showWarehouseBadge;
+    showWarehouseBadge ||
+    showWarehouseHiddenBadge;
 
   const routeManagerSection = (
     <s-section heading={t("routeManager.heading")}>
@@ -4899,6 +4908,24 @@ export default function Index() {
               <s-badge tone="warning" icon="package">
                 {t("filters.warehouseCount", { count: warehouseOrdersCount ?? 0 })}
               </s-badge>
+            ) : null}
+            {showWarehouseHiddenBadge ? (
+              <span
+                style={{ cursor: "pointer" }}
+                onClick={handleToggleIncludeWarehouse}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleToggleIncludeWarehouse();
+                  }
+                }}
+              >
+                <s-badge tone="warning" icon="package">
+                  {t("warnings.warehouseHidden", { count: warehouseOrdersHiddenCount ?? 0 })}
+                </s-badge>
+              </span>
             ) : null}
           </div>
         ) : null}
@@ -8144,6 +8171,45 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   orderFilters.push(`created_at:>=${startDateKey}`);
   const query = orderFilters.length > 0 ? orderFilters.join(" ") : undefined;
 
+  // Parallel count of warehouse-located UNFULFILLED orders for the current
+  // store location. Runs regardless of the includeWarehouse toggle so we can
+  // surface a hint badge ("N warehouse orders hidden") when the toggle is OFF
+  // but warehouse-method rows would be eligible. Skipped at "All locations"
+  // (the badge is location-scoped, mirrors the warehouse toggle visibility).
+  // Cost: ~1 extra GraphQL call returning a single integer.
+  const endWarehouseHiddenCount = timeStep("warehouse-hidden-count");
+  const warehouseHiddenCountPromise: Promise<number> = (async () => {
+    if (effectiveLocationId === DEFAULT_LOCATION_ID) return 0;
+    if (includeWarehouse) return 0; // already visible — nothing to hint
+    const legacyId = toLegacyLocationId(effectiveLocationId);
+    const hiddenQuery = [
+      "delivery_method:shipping",
+      `fulfillment_location_id:${legacyId}`,
+      "-fulfillment_status:fulfilled",
+      "-status:cancelled",
+      `created_at:>=${startDateKey}`,
+    ].join(" ");
+    try {
+      const response = await admin.graphql(
+        `#graphql
+        query WarehouseHiddenCount($query: String!) {
+          ordersCount(query: $query) { count precision }
+        }`,
+        { variables: { query: hiddenQuery } },
+      );
+      const json = await response.json();
+      const raw = json?.data?.ordersCount?.count;
+      const n = typeof raw === "number" ? raw : Number(raw);
+      return Number.isFinite(n) && n > 0 ? n : 0;
+    } catch (error) {
+      console.warn(
+        `[local-delivery] warehouseHiddenCount FAILED shop=${shop} location=${effectiveLocationId}`,
+        error,
+      );
+      return 0;
+    }
+  })();
+
   let ordersError: string | null = null;
   let orders: Array<{
     id: string;
@@ -8727,6 +8793,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     (order) => order.methodType !== "LOCAL",
   ).length;
 
+  const warehouseOrdersHiddenCount = await warehouseHiddenCountPromise;
+  endWarehouseHiddenCount(`count=${warehouseOrdersHiddenCount} includeWarehouse=${includeWarehouse}`);
+
   const normalizedLocations: LoaderLocation[] = locations.map((location) => {
     const coordinates =
       location.address?.latitude != null && location.address.longitude != null
@@ -8978,7 +9047,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   );
 
   console.info(
-    `[local-delivery] loader OK durationMs=${Date.now() - loaderT0} shop=${shop} location=${effectiveLocationId} ordersFetched=${orders.length} ordersKept=${filteredOrders.length} includeWarehouse=${includeWarehouse} warehouseOrdersCount=${warehouseOrdersCount} pages=${pagesFetched} dispatches=${activeDispatchData.length}`,
+    `[local-delivery] loader OK durationMs=${Date.now() - loaderT0} shop=${shop} location=${effectiveLocationId} ordersFetched=${orders.length} ordersKept=${filteredOrders.length} includeWarehouse=${includeWarehouse} warehouseOrdersCount=${warehouseOrdersCount} warehouseOrdersHiddenCount=${warehouseOrdersHiddenCount} pages=${pagesFetched} dispatches=${activeDispatchData.length}`,
   );
 
   return {
@@ -9007,6 +9076,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     hasUnfulfilledPresaleOrders: availablePresaleTags.length > 0,
     failedDeliveryCount,
     warehouseOrdersCount,
+    warehouseOrdersHiddenCount,
     activeDispatchData,
     optimizerAccuracy,
     pendingPostMortemReviewCount,

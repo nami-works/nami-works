@@ -332,7 +332,8 @@
   },
   "warnings": {
     "addressErrors": "Potential address errors: {{count}}",
-    "returnPickups": "Return pickups ({{count}})"
+    "returnPickups": "Return pickups ({{count}})",
+    "warehouseHidden": "{{count}} warehouse orders hidden"
   },
   "banners": {
     "mapsKeyMissing": "Google Maps API key missing",
