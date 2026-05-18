@@ -27,8 +27,16 @@ api_version = "2026-04"
   uri = "/webhooks/app/uninstalled"
 
 [access_scopes]
-# Minimal placeholder. Expand when feature scope is defined.
-scopes = "read_products"
+# Scopes the Affiliates surface actually exercises:
+#   read_customers  — app.affiliates.tsx (profile detail, claims)
+#   read_discounts  — affiliates/programs.server.ts (codeDiscountNodes sync)
+#   read_orders     — affiliates/sync.server.ts (attribution + monthly rebuild)
+#   read_products   — currently unused by Affiliates but kept as a baseline
+#                     read scope so the embedded app shell can render
+# Protected Customer Data scopes (read_customers, read_orders) are granted at
+# install time on a custom-distributed app without going through Shopify's
+# PCD review.
+scopes = "read_customers,read_discounts,read_orders,read_products"
 use_legacy_install_flow = false
 
 [auth]
