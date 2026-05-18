@@ -3,7 +3,7 @@
 # then `shopify app deploy --config shopify.app.flywheel.toml` to register
 # scopes + webhooks on Shopify's side.
 
-client_id = "<PLACEHOLDER>"
+client_id = "224a759a47ba16823a3cbfbe59c8af14"
 name = "Flywheel"
 application_url = "https://flywheel.cpg-labs.io"
 embedded = true
