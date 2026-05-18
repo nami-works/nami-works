@@ -1,6 +1,6 @@
 param(
   [Parameter(Mandatory = $true)]
-  [ValidateSet('full', 'omnify', 'both')]
+  [ValidateSet('full', 'omnify', 'flywheel', 'both', 'all')]
   [string]$App,
 
   # Override the auto-generated tag. Mostly useful for -SkipBuild redeploys.
@@ -37,7 +37,12 @@ param(
 # Usage:
 #   ./scripts/deploy.ps1 -App full     # rebuild + restart cpg-labs-full only
 #   ./scripts/deploy.ps1 -App omnify   # same, omnify container only
-#   ./scripts/deploy.ps1 -App both     # build once, restart both containers
+#   ./scripts/deploy.ps1 -App flywheel # same, flywheel container only
+#                                      # (requires the flywheel service to be
+#                                      # provisioned on the Lightsail box first
+#                                      # -- see docs/handover-flywheel-scaffold.md)
+#   ./scripts/deploy.ps1 -App both     # build once, restart full + omnify
+#   ./scripts/deploy.ps1 -App all      # build once, restart full + omnify + flywheel
 #   ./scripts/deploy.ps1 -App full -SkipBuild -Tag 20260511-e419924
 #                                      # re-deploy an existing image
 #
@@ -79,6 +84,12 @@ $Apps = @{
     compose_service = 'omnify'
     tag_prefix      = 'omnify'
     health_url      = 'https://omnify.cpg-labs.io/health'
+  }
+  'flywheel' = @{
+    container_name  = 'cpg-labs-flywheel'
+    compose_service = 'flywheel'
+    tag_prefix      = 'flywheel'
+    health_url      = 'https://flywheel.cpg-labs.io/health'
   }
 }
 
@@ -149,26 +160,35 @@ if (-not $Tag) {
 Write-Host "  Tag: $Tag" -ForegroundColor Cyan
 
 # Resolve which apps we're deploying.
-$AppKeys = if ($App -eq 'both') { @('full', 'omnify') } else { @($App) }
+$AppKeys = switch ($App) {
+  'both' { @('full', 'omnify') }
+  'all'  { @('full', 'omnify', 'flywheel') }
+  default { @($App) }
+}
 
-# Compute the full tagged image refs.
-$FullImage   = "${EcrRepo}:full-${Tag}"
-$OmnifyImage = "${EcrRepo}:omnify-${Tag}"
+# Compute the tagged image refs for every app being deployed.
+# (Same image bytes, tagged once per app -- container differs only by APP_IDENTITY.)
+$AppImages = @{}
+foreach ($k in $AppKeys) {
+  $AppImages[$k] = "${EcrRepo}:$($Apps[$k].tag_prefix)-${Tag}"
+}
 
 # -- Build + push -------------------------------------------------------------
 
 if (-not $SkipBuild) {
   Write-Host ""
-  Write-Host "  [build] docker build (tagged for both apps)..." -ForegroundColor Cyan
+  Write-Host "  [build] docker build (tagged for $($AppKeys -join ', '))..." -ForegroundColor Cyan
   # PS 5.1 + StrictMode + EAP=Stop: BuildKit writes progress lines to stderr,
   # which PowerShell wraps as NativeCommandError and aborts. Downgrade EAP to
   # Continue while docker runs; redirect stderr to stdout so progress is still
   # visible; check $LASTEXITCODE explicitly. Same workaround as docker login
   # below and on lines 207-211 for the SSH-piped docker login.
+  $tagArgs = @()
+  foreach ($k in $AppKeys) { $tagArgs += @('-t', $AppImages[$k]) }
   $prevEap = $ErrorActionPreference
   $ErrorActionPreference = 'Continue'
   try {
-    & docker build -t $FullImage -t $OmnifyImage . 2>&1 | Out-Host
+    & docker build @tagArgs . 2>&1 | Out-Host
   } finally {
     $ErrorActionPreference = $prevEap
   }
@@ -196,30 +216,23 @@ if (-not $SkipBuild) {
   if ($LASTEXITCODE -ne 0) { throw "docker login failed" }
 
   Write-Host ""
-  Write-Host "  [push] $FullImage" -ForegroundColor Cyan
-  # Same EAP guard as docker build — `docker push` emits layer-progress to
-  # stderr which would otherwise abort under EAP=Stop.
-  $prevEap = $ErrorActionPreference
-  $ErrorActionPreference = 'Continue'
-  try {
-    & docker push $FullImage 2>&1 | Out-Host
-  } finally {
-    $ErrorActionPreference = $prevEap
+  foreach ($k in $AppKeys) {
+    $img = $AppImages[$k]
+    Write-Host "  [push] $img" -ForegroundColor Cyan
+    # Same EAP guard as docker build — `docker push` emits layer-progress to
+    # stderr which would otherwise abort under EAP=Stop.
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+      & docker push $img 2>&1 | Out-Host
+    } finally {
+      $ErrorActionPreference = $prevEap
+    }
+    if ($LASTEXITCODE -ne 0) { throw "docker push ($k) failed (exit $LASTEXITCODE)" }
   }
-  if ($LASTEXITCODE -ne 0) { throw "docker push (full) failed (exit $LASTEXITCODE)" }
-
-  Write-Host "  [push] $OmnifyImage" -ForegroundColor Cyan
-  $prevEap = $ErrorActionPreference
-  $ErrorActionPreference = 'Continue'
-  try {
-    & docker push $OmnifyImage 2>&1 | Out-Host
-  } finally {
-    $ErrorActionPreference = $prevEap
-  }
-  if ($LASTEXITCODE -ne 0) { throw "docker push (omnify) failed (exit $LASTEXITCODE)" }
 } else {
   Write-Host ""
-  Write-Host "  [skip-build] using existing image $FullImage / $OmnifyImage" -ForegroundColor Yellow
+  Write-Host "  [skip-build] using existing images: $(($AppImages.Values) -join ', ')" -ForegroundColor Yellow
 }
 
 # -- Refresh ECR auth on Lightsail --------------------------------------------
@@ -264,7 +277,15 @@ Invoke-LightsailSsh "sudo sed -i $sedExpr $ComposePath && grep image: $ComposePa
 
 # `docker compose up -d <service>` recreates only the named services.
 # `docker compose up -d` (no args) recreates all services in the compose file.
-$composeServices = if ($App -eq 'both') { "" } else { $Apps[$App].compose_service }
+# 'both' keeps its historical empty-args behavior (= every service in the file)
+# for backward compatibility with existing call sites; 'all' is explicit about
+# the three app containers so unrelated services (e.g. cron-runner) aren't
+# bounced.
+$composeServices = switch ($App) {
+  'both' { "" }
+  'all'  { ($AppKeys | ForEach-Object { $Apps[$_].compose_service }) -join " " }
+  default { $Apps[$App].compose_service }
+}
 
 Write-Host ""
 Write-Host "  [lightsail] docker compose pull + up -d $composeServices..." -ForegroundColor Cyan

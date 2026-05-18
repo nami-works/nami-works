@@ -1,8 +1,8 @@
-export type AppIdentity = "cpg-labs" | "omnify" | "storytelling" | "storefront";
+export type AppIdentity = "cpg-labs" | "omnify" | "storytelling" | "storefront" | "flywheel";
 
 export function getAppIdentity(): AppIdentity {
   const raw = process.env.APP_IDENTITY;
-  if (raw === "omnify" || raw === "storytelling" || raw === "storefront") return raw;
+  if (raw === "omnify" || raw === "storytelling" || raw === "storefront" || raw === "flywheel") return raw;
   return "cpg-labs";
 }
 
@@ -11,6 +11,7 @@ const APP_DISPLAY_NAMES: Record<AppIdentity, string> = {
   omnify: "Omnify",
   storytelling: "Storytelling",
   storefront: "Storefront",
+  flywheel: "Flywheel",
 };
 
 export function getAppDisplayName(identity: AppIdentity = getAppIdentity()): string {
@@ -50,6 +51,14 @@ const IDENTITY_ROUTES: Record<Exclude<AppIdentity, "cpg-labs">, string[]> = {
   storefront: [
     "app.merchandising",
     "webhooks.products",
+  ],
+  flywheel: [
+    // Affiliates lives here under the Flywheel umbrella.
+    // For now it still ships inside the CPG Labs full surface (displayed as
+    // "Omnify" to merchants) — these prefixes go live the moment a flywheel
+    // container is wired up. See shopify.app.flywheel.toml.
+    "app.affiliates",
+    "api.cron.affiliates-sync",
   ],
 };
 
@@ -107,6 +116,7 @@ const IDENTITY_NAV: Record<Exclude<AppIdentity, "cpg-labs">, string[]> = {
   ],
   storytelling: ["/app/storytelling"],
   storefront: ["/app/merchandising"],
+  flywheel: ["/app/affiliates"],
 };
 
 export function getNavItems(): NavItem[] {
