@@ -33,6 +33,24 @@ const LEVEL_1_MINUTES = 10;
 const LEVEL_2_MINUTES = 20;
 const LEVEL_3_MINUTES = 30;
 const REORDER_MINUTES = 40;
+/**
+ * Hard cap on escalation reorders per job. Above this count the job flips
+ * to status="NEEDS_REVIEW" instead of cancelling+re-requesting again.
+ *
+ * Background (2026-05-18 incident): the escalation engine had no upper
+ * bound, only the 40-min cadence. When a delivery sat without a driver
+ * for many hours, the watchdog would send a new driver-invitation push
+ * every 40 minutes indefinitely — 13 invitations on one Shops Jardins
+ * dispatch and 15 on a Recife dispatch across ~9 hours each. Each
+ * invitation is a real "new gig at this store" push to nearby drivers,
+ * and any driver who started moving before Lalamove auto-cancelled their
+ * slot drove to the GE Beauty store expecting a pickup. Multiple
+ * "unexpected drivers" reports from the POS team traced back to this.
+ *
+ * 3 attempts = roughly 2h of trying; if Lalamove can't match a driver
+ * in that window, operator intervention is warranted.
+ */
+const MAX_REORDER_ATTEMPTS = 3;
 
 // ── Priority fee calculation ─────────────────────────────────────────────────
 
@@ -432,6 +450,39 @@ async function reorderJob(
     success: false,
   };
 
+  // ── Hard cap (2026-05-19) ────────────────────────────────────────────────
+  // Stop sending driver-invitation pushes once we've reorderd MAX_REORDER_ATTEMPTS
+  // times for the same job. Flip the status to NEEDS_REVIEW so the watchdog's
+  // escalation query (`status: "ASSIGNING_DRIVER"`) no longer matches it.
+  // Operator must manually advance the job (re-dispatch or cancel for good).
+  const currentReorderCount = job.reorderCount ?? 0;
+  if (currentReorderCount >= MAX_REORDER_ATTEMPTS) {
+    console.warn(
+      `[escalation] reorder CAP REACHED job=${job.id} shop=${shop} count=${currentReorderCount} max=${MAX_REORDER_ATTEMPTS} — flipping to NEEDS_REVIEW`,
+    );
+    // Cancel the current Lalamove order (best-effort) so we stop being on the
+    // hook for it. The flip to NEEDS_REVIEW removes it from any auto path.
+    if (!options?.skipCancel && job.lalamoveOrderId) {
+      try {
+        await cancelLalamoveOrder(job.market, job.lalamoveOrderId, credentials);
+      } catch (cancelErr) {
+        const msg = cancelErr instanceof Error ? cancelErr.message : String(cancelErr);
+        // 422/404 = already terminal; that's fine.
+        if (!msg.includes("422") && !msg.startsWith("404:")) {
+          console.warn(
+            `[escalation] reorder CAP cancel non-fatal job=${job.id} error=${msg.slice(0, 150)}`,
+          );
+        }
+      }
+    }
+    await prismaAny.lalamoveDispatchJob.update({
+      where: { id: job.id },
+      data: { status: "NEEDS_REVIEW" },
+    });
+    result.error = `Max reorder attempts (${MAX_REORDER_ATTEMPTS}) reached — job flipped to NEEDS_REVIEW`;
+    return result;
+  }
+
   // 1. Cancel the existing Lalamove order (skip if already terminal)
   if (!options?.skipCancel) {
     try {
@@ -768,6 +819,10 @@ async function reorderJob(
       status: newOrderResponse.status,
       requestedAt: new Date(),
       priorityFeeLevel: 0,
+      // Increment escalation reorder counter. Cap enforced at the top of
+      // this function — once reorderCount hits MAX_REORDER_ATTEMPTS, the
+      // next tick flips to NEEDS_REVIEW instead of re-requesting again.
+      reorderCount: { increment: 1 },
     },
   });
 

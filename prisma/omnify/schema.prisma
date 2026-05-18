@@ -266,8 +266,16 @@ model LalamoveDispatchJob {
   quotationTotal        String? // snapshot of priceBreakdown.total at dispatch time
   quotationCurrency     String? // snapshot of priceBreakdown.currency at dispatch time
   shopifyFulfillmentId  String? // Shopify fulfillment GID created at dispatch time
-  retryCount            Int       @default(0) // number of auto-retry attempts
+  retryCount            Int       @default(0) // number of auto-retry attempts (autoRetryDispatchJob)
   lastRetryAt           DateTime? // timestamp of last auto-retry
+  /// Number of escalation reorders fired on this job (separate from retryCount,
+  /// which counts full autoRetryDispatchJob invocations). reorderJob increments
+  /// this on each successful re-request. When it hits MAX_REORDER_ATTEMPTS the
+  /// job flips to status="NEEDS_REVIEW" so we stop sending driver invitations
+  /// indefinitely. Cap added 2026-05-19 after incident where 28 surplus
+  /// invitations went out across 2 jobs in 24h because the escalation engine
+  /// had no upper bound.
+  reorderCount          Int       @default(0)
   /// Driver-approach tracking for the check-dispatches "not approaching" rule.
   /// Updated by /api/control/check-dispatches on each sample.
   lastDriverLat         Float?
