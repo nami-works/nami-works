@@ -435,13 +435,13 @@
           { "name": "test-1", "tags": ["LOCAL"], "expectedInOptimize": true },
           { "name": "test-2", "tags": ["LOCAL", "ld_failed-delivery"], "expectedInOptimize": false },
           { "name": "test-3", "tags": ["LOCAL", "Failed delivery"], "expectedInOptimize": false },
-          { "name": "test-4", "tags": ["LOCAL", "ld_address-confirm"], "expectedInOptimize": false },
+          { "name": "test-4", "tags": ["LOCAL", "ld_confirm-address"], "expectedInOptimize": false },
           { "name": "test-5", "tags": ["LOCAL", "ld_rota-01"], "expectedInOptimize": false }
         ]
       },
       "expectedDecision": {
         "decisionPath": "exclude-from-optimize",
-        "rationale": "Hard rule. Server-side filter in fetchUnassignedOrdersForLocation must exclude any order carrying any of: ld_failed-delivery, Failed delivery (state-machine), ld_address-confirm, ld_number-confirm, ld_rota-*.",
+        "rationale": "Hard rule. Server-side filter in fetchUnassignedOrdersForLocation must exclude any order carrying any of: ld_failed-delivery, Failed delivery (state-machine), ld_confirm-address, ld_number-confirm, ld_rota-*.",
         "minimumConfidence": 1.0
       },
       "rulesExercised": ["hard-tag-exclusion-failed-delivery", "hard-tag-exclusion-address-review", "hard-tag-exclusion-already-routed"],

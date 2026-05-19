@@ -6178,13 +6178,15 @@ export default function Index() {
               <s-button
                 variant="primary"
                 href={
-                  // Shopify orders index, filtered by ld_address-confirm,
-                  // forced to "All locations" via selectedView=all so the
+                  // Shopify orders index, filtered by the canonical tag.
+                  // Forced to "All locations" via selectedView=all so the
                   // operator's last-used location filter doesn't hide results.
+                  // Tag value comes from LD_ADDRESS_CONFIRM_TAG constant so
+                  // future renames don't drift between deep-link + auto-tag.
                   // Polaris-native href (App-Bridge-aware) avoids the
                   // window.open store-prefix duplication we hit on the
                   // Order details modal (fix landed 2026-05-16).
-                  `https://admin.shopify.com/store/${toAdminStoreHandle(shop)}/orders?query=${encodeURIComponent("tag:ld_address-confirm")}&selectedView=all`
+                  `https://admin.shopify.com/store/${toAdminStoreHandle(shop)}/orders?query=${encodeURIComponent(`tag:${LD_ADDRESS_CONFIRM_TAG}`)}&selectedView=all`
                 }
                 target="_blank"
               >
@@ -8251,6 +8253,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       nodes: Array<{
         id: string;
         deliveryMethod: { methodType: string; presentedName: string | null };
+        destination: {
+          firstName: string | null;
+          lastName: string | null;
+          email: string | null;
+          phone: string | null;
+        } | null;
         assignedLocation: {
           name: string;
           address1: string | null;
@@ -8395,6 +8403,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
                   deliveryMethod {
                     methodType
                     presentedName
+                  }
+                  destination {
+                    firstName
+                    lastName
+                    email
+                    phone
                   }
                   assignedLocation {
                     name
@@ -8639,11 +8653,37 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         id: order.id,
         name: order.name,
         processedAt: order.processedAt ?? null,
-        customerName: order.customer?.displayName ?? null,
-        // Customer email/phone — prefer the customer record (might be null
-        // for guest checkouts), fall back to the order's own email/phone.
-        customerEmail: order.customer?.email ?? order.email ?? null,
-        customerPhone: order.customer?.phone ?? order.phone ?? null,
+        // 2026-05-19 rewire: source the "Customer" block from the matching
+        // fulfillmentOrder's Delivery-address group (= destination) so the
+        // operator sees the RECIPIENT contact info, not the account holder.
+        // Pickup / gift / B2B orders frequently have an account holder
+        // (customer.*) distinct from the actual recipient (destination.*),
+        // and the recipient is who the courier is calling.
+        //
+        // Precedence per field: destination → customer record → order-level
+        // → null. The customer-record fallback preserves backwards behavior
+        // for orders without a fulfillmentOrder.destination (rare; mostly
+        // very old orders predating Shopify's delivery-method model).
+        customerName: (() => {
+          const dest = matchingFulfillment.destination;
+          const destFull = [dest?.firstName, dest?.lastName]
+            .filter(Boolean)
+            .join(" ")
+            .trim();
+          return destFull.length > 0
+            ? destFull
+            : order.customer?.displayName ?? null;
+        })(),
+        customerEmail:
+          matchingFulfillment.destination?.email ??
+          order.customer?.email ??
+          order.email ??
+          null,
+        customerPhone:
+          matchingFulfillment.destination?.phone ??
+          order.customer?.phone ??
+          order.phone ??
+          null,
         total: order.currentTotalPriceSet
           ? formatMoney(
               order.currentTotalPriceSet.shopMoney.amount,
@@ -8696,10 +8736,20 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // operators across surfaces (Shopify Orders page filter, Order details modal,
   // automated dispatch skip-list) without depending on the auto-delivery cron
   // having seen the order first.
+  //
+  // 2026-05-19 scope tightening: only tag orders whose fulfillment location
+  // is in the LD-enabled set. Without this gate, address-flagged orders at
+  // non-LD locations (warehouse shipping, in-store retail, etc.) were getting
+  // tagged too, which surfaced them in the LD address-error modal even
+  // though they would never be routed by Lalamove. `localDeliveryLocationIds`
+  // is derived from Shopify Delivery Profiles (locations with a local-
+  // delivery method definition); null means "no profile data, don't filter".
   const ordersNeedingAddressTag = filteredOrders.filter(
     (o) =>
       !o.addressValidation.isValid &&
-      !(o.tags ?? []).includes(LD_ADDRESS_CONFIRM_TAG),
+      !(o.tags ?? []).includes(LD_ADDRESS_CONFIRM_TAG) &&
+      (localDeliveryLocationIds === null ||
+        localDeliveryLocationIds.has(o.fulfillmentLocation.id)),
   );
   if (ordersNeedingAddressTag.length > 0) {
     void (async () => {

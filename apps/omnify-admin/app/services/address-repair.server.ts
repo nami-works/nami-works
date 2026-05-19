@@ -4,7 +4,7 @@
  * TypeScript port of `nami-works/sandbox/gebeauty/scripts/address_repair.py`.
  * Implements the four §6.7 patterns from LOCAL-DELIVERY-PLAYBOOK.md as pure
  * functions. Used by the local-delivery pipeline to autofix orders BEFORE
- * tagging them with `ld_address-confirm` for human review.
+ * tagging them with `ld_confirm-address` for human review.
  *
  * The four patterns (precedence order: P1 → P4 → P2 → P3, most-specific first):
  *   p1: trailing pure-number duplicate
@@ -389,7 +389,7 @@ export function tryPattern3(a1: string, a2: string): AddressRepairResult | null 
  * Caller should tag with ld_number-confirm.
  *
  * "no-pattern-matched" = address has no recognizable issue from these four
- * patterns. Caller should tag with ld_address-confirm (existing default).
+ * patterns. Caller should tag with ld_confirm-address (existing default).
  */
 export function repairBrazilianAddress(
   address1: string | null,

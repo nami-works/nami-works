@@ -20,9 +20,14 @@ export const LD_FAILED_DELIVERY_TAG = "ld_failed-delivery";
 // Operator-namespaced tag applied when address validation fails (e.g. apartment
 // detail in line 1, multiple numbers, etc.). Auto-assign skips orders carrying
 // this tag — operator must clean the address before the order rejoins routing.
-// Hyphen-delimited canonical form. Replaces legacy ld_address_review (migrated
-// via scripts/migrate-ld-address-review-tag.ts).
-export const LD_ADDRESS_CONFIRM_TAG = "ld_address-confirm";
+// Hyphen-delimited canonical form.
+//
+// Renamed 2026-05-19: previously "ld_address-confirm". The new form puts the
+// verb first ("confirm") so it groups visually with the other ld_confirm-*
+// tags expected downstream. Legacy form is migrated via
+// scripts/migrate-ld-confirm-address-tag.ts (prior rename: ld_address_review
+// → ld_address-confirm in scripts/migrate-ld-address-review-tag.ts).
+export const LD_ADDRESS_CONFIRM_TAG = "ld_confirm-address";
 
 // Operator-namespaced tag applied when the duplicated-number heuristic flags
 // the recipient phone as a likely placeholder/duplicate. Placeholder constant

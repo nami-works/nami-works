@@ -58,6 +58,12 @@
 - Completely remove button *Add to best route* from UI and codebase
 - When selecting orders to be added to any route, any route already dispatched must not be available to have orders added to it
 - Orders already assigned to a route should not be included in the auto-assign selection for routing
+- Whenever a never-before created route, add its view to the orders UI ("Rota #nn")
+
+## route cargs
+- "Hold for review" badge
+  - is not following Polaris pattern
+  - persists after  clearing and reusing the route
 
 ## Dispatching
 - Application error reported at 13/05/26 at 17:02 BRT when dispatching orders from São Paulo
@@ -70,7 +76,7 @@
 - 502 reported at 16/05/26 at 16:59 BRT loading Local delivery (GET /app/local-delivery.data, locationId 97397014848); Caddy → upstream cpg-labs-full during a ~9s container-restart gap (clean exit, no OOM, ready at 16:59:44 BRT)
   - reverse proxy has no retry/health-gate on 502 — deploy/restart of full app surfaces as page-load failure to merchant
   - consider Caddy `lb_try_duration` + `lb_try_interval` on the upstream so restart gaps don't bleed to users
-
+- add a per time-of-request escalation logic: the later the requests happened, higher and faster the escalation should happen
 
 ## AI auto-routing
 - Understand error "Slot 8 crosses the Tietê River; +15 min typical is within acceptable range for a normal SP multi-stop route, but peak-hour exposure (+35 min) on a 6-stop route could compound delays. Try again in a moment, or assign orders manually. Decision id: cmp7chxoo001ypb2yut19yh19."
@@ -79,8 +85,6 @@
 
 ## modal **Order details**
 - fix button *Open full order* (is not opening the order correctly, returns 404)
-- place both buttons *Open full order* and *Close* at the right edge of the footer
-- fetch phone from delivery address instead of default customer phone
 
 ## all orders table
 - add a new "Due today" filter at the top to fetch only orders marked as Due today
