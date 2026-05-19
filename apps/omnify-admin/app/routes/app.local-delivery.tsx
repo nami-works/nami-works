@@ -1762,17 +1762,28 @@ export default function Index() {
     });
   };
 
-  // Address-error badge count includes BOTH:
-  //   - orders with in-app address-validation flags (isValid=false)
-  //   - orders carrying ld_address-confirm or ld_number-confirm tags from
-  //     server-side address-repair (Track 4)
-  // Both signal "operator must review the shipping address before dispatch".
+  // Address-error badge tracks the runtime validation result only.
+  //
+  // 2026-05-19: previously this also OR'd in `tags.includes(ld_confirm-address)`
+  // and `tags.includes(ld_number-confirm)` as a secondary signal. Removed
+  // because:
+  //   1. The runtime validator (`validateAddressFormat`) is the single source
+  //      of truth — it checks the SAME three patterns that produce those tags
+  //      server-side (apartment-in-line-1, multiple-numbers-in-line-1,
+  //      duplicate-number-across-lines). Tags became a lagging mirror.
+  //   2. Tag-as-badge produced false-positives: an operator who fixed the
+  //      address in Shopify but forgot to remove the tag would see the badge
+  //      keep counting their fixed order until they manually pruned the tag.
+  //      That's the badge measuring history, not current state.
+  //   3. Every loader pass re-runs validation against the freshly-fetched
+  //      shipping address from Shopify, so the badge auto-updates the moment
+  //      the address is corrected — no tag-cleanup step needed.
+  //
+  // Tags remain useful for OTHER purposes (auto-assign skip-list, Shopify-
+  // side deep-link in the address-errors modal, server-side audit trail).
+  // They're just not the source of truth for the badge.
   const addressErrorOrders = useMemo(
-    () => orders.filter((order) => {
-      if (!order.addressValidation.isValid) return true;
-      const tags = order.tags ?? [];
-      return tags.includes(LD_ADDRESS_CONFIRM_TAG) || tags.includes(LD_NUMBER_CONFIRM_TAG);
-    }),
+    () => orders.filter((order) => !order.addressValidation.isValid),
     [orders],
   );
 
