@@ -26,6 +26,10 @@ scripts
 # Project knowledge (planning notes, briefs, drafts) — never shipped
 .knowledge
 
+# Local sandboxes (e.g. sandbox/gebeauty for store-ops scripts) — not part
+# of the cpg-labs runtime, mirrors the nami-works sandbox structure.
+sandbox
+
 # Runtime / session log artifacts
 *.log
 
