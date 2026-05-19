@@ -8263,6 +8263,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     fulfillmentOrders: {
       nodes: Array<{
         id: string;
+        status: string;
         deliveryMethod: { methodType: string; presentedName: string | null };
         destination: {
           firstName: string | null;
@@ -8411,6 +8412,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
               fulfillmentOrders(first: 10) {
                 nodes {
                   id
+                  status
                   deliveryMethod {
                     methodType
                     presentedName
@@ -8512,6 +8514,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     .map((order) => {
       const matchingFulfillment = order.fulfillmentOrders.nodes.find(
         (fulfillment) => {
+          // Ghost-FO guard (2026-05-19): when an order's FO is moved between
+          // locations via `fulfillmentOrderMove`, Shopify CLOSES the old FO
+          // and creates a fresh OPEN one at the new location. The old CLOSED
+          // FO sticks around forever in the order's history. Without this
+          // filter, an order moved BACK from a local store to the warehouse
+          // would still match the local store via the stale CLOSED FO and
+          // keep appearing in that store's LD view (Lucas reproduced 2026-05-19
+          // on order #80456: CLOSED FO at Shops Jardins + OPEN FO at Extrema
+          // kept showing at Shops Jardins). Only OPEN FOs represent live
+          // fulfillment commitments — closed/cancelled FOs are history.
+          if (fulfillment.status !== "OPEN") return false;
           if (!fulfillment.assignedLocation?.location?.id) return false;
           if (
             locationId !== DEFAULT_LOCATION_ID &&
@@ -8532,7 +8545,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
       if (!matchingFulfillment?.assignedLocation?.location) {
         if (debugDropCounters) {
-          const fulfillments = order.fulfillmentOrders.nodes;
+          // Mirror the ghost-FO guard from the primary filter so debug
+          // counters don't blame `locationMismatch` for a drop that's
+          // actually `no OPEN FO`.
+          const fulfillments = order.fulfillmentOrders.nodes.filter(
+            (f) => f.status === "OPEN",
+          );
           if (fulfillments.length === 0) {
             debugDropCounters.noFulfillmentOrders += 1;
           } else {
