@@ -63,7 +63,7 @@ async function getSetupState(shop: string): Promise<SetupState> {
     {
       key: "lalamove",
       status: credential ? "done" : "todo",
-      href: "/app/settings/providers",
+      href: "/app/settings?tab=providers",
     },
     {
       key: "locations",

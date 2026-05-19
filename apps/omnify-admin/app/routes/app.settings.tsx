@@ -631,6 +631,18 @@ export default function LocationSettings() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Deep-link the active tab via ?tab=<id>. Used by the home-page setup guide
+  // ("Add Lalamove credentials" → ?tab=providers) and any other route that
+  // wants to land directly on a specific tab. Runs once per mount.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const param = new URLSearchParams(window.location.search).get("tab");
+    if (param === "settings" || param === "providers" || param === "carriers") {
+      setActiveTab(param);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const allTabs: { id: SettingsTab; label: string }[] = [
     { id: "settings", label: t("tabs.locations") },
     { id: "providers", label: t("tabs.providers") },
