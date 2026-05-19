@@ -8748,19 +8748,27 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // automated dispatch skip-list) without depending on the auto-delivery cron
   // having seen the order first.
   //
-  // 2026-05-19 scope tightening: only tag orders whose fulfillment location
-  // is in the LD-enabled set. Without this gate, address-flagged orders at
-  // non-LD locations (warehouse shipping, in-store retail, etc.) were getting
-  // tagged too, which surfaced them in the LD address-error modal even
-  // though they would never be routed by Lalamove. `localDeliveryLocationIds`
-  // is derived from Shopify Delivery Profiles (locations with a local-
-  // delivery method definition); null means "no profile data, don't filter".
+  // 2026-05-19 hardened gate: source the LD-enabled location set from
+  // LalamoveLocationConfig (our system's canonical "we can dispatch from here
+  // via Lalamove") rather than Shopify Delivery Profiles. Three reasons:
+  //   1. LalamoveLocationConfig is the truer signal — a location without a
+  //      Lalamove API config CANNOT be routed by Lalamove regardless of what
+  //      Shopify's Delivery Profiles say. CD Extrema (a warehouse / shipping
+  //      DC) has no LalamoveLocationConfig row, so its orders are guaranteed
+  //      to be skipped here.
+  //   2. Fail-closed: if lalamoveConfigRows is empty for any reason, the gate
+  //      tags zero orders rather than passing everything through (which the
+  //      old `localDeliveryLocationIds === null` fallback did).
+  //   3. Downstream messaging flows hang off this tag. A false-positive tag
+  //      on a non-LD order (e.g. CD Extrema) would route a CD-Extrema customer
+  //      into the LD address-confirmation messaging flow, which doesn't apply
+  //      to them and damages trust.
+  const ldEnabledLocationIds = new Set(lalamoveConfigRows.map((r) => r.locationId));
   const ordersNeedingAddressTag = filteredOrders.filter(
     (o) =>
       !o.addressValidation.isValid &&
       !(o.tags ?? []).includes(LD_ADDRESS_CONFIRM_TAG) &&
-      (localDeliveryLocationIds === null ||
-        localDeliveryLocationIds.has(o.fulfillmentLocation.id)),
+      ldEnabledLocationIds.has(o.fulfillmentLocation.id),
   );
   if (ordersNeedingAddressTag.length > 0) {
     void (async () => {
