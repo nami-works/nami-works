@@ -222,12 +222,26 @@ function computeEndToEndConfidence(
 export function arbitrate(input: DecisionArbiterInput): ArbiterDecision {
   const { candidates, ruleResults, quoteResults, reasonerOutput } = input;
 
-  // 1. Filter to eligible candidates.
-  const eligibleIds = candidates
-    .filter((c) => isEligible(c, ruleResults, quoteResults).eligible)
-    .map((c) => c.candidateId);
+  // 1. Filter to eligible candidates, and partition them into:
+  //    - completeEligibleIds: complete-batch candidates (route every order)
+  //    - partialEligibleIds: partial-batch candidates that excluded out-of-
+  //      area outliers ("exclude-outliers-route-rest"). These are last-resort
+  //      and must not win if any complete candidate is eligible.
+  const eligibleIds: string[] = [];
+  const completeEligibleIds: string[] = [];
+  const partialEligibleIds: string[] = [];
+  for (const c of candidates) {
+    if (!isEligible(c, ruleResults, quoteResults).eligible) continue;
+    eligibleIds.push(c.candidateId);
+    if (c.candidateType === "exclude-outliers-route-rest") {
+      partialEligibleIds.push(c.candidateId);
+    } else {
+      completeEligibleIds.push(c.candidateId);
+    }
+  }
 
-  // 2. No-eligible escape hatch.
+  // 2. No-eligible escape hatch (truly nothing routes — even excluding
+  //    outliers didn't help).
   if (eligibleIds.length === 0) {
     const placeholder = candidates[0];
     return {
@@ -255,22 +269,51 @@ export function arbitrate(input: DecisionArbiterInput): ArbiterDecision {
     };
   }
 
-  // 3. Prefer reasoner's recommendation when eligible.
+  // 3. Prefer reasoner's recommendation when it's a COMPLETE-eligible
+  //    candidate. The partial variant is a fallback — only consider it
+  //    when no complete candidate is eligible.
   let winningId: string | null = null;
-  if (eligibleIds.includes(reasonerOutput.recommendedCandidateId)) {
+  const reasonerPickIsCompleteEligible =
+    completeEligibleIds.includes(reasonerOutput.recommendedCandidateId);
+
+  if (reasonerPickIsCompleteEligible) {
     winningId = reasonerOutput.recommendedCandidateId;
-  } else {
-    // Fall back to cheapest eligible.
+  } else if (completeEligibleIds.length > 0) {
+    // Cheapest complete-eligible.
     const costRanking = rankByCost(quoteResults);
-    winningId = costRanking.find((id) => eligibleIds.includes(id)) ?? eligibleIds[0]!;
+    winningId = costRanking.find((id) => completeEligibleIds.includes(id)) ?? completeEligibleIds[0]!;
+  } else {
+    // No complete-eligible candidate exists. Fall back to the partial
+    // (exclude-outliers-route-rest) variant. Prefer reasoner's pick if it
+    // happens to be the partial one; otherwise cheapest partial.
+    const reasonerPickIsPartial =
+      partialEligibleIds.includes(reasonerOutput.recommendedCandidateId);
+    if (reasonerPickIsPartial) {
+      winningId = reasonerOutput.recommendedCandidateId;
+    } else {
+      const costRanking = rankByCost(quoteResults);
+      winningId = costRanking.find((id) => partialEligibleIds.includes(id)) ?? partialEligibleIds[0]!;
+    }
   }
 
   const winningCandidate = findCandidate(candidates, winningId)!;
   const winningRule = findRule(ruleResults, winningId);
   const winningQuote = findQuote(quoteResults, winningId);
+  const isPartialFallback =
+    winningCandidate.candidateType === "exclude-outliers-route-rest";
 
   // 4. Build the combined post-mortem flag set.
   const arbiterFlags = deriveArbiterFlags(winningRule, reasonerOutput, winningCandidate);
+  if (isPartialFallback) {
+    arbiterFlags.push({
+      category: "partial-batch-outliers-excluded",
+      ruleIds: [],
+      severity: "review-recommended",
+      reasoning:
+        winningCandidate.generationNote ??
+        "Partial-batch variant selected: one or more orders excluded from routing because no complete candidate was eligible.",
+    });
+  }
   const combinedFlags = combineFlags(reasonerOutput.postMortemFlags, arbiterFlags);
 
   // 5. Pick the decision path.
@@ -283,11 +326,17 @@ export function arbitrate(input: DecisionArbiterInput): ArbiterDecision {
 
   // 6. Build the rationale.
   const rationaleParts: string[] = [];
-  rationaleParts.push(
-    winningId === reasonerOutput.recommendedCandidateId
-      ? "Followed reasoner recommendation."
-      : "Reasoner pick was ineligible; fell back to cheapest eligible candidate.",
-  );
+  if (isPartialFallback) {
+    rationaleParts.push(
+      "No complete-batch candidate eligible; routed in-range orders only and excluded out-of-area outliers for operator triage.",
+    );
+  } else {
+    rationaleParts.push(
+      winningId === reasonerOutput.recommendedCandidateId
+        ? "Followed reasoner recommendation."
+        : "Reasoner pick was ineligible; fell back to cheapest eligible candidate.",
+    );
+  }
   if (winningRule?.severityVerdict === "soft-violation") {
     rationaleParts.push(
       `Soft-rule violation(s) accepted: ${winningRule.ruleViolations.map((v) => v.ruleId).join(", ")}.`,

@@ -152,7 +152,21 @@ export type CandidateType =
   | "absorb-low-spread"
   | "corridor-from-pickup-swap"
   | "rule-fallback"
-  | "deferred";
+  | "deferred"
+  /**
+   * Last-resort partial-routing variant. When one or more orders sit so far
+   * from the pickup (> EXCLUDE_OUTLIER_PICKUP_DISTANCE_KM) that any candidate
+   * including them triggers either a hard rule violation OR a Lalamove quote
+   * refusal, this variant excludes those orders from the routing and clusters
+   * only the remaining in-range orders. The excluded orders stay unassigned
+   * and surface via a post-mortem flag for operator review.
+   *
+   * The arbiter prefers a complete candidate (one routing every order)
+   * whenever one is eligible. This variant is selected only when EVERY
+   * complete candidate fails eligibility — strictly better than
+   * `exclude-from-optimize`, which would otherwise refuse the whole batch.
+   */
+  | "exclude-outliers-route-rest";
 
 /** One route slot inside a candidate (a single Lalamove dispatch). */
 export type RouteSlot = {
@@ -261,7 +275,14 @@ export type PostMortemFlagCategory =
   | "low-confidence-decision"
   | "cost-vs-barrier-tradeoff"
   | "outlier-kept-on-route"
-  | "autonomous-postponement";
+  | "autonomous-postponement"
+  /**
+   * The arbiter selected the `exclude-outliers-route-rest` variant because
+   * no complete candidate was eligible. One or more orders (named in the
+   * flag reasoning) were excluded from routing and remain unassigned.
+   * Operator must triage them manually.
+   */
+  | "partial-batch-outliers-excluded";
 
 export type PostMortemFlagSeverity = "info" | "review-suggested" | "review-recommended";
 

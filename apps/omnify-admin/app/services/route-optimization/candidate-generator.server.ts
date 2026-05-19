@@ -415,6 +415,83 @@ function generateRuleFallback(
   };
 }
 
+// ── Variant 7: exclude-outliers-route-rest ────────────────────────────────
+
+/**
+ * Pickup-distance threshold above which an order is considered an "out-of-
+ * area" outlier — too far from the pickup for Lalamove standard multi-stop.
+ * Anything farther will either trigger a hard rule violation (geographic
+ * barrier / intercity flag) or get refused by the Lalamove quote engine,
+ * which collectively forces the arbiter into `exclude-from-optimize` and
+ * refuses to route ANY of the batch.
+ *
+ * Empirically picked from incidents:
+ *  - Serra Negra (~100 km from SP pickup, 2026-05-19)
+ *  - Tietê River crossings with peak-hour penalties (2026-05-15)
+ * Both produced `exclude-from-optimize` + confidence=0 + total batch refusal.
+ *
+ * Set conservatively. The Lalamove BR_SAO operating radius for standard
+ * `LALAGO` service is typically 30-40 km; 50 km is a comfortable cushion
+ * beyond which we should not attempt a multi-stop dispatch.
+ *
+ * Could later be moved into GeofenceRegistry per-metro if other markets
+ * need different thresholds.
+ */
+const EXCLUDE_OUTLIER_PICKUP_DISTANCE_KM = 50;
+
+/**
+ * Emit a partial-batch candidate that excludes orders sitting too far from
+ * the pickup (per the threshold above), and routes only the in-range
+ * remainder. The excluded orders are not assigned to any slot — they stay
+ * unassigned for operator review.
+ *
+ * Returns null when:
+ *   - no orders exceed the threshold (no excludes needed; existing variants
+ *     suffice), or
+ *   - ALL orders exceed the threshold (nothing to route — emitting an empty
+ *     candidate is a job for the deferred variant, not this one).
+ *
+ * Critical design constraint: this variant is INTENDED to be a fallback.
+ * The arbiter must not prefer it over a complete candidate that's eligible.
+ * See decision-arbiter precedence (winning-candidate selection).
+ */
+function generateExcludeOutliersRouteRest(
+  orders: CandidateOrderInput[],
+  pickup: Coordinate,
+): Candidate | null {
+  if (orders.length === 0) return null;
+
+  const thresholdMeters = EXCLUDE_OUTLIER_PICKUP_DISTANCE_KM * 1000;
+  const excluded: CandidateOrderInput[] = [];
+  const kept: CandidateOrderInput[] = [];
+  for (const order of orders) {
+    const distM = haversineMeters(order.coordinates, pickup);
+    if (distM > thresholdMeters) {
+      excluded.push(order);
+    } else {
+      kept.push(order);
+    }
+  }
+
+  // No outliers → no need for this variant.
+  if (excluded.length === 0) return null;
+  // Every order is an outlier → nothing to route. Don't emit; operator
+  // handles the whole batch manually.
+  if (kept.length === 0) return null;
+
+  const k = Math.max(1, Math.ceil(kept.length / DEFAULT_ORDERS_PER_ROUTE));
+  const clusters = kMeansAssign(kept, k, pickup);
+  const slots = buildSlots(clusters);
+
+  const excludedNames = excluded.map((o) => o.name).join(", ");
+  return {
+    candidateId: "exclude-outliers-route-rest",
+    candidateType: "exclude-outliers-route-rest",
+    clustering: slots,
+    generationNote: `${excluded.length} order(s) excluded (>${EXCLUDE_OUTLIER_PICKUP_DISTANCE_KM}km from pickup): ${excludedNames}. Operator must handle unassigned orders manually.`,
+  };
+}
+
 // ── Variant 6: deferred (sparse-volume solo postponement) ──────────────────
 
 /**
@@ -504,6 +581,17 @@ export function generateCandidates(
     input.tenantKey,
   );
   if (deferred) out.push(deferred);
+
+  // Last-resort variant: when one or more orders are too far from the pickup
+  // (the "Serra Negra / Tietê River" pattern) AND every complete candidate
+  // would therefore fail eligibility, the arbiter picks this one instead of
+  // refusing the whole batch via exclude-from-optimize. See the variant's
+  // own docblock for the threshold rationale.
+  const partial = generateExcludeOutliersRouteRest(
+    input.orders,
+    input.pickupCoordinates,
+  );
+  if (partial) out.push(partial);
 
   return out;
 }

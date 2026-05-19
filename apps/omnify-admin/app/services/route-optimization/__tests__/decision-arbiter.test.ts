@@ -287,3 +287,51 @@ test("winningCandidateId is always set, never null even on degraded inputs", () 
   assert.ok(typeof decision.winningCandidateId === "string");
   assert.notEqual(decision.winningCandidateId, "");
 });
+
+// ── exclude-outliers-route-rest as fallback ────────────────────────────────
+
+test("partial fallback: complete candidates all fail, partial wins", () => {
+  // 'complete' candidate has a hard violation; 'partial' candidate (excludes
+  // outliers) is clean. Arbiter should pick the partial candidate over
+  // exclude-from-optimize.
+  const partial = candidate("partial", "exclude-outliers-route-rest", [["near-1", "near-2"]]);
+  partial.generationNote = "1 order(s) excluded (>50km from pickup): serra-negra";
+  const decision = arbitrate({
+    candidates: [candidate("complete"), partial],
+    ruleResults: [
+      rule("complete", "hard-violation", [
+        { ruleId: "hard-7-cap", severity: "hard", explanation: "x", citation: "y" },
+      ]),
+      rule("partial"),
+    ],
+    quoteResults: [quoteFail("complete"), quoteOk("partial", 4500)],
+    reasonerOutput: reasonerOutput("complete", 0.85),
+  });
+  assert.equal(decision.winningCandidateId, "partial");
+  assert.notEqual(decision.decisionPath, "exclude-from-optimize");
+  // The partial-batch flag must be present and name the excluded order.
+  const partialFlag = decision.postMortemFlags.find(
+    (f) => f.category === "partial-batch-outliers-excluded",
+  );
+  assert.ok(partialFlag, "partial-batch-outliers-excluded flag must be emitted");
+  assert.ok(
+    partialFlag.reasoning.includes("serra-negra"),
+    `flag reasoning should name the excluded order; got: ${partialFlag.reasoning}`,
+  );
+});
+
+test("partial NOT preferred when a complete candidate is eligible", () => {
+  // Both eligible. The complete candidate must win — partial is last-resort.
+  const partial = candidate("partial", "exclude-outliers-route-rest", [["near-1"]]);
+  const decision = arbitrate({
+    candidates: [candidate("complete"), partial],
+    ruleResults: [rule("complete"), rule("partial")],
+    quoteResults: [quoteOk("complete", 5000), quoteOk("partial", 3000)],
+    reasonerOutput: reasonerOutput("partial", 0.9), // even if reasoner picks partial
+  });
+  assert.equal(
+    decision.winningCandidateId,
+    "complete",
+    "complete must win over partial even when reasoner recommended partial and partial is cheaper",
+  );
+});

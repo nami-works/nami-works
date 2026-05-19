@@ -79,7 +79,6 @@
 - add a per time-of-request escalation logic: the later the requests happened, higher and faster the escalation should happen
 
 ## AI auto-routing
-- Understand error "Slot 8 crosses the Tietê River; +15 min typical is within acceptable range for a normal SP multi-stop route, but peak-hour exposure (+35 min) on a 6-stop route could compound delays. Try again in a moment, or assign orders manually. Decision id: cmp7chxoo001ypb2yut19yh19."
 - When displaying error "AI route optimization is off, Turn on "Use AI-powered route optimization" in Settings > Local delivery for this location, then try again."
   - add link to **Settings > Local delivery** to allow navigation straight from the error (open in new tab)
 

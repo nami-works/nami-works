@@ -326,10 +326,73 @@ test("generator caps candidate count at 6 (one per variant)", () => {
   ];
   const out = generateCandidates(defaultInput(orders, RIO_PICKUP, "rio-de-janeiro"));
   assert.ok(
-    out.length <= 6,
-    `expected ≤6 candidates, got ${out.length}: ${out.map((c) => c.candidateType).join(",")}`,
+    out.length <= 7,
+    `expected ≤7 candidates, got ${out.length}: ${out.map((c) => c.candidateType).join(",")}`,
   );
   // Every candidateId is unique.
   const ids = out.map((c) => c.candidateId);
   assert.equal(new Set(ids).size, ids.length, `duplicate candidate ids: ${ids.join(",")}`);
+});
+
+// ── exclude-outliers-route-rest ──────────────────────────────────────────
+
+test("exclude-outliers-route-rest: fires when one order is >50km from pickup", () => {
+  // SP pickup. 4 orders within 5km + 1 order ~100km away (Serra Negra).
+  const orders: CandidateOrderInput[] = [
+    order("near-1", -23.560, -46.665),
+    order("near-2", -23.570, -46.675),
+    order("near-3", -23.555, -46.660),
+    order("near-4", -23.575, -46.680),
+    order("serra-negra", -22.610, -46.700), // ~100 km north of SP pickup
+  ];
+  const out = generateCandidates(defaultInput(orders, SP_PICKUP, "sao-paulo"));
+  const partial = getCandidate(out, "exclude-outliers-route-rest");
+  assert.ok(partial, "expected an exclude-outliers-route-rest candidate");
+  // Excluded order should NOT appear in any slot.
+  const slotsWithExcluded = slotsContaining(partial, "serra-negra");
+  assert.deepEqual(slotsWithExcluded, [], "serra-negra must not appear in any slot");
+  // All near orders SHOULD appear.
+  for (const n of ["near-1", "near-2", "near-3", "near-4"]) {
+    assert.ok(
+      slotsContaining(partial, n).length > 0,
+      `${n} should appear in a slot of the partial candidate`,
+    );
+  }
+  // Generation note should call out the exclusion.
+  assert.ok(
+    partial.generationNote?.includes("serra-negra"),
+    `generationNote should name the excluded order; got: ${partial.generationNote}`,
+  );
+});
+
+test("exclude-outliers-route-rest: NOT emitted when all orders are in range", () => {
+  const orders: CandidateOrderInput[] = [
+    order("near-1", -23.560, -46.665),
+    order("near-2", -23.570, -46.675),
+    order("near-3", -23.555, -46.660),
+  ];
+  const out = generateCandidates(defaultInput(orders, SP_PICKUP, "sao-paulo"));
+  const partial = getCandidate(out, "exclude-outliers-route-rest");
+  assert.equal(
+    partial,
+    undefined,
+    "no candidate should be emitted when every order is within range",
+  );
+});
+
+test("exclude-outliers-route-rest: NOT emitted when EVERY order is an outlier", () => {
+  // All 3 orders ~100km from SP pickup. There's nothing to route after
+  // excluding them — variant should bail.
+  const orders: CandidateOrderInput[] = [
+    order("far-1", -22.610, -46.700),
+    order("far-2", -22.620, -46.720),
+    order("far-3", -22.630, -46.710),
+  ];
+  const out = generateCandidates(defaultInput(orders, SP_PICKUP, "sao-paulo"));
+  const partial = getCandidate(out, "exclude-outliers-route-rest");
+  assert.equal(
+    partial,
+    undefined,
+    "variant must not emit when nothing is in range — the deferred / exclude-from-optimize path owns this case",
+  );
 });
