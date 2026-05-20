@@ -8766,26 +8766,40 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // automated dispatch skip-list) without depending on the auto-delivery cron
   // having seen the order first.
   //
-  // 2026-05-19 hardened gate: source the LD-enabled location set from
-  // LalamoveLocationConfig (our system's canonical "we can dispatch from here
-  // via Lalamove") rather than Shopify Delivery Profiles. Three reasons:
-  //   1. LalamoveLocationConfig is the truer signal — a location without a
-  //      Lalamove API config CANNOT be routed by Lalamove regardless of what
-  //      Shopify's Delivery Profiles say. CD Extrema (a warehouse / shipping
-  //      DC) has no LalamoveLocationConfig row, so its orders are guaranteed
-  //      to be skipped here.
-  //   2. Fail-closed: if lalamoveConfigRows is empty for any reason, the gate
-  //      tags zero orders rather than passing everything through (which the
-  //      old `localDeliveryLocationIds === null` fallback did).
-  //   3. Downstream messaging flows hang off this tag. A false-positive tag
-  //      on a non-LD order (e.g. CD Extrema) would route a CD-Extrema customer
-  //      into the LD address-confirmation messaging flow, which doesn't apply
-  //      to them and damages trust.
+  // 2026-05-20 strict gate: tag ONLY orders whose Shopify fulfillmentOrder
+  // deliveryMethod.methodType === "LOCAL". The location-level check
+  // (LalamoveLocationConfig) stays as a defense-in-depth second gate, but
+  // methodType is the authoritative signal — Shopify itself decides per
+  // order whether it's local delivery vs shipping vs pickup, regardless of
+  // which fulfillment location it's assigned to.
+  //
+  // Why both gates:
+  //   - methodType === "LOCAL" (primary): the order's checkout chose local
+  //     delivery. A shipping/pickup order at an LD-enabled location must
+  //     NOT receive ld_confirm-address because downstream messaging flows
+  //     (WhatsApp address confirmation, dispatcher skip-list, etc.) only
+  //     apply to local-delivery orders. Tagging a shipping order would
+  //     pull a SHIPPING customer into LD's address-confirmation messaging,
+  //     which damages trust and misroutes the operator response.
+  //   - LalamoveLocationConfig (defense-in-depth): a location without a
+  //     Lalamove API config CANNOT be routed by Lalamove. If somehow a
+  //     LOCAL order lands at an un-configured location (Shopify
+  //     misconfiguration / partial setup), we still skip the tag.
+  //
+  // History:
+  //   - 2026-05-19: introduced lalamoveConfigRows-based location gate
+  //     (replaced the previous Shopify Delivery Profiles gate which
+  //     leaked CD Extrema warehouse orders into LD messaging).
+  //   - 2026-05-20: added methodType=LOCAL primary gate (this change).
+  //     The location gate alone allowed includeWarehouse SHIPPING orders
+  //     surfaced via the warehouse override to be tagged at LD-enabled
+  //     stores, which fed shipping customers into LD messaging.
   const ldEnabledLocationIds = new Set(lalamoveConfigRows.map((r) => r.locationId));
   const ordersNeedingAddressTag = filteredOrders.filter(
     (o) =>
       !o.addressValidation.isValid &&
       !(o.tags ?? []).includes(LD_ADDRESS_CONFIRM_TAG) &&
+      o.methodType === "LOCAL" &&
       ldEnabledLocationIds.has(o.fulfillmentLocation.id),
   );
   if (ordersNeedingAddressTag.length > 0) {
