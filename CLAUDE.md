@@ -25,12 +25,61 @@ Production targets, DNS, secrets backends, and deploy domains do not change with
 
 ## Parallel-session protocol
 
-Multiple Claude Code sessions run against this repo at the same time. The shared working tree and the per-app deploy guards cap how many can deploy in parallel. The cap depends on what the session is doing AND which app it's touching.
+Multiple Claude Code sessions can run against this repo at the same time. The conflict model depends on **which files the session is touching**, not on a flat session count.
 
-- **Coding sessions: 2 max per app, in separate `git worktree`s.** Two sessions sharing the same checkout and the same app will collide on lint cache, generated files, and partially-applied edits. Use `git worktree add ../nami-works-<slug> <branch>` so each session has its own working tree. **2 sessions on different apps don't conflict** the same way — `apps/connector` work and `apps/omnify-admin` work touch disjoint files.
-- **Mockup sessions: unlimited.** Mockups touch zero prod code and don't trigger any deploy. Each cuts a `mockup/<feature>` branch. Commit early — uncommitted files on `main` trip the deploy guards.
-- **Read-only / planning / research sessions: unlimited.** No file writes, no risk.
-- **Cross-session shared files** (`.claude/settings.json`, `.claude/deploy-queue.md`, `MEMORY.md`, root `CLAUDE.md`, per-app `CLAUDE.md`): edits land on `main` and every session inherits on next pull. Watch for two sessions editing the same shared file simultaneously.
+### Cross-app sessions — unlimited, no worktree required
+
+Sessions touching only one app's files (`apps/connector/`, `apps/omnify-admin/`, `apps/omnify-site/`, `apps/fulfillment/`, `apps/content-gen-api/`, `apps/content-scraper-api/`) don't collide with each other. Each app's tree is disjoint — different paths, different builds, different deploys. Just open the main checkout (`Desktop\nami-works\`) in both sessions and go.
+
+### Same-app sessions — 2 max, separate worktrees
+
+Two sessions editing the same app *will* collide: file overwrites, lint cache thrash, branch-switch eating staged files (this happened during the rota-local + LD-watchdog cross-stream on 2026-05-21). Use `git worktree` to give each session its own physical checkout.
+
+**Worktree location convention: `~/dev/worktrees/nami-works-<branch-slug>/`.**
+
+```bash
+mkdir -p "C:/Users/Lucas Guimarães/dev/worktrees"      # one-time
+git worktree add "C:/Users/Lucas Guimarães/dev/worktrees/nami-works-ld-ui" feat/ld-ui
+```
+
+Open the new folder in Cursor / Claude Code as a fresh project. Desktop stays clean (only the main checkout sits there). Inspect with `git worktree list`; remove with `git worktree remove "C:/Users/Lucas Guimarães/dev/worktrees/nami-works-ld-ui"` when the branch lands.
+
+A session that suspects another active session is on the same app should check: `git worktree list` shows active worktrees, `git branch --no-merged main` shows in-flight branches. If you see another session's branch on the same app, cut a worktree before editing.
+
+### Shared root state — serialize, or coordinate via work order
+
+A small set of files affects every workspace; concurrent edits cause merge churn or break other sessions' builds. Treat any change to these as a critical section across all live sessions:
+
+- root `package.json` (workspaces list, deps, overrides)
+- `package-lock.json`
+- root `.gitignore`, root `.npmrc`, root `tsconfig.base.json`, root `eslint.config.js`
+- root `CLAUDE.md` (and the per-app CLAUDE.md any other session is reading mid-task)
+- `.claude/settings.json`, `.claude/deploy-queue.md`
+- `packages/*` content (consumed by multiple apps)
+- any `prisma/*/schema.prisma` (whose generated client multiple workspaces import)
+
+If you need to touch any of the above and other sessions are active, either: (a) wait until they pause / land their PR, or (b) post a work order announcing the file list and proposed timing so the other sessions hold their related edits until your change merges.
+
+### Hoisted-state operations — serialize
+
+These mutate hoisted `node_modules` that every workspace shares; two sessions running them concurrently can race and produce a half-written client:
+
+- `npm install` / `npm ci`
+- `prisma generate` (any schema)
+
+Quick ops; just don't overlap them across sessions.
+
+### Mockup sessions — unlimited
+
+Mockups touch only `inputs/mockups/`. Cut a `mockup/<feature>` branch, commit early, no worktree needed. Uncommitted files on `main` trip deploy guards for any other session that tries to deploy.
+
+### Read-only / planning / research sessions — unlimited
+
+No file writes, no risk.
+
+### Deploy gating — independent of session count
+
+`.claude/deploy-queue.md` serializes deploys per-app: one Pending entry per app at a time, regardless of which session created it. Read the queue and check for other sessions' entries before proposing a deploy. See deploy-queue.md for the full schema.
 
 ## Branch-per-task
 
