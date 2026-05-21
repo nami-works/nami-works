@@ -1,0 +1,363 @@
+{
+  "page": {
+    "title": "Afiliados",
+    "syncButton": "Forcar ressincronizacao completa",
+    "syncButtonTooltip": "Webhooks e cron horario mantem os dados atualizados automaticamente. Use somente para ressincronizar 14 meses.",
+    "importButton": "Importar CSV BixGrow"
+  },
+  "sync": {
+    "running": "Sincronizando pedidos...",
+    "error": "Sincronizacao falhou",
+    "warning": "A sincronizacao anterior teve problemas",
+    "idle": "Pronto",
+    "lastSynced": "Ultima sincronizacao",
+    "lastSyncShort": "Ultima sincronizacao",
+    "totalOrders": "pedidos",
+    "affiliateOrders": "afiliados",
+    "processed": "processados",
+    "stale": "Dados de afiliados estao {{days}} dias desatualizados — rode Sincronizar Pedidos antes de tirar conclusoes."
+  },
+  "period": {
+    "last7d": "Ultimos 7 dias",
+    "last30d": "Ultimos 30 dias",
+    "lastMonth": "Mes passado",
+    "last3Months": "Ultimos 3 meses",
+    "custom": "Personalizado",
+    "startDate": "Data inicial",
+    "endDate": "Data final",
+    "apply": "Aplicar",
+    "cancel": "Cancelar"
+  },
+  "comparison": {
+    "none": "Sem comparacao",
+    "prevPeriod": "Periodo anterior",
+    "prevYear": "Ano anterior"
+  },
+  "filter": {
+    "allAffiliates": "Todos os afiliados",
+    "label": "Afiliado",
+    "search": "Buscar afiliado",
+    "searchPlaceholder": "Buscar…",
+    "clear": "Limpar filtro",
+    "noMatches": "Sem resultados"
+  },
+  "overview": {
+    "commissionCaveat": "Estimativas de margem, CAC e ROAS assumem comissao fixa de 10% para todo afiliado — o CSV do BixGrow nao exporta taxas por afiliado, entao esses tres cards sao direcionais, nao exatos."
+  },
+  "row1": {
+    "title": "Aquisicao e Economia"
+  },
+  "row2": {
+    "title": "Qualidade do Cliente"
+  },
+  "row3": {
+    "title": "Desempenho do Programa"
+  },
+  "card": {
+    "affiliateRevenue": "Receita de afiliados",
+    "affiliateMargin": "Margem de afiliados",
+    "cac": "Custo de aquisicao de clientes",
+    "ltv": "LTV de afiliados",
+    "repeatRate": "Taxa de recompra",
+    "aov": "Valor medio do pedido",
+    "leaderboard": "Ranking",
+    "productMix": "Mix de produtos",
+    "roas": "ROAS",
+    "organic": "Organico",
+    "share": "Participacao",
+    "totalSpent": "Total gasto",
+    "newCustomers": "Novos",
+    "affCustomers": "Clientes",
+    "topAffiliate": "Top",
+    "topProduct": "Top",
+    "affiliatesActive": "afiliados",
+    "products": "produtos",
+    "revenue": "Receita",
+    "orders": "Pedidos",
+    "commission": "Comissao",
+    "customers": "Clientes",
+    "affiliate": "Afiliado",
+    "quantity": "Qtd",
+    "product": "Produto",
+    "cost": "Custo"
+  },
+  "drill": {
+    "noData": "Sem dados",
+    "revenueLeaderboard": "Ranking de Receita",
+    "revenueTrend": "Tendencia Mensal",
+    "costBreakdown": "Detalhamento de Custos",
+    "marginComparison": "Comparacao de Margem",
+    "affiliateDiscount": "Descontos de afiliados",
+    "siteDiscount": "Desc. do site",
+    "commission": "Comissao",
+    "affiliateMargin": "Margem de afiliados",
+    "organicMargin": "Margem organica",
+    "affiliateColumn": "Afiliado",
+    "organicColumn": "Organico",
+    "paidAds": "Anuncios pagos",
+    "grossSales": "Bruto",
+    "netMargin": "Margem liquida",
+    "cacByAffiliate": "CAC por Afiliado",
+    "ltvComparison": "Comparacao de LTV",
+    "ltvCohortTitle": "LTV por coorte",
+    "ltvCohortNew": "Novos",
+    "ltvCohortLifted": "Influenciados",
+    "ltvCohortNa": "N/A",
+    "ltvCohortSample": "Coortes: {{new}} novos · {{lifted}} influenciados · {{na}} N/A",
+    "ltvCohortEmpty": "Sem dados de LTV, rode Sincronizar Pedidos para popular a coorte",
+    "ltvCohortWindowLabel": "Janela da coorte",
+    "ltvCohortWindow6mo": "Ultimos 6 meses",
+    "ltvCohortWindow12mo": "Ultimos 12 meses",
+    "ltvCohortWindow24mo": "Ultimos 24 meses",
+    "ltvCohortWindowAll": "Desde sempre",
+    "repeatComparison": "Comparacao de Taxa de Recompra",
+    "aovComparison": "Comparacao de AOV",
+    "roasBreakdown": "Detalhamento de ROAS"
+  },
+  "legend": {
+    "affiliate": "Afiliado",
+    "organic": "Organico"
+  },
+  "empty": {
+    "title": "Sem dados de afiliados",
+    "description": "Importe seus afiliados via CSV do BixGrow e sincronize os pedidos para ver as analises."
+  },
+  "import": {
+    "title": "Importar Afiliados do BixGrow",
+    "description": "Envie o CSV de exportacao do BixGrow. Os afiliados serao identificados pelo codigo do cupom.",
+    "button": "Importar",
+    "success": "Importados {{count}} afiliados, {{skipped}} ignorados",
+    "error": "Falha na importacao"
+  },
+  "profiles": {
+    "title": "Perfis de Afiliados"
+  },
+  "profile": {
+    "code": "Codigo",
+    "name": "Nome",
+    "commission": "comissao",
+    "tier": "Nivel",
+    "status": "Status",
+    "actions": "Acoes",
+    "edit": "Editar",
+    "editTitle": "Editar Afiliado",
+    "delete": "Excluir",
+    "notes": "Notas",
+    "back": "Voltar para perfis",
+    "topProduct": "Produto top",
+    "exportCsv": "Exportar CSV",
+    "kpi": {
+      "revenue": "Receita",
+      "customers": "Clientes",
+      "products": "Produtos",
+      "repeatLabel": "recorrentes",
+      "topLabel": "top",
+      "newLabel": "novos",
+      "preLabel": "antigos",
+      "liftLabel": "lift",
+      "vsOrganic": "vs organico",
+      "newCustomers": "novos clientes",
+      "vsPreexisting": "vs. {{count}} ja existentes",
+      "liftPositive": "Clientes deste afiliado voltaram {{pct}}% mais que organico",
+      "liftNegative": "Clientes deste afiliado voltaram {{pct}}% menos que organico",
+      "liftFlat": "Clientes deste afiliado igualaram a recorrencia organica",
+      "productsLabel": "produtos",
+      "avgItemsPerOrder": "media {{n}} itens por pedido",
+      "aovLine": "Ticket medio {{value}}"
+    },
+    "classification": {
+      "tooltipNew": "Cliente novo (nunca comprou antes do cupom deste afiliado). O afiliado trouxe um cliente novo para a loja.",
+      "tooltipLift": "Ja era cliente e agora esta voltando atraves deste afiliado. O cupom esta puxando a recorrencia acima da linha de base organica; ganho liquido se o lift cobrir o desconto.",
+      "tooltipLeak": "Ja era cliente e provavelmente voltaria de qualquer jeito. O cupom custa margem sem mudar comportamento; o desconto paga uma compra que a loja teria capturado."
+    },
+    "drill": {
+      "revenueTrend": "Receita mensal",
+      "customers": "Clientes trazidos por este afiliado",
+      "products": "Produtos vendidos por este afiliado",
+      "productRanking": "Ranking de produtos",
+      "classification": "Classificacao de aquisicao"
+    },
+    "customers": {
+      "name": "Nome",
+      "email": "Email",
+      "orders": "Pedidos",
+      "spend": "Total gasto",
+      "first": "Primeira compra",
+      "last": "Ultima compra",
+      "topProduct": "Produto top",
+      "guest": "Anonimo",
+      "repeat": "Recorrente",
+      "acquisition": "Tipo",
+      "badgeNew": "Novo",
+      "badgeLift": "Lift",
+      "badgeLeak": "Leak"
+    },
+    "products": {
+      "share": "% da receita do afiliado",
+      "orderShare": "% dos pedidos"
+    }
+  },
+  "tab": {
+    "overview": "Visao geral",
+    "affiliates": "Ranking",
+    "attributionQueue": "Fila de atribuicao"
+  },
+  "attributionQueue": {
+    "heading": "Fila de atribuicao",
+    "subtitle": "Pedidos de canais que o BixGrow nao ve (IGLU POS, WhatsApp) e precisam ser lancados manualmente",
+    "refresh": "Atualizar fila",
+    "refreshing": "Escaneando Shopify…",
+    "uploadPedidos": "Enviar pedidos.csv",
+    "lookbackLabel": "Periodo",
+    "lookback30": "30 dias",
+    "lookback90": "90 dias",
+    "lookback180": "180 dias",
+    "lookback365": "1 ano",
+    "searchPlaceholder": "Buscar pedido, cupom, afiliada, local…",
+    "empty": {
+      "noFetchYet": "Clique em Atualizar fila para escanear o Shopify em busca de pedidos IGLU ausentes no BixGrow.",
+      "nothingPending": "Nada pendente. Todos os pedidos elegiveis ja estao no BixGrow."
+    },
+    "section": {
+      "pending": "Atribuicoes pendentes",
+      "claimed": "Marcadas, aguardando confirmacao do BixGrow",
+      "forgotten": "Esquecidas: marcadas mas nao constam em pedidos.csv",
+      "unknown": "Cupons nao identificados",
+      "unknownHelp": "Pedidos cujo cupom nao esta na lista de afiliadas. Mistura de codigos de novas UGCs (reimporte o CSV de afiliadas) e promos nao relacionadas (BEAUTYBACK-*, PRIMEIRACOMPRA*, NIVER-*) que podem ser ignoradas."
+    },
+    "column": {
+      "done": "",
+      "date": "Data",
+      "order": "Pedido",
+      "subtotal": "Subtotal",
+      "coupon": "Cupom",
+      "affiliate": "Afiliada",
+      "email": "Email",
+      "location": "Local",
+      "link": "",
+      "claimedAt": "Marcada"
+    },
+    "row": {
+      "markProcessed": "Marcar como lancado",
+      "unmark": "Desmarcar",
+      "claimedDaysAgo_one": "Marcada ha {{count}} dia",
+      "claimedDaysAgo_other": "Marcada ha {{count}} dias",
+      "inactiveAffiliate": "(inativa)",
+      "copyTooltip": "Copiar",
+      "copied": "Copiado",
+      "openInAdmin": "Abrir no admin Shopify"
+    },
+    "warning": {
+      "pedidosStale": "bixgrow_pedidos.csv esta desatualizado ({{days}} dias; ultimo envio {{date}}). Envie um export novo para limpar os pedidos ja processados.",
+      "pedidosMissing": "Nenhum pedidos.csv foi importado ainda — a reconciliacao esta DESLIGADA. Envie o export mais recente para confirmar as marcacoes.",
+      "unknownCoupons": "{{count}} pedido(s) com cupons fora da lista de afiliadas. Reimporte o CSV de afiliadas se novas UGCs foram cadastradas."
+    },
+    "import": {
+      "success": "Importados {{rows}} pedidos, confirmadas {{confirmed}} marcacoes",
+      "successWithDate": "Importados {{rows}} pedidos (mais recente {{date}}), confirmadas {{confirmed}} marcacoes",
+      "error": "Falha na importacao: {{error}}"
+    },
+    "fetch": {
+      "success": "{{scanned}} pedidos escaneados · {{pending}} pendentes · {{claimed}} marcadas · {{unknown}} desconhecidas",
+      "error": "Falha no escaneamento: {{error}}"
+    },
+    "summary": {
+      "pendingCount": "{{count}} pendentes",
+      "claimedCount": "{{count}} marcadas",
+      "forgottenCount": "{{count}} esquecidas",
+      "unknownCount": "{{count}} desconhecidas"
+    }
+  },
+  "tabs": {
+    "settings": "Programas"
+  },
+  "freshChip": {
+    "fresh": "Atualizado há {{when}}",
+    "stale": "Atualizado há {{when}}",
+    "unknown": "Sincronização pendente"
+  },
+  "cronStaleBanner": {
+    "title": "A sincronização automática está atrasada.",
+    "message": "Última execução bem-sucedida há {{when}}. Erro do cron: {{error}}",
+    "messageNoError": "Última execução bem-sucedida há {{when}}.",
+    "runManual": "Executar sincronização manual"
+  },
+  "unmappedCodesBanner": {
+    "message_one": "{{count}} cupom usado em pedidos ainda não está vinculado a um perfil",
+    "message_other": "{{count}} cupons usados em pedidos ainda não estão vinculados a um perfil",
+    "cta": "Abrir fila de cadastro"
+  },
+  "overflowMenu": {
+    "trigger": "Mais",
+    "forceResync": "Forçar resincronização total",
+    "forceResyncHint": "Refazer 14 meses de pedidos. Pesado.",
+    "uploadBixgrow": "Enviar CSV do BixGrow",
+    "uploadBixgrowHint": "Atualizar metadados de afiliados (nomes, comissão %)."
+  },
+  "settings": {
+    "title": "Programas de afiliados",
+    "subtitle": "O sistema busca os cupons diretamente desses descontos do Shopify a cada hora. Adicionar um cupom no Shopify o ativa aqui em até ~1 hora, sem upload.",
+    "searchPlaceholder": "Buscar programas registrados…",
+    "addProgram": "+ Adicionar programa",
+    "summary_one": "{{n}} programa · {{codes}} cupons sincronizados · {{mapped}} vinculados",
+    "summary_other": "{{n}} programas · {{codes}} cupons sincronizados · {{mapped}} vinculados",
+    "noPrograms": "Nenhum programa de afiliados registrado ainda. Clique em \"Adicionar programa\" para registrar um desconto do Shopify como programa de afiliados.",
+    "noMatches": "Nenhum programa corresponde à sua busca.",
+    "programCard": {
+      "lastSynced": "Sincronizado há {{when}}",
+      "neverSynced": "Nunca sincronizado",
+      "codesSynced": "{{count}} cupons sincronizados do Shopify",
+      "mapped": "{{count}} vinculados a perfis",
+      "openInShopify": "Abrir no Shopify",
+      "resync": "Sincronizar agora",
+      "resyncing": "Sincronizando…",
+      "remove": "Remover",
+      "active": "Ativo",
+      "syncFailed": "Falha na sincronização",
+      "discountLabel": "Desconto Shopify"
+    },
+    "removeModal": {
+      "title": "Remover programa?",
+      "body": "Os cupons sincronizados desse desconto continuarão registrados, mas não serão mais atualizados automaticamente.",
+      "cancel": "Cancelar",
+      "remove": "Remover"
+    },
+    "addModal": {
+      "title": "Adicionar programa de afiliados",
+      "searchLabel": "Buscar descontos com cupom no Shopify",
+      "searchPlaceholder": "Digite o título do desconto…",
+      "labelLabel": "Nome do programa (exibido neste app)",
+      "labelPlaceholder": "UGC BixGrow",
+      "add": "Adicionar programa",
+      "cancel": "Cancelar",
+      "searching": "Buscando…",
+      "noResults": "Nenhum desconto encontrado. Tente outra busca.",
+      "selectFirst": "Selecione um desconto e defina um nome.",
+      "errorAdd": "Não foi possível adicionar o programa: {{error}}",
+      "statusActive": "Ativo",
+      "statusScheduled": "Agendado",
+      "statusExpired": "Expirado",
+      "codesCount_one": "{{count}} cupom",
+      "codesCount_other": "{{count}} cupons"
+    }
+  },
+  "onboarding": {
+    "title": "Cupons aguardando cadastro",
+    "subtitle": "Estes cupons aparecem em pedidos, mas ainda não estão vinculados a um perfil de afiliado.",
+    "empty": "Todos os cupons estão vinculados a perfis de afiliados.",
+    "back": "Voltar para Afiliados",
+    "comingSoon": "Em breve",
+    "column": {
+      "code": "Cupom",
+      "firstSeen": "Primeira ocorrência",
+      "orders": "Pedidos",
+      "revenue": "Receita",
+      "program": "Programa",
+      "action": "Ação"
+    },
+    "action": {
+      "onboard": "Cadastrar"
+    },
+    "noProgram": "—"
+  }
+}

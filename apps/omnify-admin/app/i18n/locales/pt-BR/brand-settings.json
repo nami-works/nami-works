@@ -1,0 +1,216 @@
+{
+  "pageHeading": "Ativos da Marca",
+  "brandConfig": {
+    "heading": "Configuração da marca",
+    "description": "A b\u00edblia da sua marca. Estes valores moldam cada post de blog, texto alt e todo conte\u00fado gerado por IA \u2014 e acumulam aprendizados das suas edi\u00e7\u00f5es ao longo do tempo."
+  },
+  "labels": {
+    "brandName": "Nome da marca",
+    "about": "Sobre",
+    "toneOfVoice": "Tom de voz",
+    "blogUrl": "URL do blog",
+    "preferredLanguage": "Idioma preferido",
+    "contentLanguage": "Idioma do conteúdo",
+    "benchmarks": "Benchmarks",
+    "brandCategory": "Categoria da marca",
+    "editorialGuidelines": "Diretrizes editoriais",
+    "formatRecommendations": "Recomendações de formato",
+    "contentStrategy": "Estratégia de conteúdo (JSON, opcional)"
+  },
+  "placeholders": {
+    "brandName": "Nome de exibição da sua marca",
+    "about": "História da marca, missão, informações institucionais",
+    "toneOfVoice": "Como a marca se comunica (ex.: formal, casual, inspiradora). Use 'Analisar loja' para gerar automaticamente a partir do seu conteúdo.",
+    "benchmarks": "Marcas concorrentes ou de referência (ex.: Gisou, Glossier), uma por linha",
+    "brandCategory": "ex.: cuidados capilares premium, skincare",
+    "editorialGuidelines": "Arquitetura de conteúdo, regras de tom, diretrizes de estrutura",
+    "formatRecommendations": "Estrutura HTML, diretrizes de resumo (ex.: Resumo HTML: 150–160 chars), tamanho do conteúdo"
+  },
+  "languageOptions": {
+    "english": "Inglês",
+    "portugueseBr": "Português (BR)"
+  },
+  "scrapeStore": {
+    "heading": "Analisar loja",
+    "description": "Use \"Analisar loja\" para analisar o conte\u00fado da sua loja e gerar automaticamente o tom de voz. Requer a API Content Scraper configurada.",
+    "comingSoon": "Analisar loja (em breve)"
+  },
+  "export": {
+    "heading": "Exportar",
+    "description": "A b\u00edblia da sua marca como artefato port\u00e1til. Baixe e reutilize onde quiser.",
+    "downloadJson": "Baixar JSON",
+    "downloadMarkdown": "Baixar Markdown",
+    "lastExported": "\u00daltima exporta\u00e7\u00e3o {{when}}",
+    "neverExported": "Nunca exportado"
+  },
+  "learnings": {
+    "heading": "Aprendizados das edi\u00e7\u00f5es",
+    "empty": "Nenhum aprendizado ainda. Revise rascunhos de IA na aba Posts de blog para come\u00e7ar.",
+    "count_one": "{{count}} aceito",
+    "count_other": "{{count}} aceitos",
+    "viewAll": "Ver todos",
+    "remove": "Remover"
+  },
+  "settingsSaved": "Configura\u00e7\u00f5es salvas",
+  "toneSummary": {
+    "heading": "Tom de voz",
+    "title": "Base de evid\u00eancias da voz da marca",
+    "syncedAt": "\u2713 \u00daltima amostragem {{when}}",
+    "neverSynced": "Nunca amostrado",
+    "stats": "A IA infere a voz da sua marca a partir destas fontes: {{traits}} tra\u00e7o{{traitPlural}} de tom validado{{traitPlural}}, {{learnings}} corre\u00e7\u00e3o{{learningPlural}} de edi\u00e7\u00e3o, {{toneState}}, idioma {{language}}.",
+    "toneSet": "tom manual definido",
+    "toneEmpty": "sem tom manual definido",
+    "pillShopify": "Blog Shopify \u00b7 {{count}} amostradas",
+    "pillMeta": "Meta \u00b7 {{count}} posts",
+    "pillMonday": "Monday.com \u00b7 {{count}} briefs",
+    "pillManual": "Manual \u00b7 {{count}} refer\u00eancia{{plural}}",
+    "manageLink": "Gerenciar fontes"
+  },
+  "toneSources": {
+    "manageLink": "Gerenciar fontes de tom de voz",
+    "pageHeading": "Tom de voz",
+    "refreshNow": "Atualizar tom agora",
+    "refreshOk": "Coletadas {{sampled}} fontes, inferidos {{inferred}} traços.",
+    "sources": {
+      "heading": "Fontes conectadas",
+      "description": "Coletamos amostras de c\u00f3pia destas fontes semanalmente para aprender como sua marca soa. Cada nova rodada \u00e9 revisada por voc\u00ea antes de influenciar os textos gerados."
+    },
+    "status": {
+      "connected": "Conectada",
+      "notConfigured": "N\u00e3o configurada",
+      "error": "Erro",
+      "noRefs": "Nenhuma refer\u00eancia ainda"
+    },
+    "rows": {
+      "shopifyName": "Posts do blog Shopify",
+      "shopifyDetailIdle": "Pronto para coletar amostras dos seus artigos.",
+      "metaName": "Instagram e Facebook",
+      "metaPosts": "posts",
+      "metaDetailIdle": "Conecte para coletar legendas + texto em imagens via Meta Graph API.",
+      "mondayName": "Monday.com",
+      "mondayDetailIdle": "Adicione chave de API + IDs dos quadros para coletar c\u00f3pia interna.",
+      "manualName": "Refer\u00eancias manuais",
+      "manualDetailIdle": "Brandbooks, manifestos ou qualquer documento de refer\u00eancia.",
+      "manualCount_one": "1 refer\u00eancia",
+      "manualCount_other": "{{count}} refer\u00eancias"
+    },
+    "shopify": {
+      "help": "Conectado automaticamente via sua sess\u00e3o Shopify \u2014 sem credenciais necess\u00e1rias. Coletamos at\u00e9 5 blogs \u00d7 25 artigos mais recentes."
+    },
+    "manual": {
+      "emptyHint": "Nenhuma refer\u00eancia ainda. Solte um arquivo ou cole uma URL acima para adicionar."
+    },
+    "actions": {
+      "refresh": "Atualizar",
+      "refreshNow": "Atualizar agora",
+      "configure": "Configurar",
+      "configureSoon": "Em breve",
+      "accept": "Aceitar",
+      "reject": "Rejeitar",
+      "delete": "Remover",
+      "reExtract": "Re-extrair"
+    },
+    "monday": {
+      "title": "Configuração do Monday.com",
+      "description": "Gere uma chave de API no Monday.com (Perfil → Admin → API). Cole os IDs dos quadros separados por vírgula.",
+      "apiKey": "Chave de API",
+      "apiKeyPlaceholderConfigured": "(armazenada — deixe em branco para manter)",
+      "boardIds": "IDs dos quadros (separados por vírgula)",
+      "save": "Salvar configuração do Monday.com",
+      "disconnect": "Desconectar",
+      "connectCta": "Conectar",
+      "fetchSchema": "Buscar colunas",
+      "columnsIntro": "Encontramos estas colunas nos seus quadros. Colunas de status expõem valores discretos para você filtrar. Colunas de texto são sempre incluídas como fontes de conteúdo.",
+      "boardStat": "{{items}} itens · {{columns}} colunas · {{groups}} grupos",
+      "noFilterableColumns": "Nenhuma coluna filtrável (status / grupo) encontrada.",
+      "noFilterableHint": "A amostragem incluirá todos os itens destes quadros.",
+      "groupColumnLabel": "Grupo (seção do quadro)",
+      "builtInGroupHint": "nativo · valores: {{values}}",
+      "statusColumnHint": "status · valores: {{values}}",
+      "filterableChip": "filtrável",
+      "skipFiltering": "Pular filtros",
+      "rulesIntro": "Múltiplos valores dentro de uma regra combinam com OU. Múltiplas regras combinam com E.",
+      "noRulesYet": "Nenhuma regra ainda — adicione uma para filtrar quais itens são amostrados.",
+      "addRule": "Adicionar regra",
+      "removeRule": "Remover regra",
+      "opIsOneOf": "é um de",
+      "opIsNotOneOf": "não é um de",
+      "opIsEmpty": "está vazio",
+      "noValuesNeeded": "(sem valores necessários)",
+      "noValuesAvailable": "(sem valores disponíveis)",
+      "previewCta": "Pré-visualizar",
+      "previewNoRules": "Sem filtros — amostrando todos os {{items}} itens.",
+      "previewRuleCount_one": "{{count}} regra de filtro — itens devem satisfazer todas as regras.",
+      "previewRuleCount_other": "{{count}} regras de filtro — itens devem satisfazer todas as regras.",
+      "editRules": "Editar regras",
+      "saveFilters": "Salvar filtros",
+      "saveAndRefresh": "Atualizar agora"
+    },
+    "mondayPhases": {
+      "connect": "A. Conectar",
+      "columns": "B. Escolher colunas",
+      "rules": "C. Regras",
+      "preview": "D. Revisar & salvar"
+    },
+    "meta": {
+      "title": "Configuração do Instagram e Facebook",
+      "description": "Gere um Page Access Token de longa duração no Meta Business Suite (Configurações → Usuários → Usuários do sistema → Gerar token). Informe o ID da conta de IG Business e/ou ID da página de Facebook.",
+      "whatIntro": "Toda segunda-feira coletamos seus posts mais recentes do Instagram e Facebook (legendas mais qualquer texto em imagens) e os passamos para o motor de inferência de tom de voz junto com Shopify e Monday.com.",
+      "whatOutro": "A próxima aba guia você pela geração do token no Meta Business Suite — cerca de 2 minutos.",
+      "trust1": "Acesso somente-leitura aos posts das contas de IG/FB que você escolher.",
+      "trust2": "Apenas legendas e texto em imagens. Sem mensagens diretas, anúncios, dados de audiência ou insights.",
+      "trust3": "Você gera o token no Meta Business Suite. Nunca vemos sua senha do Facebook.",
+      "trust4": "Token criptografado em repouso. Desconecte a qualquer momento.",
+      "generateIntro": "Abra o Meta Business Suite em uma nova aba e siga esses 3 passos. Esperamos aqui enquanto você faz.",
+      "step1Title": "business.facebook.com → Configurações → Usuários → Usuários do sistema.",
+      "step1Hint": "Ainda não tem Usuário de sistema? Adicionar → nomeie 'Omnify tone access' → função Admin.",
+      "step2Title": "Gerar novo token. Escolha as permissões: pages_read_engagement, instagram_basic, pages_show_list.",
+      "step2Hint": "Expiração do token: selecione 'Nunca' para o fluxo de longa duração.",
+      "step3Title": "Copie o token mostrado na tela, depois volte aqui.",
+      "step3Hint": "Você também vai precisar do IG Business ID e/ou FB Page ID — ambos visíveis em Configurações → Contas.",
+      "pasteIntro": "O token é criptografado antes de armazenado. Forneça pelo menos um dentre IG Business ID ou FB Page ID.",
+      "haveToken": "Tenho meu token",
+      "connectCta": "Conectar",
+      "connectedHelp": "Conectado. O token expira a cada 60 dias — vamos te avisar antes.",
+      "token": "Page Access Token de longa duração",
+      "tokenPlaceholderConfigured": "(armazenado — deixe em branco para manter)",
+      "igBusinessId": "Instagram Business ID",
+      "fbPageId": "Facebook Page ID",
+      "save": "Salvar alterações",
+      "disconnect": "Desconectar"
+    },
+    "metaPhases": {
+      "what": "A. O que coletamos",
+      "generate": "B. Gerar token",
+      "paste": "C. Colar & conectar"
+    },
+    "upload": {
+      "title": "Solte um brandbook, manifesto ou qualquer referência",
+      "addAnother": "Adicionar outra referência",
+      "sub": "PDF, DOCX, TXT, MD até 30MB · clique abaixo ou arraste um arquivo aqui",
+      "chooseFile": "Escolher arquivo",
+      "fetchUrl": "Buscar URL",
+      "or": "ou",
+      "urlPlaceholder": "…ou cole uma URL (https://…) para extrair cópia de referência de uma página web",
+      "uploadingFallbackName": "Enviando…",
+      "extractingStatus": "Extraindo texto via Claude…",
+      "failedLabel": "Envio rejeitado.",
+      "referencesHeading": "Referências manuais"
+    },
+    "uploadOk": "Referência adicionada ({{chars}} chars), inferidos {{inferred}} traços.",
+    "manualOverride": {
+      "title": "Sobrescrita manual (sempre vence)",
+      "empty": "Nenhum tom manual definido. Adicione um nas Configura\u00e7\u00f5es da marca para sobrescrever o tom inferido.",
+      "editLink": "Editar nas Configura\u00e7\u00f5es da marca \u2192"
+    },
+    "pending": {
+      "heading_one": "Em revis\u00e3o \u00b7 1 tra\u00e7o",
+      "heading_other": "Em revis\u00e3o \u00b7 {{count}} tra\u00e7os",
+      "empty": "Nenhuma hip\u00f3tese pendente. Atualize para coletar suas fontes e inferir tra\u00e7os."
+    },
+    "batches": {
+      "heading": "Rodadas anteriores",
+      "empty": "Nenhuma rodada ainda."
+    }
+  }
+}

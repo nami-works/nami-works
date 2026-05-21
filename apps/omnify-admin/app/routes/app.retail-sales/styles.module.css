@@ -1,0 +1,1512 @@
+/* --- Flat/underline tabs ----------------------------------------- */
+
+.tabsRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-bottom: 1px solid #e1e3e5;
+  margin: -4px -20px 12px;
+  padding: 0 20px;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  text-decoration: none;
+  color: #6d7175;
+  background: none;
+  font-weight: 400;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: #303030;
+  border-bottom-color: #8c9196;
+}
+
+.tabActive {
+  color: #303030;
+  font-weight: 500;
+  border-bottom-color: #303030;
+}
+
+.locationSettingsBlock {
+  padding-inline: 6pt;
+  margin-bottom: 24px;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.subSectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 16px 0 8px 0;
+}
+
+.subSectionTitle:first-of-type {
+  margin-top: 0;
+}
+
+.statCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statLabel {
+  font-weight: 600;
+  display: block;
+}
+
+.sectionHeader {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.summaryGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin-bottom: 16px;
+}
+
+.summaryGrid s-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  display: block;
+}
+
+.formGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: 16px;
+}
+
+.calculatorRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.calculatorPanel {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.actionsRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.table {
+  margin-top: 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.tableHeader {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  font-weight: 600;
+  color: #6d7175;
+}
+
+.tableRow {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.table3Col .tableHeader,
+.table3Col .tableRow {
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+}
+
+.table4Col .tableHeader,
+.table4Col .tableRow {
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+}
+
+.table5Col .tableHeader,
+.table5Col .tableRow {
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+}
+
+/* ── Settings tab ─────────────────────────────────────────────────────────── */
+
+.settingsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.toggleLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.paramDivider {
+  border: none;
+  border-top: 1px solid #e1e3e5;
+  margin: 0;
+}
+
+.paramSectionLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 12px;
+}
+
+.paramGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.paramBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.paramToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paramLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #202223;
+}
+
+.settingsSaveRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .paramGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── Section title alias for the new component ────────────────────────────── */
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ── Dashboard overview strip (heading + friendly range + subtitle) ──────── */
+/* Matches the Affiliates Overview strip: CPG Labs palette gradient accent. */
+
+.overviewStrip {
+  padding: 20px;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #e8f5fa 0%, #fce4f0 30%, #fff 65%);
+  margin-bottom: 16px;
+}
+
+.overviewStripHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.overviewHeaderLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.overviewStripHeading {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303030;
+  margin: 0;
+}
+
+.overviewStripSubtitle {
+  font-size: 13px;
+  color: #6d7175;
+  font-weight: 500;
+}
+
+.periodFriendly {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6d7175;
+  white-space: nowrap;
+}
+
+.periodFriendlyEditable {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+  font-family: inherit;
+}
+
+.periodFriendlyEditable:hover {
+  color: #303030;
+}
+
+/* ── Dashboard period bar (single-row: Period | Compare | spacer) ────────── */
+
+.periodBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.filterControl {
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filterLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+}
+
+/* ── Custom date grid (two-calendar picker, Apply/Cancel) ────────────────── */
+
+.customDateGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #f6f6f7;
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+  .customDateGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.customDateCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.customDateLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #303030;
+}
+
+.customDateActions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.storesWithGoalsChip {
+  font-size: 12px;
+  color: #6d7175;
+  padding: 4px 10px;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+}
+
+.staleAmber {
+  color: #8a6d3b;
+}
+
+.staleRed {
+  color: #d72c0d;
+  font-weight: 600;
+}
+
+/* ── Manage goals modal subtitle + footer ─────────────────────────────────── */
+.modalSubtitle {
+  font-size: 12px;
+  color: #6d7175;
+  margin: 0 0 4px;
+}
+
+.modalFooterRight {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.controlLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6d7175;
+}
+
+.monthInput,
+.select {
+  padding: 6px 10px;
+  border: 1px solid #c9cccf;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+  color: #202223;
+}
+
+.syncLabel {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.settingsIntro {
+  font-size: 13px;
+  color: #6d7175;
+  max-width: 600px;
+}
+
+/* ── KPI cards ────────────────────────────────────────────────────────────── */
+.kpiGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  margin-bottom: 16px;
+}
+
+.kpiCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kpiLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #303030;
+}
+
+/* Rich KPI card (Dashboard 6-card redesign) */
+.kpiRichCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+}
+
+.kpiRichTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #303030;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.kpiInfoIcon {
+  font-size: 11px;
+  color: #8c9196;
+  cursor: help;
+}
+
+.kpiRichPrimary {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.kpiDeltaInline {
+  font-size: 12px;
+  color: #6d7175;
+  font-weight: 500;
+}
+
+.kpiProj {
+  font-size: 12px;
+  color: #303030;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.kpiProjEarly {
+  font-size: 12px;
+  color: #303030;
+  font-style: italic;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.kpiRichLine {
+  font-size: 12px;
+  color: #6d7175;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.kpiValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.kpiValue {
+  font-size: 22px;
+  font-weight: 700;
+  color: #202223;
+}
+
+.kpiSecondary {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.delta {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.deltaUp {
+  color: #008060;
+}
+
+.deltaDown {
+  color: #d72c0d;
+}
+
+/* ── Dashboard table ──────────────────────────────────────────────────────── */
+.tableLocations .tableHeader,
+.tableLocations .tableRow {
+  grid-template-columns:
+    minmax(140px, 2fr)
+    minmax(110px, 1fr)
+    minmax(110px, 1fr)
+    minmax(110px, 1fr)
+    minmax(140px, 1.3fr)
+    minmax(80px, 0.8fr)
+    minmax(110px, 1fr);
+  align-items: center;
+}
+
+.tableEmpty {
+  padding: 24px 12px;
+  color: #6d7175;
+  text-align: center;
+}
+
+.progressCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.progressLabel {
+  font-variant-numeric: tabular-nums;
+  min-width: 48px;
+}
+
+.progressBar {
+  display: inline-block;
+  width: 80px;
+  height: 6px;
+  background: #f1f1f1;
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progressFill {
+  display: block;
+  height: 100%;
+  background: #008060;
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+.sparklineSvg {
+  display: block;
+}
+
+.sparklineEmpty {
+  color: #c9cccf;
+}
+
+/* ── Goal cards ───────────────────────────────────────────────────────────── */
+.goalCardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 16px;
+}
+
+.goalCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  background: #fff;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.goalCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.goalCardTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #202223;
+  margin: 0;
+}
+
+.goalCardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.goalCardSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.goalCardSectionLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.goalCardRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #202223;
+  gap: 8px;
+}
+
+.goalCardEmpty {
+  font-size: 13px;
+  color: #6d7175;
+  font-style: italic;
+}
+
+/* ── Inline edit form ─────────────────────────────────────────────────────── */
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.editFormRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editFormLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+}
+
+.numberInput {
+  padding: 6px 10px;
+  border: 1px solid #c9cccf;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+  color: #202223;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.growthInputs {
+  display: flex;
+  gap: 8px;
+}
+
+.growthInputs .numberInput {
+  flex: 1 1 auto;
+}
+
+.growthInputs .select {
+  flex: 0 0 100px;
+}
+
+.editPreviewRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid #e1e3e5;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.editFormActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.editFormActionsRight {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.paramHint {
+  font-size: 12px;
+  color: #6d7175;
+  font-style: italic;
+}
+
+/* ── Bulk modal (light overlay) ───────────────────────────────────────────── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modalCard {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  width: min(480px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  /* Hide the 7-col desktop table on mobile; show the card list instead. */
+  .tableLocations { display: none; }
+  .locationCards { display: flex; }
+
+  /* Mobile: promote the duplicated Manage goals button (below subtitle)
+     and hide the desktop one in the header right-edge. */
+  .manageGoalsDesktop { display: none; }
+  .manageGoalsMobile { display: block; width: 100%; margin-top: 10px; }
+
+  /* Mobile inline drilldown — reveal under the active card; hide the
+     desktop-positioned one that sits after the whole KPI row. */
+  .mobileDrilldown { display: block; }
+  .desktopDrilldown { display: none; }
+
+  .goalCardsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .kpiGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .drilldownBars {
+    min-height: 180px;
+    overflow-x: auto;
+  }
+  .drilldownColumn {
+    flex: 0 0 auto;
+    min-width: 80px;
+  }
+  .drilldownBarArea {
+    height: 120px;
+  }
+  .periodBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ── KPI clickable cards (drilldown) ──────────────────────────────────────── */
+.kpiCardClickable {
+  display: block;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.kpiCardClickable:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.kpiCardClickable:focus-visible {
+  outline: 2px solid #008060;
+  outline-offset: 2px;
+}
+
+/* Active KPI card highlight.
+   The outer <s-box> draws its own border inside shadow DOM — we can't
+   restyle it from outside. Instead, paint the active ring on the
+   wrapper <div>: a 2px box-shadow acts as an outer border that follows
+   the 12px radius, and a subtle backdrop tint signals the state without
+   competing with the Shopify-blue primary. */
+.kpiCardActive {
+  border-radius: 12px;
+  box-shadow: 0 0 0 2px #1f2d5a, 0 2px 8px rgba(31, 45, 90, 0.12);
+  background: #eef1f8;
+}
+
+.kpiGroupLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6d7175;
+  margin: 12px 0 4px;
+}
+
+.kpiGroupLabel:first-of-type {
+  margin-top: 0;
+}
+
+/* ── Active row highlight (best performer) ────────────────────────────────── */
+.tableRowHighlight {
+  background: #f0f7f4;
+  border-radius: 4px;
+}
+
+/* ── Projection row in goal cards ─────────────────────────────────────────── */
+.projectionPair {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.projectionItem {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.projectionLabel {
+  color: #6d7175;
+  font-size: 12px;
+}
+
+.projectionDivider {
+  color: #c9cccf;
+}
+
+/* ── Settings collapsed locations ─────────────────────────────────────────── */
+.locationCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.settingsCollapsedRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #fafbfb;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+}
+
+.collapsedHint {
+  font-size: 12px;
+  color: #6d7175;
+  flex: 1 1 auto;
+  margin-left: 8px;
+}
+
+.checkboxToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  color: #202223;
+}
+
+/* ── Drilldown chart (Shopify-native style) ───────────────────────────────── */
+.breakdownHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 20px;
+  padding-left: 12px;
+}
+
+.breakdownHeader h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  color: #303030;
+}
+
+.breakdownSubtitle {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+/* Chart frame: y-axis column (44px) + plot area (1fr). */
+.chartFrame {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 8px;
+}
+
+.chartYAxis {
+  position: relative;
+  height: 240px;
+}
+
+.yTick {
+  position: absolute;
+  right: 4px;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: #8c9196;
+  white-space: nowrap;
+}
+
+.chartPlot {
+  position: relative;
+  height: 240px;
+  border-left: 1px solid #e1e3e5;
+}
+
+.gridline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #ebebeb;
+  pointer-events: none;
+}
+
+.gridlineZero {
+  background: #303030;
+  opacity: 0.45;
+}
+
+.chartBars {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  padding: 0 8px;
+}
+
+.barGroup {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+}
+
+.barCurrent {
+  width: 28px;
+  border-radius: 3px 3px 0 0;
+  background: #005bd3;
+  min-height: 2px;
+  transition: height 0.3s ease;
+  display: flex;
+  flex-direction: column-reverse;
+  overflow: hidden;
+}
+
+.barCurrentSolid {
+  width: 28px;
+  border-radius: 3px 3px 0 0;
+  background: #005bd3;
+  min-height: 2px;
+  transition: height 0.3s ease;
+}
+
+.barProjection {
+  width: 100%;
+  background: #b3d1ff;
+  border-radius: 3px 3px 0 0;
+}
+
+.barPy {
+  width: 28px;
+  border-radius: 3px 3px 0 0;
+  background: #d9e3ef;
+  min-height: 2px;
+  transition: height 0.3s ease;
+}
+
+/* Dotted goal marker, ~20% wider than the bar pair (62px → 74px). */
+.goalMark {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 74px;
+  border-top: 2px dotted #b8350f;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.goalMark::after {
+  content: attr(data-label);
+  position: absolute;
+  right: 0;
+  top: -14px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #b8350f;
+  white-space: nowrap;
+}
+
+/* X-axis labels below the plot. */
+.chartXAxis {
+  margin-left: 52px;
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-around;
+  padding: 0 8px;
+}
+
+.chartXLabel {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  color: #303030;
+  line-height: 1.3;
+  padding: 0 4px;
+}
+
+/* Mini stats table below the x-axis: Goal, YoY. */
+.statsTable {
+  margin-top: 4px;
+  border-top: 1px solid #ebebeb;
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #ebebeb;
+  font-size: 12px;
+}
+
+.statsRow:last-child {
+  border-bottom: none;
+}
+
+.statsLabel {
+  text-align: left;
+  color: #6d7175;
+  font-weight: 500;
+  font-size: 11px;
+}
+
+.statsCells {
+  display: flex;
+  justify-content: space-around;
+  padding: 0 8px;
+}
+
+.statsCell {
+  flex: 1;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.statsCellPos { color: #067647; }
+.statsCellNeg { color: #d72c0d; }
+.statsCellFlat { color: #6d7175; }
+
+/* Legend (under the chart or ranking list). */
+.chartLegend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #ebebeb;
+  font-size: 12px;
+  color: #6d7175;
+  flex-wrap: wrap;
+}
+
+.chartLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legendDotCurrent {
+  background: linear-gradient(to top, #b3d1ff 0%, #b3d1ff 50%, #005bd3 50%, #005bd3 100%);
+}
+
+.legendDotCurrentSolid {
+  background: #005bd3;
+}
+
+.legendDotPy {
+  background: #d9e3ef;
+  border: 1px solid #c3d2e3;
+}
+
+.legendDotPos {
+  background: #067647;
+}
+
+.legendDotNeg {
+  background: #d72c0d;
+}
+
+.legendDash {
+  width: 16px;
+  height: 0;
+  border-top: 2px dotted #b8350f;
+  display: inline-block;
+}
+
+/* Tooltip on bar hover / focus. */
+.barTooltip {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f1f1f;
+  color: #fff;
+  font-size: 11px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  z-index: 10;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.1s ease;
+  min-width: 160px;
+}
+
+.barTooltip::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: #1f1f1f;
+}
+
+.barTooltip strong {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #fff;
+}
+
+.barTooltipRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.barTooltipRow span:first-child {
+  color: #c9cbd0;
+}
+
+.barTooltipRow .val {
+  font-weight: 600;
+}
+
+.valPos { color: #7ee0a1; }
+.valNeg { color: #ff9b85; }
+
+.barGroup:hover .barTooltip,
+.barGroup:focus-within .barTooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ── Same-store YoY: dynamic baseline chart ──────────────────────────────── */
+.yoyBar {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  z-index: 2;
+  transition: height 0.3s ease;
+}
+
+.yoyBarPos {
+  background: #067647;
+  border-radius: 3px 3px 0 0;
+}
+
+.yoyBarNeg {
+  background: #d72c0d;
+  border-radius: 0 0 3px 3px;
+}
+
+.yoyBarLabel {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  z-index: 3;
+}
+
+.yoyBarLabelPos { color: #067647; }
+.yoyBarLabelNeg { color: #d72c0d; }
+.yoyBarLabelFlat { color: #6d7175; }
+
+/* ── Achievement ranking (horizontal list) ────────────────────────────────── */
+.rankList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0 4px 12px;
+}
+
+.rankRow {
+  display: grid;
+  grid-template-columns: 20px minmax(120px, 160px) 1fr 52px;
+  gap: 12px;
+  align-items: center;
+  font-size: 12px;
+  position: relative;
+}
+
+.rankPos {
+  color: #6d7175;
+  font-weight: 500;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.rankName {
+  color: #303030;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rankTrack {
+  position: relative;
+  height: 10px;
+  background: #f1f1f1;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.rankFill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.rankFillGreen { background: #067647; }
+.rankFillYellow { background: #d99a0a; }
+.rankFillRed { background: #d72c0d; }
+
+.rankPct {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.rankPctGreen { color: #067647; }
+.rankPctYellow { color: #b0800a; }
+.rankPctRed { color: #d72c0d; }
+
+.rankSwatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.rankSwatchGreen { background: #067647; }
+.rankSwatchYellow { background: #d99a0a; }
+.rankSwatchRed { background: #d72c0d; }
+
+.rankRow:hover .barTooltip,
+.rankRow:focus-within .barTooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.rankRow .barTooltip {
+  top: -110px;
+}
+
+/* ── Mobile location cards (breakdown) ─────────────────────────────────────
+   Mobile replaces the 7-column breakdown table with a card-per-row list —
+   the table's `grid-template-columns: repeat(2, minmax(0, 1fr))` collapsed
+   7 cells into stacked chaos. Card layout mirrors Shopify-admin-native
+   mobile list patterns (Orders, Customers): primary metric + colored
+   achievement pill at top, progress bar with MTD/Goal context, secondary
+   MTD/Projected grid, YoY footer with sparkline. */
+.locationCards {
+  /* Visible by default — hidden on desktop via min-width media query at
+     end of file. Base `display: none` would live AFTER the max-width
+     media query that shows them on mobile, losing the cascade on equal
+     specificity. Desktop-scoping via min-width sidesteps the ordering. */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.locationCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.locCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.locCardName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303030;
+  margin: 0;
+}
+
+.achPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.achPillGreen { background: rgba(6, 118, 71, 0.1); color: #067647; }
+.achPillYellow { background: rgba(217, 154, 10, 0.1); color: #b0800a; }
+.achPillRed { background: rgba(215, 44, 13, 0.1); color: #d72c0d; }
+
+.locCardProgressRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.locCardProgressBar {
+  flex: 1;
+  height: 6px;
+  background: #f1f1f1;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.locCardProgressFill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.locCardProgressFillGreen { background: #067647; }
+.locCardProgressFillYellow { background: #d99a0a; }
+.locCardProgressFillRed { background: #d72c0d; }
+
+.locCardProgressLabel {
+  font-size: 11px;
+  color: #6d7175;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  min-width: 60px;
+  text-align: right;
+}
+
+.locCardMetricGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  font-size: 12px;
+}
+
+.locCardMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.locCardMetricLabel {
+  color: #6d7175;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.locCardMetricValue {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.locCardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 6px;
+  border-top: 1px solid #ebebeb;
+  font-size: 12px;
+  color: #6d7175;
+}
+
+/* Mobile-only Manage goals button below the overview subtitle.
+   Visible by default, hidden on desktop via min-width media query. */
+.manageGoalsMobile {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* Mobile inline drilldown — renders below the clicked KPI card so the user
+   always sees the chart directly under the source card rather than buried
+   after the whole KPI list. Grid-column full-span keeps the chart visually
+   tied to the card above even when the grid is nominally 1-col on mobile.
+   Visible by default, hidden on desktop via min-width media query. */
+.mobileDrilldown {
+  display: block;
+  grid-column: 1 / -1;
+}
+
+/* Mobile: reduce chart height + tighten bar pairs so groups read as units.
+   On narrow viewports the default 28px bars with 6px intra-group gap leave
+   too little room between groups — the PY bar of group N visually drifts
+   closer to the Current bar of group N+1 than to its own group. Shrink bars
+   and halve the intra-group gap so each pair coheres and `space-around`
+   produces a clear inter-group gap. */
+@media (max-width: 768px) {
+  .chartYAxis,
+  .chartPlot {
+    height: 200px;
+  }
+  .barGroup {
+    gap: 3px;
+  }
+  .barCurrent,
+  .barCurrentSolid,
+  .barPy,
+  .yoyBar {
+    width: 15px;
+  }
+  .goalMark {
+    width: 40px;
+  }
+  .rankRow {
+    grid-template-columns: 20px 1fr 48px;
+  }
+  .rankRow .rankTrack { display: none; }
+}
+
+/* Desktop-scoped visibility — hide mobile-only elements on wide viewports.
+   Paired with the base `display: flex/block` on .locationCards /
+   .manageGoalsMobile / .mobileDrilldown (visible-by-default strategy to
+   dodge the source-order cascade issue vs. the max-width media query). */
+@media (min-width: 769px) {
+  .locationCards { display: none; }
+  .manageGoalsMobile { display: none; }
+  .mobileDrilldown { display: none; }
+}

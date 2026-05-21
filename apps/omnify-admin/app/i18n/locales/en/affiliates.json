@@ -1,0 +1,363 @@
+{
+  "page": {
+    "title": "Affiliates",
+    "syncButton": "Force full resync",
+    "syncButtonTooltip": "Webhooks + hourly cron keep data current automatically. Use this only for a full 14-month resync.",
+    "importButton": "Import BixGrow CSV"
+  },
+  "sync": {
+    "running": "Syncing orders...",
+    "error": "Sync failed",
+    "warning": "Previous sync had issues",
+    "idle": "Ready",
+    "lastSynced": "Last synced",
+    "lastSyncShort": "Last sync",
+    "totalOrders": "orders",
+    "affiliateOrders": "affiliate",
+    "processed": "processed",
+    "stale": "Affiliate data is {{days}} days old — run Sync Orders to refresh before drawing conclusions."
+  },
+  "period": {
+    "last7d": "Last 7 days",
+    "last30d": "Last 30 days",
+    "lastMonth": "Last month",
+    "last3Months": "Last 3 months",
+    "custom": "Custom",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "apply": "Apply",
+    "cancel": "Cancel"
+  },
+  "comparison": {
+    "none": "No comparison",
+    "prevPeriod": "Previous period",
+    "prevYear": "Previous year"
+  },
+  "filter": {
+    "allAffiliates": "All affiliates",
+    "label": "Affiliate",
+    "search": "Search affiliate",
+    "searchPlaceholder": "Search…",
+    "clear": "Clear filter",
+    "noMatches": "No matches"
+  },
+  "row1": {
+    "title": "Acquisition & Economics"
+  },
+  "row2": {
+    "title": "Customer Quality"
+  },
+  "row3": {
+    "title": "Program Performance"
+  },
+  "card": {
+    "affiliateRevenue": "Affiliate revenue",
+    "affiliateMargin": "Affiliate margin",
+    "cac": "Customer acquisition cost",
+    "ltv": "Affiliate LTV",
+    "repeatRate": "Repeat rate",
+    "aov": "Average order value",
+    "leaderboard": "Leaderboard",
+    "productMix": "Product mix",
+    "roas": "ROAS",
+    "organic": "Organic",
+    "share": "Share",
+    "totalSpent": "Total spent",
+    "newCustomers": "New",
+    "affCustomers": "Customers",
+    "topAffiliate": "Top",
+    "topProduct": "Top",
+    "affiliatesActive": "affiliates",
+    "products": "products",
+    "revenue": "Revenue",
+    "orders": "Orders",
+    "commission": "Commission",
+    "customers": "Customers",
+    "affiliate": "Affiliate",
+    "quantity": "Qty",
+    "product": "Product",
+    "cost": "Cost"
+  },
+  "legend": {
+    "affiliate": "Affiliate",
+    "organic": "Organic"
+  },
+  "empty": {
+    "title": "No affiliate data yet",
+    "description": "Import your affiliates via BixGrow CSV, then sync orders to see analytics."
+  },
+  "import": {
+    "title": "Import BixGrow Affiliates",
+    "description": "Upload your BixGrow affiliate export CSV. Affiliates will be matched by their coupon code.",
+    "button": "Import",
+    "success": "Imported {{count}} affiliates, skipped {{skipped}}",
+    "error": "Import failed"
+  },
+  "profiles": {
+    "title": "Affiliate Profiles"
+  },
+  "profile": {
+    "code": "Code",
+    "name": "Name",
+    "commission": "commission",
+    "tier": "Tier",
+    "status": "Status",
+    "actions": "Actions",
+    "edit": "Edit",
+    "editTitle": "Edit Affiliate",
+    "delete": "Delete",
+    "notes": "Notes",
+    "back": "Back to profiles",
+    "topProduct": "Top product",
+    "exportCsv": "Export CSV",
+    "kpi": {
+      "revenue": "Revenue",
+      "customers": "Customers",
+      "products": "Products",
+      "repeatLabel": "repeat",
+      "topLabel": "top",
+      "newLabel": "new",
+      "preLabel": "pre",
+      "liftLabel": "lift",
+      "vsOrganic": "vs organic",
+      "newCustomers": "new customers",
+      "vsPreexisting": "vs. {{count}} preexisting",
+      "liftPositive": "Customers from this affiliate returned {{pct}}% more than organic",
+      "liftNegative": "Customers from this affiliate returned {{pct}}% less than organic",
+      "liftFlat": "Customers from this affiliate matched organic return rate",
+      "productsLabel": "products",
+      "avgItemsPerOrder": "avg {{n}} items per order",
+      "aovLine": "AOV {{value}}"
+    },
+    "classification": {
+      "tooltipNew": "New customer (never ordered before this affiliate's coupon). The affiliate brought a fresh customer into the store.",
+      "tooltipLift": "Was already a customer, and is now repeating through this affiliate. The coupon is pulling repeat behaviour above the organic baseline, net win if the uplift covers the discount.",
+      "tooltipLeak": "Was already a customer and would likely have repeated anyway. The coupon costs margin without changing behaviour; the discount pays for a purchase the store would have captured regardless."
+    },
+    "drill": {
+      "revenueTrend": "Monthly revenue",
+      "customers": "Customers driven by this affiliate",
+      "products": "Products this affiliate sells",
+      "productRanking": "Product ranking",
+      "classification": "Acquisition breakdown"
+    },
+    "customers": {
+      "name": "Name",
+      "email": "Email",
+      "orders": "Orders",
+      "spend": "Spend",
+      "first": "First order",
+      "last": "Last order",
+      "topProduct": "Top product",
+      "guest": "Guest",
+      "repeat": "Repeat",
+      "acquisition": "Type",
+      "badgeNew": "New",
+      "badgeLift": "Lift",
+      "badgeLeak": "Leak"
+    },
+    "products": {
+      "share": "% of affiliate rev",
+      "orderShare": "% of orders"
+    }
+  },
+  "overview": {
+    "commissionCaveat": "Margin, CAC, and ROAS estimates assume a flat 10% commission for every affiliate — BixGrow's CSV doesn't export per-affiliate commission rates, so these three cards are directional, not exact."
+  },
+  "drill": {
+    "noData": "No data",
+    "revenueLeaderboard": "Revenue Leaderboard",
+    "revenueTrend": "Monthly Trend",
+    "costBreakdown": "Cost Breakdown",
+    "marginComparison": "Margin Comparison",
+    "affiliateDiscount": "Affiliate discounts",
+    "siteDiscount": "Site disc.",
+    "commission": "Commission",
+    "affiliateMargin": "Affiliate margin",
+    "organicMargin": "Organic margin",
+    "affiliateColumn": "Affiliate",
+    "organicColumn": "Organic",
+    "paidAds": "Paid ads",
+    "grossSales": "Gross",
+    "netMargin": "Net margin",
+    "cacByAffiliate": "CAC by Affiliate",
+    "ltvComparison": "LTV Comparison",
+    "ltvCohortTitle": "LTV by cohort",
+    "ltvCohortNew": "New",
+    "ltvCohortLifted": "Lifted",
+    "ltvCohortNa": "N/A",
+    "ltvCohortSample": "Cohorts: {{new}} new · {{lifted}} lifted · {{na}} N/A",
+    "ltvCohortEmpty": "No LTV data yet, run Sync Orders to populate the cohort",
+    "ltvCohortWindowLabel": "Cohort window",
+    "ltvCohortWindow6mo": "Last 6 months",
+    "ltvCohortWindow12mo": "Last 12 months",
+    "ltvCohortWindow24mo": "Last 24 months",
+    "ltvCohortWindowAll": "All time",
+    "repeatComparison": "Repeat Rate Comparison",
+    "aovComparison": "AOV Comparison",
+    "roasBreakdown": "ROAS Breakdown"
+  },
+  "tab": {
+    "overview": "Overview",
+    "affiliates": "Ranking",
+    "attributionQueue": "Attribution queue"
+  },
+  "attributionQueue": {
+    "heading": "Attribution queue",
+    "subtitle": "Orders from non-BixGrow channels (IGLU POS, WhatsApp) that need manual entry in BixGrow",
+    "refresh": "Refresh queue",
+    "refreshing": "Scanning Shopify…",
+    "uploadPedidos": "Upload pedidos.csv",
+    "lookbackLabel": "Look back",
+    "lookback30": "30 days",
+    "lookback90": "90 days",
+    "lookback180": "180 days",
+    "lookback365": "1 year",
+    "searchPlaceholder": "Search order, coupon, affiliate, location…",
+    "empty": {
+      "noFetchYet": "Click Refresh queue to scan Shopify for IGLU orders missing from BixGrow.",
+      "nothingPending": "Nothing to do — every eligible order is already in BixGrow."
+    },
+    "section": {
+      "pending": "Pending attributions",
+      "claimed": "Claimed, waiting for BixGrow confirmation",
+      "forgotten": "Forgotten: claimed but not in pedidos.csv",
+      "unknown": "Unknown coupon codes",
+      "unknownHelp": "Orders whose coupon isn't in the affiliate list. Mix of new-UGC affiliate codes (re-upload the affiliate CSV) and unrelated promos (BEAUTYBACK-*, PRIMEIRACOMPRA*, NIVER-*) you can ignore."
+    },
+    "column": {
+      "done": "",
+      "date": "Date",
+      "order": "Order",
+      "subtotal": "Subtotal",
+      "coupon": "Coupon",
+      "affiliate": "Affiliate",
+      "email": "Email",
+      "location": "Location",
+      "link": "",
+      "claimedAt": "Claimed"
+    },
+    "row": {
+      "markProcessed": "Mark processed",
+      "unmark": "Unmark",
+      "claimedDaysAgo_one": "Claimed {{count}} day ago",
+      "claimedDaysAgo_other": "Claimed {{count}} days ago",
+      "inactiveAffiliate": "(inactive)",
+      "copyTooltip": "Copy",
+      "copied": "Copied",
+      "openInAdmin": "Open in Shopify admin"
+    },
+    "warning": {
+      "pedidosStale": "bixgrow_pedidos.csv is {{days}} days stale (last import {{date}}). Upload a fresh export so processed orders drop off.",
+      "pedidosMissing": "No pedidos.csv has been imported yet — reconciliation is OFF. Upload the latest export to confirm claims.",
+      "unknownCoupons": "{{count}} order(s) carry coupons not in the affiliate list. Re-import the affiliate CSV if new UGCs were onboarded."
+    },
+    "import": {
+      "success": "Imported {{rows}} orders, confirmed {{confirmed}} claim(s)",
+      "successWithDate": "Imported {{rows}} orders (latest {{date}}), confirmed {{confirmed}} claim(s)",
+      "error": "Import failed: {{error}}"
+    },
+    "fetch": {
+      "success": "Scanned {{scanned}} orders · {{pending}} pending · {{claimed}} claimed · {{unknown}} unknown",
+      "error": "Scan failed: {{error}}"
+    },
+    "summary": {
+      "pendingCount": "{{count}} pending",
+      "claimedCount": "{{count}} claimed",
+      "forgottenCount": "{{count}} forgotten",
+      "unknownCount": "{{count}} unknown"
+    }
+  },
+  "tabs": {
+    "settings": "Programs"
+  },
+  "freshChip": {
+    "fresh": "Updated {{when}}",
+    "stale": "Updated {{when}}",
+    "unknown": "Sync pending"
+  },
+  "cronStaleBanner": {
+    "title": "Automatic sync is delayed.",
+    "message": "Last successful run {{when}}. Cron error: {{error}}",
+    "messageNoError": "Last successful run {{when}}.",
+    "runManual": "Run manual sync"
+  },
+  "unmappedCodesBanner": {
+    "message_one": "{{count}} code used in orders isn't mapped to a profile yet",
+    "message_other": "{{count}} codes used in orders aren't mapped to a profile yet",
+    "cta": "Open onboarding queue"
+  },
+  "overflowMenu": {
+    "trigger": "More",
+    "forceResync": "Force full resync",
+    "forceResyncHint": "Re-fetch 14 months of orders. Heavy.",
+    "uploadBixgrow": "Upload BixGrow CSV",
+    "uploadBixgrowHint": "Update affiliate metadata (names, commission %)."
+  },
+  "settings": {
+    "title": "Affiliate programs",
+    "subtitle": "The system pulls coupon codes directly from these Shopify discounts every hour. Adding a code in Shopify makes it active here within ~1 hour, no upload needed.",
+    "searchPlaceholder": "Search registered programs…",
+    "addProgram": "+ Add program",
+    "summary_one": "{{n}} program · {{codes}} codes synced · {{mapped}} mapped to profiles",
+    "summary_other": "{{n}} programs · {{codes}} codes synced · {{mapped}} mapped to profiles",
+    "noPrograms": "No affiliate programs registered yet. Click \"Add program\" to register a Shopify code-discount as an affiliate program.",
+    "noMatches": "No programs match your search.",
+    "programCard": {
+      "lastSynced": "Last synced {{when}}",
+      "neverSynced": "Never synced",
+      "codesSynced": "{{count}} codes synced from Shopify",
+      "mapped": "{{count}} mapped to profiles",
+      "openInShopify": "Open in Shopify",
+      "resync": "Re-sync now",
+      "resyncing": "Syncing…",
+      "remove": "Remove",
+      "active": "Active",
+      "syncFailed": "Sync failed",
+      "discountLabel": "Shopify discount"
+    },
+    "removeModal": {
+      "title": "Remove program?",
+      "body": "Codes synced from this discount will stay in your records but will no longer be refreshed.",
+      "cancel": "Cancel",
+      "remove": "Remove"
+    },
+    "addModal": {
+      "title": "Add affiliate program",
+      "searchLabel": "Search Shopify code discounts",
+      "searchPlaceholder": "Type a discount title…",
+      "labelLabel": "Program label (shown in this app)",
+      "labelPlaceholder": "BixGrow UGC",
+      "add": "Add program",
+      "cancel": "Cancel",
+      "searching": "Searching…",
+      "noResults": "No discounts match. Try a different search.",
+      "selectFirst": "Select a discount and choose a label.",
+      "errorAdd": "Could not add program: {{error}}",
+      "statusActive": "Active",
+      "statusScheduled": "Scheduled",
+      "statusExpired": "Expired",
+      "codesCount_one": "{{count}} code",
+      "codesCount_other": "{{count}} codes"
+    }
+  },
+  "onboarding": {
+    "title": "Codes awaiting onboarding",
+    "subtitle": "These coupon codes appear in orders but aren't mapped to an affiliate profile yet.",
+    "empty": "All codes are mapped to affiliate profiles.",
+    "back": "Back to Affiliates",
+    "comingSoon": "Coming soon",
+    "column": {
+      "code": "Code",
+      "firstSeen": "First seen",
+      "orders": "Orders",
+      "revenue": "Revenue",
+      "program": "Program",
+      "action": "Action"
+    },
+    "action": {
+      "onboard": "Onboard"
+    },
+    "noProgram": "—"
+  }
+}

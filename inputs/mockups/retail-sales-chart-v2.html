@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Retail sales — chart refactor mockup</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --grid: #ebebeb;
+    --text: #303030;
+    --subdued: #6d7175;
+    --axis: #8c9196;
+    --blue-primary: #005bd3;
+    --blue-projection: #b3d1ff;
+    --blue-py: #d9e3ef;
+    --blue-py-edge: #c3d2e3;
+    --green: #067647;
+    --red: #d72c0d;
+    --goal: #b8350f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 720px;
+    margin-bottom: 24px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px 24px;
+    margin-bottom: 24px;
+    max-width: 880px;
+  }
+  .card h2 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    color: var(--text);
+  }
+  .card .sub {
+    font-size: 12px;
+    color: var(--subdued);
+    margin-bottom: 20px;
+  }
+
+  /* ============ CHART FRAME ============ */
+  .chart {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 8px;
+    height: 280px;
+    position: relative;
+  }
+
+  .yAxis {
+    position: relative;
+    height: 240px;
+  }
+  .yTick {
+    position: absolute;
+    right: 0;
+    transform: translateY(50%);
+    font-size: 11px;
+    color: var(--axis);
+    padding-right: 4px;
+  }
+
+  .plot {
+    position: relative;
+    height: 240px;
+    border-left: 1px solid var(--border);
+  }
+  .gridline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--grid);
+  }
+  .gridline.zero { background: var(--border); }
+
+  .bars {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    padding: 0 8px;
+  }
+  .group {
+    position: relative;
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .bar {
+    width: 28px;
+    border-radius: 3px 3px 0 0;
+    position: relative;
+  }
+  .barCurrent {
+    background: var(--blue-primary);
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .barProjection {
+    width: 100%;
+    background: var(--blue-projection);
+    border-radius: 3px 3px 0 0;
+  }
+  .barPy {
+    background: var(--blue-py);
+  }
+
+  /* per-location goal marker: thin dotted segment, 20% wider than the bar pair */
+  .goalMark {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 75px;
+    border-top: 2px dotted var(--goal);
+    pointer-events: none;
+  }
+  .goalMark::after {
+    content: attr(data-label);
+    position: absolute;
+    right: 0;
+    top: -14px;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--goal);
+  }
+
+  /* X-axis labels */
+  .xAxis {
+    display: flex;
+    margin-left: 52px;
+    margin-top: 8px;
+    justify-content: space-around;
+    padding: 0 8px;
+  }
+  .xLabel {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.3;
+    padding: 0 4px;
+  }
+  .xLabel .yoy {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .yoyPos { color: var(--green); }
+  .yoyNeg { color: var(--red); }
+  .yoyFlat { color: var(--subdued); }
+
+  /* ============ MINI STATS TABLE below x-axis ============ */
+  .statsTable {
+    margin-top: 4px;
+    border-top: 1px solid var(--grid);
+  }
+  .statsRow {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--grid);
+    font-size: 12px;
+  }
+  .statsRow:last-child { border-bottom: none; }
+  .statsLabel {
+    text-align: left;
+    color: var(--subdued);
+    font-weight: 500;
+    font-size: 11px;
+  }
+  .statsCells {
+    display: flex;
+    justify-content: space-around;
+    padding: 0 8px;
+  }
+  .statsCell {
+    flex: 1;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--grid);
+    font-size: 12px;
+    color: var(--subdued);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dotCurrent {
+    background: linear-gradient(to top, var(--blue-projection) 0%, var(--blue-projection) 50%, var(--blue-primary) 50%, var(--blue-primary) 100%);
+  }
+  .dotPy { background: var(--blue-py); border: 1px solid var(--blue-py-edge); }
+  .dashMark {
+    width: 16px;
+    height: 0;
+    border-top: 2px dotted var(--goal);
+    display: inline-block;
+  }
+
+  /* ============ YOY CHART ============ */
+  .barsYoy {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+    padding: 0 8px;
+  }
+  .groupYoy {
+    position: relative;
+    flex: 1;
+    height: 100%;
+  }
+  .baselineLine {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #303030;
+    z-index: 1;
+  }
+  .barYoy {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    z-index: 2;
+  }
+  .barYoyPos {
+    background: var(--green);
+    border-radius: 3px 3px 0 0;
+  }
+  .barYoyNeg {
+    background: var(--red);
+    border-radius: 0 0 3px 3px;
+  }
+  .barYoyLabel {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .barYoyLabelPos { color: var(--green); }
+  .barYoyLabelNeg { color: var(--red); }
+
+  /* ============ ACHIEVEMENT RANKING ============ */
+  .rankList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .rankRow {
+    display: grid;
+    grid-template-columns: 20px 140px 1fr 48px;
+    gap: 12px;
+    align-items: center;
+    font-size: 12px;
+  }
+  .rankPos {
+    color: var(--subdued);
+    font-weight: 500;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .rankName {
+    color: var(--text);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .rankTrack {
+    position: relative;
+    height: 10px;
+    background: #f1f1f1;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .rankFill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: 6px;
+  }
+  .rankFillGreen { background: var(--green); }
+  .rankFillYellow { background: #d99a0a; }
+  .rankFillRed { background: var(--red); }
+  .rankPct {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+  .rankPctGreen { color: var(--green); }
+  .rankPctYellow { color: #b0800a; }
+  .rankPctRed { color: var(--red); }
+  .rankLegend {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--grid);
+    font-size: 11px;
+    color: var(--subdued);
+  }
+  .rankLegend span { display: inline-flex; align-items: center; gap: 6px; }
+  .rankLegend i {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+  .swatchGreen { background: var(--green); }
+  .swatchYellow { background: #d99a0a; }
+  .swatchRed { background: var(--red); }
+
+  /* ============ NOTES PANEL ============ */
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 880px;
+    margin-bottom: 24px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; color: #4a3600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 2px; }
+
+  /* AOV variant has no goal markers */
+  .compact .xLabel .goal { display: none; }
+
+  /* On hover tooltip mock (static) */
+  .tooltipMock {
+    position: absolute;
+    background: #1f1f1f;
+    color: white;
+    font-size: 11px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    top: -130px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: none;
+  }
+  .tooltipMock::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
+    background: #1f1f1f;
+  }
+  .tooltipMock strong { font-weight: 600; color: #fff; }
+  .tooltipMock .row { display: flex; justify-content: space-between; gap: 12px; margin-top: 3px; }
+  .tooltipMock .row .val { font-weight: 600; }
+
+  /* Show tooltip on a specific group */
+  .group.showTooltip .tooltipMock,
+  .groupYoy.showTooltip .tooltipMock,
+  .rankRow.showTooltip .tooltipMock { display: block; }
+  .rankRow { position: relative; }
+</style>
+</head>
+<body>
+
+<h1>Retail sales — chart refactor mockup</h1>
+<p class="intro">
+  Proposed Shopify-native style for the Revenue by location and AOV drilldown charts.
+  Flat two-tone bars, Y-axis with gridlines, per-location dashed goal marker, heavy metadata
+  moved out of the chart body.
+</p>
+
+<div class="notes">
+  <h3>Changes vs current chart</h3>
+  <ul>
+    <li><strong>Y-axis + gridlines added.</strong> Removes need for labels on every bar.</li>
+    <li><strong>Flat fills.</strong> No gradients, no inset shadows, no dark navy.</li>
+    <li><strong>Current = one bar with two tones</strong> — solid Shopify blue for MTD, pastel blue for projection stacked on top. No in-bar text labels.</li>
+    <li><strong>PY = flat pastel-gray bar.</strong></li>
+    <li><strong>Goal = short dashed tick</strong> above each group at the goal level, red, with the goal value labeled compactly (e.g. "R$84k"). Replaces the floating red gradient bar.</li>
+    <li><strong>Date context lives in the subtitle</strong>, not on every legend item — legend collapses to 3 entries (Current + projection, Prior year, Goal).</li>
+    <li><strong>Per-location metrics as a mini-table under the bars</strong> — row labels pinned left (<em>vs Goal</em>, <em>YoY</em>), values aligned under each column. Chart stays clean; numbers stay glanceable.</li>
+    <li><strong>Values live in tooltip on hover</strong> (mocked below on RioSul) for the absolute R$ figures.</li>
+  </ul>
+</div>
+
+<!-- ============ CHART 1: Revenue by location ============ -->
+<div class="card">
+  <h2>Revenue by location</h2>
+  <div class="sub">Apr 1 – 17, 2026 · compared to Apr 2025 · goal for Apr 2026</div>
+
+  <div class="chart">
+    <!-- Y axis: scale 0 → 100k, 5 ticks -->
+    <div class="yAxis">
+      <div class="yTick" style="top: 0%;">R$100k</div>
+      <div class="yTick" style="top: 25%;">R$75k</div>
+      <div class="yTick" style="top: 50%;">R$50k</div>
+      <div class="yTick" style="top: 75%;">R$25k</div>
+      <div class="yTick" style="top: 100%;">R$0</div>
+    </div>
+
+    <div class="plot">
+      <!-- gridlines -->
+      <div class="gridline" style="top: 0%;"></div>
+      <div class="gridline" style="top: 25%;"></div>
+      <div class="gridline" style="top: 50%;"></div>
+      <div class="gridline" style="top: 75%;"></div>
+      <div class="gridline zero" style="top: 100%;"></div>
+
+      <div class="bars">
+        <!-- Shops Jardins: current 45 (MTD 26, proj 19), PY 46, Goal 84 -->
+        <div class="group">
+          <div class="bar barCurrent" style="height: 45%;">
+            <div class="barProjection" style="height: 42.2%;"></div>
+          </div>
+          <div class="bar barPy" style="height: 46%;"></div>
+          <div class="goalMark" style="bottom: 84%;" data-label="R$84k"></div>
+        </div>
+
+        <!-- RioMar Recife: current 32 (MTD 18, proj 14), PY 32, Goal 58 -->
+        <div class="group">
+          <div class="bar barCurrent" style="height: 32%;">
+            <div class="barProjection" style="height: 43.75%;"></div>
+          </div>
+          <div class="bar barPy" style="height: 32%;"></div>
+          <div class="goalMark" style="bottom: 58%;" data-label="R$58k"></div>
+        </div>
+
+        <!-- RioSul: current 28 (MTD 16, proj 12), PY 18, Goal 42 -->
+        <div class="group showTooltip">
+          <div class="bar barCurrent" style="height: 28%;">
+            <div class="barProjection" style="height: 42.85%;"></div>
+          </div>
+          <div class="bar barPy" style="height: 18%;"></div>
+          <div class="goalMark" style="bottom: 42%;" data-label="R$42k"></div>
+
+          <div class="tooltipMock">
+            <strong>RioSul</strong>
+            <div class="row"><span>MTD</span><span class="val">R$16,000</span></div>
+            <div class="row"><span>Projected</span><span class="val">R$28,000</span></div>
+            <div class="row"><span>Goal</span><span class="val">R$42,000</span></div>
+            <div class="row"><span>vs. Goal</span><span class="val" style="color:#7ee0a1;">67%</span></div>
+            <div class="row"><span>Apr 25</span><span class="val">R$18,000</span></div>
+            <div class="row"><span>YoY</span><span class="val" style="color:#7ee0a1;">+62%</span></div>
+          </div>
+        </div>
+
+        <!-- Shopping Recife: current 21 (MTD 12, proj 9), PY 26, Goal 45 -->
+        <div class="group">
+          <div class="bar barCurrent" style="height: 21%;">
+            <div class="barProjection" style="height: 42.85%;"></div>
+          </div>
+          <div class="bar barPy" style="height: 26%;"></div>
+          <div class="goalMark" style="bottom: 45%;" data-label="R$45k"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="xAxis">
+    <div class="xLabel">Shops Jardins</div>
+    <div class="xLabel">RioMar Recife</div>
+    <div class="xLabel">RioSul</div>
+    <div class="xLabel">Shopping Recife</div>
+  </div>
+
+  <div class="statsTable">
+    <div class="statsRow">
+      <div class="statsLabel">Goal</div>
+      <div class="statsCells">
+        <div class="statsCell yoyNeg">54%</div>
+        <div class="statsCell yoyNeg">55%</div>
+        <div class="statsCell yoyPos">67%</div>
+        <div class="statsCell yoyNeg">47%</div>
+      </div>
+    </div>
+    <div class="statsRow">
+      <div class="statsLabel">YoY</div>
+      <div class="statsCells">
+        <div class="statsCell yoyNeg">−1%</div>
+        <div class="statsCell yoyFlat">0%</div>
+        <div class="statsCell yoyPos">+62%</div>
+        <div class="statsCell yoyNeg">−19%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot dotCurrent"></i> Current + projection</span>
+    <span><i class="dot dotPy"></i> Prior year</span>
+    <span><i class="dashMark"></i> Goal</span>
+  </div>
+</div>
+
+<!-- ============ CHART 2: Orders by location ============ -->
+<div class="card">
+  <h2>Orders by location</h2>
+  <div class="sub">Apr 1 – 17, 2026 · compared to Apr 2025</div>
+
+  <div class="chart">
+    <div class="yAxis">
+      <div class="yTick" style="top: 0%;">400</div>
+      <div class="yTick" style="top: 25%;">300</div>
+      <div class="yTick" style="top: 50%;">200</div>
+      <div class="yTick" style="top: 75%;">100</div>
+      <div class="yTick" style="top: 100%;">0</div>
+    </div>
+
+    <div class="plot">
+      <div class="gridline" style="top: 0%;"></div>
+      <div class="gridline" style="top: 25%;"></div>
+      <div class="gridline" style="top: 50%;"></div>
+      <div class="gridline" style="top: 75%;"></div>
+      <div class="gridline zero" style="top: 100%;"></div>
+
+      <div class="bars">
+        <!-- Shops Jardins: MTD 122, Projected 214, PY 218 -->
+        <div class="group">
+          <div class="bar barCurrent" style="height: 53.5%;">
+            <div class="barProjection" style="height: 43%;"></div>
+          </div>
+          <div class="bar barPy" style="height: 54.5%;"></div>
+        </div>
+
+        <!-- RioMar Recife: MTD 72, Projected 128, PY 128 -->
+        <div class="group">
+          <div class="bar barCurrent" style="height: 32%;">
+            <div class="barProjection" style="height: 43.75%;"></div>
+          </div>
+          <div class="bar barPy" style="height: 32%;"></div>
+        </div>
+
+        <!-- RioSul: MTD 68, Projected 119, PY 76 -->
+        <div class="group showTooltip">
+          <div class="bar barCurrent" style="height: 29.75%;">
+            <div class="barProjection" style="height: 42.85%;"></div>
+          </div>
+          <div class="bar barPy" style="height: 19%;"></div>
+          <div class="tooltipMock" style="top: -110px;">
+            <strong>RioSul</strong>
+            <div class="row"><span>MTD</span><span class="val">68</span></div>
+            <div class="row"><span>Projected</span><span class="val">119</span></div>
+            <div class="row"><span>Apr 25</span><span class="val">76</span></div>
+            <div class="row"><span>YoY</span><span class="val" style="color:#7ee0a1;">+57%</span></div>
+          </div>
+        </div>
+
+        <!-- Shopping Recife: MTD 57, Projected 100, PY 124 -->
+        <div class="group">
+          <div class="bar barCurrent" style="height: 25%;">
+            <div class="barProjection" style="height: 43%;"></div>
+          </div>
+          <div class="bar barPy" style="height: 31%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="xAxis">
+    <div class="xLabel">Shops Jardins</div>
+    <div class="xLabel">RioMar Recife</div>
+    <div class="xLabel">RioSul</div>
+    <div class="xLabel">Shopping Recife</div>
+  </div>
+
+  <div class="statsTable">
+    <div class="statsRow">
+      <div class="statsLabel">YoY</div>
+      <div class="statsCells">
+        <div class="statsCell yoyNeg">−2%</div>
+        <div class="statsCell yoyFlat">0%</div>
+        <div class="statsCell yoyPos">+57%</div>
+        <div class="statsCell yoyNeg">−19%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot dotCurrent"></i> Current + projection</span>
+    <span><i class="dot dotPy"></i> Prior year</span>
+  </div>
+</div>
+
+<!-- ============ CHART 3: AOV (no goal markers) ============ -->
+<div class="card compact">
+  <h2>Average order value by location</h2>
+  <div class="sub">Apr 1 – 17, 2026 · compared to Apr 2025</div>
+
+  <div class="chart">
+    <div class="yAxis">
+      <div class="yTick" style="top: 0%;">R$500</div>
+      <div class="yTick" style="top: 25%;">R$375</div>
+      <div class="yTick" style="top: 50%;">R$250</div>
+      <div class="yTick" style="top: 75%;">R$125</div>
+      <div class="yTick" style="top: 100%;">R$0</div>
+    </div>
+
+    <div class="plot">
+      <div class="gridline" style="top: 0%;"></div>
+      <div class="gridline" style="top: 25%;"></div>
+      <div class="gridline" style="top: 50%;"></div>
+      <div class="gridline" style="top: 75%;"></div>
+      <div class="gridline zero" style="top: 100%;"></div>
+
+      <div class="bars">
+        <!-- AOV: no MTD/projection split, no goal marker -->
+        <div class="group">
+          <div class="bar barCurrent" style="height: 94%; background: var(--blue-primary);"></div>
+          <div class="bar barPy" style="height: 80%;"></div>
+        </div>
+        <div class="group">
+          <div class="bar barCurrent" style="height: 88%; background: var(--blue-primary);"></div>
+          <div class="bar barPy" style="height: 72%;"></div>
+        </div>
+        <div class="group showTooltip">
+          <div class="bar barCurrent" style="height: 76%; background: var(--blue-primary);"></div>
+          <div class="bar barPy" style="height: 68%;"></div>
+          <div class="tooltipMock" style="top: -100px;">
+            <strong>RioSul</strong>
+            <div class="row"><span>Current</span><span class="val">R$380</span></div>
+            <div class="row"><span>Apr 25</span><span class="val">R$340</span></div>
+            <div class="row"><span>YoY</span><span class="val" style="color:#7ee0a1;">+12%</span></div>
+          </div>
+        </div>
+        <div class="group">
+          <div class="bar barCurrent" style="height: 78%; background: var(--blue-primary);"></div>
+          <div class="bar barPy" style="height: 60%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="xAxis">
+    <div class="xLabel">Shops Jardins</div>
+    <div class="xLabel">RioMar Recife</div>
+    <div class="xLabel">RioSul</div>
+    <div class="xLabel">Shopping Recife</div>
+  </div>
+
+  <div class="statsTable">
+    <div class="statsRow">
+      <div class="statsLabel">YoY</div>
+      <div class="statsCells">
+        <div class="statsCell yoyPos">+17%</div>
+        <div class="statsCell yoyPos">+22%</div>
+        <div class="statsCell yoyPos">+12%</div>
+        <div class="statsCell yoyPos">+30%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot" style="background: var(--blue-primary);"></i> Current</span>
+    <span><i class="dot dotPy"></i> Prior year</span>
+  </div>
+</div>
+
+<!-- ============ CHART 4: Same-store YoY — all positive ============ -->
+<div class="card">
+  <h2>Same-store YoY by location — all positive</h2>
+  <div class="sub">Apr 1 – 17, 2026 vs Apr 1 – 17, 2025 · scenario: every store grew</div>
+
+  <div class="chart">
+    <div class="yAxis">
+      <div class="yTick" style="top: 0%;">+80%</div>
+      <div class="yTick" style="top: 25%;">+60%</div>
+      <div class="yTick" style="top: 50%;">+40%</div>
+      <div class="yTick" style="top: 75%;">+20%</div>
+      <div class="yTick" style="top: 100%;">0%</div>
+    </div>
+
+    <div class="plot">
+      <div class="gridline" style="top: 0%;"></div>
+      <div class="gridline" style="top: 25%;"></div>
+      <div class="gridline" style="top: 50%;"></div>
+      <div class="gridline" style="top: 75%;"></div>
+      <div class="gridline zero" style="top: 100%;"></div>
+
+      <div class="barsYoy">
+        <!-- Baseline at bottom (100%) — not shown as separate line since it's the axis -->
+        <!-- Shops Jardins +28% = 35% height -->
+        <div class="groupYoy">
+          <div class="barYoy barYoyPos" style="bottom: 0; height: 35%;"></div>
+          <div class="barYoyLabel barYoyLabelPos" style="bottom: 35%; margin-bottom: 4px;">+28%</div>
+        </div>
+        <!-- RioMar +15% = 18.75% -->
+        <div class="groupYoy">
+          <div class="barYoy barYoyPos" style="bottom: 0; height: 18.75%;"></div>
+          <div class="barYoyLabel barYoyLabelPos" style="bottom: 18.75%; margin-bottom: 4px;">+15%</div>
+        </div>
+        <!-- RioSul +62% = 77.5% -->
+        <div class="groupYoy showTooltip">
+          <div class="barYoy barYoyPos" style="bottom: 0; height: 77.5%;"></div>
+          <div class="barYoyLabel barYoyLabelPos" style="bottom: 77.5%; margin-bottom: 4px;">+62%</div>
+          <div class="tooltipMock" style="top: -95px;">
+            <strong>RioSul</strong>
+            <div class="row"><span>Apr 1 – 17, 2026</span><span class="val">R$16,000</span></div>
+            <div class="row"><span>Apr 1 – 17, 2025</span><span class="val">R$9,900</span></div>
+            <div class="row"><span>YoY</span><span class="val" style="color:#7ee0a1;">+62%</span></div>
+          </div>
+        </div>
+        <!-- Shopping +12% = 15% -->
+        <div class="groupYoy">
+          <div class="barYoy barYoyPos" style="bottom: 0; height: 15%;"></div>
+          <div class="barYoyLabel barYoyLabelPos" style="bottom: 15%; margin-bottom: 4px;">+12%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="xAxis">
+    <div class="xLabel">Shops Jardins</div>
+    <div class="xLabel">RioMar Recife</div>
+    <div class="xLabel">RioSul</div>
+    <div class="xLabel">Shopping Recife</div>
+  </div>
+</div>
+
+<!-- ============ CHART 5: Same-store YoY — all negative ============ -->
+<div class="card">
+  <h2>Same-store YoY by location — all negative</h2>
+  <div class="sub">Apr 1 – 17, 2026 vs Apr 1 – 17, 2025 · scenario: every store declined</div>
+
+  <div class="chart">
+    <div class="yAxis">
+      <div class="yTick" style="top: 0%;">0%</div>
+      <div class="yTick" style="top: 33.33%;">−10%</div>
+      <div class="yTick" style="top: 66.67%;">−20%</div>
+      <div class="yTick" style="top: 100%;">−30%</div>
+    </div>
+
+    <div class="plot">
+      <div class="gridline zero" style="top: 0%;"></div>
+      <div class="gridline" style="top: 33.33%;"></div>
+      <div class="gridline" style="top: 66.67%;"></div>
+      <div class="gridline" style="top: 100%;"></div>
+
+      <div class="barsYoy">
+        <!-- Baseline at top (0%) — bars hang down -->
+        <!-- Shops Jardins -8% = 26.67% -->
+        <div class="groupYoy">
+          <div class="barYoy barYoyNeg" style="top: 0; height: 26.67%;"></div>
+          <div class="barYoyLabel barYoyLabelNeg" style="top: 26.67%; margin-top: 4px;">−8%</div>
+        </div>
+        <!-- RioMar -22% = 73.33% -->
+        <div class="groupYoy showTooltip">
+          <div class="barYoy barYoyNeg" style="top: 0; height: 73.33%;"></div>
+          <div class="barYoyLabel barYoyLabelNeg" style="top: 73.33%; margin-top: 4px;">−22%</div>
+          <div class="tooltipMock" style="top: -95px;">
+            <strong>RioMar Recife</strong>
+            <div class="row"><span>Apr 1 – 17, 2026</span><span class="val">R$18,000</span></div>
+            <div class="row"><span>Apr 1 – 17, 2025</span><span class="val">R$23,100</span></div>
+            <div class="row"><span>YoY</span><span class="val" style="color:#ff9b85;">−22%</span></div>
+          </div>
+        </div>
+        <!-- RioSul -5% = 16.67% -->
+        <div class="groupYoy">
+          <div class="barYoy barYoyNeg" style="top: 0; height: 16.67%;"></div>
+          <div class="barYoyLabel barYoyLabelNeg" style="top: 16.67%; margin-top: 4px;">−5%</div>
+        </div>
+        <!-- Shopping -15% = 50% -->
+        <div class="groupYoy">
+          <div class="barYoy barYoyNeg" style="top: 0; height: 50%;"></div>
+          <div class="barYoyLabel barYoyLabelNeg" style="top: 50%; margin-top: 4px;">−15%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="xAxis">
+    <div class="xLabel">Shops Jardins</div>
+    <div class="xLabel">RioMar Recife</div>
+    <div class="xLabel">RioSul</div>
+    <div class="xLabel">Shopping Recife</div>
+  </div>
+</div>
+
+<!-- ============ CHART 6: Same-store YoY — mixed ============ -->
+<!--
+  Scale: -25% to +75%, total range 100, 4 intervals of 25.
+  Zero baseline at 75% from top.
+  Values: Shops Jardins -1, RioMar 0, RioSul +62, Shopping -19.
+-->
+<div class="card">
+  <h2>Same-store YoY by location — mixed</h2>
+  <div class="sub">Apr 1 – 17, 2026 vs Apr 1 – 17, 2025 · actual current data</div>
+
+  <div class="chart">
+    <div class="yAxis">
+      <div class="yTick" style="top: 0%;">+75%</div>
+      <div class="yTick" style="top: 25%;">+50%</div>
+      <div class="yTick" style="top: 50%;">+25%</div>
+      <div class="yTick" style="top: 75%;">0%</div>
+      <div class="yTick" style="top: 100%;">−25%</div>
+    </div>
+
+    <div class="plot">
+      <div class="gridline" style="top: 0%;"></div>
+      <div class="gridline" style="top: 25%;"></div>
+      <div class="gridline" style="top: 50%;"></div>
+      <div class="gridline zero" style="top: 75%;"></div>
+      <div class="gridline" style="top: 100%;"></div>
+
+      <div class="barsYoy">
+        <!-- Baseline at 25% from bottom (75% from top) -->
+        <!-- Shops Jardins -1%: tiny negative, height = 1% -->
+        <div class="groupYoy">
+          <div class="barYoy barYoyNeg" style="top: 75%; height: 1%;"></div>
+          <div class="barYoyLabel barYoyLabelNeg" style="top: 76%; margin-top: 4px;">−1%</div>
+        </div>
+        <!-- RioMar 0%: no bar, show label at baseline -->
+        <div class="groupYoy">
+          <div class="barYoyLabel" style="top: 75%; margin-top: 4px; color: var(--subdued);">0%</div>
+        </div>
+        <!-- RioSul +62%: height = 62% of full range, grows up from baseline -->
+        <div class="groupYoy showTooltip">
+          <div class="barYoy barYoyPos" style="bottom: 25%; height: 62%;"></div>
+          <div class="barYoyLabel barYoyLabelPos" style="bottom: 87%; margin-bottom: 4px;">+62%</div>
+          <div class="tooltipMock" style="top: -95px;">
+            <strong>RioSul</strong>
+            <div class="row"><span>Apr 1 – 17, 2026</span><span class="val">R$16,000</span></div>
+            <div class="row"><span>Apr 1 – 17, 2025</span><span class="val">R$9,900</span></div>
+            <div class="row"><span>YoY</span><span class="val" style="color:#7ee0a1;">+62%</span></div>
+          </div>
+        </div>
+        <!-- Shopping -19%: height = 19%, hangs below baseline -->
+        <div class="groupYoy">
+          <div class="barYoy barYoyNeg" style="top: 75%; height: 19%;"></div>
+          <div class="barYoyLabel barYoyLabelNeg" style="top: 94%; margin-top: 4px;">−19%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="xAxis">
+    <div class="xLabel">Shops Jardins</div>
+    <div class="xLabel">RioMar Recife</div>
+    <div class="xLabel">RioSul</div>
+    <div class="xLabel">Shopping Recife</div>
+  </div>
+</div>
+
+<!-- ============ CHART 7: Achievement ranking ============ -->
+<div class="card">
+  <h2>Achievement ranking</h2>
+  <div class="sub">Projected vs goal for Apr 2026 · sorted descending</div>
+
+  <div class="rankList">
+    <div class="rankRow showTooltip">
+      <div class="rankPos">1</div>
+      <div class="rankName">RioSul</div>
+      <div class="rankTrack">
+        <div class="rankFill rankFillGreen" style="width: 87%;"></div>
+      </div>
+      <div class="rankPct rankPctGreen">87%</div>
+      <div class="tooltipMock" style="top: -115px; left: 60%;">
+        <strong>RioSul</strong>
+        <div class="row"><span>Projected</span><span class="val">R$36,500</span></div>
+        <div class="row"><span>Goal</span><span class="val">R$42,000</span></div>
+        <div class="row"><span>vs. Goal</span><span class="val" style="color:#7ee0a1;">87%</span></div>
+        <div class="row"><span>Rank</span><span class="val">1 of 4</span></div>
+      </div>
+    </div>
+    <div class="rankRow">
+      <div class="rankPos">2</div>
+      <div class="rankName">Shops Jardins</div>
+      <div class="rankTrack">
+        <div class="rankFill rankFillYellow" style="width: 72%;"></div>
+      </div>
+      <div class="rankPct rankPctYellow">72%</div>
+    </div>
+    <div class="rankRow">
+      <div class="rankPos">3</div>
+      <div class="rankName">RioMar Recife</div>
+      <div class="rankTrack">
+        <div class="rankFill rankFillRed" style="width: 54%;"></div>
+      </div>
+      <div class="rankPct rankPctRed">54%</div>
+    </div>
+    <div class="rankRow">
+      <div class="rankPos">4</div>
+      <div class="rankName">Shopping Recife</div>
+      <div class="rankTrack">
+        <div class="rankFill rankFillRed" style="width: 47%;"></div>
+      </div>
+      <div class="rankPct rankPctRed">47%</div>
+    </div>
+  </div>
+
+  <div class="rankLegend">
+    <span><i class="swatchGreen"></i> On track (≥ 80%)</span>
+    <span><i class="swatchYellow"></i> Off pace (60 – 79%)</span>
+    <span><i class="swatchRed"></i> Behind (&lt; 60%)</span>
+  </div>
+</div>
+
+<div class="notes">
+  <h3>Open questions for you</h3>
+  <ul>
+    <li><strong>Goal display per location vs chart-wide.</strong> Mock uses a short dashed segment per location at that store's goal level. Alternative: skip the marker in the chart and keep goal info only in the breakdown table.</li>
+    <li><strong>Tooltip vs persistent labels.</strong> Mock hides values; user hovers (or taps on mobile) to see exact figures. If we still want persistent numbers, we can keep a single label above the taller bar per group.</li>
+    <li><strong>MTD / projection as one stacked bar vs two separate.</strong> Mock stacks them in a single column. Alternative: keep as a single solid bar (projected total) and skip the MTD split — matches Shopify purely but loses the "how far along are we" signal.</li>
+    <li><strong>Achievement ranking tier thresholds.</strong> Mock uses ≥80% green / 60–79% yellow / &lt;60% red. If the current page uses different thresholds, call them out and I'll align.</li>
+  </ul>
+</div>
+
+</body>
+</html>

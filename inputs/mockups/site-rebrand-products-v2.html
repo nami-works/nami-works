@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Marketing site product cards rebrand · v2</title>
+<!--
+  v2 deltas vs v1:
+  - Product header reorganized: logo larger and floating OUTSIDE the card box,
+    name + badge stack vertically to the right of the logo (more horizontal
+    breathing room for the logo).
+  - Storefront badge locked to "later this year" per Lucas.
+  - Screencast 404 fix locked to path 1 (S3 + CloudFront) — separate track,
+    not in this mockup.
+-->
+<style>
+  :root {
+    --bg: #0b0b0c;
+    --bg-soft: #14141a;
+    --card: rgba(255, 255, 255, 0.04);
+    --border: rgba(255, 255, 255, 0.12);
+    --border-strong: rgba(255, 255, 255, 0.22);
+    --text: #f5f5f7;
+    --text-muted: #c5c5cc;
+    --holo-1: #5ecece;
+    --holo-2: #b09fda;
+    --holo-3: #d4a8d4;
+    --holo-4: #5ecece;
+    --frame: #1f1f24;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #07070a;
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    padding: 28px 20px 80px;
+  }
+
+  h1.docTitle { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 6px; }
+  p.docSub    { color: var(--text-muted); margin: 0 0 28px; max-width: 720px; }
+
+  .section {
+    margin: 36px 0;
+    padding: 22px;
+    background: var(--frame);
+    border: 1px solid #2a2a32;
+    border-radius: 14px;
+  }
+  .sectionLabel {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #b09fda; margin: 0 0 14px;
+  }
+  .sectionTitle { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 4px; }
+  .sectionNote { color: var(--text-muted); font-size: 13px; margin: 0 0 18px; }
+
+  /* Two-up: desktop vs mobile preview frames */
+  .deviceRow { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+  .device {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: visible; /* logos float outside cards */
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.5);
+  }
+  .deviceTag {
+    background: #2a2a32; color: #d4a8d4; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 12px;
+    border-bottom: 1px solid #2a2a32;
+  }
+  .deviceDesktop { flex: 1 1 760px; min-width: 0; border-radius: 14px; overflow: hidden; }
+  .deviceDesktop > div:not(.deviceTag) { overflow: visible; }
+  .deviceMobile  { flex: 0 0 380px; border-radius: 14px; overflow: hidden; }
+  .deviceMobile  > div:not(.deviceTag) { overflow: visible; }
+
+  .devicePad { padding: 40px 28px 36px; }
+  .deviceMobile .devicePad { padding: 36px 22px 32px; }
+
+  .productsHeader {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-muted); margin: 0 0 14px;
+  }
+
+  .productsStack { display: flex; flex-direction: column; gap: 56px; }
+
+  /* Card */
+  .productCard {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    position: relative;          /* anchor for floating logo */
+    /* NB: overflow stays VISIBLE so the logo can poke out */
+  }
+
+  .deviceDesktop .productCardFeatured {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+    padding: 32px 32px 32px 36px;
+  }
+
+  .deviceDesktop .storefrontCard {
+    display: grid;
+    grid-template-columns: 200px 1fr auto;
+    gap: 28px;
+    align-items: center;
+    padding: 32px 32px 32px 36px;
+  }
+
+  .deviceMobile .productCard,
+  .deviceMobile .productCardFeatured,
+  .deviceMobile .storefrontCard {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 22px 20px;
+  }
+
+  /* ─── Floating logo ─── */
+  .productLogo {
+    position: absolute;
+    top: -28px;
+    left: -24px;
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    z-index: 2;
+    filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55))
+            drop-shadow(0 0 24px color-mix(in srgb, var(--holo-2) 25%, transparent));
+    /* gentle hover lift to suggest depth */
+    transition: transform 220ms ease;
+  }
+  .productLogo:hover { transform: translateY(-3px) scale(1.02); }
+
+  .deviceMobile .productLogo {
+    top: -22px;
+    left: -14px;
+    width: 68px;
+    height: 68px;
+  }
+
+  /* Header block: name (top) + badge (below) — VERTICAL STACK */
+  .productHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0 0 10px;
+    /* leave horizontal room so the floating logo doesn't overlap */
+    padding-left: 84px; /* desktop: 96 logo - 24 left float + ~12 visual gap */
+    min-height: 70px;
+  }
+  .deviceDesktop .productCardFeatured .productHeader,
+  .deviceDesktop .storefrontCard .productHeader {
+    padding-left: 90px;
+  }
+  /* When card body is laid out in columns and the header lives in a non-leftmost
+     column, no padding-left is needed (logo is anchored to the card itself, not
+     the header column). Storefront's header is in the middle column. */
+  .deviceDesktop .storefrontCard .productHeader { padding-left: 0; }
+
+  .deviceMobile .productHeader {
+    padding-left: 64px; /* mobile: 68 logo - 14 left float + ~10 gap */
+    min-height: 50px;
+    margin-bottom: 4px;
+  }
+
+  .productName {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+    line-height: 1.1;
+  }
+  .deviceDesktop .productName { font-size: 28px; }
+  .deviceMobile  .productName { font-size: 22px; }
+
+  /* Badge */
+  .productBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: none; /* lowercase — per request */
+    letter-spacing: 0;
+  }
+  .productBadgeLive {
+    background: color-mix(in srgb, var(--holo-1) 18%, transparent);
+    color: var(--holo-1);
+    border: 1px solid color-mix(in srgb, var(--holo-1) 28%, transparent);
+  }
+  .productBadgeWip {
+    background: color-mix(in srgb, var(--holo-3) 16%, transparent);
+    color: var(--holo-3);
+    border: 1px solid color-mix(in srgb, var(--holo-3) 28%, transparent);
+  }
+
+  .productTagline { font-size: 14px; color: var(--text-muted); margin: 0 0 12px; font-weight: 500; }
+  .productBlurb   { font-size: 14.5px; line-height: 1.6; color: var(--text); margin: 0 0 16px; }
+  .productBlurb strong { font-weight: 600; }
+
+  .productCta {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 18px; background: transparent;
+    border: 1px solid var(--border-strong); border-radius: 999px;
+    text-decoration: none; color: var(--text); font-size: 13px; font-weight: 600;
+  }
+
+  .waitlistCta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px;
+    background: linear-gradient(135deg, var(--holo-1), var(--holo-2), var(--holo-3));
+    color: #1d1d1f; border-radius: 999px; text-decoration: none;
+    font-size: 14px; font-weight: 700; white-space: nowrap;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--holo-2) 30%, transparent),
+                0 8px 24px -8px color-mix(in srgb, var(--holo-2) 55%, transparent);
+  }
+  .deviceMobile .waitlistCta { width: 100%; justify-content: center; }
+
+  .productVisual {
+    background: linear-gradient(135deg, rgba(94,206,206,0.08), rgba(176,159,218,0.08));
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
+    min-height: 140px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); font-size: 12px; font-style: italic;
+  }
+  .deviceDesktop .productCardFeatured .productVisual { min-height: 220px; }
+  .deviceDesktop .storefrontCard .productVisual { min-height: 160px; width: 200px; }
+
+  /* Storefront's middle column needs the floating logo anchored to it,
+     since it has its own card-like vibe. We put the logo on the card itself
+     and start text below where the logo's bottom edge sits. */
+  .deviceDesktop .storefrontCard .productLogo { left: 200px + 24px; }
+  /* simpler: pin to text column */
+  .deviceDesktop .storefrontCard {
+    position: relative;
+  }
+  .deviceDesktop .storefrontCard .productLogo {
+    top: -28px;
+    left: 220px; /* sits at the start of the text column */
+  }
+  .deviceDesktop .storefrontCard .productHeader {
+    padding-top: 56px; /* push name+badge below the floating logo */
+  }
+  /* Featured (Omnify): logo top-left of the card */
+
+  /* Notes panel */
+  .notes {
+    background: #14141a; border: 1px solid #2a2a32;
+    border-radius: 12px; padding: 20px 22px;
+    color: var(--text-muted); font-size: 13.5px; line-height: 1.65; margin-top: 8px;
+  }
+  .notes h4 {
+    color: var(--text); font-size: 14px; margin: 0 0 8px;
+    letter-spacing: 0.02em; text-transform: uppercase; font-weight: 600;
+  }
+  .notes ul { margin: 6px 0 12px; padding-left: 18px; }
+  .notes li { margin-bottom: 6px; }
+  .notes strong { color: var(--text); }
+  .notes code { background: #232328; padding: 1px 6px; border-radius: 4px; font-size: 12.5px; }
+</style>
+</head>
+<body>
+
+<h1 class="docTitle">Marketing site — Products section rebrand · v2</h1>
+<p class="docSub">
+  v2 incorporates Lucas's feedback: <strong>name and badge stack vertically</strong>,
+  <strong>logos float outside the card boxes</strong> at a larger size,
+  Storefront badge locked to <code>later this year</code>.
+</p>
+
+<!-- ════════════ NAV PREVIEW ════════════ -->
+<section class="section">
+  <p class="sectionLabel">1 · Nav logo swap (unchanged from v1)</p>
+  <h2 class="sectionTitle">omnify_map.png replaces omnify_tree.png in the global nav.</h2>
+  <p class="sectionNote">Nav placement is unchanged — same 26×26 brand mark spot. Same swap on the screencast hero (140-180px) and the about-page product logo.</p>
+</section>
+
+<!-- ════════════ PRODUCTS SECTION PREVIEW ════════════ -->
+<section class="section">
+  <p class="sectionLabel">2 · Products section · final layout</p>
+  <h2 class="sectionTitle">Logos float outside the card; name + badge stack vertically.</h2>
+
+  <div class="deviceRow">
+    <!-- ───────── DESKTOP ───────── -->
+    <div class="device deviceDesktop">
+      <div class="deviceTag">Desktop · 760+ px</div>
+      <div class="devicePad">
+        <p class="productsHeader">Our products</p>
+
+        <div class="productsStack">
+
+          <!-- Omnify card -->
+          <article class="productCard productCardFeatured">
+            <img class="productLogo" src="../../public/omnify_map.png" alt="" />
+            <div>
+              <div class="productHeader">
+                <h3 class="productName">Omnify</h3>
+                <span class="productBadge productBadgeLive">coming soon</span>
+              </div>
+              <p class="productTagline">Local delivery, retail sales, footprint planning.</p>
+              <p class="productBlurb">
+                Omnify is a <strong>Shopify-embedded app</strong>. Merchants use it
+                to plan delivery routes from store locations, track retail sales
+                against monthly goals, and plan where to open next using customer
+                geography.
+              </p>
+              <a class="productCta" href="#">See Omnify in action →</a>
+            </div>
+            <div class="productVisual">[ admin app screenshot ]</div>
+          </article>
+
+          <!-- Storefront card -->
+          <article class="productCard storefrontCard">
+            <img class="productLogo" src="../../public/storefront_window.png" alt="" />
+            <div class="productVisual">[ storefront preview tiles ]</div>
+            <div>
+              <div class="productHeader">
+                <h3 class="productName">Storefront</h3>
+                <span class="productBadge productBadgeWip">later this year</span>
+              </div>
+              <p class="productTagline">Merchandising, sale campaigns, price tags.</p>
+              <p class="productBlurb">
+                Storefront is the next CPG Labs app. It will help merchants run
+                coordinated sale campaigns, tag discounted products across channels,
+                and keep promotional logic consistent.
+              </p>
+            </div>
+            <a class="waitlistCta" href="#">Join the waitlist →</a>
+          </article>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ───────── MOBILE ───────── -->
+    <div class="device deviceMobile">
+      <div class="deviceTag">Mobile · 380 px</div>
+      <div class="devicePad">
+        <p class="productsHeader">Our products</p>
+
+        <div class="productsStack">
+          <article class="productCard productCardFeatured">
+            <img class="productLogo" src="../../public/omnify_map.png" alt="" />
+            <div class="productHeader">
+              <h3 class="productName">Omnify</h3>
+              <span class="productBadge productBadgeLive">coming soon</span>
+            </div>
+            <p class="productTagline">Local delivery, retail sales, footprint planning.</p>
+            <p class="productBlurb">Shopify-embedded app for FMCG brands.</p>
+            <a class="productCta" href="#">See Omnify →</a>
+            <div class="productVisual" style="margin-top:12px;">[ screenshot ]</div>
+          </article>
+
+          <article class="productCard storefrontCard">
+            <img class="productLogo" src="../../public/storefront_window.png" alt="" />
+            <div class="productHeader">
+              <h3 class="productName">Storefront</h3>
+              <span class="productBadge productBadgeWip">later this year</span>
+            </div>
+            <p class="productTagline">Merchandising, sale campaigns, price tags.</p>
+            <p class="productBlurb">Sale campaigns coordinated across channels.</p>
+            <div class="productVisual">[ tiles ]</div>
+            <a class="waitlistCta" href="#">Join the waitlist →</a>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ NOTES ════════════ -->
+<div class="notes">
+  <h4>Spec for production translation</h4>
+  <ul>
+    <li>
+      <strong>Logo size:</strong> 96×96 desktop, 68×68 mobile, with a
+      <code>drop-shadow</code> so it reads as floating, not pasted.
+    </li>
+    <li>
+      <strong>Logo position — Omnify:</strong> top-left of the card, offset
+      <code>top: -28px; left: -24px</code> (desktop) — corner of the card pokes
+      through the bottom-right of the logo.
+    </li>
+    <li>
+      <strong>Logo position — Storefront:</strong> anchored to the start of the
+      text column (logo over the visual-text column boundary), offset
+      <code>top: -28px; left: 220px</code> on desktop. Mobile reverts to corner
+      placement since the card stacks.
+    </li>
+    <li>
+      <strong>Header reflow:</strong> name + badge stack vertically. Heading
+      block carries left-padding equal to (logo width − left offset + ~12px gap)
+      on desktop's Omnify card so text starts past the floating logo.
+    </li>
+    <li>
+      <strong>Card overflow:</strong> the products section's container needs
+      <code>overflow: visible</code> (not hidden) so logos can extend past the
+      card edge. The current featured card has a <code>::before</code> glow with
+      <code>overflow: hidden</code> on the card — we'll keep the glow but move
+      <code>overflow</code> to <code>visible</code> on <code>.productCard</code>
+      and clip the glow with a contained <code>::before</code> sized within the
+      padding, OR drop the glow on these two cards (it competes with the new
+      logo glow anyway).
+    </li>
+    <li>
+      <strong>Badge styling:</strong> drop <code>text-transform: uppercase</code>
+      and <code>letter-spacing: 0.05em</code>. Bump font-size from 10px → 11px
+      so lowercase doesn't read as cramped.
+    </li>
+    <li>
+      <strong>Stack gap:</strong> increased from 24/32px → 56px so floating
+      logos don't collide with the card above.
+    </li>
+  </ul>
+
+  <h4 style="margin-top: 18px;">Out of scope here</h4>
+  <ul>
+    <li>
+      <strong>Screencast 404:</strong> path 1 (S3 + CloudFront) — separate track,
+      I'll execute it after these changes land.
+    </li>
+  </ul>
+</div>
+
+</body>
+</html>

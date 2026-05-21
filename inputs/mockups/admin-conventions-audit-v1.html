@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Admin Conventions Audit (issues 1, 2, 4, 5)</title>
+<style>
+  :root {
+    --bg: #f1f1f1;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --border-subtle: #ebebeb;
+    --text: #303030;
+    --subdued: #6d7175;
+    --tonal-hover: #f6f6f7;
+    --link: #005bd3;
+    --green: #067647;
+    --red: #d72c0d;
+    --notes-bg: #fff9eb;
+    --notes-border: #ffd66b;
+    --bad-bg: #ffe5e0;
+    --bad-border: #d72c0d;
+    --good-bg: #d6f7e3;
+    --good-border: #067647;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+  }
+  h1 { font-size: 22px; font-weight: 700; margin: 0 0 8px; }
+  h2 { font-size: 18px; font-weight: 650; margin: 32px 0 12px; padding-top: 24px; border-top: 2px solid var(--border); }
+  h2:first-of-type { padding-top: 0; border-top: none; margin-top: 16px; }
+  h3 { font-size: 14px; font-weight: 600; margin: 16px 0 8px; }
+  .intro { font-size: 13px; color: var(--subdued); max-width: 800px; margin-bottom: 24px; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; }
+
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 12px 0; }
+  .compare-frame { border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .compare-frame.bad { border-color: var(--bad-border); background: var(--bad-bg); }
+  .compare-frame.good { border-color: var(--good-border); background: var(--good-bg); }
+  .compare-label {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; margin-bottom: 8px;
+  }
+  .compare-frame.bad .compare-label { background: var(--red); color: white; }
+  .compare-frame.good .compare-label { background: var(--green); color: white; }
+
+  /* ===== Page-shell sandbox (mimics <s-page>) ===== */
+  .pageShell { background: white; border-radius: 8px; border: 1px solid var(--border); padding: 16px; }
+  .pageHeaderRow { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .pageHeaderLeft { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  .pageHeaderRight { display: flex; align-items: center; gap: 8px; }
+  .backBtn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 6px;
+    border: 1px solid var(--border); background: white; cursor: pointer;
+    text-decoration: none; color: var(--text);
+  }
+  .backBtn:hover { background: var(--tonal-hover); }
+  .backBtn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .pageHeading { font-size: 17px; font-weight: 650; margin: 0; }
+  .pageBody { display: grid; grid-template-columns: 1fr 320px; gap: 16px; align-items: start; }
+  .pageBody .col { display: flex; flex-direction: column; gap: 12px; }
+  .block { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .blockTitle { font-size: 14px; font-weight: 650; margin: 0 0 4px; color: var(--text); }
+  .blockDesc { font-size: 12px; color: var(--subdued); margin: 0 0 12px; }
+  .blockBody { font-size: 12px; color: var(--text); }
+
+  /* Issue 1 — wrong alignment */
+  .pageBody.misaligned { align-items: start; }
+  .pageBody.misaligned .col.main { margin-top: 36px; } /* simulates back-action displacement */
+
+  /* Issue 4 — wrong typography */
+  .bad-typo .blockTitle { font-size: 11px; font-weight: 400; color: var(--subdued); }
+  .bad-typo .blockBody { font-size: 14px; font-weight: 500; }
+
+  /* ===== Tables ===== */
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 12px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border-subtle); vertical-align: top; }
+  th { background: #f6f6f7; font-weight: 600; color: var(--subdued); text-align: left; }
+  code { background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 4px; font-family: ui-monospace, Menlo, monospace; font-size: 11px; }
+
+  /* ===== Token swatches ===== */
+  .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: middle; margin-right: 6px; border: 1px solid rgba(0,0,0,0.1); }
+
+  /* ===== Notes ===== */
+  .notes { background: var(--notes-bg); border: 1px solid var(--notes-border); border-radius: 8px; padding: 14px 18px; margin: 12px 0; font-size: 12px; line-height: 1.55; }
+  .notes h3 { margin: 0 0 6px; font-size: 13px; font-weight: 600; }
+  .notes ul { padding-left: 18px; margin: 6px 0; }
+
+  /* ===== Map marker mockup (issue 5) ===== */
+  .mapSurface { background: #1a1f24; border-radius: 8px; padding: 24px; display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; align-items: center; }
+  .marker { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 8px; background: white; border-radius: 14px; border: 1px solid #111; font-size: 11px; font-weight: 600; }
+  .markerIcon { width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; }
+  .markerIcon svg { width: 14px; height: 14px; fill: currentColor; }
+  .markerLabel { font-size: 11px; font-weight: 700; color: var(--text); }
+
+  .iconMap { display: grid; grid-template-columns: 60px 60px 1fr 1fr; gap: 8px; align-items: center; font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--border-subtle); }
+  .iconMap .swap { font-size: 20px; }
+  .iconMap .svgPreview { font-family: ui-monospace, Menlo, monospace; font-size: 11px; }
+
+  /* TOC */
+  .toc { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; }
+  .toc a { color: var(--link); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc ul { margin: 6px 0; padding-left: 20px; }
+</style>
+</head>
+<body>
+
+<h1>Admin Conventions Audit (v1)</h1>
+<p class="intro">
+  Unified mockup covering 4 of the 6 issues Lucas surfaced after PR #49 deploy. Issues
+  3 (Brand/tone-sources merge) and 6 (sync-bar placement) are too page-level to inline
+  here — they live in their own mockup files:
+  <a href="settings-brand-merged-v1.html">settings-brand-merged-v1.html</a> and
+  <a href="affiliates-sync-bar-v1.html">affiliates-sync-bar-v1.html</a>.
+  This file is the visual <strong>conventions</strong> record — the layout token,
+  typography token, padding token, and icon-swap decisions feed every page mockup.
+</p>
+
+<div class="toc">
+  <strong>In this file:</strong>
+  <ul>
+    <li><a href="#issue1">Issue 1 — Main+aside vertical alignment (back-action regression)</a></li>
+    <li><a href="#issue2">Issue 2 — Block padding tokens (4px-grid audit)</a></li>
+    <li><a href="#issue4">Issue 4 — Block-title typography hierarchy</a></li>
+    <li><a href="#issue5">Issue 5 — Map marker emoji → Polaris-style SVG</a></li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="issue1">Issue 1 — Main+aside vertical alignment</h2>
+<!-- ============================================================ -->
+
+<div class="section">
+  <p>
+    The <code>&lt;s-button slot="back-action"&gt;</code> we shipped in PR #49 occupies a
+    title-row band ABOVE both main and aside. The bug Lucas saw on
+    <code>/app/settings/brand</code>: the main column gets pushed down by the back-action
+    band while the aside column starts at the original Y — they no longer align.
+  </p>
+
+  <h3>Wrong (current state on Brand Assets)</h3>
+  <div class="pageShell">
+    <div class="pageHeaderRow">
+      <div class="pageHeaderLeft"><span class="pageHeading">Brand Assets</span></div>
+      <div class="pageHeaderRight"><span style="font-size:12px;color:var(--subdued)">Save</span></div>
+    </div>
+    <div class="pageBody misaligned">
+      <div class="col main">
+        <div class="block">
+          <div class="blockTitle">Brand configuration ← starts here (pushed down by 36px)</div>
+          <div class="blockBody">Form fields…</div>
+        </div>
+      </div>
+      <div class="col aside">
+        <div class="block">
+          <div class="blockTitle">Export ← starts at top of body</div>
+          <div class="blockBody">Buttons…</div>
+        </div>
+        <div class="block">
+          <div class="blockTitle">Learned from edits</div>
+          <div class="blockBody">No learnings yet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 20px;">Right (proposed)</h3>
+  <p style="margin: 0 0 8px; font-size: 12px;">
+    Back-action sits inside the page-header row (alongside heading + primary/secondary
+    actions). The page-body grid starts BELOW the header row and applies to both columns
+    uniformly. Both columns share the same Y origin.
+  </p>
+  <div class="pageShell">
+    <div class="pageHeaderRow">
+      <div class="pageHeaderLeft">
+        <a class="backBtn" href="#" aria-label="Back to Settings"><svg viewBox="0 0 20 20"><polyline points="12 5 7 10 12 15" /></svg></a>
+        <span class="pageHeading">Brand</span>
+      </div>
+      <div class="pageHeaderRight"><span style="font-size:12px;color:var(--subdued)">Save</span></div>
+    </div>
+    <div class="pageBody">
+      <div class="col main">
+        <div class="block">
+          <div class="blockTitle">Brand configuration ← starts at top of body</div>
+          <div class="blockBody">Form fields…</div>
+        </div>
+      </div>
+      <div class="col aside">
+        <div class="block">
+          <div class="blockTitle">Export ← same Y as main</div>
+          <div class="blockBody">Buttons…</div>
+        </div>
+        <div class="block">
+          <div class="blockTitle">Learned from edits</div>
+          <div class="blockBody">No learnings yet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h3>Implementation note</h3>
+    <ul>
+      <li><strong>Root cause:</strong> Polaris&apos;s <code>&lt;s-page&gt;</code> renders <code>slot="back-action"</code>, <code>heading</code>, <code>slot="primary-action"</code> and <code>slot="secondary-actions"</code> in a single title row above the default-slot content. But our pages with main+aside layouts wrap each in a <code>&lt;s-section&gt;</code> direct child of <code>&lt;s-page&gt;</code>, with the aside getting <code>slot="aside"</code>. The page chrome doesn&apos;t know how main and aside align — and the way we wrap the main today (often inside an extra <code>&lt;s-stack&gt;</code> or <code>&lt;div&gt;</code>) adds an extra margin-top that aside doesn&apos;t pay.</li>
+      <li><strong>Convention to codify:</strong> on any main+aside page, both columns are direct children of <code>&lt;s-page&gt;</code> (or both inside the same wrapper). NO extra <code>&lt;s-stack gap="..."&gt;</code> wrapping ONLY the main. Validate with: open the page, open devtools, both <code>&lt;s-section&gt;</code> elements should have the same <code>offsetTop</code>.</li>
+      <li><strong>Pages to audit & fix:</strong> Brand (the reported case), Storytelling Brief, Storytelling Review, Local Delivery, Footprint Expansion, Retail Sales, Affiliates Overview, Settings.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="issue2">Issue 2 — Block padding tokens</h2>
+<!-- ============================================================ -->
+
+<div class="section">
+  <p>
+    CLAUDE.md says "4px spacing grid" but the actual padding tokens our blocks use today
+    vary: <code>12px</code>, <code>16px</code>, <code>20px</code>, <code>24px</code>, all
+    encountered in production. Proposing a 3-token scale with explicit use cases.
+  </p>
+
+  <h3>Proposed token scale</h3>
+  <table>
+    <thead>
+      <tr><th>Token</th><th>Value</th><th>Polaris equivalent</th><th>Use case</th><th>Examples in code</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="swatch" style="background: #f6f6f7;"></span><code>--pad-tight</code></td>
+        <td>12px</td>
+        <td><code>padding="tight"</code></td>
+        <td>Aside cards, table cells, compact filter rows</td>
+        <td>Route Manager cards in Local Delivery, Auto-assign accuracy block</td>
+      </tr>
+      <tr>
+        <td><span class="swatch" style="background: #eceeef;"></span><code>--pad-base</code></td>
+        <td>16px</td>
+        <td><code>padding="base"</code></td>
+        <td>Standard <code>&lt;s-section&gt;</code> and main blocks</td>
+        <td>Brand configuration block, KPI cards, default <code>&lt;s-box&gt;</code></td>
+      </tr>
+      <tr>
+        <td><span class="swatch" style="background: #e1e3e5;"></span><code>--pad-loose</code></td>
+        <td>20px</td>
+        <td><code>padding="loose"</code></td>
+        <td>Wide hero blocks, modal bodies, full-width feature blocks</td>
+        <td>Program overview header on Affiliates, drilldown chart panels</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 style="margin-top: 16px;">Padding audit — current vs proposed</h3>
+  <table>
+    <thead>
+      <tr><th>Page</th><th>Block</th><th>Current padding</th><th>Should be</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Brand</td><td>Brand configuration</td><td>20px</td><td>16px (<code>--pad-base</code>)</td></tr>
+      <tr><td>Brand</td><td>Export (aside)</td><td>16px</td><td>12px (<code>--pad-tight</code>) ✓ if standardized</td></tr>
+      <tr><td>Storytelling Brief</td><td>Brief configuration</td><td>24px</td><td>16px (<code>--pad-base</code>)</td></tr>
+      <tr><td>Storytelling Brief</td><td>Brand context band</td><td>16px</td><td>16px (<code>--pad-base</code>) ✓</td></tr>
+      <tr><td>Affiliates</td><td>Program overview</td><td>16px</td><td>20px (<code>--pad-loose</code>) — it&apos;s a hero block</td></tr>
+      <tr><td>Local Delivery</td><td>Map block</td><td>0 (custom)</td><td>0 ✓ — maps are full-bleed</td></tr>
+      <tr><td>Local Delivery</td><td>Route Manager cards (aside)</td><td>12px</td><td>12px (<code>--pad-tight</code>) ✓</td></tr>
+      <tr><td>Retail Sales</td><td>KPI cards</td><td>16px</td><td>16px (<code>--pad-base</code>) ✓</td></tr>
+    </tbody>
+  </table>
+
+  <div class="notes">
+    <h3>Implementation note</h3>
+    <ul>
+      <li>The 3-token scale maps to Polaris&apos;s native <code>padding="tight|base|loose"</code> props on <code>&lt;s-box&gt;</code> and <code>&lt;s-section&gt;</code>. <strong>Prefer the prop, not custom CSS.</strong> Custom padding values fall outside the system and drift over time.</li>
+      <li>Codify in CLAUDE.md under "UI Patterns &gt; Block padding": "Default to Polaris padding props. Use <code>padding=&quot;tight&quot;</code> on aside cards and dense lists, <code>padding=&quot;base&quot;</code> on main content blocks, <code>padding=&quot;loose&quot;</code> on hero/feature blocks. Don&apos;t hardcode padding values in CSS modules."</li>
+      <li>Add a lint rule to ESLint config: warn on <code>padding: [0-9]+px</code> in <code>app/routes/**/*.module.css</code> with a comment override for justified exceptions (maps, modals).</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="issue4">Issue 4 — Block-title typography hierarchy</h2>
+<!-- ============================================================ -->
+
+<div class="section">
+  <p>
+    On <code>/app/storytelling/brief</code>, the "Brand context the AI will use" block
+    title reads SMALLER and LIGHTER than its own stats text underneath. Lucas
+    screenshotted this. The fix is to codify a fixed type scale for block titles vs
+    body vs caption, and audit pages against it.
+  </p>
+
+  <div class="comparison">
+    <div class="compare-frame bad">
+      <span class="compare-label">Wrong (current Brand context block)</span>
+      <div class="block bad-typo">
+        <div class="blockTitle">Brand context the AI will use</div>
+        <div class="blockBody">no manual tone string · 0 validated tone traits · 0 edit-corrections · en_US</div>
+      </div>
+    </div>
+    <div class="compare-frame good">
+      <span class="compare-label">Right (proposed)</span>
+      <div class="block">
+        <div class="blockTitle">Brand context the AI will use</div>
+        <div class="blockBody">no manual tone string · 0 validated tone traits · 0 edit-corrections · en_US</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Proposed type scale</h3>
+  <table>
+    <thead>
+      <tr><th>Role</th><th>Size</th><th>Weight</th><th>Color</th><th>Use case</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Page heading</td><td>20px</td><td>700</td><td>--text</td><td><code>&lt;s-page heading=…&gt;</code></td></tr>
+      <tr><td>Section heading</td><td>16px</td><td>650</td><td>--text</td><td><code>&lt;s-section heading=…&gt;</code> and equivalent</td></tr>
+      <tr><td><strong>Block title</strong></td><td>14px</td><td><strong>650</strong></td><td>--text</td><td>Any in-card title (badge-style or text)</td></tr>
+      <tr><td>Body text</td><td>13px</td><td>400</td><td>--text</td><td>Default paragraph, list items, table cells</td></tr>
+      <tr><td>Stat text</td><td>13px</td><td>400</td><td>--subdued (#6d7175)</td><td>Stat lines under block titles, captions, helper text</td></tr>
+      <tr><td>Caption</td><td>12px</td><td>400</td><td>--subdued</td><td>"Last synced", "Updated 20h ago", filter labels</td></tr>
+    </tbody>
+  </table>
+
+  <div class="notes">
+    <h3>Implementation note</h3>
+    <ul>
+      <li><strong>Hard rule:</strong> the block title is ALWAYS visually heavier than the text directly under it. If the heading style ends up subdued and the body ends up bold, the hierarchy is inverted → fix immediately.</li>
+      <li>The Brand-context block uses a custom green-tinted card — fine for the tone, but the heading inherits a smaller-than-body size from the CSS module. Specific fix on that block: bump heading to 14px/650 and pin the stat row to 13px/400/subdued.</li>
+      <li>Pages flagged for the same audit: Storytelling Brief (the reported case), any block using <code>&lt;s-text-block heading="…"&gt;</code> patterns, and the Local Delivery "Auto-assign accuracy" block (heading reads smaller than the percentage below it).</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="issue5">Issue 5 — Map marker emoji → Polaris-style SVG</h2>
+<!-- ============================================================ -->
+
+<div class="section">
+  <p>
+    Local Delivery map markers use emoji to express priority/status: 🟡 address-error,
+    🥕 / 🏆 / ⏰ / 🕐 for due-bucket, 🏬 for store. They sit inside HTML elements
+    rendered via <code>document.createElement</code> inside Google Maps&apos;
+    <code>AdvancedMarkerElement</code>. CLAUDE.md bans emoji-as-icon. Swap to inline SVG
+    with the same semantic mapping.
+  </p>
+
+  <h3>Proposed swap</h3>
+  <div class="iconMap" style="font-weight: 600; background: #f6f6f7; padding: 8px;">
+    <span>Current</span>
+    <span></span>
+    <span>Proposed (inline SVG, Polaris-style)</span>
+    <span>Semantic meaning</span>
+  </div>
+  <div class="iconMap">
+    <span style="font-size: 18px;">🟡</span>
+    <span class="swap">→</span>
+    <span class="svgPreview"><code>alert-triangle</code> (currentColor: #d72c0d)</span>
+    <span>Address validation failed</span>
+  </div>
+  <div class="iconMap">
+    <span style="font-size: 18px;">🥕</span>
+    <span class="swap">→</span>
+    <span class="svgPreview"><code>flash</code> (lightning bolt, color: due-bucket)</span>
+    <span>Due today, high priority</span>
+  </div>
+  <div class="iconMap">
+    <span style="font-size: 18px;">🏆</span>
+    <span class="swap">→</span>
+    <span class="svgPreview"><code>star-filled</code> (color: due-bucket gold)</span>
+    <span>Premium / featured</span>
+  </div>
+  <div class="iconMap">
+    <span style="font-size: 18px;">⏰</span>
+    <span class="swap">→</span>
+    <span class="svgPreview"><code>clock</code> (alarm clock)</span>
+    <span>Due-window approaching</span>
+  </div>
+  <div class="iconMap">
+    <span style="font-size: 18px;">🕐</span>
+    <span class="swap">→</span>
+    <span class="svgPreview"><code>clock</code> (standard clock)</span>
+    <span>Future due-window</span>
+  </div>
+  <div class="iconMap">
+    <span style="font-size: 18px;">🏬</span>
+    <span class="swap">→</span>
+    <span class="svgPreview"><code>store</code> (storefront)</span>
+    <span>Pickup location pin</span>
+  </div>
+
+  <h3 style="margin-top: 16px;">Preview (proposed)</h3>
+  <div class="mapSurface">
+    <div class="marker">
+      <span class="markerIcon" style="color: #d72c0d;"><svg viewBox="0 0 20 20"><path d="M10 2 L18 17 L2 17 Z" fill="currentColor"/><path d="M10 8 L10 13" stroke="white" stroke-width="2"/><circle cx="10" cy="15" r="0.8" fill="white"/></svg></span>
+      <span class="markerLabel">#79981</span>
+    </div>
+    <div class="marker">
+      <span class="markerIcon" style="color: #b8350f;"><svg viewBox="0 0 20 20"><path d="M11 2 L4 12 L9 12 L7 18 L16 8 L11 8 Z" fill="currentColor"/></svg></span>
+      <span class="markerLabel">#79982</span>
+    </div>
+    <div class="marker">
+      <span class="markerIcon" style="color: #d99a0a;"><svg viewBox="0 0 20 20"><polygon points="10,2 12.4,7.5 18.5,8 13.7,12 15.2,18 10,14.8 4.8,18 6.3,12 1.5,8 7.6,7.5" fill="currentColor"/></svg></span>
+      <span class="markerLabel">#79983</span>
+    </div>
+    <div class="marker">
+      <span class="markerIcon" style="color: var(--subdued);"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 5 L10 10 L13 12" stroke="currentColor" stroke-width="1.8" fill="none"/></svg></span>
+      <span class="markerLabel">#79984</span>
+    </div>
+    <div class="marker">
+      <span class="markerIcon" style="color: var(--text);"><svg viewBox="0 0 20 20"><path d="M3 8 L17 8 L17 17 L3 17 Z" fill="currentColor"/><path d="M3 8 L5 4 L15 4 L17 8" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></span>
+      <span class="markerLabel">Pickup</span>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h3>Implementation note</h3>
+    <ul>
+      <li>Map markers are rendered via <code>document.createElement</code> inside Google Maps&apos; <code>AdvancedMarkerElement</code>. <code>&lt;s-icon&gt;</code> web components don&apos;t render reliably outside the Polaris React tree, so the cleanest path is <strong>inline SVG strings</strong> built via DOM API — same approach as <code>app/components/tab-icons.tsx</code>.</li>
+      <li>Refactor: a new <code>app/utils/map-marker-icons.ts</code> file exporting <code>dueBucketIcon(bucket)</code>, <code>addressErrorIcon()</code>, <code>storeIcon()</code> — each returning a properly-sized SVG <code>HTMLElement</code>. Replace the existing <code>dueBucketEmoji</code> + inline emoji literals in <code>app.local-delivery.tsx</code>.</li>
+      <li>Colors are still semantic (red for error, gold for high priority, etc.) but driven by CSS variables that match the rest of the UI tokens — no hex literals.</li>
+      <li>Verify on real map at 100% zoom (markers shouldn&apos;t look pixelated).</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>Out-of-scope here (own mockup files)</h2>
+<!-- ============================================================ -->
+
+<div class="section">
+  <ul style="margin: 0; padding-left: 18px; font-size: 13px;">
+    <li><strong>Issue 3 — Brand / tone-sources merge.</strong> See <a href="settings-brand-merged-v1.html"><code>settings-brand-merged-v1.html</code></a>. The Brand page reworks to inline tone-sources state with prominent CTAs. Tone-sources sub-route stays as the deep management surface.</li>
+    <li><strong>Issue 6 — Sync-progress bar placement.</strong> See <a href="affiliates-sync-bar-v1.html"><code>affiliates-sync-bar-v1.html</code></a>. The fetching bar moves INSIDE the Program overview section header, with a full state matrix (idle / running / done / error / stale).</li>
+  </ul>
+</div>
+
+</body>
+</html>

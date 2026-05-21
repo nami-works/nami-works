@@ -1,0 +1,1552 @@
+{
+  "total_orders": 258,
+  "with_customer": 258,
+  "without_customer_count": 0,
+  "unique_customer_ids": 257,
+  "customers": [
+    {
+      "customer_id": "gid://shopify/Customer/9754956955968",
+      "order_names": [
+        "71465"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9686619193664",
+      "order_names": [
+        "80235"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10733049741632",
+      "order_names": [
+        "80238"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10644823736640",
+      "order_names": [
+        "80239"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/8552129593664",
+      "order_names": [
+        "80245"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10627442868544",
+      "order_names": [
+        "80248"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10742776856896",
+      "order_names": [
+        "80251"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10742897017152",
+      "order_names": [
+        "80256"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10742947316032",
+      "order_names": [
+        "80257"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9142132572480",
+      "order_names": [
+        "80258"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10742972973376",
+      "order_names": [
+        "80259"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10053078384960",
+      "order_names": [
+        "80260"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10731307761984",
+      "order_names": [
+        "80261"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/8527375466816",
+      "order_names": [
+        "80263"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10743178461504",
+      "order_names": [
+        "80265"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9717354135872",
+      "order_names": [
+        "80267"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10743282860352",
+      "order_names": [
+        "80270"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10743651729728",
+      "order_names": [
+        "80278"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10521029017920",
+      "order_names": [
+        "80281"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10744291426624",
+      "order_names": [
+        "80285"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/7761524097344",
+      "order_names": [
+        "80286"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10224152969536",
+      "order_names": [
+        "80289"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10249786360128",
+      "order_names": [
+        "80290"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9641504440640",
+      "order_names": [
+        "80291"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10747085291840",
+      "order_names": [
+        "80294"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10747109736768",
+      "order_names": [
+        "80295"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/8398589690176",
+      "order_names": [
+        "80297"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10747496595776",
+      "order_names": [
+        "80299"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10747387740480",
+      "order_names": [
+        "80300"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10747728200000",
+      "order_names": [
+        "80308"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10726222922048",
+      "order_names": [
+        "80314"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10748427206976",
+      "order_names": [
+        "80318"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10748881961280",
+      "order_names": [
+        "80328"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10074410254656",
+      "order_names": [
+        "80330"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10748167782720",
+      "order_names": [
+        "80333"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10749144531264",
+      "order_names": [
+        "80337"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10091238555968",
+      "order_names": [
+        "80339"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10733197394240",
+      "order_names": [
+        "80341"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10132215234880",
+      "order_names": [
+        "80348"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10747656896832",
+      "order_names": [
+        "80349"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/8150150676800",
+      "order_names": [
+        "80350"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10749837902144",
+      "order_names": [
+        "80357"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10749885284672",
+      "order_names": [
+        "80358"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10004131021120",
+      "order_names": [
+        "80359"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10750068392256",
+      "order_names": [
+        "80364"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10750096113984",
+      "order_names": [
+        "80365"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10750261461312",
+      "order_names": [
+        "80370"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10750349115712",
+      "order_names": [
+        "80371"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10750365303104",
+      "order_names": [
+        "80374"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10002020139328",
+      "order_names": [
+        "80375"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10750528880960",
+      "order_names": [
+        "80376"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10750794400064",
+      "order_names": [
+        "80379"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10223595716928",
+      "order_names": [
+        "80380"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10751671206208",
+      "order_names": [
+        "80382"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10754193785152",
+      "order_names": [
+        "80383"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10754950725952",
+      "order_names": [
+        "80386"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10754980118848",
+      "order_names": [
+        "80387"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9486496530752",
+      "order_names": [
+        "80388"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10257275060544",
+      "order_names": [
+        "80389"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10755032449344",
+      "order_names": [
+        "80390"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10662165283136",
+      "order_names": [
+        "80393"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10757007769920",
+      "order_names": [
+        "80397"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10749601153344",
+      "order_names": [
+        "80399"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10757818319168",
+      "order_names": [
+        "80400"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10172178039104",
+      "order_names": [
+        "80403"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10760339980608",
+      "order_names": [
+        "80404"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10760846410048",
+      "order_names": [
+        "80405"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10760852635968",
+      "order_names": [
+        "80406"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10760909553984",
+      "order_names": [
+        "80407"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10177905819968",
+      "order_names": [
+        "80409"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10761039315264",
+      "order_names": [
+        "80411"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10761205809472",
+      "order_names": [
+        "80415"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10761205973312",
+      "order_names": [
+        "80416"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10761206006080",
+      "order_names": [
+        "80417"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10761206071616",
+      "order_names": [
+        "80418"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/8537837437248",
+      "order_names": [
+        "80423"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10686408491328",
+      "order_names": [
+        "80424"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10761421226304",
+      "order_names": [
+        "80427"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10761715220800",
+      "order_names": [
+        "80434",
+        "80436"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9485857390912",
+      "order_names": [
+        "80437"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10762063741248",
+      "order_names": [
+        "80438"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9485140984128",
+      "order_names": [
+        "80439"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10242184577344",
+      "order_names": [
+        "80441"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10178315714880",
+      "order_names": [
+        "80443"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10762412884288",
+      "order_names": [
+        "80445"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10762803839296",
+      "order_names": [
+        "80453"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10763047371072",
+      "order_names": [
+        "80458"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10763202101568",
+      "order_names": [
+        "80461"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10403142795584",
+      "order_names": [
+        "80466"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10763383046464",
+      "order_names": [
+        "80467"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10763482464576",
+      "order_names": [
+        "80470"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10763535843648",
+      "order_names": [
+        "80471"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10422839279936",
+      "order_names": [
+        "80476"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9485683654976",
+      "order_names": [
+        "80478"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9486337737024",
+      "order_names": [
+        "80483"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10764089786688",
+      "order_names": [
+        "80486"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10764129927488",
+      "order_names": [
+        "80489"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9709837877568",
+      "order_names": [
+        "80491"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10764709134656",
+      "order_names": [
+        "80498"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10655899386176",
+      "order_names": [
+        "80499"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10735810380096",
+      "order_names": [
+        "80501"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10769868194112",
+      "order_names": [
+        "80503"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10556415377728",
+      "order_names": [
+        "80504"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10435242656064",
+      "order_names": [
+        "80505"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9486334394688",
+      "order_names": [
+        "80506"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10770890162496",
+      "order_names": [
+        "80507"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10771186680128",
+      "order_names": [
+        "80512"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/8261055709504",
+      "order_names": [
+        "80515"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10771568001344",
+      "order_names": [
+        "80517"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/7761532813632",
+      "order_names": [
+        "80522"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9918738301248",
+      "order_names": [
+        "80523"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10772814037312",
+      "order_names": [
+        "80525"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10773535752512",
+      "order_names": [
+        "80530"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10773805400384",
+      "order_names": [
+        "80533"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9865095545152",
+      "order_names": [
+        "80536"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10774761537856",
+      "order_names": [
+        "80547"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/7762204983616",
+      "order_names": [
+        "80552"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9486502887744",
+      "order_names": [
+        "80556"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10774561358144",
+      "order_names": [
+        "80560"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10776304255296",
+      "order_names": [
+        "80568"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10774475702592",
+      "order_names": [
+        "80570"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10774516531520",
+      "order_names": [
+        "80574"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10777050382656",
+      "order_names": [
+        "80576"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10776917868864",
+      "order_names": [
+        "80577"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10777264292160",
+      "order_names": [
+        "80582"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/7759503327552",
+      "order_names": [
+        "80584"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10777641025856",
+      "order_names": [
+        "80587"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9126051184960",
+      "order_names": [
+        "80588"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10075683422528",
+      "order_names": [
+        "80589"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10780878897472",
+      "order_names": [
+        "80592"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10780996763968",
+      "order_names": [
+        "80595"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10781089038656",
+      "order_names": [
+        "80596"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10781149200704",
+      "order_names": [
+        "80598"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10781335880000",
+      "order_names": [
+        "80599"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10018795585856",
+      "order_names": [
+        "80600"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10781483630912",
+      "order_names": [
+        "80602"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10781536256320",
+      "order_names": [
+        "80603"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10781849321792",
+      "order_names": [
+        "80608"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10164950565184",
+      "order_names": [
+        "80609"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10782247092544",
+      "order_names": [
+        "80613"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10782486790464",
+      "order_names": [
+        "80615"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10773234057536",
+      "order_names": [
+        "80616"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10782526144832",
+      "order_names": [
+        "80617"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10782865326400",
+      "order_names": [
+        "80620"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10782962123072",
+      "order_names": [
+        "80623"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10783133434176",
+      "order_names": [
+        "80624"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10783369003328",
+      "order_names": [
+        "80629"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10783398003008",
+      "order_names": [
+        "80631"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9787276427584",
+      "order_names": [
+        "80636"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10740330791232",
+      "order_names": [
+        "80637"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10033776034112",
+      "order_names": [
+        "80638"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/7761109844288",
+      "order_names": [
+        "80640"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10154254369088",
+      "order_names": [
+        "80643"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10783693603136",
+      "order_names": [
+        "80645"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10783760220480",
+      "order_names": [
+        "80648"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10423821173056",
+      "order_names": [
+        "80649"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10783860359488",
+      "order_names": [
+        "80654"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10783955484992",
+      "order_names": [
+        "80657"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10518608118080",
+      "order_names": [
+        "80659"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10666155901248",
+      "order_names": [
+        "80660"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10783824937280",
+      "order_names": [
+        "80661"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9486311883072",
+      "order_names": [
+        "80671"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9486563279168",
+      "order_names": [
+        "80673"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10175830524224",
+      "order_names": [
+        "80680"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/7762075451712",
+      "order_names": [
+        "80681"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10785187627328",
+      "order_names": [
+        "80690"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10786575057216",
+      "order_names": [
+        "80699"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10786565325120",
+      "order_names": [
+        "80700"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10787106685248",
+      "order_names": [
+        "80705"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10787145646400",
+      "order_names": [
+        "80706"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10617438241088",
+      "order_names": [
+        "80707"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10787451666752",
+      "order_names": [
+        "80710"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10787612492096",
+      "order_names": [
+        "80711"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10787585229120",
+      "order_names": [
+        "80712"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10789702828352",
+      "order_names": [
+        "80713"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10790053577024",
+      "order_names": [
+        "80714"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10784714981696",
+      "order_names": [
+        "80716"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9116855468352",
+      "order_names": [
+        "80717"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10100729905472",
+      "order_names": [
+        "80718"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10790971212096",
+      "order_names": [
+        "80721"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10791177158976",
+      "order_names": [
+        "80723"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10791204716864",
+      "order_names": [
+        "80724"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10791176765760",
+      "order_names": [
+        "80725"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/7761886413120",
+      "order_names": [
+        "80729"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10791626637632",
+      "order_names": [
+        "80730"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/7761230496064",
+      "order_names": [
+        "80733"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9992382153024",
+      "order_names": [
+        "80734"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10791927349568",
+      "order_names": [
+        "80735"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10791828193600",
+      "order_names": [
+        "80736"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9474965438784",
+      "order_names": [
+        "80738"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10472664564032",
+      "order_names": [
+        "80739"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10792052785472",
+      "order_names": [
+        "80740"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10792211906880",
+      "order_names": [
+        "80743"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10739607568704",
+      "order_names": [
+        "80744"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9485606977856",
+      "order_names": [
+        "80750"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/8144964583744",
+      "order_names": [
+        "80752"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10793139634496",
+      "order_names": [
+        "80761"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10793258025280",
+      "order_names": [
+        "80763"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10793547989312",
+      "order_names": [
+        "80772"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10793562571072",
+      "order_names": [
+        "80773"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10793597305152",
+      "order_names": [
+        "80774"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10793508110656",
+      "order_names": [
+        "80776"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9369632473408",
+      "order_names": [
+        "80780"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10038820798784",
+      "order_names": [
+        "80783"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9965966197056",
+      "order_names": [
+        "80786"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10794431283520",
+      "order_names": [
+        "80790"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/7762545410368",
+      "order_names": [
+        "80791"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10519194042688",
+      "order_names": [
+        "80794"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/7759557460288",
+      "order_names": [
+        "80797"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10794818568512",
+      "order_names": [
+        "80799"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10794819420480",
+      "order_names": [
+        "80800"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10794805657920",
+      "order_names": [
+        "80803"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10795194908992",
+      "order_names": [
+        "80808"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10795349672256",
+      "order_names": [
+        "80810"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10795391615296",
+      "order_names": [
+        "80811"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10795450270016",
+      "order_names": [
+        "80812"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10787311059264",
+      "order_names": [
+        "80813"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9886220255552",
+      "order_names": [
+        "80814"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9486459797824",
+      "order_names": [
+        "80817"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10796347556160",
+      "order_names": [
+        "80818"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10216133198144",
+      "order_names": [
+        "80819"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10796165857600",
+      "order_names": [
+        "80820"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10796484264256",
+      "order_names": [
+        "80821"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10796529975616",
+      "order_names": [
+        "80822"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9976559665472",
+      "order_names": [
+        "80825"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10799402123584",
+      "order_names": [
+        "80828"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10646910763328",
+      "order_names": [
+        "80829"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10799486239040",
+      "order_names": [
+        "80830"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10799599485248",
+      "order_names": [
+        "80832"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10799967338816",
+      "order_names": [
+        "80839"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10800237510976",
+      "order_names": [
+        "80842"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10800351117632",
+      "order_names": [
+        "80844"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10800341385536",
+      "order_names": [
+        "80845"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10800430743872",
+      "order_names": [
+        "80846"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10800503652672",
+      "order_names": [
+        "80847"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/7762244534592",
+      "order_names": [
+        "80848"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10800738009408",
+      "order_names": [
+        "80850"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10800949068096",
+      "order_names": [
+        "80853"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10801554522432",
+      "order_names": [
+        "80860"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9700582326592",
+      "order_names": [
+        "80868"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10781104636224",
+      "order_names": [
+        "80870"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10800604348736",
+      "order_names": [
+        "80872"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10793958965568",
+      "order_names": [
+        "80873"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/7760185622848",
+      "order_names": [
+        "80876"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10803350536512",
+      "order_names": [
+        "80878"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10803577651520",
+      "order_names": [
+        "80882"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10803583779136",
+      "order_names": [
+        "80883"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10743539499328",
+      "order_names": [
+        "80885"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10471207010624",
+      "order_names": [
+        "80890"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10799619277120",
+      "order_names": [
+        "80891"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10751290573120",
+      "order_names": [
+        "80893"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9868063342912",
+      "order_names": [
+        "80896"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10806820340032",
+      "order_names": [
+        "80897"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10239091704128",
+      "order_names": [
+        "80901"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/8912186802496",
+      "order_names": [
+        "80902"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10755237445952",
+      "order_names": [
+        "80904"
+      ]
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10807911383360",
+      "order_names": [
+        "80906"
+      ]
+    }
+  ],
+  "orders_without_customer": []
+}

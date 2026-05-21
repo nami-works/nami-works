@@ -1,0 +1,1825 @@
+/* Sync UI: the .syncProgress* classes + holo @keyframes that used to
+   live here were dead-code as of PR #67 (2026-05-12), once the
+   InBlockSyncIndicator component took over rendering. Removed in the
+   holo-sweep PR (2026-05-12) along with the .onboarding::before holo
+   strip. New sync UI consumers should use <InBlockSyncIndicator> from
+   app/components/in-block-sync-indicator.tsx — its CSS is co-located. */
+
+/* ── Overview grid (KPI cards) ──────────────────────────────────────── */
+
+.overviewRowLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6d7175;
+  margin: 16px 0 8px;
+}
+.overviewRowLabelFirst { margin-top: 8px; }
+
+.overviewGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+/* Desktop: pin all cards to row 1, drills to row 2. Without this, when a
+ * drill-down (grid-column: 1 / -1) is inserted between cards in the DOM,
+ * CSS Grid auto-placement pushes remaining cards to an implicit row 3.
+ * On mobile (single column) no pinning is needed — natural DOM-order flow
+ * puts the drill directly below its owning card. */
+@media (min-width: 769px) {
+  .overviewGrid > .overviewBox { grid-row: 1; }
+  .overviewGrid > .drillDown   { grid-row: 2; }
+}
+@media (max-width: 768px) {
+  .overviewGrid { grid-template-columns: 1fr; }
+}
+
+.overviewBox {
+  /* Structural chrome (background, border, border-radius, padding) provided
+   * by the inner <s-box padding="base" borderWidth="base" borderRadius="base">.
+   * This outer wrapper carries only layout and interaction state. */
+  display: flex;
+  flex-direction: column;
+}
+.overviewBoxInner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.overviewBoxClickable {
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+  border-radius: 10px;
+}
+.overviewBoxClickable:hover {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+.overviewBoxActive {
+  box-shadow: 0 0 0 1px #5ecece;
+  border-radius: 10px;
+  background: linear-gradient(0deg,
+    rgba(252, 228, 240, 0.5) 0%,
+    rgba(232, 245, 250, 0.5) 100%);
+}
+
+.overviewBoxLoading {
+  position: relative;
+  pointer-events: none;
+}
+.overviewBoxLoading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.overviewSpinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+.overviewPrimary {
+  font-size: 24px;
+  font-weight: 700;
+  color: #303030;
+  line-height: 1.2;
+}
+.overviewLabel {
+  font-size: 12px;
+  color: #6d7175;
+  font-weight: 500;
+}
+.overviewSecondary {
+  font-size: 13px;
+  color: #6d7175;
+  margin-top: 2px;
+}
+
+/* ── Drill-down container ──────────────────────────────────────────── */
+
+/* Drill-downs are grid items themselves, rendered inline right after their
+ * card. On desktop (3-column grid), they span the full row so the chart
+ * always appears below the entire row of cards. On mobile (1-column grid),
+ * grid-column: 1 / -1 is a no-op and the drill appears directly below its
+ * owning card — exactly what we want. */
+.drillDown {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  padding: 16px 0;
+}
+
+/* ── Flat underline tabs — Settings-style bleed ────────────────────── */
+/* Negative margins bleed the bottom border to the section card edges;
+ * padding pulls the tab buttons back inward. Matches the Settings page
+ * pattern defined in CLAUDE.md. Badge + actions sit far-right via
+ * margin-left: auto on .tabsRightGroup. */
+
+.tabsRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-bottom: 1px solid #e1e3e5;
+  margin: -4px -20px 12px;
+  padding: 0 20px;
+}
+
+.tabsRightGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .tabsRow {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .tabsRightGroup {
+    flex-basis: 100%;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  color: #6d7175;
+  font-weight: 400;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: #303030;
+  border-bottom-color: #8c9196;
+}
+
+.tabActive {
+  color: #303030;
+  font-weight: 500;
+  border-bottom-color: #303030;
+}
+
+/* ── Tab header (flat — no nested gradient block) ─────────────────────
+   Pre-2026-05-12 this lived inside a gradient-tinted .overviewStrip
+   card. Lucas asked for the decorative wrapper to be dropped so the
+   tab heading + period chip + subtitle sit directly on the default
+   main block. The classes `.overviewStripHeader/Heading/Subtitle` are
+   still in use — they style the contents, not the (now removed)
+   wrapper. The new wrapper class `.overviewHeaderFlat` just owns the
+   bottom margin so the period bar below has breathing room. */
+
+.overviewHeaderFlat {
+  margin-bottom: 16px;
+}
+
+.overviewStripHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.overviewStripHeading {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303030;
+  margin: 0;
+}
+
+.overviewStripSubtitle {
+  font-size: 13px;
+  color: #6d7175;
+  font-weight: 500;
+}
+
+/* ── Period bar ────────────────────────────────────────────────────── */
+
+.periodBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+/* Proportional filter columns: Period (2) : Compare with (2) : Search (3).
+ * Each is a column-flex with label on top, control on bottom. Since all
+ * three now have labels, bottom edges align naturally with no hack. */
+.filterControl {
+  flex: 2 0 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.filterControl:last-of-type {
+  flex: 3 0 0;
+}
+.filterLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+}
+
+/* ── Affiliate combobox (search + dropdown in one control) ────────── */
+
+.combobox {
+  position: relative;
+  width: 100%;
+}
+.comboboxInput {
+  width: 100%;
+  height: 28px;
+  padding: 0 28px 0 10px;
+  border: 1px solid #8c9196;
+  border-radius: 8px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  color: #303030;
+  box-sizing: border-box;
+  outline: none;
+}
+.comboboxInput:focus {
+  border-color: #303030;
+  box-shadow: 0 0 0 1px #303030;
+}
+.comboboxInput::placeholder {
+  color: #8c9196;
+}
+.comboboxClear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #6d7175;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+  border-radius: 50%;
+}
+.comboboxClear:hover {
+  background: #e1e3e5;
+  color: #303030;
+}
+.comboboxDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 100;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+.comboboxItem {
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #303030;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.comboboxItem:hover {
+  background: #f6f6f7;
+}
+.comboboxItemActive {
+  background: rgba(94, 206, 206, 0.1);
+  font-weight: 500;
+}
+.comboboxEmpty {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #6d7175;
+  font-style: italic;
+}
+.periodSeparator {
+  width: 1px;
+  height: 24px;
+  background: #e1e3e5;
+  margin: 0 4px;
+}
+.periodFriendly {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6d7175;
+  white-space: nowrap;
+}
+/* Render the friendly range as a clickable "Change dates" affordance when a
+ * custom range is applied and the calendar is collapsed. */
+.periodFriendlyEditable {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+  font-family: inherit;
+}
+.periodFriendlyEditable:hover {
+  color: #303030;
+}
+
+/* ── Custom date grid (two columns, centered labels) ──────────────── */
+
+.customDateGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #f6f6f7;
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+}
+@media (max-width: 768px) {
+  .customDateGrid {
+    grid-template-columns: 1fr;
+  }
+}
+.customDateCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+/* Apply / Cancel row spans both calendar columns. */
+.customDateActions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 4px;
+}
+
+/* ── Delta arrows ──────────────────────────────────────────────────── */
+
+.deltaUp {
+  font-size: 12px;
+  font-weight: 600;
+  color: #008060;
+  margin-left: 6px;
+}
+.deltaDown {
+  font-size: 12px;
+  font-weight: 600;
+  color: #d72c0d;
+  margin-left: 6px;
+}
+
+/* ── Waterfall chart ───────────────────────────────────────────────── */
+
+.waterfallContainer {
+  display: flex;
+  gap: 24px;
+  margin-top: 12px;
+}
+@media (max-width: 768px) {
+  .waterfallContainer { flex-direction: column; }
+}
+.waterfallColumn {
+  flex: 1;
+}
+.waterfallTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303030;
+  margin-bottom: 12px;
+}
+.waterfallBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.waterfallBarFill {
+  height: 24px;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+.waterfallBarLabel {
+  font-size: 12px;
+  color: #6d7175;
+  white-space: nowrap;
+}
+.waterfallBarValue {
+  font-size: 12px;
+  font-weight: 600;
+  color: #303030;
+  white-space: nowrap;
+}
+
+/* ── Leaderboard table ─────────────────────────────────────────────── */
+
+.leaderboardTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+.leaderboardTable th {
+  text-align: center;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+  background: #f6f6f7;
+  border-bottom: 1px solid #e1e3e5;
+}
+.leaderboardTable td {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #303030;
+  border-bottom: 1px solid #f1f1f1;
+}
+.leaderboardTable tr:hover td {
+  background: #f6f6f7;
+}
+.profileName {
+  font-size: 13px;
+  font-weight: 500;
+  color: #303030;
+}
+
+.affiliateHandle {
+  font-size: 12px;
+  color: #6d7175;
+  display: inline-block;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+a.affiliateHandle:hover {
+  color: #5ecece;
+  text-decoration: underline;
+}
+
+/* ── Vertical bar chart (revenue ranking + vertical waterfall) ──── */
+
+.vbarChart {
+  display: flex;
+  gap: 8px;
+  padding: 0 4px;
+  align-items: flex-end;
+}
+.vbarColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  gap: 6px;
+}
+.vbarBarArea {
+  width: 100%;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+}
+.vbarBar {
+  width: 80%;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.3s ease;
+  min-height: 2px;
+}
+.vbarBarValue {
+  font-size: 10px;
+  font-weight: 600;
+  color: #303030;
+  margin-top: 4px;
+  white-space: nowrap;
+}
+.vbarLabel {
+  font-size: 10px;
+  color: #6d7175;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: center;
+}
+
+/* ── Vertical waterfall (dual column: affiliate | organic) ─────── */
+
+.vwaterfallContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 12px;
+}
+@media (max-width: 768px) {
+  .vwaterfallContainer {
+    grid-template-columns: 1fr;
+  }
+}
+.vwaterfallCol {
+  /* Chrome (padding, border, border-radius) supplied by inner
+   * <s-box padding="base" borderWidth="base" borderRadius="base">. */
+  display: flex;
+  flex-direction: column;
+}
+.vwaterfallColInner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.vwaterfallTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303030;
+  text-align: center;
+}
+.vwaterfallPct {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5ecece;
+  margin-left: 6px;
+}
+
+/* ── Descending waterfall (percentage-based) ──────────────────────── */
+
+.waterfallChart {
+  display: flex;
+  gap: 8px;
+  padding: 0 4px;
+  align-items: flex-end;
+}
+.waterfallCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  gap: 6px;
+}
+.waterfallBarArea {
+  width: 100%;
+  height: 200px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+.waterfallBar {
+  position: absolute;
+  left: 10%;
+  width: 80%;
+  border-radius: 3px;
+  transition: top 0.25s ease, height 0.25s ease;
+}
+.waterfallBarGross {
+  background: #303030;
+  position: absolute;
+  top: 0;
+}
+.waterfallBarSubtract {
+  opacity: 0.85;
+}
+.waterfallBarNet {
+  background: #5ecece;
+}
+.waterfallBarValue {
+  font-size: 10px;
+  font-weight: 600;
+  color: #303030;
+  position: absolute;
+  bottom: -18px;
+  white-space: nowrap;
+}
+.waterfallBarLabel {
+  font-size: 10px;
+  color: #6d7175;
+  margin-top: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: center;
+}
+
+/* ── Trend chart ───────────────────────────────────────────────────── */
+
+.trendChart {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  height: 120px;
+  padding: 0 4px;
+}
+.trendBar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  min-width: 0;
+}
+.trendBarFill {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.3s ease;
+}
+.trendBarLabel {
+  font-size: 10px;
+  color: #6d7175;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ── Chart legend ──────────────────────────────────────────────────── */
+
+.chartLegend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #6d7175;
+}
+.legendDot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* ── Table wrapper for mobile scroll ───────────────────────────────── */
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+/* ── Popover date layout ───────────────────────────────────────────── */
+
+.customDatePopover {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.customDateLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #303030;
+}
+.customDateActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* ── Misc layout helpers ──────────────────────────────────────────── */
+
+.profilesHeading {
+  margin-top: 32px;
+}
+
+.drillSectionHeading {
+  margin-top: 24px;
+}
+
+.noData {
+  color: #6d7175;
+}
+
+.hiddenFileInput {
+  display: none;
+}
+
+/* ── File state card (shown inside Step 1 after file selected) ────── */
+.fileStateCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(94, 206, 206, 0.08);
+  border: 1px solid #5ecece;
+  border-radius: 8px;
+}
+
+.fileStateIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: #5ecece;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.fileStateName {
+  font-size: 13px;
+  font-weight: 500;
+  color: #303030;
+  word-break: break-all;
+  flex: 1;
+}
+
+/* ── Empty-state stepped onboarding (CPG Labs palette) ────────────── */
+.onboarding {
+  padding: 40px 16px 32px;
+  background: linear-gradient(135deg,
+    rgba(94, 206, 206, 0.06) 0%,
+    rgba(176, 159, 218, 0.06) 50%,
+    rgba(212, 168, 212, 0.06) 100%);
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* The 3px holographic top-edge strip that used to sit on .onboarding
+   was removed 2026-05-12 per Lucas's "holo signature only on loading
+   bars" rule. The onboarding card now reads as a flat Polaris card. */
+
+.onboardingHeader {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.onboardingTitle {
+  font-size: 22px;
+  font-weight: 600;
+  color: #303030;
+  margin: 0 0 8px;
+}
+
+.onboardingSubtitle {
+  font-size: 14px;
+  color: #6d7175;
+  margin: 0;
+}
+
+.onboardingGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .onboardingGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.onboardingStep {
+  /* Chrome (background, border, border-radius, padding) supplied by inner
+   * <s-box padding="base" borderWidth="base" borderRadius="base">. */
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.onboardingStepInner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.onboardingStep:hover {
+  box-shadow: 0 0 0 1px #b09fda, 0 4px 12px rgba(176, 159, 218, 0.15);
+  transform: translateY(-2px);
+}
+
+.onboardingStepDisabled {
+  opacity: 0.55;
+}
+
+.onboardingStepDisabled:hover {
+  box-shadow: none;
+  transform: none;
+}
+
+.onboardingStepDrag {
+  background: rgba(94, 206, 206, 0.06);
+  box-shadow: 0 0 0 3px rgba(94, 206, 206, 0.15);
+  border-radius: 10px;
+}
+
+.onboardingStepNumber {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5ecece 0%, #b09fda 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(94, 206, 206, 0.3);
+}
+
+.onboardingStepDone {
+  background: linear-gradient(135deg, #008060 0%, #5ecece 100%);
+  box-shadow: 0 2px 6px rgba(0, 128, 96, 0.3);
+}
+
+.onboardingStepTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303030;
+}
+
+.onboardingStepBody {
+  font-size: 13px;
+  color: #6d7175;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.onboardingStepAction {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* ── Profiles list: sortable headers, quartile bands, clickable rows ── */
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.sortable:hover {
+  color: #303030;
+}
+/* Sort arrow stays glued to the last word of the header label via a \u00A0
+ * non-breaking space embedded by the JSX; never allow the arrow span itself
+ * to break its own whitespace. */
+.sortArrow {
+  font-size: 10px;
+  color: #6d7175;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.clickableRow {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.clickableRow:hover td {
+  background: #f6f6f7;
+}
+
+/* Quartile bands — only appear when leaderboard has enough rows
+ * (see QUARTILE_MIN_ROWS in profiles-list.tsx). Kept subtle so the
+ * page stays quiet on small portfolios. */
+.quartileTop {
+  background: rgba(0, 128, 96, 0.06);
+}
+.quartileBottom {
+  background: rgba(215, 44, 13, 0.04);
+}
+
+.topProductTitle {
+  font-size: 13px;
+  color: #303030;
+}
+.topProductShare {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.mutedCell {
+  color: #6d7175;
+  font-size: 12px;
+}
+
+/* ── Profiles tab: detail view ── */
+
+.detailContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detailBackRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.detailHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  background: #fafbfb;
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.detailHeaderName {
+  font-size: 20px;
+  font-weight: 600;
+  color: #303030;
+}
+
+.detailHeaderMeta {
+  font-size: 13px;
+  color: #6d7175;
+}
+
+/* ── KPI card secondary multi-line (color-coded lift phrase) ── */
+
+.kpiSecondaryLine {
+  display: block;
+  font-size: 13px;
+  color: #6d7175;
+  margin-top: 2px;
+}
+.kpiSecondaryPositive {
+  display: block;
+  font-size: 13px;
+  color: #008060;
+  margin-top: 2px;
+}
+.kpiSecondaryNegative {
+  display: block;
+  font-size: 13px;
+  color: #d72c0d;
+  margin-top: 2px;
+}
+
+/* ── Products drill table: cap product name width ── */
+
+.productCell {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Stacked bar for acquisition breakdown (new / lift / leak) ── */
+
+.stackedBarWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0 16px;
+}
+
+.stackedBar {
+  display: flex;
+  width: 100%;
+  height: 28px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f6f6f7;
+  border: 1px solid #e1e3e5;
+}
+
+.stackedSegment {
+  height: 100%;
+  transition: width 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Count label rendered inside each segment when the segment is wide enough. */
+.stackedLabel {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Segment + legend palette share Polaris badge colors — success (green),
+ * info (blue), critical (red) — so a reader ties the bar color to the
+ * row badge below without mental translation. */
+.segNew {
+  background: #aee9d1;
+  color: #0c5132;
+}
+.segLift {
+  background: #a4e8f2;
+  color: #00527c;
+}
+.segLeak {
+  background: #fed3d1;
+  color: #8e1f0b;
+}
+
+.stackedLegend {
+  display: flex;
+  gap: 20px;
+  font-size: 12px;
+  color: #6d7175;
+  flex-wrap: wrap;
+}
+
+.stackedLegend .legendDot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* ── Cohort LTV chart (New / Lifted / N/A) ───────────────────────── */
+
+.ltvCohortHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.ltvCohortWindowControl {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+}
+
+.ltvCohortChart {
+  width: 100%;
+  height: auto;
+  max-height: 320px;
+  display: block;
+}
+
+.ltvCohortLegend {
+  display: flex;
+  gap: 20px;
+  font-size: 12px;
+  color: #6d7175;
+  flex-wrap: wrap;
+  margin: 0 0 8px 4px;
+}
+
+.ltvDotNew {
+  background: #008060;
+}
+.ltvDotLifted {
+  background: #00527c;
+}
+.ltvDotNa {
+  background: #6d7175;
+}
+
+.ltvCohortFootnote {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6d7175;
+}
+
+/* ── List toolbar (export button row) ── */
+
+.listToolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+/* ── Searchable affiliate picker (text input + select stacked inline) ── */
+
+/* .affiliatePickerWrap removed — picker is now inline in the
+ * period bar using .filterControl + .filterControlSearch wrappers. */
+
+/* ── Commission-dependent card footnote ── */
+
+.commissionCaveat {
+  font-size: 11px;
+  color: #8c9196;
+  font-style: italic;
+  margin-top: 4px;
+}
+
+/* ── Attribution Queue ─────────────────────────────────────────────────── */
+
+.attributionSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.attributionHeader {
+  color: #6d7175;
+  font-size: 13px;
+}
+
+.attributionControls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.attributionSearch {
+  flex: 1 1 240px;
+  min-width: 220px;
+  padding: 7px 10px;
+  border: 1px solid #c9cccf;
+  border-radius: 6px;
+  font: inherit;
+  color: #202223;
+  background: #fff;
+}
+.attributionSearch:focus {
+  outline: 2px solid #005bd3;
+  outline-offset: -2px;
+}
+
+.attributionLookbackLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+}
+.attributionLookbackSelect {
+  padding: 7px 10px;
+  border: 1px solid #c9cccf;
+  border-radius: 6px;
+  font: inherit;
+  background: #fff;
+  color: #202223;
+}
+
+.attributionActionsRight {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.attributionWarnBanner {
+  background: #fff4e4;
+  border: 1px solid #f0b849;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #3a3a3a;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.attributionWarnBanner ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.attributionWarnBanner li {
+  margin: 2px 0;
+}
+
+.attributionSuccessBanner {
+  background: #e4f6ea;
+  border: 1px solid #95cfaa;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #1b4332;
+}
+
+.attributionErrorBanner {
+  background: #fbeae5;
+  border: 1px solid #d72c0d;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #8a1b0a;
+}
+
+.attributionFetchSummary {
+  color: #6d7175;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.attributionEmptyState {
+  padding: 24px 16px;
+  text-align: center;
+  color: #6d7175;
+  background: #fafbfc;
+  border: 1px dashed #e1e3e5;
+  border-radius: 8px;
+}
+
+.attributionSubSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.attributionSectionHeading {
+  font-size: 14px;
+  font-weight: 600;
+  color: #202223;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: default;
+}
+details > summary.attributionSectionHeading {
+  cursor: pointer;
+}
+details > summary.attributionSectionHeading::-webkit-details-marker {
+  display: none;
+}
+details > summary.attributionSectionHeading::before {
+  content: "▸ ";
+  color: #6d7175;
+  font-size: 12px;
+}
+details[open] > summary.attributionSectionHeading::before {
+  content: "▾ ";
+}
+
+.attributionTotalPill {
+  background: #f1f2f3;
+  color: #3a3a3a;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.attributionForgottenSection {
+  border-left: 3px solid #f0b849;
+  padding-left: 12px;
+}
+
+.attributionHelp {
+  color: #6d7175;
+  font-size: 12px;
+  margin: 0 0 6px;
+}
+
+.attributionTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: #fff;
+}
+.attributionTable thead th {
+  background: #f6f6f7;
+  color: #6d7175;
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e1e3e5;
+  white-space: nowrap;
+}
+.attributionTable tbody td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f1f1f1;
+  vertical-align: middle;
+}
+.attributionTable tbody tr:hover td {
+  background: #fafbfc;
+}
+
+.attributionRowClaimed td {
+  color: #a9acaf;
+}
+.attributionRowClaimed code {
+  color: #a9acaf;
+}
+
+.attributionRowForgotten td {
+  background: #fff4e4;
+}
+.attributionRowForgotten:hover td {
+  background: #fef0d6;
+}
+
+.attributionDate {
+  color: #6d7175;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.attributionNum {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.attributionDim {
+  color: #6d7175;
+}
+
+.attributionCopyBtn {
+  all: unset;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.15s ease;
+}
+.attributionCopyBtn:hover {
+  background: #e3f1ff;
+  outline: 1px dashed #005bd3;
+}
+.attributionCopyBtnCopied {
+  background: #d4f4de !important;
+  outline: 1px dashed #067647 !important;
+}
+
+.attributionExtLink {
+  text-decoration: none;
+  color: #005bd3;
+  font-size: 16px;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.attributionExtLink:hover {
+  background: #e3f1ff;
+  color: #003d99;
+}
+
+@media (max-width: 768px) {
+  .attributionControls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .attributionSearch {
+    width: 100%;
+  }
+  .attributionActionsRight {
+    margin-left: 0;
+  }
+  .attributionTable {
+    font-size: 12px;
+  }
+  .attributionTable thead th,
+  .attributionTable tbody td {
+    padding: 6px 8px;
+  }
+}
+
+/* ── Freshness chip (tab strip right group) ─────────────────────────── */
+
+.freshChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 14px;
+  background: #e7f4ec;
+  color: #067647;
+  line-height: 1;
+  white-space: nowrap;
+}
+.freshChipStale {
+  background: #fff5dc;
+  color: #b8660a;
+}
+.freshChipUnknown {
+  background: #f6f6f7;
+  color: #6d7175;
+}
+.freshChip .checkmark {
+  font-size: 11px;
+  line-height: 1;
+}
+
+/* ── Overflow menu (⋯ More) ─────────────────────────────────────────── */
+
+.overflowMenu {
+  position: relative;
+  display: inline-block;
+}
+
+.overflowBtn {
+  border: 1px solid #e1e3e5;
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+  color: #303030;
+  cursor: pointer;
+  line-height: 1;
+  height: 28px;
+  font-family: inherit;
+}
+.overflowBtn:hover { background: #f6f6f7; }
+
+.overflowMenuPanel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  padding: 4px;
+  min-width: 240px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 5;
+}
+
+.overflowMenuItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #303030;
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 1.3;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+}
+.overflowMenuItem:hover { background: #f6f6f7; }
+.overflowMenuItem:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.menuIcon {
+  color: #8c9196;
+  width: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.menuHint {
+  display: block;
+  font-size: 11px;
+  color: #6d7175;
+  margin-top: 2px;
+}
+
+/* ── Inline banners (info / warn) ───────────────────────────────────── */
+
+.inlineBannerInfo,
+.inlineBannerWarn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 12px;
+  border: 1px solid;
+}
+.inlineBannerInfo {
+  background: #ebf2ff;
+  border-color: #c7d8f5;
+  color: #1f3d7a;
+}
+.inlineBannerWarn {
+  background: #fff5dc;
+  border-color: #f4d49a;
+  color: #6b3f00;
+}
+.inlineBannerInfo .bannerIcon,
+.inlineBannerWarn .bannerIcon {
+  font-size: 14px;
+  line-height: 1;
+}
+.inlineBannerInfo .bannerSpacer,
+.inlineBannerWarn .bannerSpacer {
+  flex: 1;
+}
+.bannerCta {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 13px;
+  padding: 0;
+  font-family: inherit;
+}
+
+/* ── Settings tab — programs registry ───────────────────────────────── */
+
+.registryHeader {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 8px 0 4px;
+  flex-wrap: wrap;
+}
+.registryHeader .registrySearch {
+  flex: 1;
+  min-width: 240px;
+}
+.registrySummary {
+  color: #6d7175;
+  font-size: 12px;
+  margin: 0 0 16px;
+  text-align: right;
+}
+
+.programCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  background: #ffffff;
+}
+.programCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.programCardLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303030;
+}
+.programCardSpacer { flex: 1; }
+.programBadge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #e7f4ec;
+  color: #067647;
+}
+.programBadgeRemoved {
+  background: #f6f6f7;
+  color: #6d7175;
+}
+.programBadgeFailed {
+  background: #ffe9e6;
+  color: #d72c0d;
+}
+.programCardCount {
+  font-size: 12px;
+  color: #6d7175;
+}
+.programCardMeta {
+  font-size: 12px;
+  color: #6d7175;
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+.programCardMetaMono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  color: #8c9196;
+}
+.programCardStats {
+  font-size: 12px;
+  color: #6d7175;
+  margin: 8px 0 12px;
+}
+.programCardError {
+  font-size: 12px;
+  color: #d72c0d;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+.programCardActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.programCardActions .leftSlot {
+  margin-right: auto;
+}
+
+@media (max-width: 768px) {
+  .programCardActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .programCardActions .leftSlot {
+    margin-right: 0;
+    margin-bottom: 4px;
+  }
+}
+
+.settingsHeader {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #303030;
+}
+.settingsSubtitle {
+  margin: 0 0 16px;
+  color: #6d7175;
+  font-size: 13px;
+}
+
+.settingsEmpty {
+  border: 1px dashed #e1e3e5;
+  border-radius: 10px;
+  padding: 24px;
+  text-align: center;
+  color: #6d7175;
+  font-size: 13px;
+  background: #fafbfb;
+}
+
+/* ── Add-program modal ──────────────────────────────────────────────── */
+
+.modalDemo { padding: 0; }
+.modalSearchInput {
+  width: 100%;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  padding: 6px 10px 6px 32px;
+  font-size: 13px;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' width='14' height='14' fill='%236d7175'><path fill-rule='evenodd' d='M9 3a6 6 0 104.472 10.03l3.249 3.25a1 1 0 001.414-1.415l-3.249-3.25A6 6 0 009 3zm-4 6a4 4 0 118 0 4 4 0 01-8 0z' clip-rule='evenodd'/></svg>") no-repeat 10px center;
+  background-color: #ffffff;
+  font-family: inherit;
+  color: #303030;
+  height: 32px;
+  line-height: 1;
+}
+.modalResults {
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  margin-top: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #ffffff;
+}
+.modalResultRow {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f1f1;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  width: 100%;
+  text-align: left;
+  color: #303030;
+  font-family: inherit;
+}
+.modalResultRow:last-child { border-bottom: none; }
+.modalResultRow:hover { background: #f6f6f7; }
+.modalResultRowSelected { background: #ebf2ff; }
+.modalResultRow .resultMeta {
+  margin-left: auto;
+  font-size: 12px;
+  color: #6d7175;
+  white-space: nowrap;
+}
+.radio {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid #8c9196;
+  flex-shrink: 0;
+  position: relative;
+  background: #ffffff;
+}
+.modalResultRowSelected .radio {
+  border-color: #005bd3;
+}
+.modalResultRowSelected .radio::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: #005bd3;
+  border-radius: 50%;
+}
+
+.modalEmpty {
+  padding: 16px;
+  font-size: 12px;
+  color: #6d7175;
+  text-align: center;
+}
+
+/* Onboarding placeholder route */
+.onboardingTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.onboardingTable th {
+  background: #f6f6f7;
+  color: #6d7175;
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e1e3e5;
+  font-size: 12px;
+}
+.onboardingTable td {
+  padding: 10px;
+  border-bottom: 1px solid #f1f1f1;
+}
+.onboardingTable tr:hover td { background: #f6f6f7; }
+.onboardingCode {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* ── Settings tab — modal-internal helpers ──────────────────────────── */
+
+.modalBody { padding: 0 4px; }
+.modalFieldGroup { margin-bottom: 14px; }
+.modalFieldGroupTop { margin-top: 14px; }
+.modalFieldLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+  margin-bottom: 4px;
+}
+.modalErrorText {
+  margin-top: 12px;
+  color: #d72c0d;
+  font-size: 12px;
+}
+.removeModalText {
+  margin: 0;
+  font-size: 13px;
+  color: #303030;
+}
+.removeModalLabel {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: #6d7175;
+}
+.programCardLink {
+  color: #005bd3;
+  font-size: 13px;
+  text-decoration: none;
+}
+.programCardLink:hover { text-decoration: underline; }
+
+/* Onboarding placeholder helpers */
+.onboardingSubtitle {
+  margin: 0 0 16px;
+  color: #6d7175;
+  font-size: 13px;
+}
+.onboardingBackLink {
+  margin-top: 16px;
+}
+.onboardingBackLink a {
+  color: #005bd3;
+  text-decoration: none;
+}
+.onboardingBackLink a:hover { text-decoration: underline; }
+.onboardingTableWrap { overflow-x: auto; }
+.onboardingNumeric { text-align: right; }

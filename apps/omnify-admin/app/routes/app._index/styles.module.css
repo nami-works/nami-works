@@ -1,0 +1,397 @@
+/* ─── Page-level ──────────────────────────────────────────────────────────── */
+.subheading {
+  font-size: 13px;
+  color: #6d7175;
+  margin: 0 0 20px;
+  max-width: 720px;
+  line-height: 1.5;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 24px 0 12px;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  color: #303030;
+}
+
+/* ─── Setup guide ─────────────────────────────────────────────────────────── */
+.setupGuide {
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  padding: 18px 20px 8px;
+  margin-bottom: 8px;
+}
+
+.setupGuideHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.setupGuideTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  color: #303030;
+}
+
+.setupGuideSub {
+  font-size: 12px;
+  color: #6d7175;
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+
+.setupGuideProgress {
+  font-size: 12px;
+  color: #6d7175;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.setupProgressBar {
+  margin: 12px 0 16px;
+  height: 4px;
+  background: #ebebeb;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.setupProgressBarFill {
+  display: block;
+  height: 100%;
+  background: #008060;
+  border-radius: 2px;
+  transition: width 200ms ease;
+}
+
+.setupSteps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.setupStep {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid #f1f1f1;
+}
+
+.setupStep:first-child { border-top: none; }
+
+.stepIcon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.stepIconDone {
+  background: #008060;
+  color: #fff;
+}
+
+.stepIconActive {
+  background: #fff;
+  color: #005bd3;
+  border: 2px solid #005bd3;
+}
+
+.stepIconTodo {
+  background: #fff;
+  color: #6d7175;
+  border: 2px solid #e1e3e5;
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.stepTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #303030;
+}
+
+.stepTitleDone {
+  color: #6d7175;
+  text-decoration: line-through;
+  text-decoration-color: #e1e3e5;
+}
+
+.stepDesc {
+  font-size: 12px;
+  color: #6d7175;
+  margin-top: 2px;
+  line-height: 1.45;
+}
+
+.stepCta {
+  font-size: 12px;
+  font-weight: 500;
+  color: #005bd3;
+  text-decoration: none;
+  border: 1px solid #e1e3e5;
+  padding: 6px 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  background: #fff;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.stepCta:hover {
+  border-color: #8c9196;
+  background: #f6f6f7;
+}
+
+/* ─── Metrics row ─────────────────────────────────────────────────────────── */
+.metricsRow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 1100px) {
+  .metricsRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .metricsRow { grid-template-columns: minmax(0, 1fr); }
+}
+
+.metricCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  padding: 14px 16px 16px;
+  text-decoration: none;
+  color: inherit;
+  min-height: 132px;
+  transition: border-color 120ms ease;
+}
+
+.metricCard:hover { border-color: #8c9196; }
+
+.metricLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/* Polaris-native card title: 14px / 600 / #303030, matches the heading
+   weight used by <s-section heading={...}> across the admin (Auto-assign
+   accuracy, LD Analytics aside, etc.). Was 12px / 500 / #6d7175 — that's
+   the metadata color, not a title color. */
+.metricLabelLeft {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #303030;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Icon sits on the title's optical center: 16px to pair with 14px text,
+   display: block + line-height: 0 to drop the inline-baseline offset
+   <s-icon> inherits from its host's font-metrics (was visibly higher
+   than the title's x-height at 14px / 14px-icon). */
+.metricLabelLeft s-icon {
+  width: 16px;
+  height: 16px;
+  color: #303030;
+  display: block;
+  line-height: 0;
+}
+
+.metricRange {
+  font-size: 11px;
+  color: #8c9196;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.metricValue {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: #303030;
+  font-variant-numeric: tabular-nums;
+}
+
+.metricSecondary {
+  font-size: 12px;
+  color: #6d7175;
+  line-height: 1.45;
+}
+
+.metricEmpty {
+  color: #6d7175;
+  font-size: 13px;
+  line-height: 1.4;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.metricEmpty strong {
+  color: #303030;
+  font-weight: 600;
+  display: block;
+}
+
+.metricFooter {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px dashed #f1f1f1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metricLink {
+  font-size: 12px;
+  color: #005bd3;
+  font-weight: 500;
+}
+
+.metricNeg { color: #d72c0d; }
+
+/* ─── Jump back in ────────────────────────────────────────────────────────── */
+.jumpGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+@media (max-width: 600px) {
+  .jumpGrid { grid-template-columns: minmax(0, 1fr); }
+}
+
+.jumpCard {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  background: #ffffff;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.jumpCard:hover {
+  border-color: #8c9196;
+  background: #f6f6f7;
+}
+
+.jumpIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #ebf2ff;
+  color: #005bd3;
+  /* display: grid + place-items: center is the bulletproof centering for
+     web-component children: <s-icon> inherits inline-baseline metrics
+     from its host's font-size which made inline-flex+align/justify-center
+     render the glyph ~2px above true center. Grid places the cell at
+     true geometric center regardless of intrinsic line-height. */
+  display: grid;
+  place-items: center;
+}
+
+.jumpIcon s-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+  line-height: 0;
+}
+
+.jumpBody {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.jumpTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #303030;
+}
+
+.jumpSub {
+  font-size: 12px;
+  color: #6d7175;
+  margin-top: 2px;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Footer help ─────────────────────────────────────────────────────────── */
+.footerHelp {
+  margin-top: 24px;
+  padding: 14px 18px;
+  border: 1px dashed #e1e3e5;
+  border-radius: 12px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.footerLinks {
+  display: inline-flex;
+  gap: 16px;
+}
+
+.footerHelp a {
+  color: #005bd3;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footerHelp a:hover { text-decoration: underline; }
+
+@media (max-width: 600px) {
+  .footerHelp {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .footerLinks {
+    flex-wrap: wrap;
+  }
+}

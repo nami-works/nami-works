@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Retail sales — goal-modal restructure mockup v1</title>
+<style>
+  :root {
+    --bg: #f1f2f4;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --border-soft: #ebebeb;
+    --grid: #ebebeb;
+    --text: #303030;
+    --subdued: #6d7175;
+    --axis: #8c9196;
+    --blue-primary: #005bd3;
+    --blue-projection: #b3d1ff;
+    --blue-py: #d9e3ef;
+    --blue-py-edge: #c3d2e3;
+    --green: #067647;
+    --red: #d72c0d;
+    --goal: #b8350f;
+    --hot-pink: #fce4f0;
+    --hot-blue: #e8f5fa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  h1.mockupTitle {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 880px;
+    margin-bottom: 20px;
+  }
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #5b4700;
+    max-width: 1200px;
+    margin-bottom: 24px;
+  }
+  .notes.critical { background: #fff4ef; border-color: #f2b6a3; color: #6b2211; }
+  .notes.questions { background: #eef4ff; border-color: #b4cbf0; color: #162c57; }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; font-weight: 600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 3px; }
+  .notes code {
+    background: #ffffff;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .sectionLabel {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 32px 0 10px;
+    max-width: 1200px;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     PAGE CHROME (fake Shopify admin iframe)
+     ══════════════════════════════════════════════════════════════ */
+  .page {
+    max-width: 1200px;
+    background: var(--bg);
+    padding: 16px 20px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .pageHeading {
+    font-size: 20px;
+    font-weight: 700;
+    color: #202223;
+    margin: 0 0 14px;
+  }
+  .section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px 20px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Tabs ── */
+  .tabsRow {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border-bottom: 1px solid var(--border);
+    margin: -4px -20px 16px;
+    padding: 0 20px;
+  }
+  .tab {
+    padding: 8px 16px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    background: none;
+    color: var(--subdued);
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    margin-bottom: -1px;
+    font-family: inherit;
+  }
+  .tab:hover { color: var(--text); border-bottom-color: #8c9196; }
+  .tabActive { color: var(--text); font-weight: 500; border-bottom-color: var(--text); }
+
+  /* ══════════════════════════════════════════════════════════════
+     OVERVIEW STRIP (with new "Set monthly goals" button)
+     ══════════════════════════════════════════════════════════════ */
+  .overviewStrip {
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: linear-gradient(180deg, var(--hot-blue) 0%, var(--hot-pink) 30%, #fff 65%);
+    margin-bottom: 16px;
+  }
+  .overviewStripHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+  .overviewHeaderLeft {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .overviewStripHeading {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .periodFriendly {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--subdued);
+    white-space: nowrap;
+  }
+  .overviewStripSubtitle {
+    font-size: 13px;
+    color: var(--subdued);
+    font-weight: 500;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     BUTTON PRIMITIVES
+     ══════════════════════════════════════════════════════════════ */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.1s ease, border-color 0.1s ease, box-shadow 0.1s ease;
+    line-height: 1.3;
+  }
+  .btnPrimary {
+    background: #303030;
+    color: #fff;
+    border-color: #1a1a1a;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.05), inset 0 -1px 0 rgba(0,0,0,0.2);
+  }
+  .btnPrimary:hover { background: #1a1a1a; }
+  .btnSecondary {
+    background: #fff;
+    color: var(--text);
+    border-color: #c9cccf;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+  }
+  .btnSecondary:hover { background: #f6f6f7; }
+  .btnCritical {
+    background: #fff;
+    color: var(--red);
+    border-color: #ebabab;
+  }
+  .btnCritical:hover { background: #fff4f2; }
+  .btnIcon {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    fill: currentColor;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     FILTER BAR (external-label pattern)
+     ══════════════════════════════════════════════════════════════ */
+  .periodBar {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .filterControl {
+    flex: 1 0 0;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .filterLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--subdued);
+  }
+  .selectMock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 10px;
+    border: 1px solid #c9cccf;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text);
+  }
+  .selectMock::after {
+    content: "▾";
+    color: #8c9196;
+    font-size: 10px;
+    margin-left: 6px;
+  }
+  .filterAction {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     KPI CARDS
+     ══════════════════════════════════════════════════════════════ */
+  .kpiGroupLabel {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--subdued);
+    margin: 8px 0 6px;
+  }
+  .kpiGrid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 16px;
+  }
+  .kpiCard {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, transform 0.1s ease;
+  }
+  .kpiCard:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.05); transform: translateY(-1px); }
+  .kpiCardActive {
+    background: #eef1f8;
+    border-color: #1f2d5a;
+    border-width: 2px;
+    padding: 13px 15px;
+  }
+  .kpiTitle {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .kpiInfoIcon {
+    font-size: 11px;
+    color: #8c9196;
+    cursor: help;
+  }
+  .kpiPrimary {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+  .kpiValue {
+    font-size: 22px;
+    font-weight: 700;
+    color: #202223;
+  }
+  .kpiDelta {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--subdued);
+  }
+  .kpiDeltaPos { color: var(--green); }
+  .kpiDeltaNeg { color: var(--red); }
+  .kpiProj {
+    font-size: 12px;
+    color: var(--text);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .kpiProjEarly { font-style: italic; }
+  .kpiLine {
+    font-size: 12px;
+    color: var(--subdued);
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     DRILLDOWN CHART (Shopify-native frame) — abbreviated for mockup
+     ══════════════════════════════════════════════════════════════ */
+  .drilldown {
+    padding: 20px 24px 20px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fff;
+    margin-bottom: 16px;
+  }
+  .drilldownHeader {
+    margin-bottom: 20px;
+    padding-left: 12px;
+  }
+  .drilldownHeader h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 2px;
+  }
+  .drilldownSubtitle {
+    font-size: 12px;
+    color: var(--subdued);
+  }
+  .chartFrame {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 8px;
+  }
+  .chartYAxis {
+    position: relative;
+    height: 240px;
+  }
+  .yTick {
+    position: absolute;
+    right: 4px;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: var(--axis);
+    white-space: nowrap;
+  }
+  .chartPlot {
+    position: relative;
+    height: 240px;
+    border-left: 1px solid var(--border);
+  }
+  .gridline {
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: var(--grid);
+  }
+  .gridlineZero { background: #303030; opacity: 0.45; }
+  .chartBars {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    padding: 0 8px;
+  }
+  .barGroup {
+    position: relative;
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 6px;
+  }
+  .barCurrent {
+    width: 28px;
+    border-radius: 3px 3px 0 0;
+    background: var(--blue-primary);
+    display: flex;
+    flex-direction: column-reverse;
+    overflow: hidden;
+  }
+  .barProjection {
+    width: 100%;
+    background: var(--blue-projection);
+    border-radius: 3px 3px 0 0;
+  }
+  .barPy {
+    width: 28px;
+    border-radius: 3px 3px 0 0;
+    background: var(--blue-py);
+  }
+  .goalMark {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 74px;
+    border-top: 2px dotted var(--goal);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .goalMark::after {
+    content: attr(data-label);
+    position: absolute;
+    right: 0;
+    top: -14px;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--goal);
+    white-space: nowrap;
+  }
+  .chartXAxis {
+    margin-left: 52px;
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-around;
+    padding: 0 8px;
+  }
+  .chartXLabel {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.3;
+    padding: 0 4px;
+  }
+  .statsTable {
+    margin-top: 4px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .statsRow {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 12px;
+    align-items: center;
+  }
+  .statsRow:last-child { border-bottom: none; }
+  .statsLabel {
+    color: var(--subdued);
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .statsCells {
+    display: flex;
+    justify-content: space-around;
+    padding: 0 8px;
+  }
+  .statsCell {
+    flex: 1;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+  }
+  .statsCellPos { color: var(--green); }
+  .statsCellNeg { color: var(--red); }
+  .chartLegend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 12px;
+    color: var(--subdued);
+  }
+  .chartLegend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legendDot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .legendDotCurrent {
+    background: linear-gradient(to top, var(--blue-projection) 0% 50%, var(--blue-primary) 50% 100%);
+  }
+  .legendDotPy { background: var(--blue-py); border: 1px solid var(--blue-py-edge); }
+  .legendDash {
+    width: 16px; height: 0;
+    border-top: 2px dotted var(--goal);
+    display: inline-block;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     BREAKDOWN TABLE
+     ══════════════════════════════════════════════════════════════ */
+  .tableCard {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .tableCardBody {
+    padding: 16px 20px;
+  }
+  .sectionTitle {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+  .breakdownTable {
+    display: grid;
+    gap: 0;
+  }
+  .breakdownHeaderRow,
+  .breakdownDataRow {
+    display: grid;
+    grid-template-columns:
+      minmax(140px, 2fr)
+      minmax(100px, 1fr)
+      minmax(100px, 1fr)
+      minmax(100px, 1fr)
+      minmax(140px, 1.3fr)
+      minmax(70px, 0.8fr)
+      minmax(100px, 1fr);
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .breakdownHeaderRow {
+    background: #f6f6f7;
+    font-weight: 600;
+    color: var(--subdued);
+    font-size: 12px;
+    padding: 8px 0;
+    text-align: center;
+    border-top: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .breakdownDataRow {
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f1f1;
+  }
+  .breakdownDataRow:last-child { border-bottom: none; }
+  .breakdownDataRow:hover { background: #f6f6f7; }
+  .breakdownDataRow span { padding: 0 8px; }
+  .breakdownDataRow > span:first-child { text-align: left; font-weight: 500; }
+  .breakdownDataRow > span { text-align: center; }
+  .progressCell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+  .progressBar {
+    display: inline-block;
+    width: 70px;
+    height: 6px;
+    background: #f1f1f1;
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+  }
+  .progressFill {
+    display: block;
+    height: 100%;
+    background: var(--green);
+    border-radius: 3px;
+  }
+  .deltaUp { color: var(--green); font-weight: 600; }
+  .deltaDown { color: var(--red); font-weight: 600; }
+  .sparkBox {
+    display: inline-block;
+    width: 80px;
+    height: 20px;
+    background: repeating-linear-gradient(90deg, transparent 0 9px, #c9cccf 9px 10px);
+    opacity: 0.3;
+    border-radius: 2px;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     MODAL — full-screen takeover "Set monthly goals"
+     ══════════════════════════════════════════════════════════════ */
+  .modalBackdrop {
+    position: relative;
+    margin: 0 auto 24px;
+    max-width: 1200px;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 40px;
+    border-radius: 16px;
+  }
+  .modalShell {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+  }
+  .modalHeaderLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .modalTitle {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .modalSubtitle {
+    font-size: 12px;
+    color: var(--subdued);
+  }
+  .modalClose {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--subdued);
+    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modalClose:hover { background: #f1f2f4; }
+  .modalBody {
+    padding: 20px;
+    max-height: 560px;
+    overflow-y: auto;
+    background: #f6f6f7;
+  }
+  .modalFooter {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background: #fff;
+  }
+
+  /* ── Goal cards (inside modal) ── */
+  .goalCardsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 16px;
+  }
+  .goalCard {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fff;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .goalCardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .goalCardTitle {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .goalCardBody {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .goalCardSection {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .goalCardSectionLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .goalCardRow {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 13px;
+    color: #202223;
+  }
+  .goalCardEmpty {
+    font-size: 13px;
+    color: var(--subdued);
+    font-style: italic;
+  }
+  .projectionPair {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .projectionLabel {
+    color: var(--subdued);
+    font-size: 12px;
+  }
+  .projectionDivider { color: #c9cccf; }
+  .goalCardProgress {
+    display: block;
+    width: 100%;
+    height: 6px;
+    background: #f1f1f1;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .goalCardProgressFill {
+    display: block;
+    height: 100%;
+    background: var(--green);
+    border-radius: 3px;
+  }
+
+  /* ── Edit form (inside goal card) ── */
+  .editForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #f9fafb;
+  }
+  .editFormField {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .editFormLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--subdued);
+  }
+  .inputMock {
+    padding: 7px 10px;
+    border: 1px solid #c9cccf;
+    border-radius: 8px;
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+  }
+  .growthInputs {
+    display: grid;
+    grid-template-columns: 1fr 100px;
+    gap: 8px;
+  }
+  .editPreviewRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 8px;
+    font-size: 14px;
+    align-items: center;
+  }
+  .editFormActions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding-top: 4px;
+  }
+  .editFormActionsRight {
+    display: flex;
+    gap: 8px;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     CALLOUTS — pointer arrows for audit commentary
+     ══════════════════════════════════════════════════════════════ */
+  .annot {
+    position: relative;
+    outline: 2px dashed #d72c0d;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  .annot::before {
+    content: attr(data-annot);
+    position: absolute;
+    top: -22px;
+    left: 0;
+    font-size: 10px;
+    color: #d72c0d;
+    background: #fff;
+    border: 1px solid #d72c0d;
+    padding: 1px 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     LAYOUT SPLIT (desktop vs modal comparison)
+     ══════════════════════════════════════════════════════════════ */
+  .splitLabel {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    background: #303030;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-bottom: 8px;
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="mockupTitle">Retail sales — goal-modal restructure · mockup v1</h1>
+<p class="intro">
+  Restructure the Retail sales page so the <strong>Goals</strong> tab is removed and becomes a <em>Set monthly goals</em> button on the Dashboard tab. The button opens a full-screen modal holding the existing Goals UI, cleaned up to match current conventions. This mockup is the full Retail sales dashboard end-to-end, plus the modal, plus an audit of convention drift found along the way.
+</p>
+
+<div class="notes">
+  <h3>Primary change</h3>
+  <ul>
+    <li><strong>Tabs reduced from 3 → 2.</strong> <code>Dashboard · Goals · Campaigns</code> → <code>Dashboard · Campaigns</code>. Goals tab deleted; its UI moves into a modal.</li>
+    <li><strong>New trigger:</strong> <em>Manage goals</em> button lives in the overview-strip header, right-aligned, next to the friendly period display. Always visible on the Dashboard tab. Label is "Manage goals" (not "Set monthly goals") because goals may already exist and the button still needs to surface — manage covers create/edit/delete uniformly.</li>
+    <li><strong>Modal type:</strong> full-screen takeover (Option A). Opens over the whole page, dark backdrop, clear dismissal. No URL change — stays on <code>/app/retail-sales</code>.</li>
+    <li><strong>Dismissal:</strong> ✕ close button top-right, <em>Done</em> button bottom-right, Esc key, and backdrop click all close the modal. Changes auto-save per-card (same behaviour as today) — no global Save/Cancel.</li>
+  </ul>
+</div>
+
+<div class="notes critical">
+  <h3>Convention drift found during audit (fixed in this mockup)</h3>
+  <ul>
+    <li><strong>Goals tab header used the legacy <code>.controlsRow</code> / <code>.controlsLeft</code> / <code>.controlsRight</code> pattern</strong> — CSS itself labels it "legacy". The Month select renders with a visible Polaris internal label, inconsistent with the Dashboard's external-label filter bar. → Migrated to <code>.periodBar</code> + <code>.filterControl</code> + <code>.filterLabel</code> with <code>labelAccessibilityVisibility="exclusive"</code>, matching the Dashboard pattern.</li>
+    <li><strong>"Apply growth to all" button sat alone in its own flex row</strong> — violates the row-packing rule (same rule that flagged the Affiliate page Export CSV on 2026-04-17). → Packed onto the same row as the Month filter, right-aligned.</li>
+    <li><strong>Goals edit form used native HTML <code>&lt;select&gt;</code> + <code>&lt;option&gt;</code></strong> for Base period and Growth unit (%/BRL). Convention: <em>"Use <code>&lt;s-option&gt;</code> inside <code>&lt;s-select&gt;</code>, not HTML <code>&lt;option&gt;</code>"</em>. → Swapped to Polaris web components.</li>
+    <li><strong>Cancel button used <code>variant="tertiary"</code></strong> (not a valid Polaris variant — renders inconsistently). → Use <code>variant="secondary"</code>, matching the Button order rule.</li>
+    <li><strong>KPI active state used <code>border-color: #1f2d5a !important</code></strong> on a child <code>&lt;s-box&gt;</code> to force an outline through the web component's shadow DOM. Hack works but reads as a bug. Flagged only — not fixed in this pass. See Open questions.</li>
+    <li><strong>Drilldown card padding is asymmetric</strong> (<code>20px 24px 20px 12px</code>) — the 12px on the left was to pull the y-axis flush with the card edge. OK visually, but the reason is non-obvious; worth a comment in the CSS. Flagged only.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 1 — Full Retail sales Dashboard tab
+     ═══════════════════════════════════════════════════════════════ -->
+
+<div class="sectionLabel">01 · Dashboard tab (new "Set monthly goals" button in overview strip)</div>
+
+<div class="page">
+  <h2 class="pageHeading">Retail sales</h2>
+
+  <div class="section">
+    <!-- Tabs — now only 2 -->
+    <div class="tabsRow">
+      <button class="tab tabActive">Dashboard</button>
+      <button class="tab">Campaigns</button>
+    </div>
+
+    <!-- ── Overview strip with the NEW button ── -->
+    <div class="overviewStrip">
+      <div class="overviewStripHeader">
+        <div class="overviewHeaderLeft">
+          <h3 class="overviewStripHeading">Retail sales dashboard</h3>
+          <span class="periodFriendly">Apr 1–17, 2026</span>
+        </div>
+        <button class="btn btnPrimary" style="outline: 2px solid #005bd3; outline-offset: 2px;">
+          <svg class="btnIcon" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M10 2a1 1 0 0 1 1 1v6h6a1 1 0 1 1 0 2h-6v6a1 1 0 1 1-2 0v-6H3a1 1 0 1 1 0-2h6V3a1 1 0 0 1 1-1z"/>
+          </svg>
+          Manage goals
+        </button>
+      </div>
+      <div class="overviewStripSubtitle">
+        4 locations · 3/4 goals set · Last synced 2 min ago
+      </div>
+    </div>
+
+    <!-- ── Period bar ── -->
+    <div class="periodBar">
+      <div class="filterControl">
+        <span class="filterLabel">Period</span>
+        <div class="selectMock">This month</div>
+      </div>
+      <div class="filterControl">
+        <span class="filterLabel">Compare with</span>
+        <div class="selectMock">Previous year</div>
+      </div>
+    </div>
+
+    <!-- ── Row 1 — Scoreboard ── -->
+    <div class="kpiGroupLabel">Scoreboard</div>
+    <div class="kpiGrid">
+      <div class="kpiCard kpiCardActive">
+        <div class="kpiTitle">Total revenue</div>
+        <div class="kpiPrimary">
+          <div class="kpiValue">R$128,400</div>
+          <span class="kpiDelta kpiDeltaNeg">-12% vs MTD goal</span>
+        </div>
+        <div class="kpiProj kpiProjEarly">Projection R$228,600</div>
+        <div class="kpiLine">
+          <span>Goal</span>
+          <span>R$260,000 <span class="kpiDeltaPos">+14%</span></span>
+        </div>
+        <div class="kpiLine">
+          <span>PY</span>
+          <span>R$218,000 <span class="kpiDeltaNeg">-5%</span></span>
+        </div>
+      </div>
+      <div class="kpiCard">
+        <div class="kpiTitle">Orders</div>
+        <div class="kpiPrimary">
+          <div class="kpiValue">2,461</div>
+          <span class="kpiDelta kpiDeltaPos">+4.2% vs previous year</span>
+        </div>
+        <div class="kpiProj kpiProjEarly">Projection 4,380</div>
+        <div class="kpiLine">
+          <span>PY</span>
+          <span>4,200 <span class="kpiDeltaNeg">-4%</span></span>
+        </div>
+      </div>
+      <div class="kpiCard">
+        <div class="kpiTitle">AOV</div>
+        <div class="kpiPrimary">
+          <div class="kpiValue">R$52.15</div>
+          <span class="kpiDelta kpiDeltaPos">+3.8% vs previous year</span>
+        </div>
+        <div class="kpiLine">
+          <span>PY</span>
+          <span>R$50.24</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Row-1 drilldown ── -->
+    <div class="drilldown">
+      <div class="drilldownHeader">
+        <h3>Revenue by location</h3>
+        <div class="drilldownSubtitle">Apr 1–17, 2026 · compared to Apr 2025 · goal for Apr 2026</div>
+      </div>
+      <div class="chartFrame">
+        <div class="chartYAxis">
+          <div class="yTick" style="top: 0%;">R$100k</div>
+          <div class="yTick" style="top: 25%;">R$75k</div>
+          <div class="yTick" style="top: 50%;">R$50k</div>
+          <div class="yTick" style="top: 75%;">R$25k</div>
+          <div class="yTick" style="top: 100%;">R$0</div>
+        </div>
+        <div class="chartPlot">
+          <div class="gridline" style="top: 0%;"></div>
+          <div class="gridline" style="top: 25%;"></div>
+          <div class="gridline" style="top: 50%;"></div>
+          <div class="gridline" style="top: 75%;"></div>
+          <div class="gridline gridlineZero" style="top: 100%;"></div>
+          <div class="chartBars">
+            <div class="barGroup">
+              <div class="barCurrent" style="height: 45%;">
+                <div class="barProjection" style="height: 38%;"></div>
+              </div>
+              <div class="barPy" style="height: 46%;"></div>
+              <div class="goalMark" style="bottom: 80%;" data-label="R$80k"></div>
+            </div>
+            <div class="barGroup">
+              <div class="barCurrent" style="height: 55%;">
+                <div class="barProjection" style="height: 40%;"></div>
+              </div>
+              <div class="barPy" style="height: 52%;"></div>
+              <div class="goalMark" style="bottom: 90%;" data-label="R$90k"></div>
+            </div>
+            <div class="barGroup">
+              <div class="barCurrent" style="height: 32%;">
+                <div class="barProjection" style="height: 35%;"></div>
+              </div>
+              <div class="barPy" style="height: 38%;"></div>
+              <div class="goalMark" style="bottom: 60%;" data-label="R$60k"></div>
+            </div>
+            <div class="barGroup">
+              <div class="barCurrent" style="height: 28%;">
+                <div class="barProjection" style="height: 30%;"></div>
+              </div>
+              <div class="barPy" style="height: 30%;"></div>
+              <div class="goalMark" style="bottom: 50%;" data-label="R$50k"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="chartXAxis">
+        <div class="chartXLabel">SP · Jardins</div>
+        <div class="chartXLabel">RJ · Ipanema</div>
+        <div class="chartXLabel">BH · Savassi</div>
+        <div class="chartXLabel">CWB · Batel</div>
+      </div>
+      <div class="statsTable">
+        <div class="statsRow">
+          <div class="statsLabel">Goal</div>
+          <div class="statsCells">
+            <div class="statsCell statsCellNeg">56%</div>
+            <div class="statsCell statsCellPos">83%</div>
+            <div class="statsCell statsCellNeg">53%</div>
+            <div class="statsCell statsCellNeg">50%</div>
+          </div>
+        </div>
+        <div class="statsRow">
+          <div class="statsLabel">YoY</div>
+          <div class="statsCells">
+            <div class="statsCell statsCellNeg">-2%</div>
+            <div class="statsCell statsCellPos">+6%</div>
+            <div class="statsCell statsCellNeg">-16%</div>
+            <div class="statsCell statsCellNeg">-7%</div>
+          </div>
+        </div>
+      </div>
+      <div class="chartLegend">
+        <span><i class="legendDot legendDotCurrent"></i> Current + projection</span>
+        <span><i class="legendDot legendDotPy"></i> Prior year</span>
+        <span><i class="legendDash"></i> Goal</span>
+      </div>
+    </div>
+
+    <!-- ── Row 2 — Volume / quality ── -->
+    <div class="kpiGroupLabel">Volume / quality</div>
+    <div class="kpiGrid">
+      <div class="kpiCard">
+        <div class="kpiTitle">Same-store YoY <span class="kpiInfoIcon">ⓘ</span></div>
+        <div class="kpiPrimary">
+          <div class="kpiValue" style="color: var(--green);">+3.4%</div>
+        </div>
+        <div class="kpiLine"><span>1 of 4 declining</span><span></span></div>
+        <div class="kpiLine"><span>Top: RJ · Ipanema +11.2%</span><span></span></div>
+      </div>
+      <div class="kpiCard">
+        <div class="kpiTitle">Achievement ranking</div>
+        <div class="kpiPrimary">
+          <div class="kpiValue" style="font-size: 16px;">RJ · Ipanema · 83%</div>
+        </div>
+        <div class="kpiLine"><span>Leader by 33pp</span><span></span></div>
+        <div class="kpiLine"><span>Trailing: CWB · Batel · 50%</span><span></span></div>
+      </div>
+      <div class="kpiCard">
+        <div class="kpiTitle">Discount rate</div>
+        <div class="kpiPrimary">
+          <div class="kpiValue">6.2%</div>
+          <span class="kpiDelta kpiDeltaNeg">+0.8 vs PY (pp)</span>
+        </div>
+        <div class="kpiLine"><span>PY</span><span>5.4%</span></div>
+        <div class="kpiLine"><span>13-mo:</span><span>R$128k</span></div>
+      </div>
+    </div>
+
+    <!-- ── Breakdown table ── -->
+    <div class="tableCard">
+      <div class="tableCardBody">
+        <h3 class="sectionTitle">Revenue breakdown by location</h3>
+        <div class="breakdownTable">
+          <div class="breakdownHeaderRow">
+            <span style="text-align:left; padding-left:8px;">Location</span>
+            <span>MTD</span>
+            <span>Projected</span>
+            <span>Goal</span>
+            <span>Achievement</span>
+            <span>YoY</span>
+            <span>13-mo trend</span>
+          </div>
+          <div class="breakdownDataRow">
+            <span>SP · Jardins</span>
+            <span>R$45k</span>
+            <span>R$83k</span>
+            <span>R$80k</span>
+            <span>
+              <span class="progressCell">
+                <span>56%</span>
+                <span class="progressBar"><span class="progressFill" style="width:56%;"></span></span>
+              </span>
+            </span>
+            <span class="deltaDown">-2%</span>
+            <span><span class="sparkBox"></span></span>
+          </div>
+          <div class="breakdownDataRow">
+            <span>RJ · Ipanema</span>
+            <span>R$55k</span>
+            <span>R$95k</span>
+            <span>R$90k</span>
+            <span>
+              <span class="progressCell">
+                <span>83%</span>
+                <span class="progressBar"><span class="progressFill" style="width:83%;"></span></span>
+              </span>
+            </span>
+            <span class="deltaUp">+6%</span>
+            <span><span class="sparkBox"></span></span>
+          </div>
+          <div class="breakdownDataRow">
+            <span>BH · Savassi</span>
+            <span>R$32k</span>
+            <span>R$55k</span>
+            <span>R$60k</span>
+            <span>
+              <span class="progressCell">
+                <span>53%</span>
+                <span class="progressBar"><span class="progressFill" style="width:53%;"></span></span>
+              </span>
+            </span>
+            <span class="deltaDown">-16%</span>
+            <span><span class="sparkBox"></span></span>
+          </div>
+          <div class="breakdownDataRow">
+            <span>CWB · Batel</span>
+            <span>R$28k</span>
+            <span>R$45k</span>
+            <span>R$50k</span>
+            <span>
+              <span class="progressCell">
+                <span>50%</span>
+                <span class="progressBar"><span class="progressFill" style="width:50%;"></span></span>
+              </span>
+            </span>
+            <span class="deltaDown">-7%</span>
+            <span><span class="sparkBox"></span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION 2 — Full-screen modal "Set monthly goals"
+     ═══════════════════════════════════════════════════════════════ -->
+
+<div class="sectionLabel">02 · "Set monthly goals" modal — opens over Section 01 when button is clicked</div>
+
+<div class="modalBackdrop">
+  <div class="modalShell">
+    <div class="modalHeader">
+      <div class="modalHeaderLeft">
+        <h3 class="modalTitle">Manage goals</h3>
+        <span class="modalSubtitle">Goals sync across the dashboard and all KPI calculations. Changes save per card.</span>
+      </div>
+      <button class="modalClose" aria-label="Close">✕</button>
+    </div>
+
+    <div class="modalBody">
+      <!-- Month filter + bulk action packed on one row (external-label pattern) -->
+      <div class="periodBar" style="margin-bottom: 20px;">
+        <div class="filterControl" style="max-width: 240px;">
+          <span class="filterLabel">Month</span>
+          <div class="selectMock">April 2026</div>
+        </div>
+        <div class="filterAction">
+          <button class="btn btnSecondary">Apply growth to all</button>
+        </div>
+      </div>
+
+      <!-- Goal cards grid -->
+      <div class="goalCardsGrid">
+
+        <!-- Card 1: existing goal, not editing -->
+        <div class="goalCard">
+          <div class="goalCardHeader">
+            <h4 class="goalCardTitle">SP · Jardins</h4>
+            <button class="btn btnSecondary">Edit</button>
+          </div>
+          <div class="goalCardBody">
+            <div class="goalCardSection">
+              <div class="goalCardRow">
+                <span>Goal</span>
+                <strong>R$80,000</strong>
+              </div>
+              <div class="goalCardRow">
+                <span>Sales so far</span>
+                <span>R$45,000 (56.3%)</span>
+              </div>
+              <div class="goalCardRow">
+                <span>Month projected</span>
+                <span class="projectionPair">
+                  <span>
+                    <span class="projectionLabel">Linear:</span>
+                    <strong>R$83,000</strong>
+                  </span>
+                  <span class="projectionDivider">|</span>
+                  <span>
+                    <span class="projectionLabel">YoY pace:</span>
+                    <strong>R$79,500</strong>
+                  </span>
+                </span>
+              </div>
+              <div class="goalCardProgress">
+                <span class="goalCardProgressFill" style="width: 56%;"></span>
+              </div>
+            </div>
+            <div class="goalCardSection">
+              <span class="goalCardSectionLabel">Baselines</span>
+              <div class="goalCardRow"><span>Previous month (Mar 2026)</span><span>R$78,400</span></div>
+              <div class="goalCardRow"><span>Same month last year (Apr 2025)</span><span>R$75,200</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: editing form open -->
+        <div class="goalCard">
+          <div class="goalCardHeader">
+            <h4 class="goalCardTitle">RJ · Ipanema</h4>
+            <!-- Edit button hidden while editing -->
+          </div>
+          <div class="goalCardBody">
+            <div class="goalCardSection">
+              <div class="goalCardRow"><span>Goal</span><strong>R$90,000</strong></div>
+              <div class="goalCardRow"><span>Sales so far</span><span>R$55,000 (61.1%)</span></div>
+            </div>
+            <div class="goalCardSection">
+              <span class="goalCardSectionLabel">Baselines</span>
+              <div class="goalCardRow"><span>Previous month (Mar 2026)</span><span>R$82,300</span></div>
+              <div class="goalCardRow"><span>Same month last year (Apr 2025)</span><span>R$84,100</span></div>
+            </div>
+
+            <!-- Edit form -->
+            <div class="editForm">
+              <div class="editFormField">
+                <span class="editFormLabel">Base period</span>
+                <!-- Migrated from native <select> to mocked <s-select> -->
+                <div class="selectMock" style="width: 100%;">Previous month: R$82,300</div>
+              </div>
+              <div class="editFormField">
+                <span class="editFormLabel">Growth</span>
+                <div class="growthInputs">
+                  <div class="inputMock">10</div>
+                  <div class="selectMock">%</div>
+                </div>
+              </div>
+              <div class="editPreviewRow">
+                <span>Projected goal</span>
+                <strong>R$90,530</strong>
+              </div>
+              <div class="editFormActions">
+                <button class="btn btnCritical">Delete</button>
+                <div class="editFormActionsRight">
+                  <!-- Cancel is variant="secondary" now, not tertiary -->
+                  <button class="btn btnSecondary">Cancel</button>
+                  <button class="btn btnPrimary">Save goal</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: existing goal, shorter (less data) -->
+        <div class="goalCard">
+          <div class="goalCardHeader">
+            <h4 class="goalCardTitle">BH · Savassi</h4>
+            <button class="btn btnSecondary">Edit</button>
+          </div>
+          <div class="goalCardBody">
+            <div class="goalCardSection">
+              <div class="goalCardRow"><span>Goal</span><strong>R$60,000</strong></div>
+              <div class="goalCardRow"><span>Sales so far</span><span>R$32,000 (53.3%)</span></div>
+              <div class="goalCardProgress">
+                <span class="goalCardProgressFill" style="width: 53%;"></span>
+              </div>
+            </div>
+            <div class="goalCardSection">
+              <span class="goalCardSectionLabel">Baselines</span>
+              <div class="goalCardRow"><span>Previous month (Mar 2026)</span><span>R$58,000</span></div>
+              <div class="goalCardRow"><span>Same month last year (Apr 2025)</span><span>R$62,300</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: no goal yet -->
+        <div class="goalCard">
+          <div class="goalCardHeader">
+            <h4 class="goalCardTitle">CWB · Batel</h4>
+            <button class="btn btnPrimary">Set goal</button>
+          </div>
+          <div class="goalCardBody">
+            <div class="goalCardSection">
+              <span class="goalCardEmpty">No goal set for this month.</span>
+            </div>
+            <div class="goalCardSection">
+              <span class="goalCardSectionLabel">Baselines</span>
+              <div class="goalCardRow"><span>Previous month (Mar 2026)</span><span>R$49,100</span></div>
+              <div class="goalCardRow"><span>Same month last year (Apr 2025)</span><span>R$47,500</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="modalFooter">
+      <button class="btn btnPrimary">Done</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

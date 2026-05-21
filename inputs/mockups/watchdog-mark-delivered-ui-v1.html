@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Watchdog mark-as-delivered (Local Delivery)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --row-border: #f1f1f1;
+    --header-bg: #f6f6f7;
+    --text: #303030;
+    --subdued: #6d7175;
+    --axis: #8c9196;
+    --blue-primary: #005bd3;
+    --green: #067647;
+    --green-bg: #e2f5ec;
+    --red: #d72c0d;
+    --red-bg: #fce9e6;
+    --orange: #b8350f;
+    --orange-bg: #ffe7d6;
+    --warning: #b54708;
+    --warning-bg: #fff4d4;
+    --warning-border: #e8c468;
+    --info: #1a73e8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 32px 0 12px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+  h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--subdued);
+    margin: 16px 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 800px;
+    margin-bottom: 24px;
+  }
+  .layout {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .touchpoints {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin: 16px 0 8px;
+  }
+  .touchpoint {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+  .touchpoint-title { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .touchpoint-desc { font-size: 12px; color: var(--subdued); }
+
+  /* Aside Route Manager card ---------------------------------------- */
+  .aside-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 12px;
+  }
+  .state-block { display: flex; flex-direction: column; gap: 6px; }
+  .state-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .state-desc { font-size: 11px; color: var(--subdued); }
+  .route-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .route-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .route-badge {
+    display: inline-block;
+    background: #cce0ff;
+    color: #002966;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .route-badge.r02 { background: #d4f3df; color: #053d22; }
+  .route-badge.r03 { background: #ffe1cc; color: #5c2600; }
+  .more-dots {
+    color: var(--axis);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0 4px;
+  }
+  .route-stats { font-size: 12px; color: var(--subdued); margin: 6px 0; }
+  .route-stats strong { color: var(--text); font-weight: 600; }
+  .route-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .btn {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .btn-primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .btn-quiet { background: transparent; border-color: transparent; }
+
+  /* Status chips on route card --------------------------------------- */
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .chip-info { background: #e0eaff; color: #1d3a9c; }
+  .chip-warning { background: var(--warning-bg); color: var(--warning); }
+  .chip-success { background: var(--green-bg); color: var(--green); }
+  .chip-critical { background: var(--red-bg); color: var(--red); }
+  .chip-icon { display: inline-block; width: 12px; height: 12px; }
+
+  /* Modal mock ------------------------------------------------------- */
+  .modal {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    max-width: 820px;
+    margin: 12px 0 24px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .modal-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-title { font-size: 14px; font-weight: 600; }
+  .modal-close { color: var(--axis); cursor: pointer; font-size: 18px; line-height: 1; }
+  .modal-body { padding: 16px 20px; }
+  .modal-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    background: #fafbfb;
+  }
+  .modal-footer.split { justify-content: space-between; }
+
+  /* Banner ----------------------------------------------------------- */
+  .banner {
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+  .banner-warning {
+    background: var(--warning-bg);
+    border: 1px solid var(--warning-border);
+    color: var(--warning);
+  }
+  .banner-icon { font-weight: 700; flex-shrink: 0; }
+  .banner-content { flex: 1; }
+  .banner-title { font-weight: 600; margin-bottom: 2px; color: #5c2400; }
+  .banner-hint { color: #5c2400; opacity: 0.85; font-size: 12px; }
+
+  /* Table inside modal ---------------------------------------------- */
+  .stops-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .stops-table thead th {
+    background: var(--header-bg);
+    color: var(--subdued);
+    font-weight: 600;
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .stops-table thead th.center { text-align: center; }
+  .stops-table tbody td {
+    padding: 10px;
+    border-bottom: 1px solid var(--row-border);
+    vertical-align: middle;
+  }
+  .stops-table tbody tr.suspect td { background: #fff8f0; }
+  .stops-table tbody tr.suspect td:first-child {
+    border-left: 3px solid var(--warning);
+  }
+  .order-link { color: var(--blue-primary); font-weight: 500; text-decoration: none; }
+  .pod-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+  .pod-delivered { background: var(--green-bg); color: var(--green); }
+  .pod-failed { background: var(--red-bg); color: var(--red); }
+  .pod-pending { background: #f1f1f1; color: var(--subdued); }
+  .pod-unknown { background: #fff4d4; color: var(--warning); }
+
+  /* Checkbox column */
+  .check-col { width: 32px; text-align: center; }
+  .check-col input { width: 14px; height: 14px; cursor: pointer; }
+
+  /* State matrix ---------------------------------------------------- */
+  .matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 12px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .matrix th, .matrix td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--row-border);
+    text-align: left;
+    vertical-align: top;
+  }
+  .matrix th {
+    background: var(--header-bg);
+    font-weight: 600;
+    color: var(--subdued);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .matrix td.cell-hidden { color: var(--subdued); font-style: italic; }
+  .matrix td.cell-visible { color: var(--text); }
+  .matrix td.cell-blocked { color: var(--warning); font-weight: 600; }
+  .matrix td.cell-auto { color: var(--green); }
+
+  /* Notes ----------------------------------------------------------- */
+  .notes {
+    background: #fff8e0;
+    border: 1px solid #e8c468;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 24px;
+  }
+  .notes h3 {
+    margin-top: 0;
+    color: #5c2400;
+    text-transform: none;
+    font-size: 13px;
+    letter-spacing: 0;
+  }
+  .notes ul { margin: 6px 0; padding-left: 18px; }
+  .notes li { margin-bottom: 4px; font-size: 12px; }
+
+  .key-changes {
+    background: #f0f9ff;
+    border-left: 4px solid var(--info);
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    border-radius: 4px;
+  }
+  .key-changes strong { color: var(--text); }
+  .strikethrough { text-decoration: line-through; opacity: 0.55; }
+  .annot {
+    display: inline-block;
+    background: #fff4d4;
+    color: var(--warning);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    vertical-align: middle;
+  }
+  .annot.add { background: var(--green-bg); color: var(--green); }
+  .annot.remove { background: var(--red-bg); color: var(--red); }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<h1>Watchdog mark-as-delivered — UI surfaces</h1>
+<p class="intro">
+  The watchdog cron will reconcile every terminal-status Lalamove dispatch into Shopify fulfillments
+  using per-stop POD as the source of truth. Most routes auto-fulfill silently and disappear from the
+  page (clean / mixed buckets). Some are flagged <strong>needs-review</strong> and require operator
+  attention. This mockup covers every UI surface this change touches.
+</p>
+
+<div class="key-changes">
+  <strong>Locked decisions from session:</strong> (1) remove maps from BOTH Route details and Manage-route modals;
+  (2) surface needs-review on the aside Route Manager card AND inside the modal; (3) banner copy = reason + plain-language hint, no literal CLI command.
+</div>
+
+<h2>1. Touchpoints overview</h2>
+<div class="touchpoints">
+  <div class="touchpoint">
+    <div class="touchpoint-title">A. Aside Route Manager card</div>
+    <div class="touchpoint-desc">Per-route card in the right rail. Gains a status chip (Needs review · Held · Delivered) when bucketed.</div>
+  </div>
+  <div class="touchpoint">
+    <div class="touchpoint-title">B. Route details modal</div>
+    <div class="touchpoint-desc">Map removed. Banner surfaces on needs-review. Per-stop POD pills already exist.</div>
+  </div>
+  <div class="touchpoint">
+    <div class="touchpoint-title">C. Manage-route modal</div>
+    <div class="touchpoint-desc">Map removed. Pure table-only layout for unassigning orders.</div>
+  </div>
+  <div class="touchpoint">
+    <div class="touchpoint-title">D. Mobile parity</div>
+    <div class="touchpoint-desc">Same banner + chip pattern surfaces on <code>/app/local-delivery-mobile</code>.</div>
+  </div>
+</div>
+
+
+<h2>2. Aside Route Manager card — all states</h2>
+<p class="intro">
+  Three card variations are new. Today's pre-watchdog card has no per-stop bucket status — it shows
+  active dispatch only. Once the watchdog is live, terminal-state routes either disappear (clean) or
+  carry a chip indicating what happened. Operator scans the rail and only stops on the warning chips.
+</p>
+
+<div class="aside-grid">
+
+  <div class="state-block">
+    <span class="state-label">State A — Active (existing, no change)</span>
+    <div class="route-card">
+      <div class="route-card-header">
+        <span class="route-badge">Route 01</span>
+        <span class="more-dots">⋯</span>
+      </div>
+      <div class="route-stats">5 orders · Shipping charges: <strong>R$ 42,30</strong></div>
+      <div class="route-stats">12,4 km · 1h 38m · Cost: <strong>R$ 38,90</strong></div>
+      <div class="route-stats" style="color: var(--blue-primary); font-weight: 600;">⚡ Driver assigned · ETA 14:22</div>
+      <div class="route-actions">
+        <button class="btn">Details</button>
+      </div>
+    </div>
+    <span class="state-desc">In-flight dispatch. Watchdog skips — not terminal yet.</span>
+  </div>
+
+  <div class="state-block">
+    <span class="state-label">State B — Auto-fulfilled (clean)</span>
+    <div class="route-card" style="opacity: 0.55; background: #fafbfb;">
+      <div class="route-card-header">
+        <span class="route-badge r02">Route 02</span>
+        <span class="more-dots">⋯</span>
+      </div>
+      <div class="route-stats">3 orders · <span class="status-chip chip-success">✓ Delivered</span></div>
+      <div class="route-stats" style="font-style: italic; color: var(--subdued);">Tags archived as r02_25.05.16 · auto-fulfilled by watchdog</div>
+    </div>
+    <span class="state-desc">Card fades out and disappears on next page reload (route tags archived).</span>
+  </div>
+
+  <div class="state-block">
+    <span class="state-label">State C — Partial (mixed)</span>
+    <div class="route-card">
+      <div class="route-card-header">
+        <span class="route-badge r03">Route 03</span>
+        <span class="more-dots">⋯</span>
+      </div>
+      <div class="route-stats">4 orders · <span class="status-chip chip-warning">⚠ 1 redelivery</span></div>
+      <div class="route-stats">8,1 km · 1h 12m · Cost: <strong>R$ 32,40</strong></div>
+      <div class="route-actions">
+        <button class="btn">Details</button>
+      </div>
+    </div>
+    <span class="state-desc">3 fulfilled, 1 tagged <code>ld_redelivery_pending</code>. Card stays until next day's dispatch picks up the redelivery.</span>
+  </div>
+
+  <div class="state-block">
+    <span class="state-label">State D — Needs review (return-stop)</span>
+    <div class="route-card" style="border-left: 3px solid var(--warning);">
+      <div class="route-card-header">
+        <span class="route-badge">Route 01</span>
+        <span class="more-dots">⋯</span>
+      </div>
+      <div class="route-stats">3 orders · <span class="status-chip chip-warning">⚠ Needs review</span></div>
+      <div class="route-stats" style="font-size: 11px; font-style: italic;">Return stop detected on Lalamove</div>
+      <div class="route-actions">
+        <button class="btn btn-primary">Review</button>
+      </div>
+    </div>
+    <span class="state-desc">Edge case 1. Last stop POD says delivered but route ended at pickup.</span>
+  </div>
+
+  <div class="state-block">
+    <span class="state-label">State E — Needs review (cancelled)</span>
+    <div class="route-card" style="border-left: 3px solid var(--warning);">
+      <div class="route-card-header">
+        <span class="route-badge r02">Route 02</span>
+        <span class="more-dots">⋯</span>
+      </div>
+      <div class="route-stats">5 orders · <span class="status-chip chip-warning">⚠ Needs review</span></div>
+      <div class="route-stats" style="font-size: 11px; font-style: italic;">Lalamove cancelled mid-route</div>
+      <div class="route-actions">
+        <button class="btn btn-primary">Review</button>
+      </div>
+    </div>
+    <span class="state-desc">Edge case 2. Driver delivered 4 of 5, cancelled at last stop.</span>
+  </div>
+
+  <div class="state-block">
+    <span class="state-label">State F — Held (waiting on POD)</span>
+    <div class="route-card">
+      <div class="route-card-header">
+        <span class="route-badge r03">Route 03</span>
+        <span class="more-dots">⋯</span>
+      </div>
+      <div class="route-stats">2 orders · <span class="status-chip chip-info">⏳ Awaiting POD</span></div>
+      <div class="route-stats" style="font-size: 11px; color: var(--subdued);">Driver completed · POD pending from Lalamove</div>
+      <div class="route-actions">
+        <button class="btn">Details</button>
+      </div>
+    </div>
+    <span class="state-desc">Watchdog retries every 5 min. No operator action needed.</span>
+  </div>
+
+</div>
+
+
+<h2>3. Route details modal — post-map-removal</h2>
+
+<h3>3a. Default (clean route — auto-fulfilled)</h3>
+<p class="intro" style="margin-bottom: 8px;">
+  Cleanest case. Operator clicked Details on a recently-fulfilled route before tags archived.
+  Map gone, table renders edge-to-edge with per-stop pills. <span class="annot remove">Map removed</span>
+</p>
+<div class="modal">
+  <div class="modal-header">
+    <span class="modal-title">Route 02</span>
+    <span class="modal-close">✕</span>
+  </div>
+  <div class="modal-body">
+    <table class="stops-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Order</th>
+          <th>Customer</th>
+          <th>Address</th>
+          <th class="center">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td><a href="#" class="order-link">#1042</a></td>
+          <td>Ana Beatriz</td>
+          <td>R. Conde de Bonfim, 380 — Tijuca</td>
+          <td class="center"><span class="pod-pill pod-delivered">✓ Delivered</span></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><a href="#" class="order-link">#1043</a></td>
+          <td>Carla Vieira</td>
+          <td>R. Uruguai, 122 — Andaraí</td>
+          <td class="center"><span class="pod-pill pod-delivered">✓ Delivered</span></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><a href="#" class="order-link">#1044</a></td>
+          <td>Patrícia Soares</td>
+          <td>R. Barão de Mesquita, 700 — Grajaú</td>
+          <td class="center"><span class="pod-pill pod-delivered">✓ Delivered</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button class="btn">Close</button>
+  </div>
+</div>
+
+<h3>3b. Needs review — return-stop detected (Edge case 1)</h3>
+<p class="intro" style="margin-bottom: 8px;">
+  Banner above the table. Last stop highlighted with a warning rail and an "unknown" pill (operator
+  doesn't know yet if it was delivered). All earlier stops keep their delivered pills.
+  <span class="annot add">Banner</span> <span class="annot add">Row highlight</span>
+</p>
+<div class="modal">
+  <div class="modal-header">
+    <span class="modal-title">Route 01</span>
+    <span class="modal-close">✕</span>
+  </div>
+  <div class="modal-body">
+    <div class="banner banner-warning">
+      <span class="banner-icon">⚠</span>
+      <div class="banner-content">
+        <div class="banner-title">Return stop detected — last delivery may have failed</div>
+        <div class="banner-hint">
+          Lalamove's route ended at the pickup location, which usually means the driver brought items back.
+          Confirm with the team on the ground which stops actually delivered, then resolve from the CLI.
+        </div>
+      </div>
+    </div>
+    <table class="stops-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Order</th>
+          <th>Customer</th>
+          <th>Address</th>
+          <th class="center">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td><a href="#" class="order-link">#1051</a></td>
+          <td>Mariana Lopes</td>
+          <td>R. Alfredo Pujol, 90 — Freguesia</td>
+          <td class="center"><span class="pod-pill pod-delivered">✓ Delivered</span></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><a href="#" class="order-link">#1052</a></td>
+          <td>Roberta Pinheiro</td>
+          <td>Estr. de Jacarepaguá, 5000 — Freguesia</td>
+          <td class="center"><span class="pod-pill pod-delivered">✓ Delivered</span></td>
+        </tr>
+        <tr class="suspect">
+          <td></td>
+          <td><a href="#" class="order-link">#1053</a></td>
+          <td>Ana Castro</td>
+          <td>Estr. dos Três Rios, 1200 — Freguesia</td>
+          <td class="center"><span class="pod-pill pod-unknown">? Suspect</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button class="btn">Close</button>
+  </div>
+</div>
+
+<h3>3c. Needs review — cancelled with partial success (Edge case 2)</h3>
+<p class="intro" style="margin-bottom: 8px;">
+  Same banner pattern, different reason. Per-stop POD shows clear success up to the last delivered stop;
+  the rest are tagged unknown until operator confirms. Edge case 2's mixed visual.
+</p>
+<div class="modal">
+  <div class="modal-header">
+    <span class="modal-title">Route 02</span>
+    <span class="modal-close">✕</span>
+  </div>
+  <div class="modal-body">
+    <div class="banner banner-warning">
+      <span class="banner-icon">⚠</span>
+      <div class="banner-content">
+        <div class="banner-title">Lalamove cancelled this route mid-delivery</div>
+        <div class="banner-hint">
+          Some stops have proof-of-delivery on file; others don't. Confirm with the team which stops were
+          actually completed before this route was cancelled, then resolve each from the CLI.
+        </div>
+      </div>
+    </div>
+    <table class="stops-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Order</th>
+          <th>Customer</th>
+          <th>Address</th>
+          <th class="center">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td><a href="#" class="order-link">#1060</a></td>
+          <td>Juliana Rocha</td>
+          <td>Av. Lúcio Costa, 3500 — Barra</td>
+          <td class="center"><span class="pod-pill pod-delivered">✓ Delivered</span></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><a href="#" class="order-link">#1061</a></td>
+          <td>Letícia Andrade</td>
+          <td>Av. das Américas, 700 — Barra</td>
+          <td class="center"><span class="pod-pill pod-delivered">✓ Delivered</span></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><a href="#" class="order-link">#1062</a></td>
+          <td>Camila Duarte</td>
+          <td>Av. Embaixador Abelardo Bueno, 1500 — Barra</td>
+          <td class="center"><span class="pod-pill pod-delivered">✓ Delivered</span></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><a href="#" class="order-link">#1063</a></td>
+          <td>Bruna Faria</td>
+          <td>Av. Ayrton Senna, 2150 — Barra</td>
+          <td class="center"><span class="pod-pill pod-delivered">✓ Delivered</span></td>
+        </tr>
+        <tr class="suspect">
+          <td></td>
+          <td><a href="#" class="order-link">#1064</a></td>
+          <td>Rafaela Cunha</td>
+          <td>Av. Alfredo Baltazar da Silveira, 600</td>
+          <td class="center"><span class="pod-pill pod-unknown">? Suspect</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button class="btn">Close</button>
+  </div>
+</div>
+
+<h3>3d. Held — POD pending from Lalamove</h3>
+<p class="intro" style="margin-bottom: 8px;">
+  No banner. Pills show <code>pending</code> on stops whose POD hasn't arrived. Watchdog will retry on
+  next tick.
+</p>
+<div class="modal">
+  <div class="modal-header">
+    <span class="modal-title">Route 03</span>
+    <span class="modal-close">✕</span>
+  </div>
+  <div class="modal-body">
+    <table class="stops-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Order</th>
+          <th>Customer</th>
+          <th>Address</th>
+          <th class="center">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td><a href="#" class="order-link">#1070</a></td>
+          <td>Beatriz Lima</td>
+          <td>R. Voluntários da Pátria, 100 — Botafogo</td>
+          <td class="center"><span class="pod-pill pod-delivered">✓ Delivered</span></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><a href="#" class="order-link">#1071</a></td>
+          <td>Helena Costa</td>
+          <td>R. São Clemente, 250 — Botafogo</td>
+          <td class="center"><span class="pod-pill pod-pending">⏳ Pending POD</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button class="btn">Close</button>
+  </div>
+</div>
+
+
+<h2>4. Manage-route modal — post-map-removal</h2>
+<p class="intro" style="margin-bottom: 8px;">
+  Used to unassign orders from a route. Map gone, table takes full width, footer keeps the existing
+  Cancel + Unassign-selected actions. Delete-style button stays bottom-right with critical tone since
+  unassigning IS the modal's purpose.
+  <span class="annot remove">Map removed</span>
+</p>
+<div class="modal">
+  <div class="modal-header">
+    <span class="modal-title">Route 01</span>
+    <span class="modal-close">✕</span>
+  </div>
+  <div class="modal-body">
+    <table class="stops-table">
+      <thead>
+        <tr>
+          <th class="check-col"><input type="checkbox" /></th>
+          <th>Order</th>
+          <th>Customer</th>
+          <th>Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="check-col"><input type="checkbox" /></td>
+          <td><a href="#" class="order-link">#1051</a></td>
+          <td>Mariana Lopes</td>
+          <td>R. Alfredo Pujol, 90 — Freguesia</td>
+        </tr>
+        <tr>
+          <td class="check-col"><input type="checkbox" checked /></td>
+          <td><a href="#" class="order-link">#1052</a></td>
+          <td>Roberta Pinheiro</td>
+          <td>Estr. de Jacarepaguá, 5000 — Freguesia</td>
+        </tr>
+        <tr>
+          <td class="check-col"><input type="checkbox" /></td>
+          <td><a href="#" class="order-link">#1053</a></td>
+          <td>Ana Castro</td>
+          <td>Estr. dos Três Rios, 1200 — Freguesia</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button class="btn">Cancel</button>
+    <button class="btn btn-primary" style="background: var(--red); border-color: var(--red);">Unassign selected (1)</button>
+  </div>
+</div>
+
+
+<h2>5. State matrix — Route details modal</h2>
+<p class="intro" style="margin-bottom: 8px;">
+  Canonical contract between bucket state and what the modal renders. Each column = one visible element.
+  "Auto" cells mean the watchdog already handled it; "Blocked" cells mean the modal renders the banner
+  and the operator must act.
+</p>
+<table class="matrix">
+  <thead>
+    <tr>
+      <th>Bucket state</th>
+      <th>Map</th>
+      <th>Banner</th>
+      <th>POD pills</th>
+      <th>Suspect row highlight</th>
+      <th>Watchdog action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Active</strong> (in-flight)</td>
+      <td class="cell-hidden">hidden (removed)</td>
+      <td class="cell-hidden">hidden</td>
+      <td class="cell-hidden">hidden (no POD yet)</td>
+      <td class="cell-hidden">hidden</td>
+      <td class="cell-hidden">skip — not terminal</td>
+    </tr>
+    <tr>
+      <td><strong>Clean</strong> (auto-fulfilled)</td>
+      <td class="cell-hidden">hidden (removed)</td>
+      <td class="cell-hidden">hidden</td>
+      <td class="cell-visible">all green</td>
+      <td class="cell-hidden">hidden</td>
+      <td class="cell-auto">fulfill all · archive tags</td>
+    </tr>
+    <tr>
+      <td><strong>Mixed</strong> (some failed)</td>
+      <td class="cell-hidden">hidden (removed)</td>
+      <td class="cell-hidden">hidden</td>
+      <td class="cell-visible">mix green + red</td>
+      <td class="cell-hidden">hidden</td>
+      <td class="cell-auto">fulfill delivered · tag failed for redelivery</td>
+    </tr>
+    <tr>
+      <td><strong>Held</strong> (POD pending)</td>
+      <td class="cell-hidden">hidden (removed)</td>
+      <td class="cell-hidden">hidden</td>
+      <td class="cell-visible">mix green + pending</td>
+      <td class="cell-hidden">hidden</td>
+      <td class="cell-auto">retry next tick</td>
+    </tr>
+    <tr>
+      <td><strong>Needs review — return-stop</strong></td>
+      <td class="cell-hidden">hidden (removed)</td>
+      <td class="cell-blocked">visible · "Return stop detected"</td>
+      <td class="cell-visible">delivered + ? on suspect</td>
+      <td class="cell-blocked">last stop highlighted</td>
+      <td class="cell-blocked">NO fulfill — wait for operator</td>
+    </tr>
+    <tr>
+      <td><strong>Needs review — cancelled+partial</strong></td>
+      <td class="cell-hidden">hidden (removed)</td>
+      <td class="cell-blocked">visible · "Lalamove cancelled mid-route"</td>
+      <td class="cell-visible">delivered + ? on unknown</td>
+      <td class="cell-blocked">unknown stops highlighted</td>
+      <td class="cell-blocked">NO fulfill — wait for operator</td>
+    </tr>
+    <tr>
+      <td><strong>Needs review — unknown POD status</strong></td>
+      <td class="cell-hidden">hidden (removed)</td>
+      <td class="cell-blocked">visible · "Unknown delivery outcome"</td>
+      <td class="cell-visible">unknown pill on affected stops</td>
+      <td class="cell-blocked">affected stops highlighted</td>
+      <td class="cell-blocked">NO fulfill — wait for operator</td>
+    </tr>
+    <tr>
+      <td><strong>Needs review — empty POD after retries</strong></td>
+      <td class="cell-hidden">hidden (removed)</td>
+      <td class="cell-blocked">visible · "No proof-of-delivery received"</td>
+      <td class="cell-visible">all pending pills</td>
+      <td class="cell-hidden">hidden</td>
+      <td class="cell-blocked">NO fulfill — wait for operator</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<h2>6. State matrix — Aside Route Manager card</h2>
+<table class="matrix">
+  <thead>
+    <tr>
+      <th>Bucket state</th>
+      <th>Status chip</th>
+      <th>Left border accent</th>
+      <th>Primary action</th>
+      <th>Card persists?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Active</strong></td>
+      <td class="cell-hidden">none (existing dispatch indicator unchanged)</td>
+      <td class="cell-hidden">none</td>
+      <td class="cell-visible">Details</td>
+      <td class="cell-visible">yes — until terminal</td>
+    </tr>
+    <tr>
+      <td><strong>Clean</strong></td>
+      <td class="cell-auto">✓ Delivered (faded)</td>
+      <td class="cell-hidden">none</td>
+      <td class="cell-hidden">hidden</td>
+      <td class="cell-hidden">no — disappears on next reload</td>
+    </tr>
+    <tr>
+      <td><strong>Mixed</strong></td>
+      <td class="cell-visible">⚠ 1 redelivery (warning tone)</td>
+      <td class="cell-hidden">none</td>
+      <td class="cell-visible">Details</td>
+      <td class="cell-visible">until next-day pickup of redelivery</td>
+    </tr>
+    <tr>
+      <td><strong>Held</strong></td>
+      <td class="cell-visible">⏳ Awaiting POD (info tone)</td>
+      <td class="cell-hidden">none</td>
+      <td class="cell-visible">Details</td>
+      <td class="cell-visible">until POD arrives or escalates</td>
+    </tr>
+    <tr>
+      <td><strong>Needs review</strong></td>
+      <td class="cell-blocked">⚠ Needs review (warning tone)</td>
+      <td class="cell-blocked">3px warning rail (left)</td>
+      <td class="cell-blocked">Review (primary, black)</td>
+      <td class="cell-blocked">until operator resolves</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<h2>7. Mobile parity (touchpoint D)</h2>
+<p class="intro">
+  Same banner pattern surfaces in <code>app/routes/app.local-delivery-mobile.tsx</code>. Card list in the
+  mobile view already uses status chips for in-flight dispatch — we extend the chip set with the same
+  needs-review / mixed / held / clean values shown above. The banner inside the mobile BottomSheet
+  route-details view is full-width (no map to remove on mobile — it never had one).
+</p>
+
+
+<div class="notes">
+  <h3>Notes / decisions captured</h3>
+  <ul>
+    <li><strong>Map removal scope</strong> — both Route details AND Manage-route modals. Decided in session.</li>
+    <li><strong>Aside surfacing</strong> — needs-review surfaces both on the card chip AND inside the modal banner (belt + suspenders).</li>
+    <li><strong>Banner copy</strong> — plain language, no literal CLI command. Each reason gets its own banner title; the hint sentence is consistent ("Confirm with the team... then resolve from the CLI"). i18n strings: <code>routeDetails.needsReview.&lt;reasonKey&gt;.title</code> + <code>.hint</code>.</li>
+    <li><strong>Suspect row treatment</strong> — 3px left rail in warning tone + light orange row background. The <code>?</code> Suspect pill is a new POD pill state (alongside delivered / failed / pending / unknown). May map to existing <code>unknown</code> visually with different copy, TBC in implementation.</li>
+    <li><strong>Card-fade for clean</strong> — opacity-55 + subdued chip for a brief reload window so the operator sees what got auto-handled instead of routes silently vanishing between page loads. Alternative: skip the fade and let routes disappear cleanly (less context, less code).</li>
+    <li><strong>"Review" action</strong> on needs-review card is just a deep-link to the details modal — same code path as Details. The label change conveys urgency.</li>
+    <li><strong>Mixed-bucket chip copy</strong> — "1 redelivery" reads better than "Partially delivered" because it names what the operator needs to do next (the failed order is back in tomorrow's queue).</li>
+    <li><strong>Skip bucket</strong> (no deliveries at all) — treated as needs-review with a "No deliveries succeeded" reason. Not drawn separately; visually identical to needs-review with all stops showing failed/unknown.</li>
+    <li><strong>i18n</strong> — all new copy goes into <code>app/i18n/locales/en.json</code> and <code>pt-BR.json</code> under <code>routeManager.chip.*</code> and <code>routeDetails.needsReview.*</code>.</li>
+  </ul>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1409 @@
+{
+  "cutoff_utc": "2026-05-19T03:00:00+00:00",
+  "totals": {
+    "before_cutoff": 271,
+    "after_cutoff": 6,
+    "flipped_within_cutoff": 19,
+    "stuck_within_cutoff": 252
+  },
+  "by_day": {
+    "2026-03-09": {
+      "flipped": [],
+      "stuck": [
+        {
+          "name": "71465",
+          "createdAt_brt": "2026-03-09 08:42",
+          "city": "Belo Horizonte"
+        }
+      ]
+    },
+    "2026-05-12": {
+      "flipped": [],
+      "stuck": [
+        {
+          "name": "80235",
+          "createdAt_brt": "2026-05-12 16:54",
+          "city": "SANTA ROSA"
+        },
+        {
+          "name": "80238",
+          "createdAt_brt": "2026-05-12 17:07",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80239",
+          "createdAt_brt": "2026-05-12 17:11",
+          "city": "Natal"
+        },
+        {
+          "name": "80245",
+          "createdAt_brt": "2026-05-12 18:07",
+          "city": "GoiÂnia"
+        },
+        {
+          "name": "80248",
+          "createdAt_brt": "2026-05-12 18:36",
+          "city": "Salvador"
+        },
+        {
+          "name": "80251",
+          "createdAt_brt": "2026-05-12 18:53",
+          "city": "BelÉm"
+        },
+        {
+          "name": "80256",
+          "createdAt_brt": "2026-05-12 19:40",
+          "city": "Itabuna"
+        },
+        {
+          "name": "80257",
+          "createdAt_brt": "2026-05-12 19:42",
+          "city": "Ipatinga"
+        },
+        {
+          "name": "80258",
+          "createdAt_brt": "2026-05-12 19:42",
+          "city": "Caruaru"
+        },
+        {
+          "name": "80259",
+          "createdAt_brt": "2026-05-12 19:46",
+          "city": "Taubaté"
+        },
+        {
+          "name": "80260",
+          "createdAt_brt": "2026-05-12 19:46",
+          "city": "Salvador"
+        },
+        {
+          "name": "80261",
+          "createdAt_brt": "2026-05-12 19:55",
+          "city": "Ipuã"
+        },
+        {
+          "name": "80263",
+          "createdAt_brt": "2026-05-12 20:17",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80265",
+          "createdAt_brt": "2026-05-12 20:37",
+          "city": "Novo Hamburgo"
+        },
+        {
+          "name": "80267",
+          "createdAt_brt": "2026-05-12 20:59",
+          "city": "Florianópolis"
+        },
+        {
+          "name": "80270",
+          "createdAt_brt": "2026-05-12 21:06",
+          "city": "Conselheiro Lafaiete"
+        },
+        {
+          "name": "80278",
+          "createdAt_brt": "2026-05-12 22:22",
+          "city": "São José do Rio Preto"
+        },
+        {
+          "name": "80281",
+          "createdAt_brt": "2026-05-12 23:10",
+          "city": "Porto Alegre"
+        }
+      ]
+    },
+    "2026-05-13": {
+      "flipped": [],
+      "stuck": [
+        {
+          "name": "80285",
+          "createdAt_brt": "2026-05-13 00:43",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80286",
+          "createdAt_brt": "2026-05-13 01:37",
+          "city": "Santa terezeinha de itaipu"
+        },
+        {
+          "name": "80289",
+          "createdAt_brt": "2026-05-13 08:20",
+          "city": "Vitória"
+        },
+        {
+          "name": "80290",
+          "createdAt_brt": "2026-05-13 08:22",
+          "city": "Vitória"
+        },
+        {
+          "name": "80291",
+          "createdAt_brt": "2026-05-13 09:07",
+          "city": "Porto Alegre"
+        },
+        {
+          "name": "80294",
+          "createdAt_brt": "2026-05-13 09:31",
+          "city": "Juiz de Fora"
+        },
+        {
+          "name": "80295",
+          "createdAt_brt": "2026-05-13 09:35",
+          "city": "BrasÍlia"
+        },
+        {
+          "name": "80297",
+          "createdAt_brt": "2026-05-13 10:25",
+          "city": "Porto Alegre"
+        },
+        {
+          "name": "80299",
+          "createdAt_brt": "2026-05-13 10:54",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80300",
+          "createdAt_brt": "2026-05-13 10:56",
+          "city": "Curitiba"
+        },
+        {
+          "name": "80308",
+          "createdAt_brt": "2026-05-13 11:46",
+          "city": "Limeira"
+        },
+        {
+          "name": "80314",
+          "createdAt_brt": "2026-05-13 13:11",
+          "city": "Divinópolis"
+        },
+        {
+          "name": "80318",
+          "createdAt_brt": "2026-05-13 13:24",
+          "city": "Aracaju"
+        },
+        {
+          "name": "80328",
+          "createdAt_brt": "2026-05-13 14:45",
+          "city": "Jardinópolis"
+        },
+        {
+          "name": "80330",
+          "createdAt_brt": "2026-05-13 14:51",
+          "city": "Curitiba"
+        },
+        {
+          "name": "80333",
+          "createdAt_brt": "2026-05-13 14:59",
+          "city": "São Sebastião do Paraíso"
+        },
+        {
+          "name": "80337",
+          "createdAt_brt": "2026-05-13 15:45",
+          "city": "Tenente Portela"
+        },
+        {
+          "name": "80339",
+          "createdAt_brt": "2026-05-13 15:53",
+          "city": "Goiânia"
+        },
+        {
+          "name": "80341",
+          "createdAt_brt": "2026-05-13 16:21",
+          "city": "Ubatuba"
+        },
+        {
+          "name": "80348",
+          "createdAt_brt": "2026-05-13 17:01",
+          "city": "Ariranha"
+        },
+        {
+          "name": "80349",
+          "createdAt_brt": "2026-05-13 17:26",
+          "city": "Maceió"
+        },
+        {
+          "name": "80350",
+          "createdAt_brt": "2026-05-13 17:44",
+          "city": "FlorianÓpolis"
+        },
+        {
+          "name": "80357",
+          "createdAt_brt": "2026-05-13 18:20",
+          "city": "FlorianÓpolis"
+        },
+        {
+          "name": "80358",
+          "createdAt_brt": "2026-05-13 18:22",
+          "city": "Jaguariúna"
+        },
+        {
+          "name": "80359",
+          "createdAt_brt": "2026-05-13 18:37",
+          "city": "Poços de Caldas"
+        },
+        {
+          "name": "80364",
+          "createdAt_brt": "2026-05-13 19:06",
+          "city": "Uberlândia"
+        },
+        {
+          "name": "80365",
+          "createdAt_brt": "2026-05-13 19:20",
+          "city": "Porto Alegre"
+        },
+        {
+          "name": "80370",
+          "createdAt_brt": "2026-05-13 20:03",
+          "city": "Teresina"
+        },
+        {
+          "name": "80371",
+          "createdAt_brt": "2026-05-13 20:24",
+          "city": "Cuiaba"
+        },
+        {
+          "name": "80374",
+          "createdAt_brt": "2026-05-13 20:37",
+          "city": "Serra"
+        },
+        {
+          "name": "80375",
+          "createdAt_brt": "2026-05-13 20:55",
+          "city": "Nova Odessa"
+        },
+        {
+          "name": "80376",
+          "createdAt_brt": "2026-05-13 21:01",
+          "city": "Brasilia"
+        },
+        {
+          "name": "80379",
+          "createdAt_brt": "2026-05-13 21:56",
+          "city": "Patos de Minas"
+        },
+        {
+          "name": "80380",
+          "createdAt_brt": "2026-05-13 22:11",
+          "city": "Belo Horizonte"
+        }
+      ]
+    },
+    "2026-05-14": {
+      "flipped": [],
+      "stuck": [
+        {
+          "name": "80382",
+          "createdAt_brt": "2026-05-14 00:40",
+          "city": "Macapá"
+        },
+        {
+          "name": "80383",
+          "createdAt_brt": "2026-05-14 06:29",
+          "city": "Porto Seguro"
+        },
+        {
+          "name": "80386",
+          "createdAt_brt": "2026-05-14 07:48",
+          "city": "Lages"
+        },
+        {
+          "name": "80387",
+          "createdAt_brt": "2026-05-14 07:54",
+          "city": "Curitiba"
+        },
+        {
+          "name": "80388",
+          "createdAt_brt": "2026-05-14 07:59",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80389",
+          "createdAt_brt": "2026-05-14 08:08",
+          "city": "São Gabriel"
+        },
+        {
+          "name": "80390",
+          "createdAt_brt": "2026-05-14 08:12",
+          "city": "Guarapari"
+        },
+        {
+          "name": "80393",
+          "createdAt_brt": "2026-05-14 08:46",
+          "city": "Feliz Natal"
+        },
+        {
+          "name": "80397",
+          "createdAt_brt": "2026-05-14 10:26",
+          "city": "Porto Alegre"
+        },
+        {
+          "name": "80399",
+          "createdAt_brt": "2026-05-14 10:31",
+          "city": "Belém"
+        },
+        {
+          "name": "80400",
+          "createdAt_brt": "2026-05-14 10:44",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80403",
+          "createdAt_brt": "2026-05-14 11:24",
+          "city": "Ribeira do Pombal"
+        },
+        {
+          "name": "80404",
+          "createdAt_brt": "2026-05-14 11:44",
+          "city": "PalhoÇa"
+        },
+        {
+          "name": "80405",
+          "createdAt_brt": "2026-05-14 12:00",
+          "city": "Passo Fundo"
+        },
+        {
+          "name": "80406",
+          "createdAt_brt": "2026-05-14 12:01",
+          "city": "Pato Branco"
+        },
+        {
+          "name": "80407",
+          "createdAt_brt": "2026-05-14 12:10",
+          "city": "Aracaju"
+        },
+        {
+          "name": "80409",
+          "createdAt_brt": "2026-05-14 12:17",
+          "city": "Presidente Prudente"
+        },
+        {
+          "name": "80411",
+          "createdAt_brt": "2026-05-14 12:28",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80415",
+          "createdAt_brt": "2026-05-14 12:51",
+          "city": "Brasília"
+        },
+        {
+          "name": "80416",
+          "createdAt_brt": "2026-05-14 12:51",
+          "city": "Manhumirim"
+        },
+        {
+          "name": "80417",
+          "createdAt_brt": "2026-05-14 12:51",
+          "city": "Teresina"
+        },
+        {
+          "name": "80418",
+          "createdAt_brt": "2026-05-14 12:51",
+          "city": "Fortaleza"
+        },
+        {
+          "name": "80423",
+          "createdAt_brt": "2026-05-14 13:18",
+          "city": "Florianópolis"
+        },
+        {
+          "name": "80424",
+          "createdAt_brt": "2026-05-14 13:21",
+          "city": "Natal"
+        },
+        {
+          "name": "80427",
+          "createdAt_brt": "2026-05-14 13:28",
+          "city": "Balneário Camboriú"
+        },
+        {
+          "name": "80434",
+          "createdAt_brt": "2026-05-14 14:24",
+          "city": "Itabirito"
+        },
+        {
+          "name": "80436",
+          "createdAt_brt": "2026-05-14 14:29",
+          "city": "Itabirito"
+        },
+        {
+          "name": "80437",
+          "createdAt_brt": "2026-05-14 14:37",
+          "city": "Porto Alegre"
+        },
+        {
+          "name": "80438",
+          "createdAt_brt": "2026-05-14 15:14",
+          "city": "Natal"
+        },
+        {
+          "name": "80439",
+          "createdAt_brt": "2026-05-14 15:19",
+          "city": "Brasília"
+        },
+        {
+          "name": "80441",
+          "createdAt_brt": "2026-05-14 15:48",
+          "city": "Fortaleza"
+        },
+        {
+          "name": "80443",
+          "createdAt_brt": "2026-05-14 16:10",
+          "city": "Luís Eduardo Magalhães"
+        },
+        {
+          "name": "80445",
+          "createdAt_brt": "2026-05-14 16:24",
+          "city": "Aracatuba"
+        },
+        {
+          "name": "80453",
+          "createdAt_brt": "2026-05-14 17:37",
+          "city": "UbÁ"
+        },
+        {
+          "name": "80458",
+          "createdAt_brt": "2026-05-14 18:24",
+          "city": "Salvador"
+        },
+        {
+          "name": "80461",
+          "createdAt_brt": "2026-05-14 18:45",
+          "city": "Brasília"
+        },
+        {
+          "name": "80466",
+          "createdAt_brt": "2026-05-14 19:08",
+          "city": "Acaraú"
+        },
+        {
+          "name": "80467",
+          "createdAt_brt": "2026-05-14 19:24",
+          "city": "BrasÍlia"
+        },
+        {
+          "name": "80470",
+          "createdAt_brt": "2026-05-14 19:46",
+          "city": "Fortaleza"
+        },
+        {
+          "name": "80471",
+          "createdAt_brt": "2026-05-14 19:50",
+          "city": "DivinÓpolis"
+        },
+        {
+          "name": "80476",
+          "createdAt_brt": "2026-05-14 20:35",
+          "city": "Aracaju"
+        },
+        {
+          "name": "80478",
+          "createdAt_brt": "2026-05-14 21:13",
+          "city": "Natal"
+        },
+        {
+          "name": "80483",
+          "createdAt_brt": "2026-05-14 21:19",
+          "city": "Limeira"
+        },
+        {
+          "name": "80486",
+          "createdAt_brt": "2026-05-14 21:36",
+          "city": "BRASILIA"
+        },
+        {
+          "name": "80489",
+          "createdAt_brt": "2026-05-14 21:48",
+          "city": "Boituva"
+        },
+        {
+          "name": "80491",
+          "createdAt_brt": "2026-05-14 21:59",
+          "city": "Curitiba"
+        },
+        {
+          "name": "80498",
+          "createdAt_brt": "2026-05-14 23:21",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80499",
+          "createdAt_brt": "2026-05-14 23:30",
+          "city": "Vila Velha"
+        }
+      ]
+    },
+    "2026-05-15": {
+      "flipped": [],
+      "stuck": [
+        {
+          "name": "80501",
+          "createdAt_brt": "2026-05-15 04:37",
+          "city": "Serra"
+        },
+        {
+          "name": "80503",
+          "createdAt_brt": "2026-05-15 07:43",
+          "city": "Natal"
+        },
+        {
+          "name": "80504",
+          "createdAt_brt": "2026-05-15 07:47",
+          "city": "Betim"
+        },
+        {
+          "name": "80505",
+          "createdAt_brt": "2026-05-15 08:56",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80506",
+          "createdAt_brt": "2026-05-15 09:14",
+          "city": "Divinópolis"
+        },
+        {
+          "name": "80507",
+          "createdAt_brt": "2026-05-15 09:20",
+          "city": "SumarÉ"
+        },
+        {
+          "name": "80512",
+          "createdAt_brt": "2026-05-15 09:48",
+          "city": "Armação dos Búzios"
+        },
+        {
+          "name": "80515",
+          "createdAt_brt": "2026-05-15 10:09",
+          "city": "Goiânia"
+        },
+        {
+          "name": "80517",
+          "createdAt_brt": "2026-05-15 10:34",
+          "city": "Curitiba"
+        },
+        {
+          "name": "80522",
+          "createdAt_brt": "2026-05-15 11:38",
+          "city": "Ribeirão Preto"
+        },
+        {
+          "name": "80523",
+          "createdAt_brt": "2026-05-15 12:08",
+          "city": "Ribeirão Preto"
+        },
+        {
+          "name": "80525",
+          "createdAt_brt": "2026-05-15 12:35",
+          "city": "Nova lima"
+        },
+        {
+          "name": "80530",
+          "createdAt_brt": "2026-05-15 13:41",
+          "city": "SÃo JosÉ Dos Campos"
+        },
+        {
+          "name": "80533",
+          "createdAt_brt": "2026-05-15 14:09",
+          "city": "Cachoeirinha"
+        },
+        {
+          "name": "80536",
+          "createdAt_brt": "2026-05-15 14:31",
+          "city": "Itajubá"
+        },
+        {
+          "name": "80547",
+          "createdAt_brt": "2026-05-15 15:54",
+          "city": "Santow"
+        },
+        {
+          "name": "80552",
+          "createdAt_brt": "2026-05-15 16:40",
+          "city": "Fortaleza"
+        },
+        {
+          "name": "80556",
+          "createdAt_brt": "2026-05-15 16:57",
+          "city": "Florianópolis"
+        },
+        {
+          "name": "80560",
+          "createdAt_brt": "2026-05-15 17:42",
+          "city": "Itapema"
+        },
+        {
+          "name": "80568",
+          "createdAt_brt": "2026-05-15 19:06",
+          "city": "Contagem"
+        },
+        {
+          "name": "80570",
+          "createdAt_brt": "2026-05-15 19:29",
+          "city": "Presidente Prudente"
+        },
+        {
+          "name": "80574",
+          "createdAt_brt": "2026-05-15 20:14",
+          "city": "Floresta"
+        },
+        {
+          "name": "80576",
+          "createdAt_brt": "2026-05-15 20:38",
+          "city": "Porto Velho"
+        },
+        {
+          "name": "80577",
+          "createdAt_brt": "2026-05-15 20:38",
+          "city": "Viçosa"
+        },
+        {
+          "name": "80582",
+          "createdAt_brt": "2026-05-15 21:03",
+          "city": "Sao Joao Do ITAPERIÚ"
+        },
+        {
+          "name": "80584",
+          "createdAt_brt": "2026-05-15 21:13",
+          "city": "Brasília"
+        },
+        {
+          "name": "80587",
+          "createdAt_brt": "2026-05-15 22:01",
+          "city": "Salesópolis"
+        },
+        {
+          "name": "80588",
+          "createdAt_brt": "2026-05-15 22:31",
+          "city": "São José dos Campos"
+        },
+        {
+          "name": "80589",
+          "createdAt_brt": "2026-05-15 23:31",
+          "city": "Curitiba"
+        }
+      ]
+    },
+    "2026-05-16": {
+      "flipped": [
+        {
+          "name": "80630",
+          "createdAt_brt": "2026-05-16 14:41",
+          "city": "SÃo Paulo"
+        },
+        {
+          "name": "80685",
+          "createdAt_brt": "2026-05-16 19:00",
+          "city": "Campinas"
+        },
+        {
+          "name": "80633",
+          "createdAt_brt": "2026-05-16 15:03",
+          "city": "Rio de Janeiro"
+        },
+        {
+          "name": "80703",
+          "createdAt_brt": "2026-05-16 23:18",
+          "city": "Rio de Janeiro"
+        }
+      ],
+      "stuck": [
+        {
+          "name": "80592",
+          "createdAt_brt": "2026-05-16 08:21",
+          "city": "Varginha"
+        },
+        {
+          "name": "80595",
+          "createdAt_brt": "2026-05-16 08:28",
+          "city": "Curitiba"
+        },
+        {
+          "name": "80596",
+          "createdAt_brt": "2026-05-16 08:49",
+          "city": "Aracruz"
+        },
+        {
+          "name": "80598",
+          "createdAt_brt": "2026-05-16 09:04",
+          "city": "Vinhedo"
+        },
+        {
+          "name": "80599",
+          "createdAt_brt": "2026-05-16 09:40",
+          "city": "GoiÂnia"
+        },
+        {
+          "name": "80600",
+          "createdAt_brt": "2026-05-16 09:44",
+          "city": "Caxias Do Sul"
+        },
+        {
+          "name": "80602",
+          "createdAt_brt": "2026-05-16 10:01",
+          "city": "Brasília"
+        },
+        {
+          "name": "80603",
+          "createdAt_brt": "2026-05-16 10:10",
+          "city": "Catanduva"
+        },
+        {
+          "name": "80608",
+          "createdAt_brt": "2026-05-16 10:56",
+          "city": "Uberlândia"
+        },
+        {
+          "name": "80609",
+          "createdAt_brt": "2026-05-16 11:07",
+          "city": "Ribeirão Preto"
+        },
+        {
+          "name": "80613",
+          "createdAt_brt": "2026-05-16 12:10",
+          "city": "Caruaru"
+        },
+        {
+          "name": "80615",
+          "createdAt_brt": "2026-05-16 12:33",
+          "city": "Patos"
+        },
+        {
+          "name": "80616",
+          "createdAt_brt": "2026-05-16 12:39",
+          "city": "João Pessoa"
+        },
+        {
+          "name": "80617",
+          "createdAt_brt": "2026-05-16 12:45",
+          "city": "Paracambi"
+        },
+        {
+          "name": "80620",
+          "createdAt_brt": "2026-05-16 13:37",
+          "city": "BrasÍlia"
+        },
+        {
+          "name": "80623",
+          "createdAt_brt": "2026-05-16 14:06",
+          "city": "Feira De Santana"
+        },
+        {
+          "name": "80624",
+          "createdAt_brt": "2026-05-16 14:11",
+          "city": "Bauru"
+        },
+        {
+          "name": "80629",
+          "createdAt_brt": "2026-05-16 14:41",
+          "city": "Manaus"
+        },
+        {
+          "name": "80631",
+          "createdAt_brt": "2026-05-16 14:49",
+          "city": "Itajaí"
+        },
+        {
+          "name": "80636",
+          "createdAt_brt": "2026-05-16 15:11",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80637",
+          "createdAt_brt": "2026-05-16 15:12",
+          "city": "Vitória"
+        },
+        {
+          "name": "80638",
+          "createdAt_brt": "2026-05-16 15:16",
+          "city": "Barueri"
+        },
+        {
+          "name": "80640",
+          "createdAt_brt": "2026-05-16 15:20",
+          "city": "Teresina"
+        },
+        {
+          "name": "80643",
+          "createdAt_brt": "2026-05-16 15:24",
+          "city": "Indaiatuba"
+        },
+        {
+          "name": "80645",
+          "createdAt_brt": "2026-05-16 15:33",
+          "city": "limoeiro do norte"
+        },
+        {
+          "name": "80648",
+          "createdAt_brt": "2026-05-16 15:42",
+          "city": "João Pessoa"
+        },
+        {
+          "name": "80649",
+          "createdAt_brt": "2026-05-16 15:46",
+          "city": "Brasília"
+        },
+        {
+          "name": "80654",
+          "createdAt_brt": "2026-05-16 16:02",
+          "city": "Foz Do IguaÇu"
+        },
+        {
+          "name": "80657",
+          "createdAt_brt": "2026-05-16 16:13",
+          "city": "Nova Iguaçu"
+        },
+        {
+          "name": "80659",
+          "createdAt_brt": "2026-05-16 16:23",
+          "city": "Caxias Do Sul"
+        },
+        {
+          "name": "80660",
+          "createdAt_brt": "2026-05-16 16:28",
+          "city": "Atibaia"
+        },
+        {
+          "name": "80661",
+          "createdAt_brt": "2026-05-16 16:31",
+          "city": "Lorena"
+        },
+        {
+          "name": "80671",
+          "createdAt_brt": "2026-05-16 17:36",
+          "city": "BrasÍlia"
+        },
+        {
+          "name": "80673",
+          "createdAt_brt": "2026-05-16 17:39",
+          "city": "ConceiÇÃo Do Castelo"
+        },
+        {
+          "name": "80680",
+          "createdAt_brt": "2026-05-16 18:21",
+          "city": "Suzano"
+        },
+        {
+          "name": "80681",
+          "createdAt_brt": "2026-05-16 18:25",
+          "city": "Betim"
+        },
+        {
+          "name": "80690",
+          "createdAt_brt": "2026-05-16 19:31",
+          "city": "Brasília"
+        },
+        {
+          "name": "80699",
+          "createdAt_brt": "2026-05-16 22:48",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80700",
+          "createdAt_brt": "2026-05-16 22:48",
+          "city": "Nova Lima"
+        }
+      ]
+    },
+    "2026-05-17": {
+      "flipped": [
+        {
+          "name": "80731",
+          "createdAt_brt": "2026-05-17 11:09",
+          "city": "Campinas"
+        },
+        {
+          "name": "80751",
+          "createdAt_brt": "2026-05-17 14:23",
+          "city": "Campinas"
+        },
+        {
+          "name": "80757",
+          "createdAt_brt": "2026-05-17 14:57",
+          "city": "São Paulo"
+        },
+        {
+          "name": "80784",
+          "createdAt_brt": "2026-05-17 17:55",
+          "city": "São Paulo"
+        },
+        {
+          "name": "80719",
+          "createdAt_brt": "2026-05-17 09:06",
+          "city": "Rio De Janeiro"
+        },
+        {
+          "name": "80802",
+          "createdAt_brt": "2026-05-17 20:04",
+          "city": "Rio de Janeiro"
+        },
+        {
+          "name": "80809",
+          "createdAt_brt": "2026-05-17 21:23",
+          "city": "Rio De Janeiro"
+        }
+      ],
+      "stuck": [
+        {
+          "name": "80705",
+          "createdAt_brt": "2026-05-17 00:03",
+          "city": "Contagem"
+        },
+        {
+          "name": "80706",
+          "createdAt_brt": "2026-05-17 00:07",
+          "city": "LuziÂnia"
+        },
+        {
+          "name": "80707",
+          "createdAt_brt": "2026-05-17 00:23",
+          "city": "Feira de Santana"
+        },
+        {
+          "name": "80710",
+          "createdAt_brt": "2026-05-17 00:59",
+          "city": "Bertioga"
+        },
+        {
+          "name": "80711",
+          "createdAt_brt": "2026-05-17 01:09",
+          "city": "Limeira"
+        },
+        {
+          "name": "80712",
+          "createdAt_brt": "2026-05-17 01:12",
+          "city": "Timbó"
+        },
+        {
+          "name": "80713",
+          "createdAt_brt": "2026-05-17 06:22",
+          "city": "Fortaleza"
+        },
+        {
+          "name": "80714",
+          "createdAt_brt": "2026-05-17 07:13",
+          "city": "Indaiatuba"
+        },
+        {
+          "name": "80716",
+          "createdAt_brt": "2026-05-17 08:33",
+          "city": "CubatÃo"
+        },
+        {
+          "name": "80717",
+          "createdAt_brt": "2026-05-17 08:49",
+          "city": "Brasília"
+        },
+        {
+          "name": "80718",
+          "createdAt_brt": "2026-05-17 08:58",
+          "city": "Santos"
+        },
+        {
+          "name": "80721",
+          "createdAt_brt": "2026-05-17 09:40",
+          "city": "Salvador"
+        },
+        {
+          "name": "80723",
+          "createdAt_brt": "2026-05-17 10:02",
+          "city": "Campos Dos Goytacazes"
+        },
+        {
+          "name": "80724",
+          "createdAt_brt": "2026-05-17 10:07",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80725",
+          "createdAt_brt": "2026-05-17 10:12",
+          "city": "Florianópolis"
+        },
+        {
+          "name": "80729",
+          "createdAt_brt": "2026-05-17 11:02",
+          "city": "Porto Alegre"
+        },
+        {
+          "name": "80730",
+          "createdAt_brt": "2026-05-17 11:04",
+          "city": "Porto Alegre"
+        },
+        {
+          "name": "80733",
+          "createdAt_brt": "2026-05-17 11:29",
+          "city": "Campos Dos Goytacazes"
+        },
+        {
+          "name": "80734",
+          "createdAt_brt": "2026-05-17 11:43",
+          "city": "Angra dos Reis"
+        },
+        {
+          "name": "80735",
+          "createdAt_brt": "2026-05-17 11:54",
+          "city": "Ilhéus"
+        },
+        {
+          "name": "80736",
+          "createdAt_brt": "2026-05-17 12:00",
+          "city": "Curitiba"
+        },
+        {
+          "name": "80738",
+          "createdAt_brt": "2026-05-17 12:04",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80739",
+          "createdAt_brt": "2026-05-17 12:05",
+          "city": "Bragança Paulista"
+        },
+        {
+          "name": "80740",
+          "createdAt_brt": "2026-05-17 12:15",
+          "city": "Boituva"
+        },
+        {
+          "name": "80743",
+          "createdAt_brt": "2026-05-17 12:47",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80744",
+          "createdAt_brt": "2026-05-17 12:58",
+          "city": "Sao Pedro da Aldeia"
+        },
+        {
+          "name": "80750",
+          "createdAt_brt": "2026-05-17 14:00",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80752",
+          "createdAt_brt": "2026-05-17 14:29",
+          "city": "Itajaí"
+        },
+        {
+          "name": "80761",
+          "createdAt_brt": "2026-05-17 15:21",
+          "city": "Ubatuba"
+        },
+        {
+          "name": "80763",
+          "createdAt_brt": "2026-05-17 15:36",
+          "city": "Teófilo otoni"
+        },
+        {
+          "name": "80772",
+          "createdAt_brt": "2026-05-17 16:36",
+          "city": "Porto Alegre"
+        },
+        {
+          "name": "80773",
+          "createdAt_brt": "2026-05-17 16:38",
+          "city": "Jacarezinho"
+        },
+        {
+          "name": "80774",
+          "createdAt_brt": "2026-05-17 16:48",
+          "city": "Nova Iguaçu"
+        },
+        {
+          "name": "80776",
+          "createdAt_brt": "2026-05-17 17:02",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80780",
+          "createdAt_brt": "2026-05-17 17:19",
+          "city": "Goiania"
+        },
+        {
+          "name": "80783",
+          "createdAt_brt": "2026-05-17 17:49",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80786",
+          "createdAt_brt": "2026-05-17 18:32",
+          "city": "Monte Alto"
+        },
+        {
+          "name": "80790",
+          "createdAt_brt": "2026-05-17 18:58",
+          "city": "Serra"
+        },
+        {
+          "name": "80791",
+          "createdAt_brt": "2026-05-17 19:00",
+          "city": "Jundiaí"
+        },
+        {
+          "name": "80794",
+          "createdAt_brt": "2026-05-17 19:13",
+          "city": "Porto Alegre"
+        },
+        {
+          "name": "80797",
+          "createdAt_brt": "2026-05-17 19:23",
+          "city": "Fortaleza"
+        },
+        {
+          "name": "80799",
+          "createdAt_brt": "2026-05-17 19:57",
+          "city": "Florianópolis"
+        },
+        {
+          "name": "80800",
+          "createdAt_brt": "2026-05-17 19:57",
+          "city": "Tubarão"
+        },
+        {
+          "name": "80803",
+          "createdAt_brt": "2026-05-17 20:16",
+          "city": "BrasÍlia"
+        },
+        {
+          "name": "80808",
+          "createdAt_brt": "2026-05-17 21:00",
+          "city": "Brasília"
+        },
+        {
+          "name": "80810",
+          "createdAt_brt": "2026-05-17 21:24",
+          "city": "Maringá"
+        },
+        {
+          "name": "80811",
+          "createdAt_brt": "2026-05-17 21:34",
+          "city": "Valinhos"
+        },
+        {
+          "name": "80812",
+          "createdAt_brt": "2026-05-17 21:43",
+          "city": "GoiÂnia"
+        },
+        {
+          "name": "80813",
+          "createdAt_brt": "2026-05-17 22:30",
+          "city": "Indaiatuba"
+        },
+        {
+          "name": "80814",
+          "createdAt_brt": "2026-05-17 22:33",
+          "city": "Uberlândia"
+        },
+        {
+          "name": "80817",
+          "createdAt_brt": "2026-05-17 23:39",
+          "city": "TaubatÉ"
+        },
+        {
+          "name": "80818",
+          "createdAt_brt": "2026-05-17 23:51",
+          "city": "Foz do Iguaçu"
+        },
+        {
+          "name": "80819",
+          "createdAt_brt": "2026-05-17 23:53",
+          "city": "Curitiba"
+        }
+      ]
+    },
+    "2026-05-18": {
+      "flipped": [
+        {
+          "name": "80875",
+          "createdAt_brt": "2026-05-18 19:08",
+          "city": "SÃo Paulo"
+        },
+        {
+          "name": "80877",
+          "createdAt_brt": "2026-05-18 19:30",
+          "city": "SÃo Paulo"
+        },
+        {
+          "name": "80886",
+          "createdAt_brt": "2026-05-18 20:56",
+          "city": "São Paulo"
+        },
+        {
+          "name": "80887",
+          "createdAt_brt": "2026-05-18 21:05",
+          "city": "São Paulo"
+        },
+        {
+          "name": "80894",
+          "createdAt_brt": "2026-05-18 22:29",
+          "city": "São Paulo"
+        },
+        {
+          "name": "80838",
+          "createdAt_brt": "2026-05-18 09:19",
+          "city": "Rio de Janeiro"
+        },
+        {
+          "name": "80843",
+          "createdAt_brt": "2026-05-18 10:14",
+          "city": "Rio De Janeiro"
+        },
+        {
+          "name": "80863",
+          "createdAt_brt": "2026-05-18 15:46",
+          "city": "Rio de Janeiro"
+        }
+      ],
+      "stuck": [
+        {
+          "name": "80820",
+          "createdAt_brt": "2026-05-18 00:08",
+          "city": "Goiânia"
+        },
+        {
+          "name": "80821",
+          "createdAt_brt": "2026-05-18 00:22",
+          "city": "Santos"
+        },
+        {
+          "name": "80822",
+          "createdAt_brt": "2026-05-18 00:24",
+          "city": "São José"
+        },
+        {
+          "name": "80825",
+          "createdAt_brt": "2026-05-18 07:35",
+          "city": "Brasília"
+        },
+        {
+          "name": "80828",
+          "createdAt_brt": "2026-05-18 08:08",
+          "city": "Bom Jesus do Itabapoana"
+        },
+        {
+          "name": "80829",
+          "createdAt_brt": "2026-05-18 08:13",
+          "city": "Curitiba"
+        },
+        {
+          "name": "80830",
+          "createdAt_brt": "2026-05-18 08:15",
+          "city": "Belo Horizonte"
+        },
+        {
+          "name": "80832",
+          "createdAt_brt": "2026-05-18 08:32",
+          "city": "Santa CecÍlia"
+        },
+        {
+          "name": "80839",
+          "createdAt_brt": "2026-05-18 09:19",
+          "city": "Curitiba"
+        },
+        {
+          "name": "80842",
+          "createdAt_brt": "2026-05-18 10:02",
+          "city": "Vitória"
+        },
+        {
+          "name": "80844",
+          "createdAt_brt": "2026-05-18 10:29",
+          "city": "Nepomuceno"
+        },
+        {
+          "name": "80845",
+          "createdAt_brt": "2026-05-18 10:35",
+          "city": "LuÍs Eduardo MagalhÃes"
+        },
+        {
+          "name": "80846",
+          "createdAt_brt": "2026-05-18 10:42",
+          "city": "Ourinhos"
+        },
+        {
+          "name": "80847",
+          "createdAt_brt": "2026-05-18 10:58",
+          "city": "RONDONOPOLIS"
+        },
+        {
+          "name": "80848",
+          "createdAt_brt": "2026-05-18 11:38",
+          "city": "Feira de Santana"
+        },
+        {
+          "name": "80850",
+          "createdAt_brt": "2026-05-18 11:58",
+          "city": "TAGUATINGA"
+        },
+        {
+          "name": "80853",
+          "createdAt_brt": "2026-05-18 12:29",
+          "city": "Camaçari"
+        },
+        {
+          "name": "80860",
+          "createdAt_brt": "2026-05-18 15:08",
+          "city": "Erechim"
+        },
+        {
+          "name": "80868",
+          "createdAt_brt": "2026-05-18 16:36",
+          "city": "Vila Velha"
+        },
+        {
+          "name": "80870",
+          "createdAt_brt": "2026-05-18 17:00",
+          "city": "Santana de Parnaíba"
+        },
+        {
+          "name": "80872",
+          "createdAt_brt": "2026-05-18 17:27",
+          "city": "Vila Velha"
+        },
+        {
+          "name": "80873",
+          "createdAt_brt": "2026-05-18 18:00",
+          "city": "Ribeirão Preto"
+        },
+        {
+          "name": "80876",
+          "createdAt_brt": "2026-05-18 19:29",
+          "city": "Uberlândia"
+        },
+        {
+          "name": "80878",
+          "createdAt_brt": "2026-05-18 19:35",
+          "city": "Blumenau"
+        },
+        {
+          "name": "80882",
+          "createdAt_brt": "2026-05-18 20:29",
+          "city": "CuiabÁ"
+        },
+        {
+          "name": "80883",
+          "createdAt_brt": "2026-05-18 20:30",
+          "city": "BrasÍlia"
+        },
+        {
+          "name": "80885",
+          "createdAt_brt": "2026-05-18 20:40",
+          "city": "Brasília"
+        },
+        {
+          "name": "80890",
+          "createdAt_brt": "2026-05-18 21:33",
+          "city": "Teixeira De Freitas"
+        },
+        {
+          "name": "80891",
+          "createdAt_brt": "2026-05-18 21:35",
+          "city": "João Pessoa"
+        },
+        {
+          "name": "80893",
+          "createdAt_brt": "2026-05-18 22:25",
+          "city": "Brasília"
+        }
+      ]
+    }
+  }
+}

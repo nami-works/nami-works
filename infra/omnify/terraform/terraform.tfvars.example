@@ -1,0 +1,29 @@
+aws_region          = "us-east-1"
+project_name        = "omnify"
+domain_name         = "omnify.cpg-labs.io"
+acm_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/your-cert-id"
+
+db_name     = "omnify"
+db_username = "omnify"
+db_password = "replace-me"
+
+shopify_api_key    = "replace-me"
+shopify_api_secret = "replace-me"
+shopify_app_url    = "https://omnify.cpg-labs.io"
+shopify_scopes     = "read_customers,read_locations,read_merchant_managed_fulfillment_orders,read_orders"
+
+google_maps_api_key = "replace-me"
+google_maps_map_id  = "replace-me"
+
+image_tag = "latest"
+
+# cpg-labs.io marketing website (apex + www)
+# site_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/your-site-cert-id"
+
+# If your AWS user lacks IAM/SSM/RDS permissions, set these:
+# create_iam = false
+# execution_role_arn = "arn:aws:iam::123456789012:role/ecsTaskExecutionRole"
+# task_role_arn = "arn:aws:iam::123456789012:role/omnify-ecs-task"
+# create_ssm = false
+# create_rds = false
+# database_url = "postgresql://user:pass@host:5432/db?schema=public"

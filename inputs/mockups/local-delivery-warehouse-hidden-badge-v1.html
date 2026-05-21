@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Local Delivery warehouse-hidden badge</title>
+<!--
+  Hidden-warehouse hint badge — mockup v1 (rev 2026-05-17).
+
+  Fix #3 deferred from commit c8b7fe1 (dispatch-drift guard + toggle
+  persistence bundle, 2026-05-17). When the `includeWarehouse` toggle is OFF
+  at a specific location AND warehouse-method orders exist at that location
+  that would be visible if the toggle were ON, surface a clickable warning
+  badge in the route-manager warnings row inviting the operator to flip the
+  toggle.
+
+  Mirrors the existing visible-state badge ([showWarehouseBadge] in
+  app/routes/app.local-delivery.tsx ~L4851-4855) but renders in the inverse
+  state. Same `<s-badge tone="warning" icon="package">` visual treatment —
+  no new design tokens, no new color choices. Clickable wrapper matches the
+  existing precedent for the `addressErrorOrders` (L4837) and
+  `pendingReturnPickups` (L4844) badges, both of which are click-to-action
+  in production today.
+-->
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --text: #303030;
+    --subdued: #6d7175;
+    --warning-bg: #ffeacc;
+    --warning-text: #b54708;
+    --warning-icon: #b54708;
+    --link: #005bd3;
+    --tag-bg: #e4e5e7;
+    --tag-text: #303030;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+  .intro { font-size: 13px; color: var(--subdued); max-width: 760px; margin-bottom: 24px; }
+
+  /* Card wrapper (mimics <s-section>) */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    max-width: 460px;
+  }
+  .card .heading {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+  .stateLabel {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--subdued);
+    margin: 8px 0 6px;
+    font-weight: 600;
+  }
+
+  /* Header column inside <s-section> */
+  .routeManagerHeaderCol {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  /* Select (location dropdown) */
+  .select {
+    appearance: none;
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #babfc4;
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  /* Warehouse toggle row */
+  .warehouseToggleInline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    padding: 4px 0;
+  }
+  .checkbox {
+    width: 14px;
+    height: 14px;
+    border: 1px solid #8a8d92;
+    border-radius: 3px;
+    background: #ffffff;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .checkbox.checked { background: var(--text); border-color: var(--text); }
+  .checkbox.checked::after {
+    content: "";
+    position: absolute;
+    left: 4px; top: 1px;
+    width: 4px; height: 8px;
+    border: solid #ffffff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  .warehouseToggleLabel { font-size: 13px; color: var(--text); }
+
+  /* Warning badges row */
+  .headerBadgesRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .badge svg { width: 12px; height: 12px; display: block; }
+  .badge.warning { background: var(--warning-bg); color: var(--warning-text); }
+  .badge.clickable { cursor: pointer; }
+  .badge.clickable:hover { filter: brightness(0.96); }
+
+  /* Status row (Orders to deliver) */
+  .statusRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .badge.info { background: #cdeefd; color: #0a3554; }
+
+  /* Notes panel */
+  .notes {
+    background: #fffbf0;
+    border-left: 3px solid #d99a0a;
+    padding: 16px;
+    max-width: 880px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .notes h3 { font-size: 13px; font-weight: 600; margin: 0 0 6px; }
+  .notes ul { margin: 0; padding-left: 18px; }
+  .notes li { margin-bottom: 4px; }
+  .notes code {
+    background: #fef3d0;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 11px;
+  }
+
+  /* State matrix */
+  .matrix {
+    max-width: 880px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+  .matrix h3 { font-size: 13px; font-weight: 600; margin: 0 0 12px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: #f6f6f7;
+    font-weight: 600;
+    color: #3a3a3a;
+  }
+  td.hidden { color: var(--subdued); }
+  td.visible { color: var(--text); font-weight: 500; }
+  td.unchanged { color: var(--subdued); font-style: italic; }
+
+  .preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 16px;
+    max-width: 1200px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Local Delivery — Hidden warehouse badge (Fix #3)</h1>
+<p class="intro">
+  When the <code>includeWarehouse</code> toggle is OFF at a specific location
+  AND warehouse-method orders exist at that location, surface a clickable
+  warning badge inviting the operator to enable the toggle. Mirrors the
+  existing visible-state badge in the route-manager warnings row.
+</p>
+
+<div class="notes">
+  <h3>Notes — design decisions baked into v1</h3>
+  <ul>
+    <li><strong>Visual treatment:</strong> identical to the existing visible-state badge — <code>&lt;s-badge tone="warning" icon="package"&gt;</code>. Warning tone communicates "needs attention but not urgent" per the CLAUDE.md color-semantics table. No new design tokens.</li>
+    <li><strong>Clickability:</strong> the badge is wrapped in a <code>&lt;span style={{cursor:"pointer"}} onClick={handleToggleIncludeWarehouse}&gt;</code> — matches the precedent set by the <code>addressErrorOrders</code> badge (L4837) and <code>pendingReturnPickups</code> badge (L4844), both of which are click-to-action today. One click flips the toggle ON and the badge converts to the visible-state badge on the same revalidation.</li>
+    <li><strong>Copy:</strong> "<em>N</em> warehouse orders hidden" — parallels the existing visible-state copy "<em>N</em> warehouse orders" but with the past-participle "hidden" to communicate the inversion. pt-BR: "<em>N</em> pedidos de armazém ocultos".</li>
+    <li><strong>Triggering signal:</strong> requires a <code>warehouseOrdersHiddenCount</code> from the loader. The current loader's GraphQL query filters by <code>deliveryMethod:LOCAL</code> when toggle is OFF, so warehouse-method orders aren't fetched at all. Loader change: when toggle is OFF, do a second small Shopify search (count-only via <code>orders(query:..., first:1)</code> with a <code>pageInfo.hasNextPage</code> tally is awkward — easier to widen the main fetch to <code>deliveryMethod:all</code> always, then split visible/hidden in the existing eligibility block). See Open Questions for the tradeoff.</li>
+    <li><strong>Belt-and-braces, not blocker:</strong> the server-side dispatch-drift guard from <code>c8b7fe1</code> already returns an actionable error if drift occurs. This badge is the proactive UI cue so operators never get to the error in the first place.</li>
+  </ul>
+</div>
+
+<div class="preview-grid">
+
+  <div>
+    <p class="stateLabel">State A — toggle OFF, no warehouse orders</p>
+    <div class="card">
+      <div class="heading">Route Manager</div>
+      <div class="routeManagerHeaderCol">
+        <select class="select"><option>Shops Jardins</option></select>
+        <div class="warehouseToggleInline">
+          <div class="checkbox"></div>
+          <span class="warehouseToggleLabel">Include warehouse</span>
+        </div>
+        <div class="statusRow">
+          <span class="badge info">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4h14v2H3zM3 9h14v2H3zM3 14h14v2H3z"/></svg>
+            Orders to deliver: 8
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="stateLabel">State B — toggle OFF, N hidden warehouse orders <strong>(NEW)</strong></p>
+    <div class="card">
+      <div class="heading">Route Manager</div>
+      <div class="routeManagerHeaderCol">
+        <select class="select"><option>Shops Jardins</option></select>
+        <div class="warehouseToggleInline">
+          <div class="checkbox"></div>
+          <span class="warehouseToggleLabel">Include warehouse</span>
+        </div>
+        <div class="headerBadgesRow">
+          <span class="badge warning clickable">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1L1 5v6c0 4.5 4 8 9 9 5-1 9-4.5 9-9V5l-9-4zm0 2.2L17 6.2v4.8c0 3.4-3 6.1-7 6.9-4-.8-7-3.5-7-6.9V6.2l7-3z"/><path d="M9 6h2v5H9zM9 13h2v2H9z"/></svg>
+            40 warehouse orders hidden
+          </span>
+        </div>
+        <div class="statusRow">
+          <span class="badge info">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4h14v2H3zM3 9h14v2H3zM3 14h14v2H3z"/></svg>
+            Orders to deliver: 8
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="stateLabel">State C — toggle ON, N warehouse orders visible (existing, unchanged)</p>
+    <div class="card">
+      <div class="heading">Route Manager</div>
+      <div class="routeManagerHeaderCol">
+        <select class="select"><option>Shops Jardins</option></select>
+        <div class="warehouseToggleInline">
+          <div class="checkbox checked"></div>
+          <span class="warehouseToggleLabel">Include warehouse</span>
+        </div>
+        <div class="headerBadgesRow">
+          <span class="badge warning">
+            <svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="6" width="14" height="11" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3 6l7-3 7 3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            40 warehouse orders
+          </span>
+        </div>
+        <div class="statusRow">
+          <span class="badge info">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4h14v2H3zM3 9h14v2H3zM3 14h14v2H3z"/></svg>
+            Orders to deliver: 48
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="stateLabel">State D — toggle ON, no warehouse orders at location (existing, unchanged)</p>
+    <div class="card">
+      <div class="heading">Route Manager</div>
+      <div class="routeManagerHeaderCol">
+        <select class="select"><option>Shops Jardins</option></select>
+        <div class="warehouseToggleInline">
+          <div class="checkbox checked"></div>
+          <span class="warehouseToggleLabel">Include warehouse</span>
+        </div>
+        <div class="statusRow">
+          <span class="badge info">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4h14v2H3zM3 9h14v2H3zM3 14h14v2H3z"/></svg>
+            Orders to deliver: 8
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="matrix">
+  <h3>State matrix</h3>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 36%;">State</th>
+        <th>Warehouse toggle</th>
+        <th>Hidden-warehouse badge (NEW)</th>
+        <th>Visible-warehouse badge (existing)</th>
+        <th>Other warning badges</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>A.</strong> Toggle OFF, no warehouse orders at location (<code>warehouseOrdersHiddenCount = 0</code>)</td>
+        <td class="visible">visible, unchecked</td>
+        <td class="hidden">hidden</td>
+        <td class="hidden">hidden</td>
+        <td class="unchanged">unchanged</td>
+      </tr>
+      <tr>
+        <td><strong>B.</strong> Toggle OFF, N warehouse orders at location (<code>warehouseOrdersHiddenCount &gt; 0</code>)</td>
+        <td class="visible">visible, unchecked</td>
+        <td class="visible">visible, clickable → flips toggle ON</td>
+        <td class="hidden">hidden</td>
+        <td class="unchanged">unchanged</td>
+      </tr>
+      <tr>
+        <td><strong>C.</strong> Toggle ON, N warehouse orders at location (<code>warehouseOrdersCount &gt; 0</code>)</td>
+        <td class="visible">visible, checked</td>
+        <td class="hidden">hidden</td>
+        <td class="visible">visible (existing)</td>
+        <td class="unchanged">unchanged</td>
+      </tr>
+      <tr>
+        <td><strong>D.</strong> Toggle ON, no warehouse orders at location (<code>warehouseOrdersCount = 0</code>)</td>
+        <td class="visible">visible, checked</td>
+        <td class="hidden">hidden</td>
+        <td class="hidden">hidden</td>
+        <td class="unchanged">unchanged</td>
+      </tr>
+      <tr>
+        <td><strong>E.</strong> "All locations" selected (DEFAULT_LOCATION_ID)</td>
+        <td class="hidden">hidden (toggle is location-scoped)</td>
+        <td class="hidden">hidden</td>
+        <td class="hidden">hidden</td>
+        <td class="unchanged">unchanged (only location-scoped warnings render here)</td>
+      </tr>
+      <tr>
+        <td><strong>F.</strong> Loader fetch fails / Shopify error</td>
+        <td class="visible">visible (default OFF, last-known UI state)</td>
+        <td class="hidden">hidden (count unavailable, fail closed)</td>
+        <td class="hidden">hidden</td>
+        <td class="unchanged">unchanged</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="notes">
+  <h3>Open questions for Lucas</h3>
+  <ul>
+    <li><strong>Loader-side count mechanic.</strong> Two options:
+      <ul>
+        <li><strong>(a)</strong> When toggle is OFF, also count warehouse-method orders via the same eligibility pipeline. Requires duplicating ~50 lines of filter logic OR widening the main fetch to always include <code>deliveryMethod:all</code> and splitting visible/hidden post-fetch. <em>Recommend this.</em></li>
+        <li><strong>(b)</strong> Cheap heuristic: a separate Shopify <code>orders(query:..., first:1)</code> with a tag/method filter to check existence-only. Loses the count precision; the badge would say "warehouse orders hidden" without a number.</li>
+      </ul>
+      Lean is (a) — the count adds information value ("40 hidden" tells the operator the scale of what they're missing). pt-BR copy depends on this too: with count = "40 pedidos de armazém ocultos"; without = "Pedidos de armazém ocultos".
+    </li>
+    <li><strong>Clickable vs. text-only.</strong> v1 ships clickable (mirrors <code>addressErrors</code> and <code>returnPickups</code> patterns). Alternative: text-only with the operator expected to flip the toggle themselves. <em>Recommend clickable</em> — it's a one-click affordance that immediately resolves the warning state.</li>
+    <li><strong>Icon choice.</strong> Existing visible-state badge uses <code>icon="package"</code>. Reusing the same icon makes the inversion obvious (same icon, opposite tone implication via the "hidden" copy). Alternative: <code>icon="eye-slash"</code> or <code>icon="archive"</code> to differentiate. <em>Recommend stay on <code>package</code></em> for consistency.</li>
+    <li><strong>Order in the badges row.</strong> Failed delivery → presale → address errors → return pickups → warehouse-visible currently. Should hidden-warehouse sit in the same slot as visible-warehouse (mutually exclusive in the same state column), or at the start/end of the row? <em>Recommend same slot</em> — they're never both visible at the same time, so the position is stable.</li>
+  </ul>
+</div>
+
+</body>
+</html>

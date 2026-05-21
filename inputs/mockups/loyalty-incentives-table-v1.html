@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Incentivos emitidos (all-incentives table)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --border-soft: #ebebeb;
+    --border-row: #f1f1f1;
+    --text: #303030;
+    --text-strong: #1a1a1a;
+    --subdued: #6d7175;
+    --axis: #8c9196;
+    --link: #005bd3;
+
+    --hover-row: #fafafa;
+
+    --badge-success-bg: #cdfee1;
+    --badge-success-text: #0c5d39;
+    --badge-info-bg: #d4e8ff;
+    --badge-info-text: #1f3c66;
+    --badge-warning-bg: #ffeac2;
+    --badge-warning-text: #5b4700;
+    --badge-critical-bg: #fed3d1;
+    --badge-critical-text: #8c1c0d;
+    --badge-subdued-bg: #e4e5e7;
+    --badge-subdued-text: #4a4a4a;
+
+    --warn-bg: #fff8e1;
+    --warn-border: #f0c043;
+    --warn-text: #7a5400;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 900px;
+    margin-bottom: 24px;
+  }
+  h2.section {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 32px 0 12px;
+    color: var(--text);
+  }
+  h3.subsection {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 16px 0 6px;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* ==== Notes panels ==== */
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 1180px;
+    margin-bottom: 24px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; color: #4a3600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 4px; }
+  .notes code { background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+
+  /* ==== State matrix table ==== */
+  .matrix-wrap { max-width: 1180px; margin-bottom: 24px; overflow-x: auto; }
+  table.matrix { border-collapse: collapse; width: 100%; font-size: 12px; background: var(--card); border: 1px solid var(--border); }
+  table.matrix th, table.matrix td {
+    border: 1px solid var(--border-soft);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  table.matrix th { background: #f6f6f7; font-weight: 600; color: var(--subdued); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  table.matrix td.state-label { font-weight: 600; color: var(--text); white-space: nowrap; }
+
+  /* ==== Page mockup container (frames the rendered route) ==== */
+  .page-mockup {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px 24px;
+    max-width: 1180px;
+    margin-bottom: 24px;
+  }
+  .page-mockup .page-caption {
+    font-size: 11px;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .page-mockup .page-caption .tag {
+    display: inline-block;
+    background: var(--badge-subdued-bg);
+    color: var(--badge-subdued-text);
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-size: 10px;
+    margin-left: 4px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  /* ==== Page header (route title + subtitle) ==== */
+  .page-header { margin-bottom: 16px; }
+  .page-header h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; color: var(--text-strong); }
+  .page-header .subtitle { font-size: 13px; color: var(--subdued); }
+
+  /* ==== Filter bar (external-label pattern per CLAUDE.md) ==== */
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+  .filter-control { display: flex; flex-direction: column; gap: 4px; }
+  .filter-label { font-size: 12px; font-weight: 600; color: var(--subdued); }
+  .filter-select, .filter-search {
+    height: 32px;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--card);
+    min-width: 140px;
+  }
+  .filter-select { padding-right: 28px; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%236d7175' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+  .filter-search { min-width: 220px; }
+  .filter-export {
+    margin-left: auto;
+    height: 32px;
+    padding: 4px 14px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    align-self: flex-end;
+  }
+  .filter-export:hover { background: var(--hover-row); }
+
+  /* ==== Active-filter chips below the bar ==== */
+  .active-filters { padding: 8px 0; font-size: 12px; color: var(--subdued); display: flex; gap: 8px; align-items: center; min-height: 30px; }
+  .filter-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--badge-subdued-bg);
+    color: var(--badge-subdued-text);
+    border-radius: 12px; padding: 2px 8px 2px 10px;
+    font-size: 11px; font-weight: 500;
+  }
+  .filter-chip .x { cursor: pointer; font-size: 12px; line-height: 1; color: var(--subdued); }
+
+  /* ==== Table ==== */
+  .table-wrap { overflow-x: auto; }
+  table.incentives {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--card);
+  }
+  table.incentives thead th {
+    background: #f6f6f7;
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  table.incentives thead th.sortable { cursor: pointer; user-select: none; }
+  table.incentives thead th.sortable:hover { color: var(--text); }
+  table.incentives thead th.sortable .arrow { display: inline-block; margin-left: 4px; color: var(--axis); }
+  table.incentives tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-row);
+    vertical-align: middle;
+    color: var(--text);
+  }
+  table.incentives tbody tr {
+    cursor: pointer;
+    transition: background-color 0.08s ease;
+    position: relative;
+  }
+  table.incentives tbody tr:hover { background: var(--hover-row); }
+
+  /* Customer cell: name + email stacked */
+  .cell-customer .name { font-weight: 500; color: var(--text-strong); }
+  .cell-customer .email { font-size: 12px; color: var(--subdued); margin-top: 2px; }
+
+  /* Amount cell — right-aligned numeric */
+  .cell-amount { font-variant-numeric: tabular-nums; font-weight: 500; }
+  .cell-amount.percent { color: var(--text); }
+
+  /* Kind icon column */
+  .cell-kind { width: 28px; }
+  .kind-icon { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; color: var(--subdued); }
+  .kind-icon svg { width: 16px; height: 16px; }
+
+  /* Arm cell — small monospace pill or dash */
+  .cell-arm { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-weight: 600; color: var(--text-strong); width: 50px; text-align: center; }
+  .cell-arm.dash { color: var(--axis); font-family: inherit; font-weight: 400; }
+  .arm-pill {
+    display: inline-block;
+    background: var(--badge-info-bg);
+    color: var(--badge-info-text);
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-size: 11px;
+  }
+
+  /* Status badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .status-badge .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+  .status-active { background: var(--badge-success-bg); color: var(--badge-success-text); }
+  .status-active .dot { background: var(--badge-success-text); }
+  .status-redeemed { background: var(--badge-info-bg); color: var(--badge-info-text); }
+  .status-redeemed .dot { background: var(--badge-info-text); }
+  .status-expired { background: var(--badge-subdued-bg); color: var(--badge-subdued-text); }
+  .status-expired .dot { background: var(--badge-subdued-text); }
+  .status-revoked-cancel, .status-revoked-refund { background: var(--badge-critical-bg); color: var(--badge-critical-text); }
+  .status-revoked-cancel .dot, .status-revoked-refund .dot { background: var(--badge-critical-text); }
+
+  /* Dates */
+  .cell-date { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--text); }
+  .cell-date.expired { text-decoration: line-through; color: var(--subdued); }
+  .cell-date.warning { color: var(--warn-text); font-weight: 600; }
+  .cell-date .warn-icon { display: inline-block; margin-right: 4px; }
+
+  /* Hover-revealed kebab */
+  .cell-kebab { width: 36px; text-align: right; }
+  .kebab-btn {
+    width: 28px; height: 28px;
+    border: none; background: transparent; border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--subdued);
+    opacity: 0;
+    transition: opacity 0.08s ease, background-color 0.08s ease;
+  }
+  table.incentives tbody tr:hover .kebab-btn { opacity: 1; }
+  .kebab-btn:hover { background: var(--badge-subdued-bg); color: var(--text); }
+  .kebab-btn:focus { opacity: 1; outline: 2px solid var(--link); outline-offset: -2px; }
+  .kebab-btn svg { width: 16px; height: 16px; }
+
+  /* External-link cursor hint on rows */
+  table.incentives tbody tr:hover td.cell-customer .name::after {
+    content: " ↗";
+    font-size: 11px;
+    color: var(--link);
+    margin-left: 4px;
+  }
+
+  /* ==== Pagination footer ==== */
+  .pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    font-size: 12px;
+    color: var(--subdued);
+    border-top: 1px solid var(--border);
+  }
+  .pagination .pages { display: flex; gap: 8px; }
+  .pagination button {
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .pagination button:disabled { color: var(--axis); cursor: not-allowed; }
+  .pagination button:hover:not(:disabled) { background: var(--hover-row); }
+
+  /* ==== Empty states ==== */
+  .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--subdued);
+    background: var(--card);
+  }
+  .empty-state .icon { width: 48px; height: 48px; color: var(--axis); margin: 0 auto 12px; display: block; }
+  .empty-state h3 { font-size: 14px; font-weight: 600; color: var(--text); margin: 0 0 6px; }
+  .empty-state p { font-size: 13px; max-width: 420px; margin: 0 auto; }
+
+  /* ==== Loading skeleton ==== */
+  .skel-row td { padding: 14px 12px; }
+  .skel-bar {
+    background: linear-gradient(90deg, #ebebeb 0%, #f6f6f7 50%, #ebebeb 100%);
+    background-size: 200% 100%;
+    animation: skel-shimmer 1.4s ease-in-out infinite;
+    height: 12px;
+    border-radius: 4px;
+  }
+  @keyframes skel-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* ==== Kebab menu popover (visual sample only) ==== */
+  .kebab-menu {
+    position: absolute;
+    right: 36px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 4px;
+    z-index: 5;
+    min-width: 200px;
+  }
+  .kebab-menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .kebab-menu button:hover { background: var(--hover-row); }
+</style>
+</head>
+<body>
+
+<h1>"Incentivos emitidos" route — mockup v1</h1>
+<p class="intro">
+  Polaris-style admin table at <code style="background:rgba(0,0,0,0.05);padding:1px 5px;border-radius:3px;font-size:12px;">app/routes/app.loyalty.incentives.tsx</code> (planned, not yet scaffolded). Reads from <code>IssuedIncentive</code> Prisma table. Cross-campaign view covering loyalty A/B test enrollments + apology credits + future incentives. Single source of truth for "who has what, in what state."
+</p>
+
+<div class="notes">
+  <h3>Design decisions baked into this mockup</h3>
+  <ul>
+    <li><strong>Row click = external drill to Shopify admin customer page</strong> (opens in new tab). Subtle <code>↗</code> indicator appears on customer name when row is hovered. Shopify admin owns the per-customer view (rendered by the customer-detail UI extension block from Phase 1.8).</li>
+    <li><strong>Default filter = ACTIVE only</strong>. Page loads showing only currently-actionable incentives. User toggles status filter to see REVOKED / EXPIRED / REDEEMED. Active filter chips render below the bar showing what's applied.</li>
+    <li><strong>Campaign label = hardcoded map in route file</strong>. Raw <code>fiscal-hold-extrema-2026-05</code> renders as "Pedido de desculpas - Atraso CD Extrema". Loyalty-test arms render as "Teste de fidelidade - Arm A/B/C". Maintained manually; refactor to a Prisma `Campaign` table only when there are 5+ active campaigns.</li>
+    <li><strong>Per-row kebab (⋮) = hover-revealed only</strong>. Appears on row hover or keyboard focus. MVP action: "Abrir cliente no Shopify ↗" (same as row click — redundant but explicit). Sets up Phase 4 expansion (Revogar / Estender validade / Reenviar notificação).</li>
+    <li><strong>External-label filter pattern</strong> per CLAUDE.md Form Inputs convention. <code>.filterControl</code> + <code>.filterLabel</code>. Mobile: filters stack 1-per-row at ≤768px.</li>
+    <li><strong>Pack wide rows</strong> per CLAUDE.md rule: Export CSV sits on the same row as the filters (right-aligned), not on its own row.</li>
+    <li><strong>No emoji</strong> per CLAUDE.md hard rule. Kind icons are inline SVG (wallet for STORE_CREDIT, ticket-tag for DISCOUNT_CODE). Status uses colored Polaris-style badges with dots, no emoji.</li>
+    <li><strong>Sort default</strong>: most recent first (by <code>issuedAt</code> desc). Customer / Amount / Issued / Expires columns are sortable; Campaign / Arm / Kind / Status are filter-only.</li>
+    <li><strong>Expiry warning</strong>: yellow + bold when ≤7d remaining. Struck-through subdued when status=EXPIRED.</li>
+    <li><strong>Pagination</strong>: 50 rows/page. Expected volume ~12k loyalty-test enrollments + 117 fiscal-hold + future. Cursor-based via Prisma; "Showing X-Y of N" footer.</li>
+    <li><strong>Mobile (≤768px)</strong>: filter bar stacks 1-per-row, table gets <code>overflow-x: auto</code>. Polaris IndexTable handles narrow-screen reflow natively in production; this mockup approximates with horizontal scroll.</li>
+  </ul>
+</div>
+
+<h2 class="section">State matrix — Phase 3.5 design contract</h2>
+
+<div class="matrix-wrap">
+<table class="matrix">
+  <thead>
+    <tr>
+      <th>State</th>
+      <th>Filter bar</th>
+      <th>Active-filter chips</th>
+      <th>Table body</th>
+      <th>Pagination</th>
+      <th>Empty state</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="state-label">First load (no filters)</td>
+      <td>Visible, Status preselected to "Ativo"</td>
+      <td>One chip: "Status: Ativo"</td>
+      <td>Showing only ACTIVE rows, sorted by issuedAt desc</td>
+      <td>"Showing 1-50 of N" if N≥50, else "Showing N"</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td class="state-label">Loading (initial or filter change)</td>
+      <td>Visible, controls disabled</td>
+      <td>Reflects current filter selection</td>
+      <td>5 skeleton rows (shimmer)</td>
+      <td>Hidden</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td class="state-label">Empty — never had any incentives</td>
+      <td>Visible</td>
+      <td>One chip: "Status: Ativo"</td>
+      <td>Hidden</td>
+      <td>Hidden</td>
+      <td>"Nenhum incentivo emitido ainda. Eles aparecerão aqui conforme o teste de fidelidade e outras campanhas emitirem créditos ou descontos."</td>
+    </tr>
+    <tr>
+      <td class="state-label">Empty — current filter returns 0</td>
+      <td>Visible</td>
+      <td>Reflects active filters (≥1 chip)</td>
+      <td>Hidden</td>
+      <td>Hidden</td>
+      <td>"Nenhum resultado para os filtros atuais." + secondary button "Limpar filtros"</td>
+    </tr>
+    <tr>
+      <td class="state-label">Populated — mixed campaigns</td>
+      <td>Visible</td>
+      <td>Reflects active filters</td>
+      <td>Rows from multiple campaigns + arms + statuses</td>
+      <td>Visible if &gt;50 rows</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td class="state-label">Row hover</td>
+      <td>Visible</td>
+      <td>—</td>
+      <td>Hovered row: bg #fafafa, customer name gets ↗ suffix, kebab fades in</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td class="state-label">Kebab focused (keyboard)</td>
+      <td>Visible</td>
+      <td>—</td>
+      <td>Kebab opaque (no hover required), focus ring visible. Enter/Space opens menu.</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td class="state-label">Kebab menu open</td>
+      <td>Visible</td>
+      <td>—</td>
+      <td>Menu popover anchored to the kebab; outside click closes; Esc closes</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td class="state-label">Row with expiry ≤7d</td>
+      <td>Visible</td>
+      <td>—</td>
+      <td>"Vence em" cell yellow + bold + ⚠ icon</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td class="state-label">Row with status=EXPIRED (shown when filter includes EXPIRED)</td>
+      <td>Visible, Status filter includes "Expirado"</td>
+      <td>Status chip reflects "Expirado" inclusion</td>
+      <td>"Vence em" cell struck-through subdued; status badge gray</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td class="state-label">Row with status=REVOKED_CANCELLED</td>
+      <td>Visible</td>
+      <td>—</td>
+      <td>Status badge red. Hover row reveals "Pedido cancelado em [date]" tooltip on the badge (TBD if needed; deferred to v2 if Lucas wants it).</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<!-- ============= STATE 1: First load (mixed populated) ======== -->
+<!-- ============================================================ -->
+<h2 class="section">State 1 — First load (default: Status=Ativo, mixed campaigns)</h2>
+
+<div class="page-mockup">
+  <div class="page-caption">As rendered on app.loyalty.incentives.tsx <span class="tag">desktop</span></div>
+
+  <div class="page-header">
+    <h1>Incentivos emitidos</h1>
+    <p class="subtitle">Todos os créditos e descontos emitidos para clientes. Clique em uma linha para abrir o cliente no Shopify.</p>
+  </div>
+
+  <div class="filter-bar">
+    <div class="filter-control">
+      <span class="filter-label">Campanha</span>
+      <select class="filter-select"><option>Todas</option></select>
+    </div>
+    <div class="filter-control">
+      <span class="filter-label">Arm</span>
+      <select class="filter-select"><option>Todos</option></select>
+    </div>
+    <div class="filter-control">
+      <span class="filter-label">Status</span>
+      <select class="filter-select"><option>Ativo</option></select>
+    </div>
+    <div class="filter-control">
+      <span class="filter-label">Cliente</span>
+      <input type="text" class="filter-search" placeholder="Buscar por nome ou email…" />
+    </div>
+    <button class="filter-export">Exportar CSV</button>
+  </div>
+
+  <div class="active-filters">
+    Filtros ativos:
+    <span class="filter-chip">Status: Ativo <span class="x">×</span></span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="incentives">
+      <thead>
+        <tr>
+          <th class="sortable">Cliente <span class="arrow">↕</span></th>
+          <th>Campanha</th>
+          <th>Arm</th>
+          <th class="sortable">Valor <span class="arrow">↕</span></th>
+          <th></th>
+          <th>Status</th>
+          <th class="sortable">Emitido em <span class="arrow">↓</span></th>
+          <th class="sortable">Vence em <span class="arrow">↕</span></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cell-customer">
+            <div class="name">Carolina Leonardo</div>
+            <div class="email">carolinaleonardo@uol.com.br</div>
+          </td>
+          <td>Pedido de desculpas - Atraso CD Extrema</td>
+          <td class="cell-arm dash">—</td>
+          <td class="cell-amount">R$ 98,55</td>
+          <td class="cell-kind">
+            <span class="kind-icon" title="Crédito na loja"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="16" height="11" rx="2"/><path d="M2 9h16"/><circle cx="14" cy="13" r="1.2" fill="currentColor"/></svg></span>
+          </td>
+          <td><span class="status-badge status-active"><span class="dot"></span>Ativo</span></td>
+          <td class="cell-date">19/05/2026</td>
+          <td class="cell-date">18/07/2026</td>
+          <td class="cell-kebab">
+            <button class="kebab-btn" aria-label="Mais ações"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="4" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="10" cy="16" r="1.6"/></svg></button>
+          </td>
+        </tr>
+        <tr>
+          <td class="cell-customer">
+            <div class="name">Lucas Santos Guimarães</div>
+            <div class="email">lucas@gebeauty.com.br</div>
+          </td>
+          <td>Teste de fidelidade</td>
+          <td class="cell-arm"><span class="arm-pill">A</span></td>
+          <td class="cell-amount">R$ 40,00</td>
+          <td class="cell-kind">
+            <span class="kind-icon" title="Crédito na loja"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="16" height="11" rx="2"/><path d="M2 9h16"/><circle cx="14" cy="13" r="1.2" fill="currentColor"/></svg></span>
+          </td>
+          <td><span class="status-badge status-active"><span class="dot"></span>Ativo</span></td>
+          <td class="cell-date">17/05/2026</td>
+          <td class="cell-date">15/08/2026</td>
+          <td class="cell-kebab">
+            <button class="kebab-btn" aria-label="Mais ações"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="4" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="10" cy="16" r="1.6"/></svg></button>
+          </td>
+        </tr>
+        <tr>
+          <td class="cell-customer">
+            <div class="name">Barbara Oliveira</div>
+            <div class="email">barbarasalgado28@gmail.com</div>
+          </td>
+          <td>Teste de fidelidade</td>
+          <td class="cell-arm"><span class="arm-pill">B</span></td>
+          <td class="cell-amount">20% off</td>
+          <td class="cell-kind">
+            <span class="kind-icon" title="Cupom de desconto"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 2L18 9l-7 7-7-7 7-7z"/><circle cx="8" cy="8" r="1.4" fill="currentColor"/></svg></span>
+          </td>
+          <td><span class="status-badge status-active"><span class="dot"></span>Ativo</span></td>
+          <td class="cell-date">18/05/2026</td>
+          <td class="cell-date">16/08/2026</td>
+          <td class="cell-kebab">
+            <button class="kebab-btn" aria-label="Mais ações"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="4" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="10" cy="16" r="1.6"/></svg></button>
+          </td>
+        </tr>
+        <tr>
+          <td class="cell-customer">
+            <div class="name">Giulia Bin</div>
+            <div class="email">giulia.bin@garotasestupidas.com</div>
+          </td>
+          <td>Teste de fidelidade</td>
+          <td class="cell-arm"><span class="arm-pill">C</span></td>
+          <td class="cell-amount">R$ 40,00 (mín. R$ 160)</td>
+          <td class="cell-kind">
+            <span class="kind-icon" title="Cupom de desconto"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 2L18 9l-7 7-7-7 7-7z"/><circle cx="8" cy="8" r="1.4" fill="currentColor"/></svg></span>
+          </td>
+          <td><span class="status-badge status-active"><span class="dot"></span>Ativo</span></td>
+          <td class="cell-date">18/05/2026</td>
+          <td class="cell-date warning"><span class="warn-icon">⚠</span> 24/05/2026</td>
+          <td class="cell-kebab">
+            <button class="kebab-btn" aria-label="Mais ações"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="4" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="10" cy="16" r="1.6"/></svg></button>
+          </td>
+        </tr>
+        <tr>
+          <td class="cell-customer">
+            <div class="name">Ellen Caroline ropoli funchal</div>
+            <div class="email">Ellencrop1@gmail.com</div>
+          </td>
+          <td>Pedido de desculpas - Atraso CD Extrema</td>
+          <td class="cell-arm dash">—</td>
+          <td class="cell-amount">R$ 245,50</td>
+          <td class="cell-kind">
+            <span class="kind-icon" title="Crédito na loja"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="16" height="11" rx="2"/><path d="M2 9h16"/><circle cx="14" cy="13" r="1.2" fill="currentColor"/></svg></span>
+          </td>
+          <td><span class="status-badge status-active"><span class="dot"></span>Ativo</span></td>
+          <td class="cell-date">19/05/2026</td>
+          <td class="cell-date">18/07/2026</td>
+          <td class="cell-kebab">
+            <button class="kebab-btn" aria-label="Mais ações"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="4" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="10" cy="16" r="1.6"/></svg></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination">
+    <div>Mostrando 1-5 de 122</div>
+    <div class="pages">
+      <button disabled>‹ Anterior</button>
+      <button>Próximo ›</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ====== STATE 2: Row hover + kebab menu open ================ -->
+<!-- ============================================================ -->
+<h2 class="section">State 2 — Row hover with kebab menu open</h2>
+
+<div class="page-mockup">
+  <div class="page-caption">Hover state — Lucas's row, kebab opened <span class="tag">desktop</span></div>
+
+  <div class="table-wrap">
+    <table class="incentives">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Campanha</th>
+          <th>Arm</th>
+          <th>Valor</th>
+          <th></th>
+          <th>Status</th>
+          <th>Emitido em</th>
+          <th>Vence em</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background: var(--hover-row); position: relative;">
+          <td class="cell-customer">
+            <div class="name">Lucas Santos Guimarães <span style="color: var(--link); font-size: 11px;">↗</span></div>
+            <div class="email">lucas@gebeauty.com.br</div>
+          </td>
+          <td>Teste de fidelidade</td>
+          <td class="cell-arm"><span class="arm-pill">A</span></td>
+          <td class="cell-amount">R$ 40,00</td>
+          <td class="cell-kind">
+            <span class="kind-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="16" height="11" rx="2"/><path d="M2 9h16"/><circle cx="14" cy="13" r="1.2" fill="currentColor"/></svg></span>
+          </td>
+          <td><span class="status-badge status-active"><span class="dot"></span>Ativo</span></td>
+          <td class="cell-date">17/05/2026</td>
+          <td class="cell-date">15/08/2026</td>
+          <td class="cell-kebab" style="position: relative;">
+            <button class="kebab-btn" style="opacity: 1; background: var(--badge-subdued-bg); color: var(--text);"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="4" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="10" cy="16" r="1.6"/></svg></button>
+            <div class="kebab-menu">
+              <button>Abrir cliente no Shopify ↗</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ====== STATE 3: Status=Revoked, all-statuses filter ======== -->
+<!-- ============================================================ -->
+<h2 class="section">State 3 — Status filter expanded to all (showing revoked + expired + redeemed)</h2>
+
+<div class="page-mockup">
+  <div class="page-caption">User selected "Status: Todos" — historical view <span class="tag">desktop</span></div>
+
+  <div class="filter-bar">
+    <div class="filter-control">
+      <span class="filter-label">Campanha</span>
+      <select class="filter-select"><option>Todas</option></select>
+    </div>
+    <div class="filter-control">
+      <span class="filter-label">Arm</span>
+      <select class="filter-select"><option>Todos</option></select>
+    </div>
+    <div class="filter-control">
+      <span class="filter-label">Status</span>
+      <select class="filter-select"><option>Todos</option></select>
+    </div>
+    <div class="filter-control">
+      <span class="filter-label">Cliente</span>
+      <input type="text" class="filter-search" placeholder="Buscar por nome ou email…" />
+    </div>
+    <button class="filter-export">Exportar CSV</button>
+  </div>
+
+  <div class="active-filters">
+    Filtros ativos:
+    <span class="filter-chip">Status: Todos <span class="x">×</span></span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="incentives">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Campanha</th>
+          <th>Arm</th>
+          <th>Valor</th>
+          <th></th>
+          <th>Status</th>
+          <th>Emitido em</th>
+          <th>Vence em</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cell-customer"><div class="name">Mariana Souza</div><div class="email">mariana.souza@gmail.com</div></td>
+          <td>Teste de fidelidade</td>
+          <td class="cell-arm"><span class="arm-pill">B</span></td>
+          <td class="cell-amount">15% off</td>
+          <td class="cell-kind"><span class="kind-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 2L18 9l-7 7-7-7 7-7z"/><circle cx="8" cy="8" r="1.4" fill="currentColor"/></svg></span></td>
+          <td><span class="status-badge status-redeemed"><span class="dot"></span>Resgatado</span></td>
+          <td class="cell-date">12/05/2026</td>
+          <td class="cell-date">10/08/2026</td>
+          <td class="cell-kebab"><button class="kebab-btn" aria-label="Mais ações"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="4" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="10" cy="16" r="1.6"/></svg></button></td>
+        </tr>
+        <tr>
+          <td class="cell-customer"><div class="name">Patrícia Andrade</div><div class="email">patricia.andrade@hotmail.com</div></td>
+          <td>Pedido de desculpas - Atraso CD Extrema</td>
+          <td class="cell-arm dash">—</td>
+          <td class="cell-amount">R$ 64,50</td>
+          <td class="cell-kind"><span class="kind-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="16" height="11" rx="2"/><path d="M2 9h16"/><circle cx="14" cy="13" r="1.2" fill="currentColor"/></svg></span></td>
+          <td><span class="status-badge status-revoked-cancel"><span class="dot"></span>Revogado (cancelamento)</span></td>
+          <td class="cell-date">19/05/2026</td>
+          <td class="cell-date">18/07/2026</td>
+          <td class="cell-kebab"><button class="kebab-btn" aria-label="Mais ações"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="4" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="10" cy="16" r="1.6"/></svg></button></td>
+        </tr>
+        <tr>
+          <td class="cell-customer"><div class="name">Roberto Lima</div><div class="email">rlima@yahoo.com.br</div></td>
+          <td>Teste de fidelidade</td>
+          <td class="cell-arm"><span class="arm-pill">C</span></td>
+          <td class="cell-amount">R$ 50,00 (mín. R$ 200)</td>
+          <td class="cell-kind"><span class="kind-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 2L18 9l-7 7-7-7 7-7z"/><circle cx="8" cy="8" r="1.4" fill="currentColor"/></svg></span></td>
+          <td><span class="status-badge status-revoked-refund"><span class="dot"></span>Revogado (reembolso)</span></td>
+          <td class="cell-date">10/05/2026</td>
+          <td class="cell-date">09/07/2026</td>
+          <td class="cell-kebab"><button class="kebab-btn" aria-label="Mais ações"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="4" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="10" cy="16" r="1.6"/></svg></button></td>
+        </tr>
+        <tr>
+          <td class="cell-customer"><div class="name">Camila Ferreira</div><div class="email">cferreira@uol.com.br</div></td>
+          <td>Pedido de desculpas - Atraso CD Extrema</td>
+          <td class="cell-arm dash">—</td>
+          <td class="cell-amount">R$ 34,50</td>
+          <td class="cell-kind"><span class="kind-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="16" height="11" rx="2"/><path d="M2 9h16"/><circle cx="14" cy="13" r="1.2" fill="currentColor"/></svg></span></td>
+          <td><span class="status-badge status-expired"><span class="dot"></span>Expirado</span></td>
+          <td class="cell-date">15/03/2026</td>
+          <td class="cell-date expired">14/05/2026</td>
+          <td class="cell-kebab"><button class="kebab-btn" aria-label="Mais ações"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="4" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="10" cy="16" r="1.6"/></svg></button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ====== STATE 4: Loading ==================================== -->
+<!-- ============================================================ -->
+<h2 class="section">State 4 — Loading (initial or after filter change)</h2>
+
+<div class="page-mockup">
+  <div class="page-caption">Skeleton rows during data fetch <span class="tag">desktop</span></div>
+
+  <div class="filter-bar" style="opacity: 0.6; pointer-events: none;">
+    <div class="filter-control"><span class="filter-label">Campanha</span><select class="filter-select" disabled><option>Todas</option></select></div>
+    <div class="filter-control"><span class="filter-label">Arm</span><select class="filter-select" disabled><option>Todos</option></select></div>
+    <div class="filter-control"><span class="filter-label">Status</span><select class="filter-select" disabled><option>Ativo</option></select></div>
+    <div class="filter-control"><span class="filter-label">Cliente</span><input type="text" class="filter-search" disabled placeholder="Buscar por nome ou email…" /></div>
+    <button class="filter-export" disabled>Exportar CSV</button>
+  </div>
+
+  <div class="active-filters">Filtros ativos: <span class="filter-chip">Status: Ativo <span class="x">×</span></span></div>
+
+  <div class="table-wrap">
+    <table class="incentives">
+      <thead>
+        <tr>
+          <th>Cliente</th><th>Campanha</th><th>Arm</th><th>Valor</th><th></th><th>Status</th><th>Emitido em</th><th>Vence em</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="skel-row"><td><div class="skel-bar" style="width: 160px;"></div><div class="skel-bar" style="width: 200px; margin-top: 4px;"></div></td><td><div class="skel-bar" style="width: 180px;"></div></td><td><div class="skel-bar" style="width: 24px;"></div></td><td><div class="skel-bar" style="width: 80px;"></div></td><td><div class="skel-bar" style="width: 16px;"></div></td><td><div class="skel-bar" style="width: 70px;"></div></td><td><div class="skel-bar" style="width: 80px;"></div></td><td><div class="skel-bar" style="width: 80px;"></div></td><td></td></tr>
+        <tr class="skel-row"><td><div class="skel-bar" style="width: 140px;"></div><div class="skel-bar" style="width: 180px; margin-top: 4px;"></div></td><td><div class="skel-bar" style="width: 200px;"></div></td><td><div class="skel-bar" style="width: 24px;"></div></td><td><div class="skel-bar" style="width: 80px;"></div></td><td><div class="skel-bar" style="width: 16px;"></div></td><td><div class="skel-bar" style="width: 70px;"></div></td><td><div class="skel-bar" style="width: 80px;"></div></td><td><div class="skel-bar" style="width: 80px;"></div></td><td></td></tr>
+        <tr class="skel-row"><td><div class="skel-bar" style="width: 180px;"></div><div class="skel-bar" style="width: 220px; margin-top: 4px;"></div></td><td><div class="skel-bar" style="width: 160px;"></div></td><td><div class="skel-bar" style="width: 24px;"></div></td><td><div class="skel-bar" style="width: 80px;"></div></td><td><div class="skel-bar" style="width: 16px;"></div></td><td><div class="skel-bar" style="width: 70px;"></div></td><td><div class="skel-bar" style="width: 80px;"></div></td><td><div class="skel-bar" style="width: 80px;"></div></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ====== STATE 5: Empty — never issued ======================= -->
+<!-- ============================================================ -->
+<h2 class="section">State 5 — Empty (no incentives ever issued)</h2>
+
+<div class="page-mockup">
+  <div class="page-caption">Fresh install / dev environment <span class="tag">desktop</span></div>
+
+  <div class="page-header">
+    <h1>Incentivos emitidos</h1>
+    <p class="subtitle">Todos os créditos e descontos emitidos para clientes. Clique em uma linha para abrir o cliente no Shopify.</p>
+  </div>
+
+  <div class="filter-bar">
+    <div class="filter-control"><span class="filter-label">Campanha</span><select class="filter-select"><option>Todas</option></select></div>
+    <div class="filter-control"><span class="filter-label">Arm</span><select class="filter-select"><option>Todos</option></select></div>
+    <div class="filter-control"><span class="filter-label">Status</span><select class="filter-select"><option>Ativo</option></select></div>
+    <div class="filter-control"><span class="filter-label">Cliente</span><input type="text" class="filter-search" placeholder="Buscar por nome ou email…" /></div>
+    <button class="filter-export" disabled>Exportar CSV</button>
+  </div>
+
+  <div class="empty-state">
+    <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="10" width="36" height="28" rx="3"/><path d="M6 18h36"/><circle cx="34" cy="29" r="2.5" fill="currentColor"/></svg>
+    <h3>Nenhum incentivo emitido ainda</h3>
+    <p>Eles aparecerão aqui conforme o teste de fidelidade e outras campanhas emitirem créditos ou descontos.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ====== STATE 6: Empty (filter returns 0) =================== -->
+<!-- ============================================================ -->
+<h2 class="section">State 6 — Empty (current filter returns 0 rows)</h2>
+
+<div class="page-mockup">
+  <div class="page-caption">User searched for a customer not in the list <span class="tag">desktop</span></div>
+
+  <div class="filter-bar">
+    <div class="filter-control"><span class="filter-label">Campanha</span><select class="filter-select"><option>Todas</option></select></div>
+    <div class="filter-control"><span class="filter-label">Arm</span><select class="filter-select"><option>Todos</option></select></div>
+    <div class="filter-control"><span class="filter-label">Status</span><select class="filter-select"><option>Ativo</option></select></div>
+    <div class="filter-control"><span class="filter-label">Cliente</span><input type="text" class="filter-search" value="@inexistente.com" /></div>
+    <button class="filter-export" disabled>Exportar CSV</button>
+  </div>
+
+  <div class="active-filters">
+    Filtros ativos:
+    <span class="filter-chip">Status: Ativo <span class="x">×</span></span>
+    <span class="filter-chip">Cliente: @inexistente.com <span class="x">×</span></span>
+  </div>
+
+  <div class="empty-state">
+    <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="20" cy="20" r="12"/><path d="M30 30l10 10"/></svg>
+    <h3>Nenhum resultado para os filtros atuais</h3>
+    <p>Tente alterar os filtros ou limpar a busca.</p>
+    <button style="margin-top: 14px; padding: 6px 14px; border: 1px solid var(--border); background: var(--card); border-radius: 6px; font-size: 13px; cursor: pointer;">Limpar filtros</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ====== STATE 7: Mobile (≤768px) =========================== -->
+<!-- ============================================================ -->
+<h2 class="section">State 7 — Mobile (≤768px) — filter stack + table horizontal scroll</h2>
+
+<div class="page-mockup" style="max-width: 420px;">
+  <div class="page-caption">Mobile viewport (iPhone-sized) <span class="tag">mobile</span></div>
+
+  <div class="page-header">
+    <h1 style="font-size: 17px;">Incentivos emitidos</h1>
+    <p class="subtitle" style="font-size: 12px;">Toque em uma linha para abrir o cliente no Shopify.</p>
+  </div>
+
+  <div class="filter-bar" style="flex-direction: column; align-items: stretch;">
+    <div class="filter-control"><span class="filter-label">Campanha</span><select class="filter-select" style="width: 100%;"><option>Todas</option></select></div>
+    <div class="filter-control"><span class="filter-label">Status</span><select class="filter-select" style="width: 100%;"><option>Ativo</option></select></div>
+    <div class="filter-control"><span class="filter-label">Cliente</span><input type="text" class="filter-search" style="width: 100%;" placeholder="Buscar…" /></div>
+  </div>
+
+  <div class="active-filters" style="font-size: 11px;">
+    <span class="filter-chip">Status: Ativo <span class="x">×</span></span>
+  </div>
+
+  <div class="table-wrap" style="border: 1px solid var(--border); border-radius: 6px;">
+    <table class="incentives" style="font-size: 12px; min-width: 700px;">
+      <thead>
+        <tr>
+          <th>Cliente</th><th>Campanha</th><th>Arm</th><th>Valor</th><th></th><th>Status</th><th>Vence</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cell-customer"><div class="name">Carolina Leonardo</div><div class="email">carolinaleonardo@uol.com.br</div></td>
+          <td>Atraso CD Extrema</td>
+          <td class="cell-arm dash">—</td>
+          <td class="cell-amount">R$ 98,55</td>
+          <td class="cell-kind"><span class="kind-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="16" height="11" rx="2"/><path d="M2 9h16"/></svg></span></td>
+          <td><span class="status-badge status-active"><span class="dot"></span>Ativo</span></td>
+          <td class="cell-date">18/07</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination" style="font-size: 11px;">
+    <div>1-50 de 122</div>
+    <div class="pages"><button>‹</button><button>›</button></div>
+  </div>
+</div>
+
+</body>
+</html>

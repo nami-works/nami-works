@@ -1,0 +1,1380 @@
+/* ── Sync progress banner ──────────────────────────────────────────── */
+.syncProgressRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+
+.syncProgressPhaseLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: #3a3a3a;
+}
+
+.syncProgressPct {
+  font-size: 13px;
+  font-weight: 600;
+  color: #3a3a3a;
+}
+
+.syncProgressBarBg {
+  width: 100%;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+/* Both determined and indeterminate share the holographic gradient */
+.syncProgressBarFill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #5ecece, #b09fda, #d4a8d4, #5ecece);
+  background-size: 200% 100%;
+  animation: omnify-holo-bar 1.4s linear infinite;
+  transition: width 0.6s ease;
+}
+
+.syncProgressMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.mapCanvas {
+  height: 360px;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.mapCanvasLarge {
+  height: clamp(320px, calc(100vh - 120px), 720px);
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.mapCanvasWrap {
+  position: relative;
+}
+
+.mapOverlayButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mapLabel {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 6px 8px;
+  border: 1px solid #dfe3e8;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1f2933;
+}
+
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chartRow {
+  display: grid;
+  grid-template-columns: minmax(0, 110px) minmax(0, 1fr) 60px;
+  gap: 8px;
+  align-items: center;
+}
+
+.chartLabel {
+  font-size: 12px;
+  color: #1f2933;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chartBarTrack {
+  background: #f1f2f3;
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.chartBar {
+  background: #008060;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.chartValue {
+  text-align: right;
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.rankFooter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.updateRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.rankTable {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rankTableHeader,
+.rankTableRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.rankTableHeader {
+  font-size: 12px;
+  color: #6d7175;
+  font-weight: 600;
+}
+
+.rankName {
+  font-size: 12px;
+  color: #1f2933;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rankValue {
+  font-size: 12px;
+  color: #1f2933;
+  text-align: right;
+}
+
+.asideColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.asideRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.asideRowRight {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.asideRowSpace {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Modal footer with destructive action left, primary actions right */
+.modalFooterSplit {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.modalFooterSplit .asideRowRight {
+  display: flex;
+  gap: 12px;
+}
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tagItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 16px;
+  border: 1px solid #dfe3e8;
+  background: #f6f6f7;
+  color: #1f2933;
+  font-size: 12px;
+}
+
+.tagRemove {
+  border: none;
+  background: transparent;
+  color: #5c5f62;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  font-size: 14px;
+}
+
+.tagRemove:hover {
+  color: #1f2933;
+}
+
+.projectsHeaderRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.projectsSelect {
+  flex: 1;
+  min-width: 220px;
+}
+
+.projectsHeaderActions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.projectsEmptyState {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+}
+
+.projectsEmptyActions {
+  margin-top: 8px;
+}
+
+.projectsLoadedHeader {
+  font-size: 14px;
+}
+
+.projectsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.projectsFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.projectsTableWrap {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.projectsSectionSpacing {
+  margin-top: 8px;
+}
+
+.projectsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.projectsTable th,
+.projectsTable td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.projectsTable th {
+  font-weight: 600;
+  color: #6d7175;
+}
+
+.projectsTable tbody tr:hover {
+  background: #f6f6f7;
+}
+
+.placeAutocompleteField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.placeAutocompleteHost {
+  width: 100%;
+  min-height: 36px;
+}
+
+.autocompleteLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: #303030;
+}
+
+.dateRangeModal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dateRangePresetList {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dateRangeContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dateRangeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.datePickerField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dateRangeFooter {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.dateRangeTrigger {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dateRangeToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.projectsControlRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.projectsControlBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 220px;
+}
+
+.mainChartsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.heatmapHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.heatmapHeaderControls {
+  width: min(240px, 100%);
+}
+
+.heatmapLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+@media (max-width: 1080px) {
+  .heatmapLayout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.topCitiesHeaderRow {
+  display: flex;
+  justify-content: stretch;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.topCitiesHeaderControls {
+  width: 100%;
+}
+
+/* Campaign layout — single column, full width */
+.campaignLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.campaignMain {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Expansion projects — full-width grid below heatmap */
+.projectsFullWidth {
+  margin-top: 16px;
+}
+.projectsGridHeader {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+.projectsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+@media (max-width: 768px) {
+  .projectsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Collapsible section wrapper */
+.collapsibleSectionWrap {
+  position: relative;
+}
+
+/* Clickable chevron toggle at bottom-right */
+.collapseChevron {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.chevronIcon {
+  font-size: 18px;
+  font-weight: 600;
+  color: #8c9196;
+  transition: transform 0.15s ease, color 0.15s ease;
+  transform: rotate(270deg);
+  display: inline-block;
+}
+
+.collapseChevron.collapsed .chevronIcon {
+  transform: rotate(90deg);
+}
+
+.collapseChevron:hover .chevronIcon {
+  color: #303030;
+}
+
+/* Aside select row with collapse toggle */
+.asideSelectRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.collapseToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #c9ccd0;
+  border-radius: 8px;
+  background: #fff;
+  color: #6d7175;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.collapseToggle:hover {
+  background: #f6f6f7;
+  border-color: #8c9196;
+  color: #303030;
+}
+
+.projectDetailBlock {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Map footer row: Heatmap options + New project */
+.mapFooterRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+/* Project card header row — badge left, delete right (matches routeCardHeader) */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Project card name badge — matches Route Manager .routeBadge */
+.cardBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  background-color: #e4e5e7;
+  color: #303030;
+}
+
+/* Project card stats block */
+.cardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+/* Project card actions — right-aligned, constructive buttons only */
+.cardActions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+/* Badge list for location removal (Price Tags pattern) */
+.badgeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #e4e5e7;
+  font-size: 12px;
+  font-weight: 450;
+  color: #303030;
+  line-height: 1.6;
+}
+
+.badgeLabel {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badgeRemove {
+  cursor: pointer;
+  color: #6d7175;
+  font-size: 14px;
+  line-height: 1;
+  margin-left: 2px;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badgeRemove:hover {
+  background: #c9ccd0;
+  color: #303030;
+}
+
+/* Loaded project view */
+.loadedProjectHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+/* Location ranking table */
+.locationTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.locationTable th,
+.locationTable td {
+  padding: 6px 8px;
+  text-align: center;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.locationTable th:first-child,
+.locationTable td:first-child {
+  text-align: left;
+}
+
+.locationTable th {
+  font-weight: 600;
+  color: #6d7175;
+  font-size: 11px;
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+  background: #f6f6f7;
+}
+
+.locationTable td {
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.locationTable tbody tr:hover {
+  background: #f6f6f7;
+}
+
+/* Column group separator — applied to first sub-column (Revenue) in each radius group */
+.columnGroupFirst {
+  border-left: 2px solid #e1e3e5;
+}
+
+.locationTableWrap {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.columnGroupHeader {
+  text-align: center !important;
+  border-bottom: 2px solid #e1e3e5;
+}
+
+/* Fit score badges */
+.fitBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.fitBadge1 { background: #d72c0d; }
+.fitBadge2 { background: #e67c00; }
+.fitBadge3 { background: #b98900; }
+.fitBadge4 { background: #2c6ecb; }
+.fitBadge5 { background: #008060; }
+
+/* Fit cell: badge + select side by side */
+.fitCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Loaded project table header controls ── */
+.loadedProjectControls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Radius stepper row — [toggle] [stepper] [unit] */
+.radiusStepperRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 64px;
+}
+
+.radiusUnitLabel {
+  font-size: 13px;
+  color: #6d7175;
+  white-space: nowrap;
+}
+
+/* Radius stepper (legacy) */
+.radiusStepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.radiusInputWrap {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #c9ccd0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.radiusStepBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #f6f6f7;
+  color: #303030;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.radiusStepBtn:hover {
+  background: #e4e5e7;
+}
+
+.radiusInput {
+  width: 56px;
+  height: 32px;
+  border: none;
+  border-left: 1px solid #c9ccd0;
+  border-right: 1px solid #c9ccd0;
+  text-align: center;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  font-size: 13px;
+  font-weight: 450;
+  color: #303030;
+  -moz-appearance: textfield;
+}
+
+.radiusInput::-webkit-outer-spin-button,
+.radiusInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Custom radius column header */
+.customRadiusHeader {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.customRadiusRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  color: #6d7175;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 50%;
+  line-height: 1;
+  padding: 0;
+}
+
+.customRadiusRemove:hover {
+  background: #e4e5e7;
+  color: #303030;
+}
+
+/* Qualitative criteria columns — equal width, allow header line breaks */
+.qualitativeHeader {
+  width: 120px;
+  min-width: 100px;
+  white-space: normal !important;
+  word-break: break-word;
+}
+
+/* Sortable column headers */
+.sortableHeader {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.sortableHeader:hover {
+  color: #303030;
+}
+
+.sortArrow {
+  display: inline-block;
+  margin-left: 2px;
+  font-size: 10px;
+  color: #008060;
+}
+
+
+/* Projects section header with collapse toggle */
+.projectsSectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.projectsSectionTitle {
+  flex: 1;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Heatmap options modal — two-column layout matching Local Delivery map style modal */
+.heatmapModalContent {
+  width: min(100%, 480px);
+  margin: 0 auto;
+}
+
+.heatmapModalColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.customizeStatsModal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.customizeStatsFooter {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.statsSpinnerOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+/* ── Overview Stats Strip ───────────────────────────────────────────────── */
+
+.overviewStrip {
+  padding: 20px;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #e8f5fa 0%, #fce4f0 30%, #fff 65%);
+  margin-bottom: 16px;
+}
+
+.overviewHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.overviewHeading {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.overviewControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.overviewToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #6d7175;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.overviewPeriodSelect {
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  border: 1px solid #c9cdd1;
+  border-radius: 8px;
+  background: #fff;
+  color: #303030;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.overviewPeriodSelect:hover { border-color: #8c9196; }
+.overviewPeriodSelect:focus { border-color: #005bd3; box-shadow: 0 0 0 1px #005bd3; }
+.overviewPeriodSelect:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.overviewSyncRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.overviewSyncText {
+  font-size: 11px;
+  color: #8c9196;
+}
+.overviewSyncLink {
+  font-size: 11px;
+  color: #005bd3;
+  cursor: pointer;
+  text-decoration: none;
+}
+.overviewSyncLink:hover {
+  text-decoration: underline;
+}
+
+.overviewRowLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6d7175;
+  margin: 16px 0 8px;
+}
+.overviewRowLabelFirst { margin-top: 8px; }
+
+.overviewGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 768px) {
+  .overviewGrid { grid-template-columns: 1fr; }
+}
+
+.overviewBox {
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.overviewIconRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.overviewIcon {
+  width: 20px;
+  height: 20px;
+  color: #6d7175;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overviewPrimary {
+  font-size: 24px;
+  font-weight: 700;
+  color: #303030;
+  line-height: 1.2;
+}
+.overviewLabel {
+  font-size: 12px;
+  color: #6d7175;
+  font-weight: 500;
+}
+.overviewSecondary {
+  font-size: 13px;
+  color: #6d7175;
+  margin-top: 2px;
+}
+
+/* ── Clickable card states ──────────────────────────────────────────────── */
+
+.overviewBoxClickable {
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.overviewBoxClickable:hover {
+  border-color: #c9cdd1;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+.overviewBoxActive {
+  border-color: #5ecece;
+  box-shadow: 0 0 0 1px #5ecece;
+  background: linear-gradient(0deg,
+    rgba(252, 228, 240, 0.5) 0%,
+    rgba(232, 245, 250, 0.5) 100%);
+}
+
+.overviewBoxLoading {
+  position: relative;
+  pointer-events: none;
+}
+.overviewBoxLoading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.overviewSpinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+/* ── Drill-down container ──────────────────────────────────────────────── */
+
+.drillDown {
+  margin-top: 16px;
+  padding: 16px 0;
+}
+
+/* ── Vertical bar chart ────────────────────────────────────────────────── */
+
+.vbarChart {
+  display: flex;
+  gap: 8px;
+  padding: 0 4px;
+}
+.vbarColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+.vbarBarArea {
+  width: 100%;
+  height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+.vbarValue {
+  font-size: 11px;
+  font-weight: 600;
+  color: #303030;
+  white-space: nowrap;
+  margin-bottom: 4px;
+}
+.vbarBar {
+  width: 100%;
+  max-width: 48px;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, #5ecece, #b09fda, #d4a8d4);
+  transition: height 0.3s ease;
+}
+.vbarLabel {
+  font-size: 10px;
+  color: #6d7175;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  margin-top: 6px;
+}
+
+/* ── Stacked vertical bar chart ────────────────────────────────────────── */
+
+.vbarStacked {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 48px;
+  border-radius: 4px 4px 0 0;
+  overflow: hidden;
+}
+.vbarStackOnline {
+  background: linear-gradient(180deg, #5ecece, #88c5d6);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.vbarStackStore {
+  background: linear-gradient(180deg, #c48fd0, #d4a8d4);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.vbarPileLabel {
+  font-size: 9px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.vbarPileLabelExternal {
+  font-size: 9px;
+  font-weight: 600;
+  color: #303030;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.vbarPileHover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.vbarStackOnline:hover .vbarPileHover,
+.vbarStackStore:hover .vbarPileHover {
+  opacity: 1;
+}
+.vbarStackOnline:hover .vbarPileLabel,
+.vbarStackStore:hover .vbarPileLabel {
+  opacity: 0;
+}
+
+/* ── Stacked bar legend ────────────────────────────────────────────────── */
+
+.chartLegend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #6d7175;
+}
+.legendDot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* ── Donut chart ───────────────────────────────────────────────────────── */
+
+.donutContainer {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+}
+.donutCard {
+  flex: 1 0 0;
+  min-width: 120px;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  scroll-snap-align: start;
+}
+/* When 4+ cities, fix width to show 3.5 and enable scroll */
+.donutContainerScrollable {
+  justify-content: flex-start;
+}
+.donutContainerScrollable .donutCard {
+  flex: 0 0 calc(28.5% - 15px);
+  min-width: 140px;
+}
+.donutSvgWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 140px;
+}
+.donutSvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.donutSlice {
+  transition: opacity 0.15s;
+}
+.donutSlice:hover {
+  opacity: 0.8;
+  filter: brightness(1.1);
+}
+.donutBadgeDefault {
+  position: absolute;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: opacity 0.15s;
+}
+.donutBadge {
+  position: absolute;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.donutBadgeVisible {
+  opacity: 1;
+}
+/* When hover badge appears, hide the default badge at the same position */
+.donutBadgeVisible ~ .donutBadgeDefault {
+  opacity: 0;
+}
+.donutBadgeStore {
+  background: rgba(212, 168, 212, 0.9);
+  color: #fff;
+  top: 25%;
+}
+.donutBadgeWarehouse {
+  background: rgba(94, 206, 206, 0.9);
+  color: #fff;
+  bottom: 25%;
+}
+.donutLabel {
+  font-size: 12px;
+  color: #303030;
+  font-weight: 600;
+}
+.donutLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: #6d7175;
+}
+
+/* ── Gap cities table ──────────────────────────────────────────────────── */
+
+.gapTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.gapTable th {
+  text-align: center;
+  font-weight: 600;
+  color: #6d7175;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e1e3e5;
+}
+.gapTable th:first-child { text-align: left; }
+.gapTable td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f1f1;
+  text-align: center;
+}
+.gapTable td:first-child { text-align: left; }
+.gapRevenueCell {
+  position: relative;
+}
+.gapRevenueBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(94, 206, 206, 0.15), rgba(212, 168, 212, 0.15));
+  z-index: 0;
+}
+.gapRevenueText {
+  position: relative;
+  z-index: 1;
+  font-weight: 600;
+}
+
+/* ── Close project button ───────────────────────────────────────────────── */
+
+.closeProjectButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #6d7175;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.closeProjectButton:hover {
+  background: #f1f1f1;
+  color: #303030;
+}
+

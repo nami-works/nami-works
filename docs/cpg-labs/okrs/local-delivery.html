@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Local Delivery Autonomy — Roadmap</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --border-light: #f1f1f1;
+    --text: #303030;
+    --text-subdued: #6d7175;
+    --axis: #8c9196;
+    --shopify-green: #008060;
+    --shopify-blue: #005bd3;
+    --amber: #d99a0a;
+    --critical-red: #d72c0d;
+    --soft-blue-bg: #e8f1ff;
+    --soft-green-bg: #e2f5ec;
+    --soft-amber-bg: #fdf2d6;
+    --soft-grey-bg: #f0f0f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .container { max-width: 880px; margin: 0 auto; }
+
+  .page-header { margin-bottom: 24px; }
+  .page-header h1 { font-size: 26px; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .page-header .subtitle { font-size: 13px; color: var(--text-subdued); margin: 0; }
+
+  .destination {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--shopify-blue);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin-bottom: 28px;
+  }
+  .destination .label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--shopify-blue);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .destination .statement {
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--text);
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 8px 0 12px;
+  }
+
+  /* Timeline strip */
+  .timeline {
+    position: relative;
+    margin-bottom: 32px;
+    padding: 16px 0 0;
+  }
+  .timeline-track {
+    position: relative;
+    height: 2px;
+    background: var(--border);
+  }
+  .timeline-track::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 2px;
+    width: 12.5%;
+    background: var(--shopify-blue);
+  }
+  .timeline-nodes {
+    display: flex;
+    justify-content: space-between;
+    margin-top: -7px;
+  }
+  .timeline-node {
+    flex: 1;
+    text-align: center;
+  }
+  .timeline-node .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 2px solid var(--border);
+    margin: 0 auto;
+    display: block;
+  }
+  .timeline-node.done .dot {
+    background: var(--shopify-blue);
+    border-color: var(--shopify-blue);
+  }
+  .timeline-node .label {
+    display: block;
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .timeline-node .date {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    color: var(--text-subdued);
+  }
+
+  /* Phase cards */
+  .phase {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin-bottom: 16px;
+  }
+  .phase-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .phase-id {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .phase-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text);
+    letter-spacing: -0.005em;
+  }
+  .chip {
+    display: inline-block;
+    padding: 3px 11px;
+    border-radius: 11px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .chip-done { background: var(--soft-green-bg); color: var(--shopify-green); }
+  .chip-next { background: var(--soft-blue-bg); color: var(--shopify-blue); }
+  .chip-later { background: var(--soft-grey-bg); color: var(--text-subdued); }
+
+  .phase-section {
+    margin-top: 14px;
+  }
+  .phase-section:first-child { margin-top: 0; }
+  .phase-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .phase-section ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+  .phase-section ul li {
+    margin-bottom: 6px;
+    line-height: 1.55;
+  }
+  .phase-section ul li:last-child { margin-bottom: 0; }
+
+  .phase-section.example {
+    background: var(--soft-grey-bg);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-top: 16px;
+    border-left: 3px solid var(--axis);
+  }
+  .phase-section.example .phase-section-label { color: var(--axis); margin-bottom: 4px; }
+  .phase-section.example p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  /* Success criteria */
+  .success {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin-top: 28px;
+  }
+  .success h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 14px;
+    color: var(--text);
+  }
+  .success ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+  .success ul li {
+    margin-bottom: 8px;
+    line-height: 1.55;
+  }
+  .success ul li:last-child { margin-bottom: 0; }
+  .success ul li strong { color: var(--text); font-weight: 600; }
+
+  .card code {
+    background: var(--soft-grey-bg);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  .phase code, .success code {
+    background: var(--soft-grey-bg);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-subdued);
+  }
+  footer .meta { margin: 0 0 4px; }
+  footer a { color: var(--shopify-blue); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  footer code {
+    background: var(--soft-grey-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 20px 16px; }
+    .page-header h1 { font-size: 22px; }
+    .destination { padding: 18px 20px; }
+    .destination .statement { font-size: 15px; }
+    .phase { padding: 18px 20px; }
+    .phase-title { font-size: 16px; }
+    .timeline-node .label, .timeline-node .date { font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="page-header">
+    <h1>Local Delivery Autonomy</h1>
+    <p class="subtitle">Roadmap · target end of 2026-Q3</p>
+  </div>
+
+  <div class="destination">
+    <div class="label">The destination</div>
+    <p class="statement">Local delivery dispatches itself — smarter than the optimizer alone, with us only stepping in to teach it from mistakes.</p>
+  </div>
+
+  <div class="section-title">The journey</div>
+
+  <div class="timeline">
+    <div class="timeline-track"></div>
+    <div class="timeline-nodes">
+      <div class="timeline-node done">
+        <span class="dot"></span>
+        <span class="label">Phase 0</span>
+        <span class="date">Done · 2026-05-12</span>
+      </div>
+      <div class="timeline-node">
+        <span class="dot"></span>
+        <span class="label">Phase 1</span>
+        <span class="date">~2026-05-26</span>
+      </div>
+      <div class="timeline-node">
+        <span class="dot"></span>
+        <span class="label">Phase 2</span>
+        <span class="date">~2026-06-09</span>
+      </div>
+      <div class="timeline-node">
+        <span class="dot"></span>
+        <span class="label">Phase 3</span>
+        <span class="date">~2026-06-23</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header">
+      <div>
+        <div class="phase-id">Phase 0</div>
+        <h2 class="phase-title">Foundations</h2>
+      </div>
+      <span class="chip chip-done">Done · 2026-05-12</span>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-section-label">What shipped</div>
+      <ul>
+        <li>An eval set: 12 real routing decisions from late April through today, locked as the regression baseline the AI will be measured against</li>
+        <li>A geofence registry: barriers (Guanabara Bay), corridors (Botafogo→Tijuca, Botafogo→Niterói via the bridge), per-metro outlier thresholds, sparse-volume locations like Recife</li>
+        <li>The AI prompt v1: the spatial-reasoner's instructions and decision rules, version-tagged so we iterate without losing history</li>
+      </ul>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-section-label">What changes for you</div>
+      <ul>
+        <li>Nothing today — these are the artifacts the AI will read once Phase 1 ships</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header">
+      <div>
+        <div class="phase-id">Phase 1</div>
+        <h2 class="phase-title">AI takes the wheel</h2>
+      </div>
+      <span class="chip chip-next">Next · ~2 weeks out</span>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-section-label">What ships</div>
+      <ul>
+        <li>When you run <code>optimize</code>, the system stops just clustering and starts <em>reasoning</em> about the routes</li>
+        <li>AI sees the map, knows about Guanabara Bay, knows about the Botafogo→Niterói corridor, knows what an outlier is</li>
+        <li>Proposes route splits with reasoning attached, not just optimizer math</li>
+        <li>Tags each proposed route with confidence and the rules it considered</li>
+      </ul>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-section-label">What changes for you</div>
+      <ul>
+        <li>Same morning routine — you still trigger optimize from <code>nami_control.py</code></li>
+        <li>Fewer interruptions where we manually catch "wait, this should ride with Niterói" — the system catches what we catch together today</li>
+        <li>You review the AI's reasoning trail; it surfaces the call, you say yes or override</li>
+      </ul>
+    </div>
+
+    <div class="phase-section example">
+      <div class="phase-section-label">Example</div>
+      <p>Today we moved julia to the Niterói route because she sits on the bridge corridor. In Phase 1 that would have been the system's first proposal, with a one-line reasoning trail: <em>"#80102 julia (Flamengo) is on the Botafogo→bridge corridor — naturally a drive-by stop on the way to Niterói. Moved from Rio route to Niterói route."</em></p>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header">
+      <div>
+        <div class="phase-id">Phase 2</div>
+        <h2 class="phase-title">You stop showing up in the morning</h2>
+      </div>
+      <span class="chip chip-later">~4 weeks out</span>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-section-label">What ships</div>
+      <ul>
+        <li>The reasoning runs on its own via a 5-minute cron — no human trigger needed</li>
+        <li>Auto-cron picks up new orders, decides, dispatches, attaches reasoning, fires Lalamove</li>
+        <li>Starts on Shops Jardins first; expands to Rio and Recife once the SJ flow is stable</li>
+        <li>A daily dashboard surfaces what was dispatched, what reasoning was applied, anything flagged for review</li>
+      </ul>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-section-label">What changes for you</div>
+      <ul>
+        <li>The 10-15 minute morning routine disappears for SJ first, then Rio, then Recife</li>
+        <li>You check in on the dashboard once a day instead of driving the dispatch</li>
+        <li>You only intervene if something looks off — and the dashboard tells you when something does</li>
+      </ul>
+    </div>
+
+    <div class="phase-section example">
+      <div class="phase-section-label">Example</div>
+      <p>Tomorrow morning you wake up to find SJ's 3 new orders already dispatched in 2 clean routes. You don't have to do anything unless an alert pops up. Total time spent on Local Delivery: ~30 seconds glancing at the dashboard.</p>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-header">
+      <div>
+        <div class="phase-id">Phase 3</div>
+        <h2 class="phase-title">The system gets smarter from us</h2>
+      </div>
+      <span class="chip chip-later">~6 weeks out</span>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-section-label">What ships</div>
+      <ul>
+        <li>Post-mortem panel showing every AI decision from the last few days — what it chose, why, what it flagged</li>
+        <li>You mark wrong calls and explain why in plain text</li>
+        <li>The system extracts the rule, updates the geofence registry, applies the fix to future routes</li>
+        <li>A correction made once teaches the system forever — not just for the location it happened at, but for any location with the same shape</li>
+      </ul>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-section-label">What changes for you</div>
+      <ul>
+        <li>Your role shifts from "dispatcher" to "teacher"</li>
+        <li>Spend ~5 minutes a day reviewing yesterday's calls; flag anything wrong</li>
+        <li>Your judgment scales across every future route, every location, every operator who joins later</li>
+      </ul>
+    </div>
+
+    <div class="phase-section example">
+      <div class="phase-section-label">Example</div>
+      <p>If the AI keeps splitting Niterói + Copa on low-volume days when you'd prefer combined, mark those calls wrong with the reason: <em>"only 2 orders today, R$20 saving worth the bridge crossing."</em> The system updates the barrier-tolerance rule. From the next 2-order Rio day onward, the AI keeps them combined automatically.</p>
+    </div>
+  </div>
+
+  <div class="success">
+    <h2>How we'll know it's working</h2>
+    <ul>
+      <li><strong>Coverage</strong> · 0% auto today → 100% auto by mid-July</li>
+      <li><strong>Quality</strong> · AI matches operator-validated routing calls ≥90% of the time</li>
+      <li><strong>Savings</strong> · Cost per delivered order in Q3 is ≥10% lower than today's baseline</li>
+      <li><strong>Stability</strong> · Zero unplanned dispatch incidents requiring expedition-team triage in Q3</li>
+    </ul>
+  </div>
+
+  <footer>
+    <p class="meta">Created 2026-05-12 · Owner: Lucas · <code>docs/okrs/local-delivery.html</code></p>
+    <p class="meta">Engineering detail: <a href="../../app/services/route-optimization/README.md">app/services/route-optimization/README.md</a></p>
+  </footer>
+
+</div>
+</body>
+</html>

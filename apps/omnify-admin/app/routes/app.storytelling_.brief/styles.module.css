@@ -1,0 +1,348 @@
+.contextBand {
+  background: #e6f4ec;
+  border: 1px solid #c5e0d0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Block-title type scale: 14px / 650 weight, always visually HEAVIER than
+   the body content underneath it. Pre-fix this was 12/600 which read
+   subdued vs the 13/400 body — inverted hierarchy. */
+.contextLabel {
+  font-size: 14px;
+  font-weight: 650;
+  color: #067647;
+  margin-bottom: 4px;
+}
+
+.contextSummary {
+  font-size: 13px;
+  font-weight: 400;
+  color: #303030;
+}
+
+.contextLink {
+  font-size: 12px;
+  color: #005bd3;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.contextLink:hover {
+  text-decoration: underline;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fieldHint {
+  font-size: 11px;
+  color: #6d7175;
+  margin-top: 2px;
+}
+
+.fieldInput,
+.fieldSelect,
+.fieldTextarea {
+  padding: 8px 12px;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  background: white;
+  color: #303030;
+}
+
+.fieldTextarea {
+  resize: vertical;
+  min-height: 70px;
+  width: 100%;
+  font-family: inherit;
+}
+
+.fieldInputError {
+  border-color: #d72c0d;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.themeList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.themeCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+  background: white;
+  overflow: hidden;
+}
+
+.themeCardExpanded {
+  border-color: #005bd3;
+  box-shadow: 0 0 0 1px #005bd3;
+}
+
+.themeHeader {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.themeNumber {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f1f8ff;
+  color: #005bd3;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.themeTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.themeTitleText {
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.themeMeta {
+  font-size: 12px;
+  color: #6d7175;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.themeChevron {
+  font-size: 16px;
+  color: #6d7175;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.themeChevronExpanded {
+  transform: rotate(180deg);
+}
+
+.themeBody {
+  padding: 4px 16px 16px;
+  border-top: 1px solid #ebebeb;
+}
+
+.themeFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.chipBox {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  background: white;
+  min-height: 38px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px 3px 10px;
+  background: #f1f8ff;
+  color: #005bd3;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.chipProduct {
+  background: #e6f4ec;
+  color: #067647;
+}
+
+.chipX {
+  cursor: pointer;
+  opacity: 0.7;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  background: none;
+  border: none;
+  padding: 0 4px;
+  color: inherit;
+}
+
+.chipX:hover {
+  opacity: 1;
+}
+
+.chipBox input {
+  border: none;
+  outline: none;
+  flex: 1;
+  min-width: 120px;
+  font-size: 13px;
+  font-family: inherit;
+  background: transparent;
+}
+
+.productPicker {
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  background: white;
+  margin-top: 8px;
+}
+
+.productSearch {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #ebebeb;
+  background: #fafafa;
+}
+
+.productSearch input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #e1e3e5;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.productList {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.productRow {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #ebebeb;
+  font-size: 13px;
+  cursor: pointer;
+  background: white;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  width: 100%;
+  text-align: left;
+}
+
+.productRow:hover {
+  background: #fafafa;
+}
+
+.productRow:last-child {
+  border-bottom: none;
+}
+
+.productHandle {
+  font-family: ui-monospace, monospace;
+  color: #6d7175;
+  font-size: 11px;
+}
+
+.jsonEditor {
+  width: 100%;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.errorBanner {
+  background: #fbeae5;
+  border: 1px solid #f5b9a8;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #842029;
+}
+
+.successBanner {
+  background: #e6f4ec;
+  border: 1px solid #c5e0d0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #0a4a2c;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .contextBand {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+  .themeHeader {
+    grid-template-columns: 32px 1fr;
+  }
+  .themeChevron {
+    grid-column: 2;
+    justify-self: flex-end;
+  }
+}

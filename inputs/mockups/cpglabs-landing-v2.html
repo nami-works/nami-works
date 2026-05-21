@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — CPG Labs corporate landing v2</title>
+<!--
+  MOCKUP: cpglabs-landing-v2.html
+  PURPOSE: Replacement landing page at cpg-labs.io. Target audience is the
+           Shopify App Store reviewer doing background research on Omnify's
+           publisher. Not a lead-gen page. Not a sales pitch.
+
+  Delta from v1 (based on parallel PM + growth + UI agent critiques):
+  - Section order: Hero → Product → About → Contact (was: Hero → About → Product → Contact)
+  - Unified max-width 1080px across all sections
+  - Section backgrounds alternate --bg / --bg-soft (no hairline dividers)
+  - Hero visual: 360px + layered glow + slow float + prefers-reduced-motion
+  - Hero eyebrow removed (redundant with nav brand + headline)
+  - All CTAs point to omnify.cpg-labs.io (not apps.shopify.com/omnify, which would 404 during review)
+  - Secondary hero CTA is "View our privacy policy" (pure trust signal, no lead-gen)
+  - Product card replaced with a real-looking Shopify admin screenshot (pure HTML/CSS, no raster)
+  - About section: dropped the 3-card focus grid, prose-only (UI agent's sharpest cut)
+  - Support email block removed (MX not wired yet)
+  - Footer: added "Established 2026" and CNPJ placeholder for Brazilian registration
+  - Typography: 56px hero, 32px section titles, 17px sub with max-width 46ch
+  - Accessibility: muted-text contrast bumped, :focus-visible added, prefers-reduced-motion respected, nav brand deduped
+  - Copy tightened everywhere: no "ship like operators", no "GDPR-compliant" bare claim, no "serving worldwide"
+-->
+<style>
+  :root {
+    --site-max:      1080px;
+
+    --bg:            #0b0b0c;
+    --bg-soft:       #14141a;
+    --card:          rgba(255, 255, 255, 0.04);
+    --border:        rgba(255, 255, 255, 0.12);
+    --border-strong: rgba(255, 255, 255, 0.22);
+    --text:          #f5f5f7;
+    --text-muted:    #c5c5cc;
+
+    --holo-1:        #5ecece;
+    --holo-2:        #b09fda;
+    --holo-3:        #d4a8d4;
+    --holo-4:        #5ecece;
+
+    --shopify-accent: #008060;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg:            #fafafa;
+      --bg-soft:       #ffffff;
+      --card:          rgba(0, 0, 0, 0.025);
+      --border:        rgba(0, 0, 0, 0.09);
+      --border-strong: rgba(0, 0, 0, 0.20);
+      --text:          #1d1d1f;
+      --text-muted:    #4c4c58;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: inherit; }
+  :focus-visible {
+    outline: 2px solid var(--holo-2);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .container {
+    max-width: var(--site-max);
+    margin: 0 auto;
+    padding: 0 32px;
+    width: 100%;
+  }
+
+  /* ========== Nav ========== */
+  nav.site {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    transition: backdrop-filter 150ms ease, border-bottom-color 150ms ease, background 150ms ease;
+  }
+  nav.site.scrolled {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom-color: var(--border-strong);
+  }
+  nav.site .inner {
+    max-width: var(--site-max);
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  nav.site .brand {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  nav.site .brand img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+  }
+  nav.site ul.navLinks {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    font-size: 13px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  nav.site ul.navLinks a {
+    text-decoration: none;
+    color: var(--text-muted);
+    transition: color 0.15s;
+  }
+  nav.site ul.navLinks a:hover { color: var(--text); }
+  nav.site ul.navLinks a.cta {
+    background: linear-gradient(90deg, var(--holo-1), var(--holo-2), var(--holo-3), var(--holo-4));
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 600;
+  }
+
+  /* ========== Section helpers ========== */
+  section {
+    padding: 80px 0;
+  }
+  section.soft { background: var(--bg-soft); }
+  .sectionEyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 8px;
+  }
+  .sectionTitle {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+    margin: 0 0 16px;
+  }
+
+  /* ========== Hero ========== */
+  section.hero {
+    padding: 140px 0 96px;
+  }
+  .heroGrid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 60px;
+    align-items: center;
+  }
+  .heroCopy { max-width: 560px; }
+  .heroHeadline {
+    font-size: 56px;
+    line-height: 1.05;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 0 0 20px;
+  }
+  .heroHeadline .holo {
+    background: linear-gradient(90deg, var(--holo-1), var(--holo-2), var(--holo-3), var(--holo-4));
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: holoSlide 5s linear infinite;
+  }
+  @keyframes holoSlide {
+    from { background-position: 0% 0%; }
+    to { background-position: 200% 0%; }
+  }
+  .heroSub {
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin: 0 0 36px;
+    max-width: 46ch;
+  }
+  .heroCtas {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .ctaPrimary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 22px;
+    background: var(--text);
+    color: var(--bg);
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform 0.15s, box-shadow 0.2s;
+  }
+  .ctaPrimary:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.18); }
+  .ctaSecondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    border-bottom: 1px solid var(--border-strong);
+    padding-bottom: 2px;
+    transition: color 0.15s, border-bottom-color 0.15s;
+  }
+  .ctaSecondary:hover {
+    color: var(--text);
+    border-bottom-color: var(--text);
+  }
+
+  .heroVisual {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .heroVisual::before,
+  .heroVisual::after {
+    content: "";
+    position: absolute;
+    inset: -40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .heroVisual::before {
+    background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-2) 32%, transparent), transparent 62%);
+    filter: blur(48px);
+  }
+  .heroVisual::after {
+    inset: 40px;
+    background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-1) 24%, transparent), transparent 55%);
+    filter: blur(32px);
+  }
+  .heroVisual img {
+    position: relative;
+    z-index: 1;
+    max-width: 360px;
+    filter: drop-shadow(0 16px 40px rgba(0, 0, 0, 0.45));
+    animation: heroFloat 6s ease-in-out infinite alternate;
+  }
+  @keyframes heroFloat {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-8px); }
+  }
+
+  /* ========== Product section (NEW: comes BEFORE About) ========== */
+  .productGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+  }
+  .productCopy h2 { font-size: 32px; font-weight: 700; letter-spacing: -0.015em; margin: 0 0 12px; line-height: 1.1; }
+  .productTagline {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin: 0 0 18px;
+    font-weight: 500;
+  }
+  .productBlurb {
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--text);
+    margin: 0 0 28px;
+    max-width: 46ch;
+  }
+  .productCopy strong { font-weight: 600; }
+
+  /* ---- Mock Shopify admin screenshot (pure HTML/CSS) ---- */
+  .appShot {
+    background: #fbfbfd;
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.12);
+    transform: perspective(1400px) rotateY(-4deg) rotateX(1deg);
+    transform-origin: center;
+  }
+  @media (prefers-color-scheme: dark) {
+    .appShot { background: #fbfbfd; } /* Shopify admin is light; keep realistic */
+  }
+  .appShot .chrome {
+    background: #f6f6f7;
+    border-bottom: 1px solid #e1e3e5;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .appShot .chromeDots {
+    display: flex;
+    gap: 5px;
+  }
+  .appShot .chromeDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #d9d9d9;
+  }
+  .appShot .chromeDot:nth-child(1) { background: #ff5f57; }
+  .appShot .chromeDot:nth-child(2) { background: #febb2f; }
+  .appShot .chromeDot:nth-child(3) { background: #28c840; }
+  .appShot .chromeUrl {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #e1e3e5;
+    border-radius: 6px;
+    font-size: 10px;
+    color: #6d7175;
+    padding: 3px 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .appShot .shopifyBar {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 7px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10px;
+  }
+  .appShot .shopifyBar .shopifyLeft {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+  }
+  .appShot .shopifyBar .shopifyLeft::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    background: #7cb518;
+    border-radius: 3px;
+    display: inline-block;
+  }
+  .appShot .shopifyBar .shopifyStore {
+    background: #2b2b2b;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: #d9d9d9;
+    font-size: 9px;
+  }
+  .appShot .adminBody {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    min-height: 300px;
+  }
+  .appShot .sidebar {
+    background: #f6f6f7;
+    border-right: 1px solid #e1e3e5;
+    padding: 10px 8px;
+    font-size: 10px;
+  }
+  .appShot .sidebarGroup {
+    margin-bottom: 10px;
+  }
+  .appShot .sidebarLabel {
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #8c9196;
+    padding: 4px 8px;
+    font-weight: 600;
+  }
+  .appShot .sidebarItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: #303030;
+    font-size: 10px;
+    margin-bottom: 1px;
+  }
+  .appShot .sidebarItem .itemDot {
+    width: 10px; height: 10px; border-radius: 2px; background: #c9cccf;
+  }
+  .appShot .sidebarItem.active {
+    background: #e3e4e5;
+    font-weight: 600;
+  }
+  .appShot .sidebarItem.active .itemDot {
+    background: #303030;
+  }
+  .appShot .main {
+    padding: 14px;
+    background: #fbfbfd;
+  }
+  .appShot .mainHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e1e3e5;
+    margin-bottom: 12px;
+  }
+  .appShot .mainTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: #303030;
+  }
+  .appShot .mainAction {
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 9px;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-weight: 500;
+  }
+  .appShot .workspace {
+    display: grid;
+    grid-template-columns: 1fr 180px;
+    gap: 10px;
+  }
+  .appShot .mapCard {
+    background: linear-gradient(135deg, #e8f0f5 0%, #d8e4ee 50%, #e0dce8 100%);
+    border: 1px solid #e1e3e5;
+    border-radius: 8px;
+    position: relative;
+    min-height: 210px;
+    overflow: hidden;
+  }
+  .appShot .mapCard::before,
+  .appShot .mapCard::after {
+    content: "";
+    position: absolute;
+    background: rgba(255, 255, 255, 0.5);
+  }
+  .appShot .mapCard::before {
+    top: 35%; left: 0; right: 0; height: 1px;
+  }
+  .appShot .mapCard::after {
+    top: 65%; left: 0; right: 0; height: 1px;
+  }
+  .appShot .mapGrid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  .appShot .routeLine {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .appShot .pin {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.28);
+    transform: translate(-50%, -50%);
+  }
+  .appShot .pin.store { background: #303030; width: 17px; height: 17px; }
+  .appShot .pin.delivered { background: #067647; }
+  .appShot .pin.active { background: #005bd3; }
+  .appShot .pin.pending { background: #b98900; }
+  .appShot .ordersList {
+    background: #fff;
+    border: 1px solid #e1e3e5;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .appShot .orderRow {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f1f1f1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 9.5px;
+  }
+  .appShot .orderRow:last-child { border-bottom: none; }
+  .appShot .orderRow.active { background: #f6f6f7; }
+  .appShot .orderBadge {
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 8.5px;
+    font-weight: 600;
+  }
+  .appShot .orderBadge.delivered { background: #cdefdf; color: #0e6345; }
+  .appShot .orderBadge.active { background: #cfe3ff; color: #00418c; }
+  .appShot .orderBadge.pending { background: #fde7ba; color: #6c4b00; }
+
+  /* ========== About (NOW BELOW Product) ========== */
+  .aboutBody {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--text-muted);
+    max-width: 640px;
+    margin: 0;
+  }
+  .aboutBody strong { color: var(--text); font-weight: 600; }
+
+  /* ========== Contact ========== */
+  .contactGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 32px;
+    margin-top: 24px;
+  }
+  .contactBlock h4 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 8px;
+  }
+  .contactBlock p {
+    font-size: 15px;
+    color: var(--text);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .contactBlock a {
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-strong);
+    padding-bottom: 1px;
+    transition: border-color 0.15s;
+  }
+  .contactBlock a:hover { border-bottom-color: var(--text); }
+
+  /* ========== Footer ========== */
+  footer.site {
+    padding: 32px 0;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  footer.site .inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  footer.site a {
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-right: 20px;
+    transition: color 0.15s;
+  }
+  footer.site a:hover { color: var(--text); }
+  footer.site .legal {
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    opacity: 0.75;
+  }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 760px) {
+    section { padding: 56px 0; }
+    section.hero { padding: 88px 0 48px; }
+    .container { padding: 0 20px; }
+    .heroGrid {
+      grid-template-columns: 1fr;
+      gap: 36px;
+    }
+    .heroHeadline { font-size: 34px; }
+    .heroSub { font-size: 16px; }
+    .heroVisual img { max-width: 240px; }
+    .productGrid {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    .productCopy { order: 1; }
+    .productVisual { order: 2; }
+    .sectionTitle { font-size: 26px; }
+    nav.site .inner { padding: 0 20px; }
+    nav.site ul.navLinks { gap: 16px; font-size: 12px; }
+    .appShot { transform: none; }
+    .appShot .workspace { grid-template-columns: 1fr; }
+    .appShot .ordersList { max-height: 140px; overflow: hidden; }
+  }
+
+  /* ========== Reduced motion ========== */
+  @media (prefers-reduced-motion: reduce) {
+    .heroHeadline .holo { animation: none; }
+    .heroVisual img { animation: none; }
+    * { transition-duration: 0.01ms !important; }
+  }
+
+  /* ========== Mockup-only annotations (not shipped) ========== */
+  .mockNotes {
+    background: #fffbea;
+    color: #4a3600;
+    border: 1px solid #f4e3a1;
+    border-radius: 10px;
+    padding: 20px 24px;
+    max-width: var(--site-max);
+    margin: 40px auto;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  .mockNotes h3 { font-size: 14px; margin: 0 0 8px; color: #3a2a00; font-weight: 700; }
+  .mockNotes ul { margin: 6px 0 0 20px; padding: 0; }
+  .mockNotes li { margin-bottom: 4px; }
+  @media (prefers-color-scheme: dark) {
+    .mockNotes {
+      background: #2b2510;
+      color: #f4e3a1;
+      border-color: #5b4700;
+    }
+    .mockNotes h3 { color: #fff0b3; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== NAV ========== -->
+<nav class="site" id="siteNav">
+  <div class="inner">
+    <a href="#hero" class="brand">
+      <img src="../../public/cpg-labs_box.png" alt="" aria-hidden="true" />
+      <span>CPG Labs</span>
+    </a>
+    <ul class="navLinks">
+      <li><a href="#product">Omnify</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="https://omnify.cpg-labs.io" class="cta">Visit Omnify →</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ========== HERO ========== -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="heroGrid">
+      <div class="heroCopy">
+        <h1 class="heroHeadline">
+          The software company behind <span class="holo">Omnify</span>.
+        </h1>
+        <p class="heroSub">
+          CPG Labs is a São Paulo software studio. We build Omnify, a Shopify-embedded app for local delivery routing, retail sales tracking, and footprint planning.
+        </p>
+        <div class="heroCtas">
+          <a href="https://omnify.cpg-labs.io" class="ctaPrimary">
+            Visit Omnify
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="https://omnify.cpg-labs.io/privacy" class="ctaSecondary">
+            View our privacy policy
+          </a>
+        </div>
+      </div>
+      <div class="heroVisual">
+        <img src="../../public/cpg-labs_box.png" alt="" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== PRODUCT (MOVED BEFORE ABOUT per PM critique) ========== -->
+<section class="soft" id="product">
+  <div class="container">
+    <div class="productGrid">
+      <div class="productCopy">
+        <div class="sectionEyebrow">Our product</div>
+        <h2>Omnify for Shopify.</h2>
+        <p class="productTagline">Local delivery, retail sales, footprint planning.</p>
+        <p class="productBlurb">
+          Omnify is a <strong>Shopify-embedded app</strong>. Merchants use it to plan delivery routes from store locations, track retail sales against monthly goals, and plan where to open next using customer geography.
+        </p>
+        <a href="https://omnify.cpg-labs.io" class="ctaPrimary">
+          Visit Omnify
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+      <div class="productVisual">
+        <!-- Synthetic Shopify admin screenshot — pure HTML/CSS, no raster image required.
+             Mirrors the look of the real Omnify Local Delivery route planner. -->
+        <div class="appShot" role="img" aria-label="Screenshot of Omnify running inside the Shopify Admin, showing the Local Delivery route planner">
+          <div class="chrome">
+            <div class="chromeDots">
+              <span class="chromeDot"></span>
+              <span class="chromeDot"></span>
+              <span class="chromeDot"></span>
+            </div>
+            <div class="chromeUrl">admin.shopify.com/store/<i>merchant</i>/apps/omnify/local-delivery</div>
+          </div>
+          <div class="shopifyBar">
+            <span class="shopifyLeft">shopify</span>
+            <span class="shopifyStore">merchant · dev</span>
+          </div>
+          <div class="adminBody">
+            <div class="sidebar">
+              <div class="sidebarGroup">
+                <div class="sidebarItem"><span class="itemDot"></span>Home</div>
+                <div class="sidebarItem"><span class="itemDot"></span>Orders</div>
+                <div class="sidebarItem"><span class="itemDot"></span>Products</div>
+                <div class="sidebarItem"><span class="itemDot"></span>Customers</div>
+              </div>
+              <div class="sidebarGroup">
+                <div class="sidebarLabel">Apps</div>
+                <div class="sidebarItem active"><span class="itemDot"></span>Omnify</div>
+              </div>
+            </div>
+            <div class="main">
+              <div class="mainHeader">
+                <div class="mainTitle">Local Delivery</div>
+                <div class="mainAction">Optimize routes</div>
+              </div>
+              <div class="workspace">
+                <div class="mapCard">
+                  <div class="mapGrid"></div>
+                  <svg class="routeLine" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M 50,55 L 32,30 L 48,18 L 68,26 L 78,48 L 64,66 L 50,55"
+                          fill="none"
+                          stroke="#005bd3"
+                          stroke-width="0.6"
+                          stroke-dasharray="1.5,1"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"/>
+                  </svg>
+                  <!-- Store pin (center) -->
+                  <span class="pin store" style="left: 50%; top: 55%;"></span>
+                  <!-- Delivered (green) -->
+                  <span class="pin delivered" style="left: 32%; top: 30%;"></span>
+                  <span class="pin delivered" style="left: 48%; top: 18%;"></span>
+                  <!-- Active (blue) -->
+                  <span class="pin active" style="left: 68%; top: 26%;"></span>
+                  <!-- Pending (amber) -->
+                  <span class="pin pending" style="left: 78%; top: 48%;"></span>
+                  <span class="pin pending" style="left: 64%; top: 66%;"></span>
+                </div>
+                <div class="ordersList">
+                  <div class="orderRow"><span>#2038</span><span class="orderBadge delivered">Delivered</span></div>
+                  <div class="orderRow"><span>#2041</span><span class="orderBadge delivered">Delivered</span></div>
+                  <div class="orderRow active"><span>#2044</span><span class="orderBadge active">On route</span></div>
+                  <div class="orderRow"><span>#2047</span><span class="orderBadge pending">Pending</span></div>
+                  <div class="orderRow"><span>#2051</span><span class="orderBadge pending">Pending</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== ABOUT ========== -->
+<section id="about">
+  <div class="container">
+    <div class="sectionEyebrow">What we build</div>
+    <h2 class="sectionTitle">Operational software for Shopify merchants.</h2>
+    <p class="aboutBody">
+      CPG Labs is an independent software company in São Paulo, Brazil. We build <strong>Omnify</strong>, a Shopify-embedded app covering route planning, retail analytics, delivery dispatch, and footprint planning. One product, maintained by the team that ships it. Hosted on AWS with encrypted storage, logging, and documented data-handling aligned with GDPR, LGPD, and CCPA. Available to merchants worldwide through the Shopify App Store.
+    </p>
+  </div>
+</section>
+
+<!-- ========== CONTACT ========== -->
+<section class="soft" id="contact">
+  <div class="container">
+    <div class="sectionEyebrow">Contact</div>
+    <h2 class="sectionTitle">Get in touch.</h2>
+    <div class="contactGrid">
+      <div class="contactBlock">
+        <h4>Email</h4>
+        <p><a href="mailto:contact@cpg-labs.io">contact@cpg-labs.io</a></p>
+      </div>
+      <div class="contactBlock">
+        <h4>Location</h4>
+        <p>São Paulo, Brazil</p>
+      </div>
+      <div class="contactBlock">
+        <h4>Product</h4>
+        <p><a href="https://omnify.cpg-labs.io">omnify.cpg-labs.io</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer class="site">
+  <div class="container">
+    <div class="inner">
+      <div>
+        <a href="https://omnify.cpg-labs.io/privacy">Privacy</a>
+        <a href="https://omnify.cpg-labs.io/terms">Terms</a>
+        <a href="https://omnify.cpg-labs.io/security">Security</a>
+      </div>
+      <div class="legal">
+        CPG Labs · Established 2026 · São Paulo, Brazil · CNPJ <span style="opacity: 0.6">[pending: fill from incorporation docs]</span><br />
+        © 2026 CPG Labs. All rights reserved.
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Nav blur intensifies on scroll (UI critic recommendation)
+  (function () {
+    var nav = document.getElementById('siteNav');
+    if (!nav) return;
+    function onScroll() {
+      if (window.scrollY > 40) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+
+<!-- ========== MOCKUP NOTES (these strip before production) ========== -->
+<div class="mockNotes">
+  <h3>v2 — what changed from v1</h3>
+  <ul>
+    <li><strong>Section order reversed</strong>: Product now sits directly under the Hero (PM critique — reviewer's primary question answered in viewport 2, not 4).</li>
+    <li><strong>Real "screenshot" card</strong>: pure HTML/CSS reproduction of Omnify running in Shopify Admin. No raster asset needed. Replaces the logo-art icon that read as marketing collateral.</li>
+    <li><strong>Unified 1080px max-width</strong>, alternating <code>--bg</code> / <code>--bg-soft</code> section backgrounds (UI critic — kill the hairline-divider template feel).</li>
+    <li><strong>Focus-item grid dropped</strong>: 3-card feature grid deleted. About is now a single paragraph carrying the same facts (UI critic's "delete to improve" move). Reclaims visual weight for the product card above.</li>
+    <li><strong>Hero CTAs de-risked</strong>: both now point at <code>omnify.cpg-labs.io</code> (not <code>apps.shopify.com/omnify</code> which would 404 during review). Secondary CTA becomes "View our privacy policy" — pure trust signal.</li>
+    <li><strong>Hero visual scaled up</strong> (360px) with layered radial glows and a 6s vertical float. Respects <code>prefers-reduced-motion</code>.</li>
+    <li><strong>Typography firmed up</strong>: 56px headline (desktop), 32px section titles, 11px eyebrows at 0.1em tracking. Sub limited to 46ch.</li>
+    <li><strong>Copy cleaned for Shopify reviewer heuristics</strong>: dropped "ship like operators", softened "GDPR-compliant" to "documented data-handling aligned with GDPR, LGPD, and CCPA", removed "serving merchants worldwide" (→ "Available to merchants worldwide through the Shopify App Store"), dropped "latest App Bridge".</li>
+    <li><strong>Footer trust primitives</strong>: "Established 2026", São Paulo, and a CNPJ placeholder. User needs to fill the actual CNPJ before ship.</li>
+    <li><strong>Accessibility</strong>: muted-text contrast bumped to AA (<code>#c5c5cc</code>), global <code>:focus-visible</code>, <code>prefers-reduced-motion</code> respected, nav brand deduped (<code>alt=""</code> on image since the text says "CPG Labs").</li>
+    <li><strong>Support email block removed</strong>: <code>support@cpg-labs.io</code> MX is not wired yet; a dead mailbox is worse than no block.</li>
+  </ul>
+</div>
+
+<div class="mockNotes">
+  <h3>Ship checklist (when we translate this to production React)</h3>
+  <ul>
+    <li>Create <code>app/routes/_index/cpglabs-corporate.tsx</code> with the same DOM and a sibling <code>cpglabs-corporate.module.css</code>. Keep existing <code>cpglabs-home.tsx</code> in the tree (dev-shop pitch) but don't route to it.</li>
+    <li>Update <code>app/routes/_site.tsx</code> loader: when variant is <code>cpglabs</code> AND pathname is <code>/</code>, render the new corporate component. For any other path under the cpglabs variant, keep the existing 301 to <code>omnify.cpg-labs.io</code>.</li>
+    <li>Re-add <code>www</code> CNAME in GoDaddy pointing back at <code>omnify-alb-2060949013.us-east-1.elb.amazonaws.com</code> (reverts earlier deletion; required for this page to be reachable).</li>
+    <li>Fill the CNPJ placeholder in the footer with the real registration number.</li>
+    <li>Build a real Omnify screenshot later to swap the mock HTML one — the mock is defensible now, but a real screenshot is stronger once we have a clean admin capture.</li>
+    <li>Commit this mockup alongside the production change as a reference artifact, per CLAUDE.md mockup convention.</li>
+  </ul>
+</div>
+
+</body>
+</html>

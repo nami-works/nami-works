@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Loyalty customer block (Shopify Admin UI Extension)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --border-soft: #ebebeb;
+    --text: #303030;
+    --subdued: #6d7175;
+    --strong: #1a1a1a;
+
+    --link: #005bd3;
+
+    --warn-bg: #fff8e1;
+    --warn-border: #f0c043;
+    --warn-text: #7a5400;
+
+    --danger-bg: #fef0ee;
+    --danger-border: #f1b8ad;
+    --danger-text: #8c1c0d;
+
+    --neutral-bg: #f1f1f3;
+    --neutral-border: #d8d9dc;
+    --neutral-text: #4a4a4a;
+
+    --expired-bg: #f6f6f7;
+    --expired-border: #e1e3e5;
+    --expired-text: #6d7175;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 900px;
+    margin-bottom: 24px;
+  }
+  h2.section {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 32px 0 12px;
+    color: var(--text);
+  }
+  h3.section {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 16px 0 4px;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* ==== Notes panels ==== */
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 900px;
+    margin-bottom: 24px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; color: #4a3600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 4px; }
+  .notes code { background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+
+  /* ==== State matrix table ==== */
+  .matrix-wrap {
+    max-width: 1100px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+  }
+  table.matrix {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+  table.matrix th,
+  table.matrix td {
+    border: 1px solid var(--border-soft);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  table.matrix th {
+    background: #f6f6f7;
+    font-weight: 600;
+    color: var(--subdued);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  table.matrix td.state-label {
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  table.matrix tr:hover { background: #fafafa; }
+
+  /* ==== Mockup grid (2-col on desktop, 1-col on mobile) ==== */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    max-width: 1100px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 768px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  /* ==== Mockup wrapper (frames the rendered block) ==== */
+  .mockup {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px 14px;
+  }
+  .mockup-caption {
+    font-size: 11px;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .mockup-caption .tag {
+    display: inline-block;
+    background: var(--neutral-bg);
+    color: var(--neutral-text);
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-size: 10px;
+    margin-left: 4px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .mockup-frame {
+    background: #fafafa;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .mockup-frame-caption {
+    font-size: 10px;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  /* ==== Shopify Admin block (mimics native customer-detail block) ==== */
+  .sb-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .sb-block-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--strong);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .sb-block-body p {
+    margin: 0 0 6px;
+    color: var(--text);
+  }
+  .sb-block-body p.muted {
+    color: var(--subdued);
+    font-size: 12px;
+  }
+  .sb-block-body .how-to-redeem {
+    margin: 8px 0 8px;
+    color: var(--subdued);
+    font-size: 12px;
+  }
+  .sb-block-body .how-to-redeem strong { color: var(--text); font-weight: 500; }
+  .sb-block-body .expiry-line {
+    color: var(--subdued);
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  .sb-block-body .expiry-line.warn {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    color: var(--warn-text);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-weight: 500;
+  }
+  .sb-block-body .expiry-line.expired {
+    background: var(--expired-bg);
+    border: 1px solid var(--expired-border);
+    color: var(--expired-text);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-style: italic;
+  }
+  .sb-block-body .cancel-line {
+    background: var(--danger-bg);
+    border: 1px solid var(--danger-border);
+    color: var(--danger-text);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+  .sb-block-body .empty {
+    color: var(--subdued);
+    font-style: italic;
+  }
+  .sb-block-body .amount {
+    font-weight: 600;
+    color: var(--strong);
+  }
+  .sb-block-body .code-pill {
+    display: inline-block;
+    background: var(--neutral-bg);
+    border: 1px solid var(--neutral-border);
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--strong);
+  }
+
+  /* ==== More-details expander ==== */
+  .sb-expander {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 12px;
+    color: var(--link);
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+  }
+  .sb-expander::before {
+    content: "▸ ";
+    color: var(--link);
+  }
+  .sb-expander.open::before {
+    content: "▾ ";
+  }
+  .sb-expanded {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 12px;
+    color: var(--subdued);
+    line-height: 1.55;
+  }
+  .sb-expanded h4 {
+    margin: 0 0 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--subdued);
+  }
+  .sb-expanded dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px 12px;
+    margin: 0 0 12px;
+  }
+  .sb-expanded dt {
+    color: var(--subdued);
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .sb-expanded dd {
+    color: var(--text);
+    margin: 0;
+    font-size: 12px;
+  }
+  .sb-expanded dd.strong { font-weight: 600; }
+  .sb-expanded .redemption-row {
+    display: grid;
+    grid-template-columns: 90px 60px 1fr;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+  }
+  .sb-expanded .redemption-row:last-child { border-bottom: none; }
+  .sb-expanded .redemption-row .order-link {
+    color: var(--link);
+    text-decoration: none;
+  }
+  .sb-expanded .schedule-row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 8px;
+    padding: 3px 0;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+  }
+  .sb-expanded .schedule-row.past { opacity: 0.55; }
+  .sb-expanded .schedule-row.current { font-weight: 600; color: var(--text); }
+  .sb-expanded .ref-link {
+    color: var(--link);
+    text-decoration: none;
+    font-size: 11px;
+  }
+
+  /* ==== EN translation footer ==== */
+  .en-translation {
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: #fafafa;
+    border-left: 2px solid var(--border);
+    font-size: 11px;
+    color: var(--subdued);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .en-translation strong { color: var(--text); font-style: normal; font-weight: 600; }
+
+  /* ==== Edge-case label strip above mockup-frame ==== */
+  .edge-strip {
+    display: inline-block;
+    font-size: 10px;
+    background: #fff0c2;
+    color: #5b4700;
+    padding: 1px 8px;
+    border-radius: 3px;
+    margin-left: 6px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<h1>Loyalty customer block — mockup v1</h1>
+<p class="intro">
+  Shopify Admin UI Extension that renders inline on the customer-detail page (target <code style="background:rgba(0,0,0,0.05);padding:1px 5px;border-radius:3px;font-size:12px;">admin.customer-details.block.render</code>). Two-tier disclosure: operator view (default) carries only what GE Beauty support staff need to help a customer redeem; analyst view (collapsed) carries full test context for Lucas and test owners. Bilingual: PT-BR primary, EN shown below each panel for review purposes (production renders one language based on admin user locale).
+</p>
+
+<div class="notes">
+  <h3>Design decisions baked into this mockup</h3>
+  <ul>
+    <li><strong>Two-tier disclosure</strong> — operator section above, "Mais detalhes / More details" expander below revealing the analyst section. No access gating: operators technically can expand, but the test-context language won't make them act differently.</li>
+    <li><strong>Operator-language rules</strong> — no occurrences of "test", "arm", "cohort", "tranche", or "enrollment" in the operator section. Verified across all 4 base states + 4 edge cases.</li>
+    <li><strong>Partial-redemption display</strong> — "Remaining + already used" two-line treatment per Lucas's 2026-05-16 call (e.g. "R$25 de crédito disponíveis. R$15 já utilizados.").</li>
+    <li><strong>Near-expiry urgency</strong> — yellow callout block around the expiry line when ≤7 days remain. Single tier, no escalating red. Renders as a Polaris-style notice strip, not a banner.</li>
+    <li><strong>Cancelled-by-refund</strong> — operator sees "Bônus removido porque o pedido #X foi reembolsado em [data]" for the 90 days the bonus would have been active. Auto-converts to "Sem bônus ativo" after that window.</li>
+    <li><strong>Just-expired (≤48h)</strong> — operator sees "Este bônus expirou em [data]" with subdued/italic treatment for 24-48h. Auto-converts to "Sem bônus ativo" after the grace window.</li>
+    <li><strong>Money format</strong> — BRL with R$ prefix, integer values (R$32, not R$32,00). Matches Polaris `formatCurrency` BRL output.</li>
+    <li><strong>Date format</strong> — ISO-style (2026-08-15) for the mockup. Production renders user-locale-aware via `Intl.DateTimeFormat`.</li>
+    <li><strong>Discount codes</strong> — rendered as monospace pills (visual nod to "this is a copyable token"). Match Polaris discount-code styling.</li>
+    <li><strong>Expanded analyst section</strong> — labelled "Test cohort: Arm A — tapering cashback" etc. Includes enrolled order with deep-link to the order page, decay schedule with current-window highlighted, redemption history.</li>
+    <li><strong>Out of scope (per integrations-engineer brief)</strong> — no Force-redeem / Force-cancel action buttons. Read-only MVP.</li>
+  </ul>
+</div>
+
+<h2 class="section">State matrix — Phase 3.5 design contract</h2>
+<p class="intro">
+  Every meaningful state the block can be in, with the operator-section behavior pinned per state. Future sessions reading this design should see what each state was supposed to do, not just the happy path. Rows correspond to the rendered mockups below.
+</p>
+
+<div class="matrix-wrap">
+<table class="matrix">
+  <thead>
+    <tr>
+      <th>State</th>
+      <th>Operator headline</th>
+      <th>Redemption instruction</th>
+      <th>Expiry rendering</th>
+      <th>Cancel/refund banner</th>
+      <th>Expander available?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="state-label">Arm A — fresh, full balance, &gt;7d remaining</td>
+      <td>"R$40 de crédito disponíveis."</td>
+      <td>Login + auto-apply at checkout</td>
+      <td>Plain date row</td>
+      <td>—</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td class="state-label">Arm A — partial redemption, ≤7d remaining</td>
+      <td>"R$25 de crédito disponíveis. R$15 já utilizados."</td>
+      <td>Login + auto-apply at checkout</td>
+      <td><strong>Yellow callout</strong> with date + days-remaining label</td>
+      <td>—</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td class="state-label">Arm B — middle window (15%), partial redemption</td>
+      <td>"Cupom ativo: LOYAL-X8K2M4. Vale 15% de desconto, sem mínimo."</td>
+      <td>Customer enters code at checkout</td>
+      <td>Plain date row</td>
+      <td>—</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td class="state-label">Arm C — fresh, full balance, &gt;7d remaining</td>
+      <td>"Cupom ativo: BONUS-K3Q9PM. Vale 20% de desconto (até 25% do pedido novo)."</td>
+      <td>Customer enters code at checkout</td>
+      <td>Plain date row</td>
+      <td>—</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td class="state-label">Cancelled — original order was refunded</td>
+      <td>"Sem bônus ativo no momento."</td>
+      <td>(hidden)</td>
+      <td>(hidden)</td>
+      <td><strong>Red-tone strip</strong> "Bônus removido porque o pedido #X foi reembolsado em [data]"</td>
+      <td>Yes (shows original enrollment + cancel context)</td>
+    </tr>
+    <tr>
+      <td class="state-label">Just expired — within last 24-48h</td>
+      <td>"Sem bônus ativo no momento."</td>
+      <td>(hidden)</td>
+      <td><strong>Subdued italic strip</strong> "Este bônus expirou em [data]"</td>
+      <td>—</td>
+      <td>Yes (shows the recently-expired enrollment for context)</td>
+    </tr>
+    <tr>
+      <td class="state-label">Not enrolled — never enrolled OR &gt;48h since expiry</td>
+      <td>"Sem bônus ativo no momento."</td>
+      <td>(hidden)</td>
+      <td>(hidden)</td>
+      <td>(hidden)</td>
+      <td>Yes (expanded shows "Não está participando do teste no momento.")</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="notes">
+  <h3>States deferred (narrow / can resolve with reasonable defaults)</h3>
+  <ul>
+    <li><strong>Redemption in flight</strong> (order placed, paid webhook hasn't fired yet) — block shows the current state. UI refreshes when next loaded. Acceptable race window.</li>
+    <li><strong>Multiple concurrent enrollments</strong> — prevented by the active-enrollment guard in the enrollment trigger (per /integrations-engineer brief). Should be impossible; if it happens, block shows the earliest active and logs a warning.</li>
+    <li><strong>Customer in pre-test period</strong> (existing CRM Bonus code still valid, never enrolled in new test) — block shows "Sem bônus ativo no momento" since CRM Bonus codes live OUTSIDE our LoyaltyEnrollment table. Customer's existing CRM Bonus code is still usable at checkout; just invisible to this block. Acceptable for pilot — if Lucas wants to show legacy codes in this block too, that's a v2.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- ============= STATE 1: Arm A — fresh, full ================== -->
+<!-- ============================================================ -->
+<h2 class="section">State 1 — Arm A customer, fresh enrollment</h2>
+
+<div class="grid">
+  <div class="mockup">
+    <div class="mockup-caption">Operator view <span class="tag">default</span></div>
+    <div class="mockup-frame">
+      <div class="mockup-frame-caption">As rendered on Shopify customer detail page</div>
+      <div class="sb-block">
+        <div class="sb-block-header">Loyalty bonus</div>
+        <div class="sb-block-body">
+          <p><span class="amount">R$40</span> de crédito disponíveis.</p>
+          <p class="how-to-redeem">
+            <strong>Como resgatar:</strong> peça para o cliente entrar na conta no checkout. O crédito é aplicado automaticamente.
+          </p>
+          <p class="expiry-line">Expira em 2026-08-15.</p>
+          <div class="sb-expander">Mais detalhes</div>
+        </div>
+      </div>
+      <div class="en-translation">
+        <strong>EN:</strong> Loyalty bonus<br>
+        R$40 of store credit available.<br>
+        <strong>How to redeem:</strong> ask the customer to log in to their account at checkout. The credit applies automatically.<br>
+        Expires on 2026-08-15.<br>
+        > More details
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-caption">Analyst view <span class="tag">expanded</span></div>
+    <div class="mockup-frame">
+      <div class="mockup-frame-caption">After clicking "Mais detalhes"</div>
+      <div class="sb-block">
+        <div class="sb-block-header">Loyalty bonus</div>
+        <div class="sb-block-body">
+          <p><span class="amount">R$40</span> de crédito disponíveis.</p>
+          <p class="how-to-redeem">
+            <strong>Como resgatar:</strong> peça para o cliente entrar na conta no checkout. O crédito é aplicado automaticamente.
+          </p>
+          <p class="expiry-line">Expira em 2026-08-15.</p>
+          <div class="sb-expander open">Mais detalhes</div>
+          <div class="sb-expanded">
+            <h4>Test cohort</h4>
+            <dl>
+              <dt>Arm</dt><dd class="strong">A — tapering cashback</dd>
+              <dt>Enrolled</dt><dd>2026-05-20 · order <a class="ref-link" href="#">#80623</a> (R$200)</dd>
+              <dt>Sticky cohort</dt><dd>yes (assigned 2026-05-20)</dd>
+            </dl>
+            <h4>Decay schedule</h4>
+            <div class="schedule-row current">
+              <div>days 1-30</div><div>R$40 available · tranche of R$10 expires 2026-06-19</div>
+            </div>
+            <div class="schedule-row">
+              <div>days 31-60</div><div>R$30 available · tranche of R$10 expires 2026-07-19</div>
+            </div>
+            <div class="schedule-row">
+              <div>days 61-90</div><div>R$20 available · tranche of R$20 expires 2026-08-18</div>
+            </div>
+            <h4 style="margin-top: 12px;">Redemption history</h4>
+            <p style="margin: 0; color: var(--subdued); font-style: italic;">No redemptions yet.</p>
+            <p style="margin: 12px 0 0;">
+              <a class="ref-link" href="#">View test brief</a> ·
+              <a class="ref-link" href="#">Project status</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ====== STATE 2: Arm A — partial redemption + near expiry === -->
+<!-- ============================================================ -->
+<h2 class="section">State 2 — Arm A customer, partial redemption <span class="edge-strip">edge case</span> + near expiry <span class="edge-strip">edge case</span></h2>
+
+<div class="grid">
+  <div class="mockup">
+    <div class="mockup-caption">Operator view <span class="tag">default</span></div>
+    <div class="mockup-frame">
+      <div class="mockup-frame-caption">Customer has R$25 left of original R$40, ≤7d remaining</div>
+      <div class="sb-block">
+        <div class="sb-block-header">Loyalty bonus</div>
+        <div class="sb-block-body">
+          <p><span class="amount">R$25</span> de crédito disponíveis.</p>
+          <p class="muted">R$15 já utilizados.</p>
+          <p class="how-to-redeem">
+            <strong>Como resgatar:</strong> peça para o cliente entrar na conta no checkout. O crédito é aplicado automaticamente.
+          </p>
+          <p class="expiry-line warn">⚠ Expira em 2026-08-15 (5 dias).</p>
+          <div class="sb-expander">Mais detalhes</div>
+        </div>
+      </div>
+      <div class="en-translation">
+        <strong>EN:</strong> Loyalty bonus<br>
+        R$25 of store credit available.<br>
+        R$15 already used.<br>
+        <strong>How to redeem:</strong> ask the customer to log in to their account at checkout. The credit applies automatically.<br>
+        ⚠ Expires on 2026-08-15 (5 days).<br>
+        > More details
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-caption">Analyst view <span class="tag">expanded</span></div>
+    <div class="mockup-frame">
+      <div class="mockup-frame-caption">Same customer, expander open</div>
+      <div class="sb-block">
+        <div class="sb-block-header">Loyalty bonus</div>
+        <div class="sb-block-body">
+          <p><span class="amount">R$25</span> de crédito disponíveis.</p>
+          <p class="muted">R$15 já utilizados.</p>
+          <p class="how-to-redeem">
+            <strong>Como resgatar:</strong> peça para o cliente entrar na conta no checkout. O crédito é aplicado automaticamente.
+          </p>
+          <p class="expiry-line warn">⚠ Expira em 2026-08-15 (5 dias).</p>
+          <div class="sb-expander open">Mais detalhes</div>
+          <div class="sb-expanded">
+            <h4>Test cohort</h4>
+            <dl>
+              <dt>Arm</dt><dd class="strong">A — tapering cashback</dd>
+              <dt>Enrolled</dt><dd>2026-05-20 · order <a class="ref-link" href="#">#80623</a> (R$200)</dd>
+              <dt>Sticky cohort</dt><dd>yes (assigned 2026-05-20)</dd>
+            </dl>
+            <h4>Decay schedule</h4>
+            <div class="schedule-row past">
+              <div>days 1-30</div><div>tranche of R$10 expired 2026-06-19</div>
+            </div>
+            <div class="schedule-row past">
+              <div>days 31-60</div><div>tranche of R$10 expired 2026-07-19</div>
+            </div>
+            <div class="schedule-row current">
+              <div>days 61-90</div><div>R$25 remaining · expires 2026-08-15</div>
+            </div>
+            <h4 style="margin-top: 12px;">Redemption history</h4>
+            <div class="redemption-row">
+              <div>2026-06-10</div><div>R$15</div><div><a class="order-link" href="#">order #80850</a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ====== STATE 3: Arm B — middle window, partial ============= -->
+<!-- ============================================================ -->
+<h2 class="section">State 3 — Arm B customer, currently in window 2 (15% off), partial redemption</h2>
+
+<div class="grid">
+  <div class="mockup">
+    <div class="mockup-caption">Operator view <span class="tag">default</span></div>
+    <div class="mockup-frame">
+      <div class="mockup-frame-caption">Code dropped from 20% → 15% on day 30, will drop to 10% on day 60</div>
+      <div class="sb-block">
+        <div class="sb-block-header">Loyalty bonus</div>
+        <div class="sb-block-body">
+          <p>Cupom ativo: <span class="code-pill">LOYAL-X8K2M4</span></p>
+          <p>Vale <span class="amount">15% de desconto</span>, sem valor mínimo.</p>
+          <p class="muted">Já foi utilizado 1 vez (1 pedido).</p>
+          <p class="how-to-redeem">
+            <strong>Como resgatar:</strong> o cliente insere o cupom no checkout.
+          </p>
+          <p class="expiry-line">Expira em 2026-08-18.</p>
+          <div class="sb-expander">Mais detalhes</div>
+        </div>
+      </div>
+      <div class="en-translation">
+        <strong>EN:</strong> Loyalty bonus<br>
+        Active discount code: LOYAL-X8K2M4<br>
+        Currently worth 15% off, no minimum.<br>
+        Already used 1 time (1 order).<br>
+        <strong>How to redeem:</strong> customer enters the code at checkout.<br>
+        Expires on 2026-08-18.<br>
+        > More details
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-caption">Analyst view <span class="tag">expanded</span></div>
+    <div class="mockup-frame">
+      <div class="mockup-frame-caption">Same customer, expander open</div>
+      <div class="sb-block">
+        <div class="sb-block-header">Loyalty bonus</div>
+        <div class="sb-block-body">
+          <p>Cupom ativo: <span class="code-pill">LOYAL-X8K2M4</span></p>
+          <p>Vale <span class="amount">15% de desconto</span>, sem valor mínimo.</p>
+          <p class="muted">Já foi utilizado 1 vez (1 pedido).</p>
+          <p class="how-to-redeem">
+            <strong>Como resgatar:</strong> o cliente insere o cupom no checkout.
+          </p>
+          <p class="expiry-line">Expira em 2026-08-18.</p>
+          <div class="sb-expander open">Mais detalhes</div>
+          <div class="sb-expanded">
+            <h4>Test cohort</h4>
+            <dl>
+              <dt>Arm</dt><dd class="strong">B — tapering discount</dd>
+              <dt>Enrolled</dt><dd>2026-05-20 · order <a class="ref-link" href="#">#80624</a> (R$180)</dd>
+              <dt>Sticky cohort</dt><dd>yes (assigned 2026-05-20)</dd>
+            </dl>
+            <h4>Value schedule</h4>
+            <div class="schedule-row past">
+              <div>days 1-30</div><div>20% off · flipped to 15% on 2026-06-19</div>
+            </div>
+            <div class="schedule-row current">
+              <div>days 31-60</div><div>15% off · flips to 10% on 2026-07-19</div>
+            </div>
+            <div class="schedule-row">
+              <div>days 61-90</div><div>10% off · expires 2026-08-18</div>
+            </div>
+            <h4 style="margin-top: 12px;">Redemption history</h4>
+            <div class="redemption-row">
+              <div>2026-06-15</div><div>20% off</div><div><a class="order-link" href="#">order #80921</a> (R$140 order, R$28 saved)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ====== STATE 4: Arm C — fresh enrollment ==================== -->
+<!-- ============================================================ -->
+<h2 class="section">State 4 — Arm C customer, fresh enrollment (CRM Bonus replica)</h2>
+
+<div class="grid">
+  <div class="mockup">
+    <div class="mockup-caption">Operator view <span class="tag">default</span></div>
+    <div class="mockup-frame">
+      <div class="mockup-frame-caption">Flat 20%, 45d validity, 25% cart cap</div>
+      <div class="sb-block">
+        <div class="sb-block-header">Loyalty bonus</div>
+        <div class="sb-block-body">
+          <p>Cupom ativo: <span class="code-pill">BONUS-K3Q9PM</span></p>
+          <p>Vale <span class="amount">20% de desconto</span> (até 25% do total do novo pedido).</p>
+          <p class="how-to-redeem">
+            <strong>Como resgatar:</strong> o cliente insere o cupom no checkout.
+          </p>
+          <p class="expiry-line">Expira em 2026-07-01.</p>
+          <div class="sb-expander">Mais detalhes</div>
+        </div>
+      </div>
+      <div class="en-translation">
+        <strong>EN:</strong> Loyalty bonus<br>
+        Active discount code: BONUS-K3Q9PM<br>
+        Worth 20% off (capped at 25% of new order total).<br>
+        <strong>How to redeem:</strong> customer enters the code at checkout.<br>
+        Expires on 2026-07-01.<br>
+        > More details
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-caption">Analyst view <span class="tag">expanded</span></div>
+    <div class="mockup-frame">
+      <div class="mockup-frame-caption">Same customer, expander open</div>
+      <div class="sb-block">
+        <div class="sb-block-header">Loyalty bonus</div>
+        <div class="sb-block-body">
+          <p>Cupom ativo: <span class="code-pill">BONUS-K3Q9PM</span></p>
+          <p>Vale <span class="amount">20% de desconto</span> (até 25% do total do novo pedido).</p>
+          <p class="how-to-redeem">
+            <strong>Como resgatar:</strong> o cliente insere o cupom no checkout.
+          </p>
+          <p class="expiry-line">Expira em 2026-07-01.</p>
+          <div class="sb-expander open">Mais detalhes</div>
+          <div class="sb-expanded">
+            <h4>Test cohort</h4>
+            <dl>
+              <dt>Arm</dt><dd class="strong">C — flat 20% / 45d / 25% cap (CRM Bonus replica)</dd>
+              <dt>Enrolled</dt><dd>2026-05-17 · order <a class="ref-link" href="#">#80590</a> (R$220)</dd>
+              <dt>Sticky cohort</dt><dd>yes (assigned 2026-05-17)</dd>
+            </dl>
+            <h4>Cap math</h4>
+            <p style="margin: 0;">
+              On a R$220 order, 20% would discount R$44 but the 25% cart cap kicks in at R$55, so the cap is not binding. On a R$150 order, 20% would discount R$30 (under the R$37.50 cap, also not binding). The cap only matters for orders below ~R$80, where 20% would exceed 25% of the cart.
+            </p>
+            <h4 style="margin-top: 12px;">Redemption history</h4>
+            <p style="margin: 0; color: var(--subdued); font-style: italic;">No redemptions yet.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ====== STATE 5: Cancelled by refund ========================= -->
+<!-- ============================================================ -->
+<h2 class="section">State 5 — Cancelled enrollment (original order was refunded) <span class="edge-strip">edge case</span></h2>
+
+<div class="grid">
+  <div class="mockup">
+    <div class="mockup-caption">Operator view <span class="tag">default</span></div>
+    <div class="mockup-frame">
+      <div class="mockup-frame-caption">Customer's order was refunded; bonus was removed</div>
+      <div class="sb-block">
+        <div class="sb-block-header">Loyalty bonus</div>
+        <div class="sb-block-body">
+          <p class="empty">Sem bônus ativo no momento.</p>
+          <p class="cancel-line">
+            Bônus removido porque o pedido <a class="order-link" href="#" style="color:inherit;text-decoration:underline;">#80623</a> foi reembolsado em 2026-06-02.
+          </p>
+          <div class="sb-expander">Mais detalhes</div>
+        </div>
+      </div>
+      <div class="en-translation">
+        <strong>EN:</strong> Loyalty bonus<br>
+        No active bonus.<br>
+        Bonus removed because order #80623 was refunded on 2026-06-02.<br>
+        > More details
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-caption">Analyst view <span class="tag">expanded</span></div>
+    <div class="mockup-frame">
+      <div class="mockup-frame-caption">Expander reveals the cancelled enrollment context</div>
+      <div class="sb-block">
+        <div class="sb-block-header">Loyalty bonus</div>
+        <div class="sb-block-body">
+          <p class="empty">Sem bônus ativo no momento.</p>
+          <p class="cancel-line">
+            Bônus removido porque o pedido <a class="order-link" href="#" style="color:inherit;text-decoration:underline;">#80623</a> foi reembolsado em 2026-06-02.
+          </p>
+          <div class="sb-expander open">Mais detalhes</div>
+          <div class="sb-expanded">
+            <h4>Cancelled enrollment</h4>
+            <dl>
+              <dt>Arm</dt><dd class="strong">A — tapering cashback</dd>
+              <dt>Enrolled</dt><dd>2026-05-20 · order <a class="ref-link" href="#">#80623</a> (R$200)</dd>
+              <dt>Original bonus</dt><dd>R$40 store credit (5%/5%/10% tranches)</dd>
+              <dt>Cancelled at</dt><dd>2026-06-02</dd>
+              <dt>Cancel reason</dt><dd>order-refunded</dd>
+              <dt>Amount redeemed before cancel</dt><dd>R$0</dd>
+              <dt>Cancellation message sent</dt><dd>✓ 2026-06-02 (email + WhatsApp)</dd>
+            </dl>
+            <p style="margin: 12px 0 0; font-style: italic;">
+              This panel auto-converts to "Não está participando do teste no momento." 90 days after the cancellation date (2026-09-01).
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ====== STATE 6: Just expired (within 24-48h) =============== -->
+<!-- ============================================================ -->
+<h2 class="section">State 6 — Just expired (within last 24-48h) <span class="edge-strip">edge case</span></h2>
+
+<div class="grid">
+  <div class="mockup">
+    <div class="mockup-caption">Operator view <span class="tag">default</span></div>
+    <div class="mockup-frame">
+      <div class="mockup-frame-caption">Customer calls asking why yesterday's redemption didn't work</div>
+      <div class="sb-block">
+        <div class="sb-block-header">Loyalty bonus</div>
+        <div class="sb-block-body">
+          <p class="empty">Sem bônus ativo no momento.</p>
+          <p class="expiry-line expired">Este bônus expirou em 2026-08-18.</p>
+          <div class="sb-expander">Mais detalhes</div>
+        </div>
+      </div>
+      <div class="en-translation">
+        <strong>EN:</strong> Loyalty bonus<br>
+        No active bonus.<br>
+        This bonus expired on 2026-08-18.<br>
+        > More details
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-caption">Analyst view <span class="tag">expanded</span></div>
+    <div class="mockup-frame">
+      <div class="mockup-frame-caption">Expander shows the recently-expired enrollment</div>
+      <div class="sb-block">
+        <div class="sb-block-header">Loyalty bonus</div>
+        <div class="sb-block-body">
+          <p class="empty">Sem bônus ativo no momento.</p>
+          <p class="expiry-line expired">Este bônus expirou em 2026-08-18.</p>
+          <div class="sb-expander open">Mais detalhes</div>
+          <div class="sb-expanded">
+            <h4>Recently expired enrollment</h4>
+            <dl>
+              <dt>Arm</dt><dd class="strong">A — tapering cashback</dd>
+              <dt>Enrolled</dt><dd>2026-05-20 · order <a class="ref-link" href="#">#80623</a> (R$200)</dd>
+              <dt>Original bonus</dt><dd>R$40 store credit</dd>
+              <dt>Total redeemed</dt><dd>R$15 (across 1 order)</dd>
+              <dt>Expired at</dt><dd>2026-08-18 (2 days ago)</dd>
+            </dl>
+            <h4 style="margin-top: 12px;">Redemption history</h4>
+            <div class="redemption-row">
+              <div>2026-06-10</div><div>R$15</div><div><a class="order-link" href="#">order #80850</a></div>
+            </div>
+            <p style="margin: 12px 0 0; font-style: italic;">
+              This panel auto-converts to "Não está participando do teste no momento." 48h after expiry (2026-08-20).
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ====== STATE 7: Not enrolled / never enrolled ============== -->
+<!-- ============================================================ -->
+<h2 class="section">State 7 — Not enrolled (never enrolled OR &gt;48h since expiry)</h2>
+
+<div class="grid">
+  <div class="mockup">
+    <div class="mockup-caption">Operator view <span class="tag">default</span></div>
+    <div class="mockup-frame">
+      <div class="mockup-frame-caption">Most customers most of the time</div>
+      <div class="sb-block">
+        <div class="sb-block-header">Loyalty bonus</div>
+        <div class="sb-block-body">
+          <p class="empty">Sem bônus ativo no momento.</p>
+          <div class="sb-expander">Mais detalhes</div>
+        </div>
+      </div>
+      <div class="en-translation">
+        <strong>EN:</strong> Loyalty bonus<br>
+        No active bonus.<br>
+        > More details
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-caption">Analyst view <span class="tag">expanded</span></div>
+    <div class="mockup-frame">
+      <div class="mockup-frame-caption">Empty expander state</div>
+      <div class="sb-block">
+        <div class="sb-block-header">Loyalty bonus</div>
+        <div class="sb-block-body">
+          <p class="empty">Sem bônus ativo no momento.</p>
+          <div class="sb-expander open">Mais detalhes</div>
+          <div class="sb-expanded">
+            <p style="margin: 0;">Este cliente não está participando do teste no momento.</p>
+            <p style="margin: 8px 0 0; font-style: italic;">
+              Will auto-enroll on the customer's next paid order (if status remains ACTIVE for the test). Sticky-cohort assignment is deterministic from customer ID, so the arm is predetermined even before first enrollment.
+            </p>
+            <p style="margin: 12px 0 0;">
+              <a class="ref-link" href="#">View test brief</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
