@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Affiliates sync-bar (in-block pattern)</title>
+<style>
+  :root {
+    --bg: #f1f1f1; --card: #ffffff; --border: #e1e3e5; --border-subtle: #ebebeb;
+    --text: #303030; --subdued: #6d7175; --link: #005bd3;
+    --green: #067647; --green-bg: #d6f7e3; --red: #d72c0d; --red-bg: #ffe5e0;
+    --gold: #d99a0a; --gold-bg: #fff3cd;
+    --notes-bg: #fff9eb; --notes-border: #ffd66b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg); color: var(--text); font-size: 14px;
+  }
+  h1 { font-size: 22px; font-weight: 700; margin: 0 0 8px; }
+  h2 { font-size: 16px; font-weight: 650; margin: 24px 0 8px; }
+  .intro { font-size: 13px; color: var(--subdued); max-width: 800px; margin-bottom: 24px; }
+
+  /* Page shell */
+  .pageShell { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 16px 20px; max-width: 1120px; }
+  .pageHeader { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .pageHeading { font-size: 18px; font-weight: 650; margin: 0; flex: 1; }
+  .updateChip { font-size: 11px; padding: 4px 10px; border-radius: 999px; background: var(--gold-bg); color: var(--gold); font-weight: 500; }
+
+  .tabs { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .tab { padding: 8px 14px; font-size: 13px; color: var(--subdued); border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; text-decoration: none; }
+  .tab.active { color: var(--text); font-weight: 500; border-bottom-color: #303030; }
+  .tabBadge { display: inline-block; padding: 1px 8px; border-radius: 999px; background: #f6f6f7; font-size: 11px; margin-left: 4px; color: var(--subdued); }
+
+  /* Section with sync bar at top edge */
+  .section { background: white; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .syncBarOuter { height: 2px; background: var(--border-subtle); position: relative; }
+  .syncBarFill { position: absolute; left: 0; top: 0; height: 2px; background: var(--link); transition: width 0.3s; }
+  .syncBarFill.error { background: var(--red); }
+
+  /* Option B — inline bar sitting below status row, inside content flow */
+  .syncBarInline {
+    margin: 0 24px 12px;
+    height: 6px;
+    background: var(--border-subtle);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .syncBarInline .fill {
+    height: 100%;
+    background: var(--link);
+    border-radius: 4px;
+    transition: width 0.3s;
+    position: relative;
+  }
+  .syncBarInline .fill.error { background: var(--red); }
+  .syncBarInline .fill.animated::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+    animation: syncBarShimmer 1.6s ease-in-out infinite;
+  }
+  @keyframes syncBarShimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  .optionBadge {
+    display: inline-block;
+    font-size: 11px; font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-left: 12px;
+    vertical-align: middle;
+  }
+  .optionBadge.a { background: #eaf3ff; color: var(--link); }
+  .optionBadge.b { background: #fff0e3; color: #b8350f; }
+  .optionBadge.recommended { background: var(--green-bg); color: var(--green); margin-left: 6px; }
+  .sectionBody { padding: 20px 24px; }
+  .sectionHero {
+    background: linear-gradient(90deg, #fff0f0, #fff0fa);
+    padding: 16px 24px; border-bottom: 1px solid var(--border-subtle);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .sectionHero .heroTitle { font-size: 17px; font-weight: 650; flex: 1; }
+  .sectionHero .heroRange { font-size: 12px; color: var(--subdued); }
+  .syncStatusRow {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 24px; background: #fafbfc;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 12px;
+  }
+  .syncStatusRow .syncIcon { width: 14px; height: 14px; display: inline-block; }
+  .syncStatusRow .syncLabel { color: var(--subdued); }
+  .syncStatusRow .syncLabel.green { color: var(--green); font-weight: 500; }
+  .syncStatusRow .syncLabel.red { color: var(--red); font-weight: 500; }
+  .syncStatusRow .syncLabel.gold { color: var(--gold); font-weight: 500; }
+  .syncStatusRow .syncCount { color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .syncStatusRow .syncCount.subtle { color: var(--subdued); font-weight: 400; }
+  .syncStatusRow .syncLink { margin-left: auto; color: var(--link); font-size: 12px; cursor: pointer; text-decoration: none; }
+  .syncStatusRow .syncLink:hover { text-decoration: underline; }
+
+  .filterRow { display: grid; grid-template-columns: 240px 240px 1fr; gap: 12px; align-items: end; }
+  .filterControl { display: flex; flex-direction: column; gap: 4px; }
+  .filterLabel { font-size: 12px; font-weight: 600; color: var(--subdued); }
+  .filterSelect, .filterInput {
+    height: 32px; border: 1px solid var(--border); border-radius: 6px;
+    padding: 0 10px; background: white; font-size: 13px; color: var(--text);
+    display: flex; align-items: center;
+  }
+
+  .helperBanner {
+    background: #eaf3ff; border-left: 4px solid var(--link); border-radius: 6px;
+    padding: 10px 14px; margin: 16px 0 0; font-size: 12px; color: var(--text);
+  }
+
+  /* State preview rail */
+  .statesRail { display: flex; flex-direction: column; gap: 24px; margin-top: 24px; }
+  .stateFrame { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .stateLabel { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: #303030; color: white; margin-bottom: 10px; }
+
+  /* Notes */
+  .notes { background: var(--notes-bg); border: 1px solid var(--notes-border); border-radius: 8px; padding: 14px 18px; margin-top: 24px; font-size: 12px; line-height: 1.55; max-width: 1120px; }
+  .notes h3 { margin: 0 0 8px; font-size: 13px; }
+  .notes ul { padding-left: 18px; margin: 6px 0; }
+
+  table.stateMatrix { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; background: white; }
+  table.stateMatrix th, table.stateMatrix td { padding: 8px 10px; border: 1px solid var(--border-subtle); text-align: left; vertical-align: top; }
+  table.stateMatrix th { background: #f6f6f7; font-weight: 600; }
+  table.stateMatrix code { background: rgba(0,0,0,0.06); padding: 1px 4px; border-radius: 3px; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<h1>Affiliates — sync-bar inside the main block</h1>
+<p class="intro">
+  Issue 6 — the "57.8K / ~78.3K processed" fetching bar currently floats ABOVE the Period
+  filter row, outside any card. <strong>Two options below.</strong> Both move the indicator
+  INSIDE the Program overview section; they differ in where the progress bar visually sits.
+  <strong>Pick one to standardize across every other in-block sync indicator in the admin</strong>
+  (tone-sources, retail-goals, footprint, etc.). Decision pending.
+</p>
+
+<!-- ============================================================ -->
+<h2>Option A — Chrome strip <span class="optionBadge a">A · top-edge 2px</span></h2>
+<p class="intro" style="margin-top: -16px;">
+  Thin 2px progress strip pinned to the top edge of the Program overview card, like a
+  loading bar at the top of a browser tab. Sync-status row sits between hero and filters.
+  Bar reads as <em>card chrome</em>, not body content.
+</p>
+<div class="pageShell">
+  <div class="pageHeader">
+    <h2 class="pageHeading">Affiliates</h2>
+  </div>
+
+  <div class="tabs">
+    <a href="#" class="tab active">Overview</a>
+    <a href="#" class="tab">Affiliates</a>
+    <a href="#" class="tab">Attribution queue<span class="tabBadge">18</span></a>
+    <a href="#" class="tab">Settings</a>
+  </div>
+
+  <div class="section">
+    <!-- 2px sync bar attached to top edge of the section -->
+    <div class="syncBarOuter"><div class="syncBarFill" style="width: 73%;"></div></div>
+
+    <!-- Hero (Program overview title + date range) -->
+    <div class="sectionHero">
+      <span class="heroTitle">Program overview</span>
+      <span class="heroRange">Apr 12 – May 11, 2026</span>
+    </div>
+
+    <!-- Sync status row (immediately below hero, above filters) -->
+    <div class="syncStatusRow">
+      <span class="syncLabel">Fetching orders</span>
+      <span class="syncCount">57.8K / ~78.3K processed</span>
+      <span class="syncCount subtle">· 13m elapsed · est. 4m remaining</span>
+      <a class="syncLink" href="#">Pause</a>
+    </div>
+
+    <!-- Body: filters + cards -->
+    <div class="sectionBody">
+      <div class="filterRow">
+        <div class="filterControl">
+          <span class="filterLabel">Period</span>
+          <div class="filterSelect">Last 30 days</div>
+        </div>
+        <div class="filterControl">
+          <span class="filterLabel">Compare with</span>
+          <div class="filterSelect">Previous period</div>
+        </div>
+        <div class="filterControl">
+          <span class="filterLabel">Search affiliate</span>
+          <div class="filterInput">All affiliates</div>
+        </div>
+      </div>
+
+      <div class="helperBanner">
+        ℹ Margin, CAC, and ROAS estimates assume a flat 10% commission for every affiliate —
+        BixGrow&apos;s CSV doesn&apos;t export per-affiliate commission rates, so these three
+        cards are directional, not exact.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>Option B — Inline bar <span class="optionBadge b">B · 6px below status row</span></h2>
+<p class="intro" style="margin-top: -16px;">
+  Regular progress bar (6px, rounded) rendered inline as body content, directly below the
+  "Fetching orders · 57.8K / ~78.3K processed · 13m elapsed · est. 4m remaining" status row.
+  Bar reads as <em>content</em>, with measurable weight. Card top edge stays clean.
+</p>
+
+<div class="pageShell">
+  <div class="pageHeader">
+    <h2 class="pageHeading">Affiliates</h2>
+  </div>
+
+  <div class="tabs">
+    <a href="#" class="tab active">Overview</a>
+    <a href="#" class="tab">Affiliates</a>
+    <a href="#" class="tab">Attribution queue<span class="tabBadge">18</span></a>
+    <a href="#" class="tab">Settings</a>
+  </div>
+
+  <div class="section">
+    <!-- NO top-edge strip in Option B -->
+
+    <!-- Hero (Program overview title + date range) -->
+    <div class="sectionHero">
+      <span class="heroTitle">Program overview</span>
+      <span class="heroRange">Apr 12 – May 11, 2026</span>
+    </div>
+
+    <!-- Sync status row (same content as Option A) -->
+    <div class="syncStatusRow">
+      <span class="syncLabel">Fetching orders</span>
+      <span class="syncCount">57.8K / ~78.3K processed</span>
+      <span class="syncCount subtle">· 13m elapsed · est. 4m remaining</span>
+      <a class="syncLink" href="#">Pause</a>
+    </div>
+
+    <!-- Inline 6px progress bar (NEW — Option B's signature) -->
+    <div class="syncBarInline">
+      <div class="fill animated" style="width: 73%;"></div>
+    </div>
+
+    <!-- Body: filters + cards (same as Option A) -->
+    <div class="sectionBody">
+      <div class="filterRow">
+        <div class="filterControl">
+          <span class="filterLabel">Period</span>
+          <div class="filterSelect">Last 30 days</div>
+        </div>
+        <div class="filterControl">
+          <span class="filterLabel">Compare with</span>
+          <div class="filterSelect">Previous period</div>
+        </div>
+        <div class="filterControl">
+          <span class="filterLabel">Search affiliate</span>
+          <div class="filterInput">All affiliates</div>
+        </div>
+      </div>
+
+      <div class="helperBanner">
+        ℹ Margin, CAC, and ROAS estimates assume a flat 10% commission for every affiliate —
+        BixGrow&apos;s CSV doesn&apos;t export per-affiliate commission rates, so these three
+        cards are directional, not exact.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>Side-by-side trade-offs</h2>
+
+<div style="background: white; border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 12px 0; font-size: 13px;">
+  <table style="width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr style="background: #f6f6f7;">
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border-subtle); font-weight: 600; width: 22%;">Dimension</th>
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border-subtle); font-weight: 600;">Option A — Chrome strip</th>
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border-subtle); font-weight: 600;">Option B — Inline bar</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);"><strong>Visual weight</strong></td><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);">Subtle — reads as card chrome, easy to miss when not paying attention</td><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);">Prominent — bar is body content, immediately visible</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);"><strong>Vertical space</strong></td><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);">Adds 2px when running, 0px otherwise</td><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);">Adds ~18px (6px bar + margins) when running</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);"><strong>Status-row pairing</strong></td><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);">Separated — bar at top, status row below hero. Two visual cues with a gap.</td><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);">Tightly coupled — status + bar read as one unit</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);"><strong>Hidden when idle</strong></td><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);">Yes — invisible 2px track, no jump in layout</td><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);">Yes — DOM node hidden entirely; 18px space removed</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);"><strong>Error visual</strong></td><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);">Red 2px strip across top of card</td><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);">Red 6px bar inside body — louder, harder to ignore</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);"><strong>Multi-section pages</strong></td><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);">Each section can have its own strip independently; works at any card density</td><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);">Same — but ~18px per section adds up faster on dense pages</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);"><strong>Mobile</strong></td><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);">Imperceptible on small screens — may feel "is anything happening?"</td><td style="padding: 8px 10px; border-bottom: 1px solid var(--border-subtle);">Clearly visible on small screens — confirms work in progress</td></tr>
+      <tr><td style="padding: 8px 10px;"><strong>Shopify-native feel</strong></td><td style="padding: 8px 10px;">Matches their loading-bar-at-top-of-page convention (e.g. app install progress)</td><td style="padding: 8px 10px;">Matches their inline-card progress convention (e.g. bulk-action progress, sync status in Settings)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="background: #fff9eb; border: 1px solid #ffd66b; border-radius: 8px; padding: 14px 18px; margin: 16px 0; font-size: 13px;">
+  <strong>Recommendation if deciding by feel:</strong> Option B for Affiliates specifically, because the merchant
+  comes to this tab DURING a sync (to see what's running) and the bar should announce itself. Option A is the
+  better default if we want a quiet, always-on indicator across many sections. <strong>If you want both,</strong>
+  the rule could be "Option B for first-class long-running syncs the merchant initiates; Option A for background
+  reconciles they didn't ask for." — but that's complexity. Pick one for everything.
+</div>
+
+<!-- ============================================================ -->
+<h2>State previews — all 5 states (Option A)</h2>
+<p class="intro" style="margin-top: -16px;">
+  Below shows Option A's 5-state matrix. Option B's matrix is identical in logic (idle / running / done / error / stale)
+  — the only difference is bar placement. If you pick B, every frame swaps the top-edge strip for the inline 6px bar.
+</p>
+<div class="statesRail">
+
+  <!-- State A: idle, synced recently -->
+  <div class="stateFrame">
+    <span class="stateLabel">State A — idle, synced &lt; 24h ago (steady state)</span>
+    <div class="section">
+      <div class="syncBarOuter"></div>
+      <div class="sectionHero">
+        <span class="heroTitle">Program overview</span>
+        <span class="heroRange">Apr 12 – May 11, 2026</span>
+      </div>
+      <div class="syncStatusRow">
+        <span class="syncLabel green">✓ Synced</span>
+        <span class="syncCount">78,326 orders processed</span>
+        <span class="syncCount subtle">· 12 min ago</span>
+        <a class="syncLink" href="#">Refresh</a>
+      </div>
+      <div class="sectionBody">
+        <div class="filterRow">
+          <div class="filterControl"><span class="filterLabel">Period</span><div class="filterSelect">Last 30 days</div></div>
+          <div class="filterControl"><span class="filterLabel">Compare with</span><div class="filterSelect">Previous period</div></div>
+          <div class="filterControl"><span class="filterLabel">Search affiliate</span><div class="filterInput">All affiliates</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State B: running -->
+  <div class="stateFrame">
+    <span class="stateLabel">State B — running (target state, what the mockup above shows)</span>
+    <div class="section">
+      <div class="syncBarOuter"><div class="syncBarFill" style="width: 73%;"></div></div>
+      <div class="sectionHero">
+        <span class="heroTitle">Program overview</span>
+        <span class="heroRange">Apr 12 – May 11, 2026</span>
+      </div>
+      <div class="syncStatusRow">
+        <span class="syncLabel">Fetching orders</span>
+        <span class="syncCount">57,800 / ~78,326 processed</span>
+        <span class="syncCount subtle">· 13m elapsed · est. 4m remaining</span>
+        <a class="syncLink" href="#">Pause</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- State C: done just now -->
+  <div class="stateFrame">
+    <span class="stateLabel">State C — done, just now (fades to State A after 5min)</span>
+    <div class="section">
+      <div class="syncBarOuter"></div>
+      <div class="sectionHero">
+        <span class="heroTitle">Program overview</span>
+        <span class="heroRange">Apr 12 – May 11, 2026</span>
+      </div>
+      <div class="syncStatusRow">
+        <span class="syncLabel green">✓ Synced just now</span>
+        <span class="syncCount">78,326 orders processed</span>
+        <a class="syncLink" href="#">Refresh</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- State D: error -->
+  <div class="stateFrame">
+    <span class="stateLabel">State D — error (sync failed)</span>
+    <div class="section">
+      <div class="syncBarOuter"><div class="syncBarFill error" style="width: 24%;"></div></div>
+      <div class="sectionHero">
+        <span class="heroTitle">Program overview</span>
+        <span class="heroRange">Apr 12 – May 11, 2026</span>
+      </div>
+      <div class="syncStatusRow">
+        <span class="syncLabel red">⚠ Sync failed</span>
+        <span class="syncCount">19,200 of 78,326 processed before failure</span>
+        <span class="syncCount subtle">· Shopify GraphQL throttled at 14:32 BRT</span>
+        <a class="syncLink" href="#">Retry</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- State E: stale -->
+  <div class="stateFrame">
+    <span class="stateLabel">State E — stale (last successful sync &gt; expected interval)</span>
+    <div class="section">
+      <div class="syncBarOuter"></div>
+      <div class="sectionHero">
+        <span class="heroTitle">Program overview</span>
+        <span class="heroRange">Apr 12 – May 11, 2026</span>
+      </div>
+      <div class="syncStatusRow">
+        <span class="syncLabel gold">⚠ Last synced 4 hours ago</span>
+        <span class="syncCount subtle">cron expected hourly · check /api/cron/affiliates-sync logs</span>
+        <a class="syncLink" href="#">Sync now</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<div class="notes">
+  <h3>State matrix — in-block sync indicator (canonical)</h3>
+  <table class="stateMatrix">
+    <thead>
+      <tr>
+        <th>State</th>
+        <th>2px top-edge bar</th>
+        <th>Status row icon/label</th>
+        <th>Count text</th>
+        <th>Right-side link</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>A — idle, recent</strong></td>
+        <td>Hidden</td>
+        <td>"✓ Synced" (green)</td>
+        <td>"N orders processed · 12 min ago"</td>
+        <td>"Refresh"</td>
+      </tr>
+      <tr>
+        <td><strong>B — running</strong></td>
+        <td>Visible, animated, blue (<code>--link</code>)</td>
+        <td>"Fetching orders" (subdued)</td>
+        <td>"57,800 / ~78,326 processed · 13m elapsed"</td>
+        <td>"Pause" or hidden (if not pausable)</td>
+      </tr>
+      <tr>
+        <td><strong>C — done just now</strong></td>
+        <td>Hidden</td>
+        <td>"✓ Synced just now" (green)</td>
+        <td>"N orders processed"</td>
+        <td>"Refresh"</td>
+      </tr>
+      <tr>
+        <td><strong>D — error</strong></td>
+        <td>Visible, frozen at fail %, red (<code>--red</code>)</td>
+        <td>"⚠ Sync failed" (red)</td>
+        <td>"N of M processed before failure · reason"</td>
+        <td>"Retry"</td>
+      </tr>
+      <tr>
+        <td><strong>E — stale</strong></td>
+        <td>Hidden</td>
+        <td>"⚠ Last synced Nh ago" (gold)</td>
+        <td>"cron expected hourly · check logs"</td>
+        <td>"Sync now"</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 style="margin-top: 16px;">Pattern reusability — apply to every in-app sync</h3>
+  <ul>
+    <li><strong>Affiliates Overview</strong> (the case Lucas flagged) — Program overview section.</li>
+    <li><strong>Retail Sales</strong> — top section ("Sales overview" or similar). Already has "Last synced" label; promote it to this pattern.</li>
+    <li><strong>Footprint Expansion</strong> — Heatmap section. Ingest progress for the per-shop bucket compute.</li>
+    <li><strong>Settings &gt; Brand</strong> (proposed merge — see <a href="settings-brand-merged-v1.html">settings-brand-merged-v1.html</a>) — Tone-of-voice sources block. Uses identical pattern, sized for its smaller block.</li>
+    <li><strong>Local Delivery</strong> — Map block header. Lalamove status reconcile is silent today; surface it. Dispatch reconcile (3min) is also silent — surface "Last reconciled N min ago".</li>
+    <li><strong>Storytelling &gt; Brief</strong> — Brand context band (already does this; the green block in <code>app.storytelling_.brief.tsx</code>). Reuse the visual treatment.</li>
+  </ul>
+
+  <h3 style="margin-top: 16px;">Why "in-block" and not "page-top banner"</h3>
+  <ul>
+    <li><strong>Banners pile up.</strong> Built for Shopify caps stacked banners at 1 per viewport. Sync state, error state, helper text, plan-gated state — all compete for that slot. In-block keeps each indicator local to what it affects.</li>
+    <li><strong>Multi-section pages.</strong> Affiliates has 4 tabs; each tab&apos;s sync state is different. A page-top banner can&apos;t express "Overview synced, Attribution Queue stale".</li>
+    <li><strong>Visual weight.</strong> A 2px line + a 6-line status row inside the card is quieter than a full <code>&lt;s-banner&gt;</code> at the top of the page — and quieter is correct because most of the time the sync is healthy and merchant attention should be on the data, not the plumbing.</li>
+  </ul>
+
+  <h3 style="margin-top: 16px;">Implementation note (integrations-engineer brief)</h3>
+  <ul>
+    <li>Each page&apos;s sync indicator reads from a per-feature meta table (<code>AffiliateSyncMeta</code>, <code>SalesGoalsSyncMeta</code>, <code>ShopIngestMeta</code>, <code>ToneSourceMeta</code>, etc.). Add 4 columns where missing: <code>lastStartedAt</code>, <code>lastFinishedAt</code>, <code>lastError</code>, <code>progressCount</code>/<code>progressTotal</code>.</li>
+    <li>State derivation (client-side):
+      <ul>
+        <li>If <code>lastStartedAt &gt; lastFinishedAt</code> AND <code>lastError IS NULL</code> → State B (running)</li>
+        <li>Else if <code>lastError IS NOT NULL</code> AND <code>lastFinishedAt &lt; lastStartedAt</code> → State D (error)</li>
+        <li>Else if <code>now() - lastFinishedAt &lt; 5min</code> → State C (done just now)</li>
+        <li>Else if <code>now() - lastFinishedAt &lt; expected_interval × 2</code> → State A (idle, recent)</li>
+        <li>Else → State E (stale)</li>
+      </ul>
+    </li>
+    <li>Polling: when in State B, client polls every 5s (extend the existing useRevalidator pattern). When stable, no polling.</li>
+    <li>"Refresh"/"Retry"/"Sync now" all POST to <code>/api/cron/&lt;feature&gt;-sync</code> with <code>?manual=1</code> — same endpoint as the cron, bypasses watermark check.</li>
+  </ul>
+</div>
+
+</body>
+</html>

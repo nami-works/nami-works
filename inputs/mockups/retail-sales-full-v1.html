@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Retail sales — full responsive redesign · mockup v1</title>
+<style>
+  :root {
+    --bg: #f1f2f4;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --border-soft: #ebebeb;
+    --grid: #ebebeb;
+    --text: #303030;
+    --subdued: #6d7175;
+    --axis: #8c9196;
+    --blue-primary: #005bd3;
+    --blue-projection: #b3d1ff;
+    --blue-py: #d9e3ef;
+    --blue-py-edge: #c3d2e3;
+    --green: #067647;
+    --red: #d72c0d;
+    --goal: #b8350f;
+    --hot-pink: #fce4f0;
+    --hot-blue: #e8f5fa;
+    --ach-green: #067647;
+    --ach-yellow: #d99a0a;
+    --ach-red: #d72c0d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  h1.mockupTitle { font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 900px;
+    margin-bottom: 20px;
+  }
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #5b4700;
+    max-width: 1400px;
+    margin-bottom: 20px;
+  }
+  .notes.critical { background: #fff4ef; border-color: #f2b6a3; color: #6b2211; }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; font-weight: 600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 3px; }
+  .notes code {
+    background: #fff;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+
+  .sectionLabel {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 32px 0 10px;
+  }
+  .sectionLabel.primary { color: #005bd3; }
+  .splitRow {
+    display: grid;
+    grid-template-columns: 400px 400px;
+    gap: 40px;
+    align-items: flex-start;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     SHARED — Desktop + mobile page chrome
+     ═══════════════════════════════════════════════════ */
+  .page {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+  .page.desktop { max-width: 1200px; }
+  .page.mobile { width: 390px; padding: 10px 12px; }
+  .pageHeading {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 14px;
+  }
+  .page.mobile .pageHeading { font-size: 17px; margin-bottom: 10px; }
+  .section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px 20px;
+    margin-bottom: 16px;
+  }
+  .page.mobile .section { padding: 12px; margin-bottom: 12px; }
+
+  /* Tabs */
+  .tabsRow {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border-bottom: 1px solid var(--border);
+    margin: -4px -20px 16px;
+    padding: 0 20px;
+  }
+  .page.mobile .tabsRow { margin: -4px -12px 12px; padding: 0 12px; }
+  .tab {
+    padding: 8px 16px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    background: none;
+    color: var(--subdued);
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    margin-bottom: -1px;
+    font-family: inherit;
+  }
+  .tab:hover { color: var(--text); border-bottom-color: #8c9196; }
+  .tabActive { color: var(--text); font-weight: 500; border-bottom-color: var(--text); }
+
+  /* Overview strip */
+  .overviewStrip {
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: linear-gradient(180deg, var(--hot-blue) 0%, var(--hot-pink) 30%, #fff 65%);
+    margin-bottom: 16px;
+  }
+  .page.mobile .overviewStrip { padding: 14px; margin-bottom: 12px; }
+  .overviewStripHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+  .overviewHeaderLeft {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+  .overviewStripHeading { font-size: 16px; font-weight: 600; margin: 0; }
+  .page.mobile .overviewStripHeading { font-size: 15px; }
+  .periodFriendly {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--subdued);
+    white-space: nowrap;
+  }
+  .overviewStripSubtitle {
+    font-size: 13px;
+    color: var(--subdued);
+    font-weight: 500;
+  }
+  .page.mobile .overviewStripSubtitle { font-size: 12px; }
+
+  /* Button */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+  .btnPrimary {
+    background: #303030;
+    color: #fff;
+    border-color: #1a1a1a;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.05), inset 0 -1px 0 rgba(0,0,0,0.2);
+  }
+  .btnSecondary {
+    background: #fff;
+    color: var(--text);
+    border-color: #c9cccf;
+  }
+  .btnFullWidthMobile { width: 100%; justify-content: center; }
+  .btnIcon { width: 14px; height: 14px; fill: currentColor; }
+
+  /* Filter bar */
+  .periodBar {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .page.mobile .periodBar { gap: 10px; margin-bottom: 12px; }
+  .filterControl {
+    flex: 1 0 0;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .page.mobile .filterControl { min-width: 100%; flex-basis: 100%; }
+  .filterLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--subdued);
+  }
+  .selectMock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 10px;
+    border: 1px solid #c9cccf;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .selectMock::after { content: "▾"; color: #8c9196; font-size: 10px; margin-left: 6px; }
+
+  /* KPI cards */
+  .kpiGroupLabel {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--subdued);
+    margin: 8px 0 6px;
+  }
+  .page.mobile .kpiGroupLabel { font-size: 12px; }
+  .kpiGrid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 16px;
+  }
+  .page.mobile .kpiGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .kpiCard {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .page.mobile .kpiCard { padding: 12px 14px; }
+  .kpiCardActive {
+    background: #eef1f8;
+    border-color: #1f2d5a;
+    border-width: 2px;
+    padding: 13px 15px;
+  }
+  .kpiTitle { font-size: 13px; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+  .kpiInfoIcon { font-size: 11px; color: #8c9196; }
+  .kpiPrimary { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
+  .kpiValue { font-size: 22px; font-weight: 700; }
+  .page.mobile .kpiValue { font-size: 20px; }
+  .kpiDelta { font-size: 12px; font-weight: 500; color: var(--subdued); }
+  .kpiDeltaPos { color: var(--green); }
+  .kpiDeltaNeg { color: var(--red); }
+  .kpiProj { font-size: 12px; font-weight: 500; margin-top: 2px; }
+  .kpiProjEarly { font-style: italic; }
+  .kpiLine { font-size: 12px; color: var(--subdued); display: flex; justify-content: space-between; gap: 6px; }
+
+  /* Drilldown chart */
+  .drilldown {
+    padding: 20px 24px 20px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fff;
+    margin-bottom: 16px;
+  }
+  .page.mobile .drilldown {
+    padding: 14px 12px 14px 8px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+  }
+  .drilldownHeader { margin-bottom: 16px; padding-left: 12px; }
+  .drilldownHeader h3 { font-size: 14px; font-weight: 600; margin: 0 0 2px; }
+  .drilldownSubtitle { font-size: 12px; color: var(--subdued); }
+  .chartFrame {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 8px;
+    min-width: 0;
+  }
+  .page.mobile .chartFrame {
+    grid-template-columns: 36px 1fr;
+    min-width: 340px; /* triggers scroll for 4+ locations but stays tight for 3 or less */
+  }
+  .chartYAxis { position: relative; height: 240px; }
+  .page.mobile .chartYAxis { height: 180px; }
+  .yTick {
+    position: absolute;
+    right: 4px;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: var(--axis);
+    white-space: nowrap;
+  }
+  .chartPlot {
+    position: relative;
+    height: 240px;
+    border-left: 1px solid var(--border);
+  }
+  .page.mobile .chartPlot { height: 180px; }
+  .gridline {
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: var(--grid);
+  }
+  .gridlineZero { background: #303030; opacity: 0.45; }
+  .chartBars {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    padding: 0 8px;
+  }
+  .barGroup {
+    position: relative;
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 6px;
+  }
+  .page.mobile .barGroup { gap: 3px; }
+  .barCurrent {
+    width: 28px;
+    border-radius: 3px 3px 0 0;
+    background: var(--blue-primary);
+    display: flex;
+    flex-direction: column-reverse;
+    overflow: hidden;
+  }
+  .barProjection { width: 100%; background: var(--blue-projection); border-radius: 3px 3px 0 0; }
+  .barPy { width: 28px; border-radius: 3px 3px 0 0; background: var(--blue-py); }
+  .page.mobile .barCurrent,
+  .page.mobile .barPy { width: 15px; }
+  .goalMark {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 74px;
+    border-top: 2px dotted var(--goal);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .page.mobile .goalMark { width: 40px; }
+  .goalMark::after {
+    content: attr(data-label);
+    position: absolute;
+    right: 0;
+    top: -14px;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--goal);
+    white-space: nowrap;
+  }
+  .chartXAxis {
+    margin-left: 52px;
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-around;
+    padding: 0 8px;
+  }
+  .page.mobile .chartXAxis { margin-left: 40px; }
+  .chartXLabel {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.3;
+    padding: 0 4px;
+  }
+  .page.mobile .chartXLabel { font-size: 10px; }
+  .statsTable {
+    margin-top: 4px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .statsRow {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 12px;
+    align-items: center;
+  }
+  .page.mobile .statsRow { grid-template-columns: 36px 1fr; padding: 5px 0; font-size: 11px; }
+  .statsRow:last-child { border-bottom: none; }
+  .statsLabel { color: var(--subdued); font-size: 11px; font-weight: 500; }
+  .statsCells { display: flex; justify-content: space-around; padding: 0 8px; }
+  .statsCell { flex: 1; text-align: center; font-variant-numeric: tabular-nums; font-weight: 500; }
+  .statsCellPos { color: var(--green); }
+  .statsCellNeg { color: var(--red); }
+  .chartLegend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 12px;
+    color: var(--subdued);
+    flex-wrap: wrap;
+  }
+  .page.mobile .chartLegend { gap: 12px; font-size: 11px; margin-top: 10px; padding-top: 10px; }
+  .chartLegend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legendDot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .legendDotCurrent { background: linear-gradient(to top, var(--blue-projection) 0% 50%, var(--blue-primary) 50% 100%); }
+  .legendDotPy { background: var(--blue-py); border: 1px solid var(--blue-py-edge); }
+  .legendDash { width: 16px; height: 0; border-top: 2px dotted var(--goal); display: inline-block; }
+
+  /* ═══════════════════════════════════════════════════
+     BREAKDOWN TABLE — desktop + 2 mobile options
+     ═══════════════════════════════════════════════════ */
+  .tableCard {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .tableCardBody { padding: 16px 20px; }
+  .page.mobile .tableCardBody { padding: 12px; }
+  .sectionTitle { font-size: 16px; font-weight: 600; margin: 0 0 12px; }
+  .page.mobile .sectionTitle { font-size: 14px; margin-bottom: 10px; }
+
+  /* Desktop table */
+  .tableGrid {
+    display: grid;
+    gap: 0;
+  }
+  .tableHeaderRow,
+  .tableDataRow {
+    display: grid;
+    grid-template-columns:
+      minmax(140px, 2fr)
+      minmax(100px, 1fr)
+      minmax(100px, 1fr)
+      minmax(100px, 1fr)
+      minmax(140px, 1.3fr)
+      minmax(70px, 0.8fr)
+      minmax(100px, 1fr);
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .tableHeaderRow {
+    background: #f6f6f7;
+    font-weight: 600;
+    color: var(--subdued);
+    font-size: 12px;
+    padding: 8px 0;
+    text-align: center;
+    border-top: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .tableDataRow {
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f1f1;
+  }
+  .tableDataRow:last-child { border-bottom: none; }
+  .tableDataRow:hover { background: #f6f6f7; }
+  .tableDataRow span { padding: 0 8px; }
+  .tableDataRow > span:first-child { text-align: left; font-weight: 500; }
+  .tableDataRow > span { text-align: center; }
+  .progressCell { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+  .progressBar {
+    display: inline-block;
+    width: 70px;
+    height: 6px;
+    background: #f1f1f1;
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+  }
+  .progressFill {
+    display: block;
+    height: 100%;
+    background: var(--green);
+    border-radius: 3px;
+  }
+  .deltaUp { color: var(--green); font-weight: 600; }
+  .deltaDown { color: var(--red); font-weight: 600; }
+  .sparkBox {
+    display: inline-block;
+    width: 80px;
+    height: 20px;
+    background: repeating-linear-gradient(90deg, transparent 0 9px, #c9cccf 9px 10px);
+    opacity: 0.3;
+    border-radius: 2px;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     OPTION A — Horizontal scroll table
+     ═══════════════════════════════════════════════════ */
+  .tableScrollWrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -12px;
+    padding: 0 12px;
+  }
+  .tableScrollWrap .tableHeaderRow,
+  .tableScrollWrap .tableDataRow {
+    min-width: 680px; /* forces horizontal scroll */
+  }
+  .scrollHintRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--subdued);
+    font-style: italic;
+    padding: 8px 0 0;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     OPTION B — Card-per-row
+     ═══════════════════════════════════════════════════ */
+  .locationCards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .locationCard {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .locCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .locCardName {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+  }
+  .achPill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .achPillGreen { background: rgba(6,118,71,0.1); color: var(--ach-green); }
+  .achPillYellow { background: rgba(217,154,10,0.1); color: var(--ach-yellow); }
+  .achPillRed { background: rgba(215,44,13,0.1); color: var(--ach-red); }
+  .locCardMetricRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+    font-size: 12px;
+  }
+  .locCardMetric {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .locCardMetricLabel {
+    color: var(--subdued);
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .locCardMetricValue {
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .locCardMetricValue.mono { font-weight: 500; }
+  .locCardProgress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .locCardProgressBar {
+    flex: 1;
+    height: 6px;
+    background: #f1f1f1;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .locCardProgressFill {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+  }
+  .locCardProgressFill.green { background: var(--ach-green); }
+  .locCardProgressFill.yellow { background: var(--ach-yellow); }
+  .locCardProgressFill.red { background: var(--ach-red); }
+  .locCardProgressLabel {
+    font-size: 11px;
+    color: var(--subdued);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    min-width: 60px;
+    text-align: right;
+  }
+  .locCardFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 6px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 12px;
+    color: var(--subdued);
+  }
+  .locCardYoy { font-weight: 500; }
+</style>
+</head>
+<body>
+
+<h1 class="mockupTitle">Retail sales — full responsive redesign · mockup v1</h1>
+<p class="intro">
+  Full page mockup of the Retail sales Dashboard tab, designed to fix the broken mobile layout (7-column breakdown table collapsed to a 2-column grid, producing stacked cells). Covers desktop + mobile end-to-end: overview strip, period bar, KPI scoreboard, drilldown chart, volume/quality row, breakdown table. The mobile version shows <strong>two alternatives</strong> for the breakdown table so you can pick the one that reads best. The Manage-goals modal is out of scope — already redesigned in v1.
+</p>
+
+<div class="notes critical">
+  <h3>Mobile breakages addressed</h3>
+  <ul>
+    <li><strong>Breakdown table (primary issue).</strong> Current mobile CSS sets <code>grid-template-columns: repeat(2, minmax(0, 1fr))</code> on a 7-cell row, producing stacked single-column chaos (headers on their own lines, values detached from their columns). Two fixes proposed below — pick one.</li>
+    <li><strong>KPI cards on mobile.</strong> Desktop: 3 per row. Mobile: stack 1 per row (current) — they hold enough content (title, primary value, delta, projection, 1–2 lines) that 2-per-row would truncate. Kept stacked, tightened padding.</li>
+    <li><strong>Drilldown chart.</strong> Already has <code>overflow-x: auto</code>. Tightened to y-axis 36px (from 44px), bars 15px (from 28px), intra-group gap 3px (from 6px), goal marker 40px (from 74px). Applied in the <code>e4fff19</code> commit just now. Kept in mockup so mobile view is complete.</li>
+    <li><strong>Overview strip.</strong> On mobile, heading wraps, period friendly drops to its own line, Manage goals button goes full-width below. This is an enhancement over the current flex-wrap behaviour which leaves the button floating oddly.</li>
+    <li><strong>Period + Compare-with filter bar.</strong> Stacks 1-per-row at ≤768px (current behaviour, kept).</li>
+  </ul>
+</div>
+
+<div class="notes">
+  <h3>Design decisions baked in (desktop + mobile)</h3>
+  <ul>
+    <li>Achievement pill in table cells — color-coded (green ≥ 80%, yellow 60–79%, red &lt; 60%) to match the Achievement ranking chart tiers. Adds color redundancy so achievement reads at a glance without the progress bar.</li>
+    <li>Consolidated "Revenue breakdown by location" copy unchanged; column set unchanged on desktop.</li>
+    <li>Option A (scroll) keeps the desktop table structure intact — zero cognitive overhead for desktop users who also visit on mobile. Shopify convention permits <code>overflow-x: auto</code> on tables.</li>
+    <li>Option B (cards) reshapes each row into a Shopify-admin-native card with a clear primary metric, secondary grid, and YoY footer. Better tap targets, easier scanning, but breaks from the desktop mental model.</li>
+    <li>All mobile bars + intra-group gaps ship the 768px treatment already committed (15px bars, 3px gap, 40px goal marker).</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     DESKTOP
+     ═══════════════════════════════════════════════════ -->
+
+<div class="sectionLabel primary">01 · Desktop (≥ 769px)</div>
+
+<div class="page desktop">
+  <h2 class="pageHeading">Retail sales</h2>
+
+  <div class="section">
+    <div class="tabsRow">
+      <button class="tab tabActive">Dashboard</button>
+      <button class="tab">Campaigns</button>
+    </div>
+
+    <div class="overviewStrip">
+      <div class="overviewStripHeader">
+        <div class="overviewHeaderLeft">
+          <h3 class="overviewStripHeading">Retail sales dashboard</h3>
+          <span class="periodFriendly">Apr 1–17, 2026</span>
+        </div>
+        <button class="btn btnPrimary">Manage goals</button>
+      </div>
+      <div class="overviewStripSubtitle">4 locations · 3/4 goals set · Last synced 2 min ago</div>
+    </div>
+
+    <div class="periodBar">
+      <div class="filterControl">
+        <span class="filterLabel">Period</span>
+        <div class="selectMock">This month</div>
+      </div>
+      <div class="filterControl">
+        <span class="filterLabel">Compare with</span>
+        <div class="selectMock">Previous year</div>
+      </div>
+    </div>
+
+    <div class="kpiGroupLabel">Scoreboard</div>
+    <div class="kpiGrid">
+      <div class="kpiCard kpiCardActive">
+        <div class="kpiTitle">Total revenue</div>
+        <div class="kpiPrimary"><div class="kpiValue">R$128k</div><span class="kpiDelta kpiDeltaNeg">-12% vs MTD goal</span></div>
+        <div class="kpiProj kpiProjEarly">Projection R$229k</div>
+        <div class="kpiLine"><span>Goal</span><span>R$260k <span class="kpiDeltaPos">+14%</span></span></div>
+        <div class="kpiLine"><span>PY</span><span>R$218k <span class="kpiDeltaNeg">-5%</span></span></div>
+      </div>
+      <div class="kpiCard">
+        <div class="kpiTitle">Orders</div>
+        <div class="kpiPrimary"><div class="kpiValue">2,461</div><span class="kpiDelta kpiDeltaPos">+4.2% vs PY</span></div>
+        <div class="kpiProj kpiProjEarly">Projection 4,380</div>
+        <div class="kpiLine"><span>PY</span><span>4,200 <span class="kpiDeltaNeg">-4%</span></span></div>
+      </div>
+      <div class="kpiCard">
+        <div class="kpiTitle">AOV</div>
+        <div class="kpiPrimary"><div class="kpiValue">R$52.15</div><span class="kpiDelta kpiDeltaPos">+3.8% vs PY</span></div>
+        <div class="kpiLine"><span>PY</span><span>R$50.24</span></div>
+      </div>
+    </div>
+
+    <div class="drilldown">
+      <div class="drilldownHeader">
+        <h3>Revenue by location</h3>
+        <div class="drilldownSubtitle">Apr 1–17, 2026 · compared to Apr 2025 · goal for Apr 2026</div>
+      </div>
+      <div class="chartFrame">
+        <div class="chartYAxis">
+          <div class="yTick" style="top: 0%;">R$100k</div>
+          <div class="yTick" style="top: 25%;">R$75k</div>
+          <div class="yTick" style="top: 50%;">R$50k</div>
+          <div class="yTick" style="top: 75%;">R$25k</div>
+          <div class="yTick" style="top: 100%;">R$0</div>
+        </div>
+        <div class="chartPlot">
+          <div class="gridline" style="top: 0%;"></div>
+          <div class="gridline" style="top: 25%;"></div>
+          <div class="gridline" style="top: 50%;"></div>
+          <div class="gridline" style="top: 75%;"></div>
+          <div class="gridline gridlineZero" style="top: 100%;"></div>
+          <div class="chartBars">
+            <div class="barGroup"><div class="barCurrent" style="height: 45%;"><div class="barProjection" style="height: 38%;"></div></div><div class="barPy" style="height: 46%;"></div><div class="goalMark" style="bottom: 80%;" data-label="R$80k"></div></div>
+            <div class="barGroup"><div class="barCurrent" style="height: 55%;"><div class="barProjection" style="height: 40%;"></div></div><div class="barPy" style="height: 52%;"></div><div class="goalMark" style="bottom: 90%;" data-label="R$90k"></div></div>
+            <div class="barGroup"><div class="barCurrent" style="height: 32%;"><div class="barProjection" style="height: 35%;"></div></div><div class="barPy" style="height: 38%;"></div><div class="goalMark" style="bottom: 60%;" data-label="R$60k"></div></div>
+            <div class="barGroup"><div class="barCurrent" style="height: 28%;"><div class="barProjection" style="height: 30%;"></div></div><div class="barPy" style="height: 30%;"></div><div class="goalMark" style="bottom: 50%;" data-label="R$50k"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="chartXAxis">
+        <div class="chartXLabel">SP · Jardins</div>
+        <div class="chartXLabel">RJ · Ipanema</div>
+        <div class="chartXLabel">BH · Savassi</div>
+        <div class="chartXLabel">CWB · Batel</div>
+      </div>
+      <div class="statsTable">
+        <div class="statsRow"><div class="statsLabel">Goal</div><div class="statsCells"><div class="statsCell statsCellNeg">56%</div><div class="statsCell statsCellPos">83%</div><div class="statsCell statsCellNeg">53%</div><div class="statsCell statsCellNeg">50%</div></div></div>
+        <div class="statsRow"><div class="statsLabel">YoY</div><div class="statsCells"><div class="statsCell statsCellNeg">-2%</div><div class="statsCell statsCellPos">+6%</div><div class="statsCell statsCellNeg">-16%</div><div class="statsCell statsCellNeg">-7%</div></div></div>
+      </div>
+      <div class="chartLegend">
+        <span><i class="legendDot legendDotCurrent"></i> Current + projection</span>
+        <span><i class="legendDot legendDotPy"></i> Prior year</span>
+        <span><i class="legendDash"></i> Goal</span>
+      </div>
+    </div>
+
+    <div class="kpiGroupLabel">Volume / quality</div>
+    <div class="kpiGrid">
+      <div class="kpiCard">
+        <div class="kpiTitle">Same-store YoY <span class="kpiInfoIcon">ⓘ</span></div>
+        <div class="kpiPrimary"><div class="kpiValue" style="color: var(--green);">+3.4%</div></div>
+        <div class="kpiLine"><span>1 of 4 declining</span><span></span></div>
+        <div class="kpiLine"><span>Top: RJ · Ipanema +11.2%</span><span></span></div>
+      </div>
+      <div class="kpiCard">
+        <div class="kpiTitle">Achievement ranking</div>
+        <div class="kpiPrimary"><div class="kpiValue" style="font-size: 16px;">RJ · Ipanema · 83%</div></div>
+        <div class="kpiLine"><span>Leader by 33pp</span><span></span></div>
+        <div class="kpiLine"><span>Trailing: CWB · Batel · 50%</span><span></span></div>
+      </div>
+      <div class="kpiCard">
+        <div class="kpiTitle">Discount rate</div>
+        <div class="kpiPrimary"><div class="kpiValue">6.2%</div><span class="kpiDelta kpiDeltaNeg">+0.8 vs PY (pp)</span></div>
+        <div class="kpiLine"><span>PY</span><span>5.4%</span></div>
+        <div class="kpiLine"><span>13-mo:</span><span>R$128k</span></div>
+      </div>
+    </div>
+
+    <div class="tableCard">
+      <div class="tableCardBody">
+        <h3 class="sectionTitle">Revenue breakdown by location</h3>
+        <div class="tableGrid">
+          <div class="tableHeaderRow">
+            <span style="text-align:left; padding-left:8px;">Location</span>
+            <span>MTD</span>
+            <span>Projected</span>
+            <span>Goal</span>
+            <span>Achievement</span>
+            <span>YoY</span>
+            <span>13-mo trend</span>
+          </div>
+          <div class="tableDataRow">
+            <span>SP · Jardins</span><span>R$45k</span><span>R$83k</span><span>R$80k</span>
+            <span><span class="progressCell"><span>56%</span><span class="progressBar"><span class="progressFill" style="width:56%;"></span></span></span></span>
+            <span class="deltaDown">-2%</span><span><span class="sparkBox"></span></span>
+          </div>
+          <div class="tableDataRow">
+            <span>RJ · Ipanema</span><span>R$55k</span><span>R$95k</span><span>R$90k</span>
+            <span><span class="progressCell"><span>83%</span><span class="progressBar"><span class="progressFill" style="width:83%;"></span></span></span></span>
+            <span class="deltaUp">+6%</span><span><span class="sparkBox"></span></span>
+          </div>
+          <div class="tableDataRow">
+            <span>BH · Savassi</span><span>R$32k</span><span>R$55k</span><span>R$60k</span>
+            <span><span class="progressCell"><span>53%</span><span class="progressBar"><span class="progressFill" style="width:53%;"></span></span></span></span>
+            <span class="deltaDown">-16%</span><span><span class="sparkBox"></span></span>
+          </div>
+          <div class="tableDataRow">
+            <span>CWB · Batel</span><span>R$28k</span><span>R$45k</span><span>R$50k</span>
+            <span><span class="progressCell"><span>50%</span><span class="progressBar"><span class="progressFill" style="width:50%;"></span></span></span></span>
+            <span class="deltaDown">-7%</span><span><span class="sparkBox"></span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     MOBILE — side-by-side A + B for the table
+     ═══════════════════════════════════════════════════ -->
+
+<div class="sectionLabel primary">02 · Mobile (≤ 768px) — two options for the table</div>
+
+<div class="splitRow">
+
+  <!-- ── Option A: horizontal scroll ── -->
+  <div>
+    <div class="sectionLabel" style="margin-top: 0;">Option A · Horizontal scroll table</div>
+
+    <div class="page mobile">
+      <h2 class="pageHeading">Retail sales</h2>
+
+      <div class="section">
+        <div class="tabsRow">
+          <button class="tab tabActive">Dashboard</button>
+          <button class="tab">Campaigns</button>
+        </div>
+
+        <div class="overviewStrip">
+          <div class="overviewStripHeader">
+            <div class="overviewHeaderLeft">
+              <h3 class="overviewStripHeading">Retail sales dashboard</h3>
+              <span class="periodFriendly">Apr 1–17, 2026</span>
+            </div>
+          </div>
+          <div class="overviewStripSubtitle">4 locations · 3/4 goals set · Last synced 2 min ago</div>
+          <button class="btn btnPrimary btnFullWidthMobile" style="margin-top: 10px;">Manage goals</button>
+        </div>
+
+        <div class="periodBar">
+          <div class="filterControl">
+            <span class="filterLabel">Period</span>
+            <div class="selectMock">This month</div>
+          </div>
+          <div class="filterControl">
+            <span class="filterLabel">Compare with</span>
+            <div class="selectMock">Previous year</div>
+          </div>
+        </div>
+
+        <div class="kpiGroupLabel">Scoreboard</div>
+        <div class="kpiGrid">
+          <div class="kpiCard kpiCardActive">
+            <div class="kpiTitle">Total revenue</div>
+            <div class="kpiPrimary"><div class="kpiValue">R$128k</div><span class="kpiDelta kpiDeltaNeg">-12% vs MTD goal</span></div>
+            <div class="kpiProj kpiProjEarly">Projection R$229k</div>
+            <div class="kpiLine"><span>Goal</span><span>R$260k <span class="kpiDeltaPos">+14%</span></span></div>
+            <div class="kpiLine"><span>PY</span><span>R$218k <span class="kpiDeltaNeg">-5%</span></span></div>
+          </div>
+          <div class="kpiCard">
+            <div class="kpiTitle">Orders</div>
+            <div class="kpiPrimary"><div class="kpiValue">2,461</div><span class="kpiDelta kpiDeltaPos">+4.2% vs PY</span></div>
+            <div class="kpiProj kpiProjEarly">Projection 4,380</div>
+            <div class="kpiLine"><span>PY</span><span>4,200 <span class="kpiDeltaNeg">-4%</span></span></div>
+          </div>
+          <div class="kpiCard">
+            <div class="kpiTitle">AOV</div>
+            <div class="kpiPrimary"><div class="kpiValue">R$52.15</div><span class="kpiDelta kpiDeltaPos">+3.8% vs PY</span></div>
+            <div class="kpiLine"><span>PY</span><span>R$50.24</span></div>
+          </div>
+        </div>
+
+        <!-- Drilldown -->
+        <div class="drilldown">
+          <div class="drilldownHeader" style="padding-left: 8px;">
+            <h3>Revenue by location</h3>
+            <div class="drilldownSubtitle">Apr 1–17 · vs Apr 2025 · goal Apr 2026</div>
+          </div>
+          <div class="chartFrame">
+            <div class="chartYAxis">
+              <div class="yTick" style="top: 0%;">R$100k</div>
+              <div class="yTick" style="top: 25%;">R$75k</div>
+              <div class="yTick" style="top: 50%;">R$50k</div>
+              <div class="yTick" style="top: 75%;">R$25k</div>
+              <div class="yTick" style="top: 100%;">R$0</div>
+            </div>
+            <div class="chartPlot">
+              <div class="gridline" style="top: 0%;"></div>
+              <div class="gridline" style="top: 25%;"></div>
+              <div class="gridline" style="top: 50%;"></div>
+              <div class="gridline" style="top: 75%;"></div>
+              <div class="gridline gridlineZero" style="top: 100%;"></div>
+              <div class="chartBars">
+                <div class="barGroup"><div class="barCurrent" style="height: 45%;"><div class="barProjection" style="height: 38%;"></div></div><div class="barPy" style="height: 46%;"></div><div class="goalMark" style="bottom: 80%;" data-label="R$80k"></div></div>
+                <div class="barGroup"><div class="barCurrent" style="height: 55%;"><div class="barProjection" style="height: 40%;"></div></div><div class="barPy" style="height: 52%;"></div><div class="goalMark" style="bottom: 90%;" data-label="R$90k"></div></div>
+                <div class="barGroup"><div class="barCurrent" style="height: 32%;"><div class="barProjection" style="height: 35%;"></div></div><div class="barPy" style="height: 38%;"></div><div class="goalMark" style="bottom: 60%;" data-label="R$60k"></div></div>
+                <div class="barGroup"><div class="barCurrent" style="height: 28%;"><div class="barProjection" style="height: 30%;"></div></div><div class="barPy" style="height: 30%;"></div><div class="goalMark" style="bottom: 50%;" data-label="R$50k"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="chartXAxis">
+            <div class="chartXLabel">SP Jard</div>
+            <div class="chartXLabel">RJ Ipan</div>
+            <div class="chartXLabel">BH Sav</div>
+            <div class="chartXLabel">CWB Bat</div>
+          </div>
+          <div class="chartLegend">
+            <span><i class="legendDot legendDotCurrent"></i> Curr + proj</span>
+            <span><i class="legendDot legendDotPy"></i> PY</span>
+            <span><i class="legendDash"></i> Goal</span>
+          </div>
+        </div>
+
+        <div class="kpiGroupLabel">Volume / quality</div>
+        <div class="kpiGrid">
+          <div class="kpiCard">
+            <div class="kpiTitle">Same-store YoY <span class="kpiInfoIcon">ⓘ</span></div>
+            <div class="kpiPrimary"><div class="kpiValue" style="color: var(--green);">+3.4%</div></div>
+            <div class="kpiLine"><span>1 of 4 declining</span><span></span></div>
+            <div class="kpiLine"><span>Top: RJ · Ipanema +11%</span><span></span></div>
+          </div>
+          <div class="kpiCard">
+            <div class="kpiTitle">Achievement ranking</div>
+            <div class="kpiPrimary"><div class="kpiValue" style="font-size: 14px;">RJ · Ipanema · 83%</div></div>
+            <div class="kpiLine"><span>Leader by 33pp</span><span></span></div>
+            <div class="kpiLine"><span>Trail: CWB · Batel 50%</span><span></span></div>
+          </div>
+          <div class="kpiCard">
+            <div class="kpiTitle">Discount rate</div>
+            <div class="kpiPrimary"><div class="kpiValue">6.2%</div><span class="kpiDelta kpiDeltaNeg">+0.8 (pp)</span></div>
+            <div class="kpiLine"><span>PY</span><span>5.4%</span></div>
+            <div class="kpiLine"><span>13-mo</span><span>R$128k</span></div>
+          </div>
+        </div>
+
+        <!-- Breakdown: horizontal scroll -->
+        <div class="tableCard">
+          <div class="tableCardBody">
+            <h3 class="sectionTitle">Revenue breakdown by location</h3>
+            <div class="tableScrollWrap">
+              <div class="tableGrid">
+                <div class="tableHeaderRow">
+                  <span style="text-align:left; padding-left:8px;">Location</span>
+                  <span>MTD</span>
+                  <span>Projected</span>
+                  <span>Goal</span>
+                  <span>Achievement</span>
+                  <span>YoY</span>
+                  <span>13-mo trend</span>
+                </div>
+                <div class="tableDataRow">
+                  <span>SP · Jardins</span><span>R$45k</span><span>R$83k</span><span>R$80k</span>
+                  <span><span class="progressCell"><span>56%</span><span class="progressBar"><span class="progressFill" style="width:56%;"></span></span></span></span>
+                  <span class="deltaDown">-2%</span><span><span class="sparkBox"></span></span>
+                </div>
+                <div class="tableDataRow">
+                  <span>RJ · Ipanema</span><span>R$55k</span><span>R$95k</span><span>R$90k</span>
+                  <span><span class="progressCell"><span>83%</span><span class="progressBar"><span class="progressFill" style="width:83%;"></span></span></span></span>
+                  <span class="deltaUp">+6%</span><span><span class="sparkBox"></span></span>
+                </div>
+                <div class="tableDataRow">
+                  <span>BH · Savassi</span><span>R$32k</span><span>R$55k</span><span>R$60k</span>
+                  <span><span class="progressCell"><span>53%</span><span class="progressBar"><span class="progressFill" style="width:53%;"></span></span></span></span>
+                  <span class="deltaDown">-16%</span><span><span class="sparkBox"></span></span>
+                </div>
+                <div class="tableDataRow">
+                  <span>CWB · Batel</span><span>R$28k</span><span>R$45k</span><span>R$50k</span>
+                  <span><span class="progressCell"><span>50%</span><span class="progressBar"><span class="progressFill" style="width:50%;"></span></span></span></span>
+                  <span class="deltaDown">-7%</span><span><span class="sparkBox"></span></span>
+                </div>
+              </div>
+            </div>
+            <div class="scrollHintRow">← swipe table to see all columns →</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Option B: card-per-row ── -->
+  <div>
+    <div class="sectionLabel" style="margin-top: 0;">Option B · Card-per-row</div>
+
+    <div class="page mobile">
+      <h2 class="pageHeading">Retail sales</h2>
+
+      <div class="section">
+        <div class="tabsRow">
+          <button class="tab tabActive">Dashboard</button>
+          <button class="tab">Campaigns</button>
+        </div>
+
+        <div class="overviewStrip">
+          <div class="overviewStripHeader">
+            <div class="overviewHeaderLeft">
+              <h3 class="overviewStripHeading">Retail sales dashboard</h3>
+              <span class="periodFriendly">Apr 1–17, 2026</span>
+            </div>
+          </div>
+          <div class="overviewStripSubtitle">4 locations · 3/4 goals set · Last synced 2 min ago</div>
+          <button class="btn btnPrimary btnFullWidthMobile" style="margin-top: 10px;">Manage goals</button>
+        </div>
+
+        <div class="periodBar">
+          <div class="filterControl">
+            <span class="filterLabel">Period</span>
+            <div class="selectMock">This month</div>
+          </div>
+          <div class="filterControl">
+            <span class="filterLabel">Compare with</span>
+            <div class="selectMock">Previous year</div>
+          </div>
+        </div>
+
+        <div class="kpiGroupLabel">Scoreboard</div>
+        <div class="kpiGrid">
+          <div class="kpiCard kpiCardActive">
+            <div class="kpiTitle">Total revenue</div>
+            <div class="kpiPrimary"><div class="kpiValue">R$128k</div><span class="kpiDelta kpiDeltaNeg">-12% vs MTD goal</span></div>
+            <div class="kpiProj kpiProjEarly">Projection R$229k</div>
+            <div class="kpiLine"><span>Goal</span><span>R$260k <span class="kpiDeltaPos">+14%</span></span></div>
+            <div class="kpiLine"><span>PY</span><span>R$218k <span class="kpiDeltaNeg">-5%</span></span></div>
+          </div>
+          <div class="kpiCard">
+            <div class="kpiTitle">Orders</div>
+            <div class="kpiPrimary"><div class="kpiValue">2,461</div><span class="kpiDelta kpiDeltaPos">+4.2% vs PY</span></div>
+            <div class="kpiProj kpiProjEarly">Projection 4,380</div>
+            <div class="kpiLine"><span>PY</span><span>4,200 <span class="kpiDeltaNeg">-4%</span></span></div>
+          </div>
+          <div class="kpiCard">
+            <div class="kpiTitle">AOV</div>
+            <div class="kpiPrimary"><div class="kpiValue">R$52.15</div><span class="kpiDelta kpiDeltaPos">+3.8% vs PY</span></div>
+            <div class="kpiLine"><span>PY</span><span>R$50.24</span></div>
+          </div>
+        </div>
+
+        <!-- Drilldown (same as Option A) -->
+        <div class="drilldown">
+          <div class="drilldownHeader" style="padding-left: 8px;">
+            <h3>Revenue by location</h3>
+            <div class="drilldownSubtitle">Apr 1–17 · vs Apr 2025 · goal Apr 2026</div>
+          </div>
+          <div class="chartFrame">
+            <div class="chartYAxis">
+              <div class="yTick" style="top: 0%;">R$100k</div>
+              <div class="yTick" style="top: 25%;">R$75k</div>
+              <div class="yTick" style="top: 50%;">R$50k</div>
+              <div class="yTick" style="top: 75%;">R$25k</div>
+              <div class="yTick" style="top: 100%;">R$0</div>
+            </div>
+            <div class="chartPlot">
+              <div class="gridline" style="top: 0%;"></div>
+              <div class="gridline" style="top: 25%;"></div>
+              <div class="gridline" style="top: 50%;"></div>
+              <div class="gridline" style="top: 75%;"></div>
+              <div class="gridline gridlineZero" style="top: 100%;"></div>
+              <div class="chartBars">
+                <div class="barGroup"><div class="barCurrent" style="height: 45%;"><div class="barProjection" style="height: 38%;"></div></div><div class="barPy" style="height: 46%;"></div><div class="goalMark" style="bottom: 80%;" data-label="R$80k"></div></div>
+                <div class="barGroup"><div class="barCurrent" style="height: 55%;"><div class="barProjection" style="height: 40%;"></div></div><div class="barPy" style="height: 52%;"></div><div class="goalMark" style="bottom: 90%;" data-label="R$90k"></div></div>
+                <div class="barGroup"><div class="barCurrent" style="height: 32%;"><div class="barProjection" style="height: 35%;"></div></div><div class="barPy" style="height: 38%;"></div><div class="goalMark" style="bottom: 60%;" data-label="R$60k"></div></div>
+                <div class="barGroup"><div class="barCurrent" style="height: 28%;"><div class="barProjection" style="height: 30%;"></div></div><div class="barPy" style="height: 30%;"></div><div class="goalMark" style="bottom: 50%;" data-label="R$50k"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="chartXAxis">
+            <div class="chartXLabel">SP Jard</div>
+            <div class="chartXLabel">RJ Ipan</div>
+            <div class="chartXLabel">BH Sav</div>
+            <div class="chartXLabel">CWB Bat</div>
+          </div>
+          <div class="chartLegend">
+            <span><i class="legendDot legendDotCurrent"></i> Curr + proj</span>
+            <span><i class="legendDot legendDotPy"></i> PY</span>
+            <span><i class="legendDash"></i> Goal</span>
+          </div>
+        </div>
+
+        <div class="kpiGroupLabel">Volume / quality</div>
+        <div class="kpiGrid">
+          <div class="kpiCard">
+            <div class="kpiTitle">Same-store YoY <span class="kpiInfoIcon">ⓘ</span></div>
+            <div class="kpiPrimary"><div class="kpiValue" style="color: var(--green);">+3.4%</div></div>
+            <div class="kpiLine"><span>1 of 4 declining</span><span></span></div>
+            <div class="kpiLine"><span>Top: RJ · Ipanema +11%</span><span></span></div>
+          </div>
+          <div class="kpiCard">
+            <div class="kpiTitle">Achievement ranking</div>
+            <div class="kpiPrimary"><div class="kpiValue" style="font-size: 14px;">RJ · Ipanema · 83%</div></div>
+            <div class="kpiLine"><span>Leader by 33pp</span><span></span></div>
+            <div class="kpiLine"><span>Trail: CWB · Batel 50%</span><span></span></div>
+          </div>
+          <div class="kpiCard">
+            <div class="kpiTitle">Discount rate</div>
+            <div class="kpiPrimary"><div class="kpiValue">6.2%</div><span class="kpiDelta kpiDeltaNeg">+0.8 (pp)</span></div>
+            <div class="kpiLine"><span>PY</span><span>5.4%</span></div>
+            <div class="kpiLine"><span>13-mo</span><span>R$128k</span></div>
+          </div>
+        </div>
+
+        <!-- Breakdown: cards -->
+        <div class="tableCard">
+          <div class="tableCardBody">
+            <h3 class="sectionTitle">Revenue breakdown by location</h3>
+            <div class="locationCards">
+
+              <div class="locationCard">
+                <div class="locCardHeader">
+                  <h4 class="locCardName">SP · Jardins</h4>
+                  <span class="achPill achPillRed">56%</span>
+                </div>
+                <div class="locCardProgress">
+                  <div class="locCardProgressBar"><span class="locCardProgressFill red" style="width: 56%;"></span></div>
+                  <span class="locCardProgressLabel">R$45k / R$80k</span>
+                </div>
+                <div class="locCardMetricRow">
+                  <div class="locCardMetric">
+                    <span class="locCardMetricLabel">MTD</span>
+                    <span class="locCardMetricValue">R$45k</span>
+                  </div>
+                  <div class="locCardMetric">
+                    <span class="locCardMetricLabel">Projected</span>
+                    <span class="locCardMetricValue mono">R$83k</span>
+                  </div>
+                </div>
+                <div class="locCardFooter">
+                  <span class="locCardYoy deltaDown">YoY -2%</span>
+                  <span><span class="sparkBox"></span></span>
+                </div>
+              </div>
+
+              <div class="locationCard">
+                <div class="locCardHeader">
+                  <h4 class="locCardName">RJ · Ipanema</h4>
+                  <span class="achPill achPillGreen">83%</span>
+                </div>
+                <div class="locCardProgress">
+                  <div class="locCardProgressBar"><span class="locCardProgressFill green" style="width: 83%;"></span></div>
+                  <span class="locCardProgressLabel">R$55k / R$90k</span>
+                </div>
+                <div class="locCardMetricRow">
+                  <div class="locCardMetric">
+                    <span class="locCardMetricLabel">MTD</span>
+                    <span class="locCardMetricValue">R$55k</span>
+                  </div>
+                  <div class="locCardMetric">
+                    <span class="locCardMetricLabel">Projected</span>
+                    <span class="locCardMetricValue mono">R$95k</span>
+                  </div>
+                </div>
+                <div class="locCardFooter">
+                  <span class="locCardYoy deltaUp">YoY +6%</span>
+                  <span><span class="sparkBox"></span></span>
+                </div>
+              </div>
+
+              <div class="locationCard">
+                <div class="locCardHeader">
+                  <h4 class="locCardName">BH · Savassi</h4>
+                  <span class="achPill achPillRed">53%</span>
+                </div>
+                <div class="locCardProgress">
+                  <div class="locCardProgressBar"><span class="locCardProgressFill red" style="width: 53%;"></span></div>
+                  <span class="locCardProgressLabel">R$32k / R$60k</span>
+                </div>
+                <div class="locCardMetricRow">
+                  <div class="locCardMetric">
+                    <span class="locCardMetricLabel">MTD</span>
+                    <span class="locCardMetricValue">R$32k</span>
+                  </div>
+                  <div class="locCardMetric">
+                    <span class="locCardMetricLabel">Projected</span>
+                    <span class="locCardMetricValue mono">R$55k</span>
+                  </div>
+                </div>
+                <div class="locCardFooter">
+                  <span class="locCardYoy deltaDown">YoY -16%</span>
+                  <span><span class="sparkBox"></span></span>
+                </div>
+              </div>
+
+              <div class="locationCard">
+                <div class="locCardHeader">
+                  <h4 class="locCardName">CWB · Batel</h4>
+                  <span class="achPill achPillRed">50%</span>
+                </div>
+                <div class="locCardProgress">
+                  <div class="locCardProgressBar"><span class="locCardProgressFill red" style="width: 50%;"></span></div>
+                  <span class="locCardProgressLabel">R$28k / R$50k</span>
+                </div>
+                <div class="locCardMetricRow">
+                  <div class="locCardMetric">
+                    <span class="locCardMetricLabel">MTD</span>
+                    <span class="locCardMetricValue">R$28k</span>
+                  </div>
+                  <div class="locCardMetric">
+                    <span class="locCardMetricLabel">Projected</span>
+                    <span class="locCardMetricValue mono">R$45k</span>
+                  </div>
+                </div>
+                <div class="locCardFooter">
+                  <span class="locCardYoy deltaDown">YoY -7%</span>
+                  <span><span class="sparkBox"></span></span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,52 @@
+# Dependencies & build output
+node_modules
+build
+.cache
+
+# Nested apps (not needed in Docker image)
+omnify
+price-tags
+blog-gen-api
+content-scraper-api
+
+# Infrastructure & scripts
+infra
+scripts
+.terraform
+
+# Git & IDE
+.git
+.github
+.cursor
+.claude
+.gemini
+.streamlit
+.vscode
+
+# Project knowledge (planning notes, briefs, drafts) — never shipped
+.knowledge
+
+# Local sandboxes (e.g. sandbox/gebeauty for store-ops scripts) — not part
+# of the cpg-labs runtime, mirrors the nami-works sandbox structure.
+sandbox
+
+# Runtime / session log artifacts
+*.log
+
+# Dev/test files
+inputs
+storage
+tests
+tmp-*
+*.md
+docs
+log.md
+backlog.md
+
+# Miscellaneous
+*.csv
+docker-compose.yml
+shopify.app.go-local.toml
+shopify.app.cpg-labs.toml
+shopify.app.retail.toml
+shopify.app.visibility.toml

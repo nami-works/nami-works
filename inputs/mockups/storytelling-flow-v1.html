@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Storytelling end-to-end flow</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --grid: #ebebeb;
+    --text: #303030;
+    --subdued: #6d7175;
+    --axis: #8c9196;
+    --blue-primary: #005bd3;
+    --blue-bg: #f1f8ff;
+    --blue-soft: #d6e8ff;
+    --green: #067647;
+    --green-bg: #e6f4ec;
+    --red: #d72c0d;
+    --red-bg: #fbeae5;
+    --yellow: #d99a0a;
+    --yellow-bg: #fff5d9;
+    --purple: #6433f0;
+    --purple-bg: #ede5fc;
+    --indigo: #2a4a8d;
+    --indigo-bg: #e1eaff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 8px; }
+  h2 { font-size: 17px; font-weight: 600; margin: 0 0 6px; }
+  h3 { font-size: 14px; font-weight: 600; margin: 0 0 4px; }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 880px;
+    margin-bottom: 32px;
+  }
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--subdued);
+  }
+  .swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
+  /* ============================================================ FLOW MAP */
+  .flowMap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+    max-width: 1280px;
+    overflow-x: auto;
+  }
+  .flowGrid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(140px, 1fr));
+    gap: 8px;
+    align-items: stretch;
+    min-width: 1180px;
+  }
+  .flowNode {
+    background: var(--blue-bg);
+    border: 2px solid var(--blue-primary);
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+    position: relative;
+  }
+  .flowNode.tone { background: var(--yellow-bg); border-color: var(--yellow); }
+  .flowNode.brief { background: var(--blue-bg); border-color: var(--blue-primary); }
+  .flowNode.gen { background: var(--purple-bg); border-color: var(--purple); }
+  .flowNode.review { background: var(--blue-bg); border-color: var(--blue-primary); }
+  .flowNode.shopify { background: var(--green-bg); border-color: var(--green); }
+  .flowNode.diff { background: var(--indigo-bg); border-color: var(--indigo); }
+  .flowNode.learnings { background: var(--green-bg); border-color: var(--green); }
+  .flowStage {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .flowTitle { font-size: 12px; font-weight: 600; line-height: 1.25; margin-bottom: 4px; }
+  .flowDetail { font-size: 11px; color: var(--subdued); line-height: 1.3; }
+  .flowMeta {
+    margin-top: 6px;
+    font-size: 10px;
+    color: var(--subdued);
+    border-top: 1px dashed var(--border);
+    padding-top: 4px;
+  }
+  .arrow {
+    position: absolute;
+    top: 50%;
+    right: -10px;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: var(--text);
+    z-index: 2;
+  }
+  .flowFeed {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+    font-size: 12px;
+    color: var(--subdued);
+    text-align: center;
+  }
+
+  /* ============================================================ SCENE CARDS */
+  .scene {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0;
+    margin-bottom: 24px;
+    max-width: 1280px;
+    overflow: hidden;
+  }
+  .sceneHeader {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    gap: 16px;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--grid);
+    background: #fafafa;
+  }
+  .sceneNumber {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--blue-primary);
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sceneNumber.tone { background: var(--yellow); }
+  .sceneNumber.brief { background: var(--blue-primary); }
+  .sceneNumber.gen { background: var(--purple); }
+  .sceneNumber.review { background: var(--blue-primary); }
+  .sceneNumber.shopify { background: var(--green); }
+  .sceneNumber.diff { background: var(--indigo); }
+  .sceneNumber.learnings { background: var(--green); }
+  .sceneTitle { font-size: 16px; font-weight: 600; margin: 0 0 2px; }
+  .scenePath { font-size: 12px; color: var(--subdued); font-family: ui-monospace, monospace; }
+  .sceneTrigger {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+  .triggerManual { background: var(--blue-bg); color: var(--blue-primary); }
+  .triggerAuto { background: var(--green-bg); color: var(--green); }
+  .triggerExternal { background: var(--yellow-bg); color: var(--yellow); }
+
+  .sceneBody {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 0;
+  }
+  .sceneSketch {
+    padding: 20px 24px;
+    border-right: 1px solid var(--grid);
+    background: #fafbfc;
+  }
+  .sceneIO {
+    padding: 20px 24px;
+  }
+  .sceneIO h4 {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 6px;
+  }
+  .sceneIO h4:not(:first-child) { margin-top: 16px; }
+  .sceneIO ul { margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.55; }
+  .sceneIO li { margin-bottom: 2px; }
+  .sceneIO code {
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    background: #f0f0f0;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* ============================================================ UI SKETCHES */
+  .ui {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 12px;
+  }
+  .ui + .ui { margin-top: 8px; }
+  .uiHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--grid);
+  }
+  .uiTitle { font-size: 13px; font-weight: 600; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .btnPrimary { background: var(--blue-primary); color: white; border-color: var(--blue-primary); }
+  .btnSubdued { background: transparent; border-color: transparent; color: var(--subdued); }
+  .pill {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 500;
+    display: inline-block;
+  }
+  .pillPending { background: var(--yellow-bg); color: var(--yellow); }
+  .pillSuccess { background: var(--green-bg); color: var(--green); }
+  .pillNeutral { background: var(--grid); color: var(--subdued); }
+  .row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--grid);
+    font-size: 12px;
+  }
+  .row:last-child { border-bottom: none; }
+  .row .iconBadge {
+    width: 22px; height: 22px;
+    border-radius: 4px;
+    background: var(--blue-bg);
+    color: var(--blue-primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+  }
+  .row.meta .iconBadge { background: var(--purple-bg); color: var(--purple); }
+  .row.monday .iconBadge { background: #ffe5d9; color: #d83b01; }
+  .row.upload .iconBadge { background: var(--yellow-bg); color: #8a5a08; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .fieldLabel { font-size: 10px; font-weight: 600; color: var(--subdued); text-transform: uppercase; letter-spacing: 0.04em; }
+  .fieldInput {
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px;
+    background: white;
+  }
+  .codeBlock {
+    background: #1f1f1f;
+    color: #c9cbd0;
+    border-radius: 4px;
+    padding: 10px 12px;
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    line-height: 1.45;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .articlePreview {
+    background: white;
+    border: 1px solid var(--grid);
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 12px;
+    color: var(--text);
+    margin: 8px 0;
+  }
+  .articlePreview h5 { margin: 0 0 6px; font-size: 13px; font-weight: 600; }
+  .articlePreview p { margin: 0; color: var(--subdued); font-size: 11px; line-height: 1.5; }
+  .diffSplit {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 8px 0;
+  }
+  .diffPanel {
+    background: white;
+    border: 1px solid var(--grid);
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 11px;
+    color: var(--subdued);
+    line-height: 1.5;
+  }
+  .diffPanel h6 { font-size: 10px; font-weight: 600; color: var(--subdued); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 4px; }
+  .diffPanel.before { background: var(--red-bg); }
+  .diffPanel.after { background: var(--green-bg); }
+  .hypothesisCard {
+    background: white;
+    border: 1px solid var(--grid);
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin: 6px 0;
+  }
+  .hypothesisCard p { margin: 4px 0 8px; font-size: 12px; }
+  .categoryPill {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    background: var(--blue-soft);
+    color: var(--indigo);
+  }
+  .categoryPill.tone { background: var(--blue-soft); color: var(--indigo); }
+  .categoryPill.dont { background: var(--red-bg); color: var(--red); }
+  .categoryPill.vocab { background: var(--green-bg); color: var(--green); }
+
+  /* ============================================================ NOTES */
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 1280px;
+    margin-bottom: 24px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; color: #4a3600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 4px; }
+
+  .sectionTitle {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--subdued);
+    margin: 32px 0 12px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Storytelling — end-to-end flow (mockup v1)</h1>
+<p class="intro">
+  The full process for the iterative AI&lt;&gt;human blog-content system at <code>/app/storytelling</code>. Six scenes covering brand setup, brief authoring, AI generation, review &amp; publish, weekly diff detection, and learning loop. Phases 1–5 already shipped (single tone string + manual diff trigger). This v1 captures the full target state including Phase 6 additions: multi-source tone ingestion + auto-trigger via weekly cron.
+</p>
+
+<div class="legend">
+  <span><span class="swatch" style="background: var(--yellow);"></span> Brand setup (Stage 0)</span>
+  <span><span class="swatch" style="background: var(--blue-primary);"></span> Inside the app</span>
+  <span><span class="swatch" style="background: var(--purple);"></span> Async / background job</span>
+  <span><span class="swatch" style="background: var(--green);"></span> Shopify-side</span>
+  <span><span class="swatch" style="background: var(--indigo);"></span> Auto-trigger (cron)</span>
+</div>
+
+<!-- ============================================================ FLOW MAP -->
+
+<div class="sectionTitle">Process at a glance</div>
+
+<div class="flowMap">
+  <div class="flowGrid">
+    <div class="flowNode tone">
+      <div class="flowStage">Stage 0</div>
+      <div class="flowTitle">Tone sources</div>
+      <div class="flowDetail">Connect, infer, validate</div>
+      <div class="flowMeta">/brand-settings/tone-sources</div>
+      <div class="arrow">→</div>
+    </div>
+    <div class="flowNode brief">
+      <div class="flowStage">Stage A</div>
+      <div class="flowTitle">Define brief</div>
+      <div class="flowDetail">Themes, products, SEO</div>
+      <div class="flowMeta">/storytelling/brief</div>
+      <div class="arrow">→</div>
+    </div>
+    <div class="flowNode gen">
+      <div class="flowStage">Stage B</div>
+      <div class="flowTitle">AI generates draft</div>
+      <div class="flowDetail">Async job, polled</div>
+      <div class="flowMeta">Content Gen API + Claude</div>
+      <div class="arrow">→</div>
+    </div>
+    <div class="flowNode review">
+      <div class="flowStage">Stage C</div>
+      <div class="flowTitle">Review &amp; publish</div>
+      <div class="flowDetail">Pick blog, push as draft</div>
+      <div class="flowMeta">/storytelling/review</div>
+      <div class="arrow">→</div>
+    </div>
+    <div class="flowNode shopify">
+      <div class="flowStage">Stage D</div>
+      <div class="flowTitle">Edit in Shopify</div>
+      <div class="flowDetail">Merchant edits, promotes</div>
+      <div class="flowMeta">Shopify admin (external)</div>
+      <div class="arrow">→</div>
+    </div>
+    <div class="flowNode diff">
+      <div class="flowStage">Stage E</div>
+      <div class="flowTitle">Cron detects diff</div>
+      <div class="flowDetail">Refetch, diff, interpret</div>
+      <div class="flowMeta">api.cron.weekly-tone-and-diff</div>
+      <div class="arrow">→</div>
+    </div>
+    <div class="flowNode learnings">
+      <div class="flowStage">Stage F</div>
+      <div class="flowTitle">Review learnings</div>
+      <div class="flowDetail">Accept / reject hypotheses</div>
+      <div class="flowMeta">/storytelling/learnings</div>
+    </div>
+  </div>
+
+  <div class="flowFeed">
+    Validated tone (Stage 0) + accepted learnings (Stage F) feed into <code>getBrandContextForGeneration()</code> on every Stage B run.<br/>
+    The loop closes: each merchant edit makes the next AI draft sharper.
+  </div>
+</div>
+
+<div class="notes">
+  <h3>What this mockup decides (full process)</h3>
+  <ul>
+    <li><strong>Six scenes, one merchant journey.</strong> Each scene below shows the UI sketch + inputs/outputs/triggers. Open questions sit at the bottom.</li>
+    <li><strong>Stage 0 (tone sources) is new (Phase 6).</strong> Detailed mockup at <code>storytelling-tone-sources-v1.html</code>. Summarized here.</li>
+    <li><strong>Stage A (brief) is currently a JSON textarea.</strong> Track D rebuilds it as a real themes UI; this mockup shows the target state.</li>
+    <li><strong>Stage E becomes auto-trigger.</strong> Today merchant has to click "Check for updates"; weekly cron replaces that.</li>
+    <li><strong>Stages B, C, F already ship</strong> — sketched here as reference, not new design work.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ SCENE 0 — TONE SOURCES -->
+
+<div class="sectionTitle">Stage-by-stage walkthrough</div>
+
+<div class="scene">
+  <div class="sceneHeader">
+    <div class="sceneNumber tone">0</div>
+    <div>
+      <h2 class="sceneTitle">Connect &amp; validate tone-of-voice sources</h2>
+      <div class="scenePath">/app/brand-settings/tone-sources · NEW Phase 6</div>
+    </div>
+    <div>
+      <span class="sceneTrigger triggerManual">Manual + Auto (weekly)</span>
+    </div>
+  </div>
+  <div class="sceneBody">
+    <div class="sceneSketch">
+      <div class="ui">
+        <div class="uiHeader">
+          <span class="uiTitle">Connected sources</span>
+          <button class="btn btnPrimary">Refresh tone now</button>
+        </div>
+        <div class="row"><span class="iconBadge">S</span> <strong>Shopify blog posts</strong> · 25 articles · sampled 14h ago <span style="margin-left: auto;" class="pill pillSuccess">Connected</span></div>
+        <div class="row meta"><span class="iconBadge">M</span> <strong>Instagram &amp; Facebook</strong> · @gebeauty_oficial · 50 posts <span style="margin-left: auto;" class="pill pillSuccess">Connected</span></div>
+        <div class="row monday"><span class="iconBadge">M</span> <strong>Monday.com</strong> · 2 boards <span style="margin-left: auto;" class="pill pillSuccess">Connected</span></div>
+        <div class="row upload"><span class="iconBadge">F</span> <strong>Manual references</strong> · 3 files + 1 URL <span style="margin-left: auto;" class="pill pillSuccess">4 references</span></div>
+      </div>
+      <div class="ui">
+        <div class="uiHeader">
+          <span class="uiTitle">Pending hypotheses · 12 traits</span>
+          <span class="pill pillPending">Batch 2026-05-06</span>
+        </div>
+        <div class="hypothesisCard">
+          <span class="categoryPill tone">Voice</span>
+          <p>Speaks in second person, warm and conversational.</p>
+          <div style="display: flex; justify-content: flex-end; gap: 6px;">
+            <button class="btn">Reject</button>
+            <button class="btn btnPrimary">Accept</button>
+          </div>
+        </div>
+        <div class="hypothesisCard">
+          <span class="categoryPill dont">Don't</span>
+          <p>Avoid clinical/medical framing.</p>
+          <div style="display: flex; justify-content: flex-end; gap: 6px;">
+            <button class="btn">Reject</button>
+            <button class="btn btnPrimary">Accept</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sceneIO">
+      <h4>Inputs</h4>
+      <ul>
+        <li>Source connections: Shopify Admin GraphQL (existing auth), Meta Graph API, Monday.com API, file upload, URL fetch.</li>
+        <li>Per-tenant secrets in <code>/omnify/tenants/&lt;shop&gt;/...</code></li>
+      </ul>
+      <h4>Processing</h4>
+      <ul>
+        <li>Sample text from each source. OCR images via Claude vision.</li>
+        <li>Send unified sample batch to Claude → up to 15 hypotheses.</li>
+        <li>Persist as <code>BrandToneSource</code> + <code>BrandToneHypothesis</code>.</li>
+      </ul>
+      <h4>Outputs</h4>
+      <ul>
+        <li>Validated traits flow into <code>getBrandContextForGeneration()</code> on next AI run.</li>
+        <li>Manual override (<code>BrandAssets.toneOfVoice</code>) always wins.</li>
+      </ul>
+      <h4>Trigger</h4>
+      <ul>
+        <li>Manual: "Refresh tone now" button on this page.</li>
+        <li>Auto: weekly Monday 09:00 (shop's local timezone) via cron.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ SCENE A — BRIEF -->
+
+<div class="scene">
+  <div class="sceneHeader">
+    <div class="sceneNumber brief">A</div>
+    <div>
+      <h2 class="sceneTitle">Define brief — themes, products, SEO targets</h2>
+      <div class="scenePath">/app/storytelling/brief · CURRENTLY JSON textarea, target = themes UI (Track D)</div>
+    </div>
+    <div>
+      <span class="sceneTrigger triggerManual">Manual</span>
+    </div>
+  </div>
+  <div class="sceneBody">
+    <div class="sceneSketch">
+      <div class="ui">
+        <div class="uiHeader">
+          <span class="uiTitle">New campaign brief</span>
+          <button class="btn btnPrimary">Generate drafts →</button>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <span class="fieldLabel">Campaign name</span>
+            <input class="fieldInput" type="text" value="May launch — kit lançamento" />
+          </div>
+          <div class="field">
+            <span class="fieldLabel">Target language</span>
+            <input class="fieldInput" type="text" value="pt-BR" />
+          </div>
+        </div>
+        <div style="margin-top: 12px;">
+          <span class="fieldLabel" style="display: block; margin-bottom: 4px;">Themes (1–5)</span>
+          <div class="row">
+            <strong style="flex: 0 0 30px;">1</strong>
+            <span style="flex: 1;">Skincare brasileira para peles maduras</span>
+            <span class="pill pillNeutral">3 products</span>
+            <span class="pill pillNeutral">2 keywords</span>
+          </div>
+          <div class="row">
+            <strong style="flex: 0 0 30px;">2</strong>
+            <span style="flex: 1;">Rotina de manhã &lt; 5 minutos</span>
+            <span class="pill pillNeutral">2 products</span>
+            <span class="pill pillNeutral">3 keywords</span>
+          </div>
+          <div class="row" style="border: none; padding-top: 12px;">
+            <button class="btn">+ Add theme</button>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top: 8px; padding: 8px 12px; background: var(--yellow-bg); border-radius: 6px; font-size: 11px; color: #6f4707;">
+        <strong>Currently:</strong> raw JSON textarea (functional but crude). Target above ships under Track D, separate branch.
+      </div>
+    </div>
+    <div class="sceneIO">
+      <h4>Inputs</h4>
+      <ul>
+        <li>Merchant input: campaign name, language, themes, per-theme product handles, SEO keywords.</li>
+        <li>Brand context (loaded automatically): tone profile + accepted learnings.</li>
+      </ul>
+      <h4>Outputs</h4>
+      <ul>
+        <li><code>BlogPostJob</code> row with <code>briefJson</code>.</li>
+        <li><code>jobId</code> from external Content Gen API.</li>
+        <li>Redirect to Stage B (review page) with <code>?jobId=...</code>.</li>
+      </ul>
+      <h4>Trigger</h4>
+      <ul>
+        <li>Manual: "Generate drafts" button.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ SCENE B — GENERATE -->
+
+<div class="scene">
+  <div class="sceneHeader">
+    <div class="sceneNumber gen">B</div>
+    <div>
+      <h2 class="sceneTitle">AI generates blog post drafts</h2>
+      <div class="scenePath">Background job · already shipped Phase 2</div>
+    </div>
+    <div>
+      <span class="sceneTrigger triggerAuto">Async job</span>
+    </div>
+  </div>
+  <div class="sceneBody">
+    <div class="sceneSketch">
+      <div class="ui">
+        <div class="uiHeader">
+          <span class="uiTitle">Generation status · job_abc123</span>
+          <span class="pill pillPending">Running · 2/3 themes</span>
+        </div>
+        <div class="row"><span style="flex: 1;">Theme 1 — Skincare brasileira...</span> <span class="pill pillSuccess">Complete</span></div>
+        <div class="row"><span style="flex: 1;">Theme 2 — Rotina de manhã...</span> <span class="pill pillSuccess">Complete</span></div>
+        <div class="row"><span style="flex: 1;">Theme 3 — Pele madura...</span> <span class="pill pillPending">Generating</span></div>
+      </div>
+      <div class="codeBlock">POST {CONTENT_GEN_API_URL}/generate
+{
+  shop, brief, brandContext: {
+    toneOfVoice, learnings: [...validated traits],
+    contentLanguage, brandCategory, ...
+  }
+}
+→ { job_id }
+
+GET {CONTENT_GEN_API_URL}/jobs/{job_id}
+→ { status, result: { themes: [...] } }</div>
+    </div>
+    <div class="sceneIO">
+      <h4>Inputs</h4>
+      <ul>
+        <li>Brief JSON from Stage A.</li>
+        <li>Brand context from <code>getBrandContextForGeneration()</code>.</li>
+      </ul>
+      <h4>Processing</h4>
+      <ul>
+        <li>External Content Gen API generates 1 article per theme.</li>
+        <li>App polls <code>/api/blog-posts/job/{jobId}</code> every 3s.</li>
+      </ul>
+      <h4>Outputs</h4>
+      <ul>
+        <li><code>BlogPostJob.resultJson</code> populated with themes.</li>
+        <li>1 <code>BlogPostDraft</code> row per theme (idempotent).</li>
+      </ul>
+      <h4>Trigger</h4>
+      <ul>
+        <li>Auto: kicked off by Stage A submission. Polled by Stage C UI.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ SCENE C — REVIEW & PUBLISH -->
+
+<div class="scene">
+  <div class="sceneHeader">
+    <div class="sceneNumber review">C</div>
+    <div>
+      <h2 class="sceneTitle">Review drafts &amp; publish to Shopify (as draft)</h2>
+      <div class="scenePath">/app/storytelling/review?jobId=... · already shipped Phase 2-3</div>
+    </div>
+    <div>
+      <span class="sceneTrigger triggerManual">Manual</span>
+    </div>
+  </div>
+  <div class="sceneBody">
+    <div class="sceneSketch">
+      <div class="ui">
+        <div class="uiHeader">
+          <span class="uiTitle">Theme 1 · Skincare brasileira para peles maduras</span>
+          <span class="pill pillSuccess">Generated</span>
+        </div>
+        <div class="articlePreview">
+          <h5>Skincare brasileira: o segredo da pele madura</h5>
+          <p>Quem nunca olhou no espelho e percebeu que a rotina precisava de um upgrade? Aqui no Brasil...</p>
+          <p style="margin-top: 8px; font-style: italic;">[~1,200 words · 6 sections · 2 product mentions]</p>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <span class="fieldLabel">Target blog</span>
+            <select class="fieldInput"><option>Skincare Brasileiro</option></select>
+          </div>
+          <div class="field" style="justify-content: flex-end;">
+            <button class="btn btnPrimary" style="align-self: flex-end;">Publish as draft to Shopify</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sceneIO">
+      <h4>Inputs</h4>
+      <ul>
+        <li>Generated themes from Stage B.</li>
+        <li>Available Shopify blogs (via Admin GraphQL).</li>
+      </ul>
+      <h4>Processing</h4>
+      <ul>
+        <li>Merchant picks target blog per theme, clicks Publish.</li>
+        <li>App calls <code>articleCreate</code> with <code>isPublished: false</code>.</li>
+      </ul>
+      <h4>Outputs</h4>
+      <ul>
+        <li><code>BlogPostDraft.shopifyArticleId</code> set.</li>
+        <li>Article exists in Shopify, hidden from storefront, ready for merchant edit.</li>
+      </ul>
+      <h4>Trigger</h4>
+      <ul>
+        <li>Manual: "Publish as draft" button per theme.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ SCENE D — EDIT IN SHOPIFY -->
+
+<div class="scene">
+  <div class="sceneHeader">
+    <div class="sceneNumber shopify">D</div>
+    <div>
+      <h2 class="sceneTitle">Merchant edits draft in Shopify, promotes to active</h2>
+      <div class="scenePath">Shopify admin · external to our app · happens between Stage C and E</div>
+    </div>
+    <div>
+      <span class="sceneTrigger triggerExternal">External</span>
+    </div>
+  </div>
+  <div class="sceneBody">
+    <div class="sceneSketch">
+      <div class="ui" style="background: #fafafa; border-color: var(--green);">
+        <div class="uiHeader">
+          <span class="uiTitle" style="color: var(--green);">Shopify admin · Online Store › Blog posts</span>
+          <span class="pill pillNeutral">Outside Omnify</span>
+        </div>
+        <div class="row">
+          <span style="flex: 1;"><strong>Skincare brasileira: o segredo da pele madura</strong> <span class="pill pillNeutral" style="margin-left: 6px;">Hidden</span></span>
+          <button class="btn btnSubdued">Edit</button>
+        </div>
+        <p style="font-size: 11px; color: var(--subdued); margin: 12px 0 0; line-height: 1.5;">
+          Merchant edits the article body inside Shopify's native editor — fixes wording, restructures, adjusts CTAs, then changes visibility to "Visible". This editing is intentionally OUT of our app: merchants already trust Shopify's editor and don't want a parallel one. Their edits become our learning signal.
+        </p>
+      </div>
+    </div>
+    <div class="sceneIO">
+      <h4>Inputs</h4>
+      <ul>
+        <li>Merchant's editorial judgment — what to keep, what to change.</li>
+      </ul>
+      <h4>Processing</h4>
+      <ul>
+        <li>Happens entirely in Shopify admin. App is unaware until Stage E.</li>
+      </ul>
+      <h4>Outputs</h4>
+      <ul>
+        <li>Updated article body in Shopify.</li>
+        <li>Optional: visibility flipped to "Visible" (storefront publish).</li>
+      </ul>
+      <h4>Trigger</h4>
+      <ul>
+        <li>External: merchant decides when to edit.</li>
+        <li>App detects the change in Stage E.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ SCENE E — DIFF DETECTION -->
+
+<div class="scene">
+  <div class="sceneHeader">
+    <div class="sceneNumber diff">E</div>
+    <div>
+      <h2 class="sceneTitle">Weekly cron detects diffs &amp; interprets them</h2>
+      <div class="scenePath">api.cron.weekly-tone-and-diff.tsx · Phase 6 NEW (replaces manual button)</div>
+    </div>
+    <div>
+      <span class="sceneTrigger triggerAuto">Auto · weekly</span>
+    </div>
+  </div>
+  <div class="sceneBody">
+    <div class="sceneSketch">
+      <div class="ui">
+        <div class="uiHeader">
+          <span class="uiTitle">Cron run · 2026-05-06 09:00 BRT (shop local time)</span>
+          <span class="pill pillSuccess">Completed</span>
+        </div>
+        <div class="row"><span style="flex: 1;">Tone refresh — 4 sources sampled</span> <span class="pill pillNeutral">12 hypotheses</span></div>
+        <div class="row"><span style="flex: 1;">Drafts scanned — 8 published articles</span> <span class="pill pillNeutral">3 with edits</span></div>
+        <div class="row"><span style="flex: 1;">Diffs interpreted — Claude called 3×</span> <span class="pill pillSuccess">Done</span></div>
+      </div>
+      <div class="diffSplit">
+        <div class="diffPanel before">
+          <h6>Before — AI draft</h6>
+          Tratamento clínico que reverte sinais do envelhecimento de forma cientificamente comprovada.
+        </div>
+        <div class="diffPanel after">
+          <h6>After — merchant edit</h6>
+          Cuidado diário pra você se sentir bonita na sua pele madura.
+        </div>
+      </div>
+      <div class="hypothesisCard">
+        <span class="categoryPill dont">Don't</span>
+        <p>Avoid clinical framing — replaced "tratamento clínico" with "cuidado diário".</p>
+        <span class="pill pillPending">Pending merchant review →</span>
+      </div>
+    </div>
+    <div class="sceneIO">
+      <h4>Inputs</h4>
+      <ul>
+        <li>All <code>BlogPostDraft</code> rows where <code>shopifyArticleId IS NOT NULL</code>.</li>
+        <li>Current Shopify article body (via Admin GraphQL).</li>
+        <li>Brand context for grounding the diff interpretation.</li>
+      </ul>
+      <h4>Processing</h4>
+      <ul>
+        <li>Per draft: refetch article, compute meaningful change, call Claude <code>interpretDiff</code>.</li>
+        <li>Skip drafts with existing pending diffs (idempotent).</li>
+      </ul>
+      <h4>Outputs</h4>
+      <ul>
+        <li>One <code>BlogPostDiff</code> row per changed draft, status <code>pending_review</code>.</li>
+        <li>Pending-diffs banner lights up at <code>/app/storytelling</code>.</li>
+      </ul>
+      <h4>Trigger</h4>
+      <ul>
+        <li>Auto: weekly Monday 09:00 (shop local time).</li>
+        <li>Manual fallback: "Check for updates" button stays on Stage F page.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ SCENE F — LEARNINGS -->
+
+<div class="scene">
+  <div class="sceneHeader">
+    <div class="sceneNumber learnings">F</div>
+    <div>
+      <h2 class="sceneTitle">Review learnings &amp; close the loop</h2>
+      <div class="scenePath">/app/storytelling/learnings · already shipped Phase 5</div>
+    </div>
+    <div>
+      <span class="sceneTrigger triggerManual">Manual</span>
+    </div>
+  </div>
+  <div class="sceneBody">
+    <div class="sceneSketch">
+      <div class="ui">
+        <div class="uiHeader">
+          <span class="uiTitle">Skincare brasileira · published 2 days ago</span>
+          <span class="pill pillPending">3 hypotheses</span>
+        </div>
+        <div class="diffSplit">
+          <div class="diffPanel before"><h6>AI draft</h6>Tratamento clínico que reverte sinais...</div>
+          <div class="diffPanel after"><h6>Your edit</h6>Cuidado diário pra você se sentir...</div>
+        </div>
+        <div class="hypothesisCard">
+          <span class="categoryPill dont">Don't</span>
+          <p>Avoid clinical framing.</p>
+          <div style="display: flex; justify-content: flex-end; gap: 6px;">
+            <button class="btn">Reject</button>
+            <button class="btn btnPrimary">Accept</button>
+          </div>
+        </div>
+        <div class="hypothesisCard">
+          <span class="categoryPill vocab">Vocabulary</span>
+          <p>Prefer "cuidado" over "tratamento" for skincare context.</p>
+          <div style="display: flex; justify-content: flex-end; gap: 6px;">
+            <button class="btn">Reject</button>
+            <button class="btn btnPrimary">Accept</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sceneIO">
+      <h4>Inputs</h4>
+      <ul>
+        <li>Pending <code>BlogPostDiff</code> rows from Stage E.</li>
+      </ul>
+      <h4>Processing</h4>
+      <ul>
+        <li>Merchant reviews each hypothesis individually.</li>
+        <li>Accept → <code>BrandLearning</code> row (status accepted).</li>
+        <li>Reject → no DB write (rejection is implicit).</li>
+      </ul>
+      <h4>Outputs</h4>
+      <ul>
+        <li>Accepted learnings flow into <code>getBrandContextForGeneration()</code> on the next Stage B run.</li>
+        <li>Loop closes — next AI draft is sharper.</li>
+      </ul>
+      <h4>Trigger</h4>
+      <ul>
+        <li>Manual: merchant visits the page when the banner says "N articles to review".</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ NOTES -->
+
+<div class="notes">
+  <h3>What this mockup is asking you to confirm</h3>
+  <ul>
+    <li><strong>Six-scene merchant journey makes sense end-to-end?</strong> 0 → A → B → C → D → E → F.</li>
+    <li><strong>Stage 0 belongs in <code>/app/brand-settings/</code></strong> (under Brand settings as a tab) rather than under <code>/app/storytelling/</code>. Tone is brand-wide — feeds future surfaces (alt-text, product copy) too. Confirm this placement.</li>
+    <li><strong>Stage A target UI</strong> — themes-based form rather than JSON textarea. Built under separate Track D branch when the tone work lands.</li>
+    <li><strong>Stage E is auto-only via cron</strong> — no in-app rich editor. Merchant edits inside Shopify's native admin (which they trust) and the system catches up weekly.</li>
+    <li><strong>Stages B/C/F shipped</strong> — sketched here for completeness. No new design work for those.</li>
+    <li><strong>The loop closes via two channels:</strong> (1) explicit traits validated at Stage 0 (proactive), and (2) implicit edits validated at Stage F (reactive).</li>
+  </ul>
+</div>
+
+<div class="notes" style="background: #f1f8ff; border-color: #c0d6f3; color: #1a3d6e;">
+  <h3>Drift from current state (what's net-new in Phase 6)</h3>
+  <ul>
+    <li><strong>NEW</strong> Stage 0 entirely (multi-source tone ingestion + validation UI).</li>
+    <li><strong>NEW</strong> Stage E auto-trigger via weekly cron (replaces manual button as default).</li>
+    <li><strong>UPDATED</strong> Stage A — JSON textarea → themes UI (Track D, separate branch).</li>
+    <li><strong>UNCHANGED</strong> Stages B, C, F.</li>
+    <li><strong>UNCHANGED</strong> The fundamental shape: AI proposes, human edits, system learns from the edit.</li>
+  </ul>
+</div>
+
+</body>
+</html>

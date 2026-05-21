@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Manual references reframe</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --grid: #ebebeb;
+    --text: #303030;
+    --subdued: #6d7175;
+    --blue-primary: #005bd3;
+    --blue-bg: #f1f8ff;
+    --green: #067647;
+    --green-bg: #e6f4ec;
+    --red: #d72c0d;
+    --red-bg: #fbeae5;
+    --yellow: #d99a0a;
+    --yellow-bg: #fff5d9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 8px; }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 880px;
+    margin-bottom: 24px;
+  }
+  .sectionTitle {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--subdued);
+    margin: 32px 0 12px;
+  }
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 880px;
+    margin-bottom: 24px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; color: #4a3600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 4px; }
+
+  /* Source row body (accordion already approved — this is the EXPANDED body) */
+  .sourceWrapper {
+    border: 1px solid #c9d4e0;
+    border-radius: 8px;
+    background: var(--card);
+    max-width: 880px;
+    margin-bottom: 32px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+  .sourceHeader {
+    display: grid;
+    grid-template-columns: 36px 1fr auto 24px;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #fafbfc;
+    border-bottom: 1px solid var(--grid);
+  }
+  .sourceIcon {
+    width: 32px; height: 32px;
+    border-radius: 7px;
+    background: #fff5d9;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sourceMeta { display: flex; flex-direction: column; gap: 2px; }
+  .sourceName { font-weight: 600; font-size: 13px; }
+  .sourceDetail {
+    font-size: 12px;
+    color: var(--subdued);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 600px;
+  }
+  .sourceStatus {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--green);
+    white-space: nowrap;
+  }
+  .sourceStatusDot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+  .sourceStatus.idle { color: var(--subdued); }
+  .sourceStatus.idle .sourceStatusDot { background: #c9cccf; }
+  .chevron {
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--subdued);
+    transform: rotate(180deg);
+  }
+  .sourceBody { padding: 16px 18px 18px; }
+
+  /* Drop zone — visual upgrade */
+  .dropzone {
+    position: relative;
+    padding: 28px 20px;
+    border: 1px dashed #b8bcc0;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #fbfbfc 0%, #f4f5f6 100%);
+    text-align: center;
+    transition: all 0.15s ease;
+    margin-bottom: 14px;
+  }
+  .dropzone:hover {
+    border-color: var(--blue-primary);
+    background: var(--blue-bg);
+  }
+  .dropzoneIcon {
+    font-size: 24px;
+    color: var(--subdued);
+    margin-bottom: 8px;
+  }
+  .dropzoneTitle {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .dropzoneSub {
+    font-size: 12px;
+    color: var(--subdued);
+    margin-bottom: 14px;
+  }
+  .dropzoneButtons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  /* URL input row (separate from dropzone) */
+  .urlRow {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+    margin-bottom: 14px;
+  }
+  .urlRow input[type="text"] {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    background: white;
+  }
+  .urlRow .or {
+    display: flex;
+    align-items: center;
+    color: var(--subdued);
+    font-size: 12px;
+    padding: 0 4px;
+  }
+
+  /* Reference list */
+  .referenceList {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .referenceRow {
+    display: grid;
+    grid-template-columns: 22px 1fr auto auto auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--grid);
+    font-size: 12px;
+  }
+  .referenceRow:last-child { border-bottom: none; }
+  .referenceRow:hover { background: #fafbfc; }
+  .referenceRowIcon { color: var(--subdued); display: flex; }
+  .referenceRowName {
+    color: var(--text);
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .referenceRowMeta {
+    color: var(--subdued);
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .referenceRowMeta.warn { color: var(--yellow); font-weight: 500; }
+
+  .iconBtn {
+    width: 26px; height: 26px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: white;
+    color: var(--subdued);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .iconBtn:hover { color: var(--text); border-color: var(--axis); }
+
+  /* Inline upload progress strip — fires only during uploadFile */
+  .uploadStrip {
+    display: grid;
+    grid-template-columns: 22px 1fr 80px;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 14px;
+    border: 1px solid var(--blue-primary);
+    border-radius: 6px;
+    background: var(--blue-bg);
+    margin-bottom: 12px;
+  }
+  .uploadStripName { font-size: 12px; color: var(--text); font-weight: 500; }
+  .uploadStripStatus { font-size: 11px; color: var(--blue-primary); }
+  .uploadStripProgress {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(0, 91, 211, 0.18);
+    overflow: hidden;
+    position: relative;
+  }
+  .uploadStripProgress::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 60%;
+    background: var(--blue-primary);
+    border-radius: 2px;
+  }
+
+  /* Error banner */
+  .errBanner {
+    display: grid;
+    grid-template-columns: 22px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 14px;
+    border: 1px solid #f6c6c1;
+    border-radius: 6px;
+    background: var(--red-bg);
+    color: #842029;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  .errBanner code {
+    background: rgba(255,255,255,0.5);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+  .errBannerClose {
+    background: transparent;
+    border: none;
+    color: #842029;
+    font-size: 16px;
+    cursor: pointer;
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* footer split */
+  .bodyHelp {
+    font-size: 12px;
+    color: var(--subdued);
+    margin: 0;
+    line-height: 1.55;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text);
+  }
+  .btnPrimary {
+    background: var(--blue-primary);
+    color: white;
+    border-color: var(--blue-primary);
+  }
+  .btnSecondary { background: white; color: var(--text); }
+  .btnTertiary { background: transparent; border-color: transparent; color: var(--subdued); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn.loading {
+    position: relative;
+    color: transparent !important;
+  }
+  .btn.loading::after {
+    content: "";
+    position: absolute;
+    width: 12px; height: 12px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation: spin 0.6s linear infinite;
+    color: white;
+  }
+  @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+  /* state matrix */
+  .matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    max-width: 880px;
+  }
+  .matrix th, .matrix td {
+    border: 1px solid var(--border);
+    padding: 6px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .matrix th {
+    background: #fafbfc;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .stateLabel {
+    display: inline-block;
+    margin: 16px 0 8px;
+    font-size: 11px;
+    color: var(--subdued);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+
+<h1>Manual references — full reframe (mockup v1)</h1>
+<p class="intro">
+  Replaces the current cramped one-row "URL + Fetch + or + Choose file" UI with a deliberate 3-tier flow inside the
+  Manual references accordion body: <strong>(1)</strong> A spacious drop-zone hosting a Polaris-style "Choose file" button
+  + drag-to-upload affordance; <strong>(2)</strong> a separate URL paste row below; <strong>(3)</strong> a reference list
+  per file/URL with file vs link icons, char count, age, Re-extract, and Delete. Native "Escolher arquivo" button is gone
+  — replaced by a Polaris s-button that triggers a hidden &lt;input type="file"&gt; via ref. Upload progress shows inline
+  as a banner strip (not a button spinner across both forms). Rejection banner is contextual to the upload, file input
+  clears automatically.
+</p>
+
+<div class="notes">
+  <h3>What this mockup decides</h3>
+  <ul>
+    <li><strong>Native browser file button retired.</strong> Replaced with Polaris s-button + hidden input pattern. "Escolher arquivo" no longer leaks into the UI.</li>
+    <li><strong>File and URL inputs visually separated</strong> — they're sibling intake methods, not competing on one row. Each gets its own block.</li>
+    <li><strong>Upload progress shown inline</strong> as a strip with file name + status + progress bar. Not a spinner on a button that confused merchants when both forms shared loading state.</li>
+    <li><strong>Per-row errors</strong> — rejection banners stay in-context, dismissable, never block the dropzone.</li>
+    <li><strong>30MB cap surfaced upfront</strong>, oversize-PDF error has actionable guidance.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ STATE 1 — IDLE / EMPTY -->
+
+<span class="stateLabel">State A · No references yet</span>
+
+<div class="sourceWrapper">
+  <div class="sourceHeader">
+    <div class="sourceIcon">
+      <s-icon-fallback>
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="#8a5a08" aria-hidden="true">
+          <path d="M3 13a1 1 0 0 1 1 1v3h12v-3a1 1 0 1 1 2 0v3a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3a1 1 0 0 1 1-1z"/>
+          <path d="M10 1a1 1 0 0 1 .7.3l3 3a1 1 0 0 1-1.4 1.4L11 4.4V12a1 1 0 1 1-2 0V4.4L7.7 5.7a1 1 0 1 1-1.4-1.4l3-3A1 1 0 0 1 10 1z"/>
+        </svg>
+      </s-icon-fallback>
+    </div>
+    <div class="sourceMeta">
+      <div class="sourceName">Manual references</div>
+      <div class="sourceDetail">Brandbooks, manifestos, or any reference document.</div>
+    </div>
+    <span class="sourceStatus idle"><span class="sourceStatusDot"></span>No references yet</span>
+    <div class="chevron">↑</div>
+  </div>
+  <div class="sourceBody">
+    <div class="dropzone">
+      <div class="dropzoneIcon">⬆</div>
+      <div class="dropzoneTitle">Drop a brandbook, manifesto, or any reference</div>
+      <div class="dropzoneSub">PDF, DOCX, TXT, MD up to 30MB · click below or drag a file here</div>
+      <div class="dropzoneButtons">
+        <button class="btn btnPrimary">Choose file</button>
+      </div>
+    </div>
+
+    <div class="urlRow">
+      <input type="text" placeholder="…or paste a URL (https://…) to fetch reference copy from a web page" />
+      <button class="btn btnSecondary">Fetch URL</button>
+    </div>
+
+    <p class="bodyHelp">
+      We'll extract text from the file/URL and use it alongside Shopify, Meta, and Monday samples to learn your brand voice.
+    </p>
+  </div>
+</div>
+
+<!-- ============================================================ STATE 2 — UPLOADING -->
+
+<span class="stateLabel">State B · Uploading (file in flight)</span>
+
+<div class="sourceWrapper">
+  <div class="sourceHeader">
+    <div class="sourceIcon">
+      <svg viewBox="0 0 20 20" width="16" height="16" fill="#8a5a08" aria-hidden="true">
+        <path d="M3 13a1 1 0 0 1 1 1v3h12v-3a1 1 0 1 1 2 0v3a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3a1 1 0 0 1 1-1z"/>
+        <path d="M10 1a1 1 0 0 1 .7.3l3 3a1 1 0 0 1-1.4 1.4L11 4.4V12a1 1 0 1 1-2 0V4.4L7.7 5.7a1 1 0 1 1-1.4-1.4l3-3A1 1 0 0 1 10 1z"/>
+      </svg>
+    </div>
+    <div class="sourceMeta">
+      <div class="sourceName">Manual references</div>
+      <div class="sourceDetail">Uploading 1 file…</div>
+    </div>
+    <span class="sourceStatus idle"><span class="sourceStatusDot"></span>No references yet</span>
+    <div class="chevron">↑</div>
+  </div>
+  <div class="sourceBody">
+    <!-- Upload progress strip in place of a button spinner -->
+    <div class="uploadStrip">
+      <div style="color: var(--blue-primary);">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M3 2h7l3 3v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm0 1v11h10V6h-3V3H3z"/></svg>
+      </div>
+      <div>
+        <div class="uploadStripName">_manualGE...uty_final.pdf</div>
+        <div class="uploadStripStatus">Extracting text via Claude · ~10s</div>
+        <div class="uploadStripProgress" style="margin-top: 6px;"></div>
+      </div>
+      <div style="text-align: right;">
+        <button class="iconBtn" title="Cancel upload">×</button>
+      </div>
+    </div>
+
+    <div class="dropzone" style="opacity: 0.5; pointer-events: none;">
+      <div class="dropzoneIcon">⬆</div>
+      <div class="dropzoneTitle">Drop a brandbook, manifesto, or any reference</div>
+      <div class="dropzoneSub">PDF, DOCX, TXT, MD up to 30MB · click below or drag a file here</div>
+      <div class="dropzoneButtons">
+        <button class="btn btnPrimary" disabled>Choose file</button>
+      </div>
+    </div>
+
+    <div class="urlRow">
+      <input type="text" placeholder="…or paste a URL (https://…) to fetch reference copy from a web page" />
+      <button class="btn btnSecondary">Fetch URL</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ STATE 3 — UPLOAD REJECTED -->
+
+<span class="stateLabel">State C · Upload rejected (file too large)</span>
+
+<div class="sourceWrapper">
+  <div class="sourceHeader">
+    <div class="sourceIcon">
+      <svg viewBox="0 0 20 20" width="16" height="16" fill="#8a5a08" aria-hidden="true">
+        <path d="M3 13a1 1 0 0 1 1 1v3h12v-3a1 1 0 1 1 2 0v3a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3a1 1 0 0 1 1-1z"/>
+        <path d="M10 1a1 1 0 0 1 .7.3l3 3a1 1 0 0 1-1.4 1.4L11 4.4V12a1 1 0 1 1-2 0V4.4L7.7 5.7a1 1 0 1 1-1.4-1.4l3-3A1 1 0 0 1 10 1z"/>
+      </svg>
+    </div>
+    <div class="sourceMeta">
+      <div class="sourceName">Manual references</div>
+      <div class="sourceDetail">Upload failed</div>
+    </div>
+    <span class="sourceStatus idle"><span class="sourceStatusDot"></span>No references yet</span>
+    <div class="chevron">↑</div>
+  </div>
+  <div class="sourceBody">
+    <div class="errBanner">
+      <div>⚠</div>
+      <div>
+        <strong>Upload rejected.</strong> <code>_manualGEbeauty_final.pdf</code> is 42MB — over the 30MB limit. Try a smaller file, split it into sections, or paste the URL of an online version.
+      </div>
+      <button class="errBannerClose" aria-label="Dismiss">×</button>
+    </div>
+
+    <div class="dropzone">
+      <div class="dropzoneIcon">⬆</div>
+      <div class="dropzoneTitle">Drop a brandbook, manifesto, or any reference</div>
+      <div class="dropzoneSub">PDF, DOCX, TXT, MD up to 30MB · click below or drag a file here</div>
+      <div class="dropzoneButtons">
+        <button class="btn btnPrimary">Choose file</button>
+      </div>
+    </div>
+
+    <div class="urlRow">
+      <input type="text" placeholder="…or paste a URL (https://…) to fetch reference copy from a web page" />
+      <button class="btn btnSecondary">Fetch URL</button>
+    </div>
+
+    <p class="bodyHelp">
+      The native file input has been cleared so you can pick another file without the rejected name lingering.
+    </p>
+  </div>
+</div>
+
+<!-- ============================================================ STATE 4 — WITH REFERENCES -->
+
+<span class="stateLabel">State D · With references (steady state)</span>
+
+<div class="sourceWrapper">
+  <div class="sourceHeader">
+    <div class="sourceIcon">
+      <svg viewBox="0 0 20 20" width="16" height="16" fill="#8a5a08" aria-hidden="true">
+        <path d="M3 13a1 1 0 0 1 1 1v3h12v-3a1 1 0 1 1 2 0v3a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3a1 1 0 0 1 1-1z"/>
+        <path d="M10 1a1 1 0 0 1 .7.3l3 3a1 1 0 0 1-1.4 1.4L11 4.4V12a1 1 0 1 1-2 0V4.4L7.7 5.7a1 1 0 1 1-1.4-1.4l3-3A1 1 0 0 1 10 1z"/>
+      </svg>
+    </div>
+    <div class="sourceMeta">
+      <div class="sourceName">Manual references</div>
+      <div class="sourceDetail">3 files + 1 URL · 24,873 chars total</div>
+    </div>
+    <span class="sourceStatus"><span class="sourceStatusDot"></span>4 references</span>
+    <div class="chevron">↑</div>
+  </div>
+  <div class="sourceBody">
+    <div class="referenceList">
+      <div class="referenceRow">
+        <span class="referenceRowIcon">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M3 2h7l3 3v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm0 1v11h10V6h-3V3H3z"/></svg>
+        </span>
+        <span class="referenceRowName">GE Beauty Brandbook 2026.pdf</span>
+        <span class="referenceRowMeta">PDF · 12,043 chars</span>
+        <span class="referenceRowMeta">2d ago</span>
+        <button class="iconBtn" title="Re-extract">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2a6 6 0 1 0 5.7 4.1l-1 .3A5 5 0 1 1 8 3v2l3-2.5L8 0v2z"/></svg>
+        </button>
+        <button class="iconBtn" title="Delete">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M3 4h10v1H3V4zm1 2h8l-.5 8a1 1 0 0 1-1 .9H5.5a1 1 0 0 1-1-.9L4 6zm2-3h4l.5 1H5.5l.5-1z"/></svg>
+        </button>
+      </div>
+
+      <div class="referenceRow">
+        <span class="referenceRowIcon">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M3 2h7l3 3v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm0 1v11h10V6h-3V3H3z"/></svg>
+        </span>
+        <span class="referenceRowName">Manifesto Editorial.docx</span>
+        <span class="referenceRowMeta">DOCX · 8,210 chars</span>
+        <span class="referenceRowMeta">5d ago</span>
+        <button class="iconBtn" title="Re-extract">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2a6 6 0 1 0 5.7 4.1l-1 .3A5 5 0 1 1 8 3v2l3-2.5L8 0v2z"/></svg>
+        </button>
+        <button class="iconBtn" title="Delete">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M3 4h10v1H3V4zm1 2h8l-.5 8a1 1 0 0 1-1 .9H5.5a1 1 0 0 1-1-.9L4 6zm2-3h4l.5 1H5.5l.5-1z"/></svg>
+        </button>
+      </div>
+
+      <div class="referenceRow">
+        <span class="referenceRowIcon">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M3 2h7l3 3v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm0 1v11h10V6h-3V3H3z"/></svg>
+        </span>
+        <span class="referenceRowName">Tone Guidelines.pdf</span>
+        <span class="referenceRowMeta warn">PDF · 1,200 chars · re-extract may improve</span>
+        <span class="referenceRowMeta">9d ago</span>
+        <button class="iconBtn" title="Re-extract">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2a6 6 0 1 0 5.7 4.1l-1 .3A5 5 0 1 1 8 3v2l3-2.5L8 0v2z"/></svg>
+        </button>
+        <button class="iconBtn" title="Delete">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M3 4h10v1H3V4zm1 2h8l-.5 8a1 1 0 0 1-1 .9H5.5a1 1 0 0 1-1-.9L4 6zm2-3h4l.5 1H5.5l.5-1z"/></svg>
+        </button>
+      </div>
+
+      <div class="referenceRow">
+        <span class="referenceRowIcon">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M5.5 11.4a2 2 0 0 1 0-2.8l2-2a1 1 0 0 1 1.4 1.4l-2 2a.6.6 0 0 0 0 .8l1 1a.6.6 0 0 0 .8 0l2-2a1 1 0 1 1 1.4 1.4l-2 2a2.6 2.6 0 0 1-3.6 0zm-1.4-1.4a1 1 0 0 1-1.4 0 2.6 2.6 0 0 1 0-3.6l2-2a2.6 2.6 0 0 1 3.6 0 1 1 0 0 1-1.4 1.4.6.6 0 0 0-.8 0l-2 2a.6.6 0 0 0 0 .8 1 1 0 0 1 0 1.4z"/></svg>
+        </span>
+        <span class="referenceRowName">linktree.com/gebeauty</span>
+        <span class="referenceRowMeta">URL · 3,420 chars</span>
+        <span class="referenceRowMeta">8d ago</span>
+        <span></span>
+        <button class="iconBtn" title="Delete">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M3 4h10v1H3V4zm1 2h8l-.5 8a1 1 0 0 1-1 .9H5.5a1 1 0 0 1-1-.9L4 6zm2-3h4l.5 1H5.5l.5-1z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="dropzone" style="padding: 18px 16px;">
+      <div class="dropzoneTitle">Add another reference</div>
+      <div class="dropzoneSub">PDF, DOCX, TXT, MD up to 30MB · click below or drag a file here</div>
+      <div class="dropzoneButtons">
+        <button class="btn btnSecondary">Choose file</button>
+      </div>
+    </div>
+
+    <div class="urlRow">
+      <input type="text" placeholder="…or paste a URL (https://…) to fetch reference copy from a web page" />
+      <button class="btn btnSecondary">Fetch URL</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ STATE MATRIX -->
+
+<div class="sectionTitle">State matrix · manual references body</div>
+
+<table class="matrix">
+  <thead>
+    <tr>
+      <th style="width: 18%;">State</th>
+      <th>Dropzone</th>
+      <th>URL row</th>
+      <th>Reference list</th>
+      <th>Banner</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>A · No refs yet (idle)</strong></td>
+      <td>Full-size · "Drop a brandbook…" · Choose file button enabled</td>
+      <td>Input + Fetch URL button enabled</td>
+      <td>Hidden</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><strong>B · File uploading</strong></td>
+      <td>Dimmed + click-disabled (extracted text via Claude still in flight)</td>
+      <td>Enabled (independent flow)</td>
+      <td>Hidden until file completes</td>
+      <td>Upload-strip with file name + progress + cancel</td>
+    </tr>
+    <tr>
+      <td><strong>B' · URL fetching</strong></td>
+      <td>Enabled (independent flow)</td>
+      <td>Input disabled · Fetch button shows spinner</td>
+      <td>Hidden until URL completes</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><strong>C · Upload rejected</strong></td>
+      <td>Restored · file input cleared programmatically · Choose file enabled</td>
+      <td>Enabled</td>
+      <td>Hidden</td>
+      <td>Red banner with reason + remediation tip · dismissable</td>
+    </tr>
+    <tr>
+      <td><strong>D · With refs (steady)</strong></td>
+      <td>Compact size · "Add another reference"</td>
+      <td>Enabled</td>
+      <td>Visible · per-row Re-extract (files only) + Delete</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><strong>E · Ref low char count (warn)</strong></td>
+      <td>Compact</td>
+      <td>Enabled</td>
+      <td>Visible · row meta shows "re-extract may improve" hint in yellow</td>
+      <td>None (per-row inline hint)</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ NOTES -->
+
+<div class="notes" style="margin-top: 32px;">
+  <h3>Decisions baked in</h3>
+  <ul>
+    <li>✅ <strong>"Choose file" is a Polaris s-button</strong> that triggers a hidden &lt;input type="file"&gt; via ref. Native "Escolher arquivo" gone.</li>
+    <li>✅ <strong>File + URL inputs visually separated</strong>. Drop zone for files (visual emphasis), URL row below as sibling.</li>
+    <li>✅ <strong>Per-form loading state.</strong> Uploading a file does NOT spin the Fetch URL button. Fetching a URL does NOT disable the file Choose-file button.</li>
+    <li>✅ <strong>Upload progress strip</strong> replaces "button spins forever" — explicit file name, status text, progress bar.</li>
+    <li>✅ <strong>Rejection banner is contextual</strong> — sits above the dropzone, dismissable, doesn't block retry.</li>
+    <li>✅ <strong>Native file input clears on rejection</strong> (the bug Lucas reported where "_manualGEbeauty_final.pdf" lingered).</li>
+    <li>✅ <strong>Reference list shows file vs URL icons</strong>, char count, age. Re-extract only on files (URLs are re-fetched via a different action — same Re-extract pattern still applies).</li>
+    <li>✅ <strong>30MB cap surfaced upfront</strong> in dropzoneSub copy. PDF-over-24MB error has tactical remediation.</li>
+  </ul>
+</div>
+
+<div class="notes" style="background: #f1f8ff; border-color: #c0d6f3; color: #1a3d6e;">
+  <h3>Deferred / open</h3>
+  <ul>
+    <li><strong>Drag-and-drop event handlers</strong> — visual affordance is there but actual drag-drop listeners (<code>dragenter</code> / <code>drop</code>) are wired in v2.</li>
+    <li><strong>Cancel button during upload</strong> — UI is here, but the AbortController plumbing through the action would need extra work. v1 ships with "page refresh = cancel."</li>
+    <li><strong>URL re-extract</strong> — currently Re-extract button only on file rows. URL rows could re-fetch the URL with the same intent — flag for v2 unless Lucas wants it now.</li>
+    <li><strong>Multi-file upload</strong> — v1 ships single-file. Multi-select dropzone is a follow-up.</li>
+  </ul>
+</div>
+
+</body>
+</html>

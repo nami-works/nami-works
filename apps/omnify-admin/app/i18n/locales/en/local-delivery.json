@@ -1,0 +1,616 @@
+{
+  "pageHeading": "Local delivery",
+  "filters": {
+    "fulfillmentDetails": "Fulfillment details",
+    "fulfillmentLocation": "Fulfillment location",
+    "allLocations": "All locations",
+    "startDate": "Start date",
+    "deliveryPromise": "Delivery promise",
+    "all": "All",
+    "daysAgo": "{{count}} day(s) ago",
+    "ordersToDeliver": "Orders to deliver: {{count}}",
+    "failedDelivery": "Failed delivery: {{count}}",
+    "sameDay": "Same day",
+    "sameDayTimeLimit": "Time limit for same day",
+    "nextDay": "Next day",
+    "dayPlus2": "Day +2",
+    "dayPlus3": "Day +3",
+    "dayPlus4": "Day +4",
+    "presaleWarning": "⚠️ There are unfulfilled pre-sale orders",
+    "includeWarehouse": "Include warehouse orders",
+    "warehouseCount": "Routed from warehouse: {{count}}",
+    "warehouseCountShow": "Routed from warehouse: {{count}} — show"
+  },
+  "map": {
+    "legend": {
+      "dueToday": "Today",
+      "dueTomorrow": "Tomorrow",
+      "dueLater": "Later",
+      "dueTodayEmoji": "⏳",
+      "dueTomorrowEmoji": "⏰",
+      "dueLaterEmoji": "🕒",
+      "overdue": "Overdue",
+      "overdueEmoji": "🚨",
+      "failed": "Failed",
+      "failedEmoji": "🚫",
+      "addressErrorEmoji": "🟡",
+      "addressError": "Address issue",
+      "chipLabel": "Legend",
+      "routedFromWarehouse": "Routed from warehouse"
+    },
+    "noMapAvailable": "Map not available.",
+    "locationGate": {
+      "heading": "Pick a location to start routing orders.",
+      "body": "Route planner needs a single origin location. Choose one from the Location filter above.",
+      "shortHeading": "Pick a location to start"
+    },
+    "selectLocationToShowRoutes": "Select a specific location to display routes on the map.",
+    "noCoordinates": "No coordinates available for the selected filters.",
+    "mapStyleButton": "Map style",
+    "collapse": "[-] Collapse",
+    "expand": "[+] Expand",
+    "collapseMap": "Collapse map",
+    "expandMap": "Expand map",
+    "polylineEdit": {
+      "edit": "Edit",
+      "confirm": "Confirm",
+      "exit": "Exit",
+      "reassign": "Reassign",
+      "unassign": "Unassign",
+      "cantExceedCap": "Cannot reassign. Route {{routeName}} would exceed the 7-orders cap.",
+      "routeOptionLabel": "{{routeName}} ({{orderCount}} stops)",
+      "exitConfirm": {
+        "heading": "Discard pending changes?",
+        "body": "Exiting will undo your {{count}} pending route change(s). The orders will go back to their original routes.",
+        "stay": "Stay",
+        "discard": "Discard and exit"
+      }
+    },
+    "clearSelection": "Clear selection",
+    "unassignSelected": "Unassign",
+    "assignToNewRoute": "Assign to new route",
+    "errors": {
+      "placesLoadFailed": "Google Maps Places failed to load. Check your API key and billing setup.",
+      "sdkNotAvailable": "Google Maps SDK not available.",
+      "advancedMarkersUnavailable": "Google Maps Advanced Markers are unavailable. Check map ID and API setup.",
+      "mapsLoadFailed": "Google Maps failed to load. Check your API key and billing setup."
+    },
+    "fulfillmentLocation": "Fulfillment location",
+    "fulfillmentLabel": "Fulfillment",
+    "styles": {
+      "light": "Light",
+      "grayscale": "Grayscale",
+      "dark": "Dark"
+    }
+  },
+  "routeManager": {
+    "clearRouteDisabledTooltip": "Cannot clear route while driver request is active",
+    "deliveryCancelled": "Delivery cancelled.",
+    "noLogEvents": "No events recorded yet.",
+    "integrationLogHeading": "Integration log",
+    "integrationLog": "Integration log",
+    "cancelYes": "Yes, cancel",
+    "cancelNo": "No",
+    "cancelDeliveryWarning": "This action cannot be undone.",
+    "cancelDeliveryConfirm": "Are you sure you want to cancel this delivery?",
+    "cancelDeliveryHeading": "Cancel delivery",
+    "cancelDelivery": "Cancel",
+    "heading": "Route manager",
+    "actions": "Actions",
+    "clearAllRoutes": "Clear all routes",
+    "quoteAllRoutes": "Fetch quotes",
+    "dispatchAllRoutes": "Dispatch all",
+    "quoteAllProgress": "Fetching quotes: {{completed}}/{{total}}",
+    "dispatchAllProgress": "Dispatching: {{completed}}/{{total}}",
+    "dispatchAllStaleAfterDispatch": "Routes dispatched, but the page didn't refresh automatically. Reload to see latest status.",
+    "openLocationSettings": "Settings",
+    "noRoutes": "No routes created yet. Select orders on the map and assign them to routes.",
+    "unassignedOrders": "Unassigned orders ({{count}})",
+    "noUnassigned": "No unassigned orders for current filters.",
+    "autoAssignmentInProgress": "Auto-assignment in progress",
+    "requestDriver": "Dispatch",
+    "requestingDriver": "Dispatching…",
+    "requestQuote": "Request quote",
+    "requestingQuote": "Requesting…",
+    "review": "Review",
+    "moreActions": "More actions",
+    "assignToRoute": "Assign to route",
+    "newRoute": "New route",
+    "route": "Route {{number}}",
+    "autoAssignAccuracy": "Auto-assign accuracy",
+    "accurateOf": "{{accurate}} of {{total}} orders",
+    "last30Days": "Last 30 days \u00b7 {{count}} optimizations",
+    "reviewDecisions": "Review decisions",
+    "postMortemPending_one": "{{count}} decision to review",
+    "postMortemPending_other": "{{count}} decisions to review",
+    "distance": "{{km}} km",
+    "duration": "{{min}} min",
+    "selectLocation": "Select a fulfillment location to view assigned routes.",
+    "noRoutesForLocation": "No assigned routes for this location.",
+    "table": {
+      "order": "Order",
+      "customer": "Customer",
+      "address": "Address",
+      "date": "Date",
+      "route": "Route",
+      "due": "Due",
+      "actions": "Actions"
+    },
+    "allOrders": "All orders ({{count}})",
+    "filterAll": "All",
+    "filterUnassigned": "Unassigned",
+    "filterAssigned": "Assigned",
+    "filterFailed": "Failed",
+    "searchPlaceholder": "Search by order # or customer",
+    "noMatchingOrders": "No orders match your filter",
+    "seeOrders": "See orders",
+    "selectAll": "Select all visible orders",
+    "routeLabel": "Route {{number}}",
+    "routeLabelCompact": "#{{number}}",
+    "rowAction": {
+      "removeFromRoute": "Remove from route",
+      "unassign": "Unassign",
+      "openInShopify": "Open in Shopify"
+    },
+    "noAddressLine1": "No address line 1",
+    "multipleCurrencies": "Multiple currencies",
+    "trackDelivery": "Track delivery →",
+    "lalamoveDisabled": "Add location details to enable Lalamove.",
+    "clearRoute": "Clear route",
+    "addToRoute": "Add to route",
+    "manage": "Manage",
+    "details": "Details",
+    "driverRequested": "Driver requested",
+    "status": {
+      "requested": "Driver requested",
+      "assigning": "Looking for driver",
+      "heading_to_pickup": "Driver heading to pickup",
+      "in_progress": "Out for delivery",
+      "delivered": "Delivered",
+      "failed": "Cancelled",
+      "rejected": "No driver available",
+      "expired": "Request expired"
+    },
+    "manageOrders": "Manage orders",
+    "autoAssignOrders": "Auto-assign orders",
+    "autoAssign": "Auto-assign",
+    "updateRoutes": "Update routes",
+    "confirmChanges": "Confirm changes",
+    "discardChangesConfirm": "You have unsaved route changes. Switch location and discard them?",
+    "addToBestRoute": "Add to best route",
+    "resetAutoAssign": "Re-enable auto-assign",
+    "addressCorrection": "Address correction",
+    "changeSettings": "Change settings",
+    "actions": "Actions",
+    "carrierStatus": "Carrier status",
+    "selectLocationForCarrier": "Select a fulfillment location to see carrier status.",
+    "selectAllInRoute": "Select all orders in route",
+    "removeFromRoute": "Remove {{name}} from route",
+    "selectOrder": "Select {{name}}",
+    "unassignOrders": "Unassign orders",
+    "confirmFulfillment": "Confirm fulfillment",
+    "fulfillmentConfirmation": "Fulfillment confirmation",
+    "markAsFulfilled": "Mark orders as fulfilled",
+    "markingAsFulfilled": "Marking as fulfilled\u2026",
+    "close": "Close",
+    "optimizeApplied": "Optimization applied: {{count}} routes",
+    "reRequestedAt": "Re-requested at {{time}}",
+    "ordersMeta": "{{count}} orders • Shipping charges: {{shipping}}",
+    "costLabel": "Cost: {{cost}}",
+    "costPlaceholder": "Cost: --",
+    "durationFormat": "{{hours}}h {{mins}}m"
+  },
+  "modals": {
+    "routeDetails": {
+      "heading": "Route {{number}} – Details",
+      "noOrders": "No orders in this route."
+    },
+    "unassignConfirm": {
+      "heading": "Warning",
+      "message": "This will unassign all orders from this route.",
+      "proceed": "Do you wish to proceed?",
+      "confirm": "Yes, unassign",
+      "cancel": "Cancel"
+    },
+    "clearAllConfirm": {
+      "heading": "Warning",
+      "message": "This will clear all route assignments.",
+      "proceed": "Do you wish to proceed?",
+      "confirm": "Yes, clear all",
+      "cancel": "Cancel"
+    },
+    "requestDriver": {
+      "heading": "Request driver",
+      "confirmMessage": "This will request a Lalamove driver for this route.",
+      "stops": "Stops:",
+      "estimatedDistance": "Estimated distance:",
+      "estimatedDuration": "Estimated duration:",
+      "confirm": "Confirm request",
+      "cancel": "Cancel",
+      "quoteId": "Quote #{{quotationId}}",
+      "expiresAt": "Expires at: {{time}}",
+      "estimatedTotal": "Estimated total: {{amount}}",
+      "ordersInRoute": "Orders in route: {{count}}",
+      "close": "Close"
+    },
+    "methodOverride": {
+      "heading": "Confirm warehouse override dispatch",
+      "body": "You're dispatching {{count}} orders originally placed for warehouse fulfillment via Local Delivery from {{location}}. The customer's order record won't change — they'll receive the same tracking emails as usual.",
+      "detailsToggle": "Show technical details",
+      "details": "The Shopify delivery method on each order stays as SHIPPING — only how we fulfill it changes. A tag ld_method-override is applied to each affected order. The dispatch job is recorded with methodOverride=true for audit and dashboard filtering.",
+      "confirm": "Confirm dispatch",
+      "cancel": "Cancel"
+    },
+    "tagFilter": {
+      "heading": "Select which tags to include in routes:",
+      "noTags": "No pre-sale tags found.",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
+    "mapStyle": {
+      "heading": "Map style",
+      "mapStyleLabel": "Map style",
+      "dark": "Dark",
+      "greyscale": "Greyscale",
+      "light": "Light",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
+    "addressErrors": {
+      "heading": "Potential address errors",
+      "noErrors": "No address errors found.",
+      "footer": "These orders may have incomplete or invalid delivery addresses.",
+      "fixAddress": "Fix address in Shopify",
+      "fixAddresses": "Fix on Orders page",
+      "openInShopify": "Open in Shopify",
+      "close": "Close",
+      "apartmentInAddress": "Apartment/unit details likely in address line 1.",
+      "duplicateNumber": "Potential duplicate number across address lines.",
+      "multipleNumbers": "Multiple numbers found in address line 1 — possible formatting error.",
+      "reviewNeeded": "Address needs confirmation."
+    },
+    "addressWarn": {
+      "heading": "Potential address errors in this route",
+      "description": "The following orders may have address issues. Fix them in Shopify before requesting a driver, or proceed anyway.",
+      "problemFixed": "Problem fixed",
+      "proceedAnyway": "Proceed anyway"
+    },
+    "foreignPhone": {
+      "heading": "Foreign phone numbers detected",
+      "description": "The following orders have phone numbers from a different country than the delivery market. The store phone will be used for delivery contact instead.",
+      "orderPhone": "Phone: {{phone}}",
+      "proceed": "Proceed with store phone",
+      "cancel": "Cancel"
+    },
+    "driverError": {
+      "carrierDiagnostic": "Carrier readiness",
+      "heading": "Driver request error",
+      "headingFailed": "Request failed",
+      "errorDetails": "Error details",
+      "close": "Close",
+      "apiCredentials": "API credentials",
+      "market": "Market",
+      "vehicleType": "Vehicle type",
+      "locationName": "Location name",
+      "locationPhone": "Location phone",
+      "locationAddress": "Location address"
+    },
+    "specialRequests": {
+      "heading": "Special requests",
+      "description": "Select any special requests for this delivery:",
+      "loading": "Loading available options...",
+      "noOptions": "No special request options available for this market.",
+      "cancel": "Cancel",
+      "confirm": "Request quote",
+      "waitTimeLabel": "Wait time"
+    },
+    "addressVerify": {
+      "heading": "Verify delivery addresses",
+      "description": "Review and correct delivery addresses before requesting a driver. Use the search field to find the correct address.",
+      "addressPlaceholder": "Search for address...",
+      "cancel": "Cancel",
+      "confirm": "Confirm and request"
+    },
+    "returnPickups": {
+      "heading": "Return Pickup Requests",
+      "instructionsLabel": "Return instructions",
+      "instructionsPlaceholder": "e.g., Ring doorbell, ask for the package...",
+      "table": {
+        "order": "Order",
+        "customer": "Customer",
+        "address": "Address"
+      },
+      "selectAll": "Select all",
+      "collectReturns": "Collect Returns",
+      "collecting": "Getting quote...",
+      "cost": "Cost: {{amount}} {{currency}}",
+      "confirmRequest": "Confirm request",
+      "confirming": "Confirming...",
+      "cancel": "Cancel",
+      "noRequests": "No pending return pickup requests."
+    }
+  },
+  "warnings": {
+    "addressErrors": "Potential address errors: {{count}}",
+    "returnPickups": "Return pickups ({{count}})",
+    "warehouseHidden": "{{count}} warehouse orders hidden"
+  },
+  "banners": {
+    "mapsKeyMissing": "Google Maps API key missing",
+    "mapsKeyDescription": "Add GOOGLE_MAPS_API_KEY to your environment to enable the delivery map.",
+    "mapsMapIdMissing": "Google Maps Map ID missing",
+    "mapsMapIdDescription": "Add GOOGLE_MAPS_MAP_ID to your environment for advanced map features.",
+    "ordersAccessRequired": "Orders access requires approval",
+    "ordersAccessDescription": "The app needs read_orders scope. Please approve in Shopify admin.",
+    "debugMode": "Local Delivery debug mode",
+    "debugDescription": "Debug mode is active. Some features may behave differently.",
+    "mapsMapIdAdvancedMarkers": "Set GOOGLE_MAPS_MAP_ID in your environment to use Advanced Markers."
+  },
+  "status": {
+    "requested": "Requested",
+    "matched": "Matched",
+    "onGoing": "Ongoing",
+    "pickedUp": "Picked up",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "rejected": "Rejected",
+    "expired": "Expired",
+    "failed": "Failed"
+  },
+  "driverRequest": {
+    "viewDetails": "View details",
+    "requestFailed": "Request failed",
+    "readyForDelivery": "Ready for delivery",
+    "outOfAreaOrders": "Orders outside service area",
+    "outOfAreaRemoved": "Orders outside service area were removed",
+    "outOfAreaContinued": "The quotation was created with the remaining orders. The orders listed above were automatically removed from the route.",
+    "cancelling": "Cancelling...",
+    "creatingQuotation": "Creating quotation...",
+    "cancelFailed": "Cancel failed",
+    "cancelCouldNotBeCancelled": "Request could not be cancelled",
+    "goToLalamove": "Go to Lalamove",
+    "staleQuote": "Route changed during quoting. Request a new quote."
+  },
+  "infoWindow": {
+    "assignedTo": "Order assigned to Route {{number}}",
+    "unassign": "Unassign"
+  },
+  "dueBuckets": {
+    "today": "Orders due today",
+    "todaySelectAll": "Select all orders due today",
+    "tomorrow": "Orders due tomorrow",
+    "tomorrowSelectAll": "Select all orders due tomorrow",
+    "later": "Orders due later",
+    "laterSelectAll": "Select all orders due later"
+  },
+  "customer": {
+    "guest": "Guest",
+    "noShippingAddress": "No shipping address"
+  },
+  "mobile": {
+    "pickLocation": "Pick a location",
+    "pickDate": "Pick a date",
+    "noCoordsForOptimize": "Pick a specific location to optimize.",
+    "optimizeCta": {
+      "heading": "{{count}} orders to route",
+      "body": "Packs today's unassigned orders into the fewest viable routes.",
+      "button": "Optimize",
+      "optimizing": "Optimizing {{count}} orders…"
+    },
+    "phases": {
+      "buildingMatrix": "Building distance matrix…",
+      "computingRoutes": "Computing route assignments…",
+      "quoting": "Quoting routes with Lalamove…",
+      "finalizing": "Finalizing…"
+    },
+    "statusStrip": "{{routes}} routes out · {{pending}} pending",
+    "statusStripErrors": "{{count}} errors",
+    "statusStripAddrErrors": "{{count}} addr errors",
+    "routesHeading": "Routes",
+    "noRoutesYet": "No routes yet.\nTap **Optimize** above to auto-assign today's orders.",
+    "pickLocationFirst": "Pick a specific location above to see routes and optimize.",
+    "unassignedSection": "Unassigned orders",
+    "unassignedEmpty": "No unassigned orders for the current filter.",
+    "showMap": "Show map",
+    "hideMap": "Hide map",
+    "mapPins": "{{routes}} routes · {{pins}} pins",
+    "mapEmpty": "No pins to display — pick a specific location and optimize, or reselect a date range with orders.",
+    "triage": "Triage (tap to review)",
+    "desktopOnlyHeading": "Desktop-only actions",
+    "triageChip": {
+      "addressErrors": "Address errors ({{count}})",
+      "returnPickups": "Return pickups ({{count}})",
+      "specialRequests": "Special requests",
+      "mapStyle": "Map style",
+      "lalamoveSettings": "Lalamove settings",
+      "openOnDesktop": "open on desktop ↗"
+    },
+    "sheet": {
+      "close": "Close",
+      "openInShopify": "Open in Shopify ↗",
+      "viewDesktop": "View desktop version",
+      "refresh": "Refresh",
+      "sameDay": "Same day",
+      "nextDay": "Next day",
+      "dayPlus2": "Day +2",
+      "dayPlus3": "Day +3",
+      "dayPlus4": "Day +4"
+    },
+    "orderDetails": {
+      "heading": "{{name}} · {{customer}}",
+      "address": "Shipping address",
+      "phone": "Phone",
+      "fulfillment": "Fulfillment",
+      "tags": "Tags",
+      "total": "Order total",
+      "due": "Due",
+      "noPhone": "—"
+    },
+    "routeDetails": {
+      "heading": "Route {{number}} · {{location}}",
+      "ordersIn": "{{count}} orders",
+      "distance": "Distance",
+      "duration": "Duration",
+      "cost": "Est. cost",
+      "stops": "Stops",
+      "lalamoveOrder": "Lalamove order",
+      "lalamoveLink": "Open tracking ↗"
+    },
+    "quoteConfirm": {
+      "heading": "Quote · Route {{number}}",
+      "sub": "{{stops}} stops",
+      "total": "Total",
+      "distance": "Distance",
+      "duration": "Est. duration",
+      "pickup": "Pickup",
+      "pickupAsap": "ASAP",
+      "disclaimer": "Once you request a driver, Lalamove dispatches immediately. Cancellation after pickup incurs a fee.",
+      "cancel": "Cancel",
+      "requestDriver": "Request driver →"
+    },
+    "cancelConfirm": {
+      "heading": "Cancel delivery?",
+      "body": "This cancels the Lalamove order. Cancellation fees may apply if the driver has already started.",
+      "cancel": "Keep delivery",
+      "confirm": "Yes, cancel"
+    },
+    "clearRouteConfirm": {
+      "heading": "Clear this route?",
+      "body": "Orders will return to unassigned. No Shopify tags are changed for dispatched routes.",
+      "cancel": "Keep route",
+      "confirm": "Clear route"
+    },
+    "clearAllConfirm": {
+      "heading": "Clear all routes?",
+      "body": "All pending routes will be cleared. Dispatched routes are kept.",
+      "cancel": "Keep routes",
+      "confirm": "Clear all"
+    },
+    "errorDetails": {
+      "heading": "Driver request error",
+      "close": "Close"
+    },
+    "addressErrorsSheet": {
+      "heading": "Address errors ({{count}})",
+      "sub": "Fix in Shopify admin. The next Optimize will pick up the corrected address.",
+      "empty": "No address errors.",
+      "noAddress": "No address line 1"
+    },
+    "card": {
+      "orderCount": "{{count}} orders",
+      "distance": "{{km}} km",
+      "duration": "~{{min}} min",
+      "shipping": "R$ {{amount}}",
+      "quoteTotal": "{{total}}",
+      "quoteStops": "{{count}} stops",
+      "quoteExpiresAt": "expires {{time}}",
+      "tracking": "Lalamove dispatch",
+      "trackingLink": "Open Lalamove tracking ↗",
+      "errorHeading": "Driver request failed",
+      "requestQuote": "Request quote",
+      "requestingQuote": "Requesting…",
+      "requestDriver": "Request driver",
+      "requestingDriver": "Requesting…",
+      "retryDriver": "Retry driver",
+      "viewError": "View error",
+      "viewDetails": "Details",
+      "cancelDelivery": "Cancel",
+      "viewOrders": "View",
+      "statusPending": "Pending",
+      "statusQuoted": "Quoted",
+      "statusRequested": "Driver requested",
+      "statusAssigning": "Assigning…",
+      "statusHeadingToPickup": "Driver heading to pickup",
+      "statusInProgress": "Out for delivery",
+      "statusDelivered": "Delivered",
+      "statusFailed": "Cancelled",
+      "statusRejected": "No driver",
+      "statusExpired": "Expired",
+      "statusError": "Failed"
+    },
+    "bannerMapsMissing": "Google Maps is not configured. Contact your admin.",
+    "bannerOrdersAccess": "Orders access is required for local delivery. Contact your admin.",
+    "desktopBanner": "Viewport is wide enough for the desktop view.",
+    "desktopBannerSwitch": "Switch to desktop",
+    "desktopBannerUnreadable": "Desktop view is unreadable at this width.",
+    "desktopBannerOpenAnyway": "Open anyway"
+  },
+  "pod": {
+    "table": {
+      "status": "Status"
+    },
+    "stopPill": {
+      "delivered": "Delivered",
+      "failed": "Failed",
+      "pending": "Pending",
+      "unknown": "Unknown",
+      "suspect": "Suspect"
+    },
+    "bucket": {
+      "clean": "All delivered · {{delivered}} of {{total}}",
+      "mixed": "Partial · {{delivered}} of {{total}} delivered",
+      "held": "Hold for review",
+      "skip": "Manual review needed",
+      "needs-review": "Needs review"
+    },
+    "partialBanner": {
+      "title": "{{fulfilled}} of {{total}} stops fulfilled.",
+      "body": "Shopify hasn't confirmed delivery on the rest. Try again later or check the order timeline."
+    },
+    "needsReview": {
+      "return-stop-detected": {
+        "title": "Return stop detected — last delivery may have failed",
+        "hint": "Lalamove's route ended at the pickup location, which usually means the driver brought items back. Confirm with the team on the ground which stops actually delivered, then resolve from the CLI."
+      },
+      "cancelled-with-partial-success": {
+        "title": "Lalamove cancelled this route mid-delivery",
+        "hint": "Some stops have proof-of-delivery on file; others don't. Confirm with the team which stops were actually completed before this route was cancelled, then resolve each from the CLI."
+      },
+      "unknown-pod-status": {
+        "title": "Unknown delivery outcome",
+        "hint": "Lalamove reported a delivery status we don't recognise on one or more stops. Confirm the outcome with the team, then resolve each suspect stop from the CLI."
+      },
+      "empty-pod-after-retries": {
+        "title": "No proof-of-delivery received",
+        "hint": "This route is past its terminal status but Lalamove never returned per-stop POD data. Confirm with the team whether the deliveries actually happened, then resolve from the CLI."
+      },
+      "unknown": {
+        "title": "Route needs review",
+        "hint": "The watchdog flagged this route for human review. Confirm outcomes with the team, then resolve from the CLI."
+      }
+    }
+  },
+  "orderDetailsModal": {
+    "heading": "Order details · {{orderName}}",
+    "headingFallback": "Order details",
+    "itemsHeading": "Items",
+    "shippingSummary": "Shipping",
+    "noShippingSummary": "No shipping summary available.",
+    "shippingCost": "Shipping cost",
+    "total": "Total",
+    "customer": "Customer",
+    "customerName": "Name",
+    "customerEmail": "Email",
+    "customerPhone": "Phone",
+    "noEmail": "—",
+    "noPhone": "—",
+    "lineItemQty": "× {{count}}",
+    "noLineItems": "No items found on this order.",
+    "processedAt": "Processed at",
+    "shippingAddress": "Shipping address",
+    "noAddress": "No address on file.",
+    "fulfillsFrom": "Fulfills from {{location}}",
+    "editAddressInShopify": "Edit in order page",
+    "tags": "Tags",
+    "operatorTagsLabel": "Operator tags (click to toggle)",
+    "allTagsLabel": "All tags",
+    "addTagPlaceholder": "Add a tag",
+    "removeTag": "Remove tag {{tag}}",
+    "internalNotes": "Internal notes",
+    "noNotes": "No internal notes yet.",
+    "addNote": "+ Add note",
+    "addNoteSoon": "Coming soon",
+    "openInShopify": "Open full order",
+    "close": "Close"
+  }
+}

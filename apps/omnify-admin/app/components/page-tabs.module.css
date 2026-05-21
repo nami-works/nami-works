@@ -1,0 +1,138 @@
+/* Off-block page tabs — Shopify-native flat/underline.
+   Lives OUTSIDE any <s-section>, directly under <s-page>. Standardizes the
+   tab idiom across Affiliates, Settings, Retail Sales, Storytelling,
+   Merchandising. Replaces the previous on-block-with-bleed-margins
+   approach that had two problems: (a) "gap vs overlap" at the active-tab
+   underline when tabs had different heights (e.g. badge in one), and
+   (b) main+aside misalignment because tabs were chrome on the main card
+   only, pushing main's body down while aside started at the original Y.
+
+   Reference: app.storytelling.tsx pattern, formalized.
+*/
+
+.tabsRow {
+  display: flex;
+  align-items: stretch;
+  gap: 7px;
+  border-bottom: 1px solid #e1e3e5;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+/* Paired aside-column spacer (rendered from inside <PageTabs>).
+   Polaris <s-page> aside-slot children are in a separate grid cell from
+   default-slot children, with their own overflow boundary. The tabs row
+   above main does NOT push aside down in document flow. This invisible
+   spacer occupies the same vertical space the tabs row contributes to
+   main (tab content + 1px divider + 16px margin-bottom ≈ 55px), making
+   aside's first block align with main's first block. F2 (PR #65)
+   attempted negative-margin to extend the row visually — Polaris's grid
+   clipped it. This is the working fix.
+   On mobile (≤768px) aside stacks ABOVE main per CLAUDE.md, so the
+   spacer is hidden — it would just add dead vertical space. */
+.tabsAsideSpacer {
+  height: 55px;
+}
+
+@media (max-width: 768px) {
+  .tabsAsideSpacer {
+    display: none;
+  }
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 0;
+  background: none;
+  color: #6d7175;
+  font-weight: 400;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s ease;
+  position: relative;
+}
+
+.tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.tab:hover {
+  color: #303030;
+}
+
+.tab:hover::after {
+  background: #8c9196;
+}
+
+.tabActive {
+  color: #303030;
+  font-weight: 500;
+}
+
+.tabActive::after {
+  background: #303030;
+}
+
+/* In-trail variant — Option C from the settings-brand-merged-v1 mockup.
+   Used when the active tab is a child of this tab (e.g. Brand is in-trail
+   when on the tone-sources sub-route, with Tone of voice as the active tab).
+
+   Color sits BETWEEN inactive (#6d7175) and active (#303030): the in-trail
+   tab reads as "you came from here / clickable to return" — more weight
+   than other inactive tabs but less than the current-page indicator.
+   No italic (Lucas r2 feedback 2026-05-12). */
+.tabInTrail {
+  color: #4a4a4a;
+}
+
+.tabInTrail::after {
+  background: #b0b0b0;
+}
+
+.tabInTrail:hover {
+  color: #303030;
+}
+
+.tabInTrail:hover::after {
+  background: #6d7175;
+}
+
+.tabTrailChevron {
+  align-self: center;
+  color: #b5b5b5;
+  font-size: 12px;
+  padding: 0 2px;
+  user-select: none;
+}
+
+.tabsRightGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .tabsRow {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .tabsRightGroup {
+    flex-basis: 100%;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+}

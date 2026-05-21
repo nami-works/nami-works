@@ -1,0 +1,1566 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
+// enough when changing adapters.
+// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+model GoalsConfig {
+  id        String   @id @default(cuid())
+  shop      String   @unique
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GoalsRun {
+  id         String   @id @default(cuid())
+  shop       String
+  rangeKey   String
+  configHash String
+  data       Json
+  createdAt  DateTime @default(now())
+
+  @@index([shop, createdAt])
+  @@index([shop, rangeKey, configHash])
+}
+
+model SalesGoalsConfig {
+  id        String   @id @default(cuid())
+  shop      String   @unique
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SalesGoalsLocationConfig {
+  id         String   @id @default(cuid())
+  shop       String
+  locationId String
+  data       Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([shop, locationId])
+}
+
+// Source-aware per-order facts for sales goals (POS-only)
+model SalesOrder {
+  id             String   @id // Shopify order GID
+  shop           String
+  source         String // "shopify-pos" | "iglu-pos"
+  locationId     String
+  locationName   String
+  orderDate      DateTime
+  totalAmount    Float
+  discountAmount Float    @default(0) // Shopify currentTotalDiscountsSet — powers Discount Rate KPI
+  currencyCode   String?
+  syncedAt       DateTime @default(now())
+
+  @@index([shop, locationId, orderDate])
+  @@index([shop, orderDate])
+}
+
+// Pre-computed per-(location, month) aggregates — dashboard reads this
+model SalesOrderMonthly {
+  id             String   @id @default(cuid())
+  shop           String
+  locationId     String
+  locationName   String
+  month          String // "YYYY-MM"
+  orderCount     Int      @default(0)
+  revenue        Float    @default(0)
+  totalDiscounts Float    @default(0) // Sum of SalesOrder.discountAmount for the bucket
+  currencyCode   String?
+  updatedAt      DateTime @updatedAt
+
+  @@unique([shop, locationId, month])
+  @@index([shop, month])
+}
+
+model SalesGoalsSyncMeta {
+  shop          String    @unique
+  status        String    @default("idle") // idle | syncing | error
+  phase         String? // "fetching" | "aggregating"
+  progressCount Int?
+  totalOrders   Int?
+  lastSyncedAt  DateTime?
+  lastOrderDate DateTime?
+  errorMessage  String?
+  startedAt     DateTime?
+  updatedAt     DateTime  @updatedAt
+}
+
+// Campaign goal: time-bounded push for a set of products/SKUs with per-location targets.
+// Example: "Mother's Day 2026" — each store chases a target count of bundle-matching orders
+// between May 5 and May 12.
+model CampaignGoal {
+  id        String   @id @default(cuid())
+  shop      String
+  name      String
+  startDate DateTime // store-local calendar date (interpreted in shop timezone)
+  endDate   DateTime
+  metric    String   @default("bundle_orders") // "bundle_orders" for V1; extensible (e.g. "units")
+  matchRule Json // CampaignMatchRule shape — see app/sales-goals/campaign-match.server.ts
+  status    String   @default("draft") // draft | active | ended | archived
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  targets CampaignGoalTarget[]
+  matches CampaignOrderMatch[]
+
+  @@index([shop, status])
+  @@index([shop, startDate, endDate])
+}
+
+// Per-location target for a campaign.
+model CampaignGoalTarget {
+  id             String   @id @default(cuid())
+  campaignGoalId String
+  locationId     String
+  locationName   String
+  targetOrders   Int // what each store is chasing
+  baselineOrders Int? // auto-derived from Y-1 (V2); manually entered in V1
+  updatedAt      DateTime @updatedAt
+
+  campaignGoal CampaignGoal @relation(fields: [campaignGoalId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignGoalId, locationId])
+}
+
+// Materialized match: one row per (campaign, matching order).
+// Written when a webhook (or cron reconcile) finds an order matching the campaign's rule.
+// Enables fast progress reads and idempotent recount.
+model CampaignOrderMatch {
+  id             String   @id // composite "{campaignId}__{orderId}"
+  campaignGoalId String
+  orderId        String // Shopify order GID
+  shop           String
+  locationId     String
+  orderDate      DateTime
+  staffMemberId  String? // Shopify POS operator ID; null for IGLU POS
+  matchedAt      DateTime @default(now())
+
+  campaignGoal CampaignGoal @relation(fields: [campaignGoalId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignGoalId, orderId])
+  @@index([campaignGoalId, locationId])
+  @@index([shop, orderDate])
+}
+
+model BenchmarkLaunch {
+  id           String    @id @default(cuid())
+  shop         String
+  productId    String
+  productTitle String?
+  firstSoldAt  DateTime?
+  computedAt   DateTime  @default(now())
+
+  @@unique([shop, productId])
+  @@index([shop, computedAt])
+}
+
+model LalamoveLocationConfig {
+  id         String   @id @default(cuid())
+  shop       String
+  locationId String
+  data       Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([shop, locationId])
+  @@index([shop])
+}
+
+model LalamoveShopCredential {
+  id                  String    @id @default(cuid())
+  shop                String    @unique
+  apiKeyCiphertext    String
+  apiSecretCiphertext String
+  keyVersion          Int       @default(1)
+  lastValidatedAt     DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([shop])
+}
+
+model CarrierServiceRegistration {
+  id               String   @id @default(cuid())
+  shop             String   @unique
+  carrierServiceId String
+  callbackUrl      String
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([shop])
+}
+
+model CarrierServiceConfig {
+  id        String   @id @default(cuid())
+  shop      String   @unique
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shop])
+}
+
+model CarrierRateSample {
+  id                 String   @id @default(cuid())
+  shop               String
+  locationId         String
+  provider           String
+  quadrantNorthIndex Int
+  quadrantEastIndex  Int
+  priceSubunits      Int
+  currency           String
+  fetchedAt          DateTime @default(now())
+
+  @@unique([shop, locationId, provider, quadrantNorthIndex, quadrantEastIndex])
+  @@index([shop, locationId])
+}
+
+model LalamoveDispatchJob {
+  id                    String    @id @default(cuid())
+  shop                  String
+  routeId               String
+  locationId            String
+  status                String
+  quotationId           String?
+  lalamoveOrderId       String?
+  market                String?
+  serviceType           String?
+  requestedBy           String?
+  requestedAt           DateTime  @default(now())
+  priorityFeeLevel      Int       @default(0) // 0=none applied, 1=first fee, 2=second fee, 3=third fee
+  quotationTotal        String? // snapshot of priceBreakdown.total at dispatch time
+  quotationCurrency     String? // snapshot of priceBreakdown.currency at dispatch time
+  shopifyFulfillmentId  String? // Shopify fulfillment GID created at dispatch time
+  retryCount            Int       @default(0) // number of auto-retry attempts (autoRetryDispatchJob)
+  lastRetryAt           DateTime? // timestamp of last auto-retry
+  /// Number of escalation reorders fired on this job (separate from retryCount,
+  /// which counts full autoRetryDispatchJob invocations). reorderJob increments
+  /// this on each successful re-request. When it hits MAX_REORDER_ATTEMPTS the
+  /// job flips to status="NEEDS_REVIEW" so we stop sending driver invitations
+  /// indefinitely. Cap added 2026-05-19 after incident where 28 surplus
+  /// invitations went out across 2 jobs in 24h because the escalation engine
+  /// had no upper bound.
+  reorderCount          Int       @default(0)
+  /// Driver-approach tracking for the check-dispatches "not approaching" rule.
+  /// Updated by /api/control/check-dispatches on each sample.
+  lastDriverLat         Float?
+  lastDriverLng         Float?
+  lastDriverSampledAt   DateTime?
+  lastDistanceToPickupM Float?
+  approachFailCount     Int       @default(0)
+  /// Snapshot of order stops at dispatch time so escalation reorder does not depend on PendingDeliveryRoute.
+  /// Shape: Array<{ shopifyOrderId: string; lat: number; lng: number; address: string; name: string; phone: string }>
+  ordersData            Json?
+  /// Per-stop POD bucket: clean | mixed | held | skip | needs-review.
+  /// Set by reconcileRouteFulfillment (operator-triggered via /api/control,
+  /// webhook-triggered, or watchdog-cron-triggered).
+  podBucket             String?
+  /// When podBucket = "needs-review", which detection rule fired:
+  /// return-stop-detected | cancelled-with-partial-success |
+  /// unknown-pod-status | empty-pod-after-retries.
+  needsReviewReason     String?
+  /// True when shopifyFulfilled !== deliveredEventsCreated on the last mark-delivered run.
+  partialDelivery       Boolean   @default(false)
+  /// Timestamp of the last podBucket update.
+  lastBucketingAt       DateTime?
+  /// True when this dispatch was placed via the warehouse-method override flow
+  /// (operator dispatched an order whose Shopify deliveryMethod is not LOCAL).
+  /// Set at create time alongside the `ld_method-override` tag on the order.
+  /// Filterable for audit / dashboards.
+  methodOverride        Boolean   @default(false)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([shop, routeId])
+  @@index([shop, status])
+}
+
+model LalamoveDispatchOrderMap {
+  id                String   @id @default(cuid())
+  shop              String
+  dispatchJobId     String
+  shopifyOrderId    String
+  lalamoveOrderId   String?
+  currentStatus     String?
+  failureReason     String?
+  /// Per-stop outcome from POD bucketing: DELIVERED | FAILED | PENDING | MISSING.
+  stopOutcome       String?
+  /// Reason text when stopOutcome is FAILED.
+  stopFailureReason String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([shop, dispatchJobId, shopifyOrderId])
+  @@index([shop, shopifyOrderId])
+  @@index([shop, lalamoveOrderId])
+}
+
+model PendingDeliveryRoute {
+  id         String   @id @default(cuid())
+  shop       String
+  locationId String
+  routeId    String   @unique @default(cuid())
+  /// "open" | "dispatched" | "cancelled"
+  status     String
+  /// Array<{ shopifyOrderId: string; lat: number; lng: number; address: string; name: string; phone: string }>
+  ordersData Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([shop, status])
+  @@index([shop, locationId, status])
+}
+
+model AutoAssignLog {
+  id         String   @id @default(cuid())
+  shop       String
+  orderId    String
+  orderName  String?
+  /// Fulfillment location GID when known; null for skips before location is determined
+  locationId String?
+  /// "assigned" | "skipped" | "error"
+  status     String
+  reason     String?
+  /// Debug details: { soloPrice, jointPrice, routeId, deliveryMethod, error, etc. }
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([shop, createdAt])
+  @@index([shop, locationId, createdAt])
+}
+
+model LalamoveDispatchEvent {
+  id              String   @id @default(cuid())
+  shop            String
+  dispatchJobId   String?
+  shopifyOrderId  String?
+  lalamoveOrderId String?
+  eventType       String
+  externalStatus  String?
+  payload         Json?
+  processedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([shop, lalamoveOrderId])
+  @@index([shop, shopifyOrderId])
+  @@index([shop, eventType])
+}
+
+model RetailCurrentLocations {
+  shop      String   @unique
+  locations Json     @default("[]")
+  updatedAt DateTime @updatedAt
+}
+
+model RetailLocationSet {
+  id        String   @id @default(cuid())
+  shop      String
+  name      String
+  locations Json
+  createdAt String
+  updatedAt DateTime @updatedAt
+
+  @@index([shop])
+}
+
+model RetailAnalyticsCache {
+  shop      String   @unique
+  customers Json     @default("[]")
+  orders    Json     @default("[]")
+  updatedAt DateTime @updatedAt
+}
+
+model RetailAnalyticsSyncStatus {
+  shop               String    @unique
+  status             String    @default("idle")
+  errorMessage       String?
+  phase              String?
+  progressCount      Int?
+  startedAt          DateTime?
+  lastCustomersTotal Int?
+  lastOrdersTotal    Int?
+  updatedAt          DateTime  @updatedAt
+}
+
+model RetailLocationProposal {
+  id            String   @id @default(cuid())
+  shop          String
+  locationSetId String
+  locationId    String
+  leasingValue  Float?
+  currency      String?
+  notes         String?
+  fileName      String?
+  fileType      String?
+  fileSize      Int?
+  fileData      Bytes?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([shop, locationSetId])
+  @@index([shop, locationId])
+}
+
+model RetailStatsConfig {
+  id        String   @id @default(cuid())
+  shop      String
+  setId     String?
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shop, setId])
+  @@index([shop])
+}
+
+model PriceTagConfig {
+  id                      String   @id @default(cuid())
+  shop                    String   @unique
+  discountMode            String   @default("highest")
+  dollarThreshold         Float?
+  metaobjectType          String   @default("")
+  metafieldNamespace      String   @default("")
+  metafieldKey            String   @default("")
+  displayNameKey          String   @default("")
+  metaobjectFieldDefaults String   @default("{}")
+  webhookSyncEnabled      Boolean  @default(false)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+model PriceTagTierRule {
+  id                String   @id @default(cuid())
+  shop              String
+  discountType      String   @default("percent")
+  startingAt        Float
+  metaobjectHandles String   @default("[]")
+  metaobjectGids    String   @default("[]")
+  sortOrder         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([shop])
+}
+
+model PriceTagProductLog {
+  id              String   @id @default(cuid())
+  shop            String
+  productGid      String
+  metafieldSet    Boolean  @default(false)
+  lastTierHandle  String?
+  lastProcessedAt DateTime @default(now())
+
+  @@unique([shop, productGid])
+  @@index([shop])
+}
+
+model BrandAssets {
+  id                    String    @id @default(cuid())
+  shop                  String    @unique
+  about                 String?
+  toneOfVoice           String?
+  brandName             String?
+  blogUrl               String?
+  preferredLanguage     String?
+  contentLanguage       String?
+  benchmarks            String?
+  brandCategory         String?
+  editorialGuidelines   String?
+  formatRecommendations String?
+  contentStrategyJson   String?
+  exportVersion         Int       @default(1)
+  lastExportedAt        DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  learnings BrandLearning[]
+
+  @@map("BrandSettings")
+}
+
+model BrandLearning {
+  id              String      @id @default(cuid())
+  shop            String
+  brandAssetsId   String
+  brandAssets     BrandAssets @relation(fields: [brandAssetsId], references: [id], onDelete: Cascade)
+  sourceArticleId String?
+  sourceDiffId    String?
+  category        String
+  beforeSnippet   String
+  afterSnippet    String
+  interpretation  String
+  status          String      @default("accepted")
+  acceptedAt      DateTime    @default(now())
+  createdAt       DateTime    @default(now())
+
+  @@index([shop, status])
+  @@index([brandAssetsId])
+}
+
+model BlogPostDiff {
+  id               String    @id @default(cuid())
+  shop             String
+  draftId          String
+  shopifyArticleId String
+  detectedAt       DateTime  @default(now())
+  beforeHtml       String
+  afterHtml        String
+  hypotheses       Json
+  status           String    @default("pending_review")
+  reviewedAt       DateTime?
+
+  @@index([shop, status])
+  @@index([shopifyArticleId])
+}
+
+model BrandToneSource {
+  id              String   @id @default(cuid())
+  shop            String
+  sourceType      String
+  sourceId        String
+  sourceUrl       String?
+  capturedAt      DateTime @default(now())
+  rawText         String
+  contentLanguage String?
+  metaJson        Json?
+  batchId         String
+
+  @@unique([shop, sourceType, sourceId])
+  @@index([shop, sourceType])
+  @@index([shop, batchId])
+}
+
+model BrandToneHypothesis {
+  id         String    @id @default(cuid())
+  shop       String
+  batchId    String
+  category   String
+  statement  String
+  evidence   Json
+  confidence Float
+  status     String    @default("pending_review")
+  createdAt  DateTime  @default(now())
+  reviewedAt DateTime?
+
+  @@index([shop, status])
+  @@index([shop, batchId])
+}
+
+model BrandIntegrationConfig {
+  id              String   @id @default(cuid())
+  shop            String
+  integrationType String
+  configCipher    String
+  keyVersion      Int      @default(1)
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([shop, integrationType])
+  @@index([shop])
+}
+
+model ProductImageAltSuggestion {
+  id            String    @id @default(cuid())
+  shop          String
+  productId     String
+  productTitle  String?
+  imageId       String
+  imageUrl      String
+  currentAlt    String?
+  detectedState String
+  suggestion    String?
+  status        String    @default("pending")
+  generatedAt   DateTime?
+  approvedAt    DateTime?
+  queuedAt      DateTime?
+  appliedAt     DateTime?
+  errorMessage  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([shop, imageId])
+  @@index([shop, status, queuedAt])
+  @@index([shop, productId])
+}
+
+model BlogPostJob {
+  id           String    @id @default(cuid())
+  shop         String
+  jobId        String    @unique
+  status       String
+  briefJson    String?
+  errorMessage String?
+  resultJson   Json?
+  lastPolledAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([shop, status])
+  @@index([shop, createdAt])
+}
+
+model BlogPostDraft {
+  id               String    @id @default(cuid())
+  shop             String
+  jobId            String
+  themeKey         String
+  title            String
+  bodyHtml         String
+  metaTitle        String?
+  metaDescription  String?
+  shopifyArticleId String?
+  publishedAt      DateTime?
+  createdAt        DateTime  @default(now())
+
+  @@unique([shop, jobId, themeKey])
+  @@index([shop, shopifyArticleId])
+}
+
+model ReturnPickupRequest {
+  id                 String   @id @default(cuid())
+  shop               String
+  shopifyOrderId     String
+  shopifyOrderName   String?
+  locationId         String
+  customerName       String?
+  customerPhone      String?
+  customerAddress    String?
+  customerAddress2   String?
+  customerLat        Float?
+  customerLng        Float?
+  status             String   @default("pending")
+  returnInstructions String?
+  quotationId        String?
+  lalamoveOrderId    String?
+  quotationTotal     String?
+  quotationCurrency  String?
+  requestedBy        String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([shop, shopifyOrderId])
+  @@index([shop, status])
+  @@index([shop, locationId, status])
+}
+
+// ─── Retail Footprint: Normalized analytics tables ────────────────────────────
+
+model RetailOrder {
+  id                    String    @id
+  shop                  String
+  customerId            String?
+  city                  String?
+  cityNorm              String?
+  latitude              Float?
+  longitude             Float?
+  totalAmount           Float?
+  currencyCode          String?
+  fulfillmentLocationId String?
+  orderDate             DateTime?
+  syncedAt              DateTime  @default(now())
+
+  @@index([shop, orderDate])
+  @@index([shop, cityNorm])
+  @@index([shop, latitude, longitude])
+  @@index([shop, fulfillmentLocationId])
+}
+
+model RetailCustomer {
+  id           String    @id
+  shop         String
+  city         String?
+  cityNorm     String?
+  latitude     Float?
+  longitude    Float?
+  customerDate DateTime?
+  syncedAt     DateTime  @default(now())
+
+  @@index([shop, customerDate])
+  @@index([shop, cityNorm])
+}
+
+model RetailCityMonthly {
+  id              String  @id @default(cuid())
+  shop            String
+  cityNorm        String
+  cityDisplay     String
+  month           String
+  orderCount      Int     @default(0)
+  revenue         Float   @default(0)
+  uniqueCustomers Int     @default(0)
+  currencyCode    String?
+  latitudeSum     Float   @default(0)
+  longitudeSum    Float   @default(0)
+  geocodedCount   Int     @default(0)
+
+  @@unique([shop, cityNorm, month])
+  @@index([shop, month])
+}
+
+model RetailHeatmapBucket {
+  id            String @id @default(cuid())
+  shop          String
+  lat3          Float
+  lng3          Float
+  orderCount    Int    @default(0)
+  revenueSum    Float  @default(0)
+  customerCount Int    @default(0)
+
+  @@unique([shop, lat3, lng3])
+  @@index([shop])
+}
+
+model RetailSyncMeta {
+  shop             String    @unique
+  status           String    @default("idle")
+  errorMessage     String?
+  phase            String?
+  progressCount    Int?
+  startedAt        DateTime?
+  lastSyncedAt     DateTime?
+  lastOrderDate    DateTime?
+  lastCustomerDate DateTime?
+  totalOrders      Int?
+  totalCustomers   Int?
+  updatedAt        DateTime  @updatedAt
+}
+
+// ─── Affiliates: Normalized analytics tables ─────────────────────────────────
+
+model AffiliateProfile {
+  id               String    @id @default(cuid())
+  shop             String
+  code             String
+  email            String?
+  firstName        String?
+  lastName         String?
+  affiliateName    String
+  instagram        String?
+  tiktok           String?
+  city             String?
+  state            String?
+  program          String?
+  referralCode     String?
+  commissionPct    Float     @default(10)
+  tier             String    @default("baseline")
+  status           String    @default("active")
+  paymentMethod    String?
+  paymentInfo      String?
+  bixgrowCreatedAt DateTime?
+  lastLogin        DateTime?
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([shop, code])
+  @@index([shop, status])
+}
+
+model AffiliateOrder {
+  id                     String    @id
+  shop                   String
+  orderName              String?
+  customerId             String?
+  customerName           String?
+  customerEmail          String?
+  affiliateCode          String
+  discountAmount         Float     @default(0)
+  affiliateDiscount      Float     @default(0)
+  siteDiscount           Float     @default(0)
+  totalAmount            Float     @default(0)
+  subtotalAmount         Float     @default(0)
+  currencyCode           String?
+  // True when the customer had a prior order with the shop before this
+  // order's createdAt (organic or via another affiliate). Set at sync time
+  // from Shopify's customer.firstOrder — see sync.server.ts. Replaces
+  // the earlier isFirstOrder column whose semantics were ambiguous.
+  wasPreExistingCustomer Boolean   @default(false)
+  itemCount              Int       @default(0)
+  lineItemsJson          String?
+  orderDate              DateTime?
+  syncedAt               DateTime  @default(now())
+
+  @@index([shop, orderDate])
+  @@index([shop, affiliateCode])
+  @@index([shop, customerId])
+  @@index([shop, affiliateCode, orderDate])
+}
+
+model AffiliateOrganicAgg {
+  id                String  @id @default(cuid())
+  shop              String
+  month             String
+  orderCount        Int     @default(0)
+  revenue           Float   @default(0)
+  subtotal          Float   @default(0)
+  siteDiscountTotal Float   @default(0)
+  uniqueCustomers   Int     @default(0)
+  newCustomers      Int     @default(0)
+  repeatCustomers   Int     @default(0)
+  avgOrderValue     Float   @default(0)
+  currencyCode      String?
+
+  @@unique([shop, month])
+  @@index([shop])
+}
+
+// Per-customer organic orders (no affiliate coupon). Enables cohort LTV
+// and future per-customer analytics for customers untouched by affiliates.
+// Populated at sync time alongside the AffiliateOrganicAgg rebuild.
+model OrganicOrder {
+  id                     String    @id
+  shop                   String
+  orderName              String?
+  customerId             String?
+  customerName           String?
+  customerEmail          String?
+  totalAmount            Float     @default(0)
+  subtotalAmount         Float     @default(0)
+  discountAmount         Float     @default(0)
+  currencyCode           String?
+  // Classified at sync time via customer.numberOfOrders + createdAt
+  // (same rule as AffiliateOrder.wasPreExistingCustomer). `false` means
+  // this row is the customer's first-ever purchase with the shop.
+  wasPreExistingCustomer Boolean   @default(false)
+  itemCount              Int       @default(0)
+  orderDate              DateTime?
+  syncedAt               DateTime  @default(now())
+
+  @@index([shop, orderDate])
+  @@index([shop, customerId])
+  @@index([shop, customerId, orderDate])
+}
+
+model AffiliateMonthly {
+  id                     String  @id @default(cuid())
+  shop                   String
+  affiliateCode          String
+  month                  String
+  orderCount             Int     @default(0)
+  revenue                Float   @default(0)
+  subtotal               Float   @default(0)
+  affiliateDiscountTotal Float   @default(0)
+  siteDiscountTotal      Float   @default(0)
+  commissionTotal        Float   @default(0)
+  uniqueCustomers        Int     @default(0)
+  newCustomers           Int     @default(0)
+  repeatCustomers        Int     @default(0)
+  avgOrderValue          Float   @default(0)
+  currencyCode           String?
+
+  @@unique([shop, affiliateCode, month])
+  @@index([shop, month])
+  @@index([shop, affiliateCode])
+}
+
+model AffiliateSyncMeta {
+  shop                 String    @unique
+  status               String    @default("idle")
+  errorMessage         String?
+  phase                String?
+  progressCount        Int?
+  startedAt            DateTime?
+  lastSyncedAt         DateTime?
+  lastOrderCursor      String?
+  totalOrders          Int?
+  totalAffiliateOrders Int?
+  updatedAt            DateTime  @updatedAt
+}
+
+// Per-shop registration of a Shopify code-discount node as an "affiliate
+// program". Coupon codes belonging to the discount auto-sync hourly into
+// AffiliateCode. Multiple programs are allowed per shop.
+model AffiliateProgram {
+  id             String    @id @default(cuid())
+  shop           String
+  discountNodeId String // gid://shopify/DiscountCodeNode/xxx
+  label          String // user-facing program name (unique per shop)
+  discountTitle  String // cached at add-time, refreshed on each sync
+  status         String    @default("active") // "active" | "removed"
+  lastSyncedAt   DateTime?
+  lastSyncStatus String? // "ok" | "failed"
+  lastSyncError  String?
+  codesCount     Int       @default(0)
+  mappedCount    Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([shop, discountNodeId])
+  @@unique([shop, label])
+  @@index([shop, status])
+}
+
+// Coupon codes synced from Shopify discount registrations (or imported via
+// BixGrow CSV with programId=null). One row per (shop, code).
+model AffiliateCode {
+  id              String   @id @default(cuid())
+  shop            String
+  code            String // literal coupon string, uppercased on write
+  programId       String? // null after program is removed (soft-delete)
+  profileId       String? // null when not yet mapped to an affiliate
+  asyncUsageCount Int      @default(0)
+  shopifyCodeId   String? // gid://shopify/DiscountRedeemCode/xxx
+  firstSeenAt     DateTime @default(now())
+  lastSeenAt      DateTime @default(now())
+
+  @@unique([shop, code])
+  @@index([shop, programId])
+  @@index([shop, profileId])
+}
+
+model GeocodeCacheEntry {
+  id        String   @id @default(cuid())
+  queryKey  String   @unique
+  lat       Float
+  lng       Float
+  route     String?
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+model RoutePolylineCache {
+  id              String   @id @default(cuid())
+  shop            String
+  locationId      String
+  orderIdsKey     String // sorted order IDs joined by "|"
+  encodedPolyline String
+  // Full computeRoutePolyline result so cache hits skip the Google Routes call.
+  // Nullable: legacy rows (created before these columns existed) fall through to recompute.
+  distanceMeters  Int?
+  durationSeconds Int?
+  orderedIdsKey   String? // ordered order IDs joined by "|" (Google's optimized stop sequence)
+  createdAt       DateTime @default(now())
+
+  @@unique([shop, locationId, orderIdsKey])
+  @@index([shop, locationId])
+}
+
+model BulkPriceCampaign {
+  id             String    @id @default(cuid())
+  shop           String
+  name           String
+  status         String    @default("draft")
+  discountType   String    @default("percentage")
+  discountValue  Float
+  filterType     String    @default("product_types")
+  filterValues   String    @default("[]")
+  excludeEnabled Boolean   @default(false)
+  excludeType    String    @default("tags")
+  excludeValues  String    @default("[]")
+  startAt        DateTime
+  endAt          DateTime?
+  activatedAt    DateTime?
+  deactivatedAt  DateTime?
+  productCount   Int       @default(0)
+  variantCount   Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  priceTagsEnabled           Boolean @default(false)
+  priceTagMetaobjectType     String?
+  priceTagDisplayNameKey     String?
+  priceTagFieldDefaults      String?
+  priceTagMetafieldNamespace String?
+  priceTagMetafieldKey       String?
+
+  items BulkPriceCampaignItem[]
+
+  @@index([shop])
+  @@index([shop, status])
+}
+
+model BulkPriceCampaignItem {
+  id                     String   @id @default(cuid())
+  campaignId             String
+  shop                   String
+  productGid             String
+  variantGid             String
+  originalPrice          Float
+  originalCompareAtPrice Float?
+  appliedPrice           Float
+  appliedCompareAtPrice  Float
+  createdAt              DateTime @default(now())
+
+  campaign BulkPriceCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([shop, variantGid])
+}
+
+model RouteOptimizationSnapshot {
+  id               String   @id @default(cuid())
+  shop             String
+  locationId       String
+  proposedAt       DateTime @default(now())
+  /// Array<{ routeIndex, orderIds, serviceType, costSubunits }>
+  proposedRoutes   Json
+  /// Array<{ orderId, lat, lng }> for geographic analysis
+  orderCoordinates Json
+  orderCount       Int
+  routeCount       Int
+
+  @@index([shop, locationId, proposedAt])
+}
+
+model RouteCorrection {
+  id                   String   @id @default(cuid())
+  shop                 String
+  snapshotId           String
+  dispatchedAt         DateTime @default(now())
+  dispatchedRouteIndex Int?
+  /// Array<{ orderId, fromRoute, toRoute, lat, lng }>
+  corrections          Json
+  wasModified          Boolean
+  ordersReassigned     Int
+  ordersDispatched     Int
+
+  @@index([shop, dispatchedAt])
+  @@index([snapshotId])
+}
+
+model WaitlistSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String   @default("gbp-health-check")
+  createdAt DateTime @default(now())
+  /// Free-form lead metadata (e.g. store_url, pain, workaround, timeline) keyed by source variant
+  metadata  Json?
+}
+
+// ─── Shopify Ingest Layer: canonical normalized tables ───────────────────────
+// Source of truth for Shopify store data. Webhooks write here; features read
+// projections from here. A drift-aware hourly cron reconciles dropped webhooks.
+// Phase 1 runs in shadow mode — these tables are populated alongside the
+// existing feature tables until a 48h diff check confirms equivalence.
+
+model ShopOrder {
+  shop                  String
+  id                    String // gid://shopify/Order/{n}
+  legacyId              String? // numeric legacy id as string (avoid BigInt JSON pitfalls)
+  name                  String? // "#1001"
+  sourceName            String? // "pos" | "web" | "shopify_draft_order" | null
+  status                String? // "open" | "closed" | "cancelled"
+  orderDate             DateTime // processed_at || created_at
+  createdAt             DateTime
+  shopifyUpdatedAt      DateTime // used as watermark for drift detection
+  cancelledAt           DateTime?
+  closedAt              DateTime?
+  customerId            String?
+  currencyCode          String?
+  currentTotalPrice     Float     @default(0)
+  currentTotalDiscounts Float     @default(0)
+  currentTotalRefunded  Float     @default(0)
+  locationId            String? // POS location (gid) when applicable
+  shippingAddressJson   Json?
+  billingAddressJson    Json?
+  customerJson          Json?
+  tagsJson              Json      @default("[]")
+  refundsJson           Json?
+  lineItemsJson         Json?
+  staffMemberId         String?
+  staffMemberName       String?
+  ingestedAt            DateTime  @default(now())
+  ingestedVia           String? // "webhook" | "reconcile" | "backfill"
+
+  @@id([shop, id])
+  @@index([shop, shopifyUpdatedAt])
+  @@index([shop, orderDate])
+  @@index([shop, customerId])
+  @@index([shop, locationId])
+  @@index([shop, status])
+}
+
+model ShopCustomer {
+  shop               String
+  id                 String // gid://shopify/Customer/{n}
+  legacyId           String?
+  email              String?
+  phone              String?
+  displayName        String?
+  firstName          String?
+  lastName           String?
+  createdAt          DateTime?
+  shopifyUpdatedAt   DateTime // watermark for drift detection
+  ordersCount        Int?
+  totalSpent         Float?
+  defaultAddressJson Json? // { city, province, country, zip, lat, lng }
+  addressesJson      Json?
+  tagsJson           Json      @default("[]")
+  ingestedAt         DateTime  @default(now())
+  ingestedVia        String?
+
+  @@id([shop, id])
+  @@index([shop, shopifyUpdatedAt])
+  @@index([shop, email])
+}
+
+model ShopProduct {
+  shop             String
+  id               String // gid://shopify/Product/{n}
+  legacyId         String?
+  title            String
+  handle           String?
+  productType      String?
+  vendor           String?
+  status           String? // "ACTIVE" | "DRAFT" | "ARCHIVED"
+  createdAt        DateTime?
+  shopifyUpdatedAt DateTime
+  publishedAt      DateTime?
+  tagsJson         Json      @default("[]")
+  variantsJson     Json      @default("[]")
+  imagesJson       Json?
+  metafieldsJson   Json?
+  ingestedAt       DateTime  @default(now())
+  ingestedVia      String?
+
+  @@id([shop, id])
+  @@index([shop, shopifyUpdatedAt])
+  @@index([shop, handle])
+}
+
+model ShopLocation {
+  shop                 String
+  id                   String // gid://shopify/Location/{n}
+  legacyId             String?
+  name                 String
+  addressJson          Json?
+  isActive             Boolean   @default(true)
+  fulfillsOnlineOrders Boolean   @default(false)
+  localPickupEnabled   Boolean   @default(false)
+  isRetailStore        Boolean   @default(false) // localPickupSettingsV2 != null
+  shopifyUpdatedAt     DateTime?
+  ingestedAt           DateTime  @default(now())
+  ingestedVia          String?
+
+  @@id([shop, id])
+}
+
+// Drift-detection watermarks per shop per entity. One row per shop.
+model ShopIngestMeta {
+  shop                         String    @unique
+  ordersLastSeenUpdatedAt      DateTime?
+  customersLastSeenUpdatedAt   DateTime?
+  productsLastSeenUpdatedAt    DateTime?
+  locationsLastRefreshedAt     DateTime?
+  ordersLastReconcileAt        DateTime?
+  customersLastReconcileAt     DateTime?
+  productsLastReconcileAt      DateTime?
+  ordersBackfillCompletedAt    DateTime?
+  customersBackfillCompletedAt DateTime?
+  productsBackfillCompletedAt  DateTime?
+  ordersRowCount               Int?
+  customersRowCount            Int?
+  productsRowCount             Int?
+  status                       String    @default("idle") // idle | syncing | error
+  errorMessage                 String?
+  updatedAt                    DateTime  @updatedAt
+}
+
+// ─── Attribution Queue (IGLU/WhatsApp orders missing from BixGrow) ──────────
+
+model AttributionClaim {
+  id             String    @id @default(cuid())
+  shop           String
+  orderName      String
+  orderGid       String?
+  couponCode     String
+  affiliateCode  String?
+  affiliateEmail String?
+  subtotal       Float?
+  currencyCode   String?
+  sourceName     String?
+  orderDate      DateTime?
+  claimedBy      String?
+  claimedAt      DateTime  @default(now())
+  confirmedAt    DateTime?
+  confirmedVia   String?
+
+  @@unique([shop, orderName])
+  @@index([shop, confirmedAt])
+  @@index([shop, claimedAt])
+}
+
+model PedidosImport {
+  id              String    @id @default(cuid())
+  shop            String
+  importedAt      DateTime  @default(now())
+  importedBy      String?
+  rowCount        Int       @default(0)
+  maxOrderDate    DateTime?
+  claimsConfirmed Int       @default(0)
+  fileName        String?
+
+  @@index([shop, importedAt])
+}
+
+model BixgrowAttributedOrder {
+  id        String    @id @default(cuid())
+  shop      String
+  orderName String
+  orderDate DateTime?
+  importId  String
+  createdAt DateTime  @default(now())
+
+  @@unique([shop, orderName])
+  @@index([shop, importId])
+}
+
+// Flagged by the orders webhook: IGLU POS / WhatsApp Hexagon orders that
+// carry a UGC coupon code and therefore might need affiliate attribution.
+// Populated in real-time so the Attribution tab can render candidates
+// without waiting for an hourly live-Shopify pagination.
+model AttributionCandidate {
+  shop          String
+  orderGid      String
+  orderName     String?
+  sourceName    String? // "206755758081" (IGLU) | "316281618433" (WhatsApp Hexagon)
+  primaryCoupon String? // lowercased coupon code from order_discounts_info custom attr
+  orderDate     DateTime?
+  discoveredAt  DateTime  @default(now())
+  discoveredVia String? // "webhook" | "cron"
+
+  @@id([shop, orderGid])
+  @@index([shop, orderDate])
+  @@index([shop, primaryCoupon])
+}
+
+// Hourly snapshot of the Attribution queue so the Attribution tab loader can
+// paint instantly without paginating Shopify on every page load. The Refresh
+// button still calls buildAttributionQueueSnapshot(force) and overwrites this
+// row.
+model AttributionQueueSnapshot {
+  shop         String   @id
+  fetchedAt    DateTime @default(now())
+  fetchedVia   String? // "cron" | "manual"
+  lookbackDays Int      @default(90)
+  scannedCount Int      @default(0)
+  pendingCount Int      @default(0)
+  claimedCount Int      @default(0)
+  unknownCount Int      @default(0)
+  rowsJson     Json     @default("[]")
+  statsJson    Json     @default("{}")
+  updatedAt    DateTime @updatedAt
+}
+
+// =====================================================================
+// Local Delivery Analytics (v1)
+// See docs/plans/local-delivery-analytics.md §3.
+// All four tables are additive; no existing read paths reference them.
+// =====================================================================
+
+model WarehouseCarrierCredential {
+  id                  String    @id @default(cuid())
+  shop                String
+  provider            String // "intelipost" | future: "frenet" | "melhor_envio"
+  apiKeyCiphertext    String
+  apiSecretCiphertext String? // null for providers that use single-key auth
+  apiEndpoint         String? // optional override (sandbox vs prod)
+  keyVersion          Int       @default(1)
+  lastValidatedAt     DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([shop, provider])
+  @@index([shop])
+}
+
+model WarehouseCarrierQuoteCache {
+  id              String   @id @default(cuid())
+  shop            String
+  orderId         String // gid://shopify/Order/{n}
+  provider        String
+  priceSubunits   Int // currency minor units (cents)
+  currency        String
+  minDeliveryDate String?
+  maxDeliveryDate String?
+  rawResponseJson Json?
+  quotedAt        DateTime @default(now())
+  expiresAt       DateTime
+
+  @@unique([shop, orderId, provider])
+  @@index([shop, expiresAt])
+  @@index([shop, orderId])
+}
+
+model LdAnalyticsDaily {
+  id                              String   @id @default(cuid())
+  shop                            String
+  cityNorm                        String
+  cityDisplay                     String
+  date                            DateTime // truncated to UTC midnight
+  ldOrderCount                    Int      @default(0)
+  ldRevenueSubunits               Int      @default(0) // customer-charged for LD
+  ldCarrierCostSubunits           Int      @default(0) // Lalamove quote total
+  warehouseCounterfactualSubunits Int      @default(0) // sum of WH carrier-rate quotes
+  warehouseCustomerRateSubunits   Int      @default(0) // sum of customer-charged WH counterfactuals
+  taxSavingsSubunits              Int      @default(0)
+  currencyCode                    String
+  coveragePercent                 Int // 0-100, % of orders successfully quoted
+  computedAt                      DateTime @default(now())
+
+  @@unique([shop, cityNorm, date])
+  @@index([shop, date])
+}
+
+model LdAnalyticsConfig {
+  shop                         String    @id
+  enabled                      Boolean   @default(false)
+  headlineFraming              String    @default("net_cost_delta") // pl_impact | revenue_retained | net_cost_delta. v1 default is net_cost_delta because pl_impact requires LD revenue capture (ShopOrder.shippingLines) which is deferred to v2.
+  perCityTaxSavingsJson        Json      @default("{}")
+  perLocationWarehouseCostJson Json      @default("{}")
+  partialDataThresholdPercent  Int       @default(80)
+  quoteCacheTtlDays            Int       @default(90)
+  asideFirstSeenAt             DateTime? // First time the LD-page analytics aside rendered for this shop. Drives the 14-day "new" pill TTL on the sidebar block. Nullable so existing shops backfill on first render.
+  createdAt                    DateTime  @default(now())
+  updatedAt                    DateTime  @updatedAt
+}
+
+/// Persists one full route-optimization decision for replay + post-mortem
+/// feedback. Written once per `handleOptimize` call (Phase 1.7+); read by
+/// the post-mortem panel (Phase 3) where operators mark decisions as
+/// "correct" / "wrong call" / "edge case" and the system mines feedback
+/// to update the rule registry.
+model RouteOptimizationDecision {
+  id                  String   @id @default(cuid())
+  shop                String
+  locationId          String
+  market              String
+  /// Snapshot of the unassigned-orders set at decision time.
+  ordersDataJson      Json
+  /// Snapshot of all candidates emitted by the generator.
+  candidatesJson      Json
+  /// Per-candidate rule-engine output.
+  ruleResultsJson     Json
+  /// Per-candidate quote results.
+  quoteResultsJson    Json
+  /// Spatial-reasoner output (null when path didn't reach the LLM, e.g.
+  /// synthetic fallback or feature flag off).
+  reasonerOutputJson  Json?
+  /// The chosen candidate id from the arbiter.
+  winningCandidateId  String
+  decisionPath        String
+  rationale           String
+  costSubunits        Int
+  costCurrency        String
+  /// End-to-end confidence (0.0–1.0), combines reasoner + rule + cost factors.
+  confidence          Float
+  /// Post-mortem flags attached to this decision (carried through to the panel).
+  postMortemFlagsJson Json
+  /// Immutable version stamps for replay parity.
+  promptVersion       String
+  arbiterVersion      String
+  /// Set true when the operator has reviewed this decision in the post-mortem
+  /// panel; never written by the auto-dispatch path.
+  operatorReviewed    Boolean  @default(false)
+  /// Operator verdict captured from the post-mortem panel.
+  /// Values: "correct" | "wrong-call" | "edge-case" | null.
+  operatorVerdict     String?
+  /// Free-text reason supplied by the operator when marking the decision.
+  operatorComment     String?
+  /// Link to the Lalamove dispatch job (when this decision actually dispatched).
+  dispatchJobId       String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([shop, locationId, createdAt])
+  @@index([shop, operatorReviewed, createdAt])
+  @@index([shop, decisionPath, createdAt])
+}
+
+// =============================================================================
+// Loyalty A/B Test (GE Beauty post-purchase retention)
+// =============================================================================
+// 3-arm post-purchase loyalty test. Brief: inputs/growth-gebeauty-loyalty-ab-test-2026-05-16.md
+//
+// Arm A (45%): tapering store credit, 20%/15%/10% of order, 3 tranches with
+//              day-30/60/90 expiries. Tranche state lives in Shopify natively
+//              (storeCreditAccountTransaction with expiresAt + remainingAmount).
+// Arm B (45%): tapering discount code, 20% → 15% → 10% across 90d via
+//              cron-driven discountCodeBasicUpdate flips. Code state lives in
+//              Shopify natively (codeDiscountNode).
+// Arm C (10%): flat 20% discount, 45d validity, 25% cart cap — CRM Bonus replica.
+//
+// We do NOT duplicate Shopify-tracked state (tranche amounts, code values,
+// expiries). We only store data Shopify doesn't model: arm assignment, test
+// clock, abuse audit hash, cron scheduling, message dispatch log, redemption
+// cross-references for post-test analytics.
+
+/// Root record for each enrollment in the loyalty A/B test.
+/// One row per (customer × triggering order). Active-enrollment guard prevents
+/// re-enrollment of the same customer until windowEndsAt passes.
+model LoyaltyEnrollment {
+  id                    String   @id @default(cuid())
+  shop                  String
+  /// Shopify customer GID — "gid://shopify/Customer/..."
+  customerId            String
+  /// Test arm: "A" | "B" | "C". Sticky per customer (deterministic hash).
+  arm                   String
+  /// Shopify order GID of the order that triggered enrollment.
+  originalOrderId       String
+  /// Total of the triggering order, in originalOrderCurrency.
+  originalOrderAmount   Float
+  originalOrderCurrency String   @default("BRL")
+  enrolledAt            DateTime @default(now())
+  /// When the bonus expires. 90d for Arms A+B, 45d for Arm C.
+  windowEndsAt          DateTime
+  /// "ACTIVE" | "COMPLETED" | "EXPIRED" | "CANCELLED".
+  status                String   @default("ACTIVE")
+  /// Free-text reason when status != ACTIVE (e.g., "refunded", "manual-cancel").
+  statusReason          String?
+  /// SHA-256 of normalized shipping address. For abuse audit ONLY — enrollment
+  /// does NOT block on duplicates (log-only per 2026-05-16 design decision).
+  shippingAddressHash   String?
+  /// Next scheduled action for the daily orchestrator cron:
+  /// day-30/60 priceRule flip (Arm B) or reminder send (all arms).
+  /// Null when no action pending. Cron query: WHERE status='ACTIVE' AND nextActionAt <= now().
+  nextActionAt          DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  redemptions LoyaltyRedemption[]
+  messageLogs LoyaltyMessageLog[]
+
+  @@index([customerId])
+  @@index([shop, status, nextActionAt])
+  @@index([shippingAddressHash])
+}
+
+/// Redemption events. N rows per enrollment.
+/// Written when an order is detected to have used either the Arm A store
+/// credit or the Arm B/C discount code (via orders/paid webhook).
+model LoyaltyRedemption {
+  id                        String    @id @default(cuid())
+  enrollmentId              String
+  /// Shopify order GID of the order that redeemed.
+  shopifyOrderId            String
+  /// Total of the redeeming order.
+  shopifyOrderAmount        Float
+  /// Actual value of the redemption applied to the order.
+  amountRedeemed            Float
+  redeemedAt                DateTime
+  /// Which window the redemption fell in: 1, 2, or 3 (always 1 for Arm C).
+  windowAtRedemption        Int
+  /// For Arm A: the StoreCreditAccountDebitTransaction GID, for cross-reference
+  /// with Shopify's per-tranche depletion. Null for Arms B and C.
+  shopifyDebitTransactionId String?
+  /// Set when the redeeming order is refunded — redemption is reverted.
+  /// For Arm A, Shopify auto-creates StoreCreditAccountDebitRevertTransaction.
+  revertedAt                DateTime?
+  createdAt                 DateTime  @default(now())
+
+  enrollment LoyaltyEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@index([enrollmentId])
+  @@index([shopifyOrderId])
+  @@index([redeemedAt])
+}
+
+/// Cross-campaign credit/discount issuance + watchdog log.
+/// Generalizes loyalty-test enrollments AND apology credits AND future
+/// incentives. Every credit/discount we issue tied to a triggering order
+/// gets a row here. Watchdog webhooks (orders/cancelled + orders/refunded)
+/// query this table by originalOrderId to revoke unused portions.
+/// Spec: inputs/growth-gebeauty-loyalty-ab-test-2026-05-16.md
+///       "IssuedIncentive watchdog (cross-campaign infrastructure)"
+model IssuedIncentive {
+  id                    String    @id @default(cuid())
+  shop                  String
+  /// Shopify customer GID — "gid://shopify/Customer/..."
+  customerId            String
+  /// Campaign identifier: "fiscal-hold-extrema-2026-05" | "loyalty-test-arm-A" | etc.
+  campaignTag           String
+  /// Shopify order GID of the triggering order (the one we watch for cancel/refund).
+  originalOrderId       String
+  originalOrderAmount   Float
+  originalOrderCurrency String    @default("BRL")
+  /// "STORE_CREDIT" | "DISCOUNT_CODE"
+  kind                  String
+  /// Issued credit amount OR discount nominal amount.
+  amount                Float
+  currency              String    @default("BRL")
+  /// Shopify reference: single GID (single-tranche credit or discount code) OR
+  /// JSON-encoded array of GIDs (multi-tranche credit — Arm A has 3 transactions).
+  shopifyRef            String
+  issuedAt              DateTime  @default(now())
+  expiresAt             DateTime?
+  /// "ACTIVE" | "REVOKED_CANCELLED" | "REVOKED_REFUNDED" | "EXPIRED" | "REDEEMED"
+  status                String    @default("ACTIVE")
+  statusReason          String?
+  revokedAt             DateTime?
+  revokedAmount         Float?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([shop, originalOrderId, status])
+  @@index([shop, status, expiresAt])
+  @@index([customerId])
+  @@index([shop, campaignTag])
+}
+
+/// Message dispatch audit trail. Up to ~12 rows per enrollment
+/// (6 message types × 2 channels). Written by MessageDispatcher before send;
+/// updated on delivery status webhook from Klaviyo / Zoko.
+model LoyaltyMessageLog {
+  id                        String    @id @default(cuid())
+  enrollmentId              String
+  /// "EMAIL" | "WHATSAPP".
+  channel                   String
+  /// "ENROLLMENT" | "REMINDER_T25" | "REMINDER_T40" | "REMINDER_T55" | "REMINDER_T85" | "CANCELLATION".
+  messageType               String
+  /// "PT" | "EN".
+  language                  String
+  /// Email or phone (for debugging only — providers resolve from Shopify customer).
+  recipientHandle           String?
+  sentAt                    DateTime?
+  /// "PENDING" | "SENT" | "DELIVERED" | "FAILED" | "BOUNCED" | "OPTED_OUT".
+  deliveryStatus            String    @default("PENDING")
+  deliveryError             String?
+  /// Klaviyo event ID or Zoko message ID, for cross-reference with provider dashboard.
+  providerMessageId         String?
+  providerWebhookReceivedAt DateTime?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  enrollment LoyaltyEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  /// Dedupe key — never send the same message twice on the same channel.
+  @@unique([enrollmentId, channel, messageType])
+  @@index([enrollmentId])
+  @@index([sentAt])
+}

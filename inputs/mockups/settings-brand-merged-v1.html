@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Settings &gt; Brand (merged with tone-sources)</title>
+<style>
+  :root {
+    --bg: #f1f1f1; --card: #ffffff; --border: #e1e3e5; --border-subtle: #ebebeb;
+    --text: #303030; --subdued: #6d7175; --tonal-hover: #f6f6f7; --link: #005bd3;
+    --green: #067647; --green-bg: #d6f7e3; --red: #d72c0d; --gold: #d99a0a;
+    --notes-bg: #fff9eb; --notes-border: #ffd66b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg); color: var(--text); font-size: 14px;
+  }
+  h1 { font-size: 22px; font-weight: 700; margin: 0 0 8px; }
+  .intro { font-size: 13px; color: var(--subdued); max-width: 800px; margin-bottom: 24px; }
+
+  .pageShell { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 16px 20px; max-width: 1120px; }
+  .pageHeader { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .pageHeaderLeft { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  .pageHeaderRight { display: flex; align-items: center; gap: 8px; }
+  .backBtn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: white; cursor: pointer; color: var(--text); text-decoration: none; }
+  .backBtn:hover { background: var(--tonal-hover); }
+  .backBtn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .pageHeading { font-size: 18px; font-weight: 650; margin: 0; }
+  .secondaryBtn { padding: 5px 12px; border: 1px solid var(--border); background: white; border-radius: 6px; font-size: 13px; cursor: pointer; }
+  .primaryBtn { padding: 5px 14px; border: 1px solid #2c2c2c; background: #2c2c2c; color: white; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; }
+
+  .tabs { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .tab { padding: 8px 14px; font-size: 13px; color: var(--subdued); border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; text-decoration: none; }
+  .tab.active { color: var(--text); font-weight: 500; border-bottom-color: #303030; }
+
+  .pageBody { display: grid; grid-template-columns: 1fr 320px; gap: 16px; align-items: start; }
+
+  .block { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .blockHead { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; gap: 12px; }
+  .blockTitle { font-size: 14px; font-weight: 650; margin: 0; color: var(--text); }
+  .blockTitle.section { font-size: 16px; }
+  .blockSub { font-size: 12px; color: var(--subdued); margin: 0 0 12px; }
+  .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+  .field label { font-size: 12px; font-weight: 600; color: var(--subdued); }
+  .field .input {
+    border: 1px solid var(--border); border-radius: 6px;
+    background: white; padding: 6px 10px; font-size: 13px;
+    color: var(--text); min-height: 32px;
+  }
+  .field .input.tall { min-height: 64px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* Tone-sources block inside Brand page */
+  .toneSummary {
+    background: var(--green-bg); border: 1px solid var(--green);
+    border-radius: 8px; padding: 14px 16px; margin: 0 0 16px;
+  }
+  .toneSummaryHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .toneSummaryTitle { font-size: 14px; font-weight: 650; color: var(--text); margin: 0; }
+  .toneSummaryStats { font-size: 12px; color: var(--text); margin: 0 0 10px; line-height: 1.6; }
+  .toneSummaryStats strong { color: var(--green); font-weight: 600; }
+  .toneSummaryActions { display: flex; gap: 8px; }
+  .toneSummaryLink {
+    font-size: 12px; color: var(--link); text-decoration: none;
+    padding: 4px 10px; border: 1px solid var(--link); border-radius: 6px; background: white;
+  }
+  .toneSummaryLink:hover { background: #f0f6ff; }
+
+  .syncBar {
+    height: 2px; background: var(--border-subtle); border-radius: 1px; margin: 6px 0; overflow: hidden;
+  }
+  .syncFill { height: 100%; background: var(--link); width: 72%; transition: width .3s; }
+  .syncCaption { font-size: 11px; color: var(--subdued); }
+  .syncDone { font-size: 11px; color: var(--green); font-weight: 500; }
+
+  .asideBlock { padding: 12px 14px; }
+
+  .notes { background: var(--notes-bg); border: 1px solid var(--notes-border); border-radius: 8px; padding: 14px 18px; margin-top: 24px; font-size: 12px; line-height: 1.55; max-width: 1120px; }
+  .notes h2 { margin: 0 0 8px; font-size: 14px; }
+  .notes h3 { margin: 12px 0 4px; font-size: 13px; }
+  .notes ul { padding-left: 18px; margin: 6px 0; }
+
+  .pillRow { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--green-bg); color: var(--green); font-weight: 500; }
+
+  table.stateMatrix { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; background: white; }
+  table.stateMatrix th, table.stateMatrix td { padding: 8px 10px; border: 1px solid var(--border-subtle); text-align: left; vertical-align: top; }
+  table.stateMatrix th { background: #f6f6f7; font-weight: 600; }
+
+  /* ===== Option-C tab variant: in-trail "Brand" (subdued, italic + chevron) ===== */
+  .tab.inTrail {
+    color: #b5b5b5;
+    font-style: italic;
+    position: relative;
+  }
+  .tab.inTrail::after {
+    /* lighter underline shows the trail; not a hover indicator */
+    background: #d9d9d9;
+  }
+  .tab.inTrailChevron {
+    /* "›" after Brand in the strip, signals "Brand IS the path to Tone of voice" */
+    color: #b5b5b5;
+    font-size: 12px;
+    padding: 8px 2px;
+    user-select: none;
+    align-self: center;
+  }
+
+  /* ===== Side-by-side option frames ===== */
+  .optionFrame {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px 20px;
+    margin: 16px 0;
+    background: var(--card);
+  }
+  .optionLabel {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 12px;
+  }
+  .optionLabel.a { background: var(--subdued); }
+  .optionLabel.b { background: var(--subdued); }
+  .optionLabel.c { background: var(--green); }
+
+  /* ===== Tone-sources sub-page styles ===== */
+  .sourceList { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .sourceItem {
+    border: 1px solid var(--border); border-radius: 8px;
+    background: white; overflow: hidden;
+  }
+  .sourceRow {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; cursor: pointer;
+  }
+  .sourceRow:hover { background: var(--tonal-hover); }
+  .sourceIcon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .sourceIcon.shopify { background: #95bf47; color: white; }
+  .sourceIcon.meta { background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: white; }
+  .sourceIcon.monday { background: #5e3aee; color: white; }
+  .sourceIcon.manual { background: #6d7175; color: white; }
+  .sourceIcon svg { width: 18px; height: 18px; fill: currentColor; }
+  .sourceMain { flex: 1; min-width: 0; }
+  .sourceName { font-size: 14px; font-weight: 650; color: var(--text); margin: 0; }
+  .sourceDetail { font-size: 12px; color: var(--subdued); margin: 2px 0 0; }
+  .sourceStatus {
+    font-size: 11px; font-weight: 500; padding: 3px 10px;
+    border-radius: 999px; flex-shrink: 0;
+  }
+  .sourceStatus.connected { background: var(--green-bg); color: var(--green); }
+  .sourceStatus.notConfigured { background: #f1f1f1; color: var(--subdued); }
+  .sourceChevron { width: 14px; height: 14px; color: var(--subdued); flex-shrink: 0; transition: transform 0.15s; }
+  .sourceChevron.expanded { transform: rotate(90deg); }
+  .sourceExpand {
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--border-subtle);
+    background: #fafbfc;
+    font-size: 13px;
+  }
+  .sourceExpand p { margin: 12px 0 8px; color: var(--subdued); font-size: 12px; }
+  .sourceExpand .formField {
+    display: flex; flex-direction: column; gap: 4px; margin: 8px 0;
+  }
+  .sourceExpand .formField label { font-size: 11px; font-weight: 600; color: var(--subdued); }
+  .sourceExpand .formField .input { border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; background: white; font-size: 12px; min-height: 28px; }
+</style>
+</head>
+<body>
+
+<h1>Settings &gt; Brand (merged with tone-sources) — v1 r2</h1>
+<p class="intro">
+  Iteration r2 (2026-05-12) addresses three issues Lucas flagged after the v1 deploy:
+  <strong>(1)</strong> Drop the back-action on the Brand sub-route — the Settings tab strip
+  already provides nav back to Settings, so the back band is redundant. Removing it also
+  fixes the main-vs-aside Y misalignment because there's no longer a chrome band that
+  pushes main down while aside stays pinned to the top.
+  <strong>(2)</strong> Move the "Tone of voice" block from the main column to be
+  the <em>first aside block</em>. Tone-sources is above-the-fold-critical because it unlocks
+  all downstream AI writing — burying it below the brand-config form was wrong.
+  <strong>(3)</strong> "Manage sources" becomes a default Polaris button (was a custom-styled
+  outlined link).
+</p>
+
+<!-- ============================================================ -->
+<!-- The new /app/settings/brand                                  -->
+<!-- ============================================================ -->
+
+<div class="pageShell">
+  <div class="pageHeader">
+    <div class="pageHeaderLeft">
+      <!-- NO back-action button — the Settings tab strip below provides nav -->
+      <span class="pageHeading">Brand Assets</span>
+    </div>
+    <div class="pageHeaderRight">
+      <button class="secondaryBtn" type="button">View JSON</button>
+      <button class="primaryBtn" type="button">Save</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <a href="#" class="tab">Locations</a>
+    <a href="#" class="tab">Delivery providers</a>
+    <a href="#" class="tab">Carriers</a>
+    <a href="#" class="tab active">Brand</a>
+  </div>
+
+  <div class="pageBody">
+    <!-- MAIN COLUMN — just the brand-configuration form now -->
+    <div>
+      <div class="block">
+        <div class="blockHead">
+          <h2 class="blockTitle section">Brand configuration</h2>
+        </div>
+        <p class="blockSub">Your brand bible. These values shape every AI-generated blog post, alt text, and future content.</p>
+
+        <div class="field">
+          <label>Brand name</label>
+          <div class="input">ge-beauty-cosmeticos</div>
+        </div>
+
+        <div class="field">
+          <label>About</label>
+          <div class="input tall">Brand story, mission, institutional info…</div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Preferred language</label>
+            <div class="input">en-US</div>
+          </div>
+          <div class="field">
+            <label>Content language</label>
+            <div class="input">pt-BR</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Tone of voice (manual override)</label>
+          <div class="input tall">How the brand communicates (e.g. formal, casual, inspirational)… (optional — when set, overrides the inferred tone from the Tone-sources block in the aside)</div>
+        </div>
+
+        <div class="field">
+          <label>Editorial guidelines</label>
+          <div class="input tall">Length, structure, do/don&apos;ts…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ASIDE COLUMN — tone-sources NOW FIRST (above-the-fold, since it unlocks AI writing) -->
+    <div>
+      <!-- ▼ TONE-SOURCES FIRST — moved from main to aside top per Lucas's r2 feedback ▼ -->
+      <div class="toneSummary" style="margin: 0 0 12px;">
+        <div class="toneSummaryHead">
+          <h2 class="toneSummaryTitle">Tone of voice</h2>
+          <span class="syncDone">✓ Synced 12m ago</span>
+        </div>
+        <p class="toneSummaryStats" style="font-size: 12px;">
+          The AI infers your brand voice from these sources:
+          <strong>0 validated tone traits</strong> ·
+          <strong>0 edit-corrections</strong> ·
+          no manual tone string ·
+          language <strong>en-US</strong>.
+        </p>
+        <div class="pillRow" style="margin: 8px 0 12px; flex-direction: column;">
+          <span class="pill" style="display: inline-flex; align-items: center; gap: 6px;">
+            <img src="../../public/shopify-logo.png" alt="Shopify" style="height: 14px; width: auto;" />
+            Shopify blog · 22 sampled
+          </span>
+          <span class="pill" style="display: inline-flex; align-items: center; gap: 6px;">
+            <img src="../../public/meta-logo.png" alt="Meta" style="height: 14px; width: auto;" />
+            Meta · not configured
+          </span>
+          <span class="pill" style="display: inline-flex; align-items: center; gap: 6px;">
+            <img src="../../public/monday-logo.png" alt="Monday.com" style="height: 14px; width: auto;" />
+            Monday.com · 14 briefs
+          </span>
+          <span class="pill" style="display: inline-flex; align-items: center; gap: 6px;">
+            <svg viewBox="0 0 20 20" width="13" height="13" fill="#8a5a08" aria-hidden="true">
+              <path d="M3 13a1 1 0 0 1 1 1v3h12v-3a1 1 0 1 1 2 0v3a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3a1 1 0 0 1 1-1z"/>
+              <path d="M10 1a1 1 0 0 1 .7.3l3 3a1 1 0 0 1-1.4 1.4L11 4.4V12a1 1 0 1 1-2 0V4.4L7.7 5.7a1 1 0 1 1-1.4-1.4l3-3A1 1 0 0 1 10 1z"/>
+            </svg>
+            Manual upload · 2 files
+          </span>
+        </div>
+        <!-- CTAs as proper Polaris buttons (primary + secondary) instead of outlined links -->
+        <button class="primaryBtn" type="button" style="width: 100%; margin-bottom: 6px;">Manage sources</button>
+        <button class="secondaryBtn" type="button" style="width: 100%; font-size: 12px;">Set manual override</button>
+      </div>
+
+      <!-- Existing aside blocks below -->
+      <div class="block asideBlock">
+        <div class="blockHead"><h2 class="blockTitle">Export</h2></div>
+        <p class="blockSub">Your brand bible as a portable artifact. Download and reuse elsewhere.</p>
+        <button class="primaryBtn" type="button" style="width: 100%; margin-bottom: 8px;">Download JSON</button>
+        <button class="secondaryBtn" type="button" style="width: 100%;">Download Markdown</button>
+        <p style="font-size: 11px; color: var(--subdued); margin: 10px 0 0;">Not exported yet</p>
+      </div>
+
+      <div class="block asideBlock" style="margin-top: 12px;">
+        <div class="blockHead"><h2 class="blockTitle">Learned from edits</h2></div>
+        <p class="blockSub" style="margin: 0;">No learnings yet. Review AI drafts on the Blog Posts tab to start.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- Frame 2 — the tone-sources SUB-PAGE                          -->
+<!-- ============================================================ -->
+
+<h1 style="margin-top: 40px;">Frame 2 — Tone of voice sub-page (3 options)</h1>
+<p class="intro">
+  <code>/app/settings/brand/tone-sources</code> — the deep management surface. Reached from
+  Brand aside &gt; "Manage sources" CTA OR from Storytelling &gt; Brief &gt; "Manage tone sources".
+  Breadcrumbs are out (we can't slot into Shopify's chrome). Three remaining options below.
+  Pick one.
+</p>
+
+<!-- ============================================================ -->
+<!-- Option A — chevron back-action + Settings tab strip          -->
+<!-- ============================================================ -->
+<div class="optionFrame">
+  <span class="optionLabel a">Option A — Chevron back-action + tab strip</span>
+  <p style="font-size: 12px; color: var(--subdued); margin: 0 0 12px;">
+    Standard Polaris back-action (chevron, returns to <code>/app/settings/brand</code>) + Settings tab strip with Brand active. Both nav paths exist. Today's chrome + the added tab strip from R1. BfS-compliant.
+  </p>
+  <div class="pageShell">
+    <div class="pageHeader">
+      <div class="pageHeaderLeft">
+        <a class="backBtn" href="#" aria-label="Back to Brand"><svg viewBox="0 0 20 20"><polyline points="12 5 7 10 12 15" /></svg></a>
+        <span class="pageHeading">Tone of voice sources</span>
+      </div>
+      <div class="pageHeaderRight">
+        <button class="primaryBtn" type="button">Refresh tone now</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <a href="#" class="tab">Locations</a>
+      <a href="#" class="tab">Delivery providers</a>
+      <a href="#" class="tab">Carriers</a>
+      <a href="#" class="tab active">Brand</a>
+    </div>
+    <p style="font-size: 11px; color: var(--subdued); margin: 12px 0 0;">[body content: 4 source cards, validated traits, manual override, weekly cron — same as today]</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- Option B — chevron only, no tab strip                        -->
+<!-- ============================================================ -->
+<div class="optionFrame">
+  <span class="optionLabel b">Option B — Chevron back-action only (no tab strip)</span>
+  <p style="font-size: 12px; color: var(--subdued); margin: 0 0 12px;">
+    Drops the Settings tab strip on tone-sources. User navigates back via chevron only. Tone-sources feels like a "modal-deep" page — less tied to the Settings IA. Simpler chrome, loses the R1 continuous-tabs benefit.
+  </p>
+  <div class="pageShell">
+    <div class="pageHeader">
+      <div class="pageHeaderLeft">
+        <a class="backBtn" href="#" aria-label="Back to Brand"><svg viewBox="0 0 20 20"><polyline points="12 5 7 10 12 15" /></svg></a>
+        <span class="pageHeading">Tone of voice sources</span>
+      </div>
+      <div class="pageHeaderRight">
+        <button class="primaryBtn" type="button">Refresh tone now</button>
+      </div>
+    </div>
+    <p style="font-size: 11px; color: var(--subdued); margin: 12px 0 0;">[body content same as Option A — no tab strip above]</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- Option C — Tab strip with Tone of voice as the active tab,   -->
+<!-- Brand visible but subdued (in-trail). Lucas's suggestion.    -->
+<!-- ============================================================ -->
+<div class="optionFrame">
+  <span class="optionLabel c">Option C — Tone of voice as an active tab, Brand in-trail (recommended by Lucas)</span>
+  <p style="font-size: 12px; color: var(--subdued); margin: 0 0 12px;">
+    The Settings tab strip dynamically extends: when on tone-sources, "Tone of voice" appears as the active tab. "Brand" stays visible but rendered subdued + italic + with a "›" chevron after it, signaling "Brand is the path here, click to go up". One row replaces both breadcrumb + tab strip. No separate chevron back-action needed. Polaris-native styling, no chrome stacking.
+  </p>
+  <div class="pageShell">
+    <div class="pageHeader">
+      <div class="pageHeaderLeft">
+        <span class="pageHeading">Tone of voice sources</span>
+      </div>
+      <div class="pageHeaderRight">
+        <button class="primaryBtn" type="button">Refresh tone now</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <a href="#" class="tab">Locations</a>
+      <a href="#" class="tab">Delivery providers</a>
+      <a href="#" class="tab">Carriers</a>
+      <a href="#" class="tab inTrail">Brand</a>
+      <span class="tab inTrailChevron">›</span>
+      <a href="#" class="tab active">Tone of voice</a>
+    </div>
+    <p style="font-size: 11px; color: var(--subdued); margin: 12px 0 0;">[body content same as Options A &amp; B — 4 source cards + validated traits + manual override + weekly cron]</p>
+  </div>
+  <p style="font-size: 12px; color: var(--text); margin: 12px 0 0; line-height: 1.55;">
+    <strong>Why this works:</strong> users always click a tab to navigate (familiar), the active state always reflects "where you are" (Tone of voice), and the in-trail Brand visually communicates "this is your path back". No two competing nav systems.
+  </p>
+</div>
+
+  <!-- In-block sync indicator (canonical pattern from affiliates-sync-bar-v1.html) -->
+  <div class="block" style="padding: 0; margin-bottom: 16px; overflow: hidden;">
+    <div style="height: 2px; background: var(--border-subtle);"></div>
+    <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; gap: 12px;">
+      <h2 class="blockTitle section" style="margin: 0; flex: 1;">Connected sources</h2>
+      <span class="syncDone">✓ Synced 12m ago</span>
+    </div>
+    <div style="padding: 16px 20px;">
+      <p style="margin: 0 0 8px; font-size: 12px; color: var(--subdued);">
+        We sample copy from these sources weekly to learn how your brand sounds. Every new
+        batch is reviewed by you before it changes how blog posts are written.
+      </p>
+
+      <div class="sourceList">
+        <!-- Shopify (PNG from public/shopify-logo.png) -->
+        <div class="sourceItem">
+          <div class="sourceRow">
+            <span class="sourceIcon" style="background: transparent; width: 40px; height: 40px;">
+              <img src="../../public/shopify-logo.png" alt="Shopify" style="height: 32px; width: auto;" />
+            </span>
+            <div class="sourceMain">
+              <p class="sourceName">Shopify blog posts</p>
+              <p class="sourceDetail">5 blogs × 22 posts sampled · 12 min ago</p>
+            </div>
+            <span class="sourceStatus connected">Connected</span>
+            <svg class="sourceChevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 5 13 10 8 15"/></svg>
+          </div>
+        </div>
+
+        <!-- Meta (PNG from public/meta-logo.png — single Meta umbrella, replaces dual IG+FB icon) -->
+        <div class="sourceItem">
+          <div class="sourceRow">
+            <span class="sourceIcon" style="background: transparent; width: 40px; height: 40px;">
+              <img src="../../public/meta-logo.png" alt="Meta" style="height: 32px; width: auto;" />
+            </span>
+            <div class="sourceMain">
+              <p class="sourceName">Instagram &amp; Facebook</p>
+              <p class="sourceDetail">Connect to pull captions + image text via Meta Graph API.</p>
+            </div>
+            <span class="sourceStatus notConfigured">Not configured</span>
+            <svg class="sourceChevron expanded" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 5 13 10 8 15"/></svg>
+          </div>
+          <div class="sourceExpand">
+            <p>
+              Generate a long-lived Page Access Token in Meta Business Suite
+              (Settings → Users → System Users → Generate token). Provide the IG Business ID
+              and/or FB Page ID for accounts you want sampled.
+            </p>
+            <div class="formField">
+              <label>Long-lived Page Access Token</label>
+              <div class="input">EAA…</div>
+            </div>
+            <div class="row" style="margin-top: 8px;">
+              <div class="formField">
+                <label>Instagram Business ID</label>
+                <div class="input">17841…</div>
+              </div>
+              <div class="formField">
+                <label>Facebook Page ID</label>
+                <div class="input">123456…</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end;">
+              <button class="secondaryBtn" type="button">Test connection</button>
+              <button class="primaryBtn" type="button">Save and sample</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monday.com (PNG from public/monday-logo.png) -->
+        <div class="sourceItem">
+          <div class="sourceRow">
+            <span class="sourceIcon" style="background: transparent; width: 40px; height: 40px;">
+              <img src="../../public/monday-logo.png" alt="Monday.com" style="height: 32px; width: auto;" />
+            </span>
+            <div class="sourceMain">
+              <p class="sourceName">Monday.com briefs</p>
+              <p class="sourceDetail">14 briefs from board "Storytelling" · 3 days ago</p>
+            </div>
+            <span class="sourceStatus connected">Connected</span>
+            <svg class="sourceChevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 5 13 10 8 15"/></svg>
+          </div>
+        </div>
+
+        <!-- Manual upload (production SVG, brown upload-tray) -->
+        <div class="sourceItem">
+          <div class="sourceRow">
+            <span class="sourceIcon" style="background: transparent; width: 40px; height: 40px;">
+              <svg viewBox="0 0 20 20" width="28" height="28" fill="#8a5a08" aria-hidden="true">
+                <path d="M3 13a1 1 0 0 1 1 1v3h12v-3a1 1 0 1 1 2 0v3a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3a1 1 0 0 1 1-1z"/>
+                <path d="M10 1a1 1 0 0 1 .7.3l3 3a1 1 0 0 1-1.4 1.4L11 4.4V12a1 1 0 1 1-2 0V4.4L7.7 5.7a1 1 0 1 1-1.4-1.4l3-3A1 1 0 0 1 10 1z"/>
+              </svg>
+            </span>
+            <div class="sourceMain">
+              <p class="sourceName">Manual upload</p>
+              <p class="sourceDetail">2 files · last upload "brand-style-guide-v3.pdf" 5 days ago</p>
+            </div>
+            <span class="sourceStatus connected">Connected</span>
+            <svg class="sourceChevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 5 13 10 8 15"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Validated tone traits (existing — abbreviated) -->
+  <div class="block" style="margin-bottom: 16px;">
+    <div class="blockHead">
+      <h2 class="blockTitle section">Validated tone traits</h2>
+      <span style="font-size: 12px; color: var(--subdued);">0 accepted · 7 awaiting review</span>
+    </div>
+    <p class="blockSub">
+      Every new sampling batch produces hypotheses about your brand voice. Accept or reject
+      each one to shape how the AI writes for you.
+    </p>
+    <div style="padding: 10px; border: 1px dashed var(--border); border-radius: 6px; font-size: 12px; color: var(--subdued); text-align: center;">
+      7 hypotheses from latest batch · <a href="#" style="color: var(--link); text-decoration: none;">Review →</a>
+    </div>
+  </div>
+
+  <!-- Manual override (existing) -->
+  <div class="block" style="margin-bottom: 16px;">
+    <div class="blockHead">
+      <h2 class="blockTitle section">Manual tone string (override)</h2>
+    </div>
+    <p class="blockSub">
+      Optional. When set, this overrides the inferred tone from sources above. Leave empty
+      to let the AI infer from your sources. <a href="settings-brand-merged-v1.html" style="color: var(--link); text-decoration: none;">Edit on Brand settings</a>.
+    </p>
+    <div class="field">
+      <div class="input tall" style="color: var(--subdued); font-style: italic;">(not set — using inferred tone)</div>
+    </div>
+  </div>
+
+  <!-- Weekly cron status -->
+  <div class="block">
+    <div class="blockHead">
+      <h2 class="blockTitle">Weekly tone &amp; diff job</h2>
+      <span class="syncDone">✓ Last run Mon Apr 29 03:00 UTC</span>
+    </div>
+    <p class="blockSub">
+      Every Monday at 03:00 UTC we re-sample your sources and surface drift in the
+      "Validated tone traits" section above. Next run: <strong>Mon May 13, 03:00 UTC</strong>.
+    </p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- IA options compared                                          -->
+<!-- ============================================================ -->
+
+<div class="notes">
+  <h2>IA decision — 3 options compared (PM analysis)</h2>
+
+  <h3>Option A — Inline full merge</h3>
+  <p>Fold all tone-sources management directly into the Brand page. Brand becomes one very long page (~1700 lines of UI). <strong>Rejected:</strong> tone-sources has its own complex sub-UI (manual upload S3, re-extract Claude jobs, accept/reject hypotheses) that doesn&apos;t fit cleanly as a section. Page becomes unwieldy.</p>
+
+  <h3>Option B — Sub-tabs inside Brand (Configuration / Tone sources / Learnings)</h3>
+  <p>Brand gets a nested tab strip. <strong>Rejected:</strong> nested tabs inside an embedded admin tab strip violate Shopify&apos;s "tabs are secondary navigation only" rule (CLAUDE.md "Shopify Design Compliance &gt; Information architecture"). Also visually noisy.</p>
+
+  <h3>Option C — Surface tone-sources STATE inline, keep deep management at sub-route ✓ Recommended</h3>
+  <p>The Brand page gains a "Tone of voice" block (the green-tinted block above) showing live counts + CTAs. The deep management sub-route stays at <code>/app/settings/brand/tone-sources</code>. From <strong>any</strong> entry point — Settings &gt; Brand or Storytelling &gt; Brief — the user sees tone-sources state and can navigate to it. The IA story is "Brand is the declared identity; tone-sources is the evidence base; both are visible from Brand".</p>
+
+  <h3>Why C wins</h3>
+  <ul>
+    <li><strong>Solves the discovery gap:</strong> the merchant who lands on <code>/app/settings/brand</code> now SEES that tone-sources exists. No more "only reachable via Storytelling".</li>
+    <li><strong>Avoids file bloat:</strong> tone-sources stays at its current route. No 1700-line monolith.</li>
+    <li><strong>Storytelling deep-links keep working:</strong> the Brand-context band on <code>/app/storytelling/brief</code> still links to <code>/app/settings/brand</code> AND <code>/app/settings/brand/tone-sources</code>; both targets still resolve.</li>
+    <li><strong>State at-a-glance:</strong> the green summary block doubles as a sync indicator (synced N min ago) and a CTA cluster, so the merchant knows the AI&apos;s evidence base is healthy before generating a brief.</li>
+  </ul>
+
+  <h2>State matrix — Tone-summary block (the green block)</h2>
+  <table class="stateMatrix">
+    <thead>
+      <tr>
+        <th>State</th>
+        <th>Status pill</th>
+        <th>Sync bar (top edge)</th>
+        <th>"Manage sources" CTA</th>
+        <th>"Set manual override" CTA</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>idle, never synced</strong></td>
+        <td>Hidden</td>
+        <td>Hidden</td>
+        <td>Visible (primary outline)</td>
+        <td>Visible</td>
+        <td>Stats read "0 sources · 0 traits · 0 corrections"</td>
+      </tr>
+      <tr>
+        <td><strong>idle, synced &lt; 24h ago</strong></td>
+        <td>"✓ Synced 12m ago" (green)</td>
+        <td>Hidden</td>
+        <td>Visible</td>
+        <td>Visible</td>
+        <td>Default healthy state — what the mockup above shows</td>
+      </tr>
+      <tr>
+        <td><strong>running (weekly cron firing)</strong></td>
+        <td>"Syncing tone sources…" (subdued)</td>
+        <td>Visible, animated 2px bar</td>
+        <td>Visible (label changes to "View progress")</td>
+        <td>Disabled with tooltip "Available when sync completes"</td>
+        <td>The sync bar lives INSIDE this block, not above the page — same pattern as Affiliates fix</td>
+      </tr>
+      <tr>
+        <td><strong>done, &lt; 5min ago</strong></td>
+        <td>"✓ Synced just now" (green, briefly)</td>
+        <td>Hidden</td>
+        <td>Visible</td>
+        <td>Visible</td>
+        <td>Fades to "Synced N min ago" after 5min</td>
+      </tr>
+      <tr>
+        <td><strong>error</strong></td>
+        <td>"⚠ Sync failed" (red)</td>
+        <td>Hidden</td>
+        <td>"Retry sync" (primary outline)</td>
+        <td>Visible (manual override still usable)</td>
+        <td>Inline error message under stats: "Last failure: Claude API rate-limited at 14:32 BRT"</td>
+      </tr>
+      <tr>
+        <td><strong>idle, stale (&gt; 7 days)</strong></td>
+        <td>"⚠ Last synced 9 days ago" (gold)</td>
+        <td>Hidden</td>
+        <td>"Refresh sources" (primary outline)</td>
+        <td>Visible</td>
+        <td>Weekly cron should fire every Monday — stale = something&apos;s wrong with the cron</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Implementation notes (r2 — for hand-off)</h2>
+  <ul>
+    <li><strong>Drop back-action on Brand sub-route.</strong> Remove <code>&lt;s-button slot="back-action"&gt;</code> from <code>app.settings_.brand.tsx</code>. The Settings tab strip already provides nav back to Settings (clicking Locations/Providers/Carriers navigates to <code>/app/settings</code>). Removing the back-action band should also resolve the main-vs-aside Y misalignment because the back-action chrome was the band pushing main down while aside stayed pinned.</li>
+    <li><strong>Move "Tone of voice" to aside slot.</strong> Wrap the existing green block with <code>slot="aside"</code> and put it AT THE TOP of the aside column (above Export + Learned from edits). It unlocks all AI writing — placement should reflect that importance.</li>
+    <li><strong>"Manage sources" → primary Polaris button.</strong> Replace the custom outlined-link CTA with <code>&lt;s-button variant="primary"&gt;Manage sources&lt;/s-button&gt;</code>. The Link-to-tone-sources navigation moves inside the button's <code>href</code>. "Set manual override" stays as a secondary or tertiary button below it.</li>
+    <li><strong>Folding Manual override INTO Brand configuration.</strong> The existing tone-of-voice text-area becomes a labeled field inside the brand-configuration block (relabeled "Tone of voice (manual override)"), so there's no longer a separate Manual-override block in main. Reduces main to one cohesive form.</li>
+    <li><strong>Main+aside Y misalignment — root cause confirmed.</strong> Lucas (2026-05-12): "The misalignment is caused by the Tabs UI, which pushes main below, but does not touch aside. It should touch aside." So the fix is structural — the tabs row must occupy a row position that BOTH columns respect, not be a default-slot child that only main sees.
+
+    <br /><br />Specifically, today's structure puts <code>&lt;PageTabs&gt;</code> as a default-slot child of <code>&lt;s-page&gt;</code> alongside the main <code>&lt;s-section&gt;</code>. Polaris's slot="aside" goes to a separate column region that doesn't see PageTabs in its document flow → aside starts at the TOP of body, main starts BELOW the tabs row, columns end up misaligned. The back-action band on Brand was a second, smaller contributor (now gone in r2) but the tabs misalignment exists on every off-block-tab page (Storytelling, Affiliates, Merchandising, Settings, Retail Sales).
+
+    <br /><br /><strong>Fix options (need to pick one and validate live):</strong>
+    <ul>
+      <li><strong>Option F1 — Aside spacer.</strong> Inject an invisible top-spacer in the aside slot matching PageTabs's rendered height (~44px = ~28px tab + 1px divider + 16px margin-bottom). Aside starts at the same Y as main. <em>Pragmatic, isolated to the route, doesn't fight Polaris's slot model.</em> Risk: tabs row divider only visually spans main, not the full content width — the line stops before aside. That looks worse than the current state for Lucas's "tabs should touch aside" framing.</li>
+      <li><strong>Option F2 — Tabs row spans both columns.</strong> Render PageTabs with a CSS rule that extends its width to cover both main AND aside columns (negative right-margin equivalent to aside-column-width + gap, or absolute positioning across the full content area). Aside then sits BELOW the tabs row in document flow. <em>Closest to Lucas's "tabs should touch aside" intent — the divider visually spans full width.</em> Risk: depends on Polaris's exact aside-column width and grid gap, which could shift in future Polaris releases.</li>
+      <li><strong>Option F3 — Custom page-body layout.</strong> Stop using <code>slot="aside"</code>. Build our own two-column grid below PageTabs as a regular React component. <em>Cleanest long-term — no Polaris-internals coupling.</em> Risk: bigger refactor, every page with aside today (Brand, Affiliates, Storytelling, Retail Sales, Local Delivery, etc.) migrates off slot="aside" to the new pattern. Out of Phase A scope.</li>
+    </ul>
+
+    <br /><strong>Recommendation: ship Option F2 now</strong> (CSS-only, low risk if Polaris aside width is stable, gives Lucas the "tabs touch aside" visual). Validate post-deploy. If F2 ends up brittle, escalate to F3 in a follow-up PR.</li>
+    <li><strong>Brand-page heading.</strong> Stays as "Brand Assets" for now. Could harmonize to "Settings" later for tab-strip consistency — flagging but not changing in this PR.</li>
+    <li><strong>Block title change.</strong> "Tone of voice — sources" → just "Tone of voice" per Lucas's r2 feedback. Cleaner, and the pills below the title make "sources" implicit anyway.</li>
+    <li><strong>Routing for tone-sources — breadcrumb ruled out (2026-05-12).</strong> Initial plan was a breadcrumb row at the top of tone-sources, but Lucas pointed out we can't slot into Shopify's chrome — a breadcrumb rendered inside <code>&lt;s-page&gt;</code> would read as body content, not chrome. CLAUDE.md's "breadcrumbs when there are &gt;1 ancestors" assumed a Shopify-chrome slot we don't have. 3 remaining options shown above (Frame 2). Lucas favors <strong>Option C</strong>: the Settings tab strip extends with "Tone of voice" as the active tab and "Brand" rendered in-trail (subdued + italic + "›" chevron after it). One row, Polaris-native, doubles as both nav AND breadcrumb-trail indicator.</li>
+  </ul>
+</div>
+
+</body>
+</html>

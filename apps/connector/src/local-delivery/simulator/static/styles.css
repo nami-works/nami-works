@@ -1,0 +1,112 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; font-size: 14px; }
+body { display: flex; flex-direction: column; }
+
+header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 12px; background: #f4f4f4; border-bottom: 1px solid #ddd;
+}
+header .title { font-weight: 600; margin-right: 8px; }
+header select, header button {
+  font-size: 13px; padding: 4px 8px; border: 1px solid #aaa; background: #fff;
+  border-radius: 3px; cursor: pointer;
+}
+header button:hover { background: #eaeaea; }
+header #status { margin-left: auto; color: #555; font-size: 12px; }
+header #dirty-flag { color: #d35400; font-size: 12px; }
+header #readonly-flag { color: #2980b9; font-size: 12px; font-weight: 600; }
+
+main { flex: 1; display: flex; min-height: 0; }
+#map { flex: 1; height: 100%; }
+#side-panel {
+  width: 360px; border-left: 1px solid #ddd; padding: 12px; overflow-y: auto;
+  background: #fafafa;
+}
+
+section { margin-bottom: 16px; }
+section h3 { margin: 0 0 8px 0; font-size: 13px; text-transform: uppercase; color: #666; }
+
+.route-card {
+  border: 1px solid #ddd; border-radius: 4px; padding: 8px; margin-bottom: 8px;
+  background: #fff;
+}
+.route-card .route-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+}
+.route-card .swatch {
+  width: 14px; height: 14px; border-radius: 50%; display: inline-block;
+}
+.route-card .swatch-unassigned {
+  background: transparent; border: 2px dashed #888;
+}
+.route-card .route-name { font-weight: 600; flex: 1; }
+.route-card .cost { color: #555; font-size: 12px; }
+.route-card .stops { font-size: 12px; color: #444; line-height: 1.5; }
+.route-card .stop-pill {
+  display: inline-block; padding: 1px 6px; margin: 2px 2px 0 0;
+  border-radius: 10px; background: #f0f0f0; font-size: 11px; cursor: pointer;
+}
+.route-card .stop-pill:hover { background: #e0e0e0; }
+
+.tag-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.tag-chips label { font-size: 12px; }
+#annotation { width: 100%; resize: vertical; }
+#save-tweak { margin-top: 8px; width: 100%; padding: 6px; cursor: pointer; }
+
+.totals { padding: 8px; background: #eef; border-radius: 4px; font-size: 13px; }
+.totals .delta-positive { color: #c0392b; }
+.totals .delta-negative { color: #27ae60; }
+
+/* Map marker labels — pill-shape badges with emoji + text.
+   Pattern ported from cpg-labs styles.module.css `mapLabel*`. */
+.map-label-container {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.map-label-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  border: 1.5px solid #111111;
+  border-radius: 999px;
+  background-color: #ffffff;
+  color: #1f2933;
+  font-family: system-ui, sans-serif;
+  font-size: 13px; font-weight: 700; line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+.map-label-badge:hover {
+  filter: brightness(1.05);
+}
+.map-label-emoji {
+  font-size: 14px; line-height: 1;
+}
+.map-label-order {
+  font-size: 13px;
+}
+
+.iw { font-size: 12px; line-height: 1.4; max-width: 240px; }
+.iw b { font-size: 13px; }
+
+.route-picker {
+  background: #fff;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  padding: 4px 0;
+  z-index: 1000;
+  min-width: 160px;
+  font-size: 13px;
+}
+.route-picker button {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; border: 0; background: transparent;
+  padding: 6px 10px; text-align: left; cursor: pointer;
+  font-size: 13px;
+}
+.route-picker button:hover { background: #f0f0f0; }
+.route-picker .swatch-new {
+  background: transparent; border: 2px dashed #888;
+}
+.route-picker .muted { color: #888; font-size: 11px; }
+

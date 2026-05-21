@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Storytelling brief (Track D)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --grid: #ebebeb;
+    --text: #303030;
+    --subdued: #6d7175;
+    --blue-primary: #005bd3;
+    --blue-bg: #f1f8ff;
+    --blue-soft: #d6e8ff;
+    --green: #067647;
+    --green-bg: #e6f4ec;
+    --red: #d72c0d;
+    --red-bg: #fbeae5;
+    --yellow: #d99a0a;
+    --yellow-bg: #fff5d9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 880px;
+    margin-bottom: 24px;
+  }
+
+  .pageHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 880px;
+    margin-bottom: 20px;
+  }
+  .pageTitle { font-size: 18px; font-weight: 600; margin: 0; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text);
+  }
+  .btnPrimary {
+    background: var(--blue-primary);
+    color: white;
+    border-color: var(--blue-primary);
+  }
+  .btnSubdued {
+    background: transparent;
+    border-color: transparent;
+    color: var(--subdued);
+  }
+  .btnDanger {
+    color: var(--red);
+    border-color: var(--border);
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    max-width: 880px;
+  }
+  .card h2 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    color: var(--text);
+  }
+  .card .sub {
+    font-size: 12px;
+    color: var(--subdued);
+    margin-bottom: 16px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  .fieldLabel {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .fieldHint {
+    font-size: 11px;
+    color: var(--subdued);
+    margin-top: 2px;
+  }
+  .fieldInput,
+  .fieldSelect,
+  .fieldTextarea {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    background: white;
+    color: var(--text);
+  }
+  .fieldTextarea {
+    resize: vertical;
+    min-height: 70px;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  /* ── Theme accordion ─────────────────────────────────────────── */
+
+  .themeList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .themeCard {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: white;
+    overflow: hidden;
+  }
+  .themeCard.expanded {
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 0 1px var(--blue-primary);
+  }
+  .themeHeader {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+  }
+  .themeNumber {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--blue-bg);
+    color: var(--blue-primary);
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .themeTitle {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .themeTitleText {
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .themeMeta {
+    font-size: 12px;
+    color: var(--subdued);
+    display: flex;
+    gap: 12px;
+  }
+  .themeBody {
+    padding: 4px 16px 16px;
+    border-top: 1px solid var(--grid);
+  }
+  .themeFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  /* ── Chip input (keywords / products) ────────────────────────── */
+
+  .chipBox {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    min-height: 38px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px 3px 10px;
+    background: var(--blue-bg);
+    color: var(--blue-primary);
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .chipX {
+    cursor: pointer;
+    color: var(--blue-primary);
+    opacity: 0.7;
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .chipX:hover { opacity: 1; }
+  .chipBox input {
+    border: none;
+    outline: none;
+    flex: 1;
+    min-width: 120px;
+    font-size: 13px;
+    font-family: inherit;
+    background: transparent;
+  }
+  .chipProduct {
+    background: var(--green-bg);
+    color: var(--green);
+  }
+  .chipProduct .chipX { color: var(--green); }
+
+  /* ── Product picker modal-look ────────────────────────────────── */
+
+  .productPicker {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    overflow: hidden;
+  }
+  .productSearch {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--grid);
+    background: #fafafa;
+  }
+  .productSearch input {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .productList {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .productRow {
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--grid);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .productRow:hover { background: #fafafa; }
+  .productRow:last-child { border-bottom: none; }
+  .productRow input[type="checkbox"] {
+    margin: 0;
+  }
+  .productHandle {
+    font-family: ui-monospace, monospace;
+    color: var(--subdued);
+    font-size: 11px;
+  }
+
+  /* ── Inline help / context-rich panels ───────────────────────── */
+
+  .infoBox {
+    background: var(--blue-bg);
+    border: 1px solid var(--blue-soft);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+  .infoBox strong { color: var(--blue-primary); }
+
+  /* ── Notes panel ─────────────────────────────────────────────── */
+
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 880px;
+    margin-bottom: 24px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; color: #4a3600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 4px; }
+
+  .pillNeutral {
+    background: var(--grid);
+    color: var(--subdued);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+<h1>Storytelling brief — Track D mockup v1</h1>
+<p class="intro">
+  Replaces the JSON-textarea editor at <code>/app/storytelling/brief</code> with a real campaign-builder UI. Themes are expandable; merchant fills in title, SEO phrase, summary, products, and keyword sets per theme. Reads existing brand context from <code>BrandAssets</code> + accepted <code>BrandToneHypothesis</code> traits (Phase 6) and surfaces them inline so the merchant knows what voice the AI will use before generating.
+</p>
+
+<div class="notes">
+  <h3>Decisions baked into v1</h3>
+  <ul>
+    <li><strong>Accordion list, not tabs.</strong> Each theme is a collapsible card. Expanded by default for the first theme on a fresh brief; subsequent themes auto-collapse so the merchant scans before drilling in.</li>
+    <li><strong>Chip-style keyword inputs.</strong> Type → enter creates a chip. Backspace removes the last chip. Mirrors Polaris-style tag inputs used elsewhere in the app.</li>
+    <li><strong>Inline product picker per theme.</strong> Search + multi-select from this shop's products. Selected products render as green chips above the picker. Reuses the existing product loader from the route — same products fetched once, shared across all theme pickers.</li>
+    <li><strong>Context band at top.</strong> Reminds the merchant which tone profile / brand assets will guide generation. One-click to <code>/app/brand-settings/tone-sources</code> if they want to refresh.</li>
+    <li><strong>JSON escape hatch.</strong> Power users keep a "View as JSON" toggle — same data, raw editing. Useful for debugging, or for pasting briefs from another tool. Switches the form into a textarea while preserving state.</li>
+    <li><strong>Validation</strong> happens on Generate — empty-title themes get a red border + inline error.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ PAGE -->
+
+<div class="pageHeader">
+  <h2 class="pageTitle">New campaign brief</h2>
+  <div style="display: flex; gap: 8px;">
+    <button class="btn btnSubdued">View as JSON</button>
+    <button class="btn">Save draft</button>
+    <button class="btn btnPrimary">Generate drafts →</button>
+  </div>
+</div>
+
+<!-- Brand context band -->
+
+<div class="card" style="background: var(--green-bg); border-color: #c5e0d0;">
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+    <div>
+      <div style="font-size: 12px; font-weight: 600; color: var(--green); margin-bottom: 4px;">Brand context the AI will use</div>
+      <div style="font-size: 13px; color: var(--text);">
+        Voice: warm, second-person, beauty-as-self-care &nbsp;·&nbsp;
+        12 validated tone traits &nbsp;·&nbsp;
+        9 accepted edit-corrections &nbsp;·&nbsp;
+        Language: pt-BR
+      </div>
+    </div>
+    <a href="#" style="font-size: 12px; color: var(--blue-primary); text-decoration: none; white-space: nowrap;">Manage tone sources →</a>
+  </div>
+</div>
+
+<!-- Campaign meta -->
+
+<div class="card">
+  <h2>Campaign details</h2>
+  <div class="grid2" style="margin-top: 12px;">
+    <div class="field">
+      <span class="fieldLabel">Campaign name</span>
+      <input class="fieldInput" type="text" value="May launch — kit lançamento" />
+      <span class="fieldHint">Used as the macro grouping name for this batch of posts.</span>
+    </div>
+    <div class="field">
+      <span class="fieldLabel">Target language</span>
+      <select class="fieldSelect">
+        <option>pt-BR</option>
+        <option>en-US</option>
+        <option>es-MX</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- Themes -->
+
+<div class="card">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+    <div>
+      <h2 style="margin: 0;">Themes</h2>
+      <div class="sub" style="margin-bottom: 0;">1–5 themes per campaign. Each theme produces one blog post.</div>
+    </div>
+    <button class="btn">+ Add theme</button>
+  </div>
+
+  <div class="themeList">
+
+    <!-- Theme 1 — expanded -->
+
+    <div class="themeCard expanded">
+      <div class="themeHeader">
+        <div class="themeNumber">1</div>
+        <div class="themeTitle">
+          <div class="themeTitleText">Skincare brasileira para peles maduras</div>
+          <div class="themeMeta">
+            <span>SEO: <em>skincare brasileira pele madura</em></span>
+            <span>3 products</span>
+            <span>5 keywords</span>
+          </div>
+        </div>
+        <div style="font-size: 16px; color: var(--subdued); transform: rotate(180deg);">⌃</div>
+      </div>
+
+      <div class="themeBody">
+
+        <div class="grid2">
+          <div class="field">
+            <span class="fieldLabel">Theme title</span>
+            <input class="fieldInput" type="text" value="Skincare brasileira para peles maduras" />
+          </div>
+          <div class="field">
+            <span class="fieldLabel">SEO phrase</span>
+            <input class="fieldInput" type="text" value="skincare brasileira pele madura" />
+            <span class="fieldHint">The phrase that should anchor the article's headline + first paragraph.</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="fieldLabel">Brief summary</span>
+          <textarea class="fieldTextarea" rows="3">Post sobre como a rotina de skincare brasileira (com clima quente, sol forte, pele oleosa) muda na maturidade. Foca em hidratação, FPS, e produtos que substituem rotinas de 8 etapas por 3 essenciais.</textarea>
+          <span class="fieldHint">What the post should cover. The AI uses this as the editorial brief, not as copy.</span>
+        </div>
+
+        <div class="field">
+          <span class="fieldLabel">Products to feature</span>
+          <div class="chipBox">
+            <span class="chip chipProduct">creme-noturno-renovador <span class="chipX">×</span></span>
+            <span class="chip chipProduct">protetor-solar-fluido <span class="chipX">×</span></span>
+            <span class="chip chipProduct">serum-vitamina-c-30 <span class="chipX">×</span></span>
+            <input type="text" placeholder="Search products to add..." />
+          </div>
+          <span class="fieldHint">Picked from your store. Up to 5 products per theme. Empty = AI picks from your full catalog.</span>
+        </div>
+
+        <div class="grid2">
+          <div class="field">
+            <span class="fieldLabel">Primary keywords</span>
+            <div class="chipBox">
+              <span class="chip">skincare maduro <span class="chipX">×</span></span>
+              <span class="chip">rotina pele madura <span class="chipX">×</span></span>
+              <input type="text" placeholder="Press enter to add..." />
+            </div>
+          </div>
+          <div class="field">
+            <span class="fieldLabel">Long-tail keywords</span>
+            <div class="chipBox">
+              <span class="chip">skincare 50 anos brasil <span class="chipX">×</span></span>
+              <span class="chip">cuidado pele madura clima tropical <span class="chipX">×</span></span>
+              <input type="text" placeholder="Press enter to add..." />
+            </div>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="field">
+            <span class="fieldLabel">Related searches</span>
+            <div class="chipBox">
+              <span class="chip">menopausa pele <span class="chipX">×</span></span>
+              <input type="text" placeholder="Press enter to add..." />
+            </div>
+          </div>
+          <div class="field">
+            <span class="fieldLabel">Competition level</span>
+            <select class="fieldSelect">
+              <option>Low</option>
+              <option selected>Medium</option>
+              <option>High</option>
+            </select>
+            <span class="fieldHint">Hint to the AI about how aggressively to optimize for the SEO phrase.</span>
+          </div>
+        </div>
+
+        <div class="themeFooter">
+          <button class="btn btnDanger">Delete theme</button>
+          <button class="btn btnSubdued">Collapse</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme 2 — collapsed -->
+
+    <div class="themeCard">
+      <div class="themeHeader">
+        <div class="themeNumber">2</div>
+        <div class="themeTitle">
+          <div class="themeTitleText">Rotina de manhã &lt; 5 minutos</div>
+          <div class="themeMeta">
+            <span>SEO: <em>rotina manhã rápida</em></span>
+            <span>2 products</span>
+            <span>3 keywords</span>
+          </div>
+        </div>
+        <div style="font-size: 16px; color: var(--subdued);">⌃</div>
+      </div>
+    </div>
+
+    <!-- Theme 3 — collapsed -->
+
+    <div class="themeCard">
+      <div class="themeHeader">
+        <div class="themeNumber">3</div>
+        <div class="themeTitle">
+          <div class="themeTitleText">Pele madura &amp; menopausa</div>
+          <div class="themeMeta">
+            <span class="pillNeutral">No SEO phrase yet</span>
+            <span>0 products</span>
+            <span>0 keywords</span>
+          </div>
+        </div>
+        <div style="font-size: 16px; color: var(--subdued);">⌃</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,169 @@
+{
+  "pageHeading": "Storytelling",
+  "tabs": {
+    "blogPosts": "Posts de blog",
+    "altText": "Texto Alt"
+  },
+  "index": {
+    "seoSection": "Gerar posts de blog SEO",
+    "seoDescription": "Crie briefings estruturados e gere conteúdo de blog otimizado para SEO usando IA. Revise rascunhos e publique diretamente no seu blog Shopify.",
+    "createBrief": "Novo briefing",
+    "configureBrand": "Configurar marca",
+    "getStarted": "Começar",
+    "stepBrand": "(sobre, tom de voz, diretrizes editoriais)",
+    "stepBrief": "com temas, palavras-chave e mapeamento de produtos",
+    "stepGenerate": "Gere conteúdo e revise antes de publicar"
+  },
+  "brief": {
+    "pageHeading": "Novo briefing",
+    "briefConfig": "Configuração do briefing",
+    "configureBrandFirst": "Configure sua marca em",
+    "beforeGenerating": "antes de gerar.",
+    "generationStarted": "Geração iniciada.",
+    "viewProgress": "Ver progresso",
+    "goToReview": "Ir para revisão",
+    "generate": "Gerar rascunhos →",
+    "viewAsForm": "Ver como formulário",
+    "viewAsJson": "Ver como JSON",
+    "brandContext": {
+      "heading": "Contexto da marca que a IA vai usar",
+      "noTone": "sem tom manual definido",
+      "toneTraits_one": "{{count}} traço de tom validado",
+      "toneTraits_other": "{{count}} traços de tom validados",
+      "learnings_one": "{{count}} correção de edição",
+      "learnings_other": "{{count}} correções de edição",
+      "manage": "Gerenciar fontes de tom →"
+    },
+    "themes": {
+      "heading": "Temas",
+      "sub_one": "{{count}} de 5 — cada tema gera um post.",
+      "sub_other": "{{count}} de 5 — cada tema gera um post.",
+      "add": "+ Adicionar tema",
+      "delete": "Remover tema",
+      "collapse": "Recolher",
+      "untitled": "Tema sem título",
+      "noSeo": "Sem frase de SEO",
+      "productCount_one": "{{count}} produto",
+      "productCount_other": "{{count}} produtos",
+      "keywordCount_one": "{{count}} palavra-chave",
+      "keywordCount_other": "{{count}} palavras-chave"
+    },
+    "fields": {
+      "campaignName": "Nome da campanha",
+      "campaignNameHint": "Usado como nome agregador deste lote de posts.",
+      "contentLanguage": "Idioma de destino",
+      "themeTitle": "Título do tema",
+      "themeTitlePlaceholder": "ex.: Skincare brasileira para peles maduras",
+      "themeTitleRequired": "Título do tema é obrigatório.",
+      "seoPhrase": "Frase de SEO",
+      "seoPhrasePlaceholder": "ex.: skincare brasileira pele madura",
+      "seoPhraseHint": "Frase que deve ancorar o título e o primeiro parágrafo.",
+      "summary": "Resumo do briefing",
+      "summaryPlaceholder": "O que o post deve abordar? A IA usa isso como briefing editorial, não como copy.",
+      "products": "Produtos a destacar",
+      "productsHint": "Até 5 produtos por tema. Vazio = IA escolhe do catálogo todo.",
+      "openPicker": "Selecionar produtos",
+      "closePicker": "Fechar seletor",
+      "primaryKeywords": "Palavras-chave primárias",
+      "longTailKeywords": "Palavras-chave de cauda longa",
+      "relatedSearches": "Buscas relacionadas",
+      "competitionLevel": "Nível de concorrência",
+      "competitionLevelHint": "Dica à IA sobre o quão agressivamente otimizar pela frase de SEO.",
+      "keywordPlaceholder": "Pressione enter para adicionar..."
+    }
+  },
+  "review": {
+    "pageHeading": "Revisar posts",
+    "generatedContent": "Conte\u00fado gerado",
+    "noJobId": "Sem ID de job. Crie um briefing e gere conte\u00fado a partir de",
+    "status": "Status:",
+    "jobId": "ID do Job:",
+    "publish": "Publicar",
+    "publishedDraft": "Rascunho publicado",
+    "targetBlog": "Blog de destino",
+    "blogs": "Blogs",
+    "noBlogsFound": "Nenhum blog encontrado. Crie um blog no Shopify primeiro.",
+    "publishingTo": "Publicando em: {{blogs}}",
+    "articleCreatedDraft": "Artigo criado como rascunho",
+    "statusLabels": {
+      "idle": "Ocioso",
+      "pending": "Pendente",
+      "running": "Executando \u00b7 Gerando conte\u00fado",
+      "completed": "Conclu\u00eddo",
+      "failed": "Falhou"
+    }
+  },
+  "recentGenerations": {
+    "heading": "Gera\u00e7\u00f5es recentes",
+    "empty": "Nenhuma gera\u00e7\u00e3o ainda.",
+    "viewAll": "Ver todas"
+  },
+  "pendingDiffs": {
+    "banner": "{{count}} artigo publicado tem edi\u00e7\u00f5es para aprender",
+    "banner_other": "{{count}} artigos publicados t\u00eam edi\u00e7\u00f5es para aprender",
+    "review": "Revisar",
+    "checkForUpdates": "Verificar atualiza\u00e7\u00f5es"
+  },
+  "learningsRoute": {
+    "pageHeading": "Aprender com suas edi\u00e7\u00f5es",
+    "empty": "Nenhum diff pendente. Quando voc\u00ea editar um artigo gerado por IA no Shopify, ele aparecer\u00e1 aqui.",
+    "aiDraft": "Rascunho da IA",
+    "yourEdit": "Sua edi\u00e7\u00e3o",
+    "hypothesesHeading": "O que estou notando",
+    "hypothesesHeading_plural": "O que estou notando ({{count}} hip\u00f3teses)",
+    "accept": "Aceitar",
+    "reject": "Rejeitar",
+    "edit": "Editar",
+    "accepted": "Aceito \u2713",
+    "dismissArticle": "Descartar artigo",
+    "publishedAt": "Publicado {{when}}",
+    "checkForUpdates": "Verificar atualiza\u00e7\u00f5es"
+  },
+  "altText": {
+    "pageHeading": "Texto Alt",
+    "auditHeading": "Auditoria de texto alternativo",
+    "summary": "{{missing}} de {{total}} imagens precisam de texto alternativo",
+    "generateForMissing": "Gerar para todas sem texto",
+    "refreshAudit": "Atualizar auditoria",
+    "notAuditedYet": "Nenhuma auditoria ainda. Atualize para escanear as imagens dos produtos.",
+    "filters": {
+      "all": "Todas",
+      "missing": "Sem texto",
+      "weak": "Fracas",
+      "approved": "Aprovadas",
+      "queued": "Na fila",
+      "applied": "Aplicadas"
+    },
+    "row": {
+      "noAlt": "Sem texto alternativo",
+      "weak": "Fraco",
+      "ok": "OK",
+      "generate": "Gerar",
+      "regenerate": "Gerar novamente",
+      "edit": "Editar sugest\u00e3o",
+      "approve": "Aprovar",
+      "reject": "Rejeitar",
+      "queuedAtPosition": "Na fila, posi\u00e7\u00e3o {{position}}",
+      "applied": "Aplicado",
+      "failed": "Falhou: {{message}}",
+      "retry": "Tentar novamente"
+    },
+    "cadence": {
+      "heading": "Aplica\u00e7\u00e3o di\u00e1ria",
+      "description": "100 imagens por dia para evitar penalidades do Google com altera\u00e7\u00f5es em massa.",
+      "todayCount": "Hoje: {{applied}} / {{limit}}",
+      "inQueue": "Na fila: {{count}}",
+      "eta": "ETA: {{days}} dia",
+      "eta_other": "ETA: {{days}} dias",
+      "nextRun": "Pr\u00f3xima execu\u00e7\u00e3o: amanh\u00e3"
+    },
+    "toast": {
+      "approved": "Aprovado e enviado para a fila",
+      "rejected": "Rejeitado",
+      "generated": "Sugest\u00e3o gerada",
+      "failed": "{{message}}",
+      "auditRefreshed": "Auditoria atualizada",
+      "bulkStarted": "Gera\u00e7\u00e3o em lote iniciada. Pode levar alguns minutos."
+    }
+  }
+}

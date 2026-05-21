@@ -1,0 +1,46 @@
+.tabsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-left: 8pt;
+}
+
+.tabItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4pt 18px;
+  border: 1px solid #e1e3e5;
+  border-radius: 10px 18px 0 0;
+  text-decoration: none;
+  color: #111111;
+  background: #dfe3e8;
+  font-weight: 400;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.tabItem:not(.tabActive):hover {
+  background: #d4d7da;
+}
+
+.tabActive {
+  background: #fff;
+}
+
+.tabContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tabIcon {
+  color: #8c9196;
+  display: inline-flex;
+}
+
+.tabIconActive {
+  color: #008060;
+}

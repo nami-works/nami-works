@@ -1,0 +1,809 @@
+/* ═══════════════════════════════════════════════════
+   Local delivery — MOBILE-ONLY layout (viewport <768px)
+   The desktop route redirects here on mount. One <s-page>, no aside,
+   single scrollable feed, custom <BottomSheet> primitive.
+   ═══════════════════════════════════════════════════ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 100%;
+  background: #f1f2f4;
+}
+
+/* ── Sticky top chrome ─────────────────────────────────── */
+.stickyTop {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: #f1f2f4;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid #e1e3e5;
+  padding-top: calc(10px + env(safe-area-inset-top, 0px));
+}
+
+.pageHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.pageTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #303030;
+  margin: 0;
+}
+
+.overflowBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #c9cccf;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 16px;
+  color: #303030;
+  padding: 0;
+}
+
+.overflowBtn:hover { background: #f6f6f7; }
+
+.locationChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #fff;
+  border: 1px solid #c9cccf;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #303030;
+  cursor: pointer;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.locationChip::after {
+  content: "▾";
+  font-size: 9px;
+  color: #6d7175;
+  margin-left: 2px;
+}
+
+.locationPin { color: #005bd3; }
+
+/* ── Filter chip row ───────────────────────────────────── */
+.filtersRow {
+  display: flex;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #f1f2f4;
+  border-bottom: 1px solid #e1e3e5;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filtersRow::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  background: #fff;
+  border: 1px solid #c9cccf;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #303030;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.chip::after {
+  content: "▾";
+  font-size: 9px;
+  color: #6d7175;
+  margin-left: 2px;
+}
+
+.chipGhost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #6d7175;
+  font-weight: 400;
+}
+
+.chipGhost::after { display: none; }
+
+/* ── Status strip ──────────────────────────────────────── */
+.statusStrip {
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #6d7175;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.statusStrip .sep { color: #c9cccf; }
+.statusStrip strong { color: #303030; font-weight: 600; }
+.statusStrip .errStrong { color: #d72c0d; font-weight: 600; }
+
+/* ── Optimize CTA banner ───────────────────────────────── */
+.optimizeCta {
+  margin: 4px 14px 12px;
+  padding: 14px;
+  background: #eef4ff;
+  border: 1px solid #c6dbff;
+  border-radius: 12px;
+}
+
+.optimizeCtaHeading {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #303030;
+}
+
+.optimizeCtaBody {
+  font-size: 12px;
+  color: #6d7175;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.optimizeCtaDisabledHint {
+  font-size: 12px;
+  color: #6d7175;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.optimizeProgressWrap { margin-top: 8px; }
+
+.optimizeProgressBar {
+  height: 4px;
+  background: #dce6fb;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.optimizeProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #005bd3, #6b2eb9, #d72c8a);
+  background-size: 200% 100%;
+  animation: mobileShimmer 2s linear infinite;
+}
+
+@keyframes mobileShimmer {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.optimizeProgressLabel {
+  font-size: 11px;
+  color: #6d7175;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ── Buttons ───────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btnPrimary {
+  background: #303030;
+  color: #fff;
+  border-color: #1a1a1a;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.05), inset 0 -1px 0 rgba(0,0,0,0.2);
+}
+
+.btnSecondary {
+  background: #fff;
+  color: #303030;
+  border-color: #c9cccf;
+}
+
+.btnCritical {
+  background: #fff;
+  color: #d72c0d;
+  border-color: #f2b6a3;
+}
+
+.btnSm { padding: 6px 10px; font-size: 12px; }
+
+.btnFull { width: 100%; }
+
+.btnLoading {
+  position: relative;
+  opacity: 0.85;
+}
+
+.btnLoading::before {
+  content: "";
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: rgba(255,255,255,0.95);
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: mobileSpin 0.8s linear infinite;
+  vertical-align: -2px;
+}
+
+.btnLoading.btnSecondary::before,
+.btnLoading.btnCritical::before {
+  border-color: rgba(0,0,0,0.2);
+  border-top-color: rgba(0,0,0,0.6);
+}
+
+@keyframes mobileSpin { to { transform: rotate(360deg); } }
+
+/* ── Banner ─────────────────────────────────────────────── */
+.banner {
+  margin: 0 14px 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.bannerInfo { background: #eef4ff; border: 1px solid #c6dbff; color: #1e3a8a; }
+.bannerWarn { background: #fff4e2; border: 1px solid #f4d9a4; color: #915407; }
+.bannerError { background: #fdecea; border: 1px solid #f2b6a3; color: #9e0c00; }
+
+.bannerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.bannerRow a {
+  color: #005bd3;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* ── Route list + card ─────────────────────────────────── */
+.routeList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 14px 12px;
+}
+
+.routeCard {
+  background: #fff;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.routeCardError { border-color: #f2b6a3; border-width: 1.5px; }
+
+.routeCardTerminal { opacity: 0.72; }
+
+.routeCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.routeBadgeAndLoc {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.routeBadge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.routeLocLabel {
+  font-size: 12px;
+  color: #6d7175;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statusBadge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.statusPending { background: #eee; color: #555; border-color: #ddd; }
+.statusQuoted { background: #eef4ff; color: #1e3a8a; border-color: #c6dbff; }
+.statusRequested, .statusAssigning { background: #fff4e2; color: #915407; border-color: #f4d9a4; }
+.statusHeadingToPickup { background: #fff4e2; color: #915407; border-color: #f4d9a4; }
+.statusInProgress { background: #fff4e2; color: #915407; border-color: #f4d9a4; }
+.statusDelivered { background: #e8f4ed; color: #067647; border-color: #a5d6b8; }
+.statusFailed, .statusRejected, .statusExpired { background: #fdecea; color: #9e0c00; border-color: #f2b6a3; }
+
+.routeStats {
+  font-size: 12px;
+  color: #6d7175;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.routeStats strong { color: #303030; font-weight: 600; }
+
+.routeQuoteBanner {
+  background: #e8f4ed;
+  border: 1px solid #a5d6b8;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 0 0 10px;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.routeQuoteBanner strong { color: #067647; }
+.routeQuoteBanner .expires { color: #6d7175; font-size: 11px; white-space: nowrap; }
+
+.routeTrackingBanner {
+  background: #fff4e2;
+  border: 1px solid #f4d9a4;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #915407;
+}
+
+.routeTrackingBanner a {
+  color: #005bd3;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 2px;
+}
+
+.routeErrorBanner {
+  background: #fdecea;
+  border: 1px solid #f2b6a3;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #9e0c00;
+  line-height: 1.4;
+}
+
+.routeErrorBanner strong { display: block; margin-bottom: 2px; }
+
+.routeActions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ── Collapsible section header ────────────────────────── */
+.collapsibleHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: #fff;
+  border-top: 1px solid #e1e3e5;
+  border-bottom: 1px solid #e1e3e5;
+  font-size: 13px;
+  font-weight: 600;
+  color: #303030;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  width: 100%;
+  border-left: none;
+  border-right: none;
+}
+
+.collapsibleHeaderCount {
+  color: #6d7175;
+  font-weight: 500;
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+.collapsibleChevron {
+  display: inline-block;
+  font-size: 12px;
+  color: #6d7175;
+  transition: transform 0.15s;
+  margin-left: auto;
+}
+
+.collapsibleExpanded .collapsibleChevron { transform: rotate(90deg); }
+
+/* ── Empty state ───────────────────────────────────────── */
+.emptyState {
+  padding: 28px 14px;
+  text-align: center;
+  color: #6d7175;
+  font-size: 12px;
+  line-height: 1.5;
+  background: #f1f2f4;
+}
+
+.emptyState strong { color: #303030; font-weight: 600; }
+
+/* ── Unassigned orders list ────────────────────────────── */
+.ordersList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+.orderCard {
+  background: #fff;
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.orderCardRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.orderName { font-size: 13px; font-weight: 600; color: #303030; }
+.orderTotal { font-size: 12px; color: #303030; font-weight: 500; white-space: nowrap; }
+.orderAddress { font-size: 12px; color: #6d7175; margin-top: 3px; line-height: 1.35; }
+
+.orderMeta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #6d7175;
+}
+
+.orderMeta .due {
+  padding: 1px 7px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 10px;
+}
+
+.dueToday { background: #fdecea; color: #d72c0d; }
+.dueTomorrow { background: #fff4e2; color: #d99a0a; }
+.dueLater { background: #eef4ff; color: #005bd3; }
+.orderErr { color: #d72c0d; }
+
+/* ── Map panel ─────────────────────────────────────────── */
+.mapPanel {
+  position: relative;
+  height: 60vh;
+  min-height: 280px;
+  max-height: 480px;
+  background: #f6f6f7;
+  border-top: 1px solid #e1e3e5;
+  border-bottom: 1px solid #e1e3e5;
+  overflow: hidden;
+  touch-action: pan-x pan-y;
+}
+
+.mapPanelDisabled { pointer-events: none; }
+
+.mapPanelEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #6d7175;
+  padding: 20px;
+  text-align: center;
+}
+
+/* ── Chip section (triage + desktop-only) ──────────────── */
+.chipSection { padding: 0 14px 14px; }
+
+.chipSectionHeading {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 16px 0 8px;
+}
+
+.triageChip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #303030;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  width: 100%;
+}
+
+.triageChipActionable { border-color: #c6dbff; background: #f5faff; }
+.triageChipActionable .chipArrow { color: #005bd3; font-weight: 600; }
+
+.triageChipDesktopOnly {
+  color: #6d7175;
+  background: transparent;
+  border-color: #ebebeb;
+}
+
+.triageChipDesktopOnly .chipArrow { color: #6d7175; font-size: 11px; }
+
+.triageLabel { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+.triageIcon { flex-shrink: 0; }
+
+/* ── Bottom sheet primitive ────────────────────────────── */
+.sheetBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 9000;
+  animation: fadeInSheet 0.15s ease-out;
+}
+
+.sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9001;
+  background: #fff;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  max-height: min(85vh, calc(100vh - 120px));
+  overflow-y: auto;
+  padding: 14px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+  animation: slideUpSheet 0.2s ease-out;
+}
+
+.sheetHandle {
+  width: 38px;
+  height: 4px;
+  background: #c9cccf;
+  border-radius: 2px;
+  margin: -4px auto 6px;
+}
+
+.sheetHeading {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 2px;
+  color: #303030;
+}
+
+.sheetSubheading {
+  font-size: 12px;
+  color: #6d7175;
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+.sheetDivider {
+  height: 1px;
+  background: #e1e3e5;
+  margin: 8px 0;
+}
+
+.sheetStatLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  padding: 4px 0;
+  color: #303030;
+}
+
+.sheetStatLine .label { color: #6d7175; }
+.sheetStatLine .val { color: #303030; font-weight: 500; text-align: right; }
+
+.sheetBody {
+  font-size: 13px;
+  color: #303030;
+  line-height: 1.5;
+}
+
+.sheetBody strong { color: #303030; font-weight: 600; }
+
+.sheetBigPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 4px 0 8px;
+}
+
+.sheetBigPrice .amount {
+  font-size: 26px;
+  font-weight: 700;
+  color: #303030;
+}
+
+.sheetBigPrice .expires {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.sheetActionRow {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.sheetActionRow .btn { flex: 0 0 auto; }
+
+.sheetListRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #ebebeb;
+  font-size: 12px;
+  gap: 8px;
+}
+
+.sheetListRow:last-child { border-bottom: none; }
+
+.sheetListRowLink {
+  color: #005bd3;
+  font-size: 11px;
+  text-decoration: none;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.sheetErrorDetails {
+  background: #f6f6f7;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+  color: #303030;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 6px 0;
+}
+
+.sheetOptionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #ebebeb;
+  font-size: 14px;
+  color: #303030;
+  cursor: pointer;
+  font-family: inherit;
+  background: transparent;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  width: 100%;
+  text-align: left;
+}
+
+.sheetOptionRow:last-child { border-bottom: none; }
+.sheetOptionRow:hover { background: #f6f6f7; }
+
+.sheetOptionRowActive {
+  font-weight: 600;
+  color: #005bd3;
+}
+
+.sheetOptionCheckmark {
+  color: #005bd3;
+  font-weight: 700;
+}
+
+.sheetOverflowList {
+  display: flex;
+  flex-direction: column;
+}
+
+.sheetOverflowList .sheetOptionRow:first-child { border-top: 1px solid #ebebeb; }
+
+/* ── Desktop banner ───────────────────────────────────── */
+.desktopBanner {
+  background: #eef4ff;
+  border-top: 1px solid #c6dbff;
+  border-bottom: 1px solid #c6dbff;
+  color: #1e3a8a;
+  padding: 8px 14px;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.desktopBanner a {
+  color: #005bd3;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+@keyframes fadeInSheet {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUpSheet {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Ensure body doesn't scroll when a sheet is open */
+.bodyNoScroll { overflow: hidden; }

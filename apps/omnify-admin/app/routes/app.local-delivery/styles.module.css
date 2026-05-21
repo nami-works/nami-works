@@ -1,0 +1,2086 @@
+.mapContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* All-locations gate badge — sits below the Route Manager heading and
+   above the location selector. Single inline row so the badge keeps
+   its natural width instead of stretching across the section. */
+.locationGateBadgeRow {
+  display: flex;
+  align-items: center;
+}
+
+.filterControl {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filterLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+}
+
+.mapCanvas {
+  position: relative;
+  height: calc(100vh - 140px);
+  min-height: 360px;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  background-color: #f6f6f7;
+  background-image: linear-gradient(#e5e5e5 1px, transparent 1px),
+    linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
+  background-size: 40px 40px;
+  overflow: hidden;
+}
+
+.mapCanvasWrap {
+  position: relative;
+}
+
+.mapOverlayButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Polyline edit toolbar — top-left corner of the map canvas, parallel to
+   the expand/collapse toggle on the right. Three states: Edit (default),
+   Confirm + Cancel (editing). Only renders on desktop. */
+.polylineToolbar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 768px) {
+  .polylineToolbar {
+    display: none;
+  }
+}
+
+/* Popover wrapper for the polyline editor's "Reassign to..." dropdown.
+   Same pattern used in app.goals (.actionPopover) — the wrapper exists so
+   the popover anchors to its trigger row instead of escaping the toolbar. */
+.polylineReassignPopover {
+  position: relative;
+  display: inline-block;
+}
+
+/* Popover wrapper for the footer-right "More actions" overflow menu. */
+.moreActionsMenuWrap {
+  position: relative;
+  display: inline-block;
+}
+
+/* Legacy class kept as a no-op alias so any leftover usage doesn't break. */
+.btnLabel {
+  display: none;
+}
+
+/* Map canvas in polyline-edit mode — adds a subtle visual cue (dashed inner
+   border) so the operator knows polylines are in edit state. The actual
+   dotted+subdued polyline rendering happens via google.maps.Polyline.setOptions
+   in the map render effect. */
+.mapCanvasEditing {
+  outline: 2px dashed #b3d1ff;
+  outline-offset: -2px;
+}
+
+.fullscreenMapActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.mapBlockFooterRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.mapMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.mapLegendOutside {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Legend chip — single trigger that reveals the full legend on hover/focus.
+   Replaces the 2026-05-12 six-pill strip. Visual mirrors a Polaris
+   default-tone <s-badge> at rest: gray pill, no border, font-size 12px.
+   On hover/focus the "Legend" label slides out next to the icon AND the
+   popover opens above. Spec: inputs/mockups/local-delivery-control-row-v1.html. */
+.legendChip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 4px 8px;
+  background: #e4e5e7;
+  border-radius: 99px;
+  color: #303030;
+  font-size: 12px;
+  cursor: default;
+  user-select: none;
+  outline: none;
+  transition: gap 0.2s ease, background 0.15s ease;
+}
+
+.legendChip:hover,
+.legendChip:focus-within {
+  background: #d2d5d8;
+  gap: 6px;
+}
+
+.legendChipIcon {
+  display: inline-flex;
+  align-items: center;
+  color: #303030;
+  flex-shrink: 0;
+}
+
+/* "Legend" label — slides out from max-width:0 on hover/focus. Same mechanic
+   the deleted .hoverExpandLabel used on the control buttons. */
+.legendChipLabel {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 0;
+  color: inherit;
+  transition: max-width 0.2s ease;
+}
+
+.legendChip:hover .legendChipLabel,
+.legendChip:focus-within .legendChipLabel {
+  max-width: 100px;
+}
+
+.legendPop {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  display: none;
+  gap: 4px;
+  z-index: 10;
+}
+
+.legendChip:hover .legendPop,
+.legendChip:focus-within .legendPop {
+  display: flex;
+}
+
+.legendPopCol {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.legendPopItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #303030;
+  white-space: nowrap;
+}
+
+.mapPoint {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.mapPointLocation {
+  background-color: #008060;
+  box-shadow: 0 0 0 3px rgba(0, 128, 96, 0.2);
+}
+
+.mapPointOrder {
+  background-color: #95bf47;
+  box-shadow: 0 0 0 3px rgba(149, 191, 71, 0.2);
+}
+
+.mapLegend {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  color: #6d7175;
+  font-size: 12px;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.mapFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.mapFooterActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mapFooterLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.asideSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding-bottom: 8px;
+}
+
+.startDateRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.startDateFieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.asideButtonRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+.asideButtonRowActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.carrierStatusBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.carrierStatusExpanded {
+  padding: 12px;
+  background: var(--s-color-bg-surface-secondary, #f6f6f7);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.carrierStatusLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: ui-monospace, monospace;
+}
+
+.carrierStatusVar {
+  font-size: 12px;
+  color: var(--s-color-text-subdued, #6d7175);
+}
+
+.carrierStatusValue {
+  font-size: 12px;
+  color: var(--s-color-text, #202223);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.carrierStatusOk {
+  color: #008060;
+  font-weight: 600;
+}
+
+.carrierStatusFail {
+  color: #d72c0d;
+  font-weight: 600;
+}
+
+.carrierStatusResult {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--s-color-border-secondary, #e1e3e5);
+}
+
+.rowEqualItem,
+.row40Item,
+.row60Item {
+  display: flex;
+  min-width: 0;
+}
+
+.rowEqualItem {
+  flex: 1 1 0;
+}
+
+.row40Item {
+  flex: 0 0 40%;
+}
+
+.row60Item {
+  flex: 1 1 60%;
+}
+
+.rowEqualItem :global(s-button),
+.row40Item :global(s-button),
+.row60Item :global(s-button) {
+  width: 100%;
+}
+
+.mainBlocks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.unassignedSectionWrap {
+  margin-top: 12px;
+}
+
+.unassignedActionsTopRight {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.unassignedHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.unassignedBucketsScroll {
+  max-height: min(56vh, 640px);
+  overflow: auto;
+  padding-top: 8px;
+  padding-right: 4px;
+  padding-left: 4px;
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+  box-shadow: inset 0 -10px 12px -12px rgba(0, 0, 0, 0.45);
+}
+
+.fullscreenOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  /* 2026-05-08 scroll fix: overlay itself is the scroll container so the
+     scrollbar lands at the viewport's right edge. Padding moved to
+     .fullscreenContent so it doesn't push the scrollbar inward. All
+     blocks (header + map + aside) scroll together as a single unit.
+     Backdrop covers the underlying page so the fullscreen-expanded view
+     reads as a focused workspace. */
+  background: #f1f1f1;
+  overflow-y: auto;
+}
+
+.fullscreenContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  /* Height removed -- content drives layout height; the parent overlay
+     handles overflow at the viewport edge. */
+}
+
+.fullscreenHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fullscreenScroll {
+  /* Outer .fullscreenOverlay handles the scroll now (2026-05-08).
+     This element is just a passthrough wrapper; flex layout is preserved
+     for any child sizing that depends on it. */
+  flex: 1;
+  padding-bottom: 8px;
+}
+
+.fullscreenSplitLayout {
+  flex: 1;
+  display: grid;
+  /* Sidebar parity in expanded mode: 1fr map + fixed aside column.
+     The aside renders Route manager + Auto-assign accuracy in the same
+     order as the collapsed view. */
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 16px;
+}
+
+@media (max-width: 1024px) {
+  .fullscreenSplitLayout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.fullscreenAsidePane {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 8px;
+}
+
+/* 2026-05-16: route cards (and other s-box containers) in the fullscreen
+   aside pane render against the gray overlay (#f1f1f1 on .fullscreenOverlay).
+   Force white background so they read as elevated cards — mirrors how
+   non-fullscreen mode renders them against the white admin chrome. */
+.fullscreenAsidePane :global(s-box) {
+  background: #ffffff;
+}
+
+.fullscreenMapPane {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fullscreenAssignedPane {
+  min-width: 0;
+  overflow: auto;
+  padding-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mapCanvasFullscreen {
+  height: calc(100vh - 140px);
+  min-height: 360px;
+}
+
+.dueGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+}
+
+.dueGroupWithDivider {
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.dueGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #ffffff;
+  padding: 12px 0 8px;
+}
+
+.dueOrdersTable {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  overflow-x: auto;
+  background: #ffffff;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.dueOrdersHeader,
+.dueOrdersRow {
+  display: grid;
+  /* 2026-05-12 v3: FIXED column widths so the grid reads as a real table.
+     Each column is a uniform vertical lane regardless of content width.
+     Customer + Address truncate with ellipsis (CSS rule below); their full
+     value is exposed via `title=` attribute on the JSX side.
+
+     Prior versions:
+     - v1 (2026-05-10): max-content + 8px column-gap. Narrow columns mashed
+       on the left, Route/Address sat far apart on the right; didn't read
+       like a table.
+     - v2 (2026-05-12): bumped column-gap 8 → 18px. Helped the headers
+       breathe but column widths still drifted with content. Lucas flagged
+       "doesn't behave as a table" — switched to fixed widths in v3. */
+  grid-template-columns:
+    24px                                       /* Checkbox */
+    70px                                       /* Order # */
+    var(--customer-col-width, 140px)           /* Customer (ellipsis) */
+    110px                                      /* Date */
+    52px                                       /* Due (icon-only, centered) */
+    var(--route-col-width, 168px)              /* Route badge + Unassign */
+    minmax(160px, 1fr);                        /* Address (ellipsis, absorbs leftover) */
+  column-gap: 12px;
+  padding: 8px 8px;
+  align-items: center;
+  font-size: 13px;
+}
+
+/* Location gate: when no specific location is selected, the checkbox column
+   is dropped from the grid and the cells are conditionally not rendered in
+   JSX. Selection is unreachable from this surface. */
+.dueOrdersTable[data-no-cb="true"] .dueOrdersHeader,
+.dueOrdersTable[data-no-cb="true"] .dueOrdersRow {
+  grid-template-columns:
+    70px
+    var(--customer-col-width, 140px)
+    110px
+    52px
+    var(--route-col-width, 168px)
+    minmax(160px, 1fr);
+}
+
+/* Content cells: nowrap + overflow handling. Customer + Address use ellipsis
+   truncation (their truncate-friendly classes below); other cells are
+   nowrap-only since their content fits the fixed width. */
+.dueOrdersHeader > span,
+.dueOrdersRow > span,
+.dueOrdersRow > s-link {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.dueOrdersHeader {
+  background: #f6f6f7;
+  font-weight: 600;
+  color: #3a3a3a;
+}
+
+.dueOrdersHeader > span:first-child,
+.dueOrdersRow > span:first-child {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dueOrdersRow {
+  border-top: 1px solid #eceeef;
+}
+
+.mapFooterBadge {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 8px;
+}
+
+/* Expanded mode (fullscreen): wider customer column + Route badge spelled out
+   ("Route 02") makes the route+unassign cell wider. */
+.dueOrdersTable[data-mode="expanded"] {
+  --customer-col-width: 120px;
+  --route-col-width: 200px;
+}
+
+/* Center-align Due and Route columns (header label + cell content). */
+.dueOrdersCenterCell {
+  text-align: center;
+  justify-self: center;
+}
+
+/* Route+Unassign combined cell: badge centered relative to the column,
+   Unassign icon attached to the right edge. Three-column grid with flexible
+   sides keeps the badge column-centered (tracking the header) regardless
+   of the icon's presence. Falls back to a centered "—" when unassigned. */
+.routeWithUnassignCell {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 100%;
+  text-align: initial;
+  justify-self: stretch;
+}
+
+.routeWithUnassignCell > .routeBadge,
+.routeWithUnassignCell > .routeUnassignedDash {
+  grid-column: 2;
+  justify-self: center;
+}
+
+.routeWithUnassignCell > s-button {
+  grid-column: 3;
+  justify-self: end;
+}
+
+/* Orders filter chips — replace previous tabs UI. Active chip is filled dark,
+   inactive chips are subdued grey. Drives a single visual cue for current filter. */
+.ordersFilterChipsRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.ordersFilterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: #f1f2f3;
+  color: #6d7175;
+  user-select: none;
+  font-family: inherit;
+}
+
+.ordersFilterChip:hover {
+  background: #e7e8ea;
+  color: #303030;
+}
+
+.ordersFilterChipActive {
+  background: #303030;
+  color: #ffffff;
+  border-color: #303030;
+}
+
+.ordersFilterChipActive:hover {
+  background: #1f1f1f;
+  color: #ffffff;
+}
+
+.ordersFilterChipCount {
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+.ordersFilterChipActive .ordersFilterChipCount {
+  opacity: 0.85;
+}
+
+.routeUnassignedDash {
+  color: #6d7175;
+  font-weight: 500;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mapHeaderGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.mapSelectBox {
+  width: 40%;
+  max-width: 40%;
+}
+
+.mapHeaderActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.mapHeaderLeft {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex: 1 1 auto;
+}
+
+.manageOrdersButtonWrap {
+  padding: 0 4px;
+}
+
+.mapHeaderRow {
+  margin-bottom: 8px;
+}
+
+.legendSwatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.assignedRoutesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.assignedRoutesHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.routeManagerHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.routeManagerTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.clearAllRoutesBottom {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+/* 2026-05-12: single tight column for selector + warnings + status badge +
+   location-gate prompt. Replaces the prior s-stack/margin-based layout which
+   produced an uneven gap between Failed-delivery and Orders-to-deliver vs the
+   Orders-to-deliver → Pick-a-location pair. */
+.routeManagerHeaderCol {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.routeManagerStatusRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* Padding removed (2026-05-06): the prior `padding: 6px 4px` was offsetting
+     the Orders-to-deliver badge 4px to the right of the warning badges in
+     .headerBadgesRow above, creating a visible misalignment between the two
+     stacked badge rows. Margin handles the vertical breathing room without
+     introducing horizontal offset. */
+}
+
+/* Header-style badge stack — wraps when narrow, keeps consistent gap. */
+.headerBadgesRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Warehouse-method override toggle (inline form). Sits between the location
+   selector and the warning badges inside .routeManagerHeaderCol as a flat
+   row — no background, no border — to read as part of the section's native
+   controls. Matches the Shopify-admin convention of stacking simple inputs
+   without per-element boxing. Click anywhere on the row toggles the
+   s-checkbox via the onClick wrapper. */
+.warehouseToggleInline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+.warehouseToggleLabel {
+  font-size: 13px;
+  color: #303030;
+}
+
+/* Route card action row — right-aligned, used for both pre-dispatch
+   primary button cluster and post-dispatch status badge. */
+.routeCardActionsRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+/* Inline notification slot inside the action row (pre-dispatch cards). The
+   notification badge sits on the LEFT of the primary button via margin-right:
+   auto pushing the rest right. Replaces the prior below-the-row rendering for
+   pre-dispatch state. */
+.routeCardActionsRowInlineNotif {
+  margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Action menus (Polaris s-menu) — force a fully-opaque white surface. The
+   default Polaris styling renders with a slight transparency that hurts
+   readability when the menu floats over the map (per 2026-05-06 review).
+   Targets the host element via :global since s-menu is a web component. */
+:global(s-menu) {
+  background: #ffffff !important;
+  opacity: 1 !important;
+  --s-menu-background: #ffffff;
+  --p-color-bg-surface: #ffffff;
+}
+
+.accuracyContent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Section heading primary-action slot: holds the post-mortem entry point
+   (silent "Review decisions →" by default; warning badge wrapping a link
+   when unreviewed flagged decisions exist). */
+.accuracyHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.accuracyReviewLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #005bd3;
+  text-decoration: none;
+}
+
+.accuracyReviewLink:hover {
+  text-decoration: underline;
+}
+
+.accuracyBarWrap {
+  width: 100%;
+  height: 10px;
+  border-radius: 5px;
+  background: #e1e3e5;
+  overflow: hidden;
+}
+
+.accuracyBarFill {
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #00bcd4, #e040fb);
+  transition: width 0.4s ease;
+}
+
+.accuracyStats {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.accuracyPct {
+  font-size: 20px;
+  font-weight: 600;
+  color: #303030;
+}
+
+.accuracyDetail {
+  font-size: 13px;
+  color: #6d7175;
+}
+
+.accuracyPeriod {
+  font-size: 11px;
+  color: #8c9196;
+}
+
+.routeManagerActionsMenu {
+  position: relative;
+}
+
+.locationGroup {
+  margin-bottom: 16px;
+}
+
+.locationGroup:last-child {
+  margin-bottom: 0;
+}
+
+.assignedRoutesTopActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.driverErrorDetails {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  overflow-x: auto;
+  margin: 8px 0 0;
+  white-space: pre-wrap;
+}
+
+.routeCard {
+  /* Tightened from 24px → 8px (1/3) so route cards stack more densely. */
+  padding-top: 8px;
+}
+
+.routeCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  /* Header bleed reduced to match the tighter card; was -12/-12/12/-12 + 16/12. */
+  margin: -8px -8px 8px -8px;
+  padding: 8px 8px;
+  border-radius: 12px 12px 0 0;
+}
+
+.routeCardHeaderText :global(s-text) {
+  color: #24324a;
+}
+
+.routeCardHeaderText {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.routeCardOrderStats {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.routeCardOrderStats :global(s-text) {
+  color: #24324a;
+}
+
+.routeCardStatus {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dispatchedBlock {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.routeBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  background-color: var(--badge-bg, #e7ecf4);
+  color: var(--badge-text, #24324a);
+}
+
+.pageActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.settingsSpanFull {
+  grid-column: 1 / -1;
+}
+
+.settingsPickupInstructionsWrap {
+  min-height: 160px;
+}
+
+.settingsPickupInstructionsWrap s-text-area {
+  min-height: 160px;
+  display: block;
+}
+
+.settingsHidden {
+  display: none;
+}
+
+.assignedRoutesList {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.assignedRoutesPanel {
+  position: sticky;
+  top: 16px;
+  align-self: start;
+  padding: 12px;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  background-color: #ffffff;
+}
+
+.assignModalGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+/* The manage/details route modals reuse .dueOrdersTable but render only
+   4 columns (checkbox/Order/Customer/Address). Override the main 7-column
+   grid for these scoped tables so the address column doesn't get squeezed. */
+.manageRouteLayout .dueOrdersHeader,
+.manageRouteLayout .dueOrdersRow {
+  grid-template-columns:
+    24px
+    56px
+    var(--customer-col-width, 120px)
+    minmax(140px, 1fr);
+}
+
+/* The table fills its row and scrolls vertically inside; the embedded
+   map above stays fixed so only the order list pages through long routes. */
+.manageRouteLayout .dueOrdersTable {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+/* Anchor the table header to the top of the scroll container so it stays
+   visible while the body scrolls. Background must be opaque so rows don't
+   show through. */
+.manageRouteLayout .dueOrdersHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f6f6f7;
+}
+
+.manageRouteLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  /* Map gets ~35% of vertical space, table ~65% — table-dominant per Lucas's call.
+     Vertical scroll lives inside the table only; map area stays fixed. */
+  grid-template-rows: minmax(0, 0.55fr) minmax(0, 1fr);
+  gap: 16px;
+  height: min(72vh, 760px);
+}
+
+.manageRouteTableRow {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.manageRouteMapCanvas {
+  height: 100%;
+}
+
+.assignModalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.narrowModalContent {
+  width: min(100%, 360px);
+  margin: 0 auto;
+}
+
+.mapStyleModalContent {
+  width: min(100%, 480px);
+  margin: 0 auto;
+}
+
+.mapStyleModalColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.placeAutocompleteField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.placeAutocompleteLabel {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.placeAutocompleteHost {
+  width: 100%;
+}
+
+.ordersTable {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(140px, 1fr) minmax(80px, auto) minmax(80px, auto);
+  gap: 8px 16px;
+  font-size: 14px;
+  align-items: center;
+}
+
+.ordersTableHeader {
+  display: contents;
+}
+
+.ordersTableHeader span {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  color: #1f2933;
+}
+
+.ordersTableRow {
+  display: contents;
+}
+
+.ordersTableRow span {
+  display: flex;
+  align-items: center;
+  color: #414f59;
+}
+
+.ordersHeaderOrder {
+  justify-content: flex-start !important;
+  text-align: left;
+}
+
+.ordersHeaderCustomer,
+.ordersHeaderRemove,
+.ordersHeaderDetails {
+  justify-content: center;
+  text-align: center;
+}
+
+.ordersCellOrder {
+  justify-content: flex-start !important;
+  text-align: left;
+}
+
+.ordersCellCustomer {
+  justify-content: flex-start !important;
+  text-align: left;
+}
+
+.ordersCellRemove,
+.ordersCellDetails {
+  justify-content: center;
+  text-align: center;
+}
+
+
+.routeColorSwatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid #d0d5dd;
+}
+
+@media (max-width: 768px) {
+  .mapCanvas {
+    height: 300px;
+    min-height: 250px;
+  }
+  .mapOverlayButton {
+    display: none;
+  }
+
+  /* Prevent route card button row from overflowing on small screens */
+  .routeCard :global(s-stack[direction="inline"]) {
+    flex-wrap: wrap;
+  }
+
+  .mapHeaderGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mapSelectBox {
+    width: 100%;
+    max-width: 100%;
+  }
+  .assignedRoutesList {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settingsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.mapLabelContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Polaris s-badge / side-panel routeBadge parity (2026-05-12). Drops the
+   prior 14px / weight 700 / 1.5px black border / radius 999px in favor of
+   the Polaris-canonical 12px / 600 / no border / radius 10px shape. Per-route
+   bg+text pairing is applied inline by buildLabel via deriveBadgeColorsForMap.
+   Spec: inputs/mockups/ld-map-pills-polaris-v1.html. */
+.mapLabelText {
+  color: #1f2933;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1.4;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+.mapLabelEmoji {
+  display: inline-flex;
+  align-items: center;
+}
+
+.mapLabelOrder {
+  font-size: 12px;
+}
+
+.mapLabelBadge {
+  border-radius: 10px;
+  padding: 2px 8px;
+  background-color: #e4e5e7;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+
+.orderListDivider {
+  padding-top: 4px;
+}
+
+/* Phase review: extracted from inline styles */
+.addressVerifyScrollArea {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.addressVerifyDivider {
+  border-bottom: 1px solid #e1e3e5;
+  margin: 12px 0;
+}
+
+.addressVerifyItem {
+  padding: 4px 0;
+}
+
+.addressVerifyHeader {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.addressVerifyOrderName {
+  color: #008060;
+}
+
+.addressVerifyHeaderSep {
+  color: #6d7175;
+}
+
+.addressVerifyCustomerName {
+  color: #202223;
+  font-weight: 600;
+}
+
+.addressVerifyOriginal {
+  color: #6d7175;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.addressVerifyInputWrap {
+  margin-top: 8px;
+}
+
+.addressVerifyInput {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #c9cccf;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.addressVerifyInput:focus {
+  border-color: #008060;
+}
+
+.deliveryStatusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cancelErrorBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.goToLalamoveLink {
+  font-size: 12px;
+  color: #2C6ECB;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.goToLalamoveLink:hover {
+  color: #1F5199;
+}
+
+.cancelWarningBox {
+  padding: 12px;
+  border: 1px solid #E0B3B2;
+  border-radius: 8px;
+  background-color: #FFF4F4;
+}
+
+.integrationLogEventHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.carrierDiagnosticSpacing {
+  margin-top: 8px;
+}
+
+.carrierDiagnosticCheckRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.carrierDiagnosticSymbol {
+  font-weight: 600;
+}
+
+.carrierDiagnosticLabel {
+  font-size: 13px;
+}
+
+.changeSettingsRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.locationSelectRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.locationSelectFlex {
+  flex: 1;
+  min-width: 0;
+}
+
+.locationSelectActions {
+  flex: 0 0 auto;
+}
+
+
+.asideOrdersRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.debugPreWrap {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.returnQuoteRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  background: #f6f6f7;
+}
+
+/* Collapsible section wrapper */
+.collapsibleSectionWrap {
+  position: relative;
+}
+
+/* Clickable chevron toggle at bottom-right */
+.collapseChevron {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.chevronIcon {
+  font-size: 18px;
+  font-weight: 600;
+  color: #8c9196;
+  transition: transform 0.15s ease, color 0.15s ease;
+  transform: rotate(270deg);
+  display: inline-block;
+}
+
+.collapseChevron.collapsed .chevronIcon {
+  transform: rotate(90deg);
+}
+
+.collapseChevron:hover .chevronIcon {
+  color: #303030;
+}
+
+.ordersSectionWrap {
+  scroll-margin-top: 30vh;
+  min-width: 0;
+}
+
+.ordersSectionWrap * {
+  min-width: 0;
+}
+
+.tabsRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.tab {
+  padding: 8px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: #6d7175;
+  font-weight: 400;
+  font-size: 13px;
+  text-decoration: none;
+  background: none;
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: #303030;
+  border-bottom-color: #8c9196;
+}
+
+.tabActive {
+  color: #303030;
+  font-weight: 500;
+  border-bottom-color: #303030;
+}
+
+.rowActionCell {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.routeCardNotifications {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.routeCardSubdued {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+@media (max-width: 768px) {
+  .dueOrdersTable {
+    overflow-x: auto;
+  }
+  .dueOrdersTable > .dueOrdersHeader,
+  .dueOrdersTable > .dueOrdersRow {
+    min-width: 1060px;
+  }
+}
+
+/* ─── Optimize-fleet progress bar ─────────────────────────────────────────── */
+
+.optimizeProgressWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0;
+}
+
+.optimizeProgressHeader {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 13px;
+  color: #6d7175;
+}
+
+/* AI optimize phase label spans the whole header row (replaces the prior
+   two-column layout with phase + ETA — the ETA was misleading with LLM
+   variability). */
+.optimizeProgressPhase {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.optimizeProgressBar {
+  height: 6px;
+  background: #e1e3e5;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.optimizeProgressFill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #5ecece, #b09fda, #d4a8d4, #5ecece);
+  background-size: 200% 100%;
+  animation: omnify-holo-bar 1.4s linear infinite;
+  transition: width 0.5s ease;
+}
+
+/* ── Per-stop POD bucketing — issue #1 / blueprint §13.8 ── */
+
+/* Details-modal variant of dueOrdersTable that adds a Status column. */
+.dueOrdersTableWithStatus .dueOrdersHeader,
+.dueOrdersTableWithStatus .dueOrdersRow {
+  grid-template-columns:
+    24px
+    72px                            /* Order # */
+    minmax(120px, 1.2fr)            /* Customer */
+    minmax(160px, 2fr)              /* Address */
+    minmax(96px, max-content);      /* Status pill */
+}
+
+.podStopPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  justify-self: start;
+}
+
+.podStopPill_delivered {
+  background: #e0f5ea;
+  color: #067647;
+  border-color: #aedcc1;
+}
+
+.podStopPill_failed {
+  background: #fde2dd;
+  color: #d72c0d;
+  border-color: #f3b8ad;
+}
+
+.podStopPill_pending {
+  background: #fff4d6;
+  color: #b88500;
+  border-color: #f0d68a;
+}
+
+.podStopPill_unknown {
+  background: #ececed;
+  color: #6d7175;
+  border-color: #d4d6d8;
+}
+
+/* needs-review variant of the per-stop pill. Same visual weight as the
+   warning chips elsewhere; "Suspect" copy comes from i18n. Used in the
+   Route details modal when the route was flagged by the watchdog
+   reconciler (return-stop, cancelled-with-partial, unknown POD, empty
+   POD after retries). */
+.podStopPill_suspect {
+  background: #fff4d6;
+  color: #b88500;
+  border-color: #f0d68a;
+}
+
+/* Bucket badge sits inline below the route header. */
+.podBucketBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  margin-top: 8px;
+  align-self: flex-start;
+}
+
+.podBucket_clean {
+  background: #e0f5ea;
+  color: #067647;
+  border-color: #aedcc1;
+}
+
+.podBucket_mixed,
+.podBucket_held {
+  background: #fff4d6;
+  color: #b88500;
+  border-color: #f0d68a;
+}
+
+.podBucket_skip {
+  background: #fde2dd;
+  color: #d72c0d;
+  border-color: #f3b8ad;
+}
+
+/* Watchdog reconciler verdict. Hyphen in the bucket value
+   ("needs-review") is normalized to underscore at the lookup site
+   (see app.local-delivery.tsx → podBucketBadge render). */
+.podBucket_needs_review {
+  background: #fff4d6;
+  color: #b88500;
+  border-color: #f0d68a;
+}
+
+/* Route card wrapper accent — the 3px left rail on cards flagged
+   needs-review so the operator can spot them in the right rail without
+   opening the modal. Sits inside the existing borderRadius so the rail
+   tucks behind the rounded corner. */
+.routeCardNeedsReview > :global(s-box) {
+  border-left: 3px solid #b88500;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* Banner that surfaces inside the Route details modal when the
+   reconciler flagged the route. Title + plain-language hint;
+   no literal CLI command. */
+.needsReviewBanner {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #fff8e1;
+  border: 1px solid #f0d68a;
+  color: #5b4700;
+  margin-bottom: 14px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.needsReviewBannerIcon {
+  font-weight: 700;
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.needsReviewBannerContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.needsReviewBannerTitle {
+  font-weight: 600;
+  color: #5b4700;
+}
+
+.needsReviewBannerHint {
+  color: #5b4700;
+  opacity: 0.85;
+  font-size: 12px;
+}
+
+/* Suspect row treatment inside the stops table — light orange tint
+   + thicker left edge so the operator's eye lands on the rows that
+   need verification. */
+.dueOrdersRowSuspect {
+  background: #fff8f0;
+  box-shadow: inset 3px 0 0 0 #b88500;
+}
+
+/* Persistent yellow banner for partialDelivery state. */
+.podPartialBanner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #fff8e1;
+  color: #5b4700;
+  border: 1px solid #f0d68a;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.podPartialBannerTitle {
+  font-weight: 600;
+}
+
+.podPartialBannerBody {
+  color: #5b4700;
+}
+
+/* ---------- Order details modal (2026-05-07) ---------- */
+/* Hover affordance for clickable rows in the All-orders table. The whole
+   row (except interactive children: checkbox, action buttons) opens the
+   order details modal on click. */
+.dueOrdersRowClickable {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.dueOrdersRowClickable:hover {
+  background: #f6f6f7;
+}
+.dueOrdersRowClickable:focus-visible {
+  outline: 2px solid #005bd3;
+  outline-offset: -2px;
+}
+
+.dueOrdersOrderName {
+  color: #005bd3;
+  font-weight: 500;
+}
+
+/* Modal body — two-column grid on desktop, single column on mobile. */
+.orderModalBody {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 4px 0;
+}
+.orderModalFull {
+  grid-column: 1 / -1;
+}
+
+.orderModalCard {
+  background: #f6f6f7;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.orderModalSectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0 0 6px;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.orderModalKeyVal {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.orderModalKey {
+  color: #6d7175;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.orderModalVal {
+  color: #303030;
+  font-size: 13px;
+  word-wrap: break-word;
+}
+
+.orderModalAddress {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.orderModalLineItems {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* 2026-05-10 r2: subdued subtitle row directly under the modal heading.
+   Holds order-level metadata (Processed at) so the Items block can stay
+   focused on products. Sits above the first card. */
+.orderModalSubtitle {
+  color: #6d7175;
+  font-size: 12px;
+  margin: -4px 0 4px;
+}
+
+/* 2026-05-08 rewrite: Items block now lists actual line items
+   (title + quantity) instead of repeating shipping data. */
+.orderModalLineItemRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+/* Customer-name display when the "Name" label is dropped (the value is
+   self-evident; spec 2026-05-08). */
+.orderModalCustomerName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303030;
+  margin-bottom: 8px;
+}
+
+/* Plain "Edit in order page" link inside the Shipping address card --
+   Plan B per Lucas. No diagonal arrow pseudo-element (the
+   .orderModalExternalLink::after rule still applies on the legacy
+   class but this new class skips it). */
+.orderModalAddressLink {
+  display: inline-block;
+  margin-top: 8px;
+  color: #005bd3;
+  font-size: 12px;
+  text-decoration: none;
+}
+.orderModalAddressLink:hover {
+  text-decoration: underline;
+}
+
+/* Add-a-tag wrapper -- adapts the Polaris s-text-field to the same
+   inline horizontal-flow as the chip row above it. */
+.orderModalAddTagWrap {
+  display: inline-block;
+  min-width: 160px;
+}
+
+.orderModalTotals {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e1e3e5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.orderModalTotalsRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.orderModalExternalLink {
+  color: #005bd3;
+  font-size: 12px;
+  text-decoration: none;
+}
+.orderModalExternalLink:hover {
+  text-decoration: underline;
+}
+.orderModalExternalLink::after {
+  content: " ↗";
+}
+
+/* Tag editor — Hybrid: operator quick-toggles + chip editor */
+.orderModalTagsLabel {
+  color: #6d7175;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin: 8px 0 4px;
+}
+
+.orderModalTagToggleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.orderModalTagToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid #e1e3e5;
+  border-radius: 14px;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #6d7175;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.orderModalTagToggle:hover {
+  border-color: #303030;
+  color: #303030;
+}
+
+.orderModalTagToggleIndicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid #6d7175;
+  background: transparent;
+}
+
+.orderModalTagToggleActive {
+  background: #fff3e0;
+  border-color: #b54708;
+  color: #b54708;
+}
+.orderModalTagToggleActive:hover {
+  background: #ffe5cc;
+}
+.orderModalTagToggleActive .orderModalTagToggleIndicator {
+  background: #b54708;
+  border-color: #b54708;
+}
+
+.orderModalChipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.orderModalChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px 2px 10px;
+  background: #ececed;
+  color: #303030;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.orderModalChipRemove {
+  border: none;
+  background: transparent;
+  color: #6d7175;
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: 50%;
+}
+.orderModalChipRemove:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #303030;
+}
+
+.orderModalAddTagInput {
+  padding: 3px 10px;
+  border: 1px dashed #e1e3e5;
+  border-radius: 12px;
+  background: transparent;
+  color: #303030;
+  font-size: 12px;
+  min-width: 140px;
+  outline: none;
+}
+.orderModalAddTagInput::placeholder {
+  color: #6d7175;
+}
+.orderModalAddTagInput:focus {
+  border-color: #005bd3;
+  border-style: solid;
+}
+
+.orderModalNotesEmpty {
+  color: #6d7175;
+  font-style: italic;
+  margin: 0 0 8px;
+  font-size: 12px;
+}
+
+/* Right-aligned footer (2026-05-08 per Lucas; 2026-05-10 r2 made flush
+   to the right edge by zeroing the left margin/padding the modal slot
+   adds and by using justify-content: flex-end). The "Open full order"
+   button is secondary, Close is primary, both anchor to the right edge. */
+
+/* Generic right-aligned modal footer (2026-05-10 r2). Drop-in container
+   for <div slot="footer"> in any s-modal. Buttons hug the right edge.
+   Used by: Map Style modal, Order Details modal. */
+.modalFooterRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .orderModalBody {
+    grid-template-columns: 1fr;
+  }
+}
+

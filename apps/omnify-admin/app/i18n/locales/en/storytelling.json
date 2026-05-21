@@ -1,0 +1,169 @@
+{
+  "pageHeading": "Storytelling",
+  "tabs": {
+    "blogPosts": "Blog posts",
+    "altText": "Alt Text"
+  },
+  "index": {
+    "seoSection": "Generate SEO blog posts",
+    "seoDescription": "Create structured briefs and generate SEO-optimized blog content using AI. Review drafts and publish to your Shopify blog.",
+    "createBrief": "New brief",
+    "configureBrand": "Configure brand settings",
+    "getStarted": "Get started",
+    "stepBrand": "(about, tone of voice, editorial guidelines)",
+    "stepBrief": "with themes, keywords, and product mapping",
+    "stepGenerate": "Generate content and review before publishing"
+  },
+  "brief": {
+    "pageHeading": "New brief",
+    "briefConfig": "Brief configuration",
+    "configureBrandFirst": "Configure your brand in",
+    "beforeGenerating": "before generating.",
+    "generationStarted": "Generation started.",
+    "viewProgress": "View progress",
+    "goToReview": "Go to review",
+    "generate": "Generate drafts →",
+    "viewAsForm": "View as form",
+    "viewAsJson": "View as JSON",
+    "brandContext": {
+      "heading": "Brand context the AI will use",
+      "noTone": "no manual tone string",
+      "toneTraits_one": "{{count}} validated tone trait",
+      "toneTraits_other": "{{count}} validated tone traits",
+      "learnings_one": "{{count}} edit-correction",
+      "learnings_other": "{{count}} edit-corrections",
+      "manage": "Manage tone sources →"
+    },
+    "themes": {
+      "heading": "Themes",
+      "sub_one": "{{count}} of 5 — each theme produces one blog post.",
+      "sub_other": "{{count}} of 5 — each theme produces one blog post.",
+      "add": "+ Add theme",
+      "delete": "Delete theme",
+      "collapse": "Collapse",
+      "untitled": "Untitled theme",
+      "noSeo": "No SEO phrase",
+      "productCount_one": "{{count}} product",
+      "productCount_other": "{{count}} products",
+      "keywordCount_one": "{{count}} keyword",
+      "keywordCount_other": "{{count}} keywords"
+    },
+    "fields": {
+      "campaignName": "Campaign name",
+      "campaignNameHint": "Used as the macro grouping name for this batch of posts.",
+      "contentLanguage": "Target language",
+      "themeTitle": "Theme title",
+      "themeTitlePlaceholder": "e.g. Skincare brasileira para peles maduras",
+      "themeTitleRequired": "Theme title is required.",
+      "seoPhrase": "SEO phrase",
+      "seoPhrasePlaceholder": "e.g. skincare brasileira pele madura",
+      "seoPhraseHint": "The phrase that should anchor the article's headline + first paragraph.",
+      "summary": "Brief summary",
+      "summaryPlaceholder": "What should the post cover? The AI uses this as the editorial brief, not as copy.",
+      "products": "Products to feature",
+      "productsHint": "Up to 5 products per theme. Empty = AI picks from your full catalog.",
+      "openPicker": "Pick products",
+      "closePicker": "Close picker",
+      "primaryKeywords": "Primary keywords",
+      "longTailKeywords": "Long-tail keywords",
+      "relatedSearches": "Related searches",
+      "competitionLevel": "Competition level",
+      "competitionLevelHint": "Hint to the AI about how aggressively to optimize for the SEO phrase.",
+      "keywordPlaceholder": "Press enter to add..."
+    }
+  },
+  "review": {
+    "pageHeading": "Review posts",
+    "generatedContent": "Generated content",
+    "noJobId": "No job ID. Create a brief and generate content from",
+    "status": "Status:",
+    "jobId": "Job ID:",
+    "publish": "Publish",
+    "publishedDraft": "Published draft",
+    "targetBlog": "Target blog",
+    "blogs": "Blogs",
+    "noBlogsFound": "No blogs found. Create a blog in Shopify first.",
+    "publishingTo": "Publishing to: {{blogs}}",
+    "articleCreatedDraft": "Article created as draft",
+    "statusLabels": {
+      "idle": "Idle",
+      "pending": "Pending",
+      "running": "Running \u00b7 Generating content",
+      "completed": "Completed",
+      "failed": "Failed"
+    }
+  },
+  "recentGenerations": {
+    "heading": "Recent generations",
+    "empty": "No generations yet.",
+    "viewAll": "View all"
+  },
+  "pendingDiffs": {
+    "banner": "{{count}} published article has edits to learn from",
+    "banner_other": "{{count}} published articles have edits to learn from",
+    "review": "Review",
+    "checkForUpdates": "Check for updates"
+  },
+  "learningsRoute": {
+    "pageHeading": "Learn from your edits",
+    "empty": "No pending diffs. When you edit an AI-generated article in Shopify, it will show up here.",
+    "aiDraft": "AI draft",
+    "yourEdit": "Your edit",
+    "hypothesesHeading": "What I'm hearing",
+    "hypothesesHeading_plural": "What I'm hearing ({{count}} hypotheses)",
+    "accept": "Accept",
+    "reject": "Reject",
+    "edit": "Edit",
+    "accepted": "Accepted \u2713",
+    "dismissArticle": "Dismiss article",
+    "publishedAt": "Published {{when}}",
+    "checkForUpdates": "Check for updates"
+  },
+  "altText": {
+    "pageHeading": "Alt Text",
+    "auditHeading": "Image alt text audit",
+    "summary": "{{missing}} of {{total}} images need alt text",
+    "generateForMissing": "Generate for all missing",
+    "refreshAudit": "Refresh audit",
+    "notAuditedYet": "No audit yet. Run a refresh to scan your product images.",
+    "filters": {
+      "all": "All",
+      "missing": "Missing",
+      "weak": "Weak",
+      "approved": "Approved",
+      "queued": "Queued",
+      "applied": "Applied"
+    },
+    "row": {
+      "noAlt": "No alt text",
+      "weak": "Weak",
+      "ok": "OK",
+      "generate": "Generate",
+      "regenerate": "Regenerate",
+      "edit": "Edit suggestion",
+      "approve": "Approve",
+      "reject": "Reject",
+      "queuedAtPosition": "Queued at position {{position}}",
+      "applied": "Applied",
+      "failed": "Failed: {{message}}",
+      "retry": "Retry"
+    },
+    "cadence": {
+      "heading": "Daily drip",
+      "description": "100 images per day to avoid Google SEO churn from bulk metadata changes.",
+      "todayCount": "Today: {{applied}} / {{limit}}",
+      "inQueue": "In queue: {{count}}",
+      "eta": "ETA: {{days}} day",
+      "eta_other": "ETA: {{days}} days",
+      "nextRun": "Next drain: tomorrow"
+    },
+    "toast": {
+      "approved": "Approved and queued",
+      "rejected": "Rejected",
+      "generated": "Suggestion generated",
+      "failed": "{{message}}",
+      "auditRefreshed": "Audit refreshed",
+      "bulkStarted": "Bulk generate started. This may take a few minutes."
+    }
+  }
+}

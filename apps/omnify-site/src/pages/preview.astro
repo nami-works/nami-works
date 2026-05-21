@@ -1,0 +1,79 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Omnify Preview"
+  description="Embedded product walkthrough preview for Omnify."
+>
+  <div class="page">
+    <div class="container">
+      <header class="header">
+        <h1 class="title">Omnify Preview</h1>
+        <p class="subtitle">
+          This page will host an embedded product walkthrough video.
+        </p>
+      </header>
+
+      <section class="section">
+        <h2 class="sectionTitle">Video preview</h2>
+        <div class="videoPlaceholder">
+          <p class="placeholderText">Video embed will be added here.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 20px 72px;
+  }
+
+  .header {
+    margin-bottom: 32px;
+  }
+
+  .title {
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    color: var(--site-text);
+  }
+
+  .subtitle {
+    margin: 0;
+    color: var(--site-text-secondary);
+    font-size: 16px;
+  }
+
+  .section {
+    margin-bottom: 28px;
+  }
+
+  .sectionTitle {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    color: var(--site-text);
+  }
+
+  .videoPlaceholder {
+    border: 2px dashed var(--site-border);
+    background: var(--site-surface);
+    border-radius: 12px;
+    padding: 48px 16px;
+    text-align: center;
+  }
+
+  .placeholderText {
+    margin: 0;
+    color: var(--site-text-secondary);
+  }
+</style>

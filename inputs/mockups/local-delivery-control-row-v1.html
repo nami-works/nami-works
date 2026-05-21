@@ -1,0 +1,1250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Local Delivery — control row + fullscreen scroll + Exit-confirm + location-gate (+ legend-chip compaction & always-expanded buttons)</title>
+<style>
+  :root {
+    --text: #303030;
+    --subdued: #6d7175;
+    --border: #e1e3e5;
+    --bg: #ffffff;
+    --canvas: #f6f6f7;
+    --primary-bg: #303030;
+    --primary-text: #ffffff;
+    --critical: #d72c0d;
+    --critical-bg: #fff4f3;
+    --critical-border: #fadcd9;
+    --ok: #008060;
+    --warn: #b8350f;
+    --info-bg: #ebf5ff;
+    --info-border: #b3d1ff;
+    --info-text: #0a3a8c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    margin: 0;
+    padding: 32px;
+    background: var(--canvas);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
+  h2 { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+  h3 { font-size: 12px; font-weight: 600; margin: 0; color: var(--subdued); text-transform: uppercase; letter-spacing: 0.4px; }
+  .lede { color: var(--subdued); margin: 0 0 20px; max-width: 880px; }
+
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 880px;
+    margin-bottom: 20px;
+  }
+  .notes h3 { font-size: 12px; margin: 0 0 6px; color: #4a3600; text-transform: uppercase; letter-spacing: 0.4px; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 3px; }
+  .notes code { background: #f1e5b3; padding: 1px 4px; border-radius: 3px; font-size: 11px; }
+
+  /* ==== State matrix table ==== */
+  .matrix-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px 18px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .matrix-wrap h2 { margin-bottom: 4px; }
+  .matrix-wrap .sub { color: var(--subdued); font-size: 12px; margin: 0 0 12px; }
+  table.matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    min-width: 1080px;
+  }
+  table.matrix th, table.matrix td {
+    padding: 6px 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  table.matrix th {
+    color: var(--subdued);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    background: #fafafa;
+    border-bottom: 2px solid var(--border);
+  }
+  table.matrix th.state-name, table.matrix td.state-name {
+    text-align: left;
+    font-weight: 500;
+    color: var(--text);
+    background: #fafafa;
+    min-width: 200px;
+  }
+  table.matrix td.state-name { background: #fafafa; }
+  table.matrix .vis     { color: var(--ok);       font-weight: 600; }
+  table.matrix .hid     { color: #999;            font-weight: 400; }
+  table.matrix .pri     { color: var(--ok);       font-weight: 700; }
+  table.matrix .err     { color: var(--critical); font-weight: 700; background: #fff0ee; }
+  table.matrix .modal   { color: var(--warn);     font-weight: 700; }
+  table.matrix .imm     { color: var(--ok);       font-weight: 600; }
+  table.matrix tr.canonical-bug { background: #fff5f3; }
+  table.matrix tr.canonical-bug td.state-name { background: #fff0ee; }
+  table.matrix .legend-row td { font-size: 11px; color: var(--subdued); padding-top: 10px; text-align: left; background: transparent; }
+
+  /* ==== State cards (visual rendering of each state) ==== */
+  .state {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .state.bug-fix {
+    border-color: var(--critical);
+    border-width: 2px;
+    background: linear-gradient(0deg, #fff8f7 0%, #ffffff 30%);
+  }
+  .state-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+  .state-tag {
+    background: #ececed;
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+  }
+  .state.bug-fix .state-tag {
+    background: var(--critical);
+    color: white;
+  }
+  .pill-fix {
+    background: var(--critical);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 10px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .pill-modal {
+    background: var(--warn);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 10px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .state-when { color: var(--subdued); font-size: 12px; margin: 4px 0 12px; max-width: 880px; }
+  .state-cond { font-size: 11px; color: var(--subdued); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; padding: 6px 8px; background: #fafafa; border-radius: 4px; margin: 0 0 12px; max-width: 880px; }
+  .exit-annot { font-size: 11px; color: var(--warn); margin: 6px 0 0; font-style: italic; }
+  .exit-annot.imm { color: var(--ok); }
+
+  .form-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0 6px;
+  }
+  .form-label .badge {
+    background: #ececed;
+    color: var(--subdued);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .map-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    flex-wrap: wrap;
+  }
+  .legend {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    color: var(--subdued);
+    font-size: 12px;
+  }
+  .actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+  }
+  .btn.primary {
+    background: var(--primary-bg);
+    color: var(--primary-text);
+    border-color: var(--primary-bg);
+  }
+  .btn.primary.critical {
+    background: var(--critical);
+    border-color: var(--critical);
+  }
+  .btn.critical {
+    color: var(--critical);
+    border-color: var(--critical);
+  }
+  .btn .icon {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn.icon-only {
+    padding: 6px 8px;
+    gap: 0;
+  }
+  .btn.ghosted {
+    opacity: 0.35;
+    text-decoration: line-through;
+    text-decoration-color: var(--critical);
+    cursor: not-allowed;
+  }
+  .btn .caret { margin-left: 2px; color: var(--subdued); font-size: 10px; }
+
+  /* ==== Fullscreen scroll-fix diagrams ==== */
+  .scroll-section {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px 18px;
+    margin-bottom: 20px;
+  }
+  .scroll-section h2 { margin-bottom: 6px; }
+  .scroll-section .sub { color: var(--subdued); font-size: 12px; margin: 0 0 14px; max-width: 880px; }
+  .scroll-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 900px) { .scroll-grid { grid-template-columns: 1fr; } }
+  .scroll-col h3 { color: var(--text); text-transform: none; letter-spacing: 0; font-size: 13px; margin-bottom: 6px; }
+  .scroll-col h3 .tag-bad  { background: var(--critical); color: white; padding: 1px 8px; border-radius: 99px; font-size: 10px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.3px; text-transform: uppercase; }
+  .scroll-col h3 .tag-good { background: var(--ok); color: white; padding: 1px 8px; border-radius: 99px; font-size: 10px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.3px; text-transform: uppercase; }
+  pre.ascii {
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+    line-height: 1.35;
+    overflow-x: auto;
+    color: var(--text);
+    margin: 0 0 8px;
+  }
+  .css-diff {
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text);
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .css-diff .add { color: var(--ok); }
+  .css-diff .rm  { color: var(--critical); text-decoration: line-through; }
+  .css-diff .cmt { color: var(--subdued); }
+
+  /* ==== Banner (location-all) ==== */
+  .info-banner {
+    background: var(--info-bg);
+    border: 1px solid var(--info-border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--info-text);
+    font-size: 13px;
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 14px;
+    max-width: 880px;
+  }
+  .info-banner .icon-lg { font-size: 16px; flex-shrink: 0; line-height: 1.3; }
+  .info-banner strong { color: var(--info-text); }
+
+  /* ==== Mock table (location-gating section) ==== */
+  .mock-table {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg);
+    max-width: 880px;
+  }
+  .mock-table .row {
+    display: grid;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .mock-table .row:last-child { border-bottom: none; }
+  .mock-table .row.header { background: #fafafa; color: var(--subdued); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; font-size: 11px; }
+  .mock-table .row.with-cb { grid-template-columns: 24px 80px 120px 90px 70px 1fr; gap: 10px; }
+  .mock-table .row.no-cb   { grid-template-columns: 80px 120px 90px 70px 1fr; gap: 10px; }
+  .mock-table .row .cb { display: inline-block; width: 14px; height: 14px; border: 1.5px solid var(--border); border-radius: 3px; }
+  .mock-table .row .cb.checked { background: var(--primary-bg); border-color: var(--primary-bg); position: relative; }
+  .mock-table .row .cb.checked::after { content: "✓"; color: white; font-size: 10px; position: absolute; top: -3px; left: 1px; }
+  .mock-table .row .cb.disabled { background: #f1f1f1; border-color: #d0d2d4; cursor: not-allowed; opacity: 0.5; }
+
+  /* ==== Modal mockup ==== */
+  .modal-section {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px 18px;
+    margin-bottom: 20px;
+  }
+  .modal-section h2 { margin-bottom: 6px; }
+  .modal-section .sub { color: var(--subdued); font-size: 12px; margin: 0 0 14px; max-width: 880px; }
+  .modal-stage {
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 8px;
+    padding: 28px 18px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .modal-card {
+    background: var(--bg);
+    border-radius: 12px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.12);
+    width: 440px;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  .modal-card .modal-head {
+    padding: 16px 20px 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+  .modal-card .modal-body {
+    padding: 14px 20px 16px;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .modal-card .modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 12px 20px 16px;
+    background: #fafafa;
+    border-top: 1px solid var(--border);
+  }
+  .copy-variants {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-width: 880px;
+  }
+  @media (max-width: 900px) { .copy-variants { grid-template-columns: 1fr; } }
+  .copy-variant {
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+  .copy-variant h4 { font-size: 12px; font-weight: 600; margin: 0 0 6px; color: var(--text); }
+  .copy-variant .when { color: var(--subdued); font-size: 11px; margin-bottom: 8px; font-style: italic; }
+  .copy-variant .heading-line { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .copy-variant .body-line { color: var(--text); line-height: 1.45; }
+
+  /* ==== Legend chip (compacted, hover/focus reveals popover) ==== */
+  /* Chip mimics a Polaris default-tone <s-badge> at rest: gray pill, no border,
+     12px font. Word "Legend" is rendered with max-width:0 + transition so it
+     slides out on hover/focus — same mechanic the old .hoverExpandLabel used
+     on the control buttons. */
+  .legend-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    padding: 4px 8px;
+    background: #e4e5e7;
+    border-radius: 99px;
+    color: var(--text);
+    font-size: 12px;
+    cursor: default;
+    position: relative;
+    user-select: none;
+    transition: gap 0.2s ease, background 0.15s ease;
+    outline: none;
+  }
+  .legend-chip:hover,
+  .legend-chip:focus-within {
+    background: #d2d5d8;
+    gap: 6px;
+  }
+  .legend-chip > span:not(.legend-chip-icon):not(.legend-pop) {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 0;
+    transition: max-width 0.2s ease;
+  }
+  .legend-chip:hover > span:not(.legend-chip-icon):not(.legend-pop),
+  .legend-chip:focus-within > span:not(.legend-chip-icon):not(.legend-pop) {
+    max-width: 100px;
+  }
+  .legend-chip-icon {
+    display: inline-flex;
+    align-items: center;
+    width: 16px;
+    height: 16px;
+    color: var(--subdued);
+  }
+  .legend-chip:hover .legend-chip-icon,
+  .legend-chip:focus-within .legend-chip-icon { color: var(--text); }
+  .legend-pop {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+    display: none;
+    gap: 4px;
+    z-index: 10;
+  }
+  .legend-chip:hover .legend-pop,
+  .legend-chip:focus-within .legend-pop { display: flex; }
+  .legend-pop-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 140px;
+  }
+  .legend-pop-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .legend-pop-item .swatch {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+  .legend-pop-item.critical .swatch { color: var(--critical); }
+  .legend-pop-item.caution  .swatch { color: #b8350f; }
+  .legend-pop-item.info     .swatch { color: #2c6ecb; }
+  .legend-pop-item.neutral  .swatch { color: var(--subdued); }
+
+  /* ==== Icon legend ==== */
+  .legend-icons {
+    margin-top: 28px;
+    padding: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .legend-icons table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+  }
+  .legend-icons th,
+  .legend-icons td {
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    vertical-align: top;
+  }
+  .legend-icons th {
+    color: var(--subdued);
+    font-weight: 600;
+  }
+  .legend-icons tr.changed { background: #fffbea; }
+</style>
+</head>
+<body>
+
+<h1>Local Delivery — control row + fullscreen scroll + Exit-confirm + location-gate</h1>
+<p class="lede">
+  Layered iteration on the rev-21 reconcile mockup. Earlier passes locked in: Confirm-visibility
+  fix, fullscreen single-scroll, Exit-confirm modal, location-gate banner, icon reconciliations.
+  <strong>This iteration adds a single new track: legend-chip compaction + always-expanded
+  control buttons.</strong> The current collapsed-by-default + on-hover-expand behavior on the
+  control panel is dropped — buttons render with icon + label permanently. To make horizontal
+  room for the always-expanded buttons inside the collapsed-map block, the six legend pills
+  collapse into a single <code>book-open</code> chip whose popover reveals the full legend in a
+  2-per-row grid on hover/focus. Same rendering in collapsed map block AND fullscreen — no more
+  visual divergence between the two modes for the control row.
+</p>
+
+<div class="notes">
+  <h3>Changes vs current production (cumulative — full scope)</h3>
+  <ul>
+    <li><strong>Legend compaction — six pills → one <code>book-open</code> chip with hover/focus popover.</strong> Production today renders six legend pills inline (Failed / Overdue / Due today / Due tomorrow / Due later / Address error), each icon-only by default with a per-pill hover-expand revealing its label. This iteration replaces that strip with a single chip ("📖 Legend" — Polaris <code>book-open</code> + the literal word "Legend"). Hover/focus opens a popover with all six items in a 2-column × 3-row grid. Implementation: pure CSS hover + <code>:focus-within</code>, no JS, same affordance pattern as the existing per-pill expand. Frees ~280px of horizontal space for the meta row.</li>
+    <li><strong>Control-row buttons — always-expanded (icon + label) in BOTH modes.</strong> Today, collapsed-map renders buttons icon-only with hover-expand on the label (<code>.hoverExpandLabel</code> max-width animation), and fullscreen renders icon + label permanently. This iteration drops the hover-expand entirely — both modes share the always-expanded rendering. The legend compaction above is what creates the horizontal budget for this. Net effect: visual consistency between collapsed and fullscreen, and every control's label is readable without hover.</li>
+    <li><strong>State matrix as canonical artifact (top of file).</strong> Locks down visible/hidden contract per state per control. The Confirm-visibility bug exists because no contract was written down at design time.</li>
+    <li><strong>Exit-confirm column added to the matrix.</strong> Each Exit cell now encodes BOTH visibility AND click-behavior: <code>imm</code> = exits immediately (no risk), <code>modal</code> = opens confirmation modal first (pending work at risk), <code>hid</code> = not rendered.</li>
+    <li><strong>Confirm bug.</strong> State C (selected, no changes pending) → Confirm = <code>hid</code>. Production currently shows it; <code>dirtyRouteIds</code> is being populated as a side effect and needs upstream fix during implementation.</li>
+    <li><strong>Reassign label.</strong> "Reassign to ▾" (post-rev-21 rename).</li>
+    <li><strong>Unassign icon changed.</strong> <code>minus-circle</code> → <code>delete</code> (trash). Disambiguates from Clear-selection, which keeps <code>minus-circle</code>. Critical tone preserved on Unassign.</li>
+    <li><strong>Exit icon reconciled.</strong> Mockup ↩ → ✕ to match production (<code>icon="x"</code>, line 5999).</li>
+    <li><strong>Location === "all" gate (page-level).</strong> Three prongs: (a) page-level info banner under the Location filter explaining the gate; (b) All-orders checkbox column hidden entirely; (c) map-marker click handlers gated to no-op. Selection is unreachable from BOTH map and table. No ghost affordances on either surface.</li>
+    <li><strong>Fullscreen scroll fix.</strong> Outer container takes over the scroll; both panes drop independent overflow. Single right-edge scroll, matches collapsed-mode behavior.</li>
+    <li><strong>⋯ More actions menu — Map style restored and locked.</strong> Lost during an interim revamp, restored in rev 21 (lines 6017–6040). This iteration adds an explicit "menu contents contract" section to the mockup so future revamps can't drop it again. Today's contract: Map style. Future overflow items get appended.</li>
+  </ul>
+</div>
+
+<!-- =============================================================== -->
+<!-- =========== Legend chip + always-expanded buttons ============== -->
+<!-- =============================================================== -->
+
+<div class="modal-section">
+  <h2>Legend chip + always-expanded control buttons</h2>
+  <p class="sub">
+    This iteration's <strong>only new track</strong>. Replaces (a) the six-pill legend strip and
+    (b) the collapsed-map button hover-expand. Both modes (collapsed map + fullscreen) now share
+    a single rendering. The state cards below have been updated to reflect this single rendering;
+    treat this section as the source-of-truth for the legend chip's interaction contract.
+  </p>
+
+  <h3 style="text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--text); margin: 18px 0 6px;">Meta row rendering</h3>
+  <div style="display: grid; grid-template-columns: 1fr; gap: 10px; max-width: 880px;">
+    <div>
+      <div class="form-label" style="margin: 0 0 4px;"><h3>Idle state</h3><span class="badge">Icon-only chip + always-expanded buttons</span></div>
+      <div class="map-footer">
+        <div class="legend">
+          <span class="legend-chip" tabindex="0" aria-label="Legend" title="Legend">
+            <span class="legend-chip-icon" aria-hidden="true">📖</span>
+          </span>
+        </div>
+        <div class="actions">
+          <button class="btn"><span class="icon">⇄</span>Reassign to<span class="caret">▾</span></button>
+          <button class="btn critical"><span class="icon">🗑</span>Unassign</button>
+          <button class="btn"><span class="icon">⊖</span>Clear selection</button>
+          <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+        </div>
+      </div>
+      <p style="font-size: 11px; color: var(--ok); margin: 4px 0 0;">↑ At rest: legend trigger is icon-only (just the <code>book-open</code> icon), styled to mirror a Polaris secondary <code>&lt;s-button&gt;</code> (white background, gray border). Word "Legend" is hidden until hover/focus. Action buttons stay always-expanded.</p>
+    </div>
+
+    <div style="margin-top: 14px;">
+      <div class="form-label" style="margin: 0 0 4px;"><h3>Hover/focus state</h3><span class="badge">Label expands + popover opens</span></div>
+      <div style="position: relative; max-width: 880px;">
+        <div class="map-footer">
+          <div class="legend">
+            <span class="legend-chip" style="border-color: #8c9196; color: var(--text);" aria-label="Legend (open)">
+              <span class="legend-chip-icon" style="color: var(--text);" aria-hidden="true">📖</span>
+              <span style="margin-left: 6px;">Legend</span>
+              <span class="legend-pop" style="display: flex; position: absolute; bottom: 100%; margin-bottom: 8px;">
+                <span class="legend-pop-col">
+                  <span class="legend-pop-item critical"><span class="swatch">⚠</span> Overdue</span>
+                  <span class="legend-pop-item caution"><span class="swatch">⚡</span> Due today</span>
+                  <span class="legend-pop-item info"><span class="swatch">⏱</span> Due tomorrow</span>
+                  <span class="legend-pop-item neutral"><span class="swatch">⏱</span> Due later</span>
+                </span>
+                <span class="legend-pop-col">
+                  <span class="legend-pop-item caution"><span class="swatch">⚠</span> Address error</span>
+                  <span class="legend-pop-item critical"><span class="swatch">⊗</span> Failed</span>
+                  <span class="legend-pop-item neutral"><span class="swatch">📦</span> Routed from warehouse</span>
+                </span>
+              </span>
+            </span>
+          </div>
+          <div class="actions">
+            <button class="btn"><span class="icon">⇄</span>Reassign to<span class="caret">▾</span></button>
+            <button class="btn critical"><span class="icon">🗑</span>Unassign</button>
+            <button class="btn"><span class="icon">⊖</span>Clear selection</button>
+            <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+          </div>
+        </div>
+      </div>
+      <p style="font-size: 11px; color: var(--subdued); margin: 4px 0 0;">↑ On hover (or keyboard focus, via <code>:focus-within</code> + <code>tabindex="0"</code>): the "Legend" word slides out next to the icon AND the popover opens above the chip. Popover has <strong>two unlabeled columns</strong>: time-sensitive (chronological worst-first) on the left, others (alphabetical) on the right. Column gap reduced from 16px → <strong>4px</strong> for a tighter group.</p>
+    </div>
+  </div>
+
+  <h3 style="text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--text); margin: 22px 0 6px;">Legend contents — seven items in two unlabeled columns</h3>
+  <table style="width: 100%; max-width: 880px; border-collapse: collapse; font-size: 12px;">
+    <thead>
+      <tr style="background: #fafafa; color: var(--subdued); text-transform: uppercase; letter-spacing: 0.3px; font-size: 11px;">
+        <th style="padding: 6px 8px; text-align: left; border-bottom: 2px solid var(--border);">Row</th>
+        <th style="padding: 6px 8px; text-align: left; border-bottom: 2px solid var(--border);">Col 1 — time-sensitive (chronological)</th>
+        <th style="padding: 6px 8px; text-align: left; border-bottom: 2px solid var(--border);">Col 2 — others (alphabetical)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--subdued);">1</td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>alert-triangle</code> · critical · <strong>Overdue</strong></td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>alert-triangle</code> · caution · <strong>Address error</strong></td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--subdued);">2</td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>bolt</code> · caution · <strong>Due today</strong></td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>x-circle</code> · critical · <strong>Failed</strong></td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--subdued);">3</td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>clock</code> · info · <strong>Due tomorrow</strong></td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>package</code> · neutral · <strong>Routed from warehouse</strong> (NEW)</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--subdued);">4</td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border);"><code>clock</code> · neutral · <strong>Due later</strong></td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--subdued); font-style: italic;">(empty)</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size: 11px; color: var(--subdued); margin: 6px 0 0;">Two unlabeled columns, separated visually only (no column headers in the rendered popover). Time-sensitive items sorted by urgency (worst first). "Others" sorted alphabetically by English label. The new "Routed from warehouse" row uses the Polaris <code>package</code> icon at neutral tone — it's an origin marker (the order came from the warehouse rather than from a store location), not a status. Mirrors the package-icon treatment already on the map markers themselves for warehouse-origin orders.</p>
+
+  <div class="notes" style="max-width: none; margin-top: 14px;">
+    <h3>Notes &amp; tradeoffs — legend chip + always-expanded buttons</h3>
+    <ul>
+      <li><strong>Why <code>book-open</code> for the chip.</strong> Lucas picked this from the Polaris <code>IconType</code> union. Semantically reads as "reference / look up what these mean" — matches the chip's purpose. Verified to exist in <code>node_modules/@shopify/polaris-types/dist/polaris.d.ts</code>. Render via <code>&lt;s-icon type="book-open" size="small"&gt;</code>.</li>
+      <li><strong>Chip visual mirrors a Polaris default-tone <code>&lt;s-badge&gt;</code>.</strong> Gray pill (<code>background: #e4e5e7</code>), no border, padding 4/8px, font 12px, fully rounded. At rest the chip is icon-only (the word "Legend" is hidden via the same <code>max-width: 0</code> + <code>:hover</code>/<code>:focus-within</code> reveal pattern that previously sat on <code>.hoverExpandWrap</code>/<code>.hoverExpandLabel</code> for the control buttons). On hover/focus the bg darkens to <code>#d2d5d8</code> for a subtle "interactive" cue. Lucas explicitly asked for the badge look (not a button look) — the control buttons stay always-expanded with their own styling.</li>
+      <li><strong>The "Legend" word reveals on hover, not at rest.</strong> Icon alone is ambiguous (could read as "open documentation") but the chip already mimics a Polaris button, which gives merchants the affordance cue. Hovering surfaces the explicit label + opens the popover in one step. Bilingual via <code>map.legend.chipLabel</code> ("Legend" / "Legenda").</li>
+      <li><strong>Popover layout: two unlabeled columns.</strong> Time-sensitive on the left (Overdue → Due today → Due tomorrow → Due later, worst-first chronological), others on the right (Address error → Failed → Routed from warehouse, alphabetical). Column gap reduced from 16px → 4px for a tighter group. Row gap stays at 8px. No column headers — the categorical separation is visual only.</li>
+      <li><strong>Routed-from-warehouse is an origin marker, not a status.</strong> Mirrors the existing map-marker treatment for warehouse-origin orders (already shipped 2026-05-14 in <code>eab4a01</code>). Lives in the "others" column, sorted alphabetically. Polaris <code>package</code> icon at <code>neutral</code> tone — same icon+tone used on the marker itself.</li>
+      <li><strong>Why hover/focus + pure CSS, not a Polaris <code>&lt;s-popover&gt;</code>.</strong> The popover needs to open on hover; Polaris popovers are click-toggle. Pure CSS <code>:hover</code> + <code>:focus-within</code> on the chip wrapper handles both pointer and keyboard. <code>:focus-within</code> + <code>tabindex="0"</code> on the chip keeps the popover open while focus is anywhere inside (so a screen-reader user tabbing through items stays inside the popover).</li>
+      <li><strong>Popover position: above the chip (bottom-up).</strong> The meta row sits at the bottom of the map block. Anchoring above keeps the popover from being clipped. <code>bottom: calc(100% + 8px); left: 0;</code> aligns to the chip's left edge so it visually "grows up" from the trigger.</li>
+      <li><strong>Mobile.</strong> Hover doesn't exist on touch. <code>:focus-within</code> still fires on tap (chip is <code>tabindex="0"</code>). Tapping focuses it → popover opens; tap elsewhere → blur → popover closes.</li>
+      <li><strong>What this does NOT change.</strong> The Reassign-to ▾ popover (route-target picker) stays click-toggle, not hover. Same for ⋯ More actions. Only the legend trigger gets the hover-expand pattern.</li>
+      <li><strong>i18n keys.</strong> Already shipped: <code>map.legend.chipLabel</code>, <code>.failed</code>, <code>.overdue</code>, <code>.dueToday</code>, <code>.dueTomorrow</code>, <code>.dueLater</code>, <code>.addressError</code>. New in this iteration: <code>map.legend.routedFromWarehouse</code> (en: "Routed from warehouse" / pt-BR: "Roteado do armazém" — matches the existing "Roteados do armazém" plural form used in the warehouse counter at <code>filters.warehouseCount</code>).</li>
+    </ul>
+  </div>
+</div>
+
+<!-- =============================================================== -->
+<!-- =============== STATE MATRIX (canonical artifact) ============== -->
+<!-- =============================================================== -->
+<div class="matrix-wrap">
+  <h2>State matrix — control row visibility + Exit-click contract</h2>
+  <p class="sub">
+    One row per reachable state. <code>vis</code> = rendered &amp; clickable. <code>hid</code> = removed from DOM (NOT disabled). <code>pri</code> = primary variant. <strong>Exit column encodes click behavior</strong>: <code>imm</code> = exits without modal, <code>modal</code> = opens confirmation modal first, <code>hid</code> = not rendered. The bug-row C is highlighted: this is the state the shipped code currently mishandles.
+  </p>
+  <table class="matrix">
+    <thead>
+      <tr>
+        <th class="state-name">State</th>
+        <th>polylineEditMode</th>
+        <th>hasSelection</th>
+        <th>hasChangesPending</th>
+        <th>Reassign&nbsp;to&nbsp;▾</th>
+        <th>Unassign 🗑</th>
+        <th>Assign&nbsp;to&nbsp;new</th>
+        <th>Clear&nbsp;sel ⊖</th>
+        <th>Confirm</th>
+        <th>Exit&nbsp;✕ <em style="text-transform: none; font-weight: 400;">(vis · click)</em></th>
+        <th>⋯&nbsp;More</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="state-name"><strong>A</strong> — Default (idle)</td>
+        <td>false</td><td>false</td><td>false</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="vis">vis</td>
+      </tr>
+      <tr>
+        <td class="state-name"><strong>B</strong> — Edit, no selection</td>
+        <td>true</td><td>false</td><td>false</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="imm">vis · imm</td>
+        <td class="vis">vis</td>
+      </tr>
+      <tr class="canonical-bug">
+        <td class="state-name"><strong>C</strong> — Edit, assigned stops selected, no changes <span class="pill-fix" title="Bug fix">FIX</span></td>
+        <td>true</td><td>true</td><td>false</td>
+        <td class="vis">vis</td>
+        <td class="vis">vis</td>
+        <td class="hid">hid</td>
+        <td class="vis">vis</td>
+        <td class="err">hid&nbsp;⚠</td>
+        <td class="hid">hid</td>
+        <td class="vis">vis</td>
+      </tr>
+      <tr>
+        <td class="state-name"><strong>D</strong> — Edit, changes pending, no selection <span class="pill-modal">MODAL</span></td>
+        <td>true</td><td>false</td><td>true</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="pri">vis (primary)</td>
+        <td class="modal">vis · modal</td>
+        <td class="vis">vis</td>
+      </tr>
+      <tr>
+        <td class="state-name"><strong>D'</strong> — Edit, changes pending AND new selection <span class="pill-modal">MODAL</span></td>
+        <td>true</td><td>true</td><td>true</td>
+        <td class="vis">vis</td>
+        <td class="vis">vis</td>
+        <td class="hid">hid</td>
+        <td class="vis">vis</td>
+        <td class="pri">vis (primary)</td>
+        <td class="modal">vis · modal</td>
+        <td class="vis">vis</td>
+      </tr>
+      <tr>
+        <td class="state-name"><strong>E</strong> — Unassigned stops selected (auto-confirm)</td>
+        <td>true</td><td>true</td><td>false</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="pri">vis (primary)</td>
+        <td class="vis">vis</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="vis">vis</td>
+      </tr>
+      <tr>
+        <td class="state-name"><strong>F</strong> — Dispatching / loading</td>
+        <td>true</td><td>(any)</td><td>(any)</td>
+        <td colspan="6" class="hid" style="text-align: center;">all action buttons hidden — only spinner + ⋯ visible</td>
+        <td class="vis">vis</td>
+      </tr>
+      <tr>
+        <td class="state-name"><strong>G</strong> — Error after Confirm <span class="pill-modal">MODAL</span></td>
+        <td>true</td><td>false</td><td>true</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="hid">hid</td>
+        <td class="pri">vis (primary, retry)</td>
+        <td class="modal">vis · modal</td>
+        <td class="vis">vis</td>
+      </tr>
+      <tr class="legend-row">
+        <td colspan="11">
+          <strong>Exit-click decoder:</strong> <code>imm</code> = immediate exit, no modal (no work pending → nothing to lose). <code>modal</code> = clicking opens the Exit confirmation modal (see "Exit confirmation modal" section below) — the user must explicitly choose to discard before exiting. <code>hid</code> = button not rendered.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="notes" style="background: #fff0ee; border-color: #f5c2c2; color: #5a1c11;">
+  <h3 style="color: #5a1c11;">⚠ Canonical bug — State C</h3>
+  <ul>
+    <li><strong>Symptom:</strong> Confirm button visible when user has selected assigned stops in edit mode but has not yet committed any Reassign/Unassign — there is nothing to confirm.</li>
+    <li><strong>Contract:</strong> matrix-row C → Confirm = <code>hid</code>. Confirm only renders when at least one route is dirty (<code>dirtyRouteIds.size &gt; 0</code>).</li>
+    <li><strong>Likely root cause</strong> (to be traced during implementation): <code>dirtyRouteIds</code> is being populated as a side effect of click-to-enter-edit (rev 21) instead of only by Reassign/Unassign commits. The fix is upstream of <code>showConfirm</code>; the gate at line 5903 is correct.</li>
+    <li><strong>Why hide and not disable:</strong> per CLAUDE.md → "Control Panels &amp; State-Driven Visibility", compact panels follow an "only actionable controls are visible" premise. A disabled Confirm here would tell the user "this panel exists to confirm something," which is misleading — the panel's purpose at this moment is to let them choose Reassign / Unassign / Clear, not Confirm.</li>
+  </ul>
+</div>
+
+<!-- =============================================================== -->
+<!-- =============== Visual state cards (post rev 21) =============== -->
+<!-- =============================================================== -->
+
+<h2 style="margin: 24px 0 6px;">Visual rendering — each state</h2>
+<p class="lede" style="margin-bottom: 16px;">
+  Below: each state's single rendering — buttons render with icon + label permanently, legend collapses into the chip + popover (see the "Legend chip + always-expanded control buttons" section above for the chip's interaction contract). Same in collapsed map block AND fullscreen.
+</p>
+
+<!-- ================================================================ -->
+<div class="state">
+  <div class="state-head">
+    <span class="state-tag">State A</span>
+    <h2>Default — routes exist, not editing, no selection</h2>
+  </div>
+  <p class="state-when">User on a location with at least one route. No stops selected. Edit button DROPPED post-rev-21 — clicking any map label auto-enters edit mode.</p>
+  <p class="state-cond">polylineEditMode=false · hasSelection=false · hasChangesPending=false</p>
+
+  <div class="form-label"><h3>Rendering</h3><span class="badge">Same in collapsed map + fullscreen</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-chip" tabindex="0" aria-label="Legend">
+        <span class="legend-chip-icon" aria-hidden="true">📖</span> Legend
+      </span>
+    </div>
+    <div class="actions">
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<div class="state">
+  <div class="state-head">
+    <span class="state-tag">State B</span>
+    <h2>Edit mode active — no selection</h2>
+  </div>
+  <p class="state-when">Reachable after the user enters edit (by clicking a stop) and then Clear-selects everything. Exit returns to State A — no modal needed since no work is pending.</p>
+  <p class="state-cond">polylineEditMode=true · hasSelection=false · hasChangesPending=false</p>
+
+  <div class="form-label"><h3>Rendering</h3><span class="badge">Same in collapsed map + fullscreen</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-chip" tabindex="0" aria-label="Legend">
+        <span class="legend-chip-icon" aria-hidden="true">📖</span> Legend
+      </span>
+    </div>
+    <div class="actions">
+      <button class="btn"><span class="icon">✕</span>Exit</button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+  <p class="exit-annot imm">Exit click → <strong>exits immediately</strong>, no modal (no pending work to discard).</p>
+</div>
+
+<!-- ================================================================ -->
+<div class="state bug-fix">
+  <div class="state-head">
+    <span class="state-tag">State C</span>
+    <h2>Edit — assigned stops selected, no changes yet</h2>
+    <span class="pill-fix">Bug fix — Confirm hidden</span>
+  </div>
+  <p class="state-when">User clicked one or more assigned stops. Selection is the signature gradient. To exit, Clear selection first (surfaces Exit in State B). <strong>Confirm is HIDDEN here</strong> — there is nothing to confirm yet. (Pre-fix: Confirm was rendered visible.)</p>
+  <p class="state-cond">polylineEditMode=true · hasSelection=true (assigned) · hasChangesPending=<strong>false</strong></p>
+
+  <div class="form-label"><h3>Rendering</h3><span class="badge">Same in collapsed map + fullscreen</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-chip" tabindex="0" aria-label="Legend">
+        <span class="legend-chip-icon" aria-hidden="true">📖</span> Legend
+      </span>
+    </div>
+    <div class="actions">
+      <button class="btn"><span class="icon">⇄</span>Reassign to<span class="caret">▾</span></button>
+      <button class="btn critical"><span class="icon">🗑</span>Unassign</button>
+      <button class="btn"><span class="icon">⊖</span>Clear selection</button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<div class="state">
+  <div class="state-head">
+    <span class="state-tag">State D</span>
+    <h2>Edit — changes pending, no selection</h2>
+    <span class="pill-modal">Exit → modal</span>
+  </div>
+  <p class="state-when">After a Reassign or Unassign was committed via popover/menu, selection auto-cleared. Confirm runs the recompute and applies; Exit triggers the confirmation modal because pending changes are at risk.</p>
+  <p class="state-cond">polylineEditMode=true · hasSelection=false · hasChangesPending=true</p>
+
+  <div class="form-label"><h3>Rendering</h3><span class="badge">Same in collapsed map + fullscreen</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-chip" tabindex="0" aria-label="Legend">
+        <span class="legend-chip-icon" aria-hidden="true">📖</span> Legend
+      </span>
+    </div>
+    <div class="actions">
+      <button class="btn primary"><span class="icon">✅</span>Confirm</button>
+      <button class="btn"><span class="icon">✕</span>Exit</button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+  <p class="exit-annot">Exit click → <strong>opens confirmation modal</strong> ("Discard pending changes?"). User must explicitly choose Discard or Stay before edit mode actually closes.</p>
+</div>
+
+<!-- ================================================================ -->
+<div class="state">
+  <div class="state-head">
+    <span class="state-tag">State D'</span>
+    <h2>Edit — changes pending AND new stops selected (chaining)</h2>
+    <span class="pill-modal">Exit → modal</span>
+  </div>
+  <p class="state-when">User has applied at least one Reassign/Unassign and picked more stops to chain another. Exit and Clear-selection coexist with distinct icons (⊖ vs ✕).</p>
+  <p class="state-cond">polylineEditMode=true · hasSelection=true · hasChangesPending=true</p>
+
+  <div class="form-label"><h3>Rendering</h3><span class="badge">Same in collapsed map + fullscreen</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-chip" tabindex="0" aria-label="Legend">
+        <span class="legend-chip-icon" aria-hidden="true">📖</span> Legend
+      </span>
+    </div>
+    <div class="actions">
+      <button class="btn"><span class="icon">⇄</span>Reassign to<span class="caret">▾</span></button>
+      <button class="btn critical"><span class="icon">🗑</span>Unassign</button>
+      <button class="btn"><span class="icon">⊖</span>Clear selection</button>
+      <button class="btn primary"><span class="icon">✅</span>Confirm</button>
+      <button class="btn"><span class="icon">✕</span>Exit</button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+  <p class="exit-annot">Exit click → <strong>opens confirmation modal</strong>. Same modal as State D — copy is shared.</p>
+</div>
+
+<!-- ================================================================ -->
+<div class="state">
+  <div class="state-head">
+    <span class="state-tag">State E</span>
+    <h2>Unassigned stops selected — auto-confirm</h2>
+  </div>
+  <p class="state-when">User picked one or more orders that aren't on a route yet. <code>Assign to new route</code> commits immediately, no Confirm step. No Unassign coexists.</p>
+  <p class="state-cond">polylineEditMode=true · hasSelection=true (unassigned) · hasChangesPending=false</p>
+
+  <div class="form-label"><h3>Rendering</h3><span class="badge">Same in collapsed map + fullscreen</span></div>
+  <div class="map-footer">
+    <div class="legend">
+      <span class="legend-chip" tabindex="0" aria-label="Legend">
+        <span class="legend-chip-icon" aria-hidden="true">📖</span> Legend
+      </span>
+    </div>
+    <div class="actions">
+      <button class="btn primary"><span class="icon">⊕</span>Assign to new route</button>
+      <button class="btn"><span class="icon">⊖</span>Clear selection</button>
+      <button class="btn icon-only" title="More actions"><span class="icon">⋯</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================================== -->
+<!-- =============== ⋯ More actions menu — contract ================ -->
+<!-- =============================================================== -->
+
+<div class="modal-section">
+  <h2>⋯ More actions menu — contents contract</h2>
+  <p class="sub">
+    The <strong>⋯ button is the LAST item in every state's action row</strong> (A through E + F + G — see matrix). Clicking it toggles a Polaris <code>&lt;s-popover&gt;</code> containing overflow actions that don't fit the primary row. <strong>This menu has been lost twice during prior revamps.</strong> Locking the contract here so it can't be dropped silently again.
+  </p>
+
+  <p style="font-size: 12px; color: var(--text); margin: 12px 0 8px;"><strong>Today's contract — menu contents:</strong></p>
+
+  <div style="display: flex; align-items: flex-start; gap: 18px; flex-wrap: wrap; margin-bottom: 12px;">
+    <div style="position: relative;">
+      <div class="map-footer" style="margin: 0;">
+        <div class="legend">
+          <span class="legend-chip" tabindex="0" aria-label="Legend">
+            <span class="legend-chip-icon" aria-hidden="true">📖</span> Legend
+          </span>
+        </div>
+        <div class="actions">
+          <button class="btn icon-only" title="More actions" style="border-color: var(--primary-bg); background: #fafafa;"><span class="icon">⋯</span></button>
+        </div>
+      </div>
+      <div style="position: absolute; right: 0; top: 100%; margin-top: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12); min-width: 180px; padding: 4px;">
+        <div style="padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: 4px; color: var(--text);">Map style</div>
+      </div>
+    </div>
+    <div style="flex: 1; min-width: 280px; font-size: 12px; line-height: 1.55; color: var(--text); padding-top: 6px;">
+      <p style="margin: 0 0 8px;"><strong>Current items (1):</strong></p>
+      <ul style="margin: 0 0 12px 18px; padding: 0;">
+        <li><strong>Map style</strong> — opens the <code>map-style-modal</code> with three options (dark / grayscale / light). Draft/applied pattern: changes don't persist until the user clicks "Apply" inside the modal.</li>
+      </ul>
+      <p style="margin: 0; color: var(--subdued);">Future items (when added) will go here. The contract: <strong>any control that would otherwise be primary-row clutter belongs in ⋯</strong>. Examples that might land here: "Reset zoom", "Center on location", "Toggle traffic layer".</p>
+    </div>
+  </div>
+
+  <div class="notes" style="max-width: none;">
+    <h3>Notes &amp; tradeoffs — ⋯ menu contract</h3>
+    <ul>
+      <li><strong>This is a regression-protection section.</strong> Lucas reported that "Map style" was dropped during multiple interim revamps and asked 3–4 times to have it restored. Each time, the next revamp lost it again because no design artifact pinned the contract. This section IS the pin.</li>
+      <li><strong>Production status (verified 2026-05-07):</strong> the ⋯ menu currently contains Map style at <code>app/routes/app.local-delivery.tsx</code> lines 6017–6040, with the modal at line 5311 and i18n keys defined for both <code>en</code> ("Map style") and <code>pt-BR</code> ("Estilo do mapa"). The code is correct.</li>
+      <li><strong>If Map style is missing in your current deploy</strong>, it's a deploy-lag issue, not a code issue — verify by running <code>scripts/deploy.ps1 -App full</code> after this iteration's changes land. The implementation phase will include a sanity-check step "verify ⋯ menu opens and Map style is the first item".</li>
+      <li><strong>Click-handler note.</strong> The Map style button uses programmatic open (<code>setIsMapStyleModalOpen(true)</code> + <code>modal.showOverlay()</code>) rather than <code>commandFor</code> + <code>command="--show"</code> — the latter raced with the popover's auto-dismiss and the modal never opened (per the 2026-05-06 review comment at line 6022). Do not "simplify" this back to <code>commandFor</code> in future revamps.</li>
+      <li><strong>Adding new items.</strong> When a new overflow item is needed, append it to BOTH the menu AND this section's "Current items" list in the same commit. Do not let the contract drift.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- =============== Location === "all" — selection gate ============= -->
+<!-- ================================================================ -->
+
+<div class="modal-section">
+  <h2>Location === "all" — selection gate (page-level)</h2>
+  <p class="sub">
+    When the Location filter is set to "all" (the default first-load state, <code>DEFAULT_LOCATION_ID</code> on line 47), the routing flow has no origin location, so selecting orders does nothing. The control row already hides itself (line 5881 <code>if (!isLocationContext) return null</code>), but selection is still reachable from <strong>two</strong> surfaces: the All-orders table checkboxes (rows 3561 / 3609) AND the map markers (click handlers at lines 1691, 1722). Both surfaces register the selection and silently drop it. Ghost affordances on both ends.
+  </p>
+
+  <p style="font-size: 12px; color: var(--text); margin: 12px 0 8px;"><strong>Fix — three prongs, one banner:</strong></p>
+  <ul style="font-size: 12px; color: var(--text); margin: 0 0 14px 18px; padding: 0;">
+    <li><strong>(a) Page-level info banner</strong> placed just below the Location filter (above the map), so it's the first thing the user sees when location === "all". Single source of truth for the explanation.</li>
+    <li><strong>(b) Hide the All-orders checkbox column</strong> entirely. Conditional grid template.</li>
+    <li><strong>(c) Disable map-marker click handlers</strong> when location === "all" — clicking does nothing. No edit-mode entry, no toggleSelection, no ghost selection. The banner is the explanation.</li>
+  </ul>
+
+  <h3 style="text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--text); margin: 18px 0 6px;">Page-level layout — target</h3>
+  <div style="border: 1px solid var(--border); border-radius: 8px; padding: 14px; background: var(--canvas); max-width: 880px;">
+    <div style="display: flex; gap: 8px; align-items: flex-end; margin-bottom: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-size: 11px; font-weight: 600; color: var(--subdued);">Location</span>
+        <div style="background: var(--bg); border: 1.5px solid var(--primary-bg); border-radius: 6px; padding: 6px 10px; font-size: 12px; min-width: 160px;">All locations ▾</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-size: 11px; font-weight: 600; color: var(--subdued);">Delivery promise</span>
+        <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 12px; min-width: 140px; color: var(--subdued);">Today + Tomorrow</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-size: 11px; font-weight: 600; color: var(--subdued);">Time limit</span>
+        <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 12px; min-width: 100px; color: var(--subdued);">All</div>
+      </div>
+    </div>
+    <div class="info-banner" style="margin-bottom: 12px;">
+      <span class="icon-lg" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 0 0-6 6c0 4.5 6 10 6 10s6-5.5 6-10a6 6 0 0 0-6-6Zm0 8.25a2.25 2.25 0 1 1 0-4.5 2.25 2.25 0 0 1 0 4.5Z"/></svg></span>
+      <div>
+        <strong>Pick a location to start routing orders.</strong> Route planner needs a single origin location. Choose one from the Location filter above.
+      </div>
+    </div>
+    <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; height: 120px; display: flex; align-items: center; justify-content: center; color: var(--subdued); font-size: 12px; font-style: italic;">
+      [Map renders normally — markers visible (informational), but clicks do nothing]
+    </div>
+    <p style="font-size: 11px; color: var(--subdued); margin: 6px 0 0; text-align: center;">↑ Banner sits between the Location filter (the cause) and the map (one of the affected surfaces). Always in view at page top, before the user reaches for either map or table.</p>
+  </div>
+
+  <h3 style="text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--text); margin: 18px 0 6px;">All-orders table — checkbox column hidden</h3>
+  <div class="mock-table">
+    <div class="row no-cb header">
+      <span>Order</span>
+      <span>Customer</span>
+      <span>Date</span>
+      <span>Due</span>
+      <span>Address</span>
+    </div>
+    <div class="row no-cb">
+      <span>#79664</span>
+      <span>Amanda S</span>
+      <span>Today 6pm</span>
+      <span>—</span>
+      <span>Rua Frei Caneca, 45</span>
+    </div>
+    <div class="row no-cb">
+      <span>#79651</span>
+      <span>Caio M</span>
+      <span>Today 4pm</span>
+      <span>—</span>
+      <span>Av. Paulista, 1230</span>
+    </div>
+  </div>
+  <p style="font-size: 11px; color: var(--ok); margin: 8px 0 0;">↑ No checkbox column when location === "all". The banner above the map already explains why — no per-table banner needed.</p>
+
+  <h3 style="text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--text); margin: 18px 0 6px;">Map markers — click handler contract</h3>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 880px;">
+    <div class="copy-variant">
+      <h4>locationId !== "all" (specific location)</h4>
+      <p class="when">Normal flow.</p>
+      <p class="body-line"><strong>Click on assigned marker</strong> → <code>enterPolylineEditMode()</code> + <code>toggleSelection(orderId)</code> → State C (assigned selected).</p>
+      <p class="body-line" style="margin-top: 6px;"><strong>Click on unassigned marker</strong> → <code>enterPolylineEditMode()</code> + <code>toggleSelection(orderId)</code> → State E (unassigned selected, auto-confirm flow).</p>
+    </div>
+    <div class="copy-variant" style="background: #fff0ee; border-color: #fadcd9;">
+      <h4>locationId === "all" (gated)</h4>
+      <p class="when">Gate state — markers visible but inert.</p>
+      <p class="body-line"><strong>Click on any marker</strong> → <strong>no-op</strong>. No edit mode entry, no selection, no popover, no toggle. The banner above the map is the only response.</p>
+      <p class="body-line" style="margin-top: 6px; color: var(--subdued); font-size: 11px;">No visual marker treatment change (markers keep their colored urgency gradient — the colors carry information independent of clickability).</p>
+    </div>
+  </div>
+
+  <div class="notes" style="max-width: none; margin-top: 14px;">
+    <h3>Notes &amp; tradeoffs — page-level location gate</h3>
+    <ul>
+      <li><strong>Why ONE banner, not two.</strong> A second banner above the table would duplicate the message. The page-level banner above the map is in view when the user lands; the table is below, so by the time they reach it they've already passed the banner. Single explanation = single source of truth.</li>
+      <li><strong>Layout shifts on filter change.</strong> When the user picks a specific location, the banner disappears and the checkbox column reappears (28px shift). One-time shift on a deliberate filter change, not a layout flicker mid-interaction. Acceptable.</li>
+      <li><strong>Banner tone.</strong> <code>info</code>, not <code>warning</code>. The user isn't doing anything wrong; they just haven't picked a location yet.</li>
+      <li><strong>Banner copy mentions BOTH gated surfaces.</strong> "Until then, map markers and order selection are read-only" tells the user upfront that clicking won't do anything, so the silent no-op on map clicks doesn't feel like a bug.</li>
+      <li><strong>i18n.</strong> Banner keys: <code>map.locationGate.banner.heading</code> + <code>.body</code> (en + pt-BR). The body string includes the "map markers and order selection are read-only" clause.</li>
+      <li><strong>Map-marker visual treatment.</strong> No greying-out, no opacity reduction. The marker colors encode order urgency (Today / Tomorrow / Later / Address-error) — that information stays valuable even when clicks are gated. Don't kill the signal to soften the affordance.</li>
+      <li><strong>Where the click-disable lives in code.</strong> Click handlers at <code>app/routes/app.local-delivery.tsx</code> lines 1691 and 1722. Wrap the existing handler bodies in <code>if (locationId === DEFAULT_LOCATION_ID) return;</code> as the first statement. Equivalent to the control-row guard at line 5881.</li>
+      <li><strong>Banner-only fallback (rejected).</strong> Originally considered keeping checkboxes + click handlers functional plus a banner. Rejected — creates a "click does nothing" feedback gap that violates the "only actionable controls are visible" premise. Hide-don't-disable applies symmetrically across all surfaces.</li>
+      <li><strong>Implementation hint — table grid.</strong> The table grid template uses <code>grid-template-columns: 24px ...</code> when checkbox is present. Extract to a variable derived from <code>locationId !== DEFAULT_LOCATION_ID</code>; conditionally render the header/row checkbox cells too.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- =============================================================== -->
+<!-- =============== Fullscreen single-scroll fix ================== -->
+<!-- =============================================================== -->
+
+<div class="scroll-section">
+  <h2>Fullscreen layout — single-scroll fix</h2>
+  <p class="sub">
+    Collapsed mode has a single page-level scroll on the right edge. Fullscreen shipped with two independent scrollbars (main column + aside column). Fix: outer container takes over the scroll, both panes drop their independent overflow.
+  </p>
+
+  <div class="scroll-grid">
+    <div class="scroll-col">
+      <h3>Today (broken)<span class="tag-bad">Two scrolls</span></h3>
+<pre class="ascii">┌─────────────────────────────────────────────┐
+│ fullscreen header                           │
+├──────────────────────────┬──────────────────┤
+│ map                      │ Route mgr        │
+│ control row              │                  │
+│ assigned table           │ Auto-accuracy    │
+│ row 1                  ▲ │ route 1        ▲ │
+│ row 2                  │ │ route 2        │ │
+│ row 3                  │ │ route 3        │ │
+│ row 4                  ▼ │ route 4        ▼ │
+└──────────────────────────┴──────────────────┘
+   ↑ scroll #1                    ↑ scroll #2
+   inside main column             inside aside</pre>
+<div class="css-diff"><span class="cmt">/* current */</span>
+.fullscreenSplitLayout { overflow: hidden; }
+.fullscreenMapPane     { overflow: auto; }
+.fullscreenAsidePane   { overflow: auto; }</div>
+    </div>
+
+    <div class="scroll-col">
+      <h3>Target (fixed)<span class="tag-good">One scroll</span></h3>
+<pre class="ascii">┌─────────────────────────────────────────────┐
+│ fullscreen header                           │
+├──────────────────────────┬─────────────────┐│
+│ map                      │ Route mgr       ││
+│ control row              │                 ││ ▲
+│ assigned table           │ Auto-accuracy   ││ │
+│ row 1                    │ route 1         ││ │
+│ row 2                    │ route 2         ││ │ scroll
+│ row 3                    │ route 3         ││ │
+│ row 4                    │ route 4         ││ │
+│ row 5                    │ route 5         ││ │
+│ row 6                    │ route 6         ││ ▼
+└──────────────────────────┴─────────────────┘│
+                            single scroll on  ┘
+                            the OUTER container</pre>
+<div class="css-diff"><span class="cmt">/* fix */</span>
+.fullscreenScroll      { <span class="rm">overflow: hidden;</span> <span class="add">overflow-y: auto;</span> }
+.fullscreenSplitLayout { <span class="rm">overflow: hidden;</span> }
+.fullscreenMapPane     { <span class="rm">overflow: auto;</span> }
+.fullscreenAsidePane   { <span class="rm">overflow: auto;</span> }
+<span class="cmt">/* both panes become content-sized;
+   .fullscreenScroll absorbs the scroll. */</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================================== -->
+<!-- =============== Exit confirmation modal ======================== -->
+<!-- =============================================================== -->
+
+<div class="modal-section">
+  <h2>Exit confirmation modal</h2>
+  <p class="sub">
+    Triggered when the user clicks Exit (✕) in States <strong>D / D' / G</strong> — i.e. whenever <code>hasChangesPending === true</code>. Polaris <code>&lt;s-modal&gt;</code>, centered, dismissible via Esc / backdrop / Stay button. Same construction pattern as the existing <code>unassign-confirm-modal</code> at <code>app/routes/app.local-delivery.tsx</code> line 4995.
+  </p>
+
+  <div class="modal-stage">
+    <div class="modal-card">
+      <div class="modal-head">Discard pending changes?</div>
+      <div class="modal-body">
+        Exiting edit mode will undo your <strong>2 pending route changes</strong>. The orders will go back to their original routes, and you'll be returned to the read-only view.
+      </div>
+      <div class="modal-foot">
+        <button class="btn">Stay</button>
+        <button class="btn primary critical">Discard and exit</button>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--text); margin: 14px 0 6px;">Copy variants per state</h3>
+  <div class="copy-variants">
+    <div class="copy-variant">
+      <h4>State D / D' (changes pending)</h4>
+      <p class="when">Standard case — user clicked Exit while pending Reassign/Unassign exist.</p>
+      <p class="heading-line">Discard pending changes?</p>
+      <p class="body-line">Exiting edit mode will undo your <strong>{{N}} pending route changes</strong>. The orders will go back to their original routes.</p>
+    </div>
+    <div class="copy-variant">
+      <h4>State G (error after Confirm)</h4>
+      <p class="when">User attempted Confirm, the recompute failed, error banner shown — they're hitting Exit to bail.</p>
+      <p class="heading-line">Discard changes and exit?</p>
+      <p class="body-line">Your <strong>{{N}} pending route changes</strong> failed to apply. Exiting will discard them — the orders stay on their original routes.</p>
+    </div>
+  </div>
+
+  <div class="notes" style="max-width: none; margin-top: 14px;">
+    <h3>Notes &amp; tradeoffs — Exit confirmation</h3>
+    <ul>
+      <li><strong>State B is the exception.</strong> When edit mode is active but no changes are pending and no selection exists, Exit fires immediately with NO modal — there's nothing to lose. The matrix encodes this as <code>vis · imm</code>.</li>
+      <li><strong>Button order.</strong> Secondary <code>Stay</code> on the LEFT, primary critical <code>Discard and exit</code> on the RIGHT — matches CLAUDE.md → "Buttons" rule (rightmost = primary). Critical-tone primary because the action is destructive.</li>
+      <li><strong>Discard verb.</strong> Chose <code>Discard and exit</code> over <code>Exit without saving</code> because the user never explicitly "saved" anything — they committed Reassign/Unassign locally; nothing has hit the server. "Discard" reads as "throw away local edits", which is accurate.</li>
+      <li><strong>Modal also when Esc / backdrop?</strong> No — Esc and backdrop click should be treated as <code>Stay</code> (non-destructive default). The modal uses <code>commandFor</code> + <code>command="--hide"</code> on the Stay button only; the Discard button calls <code>cancelPolylineEditMode()</code> programmatically.</li>
+      <li><strong>i18n.</strong> Two key groups: <code>map.polylineEdit.exitConfirm.heading</code> + <code>.body</code> (D/D') and <code>map.polylineEdit.exitConfirmAfterError.heading</code> + <code>.body</code> (G). Plural-aware count formatting needed (<code>{{N}} pending route change(s)</code>).</li>
+      <li><strong>Plural rule.</strong> When N=1, body reads "your <strong>1 pending route change</strong>". When N≥2, "your <strong>{{N}} pending route changes</strong>". Use existing i18n plural infrastructure.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<div class="legend-icons">
+  <h2>Polaris icon picks (post rev 21 + this iteration)</h2>
+  <table>
+    <thead>
+      <tr><th>Button</th><th>Polaris <code>icon</code></th><th>Render hint</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Confirm</td><td><code>check-circle</code></td><td>✅</td><td>Filled circle reads as "complete the action".</td></tr>
+      <tr class="changed"><td>Exit</td><td><code>x</code></td><td>✕</td><td><strong>Reconciled to production</strong> — was <code>exit</code> (↩) in v1 mockup; ships as <code>x</code> (line 5999). Mockup updated to match. "Leave edit mode" — distinct from Cancel.</td></tr>
+      <tr><td>Reassign to ▾</td><td><code>exchange</code></td><td>⇄</td><td>"Swap routes". Caret on the right indicates popover.</td></tr>
+      <tr class="changed"><td>Unassign</td><td><code>delete</code> + tone="critical"</td><td>🗑</td><td><strong>Changed from <code>minus-circle</code></strong> to disambiguate from Clear-selection. Trash icon reads as strongly destructive — appropriate since unassigning removes the order from its route entirely.</td></tr>
+      <tr><td>Clear selection</td><td><code>minus-circle</code></td><td>⊖</td><td>Single icon across States C / D' / E. Now visually distinct from Unassign (🗑). Neutral tone — reads as "drop selection".</td></tr>
+      <tr><td>Assign to new route</td><td><code>arrow-right-circle</code></td><td>⊕</td><td>"Add new route from these orders".</td></tr>
+      <tr><td>⋯ More actions</td><td><code>menu-horizontal</code></td><td>⋯</td><td>Already used for the per-route overflow menu — consistent. Current contents: Map style (only). See "⋯ More actions menu — contents contract" section.</td></tr>
+      <tr class="changed"><td>Legend chip</td><td><code>book-open</code></td><td>📖</td><td>Single chip replaces the six-pill legend strip. Polaris-native, verified to exist in the <code>IconType</code> union. Renders as <code>&lt;s-icon type="book-open" size="small"&gt;</code>. Chip is <strong>icon-only at rest</strong>, styled like a Polaris default-tone <code>&lt;s-badge&gt;</code> (gray pill, no border, 12px font); hover/focus darkens the bg, slides the "Legend" word out next to the icon, AND opens the popover anchored above.</td></tr>
+      <tr class="changed"><td>Routed from warehouse (NEW)</td><td><code>package</code></td><td>📦</td><td><strong>Added in legend-tweaks iteration.</strong> New legend item for the "others" column. Mirrors the package-icon marker treatment already on the map for warehouse-origin orders (shipped 2026-05-14 in <code>eab4a01</code>). Tone: <code>neutral</code> — it's an origin marker, not a status. Sorted alphabetically inside its column (last item, after "Address error" and "Failed").</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top: 12px; font-size: 11px; color: var(--subdued);">
+    Yellow-highlighted rows changed in this iteration. Verify icon names against the Polaris <code>IconType</code> union (<code>node_modules/@shopify/polaris-types/dist/polaris.d.ts</code>) before implementing.
+  </p>
+</div>
+
+</body>
+</html>

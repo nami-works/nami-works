@@ -1,0 +1,216 @@
+{
+  "pageHeading": "Brand Assets",
+  "brandConfig": {
+    "heading": "Brand configuration",
+    "description": "Your brand bible. These values shape every AI-generated blog post, alt text, and future content \u2014 and accumulate learnings from your edits over time."
+  },
+  "labels": {
+    "brandName": "Brand name",
+    "about": "About",
+    "toneOfVoice": "Tone of voice",
+    "blogUrl": "Blog URL",
+    "preferredLanguage": "Preferred language",
+    "contentLanguage": "Content language",
+    "benchmarks": "Benchmarks",
+    "brandCategory": "Brand category",
+    "editorialGuidelines": "Editorial guidelines",
+    "formatRecommendations": "Format recommendations",
+    "contentStrategy": "Content strategy (JSON, optional)"
+  },
+  "placeholders": {
+    "brandName": "Your brand display name",
+    "about": "Brand story, mission, institutional info",
+    "toneOfVoice": "How the brand communicates (e.g. formal, casual, inspirational). Use 'Scrape store' to auto-generate from your content.",
+    "benchmarks": "Competitor or reference brands (e.g. Gisou, Glossier), one per line",
+    "brandCategory": "e.g. premium hair care, skincare",
+    "editorialGuidelines": "Content architecture, tone rules, structure guidelines",
+    "formatRecommendations": "HTML structure, summary guidelines (e.g. Resumo HTML: 150–160 chars), content length"
+  },
+  "languageOptions": {
+    "english": "English",
+    "portugueseBr": "Portuguese (BR)"
+  },
+  "scrapeStore": {
+    "heading": "Scrape store",
+    "description": "Use \"Scrape store\" to analyze your shop content and auto-generate tone of voice. Requires the Content Scraper API to be configured.",
+    "comingSoon": "Scrape store (coming soon)"
+  },
+  "export": {
+    "heading": "Export",
+    "description": "Your brand bible as a portable artifact. Download and reuse elsewhere.",
+    "downloadJson": "Download JSON",
+    "downloadMarkdown": "Download Markdown",
+    "lastExported": "Last exported {{when}}",
+    "neverExported": "Not exported yet"
+  },
+  "learnings": {
+    "heading": "Learned from edits",
+    "empty": "No learnings yet. Review AI drafts on the Blog Posts tab to start.",
+    "count_one": "{{count}} accepted",
+    "count_other": "{{count}} accepted",
+    "viewAll": "View all",
+    "remove": "Remove"
+  },
+  "settingsSaved": "Settings saved",
+  "toneSummary": {
+    "heading": "Tone of voice",
+    "title": "Brand voice evidence base",
+    "syncedAt": "✓ Last sampled {{when}}",
+    "neverSynced": "Never sampled",
+    "stats": "The AI infers your brand voice from these sources: {{traits}} validated tone trait{{traitPlural}}, {{learnings}} edit-correction{{learningPlural}}, {{toneState}}, language {{language}}.",
+    "toneSet": "manual tone string set",
+    "toneEmpty": "no manual tone string",
+    "pillShopify": "Shopify blog · {{count}} sampled",
+    "pillMeta": "Meta · {{count}} posts",
+    "pillMonday": "Monday.com · {{count}} briefs",
+    "pillManual": "Manual · {{count}} reference{{plural}}",
+    "manageLink": "Manage sources"
+  },
+  "toneSources": {
+    "manageLink": "Manage tone sources",
+    "pageHeading": "Tone of voice",
+    "refreshNow": "Refresh tone now",
+    "refreshOk": "Sampled {{sampled}} articles, inferred {{inferred}} traits.",
+    "sources": {
+      "heading": "Connected sources",
+      "description": "We sample copy from these sources weekly to learn how your brand sounds. Every new batch is reviewed by you before it changes how blog posts are written."
+    },
+    "status": {
+      "connected": "Connected",
+      "notConfigured": "Not configured",
+      "error": "Error",
+      "noRefs": "No references yet"
+    },
+    "rows": {
+      "shopifyName": "Shopify blog posts",
+      "shopifyDetailIdle": "Ready to sample your existing blog articles.",
+      "metaName": "Instagram & Facebook",
+      "metaPosts": "posts",
+      "metaDetailIdle": "Connect to pull captions + image text via Meta Graph API.",
+      "mondayName": "Monday.com",
+      "mondayDetailIdle": "Add API key + board IDs to sample internal copy.",
+      "manualName": "Manual references",
+      "manualDetailIdle": "Brandbooks, manifestos, or any reference document.",
+      "manualCount_one": "1 reference",
+      "manualCount_other": "{{count}} references"
+    },
+    "shopify": {
+      "help": "Auto-connected via your Shopify session — no credentials needed. We sample up to 5 blogs × 25 most recent articles."
+    },
+    "manual": {
+      "emptyHint": "No references yet. Drop a file or paste a URL above to add one."
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "refreshNow": "Refresh now",
+      "configure": "Configure",
+      "configureSoon": "Coming soon",
+      "accept": "Accept",
+      "reject": "Reject",
+      "delete": "Delete",
+      "reExtract": "Re-extract"
+    },
+    "monday": {
+      "title": "Monday.com configuration",
+      "description": "Generate an API key in Monday.com (Profile → Admin → API). Paste your board IDs comma-separated.",
+      "apiKey": "API key",
+      "apiKeyPlaceholderConfigured": "(stored — leave blank to keep current)",
+      "boardIds": "Board IDs (comma-separated)",
+      "save": "Save Monday.com config",
+      "disconnect": "Disconnect",
+      "connectCta": "Connect",
+      "fetchSchema": "Fetch schema",
+      "columnsIntro": "We found these columns on your boards. Status columns expose discrete values you can filter on. Text columns are always included as content sources.",
+      "boardStat": "{{items}} items · {{columns}} columns · {{groups}} groups",
+      "noFilterableColumns": "No filterable columns (status / group) found.",
+      "noFilterableHint": "Sampling will include every item from these boards.",
+      "groupColumnLabel": "Group (board section)",
+      "builtInGroupHint": "built-in · values: {{values}}",
+      "statusColumnHint": "status · values: {{values}}",
+      "filterableChip": "filterable",
+      "skipFiltering": "Skip filtering",
+      "rulesIntro": "Multiple values inside one rule combine with OR. Multiple rules combine with AND.",
+      "noRulesYet": "No rules yet — add one to filter which items get sampled.",
+      "addRule": "Add another rule",
+      "removeRule": "Remove rule",
+      "opIsOneOf": "is one of",
+      "opIsNotOneOf": "is not one of",
+      "opIsEmpty": "is empty",
+      "noValuesNeeded": "(no values needed)",
+      "noValuesAvailable": "(no values available)",
+      "previewCta": "Preview",
+      "previewNoRules": "No filters — sampling all {{items}} items.",
+      "previewRuleCount_one": "{{count}} filter rule — items must satisfy every rule.",
+      "previewRuleCount_other": "{{count}} filter rules — items must satisfy every rule.",
+      "editRules": "Edit rules",
+      "saveFilters": "Save filters",
+      "saveAndRefresh": "Refresh now"
+    },
+    "mondayPhases": {
+      "connect": "A. Connect",
+      "columns": "B. Choose columns",
+      "rules": "C. Filter rules",
+      "preview": "D. Preview & save"
+    },
+    "meta": {
+      "title": "Instagram & Facebook configuration",
+      "description": "Generate a long-lived Page Access Token in Meta Business Suite (Settings → Users → System Users → Generate token). Provide the IG Business ID and/or FB Page ID for accounts you want sampled.",
+      "whatIntro": "Every Monday we sample your most recent Instagram & Facebook posts (captions plus any text rendered inside images) and pass them to the tone-of-voice inference engine alongside Shopify and Monday.com sources.",
+      "whatOutro": "The next tab walks you through generating the token in Meta Business Suite — about 2 minutes.",
+      "trust1": "Read-only access to posts on the IG/FB accounts you choose.",
+      "trust2": "Captions and image-text only. No DMs, ads, audience data, or insights.",
+      "trust3": "You generate the token in Meta Business Suite. We never see your Facebook password.",
+      "trust4": "Token is encrypted at rest. Disconnect at any time.",
+      "generateIntro": "Open Meta Business Suite in a new tab, then follow these 3 steps. We'll wait here while you do.",
+      "step1Title": "business.facebook.com → Settings → Users → System Users.",
+      "step1Hint": "Don't have a System User yet? Add → name it 'Omnify tone access' → role Admin.",
+      "step2Title": "Generate New Token. Choose permissions: pages_read_engagement, instagram_basic, pages_show_list.",
+      "step2Hint": "Token expiration: select 'Never' for the long-lived flow.",
+      "step3Title": "Copy the token shown on screen, then come back here.",
+      "step3Hint": "You'll also need your IG Business ID and/or FB Page ID — both visible in Settings → Accounts.",
+      "pasteIntro": "Token gets encrypted before being stored. Provide at least one of IG Business ID or FB Page ID.",
+      "haveToken": "I have my token",
+      "connectCta": "Connect",
+      "connectedHelp": "Connected. Token rotates every 60 days — we'll prompt you ahead of expiry.",
+      "token": "Long-lived Page Access Token",
+      "tokenPlaceholderConfigured": "(stored — leave blank to keep current)",
+      "igBusinessId": "Instagram Business ID",
+      "fbPageId": "Facebook Page ID",
+      "save": "Save changes",
+      "disconnect": "Disconnect"
+    },
+    "metaPhases": {
+      "what": "A. What we sample",
+      "generate": "B. Generate token",
+      "paste": "C. Paste & connect"
+    },
+    "upload": {
+      "title": "Drop a brandbook, manifesto, or any reference",
+      "addAnother": "Add another reference",
+      "sub": "PDF, DOCX, TXT, MD up to 30MB · click below or drag a file here",
+      "chooseFile": "Choose file",
+      "fetchUrl": "Fetch URL",
+      "or": "or",
+      "urlPlaceholder": "…or paste a URL (https://…) to fetch reference copy from a web page",
+      "uploadingFallbackName": "Uploading…",
+      "extractingStatus": "Extracting text via Claude…",
+      "failedLabel": "Upload rejected.",
+      "referencesHeading": "Manual references"
+    },
+    "uploadOk": "Reference added ({{chars}} chars), inferred {{inferred}} traits.",
+    "manualOverride": {
+      "title": "Manual override (always wins)",
+      "empty": "No manual tone string set. Add one on Brand settings to override the inferred tone.",
+      "editLink": "Edit on Brand settings →"
+    },
+    "pending": {
+      "heading_one": "Pending review · 1 trait",
+      "heading_other": "Pending review · {{count}} traits",
+      "empty": "No hypotheses pending. Run a refresh to sample your sources and infer traits."
+    },
+    "batches": {
+      "heading": "Past batches",
+      "empty": "No batches yet."
+    }
+  }
+}

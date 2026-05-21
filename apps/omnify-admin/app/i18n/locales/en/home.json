@@ -1,0 +1,89 @@
+{
+  "pageHeading": "Home",
+  "subheading": "Local delivery, retail sales, and footprint expansion for consumer brands selling on Shopify.",
+  "sections": {
+    "activityOverview": "Activity overview",
+    "jumpIn": "Jump in",
+    "jumpBackIn": "Jump back in"
+  },
+  "setup": {
+    "title": "Get Omnify running",
+    "subtitle": "Finish setup so we can start syncing orders, planning routes, and tracking sales.",
+    "progress": "{{done}} of {{total}} done",
+    "steps": {
+      "install": {
+        "title": "Install the app",
+        "desc": "Granted access to your store.",
+        "cta": "Done"
+      },
+      "lalamove": {
+        "title": "Connect your delivery provider",
+        "desc": "Add your Lalamove API key and pick the cities you operate in. Required for local delivery routing.",
+        "cta": "Connect Lalamove"
+      },
+      "locations": {
+        "title": "Configure your pickup locations",
+        "desc": "Tell Omnify which Shopify locations dispatch deliveries and what their pickup windows look like.",
+        "cta": "Open settings"
+      },
+      "customerSync": {
+        "title": "Sync your customer base",
+        "desc": "Optional, but unlocks footprint analytics and retail expansion ranking.",
+        "cta": "Run sync"
+      }
+    }
+  },
+  "metrics": {
+    "localDelivery": {
+      "label": "Local delivery",
+      "range": "Today",
+      "cta": "Plan deliveries",
+      "emptyTitle": "No deliveries yet.",
+      "emptyDesc": "Connect Lalamove and tag your first order to see today's routes here.",
+      "subPending": "orders waiting",
+      "subDispatched": "{{n}} routes dispatched today"
+    },
+    "retailSales": {
+      "label": "Retail sales",
+      "range": "This month",
+      "cta": "Open dashboard",
+      "emptyTitle": "No goals set.",
+      "emptyDesc": "Set monthly revenue targets per location to track actual vs. goal.",
+      "subRevenue": "MTD revenue",
+      "subLocations": "{{n}} locations reporting"
+    },
+    "footprintExpansion": {
+      "label": "Footprint expansion",
+      "range": "Lifetime",
+      "cta": "View heatmap",
+      "emptyTitle": "No customers synced.",
+      "emptyDesc": "Run a sync to see where your demand is concentrated and rank candidates.",
+      "subCustomers": "customers geocoded",
+      "subTopCity": "Top demand: {{city}}"
+    },
+    "affiliates": {
+      "label": "Affiliates",
+      "range": "Last 30d",
+      "cta": "Attribution queue",
+      "emptyTitle": "No codes registered.",
+      "emptyDesc": "Connect a Shopify discount code or import a BixGrow CSV to track attribution.",
+      "subAttributed": "attributed · {{n}} active codes",
+      "subUnmapped": "{{n}} codes unmapped"
+    }
+  },
+  "jumpCards": {
+    "localDelivery": { "title": "Plan deliveries", "sub": "Map orders, dispatch routes, track drivers." },
+    "retailSales": { "title": "Track retail sales", "sub": "Set goals and watch progress per store." },
+    "footprintExpansion": { "title": "Find new locations", "sub": "See where customers are and rank candidates." },
+    "affiliates": { "title": "Manage affiliates", "sub": "Codes, attribution, and commission tracking." },
+    "merchandising": { "title": "Merchandising", "sub": "Sale campaigns and price tags." },
+    "storytelling": { "title": "Storytelling", "sub": "AI-generated blog content for your brand." },
+    "settings": { "title": "Settings", "sub": "Carriers, locations, and delivery providers." }
+  },
+  "footer": {
+    "heading": "Need a hand?",
+    "docs": "Read the docs",
+    "support": "Email support",
+    "changelog": "What's new"
+  }
+}

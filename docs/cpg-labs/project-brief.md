@@ -1,0 +1,335 @@
+# Project Brief — CPG Labs (parent) & Omnify (product)
+
+> Use this document as context when discussing the project on mobile or with anyone unfamiliar with the codebase. It describes what the product does, how it works, and where things stand — written for planning conversations, not for coding.
+
+---
+
+## Brand model
+
+**CPG Labs** is the parent company and developer brand. It owns the corporate landing at `cpg-labs.io`, the Partner-account org, and the engineering surfaces (this repo, AWS infrastructure, deploy pipelines). Merchants do not "install CPG Labs" — they install one of its products.
+
+**Omnify** is the Shopify embedded app that CPG Labs publishes. It is what every merchant — including GE Beauty — sees in their Shopify admin: app name in the install list, header inside the embedded iframe, App Bridge nav entries. Omnify is built for consumer packaged goods (CPG) brands selling through Shopify and helps merchants with **local delivery logistics, retail expansion analytics, product merchandising, and AI content generation**.
+
+The Omnify app is deployed at `app.cpg-labs.io` (full feature set) and runs on AWS (ECS Fargate + RDS PostgreSQL). It's built with React Router v7, TypeScript, Prisma, Google Maps, and Shopify's Polaris design system.
+
+### Multi-App Architecture
+
+The same codebase powers multiple focused Shopify apps via an `APP_IDENTITY` environment variable. All user-facing identities surface as **Omnify** to merchants — `APP_IDENTITY` is an internal dispatcher that scopes which features render, not a user-visible brand:
+
+| Identity (env var) | Target Merchant | Features Enabled |
+|--------------------|----------------|------------------|
+| `cpg-labs` (default — Omnify full) | All merchants, full feature set | Everything |
+| `omnify` (Omnify focused) | Delivery-focused brands | Local Delivery, Retail Footprint, Retail Sales, Carrier Service, Settings |
+| `storefront` | Product merchandising & content | Price Tags, Merchandising, Story-telling (Blog Generation, Brand Settings, Alt Text) |
+
+Each identity has its own Shopify app credentials, deploy lane (`scripts/deploy.ps1 -App <key>`), and scoped navigation. The `cpg-labs` identity key is a historical infrastructure label — the merchant-facing name across all identities is Omnify. Story-telling features are being merged into the Storefront app.
+
+---
+
+## Features
+
+### 1. Local Delivery (flagship feature)
+
+**What it does:** Manages same-day and next-day local deliveries using Lalamove as the carrier. Merchants see their pending orders on a map, group them into optimized routes, request drivers, and track deliveries — all from inside Shopify Admin.
+
+**How it works:**
+- When a local delivery order comes in, a webhook auto-assigns it to the best route using Google Routes API (distance optimization, topological sorting, or cost-based Lalamove quotation).
+- The merchant sees orders as color-coded pins on an interactive Google Map, with route polylines showing distance and estimated duration.
+- Each route has a card showing its orders, total distance, and estimated cost. The merchant can drag orders between routes or let the optimizer rebalance.
+- Clicking "Request Driver" sends a quotation request to Lalamove, then places the order. The driver's real-time status flows back via webhooks (assigning → picked up → in transit → delivered).
+- Lalamove supports 11 markets (Brazil, Singapore, Hong Kong, etc.) with city-specific service types (motorcycle, van, truck) and special requests.
+
+**Key capabilities:**
+- Multi-stop route optimization (up to ~10 orders per route)
+- Per-location Lalamove configuration (market, city, service type, pickup address)
+- Auto-escalation: if no driver accepts within 60 minutes, the system can re-request
+- Return pickup support (reverse logistics)
+- Filters by location, date, delivery promise, and presale tags
+- Order tagging in Shopify based on delivery status
+
+**Current state:** Production-ready and actively used. Ongoing work includes route card restyling, driver-requested status tracking, and fixing a 422 error for Recife orders (special request mismatch).
+
+---
+
+### 2. Retail Sales (formerly Sales Goals / Retail Goals)
+
+**What it does:** Lets merchants set monthly sales targets per location and track actual performance against those targets, with variance analysis and trend charts.
+
+**How it works:**
+- Merchant picks a location and month, sets a revenue target, and optionally selects a base period (previous month or previous year) to auto-calculate growth rate.
+- Dashboard shows actual vs. goal with color-coded variance (green = on track, red = behind).
+- KPI charts show revenue, order count, and AOV trends over time.
+- Locations can be ranked by performance.
+- Per-location filters let merchants scope tracking to specific sales channels, order tags, or shipping methods.
+
+**Current state:** Fully functional with multi-tab layout (Dashboard, Goals, KPIs, Ranking, Settings).
+
+---
+
+### 3. Retail Footprint (formerly Retail Expansion)
+
+**What it does:** Helps brands analyze where to open new physical retail locations by visualizing customer and order density on a heatmap, scoring candidate locations, and managing leasing proposals.
+
+**How it works:**
+- Syncs all customers and orders from Shopify (paginated, handles API throttling) and caches their geographic data.
+- Renders a Google Maps heatmap showing where customers are concentrated — weighted by orders, revenue, or customer count.
+- Merchants create "location sets" of candidate sites and score them by proximity to existing customers (5km/10km/15km radius analysis) plus qualitative criteria (audience type, tenant mix, subjective fit).
+- Each candidate location can have a proposal attached with leasing value, currency, notes, and PDF documents.
+- City-level geocoding fallback: if a customer has no precise coordinates but has a city name, the system geocodes the city and uses its centroid.
+
+**Current state:** Fully functional. Complex feature (~151KB route file) with analytics caching, heatmap rendering, and proposal management.
+
+---
+
+### 4. Price Tags (Discount Automation)
+
+**What it does:** Automatically assigns discount labels to products based on price tiers, using Shopify metaobjects as the label system.
+
+**How it works:**
+- Merchant configures which metaobject type represents "discount labels" and maps its fields.
+- Creates tier rules: e.g., products over $50 get the "Premium" label, products over $100 get "Bestseller."
+- When a product is updated (via webhook), the system checks its price against the tier rules and assigns the matching metaobject as a metafield on the product.
+- Setup page auto-discovers the product metafield that references the metaobject type — no manual configuration needed.
+
+**Current state:** Functional with setup + tier management. Webhook-driven auto-sync working.
+
+---
+
+### 5. Merchandising
+
+**What it does:** Manages theme promotional settings and metaobject icon galleries for Shopify storefronts.
+
+**How it works:**
+- **Icons Gallery:** Browse all metaobject types in the shop, view their entries as thumbnails, edit field values inline.
+- **Announcements:** Scans the published theme's settings for promotional fields (announcement bar text, header promos), detects conflicts across sections, and suggests consolidation. Uses AI (Claude API) to identify promo-related fields in the theme schema.
+
+**Current state:** Functional. Theme integration and AI-powered conflict detection working.
+
+---
+
+### 6. Story-telling (AI Blog Generation)
+
+**What it does:** Generates SEO-optimized blog posts aligned with the brand's voice and product catalog.
+
+**How it works:**
+- Merchant first sets up their brand identity: name, tagline, tone of voice, content language, editorial guidelines, and competitor benchmarks (Brand Settings page).
+- To create a post, they write a content brief: pick a topic/keyword, select products to feature, choose a template.
+- The brief + brand context is sent to an external Content Gen API which returns a generated draft.
+- Merchant reviews, edits metadata (title, description, keywords), and publishes.
+
+**Current state:** Functional end-to-end. Brand Settings form complete, brief-to-generation flow integrated.
+
+---
+
+### 7. Goals (Product Launch Tracker)
+
+**What it does:** Tracks product launch KPIs (Day 1, Week 1, Month 1 performance) against benchmarks from previous launches.
+
+**How it works:**
+- Merchant defines a launch: target product, launch date, revenue + units goals for Day 1/Week 1/Month 1.
+- Can set benchmark products (previous launches) for comparison.
+- Segments by tag, location, or sales channel with independent goals.
+- Dashboard shows daily trends, summary cards, top products, segment breakdowns, and benchmark comparison.
+
+**Current state:** Fully functional.
+
+---
+
+### 8. Carrier Service
+
+**What it does:** Registers a Shopify Carrier Service so the app can provide real-time shipping rates at checkout.
+
+**How it works:**
+- Merchant enables the carrier service, which creates a webhook-based rate calculator in Shopify.
+- Configures distance zones (radius or postal code based), time rules (same day, next day), and enabled providers.
+- When a customer checks out, Shopify sends a rate request to the app, which calculates delivery cost based on the configured zones and cached Lalamove rate samples.
+- Currently supports Lalamove; Loggi, Uber, and Rappi are placeholder providers.
+
+**Current state:** Functional for Lalamove. Multi-provider support planned.
+
+---
+
+### 9. Settings
+
+**What it does:** Central configuration for delivery locations and Lalamove credentials.
+
+**How it works:**
+- Tab-based view per Shopify location.
+- For each location: select Lalamove market and city, service type, pickup address/phone/instructions.
+- Auto-geocodes the Shopify location coordinates for use in route optimization.
+- Encrypted storage of Lalamove API credentials.
+
+**Current state:** Fully functional.
+
+---
+
+## Integrations
+
+### Lalamove (Primary Carrier)
+- REST API v3 with HMAC-SHA256 authentication
+- 11 markets across Asia, Latin America, and Japan
+- Flow: Quotation → Order → Status webhooks → Shopify fulfillment updates
+- City-specific service types and special requests (varies within the same market)
+- 60-minute driver assignment escalation logic
+
+### Google Maps & Routes
+- Maps JavaScript API for interactive maps (delivery routes, retail heatmaps)
+- Routes API for distance/duration optimization and route polylines
+- Geocoding API for address-to-coordinate resolution
+- City-level geocoding fallback for imprecise records
+
+### Shopify
+- Embedded app using Shopify App Bridge
+- GraphQL Admin API for orders, customers, products, locations, metaobjects, fulfillments
+- Webhooks for orders, customers, products, and app lifecycle
+- Carrier Service API for checkout rate calculation
+- Polaris web components for native Admin look and feel
+
+### External APIs
+- Content Gen API for AI content generation
+- Claude API for theme settings analysis (merchandising)
+
+---
+
+## Infrastructure
+
+- **Hosting:** AWS ECS Fargate (us-east-1) behind Application Load Balancer
+- **Database:** AWS RDS PostgreSQL (Prisma ORM)
+- **Secrets:** AWS SSM Parameter Store (`/omnify/` prefix)
+- **Build:** Vite + React Router v7, Docker container
+- **Deploy:** PowerShell scripts per app identity (`deploy-cpg-labs.ps1`, `deploy-omnify.ps1`, etc.)
+- **Monitoring:** Structured console logs → AWS CloudWatch (`/ecs/omnify-gebeauty`)
+
+---
+
+## Current Initiatives
+
+This section tracks work that is actively in progress or recently landed. Keep it current — stale initiatives mislead planning conversations. See "Keeping docs/project-brief.md Updated" in `CLAUDE.md` for the update protocol.
+
+### Recently shipped
+
+**Storytelling cleanup follow-up (full rev 38 / omnify rev 56)** *(2026-05-10)*
+PR #49 (`8a43484`) — two visual follow-ups to the nav-compliance bundle below. **(1)** Switched the 5 sub-pages we touched in PR #26 (`app.storytelling_.{brief,learnings,review}.tsx`, `app.settings_.brand.tsx`, `app.settings_.brand_.tone-sources.tsx`) from a `<s-button variant="tertiary"><Link>...</Link></s-button>` shape inside `slot="back-action"` to the Polaris-native `<s-button slot="back-action" href="..." accessibilityLabel="..."><s-icon type="chevron-left" /></s-button>`. The Link-wrapped tertiary text button was forcing the slot to render at full label width, pushing the page heading + action cluster off the title row and breaking IA. Compact icon now matches Shopify's native admin order-page header. Mockup at `inputs/mockups/storytelling-page-header-v1.html` (approved before coding, per the mockup-first rule). **(2)** Two user-facing "Story-telling" → "Storytelling" strings missed by PR #26: `storytelling.json` `pageHeading` key (en + pt-BR — used by `app.storytelling.tsx` for the Storytelling landing-page heading), plus the literal author name written into Shopify Blog posts in `app.storytelling_.review.tsx` (×2). `shopify.app.storytelling.toml` `name` field intentionally left untouched — storytelling-identity is being retired, no need for a `shopify app deploy --config shopify.app.storytelling.toml`. **Deploy incident:** parallel `deploy.ps1 -App full` + `-App omnify` from one machine consistently failed mid-blob with `use of closed network connection` / `broken pipe` to ECR (3 attempts, 6 lane-failures), traced to bandwidth contention saturating the local→ECR upload pipe. Switched to **serial** (full first, then omnify) and both lanes shipped clean on first attempt. Filed as a `scripts/deploy.ps1` hardening candidate — should either serialize automatically or wrap `docker push` in exponential-backoff retry. Image tag note: deployed images carry commit `3702733`, not `8a43484` — another session landed a commit on `main` between PR #49's squash and the build start, so the deploy carried both forward.
+
+**Nav-compliance bundle (full rev 28 / omnify rev 50)** *(2026-05-09)*
+PR #26 (`7bb340c`) shipped 4 of the 5 locked-in decisions from the 2026-05-07 nav-compliance audit. **(1)** Dropped the `Extras` nav entry — cpg-labs identity goes from 8 → 7 nav items, eliminating Shopify's "View more" overflow. Removed the dead `getHomeRoute()` export and the `extras` i18n keys (en + pt-BR `common.json` + `home.json`). **(2)** Replaced legacy `slot="secondary-actions"` back buttons (and one `window.history.back()` anti-pattern) with Built-for-Shopify-compliant `slot="back-action"` (top-left) on the 3 Storytelling sub-pages (brief, learnings, review) plus the moved Brand page and tone-sources. The merchandising sub-pages were on the original list but render inside the parent `app.merchandising.tsx`'s `<Outlet>`, which already owns the page header — no per-file work needed. **(3)** Moved brand-settings from a top-level concept into a Settings sub-route. File renames via `git mv`: `app.brand-settings.tsx` → `app.settings_.brand.tsx` (URL `/app/settings/brand`), `app.brand-settings_.tone-sources.tsx` → `app.settings_.brand_.tone-sources.tsx` (URL `/app/settings/brand/tone-sources`). Settings tab strip gains a `<Link to="/app/settings/brand">` "Brand" tab as a sibling to the existing in-place button tabs (Locations / Providers / Carriers); only the Brand tab navigates, others toggle in place — mixed pattern, contained to this strip. `IDENTITY_ROUTES.storytelling` remapped to the new paths. Storytelling internal deep-links updated (4 references). **(4)** Spelling: "Story-telling" → "Storytelling" in nav labels + home jump cards (en + pt-BR). **Not shipped:** decision #4 (fold `/app/goals` into Campaigns) still depends on the Campaigns engine landing first. Deploy incident: first attempt was blocked at `Ensure-DockerRunning` because Docker Desktop wasn't running locally; manually launched, then both lanes shipped clean on first retry, no ECR network blips. 15 files touched. Pure UI + IA — no data model, migration, or scope change.
+
+**Local Delivery — post-deploy review round 4 (rev 21)** *(2026-05-07)*
+Seven fixes from Lucas's third post-deploy review landed in one squash commit (`a8679f3`). **Fix #1** (expand-on-hover): control-panel button labels collapse to `max-width: 0` by default and expand on hover via a new `.btnLabel` span wrapper + `.mapBlockFooterRightFullscreen` parent variant; fullscreen mode keeps labels permanently expanded. **Fix #2**: Assign-to-new-route icon swapped from `plus-circle` to `arrow-right-circle`. **Fix #3**: Map style menu opens reliably — dropped racing `commandFor`/`command` props that were swallowed by `s-menu`'s auto-dismiss; programmatic open via `setIsMapStyleModalOpen` + popover `removeAttribute("open")` + modal `showOverlay()`. **Fix #4**: Route-manager badge alignment unified — dropped `padding: 6px 4px` from `.routeManagerStatusRow` that was offsetting Orders-to-deliver 4px right of warning badges. **Fix #5**: Polyline cancel restore — imperative `setOptions({ strokeOpacity: 0.85, strokeWeight: 4, icons: null })` on every precomputed polyline at the START of `cancelPolylineEditMode` as a safety net for the useEffect re-run timing race. **Fix #6**: Auto-assign accuracy block always-rendered (state, chevron div, and `collapsibleSectionWrap` wrapper all dropped). **Fix #7 (the headline)**: in-page Order details modal — clicking an order row in the All-orders table now opens a Polaris `<s-modal>` instead of "open in Shopify in new tab". Body order: Items + totals (full-width top) → Customer (left) + Shipping address (right) → Tags (Hybrid editor: 3 LD operator quick-toggles `ld_failed-delivery` / `ld_address-confirm` / `ld_number-confirm` with active-state styling, plus chip row for all other tags with `×` remove + free-text Add-a-tag input that submits on Enter) → Internal notes (read-only MVP) → footer with "Open full order in Shopify ↗" + Close. Tag editor wired to new server intent `order-tag-update` calling existing `addTags`/`removeTags`. Optimistic-via-revalidation: fetcher submits → loader revalidates → modal re-renders with fresh tag state. Mockup: `inputs/mockups/local-delivery-order-modal-v1.html`. **Deferrals on file** (NOT regressions): line items per-SKU table needs a loader projection update (modal currently shows shipping summary + total); flagged-variant address warning treatment from mockup; internal-notes ADD functionality (read-only with "Coming soon" placeholder); modal Esc/backdrop close doesn't reset `orderDetailsModalOrderId` state, so re-clicking the same row after Esc won't reopen (Close button is canonical exit). First deploy attempt failed mid-blob with a transient ECR network error; clean retry succeeded. Shipped as rev 21 / image `omnify-app:full-20260507-a8679f3`. Two earlier mockups marked STALE in `inputs/mockups/INDEX.md` for follow-up `/as-built` reconciliation: `local-delivery-control-row-v1.html` and `local-delivery-backlog-v1.html`.
+
+**Storytelling Track D — brief UI rebuild + S3 binary preservation** *(2026-05-07)*
+Two follow-ups to Phase 6 shipped on the same day. **Track D**: replaces the JSON-textarea editor at `/app/storytelling/brief` with an accordion-themed campaign builder. Per-theme: title + SEO phrase + brief summary + product picker (search-and-pick from this shop's catalog, capped at 5 per theme) + chip-style keyword inputs (primary, long-tail, related searches) + competition level. Brand context band at top shows the merchant which voice will be used (`<brand name> · <toneOfVoice slice> · N validated tone traits · M edit-corrections · <language>`) with a one-click link to `/app/brand-settings/tone-sources`. View-as-JSON escape hatch toggles between form and raw textarea, preserving state. Validation: themes with empty title get inline error, Generate button disables. Loader gains accepted-hypothesis + accepted-learning counts via parallel Prisma counts. Action signature unchanged (still accepts `briefJson`); the form serializes the structured state into the same JSON shape the Content Gen API expects, so backend is untouched. **S3 follow-up**: new `cpg-labs-tone-uploads` bucket + IAM policy (default disabled via `enable_tone_uploads_bucket`, flipped on 2026-05-07 with targeted apply). `@aws-sdk/client-s3` wired into `app/services/tone-sources/s3.server.ts` (uploadToneFile / downloadToneFile / deleteToneFile, key layout `shops/<shop>/tone-uploads/<sourceId>`). `manual.server.ts` gains `persistManualUploadWithBinary` (S3 + DB in one call, graceful text-only fallback) and `reExtractFromS3` (download → Claude → refresh `rawText`). UI exposes a Re-extract button on each manual_upload row. Deleting a row also clears the S3 object. Both shipped on `main` via PR #21 (S3) + the brief-UI rebuild (still on branch). Mockups: `inputs/mockups/storytelling-brief-ui-v1.html`. Deployed: rev 19, image `omnify-app:full-20260507-7bbbf05`.
+
+**Storytelling Phase 6 — multi-source tone-of-voice ingestion + auto-trigger** *(2026-05-07, on `feat/storytelling-tone-sources` branch, awaiting merge + deploy)*
+New sub-page at `/app/brand-settings/tone-sources` with 4 source connectors that feed a unified Claude tone-inference pipeline. **Sources**: (1) Shopify blog posts (samples up to 5 blogs × 25 articles via Admin GraphQL), (2) Instagram + Facebook (long-lived Page Access Token + IG Business ID + FB Page ID, paste-in like Lalamove credentials, captions + image OCR via Claude vision), (3) Monday.com (per-tenant API key + board IDs, GraphQL `items_page` query), (4) Manual references (PDF/DOCX/TXT/MD upload up to 10MB OR pasted URL — PDFs route through Claude's native `document` content type, DOCX uses `mammoth`). **Pipeline**: each ingest persists `BrandToneSource` rows with a shared `batchId`, then Claude infers up to 15 tone traits with evidence (categories: voice/vocabulary/do/dont/register/structure) into `BrandToneHypothesis` rows with confidence scores. **Human-in-the-loop**: merchant accepts/rejects each trait inline; accepted hypotheses (≥0.5 confidence by default) flow into `getBrandContextForGeneration()` so future blog generation incorporates the multi-source signal alongside the existing manual `BrandAssets.toneOfVoice` override and the per-edit `BrandLearning` corrections. **Auto-trigger**: new hourly cron at `api.cron.weekly-tone-and-diff.tsx` fires per shop's local Monday 09:00 (resolved from `Shop.ianaTimezone`), refreshes all configured sources, runs inference, and runs `detectAndPersistDiffs()` for the existing dogfood loop. EventBridge schedule in `infra/terraform/tone-and-diff-cron.tf` ships **disabled by default** — flip `enable_tone_cron = true` in `terraform.tfvars` to enable. Manual "Refresh tone now" button on the page works regardless. **Credentials**: Monday + Meta credentials encrypted via the existing AES-256-GCM `BrandIntegrationConfig` table (rotation-safe via `keyVersion`, mirrors Lalamove pattern). 6 commits on `feat/storytelling-tone-sources`: schema + page shell, Claude inference, manual upload, Monday.com, weekly cron + Terraform, Meta IG/FB. Mockups: `inputs/mockups/storytelling-flow-v1.html` (full 7-stage merchant journey) + `storytelling-tone-sources-v1.html` (deep-dive on the new page). Pre-deploy: `npm run setup` for two new migrations (`20260507002209_add_brand_tone_source_and_hypothesis` + `20260507010455_add_brand_integration_config`); `ANTHROPIC_API_KEY` and `APP_ENCRYPTION_KEY` already set on `omnify-full-task`. **Deferred to follow-up**: S3 binary preservation for manual uploads (extracted text-only stored today), Track D rebuild of the `/app/storytelling/brief` JSON-textarea into a real themes UI.
+
+**Omnify embedded admin home — Built for Shopify §4.2.3 compliant (full rev 16, omnify rev 47)** *(2026-05-06)*
+Replaces the function-card grid at `/app/_index` with a real homepage that satisfies BFS §4.2.3 (helpful homepage: setup status + performance metrics + non-static content). Single-column layout per Shopify's homepage pattern. **Five sections rendered top-down:** (1) Setup guide — auto-derived from system state (Lalamove credentials, location config, retail sync presence); auto-hides when all 4 steps complete; per-step CTAs deep-link to the relevant settings. (2) Activity overview — 4 metric cards (Local delivery today / Retail sales May MTD / Footprint lifetime / Affiliates last 30d), each with its own natural-cadence chip; loader fans out 4 defensive Prisma probes via `Promise.all`, each query try/catch'd to return `null` → empty-state per card; never blocks the page. (3) Jump back in — 5 cards mirroring `IDENTITY_NAV.omnify` (Affiliates promoted to NAV in this rev; still under the BFS 7-cap). (4) Footer help — links to `cpg-labs.io/docs`, `mailto:support@cpg-labs.io`, `cpg-labs.io/changelog`. (5) Bilingual (EN + pt-BR) i18n via `app/i18n/locales/{en,pt-BR}/home.json`. Same template serves both `omnify` and `cpg-labs` identities — metric/jump cards driven by `getNavItems()`. Polaris `<s-icon>` types verified against `polaris-types`: `delivery`, `chart-histogram-growth`, `location`, `affiliate`, `discount`, `blog`, `settings`, `apps`. Mockup `inputs/mockups/omnify-admin-home-v1.html` synced to as-built reality and promoted to "Final mockups" in INDEX.md. **Deferred to follow-up** (visible in mockup with "Deferred · v2" pills): Recent activity section (needs new `EventLog` table + dual-write from cron pipelines) and regression warning banner (needs `OnboardingState.dismissedAt` persistence + state-aware computation). Shipped via commits `5e68627` (feat) + `babc5e7` (docs/mockup as-built) on `main`. Both lanes deployed: full rev 16 / image `omnify-app:full-20260506-5e68627`, omnify rev 47 / image `omnify-app:omnify-20260506-babc5e7`. Smoke 200 OK on both `app.cpg-labs.io/health` and `omnify.cpg-labs.io/health`; single revision live on each ALB target group.
+
+**Local Delivery — post-deploy visual review (revs 14 + 15)** *(2026-05-06)*
+Three rounds of polish landed across two ECS deploys after rev 12's LD backlog shipped. **Round 1** (`7af4be7` → rev 14): badge-icon line-break fix (Polaris `<s-badge icon="…">` prop replaces nested `<s-icon>`); selected-stop map labels bumped to 55%-alpha holographic gradient with white text for readability; expand/collapse toggle moved back to top-right with `maximize`/`minimize` Polaris icons; fullscreen overlay gains `#f1f1f1` backdrop; loading screen swaps to `omnify_map-2x.png` with the "Omnify is loading" message removed and zero gap between logo and bar. **Round 2** (`7e041c5` → rev 14): on-map polyline editor toolbar overlay deleted; footer-right row beneath the map becomes a single state-driven control panel hosting all route-tweaking actions across 6 states (A default, B editing, C editing+selection, D editing+changes, D' D+selection, E unassigned-selected); Cancel renamed Exit; Map style moves into a ⋯ More-actions menu; pre-dispatch lalamove status badge moved inline-left of the Dispatch button (no more breakline below the row); post-dispatch duplicated status badge dropped from `renderRouteNotification`; "Creating quotation..." text removed (spinner conveys it); polyline edit-mode dotted styling now applied at CREATION time (fixed the bug where polylines rebuilt mid-edit rendered solid); Assign-to-new-route auto-confirms (dirty marking removed from `submitRouteAssignment`); Polaris `s-menu` forced 100% opaque. **Round 3** (`d16f6dc` → rev 15): Edit button dropped entirely — clicking any map label now auto-enters polyline edit mode via `enterPolylineEditMode` in both marker click handlers; "Reassign to" renamed Reassign; Clear selection icon unified to `minus-circle` everywhere; Exit icon swapped to `x`; Reassign trigger and ⋯ trigger moved INSIDE their popover wrappers so each (trigger + popover) cluster is one flex child (uniform 12px spacing across the panel); Map style menu button gains `commandFor="map-style-modal" command="--show"` for declarative modal opening. **CLAUDE.md updated** with a new mockup-workflow rule: in-session iterations edit the original mockup file in place, no `-v2`/`-v3-final` files spawned per round of feedback (the session log is the iteration history). Reference artifact: `inputs/mockups/local-delivery-control-row-v1.html` (canonical 6-state spec, collapsed + fullscreen variants).
+
+**Full app rebrand: CPG Labs → Omnify** *(2026-05-06)*
+The Full embedded Shopify app at `app.cpg-labs.io` is now branded as **Omnify** to merchants. Logo swapped (`cpg-labs_box.png` → `omnify_map.png` on the loading overlay), in-app display name + order-note fallbacks updated, and `shopify.app.toml` `name` field renamed so the app appears as "Omnify" in the merchant's Shopify admin install list. CPG Labs is now reserved as the parent/developer brand (corporate landing at `cpg-labs.io`, Partner Org name) — every merchant including GE Beauty sees Omnify. Out of scope and intentionally unchanged: ECS service names (`omnify-full-service`), repo name, `APP_IDENTITY=cpg-labs` env-var value, console.log prefixes, CSS palette comments, marketing site at `cpg-labs.io`. Shipped as rev 13 / image `omnify-app:full-20260506-9ee7fce`; Shopify config released as `omnify-44`. Brand-model section at the top of this doc updated in the same wave.
+
+**Local Delivery — backlog cleanup (10 commits, rev 12)** *(2026-05-06)*
+12-item backlog from `inputs/backlog/local-delivery.md` shipped in one rev across six sequential squash-merges. UI: header badges standardized to Polaris `<s-icon>` + `<s-badge tone="…">` + `: n` format (Failed delivery alert-octagon, Potential address errors alert-triangle visible on "All locations", Orders to deliver package); per-route card trash icon replaced by ⋯ overflow menu with all destructive actions consolidated (pre-dispatch Manage/Details/Clear route; post-dispatch Details/Cancel delivery), primary button renamed "Dispatch", post-dispatch action row shows status badge right-aligned only; new polyline editor toolbar with click-to-select stops + Reassign-to popover + Unassign + 7-orders-per-route hard cap + snapshot/restore on Cancel; address-errors modal rewired to single primary "Fix addresses" deep-linking to Shopify order list filtered by `tag:ld_address-confirm`; sidebar parity in fullscreen; dispatch-all revalidator wraps in retry+banner guard. "Shipment requests to process" feature deleted entirely (UI-only, audit confirmed no backend touch). Mobile parity for badges + Shipment Requests removal. Backend: dropped `TRAFFIC_AWARE` from Google Routes; canonical hyphen tag set (`ld_failed-delivery`, `ld_address-confirm`, `ld_number-confirm`) with one-shot migration script `scripts/migrate-ld-address-review-tag.ts` (NOT yet run on prod orders); Lalamove webhook status mirrors to `custom.lalamove_delivery_status` metafield + appends terminal-failure note via `orderUpdate` (foundation for downstream WhatsApp messaging); four §6.7 deterministic Brazilian address-repair patterns ported from `nami-works/sandbox/gebeauty/scripts/address_repair.py` to `app/services/address-repair.server.ts` (24/24 parity tests; auto-fix BEFORE tagging via `applyAddressRepairOrTag` helper). Cosmetic: legacy `#ff7a00` selected-stop highlight (which collided with route palette index 4 `#FF7A00`) replaced with a 25%-alpha version of the brand's signature holographic gradient (cyan→lavender→mauve→cyan) — this is now the canonical "selected" state across the page, reinforcing the brand color used in the progress bar + auto-assign accuracy meter. Mockup at `inputs/mockups/local-delivery-backlog-v1.html`. Deferrals (NOT regressions): mobile per-route ⋯ menu refactor (BottomSheet pattern preserved), address-errors deep-link uses single-tag filter only, LLM address-extract classifier from nami-works not ported (Phase 2 — WhatsApp inbound, out of scope until that surface exists). Shipped as rev 12 / image `omnify-app:full-20260505-61f0448`.
+
+**Affiliates — auto-sync codes from Shopify discount registry + Attribution Queue UI revamp** *(2026-05-05)*
+Eliminates BixGrow CSV upload as the source of truth for affiliate coupon codes. New `AffiliateProgram` + `AffiliateCode` Prisma models; the existing hourly affiliates cron at `:30` past the hour gains a programs-sync phase that paginates `codeDiscountNode { codes }` per registered program (handles all 4 discount subtypes), upserts via parameterized bulk `INSERT … ON CONFLICT` with `gen_random_uuid()::text` IDs, and JOINs against `AffiliateProfile` to compute `mappedCount`. New **Settings** sub-tab on `/app/affiliates` lets the user register one or more Shopify code-discounts via a debounced search-and-pick modal (no GID copy-paste); Remove is soft-delete (`programId=null` on related codes preserves historical attribution). BixGrow CSV upload still works for affiliate metadata (name, email, commission %, tier). Attribution Queue tab gets a single freshness chip in the tab strip (`✓ Updated Xm ago` from `AttributionQueueSnapshot.fetchedAt`, only flips amber `⚠ Updated Xh ago` when cron is genuinely >2h late) and a `⋯ More` overflow menu housing Force full resync + Upload BixGrow CSV. The legacy contradictory banners are deleted: `Last sync: 4/20…` badge, `Affiliate data is N days old`, the unconditional `Previous sync had issues: Unknown sync error` banner that lasted 9 days in production, and `141 orders carry coupons not in affiliate list — re-import CSV`. Cron also clears stale `AffiliateSyncMeta.errorMessage` on the next successful run, so failed-run errors don't linger. New placeholder `/app/affiliates/onboarding` route lists unmapped codes (full editor in follow-up). Shipped via PR #15 (rev 11, image `omnify-app:full-20260505-c987f12`). First feature merged under the new branch-per-task + merge-via-PR workflow per CLAUDE.md hard rule. Mockup at `inputs/mockups/affiliates-attribution-queue-revamp-v1.html`.
+
+**CPG Labs corporate landing + Omnify screencast redesign** *(2026-04-23)*
+Public-facing sites refreshed for publisher-trust positioning ahead of Shopify App Review. The dev-shop lead-gen pitch at `cpg-labs.io` / `www.cpg-labs.io` root replaced by a company-first corporate landing (`app/routes/_index/cpglabs-corporate.tsx`): "For brands dissolving barriers between online and retail", two products showcased (Omnify live with a synthetic Shopify-admin screenshot rendered in pure HTML/CSS, Storefront coming soon with a holographic waitlist mailto), FMCG + omnichannel + Shopify ICP framing, trust-by-implication About copy (no self-claims about "solid/secure" — the reader infers it). Omnify screencast at `omnify.cpg-labs.io/screencast` rebranded with the same visual language (dark-first, holographic gradient video frame, tree logo with float animation). Bare `omnify.cpg-labs.io/` 301-redirects to `cpg-labs.io/` in production to consolidate publisher identity on one hostname (OmnifyHome kept in tree but unrouted; planned for a follow-up product-marketing redesign per `inputs/mockups/omnify-home-v1.html`). Existing `cpglabs-home.tsx` (dev-shop pitch) also kept in tree but unrouted. Mobile-first CSS throughout, WCAG AA contrast, `prefers-reduced-motion` respected. Mockup iteration: `inputs/mockups/cpglabs-landing-v1.html` → `v2.html` → `v3.html` (canonical).
+
+**Omnify App Store submission prep** *(2026-04-22 → 2026-04-23)*
+First-pass Shopify App Store submission ready for the Omnify focused app (client_id `68903b97...`). Logo swapped to `omnify_tree.png` across screencast, about, and marketing-site nav. OAuth redirect URL fixed in `shopify.app.omnify.toml` (`/api/auth` → `/auth`, matching the code's `authPathPrefix`). Scope set trimmed 16 → 9 (dropped unused `read_publications`, `read/write_content`, `read/write_metaobjects`, `read/write_metaobject_definitions`). Privacy policy feature list narrowed to match Omnify's actual `APP_IDENTITY` surface (Local Delivery, Retail Sales, Footprint Expansion, Affiliates, Carrier Service, Analytics — no Storytelling, no Sales). In-app copy softened: "best" → "high-potential"/"rank" in home + retail-expansion i18n (EN + pt-BR). Shopify config pushed twice via `shopify app deploy --config shopify.app.omnify.toml --force` (`omnify-5` for the OAuth fix, `omnify-6` for scope trim + compliance copy). `/shopify-submission compliance-audit` clean post-changes; cold-install verified on `ge-beauty-test` dev shop without redirect errors.
+
+**Local Delivery — mobile-only parallel route** *(2026-04-21)*
+`/app/local-delivery-mobile` is a parallel mobile-first route that reuses the desktop loader + action via `export { loader, action, headers } from "./app.local-delivery"` — zero server duplication. Desktop route auto-redirects clients with `innerWidth<768` on mount (`?desktop=1` escape hatch). In-scope on mobile: Optimize (same `optimize-fleet` intent as desktop's "Auto Assign" menu), Request quote, Request driver, Cancel delivery, Clear route/all, live tracking (15 s poll + visibility-pause), plus triage sheets for Address errors and Shipment requests that deep-link to the Shopify admin (works on mobile admin). Out of scope: manual tweaking (no add-to-route, unassign, reorder, or drag), map style editing, Lalamove settings editing, special requests editing, return pickup flow — surfaced as "open on desktop ↗" chips. Single `<BottomSheet>` primitive (10 sheet instances), NOT `<s-modal>` — App Bridge overlay spilled past the iframe on narrow viewports, same bug class as the desktop fullscreen-map overlay that killed prior responsive attempts. Mockup at `inputs/mockups/local-delivery-mobile-v1.html`. No nav link — mobile URL is reached only via the redirect or direct URL.
+
+**Retail sales — Goals tab → Manage goals modal** *(2026-04-17)*
+Goals tab removed from Retail sales (tabs collapsed from 3 → 2: Dashboard · Campaigns). The per-location goal-setting UI now lives inside a Polaris `<s-modal>` (`#manage-goals-modal`) opened by a primary **Manage goals** button in the Dashboard's overview-strip header. Goals are set roughly once a month, so a tab-level surface was wasted real estate; a modal keeps the user anchored on the dashboard they came to see. Convention drift cleaned up in the same pass: legacy `.controlsRow`/`.controlsLeft`/`.controlsRight` CSS deleted (Goals tab was the only consumer), Month select migrated to the external-label filter pattern (`.filterControl` + `.filterLabel` + `labelAccessibilityVisibility="exclusive"`), Apply-growth-to-all packed into the same row as the Month filter, native `<select>`/`<option>` in both the per-card edit form and the bulk modal swapped for `<s-select>`/`<s-option>`, and Cancel buttons changed from non-existent `variant="tertiary"` to `variant="secondary"`. `goalsMonth` state persists across modal open/close for multi-month planning sessions. Logging follows the convention: `[sales-goals:ui] manage-goals modal opened/closed`.
+
+**Retail sales — dashboard polish + rename** *(2026-04-16)*
+Renamed Retail goals → **Retail sales** across all routes (`/app/retail-sales`), nav, i18n, settings. Dashboard cards reordered (Revenue → Orders → AOV), Total Revenue delta changed to vs pro-rated MTD goal, AOV/Orders primary delta changed to literal YoY, Same-store YoY card colorized + top-grower row added, Best-vs-worst card copy rewritten for clarity. Drilldown charts restyled: navy subdued active-card highlight, PY bars rounded, goal-line labelled, legend moved to bottom center, Revenue+Orders bars use split gradient (solid MTD → fading projection), Same-store YoY uses dynamic baseline (all-positive → bottom; all-negative → top; mixed → center), Best-vs-worst uses 3-tier colors (green/yellow/red at 90/60 thresholds). Breakdown table retitled "Revenue breakdown by location", headers shortened to MTD/Projected. Polaris `<s-icon>` replaces Unicode info icons.
+
+**Omnify reorg — unified per-location Settings + feature renames** *(2026-04-15)*
+Prep for standalone App Store launch. Feature renames (English): Sales Goals → Retail goals → now **Retail sales**; Retail Footprint → **Footprint expansion**; Settings tab "Providers" → **Delivery providers**; "Location settings" card → **Delivery details**. Settings > Locations tab is unified per-location page with two sibling collapsibles: **Delivery details** and **Retail sales** filters.
+
+**Sales Goals revamp** *(2026-04-14)*
+Full rebuild. Architecture moves from "fetch every order from Shopify on every page load" to a background-sync + pre-aggregated Postgres model — three new tables (`SalesOrder`, `SalesOrderMonthly`, `SalesGoalsSyncMeta`), dual-write via order webhooks, paginated backfill mirroring the Retail Footprint pattern. POS-only attribution: `-source_name:web` at query time, `sourceName==="pos"` routes by `physicalLocation` (Shopify POS), `sourceName==="206755758081"` routes by tag match (legacy IGLU POS). Orders for closed stores (e.g. Iguatemi Fortaleza) are accepted-drop. Warehouses hidden everywhere via `localPickupSettingsV2` filter. UI collapsed from 5 tabs → 3 (Dashboard, Goals, Settings). Dashboard adds KPI cards with YoY/MoM deltas, per-location breakdown with progress bars and 13-month sparklines, month + comparison-period pickers, "Sync now" button. Goals tab redesigned as per-location cards with inline edit form, live projected-goal preview, and bulk "Apply growth to all" modal. Settings simplified to retail-only locations with order-sources and tags filters. Motivated by multi-POS migration (IGLU → Shopify POS): the business needs combined per-location sales regardless of POS system, and a 61s Shopify loader was on the edge of the ALB 504 threshold.
+
+**Auto-delivery pipeline** *(2026-04-08)*
+Local Delivery refactored from manual to fully automatic. A cron auto-assigns orders to routes after a configurable cutoff + delay, auto-dispatches Lalamove orders at a configured time, archives route tags on completion (e.g. `ld_rota-03` → `ld_rota-03_26.04.08`), and has a watchdog that clears stuck tags after a retry cutoff so orders re-enter the pool next day. Opt-in per location via `autoDeliveryEnabled`. The app no longer creates Shopify fulfillments — delivery status is tracked only via order tags and the app database.
+
+**Route optimizer tuning** *(2026-04-09)*
+12km max-spread constraint added to the VRP optimizer in `carrier-quotation-optimizer.server.ts`. Routes exceeding 12km haversine spread between any two orders now get split via 2-means bisection, enforced at four pipeline stages. Solo routes are allowed for geographically isolated orders. Derived from correction data showing 70% of dispatches were being manually split by the user.
+
+**Retail Footprint analytics — Phase 2** *(normalized tables)*
+Migrated the Retail Footprint data layer from a monolithic JSON blob to normalized Prisma tables (`RetailOrder`, `RetailCustomer`, `RetailCityMonthly`, `RetailHeatmapBucket`, `RetailSyncMeta`). Dual-write sync uses bulk `INSERT ... ON CONFLICT DO UPDATE` via raw SQL (~100x faster than per-row upserts). Required because the pilot store has 110k combined records and the old JSON approach caused OOM on write.
+
+### In progress
+
+**Campaign goals — time-bounded pushes with product criteria**
+Extends Retail sales with a campaign engine for time-bounded sales pushes (Mother's Day, Father's Day, Black Friday, brand launches, slow-inventory pushes). Per-campaign record of `(name, date range, match rule, per-location targets)` stored in new `CampaignGoal` / `CampaignGoalTarget` / `CampaignOrderMatch` Prisma models. Orders get evaluated against every active campaign's match rule via the existing order webhook (line items fetched on-demand via Shopify GraphQL, only for orders inside an active campaign window — zero cost when no campaign is running). Hourly cron (`api.cron.retail-goals-sync`) now has a secondary phase that promotes drafts, ends expired campaigns, and retroactively indexes any webhook drops. Match rule accepts 7 variants (line-item tag/SKU/productId/property, order tag, any/all combinators) so the Mother's Day cart-injection-app signature can be pinned down from a sample injected order without schema change. Campaigns overlap freely — one order can count toward every matching campaign (no dedup). Location-level attribution in V1; `staffMemberId` column reserved on `CampaignOrderMatch` for a Shopify-POS drill-down in V2. Lives as a new `Campaigns` tab under Retail goals (third sibling to `Dashboard` and `Goals`). The whole module is route-agnostic under `app/campaign-goals/` + `app/routes/app.retail-goals/campaigns-tab.tsx` with its own `campaigns` i18n namespace + `campaigns.module.css`, so extracting to a standalone `/app/campaigns` route later is a near-zero-diff move. Attach rate (bundle-orders ÷ total location orders) tracked alongside the order-count goal.
+
+**Retail sales — Dashboard YoY-pace rebuild** *(shipped — merged into the polish pass above)*
+Full dashboard redesign motivated by the owner/strategic use case. Current dashboard uses MTD vs full-month goal, which is misleading before mid-month. New design: 6 KPI cards arranged as decomposition + health (Row 1: Total revenue / AOV / Orders as `Revenue = Orders × AOV`; Row 2: Same-store YoY / Best vs worst / Discount rate). Every card shows YoY-paced projected goal delta, projected total via the existing DOW-aware `computeMonthProjections()`, plus Goal and PY lines. Cards 1–3 derive a goal where one doesn't exist natively (AOV from `revenueGoal / PY_orders`, Orders from `revenueGoal / PY_AOV`). Clicking the Revenue card expands a grouped vertical-bar drilldown per location (two-tone navy: outlined PY, solid projected, dashed goal tick, MTD-solid-over-projected-faded overlay on current month). Breakdown table drops `Orders` column, renames `Revenue` → `MTD Revenue`, inserts `Projected rev.`, and recomputes `Achievement` + `YoY` against projected revenue. Single-row controls (drops "Sync now" button, adds `X/Y goals` chip + stale-threshold color on last-synced). Background sync flips from UI-triggered to hourly EventBridge cron hitting `/api/cron/retail-goals-sync` (feature-flagged TF resources default off until secret is wired). Discount Rate required a schema change: `SalesOrder.discountAmount` + `SalesOrderMonthly.totalDiscounts`, GraphQL pulls `currentTotalDiscountsSet`, one-shot `?admin-backfill-discounts=1` endpoint mode reruns a full 13-month sync to populate history. `formatCurrencyCompact` + `formatNumberCompact` extracted from `app.affiliates.tsx` to shared `app/i18n/format.ts`. Pure analytics helpers (`buildLocationSnapshots`, `aggregateSnapshots`, `sameStoreYoY`, `bestVsWorst`, `discountRate`) moved to `app/sales-goals/analytics-pure.ts` so they can be imported from client components without pulling Prisma into the browser bundle.
+
+**Retail Footprint analytics — Phase 3** *(switch reads)*
+Restructure the loader to read directly from the normalized tables via `getHeatmapBuckets()` and `getCityRankings()` instead of the old JSON cache. Remove ~400 lines of client-side `useMemo` filter chains. Date range changes move from instant client-side filtering to a debounced server fetcher. Project stats become an on-demand `getProjectRadiusStats()` action. Until Phase 3 lands, the page shows "No geocoded records" because it still reads the empty JSON cache.
+
+**Sales merge** *(Campaigns + Price Tags → unified Sales tab)*
+Merging "Merchandising > Campaigns" and the standalone "Price Tags" feature into a single "Sales" tab under Merchandising. Price tags become an opt-in toggle per campaign. Smart badge logic compares absolute percentage vs absolute dollar discount and displays the larger. Product filter combines collections + products (from Price Tags) and product types (from Campaigns). A Quick Apply Tags action remains as a standalone secondary flow for products with existing `compareAtPrice`. Webhook handlers skip campaign-managed products to avoid fighting active campaigns. Routes have been renamed (`app.merchandising.sales.*` → `app.merchandising.sale.*`), the old Price Tags routes are deleted, but the change is not yet committed to main.
+
+**Flywheel app — Affiliates umbrella** *(scaffold landed 2026-05-18)*
+New focused Shopify app — fourth identity alongside CPG Labs full, Omnify, and Storefront. Lives on the same image as the others, differs only by `APP_IDENTITY=flywheel` at runtime; intended hostname `flywheel.cpg-labs.io`. Code-side scaffold is in: `shopify.app.flywheel.toml` (placeholder `client_id`), identity registered in `app/utils/app-identity.server.ts` (display name "Flywheel", routes/nav wired to serve the Affiliates surface — `app.affiliates*` + `api.cron.affiliates-sync`), and `scripts/deploy.ps1` supports `-App flywheel` and `-App all`. Affiliates continues serving from CPG Labs full (displayed as "Omnify" to merchants) until Flywheel goes live, at which point it'll move under the new umbrella. Blocked on user-side work: Partner Dashboard app registration (real `client_id`), DNS A record at GoDaddy, Caddy site block + `flywheel.env` + docker-compose service on the Lightsail box, and `shopify app deploy --config shopify.app.flywheel.toml`. See `docs/handover-flywheel-scaffold.md`.
+
+**VRP routing** *(replacing the corridor approach)*
+Rebuilding route optimization around a real driving distance matrix (Google Distance Matrix API) feeding a VRP solver (OR-Tools or Clarke-Wright savings), replacing the previous haversine-corridor heuristic. The corridor approach fails in cities with complex geography — Rio de Janeiro (mountains, tunnels, Guanabara Bay) exposed that haversine distance can be 5x shorter than actual road distance, causing orders to mix between routes that physically cross the city. The existing cost-reduction patterns (no DirectionsService, no loader precomputation, persistent geocode cache, polyline DB cache) must be preserved regardless of the optimizer approach.
+
+### Planned / not yet started
+
+- **Omnify product marketing page** — replace the currently-301'd OmnifyHome at `omnify.cpg-labs.io/` with a product-focused marketing page that matches the CPG Labs corporate landing's visual language. Mockup ready at `inputs/mockups/omnify-home-v1.html` (synthesized from a 3-agent team: PM strategy + growth copy + UI design). Features three capabilities as stacked alternating rows: Local Delivery (`delivery-guy.png`, cyan glow), Retail Sales (`rocket.png`, magenta glow), Footprint Expansion (`map-pin.png`, lavender glow). Time-horizon narrative (today → month → year). Ships when the 301 redirect at `app/routes/_index/route.tsx` is lifted.
+- **CPG Labs URL change** — moving off `omnify.cpg-labs.io/full` to a dedicated URL. Pending, no date set.
+- **Multi-provider carrier service** — Loggi, Uber, and Rappi currently exist as placeholder providers. No implementation work scheduled.
+- **Local Delivery polish backlog** — Recife 422 error (special request payload mismatch against the city-specific Lalamove config), driver-requested state UI refinements, Lalamove tracking URL button, per-state status labels.
+- **Per-city route-spread thresholds** — the current 12km max-spread was tuned on São Paulo correction data. Rio (water barriers) and Recife (narrower urban footprint) may warrant different thresholds once more correction data accumulates.
+
+---
+
+## Architecture Quick Reference
+
+| Area | Where to Find It |
+|------|-----------------|
+| App routes & pages | `app/routes/` |
+| Database schema | `prisma/schema.prisma` |
+| Shopify auth & session | `app/shopify.server.ts` |
+| Navigation & identity | `app/utils/app-identity.server.ts` |
+| Lalamove integration | `app/services/lalamove*.server.ts` |
+| Route optimization | `app/services/google-routes-*.server.ts` |
+| Carrier service logic | `app/services/carrier/` |
+| Price tag automation | `app/services/price-tags/` |
+| Merchandising services | `app/services/merchandising/` |
+| Webhook handlers | `app/routes/webhooks.*.tsx` |
+| Deploy scripts | `scripts/deploy-*.ps1` |
+| Infrastructure (Terraform) | `infra/terraform/` |
+| Shopify app configs | `shopify.app.*.toml` |
+| Translations | `app/i18n/` |
+
+---
+
+## UI Design Language
+
+The app uses Shopify Polaris web components (`s-page`, `s-section`, `s-stack`, `s-box`, `s-button`, etc.) to look and feel native inside Shopify Admin. Key patterns:
+
+- **One `<s-page>` per route** with primary actions in the header
+- **CSS Modules** for layout (no inline styles except runtime-computed values)
+- **Tables** with white rows, subtle borders, no zebra striping
+- **Modals** for search results, configuration, and confirmations
+- **Two-column layout** on desktop (main + aside), stacking vertically on mobile
+- **Tab bar** for secondary navigation within a page
+- **Badge chips** for selected items with remove buttons
+- **SVG icons** following Polaris conventions (no emoji in native-looking elements)
+
+Color tokens: subdued text `#6d7175`, borders `#e1e3e5`, Shopify green `#008060`, critical red `#d72c0d`, light gray background `#f6f6f7`.

@@ -1,0 +1,288 @@
+define_strategy:
+  description: >
+    Access the {brand} website and get updated about it. Read its institutional and product pages.
+    Also understand in depth its {products} portfolio and its {voice} of communication.
+    Identify and synthesize its value proposition, tone of voice, target audience and objectives. Interpret how
+    the brand wants to be perceived and what messages it wants to convey. This alignment will be used
+    as the central guide for the content project.
+  expected_output: >
+    Strategic document with: verbal identity, value proposition, central vocabulary, target audience,
+    brand mission, tone and style. It should also indicate which product categories reinforce these
+    brand attributes.
+    Formatted as markdown without '```'
+  agent: brand_strategist
+
+identify_products:
+  description: >
+    Based on the {brand} website and deep understanding of its {products} portfolio,
+    identify which products can be cited in the blog post as possible solutions for 
+    the problem raised by the theme "{theme}" or as products related to the subject brought by
+    the theme "{theme}" as a whole.
+    
+    **CRITICAL PRODUCT VALIDATION REQUIREMENTS:**
+    - Only reference products that actually exist in the {products} catalog
+    - Never invent, hallucinate, or reference non-existent products
+    - Verify each product name matches exactly with the official catalog
+    - Ensure you have access to the complete product list before making recommendations
+    - If unsure about a product's existence, exclude it rather than risk hallucination
+  expected_output: >
+    List of 3 to 5 {products} from the brand, which relate clearly and directly
+    to the proposed theme "{theme}", and that can be cited in the blog post to generate purchase desire
+    in those reading.
+    
+    **REQUIRED FORMAT:**
+    For each product, include:
+    - Product name (exactly as it appears in the catalog)
+    - Product URL from the official catalog
+    - Brief description of how it relates to the theme
+    - Confirmation that it exists in the {products} catalog
+    
+    Formatted as markdown without '```'
+  agent: brand_strategist
+
+map_opportunities:
+  description: >
+    Research the brand's {products}, especially the products defined in the previous stage, and based
+    on the strategy defined by the strategist, identify search terms, common questions, behavior
+    trends and content opportunities with SEO potential to relate the theme "{theme}" to the products.
+    Analyze the keyword data provided in {theme_keywords_data}, {primary_keywords}, {long_tail_keywords}, and {related_searches}.
+    Use {search_volume} data to prioritize keywords with high search volume and {competition_level} to identify low-difficulty opportunities.
+    Focus on opportunities where search volume > 200 and competition level is 'low' or 'medium'.
+    Categorize by intent (informational, commercial, comparative) and connect with the products.
+    
+    **CRITICAL PRODUCT VALIDATION:**
+    - Only work with products confirmed to exist in the {products} catalog
+    - Verify every product reference against the official product list
+    - Never create opportunities around non-existent products
+  expected_output: >
+    Table with: keyword, search volume, SEO difficulty, search intent, recommended content type, 
+    associated product, strategic ranking opportunity, and priority score.
+    Include specific keyword recommendations from the database with volume and difficulty data.
+    
+    **PRODUCT VERIFICATION:**
+    - Confirm each associated product exists in the {products} catalog
+    - Include the exact product name and URL from the catalog
+    - Mark any products that cannot be verified as "NEEDS VERIFICATION"
+    
+    Formatted as markdown without '```'
+  agent: seo_specialist
+
+plan_content:
+  description: >
+    Create some blog post proposals based on the identified SEO opportunities. Each structure
+    should be useful, well-segmented, with an approach aligned to the brand positioning.
+    Use the editorial guidelines ({editorial_guidelines}) to ensure consistent content architecture and tone.
+    
+    **CRITICAL PRODUCT VALIDATION:**
+    - Only plan content around products confirmed to exist in the {products} catalog
+    - Never create content structures for non-existent products
+    - Verify each product reference before including it in the plan
+  expected_output: >
+    Structure for 1 to 3 content pieces: title, subtopics, intent and user type. Relate each
+    content to all related products, and how they connect with each of the theme topics.
+    Follow the editorial guidelines: {editorial_guidelines}.
+    
+    **PRODUCT VERIFICATION REQUIRED:**
+    - List only products that exist in the {products} catalog
+    - Include exact product names and URLs for each reference
+    - Mark any unverified products as "PENDING VERIFICATION"
+    
+    Formatted as markdown without '```'
+  agent: content_strategist
+
+write_content:
+  description: >
+    Evaluate the brand's {blog} and choose one of the approved structures, based on the following criteria:
+    - purchase persuasion power
+    - content attractiveness and engagement generation potential
+    - diversification in relation to existing content
+    - keyword ranking potential from {keyword_opportunities}
+    
+    **CRITICAL TEXT STYLE**: Write naturally using simple punctuation. NEVER use em dashes (—) or en dashes (–).
+    Use regular hyphens (-) or commas instead. Content must feel human-written, not AI-generated.
+    
+    Use the {brief_summary} as a comprehensive guide for content development. This summary contains
+    key points, strategy, and context for each blog post that should be incorporated into the content.
+    Ensure the content aligns with the brief summary's strategic direction and key messaging points.
+    
+    **EDITORIAL GUIDELINES**: Follow the editorial guidelines ({editorial_guidelines}) for consistent content structure, tone, and style.
+    
+    **LANGUAGE**: Generate content in the content language specified in {content_language}. 
+    If {content_language} is 'pt_BR', write in Portuguese. If 'en_US', write in English.
+    Always respect the brand's content language preference for all content generation.
+    Note: This is separate from the UI language preference ({preferred_language}).
+    
+    **CRITICAL PRODUCT VALIDATION REQUIREMENTS:**
+    - Only mention products that actually exist in the {products} catalog
+    - Never invent, hallucinate, or reference non-existent products
+    - Always include the correct product URL from the catalog for every product mentioned
+    - Verify product names match exactly with the official catalog names
+    - If a product doesn't exist in the catalog, find an alternative existing product or remove the reference
+    - Before mentioning any product, verify it exists in the {products} catalog
+    
+    **REFERENCE CONTENT FOR TECHNICAL TOPICS:**
+    - Use {reference_content} as authoritative source for technical information, scientific facts, and detailed explanations
+    - Ensure all technical claims are supported by the reference material when {reference_content} is provided
+    - When reference content is available, prioritize accuracy and depth over generic statements
+    - Cite specific information from reference content to enhance credibility and technical accuracy
+    - If {reference_content} is empty, proceed with general knowledge but note limitations for technical topics
+    
+    From the chosen structure, develop the complete content using keyword insights:
+    - Optimize for primary keywords from {primary_keywords} (1-2% density)
+    - Integrate long-tail keywords from {long_tail_keywords} naturally for specific queries
+    - Use related searches from {related_searches} for content expansion
+    - Prioritize keywords with high search volume from {search_volume} data
+    - Focus on keywords with 'low' or 'medium' {competition_level} for better ranking potential
+    - Ensure keyword distribution follows SEO best practices
+    
+    Include related products naturally, also bringing the links for each one, provided in the {products} guide,
+    linking their main ingredients, purposes and attributes to the themes addressed in each content, and use part of the text
+    to explain how they work in solving the pain being discussed.
+    Content must **INVARIABLY** maintain focus on the defined {theme} theme. **NEVER** should it stray to secondary topics or products with secondary correlation.
+    Optimize the text with SEO best practices. Also use the {semantic_fields} automatically generated from the main theme.
+    **Use only the fields corresponding to the current theme under development.** Distribute naturally throughout the content,
+    preferably in subtitles and introductory sections. Prioritize terms that expand the search scope and bring
+    new pain or benefit associations. Ensure the semantic field proportion recommended by SEO best practices,
+    while balancing with synthesis power. Avoid extending on themes or topics that are not needed.
+     
+     **FORMATTING – Inserted Keywords**: All keywords inserted from {primary_keywords}, {long_tail_keywords}, and {related_searches}
+     must be highlighted in bold and italic using (***keyword***). This formatting signals the terms should not be changed
+     in subsequent stages and must be preserved exactly as inserted.
+     
+     **PRODUCT LINKING REQUIREMENTS:**
+     - Every product mentioned must have a clickable link to its official product page
+     - Use the exact URL from the {products} catalog
+     - Format: [Product Name](exact_url_from_catalog)
+     - Verify each URL is functional and correct
+  expected_output: >
+    Text following {format_recommendations} with 1000 to 1500 words, subtitles, cohesive paragraphs, CTAs and real product mentions,
+    with real links and context, including semantic fields used strategically.
+    Content optimized for keywords with proper keyword density and distribution.
+    Inserted keywords visibly highlighted in bold and italic (***keyword***) to indicate they are not to be modified.
+    
+    **PRODUCT ACCURACY VERIFICATION:**
+    - All products mentioned exist in the {products} catalog
+    - All product URLs are correct and functional
+    - No hallucinated or non-existent products referenced
+  agent: seo_copywriter
+
+refine_narrative:
+  description: >
+    Refine the text by doing a critical reading and restructuring when necessary, cutting repetitions and
+    reinforcing fluidity between sections. Adapt the text according to the {voice} writing style.
+    Using the {benchmarks} brands' content as reference, optimize the text for results.
+    Ensure there is no numbering of topics and subtopics, so there is fluidity in the text,
+    while maintaining a perceptible sequential logic.
+    ⚠️ The {semantic_fields} of the current theme **should not be altered or removed** at this stage. They were optimized for SEO
+    and should be preserved as previously defined.
+     ⚠️ The inserted keywords highlighted in bold and italic (***keyword***) must be preserved exactly and must not be
+     edited, replaced, or have their formatting removed.
+    Generic subtitles should only be inserted or maintained in the text to demarcate sections such as 'Introduction',
+    'Development' and 'Conclusion'. Subtitles should be used to highlight relevant sections.
+    
+    **CRITICAL PRODUCT PRESERVATION:**
+    - Preserve all product references and URLs exactly as written
+    - Do not modify product names, links, or references
+    - Maintain all product linking exactly as established
+    - Any changes to product information could break accuracy and functionality
+  expected_output: >
+    Intermediate version with rhythm, organization and scannable reading improvements. Fluid and convincing text,
+    with power to break user purchase objections.
+    Content should be maintained in the format established in {format_recommendations}.
+    
+    **PRODUCT INTEGRITY MAINTAINED:**
+    - All product references preserved exactly
+    - All product URLs maintained and functional
+    - No product information modified or removed
+  agent: narrative_editor
+
+review_everything:
+  description: >
+    Review the text created in the previous stage and correct spelling, grammar, punctuation, agreement errors
+    and adjust the style when necessary, based on the brand's {voice}.
+    Look for information that is trustworthy to the {products} guide and replace it. When it's not possible to replace it,
+    remove it and adjust the text to maintain cohesion.
+    Whenever a mention is made to a product, make sure the name is in accordance with the official name described in the {products} guide.
+    ⚠️ The {semantic_fields} of the current theme should be preserved **entirely**. They should not be edited, removed or modified
+    at this stage, as they were defined based on specific SEO criteria.
+     ⚠️ Preserve all inserted keywords exactly as written and with their bold+italic formatting (***keyword***).
+     Do not alter, remove, or rephrase these highlighted keywords.
+     
+     **CRITICAL PRODUCT VALIDATION AND CORRECTION:**
+     - Verify every product mentioned exists in the {products} catalog
+     - Ensure all product URLs are correct and functional
+     - Check that product names match exactly with official catalog names
+     - Remove any references to non-existent products
+     - Replace hallucinated products with real alternatives from the catalog
+     - If a product cannot be verified, remove the reference entirely
+     - Ensure every product mention has a working URL link
+     
+     **PRODUCT ACCURACY CHECKLIST:**
+     - [ ] All products exist in the official catalog
+     - [ ] All product names match catalog exactly
+     - [ ] All product URLs are functional
+     - [ ] No non-existent products referenced
+     - [ ] All product links are clickable and correct
+  expected_output: >
+    Final clean, clear, uniform text faithful to the knowledge base, ready for publication without need for further review.
+    Content should be delivered in the format established in {format_recommendations}.
+    
+    **PRODUCT ACCURACY VERIFIED:**
+    - All products confirmed to exist in the catalog
+    - All URLs verified and functional
+    - No hallucinated products remain
+    - Content is ready for publication with accurate product information
+  agent: content_reviewer
+
+suggest_elements:
+  description: >
+    Read the content generated in the previous stage and identify where visual resources (such as graphics,
+    product images, comparisons or explanatory videos) could facilitate understanding,
+    give rhythm to reading or reinforce the argument.
+    
+    **CRITICAL PRODUCT VALIDATION:**
+    - Only suggest visuals for products that actually exist in the {products} catalog
+    - Verify each product reference before suggesting visual elements
+    - Never suggest visuals for non-existent or hallucinated products
+  expected_output: >
+    Final text (output from previous task, without outputs from other tasks) plus contextualized visual suggestions,
+    informing type (image, graphic, video), insertion point and visualization objective.
+    
+    **PRODUCT VERIFICATION:**
+    - All products referenced in visual suggestions exist in the catalog
+    - No visuals suggested for non-existent products
+    
+    Formatted as markdown without '```'
+  agent: visual_consultant
+
+generate_seo_metafields:
+  description: >
+    From the final blog post content, the brand's strategic context and the {semantic_fields} identified for the theme,
+    define two SEO metafields. The title should contain between 55 and 70 characters, be attractive, descriptive and contain a central keyword.
+    The meta description should contain between 140 and 160 characters, anticipate the content value and encourage clicks with clarity.
+    **IMPORTANT**: Use keyword database insights to optimize meta fields for high-value keywords with proven search volume.
+    
+    **IMPORTANT – Summary HTML (Excerpt)**: Generate a concise Summary HTML (150–160 characters) for Shopify's "Summary HTML" field,
+    following {format_recommendations} (Resumo HTML): keep it unique (not a repetition of the title), accurately represent the post,
+    include primary/secondary keywords naturally (no stuffing), focus on the core benefit with action-oriented language and numbers
+    when relevant (e.g., "5 estratégias"). May include basic HTML emphasis or links supported by the theme (e.g., <strong>, <em>, <a>).
+    
+    **CRITICAL PRODUCT VALIDATION:**
+    - Only include products that actually exist in the {products} catalog
+    - Verify all product references before including them in metafields
+    - Ensure all product URLs are correct and functional
+  expected_output: >
+    metafields.md file formatted as markdown without '```', containing:
+    - meta_title: title with 45 to 60 characters, aligned with the brand's proposition and optimized for CTR.
+    The title should be extremely cohesive with the developed text, contain a maximum of 5 to 6 words, and the use of the {brand} name should be avoided,
+    except when extremely necessary or when generating clear value. In the title and text, capital letters should only be used for the first word of each sentence,
+    except when used to mention the brand name or its products.
+    - meta_description: objective and attractive summary with 140 to 160 characters **THIS SIZE IS MANDATORY**, which summarizes the benefit of reading the post.
+    - summary_html: HTML excerpt (150–160 characters) following the Resumo HTML guidelines in {format_recommendations}. Must be unique and keyword-aware.
+    - related_products: slugs of priority products related to the blog post, parsed exactly as they appear in {products}, separated by commas.
+    
+    **PRODUCT ACCURACY VERIFIED:**
+    - All related products exist in the catalog
+    - All product references are accurate and verified
+  agent: seo_specialist
+

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Local Delivery — manage-route modal layout options · v1</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --text: #303030;
+    --subdued: #6d7175;
+    --header-bg: #f6f6f7;
+    --map-bg: #e8eef5;
+    --map-stroke: #b8c5d4;
+    --pin-blue: #005bd3;
+    --pin-orange: #d99a0a;
+    --route-line: #5b8def;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+  .intro { font-size: 13px; color: var(--subdued); max-width: 880px; margin-bottom: 28px; }
+  .intro code { background: #ececed; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    max-width: 1300px;
+  }
+  @media (max-width: 1100px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+  /* ==== Modal frame ==== */
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 540px;
+  }
+  .modalHead {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modalHead h3 { margin: 0; font-size: 14px; font-weight: 600; }
+  .optBadge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--subdued);
+    background: var(--header-bg);
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .modalBody { flex: 1; min-height: 0; padding: 16px; }
+  .modalFoot {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    background: #fbfbfc;
+  }
+  .btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text);
+  }
+  .btn.primary {
+    background: var(--text);
+    color: white;
+    border-color: var(--text);
+  }
+
+  /* ==== Map placeholder ==== */
+  .map {
+    background: var(--map-bg);
+    border-radius: 6px;
+    border: 1px solid var(--map-stroke);
+    position: relative;
+    overflow: hidden;
+  }
+  .map::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 38px, rgba(184,197,212,0.18) 38px 39px),
+      repeating-linear-gradient(90deg, transparent 0 50px, rgba(184,197,212,0.18) 50px 51px);
+  }
+  .pin {
+    position: absolute;
+    width: 22px; height: 22px;
+    background: var(--pin-blue);
+    color: white;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .pin span { transform: rotate(45deg); }
+  .pin.warn { background: var(--pin-orange); }
+  .routeLine {
+    position: absolute;
+    border: 2px solid var(--route-line);
+    border-radius: 50%;
+    border-style: dashed;
+    opacity: 0.5;
+  }
+
+  /* ==== Order table ==== */
+  .ordersWrap { background: white; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; height: 100%; display: flex; flex-direction: column; }
+  .ordersHead {
+    display: grid;
+    grid-template-columns: 24px 56px 100px minmax(0, 1fr);
+    column-gap: 8px;
+    padding: 8px 10px;
+    background: var(--header-bg);
+    font-weight: 600;
+    font-size: 11px;
+    color: #3a3a3a;
+    border-bottom: 1px solid var(--border);
+  }
+  .ordersBody { flex: 1; min-height: 0; overflow: auto; }
+  .ordersRow {
+    display: grid;
+    grid-template-columns: 24px 56px 100px minmax(0, 1fr);
+    column-gap: 8px;
+    padding: 9px 10px;
+    font-size: 12px;
+    border-bottom: 1px solid #f1f1f1;
+    align-items: center;
+  }
+  .ordersRow:last-child { border-bottom: none; }
+  .ordersRow .check { width: 14px; height: 14px; border: 1.5px solid #8c9196; border-radius: 3px; }
+  .ordersRow .id { color: var(--pin-blue); font-weight: 500; }
+  .ordersRow .addr { color: var(--subdued); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ==== Layout variants ==== */
+  /* A: 50/50 stacked (current) */
+  .layoutA { display: grid; grid-template-rows: minmax(0,1fr) minmax(0,1fr); gap: 12px; height: 100%; }
+
+  /* B: 35/65 stacked (table-dominant) */
+  .layoutB { display: grid; grid-template-rows: minmax(0,0.55fr) minmax(0,1fr); gap: 12px; height: 100%; }
+
+  /* C: side by side */
+  .layoutC { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 12px; height: 100%; }
+
+  /* D: tabs */
+  .tabsBar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    padding: 0 4px;
+    margin-bottom: 12px;
+  }
+  .tab {
+    padding: 8px 14px;
+    border-bottom: 2px solid transparent;
+    color: var(--subdued);
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: -1px;
+    cursor: pointer;
+  }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 600; }
+  .tabCount { background: #ececed; color: var(--subdued); font-size: 10px; padding: 1px 6px; border-radius: 8px; margin-left: 4px; }
+  .layoutD { display: flex; flex-direction: column; height: 100%; }
+  .layoutD .pane { flex: 1; min-height: 0; }
+
+  /* Notes panel */
+  .notes {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 24px;
+    max-width: 880px;
+  }
+  .notes h2 { font-size: 13px; font-weight: 600; margin: 0 0 8px; }
+  .notes ul { padding-left: 20px; margin: 0; font-size: 12px; color: var(--subdued); line-height: 1.6; }
+  .notes li { margin-bottom: 4px; }
+  .notes b { color: var(--text); }
+</style>
+</head>
+<body>
+<h1>Manage-route modal — layout options for the map ↔ orders bleed</h1>
+<p class="intro">
+  Today the modal stacks the embedded map on top and the orders table below at a 50/50 split (<code>grid-template-rows: minmax(0, 1fr) minmax(0, 1fr)</code>, max-height <code>min(72vh, 760px)</code>). On routes with 5+ stops the table area runs out of vertical room and only 2-3 rows are visible without scrolling — that's the "bleed" in the screenshot. Four candidate layouts below; comment / pick.
+</p>
+
+<div class="grid">
+
+  <!-- ==== Option A — current ==== -->
+  <div class="modal">
+    <div class="modalHead">
+      <h3>Route 03</h3>
+      <span class="optBadge">A · current · 50/50 stack</span>
+    </div>
+    <div class="modalBody">
+      <div class="layoutA">
+        <div class="map">
+          <div class="pin" style="top: 18%; left: 22%"><span>1</span></div>
+          <div class="pin" style="top: 32%; left: 38%"><span>2</span></div>
+          <div class="pin" style="top: 48%; left: 56%"><span>3</span></div>
+          <div class="pin" style="top: 28%; left: 70%"><span>4</span></div>
+          <div class="pin warn" style="top: 64%; left: 44%"><span>5</span></div>
+        </div>
+        <div class="ordersWrap">
+          <div class="ordersHead"><span></span><span>Order</span><span>Customer</span><span>Address</span></div>
+          <div class="ordersBody">
+            <div class="ordersRow"><span class="check"></span><span class="id">78807</span><span>Camila B</span><span class="addr">Rua Bagé, 89</span></div>
+            <div class="ordersRow"><span class="check"></span><span class="id">78795</span><span>Amanda R</span><span class="addr">Av Pacaembu, 1240</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modalFoot">
+      <button class="btn">Cancel</button>
+      <button class="btn primary" disabled>Unassign orders</button>
+    </div>
+  </div>
+
+  <!-- ==== Option B — table dominant ==== -->
+  <div class="modal">
+    <div class="modalHead">
+      <h3>Route 03</h3>
+      <span class="optBadge">B · table-dominant · 35/65 stack</span>
+    </div>
+    <div class="modalBody">
+      <div class="layoutB">
+        <div class="map">
+          <div class="pin" style="top: 22%; left: 22%"><span>1</span></div>
+          <div class="pin" style="top: 38%; left: 40%"><span>2</span></div>
+          <div class="pin" style="top: 56%; left: 58%"><span>3</span></div>
+          <div class="pin" style="top: 32%; left: 72%"><span>4</span></div>
+          <div class="pin warn" style="top: 70%; left: 46%"><span>5</span></div>
+        </div>
+        <div class="ordersWrap">
+          <div class="ordersHead"><span></span><span>Order</span><span>Customer</span><span>Address</span></div>
+          <div class="ordersBody">
+            <div class="ordersRow"><span class="check"></span><span class="id">78807</span><span>Camila B</span><span class="addr">Rua Bagé, 89</span></div>
+            <div class="ordersRow"><span class="check"></span><span class="id">78795</span><span>Amanda R</span><span class="addr">Av Pacaembu, 1240</span></div>
+            <div class="ordersRow"><span class="check"></span><span class="id">78784</span><span>Ana C</span><span class="addr">Rua Lisboa, 408</span></div>
+            <div class="ordersRow"><span class="check"></span><span class="id">78758</span><span>Flavia N</span><span class="addr">Al Casa Branca, 707</span></div>
+            <div class="ordersRow"><span class="check"></span><span class="id">78610</span><span>Emanuelle</span><span class="addr">Rua Joaquim Antunes, 88</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modalFoot">
+      <button class="btn">Cancel</button>
+      <button class="btn primary" disabled>Unassign orders</button>
+    </div>
+  </div>
+
+  <!-- ==== Option C — side-by-side ==== -->
+  <div class="modal">
+    <div class="modalHead">
+      <h3>Route 03</h3>
+      <span class="optBadge">C · side-by-side · map left, table right</span>
+    </div>
+    <div class="modalBody">
+      <div class="layoutC">
+        <div class="map">
+          <div class="pin" style="top: 22%; left: 24%"><span>1</span></div>
+          <div class="pin" style="top: 38%; left: 42%"><span>2</span></div>
+          <div class="pin" style="top: 54%; left: 60%"><span>3</span></div>
+          <div class="pin" style="top: 30%; left: 70%"><span>4</span></div>
+          <div class="pin warn" style="top: 68%; left: 46%"><span>5</span></div>
+        </div>
+        <div class="ordersWrap">
+          <div class="ordersHead"><span></span><span>Order</span><span>Customer</span><span>Address</span></div>
+          <div class="ordersBody">
+            <div class="ordersRow"><span class="check"></span><span class="id">78807</span><span>Camila B</span><span class="addr">Rua Bagé, 89</span></div>
+            <div class="ordersRow"><span class="check"></span><span class="id">78795</span><span>Amanda R</span><span class="addr">Av Pacaembu, 1240</span></div>
+            <div class="ordersRow"><span class="check"></span><span class="id">78784</span><span>Ana C</span><span class="addr">Rua Lisboa, 408</span></div>
+            <div class="ordersRow"><span class="check"></span><span class="id">78758</span><span>Flavia N</span><span class="addr">Al Casa Branca, 707</span></div>
+            <div class="ordersRow"><span class="check"></span><span class="id">78610</span><span>Emanuelle</span><span class="addr">Rua Joaquim Antunes, 88</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modalFoot">
+      <button class="btn">Cancel</button>
+      <button class="btn primary" disabled>Unassign orders</button>
+    </div>
+  </div>
+
+  <!-- ==== Option D — tabs ==== -->
+  <div class="modal">
+    <div class="modalHead">
+      <h3>Route 03</h3>
+      <span class="optBadge">D · tabs · one full-bleed view at a time</span>
+    </div>
+    <div class="modalBody">
+      <div class="layoutD">
+        <div class="tabsBar">
+          <span class="tab">Map</span>
+          <span class="tab active">Orders <span class="tabCount">5</span></span>
+        </div>
+        <div class="pane">
+          <div class="ordersWrap">
+            <div class="ordersHead"><span></span><span>Order</span><span>Customer</span><span>Address</span></div>
+            <div class="ordersBody">
+              <div class="ordersRow"><span class="check"></span><span class="id">78807</span><span>Camila B</span><span class="addr">Rua Bagé, 89</span></div>
+              <div class="ordersRow"><span class="check"></span><span class="id">78795</span><span>Amanda R</span><span class="addr">Av Pacaembu, 1240</span></div>
+              <div class="ordersRow"><span class="check"></span><span class="id">78784</span><span>Ana C</span><span class="addr">Rua Lisboa, 408</span></div>
+              <div class="ordersRow"><span class="check"></span><span class="id">78758</span><span>Flavia N</span><span class="addr">Al Casa Branca, 707</span></div>
+              <div class="ordersRow"><span class="check"></span><span class="id">78610</span><span>Emanuelle</span><span class="addr">Rua Joaquim Antunes, 88</span></div>
+              <div class="ordersRow"><span class="check"></span><span class="id">78591</span><span>Bruna M</span><span class="addr">Rua Cardeal Arcoverde, 911</span></div>
+              <div class="ordersRow"><span class="check"></span><span class="id">78488</span><span>Sanni H</span><span class="addr">Rua dos Pinheiros, 12</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modalFoot">
+      <button class="btn">Cancel</button>
+      <button class="btn primary" disabled>Unassign orders</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h2>Trade-offs at a glance</h2>
+  <ul>
+    <li><b>A · current 50/50 stack</b> — baseline. Map and table both visible. Pain: routes with 5+ stops cut the table to 2-3 visible rows. The screenshot Lucas posted is exactly this state.</li>
+    <li><b>B · table-dominant 35/65 stack</b> — small change vs A: map shrinks to a thumb (still useful for spatial confirmation), table gets the breathing room. Cheapest fix; one CSS line. Closest to "see the orders, glance at the map" intent.</li>
+    <li><b>C · side-by-side</b> — most info-dense. Map and table at full vertical height. Cost: needs ~900px modal width to look right; the embedded admin iframe is tight on smaller laptops; collapses to stacked on narrow screens (so you'd need a media-query branch). Best when the operator wants to inspect spatial + tabular together.</li>
+    <li><b>D · tabs</b> — cleanest at any width: each view gets the full real estate. Cost: forces a click to switch context, hides one view by default. Works well if 90% of the time the operator only needs one of the two; less good if they bounce between map and rows constantly.</li>
+  </ul>
+</div>
+
+</body>
+</html>

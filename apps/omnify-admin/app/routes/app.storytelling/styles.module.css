@@ -1,0 +1,472 @@
+/* --- Flat/underline tabs ----------------------------------------- */
+
+.tabsRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-bottom: 1px solid #e1e3e5;
+  margin: -4px -20px 12px;
+  padding: 0 20px;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 2px solid transparent;
+  text-decoration: none;
+  color: #6d7175;
+  background: none;
+  font-weight: 400;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: #303030;
+  border-bottom-color: #8c9196;
+}
+
+.tabActive {
+  color: #303030;
+  font-weight: 500;
+  border-bottom-color: #303030;
+}
+
+/* CLI-style readonly input */
+.cliInput {
+  width: 100%;
+  font-family: monospace;
+  font-size: 13px;
+  padding: 12px 16px;
+  background: #f6f6f7;
+  color: #111111;
+  border: 1px solid #e1e3e5;
+  border-radius: 0;
+  outline: none;
+  cursor: default;
+}
+
+/* --- Pending diffs banner ---------------------------------------- */
+.pendingDiffsBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f6f6f7;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.pendingDiffsBanner a {
+  color: #303030;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.pendingDiffsBanner a:hover {
+  text-decoration: underline;
+}
+
+/* --- Recent generations aside ------------------------------------ */
+.recentJobList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recentJobRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.recentJobRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.recentJobTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #303030;
+}
+
+.recentJobMeta {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.recentJobStatusRunning {
+  color: #0b7777;
+}
+
+.recentJobStatusCompleted {
+  color: #008060;
+}
+
+.recentJobStatusFailed {
+  color: #d72c0d;
+}
+
+/* --- Alt text audit ---------------------------------------------- */
+.altSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.altSummaryText {
+  font-size: 14px;
+  color: #303030;
+}
+
+.altFilterBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.altFilterChip {
+  padding: 6px 12px;
+  border: 1px solid #e1e3e5;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #6d7175;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.altFilterChip:hover {
+  border-color: #8c9196;
+  color: #303030;
+}
+
+.altFilterChipActive {
+  background: #303030;
+  border-color: #303030;
+  color: #ffffff;
+}
+
+.altProductGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  background: #ffffff;
+}
+
+.altProductTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303030;
+  margin: 0;
+}
+
+.altImageRow {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid #f1f1f1;
+}
+
+.altImageRow:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.altThumbnail {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: #f6f6f7;
+}
+
+.altRowBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.altStatePill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.altStateMissing {
+  background: #fff4f4;
+  color: #d72c0d;
+}
+
+.altStateWeak {
+  background: #fff4e5;
+  color: #b45309;
+}
+
+.altStateOk {
+  background: #e7f5ee;
+  color: #008060;
+}
+
+.altStateQueued {
+  background: #eaf1fb;
+  color: #2c5aa0;
+}
+
+.altStateApplied {
+  background: #e7f5ee;
+  color: #008060;
+}
+
+.altStateFailed {
+  background: #fff4f4;
+  color: #d72c0d;
+}
+
+.altCurrentAlt {
+  font-size: 12px;
+  color: #6d7175;
+  word-break: break-word;
+}
+
+.altSuggestionTextarea {
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 10px;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  color: #303030;
+  resize: vertical;
+  background: #fafbfb;
+}
+
+.altRowActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.altCadenceHeading {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303030;
+  margin: 0 0 4px;
+}
+
+.altCadenceDescription {
+  font-size: 12px;
+  color: #6d7175;
+  margin: 0 0 12px;
+}
+
+.altCadenceStat {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  color: #303030;
+  padding: 4px 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.altCadenceStat:last-child {
+  border-bottom: none;
+}
+
+.altCadenceLabel {
+  color: #6d7175;
+}
+
+.altProgressBar {
+  width: 100%;
+  height: 8px;
+  background: #f1f1f1;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 6px;
+  margin-bottom: 12px;
+}
+
+.altProgressFill {
+  height: 100%;
+  background: #008060;
+  transition: width 0.2s ease;
+}
+
+/* --- Learnings review route -------------------------------------- */
+.diffArticleCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  background: #ffffff;
+}
+
+.diffArticleHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.diffArticleTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303030;
+  margin: 0;
+}
+
+.diffArticleMeta {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.diffSplit {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .diffSplit {
+    grid-template-columns: 1fr;
+  }
+}
+
+.diffPanel {
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  padding: 12px;
+  background: #fafbfb;
+  max-height: 240px;
+  overflow: auto;
+}
+
+.diffPanelLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #6d7175;
+  margin-bottom: 8px;
+}
+
+.diffPanelContent {
+  font-size: 13px;
+  color: #303030;
+  line-height: 1.5;
+}
+
+.diffHypothesesHeading {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303030;
+  margin: 0 0 12px;
+}
+
+.hypothesisCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  background: #ffffff;
+}
+
+.hypothesisHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.hypothesisCategoryPill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.hypothesisCategoryTone {
+  background: #fff4e5;
+  color: #b45309;
+}
+
+.hypothesisCategoryStructure {
+  background: #eaf1fb;
+  color: #2c5aa0;
+}
+
+.hypothesisCategoryVocabulary {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
+.hypothesisCategoryProduct_mentions {
+  background: #e7f5ee;
+  color: #008060;
+}
+
+.hypothesisCategoryOther {
+  background: #f1f1f1;
+  color: #6d7175;
+}
+
+.hypothesisInterpretation {
+  font-size: 13px;
+  color: #303030;
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.hypothesisActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.hypothesisAcceptedBadge {
+  font-size: 12px;
+  color: #008060;
+  font-weight: 500;
+}
+
+.diffDismissRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}

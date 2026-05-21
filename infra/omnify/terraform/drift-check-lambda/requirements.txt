@@ -1,0 +1,4 @@
+# boto3 is provided by the Python 3.11 Lambda runtime — listed here for
+# clarity and to document the intended dependency surface. Nothing else is
+# needed at runtime.
+boto3

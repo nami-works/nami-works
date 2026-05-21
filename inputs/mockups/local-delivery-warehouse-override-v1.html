@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Local Delivery warehouse override</title>
+<!--
+  Local Delivery warehouse-method override — mockup v1 (rev 2026-05-14 r2).
+  Reflects the current LD page (Location select + warning badges + Orders-to-
+  deliver status row, no Period/Promise/Limit filters — those moved to Settings).
+  Warehouse-method orders are flagged with a single inline icon next to the
+  order ID, not a new Method column. Override confirmation modal uses the
+  hybrid short+collapsible pattern.
+-->
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --light-border: #f1f1f1;
+    --header-bg: #f6f6f7;
+    --text: #303030;
+    --header-text: #6d7175;
+    --subdued: #6d7175;
+    --blue-primary: #005bd3;
+    --blue-light: #f1f7ff;
+    --green: #008060;
+    --critical: #d72c0d;
+    --warning-bg: #ffeacc;
+    --warning-text: #b54708;
+    --info-bg: #e4e5e7;
+    --info-text: #303030;
+    --warehouse-icon: #b54708;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+  }
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+  h2 { font-size: 14px; font-weight: 600; margin: 0 0 12px; }
+  .intro { font-size: 13px; color: var(--subdued); max-width: 1100px; margin-bottom: 24px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    max-width: 1100px;
+  }
+  .card .label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--subdued);
+    margin-bottom: 16px;
+  }
+  .sectionHeading {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    color: var(--text);
+  }
+  .twoCol {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 1100px;
+    margin-bottom: 24px;
+  }
+  .twoCol .card { margin-bottom: 0; max-width: none; }
+
+  /* ==== Route manager block (replica of current LD layout) ==== */
+  .routeManagerBlock {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    padding: 16px;
+  }
+  .routeManagerBlock + .ordersBlock { margin-top: 12px; }
+
+  .rmLocationSelect {
+    height: 32px;
+    padding: 0 28px 0 12px;
+    border: 1px solid #c9cccf;
+    border-radius: 8px;
+    background: #fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%236d7175' d='M5 6L0 0h10z'/></svg>") no-repeat right 10px center;
+    font-size: 13px;
+    color: var(--text);
+    min-width: 200px;
+    appearance: none;
+    margin-bottom: 12px;
+  }
+
+  .badgesRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  /* Polaris-style s-badge */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--info-bg);
+    color: var(--info-text);
+    cursor: default;
+  }
+  .badge svg { width: 12px; height: 12px; display: block; }
+  .badge.warning { background: var(--warning-bg); color: var(--warning-text); }
+  .badge.info { background: #cdeefd; color: #0a3554; }
+  /* attention = Polaris orange tone for in-progress / requires-attention items */
+  .badge.attention { background: #ffeacc; color: #b54708; }
+  .badge.clickable { cursor: pointer; }
+  .badge.clickable:hover { filter: brightness(0.96); }
+
+  .statusRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .actionsTrigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #c9cccf;
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .toggleFilterRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--blue-light);
+    border: 1px solid #c8defc;
+    border-radius: 8px;
+    margin: 12px 0 0;
+  }
+  .toggleFilterRow.off { background: #fafbfb; border-color: var(--light-border); }
+  .toggleControl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggleCheckbox {
+    width: 16px; height: 16px;
+    border: 1.5px solid #6d7175;
+    border-radius: 3px;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .toggleFilterRow:not(.off) .toggleCheckbox {
+    background: #303030;
+    border-color: #303030;
+    color: #fff;
+  }
+  .toggleCheckbox svg { display: none; }
+  .toggleFilterRow:not(.off) .toggleCheckbox svg { display: block; }
+  .toggleLabel { font-size: 13px; color: var(--text); }
+  .toggleHint { font-size: 12px; color: var(--subdued); }
+
+  /* ==== Orders block (table) ==== */
+  .ordersBlock {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    padding: 16px;
+  }
+  .ordersHeaderRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .table thead th {
+    background: var(--header-bg);
+    text-align: left;
+    font-weight: 600;
+    color: var(--header-text);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid var(--light-border);
+    vertical-align: middle;
+  }
+  .table tbody tr:hover { background: var(--header-bg); }
+  .table .checkboxCol { width: 32px; padding-right: 0; }
+  .ordCheck {
+    width: 14px; height: 14px;
+    border: 1.5px solid #c9cccf;
+    border-radius: 3px;
+    background: #fff;
+    display: inline-block;
+  }
+  .ordCheck.checked {
+    background: #303030;
+    border-color: #303030;
+    position: relative;
+  }
+  .ordCheck.checked::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 0;
+    width: 5px;
+    height: 9px;
+    border: solid #fff;
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg);
+  }
+  .orderIdCell {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .warehouseIcon {
+    width: 14px;
+    height: 14px;
+    color: var(--warehouse-icon);
+    flex-shrink: 0;
+  }
+  .warehouseIcon svg { display: block; width: 100%; height: 100%; }
+
+  /* Due column — bucket icon for LOCAL rows, package for warehouse rows */
+  .dueCol { width: 56px; text-align: center; padding: 8px 4px; }
+  th.dueCol { text-align: center; }
+  .dueBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    background: var(--info-bg);
+    color: var(--info-text);
+  }
+  .dueBadge svg { width: 14px; height: 14px; display: block; }
+  .dueBadge.warning { background: var(--warning-bg); color: var(--warning-text); }
+  .dueBadge.critical { background: #fde8e3; color: var(--critical); }
+  .dueBadge.info { background: #cdeefd; color: #0a3554; }
+  /* warehouse = Polaris `attention` tone (orange) — "in-progress / requires attention" */
+  .dueBadge.warehouse { background: #ffeacc; color: #b54708; }
+
+  .customerCol { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .addressCol { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--subdued); }
+  .routeBadge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #d8efdf;
+    color: #0a5d2d;
+  }
+  .routeBadge.unassigned { background: #ececed; color: #6d7175; }
+
+  /* ==== Action bar ==== */
+  .actionBar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--light-border);
+  }
+  .btn {
+    height: 32px;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #c9cccf;
+    background: #fff;
+    color: var(--text);
+  }
+  .btn.primary {
+    background: #303030;
+    color: #fff;
+    border-color: #303030;
+  }
+
+  /* ==== Empty state ==== */
+  .empty {
+    padding: 32px 24px;
+    text-align: center;
+    color: var(--subdued);
+    font-size: 13px;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    margin-top: 12px;
+  }
+  .empty strong { display: block; color: var(--text); font-size: 14px; margin-bottom: 6px; }
+
+  /* ==== Modal (hybrid: short + collapsible details) ==== */
+  .modalOverlay {
+    position: relative;
+    background: rgba(0,0,0,0.4);
+    padding: 32px;
+    border-radius: 8px;
+    margin-top: 12px;
+  }
+  .modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 540px;
+    margin: 0 auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  }
+  .modal h3 { font-size: 16px; font-weight: 600; margin: 0 0 8px; color: var(--text); }
+  .modal p { font-size: 13px; color: var(--text); margin: 0 0 8px; line-height: 1.5; }
+
+  .modal .orderList {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fafbfb;
+    margin: 12px 0 16px;
+    overflow: hidden;
+  }
+  .modal .orderList .row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--light-border);
+    font-size: 12px;
+  }
+  .modal .orderList .row:last-child { border-bottom: none; }
+  .modal .orderList .orderTitle {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .modal .orderList .meta { color: var(--subdued); }
+
+  .details {
+    border-top: 1px solid var(--light-border);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+  .detailsToggle {
+    cursor: pointer;
+    color: var(--blue-primary);
+    font-size: 12px;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .detailsToggle::before { content: "▸"; font-size: 10px; }
+  .detailsToggle.open::before { content: "▾"; }
+  .detailsBody {
+    margin-top: 8px;
+    padding: 12px;
+    background: #fafbfb;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--subdued);
+    line-height: 1.55;
+    display: none;
+  }
+  .detailsBody.open { display: block; }
+  .detailsBody code {
+    background: #f1f1f2;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .modal .modalFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  /* ==== State matrix ==== */
+  .matrixTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  .matrixTable th, .matrixTable td {
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .matrixTable th {
+    background: var(--header-bg);
+    font-weight: 600;
+    color: var(--header-text);
+    font-size: 11px;
+  }
+  .matrixTable code {
+    background: #f1f1f2;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
+
+  /* ==== Notes panel ==== */
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #5b4700;
+    max-width: 1100px;
+    margin-bottom: 24px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 8px; color: #4a3600; font-weight: 600; }
+  .notes ul { margin: 4px 0 12px 18px; padding: 0; }
+  .notes li { margin-bottom: 4px; }
+  .notes code {
+    background: #fff6d1;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Local Delivery — warehouse-method override (mockup v1)</h1>
+<p class="intro">
+  Surfaces orders Shopify still classifies as <code>SHIPPING</code> (warehouse) so an operator can dispatch them via Local Delivery once their FulfillmentOrder has been moved to a store location in Shopify admin. <strong>v1 — rev to match the actual current LD page layout:</strong> Location select + warning badges + Orders-to-deliver status row, no Period/Promise/Limit (those moved to Settings). Single inline icon next to the order ID instead of a separate Method column.
+</p>
+
+<div class="notes">
+  <h3>Changes vs current</h3>
+  <ul>
+    <li><strong>New "Include warehouse orders" toggle</strong> below the warning badges in the Route Manager section. Off by default; activates the dormant <code>?deliveryMethod=all</code> plumbing.</li>
+    <li><strong>New "Warehouse: N" badge</strong> in the badges row when warehouse-method orders exist at the selected location. Clickable when toggle is OFF (activates it); display-only when ON.</li>
+    <li><strong>Warehouse-origin marker in the existing Due column.</strong> The Due column's bucket-driven badge (<code>bolt</code> = today, <code>alert-triangle</code> = overdue, <code>clock</code> = tomorrow, <code>x-circle</code> = failed) is <strong>replaced</strong> by the <code>package</code> Polaris icon for any row whose <code>methodType !== "LOCAL"</code>. One column, dual semantic: due state for LOCAL rows, warehouse-origin marker for non-LOCAL rows. No new column.</li>
+    <li><strong>Override confirmation modal</strong> opens on Dispatch when the route contains 1+ warehouse-method orders. Hybrid copy: short operator-friendly statement up top, <em>Show technical details</em> expander for the audit-tag + Shopify-state info.</li>
+    <li><strong>Audit signals</strong> on confirm — Shopify tag <code>ld_method-override</code> + DB column <code>LalamoveDispatchJob.methodOverride</code>.</li>
+  </ul>
+</div>
+
+<!-- ==== Route Manager + Orders — combined block, the actual page layout ==== -->
+<div class="card">
+  <span class="label">Route Manager + Orders — toggle ON, mixed list (the target state)</span>
+
+  <div class="routeManagerBlock">
+    <h2 class="sectionHeading">Route Manager</h2>
+    <select class="rmLocationSelect"><option>Shops Jardins</option></select>
+
+    <div class="badgesRow">
+      <!-- Existing warning badges -->
+      <span class="badge warning clickable" title="Click to open the failed-delivery modal">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17Zm0 4a1 1 0 0 1 1 1V10a1 1 0 1 1-2 0V6.5a1 1 0 0 1 1-1Zm0 9.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+        Failed delivery: 2
+      </span>
+      <span class="badge warning clickable">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M11.25 3.25a1.41 1.41 0 0 0-2.5 0L1.9 16.24A1.29 1.29 0 0 0 3.06 18h13.88a1.29 1.29 0 0 0 1.15-1.76L11.25 3.25ZM10 7.25a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75Zm1 7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>
+        Address errors: 1
+      </span>
+      <span class="badge warning clickable">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 4.5A4.5 4.5 0 0 1 13.66 2l1.34 1.34V2a1 1 0 0 1 2 0v4a1 1 0 0 1-1 1h-4a1 1 0 1 1 0-2h1.59A2.5 2.5 0 0 0 7.5 6.5a1 1 0 1 1-2 0Zm9 9a4.5 4.5 0 0 1-8.16 2.5L5 14.66V16a1 1 0 1 1-2 0v-4a1 1 0 0 1 1-1h4a1 1 0 1 1 0 2H6.41a2.5 2.5 0 0 0 6.09-.5 1 1 0 0 1 2 0Z"/></svg>
+        Return pickups: 1
+      </span>
+      <!-- NEW: warehouse-count badge (Polaris attention tone — orange) -->
+      <span class="badge attention" title="Orders originally placed as warehouse fulfillment but routed through Local Delivery">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5 2.5 5v10L10 18.5 17.5 15V5L10 1.5Zm0 1.7 5.6 2.61L10 8.41 4.4 5.81 10 3.2ZM4 7.18l5 2.33v7.16l-5-2.33V7.18Zm12 7.16-5 2.33V9.5l5-2.33v7.18Z"/></svg>
+        Routed from warehouse: 3
+      </span>
+    </div>
+
+    <div class="statusRow">
+      <span class="badge info">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2 2 6v8l8 4 8-4V6l-8-4Zm0 2.18L15.86 7 10 9.82 4.14 7 10 4.18Zm-6 4.4 5 2.4v6.04l-5-2.4V8.58Zm7 8.44V11l5-2.4v6.04l-5 2.38Z"/></svg>
+        Orders to deliver: 12
+      </span>
+      <button class="actionsTrigger" title="Actions menu">⋯</button>
+    </div>
+
+    <!-- NEW: toggle row -->
+    <div class="toggleFilterRow">
+      <div class="toggleControl">
+        <span class="toggleCheckbox">
+          <svg width="10" height="8" viewBox="0 0 10 8"><path fill="none" stroke="currentColor" stroke-width="2" d="M1 4l3 3 5-6"/></svg>
+        </span>
+        <span class="toggleLabel"><strong>Include warehouse orders</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="ordersBlock">
+    <div class="ordersHeaderRow">
+      <h2 class="sectionHeading">Orders to deliver</h2>
+    </div>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="checkboxCol"></th>
+          <th>Order</th>
+          <th>Customer</th>
+          <th>Address</th>
+          <th class="dueCol">Due</th>
+          <th>Route</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="checkboxCol"><span class="ordCheck checked"></span></td>
+          <td><span class="orderIdCell">#80401</span></td>
+          <td class="customerCol">Camila Bresani</td>
+          <td class="addressCol">Rua Oscar Freire, 982, Jardins, São Paulo</td>
+          <td class="dueCol">
+            <span class="dueBadge warning" title="Due today">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M11.5 2 4 11h5l-1 7 7.5-9h-5l1-7Z"/></svg>
+            </span>
+          </td>
+          <td><span class="routeBadge">Route 1</span></td>
+          <td>R$129.00</td>
+        </tr>
+        <tr>
+          <td class="checkboxCol"><span class="ordCheck checked"></span></td>
+          <td><span class="orderIdCell">#80398</span></td>
+          <td class="customerCol">michelle Doherty</td>
+          <td class="addressCol">Rua Gabriele D'Annunzio, 48, Campo Belo</td>
+          <td class="dueCol">
+            <span class="dueBadge warehouse" title="Originally placed as warehouse fulfillment">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5 2.5 5v10L10 18.5 17.5 15V5L10 1.5Zm0 1.7 5.6 2.61L10 8.41 4.4 5.81 10 3.2ZM4 7.18l5 2.33v7.16l-5-2.33V7.18Zm12 7.16-5 2.33V9.5l5-2.33v7.18Z"/></svg>
+            </span>
+          </td>
+          <td><span class="routeBadge">Route 1</span></td>
+          <td>R$70.90</td>
+        </tr>
+        <tr>
+          <td class="checkboxCol"><span class="ordCheck"></span></td>
+          <td><span class="orderIdCell">#80395</span></td>
+          <td class="customerCol">Priscila de Araújo</td>
+          <td class="addressCol">Av. Brigadeiro Faria Lima, 4221, Itaim Bibi</td>
+          <td class="dueCol">
+            <span class="dueBadge warehouse" title="Originally placed as warehouse fulfillment">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5 2.5 5v10L10 18.5 17.5 15V5L10 1.5Zm0 1.7 5.6 2.61L10 8.41 4.4 5.81 10 3.2ZM4 7.18l5 2.33v7.16l-5-2.33V7.18Zm12 7.16-5 2.33V9.5l5-2.33v7.18Z"/></svg>
+            </span>
+          </td>
+          <td><span class="routeBadge unassigned">—</span></td>
+          <td>R$215.40</td>
+        </tr>
+        <tr>
+          <td class="checkboxCol"><span class="ordCheck checked"></span></td>
+          <td><span class="orderIdCell">#80391</span></td>
+          <td class="customerCol">Renata Menezes</td>
+          <td class="addressCol">R. Cardeal Arcoverde, 1567, Pinheiros</td>
+          <td class="dueCol">
+            <span class="dueBadge info" title="Due tomorrow">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.67a8.33 8.33 0 1 0 0 16.66 8.33 8.33 0 0 0 0-16.66Zm.83 8L13 11.84l-1.18 1.18-2.65-2.65V5h1.66v4.67Z"/></svg>
+            </span>
+          </td>
+          <td><span class="routeBadge">Route 2</span></td>
+          <td>R$98.00</td>
+        </tr>
+        <tr>
+          <td class="checkboxCol"><span class="ordCheck"></span></td>
+          <td><span class="orderIdCell">#80387</span></td>
+          <td class="customerCol">Flavia Gama</td>
+          <td class="addressCol">R. Augusta, 2840, Jardim Paulista</td>
+          <td class="dueCol">
+            <span class="dueBadge warehouse" title="Originally placed as warehouse fulfillment">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5 2.5 5v10L10 18.5 17.5 15V5L10 1.5Zm0 1.7 5.6 2.61L10 8.41 4.4 5.81 10 3.2ZM4 7.18l5 2.33v7.16l-5-2.33V7.18Zm12 7.16-5 2.33V9.5l5-2.33v7.18Z"/></svg>
+            </span>
+          </td>
+          <td><span class="routeBadge unassigned">—</span></td>
+          <td>R$185.30</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="actionBar">
+      <button class="btn">Optimize routes</button>
+      <button class="btn primary">Dispatch routes (2)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==== Toggle OFF state ==== -->
+<div class="card">
+  <span class="label">Toggle OFF state — clickable Warehouse: N badge invites the operator to flip it on</span>
+
+  <div class="routeManagerBlock">
+    <h2 class="sectionHeading">Route Manager</h2>
+    <select class="rmLocationSelect"><option>Shops Jardins</option></select>
+
+    <div class="badgesRow">
+      <span class="badge warning clickable">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17Zm0 4a1 1 0 0 1 1 1V10a1 1 0 1 1-2 0V6.5a1 1 0 0 1 1-1Zm0 9.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+        Failed delivery: 2
+      </span>
+      <span class="badge attention clickable" title="3 orders available — click to surface them">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5 2.5 5v10L10 18.5 17.5 15V5L10 1.5Zm0 1.7 5.6 2.61L10 8.41 4.4 5.81 10 3.2ZM4 7.18l5 2.33v7.16l-5-2.33V7.18Zm12 7.16-5 2.33V9.5l5-2.33v7.18Z"/></svg>
+        Routed from warehouse: 3 — show
+      </span>
+    </div>
+
+    <div class="statusRow">
+      <span class="badge info">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2 2 6v8l8 4 8-4V6l-8-4Zm0 2.18L15.86 7 10 9.82 4.14 7 10 4.18Zm-6 4.4 5 2.4v6.04l-5-2.4V8.58Zm7 8.44V11l5-2.4v6.04l-5 2.38Z"/></svg>
+        Orders to deliver: 9
+      </span>
+      <button class="actionsTrigger">⋯</button>
+    </div>
+
+    <div class="toggleFilterRow off">
+      <div class="toggleControl">
+        <span class="toggleCheckbox">
+          <svg width="10" height="8" viewBox="0 0 10 8"><path fill="none" stroke="currentColor" stroke-width="2" d="M1 4l3 3 5-6"/></svg>
+        </span>
+        <span class="toggleLabel">Include warehouse orders</span>
+      </div>
+      <span class="toggleHint">3 hidden</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==== Override confirmation modal — hybrid ==== -->
+<div class="card">
+  <span class="label">Override confirmation modal — opens on Dispatch when route(s) contain 1+ warehouse orders</span>
+  <div class="modalOverlay">
+    <div class="modal">
+      <h3>Confirm warehouse override dispatch</h3>
+      <p>You're dispatching <strong>2 orders</strong> originally placed for warehouse fulfillment via Local Delivery from <strong>Shops Jardins</strong>. The customer's order record won't change — they'll receive the same tracking emails as usual.</p>
+
+      <div class="orderList">
+        <div class="row">
+          <span class="orderTitle">
+            <span class="dueBadge warehouse" style="width: 20px; height: 20px;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5 2.5 5v10L10 18.5 17.5 15V5L10 1.5Zm0 1.7 5.6 2.61L10 8.41 4.4 5.81 10 3.2ZM4 7.18l5 2.33v7.16l-5-2.33V7.18Zm12 7.16-5 2.33V9.5l5-2.33v7.18Z"/></svg>
+            </span>
+            #80398
+          </span>
+          <span class="meta">michelle Doherty · Campo Belo · R$70.90</span>
+        </div>
+        <div class="row">
+          <span class="orderTitle">
+            <span class="dueBadge warehouse" style="width: 20px; height: 20px;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5 2.5 5v10L10 18.5 17.5 15V5L10 1.5Zm0 1.7 5.6 2.61L10 8.41 4.4 5.81 10 3.2ZM4 7.18l5 2.33v7.16l-5-2.33V7.18Zm12 7.16-5 2.33V9.5l5-2.33v7.18Z"/></svg>
+            </span>
+            #80395
+          </span>
+          <span class="meta">Priscila de Araújo · Itaim Bibi · R$215.40</span>
+        </div>
+      </div>
+
+      <div class="details">
+        <span class="detailsToggle open">Show technical details</span>
+        <div class="detailsBody open">
+          The Shopify <code>deliveryMethod</code> on each order stays <code>SHIPPING</code> — only how we fulfill it changes. A tag <code>ld_method-override</code> is applied to each affected order. The dispatch job row in <code>LalamoveDispatchJob</code> is created with <code>methodOverride = true</code> for audit and dashboard filtering.
+        </div>
+      </div>
+
+      <div class="modalFooter">
+        <button class="btn">Cancel</button>
+        <button class="btn primary">Confirm dispatch</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==== Empty states ==== -->
+<div class="twoCol">
+  <div class="card">
+    <span class="label">Empty state — toggle ON, no warehouse orders match</span>
+    <div class="empty">
+      <strong>No warehouse orders assigned to Shops Jardins</strong>
+      To dispatch a warehouse-method order from this location, move its fulfillment to this location in Shopify admin first.
+    </div>
+  </div>
+  <div class="card">
+    <span class="label">Empty state — selected location has no orders at all</span>
+    <div class="empty">
+      <strong>No orders to deliver</strong>
+      Local-delivery and warehouse-method orders both empty for this location and date window.
+    </div>
+  </div>
+</div>
+
+<!-- ==== State matrix ==== -->
+<div class="card">
+  <span class="label">State matrix — toggle × order presence</span>
+  <table class="matrixTable">
+    <thead>
+      <tr>
+        <th>Toggle</th>
+        <th>LOCAL matching</th>
+        <th>Warehouse matching</th>
+        <th>What user sees</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>OFF</code></td><td>0</td><td>0</td><td>Normal empty state. No Warehouse badge.</td></tr>
+      <tr><td><code>OFF</code></td><td>0</td><td>N&gt;0</td><td>Empty state + clickable <em>Warehouse: N — show</em> badge in badges row.</td></tr>
+      <tr><td><code>OFF</code></td><td>M&gt;0</td><td>0</td><td>Normal LOCAL-only list. No Warehouse badge.</td></tr>
+      <tr><td><code>OFF</code></td><td>M&gt;0</td><td>N&gt;0</td><td>LOCAL list + clickable <em>Warehouse: N — show</em> badge.</td></tr>
+      <tr><td><code>ON</code></td><td>0</td><td>0</td><td>Empty state with hint to move FO in Shopify admin first.</td></tr>
+      <tr><td><code>ON</code></td><td>0</td><td>N&gt;0</td><td>Warehouse-only list, every row's Due column shows the <code>package</code> icon. Display-only <em>Warehouse: N</em> badge.</td></tr>
+      <tr><td><code>ON</code></td><td>M&gt;0</td><td>N&gt;0</td><td>Mixed list. LOCAL rows keep their bucket-driven Due icon (bolt / alert-triangle / clock / x-circle). Warehouse rows show the <code>package</code> icon in the Due column instead. Display-only <em>Warehouse: N</em> badge.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 style="margin-top: 24px;">Dispatch action × route content</h2>
+  <table class="matrixTable">
+    <thead>
+      <tr>
+        <th>Route content</th>
+        <th>Dispatch behavior</th>
+        <th>Audit signal written</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>All LOCAL</td>
+        <td>Normal dispatch — no modal.</td>
+        <td>None. <code>methodOverride=false</code>.</td>
+      </tr>
+      <tr>
+        <td>1+ warehouse</td>
+        <td>Override modal opens first. On Confirm: apply tag + set column + dispatch.</td>
+        <td>Tag <code>ld_method-override</code> on each warehouse order. <code>methodOverride=true</code> on the dispatch job row.</td>
+      </tr>
+      <tr>
+        <td>All warehouse</td>
+        <td>Same modal — lists every order in the route.</td>
+        <td>Same as above.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="notes">
+  <h3>Rules locked from the plan</h3>
+  <ul>
+    <li><strong>Toggle does NOT persist.</strong> Always resets to OFF on page load — forces a deliberate operator action.</li>
+    <li><strong>FulfillmentOrder must already be at the local-delivery store</strong> before the order surfaces. Operator does the <code>fulfillmentOrderMove</code> in Shopify admin first.</li>
+    <li><strong>Auto-cron stays strict LOCAL-only.</strong> The <code>auto-delivery</code> cron will NEVER pick up warehouse-method orders, even with the toggle on. Override is operator-only.</li>
+    <li><strong>Mark-delivered path is untouched.</strong> Fulfillment is created at the FO's assigned location (which the operator moved).</li>
+    <li><strong>Mobile (<code>/app/local-delivery-mobile</code>) is Phase 2.</strong> Desktop ships first.</li>
+  </ul>
+</div>
+
+</body>
+</html>

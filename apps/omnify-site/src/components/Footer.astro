@@ -1,0 +1,93 @@
+<footer class="footer">
+  <div class="footerBrand">
+    <span class="footerBrandText">
+      Omnify is a product of
+      <img src="/cpg-labs_box.png" alt="CPG Labs" class="footerLogoImg" />
+      CPG Labs.
+    </span>
+  </div>
+
+  <ul class="footerLinks">
+    <li><a href="/privacy" class="footerLink">Privacy</a></li>
+    <li><a href="/terms" class="footerLink">Terms</a></li>
+    <li><a href="/security" class="footerLink">Security</a></li>
+  </ul>
+
+  <div class="footerEmail">
+    <a href="mailto:contact@cpg-labs.io">contact@cpg-labs.io</a>
+  </div>
+
+  <div class="footerCopy">
+    &copy; {new Date().getFullYear()} CPG Labs. All rights reserved.
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--site-border);
+    padding: 40px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    background-color: var(--site-bg);
+    color: var(--site-text-secondary);
+    font-family: var(--site-font);
+    font-size: 13px;
+  }
+
+  .footerBrand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .footerLogoImg {
+    height: 18px;
+    width: auto;
+    vertical-align: middle;
+    margin: 0 4px;
+  }
+
+  .footerBrandText {
+    color: var(--site-text-secondary);
+    font-size: 13px;
+  }
+
+  .footerLinks {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .footerLink,
+  .footerEmail a {
+    text-decoration: none;
+    color: var(--site-text-secondary);
+    font-size: 13px;
+    transition: color 0.15s ease;
+  }
+
+  .footerLink:hover,
+  .footerEmail a:hover {
+    color: var(--site-text);
+  }
+
+  .footerCopy {
+    color: var(--site-text-secondary);
+    font-size: 12px;
+  }
+
+  @media (min-width: 769px) {
+    .footer {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 60px 48px;
+    }
+  }
+</style>

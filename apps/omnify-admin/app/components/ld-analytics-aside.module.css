@@ -1,0 +1,155 @@
+/*
+ * LD Analytics aside block — scoped styles.
+ * Mirrors inputs/mockups/local-delivery-analytics-aside-v1.html.
+ *
+ * 7 states: loading, full, provocation, conservative_empty, stale, hidden
+ * (no DOM), focus on See-more (CSS pseudo-class).
+ */
+
+/* Skeleton uses a plain bordered card (no <s-section> wrapper because the
+   "heading" slot wouldn't have content yet). FullCard / ProvocationCard /
+   ConservativeEmptyCard all render through <s-section heading=...> instead. */
+.card {
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* "New" badge sits in its own row at the top of FullCard's body — Polaris
+   <s-section heading> owns the title slot, so the badge can't share it. */
+.newBadgeRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+/* Primary stat line — value + secondary descriptor on the same baseline.
+   Mirrors the Auto-assign accuracy block's "37%  112 of 303 orders" shape. */
+.statRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.value {
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #067647;
+  line-height: 1.1;
+}
+
+.descriptor {
+  font-size: 12px;
+  color: #303030;
+  line-height: 1.35;
+}
+
+/* Period footer — subdued single line at the bottom of the block. */
+.periodFooter {
+  font-size: 12px;
+  color: #6d7175;
+  margin-top: 4px;
+}
+
+/* Right-aligned CTA row. Per CLAUDE.md "All button rows must be right-aligned":
+   secondary on the left, primary on the right when both are present. */
+.ctaRowRight {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.arrowUp { color: #067647; }
+.arrowDown { color: #d72c0d; }
+.arrowFlat { color: #6d7175; }
+
+/* Sparkline row */
+.sparkRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.spark {
+  flex: 1;
+  height: 28px;
+}
+
+.sparkLabel {
+  font-size: 10px;
+  color: #8c9196;
+  flex-shrink: 0;
+}
+
+/* Stale footnote (rendered above the CTA row in FullCard when data is stale). */
+.staleFootnote {
+  font-size: 10px;
+  color: #b98900;
+}
+
+/* Provocation helper text — small subdued paragraph below the value. */
+.helper {
+  font-size: 11px;
+  color: #6d7175;
+  line-height: 1.4;
+}
+
+/* Conservative empty body block */
+.conservativeBody {
+  font-size: 14px;
+  color: #303030;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Skeleton (state 1) */
+.skeletonGap {
+  gap: 6px;
+}
+
+.skel {
+  background: linear-gradient(90deg, #f0f0f0 0%, #e7e7e8 50%, #f0f0f0 100%);
+  border-radius: 4px;
+}
+
+.skelLine {
+  height: 12px;
+  margin: 2px 0;
+}
+
+.skelShort {
+  width: 40%;
+}
+
+.skelTall {
+  height: 24px;
+  width: 55%;
+  margin: 4px 0;
+}
+
+.skelSpark {
+  height: 28px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.skelButtonRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.skelButton {
+  width: 78px;
+  height: 28px;
+  border-radius: 6px;
+  margin-top: 4px;
+}

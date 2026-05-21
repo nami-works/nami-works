@@ -1,5 +1,5 @@
 import type Anthropic from "@anthropic-ai/sdk";
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@prisma/client-connector";
 import type { Logger } from "pino";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";

@@ -1,0 +1,512 @@
+/* Campaign goals — styles.
+   Separate module so the tab can move to its own route without touching
+   the main Retail goals stylesheet. */
+
+.campaignsTab {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tabHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 32px 16px;
+  border: 1px dashed #c9cccf;
+  border-radius: 8px;
+  background: #fafbfb;
+  color: #6d7175;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Campaign card ───────────────────────────────────────────────────────── */
+.campaignCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  background: #fff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.campaignCard[data-status="draft"] {
+  border-left: 3px solid #8c9196;
+}
+
+.campaignCard[data-status="active"] {
+  border-left: 3px solid #008060;
+}
+
+.campaignCard[data-status="ended"] {
+  border-left: 3px solid #babec3;
+}
+
+.campaignCard[data-status="archived"] {
+  border-left: 3px solid #8c9196;
+  opacity: 0.7;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cardTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: #202223;
+}
+
+.cardDateRange {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.cardPace {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.cardHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardHeadline {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cardHeadlineNumber {
+  font-size: 22px;
+  font-weight: 700;
+  color: #202223;
+}
+
+.cardHeadlineAch {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303030;
+}
+
+.cardHeadlinePace,
+.cardHeadlineAttach {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.progressBar {
+  height: 8px;
+  background: #f1f1f1;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3d5aa0 0%, #1f2d5a 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* ── Per-location table ─────────────────────────────────────────────────── */
+.perLocationTable {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.perLocationHeader,
+.perLocationRow {
+  display: grid;
+  grid-template-columns: minmax(120px, 2fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(120px, 2fr) minmax(80px, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.perLocationHeader {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #6d7175;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.perLocationRow {
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.chipUp,
+.chipDown,
+.chipNeutral {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chipUp {
+  color: #008060;
+}
+
+.chipDown {
+  color: #d72c0d;
+}
+
+.chipNeutral {
+  color: #6d7175;
+}
+
+/* ── Card footer ────────────────────────────────────────────────────────── */
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #f1f1f1;
+  flex-wrap: wrap;
+}
+
+.cardFooterActions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Past campaigns section ─────────────────────────────────────────────── */
+.pastSection {
+  margin-top: 12px;
+}
+
+.pastList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.pastRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  background: #fafbfb;
+}
+
+.pastName {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: #303030;
+}
+
+.pastDate {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.pastResult {
+  font-size: 12px;
+  color: #303030;
+  font-weight: 500;
+}
+
+/* ── Wizard (inside s-modal) ───────────────────────────────────────────── */
+.wizardSteps {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.wizardStepDot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f1f1f1;
+  color: #6d7175;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+
+.wizardStepDotActive {
+  background: #1f2d5a;
+  color: #fff;
+}
+
+.wizardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 0;
+}
+
+.stepContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.fieldLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: #303030;
+}
+
+.fieldHint {
+  font-size: 12px;
+  color: #6d7175;
+  margin: 0;
+}
+
+.banner {
+  background: #fff4e5;
+  color: #8a6d3b;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  border: 1px solid #f5e0b0;
+}
+
+.numberInput {
+  padding: 8px 10px;
+  border: 1px solid #c9cccf;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+  color: #202223;
+  width: 100%;
+}
+
+.numberInput:disabled {
+  background: #f6f6f7;
+  color: #6d7175;
+}
+
+/* ── Match values search + dropdown ──────────────────────────────────────── */
+.matchSearchWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.matchOptionsDropdown {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.matchOptionItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  color: #303030;
+}
+
+.matchOptionItem:hover {
+  background: #f6f6f7;
+}
+
+.matchOptionSelected {
+  background: #f1f8f5;
+}
+
+.matchChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.matchChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #e4e5e7;
+  color: #303030;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.matchChipRemove {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6d7175;
+  margin-left: 2px;
+}
+
+.matchChipRemove:hover {
+  color: #d72c0d;
+}
+
+/* ── Baseline period row ─────────────────────────────────────────────────── */
+.baselinePeriodRow {
+  margin-bottom: 8px;
+}
+
+/* ── Targets table inside wizard ────────────────────────────────────────── */
+.targetsTable {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.targetsHeader,
+.targetsRow {
+  display: grid;
+  grid-template-columns: minmax(140px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.targetsHeader {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #6d7175;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.targetsRow {
+  border-bottom: 1px solid #f1f1f1;
+}
+
+/* ── Review step ─────────────────────────────────────────────────────────── */
+.reviewBlock h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.reviewGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.reviewLabel {
+  font-size: 12px;
+  color: #6d7175;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.reviewValue {
+  font-size: 13px;
+  color: #202223;
+  font-weight: 500;
+  display: block;
+}
+
+.wizardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0 0;
+  border-top: 1px solid #e1e3e5;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.wizardNav {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Mobile ─────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .cardHeadline {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .perLocationHeader,
+  .perLocationRow {
+    grid-template-columns: minmax(80px, 1fr) minmax(60px, 0.8fr) minmax(60px, 0.8fr) minmax(80px, 1fr) minmax(60px, 0.8fr);
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .fieldRow {
+    grid-template-columns: 1fr;
+  }
+
+  .targetsHeader,
+  .targetsRow {
+    grid-template-columns: 1fr 80px 80px;
+    gap: 6px;
+  }
+
+  .reviewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pastRow {
+    flex-wrap: wrap;
+  }
+}

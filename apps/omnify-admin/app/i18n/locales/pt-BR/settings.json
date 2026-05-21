@@ -1,0 +1,43 @@
+{
+  "pageHeading": "Configurações",
+  "tabs": {
+    "locations": "Localizações",
+    "providers": "Provedores de entrega",
+    "carriers": "Transportadoras",
+    "brand": "Marca"
+  },
+  "locationSettings": {
+    "title": "Detalhes de entrega",
+    "savedSuccess": "Detalhes de entrega salvos com sucesso.",
+    "selectLocation": "-selecione uma localização-",
+    "selectMarket": "-selecione o mercado-",
+    "saveSettings": "Salvar detalhes de entrega",
+    "showDisabled": "Mostrar localizações desativadas"
+  },
+  "retailSales": {
+    "title": "Vendas de varejo",
+    "subtitle": "Configure filtros por localização para vendas históricas. Apenas lojas de varejo (com retirada habilitada) são exibidas.",
+    "includeToggleOn": "Incluída",
+    "includeToggleOff": "Não incluída",
+    "collapsedHint": "Excluída dos painéis e das metas.",
+    "orderSources": "Origens do pedido",
+    "orderSourcesHint": "Quando ativado, apenas pedidos das origens selecionadas contam para esta localização.",
+    "searchOrderSources": "Buscar origens…",
+    "tags": "Tags obrigatórias",
+    "tagsHint": "Quando ativado, um pedido precisa ter ao menos uma das tags selecionadas para contar.",
+    "searchTags": "Buscar tags…",
+    "saveRetailSales": "Salvar vendas de varejo",
+    "savedSuccess": "Vendas de varejo salvas com sucesso."
+  },
+  "labels": {
+    "location": "Localização",
+    "market": "Mercado",
+    "city": "Cidade",
+    "locationName": "Nome da localização",
+    "locationPhone": "Telefone da localização",
+    "locationAddress": "Endereço da localização",
+    "locationDetails": "Detalhes da localização (número da loja, etc)",
+    "pickupInstructions": "Instruções de coleta",
+    "preferredServiceType": "Tipo de serviço preferido"
+  }
+}

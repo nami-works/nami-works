@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — per-stop POD bucketing (issue #1) — v2 final</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --border-soft: #f1f1f1;
+    --text: #303030;
+    --subdued: #6d7175;
+    --header-text: #3a3a3a;
+    --hover: #f6f6f7;
+    --header-bg: #f6f6f7;
+    --blue-primary: #005bd3;
+    --green: #067647;
+    --green-soft: #e0f5ea;
+    --green-edge: #aedcc1;
+    --red: #d72c0d;
+    --red-soft: #fde2dd;
+    --red-edge: #f3b8ad;
+    --yellow: #b88500;
+    --yellow-soft: #fff4d6;
+    --yellow-edge: #f0d68a;
+    --gray-soft: #ececed;
+    --gray-edge: #d4d6d8;
+    --warning-banner-bg: #fff8e1;
+    --warning-banner-edge: #f0d68a;
+    --warning-banner-text: #5b4700;
+    --critical-banner-bg: #fde7e2;
+    --critical-banner-edge: #f3b8ad;
+    --critical-banner-text: #8a1c0c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 8px; }
+  h2 { font-size: 14px; font-weight: 600; margin: 0 0 12px; color: var(--text); }
+  h3 { font-size: 12px; font-weight: 600; margin: 0 0 6px; color: var(--header-text); text-transform: uppercase; letter-spacing: 0.04em; }
+  .intro {
+    font-size: 13px; color: var(--subdued); max-width: 780px; margin-bottom: 24px;
+  }
+
+  /* ==== Section header ==== */
+  .sectionLabel {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--blue-primary);
+    margin: 32px 0 8px;
+  }
+  .sectionLabel:first-of-type { margin-top: 0; }
+  .sectionSub {
+    font-size: 12px; color: var(--subdued); margin-bottom: 16px; max-width: 780px;
+  }
+
+  /* ==== Card wrapper (mimics <s-section> + route card) ==== */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    max-width: 760px;
+  }
+  .card .cardHeader {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 12px; margin-bottom: 12px;
+  }
+  .badge {
+    padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 600;
+    background: #e4e5e7; color: var(--text); display: inline-flex; align-items: center; gap: 4px;
+  }
+  .badge.routeBadge { background: #b3d1ff; color: #003580; }
+  .meta { color: var(--subdued); font-size: 12px; margin-top: 2px; line-height: 1.5; }
+  .strong { font-weight: 600; color: var(--text); font-size: 13px; }
+
+  /* ==== Inline status badge on the route card (bucket signal) ==== */
+  .bucketBadge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; border-radius: 10px;
+    font-size: 11px; font-weight: 600;
+    border: 1px solid transparent;
+  }
+  .bucketBadge.clean   { background: var(--green-soft);  color: var(--green);  border-color: var(--green-edge); }
+  .bucketBadge.mixed   { background: var(--yellow-soft); color: var(--yellow); border-color: var(--yellow-edge); }
+  .bucketBadge.held    { background: var(--yellow-soft); color: var(--yellow); border-color: var(--yellow-edge); }
+  .bucketBadge.skip    { background: var(--red-soft);    color: var(--red);    border-color: var(--red-edge); }
+  .bucketBadge.partial { background: var(--yellow-soft); color: var(--yellow); border-color: var(--yellow-edge); }
+
+  /* ==== Action button ==== */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: #fff; color: var(--text); font-size: 12px; font-weight: 500;
+    cursor: pointer; line-height: 1;
+  }
+  .btn:hover { background: var(--hover); }
+  .btn.primary {
+    background: var(--blue-primary); color: #fff; border-color: var(--blue-primary);
+  }
+  .btn.primary:hover { background: #00489d; }
+  .btn.critical { color: var(--red); border-color: var(--red-edge); background: #fff; }
+  .btn.critical:hover { background: var(--red-soft); }
+  .btn.icon {
+    padding: 4px 6px; min-width: 28px; justify-content: center; color: var(--subdued);
+  }
+  .btn.icon:hover { color: var(--text); }
+
+  /* ==== Stop row (in details modal / route card expand) ==== */
+  .stopList {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    margin-top: 8px;
+  }
+  .stopRow {
+    display: grid;
+    grid-template-columns: 28px 100px 1fr 110px 32px;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 12px;
+  }
+  .stopRow:last-child { border-bottom: none; }
+  .stopRow:hover { background: var(--hover); }
+  .stopIndex {
+    font-size: 11px; font-weight: 600; color: var(--subdued);
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--header-bg);
+  }
+  .stopOrder { font-weight: 500; color: var(--text); }
+  .stopOrder a { color: var(--blue-primary); text-decoration: none; }
+  .stopOrder a:hover { text-decoration: underline; }
+  .stopCustomer { color: var(--subdued); }
+  .stopAddress { color: var(--subdued); font-size: 11px; line-height: 1.4; }
+
+  /* ==== Per-stop status pills ==== */
+  .stopPill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 600;
+    border: 1px solid transparent; white-space: nowrap;
+  }
+  .stopPill .icon { width: 10px; height: 10px; flex-shrink: 0; }
+  .stopPill.delivered { background: var(--green-soft);  color: var(--green);  border-color: var(--green-edge); }
+  .stopPill.failed    { background: var(--red-soft);    color: var(--red);    border-color: var(--red-edge); }
+  .stopPill.pending   { background: var(--yellow-soft); color: var(--yellow); border-color: var(--yellow-edge); }
+  .stopPill.unknown   { background: var(--gray-soft);   color: var(--subdued); border-color: var(--gray-edge); }
+
+  /* ==== Overflow menu ==== */
+  .overflowWrap { position: relative; }
+  .overflowMenu {
+    position: absolute; right: 0; top: calc(100% + 4px);
+    background: #fff; border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    min-width: 220px; padding: 4px; z-index: 5;
+  }
+  .overflowMenu button {
+    display: flex; width: 100%; text-align: left; padding: 8px 12px;
+    border-radius: 6px; border: none; background: transparent;
+    color: var(--text); font-size: 12px; cursor: pointer; align-items: center; gap: 8px;
+  }
+  .overflowMenu button:hover { background: var(--hover); }
+  .overflowMenu button.disabled {
+    color: var(--subdued); cursor: not-allowed;
+  }
+
+  /* ==== Banner (warning, critical) ==== */
+  .banner {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 14px; border-radius: 8px;
+    font-size: 12px; line-height: 1.5;
+    margin-bottom: 12px;
+    border: 1px solid;
+  }
+  .banner.warning {
+    background: var(--warning-banner-bg);
+    color: var(--warning-banner-text);
+    border-color: var(--warning-banner-edge);
+  }
+  .banner.critical {
+    background: var(--critical-banner-bg);
+    color: var(--critical-banner-text);
+    border-color: var(--critical-banner-edge);
+  }
+  .banner .bannerBody { flex: 1; }
+  .banner .bannerActions {
+    display: flex; gap: 8px; margin-top: 6px;
+  }
+  .banner strong { font-weight: 600; }
+
+  /* ==== Modal ==== */
+  .modalShell {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+    padding: 0;
+    max-width: 560px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .modalShell.wide { max-width: 640px; }
+  .modalShell .modalHeader {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px; font-weight: 600;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modalShell .modalBody { padding: 18px 20px; font-size: 13px; line-height: 1.5; }
+  .modalShell .modalBody p { margin: 0 0 12px; }
+  .modalShell .modalBody p:last-child { margin-bottom: 0; }
+  .modalShell .modalFooter {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 8px;
+    background: #fafafa;
+  }
+  .modalShell .modalFooter.split {
+    justify-content: space-between;
+  }
+  .modalShell .modalFooter .right {
+    display: flex; gap: 8px;
+  }
+
+  /* ==== Confirmation rows in modal ==== */
+  .factRow {
+    display: grid; grid-template-columns: 140px 1fr;
+    gap: 12px; padding: 6px 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 12px;
+  }
+  .factRow:last-of-type { border-bottom: none; }
+  .factLabel { color: var(--subdued); font-weight: 500; }
+  .factValue { color: var(--text); font-weight: 500; }
+  .factValue.warn { color: var(--yellow); font-weight: 600; }
+
+  .checkboxToggle {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px; border-radius: 8px;
+    background: var(--header-bg);
+    margin-top: 12px; cursor: pointer; user-select: none;
+    font-size: 12px;
+  }
+  .checkboxToggle .cb {
+    width: 16px; height: 16px; border: 1.5px solid var(--text);
+    border-radius: 3px; display: inline-flex; align-items: center; justify-content: center;
+    background: var(--text); color: #fff; flex-shrink: 0;
+  }
+  .checkboxToggle .cb.unchecked { background: #fff; color: transparent; }
+  .checkboxToggle .cbLabel { font-weight: 500; }
+  .checkboxToggle .cbHint { color: var(--subdued); font-weight: 400; margin-left: auto; }
+
+  /* ==== Held-modal subgroups ==== */
+  .heldGroup {
+    border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: 12px; overflow: hidden;
+  }
+  .heldGroupHeader {
+    padding: 8px 14px;
+    font-size: 11px; font-weight: 600;
+    background: var(--header-bg);
+    color: var(--header-text);
+    text-transform: uppercase; letter-spacing: 0.04em;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .heldStop {
+    display: grid; grid-template-columns: 22px 1fr auto;
+    gap: 10px; align-items: center;
+    padding: 8px 14px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 12px;
+  }
+  .heldStop .heldName { font-weight: 500; }
+  .heldStop .heldReason { color: var(--subdued); font-size: 11px; }
+
+  /* ==== Toast (mock) ==== */
+  .toast {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #1f1f1f;
+    color: #fff;
+    font-size: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    margin-bottom: 12px;
+  }
+  .toast .toastIcon { width: 14px; height: 14px; flex-shrink: 0; }
+  .toast.success .toastIcon { color: #7ee0a1; }
+  .toast.warning .toastIcon { color: #ffd060; }
+
+  /* ==== Notes ==== */
+  .notes {
+    background: #fffbea; border: 1px solid #f4e3a1; border-radius: 8px;
+    padding: 16px 20px; font-size: 12px; line-height: 1.6; color: #5b4700;
+    max-width: 880px; margin-bottom: 24px;
+  }
+  .notes h3 {
+    font-size: 12px; margin: 0 0 8px; color: #4a3600;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .notes h3:not(:first-child) { margin-top: 14px; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 4px; }
+  .notes code {
+    background: #fff5d1; padding: 1px 5px; border-radius: 3px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px;
+  }
+
+  /* ==== Layout helpers ==== */
+  .twoCol {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    max-width: 1280px;
+  }
+  @media (max-width: 980px) {
+    .twoCol { grid-template-columns: 1fr; }
+  }
+
+  /* ==== SVG icons (Polaris-style 20x20 viewBox; rendered at 12-14px) ==== */
+  svg.statusIcon { width: 12px; height: 12px; }
+</style>
+</head>
+<body>
+
+<h1>Per-stop POD bucketing — mockup v2 (final)</h1>
+<p class="intro">
+  Issue <strong>nami-works/cpg-labs#1</strong> · blueprint §13.8. Backend introduces 4 buckets
+  (<code>clean</code> / <code>mixed</code> / <code>held</code> / <code>skip</code>) and a new
+  <code>mark-stop-delivered</code> endpoint. This mockup shows the UI surfaces that expose those
+  states on the existing dispatched-route card and stops list, plus the surgical-fulfill modal
+  and the held-bucket modal. Five product decisions already locked by Lucas (see notes below).
+</p>
+
+<div class="notes">
+  <h3>Locked decisions (from /product-manager pass)</h3>
+  <ul>
+    <li><strong>Held bucket</strong> → blocking modal listing pending/unmatched stops; primary <em>Link stops manually</em>, secondary <em>Retry now</em>.</li>
+    <li><strong>partialDelivery</strong> → persistent yellow banner on the dispatched-route card with <em>Retry verification</em>; auto-dismisses on success.</li>
+    <li><strong>mark-stop-delivered notify</strong> → no email preview; loud modal copy; notify toggle defaults ON.</li>
+    <li><strong>Idempotency</strong> → check <code>fulfillment.displayStatus</code>; no DB table.</li>
+    <li><strong>Retry chain timing</strong> → synchronous in the same request.</li>
+  </ul>
+
+  <h3>Surfaces shown below</h3>
+  <ul>
+    <li><strong>A.</strong> Dispatched-route card with bucket-state variants (clean / mixed / held / skip) and the partialDelivery banner.</li>
+    <li><strong>B.</strong> Stop list with per-stop pills (Delivered / Failed / Pending / Unknown) and overflow ⋯ menu.</li>
+    <li><strong>C.</strong> Mark-this-stop-delivered confirmation modal.</li>
+    <li><strong>D.</strong> Held-bucket modal listing pending + unmatched stops.</li>
+    <li><strong>E.</strong> Per-bucket toast / banner feedback.</li>
+  </ul>
+
+  <h3>Important context</h3>
+  <ul>
+    <li>Today the route card has <strong>no UI Mark-as-delivered button</strong> — the function is invoked entirely by cron + CLI. The bucket result therefore surfaces as a <strong>passive status</strong> on the card (badge + banner), not as a click response.</li>
+    <li>Per-stop pills + overflow ⋯ live inside the existing <code>details-route-modal</code>, which already lists the route's stops (order name, customer, address). They're additive to that table — no new modal required for the pill surface.</li>
+    <li>The <em>held-bucket modal</em> in panel D fires from a notification on the route card ("Hold for review · open"), not from clicking Mark-as-delivered (since there's no such button). Once the operator resolves it, the cron picks up the route on its next pass.</li>
+  </ul>
+</div>
+
+<!-- ====================================================================== -->
+<div class="sectionLabel">A. Dispatched-route card — bucket variants</div>
+<div class="sectionSub">
+  Each variant shows the route card as it appears in the Route Manager aside after dispatch resolves.
+  The bucket badge sits next to the existing route label; the partialDelivery banner sits above the card body.
+</div>
+
+<div class="twoCol">
+
+  <!-- Variant: clean -->
+  <div>
+    <h3>Clean — all stops delivered</h3>
+    <div class="card">
+      <div class="cardHeader">
+        <div>
+          <span class="badge routeBadge">Route 03</span>
+          <span class="bucketBadge clean" style="margin-left: 8px;">
+            <svg class="statusIcon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm3.6 6.4-4.4 4.4-2-2a.8.8 0 1 0-1.2 1.1l2.6 2.6c.3.3.8.3 1.1 0l5-5a.8.8 0 1 0-1.1-1.1Z"/>
+            </svg>
+            All delivered · 5 of 5
+          </span>
+        </div>
+        <button class="btn">Details</button>
+      </div>
+      <div class="strong">5 orders · R$420 shipping</div>
+      <div class="meta">12.4 km · 1h 38m · R$87 BRL</div>
+    </div>
+  </div>
+
+  <!-- Variant: mixed -->
+  <div>
+    <h3>Mixed — Yasmin #78301 scenario</h3>
+    <div class="card">
+      <div class="cardHeader">
+        <div>
+          <span class="badge routeBadge">Route 02</span>
+          <span class="bucketBadge mixed" style="margin-left: 8px;">
+            <svg class="statusIcon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 4a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V7a1 1 0 0 1 1-1Zm0 8.5a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2Z"/>
+            </svg>
+            Partial · 4 of 5 delivered
+          </span>
+        </div>
+        <button class="btn">Details</button>
+      </div>
+      <div class="strong">5 orders · R$535 shipping</div>
+      <div class="meta">15.1 km · 2h 02m · R$104 BRL</div>
+      <div class="meta" style="margin-top: 10px; color: var(--yellow); font-weight: 500;">
+        1 stop tagged <code>ld_redelivery_pending</code> · #78301 Yasmin Costa
+      </div>
+    </div>
+  </div>
+
+  <!-- Variant: held -->
+  <div>
+    <h3>Held — POD pending or unmatched</h3>
+    <div class="card">
+      <div class="cardHeader">
+        <div>
+          <span class="badge routeBadge">Route 04</span>
+          <span class="bucketBadge held" style="margin-left: 8px;">
+            <svg class="statusIcon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm.8 4v4.4l3.1 1.8-.8 1.4-3.6-2.1V6h1.3Z"/>
+            </svg>
+            Hold for review
+          </span>
+        </div>
+        <button class="btn primary">Open review</button>
+      </div>
+      <div class="strong">6 orders · R$612 shipping</div>
+      <div class="meta">18.7 km · 2h 24m · R$118 BRL</div>
+      <div class="meta" style="margin-top: 10px;">2 stops awaiting POD · 1 stop unmatched to an order</div>
+    </div>
+  </div>
+
+  <!-- Variant: skip -->
+  <div>
+    <h3>Skip — manual review</h3>
+    <div class="card">
+      <div class="cardHeader">
+        <div>
+          <span class="badge routeBadge">Route 05</span>
+          <span class="bucketBadge skip" style="margin-left: 8px;">
+            <svg class="statusIcon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm-3.5 5 7 7-1.4 1.4-7-7L6.5 7Zm7 0L8 13.5 6.5 12l5.6-5.5L13.5 7Z"/>
+            </svg>
+            Manual review
+          </span>
+        </div>
+        <button class="btn">Details</button>
+      </div>
+      <div class="strong">3 orders · R$210 shipping</div>
+      <div class="meta">9.8 km · 1h 12m · R$62 BRL</div>
+      <div class="banner critical" style="margin-top: 12px; margin-bottom: 0;">
+        <svg class="statusIcon" viewBox="0 0 20 20" fill="currentColor" style="width:14px; height:14px; flex-shrink:0; margin-top:2px;" aria-hidden="true">
+          <path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 4a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V7a1 1 0 0 1 1-1Zm0 8.5a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2Z"/>
+        </svg>
+        <div class="bannerBody">
+          <strong>No POD data for this route.</strong> Manual review required — none of the 3 stops returned a delivery outcome from Lalamove. No fulfillments were created.
+          <div class="bannerActions">
+            <button class="btn">Refresh POD</button>
+            <button class="btn">Open route</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variant: partialDelivery -->
+  <div style="grid-column: 1 / -1;">
+    <h3>partialDelivery banner — Shopify side-effect didn't close cleanly</h3>
+    <div class="card">
+      <div class="banner warning">
+        <svg class="statusIcon" viewBox="0 0 20 20" fill="currentColor" style="width:14px; height:14px; flex-shrink:0; margin-top:2px;" aria-hidden="true">
+          <path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 4a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V7a1 1 0 0 1 1-1Zm0 8.5a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2Z"/>
+        </svg>
+        <div class="bannerBody">
+          <strong>4 of 5 stops fulfilled.</strong> Shopify hasn't confirmed delivery on the rest — the DELIVERED event didn't progress <code>displayStatus</code> for 1 order.
+          <div class="bannerActions">
+            <button class="btn primary">Retry verification</button>
+            <button class="btn">Show details</button>
+          </div>
+        </div>
+      </div>
+      <div class="cardHeader" style="margin-bottom: 4px;">
+        <div>
+          <span class="badge routeBadge">Route 02</span>
+          <span class="bucketBadge mixed" style="margin-left: 8px;">Partial · 4 of 5 delivered</span>
+        </div>
+        <button class="btn">Details</button>
+      </div>
+      <div class="strong">5 orders · R$535 shipping</div>
+      <div class="meta">15.1 km · 2h 02m · R$104 BRL</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ====================================================================== -->
+<div class="sectionLabel">B. Stop list — per-stop pills + overflow ⋯</div>
+<div class="sectionSub">
+  Lives inside the existing details-route-modal. Adds a <em>Status</em> column (pill) and a
+  trailing overflow ⋯ column. The address column tightens to make room.
+  Same layout in collapsed (route card → expanded section) and expanded (modal) variants.
+</div>
+
+<div class="card" style="max-width: 880px;">
+  <h2>Route 02 — stops</h2>
+  <div class="meta">5 stops · POD-bucketed as <strong>mixed</strong> · ranked in delivery order</div>
+
+  <div class="stopList">
+    <!-- Stop row: delivered -->
+    <div class="stopRow">
+      <span class="stopIndex">1</span>
+      <span class="stopOrder"><a href="#">#78298</a></span>
+      <span>
+        <div>Maria Silva</div>
+        <div class="stopAddress">Rua Augusta 1234, Consolação · São Paulo SP</div>
+      </span>
+      <span class="stopPill delivered">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm3.6 6.4-4.4 4.4-2-2a.8.8 0 1 0-1.2 1.1l2.6 2.6c.3.3.8.3 1.1 0l5-5a.8.8 0 1 0-1.1-1.1Z"/>
+        </svg>
+        Delivered
+      </span>
+      <div class="overflowWrap">
+        <button class="btn icon" aria-label="Stop actions">
+          <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor" aria-hidden="true"><circle cx="4" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="16" cy="10" r="1.6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Stop row: failed -->
+    <div class="stopRow">
+      <span class="stopIndex">2</span>
+      <span class="stopOrder"><a href="#">#78301</a></span>
+      <span>
+        <div>Yasmin Costa</div>
+        <div class="stopAddress">Av. Paulista 999, Bela Vista · São Paulo SP</div>
+      </span>
+      <span class="stopPill failed">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm-3.5 5 7 7-1.4 1.4-7-7L6.5 7Zm7 0L8 13.5 6.5 12l5.6-5.5L13.5 7Z"/>
+        </svg>
+        Failed
+      </span>
+      <div class="overflowWrap">
+        <button class="btn icon" aria-label="Stop actions">
+          <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor" aria-hidden="true"><circle cx="4" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="16" cy="10" r="1.6"/></svg>
+        </button>
+        <!-- Demo: overflow open on this row -->
+        <div class="overflowMenu">
+          <button>
+            <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm3.6 6.4-4.4 4.4-2-2a.8.8 0 1 0-1.2 1.1l2.6 2.6c.3.3.8.3 1.1 0l5-5a.8.8 0 1 0-1.1-1.1Z"/></svg>
+            Mark this stop delivered
+          </button>
+          <button>
+            <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M11 2H9v9H6l4 4 4-4h-3V2Zm-7 14h12v2H4v-2Z"/></svg>
+            Open in Shopify
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stop row: delivered -->
+    <div class="stopRow">
+      <span class="stopIndex">3</span>
+      <span class="stopOrder"><a href="#">#78305</a></span>
+      <span>
+        <div>Carolina Mendes</div>
+        <div class="stopAddress">Rua Oscar Freire 500, Jardins · São Paulo SP</div>
+      </span>
+      <span class="stopPill delivered">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm3.6 6.4-4.4 4.4-2-2a.8.8 0 1 0-1.2 1.1l2.6 2.6c.3.3.8.3 1.1 0l5-5a.8.8 0 1 0-1.1-1.1Z"/></svg>
+        Delivered
+      </span>
+      <div class="overflowWrap">
+        <button class="btn icon" aria-label="Stop actions">
+          <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor" aria-hidden="true"><circle cx="4" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="16" cy="10" r="1.6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Stop row: pending -->
+    <div class="stopRow">
+      <span class="stopIndex">4</span>
+      <span class="stopOrder"><a href="#">#78308</a></span>
+      <span>
+        <div>Júlia Almeida</div>
+        <div class="stopAddress">Rua Haddock Lobo 200, Cerqueira César · São Paulo SP</div>
+      </span>
+      <span class="stopPill pending">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm.8 4v4.4l3.1 1.8-.8 1.4-3.6-2.1V6h1.3Z"/></svg>
+        Pending
+      </span>
+      <div class="overflowWrap">
+        <button class="btn icon" aria-label="Stop actions">
+          <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor" aria-hidden="true"><circle cx="4" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="16" cy="10" r="1.6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Stop row: unknown -->
+    <div class="stopRow">
+      <span class="stopIndex">5</span>
+      <span class="stopOrder"><a href="#">#78312</a></span>
+      <span>
+        <div>Beatriz Rocha</div>
+        <div class="stopAddress">Rua Estados Unidos 1700 · São Paulo SP</div>
+      </span>
+      <span class="stopPill unknown">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm.8 11.5h-1.5V12h1.5v1.5ZM12.4 9c-.4.5-1.2.9-1.4 1.3a1.5 1.5 0 0 0-.2.8h-1.5c0-.5.1-.9.3-1.3.3-.5.9-.8 1.2-1.1.2-.2.3-.5.3-.7 0-.6-.4-1-1.1-1-.7 0-1.1.4-1.2 1H7.3c.1-1.4 1.1-2.4 2.7-2.4 1.6 0 2.7.9 2.7 2.2 0 .5-.2 1-.6 1.3Z"/></svg>
+        Unknown
+      </span>
+      <div class="overflowWrap">
+        <button class="btn icon" aria-label="Stop actions">
+          <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor" aria-hidden="true"><circle cx="4" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="16" cy="10" r="1.6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="meta" style="margin-top: 14px; display: flex; gap: 16px; flex-wrap: wrap;">
+    <span><span class="stopPill delivered" style="font-size: 10px; padding: 1px 6px;">Delivered</span> POD says delivered, fulfilled in Shopify</span>
+    <span><span class="stopPill failed" style="font-size: 10px; padding: 1px 6px;">Failed</span> POD says failed, tagged <code>ld_redelivery_pending</code></span>
+    <span><span class="stopPill pending" style="font-size: 10px; padding: 1px 6px;">Pending</span> Lalamove hasn't returned POD yet</span>
+    <span><span class="stopPill unknown" style="font-size: 10px; padding: 1px 6px;">Unknown</span> No POD data or stop unmatched to an order</span>
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<div class="sectionLabel">C. Mark-this-stop-delivered confirmation modal</div>
+<div class="sectionSub">
+  Opens from the stop overflow ⋯ → "Mark this stop delivered." Loud copy: customer name, order number,
+  dispatch date / days-ago, current displayStatus. Notify-customer toggle defaults ON. Single primary
+  action. Idempotency check: server short-circuits if <code>displayStatus === "DELIVERED"</code>.
+</div>
+
+<div class="modalShell">
+  <div class="modalHeader">
+    Mark this stop delivered?
+    <button class="btn icon" aria-label="Close">
+      <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="m6.4 5 3.6 3.6L13.6 5 15 6.4 11.4 10 15 13.6 13.6 15 10 11.4 6.4 15 5 13.6 8.6 10 5 6.4 6.4 5Z"/></svg>
+    </button>
+  </div>
+  <div class="modalBody">
+    <p>
+      Send a Shopify fulfillment + DELIVERED event for this single order. The other stops on this
+      route are not affected.
+    </p>
+
+    <div style="border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; background: var(--header-bg); margin-bottom: 12px;">
+      <div class="factRow">
+        <span class="factLabel">Order</span>
+        <span class="factValue"><a href="#" style="color: var(--blue-primary); text-decoration: none;">#77793</a> · Beatriz Rocha</span>
+      </div>
+      <div class="factRow">
+        <span class="factLabel">Route</span>
+        <span class="factValue">Route 04 · dispatched on Apr 27</span>
+      </div>
+      <div class="factRow">
+        <span class="factLabel">Days since dispatch</span>
+        <span class="factValue warn">5 days ago</span>
+      </div>
+      <div class="factRow">
+        <span class="factLabel">Current status</span>
+        <span class="factValue">UNFULFILLED in Shopify</span>
+      </div>
+    </div>
+
+    <div class="checkboxToggle">
+      <span class="cb">
+        <svg viewBox="0 0 20 20" width="11" height="11" fill="currentColor" aria-hidden="true"><path d="m4 10 4 4 8-8-1.4-1.4L8 11.2 5.4 8.6 4 10Z"/></svg>
+      </span>
+      <span class="cbLabel">Email Beatriz that her order has been delivered</span>
+      <span class="cbHint">notification</span>
+    </div>
+
+    <p style="margin-top: 12px; color: var(--subdued); font-size: 12px;">
+      The notification uses your store's standard "order delivered" template. If the operator already
+      told the customer, uncheck this to fulfill silently.
+    </p>
+  </div>
+  <div class="modalFooter">
+    <button class="btn">Cancel</button>
+    <button class="btn primary">Send fulfillment</button>
+  </div>
+</div>
+
+<!-- Idempotent re-run state (rare but worth showing) -->
+<h3 style="margin-top: 8px;">Idempotent re-run — already delivered in Shopify</h3>
+<div class="modalShell">
+  <div class="modalHeader">
+    Already delivered
+    <button class="btn icon" aria-label="Close">
+      <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="m6.4 5 3.6 3.6L13.6 5 15 6.4 11.4 10 15 13.6 13.6 15 10 11.4 6.4 15 5 13.6 8.6 10 5 6.4 6.4 5Z"/></svg>
+    </button>
+  </div>
+  <div class="modalBody">
+    <p>
+      <strong>#77793 Beatriz Rocha</strong> already shows <code>displayStatus = DELIVERED</code> in
+      Shopify. No fulfillment will be created.
+    </p>
+    <div class="checkboxToggle">
+      <span class="cb unchecked"></span>
+      <span class="cbLabel">Re-send the delivery notification anyway</span>
+      <span class="cbHint">notification</span>
+    </div>
+    <p style="margin-top: 12px; color: var(--subdued); font-size: 12px;">
+      Off by default — the customer was almost certainly notified the first time.
+    </p>
+  </div>
+  <div class="modalFooter">
+    <button class="btn">Cancel</button>
+    <button class="btn primary">Done</button>
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<div class="sectionLabel">D. Held-bucket modal</div>
+<div class="sectionSub">
+  Opens when the operator clicks <em>Open review</em> on a held route card.
+  Two groups: <strong>Pending POD</strong> (Lalamove hasn't returned an outcome) and
+  <strong>Unmatched stops</strong> (matching cascade phone → name → 50m → first-stop=pickup
+  failed). Primary action is <em>Link stops manually</em>; secondary <em>Retry now</em> re-queries POD.
+</div>
+
+<div class="modalShell wide">
+  <div class="modalHeader">
+    Route 04 — held for review
+    <span class="bucketBadge held">Hold for review</span>
+  </div>
+  <div class="modalBody">
+    <p>
+      Lalamove flagged this route as completed but the per-stop POD data isn't fully reconciled.
+      No Shopify writes have been performed. Pick a path:
+    </p>
+
+    <div class="heldGroup">
+      <div class="heldGroupHeader">
+        Pending POD <span style="font-weight: 500; text-transform: none; color: var(--subdued);">2 stops · Lalamove hasn't returned an outcome yet</span>
+      </div>
+      <div class="heldStop">
+        <span class="stopIndex">3</span>
+        <span>
+          <div class="heldName">#78406 Camila Pereira</div>
+          <div class="heldReason">Last update: <em>arrived</em> 14 min ago · awaiting POD</div>
+        </span>
+        <span class="stopPill pending">Pending</span>
+      </div>
+      <div class="heldStop">
+        <span class="stopIndex">5</span>
+        <span>
+          <div class="heldName">#78415 Renata Souza</div>
+          <div class="heldReason">Last update: <em>en route</em> 22 min ago · awaiting POD</div>
+        </span>
+        <span class="stopPill pending">Pending</span>
+      </div>
+    </div>
+
+    <div class="heldGroup">
+      <div class="heldGroupHeader">
+        Unmatched stops <span style="font-weight: 500; text-transform: none; color: var(--subdued);">1 stop · couldn't link to an order</span>
+      </div>
+      <div class="heldStop">
+        <span class="stopIndex">4</span>
+        <span>
+          <div class="heldName">"Cliente · Av. Brasil 880"</div>
+          <div class="heldReason">No phone match · name fuzzy fail · &gt; 50m from any order in this route</div>
+        </span>
+        <button class="btn">Link to an order</button>
+      </div>
+    </div>
+  </div>
+  <div class="modalFooter split">
+    <button class="btn">Cancel</button>
+    <div class="right">
+      <button class="btn">Retry now</button>
+      <button class="btn primary">Link stops manually</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<div class="sectionLabel">E. Per-bucket toast / banner feedback</div>
+<div class="sectionSub">
+  Fires after each cron pass that resolves a previously-pending dispatch. Toasts dismiss; banners persist.
+</div>
+
+<div class="card" style="max-width: 760px;">
+  <h2>Toast / banner per bucket</h2>
+
+  <div class="toast success">
+    <svg class="toastIcon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm3.6 6.4-4.4 4.4-2-2a.8.8 0 1 0-1.2 1.1l2.6 2.6c.3.3.8.3 1.1 0l5-5a.8.8 0 1 0-1.1-1.1Z"/></svg>
+    <span><strong>Route 03 marked delivered.</strong> 5 fulfillments created.</span>
+  </div>
+
+  <div class="toast warning">
+    <svg class="toastIcon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 4a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V7a1 1 0 0 1 1-1Zm0 8.5a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2Z"/></svg>
+    <span><strong>Route 02: 4 of 5 stops delivered.</strong> 1 flagged for re-delivery — see #78301.</span>
+  </div>
+
+  <div class="banner critical" style="margin-top: 8px;">
+    <svg class="statusIcon" viewBox="0 0 20 20" fill="currentColor" style="width:14px; height:14px; flex-shrink:0; margin-top:2px;" aria-hidden="true"><path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm-3.5 5 7 7-1.4 1.4-7-7L6.5 7Zm7 0L8 13.5 6.5 12l5.6-5.5L13.5 7Z"/></svg>
+    <div class="bannerBody">
+      <strong>Route 05: no POD data.</strong> Manual review required. No fulfillments were created.
+    </div>
+  </div>
+
+  <p class="meta" style="margin-top: 12px;">
+    Held-bucket fires no toast — it surfaces as the persistent <em>Hold for review</em> badge on the route card and the modal in panel D.
+  </p>
+</div>
+
+<!-- ====================================================================== -->
+<div class="notes">
+  <h3>Resolved decisions</h3>
+  <ul>
+    <li><strong>Pill placement</strong> → modal only. Per-stop pills live inside the existing <code>details-route-modal</code>. Route card stays dense; operator clicks <em>Details</em> to see per-stop state.</li>
+    <li><strong>Held bucket</strong> → blocking modal listing pending/unmatched stops; primary <em>Link stops manually</em>, secondary <em>Retry now</em>.</li>
+    <li><strong>partialDelivery</strong> → persistent yellow banner on the route card; auto-dismisses when retry resolves.</li>
+    <li><strong>mark-stop-delivered notify</strong> → no email preview; loud modal copy; notify toggle defaults ON; idempotent re-run shows "already delivered" with notify toggle off by default.</li>
+    <li><strong>Idempotency</strong> → check <code>fulfillment.displayStatus</code>; no DB table.</li>
+    <li><strong>Retry chain timing</strong> → synchronous in the same request.</li>
+  </ul>
+
+  <h3>Out of scope on purpose</h3>
+  <ul>
+    <li>No new top-level <em>Mark as delivered</em> button on the page or route card. The cron + CLI path stays unchanged.</li>
+    <li>No new per-stop "Mark failed", "Re-dispatch", or "Edit address" actions. Only <em>Mark this stop delivered</em> for now (Beatriz path).</li>
+    <li>Held-modal "Link stops manually" UI is referenced but not designed in this pass — when a stop is unmatched the operator gets a button that opens a follow-up linker. That linker is a separate mockup if needed.</li>
+  </ul>
+</div>
+
+</body>
+</html>

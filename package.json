@@ -5,11 +5,23 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/connector",
+    "apps/omnify-admin",
+    "apps/omnify-site",
+    "packages/letterbox",
+    "packages/shared-auth",
+    "packages/shared-db",
+    "packages/shared-encryption",
+    "packages/shared-google-routes",
+    "packages/shared-i18n",
+    "packages/shared-ui",
+    "packages/shared-webhooks"
   ],
   "engines": {
     "node": ">=20.0.0"
+  },
+  "overrides": {
+    "vite": "6.4.2"
   },
   "scripts": {
     "dev": "npm run dev -w @nami/connector",

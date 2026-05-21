@@ -1,0 +1,32 @@
+# Story-telling — focused content & SEO app
+# Register a new app in Shopify Partner Dashboard and paste the client_id here.
+
+client_id = "<PLACEHOLDER>"
+name = "Story-telling"
+application_url = "https://storytelling.cpg-labs.io"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+
+[webhooks]
+api_version = "2026-04"
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks"
+  compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+[access_scopes]
+scopes = "read_content,write_content,read_products"
+use_legacy_install_flow = false
+
+[auth]
+redirect_urls = [ "https://storytelling.cpg-labs.io/api/auth" ]

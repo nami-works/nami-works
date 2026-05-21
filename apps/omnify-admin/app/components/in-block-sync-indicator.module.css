@@ -1,0 +1,100 @@
+/* In-block sync indicator — Option B from
+   inputs/mockups/affiliates-sync-bar-v1.html (approved by Lucas 2026-05-12).
+   Renders INSIDE an <s-section>, between the section hero and its body
+   filters. Replaces the "fetching bar floating ABOVE the section" pattern.
+
+   Visual: a sync-status row ("Fetching orders · 57.8K / ~78.3K processed
+   · 13m elapsed") + a regular 6px progress bar below it. The bar lives
+   IN the body content flow, not as card chrome — it announces itself
+   to the merchant who came to the page during a sync.
+
+   Canonical pattern for every in-block sync indicator across the admin
+   (Affiliates · Retail Sales · Footprint Expansion · Local Delivery ·
+   Settings > Brand > Tone of voice). */
+
+.indicator {
+  margin: 0 0 16px;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.label {
+  color: #6d7175;
+  font-weight: 400;
+}
+
+.label.success { color: #067647; font-weight: 500; }
+.label.error { color: #d72c0d; font-weight: 500; }
+.label.stale { color: #d99a0a; font-weight: 500; }
+
+.count {
+  color: #303030;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.count.subtle {
+  color: #6d7175;
+  font-weight: 400;
+}
+
+.action {
+  margin-left: auto;
+  color: #005bd3;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+}
+
+.action:hover {
+  text-decoration: underline;
+}
+
+/* The progress bar itself — 6px rounded with optional shimmer animation
+   while running. Mockup r-final lives in affiliates-sync-bar-v1.html
+   Option B preview. */
+.bar {
+  height: 6px;
+  background: #ebebeb;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.fill {
+  height: 100%;
+  background: #005bd3;
+  border-radius: 4px;
+  transition: width 0.3s;
+  position: relative;
+}
+
+.fill.error { background: #d72c0d; }
+
+.fill.animated::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  animation: indicatorShimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes indicatorShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}

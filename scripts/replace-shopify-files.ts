@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Bulk-replace files in a Shopify Files library by name.
  *
  * Walks a local folder of replacement images, matches each by exact filename

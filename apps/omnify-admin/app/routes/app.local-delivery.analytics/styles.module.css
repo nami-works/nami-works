@@ -1,0 +1,305 @@
+/* Local Delivery Analytics — page styles */
+
+.backLink {
+  text-decoration: none;
+  color: #303030;
+}
+
+.primaryLink {
+  text-decoration: none;
+}
+
+/* ── Filter row (mirrors Retail Sales / LD external-label pattern) ── */
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.filterControl {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 180px;
+}
+
+.filterLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+}
+
+@media (max-width: 768px) {
+  .filterRow {
+    flex-direction: column;
+  }
+  .filterControl {
+    width: 100%;
+  }
+}
+
+/* ── State views ── */
+.stateTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #303030;
+}
+
+.stateBody {
+  margin: 0;
+  font-size: 14px;
+  color: #303030;
+}
+
+.stateDisclaimer {
+  margin: 0;
+  font-size: 12px;
+  color: #6d7175;
+}
+
+.stateActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.bannerActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.dimmed {
+  opacity: 0.55;
+  pointer-events: none;
+  margin-top: 8px;
+}
+
+/* ── Headline card ── */
+.headlineCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.headlineLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.headlineLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.framingSwitch {
+  background: none;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #6d7175;
+  transition: color 0.12s, border-color 0.12s;
+}
+
+.framingSwitch:hover {
+  color: #303030;
+  border-color: #8c9196;
+}
+
+.headlineValue {
+  font-size: 32px;
+  font-weight: 600;
+  color: #303030;
+  font-variant-numeric: tabular-nums;
+}
+
+.headlineFootnote {
+  margin: 0;
+  font-size: 12px;
+  color: #6d7175;
+  max-width: 720px;
+}
+
+/* ── Supporting cards (LD net + WH counterfactual net) ── */
+.supportingRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.supportingCard {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  padding: 12px 16px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.supportingLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+}
+
+.supportingValue {
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #303030;
+}
+
+.supportingSubtitle {
+  font-size: 12px;
+  color: #6d7175;
+}
+
+/* ── Per-city table ── */
+.tableSubtitle {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: #6d7175;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 13px;
+}
+
+.table thead th {
+  background: #f6f6f7;
+  font-weight: 600;
+  color: #6d7175;
+  text-align: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e1e3e5;
+  white-space: nowrap;
+}
+
+.table thead th:first-child {
+  text-align: left;
+}
+
+.table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f1f1;
+  color: #303030;
+  font-variant-numeric: tabular-nums;
+}
+
+.cityRow {
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.cityRow:hover,
+.cityRowExpanded {
+  background: #f6f6f7;
+}
+
+.tdNumeric {
+  text-align: right;
+}
+
+.positive {
+  color: #067647;
+  font-weight: 500;
+}
+
+.negative {
+  color: #d72c0d;
+  font-weight: 500;
+}
+
+.emptyRow {
+  text-align: center !important;
+  color: #6d7175;
+  padding: 24px 12px !important;
+}
+
+.drilldownRow td {
+  background: #fafafa;
+  padding: 12px 16px;
+}
+
+.drilldownLoading,
+.drilldownEmpty {
+  font-size: 13px;
+  color: #6d7175;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.drilldownTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.drilldownTable thead th {
+  background: #f6f6f7;
+  color: #6d7175;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eceeef;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.drilldownTable thead th:first-child {
+  text-align: left;
+}
+
+.drilldownTable tbody td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f1f1;
+  font-variant-numeric: tabular-nums;
+}
+
+.freeShipBadge {
+  margin-left: 8px;
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: #e4e5e7;
+  color: #303030;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .supportingRow {
+    grid-template-columns: 1fr;
+  }
+  .headlineValue {
+    font-size: 26px;
+  }
+  .table {
+    font-size: 12px;
+  }
+  .table thead th,
+  .table tbody td {
+    padding: 8px;
+  }
+}

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Page header back-action (Shopify-native)</title>
+<style>
+  :root {
+    --bg: #f1f1f1;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --text: #303030;
+    --subdued: #6d7175;
+    --tonal-hover: #f6f6f7;
+    --link: #005bd3;
+    --badge-success-bg: #cdfee1;
+    --badge-success-text: #0c5132;
+    --badge-warning-bg: #ffeec2;
+    --badge-warning-text: #5b4109;
+    --notes-bg: #fff9eb;
+    --notes-border: #ffd66b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+  }
+  h1 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 760px;
+    margin-bottom: 24px;
+  }
+
+  /* ==== Polaris-like s-page chrome ==== */
+  .page {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    max-width: 920px;
+    margin: 0 0 24px;
+    padding: 16px 20px 20px;
+  }
+  .pageHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .pageHeader .left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+  .pageHeader .right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .backBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.1s ease, border-color 0.1s ease;
+  }
+  .backBtn:hover { background: var(--tonal-hover); }
+  .backBtn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .pageHeading {
+    font-size: 18px;
+    font-weight: 650;
+    color: var(--text);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .badge-success { background: var(--badge-success-bg); color: var(--badge-success-text); }
+  .badge-warning { background: var(--badge-warning-bg); color: var(--badge-warning-text); }
+  .pageMeta {
+    font-size: 12px;
+    color: var(--subdued);
+    margin: 4px 0 16px 44px; /* indent under heading, past back-btn width */
+  }
+  .secondaryAction {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .primaryAction {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #2c2c2c;
+    background: #2c2c2c;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* ==== Page body sections ==== */
+  .section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 16px;
+  }
+  .section h2 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .section p {
+    margin: 0;
+    color: var(--subdued);
+    font-size: 13px;
+  }
+
+  /* ==== Notes panel ==== */
+  .notes {
+    background: var(--notes-bg);
+    border: 1px solid var(--notes-border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 32px;
+    max-width: 920px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .notes h3 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .notes ul { padding-left: 18px; margin: 6px 0; }
+  .notes code {
+    background: rgba(0, 0, 0, 0.06);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+  }
+  .specRow {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 12px;
+    margin-top: 10px;
+    font-size: 12px;
+  }
+  .specRow .key { font-weight: 600; color: var(--text); }
+  .specRow .value { color: var(--subdued); }
+</style>
+</head>
+<body>
+
+<h1>Page header — Shopify-native back-action</h1>
+<p class="intro">
+  Target visual language for the 5 sub-pages we touched in PR #26
+  (<code>app.storytelling_.{brief,learnings,review}</code>,
+  <code>app.settings_.brand</code>, <code>app.settings_.brand_.tone-sources</code>).
+  Replaces the current full-text "Back" button (which disrupted the title row's
+  alignment) with the compact-icon pattern Shopify uses on its own admin pages —
+  matching the pattern Lucas referenced in the order admin screenshot.
+</p>
+
+<!-- ============================================================ -->
+<!-- Frame 1: Storytelling > Brief                                -->
+<!-- ============================================================ -->
+<div class="page">
+  <div class="pageHeader">
+    <div class="left">
+      <a class="backBtn" href="#" title="Back to Storytelling" aria-label="Back to Storytelling">
+        <svg viewBox="0 0 20 20"><polyline points="12 5 7 10 12 15"/></svg>
+      </a>
+      <h2 class="pageHeading">Create brief</h2>
+    </div>
+    <div class="right">
+      <button class="secondaryAction" type="button">View JSON</button>
+      <button class="primaryAction" type="button">Generate drafts</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Brief configuration</h2>
+    <p>Themes, keywords, products, brand context — the body content of the page sits below the header band, no longer pushed askew by an oversized text-Back button.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- Frame 2: Settings > Brand                                    -->
+<!-- ============================================================ -->
+<div class="page">
+  <div class="pageHeader">
+    <div class="left">
+      <a class="backBtn" href="#" title="Back to Settings" aria-label="Back to Settings">
+        <svg viewBox="0 0 20 20"><polyline points="12 5 7 10 12 15"/></svg>
+      </a>
+      <h2 class="pageHeading">Brand</h2>
+    </div>
+    <div class="right">
+      <button class="secondaryAction" type="button">Manage tone sources</button>
+      <button class="primaryAction" type="button">Save</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Brand configuration</h2>
+    <p>About, tone of voice, editorial guidelines, format recommendations.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- Frame 3: Settings > Brand > Tone sources                     -->
+<!-- ============================================================ -->
+<div class="page">
+  <div class="pageHeader">
+    <div class="left">
+      <a class="backBtn" href="#" title="Back to Brand" aria-label="Back to Brand">
+        <svg viewBox="0 0 20 20"><polyline points="12 5 7 10 12 15"/></svg>
+      </a>
+      <h2 class="pageHeading">Tone of voice sources</h2>
+    </div>
+    <div class="right">
+      <button class="secondaryAction" type="button">Add source</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Sources</h2>
+    <p>Brand guidelines · About-us · Past content · Manual upload — the table sits cleanly under the header, no rubber-banding from a full-text Back button.</p>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- Notes panel                                                  -->
+<!-- ============================================================ -->
+<div class="notes">
+  <h3>What changes vs. the current (broken) state</h3>
+  <ul>
+    <li><b>Compact icon back-button</b> (32×32, chevron-left) replaces the full-text "Back" button. Matches Shopify's native order page header pattern. The label ("Back to Storytelling", "Back to Settings", "Back to Brand") becomes accessibility-only — visible on hover tooltip + announced by screen readers.</li>
+    <li><b>Drops the <code>&lt;Link&gt;</code> wrapping + <code>variant="tertiary"</code></b> override on the <code>&lt;s-button slot="back-action"&gt;</code>. Those two together were forcing the s-button to render as a regular text button at full label width instead of letting Polaris auto-render the slot as the compact native back affordance.</li>
+    <li><b>Heading + secondary actions + primary action all inline on one row</b> — no more vertical drift caused by a wide back element pushing content down.</li>
+    <li><b>Sub-page meta (date, source, etc.) — if any — sits indented below the heading</b>, lined up under the title text, not under the back button.</li>
+  </ul>
+
+  <div class="specRow">
+    <div class="key">Element</div>
+    <div class="value"><code>&lt;s-button slot="back-action" href="/app/storytelling"&gt;Back to Storytelling&lt;/s-button&gt;</code></div>
+  </div>
+  <div class="specRow">
+    <div class="key">Width</div>
+    <div class="value">Polaris-default for back-action slot — typically 32px square (icon-only). The label shows in tooltip + is read by screen readers.</div>
+  </div>
+  <div class="specRow">
+    <div class="key">Navigation</div>
+    <div class="value"><code>href</code> attribute (App Bridge intercepts and routes client-side inside the embedded iframe). Avoids the <code>&lt;Link&gt;</code>-inside-<code>&lt;s-button&gt;</code> nesting that triggered the layout break.</div>
+  </div>
+  <div class="specRow">
+    <div class="key">Files affected</div>
+    <div class="value">5 routes: <code>app.storytelling_.{brief,learnings,review}.tsx</code>, <code>app.settings_.brand.tsx</code>, <code>app.settings_.brand_.tone-sources.tsx</code>. Mechanical surgery: drop <code>variant="tertiary"</code>, drop the inner <code>&lt;Link&gt;</code>, push <code>href</code> onto the s-button.</div>
+  </div>
+  <div class="specRow">
+    <div class="key">Reference</div>
+    <div class="value">Same shape as <code>app.affiliates.onboarding.tsx:72</code> — that one was already rendering correctly with the back-action slot, confirming the codebase's working pattern. We just need to align the 5 PR #26 routes to it.</div>
+  </div>
+
+  <h3 style="margin-top: 14px;">Bundled in same chore branch — Storytelling spelling pass-2</h3>
+  <ul>
+    <li><code>app/i18n/locales/{en,pt-BR}/storytelling.json</code> — <code>"pageHeading"</code> still reads "Story-telling". Used by <code>app.storytelling.tsx:105</code>. Updates to "Storytelling".</li>
+    <li><code>app/routes/app.storytelling_.review.tsx</code> — line 105 + 341 use literal <code>"Story-telling"</code> as the article author when publishing to Shopify Blog. Updates to "Storytelling" (user-facing in published posts).</li>
+    <li><code>shopify.app.storytelling.toml:5</code> — <code>name = "Story-telling"</code>. This is the pinned-app name in the storytelling-identity deployment. Updates to "Storytelling". Requires <code>shopify app deploy --config shopify.app.storytelling.toml</code> after merge to take effect (per CLAUDE.md scope-change rule).</li>
+    <li>Internal references (Python comments, env.d.ts comments, archive READMEs, project-brief retro entries) — not user-visible, leaving for a future doc sweep.</li>
+  </ul>
+</div>
+
+</body>
+</html>

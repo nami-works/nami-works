@@ -1,0 +1,1324 @@
+{
+  "policy": "50% of currentSubtotalPriceSet, aggregated per customer",
+  "currency": "BRL",
+  "memo": "Crédito por atraso de envio. Pedimos desculpas pelo transtorno.",
+  "tag_segment": "fiscal-hold-extrema-2026-05",
+  "totals": {
+    "customers": 119,
+    "orders": 120,
+    "subtotal_total_brl": 20928.22,
+    "credit_total_brl": 10464.11
+  },
+  "credits": [
+    {
+      "customer_id": "gid://shopify/Customer/9754956955968",
+      "email": "carolinaleonardo@uol.com.br",
+      "displayName": "Carolina Leonardo",
+      "order_names": [
+        "#71465"
+      ],
+      "subtotal_brl": 197.1,
+      "credit_brl": 98.55,
+      "delay_days": 70
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10733049741632",
+      "email": "acarolinebatz@gmail.com",
+      "displayName": "Caroline Batistelli",
+      "order_names": [
+        "#80238"
+      ],
+      "subtotal_brl": 174.42,
+      "credit_brl": 87.21,
+      "delay_days": 6
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10742972973376",
+      "email": "ca_gentile@yahoo.com.br",
+      "displayName": "Carolina Caobianco Gentile",
+      "order_names": [
+        "#80259"
+      ],
+      "subtotal_brl": 207.1,
+      "credit_brl": 103.55,
+      "delay_days": 6
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10731307761984",
+      "email": "cintiat.nascimento@hotmail.com",
+      "displayName": "Cintia Nascimento",
+      "order_names": [
+        "#80261"
+      ],
+      "subtotal_brl": 29.0,
+      "credit_brl": 14.5,
+      "delay_days": 6
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10743178461504",
+      "email": "danielafrohlich@gmail.com",
+      "displayName": "Daniela Fröhlich",
+      "order_names": [
+        "#80265"
+      ],
+      "subtotal_brl": 69.0,
+      "credit_brl": 34.5,
+      "delay_days": 6
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10053078384960",
+      "email": "ina.ssantana@gmail.com",
+      "displayName": "Ina Santana",
+      "order_names": [
+        "#80260"
+      ],
+      "subtotal_brl": 109.65,
+      "credit_brl": 54.83,
+      "delay_days": 6
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10742947316032",
+      "email": "inspirarepdv@gmail.com",
+      "displayName": "Cynthia Helen Vasconcellos",
+      "order_names": [
+        "#80257"
+      ],
+      "subtotal_brl": 160.65,
+      "credit_brl": 80.33,
+      "delay_days": 6
+    },
+    {
+      "customer_id": "gid://shopify/Customer/8527375466816",
+      "email": "joanalassi@hotmail.com",
+      "displayName": "Joana Rodrigues",
+      "order_names": [
+        "#80263"
+      ],
+      "subtotal_brl": 129.0,
+      "credit_brl": 64.5,
+      "delay_days": 6
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9686619193664",
+      "email": "lucaslexotan@yahoo.com.br",
+      "displayName": "LUCAS FERNANDES RODRIGUES",
+      "order_names": [
+        "#80235"
+      ],
+      "subtotal_brl": 236.3,
+      "credit_brl": 118.15,
+      "delay_days": 6
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9717354135872",
+      "email": "luizapcancelli@gmail.com",
+      "displayName": "Luíza Cancelli",
+      "order_names": [
+        "#80267"
+      ],
+      "subtotal_brl": 368.8,
+      "credit_brl": 184.4,
+      "delay_days": 6
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10627442868544",
+      "email": "nadijane.rocha@gmail.com",
+      "displayName": "Nadijane Rocha",
+      "order_names": [
+        "#80248"
+      ],
+      "subtotal_brl": 131.1,
+      "credit_brl": 65.55,
+      "delay_days": 6
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10644823736640",
+      "email": "raissamelonutricionista@gmail.com",
+      "displayName": "RAÍSSA SILVA",
+      "order_names": [
+        "#80239"
+      ],
+      "subtotal_brl": 89.0,
+      "credit_brl": 44.5,
+      "delay_days": 6
+    },
+    {
+      "customer_id": "gid://shopify/Customer/8552129593664",
+      "email": "rgalvao@hotmail.com",
+      "displayName": "Renata Rocha Galvao",
+      "order_names": [
+        "#80245"
+      ],
+      "subtotal_brl": 69.0,
+      "credit_brl": 34.5,
+      "delay_days": 6
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10742776856896",
+      "email": "robertarbh@yahoo.com.br",
+      "displayName": "Roberta Henriques",
+      "order_names": [
+        "#80251"
+      ],
+      "subtotal_brl": 149.0,
+      "credit_brl": 74.5,
+      "delay_days": 6
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10742897017152",
+      "email": "tamiress.freitas@hotmail.com",
+      "displayName": "Tamires Santos Freitas",
+      "order_names": [
+        "#80256"
+      ],
+      "subtotal_brl": 156.0,
+      "credit_brl": 78.0,
+      "delay_days": 6
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9142132572480",
+      "email": "vanessacorreiaq@gmail.com",
+      "displayName": "Vanessa Correia Quirino Dovoezen",
+      "order_names": [
+        "#80258"
+      ],
+      "subtotal_brl": 147.9,
+      "credit_brl": 73.95,
+      "delay_days": 6
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10747109736768",
+      "email": "alchaardaniela@gmail.com",
+      "displayName": "Daniela Alchaar Sodré",
+      "order_names": [
+        "#80295"
+      ],
+      "subtotal_brl": 149.0,
+      "credit_brl": 74.5,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10750068392256",
+      "email": "anamarialgp15@gmail.com",
+      "displayName": "Ana maria gomide",
+      "order_names": [
+        "#80364"
+      ],
+      "subtotal_brl": 168.3,
+      "credit_brl": 84.15,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10091238555968",
+      "email": "apcalil@hotmail.com",
+      "displayName": "Ana Paula Alves de Morais",
+      "order_names": [
+        "#80339"
+      ],
+      "subtotal_brl": 188.0,
+      "credit_brl": 94.0,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10749885284672",
+      "email": "bruna_glh@hotmail.com",
+      "displayName": "Bruna Galhardo",
+      "order_names": [
+        "#80358"
+      ],
+      "subtotal_brl": 129.0,
+      "credit_brl": 64.5,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10748167782720",
+      "email": "carolbonacini@gmail.com",
+      "displayName": "Ana Carolina Bonacini",
+      "order_names": [
+        "#80333"
+      ],
+      "subtotal_brl": 103.2,
+      "credit_brl": 51.6,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10750349115712",
+      "email": "carolfmcampos@gmail.com",
+      "displayName": "Carolina Campos",
+      "order_names": [
+        "#80371"
+      ],
+      "subtotal_brl": 134.4,
+      "credit_brl": 67.2,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10748427206976",
+      "email": "cfaierstein@gmail.com",
+      "displayName": "Cristiane Faierstein",
+      "order_names": [
+        "#80318"
+      ],
+      "subtotal_brl": 69.0,
+      "credit_brl": 34.5,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10744291426624",
+      "email": "deborahmelloo@icloud.com",
+      "displayName": "Deborah melo",
+      "order_names": [
+        "#80285"
+      ],
+      "subtotal_brl": 149.0,
+      "credit_brl": 74.5,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/7761524097344",
+      "email": "elaineribeirocoach@gmail.com",
+      "displayName": "Nany Ribeiro",
+      "order_names": [
+        "#80286"
+      ],
+      "subtotal_brl": 491.25,
+      "credit_brl": 245.62,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10004131021120",
+      "email": "fazinhasj@hotmail.com",
+      "displayName": "Fabiana",
+      "order_names": [
+        "#80359"
+      ],
+      "subtotal_brl": 55.2,
+      "credit_brl": 27.6,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10733197394240",
+      "email": "ferpaola@hotmail.com",
+      "displayName": "Fernanda Cardoso",
+      "order_names": [
+        "#80341"
+      ],
+      "subtotal_brl": 103.2,
+      "credit_brl": 51.6,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10743651729728",
+      "email": "freitasester555@gmail.com",
+      "displayName": "Ester Freitas",
+      "order_names": [
+        "#80278"
+      ],
+      "subtotal_brl": 262.4,
+      "credit_brl": 131.2,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10747496595776",
+      "email": "gabrielacostaoliveira@hotmail.com",
+      "displayName": "Gabriela Costa",
+      "order_names": [
+        "#80299"
+      ],
+      "subtotal_brl": 69.0,
+      "credit_brl": 34.5,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10747387740480",
+      "email": "grassanosarah@gmail.com",
+      "displayName": "SARAH SANTOS",
+      "order_names": [
+        "#80300"
+      ],
+      "subtotal_brl": 605.0,
+      "credit_brl": 302.5,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10521029017920",
+      "email": "jennifferebi@hotmail.com",
+      "displayName": "Jenniffer Coelho",
+      "order_names": [
+        "#80281"
+      ],
+      "subtotal_brl": 60.0,
+      "credit_brl": 30.0,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10750365303104",
+      "email": "karolramosscardua@gmail.com",
+      "displayName": "Karol Ramos Scardua",
+      "order_names": [
+        "#80374"
+      ],
+      "subtotal_brl": 279.0,
+      "credit_brl": 139.5,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10749837902144",
+      "email": "ketymax09@gmail.com",
+      "displayName": "Clesia Ribeiro Rodbourne",
+      "order_names": [
+        "#80357"
+      ],
+      "subtotal_brl": 109.0,
+      "credit_brl": 54.5,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10747656896832",
+      "email": "laiscalheiros2003@gmail.com",
+      "displayName": "Maria Laís Calheiros",
+      "order_names": [
+        "#80349"
+      ],
+      "subtotal_brl": 463.5,
+      "credit_brl": 231.75,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10747085291840",
+      "email": "lari.xd@hotmail.com",
+      "displayName": "Larissa Corrêa",
+      "order_names": [
+        "#80294"
+      ],
+      "subtotal_brl": 331.2,
+      "credit_brl": 165.6,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10750261461312",
+      "email": "larissinha_rodrigues_@hotmail.com",
+      "displayName": "Larissa Machado Rodrigues",
+      "order_names": [
+        "#80370"
+      ],
+      "subtotal_brl": 89.0,
+      "credit_brl": 44.5,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10074410254656",
+      "email": "ligiabattezzati@gmail.com",
+      "displayName": "Ligia Battezzati",
+      "order_names": [
+        "#80330"
+      ],
+      "subtotal_brl": 58.65,
+      "credit_brl": 29.32,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10249786360128",
+      "email": "livia.maciel@live.com",
+      "displayName": "Livia de Lemos Maciel",
+      "order_names": [
+        "#80290"
+      ],
+      "subtotal_brl": 96.9,
+      "credit_brl": 48.45,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/8398589690176",
+      "email": "lucia.gastal@gmail.com",
+      "displayName": "Lucia Gastal",
+      "order_names": [
+        "#80297"
+      ],
+      "subtotal_brl": 58.65,
+      "credit_brl": 29.32,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9641504440640",
+      "email": "lucianebemfica@gmail.com",
+      "displayName": "LUCIANE Bemfica",
+      "order_names": [
+        "#80291"
+      ],
+      "subtotal_brl": 149.0,
+      "credit_brl": 74.5,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10132215234880",
+      "email": "luvcamargo@hotmail.com",
+      "displayName": "Luciana Camargo",
+      "order_names": [
+        "#80348"
+      ],
+      "subtotal_brl": 303.3,
+      "credit_brl": 151.65,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10750096113984",
+      "email": "maciel.asm2@gmail.com",
+      "displayName": "Aline Maciel",
+      "order_names": [
+        "#80365"
+      ],
+      "subtotal_brl": 326.4,
+      "credit_brl": 163.2,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10224152969536",
+      "email": "maiolilicia@gmail.com",
+      "displayName": "Lícia Magna Maioli",
+      "order_names": [
+        "#80289"
+      ],
+      "subtotal_brl": 384.3,
+      "credit_brl": 192.15,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10747728200000",
+      "email": "mercadinhosobral1997@gmail.com",
+      "displayName": "LETICIA SOBRAL",
+      "order_names": [
+        "#80308"
+      ],
+      "subtotal_brl": 110.4,
+      "credit_brl": 55.2,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10743282860352",
+      "email": "petaejulia@hotmail.com",
+      "displayName": "Júlia Silva Reis",
+      "order_names": [
+        "#80270"
+      ],
+      "subtotal_brl": 126.65,
+      "credit_brl": 63.33,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10748881961280",
+      "email": "taiserbornemann@hotmail.com",
+      "displayName": "Thais Bornemann",
+      "order_names": [
+        "#80328"
+      ],
+      "subtotal_brl": 208.0,
+      "credit_brl": 104.0,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/8150150676800",
+      "email": "thais.santiago.dev@gmail.com",
+      "displayName": "Thais Santiago",
+      "order_names": [
+        "#80350"
+      ],
+      "subtotal_brl": 254.6,
+      "credit_brl": 127.3,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10749144531264",
+      "email": "uzze2101@hotmail.com",
+      "displayName": "Geórgia Larissa Meurer",
+      "order_names": [
+        "#80337"
+      ],
+      "subtotal_brl": 188.0,
+      "credit_brl": 94.0,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10726222922048",
+      "email": "vanessa@tempodecrianca.com.br",
+      "displayName": "Vanessa Aquino silva",
+      "order_names": [
+        "#80314"
+      ],
+      "subtotal_brl": 317.0,
+      "credit_brl": 158.5,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10002020139328",
+      "email": "virginiafonseca0@yahoo.com.br",
+      "displayName": "Virginia Fonseca",
+      "order_names": [
+        "#80375"
+      ],
+      "subtotal_brl": 84.15,
+      "credit_brl": 42.08,
+      "delay_days": 5
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10761715220800",
+      "email": "ademilde.22@gmail.com",
+      "displayName": "ADEMILDE NASCIMENTO GOMES",
+      "order_names": [
+        "#80434",
+        "#80436"
+      ],
+      "subtotal_brl": 277.2,
+      "credit_brl": 138.6,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10761039315264",
+      "email": "alexiamvn@hotmail.com",
+      "displayName": "ALEXIA VILELA",
+      "order_names": [
+        "#80411"
+      ],
+      "subtotal_brl": 110.0,
+      "credit_brl": 55.0,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10754980118848",
+      "email": "alinearaujoto@gmail.com",
+      "displayName": "Aline Araújo",
+      "order_names": [
+        "#80387"
+      ],
+      "subtotal_brl": 431.3,
+      "credit_brl": 215.65,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10763535843648",
+      "email": "analuizaapereira@hotmail.com",
+      "displayName": "Ana Luiza Alves Pereira",
+      "order_names": [
+        "#80471"
+      ],
+      "subtotal_brl": 328.1,
+      "credit_brl": 164.05,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10750528880960",
+      "email": "andreiansantos@hotmail.com",
+      "displayName": "Andreia Vaz Vaz",
+      "order_names": [
+        "#80376"
+      ],
+      "subtotal_brl": 109.0,
+      "credit_brl": 54.5,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10762412884288",
+      "email": "andreinhaalves@hotmail.com",
+      "displayName": "Andrea Almeida",
+      "order_names": [
+        "#80445"
+      ],
+      "subtotal_brl": 103.2,
+      "credit_brl": 51.6,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10662165283136",
+      "email": "andressa_shepa@hotmail.com",
+      "displayName": "Andressa Mayara Shepard Silva",
+      "order_names": [
+        "#80393"
+      ],
+      "subtotal_brl": 134.4,
+      "credit_brl": 67.2,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10763482464576",
+      "email": "ariane.drumond.m@gmail.com",
+      "displayName": "Ariane de Drumond Miranda",
+      "order_names": [
+        "#80470"
+      ],
+      "subtotal_brl": 35.0,
+      "credit_brl": 17.5,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10755032449344",
+      "email": "bcjpenna@gmail.com",
+      "displayName": "Carla Penna",
+      "order_names": [
+        "#80390"
+      ],
+      "subtotal_brl": 109.0,
+      "credit_brl": 54.5,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10761421226304",
+      "email": "blagits@yahoo.com.br",
+      "displayName": "Marguet Hoff Blagits",
+      "order_names": [
+        "#80427"
+      ],
+      "subtotal_brl": 80.75,
+      "credit_brl": 40.38,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10762803839296",
+      "email": "brendarigreis@gmail.com",
+      "displayName": "Brenda Reis",
+      "order_names": [
+        "#80453"
+      ],
+      "subtotal_brl": 134.4,
+      "credit_brl": 67.2,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10760852635968",
+      "email": "contabil2@sinuelosm.com.br",
+      "displayName": "Roana Echer Pessoa",
+      "order_names": [
+        "#80406"
+      ],
+      "subtotal_brl": 198.0,
+      "credit_brl": 99.0,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10760339980608",
+      "email": "cortinamariela@gmail.com",
+      "displayName": "Mariela Cortina",
+      "order_names": [
+        "#80404"
+      ],
+      "subtotal_brl": 277.6,
+      "credit_brl": 138.8,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10760846410048",
+      "email": "deiaferri@yahoo.com.br",
+      "displayName": "Andréia tonet",
+      "order_names": [
+        "#80405"
+      ],
+      "subtotal_brl": 149.0,
+      "credit_brl": 74.5,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10177905819968",
+      "email": "ginnafvicente@gmail.com",
+      "displayName": "Ginna Ferreira Vicente",
+      "order_names": [
+        "#80409"
+      ],
+      "subtotal_brl": 126.65,
+      "credit_brl": 63.33,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10751671206208",
+      "email": "hprogenio@gmail.com",
+      "displayName": "Helena Progenio",
+      "order_names": [
+        "#80382"
+      ],
+      "subtotal_brl": 109.0,
+      "credit_brl": 54.5,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10763047371072",
+      "email": "janiabetania@ufrb.edu.br",
+      "displayName": "JANIA BETANIA ALVES DA SILVA",
+      "order_names": [
+        "#80458"
+      ],
+      "subtotal_brl": 103.2,
+      "credit_brl": 51.6,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10257275060544",
+      "email": "joanamozzaquatro@gmail.com",
+      "displayName": "Joannà Mozáquatro",
+      "order_names": [
+        "#80389"
+      ],
+      "subtotal_brl": 89.0,
+      "credit_brl": 44.5,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9486496530752",
+      "email": "julia_andrade@outlook.pt",
+      "displayName": "Julia Andrade",
+      "order_names": [
+        "#80388"
+      ],
+      "subtotal_brl": 89.0,
+      "credit_brl": 44.5,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10750794400064",
+      "email": "julianafariamaia@gmqil.com",
+      "displayName": "Dra Juliana",
+      "order_names": [
+        "#80379"
+      ],
+      "subtotal_brl": 149.0,
+      "credit_brl": 74.5,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10403142795584",
+      "email": "kellyfernandesaline@gmail.com",
+      "displayName": "Aline Kelly",
+      "order_names": [
+        "#80466"
+      ],
+      "subtotal_brl": 298.0,
+      "credit_brl": 149.0,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10749601153344",
+      "email": "laiscprado@hotmail.com",
+      "displayName": "Lais Cunha Prado",
+      "order_names": [
+        "#80399"
+      ],
+      "subtotal_brl": 489.3,
+      "credit_brl": 244.65,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10762063741248",
+      "email": "luizadantas@hotmail.com",
+      "displayName": "Luiza D. Rego",
+      "order_names": [
+        "#80438"
+      ],
+      "subtotal_brl": 237.6,
+      "credit_brl": 118.8,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10422839279936",
+      "email": "morganalimasilva@hotmail.com",
+      "displayName": "Maria Morgana Lima Silva",
+      "order_names": [
+        "#80476"
+      ],
+      "subtotal_brl": 182.4,
+      "credit_brl": 91.2,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9485140984128",
+      "email": "patriciamcosta1980@yahoo.com.br",
+      "displayName": "Patrícia de Morais costa velasco Velasco",
+      "order_names": [
+        "#80439"
+      ],
+      "subtotal_brl": 294.95,
+      "credit_brl": 147.47,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10172178039104",
+      "email": "patyrabelo.adm@gmail.com",
+      "displayName": "Patricia Santos Rabelo",
+      "order_names": [
+        "#80403"
+      ],
+      "subtotal_brl": 125.8,
+      "credit_brl": 62.9,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10760909553984",
+      "email": "paulaangelicasouza@gmail.com",
+      "displayName": "Paula Angelica Menezes Souza",
+      "order_names": [
+        "#80407"
+      ],
+      "subtotal_brl": 103.2,
+      "credit_brl": 51.6,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10763383046464",
+      "email": "pimentacaroline@hotmail.com",
+      "displayName": "Caroline Pimenta",
+      "order_names": [
+        "#80467"
+      ],
+      "subtotal_brl": 109.0,
+      "credit_brl": 54.5,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10242184577344",
+      "email": "ralemor35@yahoo.com",
+      "displayName": "Raquel Lemos Moreira",
+      "order_names": [
+        "#80441"
+      ],
+      "subtotal_brl": 299.0,
+      "credit_brl": 149.5,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10754950725952",
+      "email": "raquelmaus@hotmail.com",
+      "displayName": "Raquel Maus",
+      "order_names": [
+        "#80386"
+      ],
+      "subtotal_brl": 283.1,
+      "credit_brl": 141.55,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9485857390912",
+      "email": "rqsmidt@gmail.com",
+      "displayName": "Raquel Smidt",
+      "order_names": [
+        "#80437"
+      ],
+      "subtotal_brl": 182.4,
+      "credit_brl": 91.2,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10754193785152",
+      "email": "sdreboucas@hotmail.com",
+      "displayName": "Simone Rebouças",
+      "order_names": [
+        "#80383"
+      ],
+      "subtotal_brl": 258.0,
+      "credit_brl": 129.0,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10223595716928",
+      "email": "sillodi@hotmail.com",
+      "displayName": "Silvia Lodi Santos",
+      "order_names": [
+        "#80380"
+      ],
+      "subtotal_brl": 168.0,
+      "credit_brl": 84.0,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10763202101568",
+      "email": "summendes@gmail.com",
+      "displayName": "Suzana Mendes",
+      "order_names": [
+        "#80461"
+      ],
+      "subtotal_brl": 188.0,
+      "credit_brl": 94.0,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10686408491328",
+      "email": "suportemariliacosttaenf@gmail.com",
+      "displayName": "Marilia Lopes Costa",
+      "order_names": [
+        "#80424"
+      ],
+      "subtotal_brl": 69.0,
+      "credit_brl": 34.5,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/8537837437248",
+      "email": "suryapaes@gmail.com",
+      "displayName": "Surya Paes",
+      "order_names": [
+        "#80423"
+      ],
+      "subtotal_brl": 389.3,
+      "credit_brl": 194.65,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10178315714880",
+      "email": "tabatta_lf@hotmail.com",
+      "displayName": "Tábatta Figueiredo",
+      "order_names": [
+        "#80443"
+      ],
+      "subtotal_brl": 514.0,
+      "credit_brl": 257.0,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10757818319168",
+      "email": "thaiskorey@yahoo.com",
+      "displayName": "Thais Maia",
+      "order_names": [
+        "#80400"
+      ],
+      "subtotal_brl": 166.0,
+      "credit_brl": 83.0,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10761206006080",
+      "email": "v4bebuwcxqybffnyidjwat26y4m2m@scs2.tiktok.com",
+      "displayName": "Eloísa Pereira",
+      "order_names": [
+        "#80417"
+      ],
+      "subtotal_brl": 0.0,
+      "credit_brl": 0.0,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10761205973312",
+      "email": "v4bebuwcxqybffnyinjmhmjv4r23u@scs2.tiktok.com",
+      "displayName": "Marina Benfica Destro Pereira",
+      "order_names": [
+        "#80416"
+      ],
+      "subtotal_brl": 0.0,
+      "credit_brl": 0.0,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10761205809472",
+      "email": "v4bebuwcxqybffnynjperthx7kj2a@scs2.tiktok.com",
+      "displayName": "Camila Maria Ana Camila",
+      "order_names": [
+        "#80415"
+      ],
+      "subtotal_brl": 0.0,
+      "credit_brl": 0.0,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10761206071616",
+      "email": "v4bebuwcxqybffnyntpmejmufkw2a@scs2.tiktok.com",
+      "displayName": "Nathalie Carneiro",
+      "order_names": [
+        "#80418"
+      ],
+      "subtotal_brl": 0.0,
+      "credit_brl": 0.0,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10757007769920",
+      "email": "vanessakferreira@gmail.com",
+      "displayName": "Vanessa Ferreira",
+      "order_names": [
+        "#80397"
+      ],
+      "subtotal_brl": 29.0,
+      "credit_brl": 14.5,
+      "delay_days": 4
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9709837877568",
+      "email": "aletoledofotografia@gmail.com",
+      "displayName": "Alexandra Toledo",
+      "order_names": [
+        "#80491"
+      ],
+      "subtotal_brl": 69.0,
+      "credit_brl": 34.5,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10774761537856",
+      "email": "amorimik@gmail.com",
+      "displayName": "Ingrid Amorim",
+      "order_names": [
+        "#80547"
+      ],
+      "subtotal_brl": 39.0,
+      "credit_brl": 19.5,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9865095545152",
+      "email": "analaurasilvaamaral@gmail.com",
+      "displayName": "Ana Laura Silva Amaral",
+      "order_names": [
+        "#80536"
+      ],
+      "subtotal_brl": 166.0,
+      "credit_brl": 83.0,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10769868194112",
+      "email": "carolinamaiacabral@gmail.com",
+      "displayName": "Carolina Souza Mariz Maia Cabral",
+      "order_names": [
+        "#80503"
+      ],
+      "subtotal_brl": 119.2,
+      "credit_brl": 59.6,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/7762204983616",
+      "email": "ceciliarufino@gmail.com",
+      "displayName": "Cecilia Verissimo",
+      "order_names": [
+        "#80552"
+      ],
+      "subtotal_brl": 229.0,
+      "credit_brl": 114.5,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9486334394688",
+      "email": "daysefsdp@gmail.com",
+      "displayName": "Dayse Ferreira da Silva Dala Paula",
+      "order_names": [
+        "#80506"
+      ],
+      "subtotal_brl": 67.15,
+      "credit_brl": 33.58,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10764129927488",
+      "email": "deboraoliveiramoro@gmail.com",
+      "displayName": "Debora de Oliveira Moro",
+      "order_names": [
+        "#80489"
+      ],
+      "subtotal_brl": 103.2,
+      "credit_brl": 51.6,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10435242656064",
+      "email": "elisannecarvalho@hotmail.com",
+      "displayName": "Elis Carvalho",
+      "order_names": [
+        "#80505"
+      ],
+      "subtotal_brl": 109.0,
+      "credit_brl": 54.5,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10770890162496",
+      "email": "fcaron201@gmail.com",
+      "displayName": "Fatima Caron",
+      "order_names": [
+        "#80507"
+      ],
+      "subtotal_brl": 129.0,
+      "credit_brl": 64.5,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10771568001344",
+      "email": "gcperatello@gmail.com",
+      "displayName": "Theodoro Peratello Jr",
+      "order_names": [
+        "#80517"
+      ],
+      "subtotal_brl": 454.4,
+      "credit_brl": 227.2,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10556415377728",
+      "email": "geisafelicissimo@gmail.com",
+      "displayName": "Geísa Felicíssimo",
+      "order_names": [
+        "#80504"
+      ],
+      "subtotal_brl": 126.65,
+      "credit_brl": 63.33,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10773535752512",
+      "email": "glaubaggio@gmail.com",
+      "displayName": "Glaucia aguiar",
+      "order_names": [
+        "#80530"
+      ],
+      "subtotal_brl": 69.0,
+      "credit_brl": 34.5,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9485683654976",
+      "email": "julia.rfagundes@gmail.com",
+      "displayName": "JULIA FAGUNDES",
+      "order_names": [
+        "#80478"
+      ],
+      "subtotal_brl": 338.3,
+      "credit_brl": 169.15,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/8261055709504",
+      "email": "lorena25.lopes@gmail.com",
+      "displayName": "Lorena de Oliveira Lopes",
+      "order_names": [
+        "#80515"
+      ],
+      "subtotal_brl": 554.2,
+      "credit_brl": 277.1,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10655899386176",
+      "email": "luanan2000@hotmail.com",
+      "displayName": "Luana Nogueira carneiro",
+      "order_names": [
+        "#80499"
+      ],
+      "subtotal_brl": 324.8,
+      "credit_brl": 162.4,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10772814037312",
+      "email": "luisa.theodoro@gmail.com",
+      "displayName": "Luisa Theodoro",
+      "order_names": [
+        "#80525"
+      ],
+      "subtotal_brl": 238.0,
+      "credit_brl": 119.0,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9918738301248",
+      "email": "mari_m_l@hotmail.com",
+      "displayName": "Mariana",
+      "order_names": [
+        "#80523"
+      ],
+      "subtotal_brl": 188.0,
+      "credit_brl": 94.0,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10771186680128",
+      "email": "mariabbia18@gmail.com",
+      "displayName": "Bia Burke",
+      "order_names": [
+        "#80512"
+      ],
+      "subtotal_brl": 126.65,
+      "credit_brl": 63.33,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10735810380096",
+      "email": "nathaliasamela@outlook.com",
+      "displayName": "Nathália Sâmela Garcia",
+      "order_names": [
+        "#80501"
+      ],
+      "subtotal_brl": 29.0,
+      "credit_brl": 14.5,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9486502887744",
+      "email": "nzmilena@gmail.com",
+      "displayName": "MILENA DE OLIVEIRA",
+      "order_names": [
+        "#80556"
+      ],
+      "subtotal_brl": 155.8,
+      "credit_brl": 77.9,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/9486337737024",
+      "email": "roh_martins@hotmail.com",
+      "displayName": "Roberta Martins",
+      "order_names": [
+        "#80483"
+      ],
+      "subtotal_brl": 109.65,
+      "credit_brl": 54.83,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10774561358144",
+      "email": "saracichelero@hotmail.com",
+      "displayName": "Sara Cichelero",
+      "order_names": [
+        "#80560"
+      ],
+      "subtotal_brl": 0.0,
+      "credit_brl": 0.0,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10764089786688",
+      "email": "simoneoli@gmail.com",
+      "displayName": "Simone Oliveira",
+      "order_names": [
+        "#80486"
+      ],
+      "subtotal_brl": 149.0,
+      "credit_brl": 74.5,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10764709134656",
+      "email": "valerialemosss@gmail.com",
+      "displayName": "Valeria lemos Lemos",
+      "order_names": [
+        "#80498"
+      ],
+      "subtotal_brl": 119.2,
+      "credit_brl": 59.6,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/7761532813632",
+      "email": "vivireis29@gmail.com",
+      "displayName": "Viviane Aparecida dos Reis",
+      "order_names": [
+        "#80522"
+      ],
+      "subtotal_brl": 180.5,
+      "credit_brl": 90.25,
+      "delay_days": 3
+    },
+    {
+      "customer_id": "gid://shopify/Customer/10773805400384",
+      "email": "zetirolon@icloud.com",
+      "displayName": "Elizete Cardoso",
+      "order_names": [
+        "#80533"
+      ],
+      "subtotal_brl": 109.0,
+      "credit_brl": 54.5,
+      "delay_days": 3
+    }
+  ]
+}

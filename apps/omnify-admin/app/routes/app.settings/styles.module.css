@@ -1,0 +1,288 @@
+/* Settings tabs — flat/underline style inside the section block */
+.settingsTabsRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-bottom: 1px solid #e1e3e5;
+  margin: -4px -20px 12px;
+  padding: 0 20px;
+}
+
+.settingsTab {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  text-decoration: none;
+  color: #6d7175;
+  background: none;
+  font-weight: 400;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  margin-bottom: -1px;
+}
+
+.settingsTab:hover {
+  color: #303030;
+  border-bottom-color: #8c9196;
+}
+
+.settingsTabActive {
+  color: #303030;
+  font-weight: 500;
+  border-bottom-color: #303030;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.locationSettingsBlock {
+  padding-inline: 6pt;
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* Three-column grid variant — used by the market/city/timezone row and the
+   auto-delivery schedule row (auto-assign delay, dispatch time, retry cutoff). */
+.settingsGridThree {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.settingsSpanFull {
+  grid-column: 1 / -1;
+}
+
+/* Section terminator: a 1px line that lives BELOW the chevron and OUTSIDE
+   the collapsed conditional, so it always renders as a clean divider between
+   sections regardless of whether the body is open. */
+.sectionTerminator {
+  height: 1px;
+  background: #e1e3e5;
+  margin: 0;
+}
+
+.settingsPickupInstructionsWrap {
+  min-height: 80px;
+}
+
+.settingsPickupInstructionsWrap s-text-area {
+  min-height: 80px;
+  display: block;
+}
+
+.settingsHidden {
+  display: none;
+}
+
+.zoneSection {
+  margin-top: 24px;
+}
+
+.zoneSectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #202223;
+  margin-bottom: 16px;
+}
+
+.zoneCard {
+  padding: 16px;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  background-color: #f6f6f7;
+  margin-bottom: 16px;
+}
+
+.zoneCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.zoneName {
+  font-weight: 600;
+  color: #202223;
+}
+
+.zoneShopifyInfo {
+  font-size: 13px;
+  color: #6d7175;
+  margin-bottom: 16px;
+}
+
+.personalizationFields {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed #e1e3e5;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.personalizationSpanFull {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 768px) {
+  .settingsGrid,
+  .personalizationFields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── Collapsible section (chevron) ───────────────────────────────── */
+.collapsibleSectionWrap {
+  position: relative;
+}
+
+.collapseChevron {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.chevronIcon {
+  font-size: 18px;
+  font-weight: 600;
+  color: #8c9196;
+  transition: transform 0.15s ease, color 0.15s ease;
+  transform: rotate(270deg);
+  display: inline-block;
+}
+
+.collapseChevron.collapsed .chevronIcon {
+  transform: rotate(90deg);
+}
+
+.collapseChevron:hover .chevronIcon {
+  color: #303030;
+}
+
+/* ── Selector row + show-disabled toggle ─────────────────────────── */
+.selectorRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.selectorField {
+  flex: 1 1 260px;
+  min-width: 200px;
+}
+
+.showDisabledToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  padding: 8px 0;
+  color: #202223;
+  font-size: 13px;
+}
+
+.disabledOptionDim {
+  color: #8c9196;
+}
+
+/* ── Section header row (title + header-toggle for Retail goals) ─ */
+.sectionHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionHeaderTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.headerToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  color: #6d7175;
+}
+
+/* ── Per-section Save row ────────────────────────────────────────── */
+.saveRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+  margin-top: 16px;
+}
+
+.savedHint {
+  font-size: 12px;
+  color: #008060;
+}
+
+/* ── Retail goals filter block ───────────────────────────────────── */
+.filterBlock {
+  padding: 14px 16px;
+  border: 1px solid #f1f1f1;
+  border-radius: 8px;
+  background: #fff;
+  margin-bottom: 12px;
+}
+
+.filterHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.filterLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #202223;
+}
+
+.filterHint {
+  display: block;
+  font-size: 12px;
+  color: #6d7175;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+.checkboxToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.collapsedHint {
+  font-size: 12px;
+  color: #6d7175;
+  font-style: italic;
+  padding: 8px 0;
+}

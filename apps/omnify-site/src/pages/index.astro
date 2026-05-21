@@ -1,0 +1,1140 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="CPG Labs — Software for brands bridging online and retail"
+  description="CPG Labs is an independent software studio for FMCG brands running omnichannel on Shopify. We build the operational tools to unify e-commerce and retail management. Omnify is live today. Storefront is next."
+  ogTitle="CPG Labs"
+  ogDescription="Operational software for brands where online meets retail."
+  bareLayout={true}
+>
+  <div class="root">
+    <nav class="nav" id="cpglabs-nav">
+      <div class="navInner">
+        <a href="#hero" class="brand">
+          <img
+            src="/cpg-labs_box.png"
+            alt=""
+            aria-hidden="true"
+            class="brandImg"
+          />
+          <span>CPG Labs</span>
+        </a>
+        <ul class="navLinks">
+          <li class="navLinkHideMobile">
+            <a href="#products" class="navLink">Products</a>
+          </li>
+          <li class="navLinkHideMobile">
+            <a href="#about" class="navLink">About</a>
+          </li>
+          <li class="navLinkHideMobile">
+            <a href="#contact" class="navLink">Contact</a>
+          </li>
+          <li>
+            <a href="/screencast" class="navLink navLinkCta">See Omnify →</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <section class="hero" id="hero">
+      <div class="container">
+        <div class="heroGrid">
+          <div class="heroCopy">
+            <h1 class="heroHeadline">
+              For brands <span class="heroHolo">dissolving barriers</span> between
+              online and retail.
+            </h1>
+            <p class="heroSub">
+              CPG Labs is a software studio for FMCG brands operating
+              omnichannel on Shopify. We build the operational tools to unify
+              e-commerce and retail management, untap footprint expansion and
+              enable seamless experiences in all channels.
+            </p>
+            <div class="heroCtas">
+              <a href="#products" class="ctaPrimary">
+                See our products
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M5 7l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </a>
+              <a href="/privacy" class="ctaSecondary">View our privacy policy</a>
+            </div>
+          </div>
+          <div class="heroVisual">
+            <img src="/cpg-labs_box.png" alt="" class="heroVisualImg" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section sectionSoft" id="products">
+      <div class="container">
+        <div class="sectionEyebrow">Our products</div>
+
+        <div class="productsStack">
+          <article class="productCard productCardFeatured">
+            <img class="productLogo productLogoOmnify" src="/omnify_map.png" alt="" />
+            <div>
+              <div class="productHeader">
+                <h3 class="productName">Omnify</h3>
+                <span class="productBadge productBadgeLive">coming soon</span>
+              </div>
+              <p class="productTagline">
+                Local delivery, retail sales, footprint planning.
+              </p>
+              <p class="productBlurb">
+                Omnify is a <strong>Shopify-embedded app</strong>. Merchants use
+                it to plan delivery routes from store locations, track retail
+                sales against monthly goals, and plan where to open next using
+                customer geography.
+              </p>
+              <a href="/screencast" class="productCta">
+                See Omnify in action
+                <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M7 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </a>
+            </div>
+            <div class="productVisual">
+              <div class="appShot" role="img" aria-label="Screenshot of Omnify running inside the Shopify Admin, showing the Local Delivery route planner">
+                <div class="appShotChrome">
+                  <div class="appShotDots">
+                    <span class="appShotDot appShotDotRed"></span>
+                    <span class="appShotDot appShotDotYellow"></span>
+                    <span class="appShotDot appShotDotGreen"></span>
+                  </div>
+                  <div class="appShotUrl">
+                    admin.shopify.com/store/<i>merchant</i>/apps/omnify/local-delivery
+                  </div>
+                </div>
+                <div class="appShotShopifyBar">
+                  <span class="appShotShopifyLeft">shopify</span>
+                  <span class="appShotStore">merchant · dev</span>
+                </div>
+                <div class="appShotBody">
+                  <div class="appShotSidebar">
+                    <div class="appShotSidebarGroup">
+                      <div class="appShotSidebarItem"><span class="appShotItemDot"></span>Home</div>
+                      <div class="appShotSidebarItem"><span class="appShotItemDot"></span>Orders</div>
+                      <div class="appShotSidebarItem"><span class="appShotItemDot"></span>Products</div>
+                      <div class="appShotSidebarItem"><span class="appShotItemDot"></span>Customers</div>
+                    </div>
+                    <div class="appShotSidebarGroup">
+                      <div class="appShotSidebarLabel">Apps</div>
+                      <div class="appShotSidebarItem appShotSidebarItemActive">
+                        <span class="appShotItemDot"></span>Omnify
+                      </div>
+                    </div>
+                  </div>
+                  <div class="appShotMain">
+                    <div class="appShotMainHeader">
+                      <div class="appShotMainTitle">Local Delivery</div>
+                      <div class="appShotMainAction">Optimize routes</div>
+                    </div>
+                    <div class="appShotWorkspace">
+                      <div class="appShotMapCard">
+                        <div class="appShotMapGrid"></div>
+                        <svg class="appShotRouteLine" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                          <path
+                            d="M 50,55 L 32,30 L 48,18 L 68,26 L 78,48 L 64,66 L 50,55"
+                            fill="none"
+                            stroke="#005bd3"
+                            stroke-width="0.6"
+                            stroke-dasharray="1.5,1"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                        <span class="appShotPin appShotPinStore" style="left: 50%; top: 55%;"></span>
+                        <span class="appShotPin appShotPinDelivered" style="left: 32%; top: 30%;"></span>
+                        <span class="appShotPin appShotPinDelivered" style="left: 48%; top: 18%;"></span>
+                        <span class="appShotPin appShotPinActive" style="left: 68%; top: 26%;"></span>
+                        <span class="appShotPin appShotPinPending" style="left: 78%; top: 48%;"></span>
+                        <span class="appShotPin appShotPinPending" style="left: 64%; top: 66%;"></span>
+                      </div>
+                      <div class="appShotOrdersList">
+                        <div class="appShotOrderRow">
+                          <span>#2038</span>
+                          <span class="appShotOrderBadge appShotOrderBadgeDelivered">Delivered</span>
+                        </div>
+                        <div class="appShotOrderRow">
+                          <span>#2041</span>
+                          <span class="appShotOrderBadge appShotOrderBadgeDelivered">Delivered</span>
+                        </div>
+                        <div class="appShotOrderRow appShotOrderRowActive">
+                          <span>#2044</span>
+                          <span class="appShotOrderBadge appShotOrderBadgeActive">On route</span>
+                        </div>
+                        <div class="appShotOrderRow">
+                          <span>#2047</span>
+                          <span class="appShotOrderBadge appShotOrderBadgePending">Pending</span>
+                        </div>
+                        <div class="appShotOrderRow">
+                          <span>#2051</span>
+                          <span class="appShotOrderBadge appShotOrderBadgePending">Pending</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="productCard storefrontCard">
+            <img class="productLogo productLogoStorefront" src="/storefront_window.png" alt="" />
+            <div class="productVisual">
+              <div class="storefrontVisual" role="img" aria-label="Storefront preview, a merchandising canvas with price tag badges">
+                <div class="storefrontTile"></div>
+                <div class="storefrontTile"></div>
+                <div class="storefrontTile"></div>
+              </div>
+            </div>
+            <div>
+              <div class="productHeader">
+                <h3 class="productName">Storefront</h3>
+                <span class="productBadge productBadgeWip">later this year</span>
+              </div>
+              <p class="productTagline">
+                Merchandising, sale campaigns, price tags.
+              </p>
+              <p class="productBlurb">
+                Storefront is the next CPG Labs app. It will help merchants run
+                coordinated sale campaigns, tag discounted products across
+                channels, and keep promotional logic consistent between
+                storefront, PDP, and announcement bar.
+              </p>
+            </div>
+            <a
+              href="mailto:contact@cpg-labs.io?subject=Storefront%20waitlist"
+              class="waitlistCta"
+            >
+              Join the waitlist
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M3 10h14M13 5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="about">
+      <div class="container">
+        <div class="sectionEyebrow">About CPG Labs</div>
+        <h2 class="sectionTitle">
+          Worldwide omnichannel solutions, built in Brazil.
+        </h2>
+        <p class="aboutBody">
+          CPG Labs is an independent software studio building operational tools
+          for <strong>FMCG brands running omnichannel on Shopify</strong>. Every
+          product is shaped in real merchant operations before it reaches the
+          App Store, and maintained directly by the team that ships it.
+        </p>
+      </div>
+    </section>
+
+    <section class="section sectionSoft" id="contact">
+      <div class="container">
+        <div class="sectionEyebrow">Contact</div>
+        <h2 class="sectionTitle">Get in touch.</h2>
+        <div class="contactGrid">
+          <div class="contactBlock">
+            <h4>Email</h4>
+            <p><a href="mailto:contact@cpg-labs.io">contact@cpg-labs.io</a></p>
+          </div>
+          <div class="contactBlock">
+            <h4>Location</h4>
+            <p>São Paulo, Brazil</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="footerInner">
+        <div class="footerLinks">
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
+          <a href="/security">Security</a>
+        </div>
+        <div class="footerLegal">
+          CPG Labs · Established 2026 · São Paulo, Brazil
+          <br />© {new Date().getFullYear()} CPG Labs. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  </div>
+</BaseLayout>
+
+<script>
+  const nav = document.getElementById("cpglabs-nav");
+  const onScroll = () => {
+    if (!nav) return;
+    nav.classList.toggle("navScrolled", window.scrollY > 40);
+  };
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+</script>
+
+<style>
+  .root {
+    --site-max: 1080px;
+    --bg: #0b0b0c;
+    --bg-soft: #14141a;
+    --card: rgba(255, 255, 255, 0.04);
+    --border: rgba(255, 255, 255, 0.12);
+    --border-strong: rgba(255, 255, 255, 0.22);
+    --text: #f5f5f7;
+    --text-muted: #c5c5cc;
+    --holo-1: #5ecece;
+    --holo-2: #b09fda;
+    --holo-3: #d4a8d4;
+    --holo-4: #5ecece;
+
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    overflow-x: hidden;
+    max-width: 100vw;
+    position: relative;
+  }
+
+  @media (prefers-color-scheme: light) {
+    .root {
+      --bg: #fafafa;
+      --bg-soft: #ffffff;
+      --card: rgba(0, 0, 0, 0.025);
+      --border: rgba(0, 0, 0, 0.09);
+      --border-strong: rgba(0, 0, 0, 0.2);
+      --text: #1d1d1f;
+      --text-muted: #4c4c58;
+    }
+  }
+
+  .root :global(a) { color: inherit; }
+  .root :global(img) { max-width: 100%; height: auto; display: block; }
+  .root :global(:focus-visible) {
+    outline: 2px solid var(--holo-2);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: var(--site-max);
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* Nav */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    transition: backdrop-filter 150ms ease, border-bottom-color 150ms ease, background 150ms ease;
+  }
+  .navScrolled {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom-color: var(--border-strong);
+  }
+  .navInner {
+    max-width: var(--site-max);
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    color: var(--text);
+  }
+  .brandImg { width: 26px; height: 26px; object-fit: contain; }
+  .navLinks {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .navLinkHideMobile { display: none; }
+  .navLink {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 13px;
+    transition: color 0.15s;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .navLink:hover { color: var(--text); }
+  .navLinkCta {
+    background: linear-gradient(90deg, var(--holo-1), var(--holo-2), var(--holo-3), var(--holo-4));
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 600;
+  }
+
+  /* Sections */
+  .section { padding: 56px 0; }
+  .sectionSoft { background: var(--bg-soft); }
+  .sectionEyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 8px;
+  }
+  .sectionTitle {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    margin: 0 0 16px;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 76px 0 36px;
+    position: relative;
+    overflow: hidden;
+    max-width: 100%;
+  }
+  .heroGrid {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    column-gap: 14px;
+    row-gap: 18px;
+    align-items: start;
+  }
+  .heroCopy { display: contents; }
+  .heroHeadline {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 24px;
+    line-height: 1.08;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0;
+    align-self: start;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .heroHolo {
+    background: linear-gradient(90deg, var(--holo-1), var(--holo-2), var(--holo-3), var(--holo-4));
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: holoSlide 5s linear infinite;
+  }
+  @keyframes holoSlide {
+    from { background-position: 0% 0%; }
+    to { background-position: 200% 0%; }
+  }
+  .heroSub {
+    grid-column: 1 / -1;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin: 0;
+  }
+  .heroCtas {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .ctaPrimary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 22px;
+    min-height: 40px;
+    background: #1d1d1f;
+    color: #ffffff;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform 0.15s, box-shadow 0.2s;
+    width: 100%;
+    border: none;
+    cursor: pointer;
+  }
+  :global([data-theme="dark"]) .ctaPrimary {
+    background: #f5f5f7;
+    color: #1d1d1f;
+  }
+  .ctaPrimary:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18); }
+  .ctaSecondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    border-bottom: 1px solid var(--border-strong);
+    padding: 8px 0 6px;
+    min-height: 44px;
+    transition: color 0.15s, border-bottom-color 0.15s;
+  }
+  .ctaSecondary:hover {
+    color: var(--text);
+    border-bottom-color: var(--text);
+  }
+
+  .heroVisual {
+    grid-column: 1;
+    grid-row: 1;
+    position: relative;
+    aspect-ratio: 1 / 1;
+    width: 96px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .heroVisual::before,
+  .heroVisual::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .heroVisual::before {
+    inset: -16px;
+    background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-2) 36%, transparent), transparent 62%);
+    filter: blur(24px);
+  }
+  .heroVisual::after {
+    inset: 4px;
+    background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-1) 28%, transparent), transparent 55%);
+    filter: blur(14px);
+  }
+  .heroVisualImg {
+    position: relative;
+    z-index: 1;
+    max-width: 100%;
+    filter: drop-shadow(0 16px 40px rgba(0, 0, 0, 0.45));
+    animation: heroFloat 6s ease-in-out infinite alternate;
+  }
+  @keyframes heroFloat {
+    from { transform: translateY(0); }
+    to { transform: translateY(-8px); }
+  }
+
+  /* Products */
+  .productsStack {
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+    margin-top: 24px;
+  }
+  .productCard {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    /* overflow: visible — floating logos extend past the card edge */
+  }
+  /* Featured-card holo glow removed: it was competing with the new floating
+     logo's drop-shadow + radial halo. The logo now carries the card's visual
+     accent. */
+  .productCard > *:not(.productLogo) { position: relative; z-index: 1; }
+
+  /* Floating product logo. Bleeds outside the card box, anchored to the
+     card via position: absolute. Drop-shadow + holo halo make it read as
+     hovering, not pasted on. */
+  .productLogo {
+    position: absolute;
+    top: -28px;
+    left: -24px;
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    z-index: 2;
+    filter:
+      drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55))
+      drop-shadow(0 0 24px color-mix(in srgb, var(--holo-2) 25%, transparent));
+    transition: transform 220ms ease;
+  }
+  .productLogo:hover { transform: translateY(-3px) scale(1.02); }
+
+  .productHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .productName {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+    line-height: 1.1;
+  }
+  .productBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .productBadgeLive {
+    background: color-mix(in srgb, var(--holo-1) 18%, transparent);
+    color: var(--holo-1);
+    border: 1px solid color-mix(in srgb, var(--holo-1) 28%, transparent);
+  }
+  .productBadgeWip {
+    background: color-mix(in srgb, var(--holo-3) 16%, transparent);
+    color: var(--holo-3);
+    border: 1px solid color-mix(in srgb, var(--holo-3) 28%, transparent);
+  }
+  .productTagline {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0 0 14px;
+    font-weight: 500;
+  }
+  .productBlurb {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text);
+    margin: 0 0 18px;
+  }
+  .productBlurb strong { font-weight: 600; }
+  .productCta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    min-height: 38px;
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .productCta:hover { background: var(--card); border-color: var(--text); }
+
+  .waitlistCta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 22px;
+    min-height: 42px;
+    background: linear-gradient(135deg, var(--holo-1), var(--holo-2), var(--holo-3), var(--holo-4));
+    color: #1d1d1f;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--holo-2) 30%, transparent),
+      0 8px 24px -8px color-mix(in srgb, var(--holo-2) 55%, transparent);
+    transition: transform 150ms ease, box-shadow 200ms ease;
+    width: 100%;
+    white-space: nowrap;
+  }
+  .waitlistCta:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--holo-2) 50%, transparent),
+      0 14px 32px -8px color-mix(in srgb, var(--holo-2) 75%, transparent);
+  }
+  .waitlistCta:active { transform: translateY(0); }
+
+  .productVisual { margin-top: 20px; }
+
+  /* Mock admin screenshot */
+  .appShot {
+    background: #fbfbfd;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 14px 40px -10px rgba(0, 0, 0, 0.35), 0 3px 10px rgba(0, 0, 0, 0.12);
+  }
+  .appShotChrome {
+    background: #f6f6f7;
+    border-bottom: 1px solid #e1e3e5;
+    padding: 7px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .appShotDots { display: flex; gap: 5px; flex-shrink: 0; }
+  .appShotDot { width: 10px; height: 10px; border-radius: 50%; }
+  .appShotDotRed { background: #ff5f57; }
+  .appShotDotYellow { background: #febb2f; }
+  .appShotDotGreen { background: #28c840; }
+  .appShotUrl {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #e1e3e5;
+    border-radius: 6px;
+    font-size: 10px;
+    color: #6d7175;
+    padding: 3px 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .appShotShopifyBar {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 7px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10px;
+  }
+  .appShotShopifyLeft {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+  }
+  .appShotShopifyLeft::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    background: #7cb518;
+    border-radius: 3px;
+    display: inline-block;
+  }
+  .appShotStore {
+    background: #2b2b2b;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: #d9d9d9;
+    font-size: 9px;
+  }
+  .appShotBody {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    min-height: 260px;
+  }
+  .appShotSidebar {
+    background: #f6f6f7;
+    border-right: 1px solid #e1e3e5;
+    padding: 10px 6px;
+  }
+  .appShotSidebarGroup { margin-bottom: 10px; }
+  .appShotSidebarLabel {
+    font-size: 7.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #8c9196;
+    padding: 4px 8px;
+    font-weight: 600;
+  }
+  .appShotSidebarItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: #303030;
+    font-size: 9.5px;
+    margin-bottom: 1px;
+  }
+  .appShotItemDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: #c9cccf;
+  }
+  .appShotSidebarItemActive { background: #e3e4e5; font-weight: 600; }
+  .appShotSidebarItemActive .appShotItemDot { background: #303030; }
+  .appShotMain { padding: 12px; background: #fbfbfd; }
+  .appShotMainHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e1e3e5;
+    margin-bottom: 12px;
+  }
+  .appShotMainTitle { font-size: 13px; font-weight: 600; color: #303030; }
+  .appShotMainAction {
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 9px;
+    padding: 4px 9px;
+    border-radius: 5px;
+    font-weight: 500;
+  }
+  .appShotWorkspace { display: flex; flex-direction: column; gap: 10px; }
+  .appShotMapCard {
+    background: linear-gradient(135deg, #e8f0f5 0%, #d8e4ee 50%, #e0dce8 100%);
+    border: 1px solid #e1e3e5;
+    border-radius: 8px;
+    position: relative;
+    min-height: 170px;
+    overflow: hidden;
+  }
+  .appShotMapGrid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.4) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .appShotRouteLine {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  .appShotPin {
+    position: absolute;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
+    transform: translate(-50%, -50%);
+  }
+  .appShotPinStore { background: #303030; width: 15px; height: 15px; }
+  .appShotPinDelivered { background: #067647; }
+  .appShotPinActive { background: #005bd3; }
+  .appShotPinPending { background: #b98900; }
+  .appShotOrdersList {
+    background: #fff;
+    border: 1px solid #e1e3e5;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .appShotOrderRow {
+    padding: 7px 10px;
+    border-bottom: 1px solid #f1f1f1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 9.5px;
+  }
+  .appShotOrderRow:last-child { border-bottom: none; }
+  .appShotOrderRowActive { background: #f6f6f7; }
+  .appShotOrderBadge {
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 8.5px;
+    font-weight: 600;
+  }
+  .appShotOrderBadgeDelivered { background: #cdefdf; color: #0e6345; }
+  .appShotOrderBadgeActive { background: #cfe3ff; color: #00418c; }
+  .appShotOrderBadgePending { background: #fde7ba; color: #6c4b00; }
+
+  /* Storefront preview card */
+  .storefrontCard { display: flex; flex-direction: column; gap: 18px; }
+  .storefrontVisual {
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--holo-3) 8%, transparent), transparent 70%),
+      var(--bg-soft);
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
+    padding: 24px 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .storefrontTile {
+    aspect-ratio: 1 / 1;
+    background: color-mix(in srgb, var(--text) 6%, var(--bg-soft));
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    padding: 6px;
+  }
+  .storefrontTile::before {
+    position: absolute;
+    top: 6px; left: 6px;
+    background: linear-gradient(90deg, var(--holo-1), var(--holo-3));
+    color: #fff;
+    font-size: 8px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .storefrontTile::after {
+    content: "";
+    position: absolute;
+    bottom: 6px; left: 6px; right: 6px;
+    height: 3px;
+    background: color-mix(in srgb, var(--text) 14%, transparent);
+    border-radius: 2px;
+  }
+  .storefrontTile:nth-child(1)::before { content: "-15%"; }
+  .storefrontTile:nth-child(2)::before { content: "NEW"; }
+  .storefrontTile:nth-child(3)::before { content: "BUNDLE"; }
+
+  /* About */
+  .aboutBody {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--text-muted);
+    margin: 0;
+    max-width: 60ch;
+  }
+  .aboutBody strong { color: var(--text); font-weight: 600; }
+
+  /* Contact */
+  .contactGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 20px;
+  }
+  .contactBlock h4 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 6px;
+  }
+  .contactBlock p {
+    font-size: 15px;
+    color: var(--text);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .contactBlock a {
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-strong);
+    padding-bottom: 1px;
+    transition: border-color 0.15s;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .contactBlock a:hover { border-bottom-color: var(--text); }
+
+  /* Footer */
+  .footer {
+    padding: 28px 0;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .footerInner {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: var(--site-max);
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  .footerLinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .footerLinks a {
+    color: var(--text-muted);
+    text-decoration: none;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.15s;
+  }
+  .footerLinks a:hover { color: var(--text); }
+  .footerLegal {
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    opacity: 0.75;
+  }
+
+  /* Desktop overrides */
+  @media (min-width: 760px) {
+    .container { padding: 0 32px; }
+    .navInner { padding: 0 32px; }
+    .navLinks { gap: 22px; }
+    .navLinkHideMobile { display: inline-flex; }
+
+    .section { padding: 80px 0; }
+    .hero { padding: 140px 0 96px; }
+
+    .sectionTitle { font-size: 32px; }
+
+    .heroGrid {
+      grid-template-columns: 1fr 380px;
+      column-gap: 60px;
+      row-gap: 0;
+      align-items: center;
+    }
+    .heroCopy {
+      display: block;
+      grid-column: 1;
+      grid-row: 1;
+      max-width: 560px;
+    }
+    .heroHeadline {
+      grid-column: unset;
+      grid-row: unset;
+      font-size: 56px;
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      margin: 0 0 18px;
+      align-self: unset;
+      overflow-wrap: normal;
+    }
+    .heroHolo { white-space: nowrap; }
+    .heroSub {
+      grid-column: unset;
+      font-size: 17px;
+      line-height: 1.65;
+      max-width: 46ch;
+      margin: 0 0 36px;
+    }
+    .heroCtas {
+      grid-column: unset;
+      flex-direction: row;
+      align-items: center;
+      gap: 18px;
+    }
+    .ctaPrimary { width: auto; }
+
+    .heroVisual {
+      grid-column: 2;
+      grid-row: 1;
+      width: auto;
+      max-width: none;
+      margin: 0 auto;
+      aspect-ratio: 1 / 1;
+    }
+    .heroVisual::before {
+      inset: -40px;
+      background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-2) 32%, transparent), transparent 62%);
+      filter: blur(48px);
+    }
+    .heroVisual::after {
+      inset: 40px;
+      background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-1) 24%, transparent), transparent 55%);
+      filter: blur(32px);
+    }
+    .heroVisualImg { max-width: 360px; margin: 0 auto; }
+
+    .productsStack { gap: 64px; }
+    .productCard { padding: 32px; }
+    .productCardFeatured {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+    .productCardFeatured .productVisual { margin-top: 0; }
+    .productCardFeatured .appShot {
+      transform: perspective(1400px) rotateY(-4deg) rotateX(1deg);
+      transform-origin: center;
+    }
+    .productName { font-size: 26px; }
+    .appShotBody { grid-template-columns: 130px 1fr; min-height: 300px; }
+    .appShotWorkspace {
+      display: grid;
+      grid-template-columns: 1fr 170px;
+    }
+
+    /* Desktop: Omnify card has the floating logo at top-left of card,
+       overlapping the text column — header needs left padding to clear it.
+       Storefront card lays the visual in column 1 and text in column 2,
+       so the logo (anchored to the card's top-left) sits OVER the visual,
+       not the text — header doesn't need padding. */
+    .productCardFeatured .productHeader {
+      padding-left: 84px;
+      min-height: 76px;
+      justify-content: center;
+    }
+    .storefrontCard .productHeader {
+      padding-left: 0;
+    }
+
+    .storefrontCard {
+      display: grid;
+      grid-template-columns: 220px 1fr auto;
+      gap: 32px;
+      align-items: center;
+    }
+    .storefrontCard .productVisual { width: 220px; margin-top: 0; }
+    .waitlistCta { width: auto; padding: 13px 26px; font-size: 15px; min-height: 46px; }
+
+    .contactGrid {
+      flex-direction: row;
+      gap: 32px;
+    }
+    .contactBlock { flex: 1; }
+
+    .footerInner {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 0 32px;
+    }
+  }
+
+  /* Mobile: smaller floating logo, smaller offsets, header padded to clear it.
+     Mobile lays both cards as a vertical stack; logo always anchors top-left
+     of the card and content begins below/right of it. */
+  @media (max-width: 759px) {
+    .productLogo {
+      top: -22px;
+      left: -14px;
+      width: 68px;
+      height: 68px;
+    }
+    .productHeader {
+      padding-left: 64px;
+      min-height: 50px;
+      justify-content: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .heroHolo { animation: none; }
+    .heroVisualImg { animation: none; }
+    .productLogo { transition: none; }
+    .root :global(*) { transition-duration: 0.01ms !important; }
+  }
+</style>

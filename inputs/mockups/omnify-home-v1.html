@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Omnify product marketing page v1 (omnify.cpg-labs.io/)</title>
+<!--
+  MOCKUP: omnify-home-v1.html
+  TARGET URL: omnify.cpg-labs.io/  (currently 301-redirected to cpg-labs.io/
+    via commit a062ac6; this mockup is the eventual replacement — when it
+    ships, the 301 redirect in _index/route.tsx loader must be removed).
+
+  PURPOSE: Replace the existing OmnifyHome component ("Make your store
+  IMPOSSIBLE to miss!") with a product marketing page that matches the
+  CPG Labs corporate landing voice. Same design system, calm operator
+  tone, no superlatives, trust-building.
+
+  Synthesized from 3 parallel agents:
+  - PM strategy (time-horizon narrative: today → month → year)
+  - Growth copywriter (headline, feature copy, CTA labels)
+  - UI/design (stacked alternating rows, per-feature holo colors, scroll-reveal)
+
+  Feature assets:
+  - /delivery-guy.png → Local delivery (holo-1 cyan glow)
+  - /rocket.png → Retail sales (holo-3 magenta glow)
+  - /map-pin.png → Footprint expansion (holo-2 lavender glow)
+-->
+<style>
+  :root {
+    --site-max: 1080px;
+
+    --bg:            #0b0b0c;
+    --bg-soft:       #14141a;
+    --card:          rgba(255, 255, 255, 0.04);
+    --border:        rgba(255, 255, 255, 0.12);
+    --border-strong: rgba(255, 255, 255, 0.22);
+    --text:          #f5f5f7;
+    --text-muted:    #c5c5cc;
+
+    --holo-1:        #5ecece;
+    --holo-2:        #b09fda;
+    --holo-3:        #d4a8d4;
+    --holo-4:        #5ecece;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg:            #fafafa;
+      --bg-soft:       #ffffff;
+      --card:          rgba(0, 0, 0, 0.025);
+      --border:        rgba(0, 0, 0, 0.09);
+      --border-strong: rgba(0, 0, 0, 0.20);
+      --text:          #1d1d1f;
+      --text-muted:    #4c4c58;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.55;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: inherit; }
+  :focus-visible {
+    outline: 2px solid var(--holo-2);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  .container {
+    width: 100%;
+    max-width: var(--site-max);
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ---------- Nav ---------- */
+  nav.site {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    transition: backdrop-filter 150ms ease, border-bottom-color 150ms ease;
+  }
+  nav.site.scrolled {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom-color: var(--border-strong);
+  }
+  nav.site .inner {
+    max-width: var(--site-max);
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  nav.site .brand {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+  }
+  nav.site .brand img { width: 26px; height: 26px; object-fit: contain; }
+  nav.site ul.navLinks {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  nav.site ul.navLinks li.hideMobile { display: none; }
+  nav.site ul.navLinks a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 13px;
+    transition: color 0.15s;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  nav.site ul.navLinks a:hover { color: var(--text); }
+  nav.site ul.navLinks a.cta {
+    background: linear-gradient(90deg, var(--holo-1), var(--holo-2), var(--holo-3), var(--holo-4));
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 600;
+  }
+
+  /* ---------- Section helpers ---------- */
+  section { padding: 56px 0; }
+  section.soft { background: var(--bg-soft); }
+  .sectionEyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 8px;
+  }
+
+  /* ---------- Hero ---------- */
+  section.hero { padding: 88px 0 48px; }
+  .heroGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+    align-items: stretch;
+  }
+  .heroCopy { order: 1; }
+  .heroVisual { order: 2; }
+
+  .heroHeadline {
+    font-size: 36px;
+    line-height: 1.08;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 18px;
+  }
+  .heroHolo {
+    background: linear-gradient(90deg, var(--holo-1), var(--holo-2), var(--holo-3), var(--holo-4));
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: holoSlide 5s linear infinite;
+    white-space: nowrap;
+  }
+  @keyframes holoSlide {
+    from { background-position: 0% 0%; }
+    to { background-position: 200% 0%; }
+  }
+  .heroSub {
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--text-muted);
+    margin: 0 0 28px;
+  }
+  .heroCtas {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .ctaPrimary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 22px;
+    min-height: 44px;
+    background: var(--text);
+    color: var(--bg);
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform 0.15s, box-shadow 0.2s;
+    width: 100%;
+  }
+  .ctaPrimary:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.18); }
+  .ctaSecondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    border-bottom: 1px solid var(--border-strong);
+    padding: 8px 0 6px;
+    min-height: 44px;
+    transition: color 0.15s, border-bottom-color 0.15s;
+  }
+  .ctaSecondary:hover { color: var(--text); border-bottom-color: var(--text); }
+
+  .heroVisual {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    max-width: 280px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .heroVisual::before, .heroVisual::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .heroVisual::before {
+    inset: -30px;
+    background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-2) 32%, transparent), transparent 62%);
+    filter: blur(40px);
+  }
+  .heroVisual::after {
+    inset: 20px;
+    background: radial-gradient(circle at center, color-mix(in srgb, var(--holo-1) 24%, transparent), transparent 55%);
+    filter: blur(28px);
+  }
+  .heroVisualImg {
+    position: relative;
+    z-index: 1;
+    max-width: 100%;
+    filter: drop-shadow(0 16px 40px rgba(0, 0, 0, 0.45));
+    animation: heroFloat 6s ease-in-out infinite alternate;
+  }
+  @keyframes heroFloat {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-8px); }
+  }
+
+  /* ---------- Feature rows ---------- */
+  /* Base (mobile): image above copy, stacked, full width */
+  .featureRow {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    align-items: stretch;
+    padding: 8px 0;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 600ms ease, transform 600ms ease;
+  }
+  .featureRow.visible { opacity: 1; transform: translateY(0); }
+
+  .featureImageWrap {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    max-width: 260px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    order: -1;
+  }
+  .featureImageWrap::before, .featureImageWrap::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .featureImageWrap::before {
+    inset: -20px;
+    background: radial-gradient(
+      circle at center,
+      color-mix(in srgb, var(--feature-holo, var(--holo-2)) 32%, transparent),
+      transparent 62%
+    );
+    filter: blur(28px);
+  }
+  .featureImageWrap::after {
+    inset: 14px;
+    background: radial-gradient(
+      circle at center,
+      color-mix(in srgb, var(--feature-holo-b, var(--holo-1)) 22%, transparent),
+      transparent 55%
+    );
+    filter: blur(20px);
+  }
+  .featureImage {
+    position: relative;
+    z-index: 1;
+    max-width: 100%;
+    filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.4));
+    animation: heroFloat 6s ease-in-out infinite alternate;
+  }
+  .featureImage.delay-1 { animation-delay: -2s; }
+  .featureImage.delay-2 { animation-delay: -4s; }
+
+  .featureCopy { max-width: 560px; }
+  .featureEyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 6px;
+  }
+  .featureTitle {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    margin: 0 0 10px;
+  }
+  .featureTagline {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin: 0 0 14px;
+    font-weight: 500;
+  }
+  .featureBlurb {
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--text);
+    margin: 0 0 16px;
+  }
+  .featureInline {
+    color: var(--text-muted);
+    font-size: 14px;
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-strong);
+    padding-bottom: 2px;
+    transition: color 0.15s, border-bottom-color 0.15s;
+  }
+  .featureInline:hover { color: var(--text); border-bottom-color: var(--text); }
+
+  /* Per-feature holo color tokens (image glow only — titles stay solid) */
+  .featureRow.delivery    { --feature-holo: var(--holo-1); --feature-holo-b: var(--holo-2); }
+  .featureRow.retailSales { --feature-holo: var(--holo-3); --feature-holo-b: var(--holo-2); }
+  .featureRow.footprint   { --feature-holo: var(--holo-2); --feature-holo-b: var(--holo-1); }
+
+  /* ---------- Proof band ---------- */
+  .proofBand {
+    background: var(--bg-soft);
+    padding: 40px 0;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .proofText {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text);
+    margin: 0 auto 10px;
+    max-width: 52ch;
+  }
+  .proofBacklink {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-strong);
+    padding-bottom: 1px;
+    transition: color 0.15s;
+  }
+  .proofBacklink:hover { color: var(--text); }
+
+  /* ---------- CTA section ---------- */
+  .ctaSection { text-align: center; padding: 56px 0 80px; }
+  .ctaSectionTitle {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    margin: 0 0 12px;
+  }
+  .ctaSectionSub {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin: 0 auto 28px;
+    max-width: 44ch;
+  }
+  .ctaSectionButtons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .ctaBig {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 28px;
+    min-height: 52px;
+    background: linear-gradient(135deg, var(--holo-1), var(--holo-2), var(--holo-3), var(--holo-4));
+    color: #1d1d1f;
+    border-radius: 14px;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 700;
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--holo-2) 30%, transparent),
+      0 10px 28px -8px color-mix(in srgb, var(--holo-2) 55%, transparent);
+    transition: transform 150ms ease, box-shadow 200ms ease;
+    width: 100%;
+    max-width: 320px;
+  }
+  .ctaBig:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--holo-2) 50%, transparent),
+      0 16px 36px -8px color-mix(in srgb, var(--holo-2) 75%, transparent);
+  }
+
+  /* ---------- Footer ---------- */
+  footer.site {
+    padding: 28px 0;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  footer.site .inner {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: var(--site-max);
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  footer.site .footerLinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  footer.site .footerLinks a {
+    color: var(--text-muted);
+    text-decoration: none;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.15s;
+  }
+  footer.site .footerLinks a:hover { color: var(--text); }
+  footer.site .legal {
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    opacity: 0.75;
+  }
+
+  /* ============================================================
+     DESKTOP OVERRIDES
+  ============================================================ */
+  @media (min-width: 760px) {
+    .container { padding: 0 32px; }
+    nav.site .inner { padding: 0 32px; }
+    nav.site ul.navLinks { gap: 22px; }
+    nav.site ul.navLinks li.hideMobile { display: inline-flex; }
+
+    section { padding: 80px 0; }
+    section.hero { padding: 140px 0 96px; }
+
+    .heroGrid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 60px;
+      align-items: center;
+    }
+    .heroCopy { order: unset; max-width: 560px; }
+    .heroVisual { order: unset; max-width: none; aspect-ratio: 1 / 1; }
+    .heroVisual::before { inset: -40px; filter: blur(48px); }
+    .heroVisual::after { inset: 40px; filter: blur(32px); }
+    .heroVisualImg { max-width: 360px; margin: 0 auto; }
+    .heroHeadline { font-size: 56px; line-height: 1.05; letter-spacing: -0.025em; }
+    .heroSub { font-size: 17px; max-width: 46ch; margin-bottom: 36px; }
+    .heroCtas { flex-direction: row; align-items: center; gap: 18px; }
+    .ctaPrimary { width: auto; }
+
+    .featureRow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+      padding: 32px 0;
+    }
+    .featureRow.reverse .featureImageWrap { order: 2; }
+    .featureRow.reverse .featureCopy      { order: 1; }
+    .featureImageWrap {
+      max-width: 420px;
+      order: unset;
+    }
+    .featureImageWrap::before { inset: -30px; filter: blur(40px); }
+    .featureImageWrap::after  { inset: 22px;  filter: blur(28px); }
+    .featureTitle { font-size: 32px; }
+    .featureBlurb { font-size: 17px; }
+
+    .proofBand { padding: 56px 0; }
+    .proofText { font-size: 17px; }
+
+    .ctaSection { padding: 96px 0 120px; }
+    .ctaSectionTitle { font-size: 32px; }
+    .ctaSectionButtons { flex-direction: row; justify-content: center; gap: 18px; }
+    .ctaBig { width: auto; }
+
+    footer.site .inner {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 0 32px;
+    }
+  }
+
+  /* ---------- Reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .heroHolo { animation: none; }
+    .heroVisualImg { animation: none; }
+    .featureImage { animation: none; }
+    .featureRow { opacity: 1; transform: none; transition: none; }
+    * { transition-duration: 0.01ms !important; }
+  }
+
+  /* ---------- Mockup notes ---------- */
+  .mockNotes {
+    background: #fffbea;
+    color: #4a3600;
+    border: 1px solid #f4e3a1;
+    border-radius: 10px;
+    padding: 18px 22px;
+    max-width: var(--site-max);
+    margin: 32px auto;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  .mockNotes h3 { font-size: 14px; margin: 0 0 8px; color: #3a2a00; font-weight: 700; }
+  .mockNotes ul { margin: 6px 0 0 20px; padding: 0; }
+  .mockNotes li { margin-bottom: 4px; }
+  @media (prefers-color-scheme: dark) {
+    .mockNotes { background: #2b2510; color: #f4e3a1; border-color: #5b4700; }
+    .mockNotes h3 { color: #fff0b3; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== NAV ========== -->
+<nav class="site" id="siteNav">
+  <div class="inner">
+    <a href="#hero" class="brand">
+      <img src="../../public/omnify_tree.png" alt="" aria-hidden="true" />
+      <span>Omnify</span>
+    </a>
+    <ul class="navLinks">
+      <li class="hideMobile"><a href="#features">Features</a></li>
+      <li class="hideMobile"><a href="https://cpg-labs.io/">CPG Labs</a></li>
+      <li class="hideMobile"><a href="https://omnify.cpg-labs.io/privacy">Privacy</a></li>
+      <li><a href="https://omnify.cpg-labs.io/screencast" class="cta">See it in action →</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ========== HERO ========== -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="heroGrid">
+      <div class="heroCopy">
+        <h1 class="heroHeadline">
+          Operate your <span class="heroHolo">omnichannel business</span> on Shopify
+        </h1>
+        <p class="heroSub">
+          Omnify is the Shopify-embedded app for CPG brands selling online and through physical stores. Plan, optimize and dispatch deliveries from retail locations, define monthly goals and track how every store performs, and find your next store location based on where YOUR CUSTOMERS actually live.<br><br>All in your Shopify admin.
+        </p>
+        <div class="heroCtas">
+          <a href="https://omnify.cpg-labs.io/screencast" class="ctaPrimary">
+            See Omnify in action
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="#features" class="ctaSecondary">
+            See features
+          </a>
+        </div>
+      </div>
+      <div class="heroVisual">
+        <img src="../../public/omnify_tree.png" alt="" class="heroVisualImg" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FEATURES (plural, time-horizon arc: today → month → year) ========== -->
+<section id="features">
+  <div class="container">
+    <div class="sectionEyebrow">How it works</div>
+
+    <!-- Feature 1: Local delivery (today) -->
+    <div class="featureRow delivery visible" id="f-delivery">
+      <div class="featureImageWrap">
+        <img src="../../public/delivery-guy.png" alt="" class="featureImage" />
+      </div>
+      <div class="featureCopy">
+        <div class="featureEyebrow">Today · Local delivery</div>
+        <h2 class="featureTitle">Local delivery, from your stores.</h2>
+        <p class="featureTagline">Route planning, driver dispatch, order status in one view.</p>
+        <p class="featureBlurb">
+          Omnify reads orders tagged for local delivery and clusters them into optimized routes around your store locations. Dispatch to your own drivers or hand off to a connected carrier like Lalamove, without leaving the Shopify admin. Status flows back into the order, the tags, and the customer notification.
+        </p>
+        <a href="https://omnify.cpg-labs.io/screencast#delivery" class="featureInline">See it in the screencast →</a>
+      </div>
+    </div>
+
+    <!-- Feature 2: Retail sales (this month) -->
+    <div class="featureRow retailSales reverse" id="f-retail-sales">
+      <div class="featureImageWrap">
+        <img src="../../public/rocket.png" alt="" class="featureImage delay-1" />
+      </div>
+      <div class="featureCopy">
+        <div class="featureEyebrow">This month · Retail sales</div>
+        <h2 class="featureTitle">Retail sales against goals.</h2>
+        <p class="featureTagline">Monthly targets, live pacing, per-location accountability.</p>
+        <p class="featureBlurb">
+          Set revenue goals per location and per month. As POS orders come in, the dashboard fills with actual sales against target. Managers see their store's number, headquarters sees the full network, and the gap between goal and actual stays visible all month.
+        </p>
+        <a href="https://omnify.cpg-labs.io/screencast#retail-sales" class="featureInline">See it in the screencast →</a>
+      </div>
+    </div>
+
+    <!-- Feature 3: Footprint expansion (next year) -->
+    <div class="featureRow footprint" id="f-footprint">
+      <div class="featureImageWrap">
+        <img src="../../public/map-pin.png" alt="" class="featureImage delay-2" />
+      </div>
+      <div class="featureCopy">
+        <div class="featureEyebrow">Next year · Footprint expansion</div>
+        <h2 class="featureTitle">Footprint expansion, on evidence.</h2>
+        <p class="featureTagline">Where to open next, based on actual demand.</p>
+        <p class="featureBlurb">
+          Omnify combines your order and customer data with map-based analytics to rank cities and neighborhoods where demand is dense enough to justify a new physical location. Save expansion projects, layer them on the map, compare candidate addresses side by side, and export the shortlist.
+        </p>
+        <a href="https://omnify.cpg-labs.io/screencast#footprint" class="featureInline">See it in the screencast →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== PROOF BAND ========== -->
+<section class="proofBand">
+  <div class="container">
+    <p class="proofText">
+      Three tools, one operational surface: the stores you run, the deliveries you promise, and the geography you grow into, handled from inside Shopify.
+    </p>
+    <a href="https://cpg-labs.io/" class="proofBacklink">Built by CPG Labs →</a>
+  </div>
+</section>
+
+<!-- ========== FINAL CTA ========== -->
+<section class="ctaSection">
+  <div class="container">
+    <h2 class="ctaSectionTitle">See Omnify at work.</h2>
+    <p class="ctaSectionSub">
+      A 2-minute demo showing the route planner, the retail dashboard, and the expansion map in a live Shopify admin.
+    </p>
+    <div class="ctaSectionButtons">
+      <a href="https://omnify.cpg-labs.io/screencast" class="ctaBig">
+        Watch the demo
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7 5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer class="site">
+  <div class="inner">
+    <div class="footerLinks">
+      <a href="https://omnify.cpg-labs.io/privacy">Privacy</a>
+      <a href="https://omnify.cpg-labs.io/terms">Terms</a>
+      <a href="https://omnify.cpg-labs.io/security">Security</a>
+      <a href="https://cpg-labs.io/">CPG Labs</a>
+    </div>
+    <div class="legal">
+      Omnify by CPG Labs &middot; São Paulo, Brazil<br />
+      © 2026 CPG Labs. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Nav blur intensifies on scroll
+  (function () {
+    var nav = document.getElementById('siteNav');
+    function onScroll() {
+      if (window.scrollY > 40) nav.classList.add('scrolled');
+      else nav.classList.remove('scrolled');
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+
+  // Scroll-reveal on feature rows (IntersectionObserver)
+  (function () {
+    var rows = document.querySelectorAll('.featureRow');
+    if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      rows.forEach(function (r) { r.classList.add('visible'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    rows.forEach(function (r) { io.observe(r); });
+  })();
+</script>
+
+<!-- ========== MOCKUP NOTES ========== -->
+<div class="mockNotes">
+  <h3>omnify-home-v1 — design synthesis</h3>
+  <ul>
+    <li><strong>Hero</strong> — Growth copywriter's recommended headline. Holo on "running omnichannel" (animated, white-space: nowrap to stay on a single row). Sub-copy synthesized from PM + Growth, names the 3 capabilities without rigid listing. CTA primary: "See Omnify in action" → /screencast (safer than an un-live App Store listing). CTA secondary: "See features" (same-page anchor, reviewer-friendly). Hero visual: Omnify tree logo at 360px desktop / 280px mobile, same glow + float treatment as cpg-labs.io hero.</li>
+    <li><strong>Feature section</strong> — Stacked alternating rows. Per-feature holographic glow color on the image halo: delivery-guy = holo-1 cyan, rocket = holo-3 magenta, map-pin = holo-2 lavender. Image always above copy on mobile (visual hook first). Titles stay solid var(--text) — gradient restraint matches cpglabs-corporate (one animated gradient per screen ceiling).</li>
+    <li><strong>Feature order</strong> — PM's time-horizon arc: today (delivery) → this month (retail sales) → next year (footprint). Each feature's eyebrow carries the time label explicitly to make the arc visible. Narrative chain: "we delivered it" → "did we hit goal?" → "where do we grow next?"</li>
+    <li><strong>Copy tightening</strong> — PM flagged "in real time" as latency-claim risky. Swapped for "as POS orders come in" per their note. No superlatives anywhere.</li>
+    <li><strong>Scroll-reveal</strong> — feature rows fade up on IntersectionObserver. Disabled under prefers-reduced-motion.</li>
+    <li><strong>Image float desync</strong> — each feature image uses heroFloat with animation-delay 0 / -2s / -4s so the three don't bob in lockstep.</li>
+    <li><strong>Proof band</strong> — single-sentence transition before the CTA, with a quiet backlink to cpg-labs.io. Reconnects Omnify to the parent brand for reviewers without being heavy-handed.</li>
+    <li><strong>Final CTA</strong> — holographic gradient button ("Watch the demo"), same visual treatment as the Storefront waitlist CTA on cpg-labs.io. Signals "obvious action".</li>
+  </ul>
+</div>
+
+<div class="mockNotes">
+  <h3>Ship sequence (NOT today's deploy)</h3>
+  <ul>
+    <li>Today's deploy ships the <strong>301 redirect</strong> from omnify.cpg-labs.io/ → cpg-labs.io/ (commit a062ac6). This mockup is a <strong>follow-up</strong> — when it's translated to production React and we want it to go live, the 301 redirect block in <code>app/routes/_index/route.tsx</code> loader must be removed (or narrowed to a different condition).</li>
+    <li>Translate to <code>app/routes/_index/omnify-home.tsx</code> + <code>omnify-home.module.css</code> (replacing the existing content, not creating a new file, since OmnifyHome is already imported by route.tsx). Reuse design-system tokens and many classes from <code>cpglabs-corporate.module.css</code> — see UI agent's section 9 for the full reuse list.</li>
+    <li>Assets: <code>/delivery-guy.png</code>, <code>/rocket.png</code>, <code>/map-pin.png</code> already exist in <code>public/</code>. No new art needed.</li>
+    <li>Meta (Growth): title "Omnify, local delivery and retail operations for Shopify" (59 chars), description "Omnify is a Shopify-embedded app for FMCG brands running online and retail. Plan deliveries, track store sales, and choose where to open next." (154 chars).</li>
+    <li>Kill the existing OmnifyHome content entirely: "IMPOSSIBLE to miss", Google Health Check scanner, waitlist form, Show Up/Go Local/Expand pillars, pricing CTA. PM agent's section 6 has the explicit cut list with line numbers.</li>
+  </ul>
+</div>
+
+</body>
+</html>

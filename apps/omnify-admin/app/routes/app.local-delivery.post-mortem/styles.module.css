@@ -1,0 +1,813 @@
+/*
+ * Post-mortem panel — Local Delivery autonomy review.
+ *
+ * Translated from inputs/mockups/post-mortem-panel-v1.html. Visual tokens
+ * pulled from CLAUDE.md "UI Tokens" + retail-sales/styles.module.css —
+ * no new tokens introduced.
+ *
+ * Layout: list view shows filter bar + stacked rows; drilldown view
+ * shows a 2-column body (map main + aside that holds back-row +
+ * decision header + detail sections + verdict capture).
+ */
+
+/* ── Page-level ──────────────────────────────────────────────────── */
+
+.lede {
+  font-size: 13px;
+  color: #6d7175;
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* ── Filter bar (list view) ──────────────────────────────────────── */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 14px;
+}
+
+.filterControl {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+}
+
+.filterLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d7175;
+}
+
+.filterChipRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.filterChip {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #303030;
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.filterChip:hover {
+  background: #f6f6f7;
+}
+
+.filterChipActive {
+  background: #303030;
+  color: white;
+  border-color: #303030;
+}
+
+.filterChipCount {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.filterChipActive .filterChipCount {
+  opacity: 1;
+  color: white;
+}
+
+/* ── List view: stacked full-width rows ──────────────────────────── */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row {
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: border-color 0.12s, box-shadow 0.12s;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 16px;
+  align-items: start;
+  text-decoration: none;
+  color: inherit;
+}
+
+.row:hover {
+  border-color: #8c9196;
+}
+
+.rowSelected {
+  border-color: #005bd3;
+  box-shadow: 0 0 0 2px rgba(0, 91, 211, 0.12);
+}
+
+.rowMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rowTop {
+  font-size: 13px;
+  color: #303030;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+}
+
+.rowTs {
+  color: #6d7175;
+  font-variant-numeric: tabular-nums;
+}
+
+.rowLoc {
+  font-weight: 500;
+}
+
+.rowRoute {
+  color: #6d7175;
+}
+
+.rowCost {
+  font-variant-numeric: tabular-nums;
+}
+
+.rowCommentary {
+  font-size: 12px;
+  color: #6d7175;
+  line-height: 1.5;
+}
+
+.rowTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+  align-content: start;
+}
+
+/* ── Empty / toast ──────────────────────────────────────────────── */
+
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  background: #ffffff;
+  border: 1px dashed #e1e3e5;
+  border-radius: 12px;
+  color: #6d7175;
+  font-size: 13px;
+}
+
+.empty h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: #303030;
+}
+
+.empty code {
+  background: #f0f0f0;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+.toastBanner {
+  background: #e2f5ec;
+  border: 1px solid #b8e0ce;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #008060;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.toastBanner::before {
+  content: "✓";
+  font-weight: 700;
+}
+
+.toastBanner strong {
+  font-weight: 600;
+}
+
+/* ── Chips ──────────────────────────────────────────────────────── */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.chipGreen { background: #e2f5ec; color: #008060; }
+.chipAmber { background: #fdf2d6; color: #d99a0a; }
+.chipRed { background: #fde7e2; color: #d72c0d; }
+.chipBlue { background: #e8f1ff; color: #005bd3; }
+.chipGrey { background: #f0f0f0; color: #6d7175; }
+
+/* ── Drilldown: 2-column body (map main + aside) ─────────────────── */
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr 480px;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.main {
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 480px;
+  height: calc(100vh - 200px);
+  position: relative;
+}
+
+.mainEmpty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #6d7175;
+  font-size: 13px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.mainEmpty h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: #303030;
+  font-weight: 600;
+}
+
+.mapFrame {
+  width: 100%;
+  height: 100%;
+  background: #f6f6f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.mapImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.aside {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+@media (max-width: 1100px) {
+  .body {
+    grid-template-columns: 1fr;
+  }
+  .main {
+    height: 360px;
+    min-height: 360px;
+  }
+  .aside {
+    max-height: none;
+  }
+}
+
+/* ── Back-row: back link · paginator · primary action ────────────── */
+
+.backRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.backToList {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #303030;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  font-family: inherit;
+}
+
+.backToList:hover {
+  background: #f6f6f7;
+  border-color: #8c9196;
+}
+
+.backToList::before {
+  content: "←";
+  color: #6d7175;
+  margin-right: 2px;
+}
+
+/* Paginator triad */
+.paginator {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  color: #303030;
+}
+
+.paginatorBtn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  background: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1;
+  color: #303030;
+  padding: 0;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  text-decoration: none;
+}
+
+.paginatorBtn:hover {
+  background: #f6f6f7;
+  border-color: #8c9196;
+}
+
+.paginatorBtnDisabled,
+.paginatorBtn[aria-disabled="true"] {
+  color: #e1e3e5;
+  cursor: not-allowed;
+  background: #ffffff;
+  border-color: #f1f1f1;
+}
+
+.paginatorBtnDisabled:hover {
+  background: #ffffff;
+  border-color: #f1f1f1;
+}
+
+.paginatorCount {
+  padding: 0 10px;
+  font-variant-numeric: tabular-nums;
+  color: #6d7175;
+  font-size: 12px;
+  min-width: 60px;
+  text-align: center;
+}
+
+.paginatorCount strong {
+  color: #303030;
+  font-weight: 600;
+}
+
+/* Primary action (Mark approved / Save changes) */
+.btnApprove {
+  height: 32px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  border: 1px solid #303030;
+  background: #303030;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.12s;
+}
+
+.btnApprove:hover:not(:disabled) {
+  background: #4a4a4a;
+  border-color: #4a4a4a;
+}
+
+.btnApprove:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btnApprove.withCheck::before {
+  content: "✓";
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+/* Subdued Reviewed badge (top-right when already-reviewed, no edits) */
+.badgeReviewed {
+  height: 32px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid #f1f1f1;
+  background: #f0f0f0;
+  color: #6d7175;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: default;
+  user-select: none;
+}
+
+.badgeReviewed::before {
+  content: "✓";
+  font-weight: 700;
+  opacity: 0.55;
+}
+
+/* ── Decision header block (top of aside detail) ─────────────────── */
+
+.decisionHeader {
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.decisionHeader h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.decisionHeaderMeta {
+  font-size: 11px;
+  color: #6d7175;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.decisionHeaderMeta .sep {
+  color: #8c9196;
+}
+
+.decisionHeaderMeta code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 10px;
+  background: #f0f0f0;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.decisionHeaderChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+/* ── Detail sections (inside aside) ──────────────────────────────── */
+
+.section {
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.sectionTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 8px;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 4px 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.pair dt {
+  color: #6d7175;
+  font-weight: 500;
+  margin: 0;
+}
+
+.pair dd {
+  color: #303030;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.reasoning {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #303030;
+  background: #f0f0f0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 0;
+}
+
+.ruleList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ruleList li {
+  padding: 6px 0;
+  border-bottom: 1px solid #f1f1f1;
+  font-size: 12px;
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+}
+
+.ruleList li:last-child {
+  border-bottom: none;
+}
+
+.ruleName {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  color: #303030;
+}
+
+.ruleDesc {
+  color: #6d7175;
+}
+
+.candTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.candTable th,
+.candTable td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #f1f1f1;
+  text-align: left;
+}
+
+.candTable th {
+  background: #f6f6f7;
+  color: #6d7175;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+}
+
+.candTable .candWinner td {
+  background: #e2f5ec;
+}
+
+.candCostCol,
+.candScoreCol {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Verdict capture form ────────────────────────────────────────── */
+
+.verdict {
+  background: #ffffff;
+  border: 1px solid #e1e3e5;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.verdictTitle {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.verdictOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.verdictOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.verdictOption:hover {
+  background: #f6f6f7;
+}
+
+.verdictOptionSelected {
+  border-color: #005bd3;
+  background: #f0f6ff;
+}
+
+.verdictOption input {
+  margin: 0;
+  accent-color: #005bd3;
+}
+
+.verdictLabel {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.verdictHelp {
+  font-size: 11px;
+  color: #6d7175;
+  margin-left: 6px;
+}
+
+.verdictComment {
+  width: 100%;
+  min-height: 72px;
+  padding: 8px 10px;
+  border: 1px solid #e1e3e5;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  color: #303030;
+  resize: vertical;
+}
+
+.verdictActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.verdictHint {
+  text-align: right;
+  font-size: 11px;
+  color: #6d7175;
+  margin-top: 4px;
+}
+
+/* ── Unsaved-changes modal ───────────────────────────────────────── */
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(48, 48, 48, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalCard {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e1e3e5;
+  padding: 24px 28px;
+  max-width: 480px;
+  width: calc(100% - 40px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+
+.modalCard h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.modalBody {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #303030;
+  margin-bottom: 20px;
+}
+
+.modalBody p {
+  margin: 0 0 8px;
+}
+
+.modalBody p:last-child {
+  margin: 0;
+  color: #6d7175;
+  font-size: 12px;
+}
+
+.modalActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.modalActionsLeft,
+.modalActionsRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btnSecondary {
+  height: 32px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  border: 1px solid #e1e3e5;
+  background: #ffffff;
+  color: #303030;
+}
+
+.btnSecondary:hover {
+  background: #f6f6f7;
+  border-color: #8c9196;
+}
+
+.btnSecondary.critical {
+  color: #d72c0d;
+}
+
+.btnSecondary.critical:hover {
+  border-color: #d72c0d;
+  background: #fde7e2;
+}
+
+/* ── Misc ───────────────────────────────────────────────────────── */
+
+.subtle {
+  color: #6d7175;
+  font-size: 12px;
+}
+
+.code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  background: #f0f0f0;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.asideSectionHeader {
+  font-size: 10px;
+  font-weight: 700;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0 2px;
+  margin: 4px 0 -4px;
+}

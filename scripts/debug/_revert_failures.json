@@ -1,0 +1,554 @@
+[
+  {
+    "order": "80855",
+    "fid": "gid://shopify/Fulfillment/6439455883584",
+    "staff": "Ricardo",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80861",
+    "fid": "gid://shopify/Fulfillment/6439455490368",
+    "staff": "Ricardo",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80867",
+    "fid": "gid://shopify/Fulfillment/6439455097152",
+    "staff": "Ricardo",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80869",
+    "fid": "gid://shopify/Fulfillment/6439454769472",
+    "staff": "Ricardo",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80892",
+    "fid": "gid://shopify/Fulfillment/6439454474560",
+    "staff": "Ricardo",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80898",
+    "fid": "gid://shopify/Fulfillment/6439452606784",
+    "staff": "Ricardo",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80899",
+    "fid": "gid://shopify/Fulfillment/6439452246336",
+    "staff": "Ricardo",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80900",
+    "fid": "gid://shopify/Fulfillment/6439451787584",
+    "staff": "Ricardo",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80903",
+    "fid": "gid://shopify/Fulfillment/6439447593280",
+    "staff": "Ricardo",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80907",
+    "fid": "gid://shopify/Fulfillment/6439445332288",
+    "staff": "Ricardo",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80909",
+    "fid": "gid://shopify/Fulfillment/6439445102912",
+    "staff": "Ricardo",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80910",
+    "fid": "gid://shopify/Fulfillment/6439444840768",
+    "staff": "Ricardo",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80945",
+    "fid": "gid://shopify/Fulfillment/6439459389760",
+    "staff": "Ricardo",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80920",
+    "fid": "gid://shopify/Fulfillment/6439440253248",
+    "staff": "Raphael",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80922",
+    "fid": "gid://shopify/Fulfillment/6439439892800",
+    "staff": "Raphael",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80923",
+    "fid": "gid://shopify/Fulfillment/6439439761728",
+    "staff": "Raphael",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80932",
+    "fid": "gid://shopify/Fulfillment/6439439040832",
+    "staff": "Raphael",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80936",
+    "fid": "gid://shopify/Fulfillment/6439430619456",
+    "staff": "Raphael",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80937",
+    "fid": "gid://shopify/Fulfillment/6439430029632",
+    "staff": "Raphael",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80938",
+    "fid": "gid://shopify/Fulfillment/6439429275968",
+    "staff": "Raphael",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80939",
+    "fid": "gid://shopify/Fulfillment/6439427965248",
+    "staff": "Raphael",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80941",
+    "fid": "gid://shopify/Fulfillment/6439423541568",
+    "staff": "Raphael",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80942",
+    "fid": "gid://shopify/Fulfillment/6439426949440",
+    "staff": "Raphael",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  },
+  {
+    "order": "80943",
+    "fid": "gid://shopify/Fulfillment/6439422099776",
+    "staff": "Raphael",
+    "error": [
+      {
+        "message": "Access denied for fulfillmentCancel field.",
+        "locations": [
+          {
+            "line": 3,
+            "column": 3
+          }
+        ],
+        "extensions": {
+          "code": "ACCESS_DENIED",
+          "documentation": "https://shopify.dev/api/usage/access-scopes"
+        },
+        "path": [
+          "fulfillmentCancel"
+        ]
+      }
+    ]
+  }
+]

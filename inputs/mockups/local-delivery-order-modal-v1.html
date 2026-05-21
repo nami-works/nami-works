@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Local Delivery — Order details modal</title>
+<style>
+  :root {
+    --text: #303030;
+    --subdued: #6d7175;
+    --border: #e1e3e5;
+    --bg: #ffffff;
+    --canvas: #f6f6f7;
+    --primary-bg: #303030;
+    --primary-text: #ffffff;
+    --critical: #d72c0d;
+    --success: #008060;
+    --warning-bg: #fff3e0;
+    --warning-text: #b54708;
+    --info-bg: #e7f1ff;
+    --info-text: #005bd3;
+    --success-bg: #d6f0e0;
+    --success-text: #008060;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    margin: 0;
+    padding: 32px;
+    background: var(--canvas);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
+  h2 { font-size: 14px; font-weight: 600; margin: 0 0 8px; }
+  h3 { font-size: 12px; font-weight: 600; margin: 0 0 6px; color: var(--subdued); text-transform: uppercase; letter-spacing: 0.4px; }
+  .lede { color: var(--subdued); margin: 0 0 24px; max-width: 900px; }
+
+  /* ---------- Modal wrapper ---------- */
+  .modal-shell {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 760px;
+    max-width: 100%;
+    margin: 0 auto 32px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+  .modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .modal-head-left { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .modal-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .modal-title { font-size: 18px; font-weight: 600; }
+  .modal-meta { color: var(--subdued); font-size: 12px; }
+  .modal-close {
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    color: var(--subdued);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  .modal-close:hover { background: var(--canvas); }
+
+  .modal-body {
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .modal-body .full {
+    grid-column: 1 / -1;
+  }
+  .card {
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+
+  /* ---------- Modal foot ---------- */
+  .modal-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--canvas);
+  }
+  .modal-foot-left, .modal-foot-right { display: flex; gap: 8px; }
+
+  /* ---------- Inline tokens ---------- */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 16px;
+  }
+  .badge.success { background: var(--success-bg); color: var(--success-text); }
+  .badge.warning { background: var(--warning-bg); color: var(--warning-text); }
+  .badge.info { background: var(--info-bg); color: var(--info-text); }
+  .badge.subdued { background: #ececed; color: var(--subdued); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+    text-decoration: none;
+  }
+  .btn.primary { background: var(--primary-bg); color: var(--primary-text); border-color: var(--primary-bg); }
+  .btn.critical { color: var(--critical); border-color: var(--critical); }
+
+  /* ---------- Card content patterns ---------- */
+  .key-val { display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; }
+  .key { color: var(--subdued); font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .val { color: var(--text); font-size: 13px; word-wrap: break-word; }
+  .val.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; }
+  .external-link { color: var(--info-text); font-size: 12px; text-decoration: none; }
+  .external-link::after { content: " ↗"; }
+
+  .item-row {
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .item-row:last-child { border-bottom: none; }
+  .item-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    background: #fde2dd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+  .item-name { font-size: 13px; font-weight: 500; }
+  .item-sku { color: var(--subdued); font-size: 11px; }
+  .item-price { font-size: 13px; font-weight: 500; text-align: right; }
+
+  .totals { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
+  .totals-row { display: flex; justify-content: space-between; font-size: 13px; }
+  .totals-row.total { font-weight: 600; }
+  .totals-row .right { display: inline-flex; gap: 8px; align-items: center; }
+
+  .tags-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+
+  /* ---------- Tag editor (Hybrid) ---------- */
+  .tags-section-label {
+    color: var(--subdued);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin: 8px 0 4px;
+  }
+  .tag-toggle-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--subdued);
+    transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  }
+  .tag-toggle .indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1px solid var(--subdued);
+    background: transparent;
+  }
+  .tag-toggle.active {
+    background: var(--warning-bg);
+    border-color: var(--warning-text);
+    color: var(--warning-text);
+  }
+  .tag-toggle.active .indicator {
+    background: var(--warning-text);
+    border-color: var(--warning-text);
+  }
+  .tag-toggle:hover {
+    border-color: var(--text);
+    color: var(--text);
+  }
+  .tag-toggle.active:hover {
+    background: #ffe5cc;
+  }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 4px 2px 10px;
+    background: #ececed;
+    color: var(--text);
+    border-radius: 12px;
+    font-size: 12px;
+  }
+  .chip-remove {
+    border: none;
+    background: transparent;
+    color: var(--subdued);
+    cursor: pointer;
+    padding: 0 4px;
+    font-size: 14px;
+    line-height: 1;
+    border-radius: 50%;
+  }
+  .chip-remove:hover { background: rgba(0,0,0,0.08); color: var(--text); }
+  .add-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--subdued);
+    font-size: 12px;
+    cursor: text;
+    min-width: 140px;
+  }
+  .add-tag::before { content: "+ "; }
+
+  .timeline { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .timeline-item { display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: baseline; }
+  .timeline-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--subdued); margin-top: 6px; justify-self: center; }
+  .timeline-text { color: var(--text); font-size: 12px; }
+  .timeline-text strong { font-weight: 500; }
+  .timeline-time { color: var(--subdued); font-size: 11px; }
+
+  .notes-empty { color: var(--subdued); font-style: italic; margin-bottom: 6px; font-size: 12px; }
+
+  /* ---------- Why-this-shape panel ---------- */
+  .notes-panel {
+    background: #fafafb;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--info-text);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    color: var(--text);
+    font-size: 13px;
+    max-width: 900px;
+  }
+  .notes-panel h2 { color: var(--info-text); margin-bottom: 6px; }
+  .notes-panel ul { margin: 0; padding-left: 20px; }
+  .notes-panel li { margin-bottom: 4px; }
+
+  @media (max-width: 768px) {
+    .modal-body { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Local Delivery — Order details modal</h1>
+<p class="lede">
+  Replaces the current "click order → open in Shopify admin (new tab)" behavior with an
+  in-page Polaris <code>&lt;s-modal&gt;</code> tailored for the LD operator. Surfaces the
+  fields that drive routing/dispatch decisions, defers the long Shopify metafield wall
+  to the "Open in Shopify" deep-link in the footer.
+</p>
+
+<div class="notes-panel">
+  <h2>Design rationale</h2>
+  <ul>
+    <li><strong>Operator-focused, not Shopify-replica.</strong> An LD operator needs items, customer contact, address quality, tags, and the recent timeline — not the 22 Iglu/NFC-e metafields. Those stay one click away via the footer deep-link.</li>
+    <li><strong>Items lead.</strong> The modal exists primarily to confirm information and make manual adjustments, so the line items get the full-width top slot. The two-column row beneath answers the operator's follow-up questions: "who do I call if it fails?" (Customer, left) and "where do I deliver this?" (Shipping address, right).</li>
+    <li><strong>Items + Totals collapsed into one card</strong> — line items typically fit in 1-3 rows for LD orders.</li>
+    <li><strong>Tags editable inline (Hybrid).</strong> Top row: clickable quick-toggles for the three operator-relevant tags (<code>ld_failed-delivery</code>, <code>ld_address-confirm</code>, <code>ld_number-confirm</code>) — outlined when absent, filled-warning when present, click to toggle. Below: every other tag as a chip with × to remove, plus a free-text input with autocomplete from the shop's known tag list. Saves immediately on toggle/add/remove (optimistic UI; revert on error). Operator quick-toggles drive auto-assign skip logic so they get the prominent treatment.</li>
+    <li><strong>Internal notes inline-editable.</strong> One of the few places the operator can leave a note about a customer interaction without leaving the page.</li>
+    <li><strong>Timeline last 5 events only.</strong> Older events available via "Open in Shopify".</li>
+    <li><strong>Footer left = destructive / utility:</strong> Open in Shopify is a utility escape hatch. Right = primary action (Close).</li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- THE MODAL                                                    -->
+<!-- ============================================================ -->
+<div class="modal-shell">
+  <!-- Head -->
+  <div class="modal-head">
+    <div class="modal-head-left">
+      <div class="modal-title-row">
+        <span class="modal-title">#79428</span>
+        <span class="badge success">● Paid</span>
+        <span class="badge success">● Fulfilled</span>
+        <span class="badge subdued">in-store · RioSul</span>
+      </div>
+      <span class="modal-meta">May 5, 2026 · 9:57 PM · Created from draft #D18743 by IGLU POS</span>
+    </div>
+    <button class="modal-close" title="Close">✕</button>
+  </div>
+
+  <!-- Body -->
+  <div class="modal-body">
+
+    <!-- Items + totals (full width) — FIRST per 2026-05-06 review:
+         the modal exists primarily to confirm information and make manual
+         adjustments, so the line items lead. -->
+    <div class="card full">
+      <h3>Items (1)</h3>
+      <div class="item-row">
+        <div class="item-thumb">🧴</div>
+        <div>
+          <div class="item-name">melon mood | body & hair splash</div>
+          <div class="item-sku">SKU GEB 024 · qty 1</div>
+        </div>
+        <div class="item-price">R$129.00</div>
+      </div>
+      <div class="totals">
+        <div class="totals-row"><span>Subtotal</span><span>R$129.00</span></div>
+        <div class="totals-row total">
+          <span>Total</span>
+          <span class="right">R$129.00 <span class="badge success">Paid</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer (left) — comes after Items so the operator scans bottom-up
+         from the active subject (the items being delivered) to who/where -->
+    <div class="card">
+      <h3>Customer</h3>
+      <div class="key-val">
+        <span class="key">Phone</span>
+        <span class="val">+55 21 98817 3330</span>
+      </div>
+      <div class="key-val">
+        <span class="key">Email</span>
+        <span class="val">lauragcar@yahoo.com.br</span>
+      </div>
+      <div class="key-val">
+        <span class="key">CPF</span>
+        <span class="val mono">034.913.616-56</span>
+      </div>
+    </div>
+
+    <!-- Shipping address (right) -->
+    <div class="card">
+      <h3>Shipping address</h3>
+      <div class="key-val">
+        <span class="val">Laura Carvalho</span>
+        <span class="val">Rua Forte William, 11</span>
+        <span class="val">Apto 11, Matizes, Panamby</span>
+        <span class="val">São Paulo, SP — 04719-150</span>
+      </div>
+      <a class="external-link" href="#">Edit address in Shopify</a>
+    </div>
+
+    <!-- Tags (full width) — Hybrid editor: LD quick-toggles + chip editor -->
+    <div class="card full">
+      <h3>Tags</h3>
+
+      <div class="tags-section-label">Operator tags (click to toggle)</div>
+      <div class="tag-toggle-row">
+        <button class="tag-toggle" title="Add ld_failed-delivery">
+          <span class="indicator"></span>ld_failed-delivery
+        </button>
+        <button class="tag-toggle" title="Add ld_address-confirm">
+          <span class="indicator"></span>ld_address-confirm
+        </button>
+        <button class="tag-toggle" title="Add ld_number-confirm">
+          <span class="indicator"></span>ld_number-confirm
+        </button>
+      </div>
+
+      <div class="tags-section-label">All tags</div>
+      <div class="chip-row">
+        <span class="chip">in-store<button class="chip-remove" title="Remove tag">×</button></span>
+        <span class="chip">RioSul<button class="chip-remove" title="Remove tag">×</button></span>
+        <span class="add-tag">Add a tag…</span>
+      </div>
+    </div>
+
+    <!-- Internal notes (full width) -->
+    <div class="card full">
+      <h3>Internal notes</h3>
+      <p class="notes-empty">No internal notes yet.</p>
+      <button class="btn">+ Add note</button>
+    </div>
+
+    <!-- Timeline (full width) -->
+    <div class="card full">
+      <h3>Timeline (last 5)</h3>
+      <div class="timeline">
+        <div class="timeline-item">
+          <span class="timeline-dot"></span>
+          <span class="timeline-text"><strong>Fulfilled from RioSul</strong> · 1 item</span>
+          <span class="timeline-time">May 5 · 9:57 PM</span>
+        </div>
+        <div class="timeline-item">
+          <span class="timeline-dot"></span>
+          <span class="timeline-text"><strong>Fulfillment location changed</strong> for 1 item</span>
+          <span class="timeline-time">May 5 · 9:57 PM</span>
+        </div>
+        <div class="timeline-item">
+          <span class="timeline-dot"></span>
+          <span class="timeline-text"><strong>Order confirmation emailed</strong> to customer</span>
+          <span class="timeline-time">May 5 · 9:57 PM</span>
+        </div>
+        <div class="timeline-item">
+          <span class="timeline-dot"></span>
+          <span class="timeline-text"><strong>Marked R$129.00 as paid</strong> by IGLU POS</span>
+          <span class="timeline-time">May 5 · 9:57 PM</span>
+        </div>
+        <div class="timeline-item">
+          <span class="timeline-dot"></span>
+          <span class="timeline-text"><strong>Created from draft #D18743</strong> by IGLU POS</span>
+          <span class="timeline-time">May 5 · 9:57 PM</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Foot -->
+  <div class="modal-foot">
+    <div class="modal-foot-left">
+      <a class="btn" href="#">Open full order in Shopify ↗</a>
+    </div>
+    <div class="modal-foot-right">
+      <button class="btn primary">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT: order with operational issue (ld_address-confirm)   -->
+<!-- ============================================================ -->
+<h1 style="margin-top:32px;">Variant — order flagged for address confirm</h1>
+<p class="lede">
+  Same modal, demonstrating how operator-relevant tags surface in the Tags card and
+  the address card flags an outstanding issue.
+</p>
+
+<div class="modal-shell">
+  <div class="modal-head">
+    <div class="modal-head-left">
+      <div class="modal-title-row">
+        <span class="modal-title">#79430</span>
+        <span class="badge success">● Paid</span>
+        <span class="badge subdued">● Unfulfilled</span>
+        <span class="badge warning">⚠ Address review needed</span>
+      </div>
+      <span class="modal-meta">May 6, 2026 · 9:14 AM · Online checkout</span>
+    </div>
+    <button class="modal-close" title="Close">✕</button>
+  </div>
+
+  <div class="modal-body">
+
+    <div class="card full">
+      <h3>Items (2)</h3>
+      <div class="item-row">
+        <div class="item-thumb">🧴</div>
+        <div>
+          <div class="item-name">melon mood | body & hair splash</div>
+          <div class="item-sku">SKU GEB 024 · qty 1</div>
+        </div>
+        <div class="item-price">R$129.00</div>
+      </div>
+      <div class="item-row">
+        <div class="item-thumb">🌸</div>
+        <div>
+          <div class="item-name">midnight bloom | hair perfume</div>
+          <div class="item-sku">SKU GEB 031 · qty 2</div>
+        </div>
+        <div class="item-price">R$258.00</div>
+      </div>
+      <div class="totals">
+        <div class="totals-row"><span>Subtotal</span><span>R$387.00</span></div>
+        <div class="totals-row total">
+          <span>Total</span>
+          <span class="right">R$387.00 <span class="badge success">Paid</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Customer</h3>
+      <div class="key-val">
+        <span class="key">Phone</span>
+        <span class="val">+55 11 99876 5432</span>
+      </div>
+      <div class="key-val">
+        <span class="key">Email</span>
+        <span class="val">mateus.souza@gmail.com</span>
+      </div>
+      <div class="key-val">
+        <span class="key">CPF</span>
+        <span class="val mono">512.444.890-21</span>
+      </div>
+    </div>
+
+    <div class="card" style="border-left: 3px solid var(--warning-text);">
+      <h3 style="color:var(--warning-text);">Shipping address — needs confirm</h3>
+      <div class="key-val">
+        <span class="val">Mateus Souza</span>
+        <span class="val">Rua das Acácias, 88</span>
+        <span class="val">88, Bloco B, Vila Mariana</span>
+        <span class="val">São Paulo, SP — 04123-000</span>
+      </div>
+      <span class="badge warning">Duplicated number — apt or street?</span>
+      <div style="margin-top:8px;"><a class="external-link" href="#">Fix in Shopify</a></div>
+    </div>
+
+    <!-- Tags (full width) — same Hybrid editor; ld_number-confirm shown active -->
+    <div class="card full">
+      <h3>Tags</h3>
+
+      <div class="tags-section-label">Operator tags (click to toggle)</div>
+      <div class="tag-toggle-row">
+        <button class="tag-toggle" title="Add ld_failed-delivery">
+          <span class="indicator"></span>ld_failed-delivery
+        </button>
+        <button class="tag-toggle" title="Add ld_address-confirm">
+          <span class="indicator"></span>ld_address-confirm
+        </button>
+        <button class="tag-toggle active" title="Remove ld_number-confirm">
+          <span class="indicator"></span>ld_number-confirm
+        </button>
+      </div>
+
+      <div class="tags-section-label">All tags</div>
+      <div class="chip-row">
+        <span class="chip">online<button class="chip-remove" title="Remove tag">×</button></span>
+        <span class="add-tag">Add a tag…</span>
+      </div>
+    </div>
+
+    <div class="card full">
+      <h3>Internal notes</h3>
+      <p style="margin: 0 0 6px;">Customer called 11/05 saying the apt number is 88 (matches street number coincidentally). Verified address.</p>
+      <button class="btn">+ Add note</button>
+    </div>
+
+  </div>
+
+  <div class="modal-foot">
+    <div class="modal-foot-left">
+      <a class="btn" href="#">Open full order in Shopify ↗</a>
+    </div>
+    <div class="modal-foot-right">
+      <button class="btn primary">Close</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Loading overlay with app-name message</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --text: #303030;
+    --subdued: #6d7175;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 720px;
+    margin-bottom: 24px;
+  }
+
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 880px;
+    margin-bottom: 24px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; color: #4a3600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 4px; }
+
+  .variant-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    max-width: 1200px;
+    margin-bottom: 32px;
+  }
+  .variant {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .variant-label {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    background: #fafbfb;
+  }
+  .variant-label .subtle { font-weight: 400; color: var(--subdued); margin-left: 8px; font-size: 12px; }
+
+  /* The overlay itself — same as production app/routes/app.tsx lines 65-101.
+     Rendered inside .stage to demo at small scale. */
+  .stage {
+    height: 360px;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+  }
+  .logo {
+    width: 96px;
+    height: 96px;
+    border-radius: 16px;
+    background:
+      linear-gradient(135deg, #5ecece 0%, #b09fda 50%, #d4a8d4 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(94, 206, 206, 0.2);
+  }
+  .bar-track {
+    width: 110px;
+    height: 3px;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #5ecece, #b09fda, #d4a8d4, #5ecece);
+    background-size: 200% 100%;
+    animation: holo-bar 1.4s linear infinite;
+  }
+  @keyframes holo-bar {
+    0%   { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+
+  /* Message styles */
+  .msg {
+    font-size: 13px;
+    color: var(--subdued);
+    font-weight: 400;
+    text-align: center;
+    letter-spacing: 0.1px;
+  }
+  .msg .name {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* Variant A — message BELOW bar */
+  .variant-a .overlay { gap: 16px; }
+  .variant-a .msg { margin-top: 4px; }
+
+  /* Variant B — message ABOVE bar, BELOW logo */
+  .variant-b .overlay { gap: 14px; }
+
+  /* Variant C — bar smaller, message replaces bar's prominence */
+  .variant-c .overlay { gap: 18px; }
+  .variant-c .bar-track { width: 80px; height: 2px; }
+
+  /* App-name variants for the bottom strip */
+  .identity-strip {
+    margin-top: 16px;
+    padding: 16px 20px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    max-width: 1200px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: center;
+    font-size: 12px;
+  }
+  .identity-strip strong { color: var(--text); }
+  .identity-strip .pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 99px;
+    background: #f1f2f3;
+    color: var(--text);
+    font-weight: 500;
+    margin-right: 6px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Loading overlay — adding "{app-name} is updating" message — v1</h1>
+<p class="intro">
+  Existing overlay (logo + holographic bar) gains a single line of text identifying which app is loading.
+  Three placement options. Same overlay block is reused for in-app navigation AND the post-deploy cold-start
+  flash (where today the page renders as plain unstyled HTML before App Bridge defines the web components).
+</p>
+
+<div class="notes">
+  <h3>Changes vs current</h3>
+  <ul>
+    <li><strong>New message line</strong> — "{app-name} is updating" — names the app so users in multi-app stores know which surface they're entering.</li>
+    <li><strong>Overlay also fires on initial cold-start</strong>, not just on internal navigation. Hides the plain-text web-component flash per <code>:not(:defined)</code> + render gating.</li>
+    <li><strong>Logo and bar unchanged</strong> — same gradient, same dimensions, same animation timing. Only the text is new.</li>
+  </ul>
+</div>
+
+<div class="variant-grid">
+  <!-- Variant A: message below bar -->
+  <div class="variant variant-a">
+    <div class="variant-label">Variant A <span class="subtle">message below bar</span></div>
+    <div class="stage">
+      <div class="overlay">
+        <div class="logo">CPG</div>
+        <div class="bar-track"><div class="bar-fill"></div></div>
+        <div class="msg"><span class="name">CPG Labs</span> is updating</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variant B: message between logo and bar -->
+  <div class="variant variant-b">
+    <div class="variant-label">Variant B <span class="subtle">message between logo & bar</span></div>
+    <div class="stage">
+      <div class="overlay">
+        <div class="logo">CPG</div>
+        <div class="msg"><span class="name">CPG Labs</span> is updating</div>
+        <div class="bar-track"><div class="bar-fill"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variant C: smaller bar, message after -->
+  <div class="variant variant-c">
+    <div class="variant-label">Variant C <span class="subtle">message dominant, bar smaller</span></div>
+    <div class="stage">
+      <div class="overlay">
+        <div class="logo">CPG</div>
+        <div class="msg"><span class="name">CPG Labs</span> is updating</div>
+        <div class="bar-track"><div class="bar-fill"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="identity-strip">
+  <strong>App-name lookup</strong>
+  <span class="pill">cpg-labs → "CPG Labs"</span>
+  <span class="pill">omnify → "Omnify"</span>
+  <span class="pill">storytelling → "Storytelling"</span>
+  <span class="pill">storefront → "Storefront"</span>
+</div>
+
+</body>
+</html>

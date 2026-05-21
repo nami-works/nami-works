@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Local Delivery Simulator — NAMI Works</title>
+    <link rel="stylesheet" href="/local-delivery/simulator/static/styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="title">Local Delivery Simulator</div>
+      <select id="batch-picker"><option>Loading…</option></select>
+      <select id="style-picker" hidden></select>
+      <button id="optimize-fresh">Run optimize fresh</button>
+      <button id="recalculate">Recalculate cost</button>
+      <span id="dirty-flag" hidden>● unsaved tweak</span>
+      <span id="readonly-flag" hidden>🔒 read-only — live dispatch on cpg-labs UI</span>
+      <span id="status"></span>
+    </header>
+    <main>
+      <div id="map"></div>
+      <aside id="side-panel">
+        <section id="route-list">
+          <h3>Routes</h3>
+          <div id="routes-container">Pick a batch to begin.</div>
+        </section>
+        <section id="annotation-block" hidden>
+          <h3>Annotation</h3>
+          <div class="tag-chips">
+            <label><input type="checkbox" value="water-barrier" />water-barrier</label>
+            <label><input type="checkbox" value="absorption" />absorption</label>
+            <label><input type="checkbox" value="centroid" />centroid</label>
+            <label><input type="checkbox" value="address-issue" />address-issue</label>
+            <label><input type="checkbox" value="time-of-day" />time-of-day</label>
+          </div>
+          <textarea id="annotation" rows="6" placeholder="What did you change and why?"></textarea>
+          <button id="save-tweak">Save tweak</button>
+        </section>
+      </aside>
+    </main>
+    <script src="/local-delivery/simulator/static/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Local delivery — mobile-only rebuild · mockup v1</title>
+<style>
+  :root {
+    --bg: #f1f2f4;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --border-soft: #ebebeb;
+    --text: #303030;
+    --subdued: #6d7175;
+    --axis: #8c9196;
+    --blue-primary: #005bd3;
+    --blue-soft: #eef4ff;
+    --green: #067647;
+    --green-soft: #e8f4ed;
+    --red: #d72c0d;
+    --red-soft: #fdecea;
+    --yellow-soft: #fff4e2;
+    --yellow-text: #915407;
+    --critical: #d72c0d;
+    --warning: #d99a0a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  h1.mockupTitle { font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+  .intro {
+    font-size: 13px;
+    color: var(--subdued);
+    max-width: 1000px;
+    margin-bottom: 20px;
+  }
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #5b4700;
+    max-width: 1000px;
+    margin-bottom: 20px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; font-weight: 600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 4px; }
+  .notes code { background: #fff; padding: 1px 5px; border-radius: 3px; font-size: 11px; border: 1px solid rgba(0,0,0,0.08); }
+  .notes.critical { background: #fff4ef; border-color: #f2b6a3; color: #6b2211; }
+
+  .sectionLabel {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 32px 0 10px;
+  }
+  .splitRow {
+    display: grid;
+    grid-template-columns: 420px 420px;
+    gap: 40px;
+    align-items: flex-start;
+  }
+
+  /* Frame shell — iPhone 13 at 390px */
+  .phone {
+    width: 420px;
+    background: #1a1a1a;
+    border-radius: 36px;
+    padding: 12px 14px 18px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+  }
+  .phoneScreen {
+    background: var(--bg);
+    border-radius: 24px;
+    overflow: hidden;
+    height: 780px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  .phoneScreen::-webkit-scrollbar { width: 4px; }
+  .phoneScreen::-webkit-scrollbar-thumb { background: #c9cccf; border-radius: 2px; }
+  .phoneCaption {
+    font-size: 12px;
+    color: var(--subdued);
+    text-align: center;
+    margin-top: 10px;
+    font-weight: 500;
+  }
+
+  /* ── App chrome (Shopify admin top bar, simulated) ─────────── */
+  .adminChrome {
+    background: #f6f6f7;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--subdued);
+  }
+  .adminChrome .shopName { font-weight: 600; color: var(--text); }
+
+  /* ── Sticky top chrome (page heading + location chip) ─────── */
+  .stickyTop {
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+    padding: 10px 14px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .pageHeading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .pageTitle { font-size: 17px; font-weight: 700; }
+  .overflowBtn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #c9cccf;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--text);
+  }
+  .locationChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #fff;
+    border: 1px solid #c9cccf;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .locationChip::after { content: "▾"; font-size: 9px; color: var(--subdued); margin-left: 4px; }
+  .locationPin { color: var(--blue-primary); }
+
+  /* ── Filter chips row ─────────────────────────────────────── */
+  .filtersRow {
+    display: flex;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filtersRow::-webkit-scrollbar { display: none; }
+  .chip {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    background: #fff;
+    border: 1px solid #c9cccf;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .chip::after { content: "▾"; font-size: 9px; color: var(--subdued); margin-left: 2px; }
+  .chipGhost {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--subdued);
+    font-weight: 400;
+  }
+  .chipGhost::after { display: none; }
+  .chipIcon { font-size: 11px; color: var(--subdued); }
+
+  /* ── Status strip ─────────────────────────────────────────── */
+  .statusStrip {
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--subdued);
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .statusStrip .sep { color: #c9cccf; }
+  .statusStrip strong { color: var(--text); font-weight: 600; }
+  .statusStrip .errStrong { color: var(--critical); font-weight: 600; }
+
+  /* ── Optimize CTA banner ──────────────────────────────────── */
+  .optimizeCta {
+    margin: 4px 14px 12px;
+    padding: 14px;
+    background: var(--blue-soft);
+    border: 1px solid #c6dbff;
+    border-radius: 12px;
+  }
+  .optimizeCtaHeading { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .optimizeCtaBody { font-size: 12px; color: var(--subdued); margin-bottom: 10px; line-height: 1.4; }
+  .optimizeProgressWrap { margin-top: 10px; }
+  .optimizeProgressBar {
+    height: 4px;
+    background: #dce6fb;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .optimizeProgressFill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue-primary), #6b2eb9, #d72c8a);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 0% 0; } 100% { background-position: 200% 0; } }
+  .optimizeProgressLabel { font-size: 11px; color: var(--subdued); display: flex; justify-content: space-between; }
+
+  /* ── Buttons ──────────────────────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+  .btnPrimary {
+    background: #303030;
+    color: #fff;
+    border-color: #1a1a1a;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.05), inset 0 -1px 0 rgba(0,0,0,0.2);
+  }
+  .btnSecondary { background: #fff; color: var(--text); border-color: #c9cccf; }
+  .btnCritical { background: #fff; color: var(--critical); border-color: #f2b6a3; }
+  .btnSm { padding: 6px 10px; font-size: 12px; }
+  .btnFull { width: 100%; }
+  .btnLoading { opacity: 0.6; position: relative; }
+  .btnLoading::before {
+    content: "";
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255,255,255,0.6);
+    border-top-color: #fff;
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Route list + card ────────────────────────────────────── */
+  .routeList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 14px 12px;
+  }
+  .routeCard {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .routeCardError { border-color: #f2b6a3; border-width: 1.5px; }
+  .routeCardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .routeBadgeAndLoc {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+  .routeBadge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badgeA { background: #f0f4ff; color: #1e3a8a; border: 1px solid #c6dbff; }
+  .badgeB { background: #f0f9ff; color: #0b5270; border: 1px solid #a9d6ea; }
+  .badgeC { background: #f4f0ff; color: #4c1d95; border: 1px solid #d6c6f2; }
+  .badgeD { background: #fff4e2; color: #915407; border: 1px solid #f4d9a4; }
+  .routeLocLabel { font-size: 12px; color: var(--subdued); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .statusBadge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .statusPending { background: #eee; color: #555; border: 1px solid #ddd; }
+  .statusQuoted { background: #eef4ff; color: #1e3a8a; border: 1px solid #c6dbff; }
+  .statusAssigning { background: #fff4e2; color: #915407; border: 1px solid #f4d9a4; }
+  .statusInProgress { background: #fff4e2; color: #915407; border: 1px solid #f4d9a4; }
+  .statusDelivered { background: #e8f4ed; color: #067647; border: 1px solid #a5d6b8; }
+  .statusFailed { background: #fdecea; color: #9e0c00; border: 1px solid #f2b6a3; }
+  .statusError { background: #fdecea; color: #9e0c00; border: 1px solid #f2b6a3; }
+
+  .routeStats {
+    font-size: 12px;
+    color: var(--subdued);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .routeStats strong { color: var(--text); font-weight: 600; }
+  .routeFurthest { font-size: 12px; color: var(--subdued); margin-bottom: 10px; }
+  .routeFurthest .pinIcon { color: var(--axis); margin-right: 2px; }
+
+  .routeQuoteBanner {
+    background: var(--green-soft);
+    border: 1px solid #a5d6b8;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 0 0 10px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .routeQuoteBanner strong { color: var(--green); }
+  .routeQuoteBanner .expires { color: var(--subdued); font-size: 11px; }
+
+  .routeTrackingBanner {
+    background: #fff4e2;
+    border: 1px solid #f4d9a4;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 0 0 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--yellow-text);
+  }
+  .routeTrackingBanner a { color: var(--blue-primary); font-weight: 500; text-decoration: none; }
+
+  .routeErrorBanner {
+    background: var(--red-soft);
+    border: 1px solid #f2b6a3;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 0 0 10px;
+    font-size: 12px;
+    color: #9e0c00;
+    line-height: 1.4;
+  }
+
+  .routeActions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .routeActions .btn { flex: 0 0 auto; }
+  .routeActions .overflowBtn { width: 32px; height: 32px; }
+
+  /* ── Collapsible section header ───────────────────────────── */
+  .collapsibleHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #fff;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .collapsibleHeader .count {
+    color: var(--subdued);
+    font-weight: 500;
+    font-size: 12px;
+  }
+  .collapsibleHeader .chevron {
+    display: inline-block;
+    font-size: 12px;
+    color: var(--subdued);
+    transition: transform 0.15s;
+  }
+  .collapsibleHeader.expanded .chevron { transform: rotate(90deg); }
+
+  /* ── Unassigned orders list ───────────────────────────────── */
+  .ordersList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .orderCard {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .orderCardRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .orderName { font-size: 13px; font-weight: 600; color: var(--text); }
+  .orderTotal { font-size: 12px; color: var(--text); font-weight: 500; }
+  .orderAddress { font-size: 12px; color: var(--subdued); margin-top: 3px; line-height: 1.35; }
+  .orderMeta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--subdued);
+  }
+  .orderMeta .due { padding: 1px 7px; border-radius: 8px; font-weight: 600; font-size: 10px; }
+  .dueToday { background: var(--red-soft); color: var(--red); }
+  .dueTomorrow { background: #fff4e2; color: var(--warning); }
+  .dueLater { background: #eef4ff; color: var(--blue-primary); }
+  .orderOk { color: var(--green); }
+  .orderErr { color: var(--red); }
+
+  /* ── Map panel ────────────────────────────────────────────── */
+  .mapPanel {
+    position: relative;
+    height: 320px;
+    background: linear-gradient(135deg, #d6e9ff 0%, #e8f0e4 40%, #f0f0e4 100%);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .mapPanel .fakeRoads {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(90deg, transparent 0%, transparent 20%, rgba(255,255,255,0.4) 20%, rgba(255,255,255,0.4) 22%, transparent 22%, transparent 50%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.3) 52%, transparent 52%),
+      linear-gradient(0deg, transparent 0%, transparent 30%, rgba(255,255,255,0.3) 30%, rgba(255,255,255,0.3) 32%, transparent 32%, transparent 70%, rgba(255,255,255,0.3) 70%, rgba(255,255,255,0.3) 72%, transparent 72%);
+  }
+  .mapMarker {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .mapPin {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: #303030;
+    border: 2px solid #fff;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .routeLine {
+    position: absolute;
+    height: 3px;
+    border-radius: 2px;
+    transform-origin: left center;
+    opacity: 0.8;
+  }
+  .mapLegend {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .mapLegend .pill {
+    background: rgba(255,255,255,0.92);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .mapLegend .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  /* ── Chip section (triage + desktop-only) ─────────────────── */
+  .chipSection { padding: 8px 14px 14px; }
+  .chipSectionHeading {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 14px 0 8px;
+  }
+  .triageChip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .triageChipActionable { border-color: #c6dbff; background: #f5faff; }
+  .triageChipActionable .chipArrow { color: var(--blue-primary); font-weight: 600; }
+  .triageChipDesktopOnly {
+    color: var(--subdued);
+    background: transparent;
+    border-color: var(--border-soft);
+  }
+  .triageChipDesktopOnly .chipArrow { color: var(--subdued); font-size: 11px; }
+  .triageIcon { margin-right: 6px; }
+
+  /* ── Bottom sheet mockup ──────────────────────────────────── */
+  .sheetOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .sheet {
+    background: #fff;
+    width: 100%;
+    max-height: 72%;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    padding: 14px 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+  }
+  .sheetHandle {
+    width: 38px;
+    height: 4px;
+    background: #c9cccf;
+    border-radius: 2px;
+    margin: -4px auto 6px;
+  }
+  .sheetHeading { font-size: 15px; font-weight: 600; margin: 0; }
+  .sheetSubheading { font-size: 12px; color: var(--subdued); }
+  .sheetDivider { height: 1px; background: var(--border); margin: 4px 0; }
+  .sheetStatLine {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    padding: 4px 0;
+  }
+  .sheetStatLine .label { color: var(--subdued); }
+  .sheetStatLine .val { color: var(--text); font-weight: 500; }
+  .sheetStatLine .valLg { font-size: 16px; font-weight: 700; color: var(--text); }
+  .sheetActionRow {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+  .sheetActionRow .btn { flex: 0 0 auto; }
+  .sheetListRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 12px;
+  }
+  .sheetListRow:last-child { border-bottom: none; }
+  .sheetListRowLink {
+    color: var(--blue-primary);
+    font-size: 11px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  /* ── Desktop banner ───────────────────────────────────────── */
+  .desktopBanner {
+    background: #eef4ff;
+    border: 1px solid #c6dbff;
+    color: #1e3a8a;
+    padding: 8px 14px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .desktopBanner a { color: var(--blue-primary); font-weight: 600; text-decoration: none; }
+
+  /* ── Gallery (route-card variants) ────────────────────────── */
+  .galleryRow {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    max-width: 1280px;
+  }
+  .galleryItem .routeCard { margin-bottom: 8px; }
+  .galleryCaption {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+
+  /* ── Sheet gallery ────────────────────────────────────────── */
+  .sheetGallery {
+    display: grid;
+    grid-template-columns: repeat(3, 360px);
+    gap: 24px;
+  }
+  .sheetFrame {
+    background: #1a1a1a;
+    border-radius: 28px;
+    padding: 10px;
+  }
+  .sheetFrameInner {
+    background: rgba(0,0,0,0.45);
+    border-radius: 20px;
+    height: 420px;
+    position: relative;
+    overflow: hidden;
+  }
+  .sheetFrameInner .sheet {
+    border-radius: 16px 16px 0 0;
+    padding-bottom: 16px;
+  }
+  .sheetFrameCaption {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--subdued);
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="mockupTitle">Local delivery — mobile-only rebuild · mockup v1</h1>
+<p class="intro">
+  Parallel mobile route that reuses the existing desktop loader/action unchanged. The desktop route redirects clients with <code>window.innerWidth &lt; 768</code> to <code>/app/local-delivery-mobile</code> on mount (<code>?desktop=1</code> is an escape hatch). Scope is dispatch-first: Optimize, Request quote, Request driver, Cancel delivery, Clear route, View live status. No manual tweaking (no add-to-route, unassign, reorder, or drag). Map is a secondary viewer. Address errors and shipment requests are actionable via Shopify admin deep-links (which work on mobile admin).
+</p>
+
+<div class="notes">
+  <h3>Changes vs current desktop (what's REMOVED on mobile)</h3>
+  <ul>
+    <li><strong>Aside column</strong> — single-column feed instead of the desktop two-column layout with sticky right aside.</li>
+    <li><strong>Fullscreen map</strong> — the overlay that spills past the iframe on phones. Map is a collapsible 320px viewer.</li>
+    <li><strong>Orders table</strong> — replaced by a vertical card list. The 1060px min-width table doesn't compress.</li>
+    <li><strong>All multi-select + drag</strong> — no selection checkboxes, no drag-to-reorder, no add-to-route flow. Optimize is the only way to assign.</li>
+    <li><strong>17 <code>&lt;s-modal&gt;</code>s</strong> — replaced by ~10 <code>&lt;BottomSheet&gt;</code> instances using a single primitive. <code>&lt;s-modal&gt;</code> mounts via App Bridge overlay and has been seen to spill past the iframe.</li>
+    <li><strong>Desktop-only editors</strong> — Lalamove settings, special requests, address verification, integration log, map style, return pickup flow. Surfaced as "Open on desktop ↗" chips.</li>
+  </ul>
+  <h3 style="margin-top: 14px">What stays the same</h3>
+  <ul>
+    <li>Loader + all 17 action intents (<code>export { loader, action } from "./app.local-delivery"</code>).</li>
+    <li>Route coloring, Lalamove status mapping (<code>mapLalamoveStatusToInternal</code>), terminal-status helpers — duplicated locally (~40 lines) so the desktop file stays untouched.</li>
+    <li>i18n namespace <code>local-delivery</code>; new keys live under a <code>mobile.*</code> section.</li>
+    <li>Google Maps loader + options (<code>gestureHandling: "greedy"</code> already correct).</li>
+  </ul>
+</div>
+
+<p class="sectionLabel">Frames — two dispatch moments</p>
+
+<div class="splitRow">
+
+  <!-- ═══════════════════════════════════════════════════
+       FRAME A — Morning, nothing assigned yet
+       ═══════════════════════════════════════════════════ -->
+  <div>
+    <div class="phone">
+      <div class="phoneScreen">
+
+        <div class="adminChrome">
+          <span><span class="shopName">gebeauty.com</span> · Admin</span>
+          <span>9:42 AM</span>
+        </div>
+
+        <div class="stickyTop">
+          <div class="pageHeading">
+            <div class="pageTitle">Local delivery</div>
+            <div class="overflowBtn">⋯</div>
+          </div>
+          <span class="locationChip"><span class="locationPin">📍</span> São Paulo — Vila Mariana</span>
+        </div>
+
+        <div class="filtersRow">
+          <span class="chip"><span class="chipIcon">📅</span> Apr 21</span>
+          <span class="chip">Same-day</span>
+          <span class="chip">Cutoff 12:00</span>
+          <span class="chip chipGhost">Reset</span>
+        </div>
+
+        <div class="statusStrip">
+          <strong>0</strong> routes out
+          <span class="sep">·</span>
+          <strong>12</strong> pending
+          <span class="sep">·</span>
+          <strong style="color: var(--warning);">3</strong> addr errors
+        </div>
+
+        <div class="optimizeCta">
+          <div class="optimizeCtaHeading">12 orders to route</div>
+          <div class="optimizeCtaBody">
+            Packs today's unassigned orders into the fewest viable routes.
+          </div>
+          <button class="btn btnPrimary btnFull">Optimize</button>
+        </div>
+
+        <div class="collapsibleHeader expanded">
+          <span>Routes <span class="count">(0)</span></span>
+          <span class="chevron">▸</span>
+        </div>
+
+        <div style="padding: 28px 14px; text-align: center; color: var(--subdued); font-size: 12px; line-height: 1.5;">
+          No routes yet.<br/>
+          Tap <strong>Optimize</strong> above to auto-assign today's orders.
+        </div>
+
+        <div class="collapsibleHeader">
+          <span>Unassigned orders <span class="count">(12)</span></span>
+          <span class="chevron">▸</span>
+        </div>
+
+        <div class="collapsibleHeader">
+          <span>Show map <span class="count">(12 pins)</span></span>
+          <span class="chevron">▸</span>
+        </div>
+
+        <div class="chipSection">
+          <div class="chipSectionHeading">Triage (tap to review)</div>
+          <div class="triageChip triageChipActionable">
+            <span><span class="triageIcon">⚠</span> Address errors <strong style="color: var(--warning);">(3)</strong></span>
+            <span class="chipArrow">→</span>
+          </div>
+          <div class="triageChip triageChipActionable">
+            <span><span class="triageIcon">📦</span> Shipment requests <strong>(2)</strong></span>
+            <span class="chipArrow">→</span>
+          </div>
+
+          <div class="chipSectionHeading">Desktop-only actions</div>
+          <div class="triageChip triageChipDesktopOnly">
+            <span><span class="triageIcon">↩</span> Return pickups (1)</span>
+            <span class="chipArrow">open on desktop ↗</span>
+          </div>
+          <div class="triageChip triageChipDesktopOnly">
+            <span><span class="triageIcon">🎯</span> Special requests</span>
+            <span class="chipArrow">open on desktop ↗</span>
+          </div>
+          <div class="triageChip triageChipDesktopOnly">
+            <span><span class="triageIcon">🗺</span> Map style</span>
+            <span class="chipArrow">open on desktop ↗</span>
+          </div>
+          <div class="triageChip triageChipDesktopOnly">
+            <span><span class="triageIcon">⚙</span> Lalamove settings</span>
+            <span class="chipArrow">open on desktop ↗</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="phoneCaption">Frame A — Morning: 12 unassigned, tap Optimize to dispatch</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       FRAME B — Midday, 3 routes dispatched, 1 error
+       ═══════════════════════════════════════════════════ -->
+  <div>
+    <div class="phone">
+      <div class="phoneScreen">
+
+        <div class="adminChrome">
+          <span><span class="shopName">gebeauty.com</span> · Admin</span>
+          <span>1:18 PM</span>
+        </div>
+
+        <div class="stickyTop">
+          <div class="pageHeading">
+            <div class="pageTitle">Local delivery</div>
+            <div class="overflowBtn">⋯</div>
+          </div>
+          <span class="locationChip"><span class="locationPin">📍</span> São Paulo — Vila Mariana</span>
+        </div>
+
+        <div class="filtersRow">
+          <span class="chip"><span class="chipIcon">📅</span> Apr 21</span>
+          <span class="chip">Same-day</span>
+          <span class="chip">Cutoff 12:00</span>
+        </div>
+
+        <div class="statusStrip">
+          <strong>3</strong> routes out
+          <span class="sep">·</span>
+          <strong>2</strong> pending
+          <span class="sep">·</span>
+          <span class="errStrong">1 error</span>
+        </div>
+
+        <div class="routeList">
+
+          <!-- Route 1 — in transit -->
+          <div class="routeCard">
+            <div class="routeCardHeader">
+              <div class="routeBadgeAndLoc">
+                <span class="routeBadge badgeA">Route 1</span>
+                <span class="routeLocLabel">Vila Mariana</span>
+              </div>
+              <span class="statusBadge statusInProgress">In transit</span>
+            </div>
+            <div class="routeStats"><strong>5 orders</strong> · 18.4 km · ~42 min · R$ 38,50</div>
+            <div class="routeFurthest"><span class="pinIcon">📍</span> Furthest: Moema (Rua Tucuruí, 42)</div>
+            <div class="routeTrackingBanner">
+              Driver João · stop 3 of 5 · ETA 1:48 PM<br/>
+              <a href="#">Open Lalamove tracking ↗</a>
+            </div>
+            <div class="routeActions">
+              <button class="btn btnSecondary btnSm">Details</button>
+              <button class="btn btnCritical btnSm">Cancel</button>
+            </div>
+          </div>
+
+          <!-- Route 2 — error -->
+          <div class="routeCard routeCardError">
+            <div class="routeCardHeader">
+              <div class="routeBadgeAndLoc">
+                <span class="routeBadge badgeB">Route 2</span>
+                <span class="routeLocLabel">Vila Mariana</span>
+              </div>
+              <span class="statusBadge statusError">Driver assign failed</span>
+            </div>
+            <div class="routeStats"><strong>4 orders</strong> · 12.1 km · ~31 min · R$ 28,90</div>
+            <div class="routeErrorBanner">
+              <strong>No drivers available</strong> — Lalamove returned <code>ERR_NO_DRIVERS_NEARBY</code>. Retry in 2 min or dispatch from desktop.
+            </div>
+            <div class="routeActions">
+              <button class="btn btnSecondary btnSm">View error</button>
+              <button class="btn btnPrimary btnSm">Retry driver</button>
+            </div>
+          </div>
+
+          <!-- Route 3 — assigning -->
+          <div class="routeCard">
+            <div class="routeCardHeader">
+              <div class="routeBadgeAndLoc">
+                <span class="routeBadge badgeC">Route 3</span>
+                <span class="routeLocLabel">Vila Mariana</span>
+              </div>
+              <span class="statusBadge statusAssigning">Assigning driver…</span>
+            </div>
+            <div class="routeStats"><strong>6 orders</strong> · 22.0 km · ~48 min · R$ 45,20</div>
+            <div class="routeFurthest"><span class="pinIcon">📍</span> Furthest: Brooklin (Av. Berrini)</div>
+            <div class="routeActions">
+              <button class="btn btnSecondary btnSm">Details</button>
+            </div>
+          </div>
+
+          <!-- Route 4 — pending (quoted) -->
+          <div class="routeCard">
+            <div class="routeCardHeader">
+              <div class="routeBadgeAndLoc">
+                <span class="routeBadge badgeD">Route 4</span>
+                <span class="routeLocLabel">Vila Mariana</span>
+              </div>
+              <span class="statusBadge statusQuoted">Quoted</span>
+            </div>
+            <div class="routeStats"><strong>3 orders</strong> · 8.4 km · ~22 min · R$ 17,00</div>
+            <div class="routeQuoteBanner">
+              <span><strong>R$ 18,90</strong> · 3 stops</span>
+              <span class="expires">expires 1:42 PM</span>
+            </div>
+            <div class="routeActions">
+              <button class="btn btnSecondary btnSm">Details</button>
+              <button class="btn btnPrimary btnSm">Request driver</button>
+            </div>
+          </div>
+
+          <!-- Route 5 — pending (no quote yet) -->
+          <div class="routeCard">
+            <div class="routeCardHeader">
+              <div class="routeBadgeAndLoc">
+                <span class="routeBadge badgeA">Route 5</span>
+                <span class="routeLocLabel">Vila Mariana</span>
+              </div>
+              <span class="statusBadge statusPending">Pending</span>
+            </div>
+            <div class="routeStats"><strong>2 orders</strong> · 5.9 km · ~17 min · R$ 14,00</div>
+            <div class="routeActions">
+              <button class="overflowBtn" title="More">⋯</button>
+              <button class="btn btnSecondary btnSm">View</button>
+              <button class="btn btnPrimary btnSm">Request quote</button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="collapsibleHeader expanded">
+          <span>Map <span class="count">(5 routes · 20 pins)</span></span>
+          <span class="chevron">▸</span>
+        </div>
+
+        <!-- Static map illustration -->
+        <div class="mapPanel">
+          <div class="fakeRoads"></div>
+          <div class="mapLegend">
+            <span class="pill"><span class="dot" style="background: #1e3a8a;"></span>Route 1</span>
+            <span class="pill"><span class="dot" style="background: #0b5270;"></span>Route 2</span>
+            <span class="pill"><span class="dot" style="background: #4c1d95;"></span>Route 3</span>
+          </div>
+          <!-- Origin pin (fulfillment location) -->
+          <div class="mapPin" style="top: 150px; left: 90px;"></div>
+          <!-- Route 1 polyline -->
+          <div class="routeLine" style="top: 156px; left: 100px; width: 80px; transform: rotate(18deg); background: #1e3a8a;"></div>
+          <div class="routeLine" style="top: 178px; left: 178px; width: 60px; transform: rotate(40deg); background: #1e3a8a;"></div>
+          <div class="routeLine" style="top: 210px; left: 232px; width: 50px; transform: rotate(-10deg); background: #1e3a8a;"></div>
+          <!-- Route 1 delivery markers -->
+          <div class="mapMarker" style="top: 175px; left: 175px; background: #1e3a8a;"></div>
+          <div class="mapMarker" style="top: 205px; left: 228px; background: #1e3a8a;"></div>
+          <div class="mapMarker" style="top: 208px; left: 278px; background: #1e3a8a;"></div>
+          <!-- Route 2 -->
+          <div class="routeLine" style="top: 156px; left: 100px; width: 70px; transform: rotate(-30deg); background: #0b5270;"></div>
+          <div class="routeLine" style="top: 122px; left: 170px; width: 50px; transform: rotate(-50deg); background: #0b5270;"></div>
+          <div class="mapMarker" style="top: 118px; left: 166px; background: #0b5270;"></div>
+          <div class="mapMarker" style="top: 88px; left: 198px; background: #0b5270;"></div>
+          <!-- Route 3 -->
+          <div class="routeLine" style="top: 158px; left: 100px; width: 90px; transform: rotate(55deg); background: #4c1d95;"></div>
+          <div class="routeLine" style="top: 220px; left: 180px; width: 60px; transform: rotate(10deg); background: #4c1d95;"></div>
+          <div class="mapMarker" style="top: 215px; left: 175px; background: #4c1d95;"></div>
+          <div class="mapMarker" style="top: 232px; left: 235px; background: #4c1d95;"></div>
+          <div class="mapMarker" style="top: 260px; left: 210px; background: #4c1d95;"></div>
+        </div>
+
+        <div class="chipSection">
+          <div class="chipSectionHeading">Triage</div>
+          <div class="triageChip triageChipActionable">
+            <span><span class="triageIcon">⚠</span> Address errors <strong style="color: var(--warning);">(3)</strong></span>
+            <span class="chipArrow">→</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="phoneCaption">Frame B — Midday: 5 routes (1 in transit, 1 error, 1 assigning, 2 pending)</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     Route-card variant gallery
+     ═══════════════════════════════════════════════════ -->
+<p class="sectionLabel">Route-card variants by dispatch status</p>
+
+<div class="galleryRow">
+
+  <div class="galleryItem">
+    <div class="galleryCaption">Pending (no quote)</div>
+    <div class="routeCard">
+      <div class="routeCardHeader">
+        <div class="routeBadgeAndLoc">
+          <span class="routeBadge badgeA">Route 5</span>
+          <span class="routeLocLabel">Vila Mariana</span>
+        </div>
+        <span class="statusBadge statusPending">Pending</span>
+      </div>
+      <div class="routeStats"><strong>2 orders</strong> · 5.9 km · ~17 min · R$ 14,00</div>
+      <div class="routeActions">
+        <button class="overflowBtn">⋯</button>
+        <button class="btn btnSecondary btnSm">View</button>
+        <button class="btn btnPrimary btnSm">Request quote</button>
+      </div>
+    </div>
+    <p style="font-size: 11px; color: var(--subdued); line-height: 1.4;">
+      Primary = <code>Request quote</code> → opens <code>QuoteConfirmSheet</code> on success. Overflow ⋯ has <code>Clear route</code> (destructive) and <code>View on map</code>.
+    </p>
+  </div>
+
+  <div class="galleryItem">
+    <div class="galleryCaption">Quoted (ready to dispatch)</div>
+    <div class="routeCard">
+      <div class="routeCardHeader">
+        <div class="routeBadgeAndLoc">
+          <span class="routeBadge badgeD">Route 4</span>
+          <span class="routeLocLabel">Vila Mariana</span>
+        </div>
+        <span class="statusBadge statusQuoted">Quoted</span>
+      </div>
+      <div class="routeStats"><strong>3 orders</strong> · 8.4 km · ~22 min · R$ 17,00</div>
+      <div class="routeQuoteBanner">
+        <span><strong>R$ 18,90</strong> · 3 stops</span>
+        <span class="expires">expires 1:42 PM</span>
+      </div>
+      <div class="routeActions">
+        <button class="btn btnSecondary btnSm">Details</button>
+        <button class="btn btnPrimary btnSm">Request driver</button>
+      </div>
+    </div>
+    <p style="font-size: 11px; color: var(--subdued); line-height: 1.4;">
+      Quote banner shows total + expiry. Primary = <code>Request driver</code> → <code>DispatchConfirmSheet</code> terminal confirm before <code>lalamove-place-order</code>.
+    </p>
+  </div>
+
+  <div class="galleryItem">
+    <div class="galleryCaption">Assigning driver</div>
+    <div class="routeCard">
+      <div class="routeCardHeader">
+        <div class="routeBadgeAndLoc">
+          <span class="routeBadge badgeC">Route 3</span>
+          <span class="routeLocLabel">Vila Mariana</span>
+        </div>
+        <span class="statusBadge statusAssigning">Assigning…</span>
+      </div>
+      <div class="routeStats"><strong>6 orders</strong> · 22.0 km · ~48 min · R$ 45,20</div>
+      <div class="routeActions">
+        <button class="btn btnSecondary btnSm">Details</button>
+      </div>
+    </div>
+    <p style="font-size: 11px; color: var(--subdued); line-height: 1.4;">
+      No primary action — polling <code>lalamove-reconcile-status</code> every 15 s. Transitions to <code>In transit</code> or <code>Error</code>.
+    </p>
+  </div>
+
+  <div class="galleryItem">
+    <div class="galleryCaption">In transit (driver active)</div>
+    <div class="routeCard">
+      <div class="routeCardHeader">
+        <div class="routeBadgeAndLoc">
+          <span class="routeBadge badgeA">Route 1</span>
+          <span class="routeLocLabel">Vila Mariana</span>
+        </div>
+        <span class="statusBadge statusInProgress">In transit</span>
+      </div>
+      <div class="routeStats"><strong>5 orders</strong> · 18.4 km · ~42 min · R$ 38,50</div>
+      <div class="routeTrackingBanner">
+        Driver João · stop 3 of 5 · ETA 1:48 PM<br/>
+        <a href="#">Open Lalamove tracking ↗</a>
+      </div>
+      <div class="routeActions">
+        <button class="btn btnSecondary btnSm">Details</button>
+        <button class="btn btnCritical btnSm">Cancel</button>
+      </div>
+    </div>
+    <p style="font-size: 11px; color: var(--subdued); line-height: 1.4;">
+      Tracking banner is the external Lalamove share link (opens in new tab / admin iframe). <code>Cancel</code> opens <code>CancelConfirmSheet</code> (fee warning).
+    </p>
+  </div>
+
+  <div class="galleryItem">
+    <div class="galleryCaption">Delivered (terminal)</div>
+    <div class="routeCard" style="opacity: 0.72;">
+      <div class="routeCardHeader">
+        <div class="routeBadgeAndLoc">
+          <span class="routeBadge badgeA">Route 1</span>
+          <span class="routeLocLabel">Vila Mariana</span>
+        </div>
+        <span class="statusBadge statusDelivered">Delivered</span>
+      </div>
+      <div class="routeStats"><strong>5 orders</strong> · 18.4 km · 47 min · R$ 38,50</div>
+      <div class="routeFurthest" style="color: var(--subdued);">Completed 1:54 PM</div>
+      <div class="routeActions">
+        <button class="btn btnSecondary btnSm">Details</button>
+      </div>
+    </div>
+    <p style="font-size: 11px; color: var(--subdued); line-height: 1.4;">
+      Read-only. Dimmed card. <code>Details</code> opens <code>RouteDetailsSheet</code> with order list + Lalamove receipt link.
+    </p>
+  </div>
+
+  <div class="galleryItem">
+    <div class="galleryCaption">Error (driver assign failed)</div>
+    <div class="routeCard routeCardError">
+      <div class="routeCardHeader">
+        <div class="routeBadgeAndLoc">
+          <span class="routeBadge badgeB">Route 2</span>
+          <span class="routeLocLabel">Vila Mariana</span>
+        </div>
+        <span class="statusBadge statusError">Failed</span>
+      </div>
+      <div class="routeStats"><strong>4 orders</strong> · 12.1 km · ~31 min · R$ 28,90</div>
+      <div class="routeErrorBanner">
+        <strong>No drivers available</strong> — <code>ERR_NO_DRIVERS_NEARBY</code>. Retry in 2 min.
+      </div>
+      <div class="routeActions">
+        <button class="btn btnSecondary btnSm">View error</button>
+        <button class="btn btnPrimary btnSm">Retry driver</button>
+      </div>
+    </div>
+    <p style="font-size: 11px; color: var(--subdued); line-height: 1.4;">
+      Red border. <code>View error</code> opens <code>ErrorDetailsSheet</code>. <code>Retry driver</code> re-fires <code>lalamove-place-order</code>.
+    </p>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     Bottom-sheet gallery
+     ═══════════════════════════════════════════════════ -->
+<p class="sectionLabel">Bottom-sheet primitive — 3 examples</p>
+
+<div class="sheetGallery">
+
+  <!-- OrderDetailsSheet -->
+  <div>
+    <div class="sheetFrame">
+      <div class="sheetFrameInner">
+        <div class="sheet">
+          <div class="sheetHandle"></div>
+          <h3 class="sheetHeading">#1027 · Maria S.</h3>
+          <div class="sheetSubheading">Due today · order R$ 87,00</div>
+          <div class="sheetDivider"></div>
+          <div style="font-size: 13px; line-height: 1.5;">
+            <strong>Shipping address</strong><br/>
+            Rua Tucuruí, 42<br/>
+            Moema, São Paulo · 04512-020
+          </div>
+          <div class="sheetStatLine"><span class="label">Phone</span><span class="val">+55 11 9 8765 4321</span></div>
+          <div class="sheetStatLine"><span class="label">Fulfillment</span><span class="val">Vila Mariana</span></div>
+          <div class="sheetStatLine"><span class="label">Tags</span><span class="val">same-day, pilot</span></div>
+          <div class="sheetStatLine"><span class="label">Notes</span><span class="val">Deixar na portaria</span></div>
+          <div class="sheetActionRow">
+            <button class="btn btnSecondary btnSm">Close</button>
+            <button class="btn btnPrimary btnSm">Open in Shopify ↗</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sheetFrameCaption">OrderDetailsSheet — from map marker tap or order card</div>
+  </div>
+
+  <!-- QuoteConfirmSheet -->
+  <div>
+    <div class="sheetFrame">
+      <div class="sheetFrameInner">
+        <div class="sheet">
+          <div class="sheetHandle"></div>
+          <h3 class="sheetHeading">Quote — Route 4</h3>
+          <div class="sheetSubheading">3 stops · Vila Mariana → Moema</div>
+          <div class="sheetDivider"></div>
+          <div style="display: flex; align-items: baseline; gap: 8px; margin: 4px 0 8px;">
+            <span style="font-size: 28px; font-weight: 700;">R$ 18,90</span>
+            <span style="font-size: 12px; color: var(--subdued);">expires in 9 min</span>
+          </div>
+          <div class="sheetStatLine"><span class="label">Service</span><span class="val">Motorcycle · same-day</span></div>
+          <div class="sheetStatLine"><span class="label">Distance</span><span class="val">8.4 km</span></div>
+          <div class="sheetStatLine"><span class="label">Est. duration</span><span class="val">~22 min</span></div>
+          <div class="sheetStatLine"><span class="label">Pickup</span><span class="val">ASAP</span></div>
+          <div class="sheetDivider"></div>
+          <div style="font-size: 11px; color: var(--subdued); line-height: 1.5;">
+            Once you request a driver, Lalamove will dispatch immediately. Cancellation after driver pickup incurs a fee.
+          </div>
+          <div class="sheetActionRow">
+            <button class="btn btnSecondary btnSm">Cancel</button>
+            <button class="btn btnPrimary btnSm">Request driver →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sheetFrameCaption">QuoteConfirmSheet — after <code>lalamove-quote</code> success</div>
+  </div>
+
+  <!-- AddressErrorsSheet (actionable) -->
+  <div>
+    <div class="sheetFrame">
+      <div class="sheetFrameInner">
+        <div class="sheet">
+          <div class="sheetHandle"></div>
+          <h3 class="sheetHeading">Address errors (3)</h3>
+          <div class="sheetSubheading">
+            Fix in Shopify admin — link opens the order there. Next Optimize will pick up the corrected address.
+          </div>
+          <div class="sheetDivider"></div>
+          <div class="sheetListRow">
+            <div>
+              <div style="font-weight: 600; font-size: 12px;">#1031 · Juliana R.</div>
+              <div style="color: var(--subdued); font-size: 11px;">Geocode failed · "Rua??? 103"</div>
+            </div>
+            <a href="#" class="sheetListRowLink">Open in Shopify ↗</a>
+          </div>
+          <div class="sheetListRow">
+            <div>
+              <div style="font-weight: 600; font-size: 12px;">#1042 · Pedro L.</div>
+              <div style="color: var(--subdued); font-size: 11px;">Outside delivery radius · 87 km</div>
+            </div>
+            <a href="#" class="sheetListRowLink">Open in Shopify ↗</a>
+          </div>
+          <div class="sheetListRow">
+            <div>
+              <div style="font-weight: 600; font-size: 12px;">#1055 · Camila T.</div>
+              <div style="color: var(--subdued); font-size: 11px;">Missing postal code</div>
+            </div>
+            <a href="#" class="sheetListRowLink">Open in Shopify ↗</a>
+          </div>
+          <div class="sheetActionRow">
+            <button class="btn btnSecondary btnSm btnFull">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sheetFrameCaption">AddressErrorsSheet — Shopify deep-links work on mobile admin</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     Optimize-in-progress state
+     ═══════════════════════════════════════════════════ -->
+<p class="sectionLabel">Optimize-in-progress — CTA transition</p>
+
+<div style="display: grid; grid-template-columns: 420px; gap: 20px;">
+  <div>
+    <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 14px;">
+      <div class="optimizeCta" style="margin: 0;">
+        <div class="optimizeCtaHeading">Optimizing 12 orders…</div>
+        <div class="optimizeProgressWrap">
+          <div class="optimizeProgressBar"><div class="optimizeProgressFill" style="width: 40%;"></div></div>
+          <div class="optimizeProgressLabel">
+            <span>Building distance matrix…</span>
+            <span>40%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p style="font-size: 11px; color: var(--subdued); max-width: 420px; line-height: 1.5;">
+      CTA body is replaced by <code>optimizeProgress.phase</code> + percentage. Button is removed during in-flight state so there's no double-tap. Phases mirror desktop (<em>Building distance matrix · Computing initial routes · Refining · Finalizing</em>). Reuses desktop's <code>optimizeProgress</code> shape and <code>optimizeFetcher</code> wiring.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     Desktop banner (wide viewport)
+     ═══════════════════════════════════════════════════ -->
+<p class="sectionLabel">Wide-viewport banner (mobile route on a wide screen)</p>
+
+<div style="max-width: 780px; border: 1px solid var(--border); border-radius: 20px; overflow: hidden; background: var(--bg);">
+  <div class="desktopBanner">
+    <span>Viewport is wide enough for the desktop view.</span>
+    <a href="?desktop=1">Switch to desktop →</a>
+  </div>
+  <div style="padding: 14px;">
+    <div style="color: var(--subdued); font-size: 12px;">(mobile content continues below…)</div>
+  </div>
+</div>
+<p style="font-size: 11px; color: var(--subdued); max-width: 780px; line-height: 1.5;">
+  Shown on <code>/app/local-delivery-mobile</code> when <code>window.innerWidth &gt;= 768</code>. Does NOT auto-redirect — the user clicks to switch. Shopify admin iframe can resize (nav toggle, device rotation) and auto-redirect mid-session would be disorienting.
+</p>
+
+<!-- ═══════════════════════════════════════════════════
+     Notes + open questions
+     ═══════════════════════════════════════════════════ -->
+<div class="notes">
+  <h3>Design notes</h3>
+  <ul>
+    <li><strong>Feed over tabs</strong> — Routes is the entry; Map and Orders are secondary. Tabs would bury the dispatch CTA behind a nav click.</li>
+    <li><strong>One sheet primitive, many instances</strong> — <code>BottomSheet</code> lives in the route file; 10 sheet types share its backdrop/positioning/safe-area logic. Do NOT use <code>&lt;s-modal&gt;</code> (App Bridge overlay spills past the iframe on narrow viewports, same bug class as the fullscreen map).</li>
+    <li><strong>Route card status mapping</strong> — <code>dispatchedRoutes[id]?.status</code> → <code>mapLalamoveStatusToInternal</code> → card variant. <code>TERMINAL_DISPATCH_STATUSES</code> freezes the card (delivered/failed/expired/rejected).</li>
+    <li><strong>Polling cadence</strong> — 15 s when tab visible, paused when hidden (Page Visibility API). Desktop polls 5 s; mobile is slower to save battery. Flag in the Phase C deploy-queue entry.</li>
+    <li><strong>Triage chips are real actions, not dead ends</strong> — Address errors and Shipment requests open a sheet that deep-links to <code>order.adminOrderUrl</code>. Shopify admin works on mobile, so the user can actually fix the address and re-Optimize.</li>
+    <li><strong>Auto-optimize on load</strong> — desktop fires this automatically when unassigned orders appear. Mobile is EXPLICIT tap in v1 to avoid surprise progress bars on page entry.</li>
+    <li><strong>Map is opt-in, not always-on</strong> — collapsed by default in Frame A (no routes to show). Auto-expands in Frame B once routes exist. Saves ~300 px of vertical for dispatch-first states.</li>
+    <li><strong>Safe-area padding</strong> — all sheets use <code>padding-bottom: calc(16px + env(safe-area-inset-bottom))</code> so the CTA row doesn't hide behind the iOS home-indicator bar in the Shopify admin iOS app.</li>
+  </ul>
+</div>
+
+<div class="notes">
+  <h3>Decisions (resolved 2026-04-21)</h3>
+  <ul>
+    <li>✅ <strong>Auto-fire Optimize on load</strong> — <strong>Explicit tap.</strong> Less surprising, user controls spend. Opt-in via <code>?autoOptimize=1</code> later if needed.</li>
+    <li>✅ <strong>Polling cadence during active dispatch</strong> — <strong>15 s + visibility-pause</strong> (Page Visibility API stops polling when tab hidden). Battery-friendly, +10 s worst-case latency vs desktop.</li>
+    <li>✅ <strong>Return pickups on mobile</strong> — <strong>Keep desktop-only in v1.</strong> Chip stays as "open on desktop ↗". Port to v2 if the deep-link pattern proves out for Address errors.</li>
+    <li>✅ <strong>Clear route / Clear all placement</strong> — <strong>Per-card overflow ⋯ + top-right ⋯ for Clear all.</strong> Hidden behind the overflow button — protects in-transit routes from accidental taps.</li>
+    <li>🔸 <strong>Overflow menu (top-right ⋯) contents</strong> — default: "View desktop version", "Refresh data", locale toggle. Revisit if more desktop-only features get flagged during implementation.</li>
+    <li>🔸 <strong>Empty-state copy for "all locations"</strong> — default: show Optimize CTA disabled with inline helper text "Pick a specific location to optimize." Matches the failure path in <code>handleOptimizeFleet</code>.</li>
+  </ul>
+</div>
+
+</body>
+</html>

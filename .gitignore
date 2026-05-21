@@ -1,29 +1,103 @@
+# Dependencies / build / cache
 node_modules/
 **/node_modules/
 dist/
 **/dist/
+build/
+**/build/
 coverage/
 **/coverage/
+.cache/
+**/.cache/
+.turbo/
 
+# React Router / Vite / Shopify CLI runtime
+.react-router/
+.shopify/*
+.shopify.lock
+apps/omnify-admin/public/build/
+apps/omnify-admin/public/_dev/
+
+# Shopify extensions build output
+extensions/*/dist/
+
+# Env
 .env
 **/.env
 .env.local
+.env.*
 .env.*.local
 
+# Logs
 *.log
 npm-debug.log*
 .npm
+local-logs.txt
+opt-logs.txt
+phase-logs.txt
+vrp-logs.txt
+tmp-*.txt
+tmp-*.json
 
+# Sensitive / local-only credentials
+*.csv
+
+# Claude Code per-machine / transient session state (settings.json IS shipped)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/dispatch-watch.json
+
+# Other AI tool configs (per-machine, never shipped)
+.cursor/
+.gemini/
+.playwright-mcp/
+
+# Local runtime / scratch
+storage/
+z_playground/
+.streamlit/
+sandbox/gebeauty/state.json
+sandbox/gebeauty/recife_*.json
+sandbox/gebeauty/rio_*.json
+sandbox/gebeauty/sp_*.json
+sandbox/gebeauty/route-maps/[0-9]*/
+
+# Local databases (dev / test)
+*.sqlite
+*.sqlite-journal
+database.sqlite
+
+# Terraform — connector
+infra/connector/.terraform/
+infra/connector/*.tfplan
+infra/connector/terraform.tfstate
+infra/connector/terraform.tfstate.backup
+infra/connector/terraform.tfstate.*.backup
+infra/connector/terraform.tfvars
+
+# Terraform — omnify
+infra/omnify/terraform/.terraform/
+infra/omnify/terraform/*.tfplan
+infra/omnify/terraform/terraform.tfstate
+infra/omnify/terraform/terraform.tfstate.backup
+infra/omnify/terraform/terraform.tfstate.*.backup
+infra/omnify/terraform/terraform.tfvars
+infra/omnify/terraform/drift-check-lambda.zip
+
+# Large files (GitHub 100MB limit)
+apps/omnify-admin/public/screencast.mp4
+.knowledge/*.pdf
+
+# Scripts with embedded secrets
+scripts/webhook-listen.ps1
+
+# Python bytecode
+__pycache__/
+**/__pycache__/
+
+# OS / IDE
 .DS_Store
 Thumbs.db
-
-.vscode/
 .idea/
 *.swp
 *.swo
-
-# Claude Code per-machine settings (the project-shared file is settings.json)
-.claude/settings.local.json
-
-.turbo/
-.cache/

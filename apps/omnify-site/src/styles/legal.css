@@ -1,0 +1,101 @@
+/* Shared layout for legal pages (privacy, terms). Always light, regardless
+   of site theme — legal docs read better with stable light contrast. */
+
+.legal {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 16px 56px;
+  display: grid;
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  --legal-text: #2f2f2f;
+  --legal-heading: #1f1f1f;
+  --legal-muted: #6b6b6b;
+  --legal-link: #0969da;
+}
+
+.legal .title {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--legal-heading);
+}
+
+.legal .meta {
+  display: grid;
+  gap: 4px;
+}
+
+.legal .metaText {
+  margin: 0;
+  color: var(--legal-muted);
+  font-size: 14px;
+}
+
+.legal .intro {
+  margin: 0;
+  line-height: 1.7;
+  color: var(--legal-text);
+  font-size: 15px;
+}
+
+.legal section {
+  display: grid;
+  gap: 12px;
+}
+
+.legal h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--legal-heading);
+}
+
+.legal h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--legal-heading);
+}
+
+.legal p {
+  margin: 0;
+  line-height: 1.7;
+  color: var(--legal-text);
+  font-size: 15px;
+}
+
+.legal ul {
+  margin: 0;
+  padding-left: 24px;
+  display: grid;
+  gap: 6px;
+}
+
+.legal li {
+  color: var(--legal-text);
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+.legal a {
+  color: var(--legal-link);
+  text-decoration: underline;
+}
+
+.legal a:hover {
+  text-decoration: none;
+}
+
+@media (min-width: 769px) {
+  .legal {
+    padding: 48px 24px 72px;
+  }
+  .legal .title {
+    font-size: 32px;
+  }
+  .legal h2 {
+    font-size: 20px;
+  }
+}

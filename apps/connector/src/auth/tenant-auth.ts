@@ -1,5 +1,5 @@
 import { createHash, timingSafeEqual } from "node:crypto";
-import type { Brand, IntegrationTenant } from "@prisma/client";
+import type { Brand, IntegrationTenant } from "@prisma/client-connector";
 import { prisma as defaultPrisma } from "../db/prisma.js";
 import { verifyAccessToken } from "../oauth/jwt.js";
 
