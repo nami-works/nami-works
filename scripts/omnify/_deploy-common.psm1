@@ -192,11 +192,13 @@ function Assert-CleanWorkingTree {
       isn't dockerignored still gates correctly.
     .PARAMETER RepoRoot
       Optional repo root. Defaults to two levels up from this module
-      (scripts/ -> repo root).
+      (scripts/omnify/ -> scripts/ -> repo root). The monorepo absorb
+      moved this module from scripts/ to scripts/omnify/, so the default
+      now climbs one more level than before.
   #>
   [CmdletBinding()]
   param(
-    [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot ".."))
+    [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\.."))
   )
 
   Push-Location $RepoRoot
