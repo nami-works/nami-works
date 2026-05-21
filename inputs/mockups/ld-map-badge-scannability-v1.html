@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — LD map order-badge scannability vs. road labels (v1)</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --card: #ffffff;
+    --border: #e1e3e5;
+    --text: #303030;
+    --subdued: #6d7175;
+
+    /* Polaris-neutral pairing for unassigned order markers (matches production fallback) */
+    --neutral-bg: #e4e5e7;
+    --neutral-text: #303030;
+
+    /* Per-route map tones — 55% white-mix (current production palette, from ld-map-pills-polaris-v1) */
+    --route01-bg: rgb(160, 190, 232); --route01-fg: rgb(15, 38, 70);
+    --route02-bg: rgb(140, 198, 183); --route02-fg: rgb(0, 83, 62);
+    --route03-bg: rgb(216, 202, 140); --route03-fg: rgb(75, 56, 0);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 28px 32px 60px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg); color: var(--text);
+  }
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+  h2 { font-size: 14px; font-weight: 600; margin: 0 0 4px; color: var(--text); }
+  h3 { font-size: 13px; font-weight: 600; margin: 18px 0 8px; color: var(--text); }
+  p.intro {
+    font-size: 13px; color: var(--subdued);
+    max-width: 900px; margin: 0 0 22px;
+  }
+
+  /* ============ Notes panel ============ */
+  .notes {
+    background: #fffbea;
+    border: 1px solid #f4e3a1;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #5b4700;
+    max-width: 1180px;
+    margin-bottom: 22px;
+  }
+  .notes h3 { font-size: 13px; margin: 0 0 6px; color: #4a3600; }
+  .notes ul { margin: 4px 0 0 18px; padding: 0; }
+  .notes li { margin-bottom: 3px; }
+  .notes code { background: rgba(0,0,0,0.05); padding: 1px 4px; border-radius: 3px; font-size: 11px; }
+
+  /* ============ Comparison grid ============ */
+  .compareGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 26px;
+    max-width: 1500px;
+  }
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .panel h2 { font-size: 13px; line-height: 1.3; }
+  .panelTag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .panelTag.current { background: #fde2dd; color: #d72c0d; }
+  .panelTag.optA    { background: #dfeafe; color: #005bd3; }
+  .panelTag.optB    { background: #dfeafe; color: #005bd3; }
+  .panelTag.optC    { background: #e0f2eb; color: #067647; }
+  .panelDesc { font-size: 11px; color: var(--subdued); margin: 4px 0 12px; line-height: 1.45; }
+
+  /* ============ Map canvas mocks (city-zoom Rio facsimile) ============
+     Background tries to approximate the dark Shopify-native Google map style:
+     dark slate land, slightly desaturated road network, a couple of water bodies,
+     and the dense road/district labels we're contrasting against.
+  */
+  .mapCanvas {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #1f2933;
+    background-image:
+      /* water bodies — Guanabara bay-ish */
+      radial-gradient(ellipse 40% 22% at 72% 38%, #16242e 0%, #16242e 60%, transparent 60.5%),
+      radial-gradient(ellipse 18% 10% at 22% 80%, #16242e 0%, #16242e 60%, transparent 60.5%),
+      /* coarse road grid */
+      linear-gradient(115deg, transparent 49.7%, #2a3641 49.7%, #2a3641 50.3%, transparent 50.3%),
+      linear-gradient( 22deg, transparent 49.6%, #2a3641 49.6%, #2a3641 50.4%, transparent 50.4%),
+      linear-gradient( 80deg, transparent 49.8%, #2a3641 49.8%, #2a3641 50.2%, transparent 50.2%),
+      linear-gradient(160deg, transparent 49.7%, #2a3641 49.7%, #2a3641 50.3%, transparent 50.3%),
+      /* fainter secondary grid */
+      linear-gradient( 55deg, transparent 49.85%, #243038 49.85%, #243038 50.15%, transparent 50.15%),
+      linear-gradient(130deg, transparent 49.85%, #243038 49.85%, #243038 50.15%, transparent 50.15%),
+      /* base */
+      linear-gradient(135deg, #1f2933 0%, #2a3641 50%, #1c2730 100%);
+    background-size:
+      100% 100%, 100% 100%,
+      120px 120px, 120px 120px, 200px 200px, 200px 200px,
+      60px 60px, 60px 60px,
+      100% 100%;
+  }
+
+  /* Google's native road/district labels — beige/khaki on dark map.
+     CURRENT_LABEL_COLOR mimics google's default dark-style "Carto" beige. */
+  .mapLabel {
+    position: absolute;
+    font-family: "Roboto", "Inter", -apple-system, sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: #c9a86a;
+    text-shadow:
+      0 0 2px rgba(0,0,0,0.65),
+      0 0 4px rgba(0,0,0,0.45);
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+  }
+  .mapLabel.district {
+    font-size: 11px;
+    font-weight: 600;
+    color: #d6b988;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .mapLabel.water {
+    color: #6a8aa0;
+    font-style: italic;
+    text-shadow: 0 0 2px rgba(0,0,0,0.5);
+  }
+
+  /* OPTION A + C: desaturated road labels via map-style JSON
+     featureType: road + administrative.locality + administrative.neighborhood
+       elementType: labels.text.fill → lightness shifted toward map background,
+       saturation -60, opacity 0.55. Net effect: labels recede, badges advance.
+  */
+  .mapCanvas.dampLabels .mapLabel              { color: rgba(120, 110, 92, 0.55); text-shadow: none; }
+  .mapCanvas.dampLabels .mapLabel.district     { color: rgba(150, 138, 112, 0.62); }
+  .mapCanvas.dampLabels .mapLabel.water        { color: rgba(95, 118, 132, 0.62); }
+
+  /* ============ Badges ============
+     Production today: 12px / 600 Polaris stack / radius 10 / box-shadow 0 1px 2px rgba(0,0,0,.25) /
+     bg+text pairing per route. No border. Z-index unmanaged.
+  */
+  .badge {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--neutral-bg);
+    color: var(--neutral-text);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    white-space: nowrap;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+  }
+  .badge .icon { display: inline-flex; }
+  .badge .icon svg { width: 12px; height: 12px; }
+
+  .badge.route01 { background: var(--route01-bg); color: var(--route01-fg); }
+  .badge.route02 { background: var(--route02-bg); color: var(--route02-fg); }
+  .badge.route03 { background: var(--route03-bg); color: var(--route03-fg); }
+  .badge.pickup  { background: var(--neutral-bg); color: var(--neutral-text); }
+  .badge.unassigned { background: var(--neutral-bg); color: var(--neutral-text); }
+
+  /* Selected (holographic) — kept exactly as-is, NOT in scope of this iteration */
+  .badge.selected {
+    background: linear-gradient(90deg,
+      rgba(94,206,206,0.55),
+      rgba(176,159,218,0.55),
+      rgba(212,168,212,0.55),
+      rgba(94,206,206,0.55));
+    color: #ffffff;
+    z-index: 4;
+  }
+
+  /* ============ OPTION B + C: BADGE LIFT (the new, neutral treatment) ============
+     Three small additions, all using values that exist in the Polaris-adjacent palette:
+       1. Hairline ring — `inset 0 0 0 1px rgba(255,255,255,0.55)` (badge-color-neutral on white ring)
+          OR a 1px solid outer ring at color-border (#e1e3e5) so badge edge survives both dark
+          and light map styles. The ring uses an outer box-shadow stack so it doesn't change
+          padding / hitbox.
+       2. Soft outer shadow — replaces today's `0 1px 2px rgba(0,0,0,0.25)` with
+          `0 1px 2px rgba(0,0,0,0.35), 0 0 0 3px rgba(0,0,0,0.18)` — a tighter, slightly
+          deeper drop + a low-opacity 3px halo that gently darkens the map under the badge
+          so the badge sits on its own micro-tile. NO color introduced; the halo is just
+          a darker patch of the existing map canvas.
+       3. Raised stacking — z-index 3 (vs unmanaged today). Implementation note: in
+          production, Advanced markers go in a `LabelsOnTop` mapPane (z-index > Google's
+          native label pane), or set inline `marker.element.style.zIndex` accordingly.
+  */
+  .badge.lifted {
+    box-shadow:
+      0 0 0 3px rgba(0, 0, 0, 0.18),       /* halo: darkens the map directly under the badge */
+      0 1px 2px rgba(0, 0, 0, 0.35),       /* primary lift */
+      inset 0 0 0 1px rgba(255,255,255,0.55); /* hairline inner ring — survives both map styles */
+    z-index: 3;
+  }
+
+  /* For light map style preview — swap inner ring to a darker hairline */
+  .mapCanvas.light .badge.lifted {
+    box-shadow:
+      0 0 0 3px rgba(255, 255, 255, 0.55),
+      0 1px 2px rgba(0, 0, 0, 0.20),
+      inset 0 0 0 1px rgba(48, 48, 48, 0.18);
+  }
+
+  /* Light-map canvas for the bottom matrix */
+  .mapCanvas.light {
+    background: #f0eee5;
+    background-image:
+      radial-gradient(ellipse 40% 22% at 72% 38%, #d8e2e4 0%, #d8e2e4 60%, transparent 60.5%),
+      radial-gradient(ellipse 18% 10% at 22% 80%, #d8e2e4 0%, #d8e2e4 60%, transparent 60.5%),
+      linear-gradient(115deg, transparent 49.7%, #e1dccd 49.7%, #e1dccd 50.3%, transparent 50.3%),
+      linear-gradient( 22deg, transparent 49.6%, #e1dccd 49.6%, #e1dccd 50.4%, transparent 50.4%),
+      linear-gradient( 80deg, transparent 49.8%, #e1dccd 49.8%, #e1dccd 50.2%, transparent 50.2%),
+      linear-gradient(160deg, transparent 49.7%, #e1dccd 49.7%, #e1dccd 50.3%, transparent 50.3%),
+      linear-gradient( 55deg, transparent 49.85%, #ebe6d7 49.85%, #ebe6d7 50.15%, transparent 50.15%),
+      linear-gradient(130deg, transparent 49.85%, #ebe6d7 49.85%, #ebe6d7 50.15%, transparent 50.15%),
+      linear-gradient(135deg, #f0eee5 0%, #e6e3d8 50%, #ede8dc 100%);
+    background-size:
+      100% 100%, 100% 100%,
+      120px 120px, 120px 120px, 200px 200px, 200px 200px,
+      60px 60px, 60px 60px,
+      100% 100%;
+  }
+  .mapCanvas.light .mapLabel { color: #8c8266; text-shadow: 0 0 2px rgba(255,255,255,0.5); }
+  .mapCanvas.light .mapLabel.district { color: #6e6750; }
+  .mapCanvas.light .mapLabel.water { color: #6a8aa0; }
+  .mapCanvas.light.dampLabels .mapLabel { color: rgba(130, 121, 92, 0.55); text-shadow: none; }
+  .mapCanvas.light.dampLabels .mapLabel.district { color: rgba(110, 103, 80, 0.62); }
+
+  .canvasTag {
+    position: absolute;
+    top: 8px; right: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.65);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .mapCanvas.light .canvasTag { color: rgba(48,48,48,0.55); }
+
+  /* ============ State-matrix table ============ */
+  .matrixWrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px 20px;
+    margin-bottom: 22px;
+    max-width: 1180px;
+  }
+  table.matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  table.matrix th, table.matrix td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.matrix th {
+    background: #fafafa;
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--subdued);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  table.matrix td:first-child { font-weight: 600; color: var(--text); width: 22%; }
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    line-height: 1.4;
+  }
+  .pill.visible { background: #e0f2eb; color: #067647; }
+  .pill.hidden  { background: #f1f1f1; color: var(--subdued); }
+  .pill.lifted  { background: #dfeafe; color: #005bd3; }
+  .pill.note    { background: #fff4d6; color: #5b4700; }
+
+  /* ============ Side-panel reference (route cards retain 78% mix unchanged) ============ */
+  .sideRef {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin: 10px 0 0;
+    font-size: 12px;
+  }
+  .sideRef .sideTitle { font-size: 11px; color: var(--subdued); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; }
+  .routeChip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 0 4px 4px 0;
+  }
+  .routeChip.r01 { background: rgb(216, 226, 244); color: rgb(15, 38, 70); }
+  .routeChip.r02 { background: rgb(199, 227, 220); color: rgb(0, 83, 62); }
+  .routeChip.r03 { background: rgb(245, 234, 199); color: rgb(75, 56, 0); }
+
+  /* Polaris-ish icons */
+  .iBolt { color: currentColor; }
+  .iStore { color: currentColor; }
+</style>
+</head>
+<body>
+
+<h1>Local Delivery — map badge scannability vs. Google road labels (mockup v1)</h1>
+<p class="intro">
+  At city zoom on the dark Shopify-native map style, Google's native road and district labels (RJ-101, RJ-104, BR-101, ZONA NORTE, CENTRO) sit at roughly the same visual weight as the order-number badges. Non-selected badges get lost in the road-label noise. This mockup proposes a discreet, on-brand fix: keep the existing badge color system entirely, and add (a) a subtle hairline + halo "lift" that the badge already half-does, and (b) a one-knob desaturation of the map's own label fill via the existing map-style JSON. No new colors, no size bump, no flashy halos.
+</p>
+
+<div class="notes">
+  <h3>Design intent</h3>
+  <ul>
+    <li><strong>Stay neutral.</strong> Badges encode route assignment via tone pairing (already approved in <code>ld-map-pills-polaris-v1</code>) — that's the only color signal on the map. No new color is added.</li>
+    <li><strong>Reduce competition, don't shout.</strong> The fix lowers Google's label saturation/opacity and lifts the badge a touch — equivalent of bringing the badge half a step forward and pushing the road labels half a step back. Net visual mass between the two changes; the badge wins.</li>
+    <li><strong>Two independent levers.</strong> Map-style label damping (Option A) is a 1-line styler change; badge lift (Option B) is a CSS-only change. They compose (Option C). Lucas can pick the dose.</li>
+    <li><strong>Selected (holographic) state is out of scope.</strong> Already the most salient thing on the map. Don't touch.</li>
+    <li><strong>Light map style preserved.</strong> The lift uses inner-ring + halo opacity, not a fixed color, so it survives the light map style without bleeding white-on-white or black-on-black.</li>
+  </ul>
+</div>
+
+<h2 style="margin-top: 8px;">Side-by-side comparison — same 7 badges + same road-label cluster, four treatments</h2>
+<p class="intro" style="margin-bottom: 10px;">
+  Same fixture in all four panels: pickup marker + 4 assigned orders (2× route 02 green, 1× route 01 blue, 1× route 03 gold) + 2 unassigned orders, sitting in a dense cluster of road/district labels. The badge positions, sizes, fonts, and tone pairings are <em>identical</em> in every panel. Only what changes per panel is called out in the panel header.
+</p>
+
+<div class="compareGrid">
+
+  <!-- ============== Panel 1 — CURRENT ============== -->
+  <div class="panel">
+    <h2><span class="panelTag current">Current</span>What ships today</h2>
+    <p class="panelDesc">
+      Badges = 12/600 + 0 1px 2px shadow + bg/text pairing. Road labels render at Google's default beige with full opacity. Z-index unmanaged — labels and badges share the same pane.
+    </p>
+    <div class="mapCanvas">
+      <span class="canvasTag">Dark</span>
+      <!-- road labels at full strength -->
+      <span class="mapLabel district" style="top: 22%; left: 18%;">CENTRO</span>
+      <span class="mapLabel"          style="top: 30%; left: 36%;">RJ-101</span>
+      <span class="mapLabel"          style="top: 38%; left: 14%;">BR-101</span>
+      <span class="mapLabel"          style="top: 47%; left: 42%;">Av. Brasil</span>
+      <span class="mapLabel district" style="top: 60%; left: 30%;">ZONA NORTE</span>
+      <span class="mapLabel"          style="top: 68%; left: 55%;">RJ-071</span>
+      <span class="mapLabel"          style="top: 76%; left: 18%;">RJ-104</span>
+      <span class="mapLabel"          style="top: 84%; left: 64%;">Linha Amarela</span>
+      <span class="mapLabel water"    style="top: 38%; left: 72%;">Baía de Guanabara</span>
+      <!-- badges -->
+      <span class="badge pickup" style="top: 32%; left: 28%;">
+        <span class="icon iStore"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 8l2-4h10l2 4v9H3z"/><rect x="7.5" y="11.5" width="5" height="5.5" fill="#ffffff"/></svg></span>
+      </span>
+      <span class="badge route02"    style="top: 41%; left: 38%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81058</span>
+      <span class="badge route02"    style="top: 50%; left: 30%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80994</span>
+      <span class="badge route01"    style="top: 57%; left: 48%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81002</span>
+      <span class="badge route03"    style="top: 65%; left: 35%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80876</span>
+      <span class="badge unassigned" style="top: 73%; left: 50%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80931</span>
+      <span class="badge unassigned" style="top: 80%; left: 28%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81017</span>
+    </div>
+  </div>
+
+  <!-- ============== Panel 2 — OPTION A ============== -->
+  <div class="panel">
+    <h2><span class="panelTag optA">Option A</span>Damp Google labels (map-style JSON only)</h2>
+    <p class="panelDesc">
+      Add <code>road.*.labels.text.fill</code> + <code>administrative.locality.labels</code> stylers to the dark-map style JSON: lightness shifts toward map bg, saturation −60, opacity 0.55. Badges untouched. Net: labels recede; badges advance simply by existing at full strength.
+    </p>
+    <div class="mapCanvas dampLabels">
+      <span class="canvasTag">Dark · damped labels</span>
+      <span class="mapLabel district" style="top: 22%; left: 18%;">CENTRO</span>
+      <span class="mapLabel"          style="top: 30%; left: 36%;">RJ-101</span>
+      <span class="mapLabel"          style="top: 38%; left: 14%;">BR-101</span>
+      <span class="mapLabel"          style="top: 47%; left: 42%;">Av. Brasil</span>
+      <span class="mapLabel district" style="top: 60%; left: 30%;">ZONA NORTE</span>
+      <span class="mapLabel"          style="top: 68%; left: 55%;">RJ-071</span>
+      <span class="mapLabel"          style="top: 76%; left: 18%;">RJ-104</span>
+      <span class="mapLabel"          style="top: 84%; left: 64%;">Linha Amarela</span>
+      <span class="mapLabel water"    style="top: 38%; left: 72%;">Baía de Guanabara</span>
+      <span class="badge pickup"     style="top: 32%; left: 28%;"><span class="icon iStore"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 8l2-4h10l2 4v9H3z"/><rect x="7.5" y="11.5" width="5" height="5.5" fill="#ffffff"/></svg></span></span>
+      <span class="badge route02"    style="top: 41%; left: 38%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81058</span>
+      <span class="badge route02"    style="top: 50%; left: 30%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80994</span>
+      <span class="badge route01"    style="top: 57%; left: 48%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81002</span>
+      <span class="badge route03"    style="top: 65%; left: 35%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80876</span>
+      <span class="badge unassigned" style="top: 73%; left: 50%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80931</span>
+      <span class="badge unassigned" style="top: 80%; left: 28%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81017</span>
+    </div>
+  </div>
+
+  <!-- ============== Panel 3 — OPTION B ============== -->
+  <div class="panel">
+    <h2><span class="panelTag optB">Option B</span>Lift badges (CSS only)</h2>
+    <p class="panelDesc">
+      Three additions to the badge: inner hairline ring (white 55% alpha), 3px halo at black 18% alpha (a tighter "the badge is sitting on its own tile"), raised z-index above Google's label pane. Road labels left at full strength. Bg/text pairing unchanged.
+    </p>
+    <div class="mapCanvas">
+      <span class="canvasTag">Dark · lifted badges</span>
+      <span class="mapLabel district" style="top: 22%; left: 18%;">CENTRO</span>
+      <span class="mapLabel"          style="top: 30%; left: 36%;">RJ-101</span>
+      <span class="mapLabel"          style="top: 38%; left: 14%;">BR-101</span>
+      <span class="mapLabel"          style="top: 47%; left: 42%;">Av. Brasil</span>
+      <span class="mapLabel district" style="top: 60%; left: 30%;">ZONA NORTE</span>
+      <span class="mapLabel"          style="top: 68%; left: 55%;">RJ-071</span>
+      <span class="mapLabel"          style="top: 76%; left: 18%;">RJ-104</span>
+      <span class="mapLabel"          style="top: 84%; left: 64%;">Linha Amarela</span>
+      <span class="mapLabel water"    style="top: 38%; left: 72%;">Baía de Guanabara</span>
+      <span class="badge pickup lifted"     style="top: 32%; left: 28%;"><span class="icon iStore"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 8l2-4h10l2 4v9H3z"/><rect x="7.5" y="11.5" width="5" height="5.5" fill="#ffffff"/></svg></span></span>
+      <span class="badge route02 lifted"    style="top: 41%; left: 38%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81058</span>
+      <span class="badge route02 lifted"    style="top: 50%; left: 30%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80994</span>
+      <span class="badge route01 lifted"    style="top: 57%; left: 48%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81002</span>
+      <span class="badge route03 lifted"    style="top: 65%; left: 35%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80876</span>
+      <span class="badge unassigned lifted" style="top: 73%; left: 50%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80931</span>
+      <span class="badge unassigned lifted" style="top: 80%; left: 28%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81017</span>
+    </div>
+  </div>
+
+  <!-- ============== Panel 4 — OPTION C (recommended) ============== -->
+  <div class="panel">
+    <h2><span class="panelTag optC">Recommended</span>Option C: A + B combined</h2>
+    <p class="panelDesc">
+      Map-style damping <em>and</em> badge lift together. Two small adjustments instead of one big one. Each is reversible per feature flag; both ship behind no flag. This is the recommended default.
+    </p>
+    <div class="mapCanvas dampLabels">
+      <span class="canvasTag">Dark · damped + lifted</span>
+      <span class="mapLabel district" style="top: 22%; left: 18%;">CENTRO</span>
+      <span class="mapLabel"          style="top: 30%; left: 36%;">RJ-101</span>
+      <span class="mapLabel"          style="top: 38%; left: 14%;">BR-101</span>
+      <span class="mapLabel"          style="top: 47%; left: 42%;">Av. Brasil</span>
+      <span class="mapLabel district" style="top: 60%; left: 30%;">ZONA NORTE</span>
+      <span class="mapLabel"          style="top: 68%; left: 55%;">RJ-071</span>
+      <span class="mapLabel"          style="top: 76%; left: 18%;">RJ-104</span>
+      <span class="mapLabel"          style="top: 84%; left: 64%;">Linha Amarela</span>
+      <span class="mapLabel water"    style="top: 38%; left: 72%;">Baía de Guanabara</span>
+      <span class="badge pickup lifted"     style="top: 32%; left: 28%;"><span class="icon iStore"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 8l2-4h10l2 4v9H3z"/><rect x="7.5" y="11.5" width="5" height="5.5" fill="#ffffff"/></svg></span></span>
+      <span class="badge route02 lifted"    style="top: 41%; left: 38%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81058</span>
+      <span class="badge route02 lifted"    style="top: 50%; left: 30%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80994</span>
+      <span class="badge route01 lifted"    style="top: 57%; left: 48%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81002</span>
+      <span class="badge route03 lifted"    style="top: 65%; left: 35%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80876</span>
+      <span class="badge unassigned lifted" style="top: 73%; left: 50%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80931</span>
+      <span class="badge unassigned lifted" style="top: 80%; left: 28%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81017</span>
+    </div>
+  </div>
+
+</div>
+
+<h2>Light map parity check — Option C applied</h2>
+<p class="intro" style="max-width: 1180px;">
+  The badge lift uses opacity-based hairlines (not fixed black or white), so the same rule survives a map-style swap to <code>light</code> without recompiling. The inner ring flips from 55% white on dark to 18% dark on light; the halo flips from 18% black on dark to 55% white on light. Both transitions are handled by the existing <code>mapStyle</code> state branch already in <code>app.local-delivery.tsx</code>.
+</p>
+
+<div class="compareGrid" style="grid-template-columns: 1fr 1fr;">
+  <div class="panel">
+    <h2><span class="panelTag current">Light · current</span></h2>
+    <p class="panelDesc">Reference — what light map looks like today.</p>
+    <div class="mapCanvas light">
+      <span class="canvasTag">Light · current</span>
+      <span class="mapLabel district" style="top: 22%; left: 18%;">CENTRO</span>
+      <span class="mapLabel"          style="top: 30%; left: 36%;">RJ-101</span>
+      <span class="mapLabel"          style="top: 47%; left: 42%;">Av. Brasil</span>
+      <span class="mapLabel district" style="top: 60%; left: 30%;">ZONA NORTE</span>
+      <span class="mapLabel"          style="top: 76%; left: 18%;">RJ-104</span>
+      <span class="badge route02" style="top: 41%; left: 38%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81058</span>
+      <span class="badge route01" style="top: 57%; left: 48%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81002</span>
+      <span class="badge route03" style="top: 65%; left: 35%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80876</span>
+      <span class="badge unassigned" style="top: 73%; left: 50%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80931</span>
+    </div>
+  </div>
+  <div class="panel">
+    <h2><span class="panelTag optC">Light · Option C</span></h2>
+    <p class="panelDesc">Damped labels + lifted badges, light variant of the ring/halo rule.</p>
+    <div class="mapCanvas light dampLabels">
+      <span class="canvasTag">Light · damped + lifted</span>
+      <span class="mapLabel district" style="top: 22%; left: 18%;">CENTRO</span>
+      <span class="mapLabel"          style="top: 30%; left: 36%;">RJ-101</span>
+      <span class="mapLabel"          style="top: 47%; left: 42%;">Av. Brasil</span>
+      <span class="mapLabel district" style="top: 60%; left: 30%;">ZONA NORTE</span>
+      <span class="mapLabel"          style="top: 76%; left: 18%;">RJ-104</span>
+      <span class="badge route02 lifted" style="top: 41%; left: 38%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81058</span>
+      <span class="badge route01 lifted" style="top: 57%; left: 48%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>81002</span>
+      <span class="badge route03 lifted" style="top: 65%; left: 35%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80876</span>
+      <span class="badge unassigned lifted" style="top: 73%; left: 50%;"><span class="icon iBolt"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 2 L4 11 L9 11 L9 18 L16 9 L11 9 Z"/></svg></span>80931</span>
+    </div>
+  </div>
+</div>
+
+<h2>Side-panel route cards — UNCHANGED</h2>
+<p class="intro" style="max-width: 1180px;">
+  None of this touches the side-panel route cards or the order-table chips. The 78% white-mix tone pairing established in <code>ld-map-pills-polaris-v1</code> is preserved off-map.
+</p>
+<div class="sideRef" style="max-width: 600px;">
+  <div class="sideTitle">Side-panel route chips (unchanged)</div>
+  <span class="routeChip r01">Rota 1</span>
+  <span class="routeChip r02">Rota 2</span>
+  <span class="routeChip r03">Rota 3</span>
+</div>
+
+<h2 style="margin-top: 28px;">State matrix — every badge state vs. the new lift rule</h2>
+<p class="intro" style="max-width: 1180px;">
+  The badge has a small fixed set of meaningful states. The lift rule is a constant addition to non-selected badges only; selected stays exactly as it ships today. The matrix below enumerates each state and shows whether the lift applies, plus what visually distinguishes it.
+</p>
+
+<div class="matrixWrap">
+  <table class="matrix">
+    <thead>
+      <tr>
+        <th>State</th>
+        <th>Tone pairing (bg / fg)</th>
+        <th>Inner hairline ring</th>
+        <th>Outer halo (3px)</th>
+        <th>Z-index pane</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Assigned to a route</td>
+        <td>Route bg + route fg (per <code>deriveBadgeColors</code>)</td>
+        <td><span class="pill lifted">Apply</span></td>
+        <td><span class="pill lifted">Apply</span></td>
+        <td><span class="pill lifted">Above labels</span></td>
+        <td>Default case. Most badges on the map.</td>
+      </tr>
+      <tr>
+        <td>Unassigned</td>
+        <td>Polaris neutral (#e4e5e7 / #303030)</td>
+        <td><span class="pill lifted">Apply</span></td>
+        <td><span class="pill lifted">Apply</span></td>
+        <td><span class="pill lifted">Above labels</span></td>
+        <td>Same lift — neutral pairing is the most likely to vanish today.</td>
+      </tr>
+      <tr>
+        <td>Pickup / storefront origin</td>
+        <td>Polaris neutral, icon-only (no order #)</td>
+        <td><span class="pill lifted">Apply</span></td>
+        <td><span class="pill lifted">Apply</span></td>
+        <td><span class="pill lifted">Above labels</span></td>
+        <td>Lifted same as orders. There's only ever 1–3 of these.</td>
+      </tr>
+      <tr>
+        <td>Address error / failed (icon variant)</td>
+        <td>Route bg or neutral; icon swaps to warning/cancel SVG</td>
+        <td><span class="pill lifted">Apply</span></td>
+        <td><span class="pill lifted">Apply</span></td>
+        <td><span class="pill lifted">Above labels</span></td>
+        <td>Icon already carries the status; lift rule unchanged.</td>
+      </tr>
+      <tr>
+        <td>Selected (holographic gradient)</td>
+        <td>Holographic gradient + white fg (unchanged)</td>
+        <td><span class="pill hidden">Skip</span></td>
+        <td><span class="pill hidden">Skip</span></td>
+        <td><span class="pill lifted">Above all</span></td>
+        <td>Selected is already the most salient state. Adding halo on top of the holographic gradient muddies it. <strong>Z-index still elevated</strong> so selected sits above damped labels — that's the only carry-over.</td>
+      </tr>
+      <tr>
+        <td>Selected + edit-mode ring</td>
+        <td>Holographic + 3px purple outer ring</td>
+        <td><span class="pill hidden">Skip</span></td>
+        <td><span class="pill hidden">Skip (ring is the halo)</span></td>
+        <td><span class="pill lifted">Above all</span></td>
+        <td>Edit-mode ring already plays the role of the halo. Don't stack.</td>
+      </tr>
+      <tr>
+        <td>Hover (desktop)</td>
+        <td>Same as base state</td>
+        <td><span class="pill lifted">Apply (no change)</span></td>
+        <td><span class="pill note">Slight darken: 18% → 28%</span></td>
+        <td><span class="pill lifted">Above all (temp)</span></td>
+        <td>Cheap, optional. Halo opacity tick on hover only. Skip if it complicates marker DOM mutation. Flag-don't-fix if implementation is messy.</td>
+      </tr>
+      <tr>
+        <td>Cluster (Google's cluster bubble)</td>
+        <td>N/A — Google-rendered</td>
+        <td><span class="pill hidden">N/A</span></td>
+        <td><span class="pill hidden">N/A</span></td>
+        <td><span class="pill lifted">Above labels</span></td>
+        <td>Cluster bubbles already sit above labels in Google's pane order. No change needed.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>Implementation surface (for the production step — DO NOT touch yet)</h2>
+<div class="notes" style="background:#f7f9fc; border-color:#dfeafe; color:#1f2933;">
+  <h3 style="color:#005bd3;">Where this lands when approved</h3>
+  <ul>
+    <li><strong>Map style JSON (Option A).</strong> The <code>mapStyle === "dark"</code> branch in <code>app/routes/app.local-delivery.tsx</code> (the styler array passed to <code>new Map(..., { styles })</code>) gets two new entries:
+      <code>{ featureType: "road", elementType: "labels.text.fill", stylers: [{ saturation: -60 }, { lightness: -15 }, { opacity: 0.55 }] }</code> and
+      <code>{ featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ saturation: -50 }, { opacity: 0.62 }] }</code>.
+      Light style gets the inverse <code>lightness</code> sign.</li>
+    <li><strong>Badge lift (Option B).</strong> The <code>badgeStyle</code> object built around line 1980 of <code>app.local-delivery.tsx</code> gets a new <code>boxShadow</code> stack and a <code>zIndex</code> assignment on the marker element. The hairline ring is an <code>inset 0 0 0 1px rgba(255,255,255,.55)</code> inside the existing <code>boxShadow</code> string, gated on map style for the dark-vs-light variant. No new CSS class — this is a DOM-inline style on the marker, same as today's pattern.</li>
+    <li><strong>Selected guard.</strong> The <code>if (isSelected) { ... }</code> block at the same site skips the inner-ring + halo additions but still bumps <code>zIndex</code> to a higher value so selected always wins.</li>
+    <li><strong>No new tokens.</strong> All opacity values are inline. If we want to promote them later, the natural place is <code>CLAUDE.md → UI Tokens</code>; deferred.</li>
+  </ul>
+</div>
+
+</body>
+</html>

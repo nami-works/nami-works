@@ -1834,7 +1834,7 @@ export default function Index() {
 
         if (!mapRef.current) {
           const styledMapTypes = {
-            light: new googleMaps.StyledMapType(null, { name: t("map.styles.light") }),
+            light: new googleMaps.StyledMapType(LIGHT_MAP_STYLES, { name: t("map.styles.light") }),
             grayscale: new googleMaps.StyledMapType(GRAYSCALE_MAP_STYLES, {
               name: t("map.styles.grayscale"),
             }),
@@ -1978,6 +1978,11 @@ export default function Index() {
               ? deriveBadgeColorsForMap(assignedRoute.color)
               : null;
           const badgeStyle: Partial<CSSStyleDeclaration> = {};
+          // Z-index lifts every badge above Google's native road/locality
+          // label pane so the badge always wins at city zoom (Option B /
+          // Dose C from inputs/mockups/ld-map-badge-scannability-v1.html).
+          // Selected bumps up, edit-mode bumps further.
+          let badgeZIndex = 3;
           if (assignedBadgeColors) {
             badgeStyle.backgroundColor = assignedBadgeColors.bg;
             badgeStyle.color = assignedBadgeColors.text;
@@ -1998,11 +2003,24 @@ export default function Index() {
               "linear-gradient(90deg, rgba(94, 206, 206, 0.55), rgba(176, 159, 218, 0.55), rgba(212, 168, 212, 0.55), rgba(94, 206, 206, 0.55))";
             badgeStyle.borderColor = "rgba(176, 159, 218, 0.85)";
             badgeStyle.color = "#ffffff";
+            badgeZIndex = 4;
             // Edit mode: extra ring outline so the operator can see at a
             // glance which stops are picked for the next reassign/unassign.
             if (polylineEditMode) {
               badgeStyle.boxShadow = "0 0 0 3px rgba(176, 159, 218, 0.7)";
+              badgeZIndex = 5;
             }
+          } else {
+            // Non-selected lift — hairline ring + drop + 3px halo. White
+            // ring on dark/grayscale maps, dark ring on light. The halo
+            // is a low-opacity black/white patch under the badge so it
+            // reads as sitting on its own micro-tile against the damped
+            // road/locality labels. Selected/holographic skips this so
+            // the gradient stays the most salient state.
+            badgeStyle.boxShadow =
+              mapStyle === "light"
+                ? "0 0 0 3px rgba(255, 255, 255, 0.55), 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(48, 48, 48, 0.18)"
+                : "0 0 0 3px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.55)";
           }
           const markerTitle = point.kind === "order" && orderData?.customerName
             ? `${point.name} \u2022 ${orderData.customerName}`
@@ -2018,6 +2036,7 @@ export default function Index() {
             badgeStyle.color ?? null,
             badgeStyle.borderColor ?? null,
             badgeStyle.boxShadow ?? null,
+            badgeZIndex,
           ]);
           const signature = [
             position.lat.toFixed(7),
@@ -2037,6 +2056,7 @@ export default function Index() {
               position,
               title: markerTitle,
               content: parts.wrapper,
+              zIndex: badgeZIndex,
             });
             record = {
               marker: advancedMarker,
@@ -2063,6 +2083,7 @@ export default function Index() {
               m.position = position;
             }
             if (m.title !== markerTitle) m.title = markerTitle;
+            if (m.zIndex !== badgeZIndex) m.zIndex = badgeZIndex;
             if (record.orderLine.textContent !== labelText) {
               record.orderLine.textContent = labelText;
             }
@@ -2432,7 +2453,7 @@ export default function Index() {
 
         if (!manageRouteMapInstance.current) {
           const styledMapTypes = {
-            light: new googleMaps.StyledMapType(null, { name: t("map.styles.light") }),
+            light: new googleMaps.StyledMapType(LIGHT_MAP_STYLES, { name: t("map.styles.light") }),
             grayscale: new googleMaps.StyledMapType(GRAYSCALE_MAP_STYLES, {
               name: t("map.styles.grayscale"),
             }),
@@ -2642,7 +2663,7 @@ export default function Index() {
 
         if (!detailsRouteMapInstance.current) {
           const styledMapTypes = {
-            light: new googleMaps.StyledMapType(null, { name: t("map.styles.light") }),
+            light: new googleMaps.StyledMapType(LIGHT_MAP_STYLES, { name: t("map.styles.light") }),
             grayscale: new googleMaps.StyledMapType(GRAYSCALE_MAP_STYLES, {
               name: t("map.styles.grayscale"),
             }),
@@ -7520,6 +7541,13 @@ const GRAYSCALE_MAP_STYLES = [
   },
 ];
 
+// Damping stylers applied on top of the per-feature color stylers below.
+// Two-knob "Option A" treatment from mockup
+// inputs/mockups/ld-map-badge-scannability-v1.html — pushes Google's
+// native road and locality labels half a step back so order badges win
+// at city zoom. Each pair of stylers (color + opacity/saturation) is
+// applied to the same elementType, so Google merges the rendered
+// label color with the requested opacity drop.
 const DARK_MAP_STYLES = [
   { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
   { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
@@ -7527,7 +7555,11 @@ const DARK_MAP_STYLES = [
   {
     featureType: "administrative.locality",
     elementType: "labels.text.fill",
-    stylers: [{ color: "#d59563" }],
+    stylers: [
+      { color: "#d59563" },
+      { saturation: -50 },
+      { opacity: 0.62 },
+    ],
   },
   {
     featureType: "poi",
@@ -7547,7 +7579,12 @@ const DARK_MAP_STYLES = [
   {
     featureType: "road",
     elementType: "labels.text.fill",
-    stylers: [{ color: "#9ca5b3" }],
+    stylers: [
+      { color: "#9ca5b3" },
+      { saturation: -60 },
+      { lightness: -15 },
+      { opacity: 0.55 },
+    ],
   },
   {
     featureType: "road.highway",
@@ -7562,7 +7599,12 @@ const DARK_MAP_STYLES = [
   {
     featureType: "road.highway",
     elementType: "labels.text.fill",
-    stylers: [{ color: "#f3d19c" }],
+    stylers: [
+      { color: "#f3d19c" },
+      { saturation: -60 },
+      { lightness: -15 },
+      { opacity: 0.55 },
+    ],
   },
   {
     featureType: "transit",
@@ -7583,6 +7625,40 @@ const DARK_MAP_STYLES = [
     featureType: "water",
     elementType: "labels.text.stroke",
     stylers: [{ color: "#17263c" }],
+  },
+];
+
+// Light-style damping (Google's default light basemap + the same label
+// damping rules as dark, but with positive lightness so labels fade
+// toward the light canvas instead of away from it). Mirrors the
+// "Option C light parity" panel in
+// inputs/mockups/ld-map-badge-scannability-v1.html. Sparse styler
+// array — Google merges with stock light defaults for everything we
+// don't list, so this preserves the previous `null`-style baseline
+// for geometry, POI, water, etc.
+const LIGHT_MAP_STYLES = [
+  {
+    featureType: "administrative.locality",
+    elementType: "labels.text.fill",
+    stylers: [{ saturation: -50 }, { opacity: 0.62 }],
+  },
+  {
+    featureType: "road",
+    elementType: "labels.text.fill",
+    stylers: [
+      { saturation: -60 },
+      { lightness: 15 },
+      { opacity: 0.55 },
+    ],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "labels.text.fill",
+    stylers: [
+      { saturation: -60 },
+      { lightness: 15 },
+      { opacity: 0.55 },
+    ],
   },
 ];
 
