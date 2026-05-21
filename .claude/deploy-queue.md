@@ -73,27 +73,33 @@ the config files cleaned up.
 - **Dependencies:** none — independent of the existing `fix/address-tag-gate-on-methodtype` entry below, even though both touch the same loader file (different code paths — address-tag-gate is in the auto-tagger predicate, this bundle is in the modal JSX + LoaderOrder type).
 - **Risk:** low. Reversible. No schema or infra changes.
 
-### 2026-05-20 · fix/address-tag-gate-on-methodtype (`31ad38f` cpg-labs → `14302cf` nami-works)
-- **App:** omnify-admin.
-- **Files touched:** `apps/omnify-admin/app/routes/app.local-delivery.tsx`
-- **Type:** code (loader gate tightening)
-- **Summary:** Loader auto-tagger now requires `methodType === "LOCAL"` in addition to the existing `LalamoveLocationConfig` location gate before applying `ld_confirm-address`.
-- **Affects:** Local Delivery loader fire-and-forget address tagger. Prevents SHIPPING/PICKUP orders surfaced via `includeWarehouse` at LD-enabled stores from being tagged for LD address-confirmation messaging.
-- **Dependencies:** bundle with the find-new-driver-watchdog entry below — both are pre-deploy and target the same image.
-- **Risk:** low. Single-line AND on the existing filter, plus updated docblock. No new GraphQL fields (methodType already populated on loader orders). Reversible.
-
-### 2026-05-21 · feat/find-new-driver-watchdog (`5124581` → merged on `277f393`)
-- **App:** omnify-admin.
-- **Files touched:** `apps/omnify-admin/app/routes/api.control.$intent.tsx`, `apps/omnify-admin/app/services/claude-control-auth.server.ts`, `apps/omnify-admin/app/services/lalamove-escalation.server.ts`, `eslint.config.js` (new, root-level — minimal flat config to unblock the changed-lines hook).
-- **Type:** code (new service helper + control route wiring + auth branch) + ops (new cron line to add on the box after deploy).
-- **Summary:** Mid-flight stuck-driver recovery. `findNewDriverForJob(jobId, shop, admin)` cancels the current Lalamove order and re-POSTs via the existing `reorderJob` path, with priority-fee workaround for the empirically discovered `ERR_CANCELLATION` ("Cannot cancel order") response. `handleCheckDispatches` now acts on `suggested=reorder`: 09–18 BRT + `CHECK_DISPATCHES_AUTO_REORDER=true` → fire watchdog; flag off → telemetry-only (`action: "skipped-flag-off"`); 18+ BRT → flip `status=NEEDS_REVIEW` with `needsReviewReason=driver-not-approaching-after-hours`. New `X-Cron-Secret` header auth branch in `claude-control-auth` so on-box cron can hit `/api/control/check-dispatches` without the operator bearer.
-- **Affects:** the existing `check-dispatches` endpoint gains an action field per dispatch. Behavior is gated by `CHECK_DISPATCHES_AUTO_REORDER` env (default-off). With the flag off the only behavior change is the 18+ BRT NEEDS_REVIEW flip — operator-visible but not auto-mutating Lalamove.
-- **Dependencies:** bundle with the methodType-gate entry above. Post-deploy actions required: (1) set `CRON_SECRET` in `/etc/cpg-labs/full.env`; (2) add cron line `*/5 9-22 * * * curl -fsS -X POST -H "X-Cron-Secret: $CRON_SECRET" -m 60 http://localhost:3000/api/control/check-dispatches >> /var/log/cpg-labs/check-dispatches.log 2>&1`; (3) keep `CHECK_DISPATCHES_AUTO_REORDER` unset/false on first deploy — watch one cycle of telemetry-only output before flipping to `true`.
-- **Risk:** medium. New action path on Lalamove (cancel + reorder) but gated by the env flag. First-deploy risk is bounded to the 18+ BRT NEEDS_REVIEW flip (no Lalamove mutation, just DB state) — confirm the flip-rate is sane before flipping the auto-reorder flag.
-
 ---
 
 ## Deployed
+
+### 2026-05-21 · full deploy — bundled: methodType address-tag gate + find-new-driver watchdog (telemetry-only)
+- **Image tag (full):** `omnify-app:full-20260521-3944fc5` (health check HTTP 200 on attempt 1).
+- **Deploy mechanic:** `scripts/deploy-omnify-admin.ps1 -App full` from main at HEAD `3944fc5`. First build cache-stale (older Dockerfile layer missing `COPY tsconfig.base.json ./`) — fixed by manual `docker build --no-cache` + push + `-SkipBuild -Tag 20260521-3944fc5` re-run. Container `cpg-labs-full` recreated. omnify + flywheel containers untouched.
+- **Bundled commits (2):**
+  - `14302cf` — fix(local-delivery): tag `ld_confirm-address` only when `methodType === "LOCAL"`. Loader auto-tagger now AND's the existing `LalamoveLocationConfig` location gate with `fulfillmentOrder.deliveryMethod.methodType === "LOCAL"`. Originally landed in cpg-labs as `31ad38f`, re-hashed into nami-works via the Phase B absorption.
+  - `277f393` — feat(local-delivery): find-new-driver watchdog (cron-driven, flag-off by default). New `findNewDriverForJob(jobId, shop, admin)` helper in `lalamove-escalation.server.ts` (cancel + delegate to `reorderJob` with `skipCancel: true`, with priority-fee unblock for Lalamove's `ERR_CANCELLATION` and `NEEDS_REVIEW` reason `driver-locked-share-link` on persistent block). `handleCheckDispatches` (api.control.$intent.tsx) now acts on `suggested=reorder`: 09–18 BRT + `CHECK_DISPATCHES_AUTO_REORDER=true` → fire watchdog; flag off → `action: "skipped-flag-off"`; 18+ BRT → flip job to `NEEDS_REVIEW` with `needsReviewReason=driver-not-approaching-after-hours`. Adds `X-Cron-Secret` auth branch in `claude-control-auth` (env: `CRON_SECRET`) — kept for future use; the cron line below reuses the existing operator bearer instead.
+  - Side-bring: root `eslint.config.js` (minimal flat config) so the changed-lines pre-commit hook works from repo root. To be superseded by the full flat-config migration in flight.
+- **What it affects:**
+  - Local Delivery loader: SHIPPING/PICKUP orders surfaced via `includeWarehouse` at LD-enabled stores stop being auto-tagged for LD address-confirmation messaging.
+  - `/api/control/check-dispatches` response gains an `action` field per dispatch. With `CHECK_DISPATCHES_AUTO_REORDER` unset, the only behavioral change is the 18+ BRT NEEDS_REVIEW flip (DB state only, no Lalamove mutation).
+- **Verified post-deploy:**
+  - `/health` HTTP 200 on attempt 1.
+  - Image SHA: `477780048372.dkr.ecr.us-east-1.amazonaws.com/omnify-app:full-20260521-3944fc5`.
+- **Ops change (cron):** added one line to root crontab on the box (crontab lines 29 → 30):
+  ```
+  */5 9-22 * * * bash -c 'set -a; . /etc/cpg-labs/full.env; set +a; curl -fsS -X POST -H "Authorization: Bearer $CLAUDE_CONTROL_TOKEN" -m 60 http://localhost:3000/api/control/check-dispatches' >> /var/log/cpg-labs/check-dispatches.log 2>&1
+  ```
+  Uses existing `CLAUDE_CONTROL_TOKEN` from `/etc/cpg-labs/full.env`. **Timezone caveat:** the `9-22` window is server-local. Confirm the box is on America/Sao_Paulo before relying on the 18 BRT cutoff for NEEDS_REVIEW flips — if the box is UTC the cutoff is effectively 15 BRT.
+- **Flag state:** `CHECK_DISPATCHES_AUTO_REORDER` unset → watchdog is telemetry-only. Watch one cycle of `/var/log/cpg-labs/check-dispatches.log` for `"action": "skipped-flag-off"` entries before flipping to `true`.
+- **Open follow-ups:**
+  - Verify cron timezone (BRT vs UTC) on the box.
+  - Watch first NEEDS_REVIEW flip (if any) and confirm `needsReviewReason=driver-not-approaching-after-hours` shows up cleanly in the UI's existing reason renderer.
+  - Decide when to set `CHECK_DISPATCHES_AUTO_REORDER=true` after one week of telemetry.
 
 ### 2026-05-19 · full deploy — bundled: ghost-FO loader fix + hidden-warehouse badge + ticket-at-merge convention
 - **Image tag (full):** `omnify-app:full-20260519-6f8a607` (health check HTTP 200 on attempt 1).
