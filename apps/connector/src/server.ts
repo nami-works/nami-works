@@ -7,6 +7,7 @@ import { rootLogger } from "./lib/logger.js";
 import { mountLocalDeliveryRoutes } from "./local-delivery/index.js";
 import { mountTenantRoute } from "./mcp/transport.js";
 import { mountOAuthRoutes } from "./oauth/index.js";
+import { mountToneRoutes } from "./services/tone-sources/routes.js";
 // Side-effect import: registers every tool in the catalog at boot.
 import "./tools/index.js";
 
@@ -27,6 +28,7 @@ mountIconRoutes(app);
 app.get("/health", async () => ({ ok: true }));
 
 mountTenantRoute(app);
+mountToneRoutes(app);
 
 if (process.env.LOCAL_DELIVERY_SIMULATOR_ENABLED === "1") {
   await mountLocalDeliveryRoutes(app);

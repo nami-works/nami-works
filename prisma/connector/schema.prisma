@@ -21,24 +21,31 @@ enum TenantStatus {
 }
 
 model IntegrationTenant {
-  id                   String               @id @default(cuid())
-  slug                 String               @unique
+  id                   String                   @id @default(cuid())
+  slug                 String                   @unique
   displayName          String
   brand                Brand
   shopifyShop          String?
-  bearerTokenHash      String               @unique
-  ssmPrefix            String               @unique
-  status               TenantStatus         @default(active)
+  bearerTokenHash      String                   @unique
+  ssmPrefix            String                   @unique
+  status               TenantStatus             @default(active)
   contactEmail         String
   notes                String?
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
+  // ISO language tag the brand publishes in (e.g. "pt-BR", "en-US"). Read by
+  // the tone inference engine + downstream copy-drafting tools. Null = let
+  // the inference call auto-detect from the corpus.
+  contentLanguage      String?
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
   invocations          ToolInvocationLog[]
   affiliates           AffiliateProfile[]
   instagramAccount     InstagramAccount?
   instagramPosts       InstagramPost[]
-  voiceCards           VoiceCard[]
   feedback             Feedback[]
+  brandSettings        TenantBrand?
+  toneSources          BrandToneSource[]
+  toneHypotheses       BrandToneHypothesis[]
+  integrationConfigs   BrandIntegrationConfig[]
 
   @@index([status])
 }
@@ -191,25 +198,6 @@ model InstagramPost {
   @@index([tenantId, postedAt])
 }
 
-// Per-tenant voice-of-brand card. Generated from a corpus (currently
-// `InstagramPost` rows) by an LLM extraction pass; consumed by copy-drafting
-// tools that need to sound like the brand. Multiple rows per tenant so we
-// can audit drift and roll back if a new card regresses; readers should
-// pick the most-recent `generatedAt` for the requested `source`.
-model VoiceCard {
-  id          String            @id @default(cuid())
-  tenantId    String
-  source      String // "instagram" for now
-  generatedAt DateTime          @default(now())
-  modelId     String // e.g. "claude-opus-4-7"
-  corpusSize  Int // number of items fed into the extractor
-  card        Json // structured voice card (see voice-card.ts schema)
-  notes       String?           @db.Text
-  tenant      IntegrationTenant @relation(fields: [tenantId], references: [id])
-
-  @@index([tenantId, source, generatedAt])
-}
-
 // Operator feedback captured through the nami_feedback MCP tool. Writes
 // happen from inside claude.ai conversations; admins review via
 // `npm run feedback-review`. Each row is a single feedback event with a
@@ -240,4 +228,83 @@ model LdSimPolylineCache {
   routeKey  String   @unique // sha256 of "${locationId}|${orderIdsJoined}"
   polyline  String   @db.Text // encoded polyline string from Google Routes API
   fetchedAt DateTime @default(now())
+}
+
+// Per-tenant manual brand-bible fields. 1:1 with IntegrationTenant. Holds the
+// merchant-curated overrides that complement the inferred trait set produced
+// by the tone-sources pipeline. Tenants without a row use defaults (display
+// name as brand name, no manual override).
+model TenantBrand {
+  id                   String            @id @default(cuid())
+  tenantId             String            @unique
+  brandName            String?
+  about                String?           @db.Text
+  toneOfVoice          String?           @db.Text // manual override / freeform spec
+  editorialGuidelines  String?           @db.Text
+  benchmarks           String?           @db.Text
+  brandCategory        String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  tenant               IntegrationTenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+// Raw text samples pulled from a connected source for tone-of-voice analysis.
+// One row per (tenantId, sourceType, sourceId). Multiple samples per batch;
+// inference reads a whole `batchId` at once and produces hypotheses below.
+model BrandToneSource {
+  id              String            @id @default(cuid())
+  tenantId        String
+  sourceType      String // shopify_blog | meta_ig | meta_fb | monday | manual_upload | manual_url
+  sourceId        String // stable external id (article gid, post id, item id, upload id...)
+  sourceUrl       String?
+  capturedAt      DateTime          @default(now())
+  rawText         String            @db.Text // truncated server-side, ≤80k chars
+  contentLanguage String?
+  metaJson        Json? // source-specific metadata (boardId, permalink, filename, s3Key, ...)
+  batchId         String
+  tenant          IntegrationTenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, sourceType, sourceId])
+  @@index([tenantId, sourceType])
+  @@index([tenantId, batchId])
+}
+
+// Trait hypotheses produced by the Claude inference pass over a batch of
+// BrandToneSource rows. Merchant reviews each: `pending_review` → `accepted`
+// or `rejected`. Accepted rows are the canonical brand voice consumed by
+// `brand_tone_current` and downstream drafting tools.
+model BrandToneHypothesis {
+  id         String            @id @default(cuid())
+  tenantId   String
+  batchId    String
+  category   String // voice | vocabulary | do | dont | register | structure
+  statement  String            @db.Text
+  evidence   Json // [{ sourceType, sourceId, snippet }, ...]
+  confidence Float
+  status     String            @default("pending_review") // pending_review | accepted | rejected | superseded
+  createdAt  DateTime          @default(now())
+  reviewedAt DateTime?
+  tenant     IntegrationTenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+  @@index([tenantId, batchId])
+}
+
+// Encrypted credential storage for tenant integrations that aren't backed by
+// SSM (Meta Graph tokens, Monday.com API keys, etc.). One row per
+// (tenantId, integrationType). `configCipher` is AES-256-GCM ciphertext of
+// the full config JSON; `keyVersion` tracks the encryption key generation.
+model BrandIntegrationConfig {
+  id              String            @id @default(cuid())
+  tenantId        String
+  integrationType String // monday | meta
+  configCipher    String            @db.Text
+  keyVersion      Int               @default(1)
+  enabled         Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  tenant          IntegrationTenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, integrationType])
+  @@index([tenantId])
 }

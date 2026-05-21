@@ -23,6 +23,7 @@ function tenantRow(
     status: "active",
     contactEmail: "test@test.local",
     notes: null,
+    contentLanguage: null,
     createdAt: new Date("2026-04-20T00:00:00Z"),
     updatedAt: new Date("2026-04-20T00:00:00Z"),
     ...overrides,

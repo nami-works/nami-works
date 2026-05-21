@@ -24,6 +24,7 @@ function tenantRow(
     status: "active",
     contactEmail: "ops@gebeauty.com.br",
     notes: null,
+    contentLanguage: "pt-BR",
     createdAt: new Date("2026-04-20T00:00:00Z"),
     updatedAt: new Date("2026-04-20T00:00:00Z"),
     ...overrides,
