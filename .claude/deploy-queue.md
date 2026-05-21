@@ -55,6 +55,15 @@ the config files cleaned up.
 
 ## Pending
 
+### 2026-05-21 · fix/ld-order-modal-close (`d576505`)
+- **App:** omnify-admin (full + omnify, same image — modal lives on `/app/local-delivery`).
+- **Files touched:** `app/routes/app.local-delivery.tsx`, `app/routes/app.local-delivery/styles.module.css`.
+- **Type:** code (modal interaction + loader field add).
+- **Summary:** Five fixes on the Local Delivery Order details modal — Close button (hideOverlay vs removeAttribute, also unblocks reopen), Open-full-order 404 (s-button → s-link), shipping `city` added to LoaderOrder + rendered, Customer/Shipping headlines unified via shared `.orderModalBlockHeadline` class.
+- **Affects:** operator-facing modal opened from the All-orders table. No mutations, no new GraphQL fields (city was already in the existing `shippingAddress` selection used for `shippingSummary`).
+- **Dependencies:** none — independent of the existing `fix/address-tag-gate-on-methodtype` entry below, even though both touch the same loader file (different code paths — address-tag-gate is in the auto-tagger predicate, this bundle is in the modal JSX + LoaderOrder type).
+- **Risk:** low. Reversible. No schema or infra changes.
+
 ### 2026-05-20 · fix/address-tag-gate-on-methodtype (`31ad38f`)
 - **Files touched:** `app/routes/app.local-delivery.tsx`
 - **Type:** code (loader gate tightening)
