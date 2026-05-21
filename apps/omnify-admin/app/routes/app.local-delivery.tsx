@@ -7009,7 +7009,7 @@ export default function Index() {
               <h3 className={styles.orderModalSectionTitle}>
                 {t("orderDetailsModal.customer")}
               </h3>
-              <div className={styles.orderModalCustomerName}>
+              <div className={styles.orderModalBlockHeadline}>
                 {orderDetailsModalOrder.customerName ??
                   t("customer.guest")}
               </div>
@@ -7043,13 +7043,18 @@ export default function Index() {
                 {t("orderDetailsModal.shippingAddress")}
               </h3>
               <div className={styles.orderModalAddress}>
-                <span className={styles.orderModalVal}>
+                <div className={styles.orderModalBlockHeadline}>
                   {orderDetailsModalOrder.address1 ??
                     t("orderDetailsModal.noAddress")}
-                </span>
+                </div>
                 {orderDetailsModalOrder.address2 ? (
                   <span className={styles.orderModalVal}>
                     {orderDetailsModalOrder.address2}
+                  </span>
+                ) : null}
+                {orderDetailsModalOrder.city ? (
+                  <span className={styles.orderModalVal}>
+                    {orderDetailsModalOrder.city}
                   </span>
                 ) : null}
                 <span className={styles.orderModalKey}>
@@ -7190,30 +7195,38 @@ export default function Index() {
         ) : null}
 
         {/* Footer — right-aligned buttons via shared .modalFooterRight class.
-            2026-05-16: switched "Open full order" from <s-button onClick={window.open}>
-            to <s-button href target="_blank"> because window.open() inside the
-            Shopify Admin iframe was being intercepted by App Bridge and
-            re-prefixed with the current store-scoped path, producing URLs that
-            duplicated the `store/<handle>/` segment. Polaris-native href is
-            App-Bridge-aware. Close button drops the `commandFor`/`command` race
-            with onClick (CLAUDE.md rule) — dismiss programmatically. */}
+            "Open full order" uses <s-link href target="_blank"> matching the
+            other 3 Shopify-admin-deep-link spots in this file. Earlier
+            iterations tried <s-button onClick={window.open}> (App Bridge
+            re-prefixed the URL and duplicated the `store/<handle>/` segment)
+            and then <s-button href target="_blank"> (404'd because s-button
+            doesn't honor target=_blank — the iframe tried to navigate to
+            admin.shopify.com, which X-Frame-Options blocks). s-link is the
+            only known-working primitive for this. Close button drops the
+            `commandFor`/`command` race with onClick (CLAUDE.md rule) —
+            dismiss programmatically via `hideOverlay()`. `removeAttribute("open")`
+            is wrong here: Polaris s-modal isn't open-attribute-driven, so the
+            overlay stays visible with empty content (because the state-bound
+            body goes null first) and the next reopen no-ops because internal
+            state still thinks the modal is shown. */}
         <div className={styles.modalFooterRight} slot="footer">
           {orderDetailsModalOrder ? (
-            <s-button
-              variant="secondary"
+            <s-link
               href={orderDetailsModalOrder.adminOrderUrl}
               target="_blank"
             >
               {t("orderDetailsModal.openInShopify")}
-            </s-button>
+            </s-link>
           ) : null}
           <s-button
             variant="primary"
             onClick={() => {
+              const modal = document.getElementById("order-details-modal") as
+                | { hideOverlay?: () => void; hide?: () => void }
+                | null;
+              if (modal?.hideOverlay) modal.hideOverlay();
+              else if (modal?.hide) modal.hide();
               setOrderDetailsModalOrderId(null);
-              document
-                .getElementById("order-details-modal")
-                ?.removeAttribute("open");
             }}
           >
             {t("orderDetailsModal.close")}
@@ -7240,6 +7253,7 @@ type LoaderOrder = {
   shippingSummary: string | null;
   address1: string | null;
   address2: string | null;
+  city: string | null;
   adminOrderUrl: string;
   addressValidation: AddressValidationResult;
   shippingCoordinates: { latitude: number; longitude: number } | null;
@@ -8736,6 +8750,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           : null,
         address1: order.shippingAddress?.address1 ?? null,
         address2: order.shippingAddress?.address2 ?? null,
+        city: order.shippingAddress?.city ?? null,
         addressValidation,
         adminOrderUrl: `https://admin.shopify.com/store/${toAdminStoreHandle(shop)}/orders/${toLegacyLocationId(order.id)}`,
         shippingCoordinates,

@@ -1890,9 +1890,12 @@
   font-size: 13px;
 }
 
-/* Customer-name display when the "Name" label is dropped (the value is
-   self-evident; spec 2026-05-08). */
-.orderModalCustomerName {
+/* Shared block headline — used at the top of the Customer block (customer
+   name) and the Shipping address block (address1). Promotes the first line
+   of each block to a consistent 14px/600 weight so the two cards read as a
+   visual pair (spec 2026-05-08 + 2026-05-21 hierarchy-alignment backlog
+   item). */
+.orderModalBlockHeadline {
   font-size: 14px;
   font-weight: 600;
   color: #303030;
