@@ -79,6 +79,7 @@ import {
   fulfillOrderWithVerification,
   inspectOrderForFulfillment,
 } from "../services/lalamove-reconcile.server";
+import { findNewDriverForJob } from "../services/lalamove-escalation.server";
 
 const MAX_ROUTE_SLOTS = 20;
 const TERMINAL_DISPATCH_STATUSES = new Set(["COMPLETED", "CANCELED", "REJECTED", "EXPIRED"]);
@@ -2105,6 +2106,63 @@ async function handleCheckDispatches(shop: string, _body: Record<string, unknown
 
       const suggested = !inGrace && newFailCount >= APPROACH_STRIKE_LIMIT ? "reorder" : null;
 
+      // ── Watchdog auto-fire (find-new-driver) ────────────────────────────
+      // When suggested=reorder, decide whether to act now:
+      //   - hourBRT >= 18: flip NEEDS_REVIEW (no late-evening reorders;
+      //     deliveries pushed into night = bad CX).
+      //   - hourBRT < 18 AND CHECK_DISPATCHES_AUTO_REORDER=true:
+      //     fire findNewDriverForJob (cancel + re-POST, with
+      //     priority-fee-on-ERR_CANCELLATION workaround).
+      //   - hourBRT < 18 AND flag off: telemetry-only (action=skipped-flag-off).
+      // Detection cron runs 09–22 BRT every 5 min; this gate enforces the
+      // 09–18 BRT action window even if the cron line is wider.
+      let action: string | null = null;
+      if (suggested === "reorder") {
+        const hourBRT = parseInt(
+          new Intl.DateTimeFormat("en-GB", {
+            timeZone: "America/Sao_Paulo",
+            hour: "2-digit",
+            hour12: false,
+          }).format(new Date()),
+          10,
+        );
+        if (Number.isFinite(hourBRT) && hourBRT >= 18) {
+          await prismaAny.lalamoveDispatchJob.update({
+            where: { id: job.id },
+            data: {
+              status: "NEEDS_REVIEW",
+              needsReviewReason: "driver-not-approaching-after-hours",
+            },
+          });
+          action = "flipped-needs-review-after-hours";
+          console.warn(
+            `[control] check-dispatches NEEDS_REVIEW job=${job.id} hourBRT=${hourBRT} reason=driver-not-approaching-after-hours`,
+          );
+        } else if (process.env.CHECK_DISPATCHES_AUTO_REORDER === "true") {
+          try {
+            const { admin } = await unauthenticated.admin(shop);
+            const fireResult = await findNewDriverForJob(job.id, shop, admin);
+            action = fireResult.success
+              ? "auto-reorder-fired"
+              : `auto-reorder-failed:${fireResult.error ?? "?"}`;
+            console.info(
+              `[control] check-dispatches auto-reorder job=${job.id} success=${fireResult.success}${fireResult.error ? ` error=${fireResult.error}` : ""}`,
+            );
+          } catch (fireErr) {
+            const msg = fireErr instanceof Error ? fireErr.message : String(fireErr);
+            action = `auto-reorder-error:${msg}`;
+            console.error(
+              `[control] check-dispatches auto-reorder ERROR job=${job.id} error=${msg}`,
+            );
+          }
+        } else {
+          action = "skipped-flag-off";
+          console.info(
+            `[control] check-dispatches suggested=reorder skipped (CHECK_DISPATCHES_AUTO_REORDER!=true) job=${job.id}`,
+          );
+        }
+      }
+
       results.push({
         routeId: job.routeId,
         lalamoveOrderId: job.lalamoveOrderId,
@@ -2115,6 +2173,7 @@ async function handleCheckDispatches(shop: string, _body: Record<string, unknown
         approachFailCount: newFailCount,
         inGrace,
         suggested,
+        action,
         ok: true,
       });
     }

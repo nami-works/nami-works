@@ -839,6 +839,184 @@ async function reorderJob(
   return result;
 }
 
+// ── Find-new-driver watchdog (mid-flight stuck driver) ──────────────────────
+
+/**
+ * Stuck-driver recovery: cancel the current Lalamove order and re-request a
+ * fresh quotation + order so Lalamove invites new drivers. Invoked by the
+ * `check-dispatches` cron when a driver's distance-to-pickup has stalled or
+ * grown for APPROACH_STRIKE_LIMIT consecutive samples.
+ *
+ * Lalamove's DELETE /v3/orders/{id} returns 422 ERR_CANCELLATION
+ * ("Cannot cancel order.") once the driver has accepted past the early window.
+ * Empirically discovered 2026-05-20: applying a small priority fee unblocks
+ * the cancellation. The fee here is a workaround, NOT a "go-faster" payment.
+ *
+ * Outcomes:
+ *   - cancel OK → delegate to reorderJob(skipCancel=true) for re-POST.
+ *   - cancel ERR_CANCELLATION → apply MIN_FEE_AMOUNT priority fee, retry cancel
+ *     once; on success delegate to reorderJob, on failure flip the job to
+ *     NEEDS_REVIEW with reason="driver-locked-share-link" so the operator can
+ *     contact the driver via the Lalamove share link.
+ *   - cancel returns terminal-status error (beyond allowable / 404) → delegate
+ *     to autoRetryDispatchJob which fetches live state and either syncs or
+ *     retries. Same defensive-guard path as escalation reorder.
+ *   - any other cancel failure → return error, leave job untouched.
+ *
+ * reorderCount is incremented inside reorderJob; MAX_REORDER_ATTEMPTS cap
+ * applies here too — at the cap the job flips to NEEDS_REVIEW.
+ */
+export async function findNewDriverForJob(
+  jobId: string,
+  shop: string,
+  admin: AdminApiContext,
+): Promise<EscalationResult> {
+  const job = await prisma.lalamoveDispatchJob.findUnique({
+    where: { id: jobId },
+  });
+  if (!job) {
+    console.error(`[find-new-driver] job not found jobId=${jobId} shop=${shop}`);
+    return {
+      jobId,
+      routeId: "",
+      action: { type: "reorder" },
+      success: false,
+      error: "Job not found",
+    };
+  }
+  if (!job.lalamoveOrderId || !job.market) {
+    return {
+      jobId,
+      routeId: job.routeId,
+      action: { type: "reorder" },
+      success: false,
+      error: !job.lalamoveOrderId
+        ? "Job has no lalamoveOrderId"
+        : "Job has no market",
+    };
+  }
+  const lalamoveOrderId: string = job.lalamoveOrderId;
+  const market: string = job.market;
+
+  const credentials = await getRuntimeCredentialsForShop(shop);
+  if (!credentials) {
+    console.warn(`[find-new-driver] no credentials shop=${shop}`);
+    return {
+      jobId,
+      routeId: job.routeId,
+      action: { type: "reorder" },
+      success: false,
+      error: "No Lalamove credentials configured.",
+    };
+  }
+
+  console.info(
+    `[find-new-driver] START job=${jobId} shop=${shop} lalamoveOrderId=${lalamoveOrderId} reorderCount=${job.reorderCount ?? 0}`,
+  );
+
+  // 1. Try to cancel the current Lalamove order
+  try {
+    await cancelLalamoveOrder(market, lalamoveOrderId, credentials);
+    console.info(`[find-new-driver] cancel OK job=${jobId}`);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+
+    const isErrCancellation =
+      message.includes("ERR_CANCELLATION") ||
+      (message.includes("422") && message.toLowerCase().includes("cannot cancel order"));
+
+    if (isErrCancellation) {
+      console.warn(
+        `[find-new-driver] cancel BLOCKED job=${jobId} reason=ERR_CANCELLATION → applying priority fee ${MIN_FEE_AMOUNT} to unblock`,
+      );
+
+      try {
+        await addLalamovePriorityFee(
+          market,
+          lalamoveOrderId,
+          MIN_FEE_AMOUNT,
+          credentials,
+        );
+      } catch (feeErr) {
+        const feeMsg = feeErr instanceof Error ? feeErr.message : String(feeErr);
+        console.error(
+          `[find-new-driver] priority fee FAILED job=${jobId} error=${feeMsg} → flipping NEEDS_REVIEW`,
+        );
+        await prisma.lalamoveDispatchJob.update({
+          where: { id: jobId },
+          data: {
+            status: "NEEDS_REVIEW",
+            needsReviewReason: "driver-locked-share-link",
+          },
+        });
+        return {
+          jobId,
+          routeId: job.routeId,
+          action: { type: "reorder" },
+          success: false,
+          error: `Priority fee failed: ${feeMsg}`,
+        };
+      }
+
+      try {
+        await cancelLalamoveOrder(market, lalamoveOrderId, credentials);
+        console.info(
+          `[find-new-driver] cancel retry OK job=${jobId} after priority fee`,
+        );
+      } catch (retryErr) {
+        const retryMsg =
+          retryErr instanceof Error ? retryErr.message : String(retryErr);
+        console.warn(
+          `[find-new-driver] cancel retry FAILED job=${jobId} error=${retryMsg} → flipping NEEDS_REVIEW`,
+        );
+        await prisma.lalamoveDispatchJob.update({
+          where: { id: jobId },
+          data: {
+            status: "NEEDS_REVIEW",
+            needsReviewReason: "driver-locked-share-link",
+          },
+        });
+        return {
+          jobId,
+          routeId: job.routeId,
+          action: { type: "reorder" },
+          success: false,
+          error: `Cancel retry failed after priority fee: ${retryMsg}`,
+        };
+      }
+    } else {
+      const isTerminal =
+        (message.includes("422") && message.includes(TERMINAL_ORDER_STATUS_HINT)) ||
+        message.startsWith("404:");
+      if (isTerminal) {
+        console.warn(
+          `[find-new-driver] cancel terminal job=${jobId} error=${message} → delegating to autoRetryDispatchJob`,
+        );
+        return autoRetryDispatchJob(
+          { ...job, market, lalamoveOrderId },
+          shop,
+          admin,
+        );
+      }
+      console.error(
+        `[find-new-driver] cancel transient FAILED job=${jobId} error=${message}`,
+      );
+      return {
+        jobId,
+        routeId: job.routeId,
+        action: { type: "reorder" },
+        success: false,
+        error: `Cancel failed: ${message}`,
+      };
+    }
+  }
+
+  // 2. Cancel succeeded — delegate to reorderJob for the re-POST.
+  // skipCancel: true because we already cancelled above; reorderJob still
+  // enforces MAX_REORDER_ATTEMPTS and increments reorderCount.
+  return reorderJob(job, shop, admin, credentials, prisma, { skipCancel: true });
+}
+
 // ── Auto-retry for webhook-triggered failures ───────────────────────────────
 
 const MAX_AUTO_RETRIES = 2;

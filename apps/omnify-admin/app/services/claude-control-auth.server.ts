@@ -5,9 +5,17 @@
  * Upgrade path: migrate to a DB-backed `IntegrationToken` table when we need
  * multi-shop / multi-scope / rotation.
  *
- * Env vars (set via SSM Parameter Store, wired into ECS task definition):
- *   CLAUDE_CONTROL_TOKEN  — opaque secret the client sends as Bearer
- *   CLAUDE_CONTROL_SHOP   — the shop domain this token is authorized for
+ * Two auth modes:
+ *   1. Authorization: Bearer <token>  — operator / Claude-Code clients.
+ *      Token compared against CLAUDE_CONTROL_TOKEN env.
+ *   2. X-Cron-Secret: <token>  — on-box cron jobs (e.g. every-5-min check-dispatches).
+ *      Token compared against CRON_SECRET env. Same shop scope as Bearer.
+ *      Lets cron hit control endpoints without holding the operator token.
+ *
+ * Env vars:
+ *   CLAUDE_CONTROL_TOKEN  — opaque secret the operator client sends as Bearer
+ *   CRON_SECRET           — opaque secret the on-box cron sends as X-Cron-Secret
+ *   CLAUDE_CONTROL_SHOP   — the shop domain both tokens are authorized for
  *                           (e.g. "ge-beauty-cosmeticos.myshopify.com")
  */
 
@@ -16,12 +24,24 @@ export type ControlAuthResult =
   | { ok: false; status: number; error: string };
 
 export function authorizeControlRequest(request: Request): ControlAuthResult {
-  const expected = process.env.CLAUDE_CONTROL_TOKEN?.trim();
+  const expectedBearer = process.env.CLAUDE_CONTROL_TOKEN?.trim();
+  const expectedCron = process.env.CRON_SECRET?.trim();
   const shop = process.env.CLAUDE_CONTROL_SHOP?.trim();
 
-  if (!expected || !shop) {
-    console.error("[control-auth] missing CLAUDE_CONTROL_TOKEN or CLAUDE_CONTROL_SHOP env");
+  if (!shop || (!expectedBearer && !expectedCron)) {
+    console.error("[control-auth] missing CLAUDE_CONTROL_SHOP or both auth secrets (CLAUDE_CONTROL_TOKEN / CRON_SECRET)");
     return { ok: false, status: 503, error: "Control API not configured on server." };
+  }
+
+  const cronHeader = request.headers.get("x-cron-secret")?.trim();
+  if (cronHeader) {
+    if (!expectedCron) {
+      return { ok: false, status: 401, error: "X-Cron-Secret not accepted on this server." };
+    }
+    if (!safeEqual(cronHeader, expectedCron)) {
+      return { ok: false, status: 401, error: "Invalid X-Cron-Secret." };
+    }
+    return { ok: true, shop };
   }
 
   const header = request.headers.get("authorization") ?? "";
@@ -29,12 +49,16 @@ export function authorizeControlRequest(request: Request): ControlAuthResult {
   const presented = match?.[1]?.trim();
 
   if (!presented) {
-    return { ok: false, status: 401, error: "Missing Authorization: Bearer <token> header." };
+    return { ok: false, status: 401, error: "Missing Authorization: Bearer <token> or X-Cron-Secret header." };
+  }
+
+  if (!expectedBearer) {
+    return { ok: false, status: 401, error: "Bearer auth not accepted on this server." };
   }
 
   // Timing-safe-ish comparison. Node's `timingSafeEqual` requires equal-length
   // buffers; fall back to a constant-time comparison if lengths differ.
-  if (!safeEqual(presented, expected)) {
+  if (!safeEqual(presented, expectedBearer)) {
     return { ok: false, status: 401, error: "Invalid bearer token." };
   }
 
