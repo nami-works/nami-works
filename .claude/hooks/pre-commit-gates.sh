@@ -51,6 +51,31 @@ esac
 
 echo "[pre-commit-gates] gating git commit..." >&2
 
+# Branch-per-task gate. The root CLAUDE.md says every non-trivial change
+# happens on a feature branch — feat/<slug>, fix/<slug>, chore/<slug>,
+# docs/<slug>. Direct commits to main are reserved for explicit hotfixes,
+# which set ALLOW_MAIN_COMMIT=1 to bypass this check.
+current_branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '')"
+if [ "$current_branch" = "main" ] && [ "${ALLOW_MAIN_COMMIT:-}" != "1" ]; then
+  cat >&2 <<EOF
+
+✗ Refusing to commit directly to main.
+
+Cut a feature branch first:
+  git checkout -b feat/<slug>      # new feature
+  git checkout -b fix/<slug>       # bug fix
+  git checkout -b chore/<slug>     # build / refactor / config
+  git checkout -b docs/<slug>      # docs only
+
+Then commit and squash-merge to main when the work is complete and gates pass.
+
+If this is an authorized hotfix-to-main (rare), set ALLOW_MAIN_COMMIT=1 in the
+environment and re-run the commit. CLAUDE.md root § Branch-per-task documents
+the policy.
+EOF
+  exit 2
+fi
+
 # Gather files that will be in the commit.
 staged_list="$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null || true)"
 include_unstaged=""
