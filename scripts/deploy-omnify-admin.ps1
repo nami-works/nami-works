@@ -54,7 +54,7 @@ param(
 $ErrorActionPreference = "Stop"
 if ($VerboseMode) { Set-PSDebug -Trace 1 }
 
-Import-Module (Join-Path $PSScriptRoot "_deploy-common.psm1") -Force
+Import-Module (Join-Path $PSScriptRoot "omnify/_deploy-common.psm1") -Force
 
 # -- Constants ----------------------------------------------------------------
 
@@ -188,7 +188,7 @@ if (-not $SkipBuild) {
   $prevEap = $ErrorActionPreference
   $ErrorActionPreference = 'Continue'
   try {
-    & docker build @tagArgs . 2>&1 | Out-Host
+    & docker build @tagArgs -f apps/omnify-admin/Dockerfile . 2>&1 | Out-Host
   } finally {
     $ErrorActionPreference = $prevEap
   }
