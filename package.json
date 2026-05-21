@@ -1,23 +1,26 @@
 {
-  "name": "nami-works-gateway",
+  "name": "nami-works",
   "version": "0.1.0",
-  "description": "NAMI Works MCP gateway — curated Shopify + Omie tools for managed-service tenants",
+  "description": "NAMI Works monorepo: MCP connector (mcp.nami.works) + Omnify family apps (cpg-labs.io).",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "engines": {
     "node": ">=20.0.0"
   },
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "eslint src scripts",
-    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:deploy": "prisma migrate deploy",
+    "dev": "npm run dev -w @nami/connector",
+    "build": "npm run build --workspaces --if-present",
+    "start": "npm run start -w @nami/connector",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "prisma:generate": "npm run prisma:generate -w @nami/connector",
+    "prisma:migrate": "npm run prisma:migrate -w @nami/connector",
+    "prisma:deploy": "npm run prisma:deploy -w @nami/connector",
     "provision-tenant": "tsx scripts/provision-tenant.ts",
     "rotate-bearer": "tsx scripts/rotate-bearer.ts",
     "suspend-tenant": "tsx scripts/suspend-tenant.ts",
@@ -26,31 +29,5 @@
     "instagram-voice-card": "tsx scripts/instagram-voice-card.ts",
     "link-instagram": "tsx scripts/link-instagram.ts",
     "feedback-review": "tsx scripts/feedback-review.ts"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.91.1",
-    "@aws-sdk/client-ssm": "^3.700.0",
-    "@fastify/formbody": "^8.0.2",
-    "@fastify/sensible": "^6.0.2",
-    "@googleapis/drive": "^20.1.0",
-    "@modelcontextprotocol/sdk": "^1.17.0",
-    "@prisma/client": "^6.1.0",
-    "@shopify/admin-api-client": "^1.0.8",
-    "dotenv": "^17.4.2",
-    "fastify": "^5.2.0",
-    "jose": "^6.2.2",
-    "pino": "^9.5.0",
-    "pino-pretty": "^13.0.0",
-    "zod": "^3.24.1"
-  },
-  "devDependencies": {
-    "@types/node": "^22.10.0",
-    "eslint": "^9.17.0",
-    "prettier": "^3.4.0",
-    "prisma": "^6.1.0",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.0",
-    "typescript-eslint": "^8.19.0",
-    "vitest": "^2.1.8"
   }
 }

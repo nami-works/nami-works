@@ -1,9 +1,9 @@
-import "dotenv/config";
+﻿import "dotenv/config";
 import { parseArgs } from "node:util";
-import { prisma } from "../src/db/prisma.js";
-import { buildInstagramClient } from "../src/clients/instagram.js";
-import { ingestInstagramPosts } from "../src/services/instagram/ingest.js";
-import { getSecret } from "../src/secrets/ssm.js";
+import { prisma } from "../apps/connector/src/db/prisma.js";
+import { buildInstagramClient } from "../apps/connector/src/clients/instagram.js";
+import { ingestInstagramPosts } from "../apps/connector/src/services/instagram/ingest.js";
+import { getSecret } from "../apps/connector/src/secrets/ssm.js";
 
 /**
  * Dev-mode Instagram ingest. Bypasses SSM by reading the long-lived token

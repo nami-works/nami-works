@@ -1,0 +1,7 @@
+{
+  "name": "@nami/letterbox",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Handover notes and cross-session blueprints. Markdown-only, no runtime code.",
+  "type": "module"
+}

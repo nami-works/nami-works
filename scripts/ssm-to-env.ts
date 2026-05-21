@@ -1,9 +1,9 @@
-import { readFile, writeFile, access } from "node:fs/promises";
+﻿import { readFile, writeFile, access } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
 import { parseArgs } from "node:util";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { getSecret } from "../src/secrets/ssm.js";
+import { getSecret } from "../apps/connector/src/secrets/ssm.js";
 
 /**
  * Populate a sandbox/<tenant>/.env from /nami-works/tenants/<tenant>/* SSM params.

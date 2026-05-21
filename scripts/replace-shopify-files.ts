@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Bulk-replace files in a Shopify Files library by name.
  *
  * Walks a local folder of replacement images, matches each by exact filename
@@ -23,8 +23,8 @@ import { createReadStream } from "node:fs";
 import { readdir, stat } from "node:fs/promises";
 import { basename, extname, join } from "node:path";
 import { parseArgs } from "node:util";
-import { getShopifyClient } from "../src/clients/shopify.js";
-import { prisma } from "../src/db/prisma.js";
+import { getShopifyClient } from "../apps/connector/src/clients/shopify.js";
+import { prisma } from "../apps/connector/src/db/prisma.js";
 
 const ALLOWED_EXTS = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
 const MIME_BY_EXT: Record<string, string> = {

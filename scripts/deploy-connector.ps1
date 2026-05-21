@@ -1,15 +1,16 @@
-# scripts/deploy.ps1 — build, push, roll the NAMI Works gateway.
+# scripts/deploy-connector.ps1 — build, push, roll the NAMI Works connector
+# (the MCP gateway at mcp.nami.works).
 #
 # Expects:
 #   - docker CLI on PATH, authenticated (or we run ecr get-login-password below).
 #   - AWS CLI on PATH, logged in to the same account where Terraform applied
 #     (us-east-1, account 477780048372).
-#   - Terraform outputs resolvable from infra/terraform (we call `terraform output`).
+#   - Terraform outputs resolvable from infra/connector (we call `terraform output`).
 #
 # Usage:
-#   .\scripts\deploy.ps1              # tags with git sha
-#   .\scripts\deploy.ps1 -Tag v1.0.0  # custom tag
-#   .\scripts\deploy.ps1 -SkipWait    # don't wait for rollout to stabilize
+#   .\scripts\deploy-connector.ps1              # tags with git sha
+#   .\scripts\deploy-connector.ps1 -Tag v1.0.0  # custom tag
+#   .\scripts\deploy-connector.ps1 -SkipWait    # don't wait for rollout to stabilize
 
 [CmdletBinding()]
 param(
@@ -20,7 +21,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-$tfDir    = Join-Path $repoRoot 'infra/terraform'
+$tfDir    = Join-Path $repoRoot 'infra/connector'
 $region   = 'us-east-1'
 $account  = '477780048372'
 
@@ -54,7 +55,8 @@ Step "Building image ${ecrUrl}:${Tag}"
 Push-Location $repoRoot
 try {
   # Linux/amd64 — ECS Fargate task definition is X86_64.
-  docker buildx build --platform linux/amd64 -t "${ecrUrl}:${Tag}" -t "${ecrUrl}:latest" --push .
+  # Build context is repo root; Dockerfile lives inside the connector workspace.
+  docker buildx build --platform linux/amd64 -f apps/connector/Dockerfile -t "${ecrUrl}:${Tag}" -t "${ecrUrl}:latest" --push .
   if ($LASTEXITCODE -ne 0) { throw "docker build/push failed" }
 } finally {
   Pop-Location

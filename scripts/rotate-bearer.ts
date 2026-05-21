@@ -1,7 +1,7 @@
-import "dotenv/config";
+﻿import "dotenv/config";
 import { createHash, randomBytes } from "node:crypto";
 import { parseArgs } from "node:util";
-import { prisma } from "../src/db/prisma.js";
+import { prisma } from "../apps/connector/src/db/prisma.js";
 
 /**
  * Rotate a tenant's bearer token.

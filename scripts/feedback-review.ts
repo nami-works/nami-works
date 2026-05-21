@@ -1,6 +1,6 @@
-import "dotenv/config";
+﻿import "dotenv/config";
 import { parseArgs } from "node:util";
-import { prisma } from "../src/db/prisma.js";
+import { prisma } from "../apps/connector/src/db/prisma.js";
 
 /**
  * Admin: read the feedback queue. By default, lists all new feedback across

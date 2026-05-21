@@ -1,6 +1,6 @@
-import "dotenv/config";
+﻿import "dotenv/config";
 import { parseArgs } from "node:util";
-import { prisma } from "../src/db/prisma.js";
+import { prisma } from "../apps/connector/src/db/prisma.js";
 
 /**
  * Admin one-off: links an Instagram Business Account to a tenant in the DB.

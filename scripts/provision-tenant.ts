@@ -1,4 +1,4 @@
-import "dotenv/config";
+﻿import "dotenv/config";
 import { createHash, randomBytes } from "node:crypto";
 import { parseArgs } from "node:util";
 import {
@@ -6,7 +6,7 @@ import {
   PutParameterCommand,
   SSMClient,
 } from "@aws-sdk/client-ssm";
-import { prisma } from "../src/db/prisma.js";
+import { prisma } from "../apps/connector/src/db/prisma.js";
 
 const VALID_BRANDS = ["cpg-labs"] as const;
 type BrandInput = (typeof VALID_BRANDS)[number];

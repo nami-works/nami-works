@@ -1,13 +1,16 @@
 node_modules
-dist
-coverage
+**/node_modules
+**/dist
+**/coverage
 .git
 .github
 .vscode
 .idea
 
 .env
+**/.env
 .env.*
+**/.env.*
 
 *.log
 npm-debug.log*
@@ -18,7 +21,22 @@ npm-debug.log*
 Thumbs.db
 
 # local dev
-docker-compose.yml
+**/docker-compose.yml
 
 # tests don't need to ship in the image
 **/*.test.ts
+
+# operational state and reference material — not for runtime image.
+# Note: packages/letterbox/package.json must be present for npm workspaces
+# to resolve the workspace graph; only exclude its markdown payload.
+sandbox
+letterbox
+packages/letterbox/*.md
+docs
+DECISIONS.md
+README.md
+CLAUDE.md
+infra
+.claude
+.mcp.json
+scripts
