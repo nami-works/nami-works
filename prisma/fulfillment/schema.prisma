@@ -1,0 +1,205 @@
+// Rota Local — separate logical DB from connector + omnify. Cross-DB FK is
+// impossible; never reference tables in another schema's client.
+
+generator client {
+  provider = "prisma-client-js"
+  // Custom output so this schema doesn't collide with omnify's default
+  // @prisma/client or connector's @prisma/client-connector.
+  output   = "../../node_modules/@prisma/client-fulfillment"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_FULFILLMENT")
+}
+
+enum TenantStatus {
+  active
+  suspended
+  disabled
+}
+
+enum IngestionMode {
+  push
+  focus_nfe
+}
+
+enum OrderStatus {
+  RECEIVED
+  PICKING
+  PICKED
+  POOLED
+  ROUTED
+  DISPATCHED
+  DELIVERED
+  FAILED
+  CANCELLED
+}
+
+enum WebhookDeliveryStatus {
+  pending
+  delivered
+  failed
+}
+
+model FulfillmentTenant {
+  id                    String             @id @default(cuid())
+  slug                  String             @unique
+  displayName           String
+  cnpj                  String             @unique
+  status                TenantStatus       @default(active)
+  bearerTokenHash       String             @unique
+  ssmPrefix             String             @unique
+  ingestionMode         IngestionMode      @default(push)
+  webhookUrl            String?
+  // SSM SecureString paths — plaintext NEVER lands in this DB.
+  webhookSecretSsmKey   String?
+  ldShop                String
+  ldControlTokenSsmKey  String
+  pickupLocationId      String
+  contactEmail          String
+  notes                 String?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  orders                FulfillmentOrder[]
+  webhookDeliveries     WebhookDelivery[]
+
+  @@index([status])
+}
+
+model FulfillmentOrder {
+  id                 String       @id @default(cuid())
+  tenantId           String
+  chaveAcesso        String       @unique
+  merchantOrderRef   String
+  nfeNumero          String
+  nfeSerie           String
+  emissaoAt          DateTime
+
+  tpNF               Int
+  finNFe             Int
+  sefazStatus        Int
+  sefazProtocolo     String
+
+  emitCnpj           String
+  emitRazaoSocial    String
+  emitNomeFantasia   String?
+  emitEndereco       Json
+
+  // ─── PII — never include in Pino payloads. Reference by chaveAcesso. ───
+  destCpfCnpj        String
+  destNome           String
+  destEmail          String?
+  destTelefone       String?
+  destEndereco       Json
+  entregaEndereco    Json?
+  // ────────────────────────────────────────────────────────────────────────
+
+  modFrete           Int
+  transpCnpj         String?
+  transpRazaoSocial  String?
+
+  totalProdutos      Decimal      @db.Decimal(12, 2)
+  totalDesconto      Decimal      @db.Decimal(12, 2)
+  totalFrete         Decimal      @db.Decimal(12, 2)
+  totalNFe           Decimal      @db.Decimal(12, 2)
+  pesoBrutoKg        Decimal?     @db.Decimal(10, 3)
+  pesoLiquidoKg      Decimal?     @db.Decimal(10, 3)
+  volumes            Int?
+
+  // Invariant: `status` and the matching `*At` timestamp are written in the
+  // same transaction (where one exists; FAILED/CANCELLED have no paired
+  // column and rely on `updatedAt`). Status is the index target; timestamps
+  // are for analytics.
+  status             OrderStatus  @default(RECEIVED)
+  pickedAt           DateTime?
+  pooledAt           DateTime?
+  routedAt           DateTime?
+  dispatchedAt       DateTime?
+  deliveredAt        DateTime?
+  carrierShipmentId  String?
+  ldRotaTag          String?
+
+  rawXmlS3Key        String
+  receivedAt         DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  tenant             FulfillmentTenant       @relation(fields: [tenantId], references: [id])
+  items              FulfillmentOrderItem[]
+  events             NFeEventLog[]
+  pickEvents         PickEvent[]
+
+  @@index([tenantId, receivedAt])
+  @@index([tenantId, merchantOrderRef])
+  @@index([status, pooledAt])
+  @@index([tenantId, ldRotaTag])
+}
+
+model FulfillmentOrderItem {
+  id              String           @id @default(cuid())
+  orderId         String
+  nItem           Int
+  codigo          String
+  descricao       String
+  quantidade      Decimal          @db.Decimal(12, 4)
+  unidade         String
+  valorUnitario   Decimal          @db.Decimal(12, 4)
+  valorTotal      Decimal          @db.Decimal(12, 2)
+  valorDesconto   Decimal?         @db.Decimal(12, 2)
+  ean             String?
+
+  order           FulfillmentOrder @relation(fields: [orderId], references: [id])
+
+  @@unique([orderId, nItem])
+}
+
+// SEFAZ events (cancelamento, CC-e, denegação) separate from operational
+// status. rawXmlS3Key — the event XML lives in S3, not inline.
+model NFeEventLog {
+  id            String           @id @default(cuid())
+  orderId       String
+  eventCode     String
+  eventAt       DateTime
+  rawXmlS3Key   String?
+  notes         String?
+  createdAt     DateTime         @default(now())
+
+  order         FulfillmentOrder @relation(fields: [orderId], references: [id])
+
+  @@index([orderId, eventAt])
+}
+
+model PickEvent {
+  id          String           @id @default(cuid())
+  orderId     String
+  operatorId  String
+  scannedAt   DateTime         @default(now())
+  scannedCode String
+  notes       String?
+
+  order       FulfillmentOrder @relation(fields: [orderId], references: [id])
+
+  @@index([orderId, scannedAt])
+  @@index([operatorId, scannedAt])
+}
+
+// `tenantId` uses onDelete: SetNull so the audit trail survives tenant
+// deletion. Treat `payload` as a PII store at rest.
+model WebhookDelivery {
+  id            String                @id @default(cuid())
+  tenantId      String?
+  eventId       String                @unique
+  eventType     String
+  payload       Json
+  targetUrl     String
+  status        WebhookDeliveryStatus @default(pending)
+  attempts      Int                   @default(0)
+  lastAttemptAt DateTime?
+  lastError     String?               @db.Text
+  createdAt     DateTime              @default(now())
+
+  tenant        FulfillmentTenant?    @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([tenantId, eventType, createdAt])
+}

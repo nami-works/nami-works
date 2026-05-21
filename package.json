@@ -6,6 +6,7 @@
   "type": "module",
   "workspaces": [
     "apps/connector",
+    "apps/fulfillment",
     "apps/omnify-admin",
     "apps/omnify-site",
     "packages/letterbox",
