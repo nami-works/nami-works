@@ -90,14 +90,14 @@ the config files cleaned up.
 - **Verified post-deploy:**
   - `/health` HTTP 200 on attempt 1.
   - Image SHA: `477780048372.dkr.ecr.us-east-1.amazonaws.com/omnify-app:full-20260521-3944fc5`.
-- **Ops change (cron):** added one line to root crontab on the box (crontab lines 29 → 30):
+- **Ops change (cron):** added one line to root crontab on the box (final form after the 2026-05-21 TZ correction below):
   ```
-  */5 9-22 * * * bash -c 'set -a; . /etc/cpg-labs/full.env; set +a; curl -fsS -X POST -H "Authorization: Bearer $CLAUDE_CONTROL_TOKEN" -m 60 http://localhost:3000/api/control/check-dispatches' >> /var/log/cpg-labs/check-dispatches.log 2>&1
+  */5 12-23,0-1 * * * bash -c 'set -a; . /etc/cpg-labs/full.env; set +a; curl -fsS -X POST -H "Authorization: Bearer $CLAUDE_CONTROL_TOKEN" -m 60 http://localhost:3000/api/control/check-dispatches' >> /var/log/cpg-labs/check-dispatches.log 2>&1
   ```
-  Uses existing `CLAUDE_CONTROL_TOKEN` from `/etc/cpg-labs/full.env`. **Timezone caveat:** the `9-22` window is server-local. Confirm the box is on America/Sao_Paulo before relying on the 18 BRT cutoff for NEEDS_REVIEW flips — if the box is UTC the cutoff is effectively 15 BRT.
+  Uses existing `CLAUDE_CONTROL_TOKEN` from `/etc/cpg-labs/full.env`. **Timezone:** box is on UTC (`Etc/UTC, +0000`, confirmed 2026-05-21 via `timedatectl`). The hour field `12-23,0-1` is the UTC equivalent of 9 BRT to 22 BRT (BRT = UTC-3). The in-code 18 BRT NEEDS_REVIEW cutoff uses `Intl.DateTimeFormat("America/Sao_Paulo", ...)` so it's correct regardless of server TZ. Initial deploy used `9-22` (read as if server were on BRT); corrected to `12-23,0-1` same day before the cron had run a full BRT window.
 - **Flag state:** `CHECK_DISPATCHES_AUTO_REORDER` unset → watchdog is telemetry-only. Watch one cycle of `/var/log/cpg-labs/check-dispatches.log` for `"action": "skipped-flag-off"` entries before flipping to `true`.
 - **Open follow-ups:**
-  - Verify cron timezone (BRT vs UTC) on the box.
+  - ✅ Cron timezone verified (UTC) + cron hour-field corrected from `9-22` to `12-23,0-1` (2026-05-21).
   - Watch first NEEDS_REVIEW flip (if any) and confirm `needsReviewReason=driver-not-approaching-after-hours` shows up cleanly in the UI's existing reason renderer.
   - Decide when to set `CHECK_DISPATCHES_AUTO_REORDER=true` after one week of telemetry.
 
