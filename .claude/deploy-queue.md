@@ -73,13 +73,23 @@ the config files cleaned up.
 - **Dependencies:** none — independent of the existing `fix/address-tag-gate-on-methodtype` entry below, even though both touch the same loader file (different code paths — address-tag-gate is in the auto-tagger predicate, this bundle is in the modal JSX + LoaderOrder type).
 - **Risk:** low. Reversible. No schema or infra changes.
 
-### 2026-05-20 · fix/address-tag-gate-on-methodtype (`31ad38f`)
-- **Files touched:** `app/routes/app.local-delivery.tsx`
+### 2026-05-20 · fix/address-tag-gate-on-methodtype (`31ad38f` cpg-labs → `14302cf` nami-works)
+- **App:** omnify-admin.
+- **Files touched:** `apps/omnify-admin/app/routes/app.local-delivery.tsx`
 - **Type:** code (loader gate tightening)
 - **Summary:** Loader auto-tagger now requires `methodType === "LOCAL"` in addition to the existing `LalamoveLocationConfig` location gate before applying `ld_confirm-address`.
 - **Affects:** Local Delivery loader fire-and-forget address tagger. Prevents SHIPPING/PICKUP orders surfaced via `includeWarehouse` at LD-enabled stores from being tagged for LD address-confirmation messaging.
-- **Dependencies:** none.
+- **Dependencies:** bundle with the find-new-driver-watchdog entry below — both are pre-deploy and target the same image.
 - **Risk:** low. Single-line AND on the existing filter, plus updated docblock. No new GraphQL fields (methodType already populated on loader orders). Reversible.
+
+### 2026-05-21 · feat/find-new-driver-watchdog (`5124581` → merged on `277f393`)
+- **App:** omnify-admin.
+- **Files touched:** `apps/omnify-admin/app/routes/api.control.$intent.tsx`, `apps/omnify-admin/app/services/claude-control-auth.server.ts`, `apps/omnify-admin/app/services/lalamove-escalation.server.ts`, `eslint.config.js` (new, root-level — minimal flat config to unblock the changed-lines hook).
+- **Type:** code (new service helper + control route wiring + auth branch) + ops (new cron line to add on the box after deploy).
+- **Summary:** Mid-flight stuck-driver recovery. `findNewDriverForJob(jobId, shop, admin)` cancels the current Lalamove order and re-POSTs via the existing `reorderJob` path, with priority-fee workaround for the empirically discovered `ERR_CANCELLATION` ("Cannot cancel order") response. `handleCheckDispatches` now acts on `suggested=reorder`: 09–18 BRT + `CHECK_DISPATCHES_AUTO_REORDER=true` → fire watchdog; flag off → telemetry-only (`action: "skipped-flag-off"`); 18+ BRT → flip `status=NEEDS_REVIEW` with `needsReviewReason=driver-not-approaching-after-hours`. New `X-Cron-Secret` header auth branch in `claude-control-auth` so on-box cron can hit `/api/control/check-dispatches` without the operator bearer.
+- **Affects:** the existing `check-dispatches` endpoint gains an action field per dispatch. Behavior is gated by `CHECK_DISPATCHES_AUTO_REORDER` env (default-off). With the flag off the only behavior change is the 18+ BRT NEEDS_REVIEW flip — operator-visible but not auto-mutating Lalamove.
+- **Dependencies:** bundle with the methodType-gate entry above. Post-deploy actions required: (1) set `CRON_SECRET` in `/etc/cpg-labs/full.env`; (2) add cron line `*/5 9-22 * * * curl -fsS -X POST -H "X-Cron-Secret: $CRON_SECRET" -m 60 http://localhost:3000/api/control/check-dispatches >> /var/log/cpg-labs/check-dispatches.log 2>&1`; (3) keep `CHECK_DISPATCHES_AUTO_REORDER` unset/false on first deploy — watch one cycle of telemetry-only output before flipping to `true`.
+- **Risk:** medium. New action path on Lalamove (cancel + reorder) but gated by the env flag. First-deploy risk is bounded to the 18+ BRT NEEDS_REVIEW flip (no Lalamove mutation, just DB state) — confirm the flip-rate is sane before flipping the auto-reorder flag.
 
 ---
 
