@@ -43,6 +43,12 @@ COPY prisma/omnify ./prisma/omnify
 # polaris-types, etc. are devDependencies of cpg-labs).
 RUN npm ci
 
+# Shared TypeScript base config — every workspace package's tsconfig.json
+# extends ../../tsconfig.base.json. Vite's TSConfck resolves the extends
+# chain at build time, so this file must be present in the image even
+# though the app itself doesn't import it directly.
+COPY tsconfig.base.json ./
+
 # Source: omnify-admin app + all sibling packages it depends on. Each
 # package directory is copied wholesale; the manifest layers above are
 # overwritten with identical contents (idempotent).
