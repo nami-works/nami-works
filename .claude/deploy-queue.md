@@ -55,6 +55,15 @@ the config files cleaned up.
 
 ## Pending
 
+### 2026-05-21 · feat/ld-map-badge-scannability (`9b3115d`)
+- **App:** omnify-admin (full + omnify, same image — main Local Delivery map at `/app/local-delivery`).
+- **Files touched:** `app/routes/app.local-delivery.tsx`.
+- **Type:** code (Google Maps styler arrays + AdvancedMarkerElement style/zIndex).
+- **Summary:** Dose C of the badge-scannability mockup. Damps Google's road + administrative.locality label fills (saturation/lightness/opacity stylers) in `DARK_MAP_STYLES`, adds a new `LIGHT_MAP_STYLES` const (sparse styler array with the same damping recipe + inverted lightness) and wires it into all 3 `StyledMapType("light", ...)` sites. Lifts non-selected badges with an inner hairline ring + 3px low-opacity halo + `AdvancedMarkerElement.zIndex` (3 normal, 4 selected, 5 selected+edit). Selected/holographic skips the halo so the gradient stays the most salient state. `zIndex` added to the diff signature so the reconciler updates on selection toggles.
+- **Affects:** map markers on the main Local Delivery page. Modal-route maps inherit the label-damping via the shared styler arrays; per-marker lift in those modals is deferred. No data changes, no GraphQL changes.
+- **Dependencies:** none. Conflict-free with the `fix/ld-order-modal-close` entry below (different code regions in the same file: modal JSX/loader vs. map styler arrays + badge-render block).
+- **Risk:** low. Reversible per-styler or by reverting the `boxShadow`/`zIndex` additions. No new tokens, no new components, no schema or infra changes.
+
 ### 2026-05-21 · fix/ld-order-modal-close (`d576505`)
 - **App:** omnify-admin (full + omnify, same image — modal lives on `/app/local-delivery`).
 - **Files touched:** `app/routes/app.local-delivery.tsx`, `app/routes/app.local-delivery/styles.module.css`.
