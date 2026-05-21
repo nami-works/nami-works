@@ -19,7 +19,7 @@ module.exports = {
     commonjs: true,
     es6: true,
   },
-  ignorePatterns: ["!**/.server", "!**/.client"],
+  ignorePatterns: ["!**/.server", "!**/.client", "scripts/debug/**"],
 
   // Base config
   extends: ["eslint:recommended"],
@@ -143,6 +143,14 @@ module.exports = {
       ],
       env: {
         node: true,
+      },
+    },
+
+    {
+      files: ["scripts/**/*.{mjs,cjs,js}"],
+      env: {
+        node: true,
+        es2022: true,
       },
     },
   ],

@@ -1491,6 +1491,48 @@ model LoyaltyRedemption {
   @@index([redeemedAt])
 }
 
+/// Cross-campaign credit/discount issuance + watchdog log.
+/// Generalizes loyalty-test enrollments AND apology credits AND future
+/// incentives. Every credit/discount we issue tied to a triggering order
+/// gets a row here. Watchdog webhooks (orders/cancelled + orders/refunded)
+/// query this table by originalOrderId to revoke unused portions.
+/// Spec: inputs/growth-gebeauty-loyalty-ab-test-2026-05-16.md
+///       "IssuedIncentive watchdog (cross-campaign infrastructure)"
+model IssuedIncentive {
+  id                    String    @id @default(cuid())
+  shop                  String
+  /// Shopify customer GID — "gid://shopify/Customer/..."
+  customerId            String
+  /// Campaign identifier: "fiscal-hold-extrema-2026-05" | "loyalty-test-arm-A" | etc.
+  campaignTag           String
+  /// Shopify order GID of the triggering order (the one we watch for cancel/refund).
+  originalOrderId       String
+  originalOrderAmount   Float
+  originalOrderCurrency String    @default("BRL")
+  /// "STORE_CREDIT" | "DISCOUNT_CODE"
+  kind                  String
+  /// Issued credit amount OR discount nominal amount.
+  amount                Float
+  currency              String    @default("BRL")
+  /// Shopify reference: single GID (single-tranche credit or discount code) OR
+  /// JSON-encoded array of GIDs (multi-tranche credit — Arm A has 3 transactions).
+  shopifyRef            String
+  issuedAt              DateTime  @default(now())
+  expiresAt             DateTime?
+  /// "ACTIVE" | "REVOKED_CANCELLED" | "REVOKED_REFUNDED" | "EXPIRED" | "REDEEMED"
+  status                String    @default("ACTIVE")
+  statusReason          String?
+  revokedAt             DateTime?
+  revokedAmount         Float?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([shop, originalOrderId, status])
+  @@index([shop, status, expiresAt])
+  @@index([customerId])
+  @@index([shop, campaignTag])
+}
+
 /// Message dispatch audit trail. Up to ~12 rows per enrollment
 /// (6 message types × 2 channels). Written by MessageDispatcher before send;
 /// updated on delivery status webhook from Klaviyo / Zoko.

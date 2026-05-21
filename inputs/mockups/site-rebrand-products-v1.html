@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UI mockup — Marketing site product cards rebrand</title>
+<!--
+  Scope:
+  1) Replace omnify_tree.png with omnify_map.png everywhere it appears (nav, screencast, about).
+  2) Products section — add product logos + relabel badges (both lowercase).
+     - Omnify:    logo = omnify_map.png       · badge = "coming soon"
+     - Storefront: logo = storefront_window.png · badge = ??? (options below)
+
+  Logo placement principle (suggested):
+  - Inline with the product H3 heading, left of the name.
+  - Desktop: 40×40 round-ish logo, vertically centered with the heading line.
+  - Mobile:  32×32, same placement (the heading line wraps if needed).
+  - This keeps the cards visually parallel: "[logo] [Name] [badge]" reads as
+    a single product header on every breakpoint, and we don't have to wedge
+    the logo into the (already busy) right-hand visual area.
+-->
+<style>
+  :root {
+    --bg: #0b0b0c;
+    --bg-soft: #14141a;
+    --card: rgba(255, 255, 255, 0.04);
+    --border: rgba(255, 255, 255, 0.12);
+    --border-strong: rgba(255, 255, 255, 0.22);
+    --text: #f5f5f7;
+    --text-muted: #c5c5cc;
+    --holo-1: #5ecece;
+    --holo-2: #b09fda;
+    --holo-3: #d4a8d4;
+    --holo-4: #5ecece;
+    --frame: #1f1f24;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #07070a;
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    padding: 28px 20px 80px;
+  }
+
+  h1.docTitle {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+  }
+  p.docSub {
+    color: var(--text-muted);
+    margin: 0 0 28px;
+    max-width: 720px;
+  }
+
+  .section {
+    margin: 36px 0;
+    padding: 22px;
+    background: var(--frame);
+    border: 1px solid #2a2a32;
+    border-radius: 14px;
+  }
+  .sectionLabel {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #b09fda;
+    margin: 0 0 14px;
+  }
+  .sectionTitle {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 4px;
+  }
+  .sectionNote {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 0 0 18px;
+  }
+
+  /* Two-up: desktop vs mobile preview frames */
+  .deviceRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  .device {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.5);
+  }
+  .deviceTag {
+    background: #2a2a32;
+    color: #d4a8d4;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-bottom: 1px solid #2a2a32;
+  }
+  .deviceDesktop { flex: 1 1 720px; min-width: 0; }
+  .deviceMobile  { flex: 0 0 360px; }
+
+  .devicePad { padding: 24px 24px 32px; }
+  .deviceMobile .devicePad { padding: 20px 18px 28px; }
+
+  /* === Site fragments (mimics site/src/pages/index.astro) === */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 18px;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+  }
+  .navBrand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .navBrand img { width: 26px; height: 26px; object-fit: contain; }
+  .navLinks {
+    display: flex;
+    gap: 16px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .navLinks .cta {
+    background: linear-gradient(90deg, var(--holo-1), var(--holo-2), var(--holo-3));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 600;
+  }
+  .deviceMobile .navLinks li:not(.always) { display: none; }
+
+  .productsHeader {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 14px;
+  }
+
+  .productsStack {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .productCard {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Featured (Omnify) — desktop = 2 columns */
+  .deviceDesktop .productCardFeatured {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+    padding: 28px;
+  }
+
+  /* Storefront — desktop = visual + text + cta in 3 columns (matches existing) */
+  .deviceDesktop .storefrontCard {
+    display: grid;
+    grid-template-columns: 200px 1fr auto;
+    gap: 28px;
+    align-items: center;
+    padding: 28px;
+  }
+
+  /* Mobile = stacked everywhere */
+  .deviceMobile .productCard,
+  .deviceMobile .productCardFeatured,
+  .deviceMobile .storefrontCard {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Header block (logo + name + badge) */
+  .productHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 8px;
+    flex-wrap: wrap;
+  }
+  .productLogo {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    object-fit: contain;
+    background: linear-gradient(135deg,
+      color-mix(in srgb, var(--holo-1) 14%, transparent),
+      color-mix(in srgb, var(--holo-3) 12%, transparent));
+    padding: 4px;
+    border: 1px solid var(--border);
+  }
+  .deviceMobile .productLogo { width: 32px; height: 32px; border-radius: 8px; padding: 3px; }
+
+  .productName {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .deviceDesktop .productName { font-size: 26px; }
+
+  .productBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none; /* << lowercase, per request */
+  }
+  .productBadgeLive {
+    background: color-mix(in srgb, var(--holo-1) 18%, transparent);
+    color: var(--holo-1);
+    border: 1px solid color-mix(in srgb, var(--holo-1) 28%, transparent);
+  }
+  .productBadgeWip {
+    background: color-mix(in srgb, var(--holo-3) 16%, transparent);
+    color: var(--holo-3);
+    border: 1px solid color-mix(in srgb, var(--holo-3) 28%, transparent);
+  }
+
+  .productTagline {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0 0 12px;
+    font-weight: 500;
+  }
+  .productBlurb {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--text);
+    margin: 0 0 16px;
+  }
+  .productBlurb strong { font-weight: 600; }
+
+  .productCta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .waitlistCta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    background: linear-gradient(135deg, var(--holo-1), var(--holo-2), var(--holo-3));
+    color: #1d1d1f;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--holo-2) 30%, transparent),
+                0 8px 24px -8px color-mix(in srgb, var(--holo-2) 55%, transparent);
+    white-space: nowrap;
+  }
+  .deviceMobile .waitlistCta { width: 100%; justify-content: center; }
+
+  /* Visual placeholders (not the focus of this mockup) */
+  .productVisual {
+    background: linear-gradient(135deg,
+      rgba(94, 206, 206, 0.08),
+      rgba(176, 159, 218, 0.08));
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
+    min-height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-style: italic;
+  }
+  .deviceDesktop .productCardFeatured .productVisual { min-height: 220px; }
+  .deviceDesktop .storefrontCard .productVisual { min-height: 160px; width: 200px; }
+
+  /* Notes panel */
+  .notes {
+    background: #14141a;
+    border: 1px solid #2a2a32;
+    border-radius: 12px;
+    padding: 20px 22px;
+    color: var(--text-muted);
+    font-size: 13.5px;
+    line-height: 1.65;
+    margin-top: 8px;
+  }
+  .notes h4 {
+    color: var(--text);
+    font-size: 14px;
+    margin: 0 0 8px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .notes ul { margin: 6px 0 12px; padding-left: 18px; }
+  .notes li { margin-bottom: 4px; }
+  .notes strong { color: var(--text); }
+  .notes code {
+    background: #232328;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12.5px;
+  }
+
+  /* Badge alternatives row */
+  .badgeRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 14px 0 4px;
+  }
+  .badgeOption {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    padding: 10px 14px 8px;
+    background: #1a1a22;
+    border: 1px solid #2a2a32;
+    border-radius: 10px;
+    min-width: 130px;
+  }
+  .badgeOption .label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="docTitle">Marketing site — Products section rebrand</h1>
+<p class="docSub">
+  Three changes shown together so the visual reads end-to-end:
+  (1) <code>omnify_tree.png</code> retired in favor of <code>omnify_map.png</code> in the nav,
+  (2) Omnify card gets a small logo + lowercase <em>coming soon</em> badge,
+  (3) Storefront card gets a small logo + lowercase replacement badge (options below).
+</p>
+
+<!-- ════════════ NAV PREVIEW ════════════ -->
+<section class="section">
+  <p class="sectionLabel">1 · Nav logo swap</p>
+  <h2 class="sectionTitle">omnify_map.png replaces omnify_tree.png in the global nav.</h2>
+  <p class="sectionNote">
+    Same placement, same 26×26 box, same brand text — only the asset changes.
+    Same swap applied on the screencast page hero (140-180px) and the about page product logo.
+  </p>
+
+  <div class="deviceRow">
+    <div class="device deviceDesktop">
+      <div class="deviceTag">Desktop · 720+ px</div>
+      <nav class="nav">
+        <a class="navBrand" href="#">
+          <img src="../../public/omnify_map.png" alt="" />
+          Omnify
+        </a>
+        <ul class="navLinks">
+          <li>Products</li>
+          <li>Pricing</li>
+          <li>About</li>
+          <li>Contact</li>
+          <li class="always cta">See Omnify →</li>
+        </ul>
+      </nav>
+      <div style="padding: 18px 24px; color: var(--text-muted); font-size: 13px;">
+        (rest of page below)
+      </div>
+    </div>
+
+    <div class="device deviceMobile">
+      <div class="deviceTag">Mobile · 360 px</div>
+      <nav class="nav">
+        <a class="navBrand" href="#">
+          <img src="../../public/omnify_map.png" alt="" />
+          Omnify
+        </a>
+        <ul class="navLinks">
+          <li class="always cta">See →</li>
+        </ul>
+      </nav>
+      <div style="padding: 16px 18px; color: var(--text-muted); font-size: 12px;">
+        (rest of page below)
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ PRODUCTS SECTION PREVIEW ════════════ -->
+<section class="section">
+  <p class="sectionLabel">2 · Products section</p>
+  <h2 class="sectionTitle">Logos + lowercase badges, both cards.</h2>
+  <p class="sectionNote">
+    Logo sits to the left of the H3 heading (40×40 desktop, 32×32 mobile) so both
+    products have the same header rhythm: <strong>[logo] [name] [badge]</strong>.
+    Badges no longer ALL-CAPS.
+  </p>
+
+  <div class="deviceRow">
+    <!-- ───────── DESKTOP ───────── -->
+    <div class="device deviceDesktop">
+      <div class="deviceTag">Desktop · 720+ px</div>
+      <div class="devicePad">
+        <p class="productsHeader">Our products</p>
+
+        <div class="productsStack">
+
+          <!-- Omnify card -->
+          <article class="productCard productCardFeatured">
+            <div>
+              <div class="productHeader">
+                <img class="productLogo" src="../../public/omnify_map.png" alt="" />
+                <h3 class="productName">Omnify</h3>
+                <span class="productBadge productBadgeLive">coming soon</span>
+              </div>
+              <p class="productTagline">Local delivery, retail sales, footprint planning.</p>
+              <p class="productBlurb">
+                Omnify is a <strong>Shopify-embedded app</strong>. Merchants use it
+                to plan delivery routes from store locations, track retail sales
+                against monthly goals, and plan where to open next using customer
+                geography.
+              </p>
+              <a class="productCta" href="#">See Omnify in action →</a>
+            </div>
+            <div class="productVisual">[ admin app screenshot ]</div>
+          </article>
+
+          <!-- Storefront card -->
+          <article class="productCard storefrontCard">
+            <div class="productVisual">[ storefront preview tiles ]</div>
+            <div>
+              <div class="productHeader">
+                <img class="productLogo" src="../../public/storefront_window.png" alt="" />
+                <h3 class="productName">Storefront</h3>
+                <span class="productBadge productBadgeWip">in design</span>
+              </div>
+              <p class="productTagline">Merchandising, sale campaigns, price tags.</p>
+              <p class="productBlurb">
+                Storefront is the next CPG Labs app. It will help merchants run
+                coordinated sale campaigns, tag discounted products across channels,
+                and keep promotional logic consistent.
+              </p>
+            </div>
+            <a class="waitlistCta" href="#">Join the waitlist →</a>
+          </article>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ───────── MOBILE ───────── -->
+    <div class="device deviceMobile">
+      <div class="deviceTag">Mobile · 360 px</div>
+      <div class="devicePad">
+        <p class="productsHeader">Our products</p>
+
+        <div class="productsStack">
+          <article class="productCard productCardFeatured">
+            <div class="productHeader">
+              <img class="productLogo" src="../../public/omnify_map.png" alt="" />
+              <h3 class="productName">Omnify</h3>
+              <span class="productBadge productBadgeLive">coming soon</span>
+            </div>
+            <p class="productTagline">Local delivery, retail sales, footprint planning.</p>
+            <p class="productBlurb">
+              Shopify-embedded app for FMCG brands operating omnichannel.
+            </p>
+            <a class="productCta" href="#">See Omnify →</a>
+            <div class="productVisual" style="margin-top:12px;">[ screenshot ]</div>
+          </article>
+
+          <article class="productCard storefrontCard">
+            <div class="productHeader">
+              <img class="productLogo" src="../../public/storefront_window.png" alt="" />
+              <h3 class="productName">Storefront</h3>
+              <span class="productBadge productBadgeWip">in design</span>
+            </div>
+            <p class="productTagline">Merchandising, sale campaigns, price tags.</p>
+            <p class="productBlurb">Sale campaigns coordinated across channels.</p>
+            <div class="productVisual">[ tiles ]</div>
+            <a class="waitlistCta" href="#">Join the waitlist →</a>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ STOREFRONT BADGE ALTERNATIVES ════════════ -->
+<section class="section">
+  <p class="sectionLabel">3 · Storefront badge — pick one</p>
+  <h2 class="sectionTitle">"coming soon" is now Omnify's badge. Storefront needs a different label.</h2>
+  <p class="sectionNote">
+    Storefront is genuinely earlier-stage than Omnify (no shipped code yet), so
+    the badge should signal "further out" without being vague. All-lowercase, same
+    chip style as <em>coming soon</em>.
+  </p>
+
+  <div class="badgeRow">
+    <div class="badgeOption">
+      <span class="productBadge productBadgeWip">in design</span>
+      <span class="label">A · neutral, design-phase</span>
+    </div>
+    <div class="badgeOption">
+      <span class="productBadge productBadgeWip">on the roadmap</span>
+      <span class="label">B · committed, no date</span>
+    </div>
+    <div class="badgeOption">
+      <span class="productBadge productBadgeWip">next up</span>
+      <span class="label">C · short, sequential</span>
+    </div>
+    <div class="badgeOption">
+      <span class="productBadge productBadgeWip">in research</span>
+      <span class="label">D · earliest stage</span>
+    </div>
+    <div class="badgeOption">
+      <span class="productBadge productBadgeWip">later this year</span>
+      <span class="label">E · time-bound</span>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ NOTES ════════════ -->
+<div class="notes">
+  <h4>Implementation notes (post-approval)</h4>
+  <ul>
+    <li>
+      <strong>Asset swap (1):</strong> the new <code>omnify_map.png</code> is
+      already in <code>public/</code>. We need to (a) copy it to
+      <code>site/public/</code> per the CLAUDE.md asset-mirror rule, and
+      (b) replace every <code>/omnify_tree.png</code> reference in the
+      admin-app routes (<code>SiteNav</code>, <code>screencast.tsx</code>,
+      <code>_site.about.tsx</code>) and the Astro pages
+      (<code>Nav.astro</code>, <code>screencast.astro</code>,
+      <code>about.astro</code>). After that, delete <code>omnify_tree.png</code>
+      from both <code>public/</code> and <code>site/public/</code>.
+    </li>
+    <li>
+      <strong>Storefront logo (2):</strong>
+      <code>public/storefront_window.png</code> exists; needs to be copied to
+      <code>site/public/</code>.
+    </li>
+    <li>
+      <strong>Badge styling (2):</strong> drop <code>text-transform: uppercase</code>
+      and <code>letter-spacing: 0.05em</code> from <code>.productBadge</code> in
+      <code>site/src/pages/index.astro</code> and the equivalent class in the
+      admin-app site routes.
+    </li>
+    <li>
+      <strong>Logo placement (2):</strong> a 40×40 (desktop) / 32×32 (mobile)
+      thumbnail inline with the H3, NOT inside the existing right-hand visual
+      block. The visual block (Omnify screenshot, storefront tiles) keeps doing
+      its job — selling the product. The logo is a brand mark, not a hero.
+    </li>
+    <li>
+      <strong>Out of scope here:</strong> the screencast 404 fix is a separate
+      track (the <code>screencast.mp4</code> asset is missing from the deploy —
+      addressed via storage proposal in chat).
+    </li>
+  </ul>
+</div>
+
+</body>
+</html>

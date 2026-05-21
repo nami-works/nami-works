@@ -53,12 +53,18 @@ const IDENTITY_ROUTES: Record<Exclude<AppIdentity, "cpg-labs">, string[]> = {
     "webhooks.products",
   ],
   flywheel: [
-    // Affiliates lives here under the Flywheel umbrella.
-    // For now it still ships inside the CPG Labs full surface (displayed as
-    // "Omnify" to merchants) — these prefixes go live the moment a flywheel
+    // Affiliates + Loyalty live here under the Flywheel umbrella.
+    // For now everything still ships inside the CPG Labs full surface (displayed
+    // as "Omnify" to merchants) — these prefixes go live the moment a flywheel
     // container is wired up. See shopify.app.flywheel.toml.
     "app.affiliates",
     "api.cron.affiliates-sync",
+    // Loyalty A/B test + cross-campaign IssuedIncentive watchdog (added 2026-05-19).
+    // Brief: inputs/growth-gebeauty-loyalty-ab-test-2026-05-16.md
+    "app.loyalty",
+    "api.cron.loyalty-orchestrator",
+    "webhooks.orders.cancelled",
+    "webhooks.orders.refunded",
   ],
 };
 
@@ -102,6 +108,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/app/retail-sales", labelKey: "common:nav.retailSales" },
   { href: "/app/footprint-expansion", labelKey: "common:nav.footprintExpansion" },
   { href: "/app/affiliates", labelKey: "common:nav.affiliates" },
+  { href: "/app/loyalty", labelKey: "common:nav.loyalty" },
   { href: "/app/merchandising", labelKey: "common:nav.merchandising" },
   { href: "/app/storytelling", labelKey: "common:nav.storytelling" },
   { href: "/app/settings", labelKey: "common:nav.settings" },
@@ -116,7 +123,7 @@ const IDENTITY_NAV: Record<Exclude<AppIdentity, "cpg-labs">, string[]> = {
   ],
   storytelling: ["/app/storytelling"],
   storefront: ["/app/merchandising"],
-  flywheel: ["/app/affiliates"],
+  flywheel: ["/app/affiliates", "/app/loyalty"],
 };
 
 export function getNavItems(): NavItem[] {

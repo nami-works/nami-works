@@ -59,11 +59,14 @@
 - When selecting orders to be added to any route, any route already dispatched must not be available to have orders added to it
 - Orders already assigned to a route should not be included in the auto-assign selection for routing
 - Whenever a never-before created route, add its view to the orders UI ("Rota #nn")
+- drop the *Reassign* button entirely from the control panel; *Assign to new route* must handle both unassigned and already-assigned orders
+  - *Assign to new route* must appear **whenever** at least one order badge is selected, regardless of whether the selected order(s) are already on a route
 
-## route cargs
+## route cards
 - "Hold for review" badge
-  - is not following Polaris pattern
-  - persists after  clearing and reusing the route
+  - does not follow Polaris pattern (renders as a custom yellow pill instead of `<s-badge tone="warning">`); same applies to the route-state badge underneath (*Out for delivery*, *Driver heading to pickup* etc.) which is rendered as a custom orange/blue pill
+  - all route-card badges must migrate to Polaris `<s-badge>` with the right `tone` so they match the rest of the admin
+  - persists after clearing and reusing the route
 
 ## Dispatching
 - Application error reported at 13/05/26 at 17:02 BRT when dispatching orders from São Paulo
@@ -77,6 +80,14 @@
   - reverse proxy has no retry/health-gate on 502 — deploy/restart of full app surfaces as page-load failure to merchant
   - consider Caddy `lb_try_duration` + `lb_try_interval` on the upstream so restart gaps don't bleed to users
 - add a per time-of-request escalation logic: the later the requests happened, higher and faster the escalation should happen
+- **Lalamove errors modal shows "internal server error" but the order was actually dispatched** (reported 19/05/26 ~17:20 BRT)
+  - logs confirm `POST /v3/quotations → 201 ok` → `POST /v3/orders → 201 ok` → `[local-delivery:action] Unhandled error { error: '[object Response]' …` — the Lalamove order is created successfully, then the action handler throws a `Response` object that the error logger can't serialize (prints literal `[object Response]`); the UI swallows it as a generic Lalamove failure
+  - fix: in the dispatch action handler, do not throw `Response` after the Lalamove POST returns 2xx; return success and let the post-dispatch side-effect (tagging, persistence) report its own error separately
+  - UX guard: after a successful Lalamove order create, never surface the *Lalamove errors* modal — if a downstream step fails, surface a distinct "Dispatched, but post-dispatch step failed" notice so the operator doesn't try to re-dispatch a live order
+- **503s on `/app/local-delivery.data` loader** (~5×/hour as of 19/05/26)
+  - logs show two confirmed in the last hour, both ~1.4–1.5s response time, ending right after `phase1-parallel` with no error line emitted before the 503 — suggests an unhandled throw inside the loader pipeline (likely the `orders-graphql-pagination` step) or an upstream/Caddy timeout that bubbles as 503
+  - instrument the loader to log the failing step + the thrown error before responding, so future 503s have a traceable cause
+  - once instrumented, fix the underlying cause (likely Shopify GraphQL throttle or connection drop on the 18-page paginated fetch)
 
 ## AI auto-routing
 - When displaying error "AI route optimization is off, Turn on "Use AI-powered route optimization" in Settings > Local delivery for this location, then try again."
@@ -84,6 +95,15 @@
 
 ## modal **Order details**
 - fix button *Open full order* (is not opening the order correctly, returns 404)
+- make information hierarchy gracious between *Customer* and *Shipping address* blocks (align labels, line-heights, font weights so the two columns read as a pair)
+- add **City** to the *Shipping address* block (currently shows street + complement + "Fulfills from …" but no city)
+- move footer buttons (*Open full order*, *Close*) to the **right edge** of the modal footer — convention is dismiss/primary right-aligned, not left
+
+## map order balloon
+- clicking an order on the map opens a full balloon that persists until another order is selected
+  - rethink UX so the balloon is lighter / easier to dismiss (e.g. click outside to close, hover preview vs. click pin, compact card vs. full details)
+  - balloon must expose a link to the full order page (Shopify admin order URL), distinct from the in-app *Order details* modal
+  - balloon currently overlaps nearby order badges, blocking the user from clicking them to multi-select; balloon must not occlude other selectable pins (offset/anchor away, or shrink footprint)
 
 ## all orders table
 - add a new "Due today" filter at the top to fetch only orders marked as Due today

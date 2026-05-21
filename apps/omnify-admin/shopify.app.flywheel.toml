@@ -26,17 +26,34 @@ api_version = "2026-04"
   topics = [ "app/uninstalled" ]
   uri = "/webhooks/app/uninstalled"
 
+  # Loyalty A/B test + IssuedIncentive watchdog (added 2026-05-19).
+  # Brief: inputs/growth-gebeauty-loyalty-ab-test-2026-05-16.md
+  [[webhooks.subscriptions]]
+  topics = [ "orders/paid" ]
+  uri = "/webhooks/orders/paid"
+
+  [[webhooks.subscriptions]]
+  topics = [ "orders/cancelled" ]
+  uri = "/webhooks/orders/cancelled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "orders/refunded" ]
+  uri = "/webhooks/orders/refunded"
+
 [access_scopes]
-# Scopes the Affiliates surface actually exercises:
-#   read_customers  — app.affiliates.tsx (profile detail, claims)
-#   read_discounts  — affiliates/programs.server.ts (codeDiscountNodes sync)
-#   read_orders     — affiliates/sync.server.ts (attribution + monthly rebuild)
-#   read_products   — currently unused by Affiliates but kept as a baseline
-#                     read scope so the embedded app shell can render
+# Scopes the Flywheel surface actually exercises:
+#   read_customers  — app.affiliates.tsx (profile detail, claims) + app.loyalty.incentives.tsx
+#   read_discounts  — affiliates/programs.server.ts (codeDiscountNodes sync) + loyalty discount-code lifecycle
+#   read_orders     — affiliates/sync.server.ts (attribution + monthly rebuild) + loyalty enrollment trigger
+#   read_products   — currently unused but kept as a baseline read scope so the embedded app shell can render
+#   write_customers — loyalty enrollment trigger + IssuedIncentive watchdog (tagsAdd for idempotency)
+#   write_discounts — loyalty Arm B + Arm C discount-code creation + mid-window value flips + revoke-on-cancel
+#   read_store_credit_account_transactions  — operator UI extension + analyst incentives table (read balances)
+#   write_store_credit_account_transactions — loyalty Arm A multi-tranche credit issuance + revoke-on-cancel debit
 # Protected Customer Data scopes (read_customers, read_orders) are granted at
 # install time on a custom-distributed app without going through Shopify's
 # PCD review.
-scopes = "read_customers,read_discounts,read_orders,read_products"
+scopes = "read_customers,read_discounts,read_orders,read_products,write_customers,write_discounts,read_store_credit_account_transactions,write_store_credit_account_transactions"
 use_legacy_install_flow = false
 
 [auth]
