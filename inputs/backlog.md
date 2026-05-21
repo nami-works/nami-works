@@ -93,12 +93,6 @@
 - When displaying error "AI route optimization is off, Turn on "Use AI-powered route optimization" in Settings > Local delivery for this location, then try again."
   - add link to **Settings > Local delivery** to allow navigation straight from the error (open in new tab)
 
-## modal **Order details**
-- fix button *Open full order* (is not opening the order correctly, returns 404)
-- make information hierarchy gracious between *Customer* and *Shipping address* blocks (align labels, line-heights, font weights so the two columns read as a pair)
-- add **City** to the *Shipping address* block (currently shows street + complement + "Fulfills from …" but no city)
-- move footer buttons (*Open full order*, *Close*) to the **right edge** of the modal footer — convention is dismiss/primary right-aligned, not left
-
 ## map order balloon
 - clicking an order on the map opens a full balloon that persists until another order is selected
   - rethink UX so the balloon is lighter / easier to dismiss (e.g. click outside to close, hover preview vs. click pin, compact card vs. full details)
