@@ -1,0 +1,23 @@
+{
+  "wrap_up_session": "2026-05-07",
+  "merge_sha": "a8679f3",
+  "mockup_path": "inputs/mockups/local-delivery-control-row-v1.html",
+  "implements_paths": [
+    "app/routes/app.local-delivery.tsx",
+    "app/routes/app.local-delivery/styles.module.css"
+  ],
+  "index_row_bucket": "Final mockups",
+  "index_last_updated": "2026-05-06",
+  "latest_route_commit": "2026-05-07 12:57:06 a8679f3",
+  "deploy_rev": 21,
+  "drift_summary": [
+    "Edit button DROPPED — clicking any map label now auto-enters polyline edit mode (rev 15 d16f6dc + rev 21 retained)",
+    "Reassign-to renamed Reassign (i18n key polylineEdit.reassignTo → polylineEdit.reassign)",
+    "Clear selection icon unified to minus-circle in all states (was bare 'x' in edit mode, minus-circle in State E)",
+    "Exit icon swapped exit → x",
+    "Reassign trigger and ⋯ More trigger moved INSIDE their popover wrappers (each cluster is one flex child for uniform 12px gap)",
+    "Map style menu button uses programmatic open (no commandFor) — popover closes via removeAttribute + modal opens via showOverlay()",
+    "Assign-to-new-route icon plus-circle → arrow-right-circle (rev 21)",
+    "Fix #1 (button morph): label collapses to max-width:0 by default, expands on hover; controlled by .mapBlockFooterRight + .mapBlockFooterRightFullscreen parent classes (rev 21)"
+  ]
+}

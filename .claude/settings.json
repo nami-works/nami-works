@@ -1,36 +1,57 @@
 {
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
   "permissions": {
     "allow": [
-      "Bash(aws logs *)",
-      "Bash(aws ecs describe-*)",
-      "Bash(aws ecs list-*)",
-      "Bash(aws ssm get-parameter)",
-      "Bash(aws ssm get-parameter *)",
-      "Bash(aws ssm get-parameters *)",
-      "Bash(aws ssm get-parameters-by-path *)",
-      "Bash(aws ssm describe-parameters *)",
-      "Bash(aws elbv2 describe-*)",
-      "Bash(aws sts *)",
-      "Bash(aws rds describe-*)",
-      "Bash(aws ec2 describe-*)",
-      "Bash(aws acm list-certificates *)",
-      "Bash(aws acm describe-certificate *)",
-      "Bash(aws iam get-*)",
-      "Bash(aws iam list-*)",
-      "Bash(aws ecr describe-*)",
-      "Bash(aws ecr list-*)",
-      "Bash(aws cloudwatch get-*)",
-      "Bash(aws cloudwatch list-*)",
-      "Bash(npm run typecheck)",
-      "Bash(npm run lint)",
-      "Bash(npm test)",
-      "Bash(terraform validate)",
-      "Bash(terraform plan)",
-      "Bash(terraform output)",
-      "Bash(terraform output *)",
-      "Bash(terraform state list)",
-      "Bash(terraform state show *)",
-      "Bash(tasklist *)"
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(*)",
+      "WebFetch",
+      "WebSearch",
+      "Agent",
+      "TodoWrite",
+      "NotebookEdit",
+      "mcp__*",
+      "mcp__shopify-dev-mcp__validate_graphql_codeblocks"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\Lucas Guimarães\\.claude\\projects\\c--Users-Lucas-Guimar-es-Desktop-nami-works\\memory"
     ]
+  },
+  "enabledPlugins": {
+    "shopify-plugin@shopify-ai-toolkit": true
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-commit-gates.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/session-start-status.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "extraKnownMarketplaces": {
+    "shopify-ai-toolkit": {
+      "source": {
+        "source": "github",
+        "repo": "Shopify/shopify-ai-toolkit"
+      }
+    }
   }
 }

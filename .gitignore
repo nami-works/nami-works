@@ -42,8 +42,10 @@ tmp-*.json
 # Sensitive / local-only credentials
 *.csv
 
-# Claude Code per-machine settings (.claude/settings.json IS shipped — only the local override is ignored)
+# Claude Code per-machine / transient session state (settings.json IS shipped)
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/dispatch-watch.json
 
 # Other AI tool configs (per-machine, never shipped)
 .cursor/

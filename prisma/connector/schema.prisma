@@ -1,5 +1,8 @@
 generator client {
   provider = "prisma-client-js"
+  // Custom output so the omnify schema can keep the default
+  // node_modules/@prisma/client without colliding with this one.
+  output   = "../../node_modules/@prisma/client-connector"
 }
 
 datasource db {

@@ -1,4 +1,4 @@
-﻿import "dotenv/config";
+import "dotenv/config";
 import { parseArgs } from "node:util";
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "../apps/connector/src/db/prisma.js";

@@ -1,4 +1,4 @@
-﻿import { readFile, writeFile, access } from "node:fs/promises";
+import { readFile, writeFile, access } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
 import { parseArgs } from "node:util";
 import { dirname, resolve } from "node:path";

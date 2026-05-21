@@ -1,4 +1,4 @@
-import { Prisma, type PrismaClient } from "@prisma/client";
+import { Prisma, type PrismaClient } from "@prisma/client-connector";
 import type { Logger } from "pino";
 import {
   getInstagramClient,

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { IntegrationTenant } from "@prisma/client";
+import type { IntegrationTenant } from "@prisma/client-connector";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   __resetSigningKeyForTesting,

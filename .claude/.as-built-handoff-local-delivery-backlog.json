@@ -1,0 +1,18 @@
+{
+  "wrap_up_session": "2026-05-07",
+  "merge_sha": "a8679f3",
+  "mockup_path": "inputs/mockups/local-delivery-backlog-v1.html",
+  "implements_paths": [
+    "app/routes/app.local-delivery.tsx",
+    "app/routes/app.local-delivery/styles.module.css"
+  ],
+  "index_row_bucket": "Final mockups",
+  "index_last_updated": "2026-05-05",
+  "latest_route_commit": "2026-05-07 12:57:06 a8679f3",
+  "deploy_rev": 21,
+  "drift_summary": [
+    "Multiple deploys since 2026-05-05: revs 14, 15, 16-20 (other sessions), 21 (this session)",
+    "Likely drifted areas: badge bar (Polaris s-badge icon prop replaced nested s-icon — Fix #4 rev 14), per-route card ⋯ menu, polyline editor controls, address-errors modal layout, dispatch-all guard banner, post-dispatch status badge dedup",
+    "Recommend running /as-built local-delivery-backlog-v1.html and walking each section's spec against current production"
+  ]
+}

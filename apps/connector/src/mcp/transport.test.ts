@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { IntegrationTenant } from "@prisma/client";
+import type { IntegrationTenant } from "@prisma/client-connector";
 import Fastify, { type FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { TenantLookup } from "../auth/tenant-auth.js";

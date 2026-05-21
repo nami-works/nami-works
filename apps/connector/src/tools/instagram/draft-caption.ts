@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client-connector";
 import { prisma } from "../../db/prisma.js";
 import { getSecret } from "../../secrets/ssm.js";
 import { registerToolDefinition } from "../../mcp/registry.js";
