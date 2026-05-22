@@ -55,9 +55,9 @@
       "edit": "Edit",
       "confirm": "Confirm",
       "exit": "Exit",
-      "reassign": "Reassign",
-      "unassign": "Unassign",
-      "cantExceedCap": "Cannot reassign. Route {{routeName}} would exceed the 7-orders cap.",
+      "reassign": "Re-route",
+      "unassign": "Remove from route",
+      "cantExceedCap": "Cannot re-route. Route {{routeName}} would exceed the 7-orders cap.",
       "routeOptionLabel": "{{routeName}} ({{orderCount}} stops)",
       "exitConfirm": {
         "heading": "Discard pending changes?",
@@ -67,8 +67,8 @@
       }
     },
     "clearSelection": "Clear selection",
-    "unassignSelected": "Unassign",
-    "assignToNewRoute": "Assign to new route",
+    "unassignSelected": "Remove from route",
+    "assignToNewRoute": "Add to new route",
     "errors": {
       "placesLoadFailed": "Google Maps Places failed to load. Check your API key and billing setup.",
       "sdkNotAvailable": "Google Maps SDK not available.",
@@ -104,20 +104,20 @@
     "dispatchAllProgress": "Dispatching: {{completed}}/{{total}}",
     "dispatchAllStaleAfterDispatch": "Routes dispatched, but the page didn't refresh automatically. Reload to see latest status.",
     "openLocationSettings": "Settings",
-    "noRoutes": "No routes created yet. Select orders on the map and assign them to routes.",
-    "unassignedOrders": "Unassigned orders ({{count}})",
-    "noUnassigned": "No unassigned orders for current filters.",
-    "autoAssignmentInProgress": "Auto-assignment in progress",
+    "noRoutes": "No routes created yet. Select orders on the map and add them to routes.",
+    "unassignedOrders": "Orders without route ({{count}})",
+    "noUnassigned": "No orders without route for current filters.",
+    "autoAssignmentInProgress": "AI routing in progress",
     "requestDriver": "Dispatch",
     "requestingDriver": "Dispatching…",
     "requestQuote": "Request quote",
     "requestingQuote": "Requesting…",
     "review": "Review",
     "moreActions": "More actions",
-    "assignToRoute": "Assign to route",
+    "assignToRoute": "Add to route",
     "newRoute": "New route",
     "route": "Route {{number}}",
-    "autoAssignAccuracy": "Auto-assign accuracy",
+    "autoAssignAccuracy": "AI routing accuracy",
     "accurateOf": "{{accurate}} of {{total}} orders",
     "last30Days": "Last 30 days \u00b7 {{count}} optimizations",
     "reviewDecisions": "Review decisions",
@@ -125,8 +125,8 @@
     "postMortemPending_other": "{{count}} decisions to review",
     "distance": "{{km}} km",
     "duration": "{{min}} min",
-    "selectLocation": "Select a fulfillment location to view assigned routes.",
-    "noRoutesForLocation": "No assigned routes for this location.",
+    "selectLocation": "Select a fulfillment location to view generated routes.",
+    "noRoutesForLocation": "No generated routes for this location.",
     "table": {
       "order": "Order",
       "customer": "Customer",
@@ -138,8 +138,8 @@
     },
     "allOrders": "All orders ({{count}})",
     "filterAll": "All",
-    "filterUnassigned": "Unassigned",
-    "filterAssigned": "Assigned",
+    "filterUnassigned": "Without route",
+    "filterAssigned": "Routed",
     "filterFailed": "Failed",
     "searchPlaceholder": "Search by order # or customer",
     "noMatchingOrders": "No orders match your filter",
@@ -149,7 +149,7 @@
     "routeLabelCompact": "#{{number}}",
     "rowAction": {
       "removeFromRoute": "Remove from route",
-      "unassign": "Unassign",
+      "unassign": "Remove from route",
       "openInShopify": "Open in Shopify"
     },
     "noAddressLine1": "No address line 1",
@@ -172,13 +172,13 @@
       "expired": "Request expired"
     },
     "manageOrders": "Manage orders",
-    "autoAssignOrders": "Auto-assign orders",
-    "autoAssign": "Auto-assign",
+    "autoAssignOrders": "Assign routes with AI",
+    "autoAssign": "Assign routes with AI",
     "updateRoutes": "Update routes",
     "confirmChanges": "Confirm changes",
     "discardChangesConfirm": "You have unsaved route changes. Switch location and discard them?",
     "addToBestRoute": "Add to best route",
-    "resetAutoAssign": "Re-enable auto-assign",
+    "resetAutoAssign": "Re-enable AI routing",
     "addressCorrection": "Address correction",
     "changeSettings": "Change settings",
     "actions": "Actions",
@@ -187,7 +187,7 @@
     "selectAllInRoute": "Select all orders in route",
     "removeFromRoute": "Remove {{name}} from route",
     "selectOrder": "Select {{name}}",
-    "unassignOrders": "Unassign orders",
+    "unassignOrders": "Remove orders from route",
     "confirmFulfillment": "Confirm fulfillment",
     "fulfillmentConfirmation": "Fulfillment confirmation",
     "markAsFulfilled": "Mark orders as fulfilled",
@@ -207,14 +207,14 @@
     },
     "unassignConfirm": {
       "heading": "Warning",
-      "message": "This will unassign all orders from this route.",
+      "message": "This will remove all orders from this route.",
       "proceed": "Do you wish to proceed?",
-      "confirm": "Yes, unassign",
+      "confirm": "Yes, remove from route",
       "cancel": "Cancel"
     },
     "clearAllConfirm": {
       "heading": "Warning",
-      "message": "This will clear all route assignments.",
+      "message": "This will remove all orders from all routes.",
       "proceed": "Do you wish to proceed?",
       "confirm": "Yes, clear all",
       "cancel": "Cancel"
@@ -372,8 +372,8 @@
     "staleQuote": "Route changed during quoting. Request a new quote."
   },
   "infoWindow": {
-    "assignedTo": "Order assigned to Route {{number}}",
-    "unassign": "Unassign"
+    "assignedTo": "Order added to Route {{number}}",
+    "unassign": "Remove from route"
   },
   "dueBuckets": {
     "today": "Orders due today",
@@ -393,7 +393,7 @@
     "noCoordsForOptimize": "Pick a specific location to optimize.",
     "optimizeCta": {
       "heading": "{{count}} orders to route",
-      "body": "Packs today's unassigned orders into the fewest viable routes.",
+      "body": "Packs today's orders without route into the fewest viable routes.",
       "button": "Optimize",
       "optimizing": "Optimizing {{count}} orders…"
     },
@@ -407,10 +407,10 @@
     "statusStripErrors": "{{count}} errors",
     "statusStripAddrErrors": "{{count}} addr errors",
     "routesHeading": "Routes",
-    "noRoutesYet": "No routes yet.\nTap **Optimize** above to auto-assign today's orders.",
+    "noRoutesYet": "No routes yet.\nTap **Optimize** above to route today's orders with AI.",
     "pickLocationFirst": "Pick a specific location above to see routes and optimize.",
-    "unassignedSection": "Unassigned orders",
-    "unassignedEmpty": "No unassigned orders for the current filter.",
+    "unassignedSection": "Orders without route",
+    "unassignedEmpty": "No orders without route for the current filter.",
     "showMap": "Show map",
     "hideMap": "Hide map",
     "mapPins": "{{routes}} routes · {{pins}} pins",
@@ -476,7 +476,7 @@
     },
     "clearRouteConfirm": {
       "heading": "Clear this route?",
-      "body": "Orders will return to unassigned. No Shopify tags are changed for dispatched routes.",
+      "body": "Orders will return to \"without route\". No Shopify tags are changed for dispatched routes.",
       "cancel": "Keep route",
       "confirm": "Clear route"
     },

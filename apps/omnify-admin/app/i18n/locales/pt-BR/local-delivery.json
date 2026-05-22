@@ -55,9 +55,9 @@
       "edit": "Editar",
       "confirm": "Confirmar",
       "exit": "Sair",
-      "reassign": "Reatribuir",
-      "unassign": "Remover atribuição",
-      "cantExceedCap": "Não foi possível reatribuir. A rota {{routeName}} excederia o limite de 7 pedidos.",
+      "reassign": "Re-roteirizar",
+      "unassign": "Remover da rota",
+      "cantExceedCap": "Não foi possível re-roteirizar. A rota {{routeName}} excederia o limite de 7 pedidos.",
       "routeOptionLabel": "{{routeName}} ({{orderCount}} paradas)",
       "exitConfirm": {
         "heading": "Descartar mudanças pendentes?",
@@ -67,8 +67,8 @@
       }
     },
     "clearSelection": "Limpar seleção",
-    "unassignSelected": "Desatribuir",
-    "assignToNewRoute": "Atribuir a nova rota",
+    "unassignSelected": "Remover da rota",
+    "assignToNewRoute": "Adicionar a nova rota",
     "errors": {
       "placesLoadFailed": "O Google Maps Places não carregou. Verifique sua chave de API e configuração de cobrança.",
       "sdkNotAvailable": "Google Maps SDK não disponível.",
@@ -104,20 +104,20 @@
     "dispatchAllProgress": "Despachando: {{completed}}/{{total}}",
     "dispatchAllStaleAfterDispatch": "Rotas despachadas, mas a página não atualizou automaticamente. Recarregue para ver o status mais recente.",
     "openLocationSettings": "Configurações",
-    "noRoutes": "Nenhuma rota criada ainda. Selecione pedidos no mapa e atribua-os a rotas.",
-    "unassignedOrders": "Pedidos não atribuídos ({{count}})",
-    "noUnassigned": "Nenhum pedido não atribuído para os filtros atuais.",
-    "autoAssignmentInProgress": "Atribuição automática em andamento",
+    "noRoutes": "Nenhuma rota criada ainda. Selecione pedidos no mapa e adicione-os a rotas.",
+    "unassignedOrders": "Pedidos sem rota ({{count}})",
+    "noUnassigned": "Nenhum pedido sem rota para os filtros atuais.",
+    "autoAssignmentInProgress": "Roteirização com IA em andamento",
     "requestDriver": "Despachar",
     "requestingDriver": "Despachando…",
     "requestQuote": "Solicitar cotação",
     "requestingQuote": "Solicitando…",
     "review": "Revisar",
     "moreActions": "Mais ações",
-    "assignToRoute": "Atribuir à rota",
+    "assignToRoute": "Adicionar à rota",
     "newRoute": "Nova rota",
     "route": "Rota {{number}}",
-    "autoAssignAccuracy": "Precisão da auto-atribuição",
+    "autoAssignAccuracy": "Precisão do roteamento com IA",
     "accurateOf": "{{accurate}} de {{total}} pedidos",
     "last30Days": "Últimos 30 dias · {{count}} otimizações",
     "reviewDecisions": "Revisar decisões",
@@ -125,8 +125,8 @@
     "postMortemPending_other": "{{count}} decisões para revisar",
     "distance": "{{km}} km",
     "duration": "{{min}} min",
-    "selectLocation": "Selecione uma localização de fulfillment para ver as rotas atribuídas.",
-    "noRoutesForLocation": "Nenhuma rota atribuída para esta localização.",
+    "selectLocation": "Selecione uma localização de fulfillment para ver as rotas geradas.",
+    "noRoutesForLocation": "Nenhuma rota gerada para esta localização.",
     "table": {
       "order": "Pedido",
       "customer": "Cliente",
@@ -138,8 +138,8 @@
     },
     "allOrders": "Todos os pedidos ({{count}})",
     "filterAll": "Todos",
-    "filterUnassigned": "Não atribuídos",
-    "filterAssigned": "Atribuídos",
+    "filterUnassigned": "Sem rota",
+    "filterAssigned": "Roteirizados",
     "filterFailed": "Falhou",
     "searchPlaceholder": "Buscar por nº do pedido ou cliente",
     "noMatchingOrders": "Nenhum pedido corresponde ao filtro",
@@ -149,7 +149,7 @@
     "routeLabelCompact": "#{{number}}",
     "rowAction": {
       "removeFromRoute": "Remover da rota",
-      "unassign": "Desatribuir",
+      "unassign": "Remover da rota",
       "openInShopify": "Abrir no Shopify"
     },
     "noAddressLine1": "Sem linha 1 do endereço",
@@ -171,8 +171,8 @@
       "expired": "Solicitação expirada"
     },
     "manageOrders": "Gerenciar pedidos",
-    "autoAssignOrders": "Atribuir pedidos automaticamente",
-    "autoAssign": "Auto-atribuir",
+    "autoAssignOrders": "Gerar rotas com IA",
+    "autoAssign": "Gerar rotas com IA",
     "updateRoutes": "Atualizar rotas",
     "confirmChanges": "Confirmar mudanças",
     "discardChangesConfirm": "Você tem mudanças de rota não salvas. Trocar de local e descartá-las?",
@@ -184,10 +184,10 @@
     "selectAllInRoute": "Selecionar todos os pedidos da rota",
     "removeFromRoute": "Remover {{name}} da rota",
     "selectOrder": "Selecionar {{name}}",
-    "unassignOrders": "Remover atribuição",
+    "unassignOrders": "Remover da rota",
     "close": "Fechar",
     "addToBestRoute": "Adicionar à melhor rota",
-    "resetAutoAssign": "Reativar atribuição automática",
+    "resetAutoAssign": "Reativar roteirização com IA",
     "optimizeApplied": "Otimização aplicada: {{count}} rotas",
     "reRequestedAt": "Re-solicitado às {{time}}",
     "ordersMeta": "{{count}} pedidos • Taxas de envio: {{shipping}}",
@@ -209,7 +209,7 @@
     },
     "clearAllConfirm": {
       "heading": "Aviso",
-      "message": "Isso limpará todas as atribuições de rota.",
+      "message": "Isso removerá todos os pedidos de todas as rotas.",
       "proceed": "Deseja continuar?",
       "confirm": "Sim, limpar tudo",
       "cancel": "Cancelar"
@@ -343,7 +343,7 @@
   },
   "status": {
     "requested": "Solicitado",
-    "matched": "Atribuído",
+    "matched": "Roteirizado",
     "onGoing": "Em andamento",
     "pickedUp": "Coletado",
     "completed": "Concluído",
@@ -367,8 +367,8 @@
     "staleQuote": "A rota mudou durante a cotação. Solicite uma nova cotação."
   },
   "infoWindow": {
-    "assignedTo": "Pedido atribuído à Rota {{number}}",
-    "unassign": "Remover atribuição"
+    "assignedTo": "Pedido adicionado à Rota {{number}}",
+    "unassign": "Remover da rota"
   },
   "dueBuckets": {
     "today": "Pedidos para hoje",
@@ -388,7 +388,7 @@
     "noCoordsForOptimize": "Escolha um local específico para otimizar.",
     "optimizeCta": {
       "heading": "{{count}} pedidos para rotear",
-      "body": "Agrupa os pedidos não atribuídos de hoje nas menores rotas viáveis.",
+      "body": "Agrupa os pedidos sem rota de hoje nas menores rotas viáveis.",
       "button": "Otimizar",
       "optimizing": "Otimizando {{count}} pedidos…"
     },
@@ -402,10 +402,10 @@
     "statusStripErrors": "{{count}} erros",
     "statusStripAddrErrors": "{{count}} end. inválidos",
     "routesHeading": "Rotas",
-    "noRoutesYet": "Nenhuma rota ainda.\nToque em **Otimizar** acima para atribuir os pedidos de hoje.",
+    "noRoutesYet": "Nenhuma rota ainda.\nToque em **Otimizar** acima para roteirizar os pedidos de hoje com IA.",
     "pickLocationFirst": "Escolha um local específico acima para ver rotas e otimizar.",
-    "unassignedSection": "Pedidos não atribuídos",
-    "unassignedEmpty": "Não há pedidos não atribuídos para o filtro atual.",
+    "unassignedSection": "Pedidos sem rota",
+    "unassignedEmpty": "Não há pedidos sem rota para o filtro atual.",
     "showMap": "Mostrar mapa",
     "hideMap": "Ocultar mapa",
     "mapPins": "{{routes}} rotas · {{pins}} pontos",
@@ -471,7 +471,7 @@
     },
     "clearRouteConfirm": {
       "heading": "Limpar esta rota?",
-      "body": "Os pedidos voltam a \"não atribuídos\". Rotas já despachadas não têm tags alteradas.",
+      "body": "Os pedidos voltam a \"sem rota\". Rotas já despachadas não têm tags alteradas.",
       "cancel": "Manter rota",
       "confirm": "Limpar rota"
     },
