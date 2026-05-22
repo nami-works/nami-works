@@ -195,10 +195,26 @@ function Assert-CleanWorkingTree {
       (scripts/omnify/ -> scripts/ -> repo root). The monorepo absorb
       moved this module from scripts/ to scripts/omnify/, so the default
       now climbs one more level than before.
+    .PARAMETER ShippablePathPrefixes
+      Optional repo-relative path prefixes that the current Dockerfile's
+      COPY layers actually consume. When provided, dirty paths outside
+      every prefix are filtered out -- they belong to a different app's
+      deploy and cannot leak into the image being built. Pass the app's
+      own dir + every shared dir/file the Dockerfile references (root
+      manifests, packages/, prisma/<schema>/, tsconfig.base.json).
+
+      Pre-monorepo-absorb this didn't matter because each app had its
+      own repo. Post-absorb a dirty `apps/fulfillment/` file was blocking
+      an `apps/omnify-admin/` deploy even though my Dockerfile uses
+      surgical `COPY apps/omnify-admin/` and would never include it.
+
+      Omit (or pass `@()`) for backwards-compatible behavior: every
+      dirty path that isn't .dockerignored is treated as shippable.
   #>
   [CmdletBinding()]
   param(
-    [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\.."))
+    [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")),
+    [string[]]$ShippablePathPrefixes = @()
   )
 
   Push-Location $RepoRoot
@@ -228,6 +244,7 @@ function Assert-CleanWorkingTree {
     # + space). Renames look like `R  old -> new` — we take the new path.
     $shippablePaths = @()
     $ignoredCount = 0
+    $outOfScopeCount = 0
     foreach ($line in $lines) {
       $rest = $line.Substring(3)
       if ($rest -match ' -> ') { $rest = ($rest -split ' -> ')[1] }
@@ -237,13 +254,33 @@ function Assert-CleanWorkingTree {
       $matched = Test-DockerIgnored -Path $path -Patterns ([string[]]$patterns)
       if ($matched) {
         $ignoredCount += 1
-      } else {
-        $shippablePaths += $line
+        continue
       }
+      # Scope filter: when prefixes are provided, drop anything that doesn't
+      # match at least one. Prefix match is plain string-prefix on the
+      # forward-slash-normalized path so it works for both files and dirs.
+      if ($ShippablePathPrefixes.Count -gt 0) {
+        $normalized = $path -replace '\\', '/'
+        $inScope = $false
+        foreach ($prefix in $ShippablePathPrefixes) {
+          if ($normalized -eq $prefix -or $normalized.StartsWith($prefix)) {
+            $inScope = $true
+            break
+          }
+        }
+        if (-not $inScope) {
+          $outOfScopeCount += 1
+          continue
+        }
+      }
+      $shippablePaths += $line
     }
 
     if ($ignoredCount -gt 0) {
       Write-Host "[guards] Assert-CleanWorkingTree: $ignoredCount dirty path(s) skipped (.dockerignore)."
+    }
+    if ($outOfScopeCount -gt 0) {
+      Write-Host "[guards] Assert-CleanWorkingTree: $outOfScopeCount dirty path(s) skipped (outside Dockerfile COPY scope)."
     }
 
     if ($shippablePaths.Count -eq 0) {
