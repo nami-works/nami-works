@@ -55,6 +55,15 @@ the config files cleaned up.
 
 ## Pending
 
+### 2026-05-21 · fix/i18n-live-locale (`6d3e153`)
+- **App:** omnify-admin (full + omnify, same image — affects every route loader).
+- **Files touched:** `app/utils/get-current-locale.server.ts` (new), `app/routes/app.tsx`, `app/routes/app.affiliates.tsx`, `app/routes/app.affiliates.onboarding.tsx`, `app/routes/app.footprint-expansion.tsx`, `app/routes/app.local-delivery.tsx`, `app/routes/app.settings.tsx`.
+- **Type:** code (helper + 6 call-site swaps).
+- **Summary:** Read live admin locale from request URL `?locale=` (with fallback to offline session) on every loader, instead of the install-time-only `session.locale`. Merchant flipping Shopify admin language now reflects in the embedded app on the next page load — no reinstall required. New `getCurrentLocale(request, session)` helper centralizes the lookup; 6 inline `normalizeLocale((session as any).locale)` reads migrated. Two hard-coded `pt_BR` fallbacks removed.
+- **Affects:** every page in the embedded app — locale-driven translations + number/currency formatting now reflect the merchant's current admin language preference instead of a stale install-time snapshot.
+- **Dependencies:** none. Conflict-free with the other 3 omnify-admin pending entries below (different code regions; the i18n helper is additive and the route-loader edits are tiny inline swaps).
+- **Risk:** low. Reversible. No schema or infra changes. Defensive type-guard in the helper keeps it safe for non-embedded code paths.
+
 ### 2026-05-21 · feat/ld-map-badge-scannability (`9b3115d`)
 - **App:** omnify-admin (full + omnify, same image — main Local Delivery map at `/app/local-delivery`).
 - **Files touched:** `app/routes/app.local-delivery.tsx`.
