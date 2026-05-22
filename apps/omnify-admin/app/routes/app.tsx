@@ -1,5 +1,5 @@
 import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
-import { Outlet, useLoaderData, useNavigation, useRouteError } from "react-router";
+import { Outlet, data, useLoaderData, useNavigation, useRouteError } from "react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
@@ -10,7 +10,10 @@ import {
   createI18nInstance,
   type SupportedLocale,
 } from "../i18n/config";
-import { getCurrentLocale } from "../utils/get-current-locale.server";
+import {
+  getCurrentLocale,
+  buildLocalePersistenceHeader,
+} from "../utils/get-current-locale.server";
 import { getAppDisplayName, getAppIdentity, getNavItems } from "../utils/app-identity.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -21,8 +24,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const appDisplayName = getAppDisplayName(appIdentity);
   const navItems = getNavItems();
 
+  // Persist the live locale to a cookie whenever Shopify wraps this
+  // request with `?locale=` (every iframe HTML reload). Subsequent
+  // React Router `.data` fetches for child routes carry no params, but
+  // they DO carry the cookie -- which keeps the whole app in sync with
+  // the merchant's current admin language. See get-current-locale.server.ts.
+  const setCookie = buildLocalePersistenceHeader(request);
   // eslint-disable-next-line no-undef
-  return { apiKey: process.env.SHOPIFY_API_KEY || "", basePath, locale, appIdentity, appDisplayName, navItems };
+  const payload = { apiKey: process.env.SHOPIFY_API_KEY || "", basePath, locale, appIdentity, appDisplayName, navItems };
+  if (setCookie) {
+    return data(payload, { headers: { "Set-Cookie": setCookie } });
+  }
+  return payload;
 };
 
 export default function App() {
