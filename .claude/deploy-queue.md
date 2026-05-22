@@ -55,11 +55,25 @@ the config files cleaned up.
 
 ## Pending
 
-_(empty — the three Pending entries above shipped in the 2026-05-21 evening deploy below.)_
+_(empty — the i18n online-tokens fix shipped in the 2026-05-22 deploy below.)_
 
 ---
 
 ## Deployed
+
+### 2026-05-22 · full + omnify — i18n: use online tokens for live per-user locale (canonical pattern)
+- **Image tag (full):** `omnify-app:full-20260522-67958c8` (health check HTTP 200 on attempt 1).
+- **Image tag (omnify):** `omnify-app:omnify-20260522-67958c8` (health check HTTP 200 on attempt 1).
+- **Deploy mechanic:** `scripts/deploy-omnify-admin.ps1 -App both` from main at HEAD `67958c8`. Full rebuild + push + Lightsail pull + recreate. Both containers up in 46s, /health 200 on attempt 1.
+- **Bundled commits (1):**
+  - `67958c8` (#24) — fix(i18n): use online tokens for live per-user locale. Enables `useOnlineTokens: true` in the shared `shopifyApp` config (packages/shared-auth) so per-user sessions refresh on every `authenticate.admin` call via token exchange. `getCurrentLocale` now reads `session.onlineAccessInfo.associated_user.locale` first (canonical Shopify signal), with URL `?locale=` + cookie `omnify_locale` + offline `session.locale` as fallback layers. Replaces the URL-only fix (`6d3e153`) and the cookie patch (`3f08ce9`) which were workarounds. Path identified via Shopify's official docs (mcp__shopify-dev-mcp__search_docs_chunks) after Lucas asked why we hadn't consulted them.
+- **What it affects:** every embedded admin page loader resolves locale from the user's CURRENT Shopify language preference. Per-user, not per-shop -- staff using different Shopify languages each see their own. Refreshes on every page load via token exchange; no install-time staleness.
+- **Verified post-deploy:**
+  - `app.cpg-labs.io/health` HTTP 200 on attempt 1.
+  - `omnify.cpg-labs.io/health` HTTP 200 on attempt 1.
+  - `docker ps` confirms both containers on `:67958c8` (Up 46 seconds).
+  - Lucas to confirm Portuguese now sticks across all routes (not just /app home).
+- **Side effects to monitor:** online sessions are stored alongside offline sessions in PrismaSessionStorage; expect the Session table to grow with one online session per (user, shop). Offline sessions still used by webhooks + cron (no change).
 
 ### 2026-05-21 (evening) · full + omnify — bundled: i18n live-locale + badge scannability + order-modal fixes
 - **Image tag (full):** `omnify-app:full-20260521-9021b7c` (health check HTTP 200 on attempt 1).
