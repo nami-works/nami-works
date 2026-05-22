@@ -8,7 +8,7 @@ import { useFetcher, useLoaderData, useRevalidator } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { useTranslation } from "react-i18next";
 import { authenticate } from "../shopify.server";
-import { normalizeLocale } from "../i18n/config";
+import { getCurrentLocale } from "../utils/get-current-locale.server";
 import { InBlockSyncIndicator } from "../components/in-block-sync-indicator";
 import styles from "./app.footprint-expansion/styles.module.css";
 import {
@@ -634,7 +634,7 @@ export const loader = async ({
 }: LoaderFunctionArgs): Promise<LoaderData> => {
   const { admin, session } = await authenticate.admin(request);
   const shop = session.shop;
-  const userLocale = normalizeLocale((session as any).locale);
+  const userLocale = getCurrentLocale(request, session);
 
   const [locations, locationSets, heatmapBuckets, cityRankings, proposals, statsConfig, syncMeta] = await Promise.all([
     readLocations(shop),

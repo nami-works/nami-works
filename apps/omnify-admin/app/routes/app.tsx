@@ -8,16 +8,14 @@ import { I18nextProvider } from "react-i18next";
 import { authenticate } from "../shopify.server";
 import {
   createI18nInstance,
-  normalizeLocale,
   type SupportedLocale,
 } from "../i18n/config";
+import { getCurrentLocale } from "../utils/get-current-locale.server";
 import { getAppDisplayName, getAppIdentity, getNavItems } from "../utils/app-identity.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
-  const locale = normalizeLocale(
-    (session as { locale?: string }).locale,
-  );
+  const locale = getCurrentLocale(request, session);
   const basePath = process.env.BASE_PATH || "";
   const appIdentity = getAppIdentity();
   const appDisplayName = getAppDisplayName(appIdentity);

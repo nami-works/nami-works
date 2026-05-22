@@ -9,7 +9,7 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 import { useTranslation } from "react-i18next";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
-import { normalizeLocale } from "../i18n/config";
+import { getCurrentLocale } from "../utils/get-current-locale.server";
 import { formatCurrencyCompact, formatNumberCompact } from "../i18n/format";
 import styles from "./app.affiliates/styles.module.css";
 import { PageTabs, type PageTab } from "../components/page-tabs";
@@ -288,8 +288,7 @@ export const loader = async ({
 }: LoaderFunctionArgs): Promise<LoaderData> => {
   const { session } = await authenticate.admin(request);
   const shop = session.shop;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userLocale = normalizeLocale((session as any).locale);
+  const userLocale = getCurrentLocale(request, session);
 
   const [
     profiles,

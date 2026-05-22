@@ -10,6 +10,7 @@ import { loadGoogleMaps } from "../utils/load-google-maps.client";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
 import { getAppIdentity } from "../utils/app-identity.server";
+import { getCurrentLocale } from "../utils/get-current-locale.server";
 import {
   deleteShopCredentials,
   getApiKeyDisplayMask,
@@ -147,11 +148,7 @@ const LALAMOVE_SERVICE_TYPES = [
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin, session } = await authenticate.admin(request);
   const shop = session.shop;
-  const userLocale =
-    typeof (session as { locale?: string }).locale === "string" &&
-    (session as { locale?: string }).locale?.length
-      ? (session as { locale?: string }).locale
-      : "pt_BR";
+  const userLocale = getCurrentLocale(request, session);
 
   console.info(`[settings] loader START shop=${shop}`);
   const locationsResponse = await admin.graphql(

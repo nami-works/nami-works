@@ -17,7 +17,7 @@ import { Link, useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { useTranslation } from "react-i18next";
 import { authenticate } from "../shopify.server";
-import { normalizeLocale } from "../i18n/config";
+import { getCurrentLocale } from "../utils/get-current-locale.server";
 import {
   formatCurrencyCompact,
   formatNumberCompact,
@@ -36,8 +36,7 @@ export const loader = async ({
 }: LoaderFunctionArgs): Promise<LoaderData> => {
   const { session } = await authenticate.admin(request);
   const shop = session.shop;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userLocale = normalizeLocale((session as any).locale);
+  const userLocale = getCurrentLocale(request, session);
   const rows = await listUnmappedCodes(shop);
   console.info(
     `[affiliates-onboarding] loader shop=${shop} unmapped=${rows.length}`,
