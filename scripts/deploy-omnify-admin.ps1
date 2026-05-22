@@ -143,10 +143,21 @@ if (-not (Test-Path $LightsailKey)) {
   throw "Lightsail SSH key not found at $LightsailKey. Provision via 'aws lightsail download-default-key-pair' or restore from password manager."
 }
 
-# Assert-CleanWorkingTree filters out .dockerignored paths, so unrelated
-# dirty docs/inputs don't gate the deploy. Only paths that would actually
-# leak into COPY . trigger the throw.
-Assert-CleanWorkingTree
+# Assert-CleanWorkingTree filters out:
+#   1. .dockerignored paths (docs/, inputs/, sandbox/, etc. — never ship).
+#   2. Paths outside this Dockerfile's COPY scope (e.g. dirty
+#      apps/fulfillment/ files during an apps/omnify-admin/ deploy — a
+#      different app, owned by a different deploy, never lands here).
+# Only paths that would actually land in the omnify-admin image trigger
+# the throw.
+Assert-CleanWorkingTree -ShippablePathPrefixes @(
+  'apps/omnify-admin/',
+  'packages/',
+  'prisma/omnify/',
+  'tsconfig.base.json',
+  'package.json',
+  'package-lock.json'
+)
 
 # Compute tag if not provided. -SkipBuild requires an explicit -Tag.
 if (-not $Tag) {
