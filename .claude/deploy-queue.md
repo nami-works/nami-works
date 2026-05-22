@@ -55,36 +55,32 @@ the config files cleaned up.
 
 ## Pending
 
-### 2026-05-21 · fix/i18n-live-locale (`6d3e153`)
-- **App:** omnify-admin (full + omnify, same image — affects every route loader).
-- **Files touched:** `app/utils/get-current-locale.server.ts` (new), `app/routes/app.tsx`, `app/routes/app.affiliates.tsx`, `app/routes/app.affiliates.onboarding.tsx`, `app/routes/app.footprint-expansion.tsx`, `app/routes/app.local-delivery.tsx`, `app/routes/app.settings.tsx`.
-- **Type:** code (helper + 6 call-site swaps).
-- **Summary:** Read live admin locale from request URL `?locale=` (with fallback to offline session) on every loader, instead of the install-time-only `session.locale`. Merchant flipping Shopify admin language now reflects in the embedded app on the next page load — no reinstall required. New `getCurrentLocale(request, session)` helper centralizes the lookup; 6 inline `normalizeLocale((session as any).locale)` reads migrated. Two hard-coded `pt_BR` fallbacks removed.
-- **Affects:** every page in the embedded app — locale-driven translations + number/currency formatting now reflect the merchant's current admin language preference instead of a stale install-time snapshot.
-- **Dependencies:** none. Conflict-free with the other 3 omnify-admin pending entries below (different code regions; the i18n helper is additive and the route-loader edits are tiny inline swaps).
-- **Risk:** low. Reversible. No schema or infra changes. Defensive type-guard in the helper keeps it safe for non-embedded code paths.
-
-### 2026-05-21 · feat/ld-map-badge-scannability (`9b3115d`)
-- **App:** omnify-admin (full + omnify, same image — main Local Delivery map at `/app/local-delivery`).
-- **Files touched:** `app/routes/app.local-delivery.tsx`.
-- **Type:** code (Google Maps styler arrays + AdvancedMarkerElement style/zIndex).
-- **Summary:** Dose C of the badge-scannability mockup. Damps Google's road + administrative.locality label fills (saturation/lightness/opacity stylers) in `DARK_MAP_STYLES`, adds a new `LIGHT_MAP_STYLES` const (sparse styler array with the same damping recipe + inverted lightness) and wires it into all 3 `StyledMapType("light", ...)` sites. Lifts non-selected badges with an inner hairline ring + 3px low-opacity halo + `AdvancedMarkerElement.zIndex` (3 normal, 4 selected, 5 selected+edit). Selected/holographic skips the halo so the gradient stays the most salient state. `zIndex` added to the diff signature so the reconciler updates on selection toggles.
-- **Affects:** map markers on the main Local Delivery page. Modal-route maps inherit the label-damping via the shared styler arrays; per-marker lift in those modals is deferred. No data changes, no GraphQL changes.
-- **Dependencies:** none. Conflict-free with the `fix/ld-order-modal-close` entry below (different code regions in the same file: modal JSX/loader vs. map styler arrays + badge-render block).
-- **Risk:** low. Reversible per-styler or by reverting the `boxShadow`/`zIndex` additions. No new tokens, no new components, no schema or infra changes.
-
-### 2026-05-21 · fix/ld-order-modal-close (`d576505`)
-- **App:** omnify-admin (full + omnify, same image — modal lives on `/app/local-delivery`).
-- **Files touched:** `app/routes/app.local-delivery.tsx`, `app/routes/app.local-delivery/styles.module.css`.
-- **Type:** code (modal interaction + loader field add).
-- **Summary:** Five fixes on the Local Delivery Order details modal — Close button (hideOverlay vs removeAttribute, also unblocks reopen), Open-full-order 404 (s-button → s-link), shipping `city` added to LoaderOrder + rendered, Customer/Shipping headlines unified via shared `.orderModalBlockHeadline` class.
-- **Affects:** operator-facing modal opened from the All-orders table. No mutations, no new GraphQL fields (city was already in the existing `shippingAddress` selection used for `shippingSummary`).
-- **Dependencies:** none — independent of the existing `fix/address-tag-gate-on-methodtype` entry below, even though both touch the same loader file (different code paths — address-tag-gate is in the auto-tagger predicate, this bundle is in the modal JSX + LoaderOrder type).
-- **Risk:** low. Reversible. No schema or infra changes.
+_(empty — the three Pending entries above shipped in the 2026-05-21 evening deploy below.)_
 
 ---
 
 ## Deployed
+
+### 2026-05-21 (evening) · full + omnify — bundled: i18n live-locale + badge scannability + order-modal fixes
+- **Image tag (full):** `omnify-app:full-20260521-9021b7c` (health check HTTP 200 on attempt 1).
+- **Image tag (omnify):** `omnify-app:omnify-20260521-9021b7c` (health check HTTP 200 on attempt 1).
+- **Deploy mechanic:** `scripts/deploy-omnify-admin.ps1 -App both -SkipBuild -Tag 20260521-9021b7c` from main at HEAD `ba3f5d3`. Image was built earlier in the day; this run only did the Lightsail SSH pull + `docker compose up -d` step. Three failed attempts preceded this one — Assert-CleanWorkingTree over-blocked on sibling-app dirt (fixed by #19), Docker Desktop was offline (auto-launch helper added in #20), then PR #20's em-dashes broke the parser (#21 ASCII-clean fix).
+- **Bundled commits (3):**
+  - `d576505` — fix(local-delivery): order modal — close/reopen + 4 backlog items. Modal Close button switched from `removeAttribute("open")` to `hideOverlay()` (fixes the second-empty-modal + reopen-blocked bugs). "Open full order" `<s-button href>` → `<s-link href>` (fixes 404 from s-button not honoring target=_blank). Loader exposes shipping `city`; rendered in the address block. Customer/Shipping headlines unified via shared `.orderModalBlockHeadline` class.
+  - `9b3115d` — feat(local-delivery): map badge scannability vs Google road labels. Dose C of the badge-scannability mockup. Damps Google's road + administrative.locality label fills in `DARK_MAP_STYLES`; new `LIGHT_MAP_STYLES` for light parity. Non-selected badges get a 3-stop boxShadow (halo + drop + inset hairline) and `AdvancedMarkerElement.zIndex` (3/4/5 for normal/selected/edit). Selected/holographic preserved.
+  - `6d3e153` — fix(i18n): read live admin locale from request, not stale offline session. New `getCurrentLocale(request, session)` helper. All 6 inline `normalizeLocale((session as any).locale)` reads migrated. Merchant flipping Shopify admin language now reflects in the embedded app on the next page load.
+- **Companion infra fixes shipped same-day (no deploy needed — all script-level):**
+  - `fe80aeb` (#5) — reconcile omnify-admin deploy infra with monorepo layout.
+  - `c78937c` (#9) — COPY tsconfig.base.json into the omnify-admin image.
+  - `9021b7c` (#19) — scope Assert-CleanWorkingTree to the active Dockerfile's COPY paths.
+  - `d5b9915` (#20) — auto-launch Docker Desktop + fail-fast SSH (BatchMode=yes + ConnectTimeout=10).
+  - `ba3f5d3` (#21) — replace em-dashes with ASCII in the deploy script (PowerShell 5.1 cp1252 mojibake fix).
+- **What it affects:** every Shopify-admin merchant route. Locale-driven translations + number/currency formatting now reflect the merchant's current Shopify admin language preference. Local Delivery map badges visibly scannable at city zoom against Google road labels. Order details modal close/reopen + Open-full-order link no longer broken.
+- **Verified post-deploy:**
+  - `app.cpg-labs.io/health` HTTP 200 on attempt 1.
+  - `omnify.cpg-labs.io/health` HTTP 200 on attempt 1.
+  - `docker ps` confirms `cpg-labs-full` and `cpg-labs-omnify` both on `:full-20260521-9021b7c` / `:omnify-20260521-9021b7c` (Up 45 seconds at verification time).
+  - Lucas to confirm Portuguese UI flip works end-to-end via Shopify admin language toggle.
 
 ### 2026-05-21 · full deploy — bundled: methodType address-tag gate + find-new-driver watchdog (telemetry-only)
 - **Image tag (full):** `omnify-app:full-20260521-3944fc5` (health check HTTP 200 on attempt 1).
