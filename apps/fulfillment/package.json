@@ -23,6 +23,7 @@
     "schema": "../../prisma/fulfillment/schema.prisma"
   },
   "dependencies": {
+    "@aws-sdk/client-ssm": "^3.700.0",
     "@fastify/sensible": "^6.0.2",
     "@prisma/client": "^6.1.0",
     "dotenv": "^17.4.2",
