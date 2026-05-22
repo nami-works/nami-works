@@ -58,14 +58,21 @@ export function mountToneRoutes(
     const minConfidence = query.min_confidence
       ? Number.parseFloat(query.min_confidence)
       : undefined;
-    const limit = query.limit ? Number.parseInt(query.limit, 10) : undefined;
+    // Clamp the caller-supplied limit so a bearer can't ask for the whole
+    // table. 1 ≤ limit ≤ 200; out-of-range or non-numeric falls through to
+    // the service-layer default.
+    const rawLimit = query.limit ? Number.parseInt(query.limit, 10) : undefined;
+    const limit =
+      rawLimit !== undefined && Number.isFinite(rawLimit)
+        ? Math.min(Math.max(rawLimit, 1), 200)
+        : undefined;
 
     const rows = await listPendingHypotheses(authResult.tenant.id, {
       ...(minConfidence !== undefined && Number.isFinite(minConfidence)
         ? { minConfidence }
         : {}),
       ...(query.batch_id ? { batchId: query.batch_id } : {}),
-      ...(limit !== undefined && Number.isFinite(limit) ? { limit } : {}),
+      ...(limit !== undefined ? { limit } : {}),
     });
 
     return reply.send({

@@ -7,11 +7,19 @@ import { rootLogger } from "./lib/logger.js";
 import { mountLocalDeliveryRoutes } from "./local-delivery/index.js";
 import { mountTenantRoute } from "./mcp/transport.js";
 import { mountOAuthRoutes } from "./oauth/index.js";
+import { assertEncryptionConfigured } from "./services/security/encryption.js";
 import { mountToneRoutes } from "./services/tone-sources/routes.js";
 // Side-effect import: registers every tool in the catalog at boot.
 import "./tools/index.js";
 
 const isDev = process.env.NODE_ENV === "development";
+
+// Fail fast in production if encrypted-credential storage isn't configured —
+// catches missing APP_ENCRYPTION_KEY at boot instead of when a meta/monday
+// adapter first tries to decrypt and surprises someone hours later.
+if (process.env.NODE_ENV === "production") {
+  assertEncryptionConfigured();
+}
 
 const app = Fastify({
   // Pino's Logger satisfies Fastify's logger contract at runtime; the type
