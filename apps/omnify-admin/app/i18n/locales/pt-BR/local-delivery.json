@@ -9,7 +9,7 @@
     "all": "Todos",
     "daysAgo": "{{count}} dia(s) atrás",
     "ordersToDeliver": "Pedidos para entregar: {{count}}",
-    "failedDelivery": "Entrega falhada: {{count}}",
+    "failedDelivery": "Não entregue: {{count}}",
     "sameDay": "Mesmo dia",
     "sameDayTimeLimit": "Horário limite para mesmo dia",
     "nextDay": "Próximo dia",
@@ -31,7 +31,7 @@
       "dueLaterEmoji": "🕒",
       "overdue": "Atrasado",
       "overdueEmoji": "🚨",
-      "failed": "Falhou",
+      "failed": "Não entregue",
       "failedEmoji": "🚫",
       "addressErrorEmoji": "🟡",
       "addressError": "Problema no endereço",
@@ -140,7 +140,7 @@
     "filterAll": "Todos",
     "filterUnassigned": "Sem rota",
     "filterAssigned": "Roteirizados",
-    "filterFailed": "Falhou",
+    "filterFailed": "Não entregue",
     "searchPlaceholder": "Buscar por nº do pedido ou cliente",
     "noMatchingOrders": "Nenhum pedido corresponde ao filtro",
     "seeOrders": "Ver pedidos",
@@ -280,7 +280,7 @@
     "driverError": {
       "carrierDiagnostic": "Diagnóstico da transportadora",
       "heading": "Erro na solicitação de motorista",
-      "headingFailed": "Solicitação falhou",
+      "headingFailed": "Solicitação não realizada",
       "errorDetails": "Detalhes do erro",
       "close": "Fechar",
       "apiCredentials": "Credenciais de API",
@@ -350,11 +350,11 @@
     "cancelled": "Cancelado",
     "rejected": "Rejeitado",
     "expired": "Expirado",
-    "failed": "Falhado"
+    "failed": "Não realizado"
   },
   "driverRequest": {
     "viewDetails": "Ver detalhes",
-    "requestFailed": "Solicitação falhou",
+    "requestFailed": "Solicitação não realizada",
     "readyForDelivery": "Pronto para entrega",
     "outOfAreaOrders": "Pedidos fora da área de serviço",
     "outOfAreaRemoved": "Pedidos fora da área de serviço foram removidos",
@@ -501,7 +501,7 @@
       "quoteExpiresAt": "expira {{time}}",
       "tracking": "Despacho Lalamove",
       "trackingLink": "Abrir rastreio Lalamove ↗",
-      "errorHeading": "Solicitação de motorista falhou",
+      "errorHeading": "Solicitação de motorista não realizada",
       "requestQuote": "Solicitar cotação",
       "requestingQuote": "Solicitando…",
       "requestDriver": "Solicitar motorista",
@@ -521,7 +521,7 @@
       "statusFailed": "Cancelada",
       "statusRejected": "Sem motorista",
       "statusExpired": "Expirada",
-      "statusError": "Falhou"
+      "statusError": "Não realizado"
     },
     "bannerMapsMissing": "Google Maps não configurado. Contate o admin.",
     "bannerOrdersAccess": "Acesso a pedidos é necessário. Contate o admin.",
@@ -536,7 +536,7 @@
     },
     "stopPill": {
       "delivered": "Entregue",
-      "failed": "Falhou",
+      "failed": "Não realizado",
       "pending": "Pendente",
       "unknown": "Desconhecido",
       "suspect": "A verificar"
@@ -554,7 +554,7 @@
     },
     "needsReview": {
       "return-stop-detected": {
-        "title": "Parada de retorno detectada — a última entrega pode ter falhado",
+        "title": "Parada de retorno detectada — a última entrega pode não ter sido realizada",
         "hint": "A rota da Lalamove terminou no ponto de coleta, o que normalmente significa que o motorista trouxe itens de volta. Confirme com a equipe em campo quais paradas realmente foram entregues e resolva pelo CLI."
       },
       "cancelled-with-partial-success": {

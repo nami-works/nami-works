@@ -9,7 +9,7 @@
     "all": "All",
     "daysAgo": "{{count}} day(s) ago",
     "ordersToDeliver": "Orders to deliver: {{count}}",
-    "failedDelivery": "Failed delivery: {{count}}",
+    "failedDelivery": "Undelivered: {{count}}",
     "sameDay": "Same day",
     "sameDayTimeLimit": "Time limit for same day",
     "nextDay": "Next day",
@@ -31,7 +31,7 @@
       "dueLaterEmoji": "🕒",
       "overdue": "Overdue",
       "overdueEmoji": "🚨",
-      "failed": "Failed",
+      "failed": "Undelivered",
       "failedEmoji": "🚫",
       "addressErrorEmoji": "🟡",
       "addressError": "Address issue",
@@ -140,7 +140,7 @@
     "filterAll": "All",
     "filterUnassigned": "Without route",
     "filterAssigned": "Routed",
-    "filterFailed": "Failed",
+    "filterFailed": "Undelivered",
     "searchPlaceholder": "Search by order # or customer",
     "noMatchingOrders": "No orders match your filter",
     "seeOrders": "See orders",
@@ -285,7 +285,7 @@
     "driverError": {
       "carrierDiagnostic": "Carrier readiness",
       "heading": "Driver request error",
-      "headingFailed": "Request failed",
+      "headingFailed": "Request not completed",
       "errorDetails": "Error details",
       "close": "Close",
       "apiCredentials": "API credentials",
@@ -355,11 +355,11 @@
     "cancelled": "Cancelled",
     "rejected": "Rejected",
     "expired": "Expired",
-    "failed": "Failed"
+    "failed": "Not completed"
   },
   "driverRequest": {
     "viewDetails": "View details",
-    "requestFailed": "Request failed",
+    "requestFailed": "Request not completed",
     "readyForDelivery": "Ready for delivery",
     "outOfAreaOrders": "Orders outside service area",
     "outOfAreaRemoved": "Orders outside service area were removed",
@@ -506,7 +506,7 @@
       "quoteExpiresAt": "expires {{time}}",
       "tracking": "Lalamove dispatch",
       "trackingLink": "Open Lalamove tracking ↗",
-      "errorHeading": "Driver request failed",
+      "errorHeading": "Driver request not completed",
       "requestQuote": "Request quote",
       "requestingQuote": "Requesting…",
       "requestDriver": "Request driver",
@@ -526,7 +526,7 @@
       "statusFailed": "Cancelled",
       "statusRejected": "No driver",
       "statusExpired": "Expired",
-      "statusError": "Failed"
+      "statusError": "Not completed"
     },
     "bannerMapsMissing": "Google Maps is not configured. Contact your admin.",
     "bannerOrdersAccess": "Orders access is required for local delivery. Contact your admin.",
@@ -541,7 +541,7 @@
     },
     "stopPill": {
       "delivered": "Delivered",
-      "failed": "Failed",
+      "failed": "Not completed",
       "pending": "Pending",
       "unknown": "Unknown",
       "suspect": "Suspect"
@@ -559,7 +559,7 @@
     },
     "needsReview": {
       "return-stop-detected": {
-        "title": "Return stop detected — last delivery may have failed",
+        "title": "Return stop detected — last delivery may not have been completed",
         "hint": "Lalamove's route ended at the pickup location, which usually means the driver brought items back. Confirm with the team on the ground which stops actually delivered, then resolve from the CLI."
       },
       "cancelled-with-partial-success": {
