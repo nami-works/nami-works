@@ -55,6 +55,15 @@ the config files cleaned up.
 
 ## Pending
 
+### 2026-05-21 · feat/fulfillment-infra (`pending PR`)
+- **App:** fulfillment (Rota Local).
+- **Files touched:** `infra/fulfillment/main.tf`, `variables.tf`, `ecr.tf`, `iam.tf`, `cloudwatch.tf`, `outputs.tf`, `README.md`.
+- **Type:** Terraform (apply gated, NOT yet applied).
+- **Summary:** Scaffolds the AWS resources Rota Local will need: ECR repo (`nami-works-fulfillment`), task-execution + task-app IAM roles with SSM-read scoped to `/nami-works/fulfillment/*`, CloudWatch log group `/ecs/nami-works-fulfillment`. DELIBERATELY OMITS the contentious files (ecs.tf, alb.tf, rds.tf, route53*.tf, acm.tf) — those wrap product/strategy decisions (share vs separate, hostname choice) that need Lucas's read before laying down. `README.md` enumerates the open decisions.
+- **Affects:** no production traffic. Empty ECR + IAM + log group = serves nothing on its own. The ECS service that consumes these comes in the follow-up PR after the open decisions resolve.
+- **Dependencies:** none for this PR. The follow-up infra PR depends on Lucas resolving the open decisions in `infra/fulfillment/README.md` § Open decisions.
+- **Risk:** very low. Reversible (`terraform destroy` reverts). No data, no traffic. The apply gate is intentional — DO NOT apply until the rds.tf / ecs.tf / alb.tf set lands.
+
 ### 2026-05-21 · fix/i18n-live-locale (`6d3e153`)
 - **App:** omnify-admin (full + omnify, same image — affects every route loader).
 - **Files touched:** `app/utils/get-current-locale.server.ts` (new), `app/routes/app.tsx`, `app/routes/app.affiliates.tsx`, `app/routes/app.affiliates.onboarding.tsx`, `app/routes/app.footprint-expansion.tsx`, `app/routes/app.local-delivery.tsx`, `app/routes/app.settings.tsx`.
