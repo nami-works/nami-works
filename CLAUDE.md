@@ -21,6 +21,7 @@ Production targets, DNS, secrets backends, and deploy domains do not change with
 
 - **NAMI Works** = parent company, `lucas@nami.works`. Owns the GitHub org, the infra, the `nami.works` domain, and all commercial contracts.
 - **CPG Labs** = customer-facing brand for the CPG vertical. First customer: **GE Beauty** (Brazilian beauty brand). Owns the `cpg-labs.io` domain family and the Shopify apps deployed under it.
+- **Rota Local** = customer-facing brand for the 3PL operator vertical (`apps/fulfillment`). Multi-client warehouse + last-mile dispatch. Pilot tenant: GE Beauty.
 - **Principle:** ONE codebase, MANY brand skins. Internal identity (repo name, SSM paths, CloudWatch group, domain) is NAMI Works forever. Customer-facing strings (docs, system prompts, tool messages, MSAs) render the right brand per tenant.
 
 ## Parallel-session protocol
@@ -120,14 +121,16 @@ Confirm before taking risky actions — destructive git, external API writes, pr
 
 - **Connector**: AWS SSM Parameter Store under `/nami-works/tenants/<slug>/*`.
 - **Omnify family** (admin + focused + Flywheel): Lightsail instance env files at `/etc/cpg-labs/{full,omnify,cron}.env` (root-owned, 600). AWS SSM `/omnify/` prefix is preserved but no longer the runtime source.
+- **Fulfillment (Rota Local)**: AWS SSM Parameter Store under `/nami-works/fulfillment/tenants/<slug>/*`. Bearer-token hashes live in the DB; the plaintext bearer + HMAC keys + LD control tokens live in SSM SecureString. Per-tenant config rows carry the SSM path, never the secret.
 - **Public site**: no runtime secrets — static deploy.
-- Two backends, two scopes. Don't unify, don't cross-import.
+- Multiple backends, multiple scopes. Don't unify, don't cross-import.
 
-## Two Prisma schemas — no collision
+## Three Prisma schemas — no collision
 
 - `prisma/connector/schema.prisma` → emits to `node_modules/@prisma/client-connector` via custom `output`. Connector code imports from `@prisma/client-connector`.
 - `prisma/omnify/schema.prisma` → emits to the default `node_modules/@prisma/client`. Omnify code (and `@cpg-labs/shared-db`) imports from `@prisma/client`.
-- Different production Postgres instances. Different `DATABASE_URL` per app. Don't unify.
+- `prisma/fulfillment/schema.prisma` → emits to `node_modules/@prisma/client-fulfillment` via custom `output`. Fulfillment code imports from `@prisma/client-fulfillment`.
+- Different production Postgres databases (separate `DATABASE_URL` per app — `DATABASE_URL`, `DATABASE_URL_FULFILLMENT`). Cross-schema FKs are impossible by design.
 
 ## Memory
 
