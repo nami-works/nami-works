@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import sensible from "@fastify/sensible";
 import Fastify, { type FastifyBaseLogger } from "fastify";
 import { rootLogger } from "./lib/logger.js";
+import { mountOrderRoutes } from "./routes/orders.js";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -15,6 +16,7 @@ const app = Fastify({
 });
 
 await app.register(sensible);
+await mountOrderRoutes(app);
 
 app.get("/health", async () => ({ ok: true }));
 

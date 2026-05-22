@@ -1,0 +1,241 @@
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+<NFe xmlns="http://www.portalfiscal.inf.br/nfe">
+<infNFe Id="NFe35260534987157000336550010000026481025124810" versao="4.00">
+<ide>
+<cUF>35</cUF>
+<cNF>02512481</cNF>
+<natOp>Venda Merc.Adq/Rec.Terceiros,S.T., Cond.Contrib.Substituido</natOp>
+<mod>55</mod>
+<serie>1</serie>
+<nNF>2648</nNF>
+<dhEmi>2026-05-20T23:46:19-03:00</dhEmi>
+<dhSaiEnt>2026-05-20T23:46:19-03:00</dhSaiEnt>
+<tpNF>1</tpNF>
+<idDest>1</idDest>
+<cMunFG>3550308</cMunFG>
+<tpImp>1</tpImp>
+<tpEmis>1</tpEmis>
+<cDV>0</cDV>
+<tpAmb>1</tpAmb>
+<finNFe>1</finNFe>
+<indFinal>1</indFinal>
+<indPres>9</indPres>
+<indIntermed>0</indIntermed>
+<procEmi>0</procEmi>
+<verProc>Omie-4.0.201110111</verProc>
+</ide>
+<emit>
+<CNPJ>34987157000336</CNPJ>
+<xNome>GE COSMETICOS LTDA</xNome>
+<xFant>GE BEAUTY</xFant>
+<enderEmit>
+<xLgr>Rua Haddock Lobo</xLgr>
+<nro>1626</nro>
+<xCpl>LOJA G203.3</xCpl>
+<xBairro>Cerqueira Cesar</xBairro>
+<cMun>3550308</cMun>
+<xMun>Sao Paulo</xMun>
+<UF>SP</UF>
+<CEP>01414002</CEP>
+<cPais>1058</cPais>
+<xPais>BRASIL</xPais>
+<fone>11947268841</fone>
+</enderEmit>
+<IE>133840922110</IE>
+<IM>71712046</IM>
+<CNAE>4772500</CNAE>
+<CRT>3</CRT>
+</emit>
+<dest>
+<CPF>28346931883</CPF>
+<xNome>Celia Marques</xNome>
+<enderDest>
+<xLgr>Rua Joaquim Guarani</xLgr>
+<nro>485</nro>
+<xCpl>204k</xCpl>
+<xBairro>Jardim das Acacias</xBairro>
+<cMun>3550308</cMun>
+<xMun>Sao Paulo</xMun>
+<UF>SP</UF>
+<CEP>04707061</CEP>
+<cPais>1058</cPais>
+<xPais>BRASIL</xPais>
+<fone>5511992280767</fone>
+</enderDest>
+<indIEDest>9</indIEDest>
+<email>celinhammarques@gmail.com</email>
+</dest>
+<entrega>
+<CPF>28346931883</CPF>
+<xNome>Celia Marques</xNome>
+<xLgr>Rua Joaquim Guarani</xLgr>
+<nro>485</nro>
+<xCpl>204k</xCpl>
+<xBairro>Jardim das Acacias</xBairro>
+<cMun>3550308</cMun>
+<xMun>Sao Paulo</xMun>
+<UF>SP</UF>
+<CEP>04707061</CEP>
+<fone>5511992280767</fone>
+</entrega>
+<det nItem="1">
+<prod>
+<cProd>GEB 003</cProd>
+<cEAN>7896768471151</cEAN>
+<xProd>leave-in com protecao termica</xProd>
+<NCM>33059000</NCM>
+<CEST>2002000</CEST>
+<CFOP>5405</CFOP>
+<uCom>UN</uCom>
+<qCom>1.0000</qCom>
+<vUnCom>99.00</vUnCom>
+<vProd>99.00</vProd>
+<cEANTrib>7896768471151</cEANTrib>
+<uTrib>UN</uTrib>
+<qTrib>1.0000</qTrib>
+<vUnTrib>99.00</vUnTrib>
+<vDesc>14.85</vDesc>
+<indTot>1</indTot>
+</prod>
+<imposto>
+<ICMS>
+<ICMS60>
+<orig>0</orig>
+<CST>60</CST>
+<vBCSTRet>0.00</vBCSTRet>
+<pST>0.0000</pST>
+<vICMSSubstituto>0.00</vICMSSubstituto>
+<vICMSSTRet>0.00</vICMSSTRet>
+<pRedBCEfet>0.0000</pRedBCEfet>
+<vBCEfet>99.00</vBCEfet>
+<pICMSEfet>0.0000</pICMSEfet>
+<vICMSEfet>0.00</vICMSEfet>
+</ICMS60>
+</ICMS>
+<PIS><PISNT><CST>08</CST></PISNT></PIS>
+<COFINS><COFINSNT><CST>08</CST></COFINSNT></COFINS>
+</imposto>
+<infAdProd>CEST: 20.020.00</infAdProd>
+<vItem>84.15</vItem>
+</det>
+<det nItem="2">
+<prod>
+<cProd>GEB 021</cProd>
+<cEAN>7896768471182</cEAN>
+<xProd>booster definicao</xProd>
+<NCM>33059000</NCM>
+<CEST>2002000</CEST>
+<CFOP>5405</CFOP>
+<uCom>UN</uCom>
+<qCom>1.0000</qCom>
+<vUnCom>69.00</vUnCom>
+<vProd>69.00</vProd>
+<cEANTrib>7896768471182</cEANTrib>
+<uTrib>UN</uTrib>
+<qTrib>1.0000</qTrib>
+<vUnTrib>69.00</vUnTrib>
+<vDesc>10.35</vDesc>
+<indTot>1</indTot>
+</prod>
+<imposto>
+<ICMS>
+<ICMS60>
+<orig>0</orig>
+<CST>60</CST>
+<vBCSTRet>0.00</vBCSTRet>
+<pST>0.0000</pST>
+<vICMSSubstituto>0.00</vICMSSubstituto>
+<vICMSSTRet>0.00</vICMSSTRet>
+<pRedBCEfet>0.0000</pRedBCEfet>
+<vBCEfet>69.00</vBCEfet>
+<pICMSEfet>0.0000</pICMSEfet>
+<vICMSEfet>0.00</vICMSEfet>
+</ICMS60>
+</ICMS>
+<PIS><PISNT><CST>08</CST></PISNT></PIS>
+<COFINS><COFINSNT><CST>08</CST></COFINSNT></COFINS>
+</imposto>
+<infAdProd>CEST: 20.020.00</infAdProd>
+<vItem>58.65</vItem>
+</det>
+<total>
+<ICMSTot>
+<vBC>0.00</vBC>
+<vICMS>0.00</vICMS>
+<vICMSDeson>0.00</vICMSDeson>
+<vFCP>0.00</vFCP>
+<vBCST>0.00</vBCST>
+<vST>0.00</vST>
+<vFCPST>0.00</vFCPST>
+<vFCPSTRet>0.00</vFCPSTRet>
+<vProd>168.00</vProd>
+<vFrete>0.00</vFrete>
+<vSeg>0.00</vSeg>
+<vDesc>25.20</vDesc>
+<vII>0.00</vII>
+<vIPI>0.00</vIPI>
+<vIPIDevol>0.00</vIPIDevol>
+<vPIS>0.00</vPIS>
+<vCOFINS>0.00</vCOFINS>
+<vOutro>0.00</vOutro>
+<vNF>142.80</vNF>
+</ICMSTot>
+</total>
+<transp>
+<modFrete>9</modFrete>
+<vol>
+<pesoL>0.169</pesoL>
+<pesoB>0.212</pesoB>
+</vol>
+</transp>
+<cobr>
+<fat>
+<nFat>2648</nFat>
+<vOrig>142.80</vOrig>
+<vDesc>0.00</vDesc>
+<vLiq>142.80</vLiq>
+</fat>
+<dup>
+<nDup>001</nDup>
+<dVenc>2026-06-20</dVenc>
+<vDup>142.80</vDup>
+</dup>
+</cobr>
+<pag>
+<detPag>
+<indPag>1</indPag>
+<tPag>03</tPag>
+<vPag>142.80</vPag>
+<card>
+<tpIntegra>1</tpIntegra>
+<cAut>T-1815810-x1l0ssds-uq3duau0nd787c-dae2mhfcc0sc</cAut>
+</card>
+</detPag>
+</pag>
+<infAdic>
+<infCpl>Email do Destinatario: celinhammarques@gmail.com; Inf. Contribuinte: Produto destinado a Consumidor Final.;</infCpl>
+</infAdic>
+<compra>
+<xPed>81062</xPed>
+</compra>
+<infRespTec>
+<CNPJ>18511742000147</CNPJ>
+<xContato>Luciano Pereira</xContato>
+<email>nfe@omie.com.br</email>
+<fone>1151718888</fone>
+</infRespTec>
+</infNFe>
+</NFe>
+<protNFe versao="4.00">
+<infProt>
+<tpAmb>1</tpAmb>
+<verAplic>SP_NFE_PL009_V4</verAplic>
+<chNFe>35260534987157000336550010000026481025124810</chNFe>
+<dhRecbto>2026-05-20T23:46:36-03:00</dhRecbto>
+<nProt>135261958594725</nProt>
+<digVal>8p1yrAdKt7aqn+HQYjjZ4Uzpfis=</digVal>
+<cStat>100</cStat>
+<xMotivo>Autorizado o uso da NF-e</xMotivo>
+</infProt>
+</protNFe>
+</nfeProc>
