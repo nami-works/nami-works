@@ -101,16 +101,81 @@ function Invoke-LightsailSsh {
   # first connect, which PS 5.1 wraps as NativeCommandError under EAP=Stop.
   # Downgrade EAP while ssh runs; redirect stderr to stdout so warnings stay
   # visible; check $LASTEXITCODE explicitly.
+  #
+  # BatchMode=yes + ConnectTimeout=10 prevent indefinite hangs — any prompt
+  # (auth, host key, sudo password) now fails fast instead of blocking on
+  # stdin. Caught a 1h30 hang on 2026-05-21 when the ECR-auth SSH step
+  # silently waited forever.
   $prevEap = $ErrorActionPreference
   $ErrorActionPreference = 'Continue'
   try {
-    & ssh -i $LightsailKey -o StrictHostKeyChecking=no -o UserKnownHostsFile=NUL $LightsailHost $Command 2>&1 | Out-Host
+    & ssh -i $LightsailKey -o StrictHostKeyChecking=no -o UserKnownHostsFile=NUL -o BatchMode=yes -o ConnectTimeout=10 $LightsailHost $Command 2>&1 | Out-Host
   } finally {
     $ErrorActionPreference = $prevEap
   }
   if ($LASTEXITCODE -ne 0) {
     throw "SSH to $LightsailHost failed (exit $LASTEXITCODE): $Command"
   }
+}
+
+function Ensure-DockerRunning {
+  <#
+    .SYNOPSIS
+      Ensure Docker Desktop is running locally; launch it if not, wait
+      until the engine is reachable.
+    .DESCRIPTION
+      The local `docker build` / `docker push` steps require Docker
+      Desktop's engine to be alive. On Windows it's easy to forget — a
+      reboot, Windows update, or simply not having opened it leaves the
+      engine offline and the script silently fails partway through (or,
+      worse, hangs when something downstream pipes into a dead docker.
+      sock).
+
+      This helper:
+        1. Probes `docker info` quickly (5s timeout).
+        2. If unreachable, starts "C:\Program Files\Docker\Docker\
+           Docker Desktop.exe" detached and polls `docker info` every 3s
+           up to $MaxWaitSeconds (default 120).
+        3. Throws if Docker still isn't reachable at the end.
+
+      Safe to call when Docker is already running — the first probe
+      passes and the helper returns immediately. No-op on -SkipBuild
+      deploys (caller decides whether to invoke).
+    .PARAMETER MaxWaitSeconds
+      Cap on how long to wait for the engine to come up. Default 120.
+  #>
+  param([int]$MaxWaitSeconds = 120)
+
+  $probe = {
+    try {
+      $null = & docker info 2>&1
+      return ($LASTEXITCODE -eq 0)
+    } catch {
+      return $false
+    }
+  }
+
+  if (& $probe) {
+    Write-Host "  [docker] engine is reachable." -ForegroundColor Green
+    return
+  }
+
+  Write-Host "  [docker] engine not reachable — launching Docker Desktop..." -ForegroundColor Yellow
+  $dockerExe = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+  if (-not (Test-Path $dockerExe)) {
+    throw "Docker Desktop not found at $dockerExe. Install it or update the path in deploy-omnify-admin.ps1."
+  }
+  Start-Process $dockerExe | Out-Null
+
+  $deadline = (Get-Date).AddSeconds($MaxWaitSeconds)
+  while ((Get-Date) -lt $deadline) {
+    Start-Sleep -Seconds 3
+    if (& $probe) {
+      Write-Host "  [docker] engine ready." -ForegroundColor Green
+      return
+    }
+  }
+  throw "Docker Desktop launched but engine never became reachable within $MaxWaitSeconds seconds. Open Docker Desktop manually and retry."
 }
 
 function Test-PublicHealth {
@@ -188,6 +253,10 @@ foreach ($k in $AppKeys) {
 
 if (-not $SkipBuild) {
   Write-Host ""
+  Write-Host "  [docker] ensuring local engine is up..." -ForegroundColor Cyan
+  Ensure-DockerRunning
+
+  Write-Host ""
   Write-Host "  [build] docker build (tagged for $($AppKeys -join ', '))..." -ForegroundColor Cyan
   # PS 5.1 + StrictMode + EAP=Stop: BuildKit writes progress lines to stderr,
   # which PowerShell wraps as NativeCommandError and aborts. Downgrade EAP to
@@ -263,7 +332,11 @@ $tokenB64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($ecrToken))
 $prevEap = $ErrorActionPreference
 $ErrorActionPreference = 'Continue'
 try {
-  & ssh -i $LightsailKey -o StrictHostKeyChecking=no -o UserKnownHostsFile=NUL $LightsailHost "echo '$tokenB64' | base64 -d | sudo docker login --username AWS --password-stdin $EcrRegistry" 2>&1 | Out-Null
+  # `Out-Host` (was Out-Null) so failures/prompts are visible. BatchMode=yes
+  # and ConnectTimeout=10 prevent the 1h30 hangs we hit on 2026-05-21 —
+  # any prompt (auth, host key, sudo password) now fails fast instead of
+  # blocking forever on stdin.
+  & ssh -i $LightsailKey -o StrictHostKeyChecking=no -o UserKnownHostsFile=NUL -o BatchMode=yes -o ConnectTimeout=10 $LightsailHost "echo '$tokenB64' | base64 -d | sudo docker login --username AWS --password-stdin $EcrRegistry" 2>&1 | Out-Host
 } finally {
   $ErrorActionPreference = $prevEap
 }
