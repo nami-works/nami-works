@@ -43,6 +43,7 @@ import {
 } from "../services/route-optimization/pipeline.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { formatCustomerShort } from "../utils/format-name";
+import { getCurrentLocale } from "../utils/get-current-locale.server";
 import { computeDueBuckets, type DueBucket } from "./app.local-delivery/due-bucket";
 import { LdAnalyticsAside } from "../components/ld-analytics-aside";
 import styles from "./app.local-delivery/styles.module.css";
@@ -8031,10 +8032,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const loaderT0 = Date.now();
   const { admin, session } = await authenticate.admin(request);
   const shop = session.shop;
-  const userLocale =
-    typeof (session as any).locale === "string" && (session as any).locale.length > 0
-      ? (session as any).locale
-      : "pt_BR";
+  const userLocale = getCurrentLocale(request, session);
   const url = new URL(request.url);
   const debugEnabled = url.searchParams.get("debugLocalDelivery") === "1";
   const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY?.trim() || "";
