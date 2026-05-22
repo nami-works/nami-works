@@ -102,7 +102,7 @@ function Invoke-LightsailSsh {
   # Downgrade EAP while ssh runs; redirect stderr to stdout so warnings stay
   # visible; check $LASTEXITCODE explicitly.
   #
-  # BatchMode=yes + ConnectTimeout=10 prevent indefinite hangs — any prompt
+  # BatchMode=yes + ConnectTimeout=10 prevent indefinite hangs -- any prompt
   # (auth, host key, sudo password) now fails fast instead of blocking on
   # stdin. Caught a 1h30 hang on 2026-05-21 when the ECR-auth SSH step
   # silently waited forever.
@@ -125,7 +125,7 @@ function Ensure-DockerRunning {
       until the engine is reachable.
     .DESCRIPTION
       The local `docker build` / `docker push` steps require Docker
-      Desktop's engine to be alive. On Windows it's easy to forget — a
+      Desktop's engine to be alive. On Windows it's easy to forget -- a
       reboot, Windows update, or simply not having opened it leaves the
       engine offline and the script silently fails partway through (or,
       worse, hangs when something downstream pipes into a dead docker.
@@ -138,7 +138,7 @@ function Ensure-DockerRunning {
            up to $MaxWaitSeconds (default 120).
         3. Throws if Docker still isn't reachable at the end.
 
-      Safe to call when Docker is already running — the first probe
+      Safe to call when Docker is already running -- the first probe
       passes and the helper returns immediately. No-op on -SkipBuild
       deploys (caller decides whether to invoke).
     .PARAMETER MaxWaitSeconds
@@ -160,7 +160,7 @@ function Ensure-DockerRunning {
     return
   }
 
-  Write-Host "  [docker] engine not reachable — launching Docker Desktop..." -ForegroundColor Yellow
+  Write-Host "  [docker] engine not reachable -- launching Docker Desktop..." -ForegroundColor Yellow
   $dockerExe = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
   if (-not (Test-Path $dockerExe)) {
     throw "Docker Desktop not found at $dockerExe. Install it or update the path in deploy-omnify-admin.ps1."
@@ -209,9 +209,9 @@ if (-not (Test-Path $LightsailKey)) {
 }
 
 # Assert-CleanWorkingTree filters out:
-#   1. .dockerignored paths (docs/, inputs/, sandbox/, etc. — never ship).
+#   1. .dockerignored paths (docs/, inputs/, sandbox/, etc. -- never ship).
 #   2. Paths outside this Dockerfile's COPY scope (e.g. dirty
-#      apps/fulfillment/ files during an apps/omnify-admin/ deploy — a
+#      apps/fulfillment/ files during an apps/omnify-admin/ deploy -- a
 #      different app, owned by a different deploy, never lands here).
 # Only paths that would actually land in the omnify-admin image trigger
 # the throw.
@@ -299,7 +299,7 @@ if (-not $SkipBuild) {
   foreach ($k in $AppKeys) {
     $img = $AppImages[$k]
     Write-Host "  [push] $img" -ForegroundColor Cyan
-    # Same EAP guard as docker build — `docker push` emits layer-progress to
+    # Same EAP guard as docker build -- `docker push` emits layer-progress to
     # stderr which would otherwise abort under EAP=Stop.
     $prevEap = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
@@ -333,7 +333,7 @@ $prevEap = $ErrorActionPreference
 $ErrorActionPreference = 'Continue'
 try {
   # `Out-Host` (was Out-Null) so failures/prompts are visible. BatchMode=yes
-  # and ConnectTimeout=10 prevent the 1h30 hangs we hit on 2026-05-21 —
+  # and ConnectTimeout=10 prevent the 1h30 hangs we hit on 2026-05-21 --
   # any prompt (auth, host key, sudo password) now fails fast instead of
   # blocking forever on stdin.
   & ssh -i $LightsailKey -o StrictHostKeyChecking=no -o UserKnownHostsFile=NUL -o BatchMode=yes -o ConnectTimeout=10 $LightsailHost "echo '$tokenB64' | base64 -d | sudo docker login --username AWS --password-stdin $EcrRegistry" 2>&1 | Out-Host
