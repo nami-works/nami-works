@@ -13,11 +13,13 @@ import json
 import os
 import sys
 import unicodedata
+from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
-# Load environment
-load_dotenv()
+# Resolve .env relative to this script so the cwd at invocation doesn't matter.
+# Convention: sandbox/<tenant>/.env. See root CLAUDE.md § Per-tenant secrets.
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN")
 ACCESS_TOKEN = os.getenv("SHOPIFY_ADMIN_ACCESS_TOKEN")
