@@ -2,6 +2,20 @@
 
 This file governs every app in this repo. Per-app conventions live in each app's own `CLAUDE.md`. When the two disagree, the per-app file wins for code under its directory.
 
+## Working agreement — read first
+
+This repo runs under a **CTO/CEO contract**. Claude is CTO, Lucas is CEO. Tech mechanics (git workflow, secret reuse vs rotation, refactor scope, deploy bundling, test discipline) are silent calls — make them and move on. Anything that changes product, brand, money, end-user experience, or tenant business hours escalates to Lucas.
+
+The canonical contract lives in this project's Claude memory at `feedback_cto_contract.md` (auto-loaded at session start when the project memory folder is reachable). If you're in a worktree or sub-folder that doesn't resolve to the same memory path, read it once at session start from `~/.claude/projects/c--Users-Lucas-Guimar-es-Desktop-nami-works/memory/feedback_cto_contract.md`.
+
+End every session that involved real judgment with a "Calls made silently this session" block. See `feedback_end_of_session_calls.md`. That block is the primary feedback loop that keeps the contract calibrated.
+
+## Active initiatives
+
+Multi-session goals (bigger than a PR, smaller than a roadmap) live as one file each at **`.claude/initiatives/<slug>.md`**. Read all of them at session start to see what's in flight, what's blocking, and who should pick up next. When you advance a phase or shift the blocker, update the file before closing the session.
+
+Schema, conventions, and examples are in `.claude/initiatives/README.md`. Treat initiative files as the company's Kanban above the PR layer.
+
 ## What this repo is
 
 `github.com/nami-works/nami-works` ships **six production surfaces** from one codebase:
