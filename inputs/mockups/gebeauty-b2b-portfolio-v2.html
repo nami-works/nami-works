@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GE Beauty · Portfólio B2B (mockup v2 — fotográfico)</title>
+<style>
+/* ============================================================
+   GE Beauty — B2B portfolio presentation v2 (photographic register)
+   Prices + images pulled LIVE from the admin registry via
+   sandbox/gebeauty/scripts/_b2b_portfolio_fetch.py. The PORTFOLIO[]
+   array below is what that build script emits. Namespaced .gbb-*.
+   ============================================================ */
+:root{
+  --ge-red:#DF372F; --ink:#161616; --muted:#6b6b6b; --paper:#fff;
+  --bone:#f5f2ee; --sand:#efe9e1; --line:#e7e2da; --maxw:1180px;
+  --font-display:"Italian Plate No1","Helvetica Neue",-apple-system,Segoe UI,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-display);color:var(--ink);background:var(--paper);line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+img{max-width:100%;display:block}
+.gbb-wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+
+.gbb-progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--ge-red);z-index:60;transition:width .12s linear}
+.gbb-topbar{position:fixed;top:0;left:0;right:0;height:58px;z-index:55;display:flex;align-items:center;justify-content:space-between;padding:0 24px;transition:background .25s,box-shadow .25s}
+.gbb-topbar.solid{background:rgba(255,255,255,.93);box-shadow:0 1px 0 var(--line)}
+.gbb-wordmark{font-weight:800;letter-spacing:.14em;font-size:14px}
+.gbb-wordmark b{color:var(--ge-red)}
+.gbb-dl{appearance:none;border:1px solid var(--ink);background:var(--ink);color:#fff;font:inherit;font-size:12.5px;font-weight:700;letter-spacing:.04em;padding:9px 15px;border-radius:999px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:transform .15s,background .15s}
+.gbb-dl:hover{transform:translateY(-1px);background:var(--ge-red);border-color:var(--ge-red)}
+.gbb-dl svg{width:14px;height:14px}
+
+.gbb-index{position:fixed;right:26px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:13px;align-items:flex-end}
+.gbb-index a{text-decoration:none;color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.05em;display:flex;align-items:center;gap:9px;opacity:.55;transition:opacity .2s,color .2s}
+.gbb-index a .dot{width:7px;height:7px;border-radius:50%;background:currentColor;transition:transform .2s}
+.gbb-index a .lbl{opacity:0;transform:translateX(6px);transition:opacity .2s,transform .2s;white-space:nowrap}
+.gbb-index a:hover{opacity:1}.gbb-index a:hover .lbl{opacity:1;transform:none}
+.gbb-index a.active{color:var(--ge-red);opacity:1}
+.gbb-index a.active .dot{transform:scale(1.7)}
+.gbb-index a.active .lbl{opacity:1;transform:none}
+
+.gbb-rv{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.gbb-rv.in{opacity:1;transform:none}
+
+/* COVER */
+.gbb-cover{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:120px 28px 90px;position:relative;overflow:hidden;background:radial-gradient(120% 80% at 85% 8%,rgba(223,55,47,.10),transparent 55%),linear-gradient(180deg,#fff,var(--bone))}
+.gbb-cover .gbb-wrap{width:100%}
+.gbb-eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.28em;color:var(--ge-red);text-transform:uppercase}
+.gbb-cover h1{font-weight:800;letter-spacing:-.02em;font-size:clamp(42px,8vw,104px);line-height:.96;margin:22px 0 0}
+.gbb-cover h1 .thin{font-weight:300}
+.gbb-cover .sub{font-size:clamp(16px,2.2vw,22px);color:var(--muted);margin-top:26px;max-width:560px}
+.gbb-tag{margin-top:38px;font-style:italic;font-size:clamp(16px,2vw,20px)}
+.gbb-tag::before{content:"";display:inline-block;width:34px;height:1.5px;background:var(--ge-red);vertical-align:middle;margin-right:12px}
+.gbb-hero-trio{display:flex;gap:14px;margin-top:50px;max-width:430px}
+.gbb-hero-trio img{flex:1;aspect-ratio:1/1.2;object-fit:contain;background:radial-gradient(120% 100% at 50% 20%,#fff,var(--sand));border-radius:12px;padding:8px}
+.gbb-scroll{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:8px}
+.gbb-scroll .arr{width:1px;height:32px;background:linear-gradient(var(--muted),transparent);animation:gbbpulse 1.8s ease-in-out infinite}
+@keyframes gbbpulse{0%,100%{opacity:.3;transform:scaleY(.6)}50%{opacity:1;transform:scaleY(1)}}
+
+/* WHY */
+.gbb-why{padding:108px 0 86px}
+.gbb-sec-eyebrow{font-size:12px;font-weight:700;letter-spacing:.22em;color:var(--ge-red);text-transform:uppercase;margin-bottom:18px}
+.gbb-why h2{font-weight:800;font-size:clamp(28px,4.4vw,52px);line-height:1.05;letter-spacing:-.015em;max-width:800px}
+.gbb-why .lead{font-size:clamp(16px,1.9vw,19px);color:var(--muted);max-width:660px;margin-top:22px}
+.gbb-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:52px}
+.gbb-stat{border-top:2px solid var(--ink);padding-top:16px}
+.gbb-stat .n{font-weight:800;font-size:clamp(28px,4.2vw,44px);line-height:1}
+.gbb-stat .n .pct{color:var(--ge-red)}
+.gbb-stat .t{font-size:13.5px;color:var(--muted);margin-top:8px}
+.gbb-points{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 34px;margin-top:54px}
+.gbb-point{display:flex;gap:14px;align-items:flex-start;padding:6px 0}
+.gbb-point .b{flex:0 0 auto;width:9px;height:9px;border-radius:50%;background:var(--ge-red);margin-top:8px}
+.gbb-point p{font-size:15.5px}.gbb-point p b{font-weight:700}
+
+/* NOVIDADES band */
+.gbb-novid{padding:96px 0;background:linear-gradient(180deg,#fff,var(--bone));border-top:1px solid var(--line)}
+.gbb-novid .head{display:flex;align-items:flex-end;justify-content:space-between;gap:26px;flex-wrap:wrap}
+.gbb-novid h2{font-weight:800;font-size:clamp(30px,5vw,58px);line-height:1;letter-spacing:-.02em}
+.gbb-novid .hook{max-width:540px;font-size:clamp(15px,1.8vw,18px);color:var(--ink)}
+.gbb-novid .hook b{color:var(--ge-red)}
+
+/* LINE CHAPTER */
+.gbb-line{padding:92px 0 88px;border-top:1px solid var(--line)}
+.gbb-line.alt{background:var(--bone)}
+.gbb-line-head{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;flex-wrap:wrap}
+.gbb-line-num{font-weight:800;font-size:clamp(54px,10vw,120px);line-height:.8;color:transparent;-webkit-text-stroke:1.5px var(--ink);opacity:.16}
+.gbb-line-titles{flex:1 1 360px}
+.gbb-line-titles .kicker{font-size:12px;font-weight:700;letter-spacing:.2em;color:var(--ge-red);text-transform:uppercase}
+.gbb-line-titles h3{font-weight:800;font-size:clamp(30px,5vw,58px);line-height:1;letter-spacing:-.02em;margin-top:10px}
+.gbb-line-sell{max-width:580px;font-size:clamp(15px,1.8vw,18px);margin-top:18px}
+.gbb-line-count{font-size:12.5px;color:var(--muted);white-space:nowrap}
+
+/* photographic cards */
+.gbb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:24px;margin-top:46px}
+.gbb-grid.feature{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.gbb-card{background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s,border-color .25s;cursor:pointer}
+.gbb-line.alt .gbb-card,.gbb-novid .gbb-card{background:#fff}
+.gbb-card:hover{transform:translateY(-5px);box-shadow:0 22px 46px -24px rgba(22,22,22,.45);border-color:#d9d2c8}
+.gbb-shot{position:relative;aspect-ratio:1/1.08;background:radial-gradient(125% 105% at 50% 22%,#fff,var(--sand));display:flex;align-items:center;justify-content:center;overflow:hidden}
+.gbb-shot img{width:100%;height:100%;object-fit:contain;padding:14px 14px 6px;mix-blend-mode:multiply;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.gbb-card:hover .gbb-shot img{transform:scale(1.045)}
+.gbb-shot.soon{background:repeating-linear-gradient(135deg,#f3efe9,#f3efe9 12px,#efe9e1 12px,#efe9e1 24px)}
+.gbb-soonmark{display:flex;flex-direction:column;align-items:center;gap:8px;color:#b3a994}
+.gbb-soonmark svg{width:44px;height:44px}
+.gbb-soonmark span{font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+.gbb-badge{position:absolute;top:12px;left:12px;background:var(--ge-red);color:#fff;font-size:10px;font-weight:700;letter-spacing:.08em;padding:5px 10px;border-radius:999px;text-transform:uppercase}
+.gbb-badge.soft{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.gbb-badge.ghost{background:rgba(22,22,22,.78);color:#fff}
+.gbb-cbody{padding:16px 17px 18px;display:flex;flex-direction:column;flex:1}
+.gbb-cbody .nm{font-weight:700;font-size:16px;line-height:1.25}
+.gbb-cbody .sz{font-size:12.5px;color:var(--muted);margin-top:4px}
+.gbb-meta{margin-top:auto;padding-top:15px;display:flex;align-items:flex-end;justify-content:space-between}
+.gbb-pvs .lab{font-size:10px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.gbb-pvs .val{font-weight:800;font-size:20px;margin-top:1px}
+.gbb-pvs .val.tba{font-size:13px;font-weight:600;color:var(--muted)}
+.gbb-more{width:31px;height:31px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink);transition:background .2s,color .2s,transform .25s;flex:0 0 auto}
+.gbb-card:hover .gbb-more{background:var(--ink);color:#fff}
+.gbb-card.open .gbb-more{transform:rotate(45deg);background:var(--ge-red);color:#fff;border-color:var(--ge-red)}
+.gbb-detail{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.gbb-card.open .gbb-detail{max-height:260px;border-top:1px solid var(--line)}
+.gbb-detail-in{padding:14px 17px 16px}
+.gbb-detail p{font-size:13.5px}
+.gbb-spec{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.gbb-spec span{font-size:11px;color:var(--muted);background:var(--bone);border:1px solid var(--line);padding:3px 9px;border-radius:6px}
+
+/* LINE SHEET */
+.gbb-sheet{padding:96px 0;border-top:1px solid var(--line);background:var(--bone)}
+.gbb-sheet h2{font-weight:800;font-size:clamp(26px,4vw,44px);letter-spacing:-.015em}
+.gbb-sheet .note{font-size:13.5px;color:var(--muted);margin-top:12px;max-width:640px}
+.gbb-table-scroll{overflow-x:auto;margin-top:32px}
+table.gbb-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
+table.gbb-table th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:10px 12px;border-bottom:2px solid var(--ink)}
+table.gbb-table td{padding:11px 12px;border-bottom:1px solid var(--line)}
+table.gbb-table tr td:last-child,table.gbb-table tr th:last-child{text-align:right;font-weight:700;white-space:nowrap}
+table.gbb-table .lrow td{background:#fff;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:11.5px;color:var(--ge-red)}
+table.gbb-table .sku{color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* CTA */
+.gbb-cta{padding:118px 0;background:var(--ink);color:#fff;text-align:center}
+.gbb-cta h2{font-weight:800;font-size:clamp(30px,5.5vw,64px);line-height:1.02;letter-spacing:-.02em}
+.gbb-cta p{color:#c9c4bd;font-size:clamp(15px,2vw,18px);margin:22px auto 0;max-width:520px}
+.gbb-cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:42px}
+.gbb-btn{appearance:none;border:0;font:inherit;font-weight:700;letter-spacing:.03em;font-size:15px;padding:15px 28px;border-radius:999px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:9px;transition:transform .15s}
+.gbb-btn:hover{transform:translateY(-2px)}
+.gbb-btn.primary{background:var(--ge-red);color:#fff}
+.gbb-btn.ghost{background:transparent;color:#fff;border:1px solid #4a4a4a}
+.gbb-foot{padding:42px 0;text-align:center;color:var(--muted);font-size:12.5px;background:var(--ink)}
+.gbb-foot b{color:#fff}
+.gbb-fab{position:fixed;right:18px;bottom:18px;z-index:58;display:none}
+
+@media (max-width:860px){
+  .gbb-index{display:none}
+  .gbb-stats{grid-template-columns:1fr;gap:0}
+  .gbb-stat{border-top:1px solid var(--line);padding:16px 0}.gbb-stat:first-child{border-top:2px solid var(--ink)}
+  .gbb-points{grid-template-columns:1fr;gap:4px}
+  .gbb-dl{display:none}.gbb-fab{display:block}
+  .gbb-hero-trio{max-width:none}
+}
+
+@media print{
+  @page{size:A4;margin:13mm}
+  .gbb-progress,.gbb-topbar,.gbb-index,.gbb-scroll,.gbb-fab,.gbb-more,.gbb-cta-row{display:none!important}
+  body{background:#fff}.gbb-rv{opacity:1!important;transform:none!important}
+  .gbb-cover{min-height:auto;padding:0 0 18px;background:#fff;page-break-after:always}.gbb-cover h1{font-size:50px}
+  .gbb-why,.gbb-novid{padding:16px 0;background:#fff!important;page-break-after:always}
+  .gbb-line{padding:0 0 8px;border-top:0;background:#fff!important;page-break-before:always}
+  .gbb-line .gbb-grid,.gbb-novid .gbb-grid{display:none}     /* chapters fold into the sheet for print */
+  .gbb-sheet{background:#fff;padding:0;page-break-before:always}
+  .gbb-cta{background:#fff;color:#000;padding:22px 0}.gbb-cta h2,.gbb-cta p{color:#000}
+  .gbb-foot{background:#fff;color:#000;border-top:1px solid #ccc}
+}
+</style>
+</head>
+<body>
+<div class="gbb-progress" id="gbbProgress"></div>
+<header class="gbb-topbar" id="gbbTopbar">
+  <div class="gbb-wordmark">GE <b>BEAUTY</b></div>
+  <button class="gbb-dl" onclick="window.print()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+    Baixar portfólio (PDF)
+  </button>
+</header>
+<nav class="gbb-index" id="gbbIndex"></nav>
+
+<section class="gbb-cover" id="capa">
+  <div class="gbb-wrap">
+    <div class="gbb-eyebrow gbb-rv">Portfólio de produtos · 2026</div>
+    <h1 class="gbb-rv">Beleza capilar<br><span class="thin">que a sua cliente</span><br>já procura.</h1>
+    <p class="sub gbb-rv">Apresentação de portfólio para parceiros de varejo. Cinco linhas, um cuidado completo, do dia a dia ao tratamento intensivo.</p>
+    <div class="gbb-tag gbb-rv">no seu tempo, do seu jeito.</div>
+    <div class="gbb-hero-trio gbb-rv">
+      <img src="https://cdn.shopify.com/s/files/1/0807/8344/2240/files/rose-ritual.png?v=1782175742" alt="Rose Ritual" loading="lazy">
+      <img src="https://cdn.shopify.com/s/files/1/0807/8344/2240/files/pear-fresh.png?v=1782175745" alt="Pear Fresh" loading="lazy">
+      <img src="https://cdn.shopify.com/s/files/1/0807/8344/2240/files/santal-skin.png?v=1782175749" alt="Santal Skin" loading="lazy">
+    </div>
+  </div>
+  <div class="gbb-scroll"><span>role para conhecer</span><span class="arr"></span></div>
+</section>
+
+<section class="gbb-why" id="marca">
+  <div class="gbb-wrap">
+    <div class="gbb-sec-eyebrow gbb-rv">Por que GE Beauty</div>
+    <h2 class="gbb-rv">Uma marca brasileira de beleza capilar, com qualidade premium a um preço que vende.</h2>
+    <p class="lead gbb-rv">Posicionamento masstige: a experiência e o acabamento de uma marca de luxo, na faixa de preço que o varejo brasileiro gira em volume.</p>
+    <div class="gbb-stats gbb-rv">
+      <div class="gbb-stat"><div class="n">5</div><div class="t">linhas: do diário ao tratamento</div></div>
+      <div class="gbb-stat"><div class="n">20<span class="pct">+</span></div><div class="t">produtos ativos no portfólio</div></div>
+      <div class="gbb-stat"><div class="n">2<span class="pct">º</span></div><div class="t">o Brasil é o 2º maior mercado de fragrâncias do mundo</div></div>
+    </div>
+    <div class="gbb-points">
+      <div class="gbb-point gbb-rv"><span class="b"></span><p><b>Portfólio completo.</b> Limpeza, tratamento, finalização e fragrância em uma só marca, simplificando a curadoria do varejo.</p></div>
+      <div class="gbb-point gbb-rv"><span class="b"></span><p><b>Fragrância como assinatura.</b> A experiência sensorial é o que faz a cliente voltar, e a categoria de maior recompra.</p></div>
+      <div class="gbb-point gbb-rv"><span class="b"></span><p><b>Entrada acessível, alto giro.</b> Os boosters de 15 ml são a porta de entrada de categoria com baixo investimento por unidade.</p></div>
+      <div class="gbb-point gbb-rv"><span class="b"></span><p><b>Presença digital e comunidade.</b> Marca com público engajado, conteúdo próprio e prova social ativa.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- NOVIDADES (auto: lancto-tagged) -->
+<section class="gbb-novid" id="novidades">
+  <div class="gbb-wrap">
+    <div class="head gbb-rv">
+      <div>
+        <div class="gbb-sec-eyebrow">Novidades</div>
+        <h2>Acabou de chegar</h2>
+      </div>
+      <p class="hook">Fragrância foi a <b>categoria de beleza que mais cresceu no Brasil</b>. A linha Body &amp; Hair Mist ganhou três novos perfumes para ampliar a sua prateleira de maior recompra.</p>
+    </div>
+    <div class="gbb-grid feature" id="gridNovidades"></div>
+  </div>
+</section>
+
+<main id="gbbMain"></main>
+
+<section class="gbb-cta" id="contato">
+  <div class="gbb-wrap">
+    <h2 class="gbb-rv">Vamos colocar a GE Beauty na sua prateleira.</h2>
+    <p class="gbb-rv">Receba a tabela de atacado, condições comerciais e a proposta de sortimento ideal para o seu canal.</p>
+    <div class="gbb-cta-row gbb-rv">
+      <a class="gbb-btn primary" href="#">Solicitar acesso e condições</a>
+      <button class="gbb-btn ghost" onclick="window.print()">Baixar este portfólio</button>
+    </div>
+  </div>
+</section>
+<footer class="gbb-foot"><b>GE BEAUTY</b> · Preços indicados = preço sugerido de venda ao consumidor (PVS). Condições de atacado sob proposta comercial.</footer>
+<div class="gbb-fab"><button class="gbb-dl" style="display:inline-flex" onclick="window.print()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>PDF</button></div>
+
+<script>
+const CDN = "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/";
+const CDNP = "https://cdn.shopify.com/s/files/1/0807/8344/2240/products/";
+/* PORTFOLIO[] — emitted by _b2b_portfolio_fetch.py from the live registry.
+   prices + images are LIVE (fetched 2026-06-25). soon=true items (Reconstrutora
+   line) are not yet on the store; shown as forthcoming per Lucas. */
+const PORTFOLIO = [
+  { kicker:"Cuidado essencial", name:"Essenciais",
+    sell:"A base de toda rotina. Limpeza que respeita o fio, nutrição profunda e proteção para o dia a dia.",
+    products:[
+      {nm:"Shampoo sem Sulfato", sz:"250 ml", sku:"GEB 001", pvs:"95,00", img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63438.png?v=1776963350", badge:"Best-seller", note:"Limpeza suave, sem ressecar. Para uso frequente em todos os tipos de cabelo."},
+      {nm:"Máscara Condicionadora", sz:"200 ml", sku:"GEB 002", pvs:"95,00", img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63439.png?v=1776963396", badge:"Best-seller", note:"Nutrição profunda que desembaraça e devolve maciez da raiz às pontas."},
+      {nm:"Leave-in com Proteção Térmica", sz:"150 ml", sku:"GEB 003", pvs:"99,00", img:CDN+"leave-in-com-protecao-termica-ge-beauty-150ml.jpg?v=1776716791", badge:"Best-seller", note:"Protege do calor do secador e da chapinha enquanto controla o frizz."},
+      {nm:"Shampoo a Seco", sz:"150 ml", sku:"GEB 008", pvs:"69,00", img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63443.png?v=1776966069", note:"Renova o cabelo entre lavagens. Praticidade que cabe na bolsa."}
+    ]},
+  { kicker:"Tratamento concentrado", name:"Boosters",
+    sell:"Tratamento concentrado em 15 ml. Cada cliente monta o próprio cuidado conforme a necessidade do dia. Tamanho compacto, alto giro e ótima entrada de categoria.",
+    products:[
+      {nm:"Booster Fortificante", sz:"15 ml", sku:"GEB 019", pvs:"75,00", img:CDN+"booster-fortificante-ge-beauty-15ml.jpg?v=1775830122", note:"Para fios fragilizados que pedem mais resistência."},
+      {nm:"Booster Hidratante", sz:"15 ml", sku:"GEB 020", pvs:"69,00", img:CDN+"booster-hidratante-ge-beauty-15ml.jpg?v=1760031172", note:"Reposição intensa de hidratação para cabelos ressecados."},
+      {nm:"Booster Definição", sz:"15 ml", sku:"GEB 021", pvs:"69,00", img:CDN+"booster-definicao-ge-beauty-15ml.jpg?v=1760031167", badge:"Best-seller", note:"Realça e separa os cachos com toque natural."},
+      {nm:"Booster Antifrizz", sz:"15 ml", sku:"GEB 022", pvs:"79,00", img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__8458.jpg?v=1777312269", note:"Sela a cutícula e prolonga o efeito liso e alinhado."},
+      {nm:"Booster Antioxidante", sz:"15 ml", sku:"GEB 023", pvs:"75,00", img:CDN+"booster-antioxidante-ge-beauty-15ml.jpg?v=1760031165", note:"Defesa diária contra os agressores do ambiente."}
+    ]},
+  { kicker:"Preparação e finalização", name:"Styling",
+    sell:"Acabamento profissional em casa. Liso que dura, cachos definidos sem pesar e finalização leve para todos os dias.",
+    products:[
+      {nm:"Primer Cachos Definidos", sz:"250 ml", sku:"GEB 101", pvs:"149,00", img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63444.png?v=1776966207", badge:"Best-seller", note:"Prepara e define os cachos com memória de forma o dia inteiro."},
+      {nm:"Primer Liso Intacto", sz:"150 ml", sku:"GEB 102", pvs:"139,00", img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__85501.png?v=1777296888", badge:"Best-seller", note:"Liso alinhado e protegido, com resistência à umidade."},
+      {nm:"Leave-in Pluma", sz:"200 ml", sku:"GEB 120", pvs:"149,00", img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63442.png?v=1776963587", note:"Finalizador multifuncional. Leveza e potência em um só passo."}
+    ]},
+  { kicker:"Cabelo e corpo", name:"Body & Hair Mist",
+    sell:"Bruma perfumada para cabelo e corpo. Fragrância que permanece e brilho sem peso. A categoria de maior apelo sensorial e recompra do portfólio.",
+    products:[
+      {nm:"Melon Mood", sz:"200 ml", sku:"GEB 024", pvs:"129,00", img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__85503.png?v=1777297009", badge:"Best-seller", note:"Fragrância marcante de melão. Hidrata e perfuma cabelo e corpo."},
+      {nm:"Santal Skin", sz:"200 ml", sku:"GEB 031", pvs:"129,00", img:CDN+"santal-skin.png?v=1782175749", badge:"Novo", novo:true, note:"Sândalo, cardamomo e patchouli. Assinatura amadeirada e envolvente."},
+      {nm:"Rose Ritual", sz:"200 ml", sku:"GEB 032", pvs:"129,00", img:CDN+"rose-ritual.png?v=1782175742", badge:"Novo", novo:true, note:"Rosas, musk e sândalo. Realça o brilho sem pesar e deixa a pele macia."},
+      {nm:"Pear Fresh", sz:"200 ml", sku:"GEB 033", pvs:"129,00", img:CDN+"pear-fresh.png?v=1782175745", badge:"Novo", novo:true, note:"Pêra, frésia e lírio. Frescor leve para o dia."}
+    ]},
+  { kicker:"Reconstrução intensiva", name:"Mayday",
+    sell:"Reconstrução para cabelos que pedem recuperação. A linha mais potente do portfólio, agora em expansão.",
+    products:[
+      {nm:"Máscara Reconstrutora", sz:"200 ml", sku:"GEB 121", pvs:"139,00", img:CDN+"ge-52229.jpg?v=1764683961", note:"Recuperação intensa para cabelos muito danificados."},
+      {nm:"Shampoo Reconstrutor", sz:"em breve", sku:"GEB 122", pvs:null, soon:true, note:"Limpeza que prepara o fio para a reconstrução."},
+      {nm:"Condicionador Reconstrutor", sz:"em breve", sku:"GEB 123", pvs:null, soon:true, note:"Selagem e maciez no passo final do ritual."},
+      {nm:"Leave-in Reconstrutor", sz:"em breve", sku:"GEB 124", pvs:null, soon:true, note:"Proteção e reparo que continuam após o banho."},
+      {nm:"Sérum Reparador Noturno", sz:"em breve", sku:"GEB 126", pvs:null, soon:true, note:"Tratamento intensivo que age enquanto você dorme."},
+      {nm:"Kit Reconstrução", sz:"em breve", sku:"GEB 125", pvs:null, soon:true, badge:"Kit", note:"O ritual completo de reconstrução em um só kit."}
+    ]}
+];
+
+const soonSVG = '<div class="gbb-soonmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>em breve</span></div>';
+const money = v => v ? '<span class="lab">PVS</span><span class="val">R$ '+v+'</span>' : '<span class="lab">PVS</span><span class="val tba">a definir</span>';
+
+function card(p){
+  const shot = p.soon
+    ? `<div class="gbb-shot soon">${p.badge?`<span class="gbb-badge ghost">${p.badge}</span>`:''}${soonSVG}</div>`
+    : `<div class="gbb-shot">${p.badge?`<span class="gbb-badge${p.novo?'':' soft'}">${p.badge}</span>`:''}<img src="${p.img}" alt="${p.nm}" loading="lazy"></div>`;
+  return `<article class="gbb-card" onclick="this.classList.toggle('open')">
+    ${shot}
+    <div class="gbb-cbody">
+      <div class="nm">${p.nm}</div>
+      <div class="sz">${p.sz}${p.soon?'':' · '+p.sku}</div>
+      <div class="gbb-meta"><div class="gbb-pvs">${money(p.pvs)}</div>
+        <span class="gbb-more"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+      </div>
+    </div>
+    <div class="gbb-detail"><div class="gbb-detail-in"><p>${p.note}</p><div class="gbb-spec"><span>${p.sz}</span><span>SKU ${p.sku}</span><span>Validade 36 meses</span></div></div></div>
+  </article>`;
+}
+
+/* novidades = the lancto-tagged set */
+document.getElementById('gridNovidades').innerHTML =
+  PORTFOLIO.flatMap(l=>l.products).filter(p=>p.novo).map(card).join('');
+
+/* line chapters */
+const main = document.getElementById('gbbMain');
+main.innerHTML = PORTFOLIO.map((line,i)=>{
+  const num = String(i+1).padStart(2,'0');
+  return `<section class="gbb-line${i%2?' alt':''}" id="linha-${i}">
+    <div class="gbb-wrap">
+      <div class="gbb-line-head gbb-rv">
+        <div class="gbb-line-num">${num}</div>
+        <div class="gbb-line-titles"><div class="kicker">${line.kicker}</div><h3>${line.name}</h3><p class="gbb-line-sell">${line.sell}</p></div>
+        <div class="gbb-line-count">${line.products.length} produtos</div>
+      </div>
+      <div class="gbb-grid">${line.products.map(card).join('')}</div>
+    </div>
+  </section>`;
+}).join('');
+
+/* line sheet */
+let rows='';
+PORTFOLIO.forEach(line=>{
+  rows+=`<tr class="lrow"><td colspan="4">${line.name}</td></tr>`;
+  line.products.forEach(p=>{ rows+=`<tr><td>${p.nm}</td><td class="sku">${p.sku}</td><td>${p.sz}</td><td>${p.pvs?'R$ '+p.pvs:'a definir'}</td></tr>`; });
+});
+main.innerHTML += `<section class="gbb-sheet" id="tabela"><div class="gbb-wrap">
+  <div class="gbb-sec-eyebrow gbb-rv">Resumo do portfólio</div>
+  <h2 class="gbb-rv">Linha completa e preço sugerido</h2>
+  <p class="note gbb-rv">PVS = preço sugerido de venda ao consumidor. Condições de atacado, sortimento e logística sob proposta comercial.</p>
+  <div class="gbb-table-scroll gbb-rv"><table class="gbb-table"><thead><tr><th>Produto</th><th>SKU</th><th>Tamanho</th><th>PVS</th></tr></thead><tbody>${rows}</tbody></table></div>
+</div></section>`;
+
+/* side index */
+const idx=document.getElementById('gbbIndex');
+const nav=[{id:'marca',label:'A marca'},{id:'novidades',label:'Novidades'}]
+  .concat(PORTFOLIO.map((l,i)=>({id:'linha-'+i,label:l.name})),[{id:'tabela',label:'Portfólio'},{id:'contato',label:'Contato'}]);
+idx.innerHTML=nav.map(n=>`<a href="#${n.id}" data-t="${n.id}"><span class="lbl">${n.label}</span><span class="dot"></span></a>`).join('');
+
+/* progress + topbar */
+const prog=document.getElementById('gbbProgress'),topbar=document.getElementById('gbbTopbar');
+function onScroll(){const h=document.documentElement.scrollHeight-window.innerHeight;prog.style.width=(window.scrollY/h*100)+'%';topbar.classList.toggle('solid',window.scrollY>40);}
+window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+/* reveal */
+const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12,rootMargin:'0px 0px -8% 0px'});
+document.querySelectorAll('.gbb-rv').forEach(el=>io.observe(el));
+
+/* spy */
+const links=[...idx.querySelectorAll('a')];
+const spy=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.dataset.t===e.target.id));}});},{threshold:.4});
+nav.map(n=>document.getElementById(n.id)).filter(Boolean).forEach(t=>spy.observe(t));
+</script>
+</body>
+</html>
