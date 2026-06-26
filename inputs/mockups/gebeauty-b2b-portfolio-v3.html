@@ -46,14 +46,14 @@ img{max-width:100%;display:block}
 .gbb-dl:hover{transform:translateY(-1px);background:var(--ge-red);border-color:var(--ge-red)}
 .gbb-dl svg{width:14px;height:14px}
 
-.gbb-index{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:11px;align-items:flex-end}
+.gbb-index{position:fixed;right:12px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:11px;align-items:flex-end}
 .gbb-index a{text-decoration:none;color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.05em;display:flex;align-items:center;gap:9px;opacity:.5;transition:opacity .2s,color .2s}
 .gbb-index a .dot{width:7px;height:7px;border-radius:50%;background:currentColor;transition:transform .2s}
 .gbb-index a .lbl{opacity:0;transform:translateX(6px);transition:opacity .2s,transform .2s;white-space:nowrap}
 .gbb-index a:hover{opacity:1}.gbb-index a:hover .lbl{opacity:1;transform:none}
 .gbb-index a.active{color:var(--ge-red);opacity:1}
 .gbb-index a.active .dot{transform:scale(1.7)}
-.gbb-index a.active .lbl{opacity:1;transform:none}
+.gbb-index.scrolling a .lbl{opacity:1;transform:none}
 
 .gbb-rv{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
 .gbb-rv.in{opacity:1;transform:none}
@@ -176,12 +176,14 @@ img{max-width:100%;display:block}
 .gbb-sheet{padding:96px 0;border-top:1px solid var(--line);background:var(--bone)}
 .gbb-sheet h2{font-weight:700;font-size:clamp(26px,4vw,44px);letter-spacing:-.015em}
 .gbb-sheet .note{font-size:13.5px;color:var(--muted);margin-top:12px;max-width:640px}
-.gbb-table-scroll{overflow-x:auto;margin-top:32px}
+.gbb-table-scroll{overflow-x:auto;margin-top:32px;padding:0 24px}
 table.gbb-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
 table.gbb-table th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:10px 12px;border-bottom:2px solid var(--ink)}
 table.gbb-table td{padding:11px 12px;border-bottom:1px solid var(--line)}
 table.gbb-table tr td:last-child,table.gbb-table tr th:last-child{text-align:right;font-weight:700;white-space:nowrap}
-table.gbb-table .lrow td{background:#fff;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:11.5px;color:var(--ge-red)}
+table.gbb-table th.num{text-align:right}
+table.gbb-table td.num{text-align:right;font-weight:700;white-space:nowrap}
+table.gbb-table .lrow td{background:#fff;font-weight:700;letter-spacing:.02em;font-size:16px;color:var(--ge-red);text-align:left!important}
 table.gbb-table .sku{color:var(--muted);font-variant-numeric:tabular-nums}
 
 /* CTA */
@@ -386,40 +388,47 @@ const CDN="https://cdn.shopify.com/s/files/1/0807/8344/2240/files/";
 const PORTFOLIO=[
   { kicker:"Cuidado essencial", name:"Essenciais", sell:"A base de toda rotina. Limpeza que respeita o fio, nutrição profunda e proteção para o dia a dia.",
     products:[
-      {nm:"Shampoo sem Sulfato",sz:"250 ml",sku:"GEB 001",pvs:"95,00",img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63438.png?v=1776963350",badge:"Best-seller",note:"Limpeza suave, sem ressecar. Para uso frequente em todos os tipos de cabelo."},
-      {nm:"Máscara Condicionadora",sz:"200 ml",sku:"GEB 002",pvs:"95,00",img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63439.png?v=1776963396",badge:"Best-seller",note:"Nutrição profunda que desembaraça e devolve maciez da raiz às pontas."},
-      {nm:"Leave-in com Proteção Térmica",sz:"150 ml",sku:"GEB 003",pvs:"99,00",img:CDN+"leave-in-com-protecao-termica-ge-beauty-150ml.jpg?v=1776716791",badge:"Best-seller",note:"Protege do calor do secador e da chapinha enquanto controla o frizz."},
-      {nm:"Shampoo a Seco",sz:"150 ml",sku:"GEB 008",pvs:"69,00",img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63443.png?v=1776966069",note:"Renova o cabelo entre lavagens. Praticidade que cabe na bolsa."}
+      {nm:"Shampoo sem Sulfato",sz:"250 ml",sku:"GEB 001",pvs:"95,00",upc:36,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63438.png?v=1776963350",badge:"Best-seller",note:"Limpeza suave, sem ressecar. Para uso frequente em todos os tipos de cabelo."},
+      {nm:"Máscara Condicionadora",sz:"200 ml",sku:"GEB 002",pvs:"95,00",upc:36,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63439.png?v=1776963396",badge:"Best-seller",note:"Nutrição profunda que desembaraça e devolve maciez da raiz às pontas."},
+      {nm:"Leave-in com Proteção Térmica",sz:"150 ml",sku:"GEB 003",pvs:"99,00",upc:36,img:CDN+"leave-in-com-protecao-termica-ge-beauty-150ml.jpg?v=1776716791",badge:"Best-seller",note:"Protege do calor do secador e da chapinha enquanto controla o frizz."},
+      {nm:"Shampoo a Seco",sz:"150 ml",sku:"GEB 008",pvs:"69,00",upc:20,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63443.png?v=1776966069",note:"Renova o cabelo entre lavagens. Praticidade que cabe na bolsa."}
     ]},
   { kicker:"Tratamento concentrado", name:"Boosters", sell:"Tratamento concentrado em 15 ml. Cada cliente monta o próprio cuidado conforme a necessidade do dia. Tamanho compacto, alto giro e ótima entrada de categoria.",
     products:[
-      {nm:"Booster Fortificante",sz:"15 ml",sku:"GEB 019",pvs:"75,00",img:CDN+"booster-fortificante-ge-beauty-15ml.jpg?v=1775830122",note:"Para fios fragilizados que pedem mais resistência."},
-      {nm:"Booster Hidratante",sz:"15 ml",sku:"GEB 020",pvs:"69,00",img:CDN+"booster-hidratante-ge-beauty-15ml.jpg?v=1760031172",note:"Reposição intensa de hidratação para cabelos ressecados."},
-      {nm:"Booster Definição",sz:"15 ml",sku:"GEB 021",pvs:"69,00",img:CDN+"booster-definicao-ge-beauty-15ml.jpg?v=1760031167",badge:"Best-seller",note:"Realça e separa os cachos com toque natural."},
-      {nm:"Booster Antifrizz",sz:"15 ml",sku:"GEB 022",pvs:"79,00",img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__8458.jpg?v=1777312269",note:"Sela a cutícula e prolonga o efeito liso e alinhado."},
-      {nm:"Booster Antioxidante",sz:"15 ml",sku:"GEB 023",pvs:"75,00",img:CDN+"booster-antioxidante-ge-beauty-15ml.jpg?v=1760031165",note:"Defesa diária contra os agressores do ambiente."}
+      {nm:"Booster Fortificante",sz:"15 ml",sku:"GEB 019",pvs:"75,00",upc:260,img:CDN+"booster-fortificante-ge-beauty-15ml.jpg?v=1775830122",note:"Para fios fragilizados que pedem mais resistência."},
+      {nm:"Booster Hidratante",sz:"15 ml",sku:"GEB 020",pvs:"69,00",upc:260,img:CDN+"booster-hidratante-ge-beauty-15ml.jpg?v=1760031172",note:"Reposição intensa de hidratação para cabelos ressecados."},
+      {nm:"Booster Definição",sz:"15 ml",sku:"GEB 021",pvs:"69,00",upc:260,img:CDN+"booster-definicao-ge-beauty-15ml.jpg?v=1760031167",badge:"Best-seller",note:"Realça e separa os cachos com toque natural."},
+      {nm:"Booster Antifrizz",sz:"15 ml",sku:"GEB 022",pvs:"79,00",upc:260,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__8458.jpg?v=1777312269",note:"Sela a cutícula e prolonga o efeito liso e alinhado."},
+      {nm:"Booster Antioxidante",sz:"15 ml",sku:"GEB 023",pvs:"75,00",upc:260,img:CDN+"booster-antioxidante-ge-beauty-15ml.jpg?v=1760031165",note:"Defesa diária contra os agressores do ambiente."}
     ]},
   { kicker:"Preparação e finalização", name:"Styling", sell:"Acabamento profissional em casa. Liso que dura, cachos definidos sem pesar e finalização leve para todos os dias.",
     products:[
-      {nm:"Primer Cachos Definidos",sz:"250 ml",sku:"GEB 101",pvs:"149,00",img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63444.png?v=1776966207",badge:"Best-seller",note:"Prepara e define os cachos com memória de forma o dia inteiro."},
-      {nm:"Primer Liso Intacto",sz:"150 ml",sku:"GEB 102",pvs:"139,00",img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__85501.png?v=1777296888",badge:"Best-seller",note:"Liso alinhado e protegido, com resistência à umidade."},
-      {nm:"Leave-in Pluma",sz:"200 ml",sku:"GEB 120",pvs:"149,00",img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63442.png?v=1776963587",note:"Finalizador multifuncional. Leveza e potência em um só passo."}
+      {nm:"Primer Cachos Definidos",sz:"250 ml",sku:"GEB 101",pvs:"149,00",upc:12,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63444.png?v=1776966207",badge:"Best-seller",note:"Prepara e define os cachos com memória de forma o dia inteiro."},
+      {nm:"Primer Liso Intacto",sz:"150 ml",sku:"GEB 102",pvs:"139,00",upc:12,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__85501.png?v=1777296888",badge:"Best-seller",note:"Liso alinhado e protegido, com resistência à umidade."},
+      {nm:"Leave-in Pluma",sz:"200 ml",sku:"GEB 120",pvs:"149,00",upc:12,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63442.png?v=1776963587",note:"Finalizador multifuncional. Leveza e potência em um só passo."}
     ]},
   { kicker:"Cabelo e corpo", name:"Body & Hair Mist", sell:"Bruma perfumada para cabelo e corpo. Fragrância que permanece e brilho sem peso. A categoria de maior apelo sensorial e recompra do portfólio.",
     products:[
-      {nm:"Melon Mood",sz:"200 ml",sku:"GEB 024",pvs:"129,00",img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__85503.png?v=1777297009",badge:"Best-seller",note:"Fragrância marcante de melão. Hidrata e perfuma cabelo e corpo."},
-      {nm:"Santal Skin",sz:"200 ml",sku:"GEB 031",pvs:"129,00",img:CDN+"santal-skin.png?v=1782175749",badge:"Novo",novo:true,note:"Sândalo, cardamomo e patchouli. Assinatura amadeirada e envolvente."},
-      {nm:"Rose Ritual",sz:"200 ml",sku:"GEB 032",pvs:"129,00",img:CDN+"rose-ritual.png?v=1782175742",badge:"Novo",novo:true,note:"Rosas, musk e sândalo. Realça o brilho sem pesar e deixa a pele macia."},
-      {nm:"Pear Fresh",sz:"200 ml",sku:"GEB 033",pvs:"129,00",img:CDN+"pear-fresh.png?v=1782175745",badge:"Novo",novo:true,note:"Pêra, frésia e lírio. Frescor leve para o dia."}
+      {nm:"Melon Mood",sz:"200 ml",sku:"GEB 024",pvs:"129,00",upc:36,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__85503.png?v=1777297009",badge:"Best-seller",note:"Fragrância marcante de melão. Hidrata e perfuma cabelo e corpo."},
+      {nm:"Santal Skin",sz:"200 ml",sku:"GEB 031",pvs:"129,00",upc:36,img:CDN+"santal-skin.png?v=1782175749",badge:"Novo",novo:true,note:"Sândalo, cardamomo e patchouli. Assinatura amadeirada e envolvente."},
+      {nm:"Rose Ritual",sz:"200 ml",sku:"GEB 032",pvs:"129,00",upc:36,img:CDN+"rose-ritual.png?v=1782175742",badge:"Novo",novo:true,note:"Rosas, musk e sândalo. Realça o brilho sem pesar e deixa a pele macia."},
+      {nm:"Pear Fresh",sz:"200 ml",sku:"GEB 033",pvs:"129,00",upc:36,img:CDN+"pear-fresh.png?v=1782175745",badge:"Novo",novo:true,note:"Pêra, frésia e lírio. Frescor leve para o dia."}
     ]},
-  { kicker:"Reconstrução intensiva", name:"Mayday", sell:"Reconstrução para cabelos que pedem recuperação. A linha mais potente do portfólio, agora em expansão.",
+  { kicker:"Reconstrução intensiva", name:"Linha Reconstrutora - Mayday", sell:"Reconstrução para cabelos que pedem recuperação. A linha mais potente do portfólio, agora em expansão.",
     products:[
-      {nm:"Máscara Reconstrutora",sz:"200 ml",sku:"GEB 121",pvs:"139,00",img:CDN+"ge-52229.jpg?v=1764683961",note:"Recuperação intensa para cabelos muito danificados."},
+      {nm:"Máscara Reconstrutora",sz:"200 ml",sku:"GEB 121",pvs:"139,00",upc:9,img:CDN+"ge-52229.jpg?v=1764683961",note:"Recuperação intensa para cabelos muito danificados."},
       {nm:"Shampoo Reconstrutor",sz:"em breve",sku:"GEB 122",pvs:null,soon:true,note:"Limpeza que prepara o fio para a reconstrução."},
       {nm:"Condicionador Reconstrutor",sz:"em breve",sku:"GEB 123",pvs:null,soon:true,note:"Selagem e maciez no passo final do ritual."},
       {nm:"Leave-in Reconstrutor",sz:"em breve",sku:"GEB 124",pvs:null,soon:true,note:"Proteção e reparo que continuam após o banho."},
       {nm:"Sérum Reparador Noturno",sz:"em breve",sku:"GEB 126",pvs:null,soon:true,note:"Tratamento intensivo que age enquanto você dorme."},
       {nm:"Kit Reconstrução",sz:"em breve",sku:"GEB 125",pvs:null,soon:true,badge:"Kit",note:"O ritual completo de reconstrução em um só kit."}
+    ]},
+  { kicker:"Tamanho viagem", name:"Travel Size", sell:"Os heróis da marca em formato de bolsa. Ideais para presentear, experimentar e girar no PDV com baixo investimento por unidade.",
+    products:[
+      {nm:"Shampoo sem Sulfato",sz:"60 ml",sku:"GEB 013",pvs:"40,00",upc:49,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__85504.png?v=1777297074",note:"O best-seller de limpeza em formato de viagem."},
+      {nm:"Máscara Condicionadora",sz:"50 ml",sku:"GEB 010",pvs:"40,00",upc:49,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__85502.png?v=1777296959",note:"Nutrição essencial para levar a qualquer lugar."},
+      {nm:"Leave-in com Proteção Térmica",sz:"50 ml",sku:"GEB 011",pvs:"47,00",upc:49,img:CDN+"leave-in-com-protecao-termica-travel-size.png?v=1760031261",note:"Proteção térmica no tamanho que cabe na bolsa."},
+      {nm:"Melon Mood Mini",sz:"mini",sku:"GEB 029",pvs:"79,00",upc:36,img:CDN+"melon-mood_travel-size.png?v=1776708533",note:"A fragrância best-seller em versão mini."}
     ]}
 ];
 const soonSVG='<div class="gbb-soonmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>em breve</span></div>';
@@ -441,11 +450,11 @@ main.innerHTML=PORTFOLIO.map((line,i)=>`<section class="gbb-line${i%2?' alt':''}
     <div class="gbb-line-count">${line.products.length} produtos</div></div>
   <div class="gbb-grid">${line.products.map(card).join('')}</div></div></section>`).join('');
 let rows='';
-PORTFOLIO.forEach(line=>{rows+=`<tr class="lrow"><td colspan="4">${line.name}</td></tr>`;line.products.forEach(p=>{rows+=`<tr><td>${p.nm}</td><td class="sku">${p.sku}</td><td>${p.sz}</td><td>${p.pvs?'R$ '+p.pvs:'a definir'}</td></tr>`;});});
+PORTFOLIO.forEach(line=>{rows+=`<tr class="lrow"><td colspan="5">${line.name}</td></tr>`;line.products.forEach(p=>{rows+=`<tr><td>${p.nm}</td><td class="sku">${p.sku}</td><td>${p.sz}</td><td class="num">${p.pvs?'R$ '+p.pvs:'a definir'}</td><td class="num">${p.upc||'—'}</td></tr>`;});});
 main.innerHTML+=`<section class="gbb-sheet" id="tabela"><div class="gbb-wrap"><div class="gbb-sec-eyebrow gbb-rv">Resumo do portfólio</div>
   <h2 class="gbb-rv">Linha completa e preço sugerido</h2>
   <p class="note gbb-rv">PVS = preço sugerido de venda ao consumidor. Condições de atacado, sortimento e logística sob proposta comercial.</p>
-  <div class="gbb-table-scroll gbb-rv"><table class="gbb-table"><thead><tr><th>Produto</th><th>SKU</th><th>Tamanho</th><th>PVS</th></tr></thead><tbody>${rows}</tbody></table></div></div></section>`;
+  <div class="gbb-table-scroll gbb-rv"><table class="gbb-table"><thead><tr><th>Produto</th><th>SKU</th><th>Volume</th><th class="num">Preço sugerido</th><th class="num">Un/Caixa</th></tr></thead><tbody>${rows}</tbody></table></div></div></section>`;
 
 const idx=document.getElementById('gbbIndex');
 const nav=[{id:'diferencial',label:'Diferencial'},{id:'marca',label:'Posicionamento'},{id:'fundadora',label:'Fundadora'},{id:'mercado',label:'Mercado'},{id:'novidades',label:'Novidades'}]
@@ -455,6 +464,7 @@ idx.innerHTML=nav.map(n=>`<a href="#${n.id}" data-t="${n.id}"><span class="lbl">
 const prog=document.getElementById('gbbProgress'),topbar=document.getElementById('gbbTopbar');
 function onScroll(){const h=document.documentElement.scrollHeight-window.innerHeight;prog.style.width=(window.scrollY/h*100)+'%';topbar.classList.toggle('solid',window.scrollY>40);}
 window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+let gbbScrollTimer;window.addEventListener('scroll',()=>{idx.classList.add('scrolling');clearTimeout(gbbScrollTimer);gbbScrollTimer=setTimeout(()=>idx.classList.remove('scrolling'),900);},{passive:true});
 const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12,rootMargin:'0px 0px -8% 0px'});
 document.querySelectorAll('.gbb-rv').forEach(el=>io.observe(el));
 const links=[...idx.querySelectorAll('a')];
