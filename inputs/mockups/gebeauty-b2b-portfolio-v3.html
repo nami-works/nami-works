@@ -41,8 +41,7 @@ img{max-width:100%;display:block}
 .gbb-progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--ge-red);z-index:60;transition:width .12s linear}
 .gbb-topbar{position:fixed;top:0;left:0;right:0;height:58px;z-index:55;display:flex;align-items:center;justify-content:space-between;padding:0 24px;transition:background .25s,box-shadow .25s}
 .gbb-topbar.solid{background:rgba(255,255,255,.93);box-shadow:0 1px 0 var(--line)}
-.gbb-wordmark{font-weight:700;letter-spacing:.14em;font-size:14px}
-.gbb-wordmark b{color:var(--ge-red)}
+.gbb-logo{height:26px;width:auto;display:block}
 .gbb-dl{appearance:none;border:1px solid var(--ink);background:var(--ink);color:#fff;font:inherit;font-size:12.5px;font-weight:700;letter-spacing:.04em;padding:9px 15px;border-radius:999px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:transform .15s,background .15s}
 .gbb-dl:hover{transform:translateY(-1px);background:var(--ge-red);border-color:var(--ge-red)}
 .gbb-dl svg{width:14px;height:14px}
@@ -60,20 +59,16 @@ img{max-width:100%;display:block}
 .gbb-rv.in{opacity:1;transform:none}
 .gbb-sec-eyebrow{font-size:12px;font-weight:700;letter-spacing:.22em;color:var(--ge-red);text-transform:uppercase;margin-bottom:18px}
 
-/* COVER */
-.gbb-cover{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:120px 28px 90px;position:relative;overflow:hidden;background:radial-gradient(120% 80% at 85% 8%,rgba(223,55,47,.10),transparent 55%),linear-gradient(180deg,#fff,var(--bone))}
-.gbb-cover .gbb-wrap{width:100%}
+/* COVER — single screen: text left / portfolio right, blended with a gradient */
+.gbb-cover{min-height:100vh;display:flex;align-items:center;padding:84px 0 52px;position:relative;overflow:hidden;background:radial-gradient(85% 75% at 95% 45%,rgba(223,55,47,.13),transparent 60%),linear-gradient(115deg,#fff 0%,var(--bone) 55%,#f3e7e4 100%)}
+.gbb-cover-grid{max-width:var(--maxw);margin:0 auto;padding:0 28px;width:100%;display:grid;grid-template-columns:1fr 1.12fr;gap:36px;align-items:center}
 .gbb-eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.28em;color:var(--ge-red);text-transform:uppercase}
-.gbb-cover h1{font-weight:700;letter-spacing:-.02em;font-size:clamp(42px,8vw,104px);line-height:.96;margin:22px 0 0}
+.gbb-cover h1{font-weight:700;letter-spacing:-.02em;font-size:clamp(36px,4.6vw,66px);line-height:1;margin:20px 0 0}
 .gbb-cover h1 .thin{font-weight:300}
-.gbb-cover .sub{font-size:clamp(16px,2.2vw,22px);color:var(--muted);margin-top:26px;max-width:560px}
-.gbb-tag{margin-top:38px;font-style:italic;font-size:clamp(16px,2vw,20px)}
+.gbb-cover .sub{font-size:clamp(15px,1.4vw,19px);color:var(--muted);margin-top:24px;max-width:460px}
+.gbb-tag{margin-top:30px;font-style:italic;font-size:clamp(16px,1.4vw,20px)}
 .gbb-tag::before{content:"";display:inline-block;width:34px;height:1.5px;background:var(--ge-red);vertical-align:middle;margin-right:12px}
-.gbb-hero-portfolio{margin-top:46px;max-width:900px}
-.gbb-hero-portfolio img{width:100%;height:auto;display:block;border-radius:14px}
-.gbb-scroll{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:8px}
-.gbb-scroll .arr{width:1px;height:32px;background:linear-gradient(var(--muted),transparent);animation:gbbpulse 1.8s ease-in-out infinite}
-@keyframes gbbpulse{0%,100%{opacity:.3;transform:scaleY(.6)}50%{opacity:1;transform:scaleY(1)}}
+.gbb-cover-art img{width:100%;height:auto;display:block;-webkit-mask-image:linear-gradient(105deg,transparent 2%,#000 30%,#000 100%);mask-image:linear-gradient(105deg,transparent 2%,#000 30%,#000 100%)}
 
 /* O DIFERENCIAL — 4 pillars */
 .gbb-diff{padding:104px 0 92px;border-top:1px solid var(--line)}
@@ -215,7 +210,9 @@ table.gbb-table .sku{color:var(--muted);font-variant-numeric:tabular-nums}
   .gbb-points,.gbb-retail-grid,.gbb-founder-grid,.gbb-proof .market{grid-template-columns:1fr}
   .gbb-founder-grid{gap:30px}
   .gbb-dl{display:none}.gbb-fab{display:block}
-  .gbb-hero-portfolio{max-width:none}
+  .gbb-cover{min-height:auto;padding:92px 0 44px}
+  .gbb-cover-grid{grid-template-columns:1fr;gap:26px}
+  .gbb-cover-art img{-webkit-mask-image:none;mask-image:none;border-radius:14px}
 }
 
 @media print{
@@ -236,23 +233,24 @@ table.gbb-table .sku{color:var(--muted);font-variant-numeric:tabular-nums}
 <body>
 <div class="gbb-progress" id="gbbProgress"></div>
 <header class="gbb-topbar" id="gbbTopbar">
-  <div class="gbb-wordmark">GE <b>BEAUTY</b></div>
+  <img class="gbb-logo" src="assets/ge-beauty-logo.webp" alt="GE Beauty">
   <button class="gbb-dl" onclick="window.print()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Baixar portfólio (PDF)</button>
 </header>
 <nav class="gbb-index" id="gbbIndex"></nav>
 
 <!-- COVER -->
 <section class="gbb-cover" id="capa">
-  <div class="gbb-wrap">
-    <div class="gbb-eyebrow gbb-rv">Portfólio de produtos · 2026</div>
-    <h1 class="gbb-rv">Beleza capilar<br><span class="thin">que a sua cliente</span><br>já procura.</h1>
-    <p class="sub gbb-rv">Apresentação de portfólio para parceiros de varejo. Cinco linhas, um cuidado completo, do dia a dia ao tratamento intensivo.</p>
-    <div class="gbb-tag gbb-rv">no seu tempo, do seu jeito.</div>
-    <div class="gbb-hero-portfolio gbb-rv">
-      <img src="assets/portfolio_26-06-22.webp" alt="Portfólio completo GE Beauty" loading="lazy">
+  <div class="gbb-cover-grid">
+    <div class="gbb-cover-text">
+      <div class="gbb-eyebrow gbb-rv">Portfólio de produtos · 2026</div>
+      <h1 class="gbb-rv">Beleza capilar<br><span class="thin">que a sua cliente</span><br>já procura.</h1>
+      <p class="sub gbb-rv">Apresentação de portfólio para parceiros de varejo. Cinco linhas, um cuidado completo, do dia a dia ao tratamento intensivo.</p>
+      <div class="gbb-tag gbb-rv">no seu tempo, do seu jeito.</div>
+    </div>
+    <div class="gbb-cover-art gbb-rv">
+      <img src="assets/portfolio_26-06-22.webp" alt="Portfólio completo GE Beauty" loading="eager">
     </div>
   </div>
-  <div class="gbb-scroll"><span>role para conhecer</span><span class="arr"></span></div>
 </section>
 
 <!-- O DIFERENCIAL -->
