@@ -417,7 +417,7 @@ const PORTFOLIO=[
       {nm:"Rose Ritual",sz:"200 ml",sku:"GEB 032",pvs:"129,00",upc:36,img:CDN+"rose-ritual.png?v=1782175742",badge:"Novo",novo:true,note:"Rosas, musk e sândalo. Realça o brilho sem pesar e deixa a pele macia."},
       {nm:"Pear Fresh",sz:"200 ml",sku:"GEB 033",pvs:"129,00",upc:36,img:CDN+"pear-fresh.png?v=1782175745",badge:"Novo",novo:true,note:"Pêra, frésia e lírio. Frescor leve para o dia."}
     ]},
-  { kicker:"Reconstrução intensiva", name:"Linha Reconstrutora - Mayday", sell:"Reconstrução para cabelos que pedem recuperação. A linha mais potente do portfólio, agora em expansão.",
+  { kicker:"Reconstrução intensiva", name:"Linha Reconstrutora - Mayday", nav:"Linha Reconstrutora", sell:"Reconstrução para cabelos que pedem recuperação. A linha mais potente do portfólio, agora em expansão.",
     products:[
       {nm:"Máscara Reconstrutora",sz:"200 ml",sku:"GEB 121",pvs:"139,00",upc:9,img:CDN+"ge-52229.jpg?v=1764683961",note:"Recuperação intensa para cabelos muito danificados."},
       {nm:"Shampoo Reconstrutor",sz:"em breve",sku:"GEB 122",pvs:null,soon:true,note:"Limpeza que prepara o fio para a reconstrução."},
@@ -460,7 +460,7 @@ main.innerHTML+=`<section class="gbb-sheet" id="tabela"><div class="gbb-wrap"><d
 
 const idx=document.getElementById('gbbIndex');
 const LABELS={diferencial:'Diferencial',marca:'Posicionamento',fundadora:'Fundadora',mercado:'Mercado',novidades:'Novidades',tabela:'Portfólio',parceria:'Parceria',contato:'Contato'};
-const nav=[...document.querySelectorAll('section[id]')].map(s=>{let label=LABELS[s.id];if(!label&&s.id.indexOf('linha-')===0)label=PORTFOLIO[+s.id.split('-')[1]].name;return label?{id:s.id,label}:null;}).filter(Boolean);
+const nav=[...document.querySelectorAll('section[id]')].map(s=>{let label=LABELS[s.id];if(!label&&s.id.indexOf('linha-')===0){const L=PORTFOLIO[+s.id.split('-')[1]];label=L.nav||L.name;}return label?{id:s.id,label}:null;}).filter(Boolean);
 idx.innerHTML=nav.map(n=>`<a href="#${n.id}" data-t="${n.id}"><span class="lbl">${n.label}</span><span class="dot"></span></a>`).join('');
 
 const prog=document.getElementById('gbbProgress'),topbar=document.getElementById('gbbTopbar');
