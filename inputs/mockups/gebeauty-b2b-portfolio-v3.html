@@ -60,7 +60,7 @@ img{max-width:100%;display:block}
 .gbb-sec-eyebrow{font-size:12px;font-weight:700;letter-spacing:.22em;color:var(--ge-red);text-transform:uppercase;margin-bottom:18px}
 
 /* COVER — single screen: text left / portfolio right, blended with a gradient */
-.gbb-cover{min-height:100vh;display:flex;align-items:center;padding:84px 0 52px;position:relative;overflow:hidden;background:radial-gradient(85% 75% at 95% 45%,rgba(223,55,47,.13),transparent 60%),linear-gradient(115deg,#fff 0%,var(--bone) 55%,#f3e7e4 100%)}
+.gbb-cover{min-height:100vh;display:flex;align-items:center;padding:84px 0 52px;position:relative;overflow:hidden;background:radial-gradient(72% 90% at 93% 50%,rgba(223,55,47,.12),transparent 62%),linear-gradient(180deg,#fff 0%,var(--bone) 64%,#f4eae7 100%)}
 .gbb-cover-grid{max-width:var(--maxw);margin:0 auto;padding:0 28px;width:100%;display:grid;grid-template-columns:1fr 1.12fr;gap:36px;align-items:center}
 .gbb-eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.28em;color:var(--ge-red);text-transform:uppercase}
 .gbb-cover h1{font-weight:700;letter-spacing:-.02em;font-size:clamp(36px,4.6vw,66px);line-height:1;margin:20px 0 0}
@@ -68,7 +68,7 @@ img{max-width:100%;display:block}
 .gbb-cover .sub{font-size:clamp(15px,1.4vw,19px);color:var(--muted);margin-top:24px;max-width:460px}
 .gbb-tag{margin-top:30px;font-style:italic;font-size:clamp(16px,1.4vw,20px)}
 .gbb-tag::before{content:"";display:inline-block;width:34px;height:1.5px;background:var(--ge-red);vertical-align:middle;margin-right:12px}
-.gbb-cover-art img{width:100%;height:auto;display:block;-webkit-mask-image:linear-gradient(105deg,transparent 2%,#000 30%,#000 100%);mask-image:linear-gradient(105deg,transparent 2%,#000 30%,#000 100%)}
+.gbb-cover-art img{width:100%;height:auto;display:block;-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 26%,#000 100%);mask-image:linear-gradient(to right,transparent 0%,#000 26%,#000 100%)}
 
 /* O DIFERENCIAL — 4 pillars */
 .gbb-diff{padding:104px 0 92px;border-top:1px solid var(--line)}
@@ -216,17 +216,18 @@ table.gbb-table .sku{color:var(--muted);font-variant-numeric:tabular-nums}
 }
 
 @media print{
-  @page{size:A4;margin:13mm}
+  /* PDF = the exhibited design, one section per page (not a print of the scrolling page).
+     Production: the build script renders this same layout to a real PDF via headless Chrome
+     (printBackground) and the bottom button links to it with `download` for one-click save. */
+  @page{size:A4 landscape;margin:10mm}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  html,body{background:#fff}
   .gbb-progress,.gbb-topbar,.gbb-index,.gbb-scroll,.gbb-fab,.gbb-more,.gbb-cta-row{display:none!important}
-  body{background:#fff}.gbb-rv{opacity:1!important;transform:none!important}
-  .gbb-cover{min-height:auto;padding:0 0 18px;background:#fff;page-break-after:always}.gbb-cover h1{font-size:48px}
-  .gbb-diff,.gbb-why,.gbb-founder,.gbb-proof,.gbb-novid,.gbb-retail{padding:16px 0;background:#fff!important;color:#000!important;page-break-inside:avoid}
-  .gbb-proof .gbb-mkt .t,.gbb-proof h2{color:#000}.gbb-bn{border-color:#bbb}
-  .gbb-line{padding:0 0 8px;border-top:0;background:#fff!important;page-break-before:always}
-  .gbb-line .gbb-grid,.gbb-novid .gbb-grid{display:none}
-  .gbb-sheet{background:#fff;padding:0;page-break-before:always}
-  .gbb-cta{background:#fff;color:#000;padding:22px 0}.gbb-cta h2,.gbb-cta p{color:#000}.gbb-cta .gbb-btn.primary{color:#000;border:1px solid #000}
-  .gbb-foot{background:#fff;color:#000;border-top:1px solid #ccc}
+  .gbb-rv{opacity:1!important;transform:none!important}
+  section{page-break-before:always;break-before:page}
+  #capa{page-break-before:auto;break-before:auto;min-height:auto}
+  .gbb-cover-art img{-webkit-mask-image:none;mask-image:none}
+  .gbb-card{break-inside:avoid}
 }
 </style>
 </head>
@@ -234,7 +235,6 @@ table.gbb-table .sku{color:var(--muted);font-variant-numeric:tabular-nums}
 <div class="gbb-progress" id="gbbProgress"></div>
 <header class="gbb-topbar" id="gbbTopbar">
   <img class="gbb-logo" src="assets/ge-beauty-logo.webp" alt="GE Beauty">
-  <button class="gbb-dl" onclick="window.print()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Baixar portfólio (PDF)</button>
 </header>
 <nav class="gbb-index" id="gbbIndex"></nav>
 
@@ -248,7 +248,7 @@ table.gbb-table .sku{color:var(--muted);font-variant-numeric:tabular-nums}
       <div class="gbb-tag gbb-rv">no seu tempo, do seu jeito.</div>
     </div>
     <div class="gbb-cover-art gbb-rv">
-      <img src="assets/portfolio_26-06-22.webp" alt="Portfólio completo GE Beauty" loading="eager">
+      <img src="assets/portfolio_26-06-22_white-space-left.webp" alt="Portfólio completo GE Beauty" loading="eager">
     </div>
   </div>
 </section>
@@ -381,8 +381,6 @@ table.gbb-table .sku{color:var(--muted);font-variant-numeric:tabular-nums}
   </div>
 </section>
 <footer class="gbb-foot"><b>GE BEAUTY</b> · Preços indicados = preço sugerido de venda ao consumidor (PVS). Condições de atacado sob proposta comercial.</footer>
-<div class="gbb-fab"><button class="gbb-dl" style="display:inline-flex" onclick="window.print()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>PDF</button></div>
-
 <script>
 const CDN="https://cdn.shopify.com/s/files/1/0807/8344/2240/files/";
 const PORTFOLIO=[
