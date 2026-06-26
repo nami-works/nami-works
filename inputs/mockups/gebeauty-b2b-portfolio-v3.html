@@ -69,8 +69,8 @@ img{max-width:100%;display:block}
 .gbb-cover .sub{font-size:clamp(16px,2.2vw,22px);color:var(--muted);margin-top:26px;max-width:560px}
 .gbb-tag{margin-top:38px;font-style:italic;font-size:clamp(16px,2vw,20px)}
 .gbb-tag::before{content:"";display:inline-block;width:34px;height:1.5px;background:var(--ge-red);vertical-align:middle;margin-right:12px}
-.gbb-hero-trio{display:flex;gap:14px;margin-top:50px;max-width:430px}
-.gbb-hero-trio img{flex:1;aspect-ratio:1/1.2;object-fit:contain;background:radial-gradient(120% 100% at 50% 20%,#fff,var(--sand));border-radius:12px;padding:8px}
+.gbb-hero-portfolio{margin-top:46px;max-width:900px}
+.gbb-hero-portfolio img{width:100%;height:auto;display:block;border-radius:14px}
 .gbb-scroll{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:8px}
 .gbb-scroll .arr{width:1px;height:32px;background:linear-gradient(var(--muted),transparent);animation:gbbpulse 1.8s ease-in-out infinite}
 @keyframes gbbpulse{0%,100%{opacity:.3;transform:scaleY(.6)}50%{opacity:1;transform:scaleY(1)}}
@@ -215,7 +215,7 @@ table.gbb-table .sku{color:var(--muted);font-variant-numeric:tabular-nums}
   .gbb-points,.gbb-retail-grid,.gbb-founder-grid,.gbb-proof .market{grid-template-columns:1fr}
   .gbb-founder-grid{gap:30px}
   .gbb-dl{display:none}.gbb-fab{display:block}
-  .gbb-hero-trio{max-width:none}
+  .gbb-hero-portfolio{max-width:none}
 }
 
 @media print{
@@ -248,10 +248,8 @@ table.gbb-table .sku{color:var(--muted);font-variant-numeric:tabular-nums}
     <h1 class="gbb-rv">Beleza capilar<br><span class="thin">que a sua cliente</span><br>já procura.</h1>
     <p class="sub gbb-rv">Apresentação de portfólio para parceiros de varejo. Cinco linhas, um cuidado completo, do dia a dia ao tratamento intensivo.</p>
     <div class="gbb-tag gbb-rv">no seu tempo, do seu jeito.</div>
-    <div class="gbb-hero-trio gbb-rv">
-      <img src="https://cdn.shopify.com/s/files/1/0807/8344/2240/files/rose-ritual.png?v=1782175742" alt="Rose Ritual" loading="lazy">
-      <img src="https://cdn.shopify.com/s/files/1/0807/8344/2240/files/pear-fresh.png?v=1782175745" alt="Pear Fresh" loading="lazy">
-      <img src="https://cdn.shopify.com/s/files/1/0807/8344/2240/files/santal-skin.png?v=1782175749" alt="Santal Skin" loading="lazy">
+    <div class="gbb-hero-portfolio gbb-rv">
+      <img src="assets/portfolio_26-06-22.webp" alt="Portfólio completo GE Beauty" loading="lazy">
     </div>
   </div>
   <div class="gbb-scroll"><span>role para conhecer</span><span class="arr"></span></div>
