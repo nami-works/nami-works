@@ -14,10 +14,22 @@
    (_b2b_portfolio_fetch.py). Namespaced .gbb-*.
    [PLACEHOLDER] marks copy/data Lucas still owns (Camila quote, GE numbers).
    ============================================================ */
+/* DTC font setup, mirrored from the live theme (t/34). Most text = Italian Plate No2
+   Expanded (sans); buttons + small labels/nav = Italian Plate Mono. Files served from the
+   storefront CDN, so this also renders 1:1 once the page lives on the GE store. */
+@font-face{font-family:'Italian Plate No2 Expanded';font-weight:400;font-style:normal;font-display:swap;src:url('https://www.gebeauty.com.br/cdn/shop/t/34/assets/ItalianPlateNo2Expanded-Regular.woff2?v=171365115527056450341761072394') format('woff2')}
+@font-face{font-family:'Italian Plate No2 Expanded';font-weight:500;font-style:normal;font-display:swap;src:url('https://www.gebeauty.com.br/cdn/shop/t/34/assets/ItalianPlateNo2Expanded-Medium.woff2?v=6742387684623827111761072393') format('woff2')}
+@font-face{font-family:'Italian Plate No2 Expanded';font-weight:600;font-style:normal;font-display:swap;src:url('https://www.gebeauty.com.br/cdn/shop/t/34/assets/ItalianPlateNo2Expanded-Demibold.woff2?v=114664203308954651431761072395') format('woff2')}
+@font-face{font-family:'Italian Plate No2 Expanded';font-weight:700;font-style:normal;font-display:swap;src:url('https://www.gebeauty.com.br/cdn/shop/t/34/assets/ItalianPlateNo2Expanded-Bold.woff2?v=120886352148510607001761072395') format('woff2')}
+@font-face{font-family:'Italian Plate No1 Mono';font-weight:400;font-style:normal;font-display:swap;src:url('https://www.gebeauty.com.br/cdn/shop/t/34/assets/ItalianPlateNo1Mono-Regular.woff2?v=118527320043666963301761072394') format('woff2')}
+@font-face{font-family:'Italian Plate No1 Mono';font-weight:700;font-style:normal;font-display:swap;src:url('https://www.gebeauty.com.br/cdn/shop/t/34/assets/ItalianPlateNo1Mono-Bold.woff2?v=66673686109854365841761072394') format('woff2')}
+@font-face{font-family:'Italian Plate No2 Mono';font-weight:400;font-style:normal;font-display:swap;src:url('https://www.gebeauty.com.br/cdn/shop/t/34/assets/ItalianPlateNo2Mono.ttf?v=50371329732231824911761072394') format('truetype')}
 :root{
   --ge-red:#DF372F; --ink:#161616; --muted:#6b6b6b; --paper:#fff;
   --bone:#f5f2ee; --sand:#efe9e1; --line:#e7e2da; --maxw:1180px;
-  --font-display:"Italian Plate No1","Helvetica Neue",-apple-system,Segoe UI,Arial,sans-serif;
+  --font-display:'Italian Plate No2 Expanded','Assistant','Helvetica Neue',-apple-system,Segoe UI,Arial,sans-serif;
+  --font-mono:'Italian Plate No1 Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --font-label:'Italian Plate No2 Mono',ui-monospace,Menlo,monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -29,7 +41,7 @@ img{max-width:100%;display:block}
 .gbb-progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--ge-red);z-index:60;transition:width .12s linear}
 .gbb-topbar{position:fixed;top:0;left:0;right:0;height:58px;z-index:55;display:flex;align-items:center;justify-content:space-between;padding:0 24px;transition:background .25s,box-shadow .25s}
 .gbb-topbar.solid{background:rgba(255,255,255,.93);box-shadow:0 1px 0 var(--line)}
-.gbb-wordmark{font-weight:800;letter-spacing:.14em;font-size:14px}
+.gbb-wordmark{font-weight:700;letter-spacing:.14em;font-size:14px}
 .gbb-wordmark b{color:var(--ge-red)}
 .gbb-dl{appearance:none;border:1px solid var(--ink);background:var(--ink);color:#fff;font:inherit;font-size:12.5px;font-weight:700;letter-spacing:.04em;padding:9px 15px;border-radius:999px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:transform .15s,background .15s}
 .gbb-dl:hover{transform:translateY(-1px);background:var(--ge-red);border-color:var(--ge-red)}
@@ -52,7 +64,7 @@ img{max-width:100%;display:block}
 .gbb-cover{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:120px 28px 90px;position:relative;overflow:hidden;background:radial-gradient(120% 80% at 85% 8%,rgba(223,55,47,.10),transparent 55%),linear-gradient(180deg,#fff,var(--bone))}
 .gbb-cover .gbb-wrap{width:100%}
 .gbb-eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.28em;color:var(--ge-red);text-transform:uppercase}
-.gbb-cover h1{font-weight:800;letter-spacing:-.02em;font-size:clamp(42px,8vw,104px);line-height:.96;margin:22px 0 0}
+.gbb-cover h1{font-weight:700;letter-spacing:-.02em;font-size:clamp(42px,8vw,104px);line-height:.96;margin:22px 0 0}
 .gbb-cover h1 .thin{font-weight:300}
 .gbb-cover .sub{font-size:clamp(16px,2.2vw,22px);color:var(--muted);margin-top:26px;max-width:560px}
 .gbb-tag{margin-top:38px;font-style:italic;font-size:clamp(16px,2vw,20px)}
@@ -65,7 +77,7 @@ img{max-width:100%;display:block}
 
 /* O DIFERENCIAL — 4 pillars */
 .gbb-diff{padding:104px 0 92px;border-top:1px solid var(--line)}
-.gbb-diff h2{font-weight:800;font-size:clamp(28px,4.4vw,52px);line-height:1.05;letter-spacing:-.015em;max-width:760px}
+.gbb-diff h2{font-weight:700;font-size:clamp(28px,4.4vw,52px);line-height:1.05;letter-spacing:-.015em;max-width:760px}
 .gbb-diff-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:50px}
 .gbb-pillar{padding:22px;border:1px solid var(--line);border-radius:16px;background:var(--paper);transition:transform .25s,box-shadow .25s}
 .gbb-pillar:hover{transform:translateY(-4px);box-shadow:0 18px 40px -24px rgba(22,22,22,.4)}
@@ -75,7 +87,7 @@ img{max-width:100%;display:block}
 
 /* POSICIONAMENTO / WHY */
 .gbb-why{padding:100px 0 88px;background:var(--bone);border-top:1px solid var(--line)}
-.gbb-why h2{font-weight:800;font-size:clamp(28px,4.4vw,52px);line-height:1.05;letter-spacing:-.015em;max-width:800px}
+.gbb-why h2{font-weight:700;font-size:clamp(28px,4.4vw,52px);line-height:1.05;letter-spacing:-.015em;max-width:800px}
 .gbb-why .lead{font-size:clamp(16px,1.9vw,19px);color:var(--muted);max-width:660px;margin-top:22px}
 .gbb-points{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 34px;margin-top:50px}
 .gbb-point{display:flex;gap:14px;align-items:flex-start;padding:6px 0}
@@ -95,21 +107,21 @@ img{max-width:100%;display:block}
 /* PROVA SOCIAL */
 .gbb-proof{padding:100px 0;background:var(--ink);color:#fff}
 .gbb-proof .gbb-sec-eyebrow{color:#ff7a73}
-.gbb-proof h2{font-weight:800;font-size:clamp(26px,4vw,46px);letter-spacing:-.015em;max-width:760px}
+.gbb-proof h2{font-weight:700;font-size:clamp(26px,4vw,46px);letter-spacing:-.015em;max-width:760px}
 .gbb-proof .market{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
 .gbb-mkt{border-top:2px solid var(--ge-red);padding-top:16px}
-.gbb-mkt .n{font-weight:800;font-size:clamp(26px,3.6vw,40px);line-height:1}
+.gbb-mkt .n{font-weight:700;font-size:clamp(26px,3.6vw,40px);line-height:1}
 .gbb-mkt .t{font-size:13.5px;color:#c9c4bd;margin-top:9px}
 .gbb-brandnums{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:40px;padding-top:32px;border-top:1px solid #333}
 .gbb-bn{text-align:center;padding:14px;border:1px dashed #5a4a4a;border-radius:12px}
-.gbb-bn .n{font-weight:800;font-size:22px;color:#ff9a93}
+.gbb-bn .n{font-weight:700;font-size:22px;color:#ff9a93}
 .gbb-bn .t{font-size:12px;color:#9a948c;margin-top:6px}
 .gbb-proof .src{font-size:11.5px;color:#7c766e;margin-top:30px}
 
 /* NOVIDADES */
 .gbb-novid{padding:96px 0;background:linear-gradient(180deg,#fff,var(--bone));border-top:1px solid var(--line)}
 .gbb-novid .head{display:flex;align-items:flex-end;justify-content:space-between;gap:26px;flex-wrap:wrap}
-.gbb-novid h2{font-weight:800;font-size:clamp(30px,5vw,58px);line-height:1;letter-spacing:-.02em}
+.gbb-novid h2{font-weight:700;font-size:clamp(30px,5vw,58px);line-height:1;letter-spacing:-.02em}
 .gbb-novid .hook{max-width:540px;font-size:clamp(15px,1.8vw,18px)}
 .gbb-novid .hook b{color:var(--ge-red)}
 
@@ -117,10 +129,10 @@ img{max-width:100%;display:block}
 .gbb-line{padding:92px 0 88px;border-top:1px solid var(--line)}
 .gbb-line.alt{background:var(--bone)}
 .gbb-line-head{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;flex-wrap:wrap}
-.gbb-line-num{font-weight:800;font-size:clamp(54px,10vw,120px);line-height:.8;color:transparent;-webkit-text-stroke:1.5px var(--ink);opacity:.16}
+.gbb-line-num{font-weight:700;font-size:clamp(54px,10vw,120px);line-height:.8;color:transparent;-webkit-text-stroke:1.5px var(--ink);opacity:.16}
 .gbb-line-titles{flex:1 1 360px}
 .gbb-line-titles .kicker{font-size:12px;font-weight:700;letter-spacing:.2em;color:var(--ge-red);text-transform:uppercase}
-.gbb-line-titles h3{font-weight:800;font-size:clamp(30px,5vw,58px);line-height:1;letter-spacing:-.02em;margin-top:10px}
+.gbb-line-titles h3{font-weight:700;font-size:clamp(30px,5vw,58px);line-height:1;letter-spacing:-.02em;margin-top:10px}
 .gbb-line-sell{max-width:580px;font-size:clamp(15px,1.8vw,18px);margin-top:18px}
 .gbb-line-count{font-size:12.5px;color:var(--muted);white-space:nowrap}
 
@@ -144,7 +156,7 @@ img{max-width:100%;display:block}
 .gbb-cbody .sz{font-size:12.5px;color:var(--muted);margin-top:4px}
 .gbb-meta{margin-top:auto;padding-top:15px;display:flex;align-items:flex-end;justify-content:space-between}
 .gbb-pvs .lab{font-size:10px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
-.gbb-pvs .val{font-weight:800;font-size:20px;margin-top:1px}
+.gbb-pvs .val{font-weight:700;font-size:20px;margin-top:1px}
 .gbb-pvs .val.tba{font-size:13px;font-weight:600;color:var(--muted)}
 .gbb-more{width:31px;height:31px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink);transition:background .2s,color .2s,transform .25s;flex:0 0 auto}
 .gbb-card:hover .gbb-more{background:var(--ink);color:#fff}
@@ -157,7 +169,7 @@ img{max-width:100%;display:block}
 
 /* ESTRATÉGIA DE VAREJO */
 .gbb-retail{padding:104px 0;border-top:1px solid var(--line)}
-.gbb-retail h2{font-weight:800;font-size:clamp(28px,4.4vw,50px);letter-spacing:-.015em;max-width:740px}
+.gbb-retail h2{font-weight:700;font-size:clamp(28px,4.4vw,50px);letter-spacing:-.015em;max-width:740px}
 .gbb-retail .lead{font-size:clamp(15px,1.8vw,18px);color:var(--muted);max-width:620px;margin-top:20px}
 .gbb-retail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:48px}
 .gbb-supp{display:flex;gap:18px;align-items:flex-start;padding:24px;border:1px solid var(--line);border-radius:16px;background:var(--bone)}
@@ -167,7 +179,7 @@ img{max-width:100%;display:block}
 
 /* LINE SHEET */
 .gbb-sheet{padding:96px 0;border-top:1px solid var(--line);background:var(--bone)}
-.gbb-sheet h2{font-weight:800;font-size:clamp(26px,4vw,44px);letter-spacing:-.015em}
+.gbb-sheet h2{font-weight:700;font-size:clamp(26px,4vw,44px);letter-spacing:-.015em}
 .gbb-sheet .note{font-size:13.5px;color:var(--muted);margin-top:12px;max-width:640px}
 .gbb-table-scroll{overflow-x:auto;margin-top:32px}
 table.gbb-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
@@ -179,7 +191,7 @@ table.gbb-table .sku{color:var(--muted);font-variant-numeric:tabular-nums}
 
 /* CTA */
 .gbb-cta{padding:118px 0;background:var(--ge-red);color:#fff;text-align:center}
-.gbb-cta h2{font-weight:800;font-size:clamp(30px,5.5vw,64px);line-height:1.02;letter-spacing:-.02em}
+.gbb-cta h2{font-weight:700;font-size:clamp(30px,5.5vw,64px);line-height:1.02;letter-spacing:-.02em}
 .gbb-cta p{color:rgba(255,255,255,.9);font-size:clamp(15px,2vw,18px);margin:22px auto 0;max-width:520px}
 .gbb-cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:42px}
 .gbb-btn{appearance:none;border:0;font:inherit;font-weight:700;letter-spacing:.03em;font-size:15px;padding:15px 28px;border-radius:999px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:9px;transition:transform .15s}
@@ -189,6 +201,10 @@ table.gbb-table .sku{color:var(--muted);font-variant-numeric:tabular-nums}
 .gbb-foot{padding:42px 0;text-align:center;color:var(--muted);font-size:12.5px;background:var(--ink)}
 .gbb-foot b{color:#fff}
 .gbb-fab{position:fixed;right:18px;bottom:18px;z-index:58;display:none}
+
+/* DTC font combination: Mono cut on buttons/CTAs + small uppercase labels & nav (rest is No2 Expanded sans) */
+.gbb-dl,.gbb-btn{font-family:var(--font-mono)}
+.gbb-eyebrow,.gbb-sec-eyebrow,.kicker,.gbb-index a,.gbb-line-count,.gbb-pvs .lab,.gbb-badge,.gbb-spec span,table.gbb-table th{font-family:var(--font-label)}
 
 @media (max-width:980px){
   .gbb-diff-grid{grid-template-columns:repeat(2,1fr)}
