@@ -54,6 +54,8 @@ img{max-width:100%;display:block}
 .gbb-index a.active{color:var(--ge-red);opacity:1}
 .gbb-index a.active .dot{transform:scale(1.7)}
 .gbb-index.scrolling a .lbl{opacity:1;transform:none}
+.gbb-index:hover a{opacity:1!important;pointer-events:auto!important}
+.gbb-index:hover .lbl{opacity:1;transform:none}
 
 .gbb-rv{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
 .gbb-rv.in{opacity:1;transform:none}
@@ -457,8 +459,8 @@ main.innerHTML+=`<section class="gbb-sheet" id="tabela"><div class="gbb-wrap"><d
   <div class="gbb-table-scroll gbb-rv"><table class="gbb-table"><thead><tr><th>Produto</th><th>SKU</th><th>Volume</th><th class="num">Preço sugerido</th><th class="num">Un/Caixa</th></tr></thead><tbody>${rows}</tbody></table></div></div></section>`;
 
 const idx=document.getElementById('gbbIndex');
-const nav=[{id:'diferencial',label:'Diferencial'},{id:'marca',label:'Posicionamento'},{id:'fundadora',label:'Fundadora'},{id:'mercado',label:'Mercado'},{id:'novidades',label:'Novidades'}]
-  .concat(PORTFOLIO.map((l,i)=>({id:'linha-'+i,label:l.name})),[{id:'parceria',label:'Parceria'},{id:'tabela',label:'Portfólio'},{id:'contato',label:'Contato'}]);
+const LABELS={diferencial:'Diferencial',marca:'Posicionamento',fundadora:'Fundadora',mercado:'Mercado',novidades:'Novidades',tabela:'Portfólio',parceria:'Parceria',contato:'Contato'};
+const nav=[...document.querySelectorAll('section[id]')].map(s=>{let label=LABELS[s.id];if(!label&&s.id.indexOf('linha-')===0)label=PORTFOLIO[+s.id.split('-')[1]].name;return label?{id:s.id,label}:null;}).filter(Boolean);
 idx.innerHTML=nav.map(n=>`<a href="#${n.id}" data-t="${n.id}"><span class="lbl">${n.label}</span><span class="dot"></span></a>`).join('');
 
 const prog=document.getElementById('gbbProgress'),topbar=document.getElementById('gbbTopbar');
@@ -468,8 +470,11 @@ let gbbScrollTimer;window.addEventListener('scroll',()=>{idx.classList.add('scro
 const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12,rootMargin:'0px 0px -8% 0px'});
 document.querySelectorAll('.gbb-rv').forEach(el=>io.observe(el));
 const links=[...idx.querySelectorAll('a')];
-const spy=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.dataset.t===e.target.id));}});},{threshold:.4});
-nav.map(n=>document.getElementById(n.id)).filter(Boolean).forEach(t=>spy.observe(t));
+const OP=[1,.8,.52,.3];
+function setWindow(ai){links.forEach((a,i)=>{a.classList.toggle('active',i===ai);const d=Math.abs(i-ai);a.style.opacity=d>3?'0':OP[d];a.style.pointerEvents=d>3?'none':'';});}
+setWindow(0);
+const spy=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){const i=links.findIndex(a=>a.dataset.t===e.target.id);if(i>=0)setWindow(i);}});},{rootMargin:'-45% 0px -45% 0px',threshold:0});
+nav.forEach(n=>{const el=document.getElementById(n.id);if(el)spy.observe(el);});
 </script>
 </body>
 </html>
