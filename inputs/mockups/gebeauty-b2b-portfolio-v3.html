@@ -149,7 +149,7 @@ img{max-width:100%;display:block}
 .gbb-cbody{padding:16px 17px 18px;display:flex;flex-direction:column;flex:1}
 .gbb-cbody .nm{font-weight:700;font-size:16px;line-height:1.25}
 .gbb-cbody .sz{font-size:12.5px;color:var(--muted);margin-top:4px}
-.gbb-meta{margin-top:auto;padding-top:15px;display:flex;align-items:flex-end;justify-content:space-between}
+.gbb-meta{margin-top:auto;padding-top:15px;display:flex;align-items:center;justify-content:flex-end;gap:14px}
 .gbb-pvs{text-align:right}
 .gbb-pvs .lab{display:block;font-size:10px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
 .gbb-pvs .val{font-weight:700;font-size:20px;margin-top:1px}
@@ -439,8 +439,7 @@ function card(p){
     :`<div class="gbb-shot">${p.badge?`<span class="gbb-badge${p.novo?'':' soft'}">${p.badge}</span>`:''}<img src="${p.img}" alt="${p.nm}" loading="lazy"></div>`;
   return `<article class="gbb-card" onclick="this.classList.toggle('open')">${shot}
     <div class="gbb-cbody"><div class="nm">${p.nm}</div><div class="sz">${p.sz}${p.soon?'':' · '+p.sku}</div>
-      <div class="gbb-meta"><span class="gbb-more"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>
-        <div class="gbb-pvs">${money(p.pvs)}</div></div></div>
+      <div class="gbb-meta"><div class="gbb-pvs">${money(p.pvs)}</div><span class="gbb-more"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></div></div>
     <div class="gbb-detail"><div class="gbb-detail-in"><p>${p.note}</p><div class="gbb-spec"><span>SKU ${p.sku}</span><span>Validade 36 meses</span></div></div></div></article>`;
 }
 document.getElementById('gridNovidades').innerHTML=PORTFOLIO.flatMap(l=>l.products).filter(p=>p.novo).map(card).join('');
