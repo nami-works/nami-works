@@ -109,6 +109,18 @@ is that it is never injected** (the contract flags it as a "theme-level follow-u
 Generated-but-not-injected schema does nothing. Closing this is the #1 roadmap item
 (§7). Until injection ships, still emit the artifact so it's ready.
 
+### Price for AI threshold-matching
+For queries like "shampoo sem sulfato até R$100", an AI needs the price as a structured,
+*current* fact. Expose it the canonical way: **Product + Offer schema (price, priceCurrency
+BRL)** derived live from the catalog, never hardcoded in prose. A price written into
+evergreen article text goes stale and becomes a false claim (the entity-consistency
+failure we reject everywhere else). Two practical points: (1) Shopify already emits
+Product/Offer schema with the live price on every PDP, so linking to the correct
+canonical PDP (which we enforce) already lets AI surface GE within a price threshold;
+(2) when the §7 schema-injection ships, include Product/Offer (with live price) for any
+product a post features. In prose, avoid exact prices; soft signals ("acessível",
+"travel size", "kit") are fine.
+
 ---
 
 ## 6. Keep / Reject (the axis where our method is stronger)

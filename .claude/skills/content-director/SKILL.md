@@ -26,9 +26,10 @@ and the live catalog (via `scripts/catalog_fetch.py`).
   structurally impossible, which is the #1 failure mode of product copy and the
   thing the old crew could only beg the model not to do.
 - **The brand wins.** `references/brand-sources.md` lists the locked rules. The
-  biggest one: **benefit-only language, never technical ingredient names.** This
-  overrides the old crew's "link the main ingredients" instruction. No em dashes.
-  Idiomatic PT. Tagline locked. No miracle claims. Real products only.
+  biggest one: **ingredient-as-proof** (name an active ONLY when bound to its benefit,
+  e.g. "biotina, que fortalece a fibra"; never a bare ingredient list). This replaced
+  the old benefit-only-never-ingredients rule (Lucas, 2026-06-29). No em dashes.
+  Idiomatic PT. Tagline locked. No miracle claims / invented numbers. Real products only.
 - **Research live, don't consume a frozen dict.** The crew needed `keywords.py` /
   `products.py` built offline first. You don't. You research the SERP and
   competitor content live with WebSearch/WebFetch in-session. `keyword_research.py`
@@ -64,7 +65,7 @@ and the live catalog (via `scripts/catalog_fetch.py`).
 | `pdp --brief "<text>"` | Killer product description(s) for one or more products (resolve via catalog). | `--brief` |
 | `research --brief "<text>"` | Keyword + SERP + competitor research only, no writing (handoff to /growth-hacker or planning). | `--brief` |
 | `cluster --brief "<text>"` | Topic-cluster build: one pillar post + N supporting posts on a theme, interlinked, for topical authority (what AI engines reward). | `--brief` |
-| `audit --product <handle>` \| `--post <url>` | Score an existing PDP or post against the contract + brand + AEO rules, output a fix list. Pairs with `gsc_fetch.py` striking-distance. | one target |
+| `audit --post <url>` \| `--product <handle>` \| `--author "<name>"` | Score existing content against [references/eval-rubric.md](references/eval-rubric.md) (5 dimensions, gates-not-averages, verdict PUBLISH/NEEDS-FIX/REJECT). Single target **or batch sweep by author** (e.g. the third-party "Redação GE Beauty" posts). Two layers: deterministic scan + adversarial judge, grounded in the live catalog. Emits per-post scorecards + a batch rollup. | one target or `--author` |
 
 Default UX is the brief-driven loop. The brief carries intent; you ask only what
 you genuinely can't infer (use AskUserQuestion, never an inline numbered list).
@@ -74,7 +75,8 @@ you genuinely can't infer (use AskUserQuestion, never an inline numbered list).
 1. Confirm pwd is the `nami-works` repo root.
 2. Read [references/brand-sources.md](references/brand-sources.md),
    [references/shopify-html-contract.md](references/shopify-html-contract.md), and
-   [references/geo-playbook.md](references/geo-playbook.md) (the GEO method).
+   [references/geo-playbook.md](references/geo-playbook.md) (the GEO method). For `audit`
+   mode, also [references/eval-rubric.md](references/eval-rubric.md) (the scored bar).
 3. Read the canonical voice: [references/voice.md](references/voice.md) — corpus-grounded,
    GEO-ready. For non-blog formats, also [references/formats.md](references/formats.md).
 4. For fresh style exemplars, fetch 2-3 live posts by author "Kelviane Lima" via the

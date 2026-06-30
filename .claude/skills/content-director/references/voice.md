@@ -147,7 +147,7 @@ antes de publicar):**
 | Leave-in Pluma (spray) | pantenol, arginina | leveza, brilho, day after | **até 230°C** |
 | Máscara Mayday (mousse) | arginina, d-pantenol, abacate, girassol | reconstrução de massa e lipídios | — |
 | Shampoo a Seco | biotina, pantenol, algas vermelhas | controla oleosidade, dá grip/volume | — |
-| Melon Mood (splash) | AcquaBio, ProShine | pele hidratada, brilho no fio | **72h (pele)** |
+| Melon Mood **Mist** (nunca "Splash") | AcquaBio, ProShine | pele hidratada, brilho no fio | **72h (pele)** |
 | Fragrância assinatura | melão, peônia, white musk | frescor "banho tomado" | — |
 
 > O catálogo ao vivo (`scripts/catalog_fetch.py`) continua sendo a verdade sobre
