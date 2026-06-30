@@ -104,7 +104,7 @@ def make_graphql(env: dict):
 
 # ---- metafields.md parsing (crew output format) ----------------------------
 
-META_KEYS = ["meta_title", "meta_description", "summary_html", "related_products"]
+META_KEYS = ["meta_title", "meta_description", "summary_html", "related_products", "related_collections"]
 
 
 def parse_metafields(md_path: Path) -> dict:
@@ -149,6 +149,27 @@ def resolve_blog_id(graphql, handle: str):
         cursor = data["blogs"]["pageInfo"]["endCursor"]
 
 
+def resolve_product_gids(graphql, handles):
+    """handle -> product GID (None if not found). Validates related_products are real."""
+    out = {}
+    for h in handles:
+        data = graphql("query($q:String!){ products(first:1, query:$q){ nodes{ handle id } } }",
+                       {"q": f"handle:{h}"})
+        nodes = data["products"]["nodes"]
+        out[h] = nodes[0]["id"] if nodes and nodes[0]["handle"] == h else None
+    return out
+
+
+def resolve_collection_gids(graphql, handles):
+    """handle -> collection GID (None if not found)."""
+    out = {}
+    for h in handles:
+        data = graphql("query($h:String!){ collectionByHandle(handle:$h){ id } }", {"h": h})
+        c = data.get("collectionByHandle")
+        out[h] = c["id"] if c else None
+    return out
+
+
 def cmd_blog(args, env):
     graphql = make_graphql(env)
     body = sanitize(Path(args.html).read_text(encoding="utf-8"))
@@ -162,6 +183,24 @@ def cmd_blog(args, env):
     if meta["meta_description"]:
         metafields.append({"namespace": "global", "key": "description_tag",
                            "type": "single_line_text_field", "value": meta["meta_description"]})
+
+    # Wire related content into the article's own metafields (the theme renders these):
+    #   related_products    -> custom.produto                 (list.product_reference)
+    #   related_collections -> custom.colecao_relacionada_1..4 (collection_reference)
+    # Resolve handles to GIDs now (read-only), so the dry run validates them and the
+    # live article carries them. This is what the legacy crew did and the rebuild dropped.
+    rel_products = [h.strip() for h in meta["related_products"].split(",") if h.strip()]
+    rel_collections = [h.strip() for h in meta["related_collections"].split(",") if h.strip()][:4]
+    prod_gids = resolve_product_gids(graphql, rel_products) if rel_products else {}
+    col_gids = resolve_collection_gids(graphql, rel_collections) if rel_collections else {}
+    valid_prod = [prod_gids[h] for h in rel_products if prod_gids.get(h)]
+    if valid_prod:
+        metafields.append({"namespace": "custom", "key": "produto",
+                           "type": "list.product_reference", "value": json.dumps(valid_prod)})
+    for i, h in enumerate(rel_collections, 1):
+        if col_gids.get(h):
+            metafields.append({"namespace": "custom", "key": f"colecao_relacionada_{i}",
+                               "type": "collection_reference", "value": col_gids[h]})
 
     article = {
         "blogId": None,  # filled after resolve
@@ -183,8 +222,14 @@ def cmd_blog(args, env):
     warn_len("meta_description", meta["meta_description"], 140, 160)
     if meta["summary_html"]:
         warn_len("summary_html", meta["summary_html"], 150, 160)
-    if meta["related_products"]:
-        print(f"   related     : {meta['related_products']}")
+    if rel_products:
+        unresolved = [h for h in rel_products if not prod_gids.get(h)]
+        print(f"   custom.produto : {len(valid_prod)}/{len(rel_products)} products resolved"
+              + (f"  [UNRESOLVED: {unresolved}]" if unresolved else ""))
+    if rel_collections:
+        unresolved_c = [h for h in rel_collections if not col_gids.get(h)]
+        print(f"   colecao_relacionada_1..{len(rel_collections)} : {', '.join(rel_collections)}"
+              + (f"  [UNRESOLVED: {unresolved_c}]" if unresolved_c else ""))
 
     if not args.confirm:
         print("\n   DRY RUN -- nothing written. Re-run with --confirm to publish.")

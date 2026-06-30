@@ -64,7 +64,15 @@ meta_title: <45-70 chars, contains the primary keyword, max ~6 words, brand name
 meta_description: <140-160 chars, MANDATORY range, action-oriented, anticipates value>
 summary_html: <150-160 chars Resumo HTML / Excerpt, unique (not the title), keyword-aware, may use <strong>/<em>>
 related_products: <comma-separated product handles exactly as they appear in the live catalog>
+related_collections: <up to 4 comma-separated collection handles, in display order>
 ```
+
+`publish.py` wires these into the article's OWN metafields so the theme renders them:
+`related_products` -> `custom.produto` (list.product_reference); `related_collections`
+-> `custom.colecao_relacionada_1..4` (collection_reference, in order). Handles are
+resolved to GIDs at publish time and validated in the dry run (unresolved handles are
+flagged, never silently dropped). Always populate `related_products` (the legacy system
+did; the rebuild had regressed and didn't).
 
 Capitalization in titles: only the first word of each sentence is capitalized,
 except brand/product names.
