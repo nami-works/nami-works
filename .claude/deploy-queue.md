@@ -61,6 +61,16 @@ _(empty — the i18n online-tokens fix shipped in the 2026-05-22 deploy below.)_
 
 ## Deployed
 
+### 2026-07-02 · connector — connect-polish (holo favicon, Google-G button, drop bearer UI) + Inter font
+- **Image tag:** `nami-works:connector-20260702-inter` (supersedes `connector-20260702-holo`).
+- **Deploy mechanic:** local `docker buildx build --platform linux/amd64 -f apps/connector/Dockerfile --push` to ECR `477780048372.dkr.ecr.us-east-1.amazonaws.com/nami-works`, then SSH to `ubuntu@54.221.23.142`: box `docker login` (token piped from local aws), `sed` the compose image tag holo→inter in `/srv/cpg-labs/docker-compose.yml`, `sudo docker compose pull connector && up -d --force-recreate connector`. Postgres + omnify containers untouched.
+- **Bundled PRs (2, both squash-merged to main):**
+  - #35 — holo PNG served at `/favicon.ico` (claude.ai reads the connector tile from the favicon; was showing the flat GE-red SVG); Google four-color "G" in a white chip on the "Entrar com Google" button; removed the "Usar chave de acesso" bearer block from the consent page (bearer break-glass POST handler untouched); dropped dead form CSS.
+  - #36 — embed Inter variable webfont (v20 latin, wght 100-900) as a data URI; font stack now `-apple-system, BlinkMacSystemFont, "SF Pro …", "Inter", "Segoe UI", …` → Apple keeps SF, Windows/Android render Inter.
+- **Verified post-deploy:** `mcp.gebeauty.com.br/health` → `{"ok":true}`; `/favicon.ico` → HTTP 200 `image/png` 72818 bytes (holo); `/oauth/authorize` with an unregistered client → graceful HTTP 400 error page (consent HTML renders only for claude.ai's registered client — Lucas verifies Inter + G-logo + no-bearer visually on reconnect).
+- **What it affects:** connector OAuth consent page + connector tile in claude.ai only. No migration, no env change.
+- **Note (fix a — tool grouping):** decided NOT actionable server-side. claude.ai renders one connector's tools as a single flat "Other tools" list; MCP has no group/category field (SEP-993 namespaces proposal not in spec). Decision: leave flat + rely on `system_action` name prefixes for clustering. Splitting into per-vertical connectors deferred.
+
 ### 2026-05-22 · full + omnify — i18n: use online tokens for live per-user locale (canonical pattern)
 - **Image tag (full):** `omnify-app:full-20260522-67958c8` (health check HTTP 200 on attempt 1).
 - **Image tag (omnify):** `omnify-app:omnify-20260522-67958c8` (health check HTTP 200 on attempt 1).
