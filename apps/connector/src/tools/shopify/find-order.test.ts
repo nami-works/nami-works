@@ -25,6 +25,7 @@ function makeCtx(): ToolContext {
       role: "operator",
       principalId: null,
       actorLabel: null,
+      access: { isOwner: true, systems: {} },
     },
     logger: silentLogger,
     requestId: "req_test",

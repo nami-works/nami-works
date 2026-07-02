@@ -25,6 +25,27 @@ enum PrincipalRole {
   operator
 }
 
+// The connector's tool surface, split into "systems" for access control.
+// Shopify is broken into sub-areas (it's ~70 of ~87 tools). A tool's system
+// is declared in src/mcp/tool-catalog.ts.
+enum ConnectorSystem {
+  shopify_orders
+  shopify_products
+  shopify_discounts
+  shopify_customers
+  shopify_reports
+  omie
+  instagram
+  brand
+  affiliates
+}
+
+enum AccessLevel {
+  none
+  read
+  readwrite
+}
+
 model IntegrationTenant {
   id                   String               @id @default(cuid())
   slug                 String               @unique
@@ -45,6 +66,7 @@ model IntegrationTenant {
   voiceCards           VoiceCard[]
   feedback             Feedback[]
   principals           TenantPrincipal[]
+  accessRoles          AccessRole[]
 
   @@index([status])
 }
@@ -65,9 +87,45 @@ model TenantPrincipal {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   tenant          IntegrationTenant @relation(fields: [tenantId], references: [id])
+  roles           PrincipalRoleAssignment[]
 
   @@index([tenantId])
   @@index([status])
+}
+
+// An editable, named access role scoped to a tenant. Access = a per-system
+// grant map (missing system = no access). `isOwner` roles grant everything plus
+// owner-only admin tools. A principal's effective access is the UNION of all
+// their assigned roles' grants (multiple stackable roles per person).
+model AccessRole {
+  id         String                    @id @default(cuid())
+  tenantId   String
+  key        String                    // stable slug, e.g. "operacoes"
+  label      String                    // display name, e.g. "Operações/Logística"
+  isSystem   Boolean                   @default(false) // protected from deletion (e.g. Admin)
+  isOwner    Boolean                   @default(false) // grants all systems R/W + admin tools
+  grants     Json                      // { "<ConnectorSystem>": "read" | "readwrite" } — omitted = none
+  createdAt  DateTime                  @default(now())
+  updatedAt  DateTime                  @updatedAt
+  tenant     IntegrationTenant         @relation(fields: [tenantId], references: [id])
+  principals PrincipalRoleAssignment[]
+
+  @@unique([tenantId, key])
+  @@index([tenantId])
+}
+
+// Many-to-many: a principal can hold several roles; access is the union.
+model PrincipalRoleAssignment {
+  id          String          @id @default(cuid())
+  principalId String
+  roleId      String
+  createdAt   DateTime        @default(now())
+  principal   TenantPrincipal @relation(fields: [principalId], references: [id], onDelete: Cascade)
+  role        AccessRole      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([principalId, roleId])
+  @@index([principalId])
+  @@index([roleId])
 }
 
 model ToolInvocationLog {
