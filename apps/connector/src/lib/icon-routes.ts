@@ -14,13 +14,15 @@ export const GE_ICON_SVG = `<?xml version="1.0" encoding="UTF-8"?>
 const HOLO_ICON_PNG_BUFFER = Buffer.from(HOLO_ICON_PNG_BASE64, "base64");
 
 export function mountIconRoutes(app: FastifyInstance): void {
-  // Browser tab favicon — lightweight SVG.
+  // Favicon — claude.ai resolves the connector tile from /favicon.ico, so serve
+  // the holographic PNG here (a PNG body under the .ico path is fine; clients
+  // honor the response Content-Type). The flat SVG mark stays at /icon.svg.
   app.get("/favicon.ico", async (_req, reply) => {
     reply.header("Cache-Control", "public, max-age=86400");
-    return reply.type("image/svg+xml").send(GE_ICON_SVG);
+    return reply.type("image/png").send(HOLO_ICON_PNG_BUFFER);
   });
 
-  // SVG variant kept for clients that resolved the old icon URL between deploys.
+  // Flat GE mark, kept for any client that prefers an SVG icon.
   app.get("/icon.svg", async (_req, reply) => {
     reply.header("Cache-Control", "public, max-age=86400");
     return reply.type("image/svg+xml").send(GE_ICON_SVG);
