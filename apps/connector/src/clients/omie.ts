@@ -217,33 +217,66 @@ export async function getOmieCompanies(
   return companies;
 }
 
-export type CompanyResolution =
-  | { kind: "one"; company: OmieCompany }
-  | { kind: "ambiguous"; companies: OmieCompany[] }
-  | { kind: "notfound"; requested: string; companies: OmieCompany[] };
+export type CompaniesResolution =
+  | { kind: "companies"; companies: OmieCompany[] } // one or more to query
+  | { kind: "ambiguous"; companies: OmieCompany[] } // ask the user which
+  | { kind: "notfound"; requested: string[]; companies: OmieCompany[] };
 
-// Pick the Omie company to query. If the caller named one (`empresa` = code),
-// resolve it; if there's only one company, use it; otherwise signal ambiguity so
-// the tool can ask the user which company (app) they mean.
-export function resolveOmieCompany(
-  companies: OmieCompany[],
-  requested?: string,
-): CompanyResolution {
-  if (requested && requested.length > 0) {
-    const match = companies.find((c) => c.code === requested);
-    return match
-      ? { kind: "one", company: match }
-      : { kind: "notfound", requested, companies };
-  }
-  if (companies.length === 1) return { kind: "one", company: companies[0]! };
-  return { kind: "ambiguous", companies };
+function normalizeName(s: string): string {
+  return s
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, ""); // strip accents
 }
 
-// One-line listing of the configured companies, for disambiguation prompts.
+// Resolve which Omie companies to query. `empresa` may be one name/code or a
+// list (multi-select). Matches case/accent-insensitively on code or label.
+// - none requested + one company  → that company
+// - none requested + several      → ambiguous (ask the user, multi-select)
+// - some requested                → the matching companies (or notfound)
+export function resolveOmieCompanies(
+  companies: OmieCompany[],
+  requested?: string | string[],
+): CompaniesResolution {
+  const req = (
+    requested == null ? [] : Array.isArray(requested) ? requested : [requested]
+  ).filter((r) => r && r.trim().length > 0);
+
+  if (req.length === 0) {
+    if (companies.length === 1) return { kind: "companies", companies };
+    return { kind: "ambiguous", companies };
+  }
+
+  const chosen: OmieCompany[] = [];
+  const missing: string[] = [];
+  for (const r of req) {
+    const match = companies.find(
+      (c) =>
+        normalizeName(c.code) === normalizeName(r) ||
+        (c.label !== undefined && normalizeName(c.label) === normalizeName(r)),
+    );
+    if (match && !chosen.includes(match)) chosen.push(match);
+    else if (!match) missing.push(r);
+  }
+  if (missing.length > 0) return { kind: "notfound", requested: missing, companies };
+  return { kind: "companies", companies: chosen };
+}
+
+// Human-friendly listing of the configured companies, for the disambiguation
+// prompt. Shows the label (name) callers should pick.
 export function describeOmieCompanies(companies: OmieCompany[]): string {
-  return companies
-    .map((c) => `- ${c.code}${c.label ? ` (${c.label})` : ""}`)
-    .join("\n");
+  return companies.map((c) => `- ${c.label ?? c.code}`).join("\n");
+}
+
+// Disambiguation message returned when the caller didn't say which company and
+// there's more than one. Instructs the assistant to ask the user with a
+// multi-select question and re-call with the chosen names in `empresa`.
+export function omieAmbiguousPrompt(companies: OmieCompany[]): string {
+  return [
+    "Esta conta tem várias empresas no Omie. Pergunte ao usuário, com uma pergunta de múltipla escolha (seleção múltipla habilitada), quais empresas usar, e chame a tool de novo passando `empresa` com os nomes escolhidos (uma ou mais). Empresas disponíveis:",
+    describeOmieCompanies(companies),
+  ].join("\n");
 }
 
 export async function getOmieClient(args: OmieClientArgs): Promise<OmieClient> {

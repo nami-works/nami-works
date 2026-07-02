@@ -2,7 +2,8 @@ import { z } from "zod";
 import {
   describeOmieCompanies,
   getOmieCompanies,
-  resolveOmieCompany,
+  omieAmbiguousPrompt,
+  resolveOmieCompanies,
   type OmieClient,
 } from "../../clients/omie.js";
 import { registerToolDefinition } from "../../mcp/registry.js";
@@ -79,99 +80,121 @@ async function fetchArForClient(
 }
 
 export async function consultarFinanceiroHandler(
-  args: { empresa?: string | undefined; codigoCliente?: number | undefined },
+  args: {
+    empresa?: string | string[] | undefined;
+    codigoCliente?: number | undefined;
+  },
   ctx: ToolContext,
 ): Promise<ToolResult> {
   const companies = await getOmieCompanies({ ssmPrefix: ctx.tenant.ssmPrefix });
-  const resolution = resolveOmieCompany(companies, args.empresa);
+  const resolution = resolveOmieCompanies(companies, args.empresa);
   if (resolution.kind === "ambiguous") {
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Esta conta tem mais de uma empresa no Omie. Diga qual usar no parâmetro \`empresa\`:\n${describeOmieCompanies(companies)}`,
-        },
-      ],
-    };
+    return { content: [{ type: "text", text: omieAmbiguousPrompt(companies) }] };
   }
   if (resolution.kind === "notfound") {
     return {
       content: [
         {
           type: "text",
-          text: `Empresa "${resolution.requested}" não encontrada. Opções:\n${describeOmieCompanies(companies)}`,
+          text: `Empresa(s) não encontrada(s): ${resolution.requested.join(", ")}. Opções:\n${describeOmieCompanies(companies)}`,
         },
       ],
       isError: true,
     };
   }
-  const company = resolution.company;
-  const multi = companies.length > 1;
-  const companyLabel = multi ? ` · empresa ${company.code}` : "";
+  const selected = resolution.companies;
+  const multi = selected.length > 1;
   const scopedToClient = typeof args.codigoCliente === "number";
   const scopeLabel = scopedToClient
     ? `cliente ${args.codigoCliente}`
     : "todos os clientes";
 
-  const { items, totalRegistros } = await fetchArForClient(
-    company.client,
-    args.codigoCliente,
-  );
+  const blocks: string[] = [];
+  let grandA = 0;
+  let grandV = 0;
+  let grandR = 0;
+  let anyItems = false;
 
-  if (items.length === 0) {
+  for (const co of selected) {
+    const name = co.label ?? co.code;
+    const { items, totalRegistros } = await fetchArForClient(
+      co.client,
+      args.codigoCliente,
+    );
+    const tag = multi ? `— ${name} —` : null;
+    if (items.length === 0) {
+      if (tag) blocks.push(`${tag}\nSem lançamentos.`);
+      continue;
+    }
+    anyItems = true;
+
+    let a = 0;
+    let v = 0;
+    let r = 0;
+    for (const item of items) {
+      if (item.status_titulo === "RECEBIDO") r += item.valor_documento;
+      else if (item.status_titulo === "VENCIDO") v += item.valor_documento;
+      else a += item.valor_documento;
+    }
+    grandA += a;
+    grandV += v;
+    grandR += r;
+
+    const lineCount = multi ? 10 : 25;
+    const lines = items
+      .slice()
+      .sort((x, y) =>
+        brToYmd(x.data_vencimento).localeCompare(brToYmd(y.data_vencimento)),
+      )
+      .slice(0, lineCount)
+      .map((item) => {
+        const num = item.numero_documento ?? `#${item.codigo_lancamento_omie}`;
+        const cliente =
+          !scopedToClient && item.codigo_cliente_fornecedor
+            ? `cliente ${item.codigo_cliente_fornecedor} · `
+            : "";
+        return `  ${cliente}${num} · vence ${item.data_vencimento} · R$ ${item.valor_documento.toFixed(2)} · ${item.status_titulo}`;
+      });
+
+    const capped = !scopedToClient && totalRegistros > items.length;
+    const more = capped
+      ? ` (mostrando ${lineCount} de ${items.length} carregados; ledger tem ${totalRegistros})`
+      : items.length > lineCount
+        ? ` (mostrando ${lineCount} de ${items.length})`
+        : "";
+
+    const head = [
+      tag,
+      `A receber: R$ ${a.toFixed(2)} · Vencido: R$ ${v.toFixed(2)} · Recebido: R$ ${r.toFixed(2)}`,
+      `Lançamentos (mais antigos primeiro)${more}:`,
+    ]
+      .filter((s): s is string => s !== null)
+      .join("\n");
+    blocks.push(`${head}\n${lines.join("\n")}`);
+  }
+
+  if (!anyItems) {
     return {
       content: [
         {
           type: "text",
-          text: `Nenhum lançamento financeiro para ${scopeLabel}${companyLabel}.`,
+          text: `Nenhum lançamento financeiro para ${scopeLabel}${multi ? " nas empresas selecionadas" : ""}.`,
         },
       ],
     };
   }
 
-  let aReceber = 0;
-  let vencido = 0;
-  let recebido = 0;
-  for (const item of items) {
-    if (item.status_titulo === "RECEBIDO") recebido += item.valor_documento;
-    else if (item.status_titulo === "VENCIDO") vencido += item.valor_documento;
-    else aReceber += item.valor_documento;
-  }
-
-  const lines = items
-    .slice()
-    .sort((a, b) =>
-      brToYmd(a.data_vencimento).localeCompare(brToYmd(b.data_vencimento)),
-    )
-    .slice(0, 25)
-    .map((item) => {
-      const num = item.numero_documento ?? `#${item.codigo_lancamento_omie}`;
-      const cliente =
-        !scopedToClient && item.codigo_cliente_fornecedor
-          ? `cliente ${item.codigo_cliente_fornecedor} · `
-          : "";
-      return `  ${cliente}${num} · vence ${item.data_vencimento} · R$ ${item.valor_documento.toFixed(2)} · ${item.status_titulo}`;
-    });
-
-  const capped = !scopedToClient && totalRegistros > items.length;
-  const truncated = capped
-    ? `\n\n(mostrando 25 de ${items.length} carregados; ledger tem ${totalRegistros} — consulte um cliente específico para o detalhe completo)`
-    : items.length > 25
-      ? `\n\n(mostrando 25 de ${items.length})`
-      : "";
-
-  const summary = [
-    `Contas a receber · ${scopeLabel}${companyLabel}`,
-    `A receber: R$ ${aReceber.toFixed(2)}`,
-    `Vencido:   R$ ${vencido.toFixed(2)}`,
-    `Recebido:  R$ ${recebido.toFixed(2)}`,
-    ``,
-    `Lançamentos (mais antigos primeiro):`,
-  ].join("\n");
+  const single = !multi ? ` · ${selected[0]!.label ?? selected[0]!.code}` : "";
+  const grand = multi
+    ? `\n\nTotal consolidado — A receber: R$ ${grandA.toFixed(2)} · Vencido: R$ ${grandV.toFixed(2)} · Recebido: R$ ${grandR.toFixed(2)}`
+    : "";
 
   return {
     content: [
-      { type: "text", text: `${summary}\n${lines.join("\n")}${truncated}` },
+      {
+        type: "text",
+        text: `Contas a receber · ${scopeLabel}${single}\n\n${blocks.join("\n\n")}${grand}`,
+      },
     ],
   };
 }
@@ -179,13 +202,13 @@ export async function consultarFinanceiroHandler(
 registerToolDefinition({
   name: "omie_consultar_financeiro",
   description:
-    "Contas a receber de uma empresa no Omie. Sem cliente informado, resume a carteira inteira; com codigoCliente, foca nesse cliente. Se o tenant tiver mais de uma empresa Omie e `empresa` não for informada, a tool pergunta qual usar.",
+    "Contas a receber no Omie por empresa. Sem cliente informado, resume a carteira inteira; com codigoCliente, foca nesse cliente. `empresa` aceita um nome ou vários (seleção múltipla) — se houver mais de uma empresa e nada for informado, a tool pede para o usuário escolher. Com várias, mostra por empresa + total consolidado.",
   inputSchema: {
     empresa: z
-      .string()
+      .union([z.string(), z.array(z.string())])
       .optional()
       .describe(
-        "Código da empresa Omie (ex: 000174). Omita para usar a única empresa; se houver várias, a tool lista as opções.",
+        "Nome da empresa Omie (ex: 'Matriz') ou lista de nomes para consolidar várias. Omita para escolher via pergunta quando houver mais de uma.",
       ),
     codigoCliente: z
       .number()

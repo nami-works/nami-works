@@ -2,7 +2,8 @@ import { z } from "zod";
 import {
   describeOmieCompanies,
   getOmieCompanies,
-  resolveOmieCompany,
+  omieAmbiguousPrompt,
+  resolveOmieCompanies,
   type OmieClient,
 } from "../../clients/omie.js";
 import { registerToolDefinition } from "../../mcp/registry.js";
@@ -93,7 +94,7 @@ export async function listarPedidosHandler(
   args: {
     desde: string;
     ate: string;
-    empresa?: string | undefined;
+    empresa?: string | string[] | undefined;
     codigoCliente?: number | undefined;
   },
   ctx: ToolContext,
@@ -111,57 +112,63 @@ export async function listarPedidosHandler(
   }
 
   const companies = await getOmieCompanies({ ssmPrefix: ctx.tenant.ssmPrefix });
-  const resolution = resolveOmieCompany(companies, args.empresa);
+  const resolution = resolveOmieCompanies(companies, args.empresa);
   if (resolution.kind === "ambiguous") {
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Esta conta tem mais de uma empresa no Omie. Diga qual usar no parâmetro \`empresa\`:\n${describeOmieCompanies(companies)}`,
-        },
-      ],
-    };
+    return { content: [{ type: "text", text: omieAmbiguousPrompt(companies) }] };
   }
   if (resolution.kind === "notfound") {
     return {
       content: [
         {
           type: "text",
-          text: `Empresa "${resolution.requested}" não encontrada. Opções:\n${describeOmieCompanies(companies)}`,
+          text: `Empresa(s) não encontrada(s): ${resolution.requested.join(", ")}. Opções:\n${describeOmieCompanies(companies)}`,
         },
       ],
       isError: true,
     };
   }
-  const company = resolution.company;
-  const companyLabel = companies.length > 1 ? ` · empresa ${company.code}` : "";
+  const selected = resolution.companies;
+  const multi = selected.length > 1;
   const clientNote = args.codigoCliente ? ` (cliente ${args.codigoCliente})` : "";
 
-  const { line, morePages } = await listPedidosForCompany(
-    company.client,
-    args.desde,
-    args.ate,
-    args.codigoCliente,
-  );
+  const blocks: string[] = [];
+  let any = false;
+  for (const co of selected) {
+    const name = co.label ?? co.code;
+    const { line, morePages } = await listPedidosForCompany(
+      co.client,
+      args.desde,
+      args.ate,
+      args.codigoCliente,
+    );
+    const tag = multi ? `— ${name} —\n` : "";
+    if (!line) {
+      if (multi) blocks.push(`${tag}Sem pedidos no período.`);
+      continue;
+    }
+    any = true;
+    const more =
+      morePages > 1
+        ? `\n  (página 1 de ${morePages} — refine a faixa de datas para ver mais)`
+        : "";
+    blocks.push(`${tag}${line}${more}`);
+  }
 
-  if (!line) {
+  if (!any) {
     return {
       content: [
         {
           type: "text",
-          text: `Nenhum pedido entre ${args.desde} e ${args.ate}${clientNote}${companyLabel}.`,
+          text: `Nenhum pedido entre ${args.desde} e ${args.ate}${clientNote}${multi ? " nas empresas selecionadas" : ""}.`,
         },
       ],
     };
   }
 
-  const more =
-    morePages > 1
-      ? `\n\n(página 1 de ${morePages} — refine a faixa de datas para ver mais)`
-      : "";
-  const header = `Pedidos Omie entre ${args.desde} e ${args.ate}${clientNote}${companyLabel}:`;
+  const single = !multi ? ` · ${selected[0]!.label ?? selected[0]!.code}` : "";
+  const header = `Pedidos Omie entre ${args.desde} e ${args.ate}${clientNote}${single}:`;
   return {
-    content: [{ type: "text", text: `${header}\n\n${line}${more}` }],
+    content: [{ type: "text", text: `${header}\n\n${blocks.join("\n\n")}` }],
   };
 }
 
@@ -179,10 +186,10 @@ registerToolDefinition({
       .regex(ISO_DATE, "use formato ISO YYYY-MM-DD")
       .describe('Data final (ISO YYYY-MM-DD). Ex: "2026-04-30".'),
     empresa: z
-      .string()
+      .union([z.string(), z.array(z.string())])
       .optional()
       .describe(
-        "Código da empresa Omie (ex: 000174). Omita para usar a única empresa; se houver várias, a tool lista as opções.",
+        "Nome da empresa Omie (ex: 'Matriz') ou lista de nomes para consolidar várias. Omita para escolher via pergunta quando houver mais de uma.",
       ),
     codigoCliente: z
       .number()
