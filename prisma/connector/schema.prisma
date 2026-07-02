@@ -81,14 +81,21 @@ model TenantPrincipal {
   tenantId        String
   label           String
   contactEmail    String
-  bearerTokenHash String            @unique
+  // Nullable: Google-login principals have no bearer; the legacy/break-glass
+  // path uses a bearer. googleSub is set on first successful Google login and
+  // is the durable identity thereafter. A principal with neither yet is an
+  // outstanding invite (matched by contactEmail on first Google login).
+  bearerTokenHash String?           @unique
+  googleSub       String?           @unique
   role            PrincipalRole     @default(operator)
   status          TenantStatus      @default(active)
+  invitedAt       DateTime?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   tenant          IntegrationTenant @relation(fields: [tenantId], references: [id])
   roles           PrincipalRoleAssignment[]
 
+  @@unique([tenantId, contactEmail])
   @@index([tenantId])
   @@index([status])
 }
