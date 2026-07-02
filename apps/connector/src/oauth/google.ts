@@ -76,7 +76,7 @@ export function mountGoogleOAuth(
     const q = request.query as Record<string, string | undefined>;
     const { client_id: clientId, redirect_uri: redirectUri } = q;
     const codeChallenge = q.code_challenge;
-    const tenant = q.tenant;
+    const tenant = q.tenant ?? process.env.DEFAULT_TENANT;
     const mcpState = q.state ?? "";
     if (!clientId || !redirectUri || !codeChallenge || !tenant) {
       return reply

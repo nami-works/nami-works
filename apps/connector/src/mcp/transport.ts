@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
   authorizeTenantRequest,
   type TenantLookup,
@@ -17,8 +17,11 @@ export function mountTenantRoute(
   app: FastifyInstance,
   deps: TransportDeps = {},
 ): void {
-  app.post("/:tenant", async (request, reply) => {
-    const { tenant: slug } = request.params as { tenant: string };
+  const handle = async (
+    slug: string,
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ): Promise<unknown> => {
     const authResult = await authorizeTenantRequest({
       slug,
       authorizationHeader: request.headers.authorization,
@@ -30,13 +33,10 @@ export function mountTenantRoute(
       // OAuth endpoints. Claude.ai's MCP host uses this hint to start the
       // OAuth flow instead of giving up with "couldn't reach the server".
       if (authResult.status === 401) {
-        const issuer =
-          process.env.OAUTH_ISSUER ?? "https://mcp.nami.works";
+        const issuer = process.env.OAUTH_ISSUER ?? "https://mcp.nami.works";
         // Per-tenant protected-resource metadata URL. Claude.ai's MCP host
-        // fetches this, reads `resource: "<issuer>/<tenant>"`, and then
-        // passes that resource value in the OAuth authorize + token calls
-        // (RFC 8707). This is how the tenant slug travels from the
-        // 401 response into the OAuth flow without any URL params.
+        // fetches this, reads `resource: "<issuer>/<tenant>"`, and then passes
+        // that resource value in the OAuth authorize + token calls (RFC 8707).
         reply.header(
           "WWW-Authenticate",
           `Bearer realm="MCP", resource_metadata="${issuer}/.well-known/oauth-protected-resource/${slug}"`,
@@ -74,5 +74,18 @@ export function mountTenantRoute(
       await transport.close();
       await server.close();
     }
-  });
+    return undefined;
+  };
+
+  app.post("/:tenant", (request, reply) =>
+    handle((request.params as { tenant: string }).tenant, request, reply),
+  );
+
+  // Single-tenant convenience: when DEFAULT_TENANT is set, the bare connector
+  // URL (POST /, no tenant path) resolves to that tenant — so the clean URL
+  // works without a slug. Multi-tenant deployments leave DEFAULT_TENANT unset.
+  const defaultTenant = process.env.DEFAULT_TENANT;
+  if (defaultTenant) {
+    app.post("/", (request, reply) => handle(defaultTenant, request, reply));
+  }
 }
