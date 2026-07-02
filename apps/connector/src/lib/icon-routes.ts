@@ -1,35 +1,32 @@
 import type { FastifyInstance } from "fastify";
 import { HOLO_ICON_PNG_BASE64 } from "./ge-holo-icon.js";
 
-/**
- * GE Beauty mark (SVG) for the browser favicon / legacy icon route. Small flat
- * mark — the full-color holographic tile is served as the PNG serverInfo icon.
- */
-export const GE_ICON_SVG = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <rect width="32" height="32" rx="7" fill="#DF372F"/>
-  <text x="16" y="22" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="15" font-weight="700" text-anchor="middle" fill="#ffffff">ge</text>
-</svg>`;
-
+// GE Beauty holographic tile, served at EVERY icon route so whichever one a
+// client resolves (favicon, icon.svg, or the MCP serverInfo icon.png) shows the
+// same brand mark. claude.ai's connector-list icon is fetched from /icon.svg
+// (SVG preferred over the favicon), which is why the flat red mark persisted
+// after only favicon/icon.png were changed. The SVG simply wraps the PNG tile.
 const HOLO_ICON_PNG_BUFFER = Buffer.from(HOLO_ICON_PNG_BASE64, "base64");
 
+const HOLO_ICON_SVG = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 256 256" width="256" height="256">
+  <image width="256" height="256" xlink:href="data:image/png;base64,${HOLO_ICON_PNG_BASE64}"/>
+</svg>`;
+
 export function mountIconRoutes(app: FastifyInstance): void {
-  // Favicon — claude.ai resolves the connector tile from /favicon.ico, so serve
-  // the holographic PNG here (a PNG body under the .ico path is fine; clients
-  // honor the response Content-Type). The flat SVG mark stays at /icon.svg.
+  // Browser-tab favicon.
   app.get("/favicon.ico", async (_req, reply) => {
     reply.header("Cache-Control", "public, max-age=86400");
     return reply.type("image/png").send(HOLO_ICON_PNG_BUFFER);
   });
 
-  // Flat GE mark, kept for any client that prefers an SVG icon.
+  // SVG icon — this is what claude.ai renders in the Connectors list.
   app.get("/icon.svg", async (_req, reply) => {
     reply.header("Cache-Control", "public, max-age=86400");
-    return reply.type("image/svg+xml").send(GE_ICON_SVG);
+    return reply.type("image/svg+xml").send(HOLO_ICON_SVG);
   });
 
-  // Canonical MCP serverInfo icon — the GE Beauty holographic square tile.
-  // Referenced from src/mcp/registry.ts in the serverInfo.icons array.
+  // Canonical MCP serverInfo icon (registry.ts serverInfo.icons array).
   app.get("/icon.png", async (_req, reply) => {
     reply.header("Cache-Control", "public, max-age=86400");
     return reply.type("image/png").send(HOLO_ICON_PNG_BUFFER);
