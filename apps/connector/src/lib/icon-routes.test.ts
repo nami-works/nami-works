@@ -1,9 +1,9 @@
 import Fastify from "fastify";
 import { describe, expect, it } from "vitest";
-import { NAMI_WORKS_ICON_SVG, mountIconRoutes } from "./icon-routes.js";
+import { GE_ICON_SVG, mountIconRoutes } from "./icon-routes.js";
 
 describe("icon routes", () => {
-  it("serves the NAMI Works mark at /favicon.ico with image/svg+xml type", async () => {
+  it("serves the GE Beauty mark at /favicon.ico with image/svg+xml type", async () => {
     const app = Fastify({ logger: false });
     mountIconRoutes(app);
     const res = await app.inject({ method: "GET", url: "/favicon.ico" });
@@ -19,7 +19,17 @@ describe("icon routes", () => {
     const res = await app.inject({ method: "GET", url: "/icon.svg" });
     expect(res.statusCode).toBe(200);
     expect(res.headers["content-type"]).toContain("image/svg+xml");
-    expect(res.body).toBe(NAMI_WORKS_ICON_SVG);
+    expect(res.body).toBe(GE_ICON_SVG);
+    await app.close();
+  });
+
+  it("serves the holographic PNG tile at /icon.png", async () => {
+    const app = Fastify({ logger: false });
+    mountIconRoutes(app);
+    const res = await app.inject({ method: "GET", url: "/icon.png" });
+    expect(res.statusCode).toBe(200);
+    expect(res.headers["content-type"]).toContain("image/png");
+    expect(res.rawPayload.length).toBeGreaterThan(1000);
     await app.close();
   });
 

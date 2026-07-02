@@ -163,6 +163,7 @@ export function mountOAuthAuthorize(
     const tenantSlug =
       q.tenant ??
       deriveTenantFromResource(q.resource) ??
+      process.env.DEFAULT_TENANT ?? // single-tenant: bare URL resolves here
       undefined;
 
     if (!clientId || !redirectUri || !codeChallenge) {
