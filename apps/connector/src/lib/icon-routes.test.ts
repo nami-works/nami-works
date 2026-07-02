@@ -35,11 +35,11 @@ describe("icon routes", () => {
     await app.close();
   });
 
-  it("sets a 1-day Cache-Control header so MCP clients and browsers cache the icon", async () => {
+  it("sets a no-store Cache-Control header so clients never hold a stale icon", async () => {
     const app = Fastify({ logger: false });
     mountIconRoutes(app);
     const res = await app.inject({ method: "GET", url: "/icon.svg" });
-    expect(res.headers["cache-control"]).toContain("max-age=86400");
+    expect(res.headers["cache-control"]).toContain("no-store");
     await app.close();
   });
 });
