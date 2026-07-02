@@ -45,6 +45,11 @@ RUN npm ci --omit=dev
 # @prisma/client at require time. Copy it from the build stage so we don't need
 # the prisma CLI (a devDep) in the runtime image.
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+# The connector uses a custom generator output (@prisma/client-connector) so it
+# can coexist with the omnify schema's default @prisma/client. That generated
+# package is NOT recreated by `npm ci` in this stage, so copy it explicitly or
+# the runtime crashes with ERR_MODULE_NOT_FOUND on '@prisma/client-connector'.
+COPY --from=build /app/node_modules/@prisma/client-connector ./node_modules/@prisma/client-connector
 COPY --from=build /app/apps/connector/dist ./apps/connector/dist
 
 USER node

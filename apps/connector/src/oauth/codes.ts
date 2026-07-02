@@ -1,3 +1,4 @@
+import type { PrincipalRole } from "@prisma/client-connector";
 import { randomBytes } from "node:crypto";
 
 /**
@@ -13,6 +14,9 @@ import { randomBytes } from "node:crypto";
 
 export type AuthCodeRecord = {
   tenantSlug: string;
+  principalId?: string;
+  role?: PrincipalRole;
+  actorLabel?: string | null;
   clientId: string;
   redirectUri: string;
   codeChallenge: string;

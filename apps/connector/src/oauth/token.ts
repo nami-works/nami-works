@@ -115,6 +115,9 @@ export function mountOAuthToken(app: FastifyInstance): void {
 
     const accessToken = await signAccessToken({
       tenantSlug: record.tenantSlug,
+      ...(record.role ? { role: record.role } : {}),
+      ...(record.principalId ? { principalId: record.principalId } : {}),
+      ...(record.actorLabel ? { actorLabel: record.actorLabel } : {}),
       ttlSeconds: TOKEN_TTL_SECONDS,
     });
 

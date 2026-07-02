@@ -1,9 +1,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import type { FastifyInstance } from "fastify";
-import {
-  type TenantLookup,
-  type TenantContext,
-} from "../auth/tenant-auth.js";
+import type { PrincipalRole } from "@prisma/client-connector";
+import { type TenantLookup } from "../auth/tenant-auth.js";
 import { prisma as defaultPrisma } from "../db/prisma.js";
 import { issueCode } from "./codes.js";
 import { verifyClientId } from "./jwt.js";
@@ -241,25 +239,57 @@ export function mountOAuthAuthorize(
         .send(renderError("Invalid client_id or redirect_uri."));
     }
 
-    // Verify the consent bearer against the tenant row (constant-time).
+    // Resolve the pasted bearer to a principal (per-user) or the legacy
+    // tenant-level owner bearer. This sets the role + identity that will ride
+    // the issued access token.
     const db = deps.prisma ?? defaultPrisma;
-    let tenant: TenantContext | null = null;
-    let storedHash = SHA256_DUMMY_HEX;
+    const presentedHash = createHash("sha256").update(bearer).digest("hex");
+
+    let resolved:
+      | {
+          tenantSlug: string;
+          role: PrincipalRole;
+          principalId?: string;
+          actorLabel?: string;
+        }
+      | null = null;
+
     try {
-      const row = await db.integrationTenant.findUnique({
-        where: { slug: tenantSlug },
-      });
-      if (row) {
-        tenant = {
-          id: row.id,
-          slug: row.slug,
-          displayName: row.displayName,
-          brand: row.brand,
-          shopifyShop: row.shopifyShop,
-          ssmPrefix: row.ssmPrefix,
-        };
-        if (row.status === "active") {
-          storedHash = row.bearerTokenHash;
+      // Per-principal bearer first (the current model).
+      if (db.tenantPrincipal) {
+        const p = await db.tenantPrincipal.findUnique({
+          where: { bearerTokenHash: presentedHash },
+          include: { tenant: true },
+        });
+        if (
+          p &&
+          p.status === "active" &&
+          p.tenant.slug === tenantSlug &&
+          p.tenant.status === "active"
+        ) {
+          resolved = {
+            tenantSlug: p.tenant.slug,
+            role: p.role,
+            principalId: p.id,
+            actorLabel: p.label,
+          };
+        }
+      }
+
+      // Legacy tenant-level owner bearer. Constant-time compare with a decoy
+      // hash so latency doesn't leak whether the tenant/bearer exists.
+      if (!resolved) {
+        const row = await db.integrationTenant.findUnique({
+          where: { slug: tenantSlug },
+        });
+        const storedHash =
+          row && row.status === "active"
+            ? row.bearerTokenHash
+            : SHA256_DUMMY_HEX;
+        const a = Buffer.from(presentedHash, "hex");
+        const b = Buffer.from(storedHash, "hex");
+        if (row && a.length === b.length && timingSafeEqual(a, b)) {
+          resolved = { tenantSlug: row.slug, role: "owner" };
         }
       }
     } catch {
@@ -269,13 +299,7 @@ export function mountOAuthAuthorize(
         .send(renderError("Auth backend unavailable. Retry shortly."));
     }
 
-    const presentedHash = createHash("sha256").update(bearer).digest("hex");
-    const a = Buffer.from(presentedHash, "hex");
-    const b = Buffer.from(storedHash, "hex");
-    const ok =
-      a.length === b.length && timingSafeEqual(a, b) && tenant !== null;
-
-    if (!ok) {
+    if (!resolved) {
       return reply
         .code(401)
         .type("text/html")
@@ -297,7 +321,10 @@ export function mountOAuthAuthorize(
     }
 
     const code = issueCode({
-      tenantSlug,
+      tenantSlug: resolved.tenantSlug,
+      ...(resolved.principalId ? { principalId: resolved.principalId } : {}),
+      role: resolved.role,
+      ...(resolved.actorLabel ? { actorLabel: resolved.actorLabel } : {}),
       clientId,
       redirectUri,
       codeChallenge,

@@ -1,3 +1,4 @@
+import type { PrincipalRole } from "@prisma/client-connector";
 import { SignJWT, jwtVerify } from "jose";
 
 /**
@@ -40,21 +41,35 @@ const ISSUER = process.env.OAUTH_ISSUER ?? "https://mcp.nami.works";
 
 export type AccessTokenClaims = {
   iss: string;
-  sub: string; // tenant:<slug>
+  sub: string; // principal:<id> when per-user, else tenant:<slug>
   tenant: string;
+  role?: PrincipalRole;
+  pid?: string; // principal id — re-resolved live on each request
+  label?: string;
   iat: number;
   exp: number;
 };
 
 export async function signAccessToken(args: {
   tenantSlug: string;
+  role?: PrincipalRole;
+  principalId?: string;
+  actorLabel?: string | null;
   ttlSeconds?: number;
 }): Promise<string> {
   const ttl = args.ttlSeconds ?? 60 * 60 * 24; // 24h
-  return await new SignJWT({ tenant: args.tenantSlug })
+  const payload: Record<string, unknown> = { tenant: args.tenantSlug };
+  if (args.role) payload.role = args.role;
+  if (args.principalId) payload.pid = args.principalId;
+  if (args.actorLabel) payload.label = args.actorLabel;
+  return await new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
     .setIssuer(ISSUER)
-    .setSubject(`tenant:${args.tenantSlug}`)
+    .setSubject(
+      args.principalId
+        ? `principal:${args.principalId}`
+        : `tenant:${args.tenantSlug}`,
+    )
     .setIssuedAt()
     .setExpirationTime(`${ttl}s`)
     .sign(getSigningKey());
