@@ -9,8 +9,9 @@ import {
   createMcpServerForTenant,
   listRegisteredToolNames,
   registerToolDefinition,
-  toolDisplayTitle,
 } from "./registry.js";
+import { TOOL_CATALOG } from "./tool-catalog.js";
+import { TOOL_TITLES, toolDisplayTitle } from "./tool-titles.js";
 
 const silentLogger = pino({ level: "silent" });
 
@@ -123,21 +124,29 @@ describe("tool registry", () => {
     }
   });
 
-  it("derives a Vendor · Readable Name display title from the tool name", () => {
-    expect(toolDisplayTitle("shopify_customer_ltv")).toBe("Shopify · Customer LTV");
-    expect(toolDisplayTitle("shopify_list_todays_orders")).toBe(
-      "Shopify · List Todays Orders",
+  it("uses the curated pt-BR display title for known tools", () => {
+    expect(toolDisplayTitle("shopify_customer_lifetime")).toBe(
+      "Shopify · LTV do cliente",
     );
-    expect(toolDisplayTitle("shopify_audit_missing_seo")).toBe(
-      "Shopify · Audit Missing SEO",
+    expect(toolDisplayTitle("shopify_list_todays_orders")).toBe(
+      "Shopify · Pedidos de hoje",
     );
     expect(toolDisplayTitle("omie_consultar_financeiro")).toBe(
-      "Omie · Consultar Financeiro",
+      "Omie · Contas a receber do cliente",
     );
-    expect(toolDisplayTitle("affiliates_list_profiles")).toBe(
-      "Affiliates · List Profiles",
+    expect(toolDisplayTitle("nami_feedback")).toBe("NAMI · Enviar feedback");
+  });
+
+  it("falls back to a derived Fornecedor · Nome title for unmapped tools", () => {
+    expect(toolDisplayTitle("shopify_brand_new_report")).toBe(
+      "Shopify · Brand New Report",
     );
-    expect(toolDisplayTitle("nami_feedback")).toBe("NAMI · Feedback");
+    expect(toolDisplayTitle("echo")).toBe("Echo");
+  });
+
+  it("has a curated title for every catalog tool (no drift)", () => {
+    const missing = Object.keys(TOOL_CATALOG).filter((n) => !TOOL_TITLES[n]);
+    expect(missing).toEqual([]);
   });
 
   it("returns isError=true when a tool handler throws", async () => {
