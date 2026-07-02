@@ -9,6 +9,7 @@ import {
   createMcpServerForTenant,
   listRegisteredToolNames,
   registerToolDefinition,
+  toolDisplayTitle,
 } from "./registry.js";
 
 const silentLogger = pino({ level: "silent" });
@@ -101,6 +102,7 @@ describe("tool registry", () => {
       const list = await client.listTools();
       expect(list.tools).toHaveLength(1);
       expect(list.tools[0]?.name).toBe("echo");
+      expect(list.tools[0]?.title).toBe("Echo");
       expect(list.tools[0]?.description).toBe("Echo back the message");
 
       const callResult = await client.callTool({
@@ -119,6 +121,23 @@ describe("tool registry", () => {
     } finally {
       await close();
     }
+  });
+
+  it("derives a Vendor · Readable Name display title from the tool name", () => {
+    expect(toolDisplayTitle("shopify_customer_ltv")).toBe("Shopify · Customer LTV");
+    expect(toolDisplayTitle("shopify_list_todays_orders")).toBe(
+      "Shopify · List Todays Orders",
+    );
+    expect(toolDisplayTitle("shopify_audit_missing_seo")).toBe(
+      "Shopify · Audit Missing SEO",
+    );
+    expect(toolDisplayTitle("omie_consultar_financeiro")).toBe(
+      "Omie · Consultar Financeiro",
+    );
+    expect(toolDisplayTitle("affiliates_list_profiles")).toBe(
+      "Affiliates · List Profiles",
+    );
+    expect(toolDisplayTitle("nami_feedback")).toBe("NAMI · Feedback");
   });
 
   it("returns isError=true when a tool handler throws", async () => {

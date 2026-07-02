@@ -22,6 +22,50 @@ export function listRegisteredToolNames(): string[] {
   return definitions.map((d) => d.name);
 }
 
+// Human-readable display title per tool. MCP clients (claude.ai) show the tool
+// `title` when present, falling back to humanizing the programmatic `name`
+// (e.g. shopify_customer_ltv → "Shopify customer ltv"). We render
+// "Vendor · Readable Name" (middle-dot separator) so the flat tool list reads
+// cleanly and clusters by vendor. Derived from the name — no per-tool config.
+const TOOL_VENDOR_LABELS: Record<string, string> = {
+  shopify: "Shopify",
+  omie: "Omie",
+  instagram: "Instagram",
+  brand: "Brand",
+  affiliates: "Affiliates",
+  nami: "NAMI",
+};
+
+// Tokens that should render uppercase (or mixed) instead of Title Case.
+const TOOL_TITLE_ACRONYMS: Record<string, string> = {
+  ltv: "LTV",
+  seo: "SEO",
+  pos: "POS",
+  id: "ID",
+  url: "URL",
+  aov: "AOV",
+  ugc: "UGC",
+  cpf: "CPF",
+  cnpj: "CNPJ",
+  nfe: "NFe",
+  b2b: "B2B",
+  cd: "CD",
+  sku: "SKU",
+};
+
+function capitalize(word: string): string {
+  return word ? word[0].toUpperCase() + word.slice(1) : word;
+}
+
+export function toolDisplayTitle(name: string): string {
+  const [vendor, ...rest] = name.split("_");
+  const label = TOOL_VENDOR_LABELS[vendor] ?? capitalize(vendor);
+  const readable = rest
+    .map((w) => TOOL_TITLE_ACRONYMS[w] ?? capitalize(w))
+    .join(" ");
+  return readable ? `${label} · ${readable}` : label;
+}
+
 // Used as the absolute base URL for MCP-advertised resource URLs (e.g. icons).
 // Falls back to the production hostname so the icon is served by the live ALB
 // even when OAUTH_ISSUER isn't set.
@@ -66,7 +110,11 @@ export function createMcpServerForTenant(ctx: ToolContext): McpServer {
     }
     server.registerTool(
       def.name,
-      { description: def.description, inputSchema: def.inputSchema },
+      {
+        title: toolDisplayTitle(def.name),
+        description: def.description,
+        inputSchema: def.inputSchema,
+      },
       async (args: unknown) => {
         const start = performance.now();
         let result: ToolResult;
