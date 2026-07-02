@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { getOmieClient } from "../../clients/omie.js";
+import {
+  describeOmieCompanies,
+  getOmieCompanies,
+  resolveOmieCompany,
+} from "../../clients/omie.js";
 import { registerToolDefinition } from "../../mcp/registry.js";
 import type { ToolContext, ToolResult } from "../../mcp/types.js";
 
@@ -40,7 +44,11 @@ function digitsOnly(v: string): string {
 }
 
 export async function consultarClienteHandler(
-  args: { cnpj?: string | undefined; codigo?: number | undefined },
+  args: {
+    cnpj?: string | undefined;
+    codigo?: number | undefined;
+    empresa?: string | undefined;
+  },
   ctx: ToolContext,
 ): Promise<ToolResult> {
   if (!args.cnpj && typeof args.codigo !== "number") {
@@ -55,7 +63,30 @@ export async function consultarClienteHandler(
     };
   }
 
-  const omie = await getOmieClient({ ssmPrefix: ctx.tenant.ssmPrefix });
+  const companies = await getOmieCompanies({ ssmPrefix: ctx.tenant.ssmPrefix });
+  const resolution = resolveOmieCompany(companies, args.empresa);
+  if (resolution.kind === "ambiguous") {
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Esta conta tem mais de uma empresa no Omie. Diga qual usar no parâmetro \`empresa\`:\n${describeOmieCompanies(companies)}`,
+        },
+      ],
+    };
+  }
+  if (resolution.kind === "notfound") {
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Empresa "${resolution.requested}" não encontrada. Opções:\n${describeOmieCompanies(companies)}`,
+        },
+      ],
+      isError: true,
+    };
+  }
+  const omie = resolution.company.client;
 
   let codigo = args.codigo;
   if (typeof codigo !== "number") {
@@ -169,7 +200,7 @@ export async function consultarClienteHandler(
 registerToolDefinition({
   name: "omie_consultar_cliente",
   description:
-    "Consulta um cliente no Omie por CNPJ/CPF ou pelo codigo_cliente_omie. Retorna razão social, contatos, endereço, tags e status (ativo/inativo/bloqueado).",
+    "Consulta um cliente em uma empresa do Omie por CNPJ/CPF ou pelo codigo_cliente_omie. Se o tenant tiver mais de uma empresa Omie e `empresa` não for informada, a tool pergunta qual usar. Retorna razão social, contatos, endereço, tags e status (ativo/inativo/bloqueado).",
   inputSchema: {
     cnpj: z
       .string()
@@ -182,6 +213,12 @@ registerToolDefinition({
       .int()
       .optional()
       .describe("codigo_cliente_omie. Use quando você já tem o ID."),
+    empresa: z
+      .string()
+      .optional()
+      .describe(
+        "Código da empresa Omie (ex: 000174). Omita para usar a única empresa; se houver várias, a tool lista as opções.",
+      ),
   },
   handler: consultarClienteHandler,
 });

@@ -3,12 +3,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { OmieCallResult, OmieClient } from "../../clients/omie.js";
 import type { ToolContext } from "../../mcp/types.js";
 
-vi.mock("../../clients/omie.js", () => ({
-  getOmieClient: vi.fn(),
-}));
+vi.mock("../../clients/omie.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../clients/omie.js")>();
+  return { ...actual, getOmieCompanies: vi.fn() };
+});
 
-import { getOmieClient } from "../../clients/omie.js";
+import { getOmieCompanies } from "../../clients/omie.js";
 import { consultarFinanceiroHandler } from "./consultar-financeiro.js";
+
+function asCompany(client: OmieClient) {
+  return [{ code: "principal", client }];
+}
 
 const silentLogger = pino({ level: "silent" });
 
@@ -37,7 +43,7 @@ function fakeOmie(responses: Array<OmieCallResult<unknown>>): OmieClient {
 }
 
 beforeEach(() => {
-  vi.mocked(getOmieClient).mockReset();
+  vi.mocked(getOmieCompanies).mockReset();
 });
 
 describe("consultarFinanceiroHandler", () => {
@@ -71,7 +77,7 @@ describe("consultarFinanceiroHandler", () => {
     const client = fakeOmie([
       { ok: true, data: { conta_receber_cadastro: items } },
     ]);
-    vi.mocked(getOmieClient).mockResolvedValue(client);
+    vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
 
     const res = await consultarFinanceiroHandler(
       { codigoCliente: 999 },
@@ -137,7 +143,7 @@ describe("consultarFinanceiroHandler", () => {
       },
     };
     const client = fakeOmie([page1, page2]);
-    vi.mocked(getOmieClient).mockResolvedValue(client);
+    vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
 
     const res = await consultarFinanceiroHandler({}, makeCtx());
     const text = res.content[0]?.text ?? "";
@@ -158,7 +164,7 @@ describe("consultarFinanceiroHandler", () => {
         faultstring: "Não existem registros para a página informada.",
       },
     ]);
-    vi.mocked(getOmieClient).mockResolvedValue(client);
+    vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
 
     const res = await consultarFinanceiroHandler(
       { codigoCliente: 999 },
@@ -172,7 +178,7 @@ describe("consultarFinanceiroHandler", () => {
     const client = fakeOmie([
       { ok: true, data: { conta_receber_cadastro: [] } },
     ]);
-    vi.mocked(getOmieClient).mockResolvedValue(client);
+    vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
 
     const res = await consultarFinanceiroHandler(
       { codigoCliente: 999 },
