@@ -3,12 +3,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { OmieCallResult, OmieClient } from "../../clients/omie.js";
 import type { ToolContext } from "../../mcp/types.js";
 
-vi.mock("../../clients/omie.js", () => ({
-  getOmieClient: vi.fn(),
-}));
+vi.mock("../../clients/omie.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../clients/omie.js")>();
+  return { ...actual, getOmieCompanies: vi.fn() };
+});
 
-import { getOmieClient } from "../../clients/omie.js";
+import { getOmieCompanies } from "../../clients/omie.js";
 import { consultarClienteHandler } from "./consultar-cliente.js";
+
+function asCompany(client: OmieClient) {
+  return [{ code: "principal", client }];
+}
 
 const silentLogger = pino({ level: "silent" });
 
@@ -37,7 +43,7 @@ function fakeOmie(responses: Array<OmieCallResult<unknown>>): OmieClient {
 }
 
 beforeEach(() => {
-  vi.mocked(getOmieClient).mockReset();
+  vi.mocked(getOmieCompanies).mockReset();
 });
 
 describe("consultarClienteHandler", () => {
@@ -64,7 +70,7 @@ describe("consultarClienteHandler", () => {
         },
       },
     ]);
-    vi.mocked(getOmieClient).mockResolvedValue(client);
+    vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
 
     const res = await consultarClienteHandler({ codigo: 12345 }, makeCtx());
     const text = res.content[0]?.text ?? "";
@@ -111,7 +117,7 @@ describe("consultarClienteHandler", () => {
         },
       },
     ]);
-    vi.mocked(getOmieClient).mockResolvedValue(client);
+    vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
 
     const res = await consultarClienteHandler(
       { cnpj: "12.345.678/0001-90" },
@@ -125,7 +131,7 @@ describe("consultarClienteHandler", () => {
     const client = fakeOmie([
       { ok: true, data: { clientes_cadastro_resumido: [] } },
     ]);
-    vi.mocked(getOmieClient).mockResolvedValue(client);
+    vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
 
     const res = await consultarClienteHandler(
       { cnpj: "99.999.999/9999-99" },
@@ -150,7 +156,7 @@ describe("consultarClienteHandler", () => {
         faultcode: "SOAP-ENV:Client-101",
       },
     ]);
-    vi.mocked(getOmieClient).mockResolvedValue(client);
+    vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
 
     const res = await consultarClienteHandler({ codigo: 7 }, makeCtx());
     expect(res.isError).toBeUndefined();
@@ -161,7 +167,7 @@ describe("consultarClienteHandler", () => {
     const client = fakeOmie([
       { ok: false, status: 500, faultstring: "internal" },
     ]);
-    vi.mocked(getOmieClient).mockResolvedValue(client);
+    vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
     await expect(
       consultarClienteHandler({ codigo: 1 }, makeCtx()),
     ).rejects.toThrow(/Omie ConsultarCliente failed/);

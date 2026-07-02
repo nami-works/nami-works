@@ -3,12 +3,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { OmieCallResult, OmieClient } from "../../clients/omie.js";
 import type { ToolContext } from "../../mcp/types.js";
 
-vi.mock("../../clients/omie.js", () => ({
-  getOmieClient: vi.fn(),
-}));
+vi.mock("../../clients/omie.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../clients/omie.js")>();
+  return { ...actual, getOmieCompanies: vi.fn() };
+});
 
-import { getOmieClient } from "../../clients/omie.js";
+import { getOmieCompanies } from "../../clients/omie.js";
 import { listarPedidosHandler } from "./listar-pedidos.js";
+
+function asCompany(client: OmieClient) {
+  return [{ code: "principal", client }];
+}
 
 const silentLogger = pino({ level: "silent" });
 
@@ -37,7 +43,7 @@ function fakeOmie(responses: Array<OmieCallResult<unknown>>): OmieClient {
 }
 
 beforeEach(() => {
-  vi.mocked(getOmieClient).mockReset();
+  vi.mocked(getOmieCompanies).mockReset();
 });
 
 describe("listarPedidosHandler", () => {
@@ -82,7 +88,7 @@ describe("listarPedidosHandler", () => {
         } as unknown;
       }) as unknown as OmieClient["call"],
     };
-    vi.mocked(getOmieClient).mockResolvedValue(client);
+    vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
 
     const res = await listarPedidosHandler(
       { desde: "2026-04-01", ate: "2026-04-30" },
@@ -103,13 +109,13 @@ describe("listarPedidosHandler", () => {
         faultstring: "Não existem registros para a página informada.",
       },
     ]);
-    vi.mocked(getOmieClient).mockResolvedValue(client);
+    vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
     const res = await listarPedidosHandler(
       { desde: "2026-04-01", ate: "2026-04-02" },
       makeCtx(),
     );
     expect(res.isError).toBeUndefined();
-    expect(res.content[0]?.text).toContain("Nenhum pedido encontrado");
+    expect(res.content[0]?.text).toContain("Nenhum pedido");
   });
 
   it("scopes to a single client when codigoCliente is given", async () => {
@@ -122,7 +128,7 @@ describe("listarPedidosHandler", () => {
         return { ok: true, data: { pedido_venda_produto: [] } } as unknown;
       }) as unknown as OmieClient["call"],
     };
-    vi.mocked(getOmieClient).mockResolvedValue(client);
+    vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
     await listarPedidosHandler(
       { desde: "2026-04-01", ate: "2026-04-02", codigoCliente: 12345 },
       makeCtx(),

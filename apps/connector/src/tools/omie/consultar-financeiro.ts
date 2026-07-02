@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { getOmieClient } from "../../clients/omie.js";
+import {
+  describeOmieCompanies,
+  getOmieCompanies,
+  resolveOmieCompany,
+  type OmieClient,
+} from "../../clients/omie.js";
 import { registerToolDefinition } from "../../mcp/registry.js";
 import type { ToolContext, ToolResult } from "../../mcp/types.js";
 
@@ -30,23 +35,19 @@ function brToYmd(br: string): string {
   return m ? `${m[3]}-${m[2]}-${m[1]}` : br;
 }
 
-export async function consultarFinanceiroHandler(
-  args: { codigoCliente?: number | undefined },
-  ctx: ToolContext,
-): Promise<ToolResult> {
-  const omie = await getOmieClient({ ssmPrefix: ctx.tenant.ssmPrefix });
-  const scopedToClient = typeof args.codigoCliente === "number";
-  const scopeLabel = scopedToClient
-    ? `cliente ${args.codigoCliente}`
-    : "todos os clientes";
-
+// Accounts-receivable for one Omie company. Single page when scoped to a client;
+// paginated (capped) when walking the whole ledger.
+async function fetchArForClient(
+  client: OmieClient,
+  codigoCliente: number | undefined,
+): Promise<{ items: ContaReceber[]; totalRegistros: number }> {
+  const scoped = typeof codigoCliente === "number";
+  const maxPages = scoped ? 1 : ALL_CLIENTS_MAX_PAGES;
   const items: ContaReceber[] = [];
-  const maxPages = scopedToClient ? 1 : ALL_CLIENTS_MAX_PAGES;
-  let totalRegistros: number | undefined;
-  let totalPaginas: number | undefined;
+  let totalRegistros = 0;
 
   for (let pagina = 1; pagina <= maxPages; pagina += 1) {
-    const res = await omie.call<
+    const res = await client.call<
       Record<string, unknown>,
       ListarContasReceberResponse
     >({
@@ -56,7 +57,7 @@ export async function consultarFinanceiroHandler(
         pagina,
         registros_por_pagina: 200,
         apenas_importado_api: "N",
-        ...(scopedToClient ? { filtrar_por_cliente: args.codigoCliente } : {}),
+        ...(scoped ? { filtrar_por_cliente: codigoCliente } : {}),
       },
     });
     if (!res.ok) {
@@ -65,19 +66,64 @@ export async function consultarFinanceiroHandler(
     }
     const page = res.data.conta_receber_cadastro ?? [];
     items.push(...page);
-    totalRegistros = res.data.total_de_registros;
-    totalPaginas = res.data.total_de_paginas;
-    if (page.length === 0 || (totalPaginas !== undefined && pagina >= totalPaginas)) {
+    totalRegistros = res.data.total_de_registros ?? totalRegistros;
+    const totalPaginas = res.data.total_de_paginas;
+    if (
+      page.length === 0 ||
+      (totalPaginas !== undefined && pagina >= totalPaginas)
+    ) {
       break;
     }
   }
+  return { items, totalRegistros: totalRegistros || items.length };
+}
+
+export async function consultarFinanceiroHandler(
+  args: { empresa?: string | undefined; codigoCliente?: number | undefined },
+  ctx: ToolContext,
+): Promise<ToolResult> {
+  const companies = await getOmieCompanies({ ssmPrefix: ctx.tenant.ssmPrefix });
+  const resolution = resolveOmieCompany(companies, args.empresa);
+  if (resolution.kind === "ambiguous") {
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Esta conta tem mais de uma empresa no Omie. Diga qual usar no parâmetro \`empresa\`:\n${describeOmieCompanies(companies)}`,
+        },
+      ],
+    };
+  }
+  if (resolution.kind === "notfound") {
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Empresa "${resolution.requested}" não encontrada. Opções:\n${describeOmieCompanies(companies)}`,
+        },
+      ],
+      isError: true,
+    };
+  }
+  const company = resolution.company;
+  const multi = companies.length > 1;
+  const companyLabel = multi ? ` · empresa ${company.code}` : "";
+  const scopedToClient = typeof args.codigoCliente === "number";
+  const scopeLabel = scopedToClient
+    ? `cliente ${args.codigoCliente}`
+    : "todos os clientes";
+
+  const { items, totalRegistros } = await fetchArForClient(
+    company.client,
+    args.codigoCliente,
+  );
 
   if (items.length === 0) {
     return {
       content: [
         {
           type: "text",
-          text: `Nenhum lançamento financeiro encontrado para ${scopeLabel}.`,
+          text: `Nenhum lançamento financeiro para ${scopeLabel}${companyLabel}.`,
         },
       ],
     };
@@ -94,7 +140,9 @@ export async function consultarFinanceiroHandler(
 
   const lines = items
     .slice()
-    .sort((a, b) => brToYmd(a.data_vencimento).localeCompare(brToYmd(b.data_vencimento)))
+    .sort((a, b) =>
+      brToYmd(a.data_vencimento).localeCompare(brToYmd(b.data_vencimento)),
+    )
     .slice(0, 25)
     .map((item) => {
       const num = item.numero_documento ?? `#${item.codigo_lancamento_omie}`;
@@ -105,17 +153,15 @@ export async function consultarFinanceiroHandler(
       return `  ${cliente}${num} · vence ${item.data_vencimento} · R$ ${item.valor_documento.toFixed(2)} · ${item.status_titulo}`;
     });
 
-  // For the all-clients scope, note when the ledger is larger than what we walked.
-  const walked = totalRegistros ?? items.length;
-  const capped = !scopedToClient && walked > items.length;
+  const capped = !scopedToClient && totalRegistros > items.length;
   const truncated = capped
-    ? `\n\n(mostrando 25 de ${items.length} carregados; ledger tem ${walked} lançamentos — consulte um cliente específico para o detalhe completo)`
+    ? `\n\n(mostrando 25 de ${items.length} carregados; ledger tem ${totalRegistros} — consulte um cliente específico para o detalhe completo)`
     : items.length > 25
       ? `\n\n(mostrando 25 de ${items.length})`
       : "";
 
   const summary = [
-    `Contas a receber · ${scopeLabel}`,
+    `Contas a receber · ${scopeLabel}${companyLabel}`,
     `A receber: R$ ${aReceber.toFixed(2)}`,
     `Vencido:   R$ ${vencido.toFixed(2)}`,
     `Recebido:  R$ ${recebido.toFixed(2)}`,
@@ -133,8 +179,14 @@ export async function consultarFinanceiroHandler(
 registerToolDefinition({
   name: "omie_consultar_financeiro",
   description:
-    "Contas a receber no Omie. Sem cliente informado, resume a carteira inteira (todos os clientes); com codigoCliente, foca em um cliente. Retorna total a receber, vencido, recebido e os 25 lançamentos mais antigos.",
+    "Contas a receber de uma empresa no Omie. Sem cliente informado, resume a carteira inteira; com codigoCliente, foca nesse cliente. Se o tenant tiver mais de uma empresa Omie e `empresa` não for informada, a tool pergunta qual usar.",
   inputSchema: {
+    empresa: z
+      .string()
+      .optional()
+      .describe(
+        "Código da empresa Omie (ex: 000174). Omita para usar a única empresa; se houver várias, a tool lista as opções.",
+      ),
     codigoCliente: z
       .number()
       .int()

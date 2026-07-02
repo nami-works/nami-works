@@ -142,6 +142,110 @@ export function buildOmieClient(
 
 export type OmieClientArgs = { ssmPrefix: string };
 
+// One Omie legal entity (empresa) the tenant operates, with its own API client.
+export type OmieCompany = { code: string; label?: string; client: OmieClient };
+
+type CompaniesCacheEntry = { companies: OmieCompany[]; expiresAt: number };
+const companiesCache = new Map<string, CompaniesCacheEntry>();
+
+type CompanyManifestEntry = {
+  code: string;
+  label?: string;
+  appKey: string;
+  appSecret: string;
+};
+
+/**
+ * All Omie companies configured for a tenant. GE runs several Omie legal
+ * entities, so the Omie tools query every configured company and aggregate.
+ *
+ * Source of truth is a JSON manifest at `${ssmPrefix}/omie/companies`:
+ *   [{ "code": "000174", "label": "…", "appKey": "…", "appSecret": "…" }, …]
+ * When the manifest is absent (or placeholder), we fall back to the legacy
+ * single-company pair `${ssmPrefix}/omie/app_key` + `/app_secret` as one
+ * company keyed "principal", so older provisioning keeps working.
+ */
+export async function getOmieCompanies(
+  args: OmieClientArgs,
+): Promise<OmieCompany[]> {
+  const now = Date.now();
+  const hit = companiesCache.get(args.ssmPrefix);
+  if (hit && hit.expiresAt > now) return hit.companies;
+
+  const manifestRaw = await getSecret(
+    `${args.ssmPrefix}/omie/companies`,
+  ).catch(() => null);
+
+  let companies: OmieCompany[];
+  if (manifestRaw && manifestRaw !== "REPLACE_ME") {
+    let parsed: CompanyManifestEntry[];
+    try {
+      parsed = JSON.parse(manifestRaw) as CompanyManifestEntry[];
+    } catch {
+      throw new Error(
+        `Omie companies manifest at ${args.ssmPrefix}/omie/companies is not valid JSON.`,
+      );
+    }
+    companies = parsed
+      .filter(
+        (c) =>
+          c.appKey &&
+          c.appSecret &&
+          c.appKey !== "REPLACE_ME" &&
+          c.appSecret !== "REPLACE_ME",
+      )
+      .map((c) => ({
+        code: c.code,
+        ...(c.label ? { label: c.label } : {}),
+        client: buildOmieClient(c.appKey, c.appSecret),
+      }));
+    if (companies.length === 0) {
+      throw new Error(
+        `Omie companies manifest at ${args.ssmPrefix}/omie/companies has no usable entries (all missing or placeholder credentials).`,
+      );
+    }
+  } else {
+    // Legacy single-company fallback (throws on placeholder, as before).
+    const client = await getOmieClient({ ssmPrefix: args.ssmPrefix });
+    companies = [{ code: "principal", client }];
+  }
+
+  companiesCache.set(args.ssmPrefix, {
+    companies,
+    expiresAt: now + CLIENT_CACHE_TTL_MS,
+  });
+  return companies;
+}
+
+export type CompanyResolution =
+  | { kind: "one"; company: OmieCompany }
+  | { kind: "ambiguous"; companies: OmieCompany[] }
+  | { kind: "notfound"; requested: string; companies: OmieCompany[] };
+
+// Pick the Omie company to query. If the caller named one (`empresa` = code),
+// resolve it; if there's only one company, use it; otherwise signal ambiguity so
+// the tool can ask the user which company (app) they mean.
+export function resolveOmieCompany(
+  companies: OmieCompany[],
+  requested?: string,
+): CompanyResolution {
+  if (requested && requested.length > 0) {
+    const match = companies.find((c) => c.code === requested);
+    return match
+      ? { kind: "one", company: match }
+      : { kind: "notfound", requested, companies };
+  }
+  if (companies.length === 1) return { kind: "one", company: companies[0]! };
+  return { kind: "ambiguous", companies };
+}
+
+// One-line listing of the configured companies, for disambiguation prompts.
+export function describeOmieCompanies(companies: OmieCompany[]): string {
+  return companies
+    .map((c) => `- ${c.code}${c.label ? ` (${c.label})` : ""}`)
+    .join("\n");
+}
+
 export async function getOmieClient(args: OmieClientArgs): Promise<OmieClient> {
   const key = args.ssmPrefix;
   const now = Date.now();
@@ -166,4 +270,5 @@ export async function getOmieClient(args: OmieClientArgs): Promise<OmieClient> {
 
 export function __clearOmieClientCacheForTesting(): void {
   cache.clear();
+  companiesCache.clear();
 }
