@@ -62,7 +62,11 @@ _(empty — the i18n online-tokens fix shipped in the 2026-05-22 deploy below.)_
 ## Deployed
 
 ### 2026-07-02 · connector — connect-polish (holo favicon, Google-G button, drop bearer UI) + Inter font + tool display titles
-- **Image tag:** `nami-works:connector-20260702-screen` (supersedes `-titles3` → `-titles2` → `-titles` → `-inter` → `-holo`). Live + `/health` ok.
+- **Image tag:** `nami-works:connector-20260702-omie2` (supersedes -screen → -titles3 → -titles2 → -titles → -inter → -holo). Live + `/health` ok.
+- **Live diagnosis + provisioning (2026-07-02, via short-lived owner-JWT MCP smoke on the box):** Only Shopify had real backing. Fixed both gaps:
+  - **Instagram** — SSM long_lived_token was REAL but EXPIRED; replaced with the working system-user token (META_SANDBOX_API_KEY, non-expiring), seeded InstagramAccount (@gebeauty, igUserId 17841423297702015), ran first ingest (1000 posts). IG tools + auto-refresh now return real data.
+  - **Omie** — SSM app_key/app_secret were REPLACE_ME placeholders. Introduced multi-company support: SSM `/omie/companies` JSON manifest (v2) with all 6 GE entities' real creds parsed from `sandbox/gebeauty/.env` (## LABEL blocks; colliding var names, distinct values). PR #42 (`getOmieCompanies`) + PR #43 (multi-select `empresa`: ask-which via named multi-select prompt, aggregate selected + consolidated total). Verified live: Matriz AR real; multi-select aggregates. Companies: Matriz, Shopping Recife, Shops Jardins, Rio Sul, Rio Mar Recife, Extrema.
+- **PR #40:** `/icon.svg` serves holo (connector-list icon). **PR #41:** consent heading → "MCP GE Beauty", centered.
 - **PR #40 (rolled in -screen):** `/icon.svg` now serves the holo tile (SVG wrapping the holo PNG). claude.ai reads the connector-list icon from `/icon.svg` (SVG > favicon), which is why the flat red "ge" persisted after only favicon/icon.png were changed. All three icon routes now holo. **May need a full connector remove + re-add in claude.ai to bust the cached icon.**
 - **PR #41 (rolled in -screen):** consent heading "Autorizar acesso" → "MCP GE Beauty", centered.
 - **PR #37/#38 (superseded):** first-pass tool `title` (derived, then curated pt-BR).
