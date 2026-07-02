@@ -208,6 +208,7 @@ describe("authorizeTenantRequest — per-user principals", () => {
       status: "active",
       createdAt: new Date("2026-07-01T00:00:00Z"),
       updatedAt: new Date("2026-07-01T00:00:00Z"),
+      roles: [],
       tenant: tenantRow(),
       ...overrides,
     };

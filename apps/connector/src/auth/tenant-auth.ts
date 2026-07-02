@@ -1,11 +1,14 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import type {
+  AccessRole,
   Brand,
   IntegrationTenant,
   PrincipalRole,
+  PrincipalRoleAssignment,
   TenantPrincipal,
 } from "@prisma/client-connector";
 import { prisma as defaultPrisma } from "../db/prisma.js";
+import { computeEffectiveAccess, type EffectiveAccess } from "../mcp/access.js";
 import { verifyAccessToken } from "../oauth/jwt.js";
 
 export type TenantContext = {
@@ -22,10 +25,14 @@ export type TenantContext = {
   role: PrincipalRole;
   principalId: string | null;
   actorLabel: string | null;
+  // Effective tool access = union of the principal's assigned roles' grants.
+  // The registry filters tools against this. Legacy break-glass bearer = owner.
+  access: EffectiveAccess;
 };
 
 export type PrincipalWithTenant = TenantPrincipal & {
   tenant: IntegrationTenant;
+  roles: (PrincipalRoleAssignment & { role: AccessRole })[];
 };
 
 export type TenantAuthSuccess = { ok: true; tenant: TenantContext };
@@ -44,7 +51,7 @@ export type TenantLookup = {
   tenantPrincipal?: {
     findUnique: (args: {
       where: { bearerTokenHash: string } | { id: string };
-      include?: { tenant: true };
+      include?: { tenant: true; roles?: { include: { role: true } } };
     }) => Promise<PrincipalWithTenant | null>;
   };
 };
@@ -92,7 +99,7 @@ export async function authorizeTenantRequest(input: {
       try {
         principal = await db.tenantPrincipal.findUnique({
           where: { id: claims.pid },
-          include: { tenant: true },
+          include: { tenant: true, roles: { include: { role: true } } },
         });
       } catch {
         return BACKEND_DOWN;
@@ -131,7 +138,7 @@ export async function authorizeTenantRequest(input: {
     try {
       principal = await db.tenantPrincipal.findUnique({
         where: { bearerTokenHash: candidateHash },
-        include: { tenant: true },
+        include: { tenant: true, roles: { include: { role: true } } },
       });
     } catch {
       return BACKEND_DOWN;
@@ -167,6 +174,11 @@ export async function authorizeTenantRequest(input: {
 }
 
 function contextFromPrincipal(p: PrincipalWithTenant): TenantContext {
+  const access = computeEffectiveAccess((p.roles ?? []).map((a) => a.role));
+  // The coarse `role=owner` tier is always an owner, even before any Admin
+  // AccessRole is assigned (keeps existing owner principals working, and is the
+  // break-glass owner tier).
+  if (p.role === "owner") access.isOwner = true;
   return {
     id: p.tenant.id,
     slug: p.tenant.slug,
@@ -177,6 +189,7 @@ function contextFromPrincipal(p: PrincipalWithTenant): TenantContext {
     role: p.role,
     principalId: p.id,
     actorLabel: p.label,
+    access,
   };
 }
 
@@ -194,6 +207,8 @@ function contextFromTenant(
     role,
     principalId: null,
     actorLabel: null,
+    // Break-glass tenant bearer is owner: full access, no per-system limits.
+    access: { isOwner: true, systems: {} },
   };
 }
 

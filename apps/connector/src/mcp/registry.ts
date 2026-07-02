@@ -2,6 +2,8 @@ import { performance } from "node:perf_hooks";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ZodRawShape } from "zod";
 import { recordInvocation } from "../lib/logger.js";
+import { canUseTool } from "./access.js";
+import { TOOL_CATALOG } from "./tool-catalog.js";
 import type { ToolContext, ToolDefinition, ToolResult } from "./types.js";
 
 const definitions: ToolDefinition<ZodRawShape>[] = [];
@@ -51,8 +53,17 @@ export function createMcpServerForTenant(ctx: ToolContext): McpServer {
   );
 
   for (const def of definitions) {
-    // Role gate: owner-only tools are neither listed nor callable for operators.
-    if (def.requiredRole === "owner" && ctx.tenant.role !== "owner") continue;
+    // Access gate. Owner-only admin tools require owner. Every other tool is
+    // filtered by the principal's effective per-system access (union of their
+    // roles' grants; read vs write) via the tool catalog. A registered tool
+    // missing from the catalog fails closed (owner-only).
+    if (def.requiredRole === "owner" && !ctx.tenant.access.isOwner) continue;
+    const catalogEntry = TOOL_CATALOG[def.name];
+    if (catalogEntry) {
+      if (!canUseTool(ctx.tenant.access, catalogEntry)) continue;
+    } else if (!ctx.tenant.access.isOwner) {
+      continue;
+    }
     server.registerTool(
       def.name,
       { description: def.description, inputSchema: def.inputSchema },
