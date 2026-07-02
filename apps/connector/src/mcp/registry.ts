@@ -51,6 +51,8 @@ export function createMcpServerForTenant(ctx: ToolContext): McpServer {
   );
 
   for (const def of definitions) {
+    // Role gate: owner-only tools are neither listed nor callable for operators.
+    if (def.requiredRole === "owner" && ctx.tenant.role !== "owner") continue;
     server.registerTool(
       def.name,
       { description: def.description, inputSchema: def.inputSchema },
@@ -96,6 +98,8 @@ export function createMcpServerForTenant(ctx: ToolContext): McpServer {
           status,
           durationMs,
           requestId: ctx.requestId,
+          principalId: ctx.tenant.principalId,
+          actorLabel: ctx.tenant.actorLabel,
         });
         return result;
       },

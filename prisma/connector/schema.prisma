@@ -20,6 +20,11 @@ enum TenantStatus {
   disabled
 }
 
+enum PrincipalRole {
+  owner
+  operator
+}
+
 model IntegrationTenant {
   id                   String               @id @default(cuid())
   slug                 String               @unique
@@ -39,7 +44,29 @@ model IntegrationTenant {
   instagramPosts       InstagramPost[]
   voiceCards           VoiceCard[]
   feedback             Feedback[]
+  principals           TenantPrincipal[]
 
+  @@index([status])
+}
+
+// A human operator authorized to act on a tenant. Each carries their own
+// bearer (so actions are attributable and revocable per person) and a role.
+// `owner` may run canonical/structural tools (gated via ToolDefinition.requiredRole);
+// `operator` runs the day-to-day surface. Introduced when the connector moved
+// off the single shared-bearer model.
+model TenantPrincipal {
+  id              String            @id @default(cuid())
+  tenantId        String
+  label           String
+  contactEmail    String
+  bearerTokenHash String            @unique
+  role            PrincipalRole     @default(operator)
+  status          TenantStatus      @default(active)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  tenant          IntegrationTenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
   @@index([status])
 }
 
@@ -50,6 +77,8 @@ model ToolInvocationLog {
   status     String
   durationMs Int
   requestId  String
+  principalId String?
+  actorLabel  String?
   createdAt  DateTime          @default(now())
   tenant     IntegrationTenant @relation(fields: [tenantId], references: [id])
 

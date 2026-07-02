@@ -5,7 +5,11 @@ import {
   __resetSigningKeyForTesting,
   signAccessToken,
 } from "../oauth/jwt.js";
-import { authorizeTenantRequest, type TenantLookup } from "./tenant-auth.js";
+import {
+  authorizeTenantRequest,
+  type TenantLookup,
+  type PrincipalWithTenant,
+} from "./tenant-auth.js";
 
 const BEARER = "the-raw-bearer-value-for-tests";
 const BEARER_HASH = createHash("sha256").update(BEARER).digest("hex");
@@ -182,6 +186,78 @@ describe("authorizeTenantRequest — JWT (OAuth-issued) path", () => {
       slug: "gebeauty",
       authorizationHeader: `Bearer ${jwt}`,
       prisma: stub(tenantRow({ status: "suspended" })),
+    });
+    expect(result.ok).toBe(false);
+  });
+});
+
+describe("authorizeTenantRequest — per-user principals", () => {
+  const P_BEARER = "operator-personal-bearer-value";
+  const P_HASH = createHash("sha256").update(P_BEARER).digest("hex");
+
+  function principalRow(
+    overrides: Partial<PrincipalWithTenant> = {},
+  ): PrincipalWithTenant {
+    return {
+      id: "p_ops",
+      tenantId: "t_gebeauty",
+      label: "Ops Manager",
+      contactEmail: "ops@gebeauty.com.br",
+      bearerTokenHash: P_HASH,
+      role: "operator",
+      status: "active",
+      createdAt: new Date("2026-07-01T00:00:00Z"),
+      updatedAt: new Date("2026-07-01T00:00:00Z"),
+      tenant: tenantRow(),
+      ...overrides,
+    };
+  }
+
+  function principalStub(principal: PrincipalWithTenant | null): TenantLookup {
+    return {
+      integrationTenant: { findUnique: async () => tenantRow() },
+      tenantPrincipal: { findUnique: async () => principal },
+    };
+  }
+
+  it("resolves a principal bearer to its role + attribution", async () => {
+    const result = await authorizeTenantRequest({
+      slug: "gebeauty",
+      authorizationHeader: `Bearer ${P_BEARER}`,
+      prisma: principalStub(principalRow()),
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.tenant.role).toBe("operator");
+      expect(result.tenant.principalId).toBe("p_ops");
+      expect(result.tenant.actorLabel).toBe("Ops Manager");
+    }
+  });
+
+  it("resolves an owner principal with the owner role", async () => {
+    const result = await authorizeTenantRequest({
+      slug: "gebeauty",
+      authorizationHeader: `Bearer ${P_BEARER}`,
+      prisma: principalStub(principalRow({ role: "owner" })),
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.tenant.role).toBe("owner");
+  });
+
+  it("401s a disabled principal (per-person kill switch)", async () => {
+    const result = await authorizeTenantRequest({
+      slug: "gebeauty",
+      authorizationHeader: `Bearer ${P_BEARER}`,
+      prisma: principalStub(principalRow({ status: "disabled" })),
+    });
+    expect(result.ok).toBe(false);
+  });
+
+  it("401s when the principal belongs to a different tenant slug", async () => {
+    const result = await authorizeTenantRequest({
+      slug: "someone-else",
+      authorizationHeader: `Bearer ${P_BEARER}`,
+      prisma: principalStub(principalRow()),
     });
     expect(result.ok).toBe(false);
   });
