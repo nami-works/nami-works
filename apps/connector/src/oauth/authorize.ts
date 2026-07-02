@@ -4,6 +4,11 @@ import type { PrincipalRole } from "@prisma/client-connector";
 import { type TenantLookup } from "../auth/tenant-auth.js";
 import { prisma as defaultPrisma } from "../db/prisma.js";
 import { issueCode } from "./codes.js";
+import {
+  CONSENT_FONT_BOLD,
+  CONSENT_FONT_MEDIUM,
+  CONSENT_LOGO_HOLO,
+} from "./consent-assets.js";
 import { verifyClientId } from "./jwt.js";
 
 /**
@@ -49,41 +54,56 @@ function renderConsent(args: {
   const error = args.errorMessage
     ? `<div class="error">${escapeHtml(args.errorMessage)}</div>`
     : "";
+  const client = escapeHtml(args.clientName ?? "o aplicativo");
   return `<!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <title>Authorize ${escapeHtml(args.clientName ?? "MCP client")} — NAMI Works</title>
+  <title>Autorizar ${client} · GE Beauty</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: -apple-system, system-ui, Segoe UI, sans-serif; background: #f7f7f5; margin: 0; padding: 0; color: #222; }
-    .card { max-width: 520px; margin: 8vh auto; background: #fff; padding: 36px 40px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-    h1 { font-size: 22px; margin: 0 0 12px; }
-    p  { color: #555; line-height: 1.5; margin: 0 0 18px; font-size: 14px; }
-    .tenant { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #f0efeb; padding: 2px 8px; border-radius: 4px; }
-    label { display: block; font-size: 13px; color: #444; margin-bottom: 6px; font-weight: 500; }
-    input[type=password], input[type=text] { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 14px; border: 1px solid #d4d3cf; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-    button { margin-top: 18px; width: 100%; padding: 11px; font-size: 14px; font-weight: 500; border: 0; border-radius: 6px; background: #1f1e1c; color: #fff; cursor: pointer; }
-    button:hover { background: #000; }
-    .error { background: #fde8e8; color: #9f1d1d; padding: 10px 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; }
-    .footer { margin-top: 22px; color: #888; font-size: 12px; text-align: center; }
+    @font-face{font-family:"ItalianPlate";font-weight:500;font-style:normal;src:url(${CONSENT_FONT_MEDIUM}) format("woff2");font-display:swap;}
+    @font-face{font-family:"ItalianPlate";font-weight:700;font-style:normal;src:url(${CONSENT_FONT_BOLD}) format("woff2");font-display:swap;}
+    @keyframes holo{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
+    :root{--ink:#1A1A18;--sub:#5A5A57;--faint:#8F8C85;--danger:#C0392B;--page:#ECEDE9;--card:#FFFFFF;--line:#DAD8D1;}
+    *{box-sizing:border-box;}
+    body{font-family:"ItalianPlate",-apple-system,system-ui,"Segoe UI",sans-serif;background:var(--page);color:var(--ink);min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center;padding:32px 16px;-webkit-font-smoothing:antialiased;}
+    .card{position:relative;width:100%;max-width:440px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:38px 36px 30px;overflow:hidden;box-shadow:0 12px 40px -18px rgba(31,30,28,.28);}
+    .brandbar{position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#5ecece,#b09fda,#d4a8d4,#5ecece);background-size:200% 100%;animation:holo 3.6s linear infinite;}
+    .logo{display:block;width:104px;height:104px;object-fit:cover;margin:4px auto 24px;border-radius:20px;box-shadow:4px -4px 11px -4px rgba(31,30,28,.18),11px -11px 30px -10px rgba(31,30,28,.13);}
+    h1{font-weight:700;font-size:23px;letter-spacing:-.01em;margin:0 0 12px;}
+    .lead{font-weight:500;font-size:14.5px;line-height:1.55;color:var(--sub);margin:0 0 22px;}
+    .lead strong{color:var(--ink);font-weight:700;}
+    label{display:block;font-weight:700;font-size:12.5px;color:#33322F;margin-bottom:7px;}
+    input[type=password]{width:100%;padding:12px 14px;font-size:14px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);background:#FCFBF9;border:1.5px solid var(--line);border-radius:10px;outline:none;transition:border-color .12s,box-shadow .12s,background .12s;}
+    input[type=password]::placeholder{color:#B4B1A9;}
+    input[type=password]:focus{border-color:#b09fda;background:#fff;box-shadow:0 0 0 3px rgba(94,206,206,.28);}
+    .help{font-size:12px;color:var(--faint);margin:8px 0 0;font-weight:500;}
+    button{width:100%;margin-top:22px;padding:13px;cursor:pointer;font-family:inherit;font-weight:700;font-size:15px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.32);background:linear-gradient(100deg,#5ecece,#b09fda,#d4a8d4);border:0;border-radius:10px;transition:filter .12s,transform .04s;}
+    button:hover{filter:saturate(1.08) brightness(1.03);}
+    button:active{transform:translateY(1px);}
+    .error{background:#FCE9E7;color:#9F1D1D;border-left:3px solid var(--danger);padding:10px 13px;border-radius:8px;font-size:13px;font-weight:500;line-height:1.4;margin:0 0 20px;}
+    .footer{margin-top:24px;text-align:center;font-size:12px;color:#A9A69F;font-weight:500;letter-spacing:.02em;}
   </style>
 </head>
 <body>
   <form class="card" method="POST" action="/oauth/authorize">
-    <h1>Authorize ${escapeHtml(args.clientName ?? "MCP client")}</h1>
-    <p>Grant access to NAMI Works tenant <span class="tenant">${escapeHtml(args.tenantSlug)}</span>. Paste the tenant bearer issued by <code>provision-tenant</code> to continue.</p>
+    <div class="brandbar"></div>
+    <img class="logo" alt="GE Beauty" src="${CONSENT_LOGO_HOLO}">
+    <h1>Autorizar acesso</h1>
+    <p class="lead">Você está conectando o <strong>${client}</strong> à central de inteligência da GE&nbsp;Beauty. Cole sua chave de acesso para continuar.</p>
     ${error}
-    <label for="bearer">Tenant bearer</label>
-    <input id="bearer" name="bearer" type="password" autocomplete="off" autofocus required>
+    <label for="bearer">Chave de acesso</label>
+    <input id="bearer" name="bearer" type="password" autocomplete="off" autofocus required placeholder="Cole sua chave aqui">
+    <p class="help">Chave pessoal fornecida pela sua equipe. Não compartilhe.</p>
     <input type="hidden" name="tenant" value="${escapeHtml(args.tenantSlug)}">
     <input type="hidden" name="client_id" value="${escapeHtml(args.clientId)}">
     <input type="hidden" name="redirect_uri" value="${escapeHtml(args.redirectUri)}">
     <input type="hidden" name="state" value="${escapeHtml(args.state)}">
     <input type="hidden" name="code_challenge" value="${escapeHtml(args.codeChallenge)}">
     <input type="hidden" name="code_challenge_method" value="${escapeHtml(args.codeChallengeMethod)}">
-    <button type="submit">Authorize</button>
-    <div class="footer">NAMI Works · mcp.nami.works</div>
+    <button type="submit">Autorizar</button>
+    <div class="footer">GE&nbsp;Beauty · Acesso interno</div>
   </form>
 </body>
 </html>`;
