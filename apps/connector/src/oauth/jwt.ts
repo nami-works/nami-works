@@ -75,6 +75,61 @@ export async function signAccessToken(args: {
     .sign(getSigningKey());
 }
 
+// ---- Google-login state: a short-lived signed blob that carries the MCP OAuth
+// params across the redirect to Google and back, so the callback can resume the
+// connector's own authorization-code flow. Signed with the same key. ----
+
+export type GoogleStateClaims = {
+  tenant: string;
+  clientId: string;
+  redirectUri: string;
+  mcpState: string;
+  codeChallenge: string;
+  nonce: string;
+};
+
+export async function signGoogleState(s: GoogleStateClaims): Promise<string> {
+  return await new SignJWT({ ...s })
+    .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+    .setIssuer(ISSUER)
+    .setSubject("google-state")
+    .setIssuedAt()
+    .setExpirationTime("10m")
+    .sign(getSigningKey());
+}
+
+export async function verifyGoogleState(
+  token: string,
+): Promise<GoogleStateClaims | null> {
+  try {
+    const { payload } = await jwtVerify(token, getSigningKey(), {
+      issuer: ISSUER,
+      subject: "google-state",
+    });
+    const { tenant, clientId, redirectUri, mcpState, codeChallenge, nonce } =
+      payload as Record<string, unknown>;
+    if (
+      typeof tenant !== "string" ||
+      typeof clientId !== "string" ||
+      typeof redirectUri !== "string" ||
+      typeof codeChallenge !== "string" ||
+      typeof nonce !== "string"
+    ) {
+      return null;
+    }
+    return {
+      tenant,
+      clientId,
+      redirectUri,
+      mcpState: typeof mcpState === "string" ? mcpState : "",
+      codeChallenge,
+      nonce,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function verifyAccessToken(
   token: string,
 ): Promise<AccessTokenClaims | null> {

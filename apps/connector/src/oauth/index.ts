@@ -3,6 +3,7 @@ import formbody from "@fastify/formbody";
 import type { TenantLookup } from "../auth/tenant-auth.js";
 import { mountOAuthAuthorize } from "./authorize.js";
 import { mountOAuthDiscovery } from "./discovery.js";
+import { mountGoogleOAuth } from "./google.js";
 import { mountOAuthRegister } from "./register.js";
 import { mountOAuthToken } from "./token.js";
 
@@ -24,5 +25,6 @@ export async function mountOAuthRoutes(
   mountOAuthDiscovery(app);
   mountOAuthRegister(app);
   mountOAuthAuthorize(app, deps);
+  mountGoogleOAuth(app);
   mountOAuthToken(app);
 }

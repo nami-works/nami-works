@@ -51,6 +51,17 @@ function renderConsent(args: {
     ? `<div class="error">${escapeHtml(args.errorMessage)}</div>`
     : "";
   const client = escapeHtml(args.clientName ?? "o aplicativo");
+  const googleHref =
+    "/oauth/google/start?client_id=" +
+    encodeURIComponent(args.clientId) +
+    "&redirect_uri=" +
+    encodeURIComponent(args.redirectUri) +
+    "&code_challenge=" +
+    encodeURIComponent(args.codeChallenge) +
+    "&state=" +
+    encodeURIComponent(args.state) +
+    "&tenant=" +
+    encodeURIComponent(args.tenantSlug);
   return `<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -78,27 +89,39 @@ function renderConsent(args: {
     button:active{transform:translateY(1px);}
     .error{background:#FCE9E7;color:#9F1D1D;border-left:3px solid var(--danger);padding:10px 13px;border-radius:8px;font-size:13px;font-weight:500;line-height:1.4;margin:0 0 20px;}
     .footer{margin-top:24px;text-align:center;font-size:12px;color:#A9A69F;font-weight:500;letter-spacing:.02em;}
+    .gbtn{display:block;width:100%;margin-top:4px;padding:13px;text-align:center;text-decoration:none;font-weight:700;font-size:15px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.32);background:linear-gradient(100deg,#5ecece,#b09fda,#d4a8d4);border-radius:10px;transition:filter .12s;}
+    .gbtn:hover{filter:saturate(1.08) brightness(1.03);}
+    .adv{margin-top:16px;}
+    .adv summary{cursor:pointer;font-size:12.5px;color:var(--faint);font-weight:500;list-style:none;}
+    .adv summary::-webkit-details-marker{display:none;}
+    .adv[open] summary{margin-bottom:14px;}
   </style>
 </head>
 <body>
-  <form class="card" method="POST" action="/oauth/authorize">
+  <div class="card">
     <div class="brandbar"></div>
     <img class="logo" alt="GE Beauty" src="${CONSENT_LOGO_HOLO}">
     <h1>Autorizar acesso</h1>
-    <p class="lead">Você está conectando o <strong>${client}</strong> à central de inteligência da GE&nbsp;Beauty. Cole sua chave de acesso para continuar.</p>
+    <p class="lead">Entre com sua conta Google para conectar o <strong>${client}</strong> à central de inteligência da GE&nbsp;Beauty.</p>
     ${error}
-    <label for="bearer">Chave de acesso</label>
-    <input id="bearer" name="bearer" type="password" autocomplete="off" autofocus required placeholder="Cole sua chave aqui">
-    <p class="help">Chave pessoal fornecida pela sua equipe. Não compartilhe.</p>
-    <input type="hidden" name="tenant" value="${escapeHtml(args.tenantSlug)}">
-    <input type="hidden" name="client_id" value="${escapeHtml(args.clientId)}">
-    <input type="hidden" name="redirect_uri" value="${escapeHtml(args.redirectUri)}">
-    <input type="hidden" name="state" value="${escapeHtml(args.state)}">
-    <input type="hidden" name="code_challenge" value="${escapeHtml(args.codeChallenge)}">
-    <input type="hidden" name="code_challenge_method" value="${escapeHtml(args.codeChallengeMethod)}">
-    <button type="submit">Autorizar</button>
+    <a class="gbtn" href="${googleHref}">Entrar com Google</a>
+    <details class="adv">
+      <summary>Usar chave de acesso</summary>
+      <form method="POST" action="/oauth/authorize">
+        <label for="bearer">Chave de acesso</label>
+        <input id="bearer" name="bearer" type="password" autocomplete="off" required placeholder="Cole sua chave aqui">
+        <p class="help">Chave pessoal fornecida pela sua equipe. Não compartilhe.</p>
+        <input type="hidden" name="tenant" value="${escapeHtml(args.tenantSlug)}">
+        <input type="hidden" name="client_id" value="${escapeHtml(args.clientId)}">
+        <input type="hidden" name="redirect_uri" value="${escapeHtml(args.redirectUri)}">
+        <input type="hidden" name="state" value="${escapeHtml(args.state)}">
+        <input type="hidden" name="code_challenge" value="${escapeHtml(args.codeChallenge)}">
+        <input type="hidden" name="code_challenge_method" value="${escapeHtml(args.codeChallengeMethod)}">
+        <button type="submit">Autorizar com chave</button>
+      </form>
+    </details>
     <div class="footer">GE&nbsp;Beauty · Acesso interno</div>
-  </form>
+  </div>
 </body>
 </html>`;
 }
