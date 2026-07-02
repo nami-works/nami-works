@@ -61,8 +61,9 @@ _(empty — the i18n online-tokens fix shipped in the 2026-05-22 deploy below.)_
 
 ## Deployed
 
-### 2026-07-02 · connector — connect-polish (holo favicon, Google-G button, drop bearer UI) + Inter font
-- **Image tag:** `nami-works:connector-20260702-inter` (supersedes `connector-20260702-holo`).
+### 2026-07-02 · connector — connect-polish (holo favicon, Google-G button, drop bearer UI) + Inter font + tool display titles
+- **Image tag:** `nami-works:connector-20260702-titles` (supersedes `-inter` → `-holo`). Live + `/health` ok.
+- **PR #37 (added after -inter):** derived MCP tool `title` per tool — "Vendor · Readable Name" (e.g. "Shopify · Customer LTV") so claude.ai stops humanizing the raw name. `toolDisplayTitle` in `registry.ts`, pure-derived, unit-tested (147 tests). Rolled as `-titles`.
 - **Deploy mechanic:** local `docker buildx build --platform linux/amd64 -f apps/connector/Dockerfile --push` to ECR `477780048372.dkr.ecr.us-east-1.amazonaws.com/nami-works`, then SSH to `ubuntu@54.221.23.142`: box `docker login` (token piped from local aws), `sed` the compose image tag holo→inter in `/srv/cpg-labs/docker-compose.yml`, `sudo docker compose pull connector && up -d --force-recreate connector`. Postgres + omnify containers untouched.
 - **Bundled PRs (2, both squash-merged to main):**
   - #35 — holo PNG served at `/favicon.ico` (claude.ai reads the connector tile from the favicon; was showing the flat GE-red SVG); Google four-color "G" in a white chip on the "Entrar com Google" button; removed the "Usar chave de acesso" bearer block from the consent page (bearer break-glass POST handler untouched); dropped dead form CSS.
