@@ -52,6 +52,45 @@ export type IngestResult = {
   tokenExpiresInDays: number | null;
 };
 
+/**
+ * Freshness guard for read tools. If the tenant's Instagram corpus hasn't been
+ * synced within `ttlMinutes` (default 6h), runs a bounded incremental ingest so
+ * the read reflects recent posts. Best-effort: a linked account is required, and
+ * any ingest failure is swallowed (the caller still serves stored data). This is
+ * how posts stay "fresh whenever the team uses Claude" without a manual refresh
+ * tool — the TTL keeps us off Meta's rate limits.
+ */
+export async function ensureFreshInstagram(args: {
+  tenantId: string;
+  prisma: PrismaClient;
+  ttlMinutes?: number;
+  logger?: Logger;
+}): Promise<void> {
+  const ttlMs = (args.ttlMinutes ?? 360) * 60_000;
+  const account = await args.prisma.instagramAccount.findUnique({
+    where: { tenantId: args.tenantId },
+    select: { lastSyncedAt: true },
+  });
+  if (!account) return;
+  if (account.lastSyncedAt && Date.now() - account.lastSyncedAt.getTime() < ttlMs) {
+    return;
+  }
+  try {
+    await ingestInstagramPosts({
+      tenantId: args.tenantId,
+      prisma: args.prisma,
+      mode: "incremental",
+      maxPages: 3,
+      ...(args.logger ? { logger: args.logger } : {}),
+    });
+  } catch (err) {
+    (args.logger ?? rootLogger).warn(
+      { err, tenantId: args.tenantId },
+      "instagram auto-refresh on read failed; serving stored data",
+    );
+  }
+}
+
 export async function ingestInstagramPosts(args: IngestArgs): Promise<IngestResult> {
   const { tenantId, prisma } = args;
   const mode = args.mode ?? "incremental";

@@ -3,7 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ZodRawShape } from "zod";
 import { recordInvocation } from "../lib/logger.js";
 import { canUseTool } from "./access.js";
-import { TOOL_CATALOG } from "./tool-catalog.js";
+import { DISABLED_TOOLS, TOOL_CATALOG } from "./tool-catalog.js";
 import { toolDisplayTitle } from "./tool-titles.js";
 import type { ToolContext, ToolDefinition, ToolResult } from "./types.js";
 
@@ -54,6 +54,9 @@ export function createMcpServerForTenant(ctx: ToolContext): McpServer {
   );
 
   for (const def of definitions) {
+    // Removed from the exposed surface (see DISABLED_TOOLS). Skipped entirely —
+    // never registered, so it can't appear in tools/list or be called.
+    if (DISABLED_TOOLS.has(def.name)) continue;
     // Access gate. Owner-only admin tools require owner. Every other tool is
     // filtered by the principal's effective per-system access (union of their
     // roles' grants; read vs write) via the tool catalog. A registered tool

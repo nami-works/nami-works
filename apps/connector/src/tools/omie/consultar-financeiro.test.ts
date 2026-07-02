@@ -90,6 +90,66 @@ describe("consultarFinanceiroHandler", () => {
     expect(idx2).toBeLessThan(idx3);
   });
 
+  it("aggregates across all clients (paginated) when no codigoCliente is given", async () => {
+    const page1 = {
+      ok: true as const,
+      data: {
+        total_de_paginas: 2,
+        total_de_registros: 3,
+        conta_receber_cadastro: [
+          {
+            codigo_lancamento_omie: 1,
+            codigo_cliente_fornecedor: 501,
+            numero_documento: "DOC-1",
+            data_vencimento: "10/03/2026",
+            valor_documento: 100,
+            status_titulo: "A_RECEBER",
+            observacao: null,
+          },
+          {
+            codigo_lancamento_omie: 2,
+            codigo_cliente_fornecedor: 502,
+            numero_documento: "DOC-2",
+            data_vencimento: "10/04/2026",
+            valor_documento: 200,
+            status_titulo: "VENCIDO",
+            observacao: null,
+          },
+        ],
+      },
+    };
+    const page2 = {
+      ok: true as const,
+      data: {
+        total_de_paginas: 2,
+        total_de_registros: 3,
+        conta_receber_cadastro: [
+          {
+            codigo_lancamento_omie: 3,
+            codigo_cliente_fornecedor: 503,
+            numero_documento: "DOC-3",
+            data_vencimento: "10/05/2026",
+            valor_documento: 300,
+            status_titulo: "RECEBIDO",
+            observacao: null,
+          },
+        ],
+      },
+    };
+    const client = fakeOmie([page1, page2]);
+    vi.mocked(getOmieClient).mockResolvedValue(client);
+
+    const res = await consultarFinanceiroHandler({}, makeCtx());
+    const text = res.content[0]?.text ?? "";
+    expect(text).toContain("todos os clientes");
+    expect(text).toContain("A receber: R$ 100.00");
+    expect(text).toContain("Vencido:   R$ 200.00");
+    expect(text).toContain("Recebido:  R$ 300.00");
+    // all-clients lines carry the client code
+    expect(text).toContain("cliente 501");
+    expect(client.call).toHaveBeenCalledTimes(2);
+  });
+
   it("handles 'não existem registros' fault gracefully", async () => {
     const client = fakeOmie([
       {
