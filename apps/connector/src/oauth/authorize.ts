@@ -82,7 +82,7 @@ function renderConsent(args: {
     .card{position:relative;width:100%;max-width:440px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:38px 36px 30px;overflow:hidden;box-shadow:0 12px 40px -18px rgba(31,30,28,.28);}
     .brandbar{position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#5ecece,#b09fda,#d4a8d4,#5ecece);background-size:200% 100%;animation:holo 3.6s linear infinite;}
     .logo{display:block;width:104px;height:104px;object-fit:cover;margin:4px auto 24px;border-radius:20px;box-shadow:4px -4px 11px -4px rgba(31,30,28,.18),11px -11px 30px -10px rgba(31,30,28,.13);}
-    h1{font-weight:700;font-size:23px;letter-spacing:-.01em;margin:0 0 12px;}
+    h1{font-weight:700;font-size:23px;letter-spacing:-.01em;margin:0 0 12px;text-align:center;}
     .lead{font-weight:500;font-size:14.5px;line-height:1.55;color:var(--sub);margin:0 0 22px;}
     .lead strong{color:var(--ink);font-weight:700;}
     .error{background:#FCE9E7;color:#9F1D1D;border-left:3px solid var(--danger);padding:10px 13px;border-radius:8px;font-size:13px;font-weight:500;line-height:1.4;margin:0 0 20px;}
@@ -97,7 +97,7 @@ function renderConsent(args: {
   <div class="card">
     <div class="brandbar"></div>
     <img class="logo" alt="GE Beauty" src="${CONSENT_LOGO_HOLO}">
-    <h1>Autorizar acesso</h1>
+    <h1>MCP GE Beauty</h1>
     <p class="lead">Entre com sua conta Google para conectar o <strong>${client}</strong> à central de inteligência da GE&nbsp;Beauty.</p>
     ${error}
     <a class="gbtn" href="${googleHref}"><span class="gchip">${GOOGLE_G_SVG}</span><span>Entrar com Google</span></a>
