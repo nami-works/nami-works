@@ -10,7 +10,7 @@ import {
   listRegisteredToolNames,
   registerToolDefinition,
 } from "./registry.js";
-import { TOOL_CATALOG } from "./tool-catalog.js";
+import { DISABLED_TOOLS, TOOL_CATALOG } from "./tool-catalog.js";
 import { TOOL_TITLES, toolDisplayTitle } from "./tool-titles.js";
 
 const silentLogger = pino({ level: "silent" });
@@ -132,9 +132,9 @@ describe("tool registry", () => {
       "Shopify · Pedidos de hoje",
     );
     expect(toolDisplayTitle("omie_consultar_financeiro")).toBe(
-      "Omie · Contas a receber do cliente",
+      "Omie · Contas a receber",
     );
-    expect(toolDisplayTitle("nami_feedback")).toBe("NAMI · Enviar feedback");
+    expect(toolDisplayTitle("nami_feedback")).toBe("Suporte · Enviar feedback");
   });
 
   it("falls back to a derived Fornecedor · Nome title for unmapped tools", () => {
@@ -147,6 +147,32 @@ describe("tool registry", () => {
   it("has a curated title for every catalog tool (no drift)", () => {
     const missing = Object.keys(TOOL_CATALOG).filter((n) => !TOOL_TITLES[n]);
     expect(missing).toEqual([]);
+  });
+
+  it("does not register tools that are in DISABLED_TOOLS", async () => {
+    const disabledName = "instagram_link_account";
+    expect(DISABLED_TOOLS.has(disabledName)).toBe(true);
+    // A normal tool alongside so the server advertises the tools capability.
+    registerToolDefinition({
+      name: "visible_tool",
+      description: "should be listed",
+      inputSchema: {},
+      handler: async () => ({ content: [{ type: "text", text: "ok" }] }),
+    });
+    registerToolDefinition({
+      name: disabledName,
+      description: "should be hidden",
+      inputSchema: {},
+      handler: async () => ({ content: [{ type: "text", text: "ok" }] }),
+    });
+    const { client, close } = await connectedClient(makeCtx());
+    try {
+      const list = await client.listTools();
+      expect(list.tools.find((t) => t.name === "visible_tool")).toBeDefined();
+      expect(list.tools.find((t) => t.name === disabledName)).toBeUndefined();
+    } finally {
+      await close();
+    }
   });
 
   it("returns isError=true when a tool handler throws", async () => {

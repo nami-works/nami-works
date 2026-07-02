@@ -42,7 +42,7 @@ export async function lowInventoryAlertHandler(
   },
   ctx: ToolContext,
 ): Promise<ToolResult> {
-  const threshold = args.threshold ?? 5;
+  const threshold = args.threshold ?? 50;
   const maxPages = Math.min(args.maxPages ?? 3, 10);
   const client = await getShopifyClient({
     ssmPrefix: ctx.tenant.ssmPrefix,
@@ -119,7 +119,7 @@ export async function lowInventoryAlertHandler(
 registerToolDefinition({
   name: "shopify_low_inventory_alert",
   description:
-    "Lista variantes com estoque <= N (default 5), ordenadas da mais baixa primeiro. Opcional: filtra por tag pra focar em uma categoria/campanha. Essencial pra reposição e promo-planning.",
+    "Lista variantes com estoque <= N (default 50), ordenadas da mais baixa primeiro. Opcional: filtra por tag pra focar em uma categoria/campanha. Essencial pra reposição e promo-planning.",
   inputSchema: {
     threshold: z.number().int().min(0).max(100).optional(),
     tag: z.string().optional(),

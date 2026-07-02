@@ -126,3 +126,29 @@ export const TOOL_CATALOG: Record<string, ToolCatalogEntry> = {
   // --- affiliates ---
   affiliates_list_profiles: { system: "affiliates", write: false },
 };
+
+// Tools removed from the connector's exposed surface (2026-07-02 review with
+// Lucas). They stay in the codebase + catalog (reversible — delete from this set
+// to re-expose) but the registry skips registering them, so they never appear in
+// tools/list. Reasons: admin-only backstops, redundant/niche, or replaced:
+//   - instagram_refresh_ingest → replaced by auto-refresh-on-read (services/instagram/ingest.ts)
+//   - instagram_voice_card_current → merged into brand_tone_current
+//   - order/customer/product tag-writes, bulk-price preview, BEAUTYBACK-specific,
+//     PDP internals, transfers, gift cards, drive-file replace, order compare.
+export const DISABLED_TOOLS: ReadonlySet<string> = new Set([
+  "instagram_link_account",
+  "instagram_refresh_ingest",
+  "instagram_voice_card_current",
+  "shopify_compare_two_orders",
+  "shopify_tag_order",
+  "shopify_untag_order",
+  "shopify_preview_bulk_price_update",
+  "shopify_list_transfers",
+  "shopify_replace_files_from_drive_folder",
+  "shopify_replace_product_tags",
+  "shopify_pdp_list_controlled_vocabularies",
+  "shopify_pdp_resolve_drive_images",
+  "shopify_list_beautyback_codes",
+  "shopify_audit_beautyback_consistency",
+  "shopify_list_gift_cards",
+]);
