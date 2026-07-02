@@ -4,11 +4,7 @@ import type { PrincipalRole } from "@prisma/client-connector";
 import { type TenantLookup } from "../auth/tenant-auth.js";
 import { prisma as defaultPrisma } from "../db/prisma.js";
 import { issueCode } from "./codes.js";
-import {
-  CONSENT_FONT_BOLD,
-  CONSENT_FONT_MEDIUM,
-  CONSENT_LOGO_HOLO,
-} from "./consent-assets.js";
+import { CONSENT_LOGO_HOLO } from "./consent-assets.js";
 import { verifyClientId } from "./jwt.js";
 
 /**
@@ -62,12 +58,10 @@ function renderConsent(args: {
   <title>Autorizar ${client} · GE Beauty</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    @font-face{font-family:"ItalianPlate";font-weight:500;font-style:normal;src:url(${CONSENT_FONT_MEDIUM}) format("woff2");font-display:swap;}
-    @font-face{font-family:"ItalianPlate";font-weight:700;font-style:normal;src:url(${CONSENT_FONT_BOLD}) format("woff2");font-display:swap;}
     @keyframes holo{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
     :root{--ink:#1A1A18;--sub:#5A5A57;--faint:#8F8C85;--danger:#C0392B;--page:#ECEDE9;--card:#FFFFFF;--line:#DAD8D1;}
     *{box-sizing:border-box;}
-    body{font-family:"ItalianPlate",-apple-system,system-ui,"Segoe UI",sans-serif;background:var(--page);color:var(--ink);min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center;padding:32px 16px;-webkit-font-smoothing:antialiased;}
+    body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--page);color:var(--ink);min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center;padding:32px 16px;-webkit-font-smoothing:antialiased;}
     .card{position:relative;width:100%;max-width:440px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:38px 36px 30px;overflow:hidden;box-shadow:0 12px 40px -18px rgba(31,30,28,.28);}
     .brandbar{position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#5ecece,#b09fda,#d4a8d4,#5ecece);background-size:200% 100%;animation:holo 3.6s linear infinite;}
     .logo{display:block;width:104px;height:104px;object-fit:cover;margin:4px auto 24px;border-radius:20px;box-shadow:4px -4px 11px -4px rgba(31,30,28,.18),11px -11px 30px -10px rgba(31,30,28,.13);}
