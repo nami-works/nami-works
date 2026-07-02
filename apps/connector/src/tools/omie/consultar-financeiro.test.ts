@@ -85,8 +85,8 @@ describe("consultarFinanceiroHandler", () => {
     );
     const text = res.content[0]?.text ?? "";
     expect(text).toContain("A receber: R$ 300.00");
-    expect(text).toContain("Vencido:   R$ 200.00");
-    expect(text).toContain("Recebido:  R$ 100.00");
+    expect(text).toContain("Vencido: R$ 200.00");
+    expect(text).toContain("Recebido: R$ 100.00");
     // Oldest first (DOC-1 March before DOC-2 April before DOC-3 May)
     const idx1 = text.indexOf("DOC-1");
     const idx2 = text.indexOf("DOC-2");
@@ -149,8 +149,8 @@ describe("consultarFinanceiroHandler", () => {
     const text = res.content[0]?.text ?? "";
     expect(text).toContain("todos os clientes");
     expect(text).toContain("A receber: R$ 100.00");
-    expect(text).toContain("Vencido:   R$ 200.00");
-    expect(text).toContain("Recebido:  R$ 300.00");
+    expect(text).toContain("Vencido: R$ 200.00");
+    expect(text).toContain("Recebido: R$ 300.00");
     // all-clients lines carry the client code
     expect(text).toContain("cliente 501");
     expect(client.call).toHaveBeenCalledTimes(2);
