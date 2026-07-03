@@ -62,7 +62,8 @@ _(empty — the i18n online-tokens fix shipped in the 2026-05-22 deploy below.)_
 ## Deployed
 
 ### 2026-07-02 · connector — connect-polish (holo favicon, Google-G button, drop bearer UI) + Inter font + tool display titles
-- **Image tag:** `nami-works:connector-20260702-nostore` (supersedes -omie2 → -screen → -titles3 → -titles2 → -titles → -inter → -holo). Live + `/health` ok.
+- **Image tag:** `nami-works:connector-20260702-clientefix` (supersedes -nostore → -omie2 → -screen → -titles3 → -titles2 → -titles → -inter → -holo). Live + `/health` ok.
+- **PR #45 (rolled as -clientefix):** `omie_consultar_cliente` was throwing for every `empresa` value — ListarClientes returns the record under `clientes_cadastro` with code field `codigo_cliente_omie`, but the parser read `codigo_cliente` (undefined → throw). Fixed to read `codigo_cliente_omie` (+ resumido fallback) and treat "não existem registros" as a clean miss. Verified live: B4A returns (código 6741776573). B2B código map saved at `sandbox/gebeauty/omie-b2b-client-codes.md`.
 - **PR #44:** icon routes now serve `Cache-Control: no-store` (were 24h) so claude.ai can't hold a stale connector icon. NOTE: claude.ai may not fetch a server icon for custom connectors at all (renders a name-derived monogram) — pending: confirm via a FULL connector remove + re-add (disconnect alone keeps the cached entry).
 - **Live diagnosis + provisioning (2026-07-02, via short-lived owner-JWT MCP smoke on the box):** Only Shopify had real backing. Fixed both gaps:
   - **Instagram** — SSM long_lived_token was REAL but EXPIRED; replaced with the working system-user token (META_SANDBOX_API_KEY, non-expiring), seeded InstagramAccount (@gebeauty, igUserId 17841423297702015), ran first ingest (1000 posts). IG tools + auto-refresh now return real data.
