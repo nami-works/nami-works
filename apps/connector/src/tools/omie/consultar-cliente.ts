@@ -18,6 +18,7 @@ type ClienteRecord = {
   razao_social?: string | null;
   nome_fantasia?: string | null;
   cnpj_cpf?: string | null;
+  inativo?: string | null;
 };
 type ListarClientesResponse = {
   clientes_cadastro_resumido?: ClienteRecord[];
@@ -45,6 +46,39 @@ type ConsultarClienteResponse = {
 
 function digitsOnly(v: string): string {
   return v.replace(/\D/g, "");
+}
+
+// Name search in ONE company: ListarClientes with a razao_social LIKE filter.
+// Returns a compact list of matches (may be several). "não existem registros"
+// → empty (clean miss).
+async function searchByNameInCompany(
+  client: OmieClient,
+  nome: string,
+): Promise<Array<{ codigo?: number; label: string }>> {
+  const res = await client.call<Record<string, unknown>, ListarClientesResponse>({
+    resource: "geral/clientes",
+    method: "ListarClientes",
+    param: {
+      pagina: 1,
+      registros_por_pagina: 50,
+      apenas_importado_api: "N",
+      clientesFiltro: { razao_social: nome },
+    },
+  });
+  if (!res.ok) {
+    if (/n[ãa]o existem registros/i.test(res.faultstring)) return [];
+    throw new Error(`Omie ListarClientes failed: ${res.faultstring}`);
+  }
+  const records = res.data.clientes_cadastro ?? res.data.clientes_cadastro_resumido ?? [];
+  return records.map((r) => {
+    const codigo = r.codigo_cliente_omie ?? r.codigo_cliente;
+    const status = r.inativo === "S" ? " · INATIVO" : "";
+    const razao = r.razao_social ?? r.nome_fantasia ?? "(sem razão)";
+    return {
+      ...(typeof codigo === "number" ? { codigo } : {}),
+      label: `#${codigo ?? "?"} · ${razao} · ${r.cnpj_cpf ?? "(sem CNPJ)"}${status}`,
+    };
+  });
 }
 
 type ClienteLookup =
@@ -141,22 +175,29 @@ export async function consultarClienteHandler(
   args: {
     cnpj?: string | undefined;
     codigo?: number | undefined;
+    nome?: string | undefined;
     empresa?: string | string[] | undefined;
   },
   ctx: ToolContext,
 ): Promise<ToolResult> {
-  if (!args.cnpj && typeof args.codigo !== "number") {
+  const nome = args.nome?.trim();
+  const byName = !!nome && !args.cnpj && typeof args.codigo !== "number";
+  if (!args.cnpj && typeof args.codigo !== "number" && !nome) {
     return {
       content: [
         {
           type: "text",
-          text: "Provide either cnpj (CNPJ ou CPF) or codigo (codigo_cliente_omie).",
+          text: "Informe nome (razão social), cnpj (CNPJ/CPF) ou codigo (codigo_cliente_omie).",
         },
       ],
       isError: true,
     };
   }
-  if (typeof args.codigo !== "number" && digitsOnly(args.cnpj ?? "").length === 0) {
+  if (
+    !byName &&
+    typeof args.codigo !== "number" &&
+    digitsOnly(args.cnpj ?? "").length === 0
+  ) {
     return {
       content: [{ type: "text", text: "cnpj is empty after normalization." }],
       isError: true,
@@ -181,6 +222,40 @@ export async function consultarClienteHandler(
   }
   const selected = resolution.companies;
   const multi = selected.length > 1;
+
+  // Name search: list matching clients (código + razão + CNPJ) so the caller can
+  // pick a código and drill in with cnpj/codigo. May return several per company.
+  if (byName && nome) {
+    const nameBlocks: string[] = [];
+    for (const co of selected) {
+      const matches = await searchByNameInCompany(co.client, nome);
+      if (matches.length === 0) continue;
+      const lines = matches.slice(0, 25).map((m) => `  ${m.label}`);
+      const extra =
+        matches.length > 25 ? `\n  (+${matches.length - 25} outros)` : "";
+      nameBlocks.push(
+        (multi ? `— ${co.label ?? co.code} —\n` : "") + lines.join("\n") + extra,
+      );
+    }
+    if (nameBlocks.length === 0) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Nenhum cliente encontrado para "${nome}"${multi ? " nas empresas selecionadas" : ""}.`,
+          },
+        ],
+      };
+    }
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Clientes que correspondem a "${nome}":\n\n${nameBlocks.join("\n\n")}\n\nUse o codigo com omie_consultar_cliente / omie_consultar_financeiro / omie_listar_pedidos.`,
+        },
+      ],
+    };
+  }
 
   const blocks: string[] = [];
   let lastReason: "no-cnpj-match" | "nao-cadastrado" | null = null;
@@ -232,8 +307,14 @@ export async function consultarClienteHandler(
 registerToolDefinition({
   name: "omie_consultar_cliente",
   description:
-    "Consulta um cliente no Omie por CNPJ/CPF ou pelo codigo_cliente_omie. `empresa` aceita um nome ou vários (seleção múltipla) — se houver mais de uma empresa e nada for informado, a tool pede para o usuário escolher. Retorna razão social, contatos, endereço, tags e status (ativo/inativo/bloqueado), por empresa.",
+    "Consulta um cliente no Omie por NOME (razão social, busca parcial), CNPJ/CPF ou codigo_cliente_omie. Com `nome`, lista os clientes que correspondem (código + razão + CNPJ) para você escolher; com cnpj/codigo, retorna o cadastro completo. `empresa` aceita um nome ou vários (seleção múltipla) — se houver mais de uma empresa e nada for informado, a tool pede para escolher.",
   inputSchema: {
+    nome: z
+      .string()
+      .optional()
+      .describe(
+        "Nome / razão social do cliente (busca parcial, ex: 'UAU BOX', 'B4A'). Retorna a lista de correspondências com o codigo_cliente_omie de cada uma.",
+      ),
     cnpj: z
       .string()
       .optional()
