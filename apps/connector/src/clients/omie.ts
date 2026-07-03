@@ -49,12 +49,43 @@ function defaultBackoff(attempt: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Omie throttles per account across all app_keys (one request per method at a
+// time; bursts trip "consumo redundante" / "API bloqueada"). We proactively
+// SERIALIZE every Omie call through one module-level gate with a minimum gap
+// between calls, so the connector stays under Omie's limits by construction
+// rather than reacting to blocks. Gap defaults to 600ms (0 in tests).
+const OMIE_MIN_GAP_MS = Number(
+  process.env.OMIE_MIN_GAP_MS ?? (process.env.NODE_ENV === "test" ? 0 : 600),
+);
+let omieTail: Promise<unknown> = Promise.resolve();
+let omieLastEnd = 0;
+
+function serializeOmieCall<T>(fn: () => Promise<T>, gapMs: number): Promise<T> {
+  const run = omieTail.then(async () => {
+    const wait = Math.max(0, omieLastEnd + gapMs - Date.now());
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    try {
+      return await fn();
+    } finally {
+      omieLastEnd = Date.now();
+    }
+  });
+  // Keep the chain alive regardless of this call's outcome.
+  omieTail = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
 export type BuildClientOptions = {
   baseUrl?: string;
   fetchImpl?: typeof fetch;
   backoff?: (attempt: number) => Promise<void>;
   /** Wait for a throttle window (ms). Injectable so tests don't really sleep. */
   throttleWait?: (ms: number) => Promise<void>;
+  /** Minimum ms between Omie calls (serial gate). Defaults per env; 0 in tests. */
+  minGapMs?: number;
 };
 
 export function buildOmieClient(
@@ -67,11 +98,20 @@ export function buildOmieClient(
   const sleep = opts.backoff ?? defaultBackoff;
   const throttleWait =
     opts.throttleWait ?? ((ms: number) => new Promise((r) => setTimeout(r, ms)));
+  const minGap = opts.minGapMs ?? OMIE_MIN_GAP_MS;
 
   return {
-    async call<TParam, TResponse>(
+    call<TParam, TResponse>(
       args: OmieCallArgs<TParam>,
     ): Promise<OmieCallResult<TResponse>> {
+      return serializeOmieCall(() => doCall(args), minGap);
+    },
+  };
+
+  async function doCall<TParam, TResponse>(
+    args: OmieCallArgs<TParam>,
+  ): Promise<OmieCallResult<TResponse>> {
+    {
       const url = `${baseUrl}/${args.resource.replace(/^\/+|\/+$/g, "")}/`;
       const body = JSON.stringify({
         app_key: appKey,
@@ -151,8 +191,8 @@ export function buildOmieClient(
           faultstring: "max retries exceeded",
         }
       );
-    },
-  };
+    }
+  }
 }
 
 // Omie per-account throttle / duplicate-query faults (returned as HTTP-200
@@ -166,7 +206,7 @@ export function isOmieThrottleFault(faultstring: string): boolean {
 }
 
 export const OMIE_THROTTLE_MESSAGE =
-  "A Omie bloqueou esta consulta temporariamente (proteção contra chamadas repetidas ou simultâneas). Aguarde cerca de 1 minuto e tente novamente.";
+  "⏳ A API da Omie limitou esta consulta temporariamente (limite de uso imposto pela própria Omie — não é uma limitação do Claude, que segue funcionando normalmente). Aguarde cerca de 1 minuto e tente novamente, ou consulte por nome (que resolve pelo registro local, sem chamar a Omie).";
 
 export type OmieClientArgs = { ssmPrefix: string };
 
