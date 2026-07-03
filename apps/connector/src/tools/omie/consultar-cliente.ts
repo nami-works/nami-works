@@ -2,6 +2,8 @@ import { z } from "zod";
 import {
   describeOmieCompanies,
   getOmieCompanies,
+  isOmieThrottleFault,
+  OMIE_THROTTLE_MESSAGE,
   omieAmbiguousPrompt,
   resolveOmieCompanies,
   type OmieClient,
@@ -177,14 +179,33 @@ async function lookupClienteInCompany(
   return { found: true, text };
 }
 
+type ConsultarClienteArgs = {
+  cnpj?: string | undefined;
+  codigo?: number | undefined;
+  nome?: string | undefined;
+  incluirPessoaFisica?: boolean | undefined;
+  empresa?: string | string[] | undefined;
+};
+
+// Surface Omie throttle/duplicate-query faults as a friendly retry message
+// instead of a hard "tool invocation failed".
 export async function consultarClienteHandler(
-  args: {
-    cnpj?: string | undefined;
-    codigo?: number | undefined;
-    nome?: string | undefined;
-    incluirPessoaFisica?: boolean | undefined;
-    empresa?: string | string[] | undefined;
-  },
+  args: ConsultarClienteArgs,
+  ctx: ToolContext,
+): Promise<ToolResult> {
+  try {
+    return await consultarClienteImpl(args, ctx);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (isOmieThrottleFault(msg)) {
+      return { content: [{ type: "text", text: OMIE_THROTTLE_MESSAGE }] };
+    }
+    throw err;
+  }
+}
+
+async function consultarClienteImpl(
+  args: ConsultarClienteArgs,
   ctx: ToolContext,
 ): Promise<ToolResult> {
   const nome = args.nome?.trim();

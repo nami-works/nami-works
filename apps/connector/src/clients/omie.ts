@@ -110,17 +110,15 @@ export function buildOmieClient(
           const fs = (json as { faultstring?: unknown }).faultstring;
           if (typeof fs === "string") {
             const fc = (json as { faultcode?: unknown }).faultcode;
-            // Omie serializes one call per method per account and rejects
-            // rapid repeats. These faults (HTTP 200) are transient: wait the
-            // interval Omie asks for (or ~12s) and retry.
-            const throttled =
-              /consumo redundante|j[áa] existe uma requisi|aguarde\s+\d+\s+segundo/i.test(
-                fs,
-              );
-            if (throttled && attempt < MAX_RETRIES) {
-              const m = /aguarde\s+(\d+)\s+segundo/i.exec(fs);
-              const waitMs = (m ? Math.min(Number(m[1]) + 1, 35) : 12) * 1000;
-              await throttleWait(waitMs);
+            // Omie serializes one call per method at a time per account. When a
+            // prior call is still running it returns "Já existe uma requisição
+            // desse método" (HTTP 200) — that IS transient, so wait briefly and
+            // retry. Do NOT retry "Consumo redundante" (duplicate-query dedup):
+            // resending the identical request just re-trips it. Return it so the
+            // tool can surface a friendly "retry in a moment" instead of hanging.
+            const concurrent = /j[áa] existe uma requisi/i.test(fs);
+            if (concurrent && attempt < MAX_RETRIES) {
+              await throttleWait(8000);
               continue;
             }
             return {
@@ -156,6 +154,19 @@ export function buildOmieClient(
     },
   };
 }
+
+// Omie per-account throttle / duplicate-query faults (returned as HTTP-200
+// faultstrings). Tools can surface a friendly "retry shortly" instead of a hard
+// error. "Consumo redundante" = same query too soon; "Já existe uma requisição"
+// = a call of this method is still running.
+export function isOmieThrottleFault(faultstring: string): boolean {
+  return /consumo redundante|j[áa] existe uma requisi|aguarde\s+\d+\s+segundo/i.test(
+    faultstring,
+  );
+}
+
+export const OMIE_THROTTLE_MESSAGE =
+  "A Omie bloqueou esta consulta temporariamente (proteção contra chamadas repetidas ou simultâneas). Aguarde cerca de 1 minuto e tente novamente.";
 
 export type OmieClientArgs = { ssmPrefix: string };
 

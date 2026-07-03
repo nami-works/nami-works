@@ -96,17 +96,13 @@ describe("buildOmieClient", () => {
     expect(r.ok).toBe(true);
   });
 
-  it("waits + retries on an Omie throttle fault ('Consumo redundante'), then succeeds", async () => {
+  it("retries the concurrency fault ('Já existe uma requisição'), then succeeds", async () => {
     const waits: number[] = [];
     const client = buildOmieClient("k", "s", {
       fetchImpl: fakeFetch([
         {
           status: 200,
-          body: {
-            faultstring:
-              "ERROR: Consumo redundante detectado. Aguarde 31 segundos para tentar novamente (REDUNDANT).",
-            faultcode: "SOAP-ENV:Client-6",
-          },
+          body: { faultstring: "Já existe uma requisição desse método sendo executada" },
         },
         { status: 200, body: { clientes_cadastro: [{ codigo_cliente_omie: 1 }] } },
       ]),
@@ -121,8 +117,33 @@ describe("buildOmieClient", () => {
       param: {},
     });
     expect(r.ok).toBe(true);
-    // waited the interval Omie asked for (31s + 1, capped at 35s)
-    expect(waits).toEqual([32000]);
+    expect(waits).toEqual([8000]);
+  });
+
+  it("does NOT retry 'Consumo redundante' — returns it immediately (no wait)", async () => {
+    const waits: number[] = [];
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            faultstring:
+              "ERROR: Consumo redundante detectado. Aguarde 31 segundos para tentar novamente (REDUNDANT).",
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+    );
+    const client = buildOmieClient("k", "s", {
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      backoff: noBackoff,
+      throttleWait: async (ms) => {
+        waits.push(ms);
+      },
+    });
+    const r = await client.call({ resource: "x", method: "ListarClientes", param: {} });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.faultstring).toContain("Consumo redundante");
+    expect(waits).toEqual([]); // no wait
+    expect(fetchImpl).toHaveBeenCalledTimes(1); // no retry
   });
 
   it("returns the last error when retries are exhausted", async () => {
