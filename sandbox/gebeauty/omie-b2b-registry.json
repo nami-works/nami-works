@@ -1,0 +1,36 @@
+[
+  {
+    "nome": "UAU BOX",
+    "aliases": ["UAUBOX"],
+    "cnpj": "28.917.082/0001-52",
+    "codigos": {
+      "Matriz": 6757341993,
+      "Shopping Recife": 2037077035,
+      "Shops Jardins": 5153354952,
+      "Rio Sul": 5611533123,
+      "Rio Mar Recife": 9359520049,
+      "Extrema": 11493424013
+    }
+  },
+  {
+    "nome": "B4A",
+    "aliases": ["Glambox", "B4A Servicos de Tecnologia"],
+    "cnpj": "13.475.001/0001-34",
+    "codigos": {
+      "Matriz": 6741776573
+    }
+  },
+  {
+    "nome": "Amazon",
+    "aliases": ["Amazon Servicos de Varejo", "Amazon Brasil"],
+    "cnpj": "15.436.940/0012-58",
+    "codigos": {
+      "Matriz": 6800644256,
+      "Shopping Recife": 2070705307,
+      "Shops Jardins": 5200701648,
+      "Rio Sul": 5693541250,
+      "Rio Mar Recife": 9434937768,
+      "Extrema": 11528652054
+    }
+  }
+]
