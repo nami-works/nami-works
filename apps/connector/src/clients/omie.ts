@@ -328,6 +328,24 @@ export async function getB2BRegistry(
   return entries;
 }
 
+// Find the registry entry matching a customer name (case/accent-insensitive,
+// substring either way). Lets the pedidos/financeiro tools accept a name and
+// resolve it to per-company códigos without an Omie call.
+export function resolveRegistryEntry(
+  registry: B2BRegistryEntry[],
+  nome: string,
+): B2BRegistryEntry | null {
+  const q = normalizeName(nome);
+  if (!q) return null;
+  return (
+    registry.find((e) =>
+      [e.nome, ...(e.aliases ?? [])]
+        .map(normalizeName)
+        .some((n) => n.includes(q) || q.includes(n)),
+    ) ?? null
+  );
+}
+
 export type CompaniesResolution =
   | { kind: "companies"; companies: OmieCompany[] } // one or more to query
   | { kind: "ambiguous"; companies: OmieCompany[] } // ask the user which

@@ -1,10 +1,14 @@
 import { z } from "zod";
 import {
+  type B2BRegistryEntry,
   describeOmieCompanies,
+  getB2BRegistry,
   getOmieCompanies,
   omieAmbiguousPrompt,
   resolveOmieCompanies,
+  resolveRegistryEntry,
   type OmieClient,
+  type OmieCompany,
 } from "../../clients/omie.js";
 import { registerToolDefinition } from "../../mcp/registry.js";
 import type { ToolContext, ToolResult } from "../../mcp/types.js";
@@ -36,6 +40,21 @@ function brToYmd(br: string): string {
   return m ? `${m[3]}-${m[2]}-${m[1]}` : br;
 }
 
+function normName(s: string): string {
+  return s.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+
+function registryCodigoFor(
+  entry: B2BRegistryEntry,
+  co: OmieCompany,
+): number | undefined {
+  const target = [normName(co.label ?? co.code), normName(co.code)];
+  const key = Object.keys(entry.codigos).find((k) =>
+    target.includes(normName(k)),
+  );
+  return key ? entry.codigos[key] : undefined;
+}
+
 // Accounts-receivable for one Omie company. Single page when scoped to a client;
 // paginated (capped) when walking the whole ledger.
 async function fetchArForClient(
@@ -58,7 +77,9 @@ async function fetchArForClient(
         pagina,
         registros_por_pagina: 200,
         apenas_importado_api: "N",
-        ...(scoped ? { filtrar_por_cliente: codigoCliente } : {}),
+        // Omie's contareceber client filter is `filtrar_cliente` (NOT
+        // `filtrar_por_cliente`, which is silently ignored).
+        ...(scoped ? { filtrar_cliente: codigoCliente } : {}),
       },
     });
     if (!res.ok) {
@@ -83,31 +104,64 @@ export async function consultarFinanceiroHandler(
   args: {
     empresa?: string | string[] | undefined;
     codigoCliente?: number | undefined;
+    nome?: string | undefined;
   },
   ctx: ToolContext,
 ): Promise<ToolResult> {
+  // Resolve a customer name to per-company códigos via the registry (no Omie call).
+  const nome = args.nome?.trim();
+  let registryEntry: B2BRegistryEntry | null = null;
+  if (nome && typeof args.codigoCliente !== "number") {
+    const registry = await getB2BRegistry({ ssmPrefix: ctx.tenant.ssmPrefix });
+    registryEntry = resolveRegistryEntry(registry, nome);
+    if (!registryEntry) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Não encontrei "${nome}" no registro B2B. Use omie_consultar_cliente(nome="${nome}") para localizar o cliente, ou passe codigoCliente.`,
+          },
+        ],
+      };
+    }
+  }
+
   const companies = await getOmieCompanies({ ssmPrefix: ctx.tenant.ssmPrefix });
-  const resolution = resolveOmieCompanies(companies, args.empresa);
-  if (resolution.kind === "ambiguous") {
-    return { content: [{ type: "text", text: omieAmbiguousPrompt(companies) }] };
+  let selected: OmieCompany[];
+  if (registryEntry && args.empresa == null) {
+    const keys = new Set(Object.keys(registryEntry.codigos).map(normName));
+    selected = companies.filter(
+      (c) => keys.has(normName(c.label ?? c.code)) || keys.has(normName(c.code)),
+    );
+    if (selected.length === 0) selected = companies;
+  } else {
+    const resolution = resolveOmieCompanies(companies, args.empresa);
+    if (resolution.kind === "ambiguous") {
+      return {
+        content: [{ type: "text", text: omieAmbiguousPrompt(companies) }],
+      };
+    }
+    if (resolution.kind === "notfound") {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Empresa(s) não encontrada(s): ${resolution.requested.join(", ")}. Opções:\n${describeOmieCompanies(companies)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+    selected = resolution.companies;
   }
-  if (resolution.kind === "notfound") {
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Empresa(s) não encontrada(s): ${resolution.requested.join(", ")}. Opções:\n${describeOmieCompanies(companies)}`,
-        },
-      ],
-      isError: true,
-    };
-  }
-  const selected = resolution.companies;
   const multi = selected.length > 1;
-  const scopedToClient = typeof args.codigoCliente === "number";
-  const scopeLabel = scopedToClient
-    ? `cliente ${args.codigoCliente}`
-    : "todos os clientes";
+  const scopedToClient =
+    registryEntry != null || typeof args.codigoCliente === "number";
+  const scopeLabel = registryEntry
+    ? `cliente ${registryEntry.nome}`
+    : typeof args.codigoCliente === "number"
+      ? `cliente ${args.codigoCliente}`
+      : "todos os clientes";
 
   const blocks: string[] = [];
   let grandA = 0;
@@ -117,10 +171,14 @@ export async function consultarFinanceiroHandler(
 
   for (const co of selected) {
     const name = co.label ?? co.code;
-    const { items, totalRegistros } = await fetchArForClient(
-      co.client,
-      args.codigoCliente,
-    );
+    const codigo = registryEntry
+      ? registryCodigoFor(registryEntry, co)
+      : args.codigoCliente;
+    if (registryEntry && typeof codigo !== "number") {
+      if (multi) blocks.push(`— ${name} —\nSem cadastro nesta empresa.`);
+      continue;
+    }
+    const { items, totalRegistros } = await fetchArForClient(co.client, codigo);
     const tag = multi ? `— ${name} —` : null;
     if (items.length === 0) {
       if (tag) blocks.push(`${tag}\nSem lançamentos.`);
@@ -202,8 +260,14 @@ export async function consultarFinanceiroHandler(
 registerToolDefinition({
   name: "omie_consultar_financeiro",
   description:
-    "Contas a receber no Omie por empresa. Sem cliente informado, resume a carteira inteira; com codigoCliente, foca nesse cliente. `empresa` aceita um nome ou vários (seleção múltipla) — se houver mais de uma empresa e nada for informado, a tool pede para o usuário escolher. Com várias, mostra por empresa + total consolidado.",
+    "Contas a receber no Omie por empresa. Informe `nome` do cliente (ex: 'Amazon') — resolvido pelo registro B2B, sem chamar a Omie para achar o código — ou `codigoCliente`; sem cliente, resume a carteira inteira. `empresa` aceita um nome ou vários; com `nome`, usa as empresas onde o cliente existe. Mostra a receber/vencido/recebido por empresa + total consolidado.",
   inputSchema: {
+    nome: z
+      .string()
+      .optional()
+      .describe(
+        "Nome do cliente (ex: 'Amazon', 'UAU BOX'). Resolvido pelo registro B2B → código por empresa, sem chamar a Omie. Preferível a codigoCliente.",
+      ),
     empresa: z
       .union([z.string(), z.array(z.string())])
       .optional()
