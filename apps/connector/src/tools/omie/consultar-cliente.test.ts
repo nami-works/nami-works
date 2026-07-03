@@ -174,6 +174,33 @@ describe("consultarClienteHandler", () => {
     expect((client.call as ReturnType<typeof vi.fn>).mock.calls).toHaveLength(2);
   });
 
+  it("lists matches by name (razao_social search) with their códigos", async () => {
+    const client = fakeOmie([
+      {
+        ok: true,
+        data: {
+          clientes_cadastro: [
+            {
+              codigo_cliente_omie: 6757341993,
+              razao_social: "UAUBOX S.A.",
+              cnpj_cpf: "28.917.082/0001-52",
+              inativo: "N",
+            },
+          ],
+        },
+      },
+    ]);
+    vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
+
+    const res = await consultarClienteHandler({ nome: "UAU" }, makeCtx());
+    expect(res.isError).toBeUndefined();
+    const text = res.content[0]?.text ?? "";
+    expect(text).toContain("#6757341993");
+    expect(text).toContain("UAUBOX S.A.");
+    // name search is a single ListarClientes call (no ConsultarCliente)
+    expect((client.call as ReturnType<typeof vi.fn>).mock.calls).toHaveLength(1);
+  });
+
   it("treats 'não existem registros' on ListarClientes as a clean miss, not an error", async () => {
     const client = fakeOmie([
       {
