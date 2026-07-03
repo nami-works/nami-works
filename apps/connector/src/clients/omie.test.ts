@@ -96,6 +96,35 @@ describe("buildOmieClient", () => {
     expect(r.ok).toBe(true);
   });
 
+  it("waits + retries on an Omie throttle fault ('Consumo redundante'), then succeeds", async () => {
+    const waits: number[] = [];
+    const client = buildOmieClient("k", "s", {
+      fetchImpl: fakeFetch([
+        {
+          status: 200,
+          body: {
+            faultstring:
+              "ERROR: Consumo redundante detectado. Aguarde 31 segundos para tentar novamente (REDUNDANT).",
+            faultcode: "SOAP-ENV:Client-6",
+          },
+        },
+        { status: 200, body: { clientes_cadastro: [{ codigo_cliente_omie: 1 }] } },
+      ]),
+      backoff: noBackoff,
+      throttleWait: async (ms) => {
+        waits.push(ms);
+      },
+    });
+    const r = await client.call({
+      resource: "geral/clientes",
+      method: "ListarClientes",
+      param: {},
+    });
+    expect(r.ok).toBe(true);
+    // waited the interval Omie asked for (31s + 1, capped at 35s)
+    expect(waits).toEqual([32000]);
+  });
+
   it("returns the last error when retries are exhausted", async () => {
     const client = buildOmieClient("k", "s", {
       fetchImpl: fakeFetch([

@@ -54,6 +54,7 @@ function digitsOnly(v: string): string {
 async function searchByNameInCompany(
   client: OmieClient,
   nome: string,
+  incluirPessoaFisica: boolean,
 ): Promise<Array<{ codigo?: number; label: string }>> {
   const res = await client.call<Record<string, unknown>, ListarClientesResponse>({
     resource: "geral/clientes",
@@ -69,7 +70,12 @@ async function searchByNameInCompany(
     if (/n[ãa]o existem registros/i.test(res.faultstring)) return [];
     throw new Error(`Omie ListarClientes failed: ${res.faultstring}`);
   }
-  const records = res.data.clientes_cadastro ?? res.data.clientes_cadastro_resumido ?? [];
+  let records = res.data.clientes_cadastro ?? res.data.clientes_cadastro_resumido ?? [];
+  // B2B focus: keep only CNPJs (contain "/"), dropping individual CPFs — cuts
+  // out end-customer noise. Opt back in with incluirPessoaFisica.
+  if (!incluirPessoaFisica) {
+    records = records.filter((r) => (r.cnpj_cpf ?? "").includes("/"));
+  }
   return records.map((r) => {
     const codigo = r.codigo_cliente_omie ?? r.codigo_cliente;
     const status = r.inativo === "S" ? " · INATIVO" : "";
@@ -176,6 +182,7 @@ export async function consultarClienteHandler(
     cnpj?: string | undefined;
     codigo?: number | undefined;
     nome?: string | undefined;
+    incluirPessoaFisica?: boolean | undefined;
     empresa?: string | string[] | undefined;
   },
   ctx: ToolContext,
@@ -228,7 +235,11 @@ export async function consultarClienteHandler(
   if (byName && nome) {
     const nameBlocks: string[] = [];
     for (const co of selected) {
-      const matches = await searchByNameInCompany(co.client, nome);
+      const matches = await searchByNameInCompany(
+        co.client,
+        nome,
+        args.incluirPessoaFisica ?? false,
+      );
       if (matches.length === 0) continue;
       const lines = matches.slice(0, 25).map((m) => `  ${m.label}`);
       const extra =
@@ -313,7 +324,13 @@ registerToolDefinition({
       .string()
       .optional()
       .describe(
-        "Nome / razão social do cliente (busca parcial, ex: 'UAU BOX', 'B4A'). Retorna a lista de correspondências com o codigo_cliente_omie de cada uma.",
+        "Nome / razão social do cliente (busca parcial, ex: 'UAU BOX', 'B4A'). Retorna a lista de correspondências com o codigo_cliente_omie de cada uma. Por padrão mostra só empresas (CNPJ).",
+      ),
+    incluirPessoaFisica: z
+      .boolean()
+      .optional()
+      .describe(
+        "Na busca por nome, inclui pessoas físicas (CPF). Padrão false — só CNPJ (foco B2B).",
       ),
     cnpj: z
       .string()

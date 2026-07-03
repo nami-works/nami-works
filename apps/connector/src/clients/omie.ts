@@ -53,6 +53,8 @@ export type BuildClientOptions = {
   baseUrl?: string;
   fetchImpl?: typeof fetch;
   backoff?: (attempt: number) => Promise<void>;
+  /** Wait for a throttle window (ms). Injectable so tests don't really sleep. */
+  throttleWait?: (ms: number) => Promise<void>;
 };
 
 export function buildOmieClient(
@@ -63,6 +65,8 @@ export function buildOmieClient(
   const baseUrl = opts.baseUrl ?? OMIE_BASE_URL;
   const fetchImpl = opts.fetchImpl ?? fetch;
   const sleep = opts.backoff ?? defaultBackoff;
+  const throttleWait =
+    opts.throttleWait ?? ((ms: number) => new Promise((r) => setTimeout(r, ms)));
 
   return {
     async call<TParam, TResponse>(
@@ -106,6 +110,19 @@ export function buildOmieClient(
           const fs = (json as { faultstring?: unknown }).faultstring;
           if (typeof fs === "string") {
             const fc = (json as { faultcode?: unknown }).faultcode;
+            // Omie serializes one call per method per account and rejects
+            // rapid repeats. These faults (HTTP 200) are transient: wait the
+            // interval Omie asks for (or ~12s) and retry.
+            const throttled =
+              /consumo redundante|j[áa] existe uma requisi|aguarde\s+\d+\s+segundo/i.test(
+                fs,
+              );
+            if (throttled && attempt < MAX_RETRIES) {
+              const m = /aguarde\s+(\d+)\s+segundo/i.exec(fs);
+              const waitMs = (m ? Math.min(Number(m[1]) + 1, 35) : 12) * 1000;
+              await throttleWait(waitMs);
+              continue;
+            }
             return {
               ok: false,
               status: 200,
