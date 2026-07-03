@@ -160,7 +160,7 @@ export function buildOmieClient(
 // error. "Consumo redundante" = same query too soon; "Já existe uma requisição"
 // = a call of this method is still running.
 export function isOmieThrottleFault(faultstring: string): boolean {
-  return /consumo redundante|j[áa] existe uma requisi|aguarde\s+\d+\s+segundo/i.test(
+  return /consumo redundante|consumo indevido|api bloqueada|j[áa] existe uma requisi|aguarde\s+\d+\s+segundo|tente novamente em\s+\d+\s+segundo/i.test(
     faultstring,
   );
 }
