@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { buildOmieClient } from "./omie.js";
+import { buildOmieClient, isOmieThrottleFault } from "./omie.js";
 
 const noBackoff = async () => undefined;
 
@@ -205,6 +205,25 @@ describe("buildOmieClient", () => {
 
 // In-process state from getOmieClient (cache + SSM fetches) tested separately
 // in the SSM module's own tests; we don't repeat that wiring here.
+
+describe("isOmieThrottleFault", () => {
+  it("matches all three Omie throttle/block wordings", () => {
+    expect(
+      isOmieThrottleFault("Já existe uma requisição desse método sendo executada"),
+    ).toBe(true);
+    expect(
+      isOmieThrottleFault(
+        "ERROR: Consumo redundante detectado. Aguarde 31 segundos para tentar novamente (REDUNDANT).",
+      ),
+    ).toBe(true);
+    expect(
+      isOmieThrottleFault(
+        "ERROR: API bloqueada por consumo indevido. Tente novamente em 166 segundos.",
+      ),
+    ).toBe(true);
+    expect(isOmieThrottleFault("Cliente não cadastrado")).toBe(false);
+  });
+});
 
 describe("client cache reset helper", () => {
   beforeEach(() => undefined);
