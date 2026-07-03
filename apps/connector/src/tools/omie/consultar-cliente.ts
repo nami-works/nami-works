@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   describeOmieCompanies,
+  getB2BRegistry,
   getOmieCompanies,
   isOmieThrottleFault,
   OMIE_THROTTLE_MESSAGE,
@@ -48,6 +49,14 @@ type ConsultarClienteResponse = {
 
 function digitsOnly(v: string): string {
   return v.replace(/\D/g, "");
+}
+
+function normName(s: string): string {
+  return s
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
 }
 
 // Name search in ONE company: ListarClientes with a razao_social LIKE filter.
@@ -230,6 +239,49 @@ async function consultarClienteImpl(
       content: [{ type: "text", text: "cnpj is empty after normalization." }],
       isError: true,
     };
+  }
+
+  // Registry-first for name lookups: resolve against the canonical B2B registry
+  // (SSM) with zero Omie calls — this is what keeps name searches off the
+  // throttled ListarClientes. Only a registry miss falls through to a live Omie
+  // search below.
+  if (byName && nome) {
+    const registry = await getB2BRegistry({ ssmPrefix: ctx.tenant.ssmPrefix });
+    const q = normName(nome);
+    const hits = registry.filter((e) => {
+      const names = [e.nome, ...(e.aliases ?? [])].map(normName);
+      return names.some((n) => n.includes(q) || q.includes(n));
+    });
+    if (hits.length > 0) {
+      const empresaFilter =
+        args.empresa != null
+          ? new Set(
+              (Array.isArray(args.empresa) ? args.empresa : [args.empresa]).map(
+                normName,
+              ),
+            )
+          : null;
+      const blocks = hits.map((h) => {
+        const codeLines = Object.entries(h.codigos)
+          .filter(([co]) => !empresaFilter || empresaFilter.has(normName(co)))
+          .map(([co, cod]) => `  ${co}: ${cod}`);
+        return [
+          `${h.nome}${h.cnpj ? ` · CNPJ ${h.cnpj}` : ""}`,
+          ...(codeLines.length > 0
+            ? codeLines
+            : ["  (nenhuma das empresas selecionadas)"]),
+        ].join("\n");
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Clientes B2B para "${nome}" (codigo_cliente_omie por empresa):\n\n${blocks.join("\n\n")}\n\nUse o código com omie_consultar_financeiro / omie_listar_pedidos (na empresa correspondente).`,
+          },
+        ],
+      };
+    }
+    // registry miss → live Omie search (company resolution below)
   }
 
   const companies = await getOmieCompanies({ ssmPrefix: ctx.tenant.ssmPrefix });

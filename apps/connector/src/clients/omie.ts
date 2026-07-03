@@ -245,6 +245,49 @@ export async function getOmieCompanies(
   return companies;
 }
 
+// Canonical B2B customer registry (SSM `/omie/b2b_registry`, JSON). Maps a
+// customer name → its codigo_cliente_omie per company, so name lookups resolve
+// locally without hitting Omie's throttled ListarClientes. Curated + backfilled
+// from sales history; the tool falls back to a live Omie search on a miss.
+export type B2BRegistryEntry = {
+  nome: string;
+  aliases?: string[];
+  cnpj?: string;
+  codigos: Record<string, number>; // company code/label → codigo_cliente_omie
+};
+
+const b2bRegistryCache = new Map<
+  string,
+  { entries: B2BRegistryEntry[]; expiresAt: number }
+>();
+
+export async function getB2BRegistry(
+  args: OmieClientArgs,
+): Promise<B2BRegistryEntry[]> {
+  const now = Date.now();
+  const hit = b2bRegistryCache.get(args.ssmPrefix);
+  if (hit && hit.expiresAt > now) return hit.entries;
+
+  const raw = await getSecret(`${args.ssmPrefix}/omie/b2b_registry`).catch(
+    () => null,
+  );
+  let entries: B2BRegistryEntry[] = [];
+  if (raw && raw !== "REPLACE_ME") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) entries = parsed as B2BRegistryEntry[];
+    } catch {
+      // Malformed registry → treat as empty; live Omie search still works.
+      entries = [];
+    }
+  }
+  b2bRegistryCache.set(args.ssmPrefix, {
+    entries,
+    expiresAt: now + CLIENT_CACHE_TTL_MS,
+  });
+  return entries;
+}
+
 export type CompaniesResolution =
   | { kind: "companies"; companies: OmieCompany[] } // one or more to query
   | { kind: "ambiguous"; companies: OmieCompany[] } // ask the user which
@@ -332,4 +375,5 @@ export async function getOmieClient(args: OmieClientArgs): Promise<OmieClient> {
 export function __clearOmieClientCacheForTesting(): void {
   cache.clear();
   companiesCache.clear();
+  b2bRegistryCache.clear();
 }

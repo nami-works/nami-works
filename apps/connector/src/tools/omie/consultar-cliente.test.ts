@@ -6,10 +6,10 @@ import type { ToolContext } from "../../mcp/types.js";
 vi.mock("../../clients/omie.js", async (importOriginal) => {
   const actual =
     await importOriginal<typeof import("../../clients/omie.js")>();
-  return { ...actual, getOmieCompanies: vi.fn() };
+  return { ...actual, getOmieCompanies: vi.fn(), getB2BRegistry: vi.fn() };
 });
 
-import { getOmieCompanies } from "../../clients/omie.js";
+import { getB2BRegistry, getOmieCompanies } from "../../clients/omie.js";
 import { consultarClienteHandler } from "./consultar-cliente.js";
 
 function asCompany(client: OmieClient) {
@@ -44,6 +44,8 @@ function fakeOmie(responses: Array<OmieCallResult<unknown>>): OmieClient {
 
 beforeEach(() => {
   vi.mocked(getOmieCompanies).mockReset();
+  // Default: empty registry → name lookups fall through to a live Omie search.
+  vi.mocked(getB2BRegistry).mockReset().mockResolvedValue([]);
 });
 
 describe("consultarClienteHandler", () => {
@@ -172,6 +174,45 @@ describe("consultarClienteHandler", () => {
     expect(res.content[0]?.text).toContain("Cliente Omie #6741776573");
     expect(res.content[0]?.text).toContain("B4A");
     expect((client.call as ReturnType<typeof vi.fn>).mock.calls).toHaveLength(2);
+  });
+
+  it("resolves a name against the B2B registry with ZERO Omie calls", async () => {
+    vi.mocked(getB2BRegistry).mockResolvedValue([
+      {
+        nome: "UAU BOX",
+        aliases: ["UAUBOX"],
+        cnpj: "28.917.082/0001-52",
+        codigos: { Matriz: 6757341993, Extrema: 11493424013 },
+      },
+    ]);
+    // If the registry is used, getOmieCompanies must never be called.
+    vi.mocked(getOmieCompanies).mockRejectedValue(
+      new Error("should not hit Omie"),
+    );
+
+    const res = await consultarClienteHandler({ nome: "uau box" }, makeCtx());
+    expect(res.isError).toBeUndefined();
+    const text = res.content[0]?.text ?? "";
+    expect(text).toContain("UAU BOX");
+    expect(text).toContain("Matriz: 6757341993");
+    expect(text).toContain("Extrema: 11493424013");
+    expect(vi.mocked(getOmieCompanies)).not.toHaveBeenCalled();
+  });
+
+  it("registry hit filters códigos to the requested empresa", async () => {
+    vi.mocked(getB2BRegistry).mockResolvedValue([
+      {
+        nome: "UAU BOX",
+        codigos: { Matriz: 6757341993, Extrema: 11493424013 },
+      },
+    ]);
+    const res = await consultarClienteHandler(
+      { nome: "UAU BOX", empresa: "Extrema" },
+      makeCtx(),
+    );
+    const text = res.content[0]?.text ?? "";
+    expect(text).toContain("Extrema: 11493424013");
+    expect(text).not.toContain("Matriz: 6757341993");
   });
 
   it("lists matches by name (razao_social search) with their códigos", async () => {
