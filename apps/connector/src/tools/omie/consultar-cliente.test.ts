@@ -127,6 +127,71 @@ describe("consultarClienteHandler", () => {
     expect((client.call as ReturnType<typeof vi.fn>).mock.calls).toHaveLength(2);
   });
 
+  it("reads codigo_cliente_omie from the full clientes_cadastro record (real ListarClientes shape)", async () => {
+    const client = fakeOmie([
+      {
+        ok: true,
+        data: {
+          clientes_cadastro: [
+            {
+              codigo_cliente_omie: 6741776573,
+              razao_social: "B4A SERVICOS DE TECNOLOGIA E COMERCIO S. A.",
+              nome_fantasia: "B4A",
+              cnpj_cpf: "13.475.001/0001-34",
+            },
+          ],
+        },
+      },
+      {
+        ok: true,
+        data: {
+          codigo_cliente_omie: 6741776573,
+          codigo_cliente_integracao: null,
+          razao_social: "B4A SERVICOS DE TECNOLOGIA E COMERCIO S. A.",
+          nome_fantasia: "B4A",
+          cnpj_cpf: "13.475.001/0001-34",
+          inscricao_estadual: null,
+          endereco: null,
+          endereco_numero: null,
+          bairro: null,
+          cidade: null,
+          estado: null,
+          cep: null,
+          inativo: "N",
+          bloqueado: "N",
+        },
+      },
+    ]);
+    vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
+
+    const res = await consultarClienteHandler(
+      { cnpj: "13475001000134" },
+      makeCtx(),
+    );
+    expect(res.isError).toBeUndefined();
+    expect(res.content[0]?.text).toContain("Cliente Omie #6741776573");
+    expect(res.content[0]?.text).toContain("B4A");
+    expect((client.call as ReturnType<typeof vi.fn>).mock.calls).toHaveLength(2);
+  });
+
+  it("treats 'não existem registros' on ListarClientes as a clean miss, not an error", async () => {
+    const client = fakeOmie([
+      {
+        ok: false,
+        status: 200,
+        faultstring: "Não existem registros para a página informada.",
+      },
+    ]);
+    vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
+
+    const res = await consultarClienteHandler(
+      { cnpj: "99999999000199" },
+      makeCtx(),
+    );
+    expect(res.isError).toBeUndefined();
+    expect(res.content[0]?.text).toContain("Nenhum cliente encontrado");
+  });
+
   it("returns clean 'not found' when CNPJ has no match", async () => {
     const client = fakeOmie([
       { ok: true, data: { clientes_cadastro_resumido: [] } },

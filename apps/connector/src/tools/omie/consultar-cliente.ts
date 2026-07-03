@@ -9,17 +9,19 @@ import {
 import { registerToolDefinition } from "../../mcp/registry.js";
 import type { ToolContext, ToolResult } from "../../mcp/types.js";
 
+// ListarClientes returns the code as `codigo_cliente_omie` on the full
+// `clientes_cadastro` records, and as `codigo_cliente` on the lighter
+// `clientes_cadastro_resumido` records. Read whichever is present.
+type ClienteRecord = {
+  codigo_cliente_omie?: number;
+  codigo_cliente?: number;
+  razao_social?: string | null;
+  nome_fantasia?: string | null;
+  cnpj_cpf?: string | null;
+};
 type ListarClientesResponse = {
-  clientes_cadastro_resumido?: Array<{
-    codigo_cliente: number;
-    razao_social: string | null;
-    nome_fantasia: string | null;
-    cnpj_cpf: string | null;
-  }>;
-  clientes_cadastro?: Array<{
-    codigo_cliente: number;
-    razao_social: string | null;
-  }>;
+  clientes_cadastro_resumido?: ClienteRecord[];
+  clientes_cadastro?: ClienteRecord[];
   total_de_paginas?: number;
 };
 
@@ -73,16 +75,22 @@ async function lookupClienteInCompany(
       },
     });
     if (!listing.ok) {
+      // Not in this company → treat as a clean miss, not an error (matters when
+      // looking a CNPJ up across several companies where only one carries it).
+      if (/n[ãa]o existem registros/i.test(listing.faultstring)) {
+        return { found: false, reason: "no-cnpj-match" };
+      }
       throw new Error(`Omie ListarClientes failed: ${listing.faultstring}`);
     }
     const records =
-      listing.data.clientes_cadastro_resumido ??
       listing.data.clientes_cadastro ??
+      listing.data.clientes_cadastro_resumido ??
       [];
-    if (records.length === 0) return { found: false, reason: "no-cnpj-match" };
-    codigo = records[0]?.codigo_cliente;
+    const rec = records[0];
+    if (!rec) return { found: false, reason: "no-cnpj-match" };
+    codigo = rec.codigo_cliente_omie ?? rec.codigo_cliente;
     if (typeof codigo !== "number") {
-      throw new Error("Omie returned a record with no codigo_cliente.");
+      throw new Error("Omie returned a record with no codigo_cliente_omie.");
     }
   }
 
