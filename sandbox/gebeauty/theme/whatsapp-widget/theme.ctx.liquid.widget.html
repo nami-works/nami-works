@@ -1,0 +1,171 @@
+{%- if template contains 'product' -%}<style id="hx-wa-pdp-lift">.hx-wa-btn{bottom:124px !important}.hx-wa-widget{bottom:192px !important}.hx-wa-badge{bottom:182px !important}@media (max-width:640px){.hx-wa-btn{bottom:116px !important}.hx-wa-widget{bottom:184px !important}.hx-wa-badge{bottom:174px !important}}</style>{%- endif -%}<!-- Hexagon WhatsApp Widget -->
+<script id="hexagon-ge-whatsapp-widget">
+(function(){
+  var config={"enterpriseId":"172c5754-58c1-4363-9e83-34a38fb43f37","aiBaseUrl":"https://wa.me/551142103680?text=Oi!%20Quero%20comprar%20pelo%20WhatsApp!%20Cupom:%20NO_SEU_TEMPO_40","humanSalesUrl":"https://linklist.bio/gebeauty_insta","supportUrl":"https://wa.me/5511945630346?text=Oi!%20Preciso%20de%20ajuda%20com%20meu%20pedido.","logoUrl":"https://www.gebeauty.com.br/cdn/shop/files/ge_beauty_logo-01_copia.svg?v=1696611815&width=500","trackUrl":"https://api.joinhexagon.com/api/v1/public/widget-click"};
+  var SHOW_BADGE=true; // R$40 OFF floating badge kill switch: set true to re-enable
+  var BADGE_DISMISS_KEY='hx_badge_dismiss_until',BADGE_SESSION_KEY='hx_badge_off',BADGE_VIEWS_KEY='hx_badge_views',BADGE_VIEW_LIMIT=2;
+  function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  function ssGet(k){try{return sessionStorage.getItem(k)}catch(e){return null}}
+  function ssSet(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}
+  function onBuyPage(){return /^\/(cart|checkout)/.test(location.pathname)}
+  function badgeSuppressed(){if(onBuyPage())return true;var u=parseInt(lsGet(BADGE_DISMISS_KEY)||'0',10);if(u&&Date.now()<u)return true;if(ssGet(BADGE_SESSION_KEY)==='1')return true;if((parseInt(lsGet(BADGE_VIEWS_KEY)||'0',10))>=BADGE_VIEW_LIMIT)return true;return false}
+  function removeBadge(){var b=document.getElementById('hxWaBadge');if(b&&b.parentNode)b.parentNode.removeChild(b)}
+  function minFab(){var b=document.getElementById('hxWaBtn');if(b)b.classList.add('hx-wa-min')}
+  function unminFab(){var b=document.getElementById('hxWaBtn');if(b)b.classList.remove('hx-wa-min')}
+  function suppressBadgeSession(){ssSet(BADGE_SESSION_KEY,'1');removeBadge();minFab()}
+  function dismissBadge(){lsSet(BADGE_DISMISS_KEY,String(Date.now()+7*24*60*60*1000));removeBadge();minFab()}
+  function resetBadgeViews(){lsSet(BADGE_VIEWS_KEY,'0')}
+  var WA_PATH="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z";
+  var BADGE_HTML='<span style="display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;letter-spacing:0.5px;background:#F97316;color:#fff;padding:4px 9px;border-radius:20px;line-height:1;vertical-align:middle;position:relative;top:-1px">R$40 OFF</span>';
+  function uid(){try{return crypto.randomUUID()}catch(e){return 'x'+Date.now()+Math.random().toString(36).slice(2,10)}}
+  function ensureSessionValue(key,resolver){try{var existing=localStorage.getItem(key);if(existing)return existing;var next=resolver();localStorage.setItem(key,next);return next}catch(e){return resolver()}}
+  function currentVariant(){
+    return ensureSessionValue('hx_ab',function(){
+      var r=Math.random();
+      return r<1/3?'A':(r<2/3?'B':'C');
+    });
+  }
+  function currentSessionId(){return ensureSessionValue('hx_sid',uid)}
+  function track(row){
+    try{
+      var payload=JSON.stringify({enterpriseId:config.enterpriseId,variant:currentVariant(),row:row,sessionId:currentSessionId(),url:location.href});
+      if(navigator.sendBeacon){
+        navigator.sendBeacon(config.trackUrl,new Blob([payload],{type:'text/plain'}));
+        return;
+      }
+      fetch(config.trackUrl,{method:'POST',body:payload,keepalive:true,headers:{'Content-Type':'text/plain'},mode:'no-cors'});
+    }catch(e){}
+  }
+  function mount(){
+    if(document.getElementById('hxWaBtn')||document.getElementById('hxWaWidget'))return;
+    var root=document.createElement('div');
+    root.id='hxWaRoot';
+    var style=document.createElement('style');
+    style.textContent=
+      '.hx-wa-btn{position:fixed;right:24px;bottom:24px;z-index:99999;width:56px;height:56px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 12px rgba(37,211,102,0.35);transition:transform .35s cubic-bezier(.4,0,.2,1),box-shadow .25s ease;border:none;outline:none;-webkit-tap-highlight-color:transparent}'+
+      '.hx-wa-btn:hover{box-shadow:0 4px 18px rgba(37,211,102,0.45)}'+
+      '.hx-wa-btn:not(.hx-open):hover{transform:scale(1.06)}'+
+      '.hx-wa-btn.hx-open{transform:rotate(180deg)}'+
+      '.hx-wa-btn .hx-ico-wa,.hx-wa-btn .hx-ico-x{position:absolute;transition:opacity .3s ease,transform .3s ease}'+
+      '.hx-wa-btn .hx-ico-wa{width:30px;height:30px;opacity:1;transform:scale(1)}'+
+      '.hx-wa-btn .hx-ico-x{width:20px;height:20px;stroke:#fff;opacity:0;transform:scale(.4) rotate(-90deg)}'+
+      '.hx-wa-btn.hx-open .hx-ico-wa{opacity:0;transform:scale(.4)}'+
+      '.hx-wa-btn.hx-open .hx-ico-x{opacity:1;transform:scale(1) rotate(0deg)}'+
+      '.hx-wa-widget{position:fixed;right:24px;bottom:92px;z-index:99998;width:348px;max-width:calc(100vw - 48px);background:#fff;border-radius:18px;box-shadow:0 0 0 1px rgba(0,0,0,0.03),0 2px 8px rgba(0,0,0,0.04),0 12px 40px rgba(0,0,0,0.12);overflow:hidden;opacity:0;transform:translateY(16px) scale(.94);transform-origin:bottom right;pointer-events:none;transition:opacity .3s cubic-bezier(.4,0,.2,1),transform .3s cubic-bezier(.4,0,.2,1)}'+
+      '.hx-wa-widget.hx-open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}'+
+      '.hx-wa-widget-hdr{background:linear-gradient(135deg,#25D366 0%,#1FAF54 50%,#128C7E 100%);padding:20px 22px;display:flex;align-items:center;gap:14px}'+
+      '.hx-wa-widget-hdr .hx-logo{width:40px;height:40px;background:rgba(255,255,255,0.18);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;backdrop-filter:blur(4px)}'+
+      '.hx-wa-widget-hdr .hx-logo svg{width:22px;height:22px;fill:#fff}'+
+      '.hx-wa-widget-hdr .hx-title{font-size:19px;font-weight:700;color:#fff;letter-spacing:-0.2px;line-height:1.2}'+
+      '.hx-wa-widget-hdr .hx-sub{font-size:13px;font-weight:600;color:#fff;line-height:1.35;margin-top:4px;max-width:250px}.hx-wa-widget-hdr .hx-sub-code{font-weight:800;color:#fff;letter-spacing:0.15px}'+
+      '.hx-wa-list{padding:12px 14px;display:flex;flex-direction:column;gap:10px;background:#f6f7f8}'+
+      '.hx-wa-row{position:relative;display:flex;align-items:center;gap:14px;padding:14px 16px 14px 18px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.04);text-decoration:none;color:inherit;transition:transform .15s ease,box-shadow .15s ease}'+
+      '.hx-wa-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#25D366}'+
+      '.hx-wa-row:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,0.08)}'+
+      '.hx-wa-row .hx-ava{width:40px;height:40px;border-radius:50%;flex-shrink:0;overflow:hidden;background:#fff}'+
+      '.hx-wa-row .hx-ava img{width:100%;height:100%;object-fit:contain}'+
+      '.hx-wa-row .hx-txt{flex:1;min-width:0;display:flex;flex-direction:column}'+
+      '.hx-wa-row .hx-row-title{font-size:15px;font-weight:700;color:#111;line-height:1.25;letter-spacing:-0.2px;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}'+
+      '.hx-wa-row .hx-row-sub{font-size:13px;font-weight:400;color:#8a8f98;margin-top:2px;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}'+
+      '.hx-wa-row .hx-row-cta{flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid #25D366;display:flex;align-items:center;justify-content:center;transition:background .15s ease}'+
+      '.hx-wa-row .hx-row-cta svg{width:18px;height:18px;fill:#25D366;transition:fill .15s ease}'+
+      '.hx-wa-row:hover .hx-row-cta{background:#25D366}'+
+      '.hx-wa-row:hover .hx-row-cta svg{fill:#fff}'+
+      '.hx-wa-badge{position:fixed;--hx-tx:0;right:24px;bottom:82px;display:flex;align-items:center;justify-content:center;background:#fff;color:#DF3630;border:0.75px solid #DF3630;font-size:12px;font-weight:700;line-height:1.2;letter-spacing:0;padding:8px 12px;border-radius:20px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.18);z-index:2147483646;animation:hx-badge-pulse 2s ease-in-out infinite;opacity:var(--hx-badge-effective-opacity,1);transition:opacity .6s ease;pointer-events:auto;cursor:pointer;white-space:nowrap;font-family:inherit}'+
+      '.hx-wa-badge{overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,0.14),0 2px 6px rgba(0,0,0,0.10)}'+
+      '.hx-wa-badge::after{content:"";position:absolute;top:0;bottom:0;left:-50%;width:30%;background:linear-gradient(100deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0.45) 50%,rgba(255,255,255,0) 100%);transform:skewX(-16deg);animation:hx-badge-sheen 6.5s cubic-bezier(.4,0,.2,1) 2s infinite;pointer-events:none}'+
+      '@keyframes hx-badge-sheen{0%{left:-50%}20%{left:125%}100%{left:125%}}'+
+      '@keyframes hx-badge-pulse{0%,100%{transform:translate(var(--hx-tx,0),0) scale(1)}50%{transform:translate(var(--hx-tx,0),-3px) scale(1.03)}}'+
+
+      '.hx-wa-btn.hx-wa-min{width:42px;height:42px;animation:none}.hx-wa-btn.hx-wa-min .hx-ico-wa{width:22px;height:22px}.hx-wa-btn.hx-wa-min .hx-ico-x{width:15px;height:15px}.hx-wa-btn.hx-wa-min::before,.hx-wa-btn.hx-wa-min::after{display:none}'+
+      '.hx-wa-help{padding:6px 16px 4px;text-align:center;background:transparent;font-size:12px;line-height:1.4;color:#999;letter-spacing:.2px}'+
+      '.hx-help-q{color:#999}'+
+      
+      '.hx-help-link{color:#DF3630;font-weight:500;text-decoration:none;cursor:pointer}'+
+      '.hx-help-link:hover,.hx-help-link:active{text-decoration:underline}'+
+      '.hx-help-meta{color:#bbb;display:block;margin-top:1px}'+
+      '.hx-wa-footer{padding:6px 20px 10px;text-align:center;background:#f6f7f8}'+
+      
+      '.hx-wa-footer a{font-size:9.5px;color:#FF6B35;text-decoration:none;letter-spacing:.2px;transition:color .2s ease}'+
+      '.hx-wa-footer a:hover,.hx-wa-footer a:active{color:#CC4F1F}'+
+      '@media (max-width: 640px){.hx-wa-btn{right:16px;bottom:16px}.hx-wa-widget{right:16px;bottom:84px;max-width:calc(100vw - 32px)}.hx-wa-badge{right:16px;bottom:74px}}';
+    root.appendChild(style);
+    var waIcon='<svg viewBox="0 0 24 24"><path d="'+WA_PATH+'"/></svg>';
+    root.innerHTML+=
+      '<div class="hx-wa-widget" id="hxWaWidget" aria-hidden="true">'+
+        '<div class="hx-wa-widget-hdr">'+
+          '<div class="hx-logo">'+waIcon+'</div>'+
+          '<div><div class="hx-title">compre pelo whatsapp</div></div>'+
+        '</div>'+
+        '<div class="hx-wa-list">'+
+          '<a class="hx-wa-row" data-hx-row="ai" href="'+config.aiBaseUrl+'" target="_blank" rel="noopener noreferrer">'+'<!--hx-orbs-dom-start--><span class="hx-orbs" aria-hidden="true"><span class="hx-orb hx-orb-1"></span><span class="hx-orb hx-orb-2"></span><span class="hx-orb hx-orb-3"></span></span><!--hx-orbs-dom-end-->'+
+            '<div class="hx-txt"><span class="hx-row-title">com nosso assistente inteligente</span><span class="hx-row-sub">entregas para todo o Brasil</span></div>'+
+            '<div class="hx-row-cta" aria-hidden="true">'+waIcon+'</div>'+
+          '</a>'+
+          '<a class="hx-wa-row" data-hx-row="sales_team" href="'+config.humanSalesUrl+'" target="_blank" rel="noopener noreferrer">'+
+            '<div class="hx-txt"><span class="hx-row-title">com uma de nossas lojas</span><span class="hx-row-sub">receba ainda hoje em SP, Rio e Recife</span></div>'+
+            '<div class="hx-row-cta" aria-hidden="true">'+waIcon+'</div>'+
+          '</a>'+
+          '<div class="hx-wa-help" data-hx-row="support">'+
+            '<span class="hx-help-q">precisa de ajuda? </span>'+
+            '<a href="'+config.supportUrl+'" target="_blank" rel="noopener noreferrer" class="hx-help-link">fale com o nosso SAC</a>'+
+            ' <span class="hx-help-meta">atendimento: seg a sex das 9h às 18h</span>'+
+          '</div>'+
+        '</div>'+
+        '<div class="hx-wa-footer"><a href="https://joinhexagon.com" target="_blank" rel="noopener">Feito por Hexagon</a></div>'+
+      '</div>'+
+      '<button class="hx-wa-btn" id="hxWaBtn" aria-label="Chat on WhatsApp">'+
+        '<svg class="hx-ico-wa" viewBox="0 0 24 24" fill="#fff"><path d="'+WA_PATH+'"/></svg>'+
+        '<svg class="hx-ico-x" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>'+
+      '</button>';
+    document.body.appendChild(root);
+    if(SHOW_BADGE&&!badgeSuppressed()){var bg=document.createElement('div');bg.id='hxWaBadge';bg.className='hx-wa-badge';bg.innerHTML='compre pelo whats';bg.setAttribute('role','button');bg.setAttribute('tabindex','0');document.body.appendChild(bg);bg.style.setProperty('--hx-badge-effective-opacity','0');bg.addEventListener('click',function(e){e.stopPropagation();toggle(true)});bg.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();toggle(true)}});lsSet(BADGE_VIEWS_KEY,String((parseInt(lsGet(BADGE_VIEWS_KEY)||'0',10))+1));}else if(SHOW_BADGE){minFab();}
+    var btn=document.getElementById('hxWaBtn');
+    var widget=document.getElementById('hxWaWidget');
+    if(!btn||!widget)return;
+    var bot=document.getElementById('bot');if(bot)bot.style.display='none';
+    var variant=currentVariant();
+    var aiRow=root.querySelector('[data-hx-row="ai"]');
+    var subtitles={A:'entregas para todo o Brasil',B:'entregas para todo o Brasil',C:'entregas para todo o Brasil'};
+    var prefills={A:'Oi! Quero comprar pelo WhatsApp! Cupom: NO_SEU_TEMPO_40',B:'Oi! Quero comprar com a IA pelo WhatsApp! Cupom: NO_SEU_TEMPO_40',C:'Oi! Quero comprar em menos de 1min com IA! Cupom: NO_SEU_TEMPO_40'};
+    if(aiRow){
+      var sub=aiRow.querySelector('.hx-row-sub');
+      if(sub)sub.textContent=subtitles[variant];
+      aiRow.href=config.aiBaseUrl.replace(/text=.*/, 'text='+encodeURIComponent(prefills[variant]));
+    }
+    root.querySelectorAll('[data-hx-row]').forEach(function(row){
+      row.addEventListener('click',function(){rowTapped=true;resetBadgeViews();track(String(row.getAttribute('data-hx-row')||''))});
+    });
+    var open=false;var panelOpened=false;var rowTapped=false;var badgeShown=false;var badgeShownOnce=false;
+    var badgeFrame=0;
+    var badgeFadeStart=120;var badgeAppearVh=1.0;
+    var badgeFadeEnd=640;
+    function badgeScrollTop(){return Math.max(window.pageYOffset||0,document.documentElement&&document.documentElement.scrollTop||0,document.body&&document.body.scrollTop||0)}
+    function updateBadgeOpacity(){badgeFrame=0;var bd=document.getElementById('hxWaBadge');if(!bd)return;var scroll=badgeScrollTop();var progress=Math.min(Math.max((scroll-badgeFadeStart)/(badgeFadeEnd-badgeFadeStart),0),1);var cart=false;try{cart=!!document.querySelector('cart-drawer.active,.cart-drawer.active,#CartDrawer.active,cart-drawer[open],[data-cart-drawer].active,.drawer.active')||Array.prototype.some.call(document.querySelectorAll('cart-drawer,#CartDrawer,.cart-drawer,.drawer__inner'),function(el){var s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=='none'&&s.visibility==='visible'&&r.width>0&&r.height>0&&r.left<innerWidth&&r.right>0&&r.top<innerHeight&&r.bottom>0})}catch(e){}var _fb=document.getElementById('hxWaBtn'),_wg=document.getElementById('hxWaWidget');if(cart){suppressBadgeSession();if(_fb)_fb.style.zIndex='1';if(_wg)_wg.style.zIndex='1';return;}if(_fb)_fb.style.zIndex='';if(_wg)_wg.style.zIndex='';if(!badgeShownOnce&&scroll>=window.innerHeight*badgeAppearVh){badgeShownOnce=true;badgeShown=true;setTimeout(function(){badgeShown=false;updateBadgeOpacity();},6000);}var opacity=(open||!badgeShown)?0:1;bd.style.setProperty('--hx-badge-effective-opacity',String(opacity));bd.style.pointerEvents=(open||opacity<0.08)?'none':'auto'}
+    function scheduleBadgeOpacity(){if(badgeFrame)return;badgeFrame=window.requestAnimationFrame?window.requestAnimationFrame(updateBadgeOpacity):setTimeout(updateBadgeOpacity,16)}
+    function toggle(next){
+      if(next){panelOpened=true;rowTapped=false;resetBadgeViews();unminFab();}else if(panelOpened&&!rowTapped){suppressBadgeSession();}if(!next){panelOpened=false;}open=next;
+      btn.classList.toggle('hx-open',open);
+      widget.classList.toggle('hx-open',open);
+      widget.setAttribute('aria-hidden',open?'false':'true');
+      updateBadgeOpacity();
+    }
+    btn.addEventListener('click',function(){toggle(!open)});
+    document.addEventListener('click',function(event){
+      var target=event.target;
+      if(!(target instanceof Node))return;
+      if(open&&!widget.contains(target)&&!btn.contains(target))toggle(false);
+    });
+    document.addEventListener('keydown',function(event){
+      if(event.key==='Escape'&&open)toggle(false);
+    });
+    window.addEventListener('scroll',scheduleBadgeOpacity,{passive:true});
+    window.addEventListener('resize',scheduleBadgeOpacity,{passive:true});
+    setInterval(scheduleBadgeOpacity,350);
+    updateBadgeOpacity();
+  }
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',mount,{once:true})}else{mount()}
+})();
+// <!-- /Hexagon WhatsApp Widget -->
+</script>
