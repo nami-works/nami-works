@@ -123,6 +123,9 @@ export const TOOL_CATALOG: Record<string, ToolCatalogEntry> = {
   brand_tone_current: { system: "brand", write: false },
   nami_feedback: { system: "brand", write: false, alwaysAvailable: true },
 
+  // --- loox (customer reviews / UGC → content) — gated under the brand system ---
+  loox_list_reviews: { system: "brand", write: false },
+
   // --- affiliates ---
   affiliates_list_profiles: { system: "affiliates", write: false },
 };
