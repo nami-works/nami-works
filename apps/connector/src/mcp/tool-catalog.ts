@@ -109,6 +109,7 @@ export const TOOL_CATALOG: Record<string, ToolCatalogEntry> = {
   omie_consultar_cliente: { system: "omie", write: false },
   omie_listar_pedidos: { system: "omie", write: false },
   omie_consultar_financeiro: { system: "omie", write: false },
+  omie_contas_a_pagar: { system: "omie", write: false },
 
   // --- instagram ---
   instagram_voice_card_current: { system: "instagram", write: false },
