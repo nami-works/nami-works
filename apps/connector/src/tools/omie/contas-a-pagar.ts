@@ -140,10 +140,12 @@ export async function contasAPagarHandler(
     let vencido = 0;
     let pago = 0;
     for (const item of items) {
+      // Omie uses "A VENCER" for not-yet-due — do NOT match on bare "venc"
+      // (that would miscount future titles as overdue). Only VENCIDO/ATRASADO.
       if (item.status_titulo === "PAGO") pago += item.valor_documento;
-      else if (/venc|atras/i.test(item.status_titulo))
+      else if (/vencid|atrasad/i.test(item.status_titulo))
         vencido += item.valor_documento;
-      else aPagar += item.valor_documento;
+      else aPagar += item.valor_documento; // A_PAGAR, "A VENCER", etc.
     }
     grandP += aPagar;
     grandV += vencido;

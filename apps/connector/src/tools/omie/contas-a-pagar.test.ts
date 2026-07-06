@@ -54,6 +54,7 @@ describe("contasAPagarHandler", () => {
             { codigo_lancamento_omie: 1, numero_documento: "AP-1", data_vencimento: "10/03/2026", valor_documento: 100, status_titulo: "A_PAGAR", observacao: null },
             { codigo_lancamento_omie: 2, numero_documento: "AP-2", data_vencimento: "10/02/2026", valor_documento: 200, status_titulo: "VENCIDO", observacao: null },
             { codigo_lancamento_omie: 3, numero_documento: "AP-3", data_vencimento: "10/01/2026", valor_documento: 300, status_titulo: "PAGO", observacao: null },
+            { codigo_lancamento_omie: 4, numero_documento: "AP-4", data_vencimento: "10/09/2026", valor_documento: 50, status_titulo: "A VENCER", observacao: null },
           ],
         },
       },
@@ -62,7 +63,8 @@ describe("contasAPagarHandler", () => {
 
     const res = await contasAPagarHandler({ codigoFornecedor: 999 }, makeCtx());
     const text = res.content[0]?.text ?? "";
-    expect(text).toContain("A pagar: R$ 100.00");
+    // "A VENCER" (50) must count as a-pagar, NOT vencido
+    expect(text).toContain("A pagar: R$ 150.00");
     expect(text).toContain("Vencido: R$ 200.00");
     expect(text).toContain("Pago: R$ 300.00");
     // oldest-first ordering
