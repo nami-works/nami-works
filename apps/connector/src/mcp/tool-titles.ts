@@ -34,6 +34,7 @@ export const TOOL_TITLES: Record<string, string> = {
   // --- Omie ---
   omie_consultar_cliente: "Omie · Consultar cliente",
   omie_consultar_financeiro: "Omie · Contas a receber",
+  omie_contas_a_pagar: "Omie · Contas a pagar",
   omie_listar_pedidos: "Omie · Listar pedidos de venda",
 
   // --- Shopify: pedidos ---

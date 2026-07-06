@@ -2,3 +2,4 @@
 import "./consultar-cliente.js";
 import "./listar-pedidos.js";
 import "./consultar-financeiro.js";
+import "./contas-a-pagar.js";
