@@ -17,6 +17,7 @@ export const TOOL_TITLES: Record<string, string> = {
 
   // --- Conteúdo (voz da marca) ---
   brand_tone_current: "Conteúdo · Tom de voz da marca",
+  loox_list_reviews: "Loox · Avaliações de clientes",
   instagram_voice_card_current: "Conteúdo · Cartão de voz (Instagram)", // disabled: merged into brand_tone_current
 
   // --- Instagram ---
@@ -132,6 +133,7 @@ const FALLBACK_VENDOR_LABELS: Record<string, string> = {
   brand: "Conteúdo",
   affiliates: "Afiliadas",
   nami: "Suporte",
+  loox: "Loox",
 };
 
 // Tokens that should render uppercase (or mixed) rather than capitalized.

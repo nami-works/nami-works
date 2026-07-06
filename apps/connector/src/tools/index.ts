@@ -6,4 +6,5 @@ import "./omie/index.js";
 import "./affiliates/index.js";
 import "./instagram/index.js";
 import "./brand/index.js";
+import "./loox/index.js";
 import "./nami/index.js";
