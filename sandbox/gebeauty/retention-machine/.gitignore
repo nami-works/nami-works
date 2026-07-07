@@ -1,0 +1,8 @@
+# Customer PII + operational data — NEVER commit (emails, phones, names, GIDs, live order dumps)
+_cache/
+out/
+learning/*.jsonl
+learning/*.log
+*-state.json
+
+# keep: *.py, *.liquid, config.json, README.md, learning/*.md (hypotheses + aggregate readouts, no PII)
