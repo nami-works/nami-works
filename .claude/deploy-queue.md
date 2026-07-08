@@ -61,6 +61,15 @@ _(empty — the i18n online-tokens fix shipped in the 2026-05-22 deploy below.)_
 
 ## Deployed
 
+### 2026-07-08 · connector — feedback attribution + proactive struggle-detection nudge
+- **Image tag:** `nami-works:connector-20260708-feedback` (supersedes -pagar2). Live on `mcp.gebeauty.com.br`; `/health` 200 on attempt 1; container up clean, no startup errors.
+- **Deploy mechanic:** buildx `linux/amd64` push to ECR (`477780048372.dkr.ecr.us-east-1.amazonaws.com/nami-works`), then on `54.221.23.142`: sed tag in `/srv/cpg-labs/docker-compose.yml` (service `connector`) + `docker compose pull connector && up -d --force-recreate connector`. Box ECR token had expired → re-authed by piping a locally-minted `aws ecr get-login-password` into the box's `docker login` over ssh stdin.
+- **Bundled commits (2):**
+  - PR #58 — `nami_feedback` records `principalId` + `principalLabel` from the request principal; `Feedback` gained two nullable columns (additive migration `20260702020000_add_feedback_principal`, applied to prod `connector` DB via psql before the roll); `feedback-review` prints `[from: <name>]`.
+  - PR #59 — gateway `instructions` now tell the client to judge task difficulty and proactively offer `nami_feedback` when a session has been a struggle (tool failing, missing/wrong data, user repeating themselves), before the user asks.
+- **What it affects:** every teammate's feedback is now attributed (was anonymous). The two DB columns are nullable + additive, so the prior image (`-pagar2`) stayed fully compatible during the window between the migration and this roll — no breakage window.
+- **Verified post-deploy:** `mcp.gebeauty.com.br/health` 200; box-local `:3003/health` 200; `docker ps` shows `cpg-labs-connector` on `:connector-20260708-feedback`; 168 connector tests green pre-deploy.
+
 ### 2026-07-02 · connector — connect-polish (holo favicon, Google-G button, drop bearer UI) + Inter font + tool display titles
 - **Image tag:** `nami-works:connector-20260702-pagar2` (supersedes -pagar → -loox → -pedidosfix → …). Live + `/health` ok.
 - **PR #54/#55 (rolled -pagar2):** new `omie_contas_a_pagar` (payables) — ListarContasPagar per company, filter cnpjFornecedor (exact) or codigoFornecedor; a pagar/vencido/pago per empresa + consolidado. Verified live (FLY GALLEY Matriz). Fix: "A VENCER" (not-yet-due) counts as a-pagar, not vencido. Under `omie` system.
