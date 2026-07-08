@@ -99,8 +99,9 @@ async function list(): Promise<void> {
   for (const r of rows) {
     const date = r.createdAt.toISOString().slice(0, 19).replace("T", " ");
     const tool = r.relatedTool ? ` [tool: ${r.relatedTool}]` : "";
+    const who = r.principalLabel ? ` [from: ${r.principalLabel}]` : "";
     console.log(
-      `[${date}] [${r.tenant.slug}] [${r.category}]${tool} id=${r.id}`,
+      `[${date}] [${r.tenant.slug}] [${r.category}]${who}${tool} id=${r.id}`,
     );
     console.log(`  ${r.message.replace(/\n/g, "\n  ")}`);
     if (r.reviewNote) console.log(`  └─ review: ${r.reviewNote}`);
