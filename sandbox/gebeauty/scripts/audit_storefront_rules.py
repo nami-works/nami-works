@@ -185,4 +185,8 @@ else:
     print(f"\n⚠ {len(violations)} violation(s):")
     for sev, code, t, detail in violations:
         print(f"  [{sev:6}] {code} {t}\n           {detail}")
+_h = sum(1 for v in violations if v[0] == HIGH)
+_n = sum(1 for v in violations if v[0] == NORMAL)
+_l = sum(1 for v in violations if v[0] == LOW)
+print(f"SUMMARY high={_h} normal={_n} low={_l}")  # machine-readable for watchdog_report.py
 sys.exit(min(len(violations), 250))
