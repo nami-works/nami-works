@@ -160,11 +160,19 @@ while True:
             noncombine.append((disc.get('title') or '', t))
     if conn['pageInfo']['hasNextPage']: cur = conn['pageInfo']['endCursor']
     else: break
-if noncombine:
-    cls = Counter(_cls(tt) for tt, _ in noncombine)
+# The R$299 free-ship is itself a DiscountAutomaticApp Function; shipping=false is
+# CORRECT for it (a shipping discount doesn't stack with shipping). Exclude by title.
+# Other app-automatic discounts are app-owned -> can't flip from our token; report LOW.
+code_nc = [(tt, t) for tt, t in noncombine if t != 'DiscountAutomaticApp']
+app_nc = [(tt, t) for tt, t in noncombine if t == 'DiscountAutomaticApp' and 'frete gr' not in tt.lower()]
+if code_nc:
+    cls = Counter(_cls(tt) for tt, _ in code_nc)
     breakdown = '; '.join(f'{v} {k}' for k, v in cls.most_common())
-    flag(NORMAL, 'D1', f'{len(noncombine)} active discounts do not combine with free shipping',
-         f'{breakdown} — remediate: fix_discount_shipping_combine.py --all (or --gift/--channel20/--affiliate10) --apply')
+    flag(NORMAL, 'D1', f'{len(code_nc)} code discounts do not combine with free shipping',
+         f'{breakdown} — remediate: fix_discount_shipping_combine.py --all --no-app --apply')
+if app_nc:
+    flag(LOW, 'D1-app', f'{len(app_nc)} app-automatic discounts do not combine with free shipping (manual review)',
+         f'{[tt for tt, _ in app_nc]} — app-owned, cannot flip from our token; fix in the owning app if they should stack')
 
 # ---- report ----
 print(f"Audited {len(prods)} products ({n_kits} kits, {n_disc} with a compare-at discount) "

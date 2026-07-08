@@ -155,6 +155,8 @@ def main():
                         help="Include all `gift_*` CRM Bonus cashback codes")
     parser.add_argument("--all", dest="all_flag", action="store_true",
                         help="Include EVERY record currently not combining with shipping")
+    parser.add_argument("--no-app", action="store_true",
+                        help="With --all, skip DiscountAutomaticApp (app-owned) discounts")
     parser.add_argument("--apply", action="store_true",
                         help="Actually run the mutations (default: dry-run)")
     parser.add_argument("--limit", type=int, default=None,
@@ -177,7 +179,9 @@ def main():
         title = (d.get("title") or "").strip()
         type_name = d["type"]
         if args.all_flag:
-            if type_name in MUTATIONS:
+            if type_name == "DiscountAutomaticApp" and args.no_app:
+                print(f"  [skip] --no-app: {type_name}: {title}")
+            elif type_name in MUTATIONS:
                 targets.append(("all", d))
             else:
                 print(f"  [skip] unsupported type {type_name}: {title}")
