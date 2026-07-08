@@ -151,6 +151,8 @@ def main():
                         help="Include all <NAME>10 affiliate codes")
     parser.add_argument("--channel20", action="store_true",
                         help="Include the 15 channel-scoped 20%% codes")
+    parser.add_argument("--gift", action="store_true",
+                        help="Include all `gift_*` CRM Bonus cashback codes")
     parser.add_argument("--all", dest="all_flag", action="store_true",
                         help="Include EVERY record currently not combining with shipping")
     parser.add_argument("--apply", action="store_true",
@@ -159,8 +161,8 @@ def main():
                         help="Cap number of updates (safety, testing)")
     args = parser.parse_args()
 
-    if not (args.affiliate10 or args.channel20 or args.all_flag):
-        parser.error("Pick at least one target: --affiliate10, --channel20, or --all")
+    if not (args.affiliate10 or args.channel20 or args.gift or args.all_flag):
+        parser.error("Pick at least one target: --affiliate10, --channel20, --gift, or --all")
 
     audit_path = REPO_ROOT / "inputs" / "discount_shipping_audit.json"
     if not audit_path.exists():
@@ -186,6 +188,8 @@ def main():
             targets.append(("affiliate10", d))
         elif args.channel20 and title in CHANNEL_20_CODES:
             targets.append(("channel20", d))
+        elif args.gift and title.startswith("gift_"):
+            targets.append(("gift", d))
 
     # De-dup on id in case the same record matched twice somehow
     seen = set()

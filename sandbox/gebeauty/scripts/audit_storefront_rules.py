@@ -15,6 +15,7 @@ Invariants (see initiative for detail):
   G4 duplicate ACTIVE off-badges with identical texto (library hygiene, low sev)
 """
 import json, urllib.request, time, re, sys
+from collections import Counter
 from pathlib import Path
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -127,8 +128,47 @@ for p in prods:
         if off_refs:
             flag(NORMAL, 'G2', f'{title}: off-badge on full-price product', f'{[t for _, t in off_refs]}')
 
+# ---- D1: discount combinability with free shipping ----
+# Every active non-free-shipping discount must have combinesWith.shippingDiscounts=true,
+# else it can't stack with the R$299 free-ship Function. Detection only (read-only);
+# remediation is sandbox/gebeauty/scripts/fix_discount_shipping_combine.py.
+QD = ('fragment cw on DiscountCombinesWith { shippingDiscounts }'
+      'query($cur:String){discountNodes(first:100,after:$cur,query:"status:active",sortKey:CREATED_AT){'
+      ' pageInfo{hasNextPage endCursor} edges{node{discount{__typename'
+      '  ... on DiscountCodeBasic{title combinesWith{...cw}}'
+      '  ... on DiscountCodeBxgy{title combinesWith{...cw}}'
+      '  ... on DiscountCodeApp{title combinesWith{...cw}}'
+      '  ... on DiscountAutomaticBasic{title combinesWith{...cw}}'
+      '  ... on DiscountAutomaticBxgy{title combinesWith{...cw}}'
+      '  ... on DiscountAutomaticApp{title combinesWith{...cw}}'
+      '  ... on DiscountCodeFreeShipping{title}'
+      '  ... on DiscountAutomaticFreeShipping{title}}}}}}')
+FREESHIP = {'DiscountCodeFreeShipping', 'DiscountAutomaticFreeShipping'}
+def _cls(t):
+    t = t.strip()
+    if t.startswith('gift_'): return 'gift_ (CRM Bonus cashback)'
+    if t.startswith('Loox Referrals'): return 'Loox referral'
+    if re.fullmatch(r'[A-Z]+10', t): return 'affiliate NAME10'
+    return 'other'
+cur = None; n_disc_total = 0; noncombine = []
+while True:
+    d = gql(QD, {'cur': cur}); conn = d['data']['discountNodes']
+    for e in conn['edges']:
+        disc = e['node']['discount'] or {}; n_disc_total += 1
+        t = disc.get('__typename', '?'); cw = disc.get('combinesWith') or {}
+        if t not in FREESHIP and cw.get('shippingDiscounts') is False:
+            noncombine.append((disc.get('title') or '', t))
+    if conn['pageInfo']['hasNextPage']: cur = conn['pageInfo']['endCursor']
+    else: break
+if noncombine:
+    cls = Counter(_cls(tt) for tt, _ in noncombine)
+    breakdown = '; '.join(f'{v} {k}' for k, v in cls.most_common())
+    flag(NORMAL, 'D1', f'{len(noncombine)} active discounts do not combine with free shipping',
+         f'{breakdown} — remediate: fix_discount_shipping_combine.py --all (or --gift/--channel20/--affiliate10) --apply')
+
 # ---- report ----
-print(f"Audited {len(prods)} products ({n_kits} kits, {n_disc} with a compare-at discount).")
+print(f"Audited {len(prods)} products ({n_kits} kits, {n_disc} with a compare-at discount) "
+      f"and {n_disc_total} active discounts.")
 order = {HIGH: 0, NORMAL: 1, LOW: 2}
 violations.sort(key=lambda x: order[x[0]])
 if not violations:
