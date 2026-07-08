@@ -315,6 +315,10 @@ model Feedback {
   category    String // voice_drift | tool_bug | missing_capability | copy_quality | other
   message     String            @db.Text
   relatedTool String?
+  // Who submitted it (per-user principal). Nullable: legacy rows + the
+  // owner/break-glass path may have no principal.
+  principalId    String?
+  principalLabel String?
   status      String            @default("new") // new | reviewing | actioned | wont_fix
   createdAt   DateTime          @default(now())
   reviewedAt  DateTime?
