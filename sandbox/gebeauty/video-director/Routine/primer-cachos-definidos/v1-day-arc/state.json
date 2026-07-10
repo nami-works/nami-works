@@ -1,0 +1,945 @@
+{
+  "schema_version": 1,
+  "concept_id": "primer-cachos-definidos-v1",
+  "concept_label": "primer cachos definidos — day-arc v1",
+  "created_at": "2026-05-25T01:06:57Z",
+  "updated_at": "2026-06-09T14:52:38Z",
+  "state": "DELIVERED",
+  "events": [
+    {
+      "ts": "2026-05-25T01:06:57Z",
+      "actor": "brain",
+      "event": "state_init",
+      "from": null,
+      "to": "DRAFT"
+    },
+    {
+      "ts": "2026-05-25T01:06:57Z",
+      "actor": "brain",
+      "event": "step1_ingest_complete",
+      "benefits_count": 3,
+      "benefit_images_count": 3,
+      "finalidade_present": true
+    },
+    {
+      "ts": "2026-05-25T01:06:57Z",
+      "actor": "brain",
+      "event": "state_transition",
+      "from": "DRAFT",
+      "to": "BRIEF_LOCKED",
+      "details": "step 1 ingest done"
+    },
+    {
+      "ts": "2026-05-25T01:08:18Z",
+      "actor": "brain",
+      "event": "step2_moments_complete",
+      "count": 3,
+      "archetype_mix": "2 drop hook, 1 deflection"
+    },
+    {
+      "ts": "2026-05-25T01:08:59Z",
+      "actor": "brain",
+      "event": "step3_narrative_arc_complete",
+      "shots": 3,
+      "arc_type": "3-beat day-arc (no separate hook/offer)"
+    },
+    {
+      "ts": "2026-05-25T01:10:27Z",
+      "actor": "brain",
+      "event": "step4_shots_complete",
+      "count": 3,
+      "models": [
+        "seedance-pro",
+        "veo-3",
+        "seedance-pro"
+      ]
+    },
+    {
+      "ts": "2026-05-25T01:11:13Z",
+      "actor": "brain",
+      "event": "step5_ad_copy_complete",
+      "chars_primary": 85
+    },
+    {
+      "ts": "2026-05-25T01:11:13Z",
+      "actor": "brain",
+      "event": "budget_estimated",
+      "total_usd": 2.08
+    },
+    {
+      "ts": "2026-05-25T01:11:13Z",
+      "actor": "brain",
+      "event": "state_transition",
+      "from": "BRIEF_LOCKED",
+      "to": "STORYBOARD",
+      "details": "brain complete, ready for budget approval"
+    },
+    {
+      "ts": "2026-05-25T02:16:38Z",
+      "actor": "human",
+      "event": "budget_approved",
+      "total_usd": 2.08
+    },
+    {
+      "ts": "2026-05-25T02:16:38Z",
+      "actor": "human",
+      "event": "state_transition",
+      "from": "STORYBOARD",
+      "to": "QUEUED"
+    },
+    {
+      "ts": "2026-05-25T02:16:38Z",
+      "actor": "brain",
+      "event": "shot_status_change",
+      "shot_id": "01-morning-styling",
+      "from": "PENDING",
+      "to": "QUEUED"
+    },
+    {
+      "ts": "2026-05-25T02:16:38Z",
+      "actor": "brain",
+      "event": "shot_status_change",
+      "shot_id": "02-afternoon-rain",
+      "from": "PENDING",
+      "to": "QUEUED"
+    },
+    {
+      "ts": "2026-05-25T02:16:38Z",
+      "actor": "brain",
+      "event": "shot_status_change",
+      "shot_id": "03-evening-arrival",
+      "from": "PENDING",
+      "to": "QUEUED"
+    },
+    {
+      "ts": "2026-05-25T02:16:38Z",
+      "actor": "brain",
+      "event": "state_transition",
+      "from": "QUEUED",
+      "to": "RENDERING"
+    },
+    {
+      "ts": "2026-05-25T02:18:30Z",
+      "actor": "dispatcher",
+      "event": "shot_status_change",
+      "shot_id": "03-evening-arrival",
+      "from": "QUEUED",
+      "to": "DOWNLOADING"
+    },
+    {
+      "ts": "2026-05-25T02:18:30Z",
+      "actor": "dispatcher",
+      "event": "shot_status_change",
+      "shot_id": "01-morning-styling",
+      "from": "QUEUED",
+      "to": "DOWNLOADING"
+    },
+    {
+      "ts": "2026-05-25T02:18:30Z",
+      "actor": "dispatcher",
+      "event": "shot_status_change",
+      "shot_id": "02-afternoon-rain",
+      "from": "QUEUED",
+      "to": "DOWNLOADING"
+    },
+    {
+      "ts": "2026-05-25T02:49:50Z",
+      "actor": "brain",
+      "event": "shot_status_change",
+      "shot_id": "01-morning-styling",
+      "from": "DOWNLOADING",
+      "to": "QUEUED",
+      "reason": "texture mismatch, regen with corrected gel-creme description"
+    },
+    {
+      "ts": "2026-05-25T02:49:50Z",
+      "actor": "brain",
+      "event": "shot_status_change",
+      "shot_id": "02-afternoon-rain",
+      "from": "DOWNLOADING",
+      "to": "QUEUED",
+      "reason": "rain too gentle, regen with torrential downpour"
+    },
+    {
+      "ts": "2026-05-25T02:49:50Z",
+      "actor": "brain",
+      "event": "regen_dispatch",
+      "shots": [
+        "01-morning-styling",
+        "02-afternoon-rain"
+      ]
+    },
+    {
+      "ts": "2026-05-25T02:51:47Z",
+      "actor": "dispatcher",
+      "event": "shot_status_change",
+      "shot_id": "01-morning-styling",
+      "from": "QUEUED",
+      "to": "DOWNLOADING"
+    },
+    {
+      "ts": "2026-05-25T02:51:47Z",
+      "actor": "dispatcher",
+      "event": "shot_status_change",
+      "shot_id": "02-afternoon-rain",
+      "from": "QUEUED",
+      "to": "DOWNLOADING"
+    },
+    {
+      "ts": "2026-05-25T03:01:02Z",
+      "actor": "reviewer",
+      "event": "shot_status_change",
+      "shot_id": "01-morning-styling",
+      "from": "DOWNLOADING",
+      "to": "PASS",
+      "score": "12/15"
+    },
+    {
+      "ts": "2026-05-25T03:01:02Z",
+      "actor": "reviewer",
+      "event": "shot_status_change",
+      "shot_id": "02-afternoon-rain",
+      "from": "DOWNLOADING",
+      "to": "PASS",
+      "score": "15/15"
+    },
+    {
+      "ts": "2026-05-25T03:01:02Z",
+      "actor": "reviewer",
+      "event": "shot_status_change",
+      "shot_id": "03-evening-arrival",
+      "from": "DOWNLOADING",
+      "to": "PASS",
+      "score": "14/15"
+    },
+    {
+      "ts": "2026-05-25T03:01:02Z",
+      "actor": "reviewer",
+      "event": "state_transition",
+      "from": "RENDERING",
+      "to": "ALL_PASS",
+      "details": "all 3 base shots PASS, ready for assembly"
+    },
+    {
+      "ts": "2026-05-25T03:01:02Z",
+      "actor": "brain",
+      "event": "base_review_complete",
+      "scores": {
+        "01": "12/15",
+        "02": "15/15",
+        "03": "14/15"
+      }
+    },
+    {
+      "ts": "2026-05-25T03:02:48Z",
+      "actor": "brain",
+      "event": "shot1_pivot",
+      "from_archetype": "drop hook (gel texture)",
+      "to_archetype": "deflection demonstration (dryer absence-of-effect)",
+      "cost_added": 0,
+      "reason": "texture rejected, blow-dryer sound = meaning carrier"
+    },
+    {
+      "ts": "2026-05-25T17:05:32Z",
+      "actor": "assembler",
+      "event": "state_transition",
+      "from": "ALL_PASS",
+      "to": "ASSEMBLED",
+      "variant": "base"
+    },
+    {
+      "ts": "2026-06-08T19:24:35Z",
+      "actor": "director",
+      "event": "state_transition",
+      "from": "ASSEMBLED",
+      "to": "REGEN_QUEUED",
+      "reason": "user-requested-v2-direction"
+    },
+    {
+      "ts": "2026-06-08T19:24:35Z",
+      "actor": "director",
+      "event": "redispatch_v2",
+      "shots": [
+        "01-morning-styling",
+        "02-afternoon-rain",
+        "03-evening-arrival"
+      ]
+    },
+    {
+      "ts": "2026-06-08T19:26:20Z",
+      "actor": "director",
+      "event": "redispatch_v2_complete",
+      "successes": [
+        "03-evening-arrival",
+        "01-morning-styling",
+        "02-afternoon-rain"
+      ],
+      "errors": []
+    },
+    {
+      "ts": "2026-06-08T19:42:19Z",
+      "actor": "director",
+      "event": "seeds_v3_generated",
+      "shots": [
+        "01-morning-styling",
+        "03-evening-arrival",
+        "02-afternoon-rain"
+      ],
+      "errors": []
+    },
+    {
+      "ts": "2026-06-08T19:49:26Z",
+      "actor": "director",
+      "event": "redispatch_v3",
+      "shots": [
+        "01-morning-styling",
+        "02-afternoon-rain",
+        "03-evening-arrival"
+      ]
+    },
+    {
+      "ts": "2026-06-08T19:51:41Z",
+      "actor": "director",
+      "event": "redispatch_v3_complete",
+      "successes": [
+        "01-morning-styling",
+        "03-evening-arrival",
+        "02-afternoon-rain"
+      ],
+      "errors": []
+    },
+    {
+      "ts": "2026-06-08T21:07:10Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "base"
+    },
+    {
+      "ts": "2026-06-08T22:47:33Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "base"
+    },
+    {
+      "ts": "2026-06-08T23:38:22Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "base"
+    },
+    {
+      "ts": "2026-06-08T23:56:44Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "base"
+    },
+    {
+      "ts": "2026-06-09T00:09:27Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "base"
+    },
+    {
+      "ts": "2026-06-09T00:21:00Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "base"
+    },
+    {
+      "ts": "2026-06-09T14:50:13Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-a"
+    },
+    {
+      "ts": "2026-06-09T14:51:10Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-a"
+    },
+    {
+      "ts": "2026-06-09T14:51:41Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-b"
+    },
+    {
+      "ts": "2026-06-09T14:51:41Z",
+      "actor": "variants",
+      "event": "variants_run",
+      "results": {
+        "variant-a": "ok",
+        "variant-b": "ok"
+      }
+    },
+    {
+      "ts": "2026-06-09T14:52:27Z",
+      "actor": "manual-backfill",
+      "event": "state_transition",
+      "from": "REGEN_QUEUED",
+      "to": "ASSEMBLED"
+    },
+    {
+      "ts": "2026-06-09T14:52:27Z",
+      "actor": "manual-backfill",
+      "event": "shots_promoted_to_PASS"
+    },
+    {
+      "ts": "2026-06-09T14:52:38Z",
+      "actor": "deliver",
+      "event": "state_transition",
+      "from": "ASSEMBLED",
+      "to": "DELIVERED",
+      "packages": [
+        "base",
+        "variant-a",
+        "variant-b"
+      ]
+    }
+  ],
+  "product": {
+    "gid": "gid://shopify/Product/9668674879808",
+    "handle": "primer-cachos-definidos",
+    "title": "primer cachos definidos",
+    "description": "cachos definidos por até 24h: protege do calor, hidrata e mantém a forma natural, sem frizz e sem pesar",
+    "price_brl": "149.00",
+    "dosagem": "250mL",
+    "tipo_de_cabelo": [
+      "Cacheados",
+      "Finos",
+      "Lisos",
+      "Equilibrados"
+    ],
+    "necessidade": [
+      "Com frizz",
+      "Sem volume"
+    ],
+    "finalizacao": [
+      "Cachos definidos",
+      "Ondas naturais",
+      "Babyliss duradouro"
+    ],
+    "hero_image": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63444.png",
+    "accent_color": "#ffd48d",
+    "accent_token": "yellow-sun"
+  },
+  "finalidade": "cachos definidos, macios e sem pesar os fios",
+  "benefits": [
+    "definição leve e natural",
+    "controla o frizz e blinda por até 24h",
+    "brilho e hidratação sem rigidez"
+  ],
+  "benefit_images": [
+    "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/icon-150-cachos-definidos.png?v=1762289375",
+    "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/WhatsApp_Image_2025-11-04_at_18.08.56.jpg?v=1762290943",
+    "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/WhatsApp_Image_2025-11-04_at_18.08.55.jpg?v=1762290914"
+  ],
+  "caracteristicas": [
+    "definição leve e natural, com movimento",
+    "controla o frizz e blinda da umidade por até 24h",
+    "adiciona brilho e hidrata sem rigidez"
+  ],
+  "constitution_refs": {
+    "ip_doc": "docs/video-director-ip.md",
+    "metafield_map": "docs/video-director-metafield-map.md",
+    "state_schema": "docs/video-director-state-schema.md"
+  },
+  "brief": {
+    "audience": "Marcela persona (default)",
+    "platform": "meta-reels",
+    "aspect_target": "9:16",
+    "length_seconds": 15,
+    "lane": "sensorial",
+    "hero_intent": "demonstrate the 3 curated benefits through Marcela's day arc — defined curls in the morning, frizz control across the day, brilho on arrival home",
+    "variant_mode": "1+2",
+    "render_budget_cap_usd": 10.0,
+    "review_strictness": "high"
+  },
+  "moments": [
+    {
+      "benefit_index": 0,
+      "benefit": "definição leve e natural",
+      "moment": "morning styling — curl definition forms",
+      "sensory_anchor": "gel-cream piped onto a cream marble surface, slowly forming a perfect spiral",
+      "audio": "soft pump-spray sound + bathroom tile ambience + low warm pad",
+      "archetype": "drop hook",
+      "time_of_day": "morning"
+    },
+    {
+      "benefit_index": 1,
+      "benefit": "controla o frizz e blinda por até 24h",
+      "moment": "afternoon transit — rain falls but doesn't reach the product",
+      "sensory_anchor": "rain droplets falling from above, deflecting outward around the product onto the cream surface beside it",
+      "audio": "rain on glass + ambient wet street + low pad",
+      "archetype": "deflection demonstration",
+      "time_of_day": "afternoon"
+    },
+    {
+      "benefit_index": 2,
+      "benefit": "brilho e hidratação sem rigidez",
+      "moment": "evening arrival home — warm light reveals the gleam",
+      "sensory_anchor": "a slow band of warm golden light sweeping across the product's surface, revealing the glossy brilho finish",
+      "audio": "indoor calm + soft household ambience + warm closing pad",
+      "archetype": "drop hook",
+      "time_of_day": "evening"
+    }
+  ],
+  "narrative_arc": [
+    {
+      "shot_id": "01-morning-styling",
+      "position": 1,
+      "time_of_day": "morning",
+      "intent": "demonstrate heat protection — blow dryer present, product completely undisturbed",
+      "archetype": "deflection demonstration",
+      "lighting": "cool morning, soft from upper-left, slightly blue-tinted neutral white",
+      "audio_primary": "blow-dryer hum continuous — THE storytelling carrier for this shot",
+      "audio_ambient": "bathroom tile ambience at -22 dB",
+      "audio_sting": "soft piano stab on the spiral completion",
+      "duration_seconds": 4
+    },
+    {
+      "shot_id": "02-afternoon-rain",
+      "position": 2,
+      "time_of_day": "afternoon",
+      "intent": "demonstrate 24h frizz control under environmental humidity — rain deflected around the product",
+      "archetype": "deflection demonstration",
+      "lighting": "overcast cool, slight blue-grey tint, soft diffused from above",
+      "audio_primary": "rain on glass + droplet impacts on cream surface beside the product",
+      "audio_ambient": "ambient wet street + soft city undertone at -22 dB",
+      "audio_sting": null,
+      "duration_seconds": 4
+    },
+    {
+      "shot_id": "03-evening-arrival",
+      "position": 3,
+      "time_of_day": "evening",
+      "intent": "demonstrate brilho and hydration — warm light reveals the gleam, the day didn't dim it",
+      "archetype": "drop hook",
+      "lighting": "warm golden, low angle from the right, like late afternoon through a window",
+      "audio_primary": "soft warm pad swell as light sweeps across",
+      "audio_ambient": "indoor calm + soft household ambience at -22 dB",
+      "audio_sting": "subtle pad resolve at 0:03",
+      "duration_seconds": 4
+    }
+  ],
+  "shots": [
+    {
+      "shot_id": "01-morning-styling",
+      "model_label": "veo-3",
+      "model_slug": "fal-ai/veo3/image-to-video",
+      "seed_image_url": "https://v3b.fal.media/files/b/0a9d82b4/D_IT4Ta3zyATZ2ghqsOwE_JO0NWmfT.png",
+      "extra_args": {
+        "duration": "6s"
+      },
+      "prompt": "The frosted glass GE Beauty haircare bottle stands perfectly still on the cream marble bathroom counter in the right portion of frame, exactly as in the seed image. Over the duration of the shot, NOTHING in the scene physically moves except for very subtle ambient micro-motion: a faint wisp of steam at the very edge of frame on the left, a barely-perceptible drift of light intensity. The bottle is COMPLETELY MOTIONLESS: no rotation, no drift, no tilt, no wobble, no movement whatsoever, perfectly locked from frame 1 to frame N. The camera is COMPLETELY LOCKED: no zoom, no dolly, no pan, no tilt, no drift, no shake. The bathroom counter, tile, and wood remain identical from frame 1 to frame N. Audio: warm continuous hum of a hair dryer off-frame, subtle bathroom tile reverb, no speech. Aesop-style minimalism. NEGATIVE: no people, no faces, no hair, no hands, no visible hair dryer in frame, no rotation of bottle, no camera movement, no environment changes, no flickering.",
+      "caption_hook": "definição.",
+      "audio_layers": {
+        "asmr": "blow-dryer hum dominant throughout the shot",
+        "ambient": "bathroom tile ambience at -22 dB",
+        "sting": "subtle warm pad swell as the dryer becomes audible"
+      },
+      "duration_s": 5,
+      "aspect_ratio": "9:16",
+      "resolution": "1080p",
+      "status": "PASS",
+      "attempts": 3,
+      "max_attempts": 3,
+      "history": [
+        {
+          "timestamp": "2026-05-25T02:16:38Z",
+          "event": "status_queued",
+          "from": "PENDING"
+        },
+        {
+          "timestamp": "2026-05-25T02:18:30Z",
+          "event": "status_downloading",
+          "from": "QUEUED"
+        },
+        {
+          "timestamp": "2026-05-25T02:18:30Z",
+          "event": "render_complete",
+          "mp4_path": "inputs\\video-prototypes\\primer-cachos-definidos-v1\\clips\\01-morning-styling.mp4"
+        },
+        {
+          "timestamp": "2026-05-25T02:49:50Z",
+          "event": "status_queued",
+          "from": "DOWNLOADING",
+          "reason": "texture mismatch, regen with corrected gel-creme description"
+        },
+        {
+          "timestamp": "2026-05-25T02:51:47Z",
+          "event": "regen_complete",
+          "mp4_path": "inputs\\video-prototypes\\primer-cachos-definidos-v1\\clips\\01-morning-styling.mp4",
+          "attempt": 1
+        },
+        {
+          "timestamp": "2026-05-25T02:51:47Z",
+          "event": "status_downloading",
+          "from": "QUEUED"
+        },
+        {
+          "timestamp": "2026-05-25T03:01:02Z",
+          "event": "status_pass",
+          "from": "DOWNLOADING",
+          "score": "12/15"
+        },
+        {
+          "timestamp": "2026-05-25T03:02:48Z",
+          "event": "rejected_v2_texture_mound",
+          "reason": "Lucas: texture won't add audience recognition; blow-dryer sound carries the meaning"
+        },
+        {
+          "timestamp": "2026-06-08T19:24:35Z",
+          "event": "prompt_rewrite_v2",
+          "model_label": "veo-3",
+          "model_slug": "fal-ai/veo3/image-to-video",
+          "old_prompt": "The product remains perfectly static in the right portion of frame on a warm cream-colored marble surface. Cool morning light enters from the upper-left, soft and slightly blue-tinted neutral white. On the marble surface in the left foreground, a generous mound of pale-ivory gel-cream slowly forms over the duration of the shot. The texture is critical: a hybrid gel-creme consistency, slightly opaque, pale ivory color (NOT transparent, NOT pure white, NOT clear gel). Visual reference for the texture: soft pliable cream with a slight sheen, like a thick yogurt or a soft mousse, holding its shape with subtle ridges. Defines como gel, hidrata como creme. The mound grows slowly outward from a single point, taking on a soft round shape with gentle peaks. The product itself stays sharp, undisturbed. Camera is static, eye-level macro, slight forward dolly of about 3 percent. Lighting stays cool-neutral cream throughout, never shifts. Calm, mature, Aesop-style minimalism. NO transparent liquid, NO clear gel, NO water, NO pure white, NO flames, NO fire, NO orange glow, NO red light, NO smoke, NO mist, NO fog, NO colored air, NO glowing field, NO transparent dome, NO bubble, NO glass sphere, NO shield, NO halo, NO aura. No people, no hair, no hands, no logos other than what is already on the product.",
+          "new_prompt": "A frosted glass bottle of haircare product stands perfectly still in the right portion of frame, suspended in a soft cream-colored void with NO visible surface, NO floor, NO marble, NO table — only a soft warm cream tonal background with subtle radial vignette. Cool morning light from upper-left, soft slightly blue-tinted neutral white. From the left side of frame, a chrome hair dryer slowly enters, its sleek metallic form gliding in horizontally, coming to rest with its nozzle pointed at the bottle. The dryer stays steady for the remainder of the shot. The bottle is COMPLETELY MOTIONLESS throughout: no rotation, no drift, no tilt, no wobble, no movement of any kind, perfectly locked from frame 1 to frame N. The camera is COMPLETELY LOCKED: no zoom, no dolly, no pan, no tilt, no drift, no shake. Camera position is identical at frame 1 and frame N. Aesop-style minimalism, calm mature mood. NEGATIVE: no marble surface, no defined floor, no counter, no table, no water, no mist, no fog, no field, no bubble, no dome, no shield, no halo, no aura, no transparent substance, no refractive distortion, no flames, no smoke, no orange light, no orange tint, no fire, no people, no faces, no hair, no hands, no logos other than what is on the product, no camera movement, no rotation of the bottle, no drift, no wobble."
+        },
+        {
+          "timestamp": "2026-06-08T19:26:20Z",
+          "event": "rendered_v2",
+          "model_label": "veo-3"
+        },
+        {
+          "timestamp": "2026-06-08T19:49:26Z",
+          "event": "prompt_rewrite_v3",
+          "old_prompt": "A frosted glass bottle of haircare product stands perfectly still in the right portion of frame, suspended in a soft cream-colored void with NO visible surface, NO floor, NO marble, NO table — only a soft warm cream tonal background with subtle radial vignette. Cool morning light from upper-left, soft slightly blue-tinted neutral white. From the left side of frame, a chrome hair dryer slowly enters, its sleek metallic form gliding in horizontally, coming to rest with its nozzle pointed at the bottle. The dryer stays steady for the remainder of the shot. The bottle is COMPLETELY MOTIONLESS throughout: no rotation, no drift, no tilt, no wobble, no movement of any kind, perfectly locked from frame 1 to frame N. The camera is COMPLETELY LOCKED: no zoom, no dolly, no pan, no tilt, no drift, no shake. Camera position is identical at frame 1 and frame N. Aesop-style minimalism, calm mature mood. NEGATIVE: no marble surface, no defined floor, no counter, no table, no water, no mist, no fog, no field, no bubble, no dome, no shield, no halo, no aura, no transparent substance, no refractive distortion, no flames, no smoke, no orange light, no orange tint, no fire, no people, no faces, no hair, no hands, no logos other than what is on the product, no camera movement, no rotation of the bottle, no drift, no wobble.",
+          "new_prompt": "The frosted glass GE Beauty haircare bottle stands perfectly still on the cream marble bathroom counter in the right portion of frame, exactly as in the seed image. Over the duration of the shot, NOTHING in the scene physically moves except for very subtle ambient micro-motion: a faint wisp of steam at the very edge of frame on the left, a barely-perceptible drift of light intensity. The bottle is COMPLETELY MOTIONLESS: no rotation, no drift, no tilt, no wobble, no movement whatsoever, perfectly locked from frame 1 to frame N. The camera is COMPLETELY LOCKED: no zoom, no dolly, no pan, no tilt, no drift, no shake. The bathroom counter, tile, and wood remain identical from frame 1 to frame N. Audio: warm continuous hum of a hair dryer off-frame, subtle bathroom tile reverb, no speech. Aesop-style minimalism. NEGATIVE: no people, no faces, no hair, no hands, no visible hair dryer in frame, no rotation of bottle, no camera movement, no environment changes, no flickering.",
+          "old_seed_image_url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63444.png",
+          "new_seed_image_url": "https://v3b.fal.media/files/b/0a9d82b4/D_IT4Ta3zyATZ2ghqsOwE_JO0NWmfT.png"
+        },
+        {
+          "timestamp": "2026-06-08T19:51:41Z",
+          "event": "rendered_v3"
+        },
+        {
+          "timestamp": "2026-06-09T14:52:27Z",
+          "event": "status_backfilled_to_PASS",
+          "reason": "v1-v8 work done manually; status promoted to allow deliver"
+        }
+      ],
+      "rendered_at": "2026-05-25T02:18:30Z",
+      "rendered_mp4_path": "state/primer-cachos-definidos-v1/clips/01-morning-styling.mp4",
+      "render_cost_usd": 1.48,
+      "review": {
+        "scored_at": "2026-05-25T03:02:48Z",
+        "score_hook": 4,
+        "score_sensorial": 4,
+        "score_brand_match": 5,
+        "verdict": "PASS",
+        "reason": "smoke-test clip reused; clean dryer+protected-bottle composition; meaning carried by blow-dryer audio in assembly"
+      },
+      "fal_url": "https://v3b.fal.media/files/b/0a9d82ea/X9SOtpCDwSgbas15STa6F_9cc9f934f4de40cfb073375e2ee91301.mp4",
+      "downloaded_at": "2026-06-08T19:51:41Z"
+    },
+    {
+      "shot_id": "02-afternoon-rain",
+      "model_label": "veo-3",
+      "model_slug": "fal-ai/veo3/image-to-video",
+      "seed_image_url": "https://v3b.fal.media/files/b/0a9d82b4/CdaK57Mq_41RltLKW0cM8_xAjrJvNW.png",
+      "extra_args": {
+        "duration": "6s"
+      },
+      "prompt": "The frosted glass GE Beauty haircare bottle stands perfectly still on the dark wood cafe table by the rain-streaked window, exactly as in the seed image. Over the duration of the shot, RAIN visibly streams down the window behind the bottle: large droplets traveling down the glass, the city beyond softly blurred and wet. The bottle is COMPLETELY MOTIONLESS: no rotation, no drift, no tilt, no wobble. The camera is COMPLETELY LOCKED: no zoom, no dolly, no pan. The cafe interior remains identical from frame 1 to frame N. Audio: rain on glass with droplet impacts, wet street ambience underneath, soft distant cafe murmur. Aesop-style minimalism. NEGATIVE: no people, no faces, no hair, no hands, no cups, no condensation on the bottle, no rotation of bottle, no camera movement, no flickering.",
+      "caption_hook": null,
+      "audio_layers": {
+        "asmr": "rain on glass + droplet impacts on cream marble beside the product",
+        "ambient": "ambient wet street + soft city undertone at -22 dB",
+        "sting": null
+      },
+      "duration_s": 6,
+      "aspect_ratio": "9:16",
+      "resolution": "1080p",
+      "status": "PASS",
+      "attempts": 3,
+      "max_attempts": 3,
+      "history": [
+        {
+          "timestamp": "2026-05-25T02:16:38Z",
+          "event": "status_queued",
+          "from": "PENDING"
+        },
+        {
+          "timestamp": "2026-05-25T02:18:30Z",
+          "event": "status_downloading",
+          "from": "QUEUED"
+        },
+        {
+          "timestamp": "2026-05-25T02:18:30Z",
+          "event": "render_complete",
+          "mp4_path": "inputs\\video-prototypes\\primer-cachos-definidos-v1\\clips\\02-afternoon-rain.mp4"
+        },
+        {
+          "timestamp": "2026-05-25T02:49:50Z",
+          "event": "status_queued",
+          "from": "DOWNLOADING",
+          "reason": "rain too gentle, regen with torrential downpour"
+        },
+        {
+          "timestamp": "2026-05-25T02:51:47Z",
+          "event": "regen_complete",
+          "mp4_path": "inputs\\video-prototypes\\primer-cachos-definidos-v1\\clips\\02-afternoon-rain.mp4",
+          "attempt": 1
+        },
+        {
+          "timestamp": "2026-05-25T02:51:47Z",
+          "event": "status_downloading",
+          "from": "QUEUED"
+        },
+        {
+          "timestamp": "2026-05-25T03:01:02Z",
+          "event": "status_pass",
+          "from": "DOWNLOADING",
+          "score": "15/15"
+        },
+        {
+          "timestamp": "2026-06-08T19:24:35Z",
+          "event": "prompt_rewrite_v2",
+          "model_label": "veo-3",
+          "model_slug": "fal-ai/veo3/image-to-video",
+          "old_prompt": "The product remains perfectly static in the center of frame on a warm cream-colored marble surface, never moving, never rotating. Overcast cool light, slight blue-grey tint, soft and diffused from above. From the top of frame, a TORRENTIAL DOWNPOUR of rain falls heavily and continuously — dense sheets of water, hundreds of droplets per second, steady heavy rainfall like a tropical storm. The rain is visible as continuous streaks and falling sheets, not as individual drops. About three to five centimeters above the top of the product, the falling rain meets an invisible curved path — the water visibly arcs outward in cascading sheets to the LEFT and to the RIGHT of the bottle, like water deflecting off an invisible umbrella, then continues to fall in heavy streams onto the cream marble surface beside the product where it pools and runs off frame. The deflection is dramatic, continuous, and clearly visible. No water ever touches the bottle's surface. The bottle stays bone-dry, perfectly clean, sharp, evenly lit. The torrential rain continues steadily throughout the entire shot. Camera is static, eye-level. Calm composition under the chaos of the rain. Aesop-style minimalism in the framing, but the rain itself is intense and visible. NO flames, NO fire, NO orange glow, NO red light, NO smoke, NO fog, NO colored air, NO glowing field, NO transparent dome, NO bubble, NO glass sphere, NO shield, NO halo, NO aura, NO visible barrier of any kind. No people, no hair, no hands, no logos other than what is already on the product.",
+          "new_prompt": "A frosted glass bottle of haircare product stands perfectly still in the center of frame, suspended in a soft cream-colored void with NO visible surface, NO floor, NO marble, NO table — only soft cool cream tonal background with subtle radial vignette. Cool overcast afternoon light, slight blue-grey tint, soft diffused from above. TORRENTIAL DOWNPOUR fills the surrounding space — dense sheets of water, hundreds of droplets per second, like a tropical storm, visible as continuous streaks and falling sheets. The rain visibly deflects around the bottle: cascading sheets arc smoothly to the left and right of the product, none of it touching the bottle's surface, the deflection clean and dramatic. The deflection arcs are made of WATER ONLY, no glow, no aura, no membrane, no field. The bottle is COMPLETELY MOTIONLESS throughout: no rotation, no drift, no tilt, no wobble. The camera is COMPLETELY LOCKED: no zoom, no dolly, no pan, no tilt, no drift, no shake. Aesop-style minimalism. NEGATIVE: no marble surface, no defined floor, no field, no bubble, no dome, no shield, no halo, no aura, no glowing substance, no people, no faces, no hair, no hands, no camera movement, no rotation of the bottle."
+        },
+        {
+          "timestamp": "2026-06-08T19:26:20Z",
+          "event": "rendered_v2",
+          "model_label": "veo-3"
+        },
+        {
+          "timestamp": "2026-06-08T19:49:26Z",
+          "event": "prompt_rewrite_v3",
+          "old_prompt": "A frosted glass bottle of haircare product stands perfectly still in the center of frame, suspended in a soft cream-colored void with NO visible surface, NO floor, NO marble, NO table — only soft cool cream tonal background with subtle radial vignette. Cool overcast afternoon light, slight blue-grey tint, soft diffused from above. TORRENTIAL DOWNPOUR fills the surrounding space — dense sheets of water, hundreds of droplets per second, like a tropical storm, visible as continuous streaks and falling sheets. The rain visibly deflects around the bottle: cascading sheets arc smoothly to the left and right of the product, none of it touching the bottle's surface, the deflection clean and dramatic. The deflection arcs are made of WATER ONLY, no glow, no aura, no membrane, no field. The bottle is COMPLETELY MOTIONLESS throughout: no rotation, no drift, no tilt, no wobble. The camera is COMPLETELY LOCKED: no zoom, no dolly, no pan, no tilt, no drift, no shake. Aesop-style minimalism. NEGATIVE: no marble surface, no defined floor, no field, no bubble, no dome, no shield, no halo, no aura, no glowing substance, no people, no faces, no hair, no hands, no camera movement, no rotation of the bottle.",
+          "new_prompt": "The frosted glass GE Beauty haircare bottle stands perfectly still on the dark wood cafe table by the rain-streaked window, exactly as in the seed image. Over the duration of the shot, RAIN visibly streams down the window behind the bottle: large droplets traveling down the glass, the city beyond softly blurred and wet. The bottle is COMPLETELY MOTIONLESS: no rotation, no drift, no tilt, no wobble. The camera is COMPLETELY LOCKED: no zoom, no dolly, no pan. The cafe interior remains identical from frame 1 to frame N. Audio: rain on glass with droplet impacts, wet street ambience underneath, soft distant cafe murmur. Aesop-style minimalism. NEGATIVE: no people, no faces, no hair, no hands, no cups, no condensation on the bottle, no rotation of bottle, no camera movement, no flickering.",
+          "old_seed_image_url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63444.png",
+          "new_seed_image_url": "https://v3b.fal.media/files/b/0a9d82b4/CdaK57Mq_41RltLKW0cM8_xAjrJvNW.png"
+        },
+        {
+          "timestamp": "2026-06-08T19:51:41Z",
+          "event": "rendered_v3"
+        },
+        {
+          "timestamp": "2026-06-09T14:52:27Z",
+          "event": "status_backfilled_to_PASS",
+          "reason": "v1-v8 work done manually; status promoted to allow deliver"
+        }
+      ],
+      "rendered_at": "2026-05-25T02:18:30Z",
+      "rendered_mp4_path": "state/primer-cachos-definidos-v1/clips/02-afternoon-rain.mp4",
+      "render_cost_usd": 1.2,
+      "review": {
+        "scored_at": "2026-05-25T02:51:47Z",
+        "score_hook": 5,
+        "score_sensorial": 5,
+        "score_brand_match": 5,
+        "verdict": "PASS",
+        "reason": "v2 nailed torrential rain with dramatic cascading deflection arcs; bottle bone-dry; cream BG preserved"
+      },
+      "fal_url": "https://v3b.fal.media/files/b/0a9d82ed/q5Z1lcBc0Lm9LInCyLEQq_f1c01a0ec8004405adcf9f2eeea903e2.mp4",
+      "downloaded_at": "2026-06-08T19:51:41Z"
+    },
+    {
+      "shot_id": "03-evening-arrival",
+      "model_label": "veo-3",
+      "model_slug": "fal-ai/veo3/image-to-video",
+      "seed_image_url": "https://v3b.fal.media/files/b/0a9d82b4/vHHOURqvg8wUv0vMPtl4V_xnROVQ18.png",
+      "extra_args": {
+        "duration": "6s"
+      },
+      "prompt": "The frosted glass GE Beauty haircare bottle stands perfectly still on the entryway console table beside the handbag and keys, exactly as in the seed image. Over the duration of the shot, warm golden afternoon light SLIGHTLY INCREASES intensity, as if a front door has just opened just out of frame to the right, casting more warm light onto the bottle. The light shift is subtle but felt. The bottle is COMPLETELY MOTIONLESS: no rotation, no drift, no tilt, no wobble. The camera is COMPLETELY LOCKED: no zoom, no dolly, no pan. The entryway environment remains identical from frame 1 to frame N. Audio: front door opening with a soft creak, brief footsteps on tile, front door closing with a soft thud, then quiet home ambience. Aesop-style minimalism. NEGATIVE: no people, no faces, no hair, no hands, no rotation of bottle, no camera movement, no flickering.",
+      "caption_hook": null,
+      "audio_layers": {
+        "asmr": "soft warm pad swell as light sweeps across",
+        "ambient": "indoor calm + soft household ambience at -22 dB",
+        "sting": "subtle pad resolve at 0:03"
+      },
+      "duration_s": 5,
+      "aspect_ratio": "9:16",
+      "resolution": "1080p",
+      "status": "PASS",
+      "attempts": 2,
+      "max_attempts": 3,
+      "history": [
+        {
+          "timestamp": "2026-05-25T02:16:38Z",
+          "event": "status_queued",
+          "from": "PENDING"
+        },
+        {
+          "timestamp": "2026-05-25T02:18:30Z",
+          "event": "status_downloading",
+          "from": "QUEUED"
+        },
+        {
+          "timestamp": "2026-05-25T02:18:30Z",
+          "event": "render_complete",
+          "mp4_path": "inputs\\video-prototypes\\primer-cachos-definidos-v1\\clips\\03-evening-arrival.mp4"
+        },
+        {
+          "timestamp": "2026-05-25T03:01:02Z",
+          "event": "status_pass",
+          "from": "DOWNLOADING",
+          "score": "14/15"
+        },
+        {
+          "timestamp": "2026-06-08T19:24:35Z",
+          "event": "prompt_rewrite_v2",
+          "model_label": "veo-3",
+          "model_slug": "fal-ai/veo3/image-to-video",
+          "old_prompt": "The product remains perfectly static in the center of frame on a warm cream-colored marble surface, never moving, never rotating. At the start of the shot, the lighting is calm warm neutral. Over the duration of the shot, a slow warm golden light enters from the right side of frame, sweeping across the product's surface from right to left like late afternoon sun through a window. As the warm light travels along the bottle, the glossy finish reveals a soft gleam, catching the golden tone, brilho visible across the surface. The product never moves. The cream surface around it picks up the warm light gradually. Camera is static, eye-level macro, slight forward dolly of about 3 percent. Lighting transitions from neutral-cream to warm-golden, never harsh, never red-orange. Calm, mature, Aesop-style minimalism. NO flames, NO fire, NO red light, NO smoke, NO water, NO liquid, NO mist, NO fog, NO visible haze, NO colored air, NO glowing field, NO transparent dome, NO bubble, NO glass sphere, NO shield, NO halo, NO aura, NO visible barrier of any kind. No people, no hair, no hands, no logos other than what is already on the product.",
+          "new_prompt": "A frosted glass bottle of haircare product stands perfectly still in the right portion of frame, suspended in a soft cream-colored void with NO visible surface, NO floor, NO marble, NO table — only a soft warm cream tonal background with subtle radial vignette. Over the duration of the shot, warm golden light slowly sweeps from the right side of frame to the left across the bottle, like late afternoon sunlight through a window. The cream void transitions from neutral warm at frame 1 to soft golden-hour warmth by frame N. As the light sweeps, the bottle's gleam emerges: a soft warm highlight runs along the bottle's curved face, revealing the gloss and clarity of the frosted glass. The bottle is COMPLETELY MOTIONLESS throughout: no rotation, no drift, no tilt, no wobble. The camera is COMPLETELY LOCKED: no zoom, no dolly, no pan, no tilt, no drift, no shake. Aesop-style minimalism, calm mature mood. NEGATIVE: no marble surface, no defined floor, no orange tint, no fire, no flames, no refractive distortion, no field, no halo, no aura, no people, no faces, no hair, no hands, no camera movement, no rotation of the bottle."
+        },
+        {
+          "timestamp": "2026-06-08T19:26:20Z",
+          "event": "rendered_v2",
+          "model_label": "veo-3"
+        },
+        {
+          "timestamp": "2026-06-08T19:49:26Z",
+          "event": "prompt_rewrite_v3",
+          "old_prompt": "A frosted glass bottle of haircare product stands perfectly still in the right portion of frame, suspended in a soft cream-colored void with NO visible surface, NO floor, NO marble, NO table — only a soft warm cream tonal background with subtle radial vignette. Over the duration of the shot, warm golden light slowly sweeps from the right side of frame to the left across the bottle, like late afternoon sunlight through a window. The cream void transitions from neutral warm at frame 1 to soft golden-hour warmth by frame N. As the light sweeps, the bottle's gleam emerges: a soft warm highlight runs along the bottle's curved face, revealing the gloss and clarity of the frosted glass. The bottle is COMPLETELY MOTIONLESS throughout: no rotation, no drift, no tilt, no wobble. The camera is COMPLETELY LOCKED: no zoom, no dolly, no pan, no tilt, no drift, no shake. Aesop-style minimalism, calm mature mood. NEGATIVE: no marble surface, no defined floor, no orange tint, no fire, no flames, no refractive distortion, no field, no halo, no aura, no people, no faces, no hair, no hands, no camera movement, no rotation of the bottle.",
+          "new_prompt": "The frosted glass GE Beauty haircare bottle stands perfectly still on the entryway console table beside the handbag and keys, exactly as in the seed image. Over the duration of the shot, warm golden afternoon light SLIGHTLY INCREASES intensity, as if a front door has just opened just out of frame to the right, casting more warm light onto the bottle. The light shift is subtle but felt. The bottle is COMPLETELY MOTIONLESS: no rotation, no drift, no tilt, no wobble. The camera is COMPLETELY LOCKED: no zoom, no dolly, no pan. The entryway environment remains identical from frame 1 to frame N. Audio: front door opening with a soft creak, brief footsteps on tile, front door closing with a soft thud, then quiet home ambience. Aesop-style minimalism. NEGATIVE: no people, no faces, no hair, no hands, no rotation of bottle, no camera movement, no flickering.",
+          "old_seed_image_url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63444.png",
+          "new_seed_image_url": "https://v3b.fal.media/files/b/0a9d82b4/vHHOURqvg8wUv0vMPtl4V_xnROVQ18.png"
+        },
+        {
+          "timestamp": "2026-06-08T19:51:41Z",
+          "event": "rendered_v3"
+        },
+        {
+          "timestamp": "2026-06-09T14:52:27Z",
+          "event": "status_backfilled_to_PASS",
+          "reason": "v1-v8 work done manually; status promoted to allow deliver"
+        }
+      ],
+      "rendered_at": "2026-05-25T02:18:30Z",
+      "rendered_mp4_path": "state/primer-cachos-definidos-v1/clips/03-evening-arrival.mp4",
+      "render_cost_usd": 0.74,
+      "review": {
+        "scored_at": "2026-05-25T02:51:47Z",
+        "score_hook": 4,
+        "score_sensorial": 5,
+        "score_brand_match": 5,
+        "verdict": "PASS",
+        "reason": "warm golden light reveal beautifully done; gleam visible on glossy bottle surface; on-brand"
+      },
+      "fal_url": "https://v3b.fal.media/files/b/0a9d82ea/wC4jMQjOjO_CVqt4NqHP5_dcbd35ab2aef492eada56d48654c949d.mp4",
+      "downloaded_at": "2026-06-08T19:51:41Z"
+    }
+  ],
+  "ad_copy": {
+    "primary_text": "definição leve, 24h sem frizz, brilho que dura. seus cachos, do começo ao fim do dia.",
+    "headline": "24h sem frizz, sem peso.",
+    "link_description": "conheça primer cachos.",
+    "cta_button": "Saiba mais",
+    "caption_offer": "24h sem frizz.",
+    "caption_tagline": "no seu tempo, do seu jeito."
+  },
+  "budget": {
+    "cap_usd": 10.0,
+    "estimated_usd": 2.08,
+    "spent_usd": 7.137,
+    "by_shot": {
+      "03-evening-arrival": 0.74,
+      "01-morning-styling": 0.74,
+      "02-afternoon-rain": 0.6,
+      "01-morning-styling-regen-1": 0.74,
+      "02-afternoon-rain-regen-1": 0.6,
+      "03-evening-arrival_v2_redispatch": 0.6,
+      "01-morning-styling_v2_redispatch": 0.6,
+      "02-afternoon-rain_v2_redispatch": 0.6,
+      "seeds_v3": 0.117,
+      "01-morning-styling_v3_redispatch": 0.6,
+      "03-evening-arrival_v3_redispatch": 0.6,
+      "02-afternoon-rain_v3_redispatch": 0.6
+    },
+    "estimated_by_shot": {
+      "01-morning-styling": 0.74,
+      "02-afternoon-rain": 0.6,
+      "03-evening-arrival": 0.74
+    },
+    "approved_at": "2026-05-25T02:16:38Z",
+    "approved_by": "lucas"
+  },
+  "assembly": {
+    "base": {
+      "creative_path": "output/base/creative.mp4",
+      "thumbnail_path": "output/base/thumbnail.jpg",
+      "captions_path": "output/base/captions.srt",
+      "copy_path": "output/base/copy.txt",
+      "duration_s": 18.92,
+      "shots_in_order": [
+        "01-morning-styling",
+        "02-afternoon-rain",
+        "03-evening-arrival"
+      ],
+      "audio_enabled": true,
+      "crossfade_s": 0.6,
+      "zoom_end_scale": 1.06,
+      "assembled_at": "2026-06-09T00:21:00Z"
+    },
+    "variant-a": {
+      "creative_path": "output/variant-a/creative.mp4",
+      "thumbnail_path": "output/variant-a/thumbnail.jpg",
+      "captions_path": "output/variant-a/captions.srt",
+      "copy_path": "output/variant-a/copy.txt",
+      "duration_s": 18.92,
+      "shots_in_order": [
+        "03-evening-arrival",
+        "01-morning-styling",
+        "02-afternoon-rain"
+      ],
+      "audio_enabled": true,
+      "crossfade_s": 0.6,
+      "zoom_end_scale": 1.06,
+      "assembled_at": "2026-06-09T14:51:10Z"
+    },
+    "variant-b": {
+      "creative_path": "output/variant-b/creative.mp4",
+      "thumbnail_path": "output/variant-b/thumbnail.jpg",
+      "captions_path": "output/variant-b/captions.srt",
+      "copy_path": "output/variant-b/copy.txt",
+      "duration_s": 18.92,
+      "shots_in_order": [
+        "01-morning-styling",
+        "02-afternoon-rain",
+        "03-evening-arrival"
+      ],
+      "audio_enabled": true,
+      "crossfade_s": 0.6,
+      "zoom_end_scale": 1.06,
+      "assembled_at": "2026-06-09T14:51:41Z"
+    }
+  },
+  "seeds_v3": {
+    "01-morning-styling": {
+      "url": "https://v3b.fal.media/files/b/0a9d82b4/D_IT4Ta3zyATZ2ghqsOwE_JO0NWmfT.png",
+      "local_path": "seeds/v3/01-morning-styling.png",
+      "edit_prompt": "Place this haircare bottle on a clean modern bathroom counter, soft cream-colored marble surface, in a warm minimal Brazilian bathroom. Soft cool morning light from the upper-left through a window. Light wood, white subway tile, a subtle hint of steam at the very edge of frame. The bottle is the focal subject, perfectly upright, centered in the right portion of frame. Aesop-style minimalism, calm, mature. NO people, NO faces, NO hair, NO hands, NO blow dryer visible. Preserve the exact appearance, label, and proportions of the bottle. 9:16 portrait composition.",
+      "model_slug": "fal-ai/nano-banana/edit",
+      "generated_at": "2026-06-08T19:42:19Z"
+    },
+    "03-evening-arrival": {
+      "url": "https://v3b.fal.media/files/b/0a9d82b4/vHHOURqvg8wUv0vMPtl4V_xnROVQ18.png",
+      "local_path": "seeds/v3/03-evening-arrival.png",
+      "edit_prompt": "Place this haircare bottle on an entryway console table in a modern Brazilian home foyer. Soft warm golden afternoon light spills in from a doorway just out of frame to the right. Beside the bottle on the console: a small folded handbag, a set of keys, a folded envelope, implying someone has just arrived home. The bottle is the focal subject, perfectly upright, centered in the right portion of frame. Aesop-style minimalism, warm, inviting. NO people, NO faces, NO hair, NO hands. Preserve the exact appearance, label, and proportions of the bottle. 9:16 portrait composition.",
+      "model_slug": "fal-ai/nano-banana/edit",
+      "generated_at": "2026-06-08T19:42:19Z"
+    },
+    "02-afternoon-rain": {
+      "url": "https://v3b.fal.media/files/b/0a9d82b4/CdaK57Mq_41RltLKW0cM8_xAjrJvNW.png",
+      "local_path": "seeds/v3/02-afternoon-rain.png",
+      "edit_prompt": "Place this haircare bottle on a small dark wood cafe table positioned directly in front of a tall window. Behind the window, heavy urban rain streams down the glass in clear streaks, blurred wet city in the background, soft warm interior cafe lighting mixed with cool grey daylight from outside. The bottle is centered on the table, perfectly upright. Aesop-style minimalism, cinematic, cozy. NO people, NO faces, NO hair, NO hands, NO cups or food. Preserve the exact appearance, label, and proportions of the bottle. 9:16 portrait composition.",
+      "model_slug": "fal-ai/nano-banana/edit",
+      "generated_at": "2026-06-08T19:42:19Z"
+    }
+  },
+  "delivery": {
+    "delivered_at": "2026-06-09T14:52:38Z",
+    "packages": [
+      "base",
+      "variant-a",
+      "variant-b"
+    ],
+    "output_dir": "output"
+  }
+}

@@ -1,0 +1,792 @@
+{
+  "shop_plan": {
+    "data": {
+      "shop": {
+        "name": "GE Beauty",
+        "myshopifyDomain": "ge-beauty-cosmeticos.myshopify.com",
+        "plan": {
+          "displayName": "Shopify Plus",
+          "partnerDevelopment": false,
+          "shopifyPlus": true
+        }
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 2,
+        "actualQueryCost": 2,
+        "throttleStatus": {
+          "maximumAvailable": 20000.0,
+          "currentlyAvailable": 19998,
+          "restoreRate": 1000.0
+        }
+      }
+    }
+  },
+  "script_tags": {
+    "data": {
+      "scriptTags": {
+        "nodes": []
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 9,
+        "actualQueryCost": 9,
+        "throttleStatus": {
+          "maximumAvailable": 20000.0,
+          "currentlyAvailable": 19991,
+          "restoreRate": 1000.0
+        }
+      }
+    }
+  },
+  "metaobject_defs": {
+    "data": {
+      "metaobjectDefinitions": {
+        "nodes": [
+          {
+            "type": "descricao_longa",
+            "name": "Descrição longa",
+            "metaobjectsCount": 75
+          },
+          {
+            "type": "como_usar_slide",
+            "name": "[Como usar] Slide",
+            "metaobjectsCount": 3
+          },
+          {
+            "type": "etiqueta",
+            "name": "Etiqueta",
+            "metaobjectsCount": 75
+          },
+          {
+            "type": "shopify--color-pattern",
+            "name": "Color",
+            "metaobjectsCount": 2
+          },
+          {
+            "type": "shopify--target-gender",
+            "name": "Target gender",
+            "metaobjectsCount": 2
+          },
+          {
+            "type": "shopify--treatment-type",
+            "name": "Treatment type",
+            "metaobjectsCount": 1
+          },
+          {
+            "type": "shopify--shape",
+            "name": "Shape",
+            "metaobjectsCount": 1
+          },
+          {
+            "type": "shopify--material",
+            "name": "Material",
+            "metaobjectsCount": 1
+          },
+          {
+            "type": "shopify--product-formulation",
+            "name": "Product formulation",
+            "metaobjectsCount": 1
+          },
+          {
+            "type": "shopify--suitable-space",
+            "name": "Suitable space",
+            "metaobjectsCount": 1
+          },
+          {
+            "type": "shopify--finish",
+            "name": "Finish",
+            "metaobjectsCount": 1
+          },
+          {
+            "type": "shopify--primer-use",
+            "name": "Primer use",
+            "metaobjectsCount": 1
+          },
+          {
+            "type": "shopify--intended-application",
+            "name": "Intended application",
+            "metaobjectsCount": 1
+          },
+          {
+            "type": "shopify--fabric",
+            "name": "Fabric",
+            "metaobjectsCount": 1
+          },
+          {
+            "type": "shopify--accessory-size",
+            "name": "Accessory size",
+            "metaobjectsCount": 1
+          },
+          {
+            "type": "shopify--age-group",
+            "name": "Age group",
+            "metaobjectsCount": 1
+          },
+          {
+            "type": "shopify--hair-type",
+            "name": "Hair type",
+            "metaobjectsCount": 5
+          },
+          {
+            "type": "shopify--product-form",
+            "name": "Product form",
+            "metaobjectsCount": 5
+          },
+          {
+            "type": "item_faq",
+            "name": "Item Faq",
+            "metaobjectsCount": 79
+          },
+          {
+            "type": "antes_e_depois",
+            "name": "Antes e Depois",
+            "metaobjectsCount": 15
+          },
+          {
+            "type": "ingredientes_com_descri_o",
+            "name": "Ingredientes com Descrição",
+            "metaobjectsCount": 2
+          },
+          {
+            "type": "shopify--hair-care-finish",
+            "name": "Hair care finish",
+            "metaobjectsCount": 1
+          },
+          {
+            "type": "shopify--hold-level",
+            "name": "Hold level",
+            "metaobjectsCount": 1
+          },
+          {
+            "type": "shopify--product-certifications-standards",
+            "name": "Product certifications & standards",
+            "metaobjectsCount": 2
+          },
+          {
+            "type": "shopify--shampoo-type",
+            "name": "Shampoo type",
+            "metaobjectsCount": 1
+          },
+          {
+            "type": "shopify--suitable-for-hair-type",
+            "name": "Suitable for hair type",
+            "metaobjectsCount": 4
+          },
+          {
+            "type": "icones",
+            "name": "Ícones",
+            "metaobjectsCount": 12
+          },
+          {
+            "type": "disclaimers",
+            "name": "Disclaimers",
+            "metaobjectsCount": 1
+          },
+          {
+            "type": "ai_readiness",
+            "name": "AI Readiness",
+            "metaobjectsCount": 14
+          },
+          {
+            "type": "anuncio_barra_de_avisos",
+            "name": "Anúncio barra de avisos",
+            "metaobjectsCount": 3
+          },
+          {
+            "type": "shopify--qa-pair",
+            "name": "Question and Answer Pairs",
+            "metaobjectsCount": 1
+          }
+        ]
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 10,
+        "actualQueryCost": 6,
+        "throttleStatus": {
+          "maximumAvailable": 20000.0,
+          "currentlyAvailable": 19994,
+          "restoreRate": 1000.0
+        }
+      }
+    }
+  },
+  "selling_plan_groups": {
+    "data": {
+      "sellingPlanGroups": {
+        "nodes": []
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 8,
+        "actualQueryCost": 8,
+        "throttleStatus": {
+          "maximumAvailable": 20000.0,
+          "currentlyAvailable": 19992,
+          "restoreRate": 1000.0
+        }
+      }
+    }
+  },
+  "shopify_functions": {
+    "data": {
+      "shopifyFunctions": {
+        "nodes": []
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 18,
+        "actualQueryCost": 10,
+        "throttleStatus": {
+          "maximumAvailable": 20000.0,
+          "currentlyAvailable": 19990,
+          "restoreRate": 1000.0
+        }
+      }
+    }
+  },
+  "markets": {
+    "data": {
+      "markets": {
+        "nodes": [
+          {
+            "name": "Brazil",
+            "handle": "br",
+            "enabled": true,
+            "primary": true
+          },
+          {
+            "name": "International",
+            "handle": "international",
+            "enabled": true,
+            "primary": false
+          }
+        ]
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 7,
+        "actualQueryCost": 3,
+        "throttleStatus": {
+          "maximumAvailable": 20000.0,
+          "currentlyAvailable": 19997,
+          "restoreRate": 1000.0
+        }
+      }
+    }
+  },
+  "automatic_discounts": {
+    "data": {
+      "automaticDiscountNodes": {
+        "nodes": [
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticFreeShipping"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBxgy",
+              "title": "PORTA BOOSTER",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBxgy",
+              "title": "WE LOVE BOOSTER",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "AGO24BH",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "AGO24-BA-BF",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "AGO24-LEAVIN",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBxgy",
+              "title": "COMPRE-GANHE-SET24",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "KITS-SET24-OFF",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "SHAMPOO&MASCARA-SET24",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "BOOSTERS10OFF",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "CLIENTE15-SET24",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "2PRODUTOS-SET24",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "3PRODUTOS-SET24",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "LEAVEIN-BA-10OFF",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "Cópia de LEAVEIN-BH-10OFF",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "MONTE_SEU_KIT-10OFF",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "MONTE_SEU_KIT-15OFF",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": " LEAVEIN-BF-10OFF",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "KIT-USO-DIARIO+NECESSAIRE",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBxgy",
+              "title": "compre e ganhe",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "CARRINHO152",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "RelaxFriday15OFF",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "RelaxFriday20off",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "MONTE_SEU_KIT_10OFF",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "MONTE_SEU_KIT_15OFF",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "15OFF_DIADOCONSUMIDOR",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "15%OFF_FDS_CONSUMIDOR",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "promo10off_abril",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "5% off (2 produtos)",
+              "status": "EXPIRED"
+            }
+          },
+          {
+            "automaticDiscount": {
+              "__typename": "DiscountAutomaticBasic",
+              "title": "10% off (3 produtos)",
+              "status": "EXPIRED"
+            }
+          }
+        ]
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 14,
+        "actualQueryCost": 14,
+        "throttleStatus": {
+          "maximumAvailable": 20000.0,
+          "currentlyAvailable": 19986,
+          "restoreRate": 1000.0
+        }
+      }
+    }
+  },
+  "bundle_products": {
+    "data": {
+      "products": {
+        "nodes": [
+          {
+            "handle": "mascara-condicionadora",
+            "title": "máscara condicionadora",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "shampoo-sem-sulfato",
+            "title": "shampoo sem sulfato",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "shampoo-sem-sulfato-travel-size",
+            "title": "travel size | shampoo sem sulfato",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "mascara-condicionadora-travel-size",
+            "title": "travel size | máscara condicionadora",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-para-todo-dia",
+            "title": "kit \"todo dia\"",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "travel-size-kit-uso-diario-necessaire-b",
+            "title": "travel size | kit para todo dia + nécessaire",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "travel-size-kit-para-todo-dia",
+            "title": "trio de miniaturas | kit para todo dia travel size",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-antiqueda",
+            "title": "kit antiqueda",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-tratamento-nutricao-e-hidratacao-b",
+            "title": "kit tratamento nutrição e hidratação",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-limpeza-hidratante-b",
+            "title": "kit limpeza hidratante",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-forca-e-protecao",
+            "title": "kit força e proteção",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-cabelo-renovado",
+            "title": "kit cabelo renovado",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-limpeza-calmante-b",
+            "title": "kit limpeza calmante",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-prevencao-de-queda-b",
+            "title": "kit prevenção de queda",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-textura-natural-b",
+            "title": "kit textura natural",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-verao-b",
+            "title": "kit verão",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-forca-e-hidratacao-b",
+            "title": "kit força e hidratação",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-finalizacao-com-brilho-1",
+            "title": "kit finalização com brilho",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-coloracao-duradoura-2",
+            "title": "kit coloração duradoura",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-protetor-solar-do-cabelo",
+            "title": "dupla protetor solar do cabelo",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "leave-in-booster-hidratante-b",
+            "title": "dupla leave-in + booster hidratante",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "leave-in-booster-fortificante-1",
+            "title": "dupla leave-in + booster fortificante",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "leave-in-booster-definicao-b",
+            "title": "dupla leave-in + booster definição",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-mixer-e-espatula-1",
+            "title": "kit mixer e espátula",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-rotina-completa",
+            "title": "kit rotina completa",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-antifrizz",
+            "title": "kit antifrizz",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-liso-sem-frizz-1",
+            "title": "dupla liso sem frizz",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-cuidados-diarios",
+            "title": "kit cuidados diários",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-cachos-sem-frizz",
+            "title": "dupla cachos sem frizz",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "dupla-travel-size-shampoo-mascara",
+            "title": "dupla travel size | shampoo + máscara",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "dupla-travel-size-shampoo-leave-in",
+            "title": "dupla travel size | shampoo + leave-in",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "dupla-travel-size-mascara-leave-in",
+            "title": "dupla travel size | máscara + leave-in",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-beach-hair",
+            "title": "kit beach hair",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "dupla-leave-in-booster-antifrizz",
+            "title": "dupla leave-in + booster antifrizz",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-boosters",
+            "title": "kit boosters",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-tratamento-intensivo",
+            "title": "kit tratamento intensivo",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-tratamento-definicao",
+            "title": "kit tratamento & definição",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-reconstrucao-leveza",
+            "title": "kit reconstrução & leveza",
+            "hasOnlyDefaultVariant": true
+          },
+          {
+            "handle": "kit-travel-size",
+            "title": "kit travel size",
+            "hasOnlyDefaultVariant": true
+          }
+        ]
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 9,
+        "actualQueryCost": 8,
+        "throttleStatus": {
+          "maximumAvailable": 20000.0,
+          "currentlyAvailable": 19992,
+          "restoreRate": 1000.0
+        }
+      }
+    }
+  },
+  "publications": {
+    "data": {
+      "publications": {
+        "nodes": [
+          {
+            "name": "Online Store"
+          },
+          {
+            "name": "Point of Sale"
+          },
+          {
+            "name": "Google & YouTube"
+          },
+          {
+            "name": "Facebook & Instagram"
+          },
+          {
+            "name": "Pinterest"
+          },
+          {
+            "name": "IGLU POS"
+          },
+          {
+            "name": "TikTok"
+          }
+        ]
+      }
+    },
+    "extensions": {
+      "cost": {
+        "requestedQueryCost": 7,
+        "actualQueryCost": 4,
+        "throttleStatus": {
+          "maximumAvailable": 20000.0,
+          "currentlyAvailable": 19996,
+          "restoreRate": 1000.0
+        }
+      }
+    }
+  },
+  "bundle_component_probe": {
+    "errors": [
+      {
+        "message": "Field 'components' doesn't exist on type 'ProductVariant'",
+        "locations": [
+          {
+            "line": 9,
+            "column": 11
+          }
+        ],
+        "path": [
+          "query",
+          "products",
+          "nodes",
+          "variants",
+          "nodes",
+          "components"
+        ],
+        "extensions": {
+          "code": "undefinedField",
+          "typeName": "ProductVariant",
+          "fieldName": "components"
+        }
+      }
+    ]
+  }
+}

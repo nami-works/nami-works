@@ -1,0 +1,145 @@
+---
+id: gebeauty-b2b-channels
+name: GE Beauty B2B retail channels (Sephora, Drogaria Iguatemi + future)
+owner: shared
+status: in-progress
+priority: high
+created: 2026-06-23
+target: null
+current_phase: 1-sephora-registry-gaps
+next_blocker: "Sephora: registry gaps (Anvisa 20 SKUs/Raphael, ICMS-ST+Ponto Inflamação/fiscal, Canal+Vendor+Nro Lojas/buyer). Drogaria Iguatemi: counter-proposal pending (Lucas) — 40% margin + ~R$145-150k trade breaks even at ~R$7k sell-out/loja/mês."
+next_owner: lucas
+stakeholders:
+  - GE Beauty
+  - Sephora Brasil (specialty retail — onboarding)
+  - Drogaria Iguatemi / Grupo DI (farmácia curada — negotiating)
+working_agreement: ~/.claude/projects/c--Users-Lucas-Guimar-es-Desktop-nami-works/memory/feedback_cto_contract.md
+---
+
+## Why
+
+Retail B2B channels (specialty stores, department stores, pharmacies) are a different animal
+from subscription boxes: they require ongoing sellout support — co-marketing, staff training,
+in-store merchandising, replenishment cadence, and promotional alignment. GE Beauty can't just
+drop product and walk away. Getting in is harder, but the brand-building value and repeat volume
+justify the overhead. Sephora Brasil is the first target.
+
+Subscription box deals (B4A, Magenta) are tracked separately in
+`.claude/initiatives/gebeauty-subscription-boxes.md` — those are discount-first and don't
+require sellout support.
+
+## Channels
+
+| Channel | Type | Status |
+|---------|------|--------|
+| Sephora Brasil | Specialty retail | Onboarding — registry mapper built, gaps pending |
+| Drogaria Iguatemi (Grupo DI) | Farmácia / curated retail | Negotiating — break-even model built, counter-proposal pending |
+
+## B2B channel P&L / break-even — reusable methodology
+
+Any sellout-support retail channel that asks for a **trade investment + retailer margin** is
+evaluated with the same model. Tooling and GE's fiscal facts below are **reusable across
+channels**; only the per-deal terms change. Built this way for Drogaria Iguatemi 2026-06-29.
+
+**Tooling**
+- `sandbox/gebeauty/scripts/build_b2b_breakeven_xlsx.py` — generates the live Excel model
+  (openpyxl): every driver an editable input cell; DRE + a sell-out × investment sensitivity
+  grid recompute. Follow `docs/excel-conventions.md` when building/editing any `.xlsx`.
+- `sandbox/gebeauty/scripts/b2b_retail_pnl.py` — CLI version of the same P&L.
+- Canonical Excel per channel: Drive `GEB_B2B/<categoria>/<varejista>/GE Beauty_Break-even B2B_<varejista>.xlsx`.
+
+**P&L logic (the rationale)**
+- `sell-in = sell-out × (1 − margem do varejista)`. GE invoices sell-in; consumer pays sell-out.
+- **Hinge:** if the 1st order is 100% bonificado (free), GE earns margin only on paid
+  **reorders** → break-even = the reorder volume whose contribution covers the fixed channel
+  investment over the contract.
+- **DRE order (BP):** Receita bruta (sell-in) → (−) impostos → Receita líquida → (−) CMV →
+  Margem bruta → (−) frete / bonificação / trade / ativação → Resultado (pré-IRPJ/CSLL).
+- **Levers to negotiate:** retailer margin + trade investment. Fix a target sell-out, solve
+  the investment the channel can fund (or vice-versa). Grid = sell-out × investment, green/red.
+
+**GE fiscal facts (reusable — confirm per deal with the accountant)**
+- **PIS/COFINS = 0% on GE's B2B resale.** GE is a **reseller of monofásico cosmetics**
+  (Lei 10.147/2000; NCM 3305/3307). GE's suppliers (the manufacturers) already paid the
+  concentrated ~12,5% upstream — embedded in GE's product cost. Downstream reseller = alíquota
+  zero, no input credit. So **no PIS/COFINS line on sell-in**.
+- **ICMS ≈ 1,1% efetivo** via **COMPETE-ES atacadista** (GE fatura como atacadista no ES;
+  12% de destaque, 1,1% pago). Flag: interação com ICMS-ST por produto.
+- **COGS ≈ 27,5% do sell-out**, modelado em 2 linhas: **Produto 22,5% do sell-out + fee
+  Boniteca 8% do sell-in** (Boniteca = comissão sobre sell-in). Custo do produto já embute
+  os tributos pagos a montante.
+- **IRPJ/CSLL:** GE em Lucro Real, hoje em prejuízo → imposto de renda = 0. O modelo para no
+  Resultado pré-IR (correto); a contribuição do canal reduz o prejuízo 1:1. PIS/COFINS e ICMS
+  são tributos sobre receita — não mudam com o prejuízo.
+
+## Drogaria Iguatemi — deal state (2026-06-25, thread "GE Beauty | Next Steps")
+
+- Contatos: Linéia Barreto (Curadoria), Patrícia Sepúlvida (Trade Mkt).
+- **Pedido deles (NÃO acordado):** margem 45% "já considerando impostos"; trade R$150k/12 meses;
+  1º pedido 100% bonificado (6 un + 1 tester por SKU por loja); pagamento 60/75 d da entrega.
+- Introdução em **7 lojas SP**; entrega a **1 CD (Brooklin, SP)**; reposição semanal.
+- **Resultado do modelo:** a 40% de margem (contraproposta) + R$7k sell-out/loja/mês + R$150k
+  trade → **~break-even (−R$3,5k/ano)**. Break-even sell-out ≈ R$7.130; teto de trade ≈ R$146k.
+- **Posição de contraproposta:** essencialmente alinhados a 40%; pedir folga fina (sell-out
+  ~R$7,5k ou trade ~R$145k). **Próximo passo: Lucas envia a contraproposta.**
+- Arquivo: `GEB_B2B/Farmácias/Drogaria Iguatemi/GE Beauty_Break-even B2B_Drogaria Iguatemi.xlsx`.
+
+## Sephora registry tooling
+
+`sandbox/gebeauty/sephora/sephora_mapper.py` — reads products.json → Sephora CADASTROS CSV
+`sandbox/gebeauty/sephora/sephora_cadastro.csv` — 27 rows, gaps marked [PENDENTE]
+
+Template in Drive: CADASTROS NOVOS - SEPHORA - 2026.xlsx (`1m5UHVFLbWhToN0uZrw-ngxIZNWnh2Aq9`)
+Sephora folder (B2B Drive): `1vxTr2nm5bztebDz4qOOtizCwiLgDQcaM`
+
+## Sephora registry gap map (as of 2026-06-24)
+
+| Gap | Owner | Notes |
+|-----|-------|-------|
+| Anvisa process numbers — 20 SKUs | Raphael/ops | Known for GEB003/008/010/013/022 only |
+| ICMS-ST%, Ponto de Inflamação | Fiscal team (accountant) | Needed for all rows |
+| Canal, Nro Lojas, Vendor | Sephora buyer | Commercial setup — happens after initial contact |
+| Sell-in price — 10 SKUs | Lucas | Mist line + Mayday line: no B2B price established yet |
+
+Sell-in for the 15 original haircare SKUs: available from B2B cadastro (35% margin basis).
+Confirm with Lucas whether to use those as the Sephora opening offer or set different terms.
+
+## Flags to resolve before submitting
+
+- **GEB008 NCM**: B2B file shows 3305.10.00 (xampus); B4A ficha + aerosol format suggest
+  3305.90.00 (outras preparações capilares). Confirm with fiscal before Sephora SAP import.
+- **Mist line category**: GEB024–029 use NCM 3307.20.10 — may be "FRAGRÂNCIAS/CORPO" at
+  Sephora, not "CABELO". Confirm category assignment with buyer.
+
+## Phases
+
+- [x] 1. Map data sources + build sephora_mapper.py — done 2026-06-24
+  - Data: products.json (EAN/dims/NCM), B2B cadastro (sell-in, 15 SKUs), B4A ficha (Anvisa, 5 SKUs)
+  - 27 rows: 25 products + 2 accessories (Escova Oval, Escova Polvo)
+  - All physical data pre-filled; fiscal + commercial fields pending
+- [ ] 2. Fill registry gaps — owner: lucas
+  - Collect Anvisa for 20 SKUs → Raphael
+  - Collect ICMS-ST%, Ponto de Inflamação → accountant
+  - Confirm NCM for GEB008 + category for Mist line
+  - Set sell-in price for 10 newer SKUs
+- [ ] 3. Regenerate CSV + upload to Drive + send to Sephora buyer — owner: cto (once gaps filled)
+- [ ] 4. Sephora Vendor onboarding + contract negotiation — owner: lucas
+- [ ] 5. Define sellout support plan (co-marketing, training, replenishment cadence) — owner: lucas
+- [ ] 6. First order + go-live — owner: shared
+
+## Notes
+
+- 2026-06-24: Separated from subscription-box initiative. Retail B2B requires sellout support;
+  boxes are discount-only. Different economics, different cadence.
+- 2026-06-23: BLZ (Beleza na Web) cadastro (`1j3zFCV-g2vyzFrKfV7CqthtIageL5avK`) is the
+  primary source for physical specs on the original 15 haircare SKUs. Newer products
+  (Mist, Mayday) come from products.json only.
+- 2026-06-23: Sephora registry also requires QUALIDADE fields (data de validade from
+  fabricação). All GE Beauty products: 3 anos (1095 days per products.json shelf_life_days).
+
+## Done means
+
+- Sephora CADASTROS form fully filled (zero [PENDENTE] in critical fields)
+- CSV uploaded to Sephora Drive folder and sent to buyer
+- Vendor number and canal assignment received from Sephora procurement
+- Sellout support plan documented before first order is placed

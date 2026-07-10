@@ -1,0 +1,14 @@
+{
+  "name": "UAU Box — Orçamento Julho/Agosto 2026",
+  "payment_days": null,
+  "monthly_rate": 0.013,
+  "_note": "Preços = Preço final faturando SP do orçamento Raphael. Volumes = 20k/SKU conforme planilha.",
+  "lines": [
+    {"sku": "GEB029", "volume": 20000, "price": 17.20},
+    {"sku": "GEB001", "volume": 20000, "price": 21.09},
+    {"sku": "GEB002", "volume": 20000, "price": 13.23},
+    {"sku": "GEB003", "volume": 20000, "price": 9.89},
+    {"sku": "GEB121", "volume": 20000, "price": 30.38},
+    {"sku": "GEB024", "volume": 20000, "price": 21.18}
+  ]
+}

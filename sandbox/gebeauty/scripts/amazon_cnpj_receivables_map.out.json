@@ -1,0 +1,73 @@
+{
+ "MATRIZ|15436940001258": {
+  "connection": "MATRIZ",
+  "cnpj": "15436940001258",
+  "code": 6800644256,
+  "titles": 0,
+  "revenue": 0.0,
+  "span": "-",
+  "nf_refs": []
+ },
+ "SHOPPING RECIFE|15436940001258": {
+  "connection": "SHOPPING RECIFE",
+  "cnpj": "15436940001258",
+  "code": 2070705307,
+  "titles": 0,
+  "revenue": 0.0,
+  "span": "-",
+  "nf_refs": []
+ },
+ "SHOPS JARDINS|15436940001258": {
+  "connection": "SHOPS JARDINS",
+  "cnpj": "15436940001258",
+  "code": 5200701648,
+  "titles": 16,
+  "revenue": 18416.64,
+  "span": "06/04/2026..08/06/2026",
+  "nf_refs": [
+   "00001978",
+   "00001980",
+   "00001985",
+   "00002110",
+   "00002111",
+   "00002228",
+   "00002229",
+   "00002230",
+   "00002337",
+   "00002438",
+   "00002454",
+   "00002510",
+   "00002621",
+   "00002669",
+   "00002714",
+   "00002755"
+  ]
+ },
+ "RIO SUL|15436940001258": {
+  "connection": "RIO SUL",
+  "cnpj": "15436940001258",
+  "code": 5693541250,
+  "titles": 0,
+  "revenue": 0.0,
+  "span": "-",
+  "nf_refs": []
+ },
+ "RIO MAR RECIFE|15436940001258": {
+  "connection": "RIO MAR RECIFE",
+  "cnpj": "15436940001258",
+  "code": 9434937768,
+  "titles": 0,
+  "revenue": 0.0,
+  "span": "-",
+  "nf_refs": []
+ },
+ "EXTREMA|15436940001258": {
+  "connection": "EXTREMA",
+  "cnpj": "15436940001258",
+  "code": 11583710146,
+  "titles": 0,
+  "revenue": 0.0,
+  "span": "-",
+  "nf_refs": []
+ }
+}

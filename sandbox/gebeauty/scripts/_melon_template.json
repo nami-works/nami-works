@@ -1,0 +1,675 @@
+{
+  "title": "melon mood | body & hair splash",
+  "handle": "melon-mood-body-hair-splash",
+  "status": "ACTIVE",
+  "productType": "product",
+  "vendor": "GE Beauty",
+  "tags": [
+    "avulso",
+    "best-seller",
+    "formula",
+    "full-size",
+    "lancto",
+    "lancto-essencial",
+    "lancto-vs-hero",
+    "lancto2025",
+    "para-todo-dia",
+    "produto-full-size",
+    "stockable"
+  ],
+  "descriptionHtml": "<h3><strong>fragrância e hidratação para cabelo e corpo</strong></h3>\n<p>bruma perfumada de melão, peônias e white musk, perfeita para usar depois do banho, antes de sair ou sempre que quiser</p>",
+  "seo": {
+    "title": "Melon Mood Body & Hair Splash | GE Beauty",
+    "description": "Perfume corporal e capilar com notas frutadas e frescas. Melon Mood GE Beauty: hidratação leve, brilho e fragrância envolvente para corpo e cabelo"
+  },
+  "options": [
+    {
+      "name": "Title",
+      "optionValues": [
+        {
+          "name": "Default Title"
+        }
+      ]
+    }
+  ],
+  "mediaCount": {
+    "count": 7
+  },
+  "category": {
+    "id": "gid://shopify/TaxonomyCategory/hb-3-2-8-1",
+    "name": "Body Mists"
+  },
+  "resourcePublications": {
+    "edges": [
+      {
+        "node": {
+          "isPublished": true,
+          "publication": {
+            "name": "Online Store"
+          }
+        }
+      },
+      {
+        "node": {
+          "isPublished": true,
+          "publication": {
+            "name": "IGLU POS"
+          }
+        }
+      },
+      {
+        "node": {
+          "isPublished": true,
+          "publication": {
+            "name": "Google & YouTube"
+          }
+        }
+      },
+      {
+        "node": {
+          "isPublished": true,
+          "publication": {
+            "name": "Pinterest"
+          }
+        }
+      },
+      {
+        "node": {
+          "isPublished": true,
+          "publication": {
+            "name": "Point of Sale"
+          }
+        }
+      },
+      {
+        "node": {
+          "isPublished": true,
+          "publication": {
+            "name": "TikTok"
+          }
+        }
+      },
+      {
+        "node": {
+          "isPublished": true,
+          "publication": {
+            "name": "Facebook & Instagram"
+          }
+        }
+      },
+      {
+        "node": {
+          "isPublished": true,
+          "publication": {
+            "name": "Microsoft Copilot"
+          }
+        }
+      }
+    ]
+  },
+  "collections": {
+    "edges": [
+      {
+        "node": {
+          "title": "todos os produtos",
+          "handle": "todos-os-produtos",
+          "ruleSet": {
+            "appliedDisjunctively": true,
+            "rules": [
+              {
+                "column": "TYPE",
+                "relation": "EQUALS",
+                "condition": "product"
+              },
+              {
+                "column": "TYPE",
+                "relation": "EQUALS",
+                "condition": "kit"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "node": {
+          "title": "EasyGift All Products",
+          "handle": "easygift-all-products",
+          "ruleSet": {
+            "appliedDisjunctively": true,
+            "rules": [
+              {
+                "column": "VARIANT_PRICE",
+                "relation": "GREATER_THAN",
+                "condition": "0.01"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "node": {
+          "title": "Monte seu kit",
+          "handle": "monte-seu-kit",
+          "ruleSet": {
+            "appliedDisjunctively": false,
+            "rules": [
+              {
+                "column": "TAG",
+                "relation": "EQUALS",
+                "condition": "avulso"
+              },
+              {
+                "column": "TYPE",
+                "relation": "NOT_EQUALS",
+                "condition": "brinde"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "node": {
+          "title": "para todo dia",
+          "handle": "para-todo-dia",
+          "ruleSet": {
+            "appliedDisjunctively": false,
+            "rules": [
+              {
+                "column": "TAG",
+                "relation": "EQUALS",
+                "condition": "para-todo-dia"
+              },
+              {
+                "column": "VARIANT_INVENTORY",
+                "relation": "GREATER_THAN",
+                "condition": "0"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "node": {
+          "title": "produtos full size | descontos progressivos",
+          "handle": "produtos-full-size",
+          "ruleSet": {
+            "appliedDisjunctively": false,
+            "rules": [
+              {
+                "column": "TAG",
+                "relation": "EQUALS",
+                "condition": "produto-full-size"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "node": {
+          "title": "a linha completa",
+          "handle": "a-linha-completa",
+          "ruleSet": {
+            "appliedDisjunctively": false,
+            "rules": [
+              {
+                "column": "TYPE",
+                "relation": "EQUALS",
+                "condition": "product"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "node": {
+          "title": "Escolhidos da Antonia",
+          "handle": "escolhidos-da-antonia",
+          "ruleSet": null
+        }
+      },
+      {
+        "node": {
+          "title": "seleção com 10% off",
+          "handle": "selecao-20-off-mascara-mayday",
+          "ruleSet": {
+            "appliedDisjunctively": false,
+            "rules": [
+              {
+                "column": "TAG",
+                "relation": "EQUALS",
+                "condition": "avulso"
+              },
+              {
+                "column": "TAG",
+                "relation": "NOT_EQUALS",
+                "condition": "ex-promo"
+              },
+              {
+                "column": "TYPE",
+                "relation": "NOT_EQUALS",
+                "condition": "brinde"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "node": {
+          "title": "lançamentos",
+          "handle": "lancamentos",
+          "ruleSet": {
+            "appliedDisjunctively": false,
+            "rules": [
+              {
+                "column": "TAG",
+                "relation": "EQUALS",
+                "condition": "lancto"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "node": {
+          "title": "ganhe trio de miniaturas",
+          "handle": "ganhe-trio-de-miniaturas",
+          "ruleSet": {
+            "appliedDisjunctively": true,
+            "rules": [
+              {
+                "column": "TAG",
+                "relation": "EQUALS",
+                "condition": "full-size"
+              },
+              {
+                "column": "TITLE",
+                "relation": "CONTAINS",
+                "condition": "trio de miniaturas"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "node": {
+          "title": "produtos e kits full size",
+          "handle": "produtos-e-kits-full-size",
+          "ruleSet": {
+            "appliedDisjunctively": true,
+            "rules": [
+              {
+                "column": "TAG",
+                "relation": "EQUALS",
+                "condition": "full-size"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "node": {
+          "title": "best sellers",
+          "handle": "best-sellers",
+          "ruleSet": {
+            "appliedDisjunctively": false,
+            "rules": [
+              {
+                "column": "TAG",
+                "relation": "EQUALS",
+                "condition": "best-seller"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "node": {
+          "title": "upsell options",
+          "handle": "upsell-options",
+          "ruleSet": {
+            "appliedDisjunctively": false,
+            "rules": [
+              {
+                "column": "TYPE",
+                "relation": "EQUALS",
+                "condition": "product"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "node": {
+          "title": "verão",
+          "handle": "verao",
+          "ruleSet": null
+        }
+      },
+      {
+        "node": {
+          "title": "novos essenciais",
+          "handle": "novos-essenciais",
+          "ruleSet": {
+            "appliedDisjunctively": false,
+            "rules": [
+              {
+                "column": "TAG",
+                "relation": "EQUALS",
+                "condition": "lancto-essencial"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "node": {
+          "title": "seleção vip mês do consumidor",
+          "handle": "selecao-vip-mes-do-consumidor",
+          "ruleSet": {
+            "appliedDisjunctively": true,
+            "rules": [
+              {
+                "column": "TAG",
+                "relation": "EQUALS",
+                "condition": "lancto-essencial"
+              },
+              {
+                "column": "TAG",
+                "relation": "EQUALS",
+                "condition": "essenciais-rotina"
+              },
+              {
+                "column": "TAG",
+                "relation": "EQUALS",
+                "condition": "contem-finalizador"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "metafields": {
+    "edges": [
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "benefits",
+          "type": "multi_line_text_field",
+          "value": "<ul><li>Perfuma suavemente corpo e cabelo</li><li>Sensação de frescor e leveza instantânea</li><li>Toque macio e brilho natural nos fios</li><li>Ajuda a selar as cutículas e realçar o brilho do cabelo</li><li>Mantém a pele hidratada e com toque sedoso</li></ul>"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "ingredients",
+          "type": "single_line_text_field",
+          "value": "Aqua, Alcohol, PEG-40 Hydrogenated Castor Oil, Parfum, Hexylene Glycol, Ceteareth-20, Glycerin, Castor Oil Propanediol Esters, Xylityl Sesquicaprylate, Caprylyl Glycol"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "texture",
+          "type": "single_line_text_field",
+          "value": "Bruma leve e refrescante"
+        }
+      },
+      {
+        "node": {
+          "namespace": "global",
+          "key": "title_tag",
+          "type": "string",
+          "value": "Melon Mood Body & Hair Splash | GE Beauty"
+        }
+      },
+      {
+        "node": {
+          "namespace": "global",
+          "key": "description_tag",
+          "type": "string",
+          "value": "Perfume corporal e capilar com notas frutadas e frescas. Melon Mood GE Beauty: hidratação leve, brilho e fragrância envolvente para corpo e cabelo"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "descricao_longa_com_abas",
+          "type": "metaobject_reference",
+          "value": "gid://shopify/Metaobject/153980862784"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "dosagem",
+          "type": "single_line_text_field",
+          "value": "200ml"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "finalidade",
+          "type": "single_line_text_field",
+          "value": "cabelo e pele macios e perfumados"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "caracteristicas",
+          "type": "rich_text_field",
+          "value": "{\"type\":\"root\",\"children\":[{\"listType\":\"unordered\",\"type\":\"list\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"perfuma suavemente\",\"bold\":true},{\"type\":\"text\",\"value\":\" cabelo e corpo\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"sela as cutículas\",\"bold\":true},{\"type\":\"text\",\"value\":\" e promove brilho intenso nos fios\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"hidratação de até 72h\",\"bold\":true},{\"type\":\"text\",\"value\":\" com retenção inteligente de água na pele\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"pele macia e hidratada\",\"bold\":true},{\"type\":\"text\",\"value\":\" com viço natural\"}]}]}]}"
+        }
+      },
+      {
+        "node": {
+          "namespace": "loox",
+          "key": "avg_rating",
+          "type": "number_decimal",
+          "value": "4.0"
+        }
+      },
+      {
+        "node": {
+          "namespace": "loox",
+          "key": "reviews",
+          "type": "multi_line_text_field",
+          "value": "<div id=\"loox-inline-reviews\" style=\"display:none\" data-loox-hash=\"1781187975271\"><div class=\"review\"><div class=\"name\">Sabrina S.</div><div class=\"review_text\">embalagem bonita. fragrância bem doce</div></div><div class=\"review\"><div class=\"name\">Sandra F.</div><div class=\"review_text\">Cheiro delicioso! Cheiro de frescor! Em dias que não quero usar perfume, faço a substituição pelo  body &amp; hair splash!!!\n</div></div><div class=\"review\"><div class=\"name\">Angelica V.</div><div class=\"review_text\">Eu sou cliente GE beauty já há anos e a marca nunca me decepciona! E uma delícia reaplicar o cheirinho ao longo do dia, além da hidratação que fica na pele após o uso até o final do dia </div></div><div class=\"review\"><div class=\"name\">Leticia  O.</div><div class=\"review_text\">Cheiro delicioso!! Amei !! </div></div><div class=\"review\"><div class=\"name\">Regiane S.</div><div class=\"review_text\">Não gostei muito do perfume</div></div><div class=\"review\"><div class=\"name\">Ina S.</div><div class=\"review_text\">O melhor body splash da vida.\nTextura perfeita e o cheiro é muito, muito bom!</div></div><div class=\"review\"><div class=\"name\">Susanne S.</div><div class=\"review_text\">Fixação não é boa.\nO spray sai jatos de produto.\nDeixa o cabelo meio duro.</div></div><div class=\"review\"><div class=\"name\">Maria L.</div><div class=\"review_text\">Produtos sensacionais, maravilhosos \nParabéns!</div></div><div class=\"review\"><div class=\"name\">Renata V.</div><div class=\"review_text\">cheiro perfeito! super combina com o clima carioca!</div></div><div class=\"review\"><div class=\"name\">Daniela M.</div><div class=\"review_text\">Perfume suave e refrescante! Amei</div></div><div class=\"review\"><div class=\"name\">Solange S.</div><div class=\"review_text\">ok</div></div><div class=\"review\"><div class=\"name\">Caroline T.</div><div class=\"review_text\">O cheiro é super gostoso e fresco, mas não fixa nada na pele (dura literalmente 30 minutos) e me deixa com a pele oleosa.</div></div><div class=\"review\"><div class=\"name\">Diana R.</div><div class=\"review_text\">Cheiro maravilhoso e ficção tbm.</div></div><div class=\"review\"><div class=\"name\">Fernanda V.</div><div class=\"review_text\">Tem cheiro de remédio!</div></div><div class=\"review\"><div class=\"name\">Livia P.</div><div class=\"review_text\">Cheiro gostoso. Mas não fixa por muito tempo, em duas horas a gente não sente mas o cheiro. </div></div><div class=\"review\"><div class=\"name\">Leticia S.</div><div class=\"review_text\">Ele é simplesmente perfeito!! Leve, cheiroso, refrescante e marcante. Meu novo cheiro preferido foi atualizado com sucesso. </div></div><div class=\"review\"><div class=\"name\">gessica h.</div><div class=\"review_text\">MARAVILHOSO</div></div><div class=\"review\"><div class=\"name\">MARIANA GALINDO C.</div><div class=\"review_text\">Aroma muito bom!</div></div><div class=\"review\"><div class=\"name\">Marcia P.</div><div class=\"review_text\">A primeira vez que fiz o pedido  já amei. Então pedi os travel sizes para uma viagem que vou fazer, e pedi o body splash, que eu amei e já estou pedindo o tamanho menor também. Estão de parabéns pela excelência da marca.</div></div><div class=\"review\"><div class=\"name\">Fabiola L.</div><div class=\"review_text\">Comprei pela primeira vez o body splash grande e amei , uso todos os dias no corpo e no cabelo. Então comprei o body splash travel para minha filha e ela amou. Estou aguardando a minha compra de kit de viagem com body splash. Os produtos são incríveis, viciantes.</div></div><div class=\"review\"><div class=\"name\">Maristela S.</div><div class=\"review_text\">A vendedora de vocês é simplesmente maravilhosa ( CJ Shops ), sabe tudo sobre os produtos, simpática, comprei a primeira vez somente por conta do atendimento, depois usei e comprei mais para presentear. Funcionaria assim faz toda a diferença. </div></div><div class=\"review\"><div class=\"name\">Lia B.</div><div class=\"review_text\">O cabelo fica completamente oleoso</div></div><div class=\"review\"><div class=\"name\">Graziella C.</div><div class=\"review_text\">Estou usando há mais de 1 mês todos dias, ele dura muuuuito. É bastante cheiroso, bem suave e tem uma boa fixação nos cabelos. Senti que a fixação foi melhor nos cabelos de que no corpo. Toda via o produto é ótimo. Estou amando!</div></div><div class=\"review\"><div class=\"name\">Thais N.</div><div class=\"review_text\">Não dei o total de estrelas porque, no meu corpo, ele não fixa muito. No cabelo, se eu aplicar por cima, fica duro. Tenho que abaixar a cabeça e aplicar por baixo e depois pentear. O cheiro no cabelo dura muito e é excelente.</div></div><div class=\"review\"><div class=\"name\">Diana T.</div><div class=\"review_text\">Maravilhoso </div></div><div class=\"review\"><div class=\"name\">Gisele S.</div><div class=\"review_text\">Demorou muito a chegar os produtos </div></div><div class=\"review\"><div class=\"name\">Carolina M.</div><div class=\"review_text\">Acabando um e comprando outro. Já quero a versão travel!</div></div><div class=\"review\"><div class=\"name\">malu m.</div><div class=\"review_text\">Cheiro maravilhoso, só fixação poderia ser maior para o cheiro durar mais tempo na pele.</div></div><div class=\"review\"><div class=\"name\">thais g.</div><div class=\"review_text\">Delícia, mas pouquíssima fixação </div></div><div class=\"review\"><div class=\"name\">Fabrizia E.</div><div class=\"review_text\">Achei a fixação desejou muito a desejar! Sei q é um body splash, mas só se sente o aroma no momento em q se borrifa e depois nem a lembrança </div></div><div class=\"review\"><div class=\"name\">Cecília F.</div><div class=\"review_text\">Muito cheiroso, mas ele deixa a pele com aspecto meio grudento o que para mim é o grande aspecto negativo.</div></div><div class=\"review\"><div class=\"name\">Ana Keila F.</div><div class=\"review_text\">cheiro de ricaaaaaaa rs\neu to amando!!!!</div></div><div class=\"review\"><div class=\"name\">Brenda</div><div class=\"review_text\">Quando borrifei, o melão veio lindo, fresco, verde, nada bala. Tinha algo quase natural, meio cheiro da parte mais interna da fruta, perto das sementes. Fiquei animada.\n\nSó que durou uns 10 segundos. Rapidinho ele some e entra um floral limpinho com white musk que deixa tudo com cara de sabonete Lux, bem comum mesmo. Eu até gosto desse tipo de fragrância, mas não é o que eu espero de algo chamado Melon Mood.\n\nSe você quer frescor confortável e assabonetado, com um leve dulçor, pode funcionar. Se quer melão, melhor procurar outro.\n\nAh, a embalagem é realmente belíssima, cara de coisa cara. </div></div><div class=\"review\"><div class=\"name\">Isabel S.</div><div class=\"review_text\">Estou viciada nele! O cheiro é maravilhoso e já quero comprar a versão mini para levar pra todo canto </div></div><div class=\"review\"><div class=\"name\">Yuki H.</div><div class=\"review_text\">Cheirinho maravilhoso.</div></div><div class=\"review\"><div class=\"name\">MARIA DA CONCEIÇÃO A.</div><div class=\"review_text\">O cheiro é delicioso, mas o produto não fixa nada. Mesmo para uma proposta de body splash a fixação deixa muito a desejar. Minutos depois o cheiro já foi embora da pele. </div></div><div class=\"review\"><div class=\"name\">Camila K.</div><div class=\"review_text\">Cheiro maravilhoso e realmente ajuda a hidratar a pele! </div></div><div class=\"review\"><div class=\"name\">Bruna C.</div><div class=\"review_text\">Perfeito </div></div><div class=\"review\"><div class=\"name\">Georgia P.</div><div class=\"review_text\">Cheirinho ótimo e refrescante</div></div><div class=\"review\"><div class=\"name\">Rafaela P.</div><div class=\"review_text\">Experiência maravilhosa com esse Body &amp; Hair Splash.</div></div><div class=\"review\"><div class=\"name\">Natalia G.</div><div class=\"review_text\">O cheiro é bom mas não fixa nada e deixa a Pele melada</div></div><div class=\"review\"><div class=\"name\">CAROLINA P.</div><div class=\"review_text\">Um sopro de fruta fresca.\n\nMelon Mood é leve, aquoso e luminoso. Não é perfume de protagonismo — é frescor imediato. Ele traz aquela sensação de pele limpa com toque frutado, quase como uma névoa doce que passa e refresca.\n\nNão tem profundidade nem complexidade, e essa é justamente a graça. Ele não quer marcar presença, quer trazer leveza.\n\nFunciona lindamente em layering, porque abre os perfumes, ilumina notas frutadas e cria movimento.</div></div><div class=\"review\"><div class=\"name\">Renata F.</div><div class=\"review_text\">Achei muito doce.</div></div><div class=\"review\"><div class=\"name\">MARIANA C.</div><div class=\"review_text\">Deixa o cabelo muito macio e cheiroso. Num dia de cabelo mais rebelde ou seco, ele salva !!!</div></div><div class=\"review\"><div class=\"name\">Ana F.</div><div class=\"review_text\">Hidrata a pele, o cheiro é ótimo, mas não fixa muito tempo.</div></div><div class=\"review\"><div class=\"name\">Carolina A.</div><div class=\"review_text\">Tive a sensação de pele “colenta”. Não tive a melhor das sensações…</div></div><div class=\"review\"><div class=\"name\">Amanda C.</div><div class=\"review_text\">o cheiro é incrível, mas a fixação é muito fraca. Pouquíssimo tempo depois já não senti mais cheiro nenhum. </div></div><div class=\"review\"><div class=\"name\">Jéssica X.</div><div class=\"review_text\">O cheiro é uma delícia, mas não dura tanto. Na pele realmente passa rápido, embora no cabelo dure um pouco mais!</div></div><div class=\"review\"><div class=\"name\">CIBELLY F.</div><div class=\"review_text\">Oii... adorei o cheirinho, bem adequado pro verão.\n\nConfesso que ainda não usei no cabelo, mas vi um vídeo de favoritos da Carla &quot;notra&quot; ontem e vou testar.\n\nA única parte chatíssima é que ele escorregou da minha mão e quebrou o botãozinho de spray do frasco, então vou precisar comprar um frasco a parte pra usar.</div></div><div class=\"review\"><div class=\"name\">Bruna D.</div><div class=\"review_text\">Muito gostoso, fresh, bem verão. Deixa um glow bonito na pele.</div></div><div class=\"review\"><div class=\"name\">ANA CAROLINA P.</div><div class=\"review_text\">Não gostei da fragrância. Ainda está intacto. Gostaria de resolver. </div></div><div class=\"review\"><div class=\"name\">Gabriela A.</div><div class=\"review_text\">Nao gostei, cheiro de fragrância infantil de loja barata e nao dura 5 minutos </div></div><div class=\"review\"><div class=\"name\">Sabrina M.</div><div class=\"review_text\">Perfeito!</div></div><div class=\"review\"><div class=\"name\">THABATA O.</div><div class=\"review_text\">Cheiro fresco e delicioso</div></div><div class=\"review\"><div class=\"name\">Fabiane F.</div><div class=\"review_text\">Olha a experiência não foi legal desde o começo, demorou pra chegar, pq segundo vcs aí o Correio estava em greve, deveria ter uma outra opção de entrega, foi bem frustrante, achei a apresentação do produto bem feia , veio enrolado em um papel tipo Craft, sem caixa , sem nada , dar de presente pareceria usado , o da Jade Picon vem em caixa linda, por fim a,fragrância; é maravilhosa mas a fixação em mim foi inexistente, durou nem 1hora infelizmente, sei que é body splash mas temos opções no mercado com melhor performance, uma pena! </div></div><div class=\"review\"><div class=\"name\">Thiara  P.</div><div class=\"review_text\">Fragrância gostosa, muito cheiroso mesmo. Para ser perfeito poderia ser mais fresquinho. Achei que gruda um pouco.</div></div><div class=\"review\"><div class=\"name\">Veronica  S.</div><div class=\"review_text\">Perfeito os produtos!</div></div><div class=\"review\"><div class=\"name\">SILMARA A.</div><div class=\"review_text\">ele é perfeito para o corpo, cheirinho suave de melão que até lembra cheiro de praia.\nPara o cabelo não achei vantagem , no meu não fez efeito nenhum, mas como body splash, excelente.</div></div><div class=\"review\"><div class=\"name\">lidia d.</div><div class=\"review_text\">Amei demais, cheirinho de banho o dia todo </div></div><div class=\"review\"><div class=\"name\">Núbia  L.</div><div class=\"review_text\">Aroma agradável e viciante, tô usando até para ir a cozinha </div></div><div class=\"review\"><div class=\"name\">Karina</div><div class=\"review_text\">Sinceramente, é um produto que não comprarei novamente. Tem um cheiro agradável, mas não fica de forma alguma. Estou usando para dormir, apenas, pois, durante o dia, mesmo buscando algo mais leve para o calor, há outras opções que ficam na pele, no cabelo, na roupa...</div></div><div class=\"review\"><div class=\"name\">Sarah L.</div><div class=\"review_text\">Refrescante </div></div><div class=\"review\"><div class=\"name\">Jane M.</div><div class=\"review_text\">Adorei o cheiro na pele ainda não testei no cabelo \n\n</div></div><div class=\"review\"><div class=\"name\">Maria F.</div><div class=\"review_text\">O cheiro some em 2min</div></div><div class=\"review\"><div class=\"name\">patricia d.</div><div class=\"review_text\">Não recebi meus produtos!</div></div><div class=\"review\"><div class=\"name\">Raísa B.</div><div class=\"review_text\">O cheiro é muito bom mas podia melhorar a Fixação</div></div><div class=\"review\"><div class=\"name\">Eliane V.</div><div class=\"review_text\">Cheiro delicioso </div></div><div class=\"review\"><div class=\"name\">Natalia S.</div><div class=\"review_text\">Amei meu produto!! \nEntrega foi super rápida e o cheiro é divino!!! Viciei!!!!</div></div><div class=\"review\"><div class=\"name\">Marina L.</div><div class=\"review_text\">Não recebi o produto por conta da greve dos Correios e, segundo o SAC - que me respondeu de maneira completamente passivo agressiva - não existe qualquer previsão para a chegada do mesmo. Me decepcionei bastante com o atendimento pós compra, que não está alinhado ao branding da empresa e dificilmente comprarei novamente. Tomara que pelo menos um dia o meu produto chegue, né? :) Senão imagino que será uma batalha para reaver o meu dinheiro de volta. </div></div><div class=\"review\"><div class=\"name\">Alice M.</div><div class=\"review_text\">ainda não recebi o produto. quando comprei não tinha nenhum aviso sobre ser uma pré-compra, paguei o frete mais caro para receber mais rápido e só agora está sendo enviado.</div></div><div class=\"review\"><div class=\"name\">Roseli A.</div><div class=\"review_text\">A compra foi um presente de Natal. Meu filho amou.</div></div><div class=\"review\"><div class=\"name\">Ana paula B.</div><div class=\"review_text\">Eu amei perfeito o melhor perfume que já tive já tá acabado uso todos os dias no meu trabalho todo mundo adorou </div></div><div class=\"review\"><div class=\"name\">Cristiane T.</div><div class=\"review_text\">O produto é maravilhoso. Um cheiro suave, fresco e muito chic. Perfuma e hidrata o cabelo e deixa a pele linda. Amei!</div></div><div class=\"review\"><div class=\"name\">CLARISSE F.</div><div class=\"review_text\">Cheiro parecido com aquelas colônias ardidas da natura. Achei que fosse vir mais fiel ao cheiro fresco original do produto GE. Deixou o cabelo embaçado e meio engordurado. Esse não valeu a compra. </div></div><div class=\"review\"><div class=\"name\">Maria H.</div><div class=\"review_text\">Achei que o perfume não fixa bem, meia hora depois o perfume vai embora </div></div><div class=\"review\"><div class=\"name\">Isavania P.</div><div class=\"review_text\">Ameiiii. O cheiro é perfeito e dura bastante no cabelo. Uso todos os dias e fica cheiro de cabelo lavado. Ele também super hidrata o cabelo e nem preciso usar óleo quando aplico ele.</div></div><div class=\"review\"><div class=\"name\">Thais R.</div><div class=\"review_text\">Comprei no escuro, lendo a descrição da fragrancia no site.  Ao meu ver nada nela lembra melão, achei doce apesar de fresca, talvez por isso minha decepção! </div></div><div class=\"review\"><div class=\"name\">Jaqueline F.</div><div class=\"review_text\">O body splash é leve, com boa fixação. Ótimo para o clima do verão brasileiro.</div></div><div class=\"review\"><div class=\"name\">Alvaro S.</div><div class=\"review_text\">Perfeito, fragrancia e fixação. Já pedi outro par aminha mãe que quer roubar o meu..... KKKK</div></div><div class=\"review\"><div class=\"name\">Benedita Edyanne V.</div><div class=\"review_text\">Uma delícia de cheiro!!!</div></div><div class=\"review\"><div class=\"name\">bianca k.</div><div class=\"review_text\">Como opinar se mesmo depois de 21 dias o produto ainda nem está na rota , pedi ajuda no instagram só pediram pra ver a DM nos comentários mas de fato não recebi nemhum suporte via DM. Suporte ao cliente PÉSSIMO. Extremamente decepcionada sendo que fazem muita propaganda não conseguindo suprir a demanda. Essa vai ser minha primeira e última compra dessa empresa sem comprometimento.</div></div><div class=\"review\"><div class=\"name\">Adriana H.</div><div class=\"review_text\">Cheiro sintético </div></div><div class=\"review\"><div class=\"name\">joana B.</div><div class=\"review_text\">achei o cheiro um pouco enjoativo e a textura no corpo um pouco melado.\n</div></div><div class=\"review\"><div class=\"name\">Thamires R.</div><div class=\"review_text\">O cheiro é bom e refrescante e tem a durabilidade esperada para um bodysplash. usei no corpo e no cabelo, não vi muita diferença quanto as outras promessas do produto além do cheiro.</div></div><div class=\"review\"><div class=\"name\">Bruno A.</div><div class=\"review_text\">Amei o body splash \n</div></div><div class=\"review\"><div class=\"name\">Anna P.</div><div class=\"review_text\">O cheiro é tudo isso mesmo. </div></div><div class=\"review\"><div class=\"name\">Maria Joene P.</div><div class=\"review_text\">Eu tenho uma confiança enorme na Camila Coutinho e quando ela lança um produto, tenho certeza que é bom, limpo, eficiente. \nQuando anunciou o Melon, pensei logo: quero!  \nAdoro a sensação de frescor de um bom pós banho e esse tem o cheirinho GE BEAUTY. É pro corpo todo, cabelo, rosto., enfim, vaporize-se desse aroma. </div></div><div class=\"review\"><div class=\"name\">NATALIA G.</div><div class=\"review_text\">Bem cheiroso e refrescante! Além de deixar a pele com aspecto hidratada. Gostei muito!</div></div><div class=\"review\"><div class=\"name\">Marcela d.</div><div class=\"review_text\">O cheiro é maravilhoso, mas achei meio pegajoso na pele.</div></div><div class=\"review\"><div class=\"name\">Rafaela B.</div><div class=\"review_text\">O principal problema é que deixa a pele grudenta. Não achei confortável de aplicar. E não gostei do cheiro tbm. Muito frutado</div></div><div class=\"review\"><div class=\"name\">Camila A.</div><div class=\"review_text\">Achei q fica uma textura muito melada no corpo.</div></div><div class=\"review\"><div class=\"name\">Paula M.</div><div class=\"review_text\">Eu simplesmente adorei \nCheiro muito bom. </div></div><div class=\"review\"><div class=\"name\">Fernanda Ribas B.</div><div class=\"review_text\">Comprei o produto há quase um mês e ainda não recebi</div></div><div class=\"review\"><div class=\"name\">Luciana T.</div><div class=\"review_text\">Cheiro delicioso!!! Vou viciar com certeza!</div></div><div class=\"review\"><div class=\"name\">Carita N.</div><div class=\"review_text\">Achei que o body slash deixa a pele grudenta. Ele não seca bem. Onde o spray pega, fica grudando.\nNão achei que o cheiro tem longa duração.</div></div><div class=\"review\"><div class=\"name\">Mariana F.</div><div class=\"review_text\">Muito cheiroso e boa fixação tanto no corpo quanto nos cabelos!</div></div><div class=\"review\"><div class=\"name\">Monica T.</div><div class=\"review_text\">O melhor de todos! Cheirinho maravilhoso, hidratou  minha pele e manteve os cabelos hidratados! Usei na praia, antes da ginastica  e após o banho. Perfeitão!!!!</div></div><div class=\"review\"><div class=\"name\">Juliana F.</div><div class=\"review_text\">Sou extremamente chata para fragrâncias mas está me encantou! Estou apaixonada!  </div></div><div class=\"review\"><div class=\"name\">Caroline L.</div><div class=\"review_text\">Gostei do cheiro, e da fixação no corpo. Também senti que contribuiu a sensação de hidratação na pele após usar. </div></div><div class=\"review\"><div class=\"name\">Juliana P.</div><div class=\"review_text\">Muito gostoso o cheiro, leve com cheiro bem delicado, estou amamentando e ajuda muito que possa ser passado no cabeo pois nao fica passando para o bebe o cheiro na pele e ainda fico cheirosa neste momento do puerperio, em que essas pequenas sensações  ajudam a me sentir mais cuidada..</div></div></div>"
+        }
+      },
+      {
+        "node": {
+          "namespace": "loox",
+          "key": "num_reviews",
+          "type": "number_integer",
+          "value": "136"
+        }
+      },
+      {
+        "node": {
+          "namespace": "shopify--discovery--product_recommendation",
+          "key": "complementary_products",
+          "type": "list.product_reference",
+          "value": "[\"gid://shopify/Product/9668674879808\",\"gid://shopify/Product/8803151282496\",\"gid://shopify/Product/8803151184192\",\"gid://shopify/Product/9758954291520\",\"gid://shopify/Product/9613035438400\",\"gid://shopify/Product/9613035995456\",\"gid://shopify/Product/8803151708480\"]"
+        }
+      },
+      {
+        "node": {
+          "namespace": "shopify--discovery--product_recommendation",
+          "key": "related_products",
+          "type": "list.product_reference",
+          "value": "[\"gid://shopify/Product/9668674879808\",\"gid://shopify/Product/8803151282496\",\"gid://shopify/Product/8803151184192\",\"gid://shopify/Product/9758954291520\",\"gid://shopify/Product/9613035438400\",\"gid://shopify/Product/9613035995456\",\"gid://shopify/Product/8803151708480\"]"
+        }
+      },
+      {
+        "node": {
+          "namespace": "mm-google-shopping",
+          "key": "google_product_category",
+          "type": "string",
+          "value": "479"
+        }
+      },
+      {
+        "node": {
+          "namespace": "mc-facebook",
+          "key": "google_product_category",
+          "type": "string",
+          "value": "479"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "texto_promocional",
+          "type": "rich_text_field",
+          "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"só essa semana\",\"bold\":true},{\"type\":\"text\",\"value\":\", garanta este kit com um \"},{\"type\":\"text\",\"value\":\"desconto especial\",\"bold\":true}]}]}"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "beneficio_em_destaque_1",
+          "type": "single_line_text_field",
+          "value": "perfuma suavemente cabelo e corpo"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "imagem_beneficio_em_destaque_1",
+          "type": "file_reference",
+          "value": "gid://shopify/MediaImage/41611095507264"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "beneficio_em_destaque_2",
+          "type": "single_line_text_field",
+          "value": "sela as cutículas e intensifica o brilho"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "imagem_beneficio_em_destaque_2",
+          "type": "file_reference",
+          "value": "gid://shopify/MediaImage/41609321775424"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "beneficio_em_destaque_3",
+          "type": "single_line_text_field",
+          "value": "hidrata a pele por até 72h"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "imagem_beneficio_em_destaque_3",
+          "type": "file_reference",
+          "value": "gid://shopify/MediaImage/41609336422720"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "descricao_completa_em_markdown",
+          "type": "multi_line_text_field",
+          "value": "# Melon Mood Body & Hair Splash – Brilho, Hidratação e Perfume em Harmonia\n\n---\n\n## 1. Identificação do Produto\n- **Nome do Produto:** Melon Mood Body & Hair Splash  \n- **Categoria:** Finalização / Perfumaria Funcional  \n- **Linha:** Sensorial e Hiper-hidratante (GE Beauty 2025)  \n- **Tipo de Cabelo Indicado:** Todos os tipos  \n- **Tipo de Pele Indicado:** Todos os tipos, especialmente peles que pedem hidratação leve e toque fresco  \n- **Tamanho / Volume:** 200 ml  \n- **Preço Sugerido:** R$ 129,00  \n- **Status:** Lançamento 2025  \n\n---\n\n## 2. Descrição Conceitual\n> “O Melon Mood Body & Hair Splash é o toque final do seu ritual de autocuidado. Desenvolvido com o ativo biotecnológico AcquaBio®, que hidrata profundamente por até 72 horas, e com o complexo ProShine, que ativa o brilho dos fios, ele perfuma, hidrata e revela o glow natural da pele e do cabelo. Um splash multifuncional que combina ciência e prazer sensorial — para sentir-se bem da cabeça aos pés.”  \n\n---\n\n## 3. Benefícios Principais\n- Hidratação biológica da pele por até 72 horas  \n- Glow capilar e brilho instantâneo dos fios  \n- Perfume envolvente e sofisticado  \n- Sensação de frescor e bem-estar imediata  \n- Textura leve, sem pesar ou deixar resíduos  \n- Livre de silicones e conservantes  \n\n---\n\n## 4. Ativos e Tecnologia\n\n| **Ativo** | **Origem / Tecnologia** | **Função e Benefício Principal** |\n|------------|--------------------------|----------------------------------|\n| **AcquaBio®** | Biotecnologia vegetal (Angico Branco) | Estimula a produção natural de ácido hialurônico e aquaporina-3, garantindo hidratação profunda e prolongada da pele por até 72h |\n| **ProShine®** | Ésteres vegetais com alto índice de refração | Realça o brilho dos fios e da pele, criando acabamento radiante e sedoso |\n| **Fragrância Melon Mood** | Notas frutadas e amadeiradas | Perfume refrescante, envolvente e elegante, assinatura olfativa da linha |\n| **Base leve aquosa** | Clean Beauty / livre de silicones | Fórmula ultraleve, ideal para aplicação em cabelo e corpo sem acúmulo |\n\n---\n\n## 5. Modo de Uso\n> “Agite antes de usar. Aplique o Melon Mood Body & Hair Splash mantendo uma distância de cerca de 15 cm da pele e dos cabelos, para uma distribuição uniforme da fragrância e dos ativos.  \nReaplique sempre que desejar reforçar a hidratação e a perfumação.”  \n\n---\n\n## 6. O que esperar (Resultados observáveis)\n- Pele hidratada, macia e com toque aveludado  \n- Brilho e vitalidade natural nos fios  \n- Perfumação prolongada e confortável  \n- Sensação imediata de frescor e leveza  \n- Aparência saudável e radiante  \n\n---\n\n## 7. Clean Beauty & Sustentabilidade\n- 100% vegano e cruelty-free  \n- Livre de silicones, conservantes, parabenos e petrolatos  \n- Fórmula biodegradável e de alta performance natural  \n- Embalagem reciclável  \n- Ativos obtidos por biotecnologia e processos sustentáveis  \n\n---\n\n## 8. Diferenciais Científicos\n> “Com a tecnologia exclusiva **AcquaBio®**, o Melon Mood estimula a hidratação biológica da pele por meio do aumento das aquaporinas e da produção de ácido hialurônico natural.  \nEstudos clínicos demonstraram **redução de 25% na perda de água transepidérmica (TEWL)** e efeito hidratante prolongado por até 72 horas após o uso contínuo.”:contentReference[oaicite:3]{index=3}  \n\n---\n\n## 9. Experiência Sensorial\n> “Textura aquosa e ultraleve, de absorção imediata. A fragrância **Melon Mood** combina notas suculentas de melão e frutas frescas com nuances amadeiradas, criando uma sensação luminosa, fresca e elegante — ideal para todas as ocasiões.”  \n\n---\n\n## 10. Perfil de Uso\n> “Perfeito para quem busca praticidade e leveza no cuidado diário. Ideal para dias quentes, pós-banho, praia ou academia, quando o cabelo e a pele pedem hidratação instantânea e perfume prolongado. Um produto versátil que complementa o ritual GE Beauty.”  \n\n---\n\n## 11. Insights para SEO e Blog Posts\n**Principais Keywords:**  \n- body splash natural  \n- brilho capilar  \n- hidratação prolongada 72h  \n- perfume para corpo e cabelo  \n- AcquaBio  \n- ProShine  \n- fragrância Melon Mood  \n\n**Sugestões de pautas derivadas:**  \n- “Por que o Melon Mood é o novo essencial do seu ritual de autocuidado.”  \n- “Conheça o ativo biotecnológico que hidrata por até 72h.”  \n- “Body & Hair Splash: o segredo do brilho leve e do perfume duradouro.”  \n\n---\n\n## 12. Diretrizes Visuais (para blog e e-commerce)\n- Fundo claro, iluminação suave e reflexos que evoquem frescor e brilho.  \n- Fotografar textura em movimento (spray ou gotículas).  \n- Mostrar aplicação real em pele e cabelo.  \n- Integrar elementos naturais (melão, folhas verdes, luz solar).  \n\n---\n\n## 13. Notas Legais e Regulamentares\n- Dermatologicamente testado  \n- Clinicamente testado  \n- Seguro para uso diário  \n- Uso externo  \n- Manter fora do alcance de crianças  \n\n---\n\n### Resumo técnico\n> Melon Mood Body & Hair Splash | GE Beauty  \n> Tecnologia AcquaBio® + ProShine®  \n> Hidratação biológica 72h • Brilho capilar • Perfume natural  \n> 100% vegano • biodegradável • biotecnologia verde\n"
+        }
+      },
+      {
+        "node": {
+          "namespace": "reviews",
+          "key": "rating",
+          "type": "rating",
+          "value": "{\"scale_min\":\"1.0\",\"scale_max\":\"5.0\",\"value\":\"4.0\"}"
+        }
+      },
+      {
+        "node": {
+          "namespace": "reviews",
+          "key": "rating_count",
+          "type": "number_integer",
+          "value": "136"
+        }
+      },
+      {
+        "node": {
+          "namespace": "shopify--discovery--product_recommendation",
+          "key": "related_products_display",
+          "type": "single_line_text_field",
+          "value": "ahead"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "texto_promo",
+          "type": "single_line_text_field",
+          "value": "compre e ganhe um leave-in travel size"
+        }
+      },
+      {
+        "node": {
+          "namespace": "fullcomm",
+          "key": "ncm",
+          "type": "single_line_text_field",
+          "value": "33072010"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "ai_readiness",
+          "type": "metaobject_reference",
+          "value": "gid://shopify/Metaobject/221338730816"
+        }
+      },
+      {
+        "node": {
+          "namespace": "custom",
+          "key": "etiquetas",
+          "type": "list.metaobject_reference",
+          "value": "[\"gid://shopify/Metaobject/223415828800\"]"
+        }
+      }
+    ]
+  },
+  "variants": {
+    "edges": [
+      {
+        "node": {
+          "sku": "GEB 024",
+          "price": "129.00",
+          "compareAtPrice": null,
+          "barcode": "042882635451",
+          "inventoryQuantity": 8014,
+          "taxable": true,
+          "inventoryItem": {
+            "tracked": true,
+            "measurement": {
+              "weight": {
+                "value": 0.2,
+                "unit": "KILOGRAMS"
+              }
+            },
+            "harmonizedSystemCode": "330720",
+            "requiresShipping": true
+          },
+          "selectedOptions": [
+            {
+              "name": "Title",
+              "value": "Default Title"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

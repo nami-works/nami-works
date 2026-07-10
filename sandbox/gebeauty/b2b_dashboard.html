@@ -1,0 +1,1168 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GE Beauty — B2B Box Dashboard</title>
+<style>
+:root {
+  --bg:       #F4F3F0;
+  --surface:  #FFFFFF;
+  --ink:      #1C1917;
+  --muted:    #877E77;
+  --line:     #E6E3DD;
+  --accent:   #1E4FBE;
+  --acc-lo:   #EEF1FA;
+  --ok:       #1F7A3E;
+  --ok-lo:    #EBF5EE;
+  --warn:     #B83010;
+  --warn-lo:  #FAEDE9;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+  line-height: 1.5;
+  padding: 24px 32px 56px;
+  min-width: 820px;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--ink);
+}
+.page-header h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.7rem;
+  font-weight: normal;
+  letter-spacing: -0.01em;
+}
+.page-subtitle {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── Filter bar ─────────────────────────────────────────────────────── */
+.filter-bar {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.filter-lbl {
+  font-size: 0.68rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.filter-bar select {
+  font-family: inherit;
+  font-size: 0.82rem;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 4px 8px;
+}
+.filter-bar select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.btn-reset {
+  font-family: inherit;
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--line);
+  padding: 5px 12px;
+  cursor: pointer;
+}
+.btn-reset:hover { color: var(--ink); border-color: var(--ink); }
+.btn-reset:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* ── Top grid ───────────────────────────────────────────────────────── */
+.top-grid {
+  display: grid;
+  grid-template-columns: 310px 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* ── KPI panel ──────────────────────────────────────────────────────── */
+.kpi-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.kpi-row { display: flex; gap: 20px; }
+.kpi-item { display: flex; flex-direction: column; gap: 2px; }
+.kpi-lbl {
+  font-size: 0.67rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.kpi-val {
+  font-size: 1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-val.large {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 2rem;
+  font-weight: normal;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+
+/* ── Chart panel ─────────────────────────────────────────────────────── */
+.chart-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 14px 18px 6px;
+}
+.chart-head {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+#chart-svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+/* ── Tooltip ─────────────────────────────────────────────────────────── */
+#tooltip {
+  position: fixed;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.73rem;
+  line-height: 1.7;
+  padding: 8px 12px;
+  pointer-events: none;
+  display: none;
+  z-index: 1000;
+  white-space: nowrap;
+}
+
+/* ── Month detail ─────────────────────────────────────────────────────── */
+#month-detail { margin-bottom: 12px; }
+.detail-panel {
+  background: var(--acc-lo);
+  border-left: 3px solid var(--accent);
+  padding: 12px 16px;
+}
+.detail-panel h3 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.92rem;
+  font-weight: normal;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+/* ── Sections ────────────────────────────────────────────────────────── */
+.section { margin-bottom: 24px; }
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  user-select: none;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+.section-head:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.section-head h2 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.05rem;
+  font-weight: normal;
+}
+.section-arrow {
+  font-size: 0.6rem;
+  color: var(--muted);
+  transition: transform 0.14s ease;
+  display: inline-block;
+}
+.section-arrow.open { transform: rotate(90deg); }
+.section-body { display: none; }
+.section-body.open { display: block; }
+
+/* ── Tables ──────────────────────────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; margin-bottom: 14px; }
+.tbl-caption {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+table {
+  border-collapse: collapse;
+  font-size: 0.79rem;
+  width: auto;
+  min-width: 100%;
+  font-variant-numeric: tabular-nums;
+  background: var(--surface);
+}
+thead th {
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 0.67rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: normal;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+  text-align: left;
+}
+tbody td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--bg); }
+
+td.r, th.r { text-align: right; }
+td.c, th.c { text-align: center; }
+td.ok   { color: var(--ok); }
+td.warn { color: var(--warn); }
+td.muted { color: var(--muted); font-style: italic; }
+
+/* flag chips */
+.chip {
+  display: inline-block;
+  font-size: 0.63rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border: 1px solid currentColor;
+}
+.chip.ok   { color: var(--ok);   background: var(--ok-lo); }
+.chip.warn { color: var(--warn); background: var(--warn-lo); }
+.chip.neu  { color: var(--muted); }
+
+/* deal blocks */
+.deal-block { margin-bottom: 22px; }
+.deal-block h3 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.95rem;
+  font-weight: normal;
+  margin-bottom: 4px;
+}
+.deal-meta {
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.empty-msg {
+  font-size: 0.82rem;
+  color: var(--muted);
+  padding: 8px 0;
+}
+
+/* ── Proposal Builder ────────────────────────────────────────────────── */
+.builder-form { background: var(--surface); border: 1px solid var(--line); padding: 18px 20px; }
+.builder-meta-row { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 16px; }
+.builder-field { display: flex; flex-direction: column; gap: 4px; }
+.builder-field label { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.builder-field input, .builder-field select {
+  font-family: inherit; font-size: 0.82rem; color: var(--ink);
+  background: var(--bg); border: 1px solid var(--line); padding: 5px 9px;
+}
+.builder-field input:focus, .builder-field select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.builder-tbl-wrap { overflow-x: auto; margin: 10px 0 4px; }
+.builder-tbl {
+  min-width: 820px; border-collapse: collapse;
+  font-size: 0.79rem; font-variant-numeric: tabular-nums; background: var(--surface);
+}
+.builder-tbl th {
+  background: var(--bg); color: var(--muted); font-size: 0.67rem;
+  letter-spacing: 0.08em; text-transform: uppercase; font-weight: normal;
+  padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; text-align: left;
+}
+.builder-tbl td { padding: 4px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.builder-tbl tfoot td { padding: 6px 6px; background: var(--bg); }
+.builder-tbl input[type=number] {
+  width: 90px; font-family: inherit; font-size: 0.79rem; text-align: right;
+  padding: 3px 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.builder-tbl input[type=number]:focus { outline: 2px solid var(--accent); }
+.bsku { font-family: inherit; font-size: 0.79rem; border: 1px solid var(--line); background: var(--bg); color: var(--ink); padding: 3px 4px; min-width: 170px; }
+.builder-totals td { font-weight: 600; border-top: 2px solid var(--ink); }
+.builder-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+.btn-builder {
+  font-family: inherit; font-size: 0.78rem; border: 1px solid var(--line);
+  padding: 5px 14px; cursor: pointer; background: var(--surface); color: var(--ink);
+}
+.btn-builder:hover { border-color: var(--accent); color: var(--accent); }
+.btn-builder.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-builder.primary:hover { opacity: 0.88; }
+.btn-builder.danger { color: var(--muted); }
+.btn-builder.danger:hover { color: var(--warn); border-color: var(--warn); }
+.btn-remove { font-family: inherit; font-size: 0.7rem; padding: 2px 7px; color: var(--muted); border: 1px solid transparent; background: none; cursor: pointer; }
+.btn-remove:hover { color: var(--warn); border-color: var(--warn); }
+.monday-link { margin-left: auto; font-size: 0.75rem; color: var(--accent); text-decoration: none; }
+.monday-link:hover { text-decoration: underline; }
+.builder-output { margin-top: 14px; display: none; }
+.builder-output pre {
+  background: #1C1917; color: #E8E5DF;
+  font-size: 0.72rem; padding: 14px 16px; overflow-x: auto;
+  font-family: 'Consolas', 'Menlo', monospace; line-height: 1.65; white-space: pre;
+}
+.btn-copy { font-family: inherit; font-size: 0.72rem; background: none; border: 1px solid #555; color: #888; padding: 3px 10px; cursor: pointer; margin-bottom: 8px; }
+.btn-copy:hover { background: #2a2826; color: #ccc; }
+
+@media (prefers-reduced-motion: reduce) {
+  .section-arrow { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1>GE Beauty — B2B Box</h1>
+  <span class="page-subtitle">Ledger &amp; Negociação</span>
+</header>
+
+<div class="section">
+  <div class="section-head" tabindex="0" data-target="builder-body" role="button" aria-expanded="true">
+    <h2>Construtor de proposta</h2>
+    <span class="section-arrow open" aria-hidden="true">&#9654;</span>
+  </div>
+  <div class="section-body open" id="builder-body">
+    <div class="builder-form">
+      <div class="builder-meta-row">
+        <div class="builder-field">
+          <label for="b-op">Operador</label>
+          <select id="b-op"><option value="">— selecionar —</option></select>
+        </div>
+        <div class="builder-field">
+          <label for="b-date">Data</label>
+          <input type="date" id="b-date">
+        </div>
+        <div class="builder-field">
+          <label for="b-pay">Prazo pgto (dias)</label>
+          <input type="number" id="b-pay" min="0" step="1" style="width:110px" placeholder="ex. 45">
+        </div>
+        <div class="builder-field" style="flex:1;min-width:200px">
+          <label for="b-note">Observação</label>
+          <input type="text" id="b-note" style="width:100%" placeholder="opcional">
+        </div>
+      </div>
+      <div class="builder-tbl-wrap">
+        <table class="builder-tbl">
+          <thead><tr>
+            <th>SKU</th><th>Produto</th>
+            <th class="r">Volume</th><th class="r">Preço prop.</th>
+            <th class="r">Retail</th><th class="r">Desc%</th><th class="r">GM%</th>
+            <th class="r">Total</th><th>Flag hist.</th><th></th>
+          </tr></thead>
+          <tbody id="btbody"></tbody>
+          <tfoot id="btfoot"></tfoot>
+        </table>
+      </div>
+      <div class="builder-actions">
+        <button class="btn-builder" id="btn-add-sku">+ Adicionar SKU</button>
+        <button class="btn-builder primary" id="btn-gen-json">Gerar JSON</button>
+        <button class="btn-builder danger" id="btn-clear-b">Limpar</button>
+        <a href="https://garotas-estupidas.monday.com/boards/18417230518" target="_blank" rel="noopener" class="monday-link">Ver pipeline no Monday.com &#8599;</a>
+      </div>
+      <div class="builder-output" id="boutput">
+        <button class="btn-copy" id="btn-copy-json">Copiar JSON</button>
+        <pre id="bpre"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <div class="filter-group">
+    <span class="filter-lbl">Cliente</span>
+    <select id="f-op" multiple size="3" style="min-width:120px" title="Ctrl + clique para múltiplos"></select>
+  </div>
+  <div class="filter-group">
+    <span class="filter-lbl">Período</span>
+    <select id="f-per">
+      <option value="3">Últimos 3 meses</option>
+      <option value="6">Últimos 6 meses</option>
+      <option value="12" selected>Últimos 12 meses</option>
+      <option value="24">Últimos 24 meses</option>
+      <option value="0">Todo período</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <span class="filter-lbl">SKU</span>
+    <select id="f-sku" multiple size="3" style="min-width:220px" title="Ctrl + clique para múltiplos"></select>
+  </div>
+  <div class="filter-group" style="justify-content:flex-end">
+    <button class="btn-reset" id="btn-reset">Limpar filtros</button>
+  </div>
+</div>
+
+<div class="top-grid">
+  <div class="kpi-panel">
+    <div>
+      <div class="kpi-lbl">Receita total</div>
+      <div class="kpi-val large" id="k-rev">—</div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-item">
+        <span class="kpi-lbl">Pedidos</span>
+        <span class="kpi-val" id="k-ord">—</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-lbl">Margem gerada</span>
+        <span class="kpi-val" id="k-mar">—</span>
+      </div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-item">
+        <span class="kpi-lbl">SKUs distintos</span>
+        <span class="kpi-val" id="k-sku">—</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-lbl">Volume</span>
+        <span class="kpi-val" id="k-vol">—</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-lbl">Desc. médio</span>
+        <span class="kpi-val" id="k-disc">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-panel">
+    <div class="chart-head">Receita por mês — clique na barra para ver o detalhe</div>
+    <svg id="chart-svg" height="188" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+</div>
+
+<div id="month-detail"></div>
+<div id="tooltip"></div>
+
+<div class="section">
+  <div class="section-head" tabindex="0" data-target="ledger-body" role="button" aria-expanded="true">
+    <h2>Ledger histórico</h2>
+    <span class="section-arrow open" aria-hidden="true">&#9654;</span>
+  </div>
+  <div class="section-body open" id="ledger-body"></div>
+</div>
+
+<div class="section">
+  <div class="section-head" tabindex="0" data-target="proposals-body" role="button" aria-expanded="true">
+    <h2>Propostas em aberto</h2>
+    <span class="section-arrow open" aria-hidden="true">&#9654;</span>
+  </div>
+  <div class="section-body open" id="proposals-body"></div>
+</div>
+
+<div class="section">
+  <div class="section-head" tabindex="0" data-target="sent-body" role="button" aria-expanded="true">
+    <h2>Propostas enviadas</h2>
+    <span class="section-arrow open" aria-hidden="true">&#9654;</span>
+  </div>
+  <div class="section-body open" id="sent-body"></div>
+</div>
+
+<div class="section">
+  <div class="section-head" tabindex="0" data-target="cogs-body" role="button" aria-expanded="false">
+    <h2>COGS &amp; cobertura</h2>
+    <span class="section-arrow" aria-hidden="true">&#9654;</span>
+  </div>
+  <div class="section-body" id="cogs-body"></div>
+</div>
+
+<script>
+const DATA = {"history": [{"id": "b4a_2025-10-03_nf00076502", "operator": "B4A", "date": "2025-10-03", "status": "completed", "nf": "00076502", "payment_days": 46, "monthly_rate": 0.013, "_note": "NF 00076502 emitida 03/10/2025 — B4A SERVICOS DE TECNOLOGIA E COMERCIO S. via MATRIZ. vNF=R$4,500.", "lines": [{"sku": "GEB 008", "volume": 300, "price": 15.0, "retail_at_time": null}]}, {"id": "uaubox_2025-11-06_nf00077620", "operator": "UAU Box", "date": "2025-11-06", "status": "completed", "nf": "00077620", "payment_days": 90, "monthly_rate": 0.013, "_note": "NF 00077620 emitida 06/11/2025 — UAUBOX S.A. via MATRIZ. vNF=R$43,362.", "lines": [{"sku": "GEB 019", "volume": 1250, "price": 16.37, "retail_at_time": null}, {"sku": "GEB 023", "volume": 1250, "price": 18.32, "retail_at_time": null}]}, {"id": "uaubox-2026-02", "operator": "UAU Box", "date": "2026-02-09", "status": "completed", "nf": "84.166", "payment_days": 90, "monthly_rate": 0.013, "_note": "NF emitida 09/02/2026. Pagamento em 4x (até 09/06/2026).", "lines": [{"sku": "GEB 008", "volume": 17000, "price": 17.19, "retail_at_time": 58.65}]}, {"id": "uaubox_2026-03-31_nf00001921", "operator": "UAU Box", "date": "2026-03-31", "status": "completed", "nf": "00001921", "payment_days": 125, "monthly_rate": 0.013, "_note": "NF 00001921 emitida 31/03/2026 — UAUBOX S.A. via SHOPS JARDINS. vNF=R$310,930.", "lines": [{"sku": "GEB 020", "volume": 17000, "price": 18.29, "retail_at_time": null}]}, {"id": "magenta_2026-03-31_nf00001928", "operator": "Magenta", "date": "2026-03-31", "status": "completed", "nf": "00001928", "payment_days": 45, "monthly_rate": 0.013, "_note": "NF 00001928 emitida 31/03/2026 — MAGENTA COMERCIO DE COSMETICOS LTDA via SHOPS JARDINS. vNF=R$36,240.", "lines": [{"sku": "GEB 003", "volume": 2000, "price": 13.5, "retail_at_time": null}, {"sku": "GEB 002", "volume": 560, "price": 16.5, "retail_at_time": null}]}, {"id": "uaubox_2026-04-17_nf00002174", "operator": "UAU Box", "date": "2026-04-17", "status": "completed", "nf": "00002174", "payment_days": 125, "monthly_rate": 0.013, "_note": "NF 00002174 emitida 17/04/2026 — UAUBOX S.A. via SHOPS JARDINS. vNF=R$27,435.", "lines": [{"sku": "GEB 020", "volume": 1500, "price": 18.29, "retail_at_time": null}]}, {"id": "magenta_2026-05-27_nf00002682", "operator": "Magenta", "date": "2026-05-27", "status": "completed", "nf": "00002682", "payment_days": 45, "monthly_rate": 0.013, "_note": "NF 00002682 emitida 27/05/2026 — MAGENTA COMERCIO DE COSMETICOS LTDA via SHOPS JARDINS. vNF=R$37,980.", "lines": [{"sku": "GEB 003", "volume": 1000, "price": 18.81, "retail_at_time": null}, {"sku": "GEB 002", "volume": 1000, "price": 19.17, "retail_at_time": null}]}, {"id": "b4a_2026-05-29_nf00002701", "operator": "B4A", "date": "2026-05-29", "status": "completed", "nf": "00002701", "payment_days": 120, "monthly_rate": 0.013, "_note": "NF 00002701 emitida 29/05/2026 — B4A SERVICOS DE TECNOLOGIA E COMERCIO S. via SHOPS JARDINS. vNF=R$105,000.", "lines": [{"sku": "GEB 013", "volume": 15000, "price": 7.0, "retail_at_time": null}]}, {"id": "b4a_2026-05-29_nf00002702", "operator": "B4A", "date": "2026-05-29", "status": "completed", "nf": "00002702", "payment_days": 120, "monthly_rate": 0.013, "_note": "NF 00002702 emitida 29/05/2026 — B4A SERVICOS DE TECNOLOGIA E COMERCIO S. via SHOPS JARDINS. vNF=R$105,000.", "lines": [{"sku": "GEB 010", "volume": 15000, "price": 7.0, "retail_at_time": null}]}, {"id": "uaubox_2026-11_contracted", "operator": "UAU Box", "date": "2026-10-15", "status": "contracted", "nf": null, "payment_days": 120, "monthly_rate": 0.013, "_note": "Novembro 2026 box. Contrato Clicksign f7d8c570 (24/11/2025). Booster Definição, entrega até 15/10/2026. 4x parcelas 30/60/90/120d — último pagamento ~fev/2027.", "lines": [{"sku": "GEB 021", "volume": 17000, "price": 21.83, "retail_at_time": null}]}, {"id": "b4a-2026-ago-out", "operator": "B4A", "date": "2026-08-01", "status": "completed", "nf": null, "payment_days": 53, "monthly_rate": 0.013, "_note": "Box Ago/Set/Out 2026. Data estimada — confirmar com Raphael. 3 edições mensais.", "lines": [{"sku": "GEB 003", "volume": 15000, "price": 12.0, "retail_at_time": 84.15}, {"sku": "GEB 008", "volume": 15000, "price": 14.0, "retail_at_time": 58.65}, {"sku": "GEB 022", "volume": 20000, "price": 12.0, "retail_at_time": 67.15}]}, {"id": "magenta_proposta_2026-07-01", "operator": "Magenta", "date": "2026-07-01", "status": "sent", "nf": null, "payment_days": null, "monthly_rate": 0.013, "_note": "Proposta enviada 01/07/2026 — aguardando confirmação. PDF: B2B_Proposta_Magenta_20260701.pdf.", "lines": [{"sku": "GEB 024", "volume": 5000, "price": 28.5, "retail_at_time": 129.0}, {"sku": "GEB 102", "volume": 4000, "price": 31.0, "retail_at_time": 118.15}, {"sku": "GEB 029", "volume": 4000, "price": 23.45, "retail_at_time": 79.0}, {"sku": "GEB 023", "volume": 3000, "price": 24.65, "retail_at_time": 63.75}, {"sku": "GEB 011", "volume": 3000, "price": 12.0, "retail_at_time": null}, {"sku": "GEB 013", "volume": 3000, "price": 11.0, "retail_at_time": 40.0}, {"sku": "GEB 010", "volume": 3000, "price": 11.0, "retail_at_time": 40.0}, {"sku": "GEB 022", "volume": 2000, "price": 22.7, "retail_at_time": 67.15}, {"sku": "GEB 008", "volume": 1000, "price": 18.0, "retail_at_time": 58.65}]}], "cogs": {"GEB001": {"name": "Shampoo Sem Sulfato 250ml", "cogs_es": 17.33, "cogs_sp": 18.52, "retail": 80.75, "src": "U/N"}, "GEB002": {"name": "Máscara Condicionadora 200ml", "cogs_es": 10.64, "cogs_sp": 11.37, "retail": 80.75, "src": "U"}, "GEB003": {"name": "Leave-in Proteção Térmica 150ml", "cogs_es": 8.35, "cogs_sp": 8.72, "retail": 84.15, "src": "B/N"}, "GEB008": {"name": "Shampoo a Seco 150ml", "cogs_es": 12.14, "cogs_sp": 12.14, "retail": 58.65, "src": "B"}, "GEB010": {"name": "Máscara Condicionadora 50ml", "cogs_es": 5.11, "cogs_sp": 5.81, "retail": 40.0, "src": "B"}, "GEB013": {"name": "Shampoo Sem Sulfato 60ml", "cogs_es": 6.49, "cogs_sp": 6.85, "retail": 40.0, "src": "B"}, "GEB022": {"name": "Booster Antifrizz 15ml", "cogs_es": 9.24, "cogs_sp": 9.86, "retail": 67.15, "src": "B"}, "GEB029": {"name": "Melon Mood Mini 100ml", "cogs_es": 16.7, "cogs_sp": 17.2, "retail": 79.0, "src": "U"}, "GEB101": {"name": "Primer Cachos Definidos 250ml", "cogs_es": 15.73, "cogs_sp": 16.01, "retail": 126.65, "src": "U"}, "GEB121": {"name": "Máscara Mayday 200g", "cogs_es": 29.88, "cogs_sp": 30.38, "retail": 139.0, "src": "U"}, "GEB019": {"name": "Booster Fortificante 15ml", "cogs_es": null, "cogs_sp": null, "retail": 63.75, "src": "?"}, "GEB020": {"name": "Booster Hidratante 15ml", "cogs_es": null, "cogs_sp": null, "retail": 58.65, "src": "?"}, "GEB021": {"name": "Booster Definição 15ml", "cogs_es": null, "cogs_sp": null, "retail": 58.65, "src": "?"}, "GEB023": {"name": "Booster Antioxidante 15ml", "cogs_es": null, "cogs_sp": null, "retail": 63.75, "src": "?"}, "GEB024": {"name": "Melon Mood 200ml", "cogs_es": 20.68, "cogs_sp": 21.18, "retail": 129.0, "src": "U"}, "GEB102": {"name": "Primer Liso Intacto 250ml", "cogs_es": null, "cogs_sp": null, "retail": 118.15, "src": "?"}, "GEB120": {"name": "Leave-in Pluma 200ml", "cogs_es": null, "cogs_sp": null, "retail": 126.65, "src": "?"}}, "openDeals": [{"_note": "Canal B2B pipeline state. Stages: prospect | negociando | proposta-enviada | ativo. Edit manually when stage changes; re-run _b2b_dashboard.py to reflect.", "channels": [{"name": "Magenta", "stage": "proposta-enviada", "last_contact": "2026-07-01", "value_brl": "R$ 599.650", "note": "9 SKUs · R$ 599.650 — aguardando confirmação", "next_step": "Follow-up com Clarissa"}, {"name": "B4A", "stage": "ativo", "last_contact": null, "value_brl": "R$ 630.000", "note": "Box Ago/Set/Out 2026 contratado — 3 edições mensais", "next_step": null}, {"name": "UAU Box", "stage": "ativo", "last_contact": null, "value_brl": "R$ 371.110", "note": "Box Nov 2026 contratado — Booster Definição 17k un.", "next_step": null}, {"name": "Sephora Brasil", "stage": "negociando", "last_contact": "2026-06-24", "value_brl": null, "note": "Cadastro em construção — gaps: Anvisa, ICMS-ST, preços Mist+Mayday", "next_step": "Lucas: coletar Anvisa via Raphael"}, {"name": "Drogaria Iguatemi", "stage": "negociando", "last_contact": "2026-06-25", "value_brl": null, "note": "Proposta deles: 45% + R$150k trade. GE contra: 40% + R$145k.", "next_step": "Lucas: enviar contraproposta"}], "_file": "pipeline.json"}, {"name": "B4A — Ago/Set/Out 2026", "payment_days": 53, "monthly_rate": 0.013, "lines": [{"sku": "GEB003", "volume": 15000, "price": 12.0}, {"sku": "GEB008", "volume": 15000, "price": 14.0}, {"sku": "GEB022", "volume": 20000, "price": 12.0}], "_file": "b4a_ago_out_2026.json"}, {"name": "Magenta — Proposta recebida", "payment_days": null, "monthly_rate": 0.013, "_note": "Preços = proposta Magenta (o que Magenta quer pagar a GE). GEB023/GEB102 ainda sem COGS.", "lines": [{"sku": "GEB022", "volume": 2000, "price": 22.7}, {"sku": "GEB029", "volume": 4000, "price": 23.45}, {"sku": "GEB024", "volume": 5000, "price": 28.5}], "_lines_blocked_no_cogs": [{"sku": "GEB023", "volume": 2000, "price": 24.65, "_note": "Booster Antioxidante — COGS ausente"}, {"sku": "GEB102", "volume": 4000, "price": 31.0, "_note": "Primer Liso — COGS ausente"}], "_file": "magenta_proposta.json"}, {"name": "UAU Box — Orçamento Julho/Agosto 2026", "payment_days": null, "monthly_rate": 0.013, "_note": "Preços = Preço final faturando SP do orçamento Raphael. Volumes = 20k/SKU conforme planilha.", "lines": [{"sku": "GEB029", "volume": 20000, "price": 17.2}, {"sku": "GEB001", "volume": 20000, "price": 21.09}, {"sku": "GEB002", "volume": 20000, "price": 13.23}, {"sku": "GEB003", "volume": 20000, "price": 9.89}, {"sku": "GEB121", "volume": 20000, "price": 30.38}, {"sku": "GEB024", "volume": 20000, "price": 21.18}], "_file": "uaubox_proposta.json"}], "sentProposals": [{"id": "magenta_proposta_2026-07-01", "operator": "Magenta", "date": "2026-07-01", "status": "sent", "nf": null, "payment_days": null, "monthly_rate": 0.013, "_note": "Proposta enviada 01/07/2026 — aguardando confirmação. PDF: B2B_Proposta_Magenta_20260701.pdf.", "lines": [{"sku": "GEB 024", "volume": 5000, "price": 28.5, "retail_at_time": 129.0}, {"sku": "GEB 102", "volume": 4000, "price": 31.0, "retail_at_time": 118.15}, {"sku": "GEB 029", "volume": 4000, "price": 23.45, "retail_at_time": 79.0}, {"sku": "GEB 023", "volume": 3000, "price": 24.65, "retail_at_time": 63.75}, {"sku": "GEB 011", "volume": 3000, "price": 12.0, "retail_at_time": null}, {"sku": "GEB 013", "volume": 3000, "price": 11.0, "retail_at_time": 40.0}, {"sku": "GEB 010", "volume": 3000, "price": 11.0, "retail_at_time": 40.0}, {"sku": "GEB 022", "volume": 2000, "price": 22.7, "retail_at_time": 67.15}, {"sku": "GEB 008", "volume": 1000, "price": 18.0, "retail_at_time": 58.65}]}]};
+
+// ── Formatters ────────────────────────────────────────────────────────
+const BRL_FMT = new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL', minimumFractionDigits:2});
+const NUM_FMT = new Intl.NumberFormat('pt-BR');
+const brl = v => v == null ? '—' : BRL_FMT.format(v);
+const num = v => v == null ? '—' : NUM_FMT.format(v);
+const pct = v => v == null ? '—' : v.toFixed(1) + '%';
+const norm = s => s.toUpperCase().replace(/[\s\-]/g, '');
+
+// ── State ─────────────────────────────────────────────────────────────
+const S = { ops: new Set(), skus: new Set(), period: 12, month: null };
+
+// ── Filtering ─────────────────────────────────────────────────────────
+function filterDeals() {
+  const cutoff = S.period > 0
+    ? new Date(Date.now() - S.period * 30.44 * 86400e3)
+    : null;
+  return DATA.history
+    .filter(d =>
+      d.status === 'completed' &&
+      (!cutoff || new Date(d.date) >= cutoff) &&
+      (S.ops.size === 0 || S.ops.has(d.operator))
+    )
+    .map(d => ({
+      ...d,
+      lines: d.lines.filter(l => S.skus.size === 0 || S.skus.has(norm(l.sku)))
+    }))
+    .filter(d => d.lines.length > 0);
+}
+
+// ── Metrics ───────────────────────────────────────────────────────────
+function computeKpis(deals) {
+  let revenue = 0, margin = 0, volume = 0, wDisc = 0, wRev = 0;
+  const ss = new Set();
+  for (const d of deals) {
+    for (const l of d.lines) {
+      const sku = norm(l.sku), c = DATA.cogs[sku];
+      const cogs   = c ? (c.cogs_es ?? 0) : 0;
+      const retail = l.retail_at_time ?? (c ? c.retail : 0) ?? 0;
+      const lr = l.price * l.volume;
+      revenue += lr;
+      margin  += (l.price - cogs) * l.volume;
+      volume  += l.volume;
+      ss.add(sku);
+      if (retail > 0) { wDisc += (retail - l.price) / retail * 100 * lr; wRev += lr; }
+    }
+  }
+  return { revenue, margin, volume, orders: deals.length, skuCount: ss.size, avgDisc: wRev > 0 ? wDisc / wRev : null };
+}
+
+function groupByMonth(deals) {
+  const m = new Map();
+  for (const d of deals) {
+    const k = d.date.slice(0, 7);
+    if (!m.has(k)) m.set(k, { key: k, revenue: 0, volume: 0, orders: 0, deals: [] });
+    const mo = m.get(k);
+    mo.orders++;
+    mo.deals.push(d);
+    for (const l of d.lines) { mo.revenue += l.price * l.volume; mo.volume += l.volume; }
+  }
+  return [...m.entries()].sort(([a],[b]) => a < b ? -1 : 1).map(([,v]) => v);
+}
+
+// ── KPIs ──────────────────────────────────────────────────────────────
+function renderKpis(deals) {
+  const k = computeKpis(deals);
+  document.getElementById('k-rev').textContent  = brl(k.revenue);
+  document.getElementById('k-ord').textContent  = k.orders;
+  document.getElementById('k-mar').textContent  = brl(k.margin);
+  document.getElementById('k-sku').textContent  = k.skuCount;
+  document.getElementById('k-vol').textContent  = num(k.volume) + ' un';
+  document.getElementById('k-disc').textContent = pct(k.avgDisc);
+}
+
+// ── Bar chart ─────────────────────────────────────────────────────────
+const NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs) {
+  const e = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  return e;
+}
+
+function renderChart(months) {
+  const svg = document.getElementById('chart-svg');
+  svg.innerHTML = '';
+
+  const VW = 600, VH = 188, PL = 8, PR = 8, PT = 8, PB = 30;
+  const cW = VW - PL - PR, cH = VH - PT - PB;
+  svg.setAttribute('viewBox', '0 0 ' + VW + ' ' + VH);
+
+  // Horizontal grid lines
+  for (const frac of [0.25, 0.5, 0.75, 1.0]) {
+    const y = PT + cH * (1 - frac);
+    svg.appendChild(svgEl('line', { x1: PL, y1: y, x2: VW - PR, y2: y, stroke: '#E6E3DD', 'stroke-width': '1' }));
+  }
+
+  if (!months.length) {
+    const t = svgEl('text', { x: VW / 2, y: VH / 2, 'text-anchor': 'middle', 'font-size': '12', fill: '#877E77', 'font-family': 'system-ui, sans-serif' });
+    t.textContent = 'Sem dados no período selecionado';
+    svg.appendChild(t);
+    return;
+  }
+
+  const maxRev = Math.max(...months.map(m => m.revenue));
+  const slotW  = cW / months.length;
+  const barW   = Math.max(slotW * 0.62, 14);
+
+  months.forEach((m, i) => {
+    const barH   = maxRev > 0 ? (m.revenue / maxRev) * cH : 4;
+    const x      = PL + i * slotW + (slotW - barW) / 2;
+    const y      = PT + cH - barH;
+    const active = S.month === m.key;
+
+    const rect = svgEl('rect', {
+      x, y, width: barW, height: barH,
+      fill: active ? '#1E4FBE' : '#8A9EC6',
+      cursor: 'pointer',
+    });
+    rect.addEventListener('mouseover', e => showTip(e, m));
+    rect.addEventListener('mousemove', moveTip);
+    rect.addEventListener('mouseout',  hideTip);
+    rect.addEventListener('click',     () => toggleDetail(m));
+    svg.appendChild(rect);
+
+    // Revenue label above bar
+    if (barH > 20) {
+      const lv = svgEl('text', {
+        x: x + barW / 2, y: y - 4,
+        'text-anchor': 'middle', 'font-size': '9',
+        fill: active ? '#1E4FBE' : '#1C1917',
+        'font-family': 'system-ui, sans-serif',
+      });
+      lv.textContent = 'R$' + (m.revenue / 1000).toFixed(0) + 'k';
+      svg.appendChild(lv);
+    }
+
+    // Month label below
+    const parts = m.key.split('-');
+    const lbl = svgEl('text', {
+      x: x + barW / 2, y: VH - PB + 18,
+      'text-anchor': 'middle', 'font-size': '10',
+      fill: active ? '#1E4FBE' : '#877E77',
+      'font-family': 'system-ui, sans-serif',
+    });
+    lbl.textContent = parts[1] + '/' + parts[0].slice(2);
+    svg.appendChild(lbl);
+  });
+}
+
+// ── Tooltip ───────────────────────────────────────────────────────────
+function showTip(e, m) {
+  const t = document.getElementById('tooltip');
+  t.innerHTML = '<strong>' + m.key + '</strong><br>Receita: ' + brl(m.revenue) + '<br>Volume: ' + num(m.volume) + ' un<br>Pedidos: ' + m.orders;
+  t.style.display = 'block';
+  moveTip(e);
+}
+function moveTip(e) {
+  const t = document.getElementById('tooltip');
+  t.style.left = (e.clientX + 14) + 'px';
+  t.style.top  = (e.clientY + 12) + 'px';
+}
+function hideTip() { document.getElementById('tooltip').style.display = 'none'; }
+
+// ── Month detail ───────────────────────────────────────────────────────
+function toggleDetail(m) {
+  const div = document.getElementById('month-detail');
+  if (S.month === m.key) {
+    S.month = null;
+    div.innerHTML = '';
+  } else {
+    S.month = m.key;
+    let rows = '';
+    for (const d of m.deals) {
+      for (const l of d.lines) {
+        const sku = norm(l.sku), name = DATA.cogs[sku] ? DATA.cogs[sku].name : sku;
+        rows += '<tr>' +
+          '<td>' + d.operator + '</td>' +
+          '<td>' + sku + '</td>' +
+          '<td>' + name + '</td>' +
+          '<td class="r">' + num(l.volume) + '</td>' +
+          '<td class="r">' + brl(l.price) + '</td>' +
+          '<td class="r">' + brl(l.price * l.volume) + '</td>' +
+          '</tr>';
+      }
+    }
+    div.innerHTML = '<div class="detail-panel">' +
+      '<h3>' + m.key + ' — detalhe</h3>' +
+      '<div class="tbl-wrap"><table>' +
+      '<thead><tr><th>Operador</th><th>SKU</th><th>Produto</th>' +
+      '<th class="r">Volume</th><th class="r">Preço unit.</th><th class="r">Total</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody>' +
+      '</table></div></div>';
+  }
+  const f = filterDeals();
+  renderChart(groupByMonth(f));
+}
+
+// ── History index for proposal flag lookup ────────────────────────────
+function buildHistIdx() {
+  const idx = {};
+  for (const d of DATA.history) {
+    for (const l of d.lines) {
+      const sku = norm(l.sku), retail = l.retail_at_time ?? 0;
+      const disc = retail > 0 ? (retail - l.price) / retail * 100 : null;
+      (idx[sku] = idx[sku] || []).push({ op: d.operator, date: d.date.slice(0,7), disc });
+    }
+  }
+  return idx;
+}
+
+// ── Ledger ────────────────────────────────────────────────────────────
+function renderLedger(deals) {
+  const el = document.getElementById('ledger-body');
+  if (!deals.length) {
+    el.innerHTML = '<p class="empty-msg">Sem deals no período selecionado.</p>';
+    return;
+  }
+
+  const bySku = {}, rows = [];
+  for (const d of deals) {
+    for (const l of d.lines) {
+      const sku = norm(l.sku), c = DATA.cogs[sku];
+      const retail = l.retail_at_time ?? 0;
+      const disc   = retail > 0 ? (retail - l.price) / retail * 100 : null;
+      const gm     = (c && c.cogs_es != null) ? (l.price - c.cogs_es) / l.price * 100 : null;
+      rows.push([sku, c ? c.name : '?', d.operator, d.date.slice(0,7),
+                 num(l.volume), brl(l.price), brl(retail || null), disc, gm]);
+      if (disc != null) (bySku[sku] = bySku[sku] || []).push(disc);
+    }
+  }
+  rows.sort((a,b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[3] < b[3] ? -1 : 1);
+
+  let sumRows = '';
+  for (const sku of Object.keys(bySku).sort()) {
+    const ds = bySku[sku];
+    sumRows += '<tr>' +
+      '<td>' + sku + '</td>' +
+      '<td>' + (DATA.cogs[sku] ? DATA.cogs[sku].name : '?') + '</td>' +
+      '<td class="r">' + ds.length + '</td>' +
+      '<td class="r">' + Math.min(...ds).toFixed(1) + '%</td>' +
+      '<td class="r">' + Math.max(...ds).toFixed(1) + '%</td>' +
+      '</tr>';
+  }
+
+  let detRows = '';
+  for (const [sku, name, op, dt, vol, preco, retail, disc, gm] of rows) {
+    const discCls = (disc != null && disc > 85) ? 'warn' : '';
+    const gmCls   = gm != null ? (gm < 10 ? 'warn' : gm > 25 ? 'ok' : '') : '';
+    detRows += '<tr>' +
+      '<td>' + sku + '</td><td>' + name + '</td><td>' + op + '</td><td>' + dt + '</td>' +
+      '<td class="r">' + vol + '</td>' +
+      '<td class="r">' + preco + '</td>' +
+      '<td class="r">' + retail + '</td>' +
+      '<td class="r ' + discCls + '">' + pct(disc) + '</td>' +
+      '<td class="r ' + gmCls + '">' + pct(gm) + '</td>' +
+      '</tr>';
+  }
+
+  el.innerHTML =
+    '<div class="tbl-caption">Range por SKU</div>' +
+    '<div class="tbl-wrap"><table>' +
+    '<thead><tr><th>SKU</th><th>Produto</th><th class="r">Deals</th><th class="r">Desc% min</th><th class="r">Desc% max</th></tr></thead>' +
+    '<tbody>' + sumRows + '</tbody></table></div>' +
+    '<div class="tbl-caption">Detalhe — deals fechados</div>' +
+    '<div class="tbl-wrap"><table>' +
+    '<thead><tr><th>SKU</th><th>Produto</th><th>Operador</th><th>Data</th>' +
+    '<th class="r">Volume</th><th class="r">Preço</th><th class="r">Retail</th>' +
+    '<th class="r">Desc%</th><th class="r">GM%</th></tr></thead>' +
+    '<tbody>' + detRows + '</tbody></table></div>';
+}
+
+// ── Proposals ─────────────────────────────────────────────────────────
+function renderProposals() {
+  const histIdx = buildHistIdx();
+  let html = '';
+
+  for (const deal of DATA.openDeals) {
+    const name = deal.name || deal._file;
+    const pay  = deal.payment_days ? deal.payment_days + ' dias' : 'pagamento a definir';
+    let rows = '';
+
+    for (const l of (deal.lines || [])) {
+      const sku = norm(l.sku), c = DATA.cogs[sku];
+      const retail = c ? c.retail : null;
+      const disc   = retail ? (retail - l.price) / retail * 100 : null;
+      const gm     = (c && c.cogs_es != null) ? (l.price - c.cogs_es) / l.price * 100 : null;
+      const hist   = histIdx[sku] || [];
+      const histStr = hist.map(h => h.op + ' ' + h.date + ': ' + pct(h.disc)).join(' · ') || '—';
+
+      let flagHtml = '';
+      if (disc != null && hist.length) {
+        const ds = hist.filter(h => h.disc != null).map(h => h.disc);
+        if (ds.length) {
+          const lo = Math.min(...ds), hi = Math.max(...ds);
+          if (disc < lo)      flagHtml = '<span class="chip ok">+ melhor (hist. min ' + lo.toFixed(1) + '%)</span>';
+          else if (disc > hi) flagHtml = '<span class="chip warn">! pior (hist. max ' + hi.toFixed(1) + '%)</span>';
+          else                flagHtml = '<span class="chip neu">~ no range ' + lo.toFixed(1) + '–' + hi.toFixed(1) + '%</span>';
+        }
+      }
+
+      const gmCls = gm != null ? (gm < 10 ? 'warn' : gm > 25 ? 'ok' : '') : '';
+      rows += '<tr>' +
+        '<td>' + sku + '</td>' +
+        '<td>' + (c ? c.name : '?') + '</td>' +
+        '<td class="r">' + num(l.volume) + '</td>' +
+        '<td class="r">' + brl(l.price) + '</td>' +
+        '<td class="r">' + brl(retail) + '</td>' +
+        '<td class="r">' + pct(disc) + '</td>' +
+        '<td class="r ' + gmCls + '">' + pct(gm) + '</td>' +
+        '<td>' + histStr + '</td>' +
+        '<td>' + flagHtml + '</td>' +
+        '</tr>';
+    }
+
+    for (const l of (deal._lines_blocked_no_cogs || [])) {
+      const sku = norm(l.sku), c = DATA.cogs[sku];
+      rows += '<tr>' +
+        '<td>' + sku + '</td>' +
+        '<td class="muted">' + (c ? c.name : '?') + '</td>' +
+        '<td class="r">' + num(l.volume) + '</td>' +
+        '<td class="r">' + brl(l.price) + '</td>' +
+        '<td colspan="5" class="muted">COGS ausente — bloqueado</td>' +
+        '</tr>';
+    }
+
+    html += '<div class="deal-block">' +
+      '<h3>' + name + '</h3>' +
+      '<div class="deal-meta">' + pay + '</div>' +
+      '<div class="tbl-wrap"><table>' +
+      '<thead><tr><th>SKU</th><th>Produto</th><th class="r">Volume</th><th class="r">Preço</th>' +
+      '<th class="r">Retail</th><th class="r">Desc%</th><th class="r">GM%</th>' +
+      '<th>Histórico</th><th>Flag</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody>' +
+      '</table></div></div>';
+  }
+
+  document.getElementById('proposals-body').innerHTML =
+    html || '<p class="empty-msg">Sem propostas em aberto.</p>';
+}
+
+// ── Sent proposals ───────────────────────────────────────────────────
+function renderSentProposals() {
+  const el = document.getElementById('sent-body');
+  if (!DATA.sentProposals || !DATA.sentProposals.length) {
+    el.innerHTML = '<p class="empty-msg">Nenhuma proposta enviada registrada.</p>';
+    return;
+  }
+
+  let html = '';
+  for (const deal of DATA.sentProposals) {
+    const dateStr = deal.date || '—';
+    let rows = '';
+    for (const l of (deal.lines || [])) {
+      const sku = norm(l.sku), c = DATA.cogs[sku];
+      const retail = l.retail_at_time ?? (c ? c.retail : null);
+      const disc   = (retail && retail > 0) ? (retail - l.price) / retail * 100 : null;
+      const gm     = (c && c.cogs_es != null) ? (l.price - c.cogs_es) / l.price * 100 : null;
+      const gmCls  = gm != null ? (gm < 10 ? 'warn' : gm > 25 ? 'ok' : '') : '';
+      const discCls = (disc != null && disc > 85) ? 'warn' : '';
+      rows += '<tr>' +
+        '<td>' + sku + '</td>' +
+        '<td>' + (c ? c.name : '?') + '</td>' +
+        '<td class="r">' + num(l.volume) + '</td>' +
+        '<td class="r">' + brl(l.price) + '</td>' +
+        '<td class="r">' + brl(retail) + '</td>' +
+        '<td class="r ' + discCls + '">' + pct(disc) + '</td>' +
+        '<td class="r ' + gmCls + '">' + pct(gm) + '</td>' +
+        '</tr>';
+    }
+    html += '<div class="deal-block">' +
+      '<h3>' + (deal.operator || '?') + ' <span class="chip neu" style="vertical-align:middle;font-size:0.6rem">enviado</span></h3>' +
+      '<div class="deal-meta">' + dateStr + (deal._note ? ' &middot; ' + deal._note : '') + '</div>' +
+      '<div class="tbl-wrap"><table>' +
+      '<thead><tr><th>SKU</th><th>Produto</th><th class="r">Volume</th><th class="r">Preço proposto</th>' +
+      '<th class="r">Retail</th><th class="r">Desc%</th><th class="r">GM%</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody>' +
+      '</table></div></div>';
+  }
+  el.innerHTML = html;
+}
+
+// ── COGS coverage ─────────────────────────────────────────────────────
+function renderCogs() {
+  let rows = '';
+  for (const [sku, p] of Object.entries(DATA.cogs).sort(([a],[b]) => a < b ? -1 : 1)) {
+    const okEs = p.cogs_es != null;
+    const okSp = p.cogs_sp != null;
+    rows += '<tr>' +
+      '<td>' + sku + '</td>' +
+      '<td>' + p.name + '</td>' +
+      '<td class="r ' + (okEs ? '' : 'muted') + '">' + (okEs ? brl(p.cogs_es) : 'N/D') + '</td>' +
+      '<td class="r ' + (okSp ? '' : 'muted') + '">' + (okSp ? brl(p.cogs_sp) : 'N/D') + '</td>' +
+      '<td class="r">' + brl(p.retail) + '</td>' +
+      '<td>' + (p.src || '?') + '</td>' +
+      '</tr>';
+  }
+  document.getElementById('cogs-body').innerHTML =
+    '<div class="tbl-wrap"><table>' +
+    '<thead><tr><th>SKU</th><th>Produto</th><th class="r">COGS ES</th><th class="r">COGS SP</th><th class="r">Retail</th><th>Fonte</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody>' +
+    '</table></div>';
+}
+
+// ── Full render ───────────────────────────────────────────────────────
+function render() {
+  const f = filterDeals();
+  renderKpis(f);
+  renderChart(groupByMonth(f));
+  renderLedger(f);
+  renderProposals();
+  renderSentProposals();
+  renderCogs();
+}
+
+// ── Filter init ───────────────────────────────────────────────────────
+function initFilters() {
+  const ops  = [...new Set(DATA.history.map(d => d.operator))].sort();
+  const skus = [...new Set(DATA.history.flatMap(d => d.lines.map(l => norm(l.sku))))].sort();
+
+  const opSel  = document.getElementById('f-op');
+  const skuSel = document.getElementById('f-sku');
+
+  ops.forEach(op => {
+    const o = document.createElement('option');
+    o.value = op; o.textContent = op;
+    opSel.appendChild(o);
+  });
+  skus.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s;
+    o.textContent = s + ' — ' + (DATA.cogs[s] ? DATA.cogs[s].name : '?');
+    skuSel.appendChild(o);
+  });
+
+  function resetDetail() {
+    S.month = null;
+    document.getElementById('month-detail').innerHTML = '';
+  }
+
+  opSel.addEventListener('change', () => {
+    S.ops = new Set([...opSel.selectedOptions].map(o => o.value));
+    resetDetail(); render();
+  });
+  skuSel.addEventListener('change', () => {
+    S.skus = new Set([...skuSel.selectedOptions].map(o => o.value));
+    resetDetail(); render();
+  });
+  document.getElementById('f-per').addEventListener('change', e => {
+    S.period = parseInt(e.target.value, 10);
+    resetDetail(); render();
+  });
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    S.ops = new Set(); S.skus = new Set(); S.period = 12;
+    opSel.selectedIndex = -1; skuSel.selectedIndex = -1;
+    document.getElementById('f-per').value = '12';
+    resetDetail(); render();
+  });
+}
+
+// ── Proposal Builder ─────────────────────────────────────────────────
+var bRows = [], bNextId = 0;
+
+function addBRow() {
+  bRows.push({ id: ++bNextId, sku: '', vol: 0, price: 0 });
+  refreshBTable();
+}
+
+function removeBRow(id) {
+  bRows = bRows.filter(function(r) { return r.id !== id; });
+  refreshBTable();
+}
+
+function refreshBTable() {
+  var tbody = document.getElementById('btbody');
+  var tfoot = document.getElementById('btfoot');
+  var hIdx  = buildHistIdx();
+
+  var skuOpts = Object.keys(DATA.cogs).sort()
+    .map(function(s) { return '<option value="' + s + '">' + s + ' — ' + DATA.cogs[s].name + '</option>'; })
+    .join('');
+
+  var totRev = 0, totMar = 0, totVol = 0, wD = 0, wDR = 0;
+
+  tbody.innerHTML = bRows.map(function(row) {
+    var c      = row.sku ? DATA.cogs[row.sku] : null;
+    var retail = c ? c.retail : null;
+    var cogsEs = c ? c.cogs_es : null;
+    var disc   = (retail && row.price > 0) ? (retail - row.price) / retail * 100 : null;
+    var gm     = (cogsEs != null && row.price > 0) ? (row.price - cogsEs) / row.price * 100 : null;
+    var lineRev = row.vol * row.price;
+    var lineMar = cogsEs != null ? (row.price - cogsEs) * row.vol : null;
+
+    if (lineRev > 0) { totRev += lineRev; totVol += row.vol; }
+    if (lineMar != null) totMar += lineMar;
+    if (disc != null && lineRev > 0) { wD += disc * lineRev; wDR += lineRev; }
+
+    var flagHtml = '';
+    if (disc != null && row.sku) {
+      var hist = (hIdx[row.sku] || []).filter(function(h) { return h.disc != null; });
+      if (hist.length) {
+        var lo = Math.min.apply(null, hist.map(function(h) { return h.disc; }));
+        var hi = Math.max.apply(null, hist.map(function(h) { return h.disc; }));
+        if (disc < lo)      flagHtml = '<span class="chip ok">+ melhor (min ' + lo.toFixed(1) + '%)</span>';
+        else if (disc > hi) flagHtml = '<span class="chip warn">! pior (max ' + hi.toFixed(1) + '%)</span>';
+        else                flagHtml = '<span class="chip neu">&#126; range ' + lo.toFixed(1) + '&#8211;' + hi.toFixed(1) + '%</span>';
+      }
+    }
+
+    var selHtml = '<select class="bsku" data-rid="' + row.id + '"><option value="">&#8212; SKU &#8212;</option>' +
+      skuOpts.replace('value="' + row.sku + '"', 'value="' + row.sku + '" selected') + '</select>';
+
+    var gmCls   = gm   != null ? (gm   < 10 ? 'warn' : gm   > 25 ? 'ok' : '') : '';
+    var discCls = disc != null && disc > 85 ? 'warn' : '';
+
+    return '<tr data-rid="' + row.id + '">' +
+      '<td>' + selHtml + '</td>' +
+      '<td style="min-width:130px;white-space:normal">' + (c ? c.name : '<em style="color:var(--muted)">&#8212;</em>') + '</td>' +
+      '<td class="r"><input type="number" class="bvol" data-rid="' + row.id + '" value="' + (row.vol || '') + '" min="0" step="1" placeholder="0"></td>' +
+      '<td class="r"><input type="number" class="bprice" data-rid="' + row.id + '" value="' + (row.price || '') + '" min="0" step="0.01" placeholder="0.00"></td>' +
+      '<td class="r">' + brl(retail) + '</td>' +
+      '<td class="r ' + discCls + '">' + pct(disc) + '</td>' +
+      '<td class="r ' + gmCls   + '">' + pct(gm)   + '</td>' +
+      '<td class="r">' + (lineRev > 0 ? brl(lineRev) : '&#8212;') + '</td>' +
+      '<td style="white-space:nowrap">' + flagHtml + '</td>' +
+      '<td><button class="btn-remove" data-rid="' + row.id + '">&#10005;</button></td>' +
+      '</tr>';
+  }).join('');
+
+  var avgDisc = wDR > 0 ? wD / wDR : null;
+  var avgGm   = totRev > 0 ? totMar / totRev * 100 : null;
+  tfoot.innerHTML = '<tr class="builder-totals">' +
+    '<td colspan="2"><strong>Total</strong></td>' +
+    '<td class="r">' + num(totVol) + '</td>' +
+    '<td colspan="2"></td>' +
+    '<td class="r">' + pct(avgDisc) + '</td>' +
+    '<td class="r">' + pct(avgGm) + '</td>' +
+    '<td class="r"><strong>' + brl(totRev) + '</strong></td>' +
+    '<td colspan="2"></td>' +
+    '</tr>';
+
+  document.querySelectorAll('.bsku').forEach(function(sel) {
+    sel.addEventListener('change', function() {
+      var r = bRows.find(function(r) { return r.id == sel.dataset.rid; });
+      if (r) { r.sku = sel.value; refreshBTable(); }
+    });
+  });
+  document.querySelectorAll('.bvol').forEach(function(inp) {
+    inp.addEventListener('input', function() {
+      var r = bRows.find(function(r) { return r.id == inp.dataset.rid; });
+      if (r) { r.vol = parseFloat(inp.value) || 0; refreshBTable(); }
+    });
+  });
+  document.querySelectorAll('.bprice').forEach(function(inp) {
+    inp.addEventListener('input', function() {
+      var r = bRows.find(function(r) { return r.id == inp.dataset.rid; });
+      if (r) { r.price = parseFloat(inp.value) || 0; refreshBTable(); }
+    });
+  });
+  document.querySelectorAll('.btn-remove').forEach(function(btn) {
+    btn.addEventListener('click', function() { removeBRow(parseInt(btn.dataset.rid, 10)); });
+  });
+}
+
+function genBuilderJson() {
+  var op   = document.getElementById('b-op').value;
+  var date = document.getElementById('b-date').value;
+  var pay  = document.getElementById('b-pay').value;
+  var note = document.getElementById('b-note').value.trim();
+
+  var validRows = bRows.filter(function(r) { return r.sku && r.vol > 0 && r.price > 0; });
+  if (!op || op === '__new__' || !date || !validRows.length) {
+    alert('Preencha operador, data, e pelo menos uma linha com SKU + volume + preço.');
+    return;
+  }
+
+  var slug  = op.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+  var entry = {
+    id: slug + '_proposta_' + date,
+    operator: op,
+    date: date,
+    status: 'sent',
+    nf: null,
+    payment_days: pay ? parseInt(pay, 10) : null,
+    monthly_rate: 0.013,
+    _note: note || ('Proposta enviada ' + date + ' — aguardando confirmação.'),
+    lines: validRows.map(function(r) {
+      var c = DATA.cogs[r.sku];
+      return { sku: r.sku, volume: r.vol, price: r.price, retail_at_time: c ? c.retail : null };
+    })
+  };
+
+  document.getElementById('bpre').textContent = JSON.stringify(entry, null, 2);
+  document.getElementById('boutput').style.display = 'block';
+}
+
+function initBuilder() {
+  var ops = [...new Set(DATA.history.map(function(d) { return d.operator; }))].sort();
+  var opSel = document.getElementById('b-op');
+  ops.forEach(function(op) {
+    var o = document.createElement('option');
+    o.value = op; o.textContent = op; opSel.appendChild(o);
+  });
+  var newOpt = document.createElement('option');
+  newOpt.value = '__new__'; newOpt.textContent = '+ Novo operador…';
+  opSel.appendChild(newOpt);
+
+  opSel.addEventListener('change', function() {
+    if (opSel.value === '__new__') {
+      var name = prompt('Nome do novo operador:');
+      if (name && name.trim()) {
+        var opt = document.createElement('option');
+        opt.value = name.trim(); opt.textContent = name.trim();
+        opSel.insertBefore(opt, newOpt);
+        opSel.value = name.trim();
+      } else { opSel.value = ''; }
+    }
+  });
+
+  var t = new Date();
+  document.getElementById('b-date').value =
+    t.getFullYear() + '-' +
+    String(t.getMonth() + 1).padStart(2, '0') + '-' +
+    String(t.getDate()).padStart(2, '0');
+
+  document.getElementById('btn-add-sku').addEventListener('click', addBRow);
+  document.getElementById('btn-gen-json').addEventListener('click', genBuilderJson);
+  document.getElementById('btn-clear-b').addEventListener('click', function() {
+    bRows = []; bNextId = 0;
+    document.getElementById('boutput').style.display = 'none';
+    document.getElementById('b-note').value = '';
+    document.getElementById('b-pay').value = '';
+    refreshBTable();
+  });
+  document.getElementById('btn-copy-json').addEventListener('click', function() {
+    navigator.clipboard.writeText(document.getElementById('bpre').textContent).then(function() {
+      var btn = document.getElementById('btn-copy-json');
+      btn.textContent = 'Copiado!';
+      setTimeout(function() { btn.textContent = 'Copiar JSON'; }, 1600);
+    });
+  });
+
+  addBRow();
+}
+
+// ── Section collapse ──────────────────────────────────────────────────
+document.querySelectorAll('.section-head').forEach(head => {
+  function toggle() {
+    const body   = document.getElementById(head.dataset.target);
+    const arrow  = head.querySelector('.section-arrow');
+    const isOpen = body.classList.toggle('open');
+    arrow.classList.toggle('open', isOpen);
+    head.setAttribute('aria-expanded', isOpen);
+  }
+  head.addEventListener('click', toggle);
+  head.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+});
+
+// ── Boot ──────────────────────────────────────────────────────────────
+initFilters();
+initBuilder();
+render();
+</script>
+</body>
+</html>

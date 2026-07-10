@@ -1,0 +1,113 @@
+{
+  "rose": [
+    {
+      "idx": 0,
+      "mediaId": "gid://shopify/MediaImage/43715054534976",
+      "w": 4096,
+      "h": 4096,
+      "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/rose-ritual.png?v=1782175742"
+    },
+    {
+      "idx": 1,
+      "mediaId": "gid://shopify/MediaImage/43718489047360",
+      "w": 3584,
+      "h": 4800,
+      "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/rose-ritual_1811.png?v=1782244929"
+    },
+    {
+      "idx": 2,
+      "mediaId": "gid://shopify/MediaImage/43718489080128",
+      "w": 3712,
+      "h": 4608,
+      "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/rose-ritual_1812.png?v=1782244930"
+    },
+    {
+      "idx": 3,
+      "mediaId": "gid://shopify/MediaImage/43718489112896",
+      "w": 3392,
+      "h": 5056,
+      "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/rose-ritual_1813.png?v=1782244929"
+    },
+    {
+      "idx": 4,
+      "mediaId": "gid://shopify/MediaImage/43718489145664",
+      "w": 3712,
+      "h": 4608,
+      "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/rose-ritual_1814.png?v=1782244929"
+    }
+  ],
+  "pear": [
+    {
+      "idx": 0,
+      "mediaId": "gid://shopify/MediaImage/43715054666048",
+      "w": 4096,
+      "h": 4096,
+      "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/pear-fresh.png?v=1782175745"
+    },
+    {
+      "idx": 1,
+      "mediaId": "gid://shopify/MediaImage/43718489866560",
+      "w": 3584,
+      "h": 4800,
+      "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/pear-fresh_1781.png?v=1782244951"
+    },
+    {
+      "idx": 2,
+      "mediaId": "gid://shopify/MediaImage/43718489899328",
+      "w": 3712,
+      "h": 4608,
+      "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/pear-fresh_1782.png?v=1782244950"
+    },
+    {
+      "idx": 3,
+      "mediaId": "gid://shopify/MediaImage/43718489932096",
+      "w": 3392,
+      "h": 5056,
+      "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/pear-fresh_1783.png?v=1782244952"
+    },
+    {
+      "idx": 4,
+      "mediaId": "gid://shopify/MediaImage/43718489964864",
+      "w": 3712,
+      "h": 4608,
+      "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/pear-fresh_1784.png?v=1782244950"
+    }
+  ],
+  "santal": [
+    {
+      "idx": 0,
+      "mediaId": "gid://shopify/MediaImage/43715054829888",
+      "w": 4096,
+      "h": 4096,
+      "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/santal-skin.png?v=1782175749"
+    },
+    {
+      "idx": 1,
+      "mediaId": "gid://shopify/MediaImage/43718497141056",
+      "w": 3584,
+      "h": 4800,
+      "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/santal-skin_1911.png?v=1782245036"
+    },
+    {
+      "idx": 2,
+      "mediaId": "gid://shopify/MediaImage/43718497173824",
+      "w": 3712,
+      "h": 4608,
+      "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/santal-skin_1913.png?v=1782245041"
+    },
+    {
+      "idx": 3,
+      "mediaId": "gid://shopify/MediaImage/43718497206592",
+      "w": 3392,
+      "h": 5056,
+      "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/santal-skin_1914.png?v=1782245035"
+    },
+    {
+      "idx": 4,
+      "mediaId": "gid://shopify/MediaImage/43718503792960",
+      "w": 3712,
+      "h": 4608,
+      "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/santal-skin_1912.jpg?v=1782245172"
+    }
+  ]
+}

@@ -1,0 +1,541 @@
+[
+  {
+    "sku": "GEB 120",
+    "title": "leave-in pluma",
+    "verdict": "MINOR",
+    "findings": [
+      {
+        "issue": "custom.ingredients is empty and no active is named anywhere in the inspectable copy, so the listing states benefits with zero ingredient backing (ingredient-as-proof rule violated).",
+        "severity": "medium",
+        "detail": "shopify_custom_ingredients is null and shopify_descricao_markdown is null. The only ingredient-adjacent field, custom.caracteristicas, is a bare benefit stream ('hidrata e nutre | repara danos | fortalece a fibra | protege do calor ate 230 C | potencializa o brilho | sem pesar') with no active bound to any benefit. The real label supports naming pantenol (Panthenol), arginina (Arginine) and oleo de girassol (Helianthus Annuus) as the proof behind those exact claims."
+      },
+      {
+        "issue": "No full legal INCI exists anywhere on the listing to feed marketplace catalogs.",
+        "severity": "medium",
+        "detail": "Amazon 1P, Sephora, Beleza na Web and Mercado Livre require a full ordered INCI. None is present in any Shopify field; it must be sourced from the label artwork (full list captured above)."
+      },
+      {
+        "issue": "Long-description metaobject content could not be verified.",
+        "severity": "low",
+        "detail": "shopify_has_descricao_longa_metaobject is true (custom.descricao_longa_com_abas) but its rendered text was not included in agentdata, so any ingredient content it may carry is unassessed. The assessment of empty ingredient fields is based only on the inspectable values."
+      }
+    ],
+    "marketplace_impact": "No full legal INCI anywhere on the listing. Amazon 1P / Sephora / Beleza na Web / Mercado Livre feeds must source the ordered INCI directly from the label artwork (LEAVE IN LEVE_V5); the ecommerce PDP cannot supply it today.",
+    "extraction_method": "text",
+    "confidence": "high",
+    "label_inci_extracted": "Aqua, Disodium EDTA, Cetearyl Alcohol, Behentrimonium Chloride, Ethyl Linoleate, Ethyl Oleate, Crambe Abyssinica Seed Oil, Helianthus Annuus Seed Oil, Persea Gratissima Oil, Pentaerythrityl Tetra-Di-T-Butyl Hydroxyhydrocinnamate, Tocopherol, Ceteareth-20, Tocopheryl Acetate, Lactic Acid, Trehalose, Polyglyceryl-10 Laurate, Glycolic Acid, Magnesium Aluminum Silicate, Cocos Nucifera Oil, Sodium Lignosulfonate, Benzyl Alcohol, Xylitol, Caprylic Acid, Glycerin, Salvia Hispanica Seed Extract, Caprylyl/Capryl Glucoside, Sorbitan Oleate, Polyquaternium-37, Sodium Phosphate, Undecane, Tridecane, Itaconic Acid, Arginine, Panthenol, Linum Usitatissimum Seed Extract, Parfum, Citral, Citronellol, Geraniol, Hexyl Cinnamal, Hydroxycitronellal, Limonene, Linalool.",
+    "label_key_actives": [
+      "Panthenol (pantenol)",
+      "Arginine (arginina)",
+      "Helianthus Annuus Seed Oil (oleo de girassol)",
+      "Crambe Abyssinica Seed Oil (crambe)",
+      "Persea Gratissima Oil (abacate)",
+      "Salvia Hispanica Seed Extract (chia)",
+      "Linum Usitatissimum Seed Extract (linhaca)",
+      "Trehalose",
+      "Xylitol",
+      "Tocopherol (vitamina E)"
+    ],
+    "shopify_ingredient_fields_present": [
+      "custom.caracteristicas (benefit stream, no active named)",
+      "custom.descricao_longa_com_abas (metaobject present, content not inspected)"
+    ],
+    "shopify_ingredients_value": null,
+    "recommended_fix": "Populate custom.ingredients binding real label actives to their benefits (pantenol e arginina que reconstroem e fortalecem, oleo de girassol que nutre, protecao termica ate 230 C) and add the full ordered INCI (captured above) to a dedicated metafield/tab so marketplace feeds have it.",
+    "secrets_encountered_and_withheld": false
+  },
+  {
+    "sku": "GEB 021",
+    "title": "booster definição",
+    "verdict": "MINOR",
+    "findings": [
+      {
+        "issue": "No full legal INCI anywhere on the listing — custom.ingredients is null and descricao_markdown is null, so marketplace channels have nothing to ingest.",
+        "severity": "medium",
+        "detail": "Amazon 1P, Sephora, Beleza na Web and Mercado Livre generally require a full INCI. The label carries a clean, short 6-item list (Aqua, Linum Usitatissimum Seed Extract, Salvia Hispanica Seed Extract, Benzyl Alcohol, Xylitol, Caprylic Acid) that must be sourced from the artwork FRENTE panel since it lives nowhere on the Shopify listing."
+      },
+      {
+        "issue": "Ingredient-as-proof voice unrealized: caracteristicas is benefit-only and names no active.",
+        "severity": "medium",
+        "detail": "The label itself leads with chia + linhaça ('ativo 100% puro polissacarideos de linhaca e chia'), but the listing's benefit bullets (mantem a definicao, realca a textura, protege da umidade) bind no active to any benefit in the visible fields. The locked voice rule wants chia (Salvia Hispanica) / linhaca (Linum Usitatissimum) surfaced as proof of the definition + anti-humidity claim."
+      },
+      {
+        "issue": "custom.ingredients metafield empty (null) despite a clean derivable label.",
+        "severity": "low",
+        "detail": "The lighter marketing-highlight field is not populated even though the label offers an easy, accurate source (chia + linhaca as the two heroes). This is a gap to fill, not an error."
+      },
+      {
+        "issue": "No hallucinated or copied ingredient content — content is clean, just sparse.",
+        "severity": "low",
+        "detail": "Positive check: caracteristicas names no invented active, and there is no sign of another product's INCI being copied in (contrast with the mask/mist listings that share a suspicious Aqua/Alcohol/Parfum mist list). Booster Definicao's visible content is simply thin."
+      }
+    ],
+    "marketplace_impact": "No full INCI exists anywhere on the listing to feed Amazon 1P / Sephora / Beleza na Web / Mercado Livre. The full legal INCI must be sourced from the label artwork: Aqua, Linum Usitatissimum Seed Extract, Salvia Hispanica Seed Extract, Benzyl Alcohol, Xylitol, Caprylic Acid. It is short and clean (6 items), so onboarding cost is low once transcribed.",
+    "extraction_method": "text",
+    "confidence": "high",
+    "label_inci_extracted": "Aqua, Linum Usitatissimum Seed Extract, Salvia Hispanica Seed Extract, Benzyl Alcohol, Xylitol, Caprylic Acid",
+    "label_key_actives": [
+      "linhaça (Linum Usitatissimum Seed Extract)",
+      "chia (Salvia Hispanica Seed Extract)",
+      "xilitol (Xylitol)"
+    ],
+    "shopify_ingredient_fields_present": [],
+    "shopify_ingredients_value": null,
+    "recommended_fix": "Populate custom.ingredients with an ingredient-as-proof highlight binding chia + linhaça to the definition/anti-humidity benefit, and add the full label INCI (6 items) to a listing field to feed marketplace channels.",
+    "secrets_encountered_and_withheld": false
+  },
+  {
+    "sku": "GEB 022",
+    "title": "booster antifrizz",
+    "verdict": "MISSING",
+    "findings": [
+      {
+        "issue": "No ingredient/INCI content on the listing at all: custom.ingredients is null, description markdown is null, and custom.caracteristicas carries only benefit bullets (reduz frizz e volume, protege contra danos termicos e umidade, devolve brilho e maciez) with zero ingredient names. The listing tells no ingredient story despite the label having a clean one.",
+        "severity": "high",
+        "detail": "Label hero actives are explicitly printed on the cartucho front panel: 'COM ATIVOS A BASE DE OLEO DE COCO, CHIA E TREHALOSE' (Cocos Nucifera Oil, Salvia Hispanica Seed Extract, Trehalose). None surface on the listing."
+      },
+      {
+        "issue": "No full legal INCI anywhere on the listing to feed marketplace catalogs (Amazon 1P, Sephora, Beleza na Web, Mercado Livre) which require full INCI.",
+        "severity": "medium",
+        "detail": "Full INCI must be sourced from the label artwork; it exists on the cartucho panel but not in any Shopify field provided."
+      },
+      {
+        "issue": "Missed ingredient-as-proof opportunity (locked voice rule). The label already binds oleo de coco/chia/trehalose to the antifrizz + thermal-protection benefit; the listing names no active bound to any benefit.",
+        "severity": "low",
+        "detail": "caracteristicas states benefits abstractly with no proof ingredient attached."
+      },
+      {
+        "issue": "A descricao_longa metaobject exists (shopify_has_descricao_longa_metaobject=true) but its content was not in scope; ingredient content could conceivably live there and should be verified before treating the listing as fully devoid of ingredients.",
+        "severity": "low",
+        "detail": "Could not open the metaobject body from the provided data."
+      }
+    ],
+    "marketplace_impact": "Full legal INCI is available on the label artwork but absent from every listing field provided (custom.ingredients null, no description, caracteristicas benefits-only). Any marketplace channel that mandates a full INCI (Amazon 1P, Sephora, Beleza na Web, Mercado Livre) must have it sourced from the label rather than pulled from the Shopify listing.",
+    "extraction_method": "text",
+    "confidence": "high",
+    "label_inci_extracted": "Aqua, Disodium Edta, Cetearyl Alcohol, Behentrimonium Chloride, Ceteareth-20, Tocopheryl Acetate, Lactic Acid, Ethyl Linoleate, Ethyl Oleate, Trehalose, Polyglyceryl-10 Laurate, Glycolic Acid, Magnesium Aluminum Silicate, Cocos Nucifera Oil, Sodium Lignosulfonate, Benzyl Alcohol, Xylitol, Caprylic Acid, Tocopherol, Glycerin, Salvia Hispanica Seed Extract, Caprylyl/Capryl Glucoside, Sorbitan Oleate, Polyquaternium-37, Sodium Phosphate, Pentaerythrityl Tetra-Di-T-Butyl Hydroxyhydrocinnamate, Undecane, Tridecane, Parfum, Citral, Citronellol, Geraniol, Hexyl Cinnamal, Hydroxycitronellal, Limonene, Linalool.",
+    "label_key_actives": [
+      "Cocos Nucifera Oil (oleo de coco)",
+      "Salvia Hispanica Seed Extract (chia)",
+      "Trehalose"
+    ],
+    "shopify_ingredient_fields_present": [],
+    "shopify_ingredients_value": null,
+    "recommended_fix": "Populate custom.ingredients with the label's own hero actives bound to their benefit (oleo de coco, chia e trehalose para controle de frizz e protecao termica) and add the full legal INCI (transcribed above from the cartucho) to a description/ingredients field so marketplace feeds have a source.",
+    "secrets_encountered_and_withheld": false
+  },
+  {
+    "sku": "GEB 101",
+    "title": "Primer Cachos Definidos",
+    "verdict": "MISSING",
+    "findings": [
+      {
+        "issue": "No ingredient/INCI content in the listing's primary fields: custom.ingredients is null and shopify_descricao_markdown is null. The listing communicates zero ingredients to the shopper.",
+        "severity": "high",
+        "detail": "Real label carries clear hero actives (chia, linhaca, Omega Plus) that align with the definicao/anti-frizz positioning, yet none surface on the PDP fields available. custom.ingredients (the by-design marketing highlight) is empty rather than lighter."
+      },
+      {
+        "issue": "custom.caracteristicas is a bare benefit list with no actives named, violating the locked ingredient-as-proof voice rule.",
+        "severity": "medium",
+        "detail": "Value is 'definicao leve | e natural, com movimento | controla o frizz | e blinda da umidade por ate 24h | adiciona brilho | e hidrata sem rigidez' - benefits float free of any ingredient. The label's own actives (chia + linhaca + Omega Plus bound to definicao/frizz control) are exactly the proof this copy should name."
+      },
+      {
+        "issue": "No full legal INCI exists anywhere in the available listing fields, blocking marketplace catalog feeds that require it.",
+        "severity": "medium",
+        "detail": "Amazon 1P, Sephora, Beleza na Web and Mercado Livre generally require a full legal INCI. It must be sourced from the label (available in the ANVISA dossier / rotulo), not from the current Shopify listing."
+      },
+      {
+        "issue": "caracteristicas claims umidade protection 'por ate 24h' while the product label states 12h.",
+        "severity": "low",
+        "detail": "Label docx reads '12hrs de controle do frizz' / 'por ate 12 horas'; listing says 24h. Claim-duration discrepancy, outside strict INCI scope but flagged since it touches label fidelity. Note the brief's canonical map also cites 24h, so the label vs canon conflict should be reconciled by the brand."
+      }
+    ],
+    "marketplace_impact": "Listing has no full INCI and no ingredient highlight, so it cannot feed Amazon 1P / Sephora / Beleza na Web / Mercado Livre catalogs that mandate a full legal INCI. Full INCI must be built from the label/ANVISA dossier. Caveat: a descricao_longa metaobject (shopify_has_descricao_longa_metaobject=true) exists but its content was not in the agent data, so I could not verify whether it carries any ingredient copy; if it does, severity of the presence gap drops to MINOR.",
+    "recommended_fix": "Populate custom.ingredients with an ingredient-as-proof highlight naming chia + linhaca + Omega Plus bound to the definicao/anti-frizz/24h benefit, and attach a full legal INCI (descending-order label panel) for marketplace feeds; verify the descricao_longa metaobject content before finalizing.",
+    "extraction_method": "text",
+    "confidence": "medium",
+    "label_inci_extracted": "Aqua, Behentrimonium Chloride, Benzyl Alcohol, Caprylic Acid, Cocos Nucifera Oil, Ethyl Linoleate, Ethyl Oleate, Ethylhexylglycerin, Glycolic Acid, Helianthus Annuus Seed Oil, Hydroxyethylcellulose, Lactic Acid, Linum Usitatissimum Seed Extract, Macadamia Integrifolia Seed Oil, Magnesium Aluminum Silicate, Olea Europaea Fruit Oil, Parfum, Polyglyceryl-10 Laurate, Salvia Hispanica Seed Extract, Sesamum Indicum Seed Oil, Sodium Lignosulfonate, TBHQ, Tocopherol, Trehalose, Xylitol, Zea Mays Oil (qualitative name set from the ANVISA formula declaration, listed alphabetically as ANVISA presents it - not the descending-concentration order of the printed label panel; percentages withheld)",
+    "label_key_actives": [
+      "chia (Salvia Hispanica Seed Extract)",
+      "linhaca (Linum Usitatissimum Seed Extract)",
+      "Omega Plus (Ethyl Linoleate / Ethyl Oleate omega esters)",
+      "oleo de macadamia",
+      "oleo de coco",
+      "oleo de oliva",
+      "oleo de girassol",
+      "oleo de gergelim",
+      "trehalose",
+      "xylitol",
+      "tocoferol"
+    ],
+    "shopify_ingredient_fields_present": [],
+    "shopify_ingredients_value": null,
+    "secrets_encountered_and_withheld": true
+  },
+  {
+    "sku": "GEB 023",
+    "title": "booster antioxidante",
+    "verdict": "MINOR",
+    "findings": [
+      {
+        "issue": "custom.ingredients is null — the field designed to carry the marketing-friendly ingredient highlight is empty, so the listing names none of the label's hero actives",
+        "severity": "medium",
+        "detail": "The label leads with 'ATIVO 100% PURO À BASE DE CHÁ VERDE, PANTENOL E XILITOL' (chá verde = Camellia Sinensis Leaf Extract, pantenol = Panthenol, xilitol = Xylitol), all confirmed on the real INCI panel, yet no active is named anywhere in captured listing content. Fix: populate custom.ingredients with those three label-hero actives."
+      },
+      {
+        "issue": "Ingredient-as-proof voice unfulfilled — caracteristicas states benefits without binding them to the actives that deliver them",
+        "severity": "medium",
+        "detail": "caracteristicas reads 'protege do sol e poluição | evitando o desbotamento | preserva a cor dos fios tingidos | preserva a hidratação | acalma o couro cabeludo' — correct benefits, but floating free of chá verde/pantenol/xilitol. Locked rule wants e.g. 'chá verde, que protege do sol e da poluição'. Fix: bind each benefit to its proof active."
+      },
+      {
+        "issue": "No full legal INCI present anywhere on the listing",
+        "severity": "low",
+        "detail": "Marketplaces (Amazon 1P, Sephora, Beleza na Web, Mercado Livre) require full INCI; none exists on the listing. It must be sourced from the label: Aqua, Galactoarabinan, Salvia Hispanica Seed Extract, Glycerin, Trehalose, Xylitol, Panthenol, Camellia Sinensis Leaf Extract, Sodium Phosphate, Caprylyl Glycol."
+      }
+    ],
+    "marketplace_impact": "No full legal INCI exists anywhere on the Shopify listing (custom.ingredients null, description null, caracteristicas benefits-only). Amazon 1P / Sephora / Beleza na Web / Mercado Livre catalogs require full INCI, which must be sourced from the label FRENTE panel: Aqua, Galactoarabinan, Salvia Hispanica Seed Extract, Glycerin, Trehalose, Xylitol, Panthenol, Camellia Sinensis Leaf Extract, Sodium Phosphate, Caprylyl Glycol. No wrong or copied-from-another-product ingredient content detected.",
+    "recommended_fix": "Populate custom.ingredients with the label's hero actives bound to their benefits (chá verde/Camellia Sinensis que protege do sol e da poluição; pantenol/Panthenol que acalma o couro cabeludo; xilitol/Xylitol), and hold the full label INCI for marketplace feeds.",
+    "extraction_method": "text",
+    "confidence": "medium",
+    "label_inci_extracted": "Aqua, Galactoarabinan, Salvia Hispanica Seed Extract, Glycerin, Trehalose, Xylitol, Panthenol, Camellia Sinensis Leaf Extract, Sodium Phosphate, Caprylyl Glycol",
+    "label_key_actives": [
+      "chá verde (Camellia Sinensis Leaf Extract)",
+      "pantenol (Panthenol)",
+      "xilitol (Xylitol)",
+      "chia (Salvia Hispanica Seed Extract)",
+      "trehalose (Trehalose)",
+      "galactoarabinan (Galactoarabinan)"
+    ],
+    "shopify_ingredient_fields_present": [
+      "shopify_caracteristicas",
+      "shopify_has_descricao_longa_metaobject"
+    ],
+    "shopify_ingredients_value": null,
+    "secrets_encountered_and_withheld": false
+  },
+  {
+    "sku": "GEB 020",
+    "title": "booster hidratante",
+    "verdict": "MINOR",
+    "findings": [
+      {
+        "issue": "custom.ingredients highlight field is empty (null) — the primary marketing ingredient field carries nothing",
+        "severity": "medium",
+        "detail": "The label offers strong proof material (macadâmia, oliva, girassol, gergelim, ômega 3/6/7/9) but none of it surfaces in the dedicated ingredient field. Not a full-INCI failure (that field is a light highlight by design), but here it is fully absent rather than merely light."
+      },
+      {
+        "issue": "Ingredient-as-proof voice violated by omission in caracteristicas",
+        "severity": "medium",
+        "detail": "caracteristicas is a bare benefit list ('hidratação profunda | e duradoura | melhora a penteabilidade | e devolve a maciez | adiciona brilho | e toque suave sem pesar') with zero actives bound to any benefit. Locked rule requires naming an active tied to the benefit it delivers (e.g. 'óleos de macadâmia e oliva, que devolvem maciez e brilho'). The label supplies exactly those actives."
+      },
+      {
+        "issue": "No full legal INCI anywhere on the listing for marketplace feeds",
+        "severity": "medium",
+        "detail": "custom.ingredients null, caracteristicas benefit-only, descricao_markdown null. Amazon 1P / Sephora / Beleza na Web / Mercado Livre require full INCI, which must be sourced from the label. Clean INCI to feed: Helianthus Annuus Seed Oil, Zea Mays Oil, Sesamum Indicum Seed Oil, Macadamia Integrifolia Seed Oil, Olea Europaea Fruit Oil, TBHQ."
+      },
+      {
+        "issue": "Source label has INCI nomenclature typos to correct before syndication",
+        "severity": "low",
+        "detail": "The printed panel reads 'Sea Mays Oil' (should be Zea Mays Oil) and 'Olea Europe Fruit Oil' (should be Olea Europaea Fruit Oil). If the label INCI is copy-pasted into marketplace catalogs verbatim, these errors propagate. No invented actives and no copied-from-another-product mismatch detected — the oil-blend INCI is correct for this anhydrous booster."
+      }
+    ],
+    "marketplace_impact": "No full legal INCI exists anywhere on the Shopify listing (custom.ingredients null, caracteristicas benefit-only, descricao_markdown null). Marketplaces requiring full INCI (Amazon 1P, Sephora, Beleza na Web, Mercado Livre) must be fed from the label. Corrected INCI to syndicate: Helianthus Annuus Seed Oil, Zea Mays Oil, Sesamum Indicum Seed Oil, Macadamia Integrifolia Seed Oil, Olea Europaea Fruit Oil, TBHQ. Note the label's own 'Sea Mays'/'Olea Europe' typos must be fixed first.",
+    "recommended_fix": "Populate custom.ingredients and rewrite caracteristicas to bind the label's real actives to benefits (macadâmia/oliva/girassol/gergelim + ômega 3/6/7/9 → hidratação, maciez, brilho), and store the corrected full INCI for marketplace feeds.",
+    "extraction_method": "text",
+    "confidence": "high",
+    "secrets_encountered_and_withheld": false,
+    "label_inci_extracted": "Helianthus Annuus Seed Oil, Zea Mays Oil, Sesamum Indicum Seed Oil, Macadamia Integrifolia Seed Oil, Olea Europaea Fruit Oil, TBHQ (label prints 'Sea Mays Oil' and 'Olea Europe Fruit Oil' — corrected to standard INCI here; anhydrous pure-oil blend, no Aqua)",
+    "label_key_actives": [
+      "macadâmia",
+      "oliva",
+      "girassol",
+      "gergelim",
+      "milho (Zea Mays)",
+      "ômega 3/6/7/9"
+    ],
+    "shopify_ingredient_fields_present": [
+      "custom.caracteristicas (populated but benefits-only, no actives)",
+      "custom.descricao_longa metaobject (present; content not inspectable from agentdata)"
+    ],
+    "shopify_ingredients_value": null
+  },
+  {
+    "sku": "GEB 002",
+    "title": "máscara condicionadora",
+    "verdict": "MINOR",
+    "findings": [
+      {
+        "issue": "custom.ingredients metafield is empty (null) — the dedicated marketing ingredient-highlight field carries nothing, so the product's strong, label-true oil/butter story goes completely unused on the listing.",
+        "severity": "medium",
+        "detail": "The label names a rich nutrition/hydration set — óleo de abacate (Persea Gratissima), crambe (Crambe Abyssinica), girassol (Helianthus Annuus), plus macadâmia, gergelim, oliva, manteiga de murumuru and cupuaçu (Theobroma Grandiflorum), chia and linhaça extracts. None of this appears in custom.ingredients. This is absence, not the by-design 'lightness' the brief tolerates. Fix: populate custom.ingredients with the hero actives bound to benefits (abacate + crambe + girassol → nutrição e hidratação profunda; murumuru/cupuaçu butters → maciez/selagem)."
+      },
+      {
+        "issue": "custom.caracteristicas is a bare benefit list with zero ingredients named — violates the locked ingredient-as-proof rule (benefits floating with no active anchoring them).",
+        "severity": "medium",
+        "detail": "Current value: 'hidratação profunda | menos frizz e mais força | desembaraço imediato | fios sedosos | fios saudáveis | e recuperados' — all outcomes, no proof. Every one of these claims has a real on-label active to bind to (e.g. desembaraço → Behentrimonium Chloride / Cetearyl Alcohol; nutrição → óleos de abacate, crambe, girassol). Fix: rewrite each characteristic as active→benefit."
+      },
+      {
+        "issue": "No full legal INCI anywhere on the listing to feed marketplace catalogs.",
+        "severity": "medium",
+        "detail": "Amazon 1P, Sephora, Beleza na Web and Mercado Livre generally require the complete legal INCI. custom.ingredients is null and caracteristicas names no ingredients, so nothing on the listing can feed those channels. The full INCI must be sourced from the label (present in whitelist file F3, the FINALIZADA 200ml artwork; also mirrored at gebeauty.com.br/p/ingredientes-mascara per the on-tube QR link)."
+      },
+      {
+        "issue": "descricao_longa metaobject is flagged present but its content was not available in the agent data, so ingredient accuracy inside the long description could not be verified.",
+        "severity": "low",
+        "detail": "shopify_has_descricao_longa_metaobject = true, but shopify_descricao_markdown is null and the metaobject body was not provided. The label's own descriptive copy correctly names crambe, girassol and abacate (all on-label), so if the metaobject reuses that copy it is accurate; this needs a direct check of the live metaobject. No copied-from-a-different-product INCI was detected in any visible field."
+      }
+    ],
+    "marketplace_impact": "No full legal INCI exists anywhere on the listing (custom.ingredients null; caracteristicas benefit-only). Any marketplace requiring full INCI (Amazon 1P, Sephora, Beleza na Web, Mercado Livre) must have it sourced from the label. Canonical INCI is on whitelist file F3 (FINALIZADA 200ml artwork) and mirrored at gebeauty.com.br/p/ingredientes-mascara. Hero label actives available to feed both marketing and catalog fields: abacate (Persea Gratissima), crambe (Crambe Abyssinica), girassol (Helianthus Annuus), macadâmia, gergelim, oliva, murumuru, cupuaçu, chia, linhaça, xilitol.",
+    "recommended_fix": "Populate custom.ingredients with the on-label hero actives (abacate + crambe + girassol oils, murumuru/cupuaçu butters) each bound to a benefit, rewrite caracteristicas to anchor its benefits to those actives, and stage the full label INCI (from file F3) for marketplace catalog feeds.",
+    "extraction_method": "text",
+    "confidence": "medium",
+    "label_inci_extracted": "Cetearyl Alcohol, Behentrimonium Chloride, Helianthus Annuus Seed Oil, Zea Mays Oil, Sesamum Indicum Seed Oil, Macadamia Integrifolia Seed Oil, Olea Europaea Fruit Oil, TBHQ, Astrocaryum Murumuru Seed Butter, Palm Alcohol, Theobroma Grandiflorum Seed Butter, Lecithin, Phytosteryl Canolate, Tocopherol, Ethyl Linoleate, Ethyl Oleate, Crambe Abyssinica Seed Oil, Persea Gratissima Oil, Pentaerythrityl Tetra-Di-T-Butyl Hydroxyhydrocinnamate, Cetyl Alcohol, Stearamidopropyl Dimethylamine, Aqua, Sodium Gluconate, Cetrimonium Chloride, Lactic Acid, Parfum, Linum Usitatissimum Seed Extract, Salvia Hispanica Seed Extract, Benzyl Alcohol, Xylitol, Caprylic Acid, Xylityl Sesquicaprylate, Benzyl Benzoate, Hexyl Cinnamal, Limonene, Linalool",
+    "label_key_actives": [
+      "Persea Gratissima (óleo de abacate)",
+      "Crambe Abyssinica (óleo de crambe)",
+      "Helianthus Annuus (óleo de girassol)",
+      "Macadamia Integrifolia (macadâmia)",
+      "Sesamum Indicum (gergelim)",
+      "Olea Europaea (oliva)",
+      "Astrocaryum Murumuru (manteiga de murumuru)",
+      "Theobroma Grandiflorum (manteiga de cupuaçu)",
+      "Salvia Hispanica (chia)",
+      "Linum Usitatissimum (linhaça)",
+      "Xylitol (xilitol)"
+    ],
+    "shopify_ingredient_fields_present": [
+      "custom.caracteristicas (benefits only, no ingredients)",
+      "custom.descricao_longa (metaobject ref present, content unverified)"
+    ],
+    "shopify_ingredients_value": null,
+    "secrets_encountered_and_withheld": false
+  },
+  {
+    "sku": "GEB 001",
+    "title": "shampoo sem sulfato",
+    "verdict": "MISSING",
+    "findings": [
+      {
+        "issue": "No ingredient content in any inspectable listing field: custom.ingredients is null and shopify_descricao_markdown is null. The listing names zero ingredients despite the label carrying a rich, on-brand active set.",
+        "severity": "high",
+        "detail": "Label truth (recovered clean from whitelisted spec) leads with murumuru (Sodium Astrocaryum Murumuruate), plus crambe, girassol (Helianthus Annuus), abacate (Persea Gratissima), Panthenol, Glycerin, and a mild sulfate-free surfactant system (Lauryl Glucoside, Cocamidopropyl Betaine, Sodium Lauroyl Sarcosinate). None appear on the listing. Fix: populate custom.ingredients with the murumuru/crambe/girassol/abacate + panthenol highlight, bound to the sulfate-free/gentle-cleansing benefit."
+      },
+      {
+        "issue": "No full legal INCI anywhere on the listing to feed marketplace channels.",
+        "severity": "medium",
+        "detail": "Amazon 1P, Sephora, Beleza na Web and Mercado Livre require the full ordered INCI. It is absent from the listing and must be sourced from the label. It is available and was extracted verbatim from the whitelisted 250ml spec (29 ingredients, Aqua-first, no sulfates). Fix: seed the marketplace INCI field from that label list."
+      },
+      {
+        "issue": "caracteristicas is pure benefit copy with no ingredient anchoring, violating the ingredient-as-proof rule by omission.",
+        "severity": "low",
+        "detail": "Bullets read 'fios limpos por mais tempo | oleosidade equilibrada | formula suave | para todos os tipos' with no active bound to any claim. The gentle sulfate-free surfactants + murumuru would substantiate 'formula suave' and 'oleosidade equilibrada'. Fix: bind at least one active to its benefit."
+      }
+    ],
+    "marketplace_impact": "No full INCI exists on the Shopify listing; marketplace catalogs (Amazon 1P, Sephora, Beleza na Web, Mercado Livre) that mandate a full legal INCI must be fed from the label. The complete ordered INCI is available and was extracted from the whitelisted 250ml spec, so the gap is fillable without new sourcing.",
+    "extraction_method": "text",
+    "confidence": "high",
+    "secrets_encountered_and_withheld": false,
+    "label_inci_extracted": "Aqua, Sodium Astrocaryum Murumuruate, PEG-120 Methyl Glucose Dioleate, Ethyl Linoleate, Ethyl Oleate, Crambe Abyssinica Seed Oil, Helianthus Annuus Seed Oil, Persea Gratissima Oil, Pentaerythrityl Tetra-Di-T-Butyl Hydroxyhydrocinnamate, Tocopherol, Guar Hydroxypropyltrimonium Chloride, Glycerin, Sodium Lauroyl Sarcosinate, Disodium EDTA, Lauryl Glucoside, Cocamidopropyl Betaine, Panthenol, Citric Acid, Polyquaternium-7, Xylityl Sesquicaprylate, Parfum, Sodium Gluconate, Benzyl Alcohol, Benzyl Benzoate, Citronellol, Hexyl Cinnamal, Hydroxycitronellal, Limonene, Linalool",
+    "label_key_actives": [
+      "Sodium Astrocaryum Murumuruate (murumuru, primary mild cleanser)",
+      "Crambe Abyssinica Seed Oil (crambe)",
+      "Helianthus Annuus Seed Oil (girassol)",
+      "Persea Gratissima Oil (abacate)",
+      "Panthenol",
+      "Glycerin",
+      "Lauryl Glucoside + Cocamidopropyl Betaine + Sodium Lauroyl Sarcosinate (sulfate-free surfactant system)"
+    ],
+    "shopify_ingredient_fields_present": [
+      "custom.caracteristicas (populated, benefit-only, no ingredients)",
+      "custom.descricao_longa metaobject (present, content not inspectable in this dataset)"
+    ],
+    "shopify_ingredients_value": null,
+    "recommended_fix": "Populate custom.ingredients with a benefit-bound highlight of the label's real actives (murumuru + crambe/girassol/abacate + panthenol tied to gentle sulfate-free cleansing and balanced oiliness), and seed a full legal INCI field from the extracted label list to serve marketplace channels."
+  },
+  {
+    "sku": "GEB 102",
+    "title": "Primer Liso Intacto",
+    "verdict": "MINOR",
+    "findings": [
+      {
+        "issue": "custom.ingredients is null and the only ingredient-adjacent field (custom.caracteristicas) names zero actives, so the strong provable label actives go entirely uncommunicated on the listing.",
+        "severity": "medium",
+        "detail": "caracteristicas is pure benefit copy ('prolonga a escova, sem frizz, proteção térmica, contra umidade, alinhamento por 24h, brilho, hidratação sem pesar') with no ingredient bound to any benefit. The real label carries named actives that would power ingredient-as-proof voice: Crambe Abyssinica Seed Oil (óleo de crambe), Persea Gratissima Oil (óleo de abacate), Helianthus Annuus Seed Oil (girassol), Cocos Nucifera Oil (coco), plus Trehalose and Tocopherol. Ingredient-as-proof rule is unrealized (no active is stated as proof of a claim)."
+      },
+      {
+        "issue": "Duration claim mismatch: listing says 'alinhamento por 24h' but the product's own embalagem/label text claims 12h.",
+        "severity": "medium",
+        "detail": "The whitelisted embalagem docx states 'Proteção térmica e 12hrs de controle do frizz' and 'mantém a sua escova impecável por até 12 horas'. The Shopify caracteristicas asserts 24h. Against the label truth the 24h figure is unsupported. This is a claim (not INCI) inconsistency that needs a source decision (brand canon vs on-pack)."
+      },
+      {
+        "issue": "No full legal INCI anywhere on the listing to feed marketplace catalogs.",
+        "severity": "low",
+        "detail": "custom.ingredients null, no INCI panel in any surfaced field. Amazon 1P / Sephora / Beleza na Web / Mercado Livre require full INCI, which must be sourced from the label (extracted below)."
+      },
+      {
+        "issue": "A descricao_longa metaobject is linked (shopify_has_descricao_longa_metaobject true) but its content was not provided, so any ingredient copy living there could not be verified.",
+        "severity": "low",
+        "detail": "Assessment is limited to custom.ingredients (null), custom.caracteristicas (benefits only), and shopify_descricao_markdown (null). If actives are surfaced inside the tabbed long-description metaobject they were not visible in the agent data; the presence/derivation of any actives there is unconfirmed."
+      }
+    ],
+    "marketplace_impact": "No full legal INCI exists anywhere on the Shopify listing (custom.ingredients is null; caracteristicas is benefit-only). Marketplace channels that mandate a complete INCI (Amazon 1P, Sephora, Beleza na Web, Mercado Livre) cannot be fed from the current listing and must pull the INCI from the label. The label-truth INCI is available and coherent for a styling emulsion.",
+    "extraction_method": "text",
+    "confidence": "medium",
+    "label_inci_extracted": "Aqua, Behentrimonium Chloride, Benzyl Alcohol, Caprylic Acid Castor Oil Propanediol Esters, Cetearyl Alcohol, Cocos Nucifera Oil, Crambe Abyssinica Seed Oil, Disodium EDTA, Ethyl Linoleate, Ethyl Oleate, Glycolic Acid, Helianthus Annuus Seed Oil, Lactic Acid, Parfum, Persea Gratissima Oil, Stearamidopropyl Dimethylamine, Tocopherol, Trehalose (qualitative names only; order not guaranteed to be the printed label order since names were read from the formula table with all quantities withheld)",
+    "label_key_actives": [
+      "Crambe Abyssinica Seed Oil (óleo de crambe)",
+      "Persea Gratissima Oil (óleo de abacate)",
+      "Helianthus Annuus Seed Oil (girassol)",
+      "Cocos Nucifera Oil (coco)",
+      "Trehalose",
+      "Tocopherol (vitamina E)"
+    ],
+    "shopify_ingredient_fields_present": [
+      "custom.caracteristicas (benefits only, names no actives)",
+      "custom.descricao_longa metaobject (linked but content not provided / unverified)"
+    ],
+    "shopify_ingredients_value": null,
+    "recommended_fix": "Populate custom.ingredients using ingredient-as-proof voice with the real label actives (crambe/abacate for escovação + proteção térmica, girassol/coco for hidratação, trehalose para retenção de umidade), and add the full label INCI (list above) in a dedicated field or the long-description metaobject to feed marketplace catalogs; separately, reconcile the '24h' vs label '12h' alignment claim to one sourced number.",
+    "secrets_encountered_and_withheld": true
+  },
+  {
+    "sku": "GEB 003",
+    "title": "Leave-in com Proteção Térmica",
+    "verdict": "MISSING",
+    "findings": [
+      {
+        "issue": "custom.ingredients is null — the structured ingredient-highlight metafield is completely empty. The listing communicates zero ingredients through the field designed to carry them.",
+        "severity": "high",
+        "detail": "Label truth supports a rich highlight (chia/Salvia Hispanica, trehalose, Thermoshield, Sensactive Veg). Fix: populate custom.ingredients derived from THIS label, each active bound to its benefit."
+      },
+      {
+        "issue": "No full legal INCI present anywhere in the captured listing fields — nothing to feed marketplace catalogs.",
+        "severity": "high",
+        "detail": "Amazon 1P, Sephora, Beleza na Web and Mercado Livre require a full INCI. It must be sourced from the label (transcribed above). No INCI is present in custom.ingredients, description, or caracteristicas."
+      },
+      {
+        "issue": "Voice-map / hallucination risk: brief's canonical map lists 'proteína de seda (silk)' for this leave-in, but the real label contains NO silk protein.",
+        "severity": "medium",
+        "detail": "Real actives are chia (Salvia Hispanica Seed Extract) + trehalose + Thermoshield tech + Sensactive Veg. Any future copy must NOT introduce 'proteína de seda' — it would be an invented active. Bind proteção térmica to Thermoshield and hidratação to chia+trehalose instead."
+      },
+      {
+        "issue": "shopify_caracteristicas is benefit-only and names no active, so the ingredient-as-proof voice rule cannot be satisfied by any current field.",
+        "severity": "medium",
+        "detail": "caracteristicas is 'protege contra danos térmicos | e hidrata | mais brilho e maciez...' with no active named. Not a hard fault for that field by design, but combined with the null ingredient fields it means no active is ever bound to a benefit on the listing."
+      },
+      {
+        "issue": "descricao_longa metaobject is flagged present (shopify_has_descricao_longa_metaobject=true) but its content was not captured in the dataset — cannot confirm whether it carries any ingredient/INCI content.",
+        "severity": "low",
+        "detail": "Must be inspected on the live store. If it holds an 'Ingredientes' tab the gap is partly mitigated; if not, the ingredient gap is total. Label also references a QR to gebeauty.com.br/p/ingredientes-leave-in, so an off-listing ingredients page exists."
+      }
+    ],
+    "marketplace_impact": "No full legal INCI exists in any captured Shopify field, and the marketing-highlight field (custom.ingredients) is null. Marketplaces that require a complete INCI (Amazon 1P, Sephora, Beleza na Web, Mercado Livre) cannot be fed from this listing; the INCI must be transcribed from the label (available above). Cross-product contamination could not be evaluated because no ingredient list is present to compare against.",
+    "extraction_method": "visual",
+    "confidence": "medium",
+    "label_inci_extracted": "Cetearyl Alcohol, Cetyl Alcohol, Astrocaryum Murumuru Seed Butter, Palm Alcohol, Theobroma Grandiflorum Seed Butter, Lecithin, Phytosteryl Canolate, Tocopherol, Ethyl Linoleate, Ethyl Oleate, Crambe Abyssinica Seed Oil, Helianthus Annuus Seed Oil, Persea Gratissima Oil, Pentaerythrityl Tetra-Di-T-Butyl Hydroxyhydrocinnamate, Ceteareth-20, Aqua, Cetrimonium Chloride, Glycerin, Citric Acid, Salvia Hispanica Seed Extract, Trehalose, Xylitol, Caprylyl/Capryl Glucoside, Sorbitan Oleate, Polyquaternium-37, Sodium Phosphate, Benzyl Alcohol, Caprylic Acid, Xylityl Sesquicaprylate, Parfum, Benzyl Benzoate, Citral, Citronellol, Geraniol, Hexyl Cinnamal, Hydroxycitronellal, Limonene, Linalool.",
+    "label_key_actives": [
+      "extrato de chia (Salvia Hispanica Seed Extract)",
+      "trehalose",
+      "Thermoshield (heat-protection tech)",
+      "Sensactive Veg (touch/well-being active)",
+      "murumuru (Astrocaryum Murumuru Seed Butter)",
+      "cupuaçu (Theobroma Grandiflorum Seed Butter)",
+      "crambe (Crambe Abyssinica Seed Oil)",
+      "girassol (Helianthus Annuus Seed Oil)",
+      "abacate (Persea Gratissima Oil)"
+    ],
+    "shopify_ingredient_fields_present": [
+      "custom.descricao_longa (metaobject ref present; content not captured — must be verified on live store)"
+    ],
+    "shopify_ingredients_value": null,
+    "recommended_fix": "Populate custom.ingredients from THIS label, binding actives to benefits per the ingredient-as-proof rule (chia + trehalose = hidratação/maciez; Thermoshield = proteção térmica até 230°C; Sensactive Veg = toque/bem-estar). Do NOT introduce 'proteína de seda' — it is not on the label. Separately, store the full legal INCI (above) in a dedicated field/metaobject to feed marketplace catalogs, and verify whether the existing descricao_longa metaobject already carries an Ingredientes tab.",
+    "secrets_encountered_and_withheld": false
+  },
+  {
+    "sku": "GEB 024",
+    "title": "melon mood | body & hair mist",
+    "verdict": "MINOR",
+    "findings": [
+      {
+        "issue": "custom.ingredients is truncated to the first 10 INCI names and drops the hero marketed active Anadenanthera Colubrina Bark Extract (AcquaBio, position 11 on label)",
+        "severity": "medium",
+        "detail": "The Shopify custom.ingredients string reproduces label positions 1-10 exactly and in correct order (Aqua ... Caprylyl Glycol), then stops. The description sells AcquaBio (Anadenanthera Colubrina Bark Extract) and ProShine as the two hero actives, yet the ingredient highlight list omits AcquaBio entirely (it sits at position 11) and also omits Xylitol. The one field meant to surface ingredients as proof does not carry the very active the copy markets."
+      },
+      {
+        "issue": "No full legal INCI exists anywhere on the listing for marketplace channels",
+        "severity": "medium",
+        "detail": "Full label INCI has 22 tokens including fragrance allergens (Citral, Citronellol, Geraniol, Hexyl Cinnamal, Hydroxycitronellal, Limonene, Linalool) plus Disodium EDTA, Xylitol, Caprylic Acid. custom.ingredients stops at 10; caracteristicas carries only benefit phrases; description is marketing prose. Amazon 1P, Sephora, Beleza na Web and Mercado Livre require the complete INCI (allergen declaration included), so it must be sourced from the label artwork for those channels."
+      },
+      {
+        "issue": "custom.caracteristicas carries only benefit phrases with no ingredient binding, and has encoding/formatting artifacts",
+        "severity": "low",
+        "detail": "Pipe-separated claims (perfuma suavemente, sela as cuticulas, brilho intenso, hidratacao de ate 72h, retencao inteligente de agua) all match the label/claims letter, so accuracy is fine. But none is bound to an active, so the ingredient-as-proof link lives only in the long description. Minor leading-space and mojibake artifacts in the field text (cosmetic)."
+      }
+    ],
+    "marketplace_impact": "Listing INCI content is accurate and correctly derived from THIS product's real mist label (not copied from another SKU), but the full legal INCI is absent everywhere on the listing. custom.ingredients gives only the first 10 of 22 tokens, so fragrance allergens and downstream ingredients are missing. Any Amazon 1P / Sephora / Beleza na Web / Mercado Livre feed must pull the complete INCI (all 22 tokens incl. allergen declaration) from the label artwork; it cannot be lifted from the current Shopify fields.",
+    "extraction_method": "text",
+    "confidence": "high",
+    "label_inci_extracted": "Aqua, Alcohol, PEG-40 Hydrogenated Castor Oil, Parfum, Hexylene Glycol, Ceteareth-20, Glycerin, Castor Oil Propanediol Esters, Xylityl Sesquicaprylate, Caprylyl Glycol, Anadenanthera Colubrina Bark Extract, Disodium EDTA, Xylitol, Caprylic Acid, Citral, Citronellol, Geraniol, Hexyl Cinnamal, Hydroxycitronellal, Limonene, Linalool",
+    "label_key_actives": [
+      "AcquaBio = Anadenanthera Colubrina Bark Extract (72h skin hydration)",
+      "ProShine = high-refractive-index esters / Castor Oil Propanediol Esters (hair shine + color)"
+    ],
+    "shopify_ingredient_fields_present": [
+      "custom.ingredients",
+      "custom.caracteristicas",
+      "shopify_descricao_markdown",
+      "custom.descricao_longa (metaobject)"
+    ],
+    "shopify_ingredients_value": "Aqua, Alcohol, PEG-40 Hydrogenated Castor Oil, Parfum, Hexylene Glycol, Ceteareth-20, Glycerin, Castor Oil Propanediol Esters, Xylityl Sesquicaprylate, Caprylyl Glycol",
+    "recommended_fix": "Extend custom.ingredients to include the marketed hero active Anadenanthera Colubrina Bark Extract (AcquaBio) so the highlight list surfaces the active the copy sells, and store the complete 22-token INCI from the label in a dedicated full-INCI field to feed Amazon/Sephora/marketplace catalogs.",
+    "secrets_encountered_and_withheld": false
+  },
+  {
+    "sku": "GEB 121",
+    "title": "Máscara Mayday",
+    "verdict": "MAJOR",
+    "findings": [
+      {
+        "issue": "Shopify custom.ingredients is a DIFFERENT product's INCI — a hydro-alcoholic fragrance-mist list, not the reconstruction mask's emulsion INCI.",
+        "severity": "high",
+        "detail": "Listing custom.ingredients = 'Aqua, Alcohol, PEG-40 Hydrogenated Castor Oil, Parfum, Hexylene Glycol, Ceteareth-20, Glycerin, Castor Oil Propanediol Esters, Xylityl Sesquicaprylate, Caprylyl Glycol' — a classic Alcohol+PEG-40 Hydrogenated Castor Oil+Parfum fragrance-solubilization system (a body/hair mist or splash). The real Mayday label (ADESIVO) is a conditioning-mask emulsion: Aqua, Cetearyl Alcohol, Glycerin, C12-15 Alkyl Benzoate, Cetyl Alcohol, Parfum, Lactic Acid, Stearamidopropyl Dimethylamine, Behentrimonium Chloride, ...Arginine, Helianthus Annuus Seed Oil, Panthenol, Persea Gratissima Oil, Linum Usitatissimum, Salvia Hispanica... The two lists share only Aqua, Parfum, Glycerin. An emulsion mask and a mist cannot share an INCI. The listed Alcohol, PEG-40 Hydrogenated Castor Oil, Ceteareth-20, Hexylene Glycol, Castor Oil Propanediol Esters, Xylityl Sesquicaprylate, Caprylyl Glycol are NOT on the real label; the real conditioning agents (Cetearyl/Cetyl Alcohol, Behentrimonium Chloride, Stearamidopropyl Dimethylamine, Panthenol, avocado/sunflower oils) are all MISSING. Fix: replace custom.ingredients with the real mask INCI transcribed from the ADESIVO label."
+      },
+      {
+        "issue": "No correct full legal INCI anywhere on the listing to feed marketplaces; the one INCI-shaped field is wrong.",
+        "severity": "medium",
+        "detail": "custom.caracteristicas and the description carry only benefits/actives, not a full INCI. The single INCI field (custom.ingredients) holds a foreign product's list. If pushed to Amazon 1P / Sephora / Beleza na Web (which require full legal INCI), it would publish a false ingredient declaration — listing Alcohol/PEG-40 that aren't present and omitting real actives plus label allergens (Benzyl Alcohol, Geraniol, Hexyl Cinnamal, Limonene, Linalool, Benzyl Benzoate). Source the correct full INCI from the ADESIVO label before syndicating."
+      },
+      {
+        "issue": "Description heroes different actives than the on-label front panel; all named actives are real (no hallucination) but emphasis diverges.",
+        "severity": "low",
+        "detail": "shopify_descricao_markdown foregrounds 'Restart PRO' (proprietary reticulating/keratin-crosslink trade name), D-Pantenol, and 'polissacarídeos de linhaça e chia'. Panthenol, Linum Usitatissimum (linhaça) and Salvia Hispanica (chia) are all on the real label — no invented actives. But the label front panel heroes 'D-PANTENOL, ÓLEO DE ABACATE E GIRASSOL' (Persea Gratissima + Helianthus), which the description does not surface. 'Restart PRO' is a marketing name not directly mappable to a single INCI (plausibly the Arginine/Itaconic Acid/Lactic Acid crosslink chemistry on label) — keep it substantiated. Recommend aligning hero-active emphasis (add abacate/girassol) for label consistency. Ingredient-as-proof voice is respected in the description (actives bound to force/elasticity/shine)."
+      }
+    ],
+    "marketplace_impact": "High risk. The only INCI-shaped field on the listing (custom.ingredients) is a foreign product's mist/splash INCI, not the mask's. Any marketplace that ingests it (Amazon 1P, Sephora, Beleza na Web, Mercado Livre) would publish a false legal ingredient list — declaring Alcohol/PEG-40 Hydrogenated Castor Oil/Ceteareth-20 that are absent, while omitting the real conditioning system (Cetearyl Alcohol, Behentrimonium Chloride, Panthenol, avocado/sunflower oils) and the label's declared fragrance allergens. Full correct INCI must be sourced from the ADESIVO label, not the current listing.",
+    "extraction_method": "text",
+    "confidence": "high",
+    "label_inci_extracted": "Aqua, Cetearyl Alcohol, Glycerin, C12-15 Alkyl Benzoate, Cetyl Alcohol, Parfum, Lactic Acid, Stearamidopropyl Dimethylamine, Behentrimonium Chloride, Ethyl Linoleate, Ethyl Oleate, Benzyl Alcohol, Itaconic Acid, Arginine, Helianthus Annuus Seed Oil, Xylitol, Caprylic Acid, Panthenol, Zea Mays Oil, Linum Usitatissimum Seed Extract, Salvia Hispanica Seed Extract, Polyglyceryl-10 Laurate, Crambe Abyssinica Seed Oil, Tocopheryl Acetate, Persea Gratissima Oil, Sesamum Indicum Seed Oil, Macadamia Integrifolia Seed Oil, Sodium Gluconate, Olea Europaea Fruit Oil, Pentaerythrityl Tetra-Di-T-Butyl Hydroxyhydrocinnamate, Tocopherol, TBHQ, Benzyl Benzoate, Geraniol, Hexyl Cinnamal, Limonene, Linalool",
+    "label_key_actives": [
+      "Panthenol (D-Pantenol)",
+      "Arginine",
+      "Persea Gratissima Oil (abacate)",
+      "Helianthus Annuus Seed Oil (girassol)",
+      "Linum Usitatissimum Seed Extract (linhaça)",
+      "Salvia Hispanica Seed Extract (chia)",
+      "Crambe Abyssinica Seed Oil",
+      "Macadamia Integrifolia Seed Oil",
+      "Sesamum Indicum Seed Oil",
+      "Behentrimonium Chloride",
+      "Stearamidopropyl Dimethylamine"
+    ],
+    "shopify_ingredient_fields_present": [
+      "shopify_custom_ingredients",
+      "shopify_caracteristicas",
+      "shopify_descricao_markdown",
+      "shopify_has_descricao_longa_metaobject (true)"
+    ],
+    "shopify_ingredients_value": "Aqua, Alcohol, PEG-40 Hydrogenated Castor Oil, Parfum, Hexylene Glycol, Ceteareth-20, Glycerin, Castor Oil Propanediol Esters, Xylityl Sesquicaprylate, Caprylyl Glycol",
+    "recommended_fix": "Replace the Shopify custom.ingredients (currently a foreign mist/splash INCI) with the real Máscara Mayday INCI transcribed from the ADESIVO label, and use that same corrected INCI as the source for any Amazon/Sephora/Beleza na Web syndication. Optionally align the description's hero actives with the label front panel (add óleo de abacate + girassol alongside D-Pantenol / linhaça / chia).",
+    "secrets_encountered_and_withheld": false
+  }
+]

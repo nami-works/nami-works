@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bisyou — Investment Memo (v2)</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 16mm 16mm; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: "Segoe UI", Calibri, Arial, sans-serif; color: #1a1f29; font-size: 10.5pt; line-height: 1.5; margin: 0; }
+  h1 { font-size: 23pt; margin: 0 0 2px 0; letter-spacing: -0.4px; }
+  h2 { font-size: 14pt; margin: 26px 0 8px; padding: 7px 11px; background: #11243f; color: #fff; border-radius: 4px; }
+  h3 { font-size: 11.5pt; margin: 16px 0 4px; color: #11243f; }
+  p { margin: 6px 0; }
+  .meta { color: #5b6677; font-size: 9pt; margin-top: 4px; }
+  .rev { background:#fdf8ee; border:1px solid #e6d5a8; border-radius:5px; padding:7px 11px; font-size:8.8pt; color:#6b5a2d; margin:8px 0; }
+  .rule { height: 3px; background: linear-gradient(90deg,#c79a3a,#11243f); border: 0; margin: 10px 0 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 9.3pt; }
+  th, td { border: 1px solid #d4dae3; padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: #eef2f7; font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .verdict { border: 2px solid #11243f; border-radius: 8px; padding: 14px 18px; margin: 14px 0; background: #f5f8fc; }
+  .verdict .tag { display: inline-block; background: #1f7a3f; color: #fff; font-weight: 700; padding: 3px 12px; border-radius: 20px; font-size: 10pt; }
+  .callout { border-left: 4px solid #c79a3a; background: #fdf8ee; padding: 9px 14px; margin: 12px 0; border-radius: 0 4px 4px 0; }
+  .risk { border-left: 4px solid #b23b3b; background: #fcf1f1; padding: 9px 14px; margin: 12px 0; border-radius: 0 4px 4px 0; }
+  .good { border-left: 4px solid #1f7a3f; background: #f0f8f2; padding: 9px 14px; margin: 12px 0; border-radius: 0 4px 4px 0; }
+  ul, ol { margin: 6px 0; padding-left: 20px; } li { margin: 3px 0; }
+  .small { font-size: 8.6pt; color: #5b6677; }
+  .kpi-row { display: flex; gap: 10px; margin: 12px 0; }
+  .kpi { flex: 1; border: 1px solid #d4dae3; border-radius: 6px; padding: 9px 11px; background: #fff; }
+  .kpi .v { font-size: 15pt; font-weight: 700; color: #11243f; } .kpi .l { font-size: 8pt; color: #5b6677; text-transform: uppercase; }
+  .pos { color: #1f7a3f; font-weight: 600; } .neg { color: #b23b3b; font-weight: 600; }
+  h2 { page-break-after: avoid; } table, .verdict, .callout, .risk, .good { page-break-inside: avoid; }
+  .footer { margin-top: 26px; border-top: 1px solid #d4dae3; padding-top: 8px; color: #5b6677; font-size: 8.4pt; }
+</style>
+</head>
+<body>
+
+<h1>Bisyou — Should we take it on?</h1>
+<hr class="rule">
+<div class="meta"><b>Confidential investment memo (v2).</b> Prepared by Claude (CTO/CFO) for Lucas Guimarães (CEO), NAMI Works / GE Beauty &nbsp;·&nbsp; 14 June 2026.</div>
+<div class="rev"><b>Revision v2 — incorporates your review (C1–C7):</b> no GE↔Bisyou cross-sell and no Camila — brands run independently, only the operational structure is shared (C6); Boniteca finances inventory, paid M+2 after sale, so no working-capital outlay (C3); 2026 figures reframed as a 4-month run-rate (C4); cost-base "Ours" column broken down (C5); freight section corrected — charged-to-customer ≠ cost-to-ship, "doubles cost" retracted (C7); channel-collapse evidence surfaced with its limits (C1).</div>
+
+<!-- 1. RECOMMENDATION -->
+<h2>1. Recommendation at a glance</h2>
+<div class="verdict"><span class="tag">CONDITIONAL GO</span> &nbsp;<b>Pursue to a term sheet</b>, inside the gates below. The thesis is narrower than v1: with <b>no demand synergy</b> (no cross-sell, no Camila), the entire case is an <b>operational cost-arbitrage</b> — take Bisyou's own revenue and run it on a far lighter cost base than the current owners can. The downside is genuinely capped; the upside is real but modest and hinges on one thing: whether we can acquire Bisyou's customers efficiently on its <i>own</i> brand.</div>
+
+<p><b>Big picture.</b> Bisyou loses ~R$3M/yr at a run-rate and has been profitable in only one of five years — the cost of buying its customers always ate its excellent (~80%) margin. But the licensing structure hands us the <i>operation</i> with no debt, no labour, no legacy payables, and (because Boniteca finances the stock) no working-capital outlay. On our cost base — no debt service, lean shared overhead, marketing as variable CPA instead of fixed influencer retainers — the same revenue flips to roughly <b>R$1M of EBITDA</b>. The brand's own-site business is durable (32% of orders repeat), so there is a real asset underneath. The bet is no longer "use GE's audience"; it is "run lean and acquire with discipline where the incumbents couldn't."</p>
+
+<p><b>The gates (all must hold, or we pass):</b></p>
+<ol>
+<li><b>Royalty ≤ ~5–8% of NET revenue, no fixed minimum.</b> On gross, or with a minimum, the math breaks.</li>
+<li><b>We can run standalone acquisition at ≤ ~35% of net revenue.</b> This is the new crux: with no cross-sell crutch, the whole upside depends on marketing efficiency. Break-even is ~39%; the owners ran 48% (recent) and 32% (their one good year). <b>Prove it with a small paid test before committing.</b></li>
+<li><b>May/June own-site revenue is stabilising, not still sliding.</b> We do not have these two months yet; this is a forward-looking diligence gate.</li>
+<li><b>License term long enough and cheap enough to exit</b> to prove the model pre-purchase; plus clean ANVISA, trademark, no live litigation.</li>
+<li><b>We cap the leadership attention committed.</b> The real cost is bandwidth pulled off GE Beauty, not cash.</li>
+</ol>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="v neg">−R$3.0M</div><div class="l">Their current burn (2026 run-rate)</div></div>
+  <div class="kpi"><div class="v pos">~R$1.0M</div><div class="l">Est. EBITDA on our base (illustrative)</div></div>
+  <div class="kpi"><div class="v">~39%</div><div class="l">Break-even marketing (% of net)</div></div>
+  <div class="kpi"><div class="v pos">~R$4.2M</div><div class="l">Break-even net revenue (vs ~R$7.6M run-rate)</div></div>
+</div>
+
+<!-- 2. THE DEAL -->
+<h2>2. What is actually on the table</h2>
+<p><b>Big picture.</b> A brand-licensing and operational takeover, not an acquisition. We run Bisyou and pay a royalty, with an option to buy later (~year five). We take the operation; we do not take the balance sheet. <b>The two brands stay independent on the demand side</b> — only the operational machine is shared.</p>
+<h3>Structure (clean handover)</h3>
+<ul>
+<li><b>No liabilities transferred:</b> no labour liabilities, no bank debt, none of the ~R$1.9M legacy payables. Pre-closing items stay with the owners.</li>
+<li><b>Supply unchanged:</b> made by <b>Boniteca</b> (same manufacturer as GE). Boniteca fee is a 10%→5% regressive success fee, paid only after sale.</li>
+<li><b>No working-capital outlay (corrected):</b> Boniteca <i>finances the inventory</i>; we pay on consignment-style terms, ~M+2 after the sale (e.g. June sales paid the 5th business day of August). We pay only after the cash is in. There is no ~R$1M stock pre-funding.</li>
+<li><b>Marketing today:</b> influencer contracts already cancelled; Meta/Google agency runs to Nov-2026 (~R$60k/mo media + R$6.5k service, break fee on early exit).</li>
+</ul>
+<h3>Who we are dealing with</h3>
+<p>Cap table: <b>Disruptive Participações S/A 76%</b>, Ivan Pinheiro 12%, Carolina Viudes 12%. A financial holder controlling 76% and licensing out operations is a mild <b>negative-selection signal</b> — they could not fund or fix it. That is why the royalty and the purchase strike must be priced as the call option this is.</p>
+
+<!-- 3. FINANCIAL REALITY -->
+<h2>3. The brand's financial reality</h2>
+<p><b>Big picture.</b> Bisyou scaled to ~R$15M in 2024 and made money in exactly one year. In 2025 it swung to a R$1.8M net loss. The four months of 2026 we have (Jan–Apr) run well below 2025.</p>
+<table>
+<tr><th>R$ (Contábil view)</th><th class="num">2021</th><th class="num">2022</th><th class="num">2023</th><th class="num">2024</th><th class="num">2025</th></tr>
+<tr><td>Gross revenue</td><td class="num">2.47M</td><td class="num">6.40M</td><td class="num">9.81M</td><td class="num">15.44M</td><td class="num">14.79M</td></tr>
+<tr><td>Gross margin</td><td class="num">77.5%</td><td class="num">82.4%</td><td class="num">84.5%</td><td class="num">85.2%</td><td class="num">80.2%</td></tr>
+<tr><td>Commercial spend (mktg)</td><td class="num">0.91M</td><td class="num">2.34M</td><td class="num">3.14M</td><td class="num">4.45M</td><td class="num">5.20M</td></tr>
+<tr><td>Net profit / (loss)</td><td class="num neg">(0.20M)</td><td class="num neg">(0.22M)</td><td class="num neg">(0.40M)</td><td class="num pos">0.62M</td><td class="num neg">(1.78M)</td></tr>
+</table>
+<div class="callout"><b>On 2026 (your C4):</b> we have only <b>4 actual months (Jan–Apr)</b>. The "−46% vs 2025 / ~R$3M burn" is an <b>annualised run-rate, not a confirmed full-year figure</b> — treat it as directional. Within those months advertising ran ~48% of net revenue while the company still lost ~R$300k/month: a paid-acquisition spiral, spending a rising share of sales to chase a falling top line.</div>
+
+<!-- 4. WHAT BROKE + EVIDENCE -->
+<h2>4. What broke — and what the evidence does and doesn't prove</h2>
+<p><b>Big picture.</b> The collapse is concentrated in <b>TikTok Shop</b>, driven by one viral product (Bio Estimulador). The own-site channel held up far better. <b>But</b> — addressing your C1 — I want to be precise about what the data proves.</p>
+<table>
+<tr><th>Gross revenue by channel</th><th class="num">nov/25</th><th class="num">dez/25</th><th class="num">jan/26</th><th class="num">fev/26</th><th class="num">mar/26</th><th class="num">abr/26</th><th class="num">Trend</th></tr>
+<tr><td>TikTok Shop</td><td class="num">965k</td><td class="num">573k</td><td class="num">174k</td><td class="num">90k</td><td class="num">128k</td><td class="num">76k</td><td class="num neg">−92%</td></tr>
+<tr><td>Shopify (own site)</td><td class="num">1,312k</td><td class="num">987k</td><td class="num">562k</td><td class="num">476k</td><td class="num">909k</td><td class="num">597k</td><td class="num">−54%, bouncing</td></tr>
+<tr><td>B2B (DPSP)</td><td class="num">74k</td><td class="num">26k</td><td class="num">59k</td><td class="num">2k</td><td class="num">0</td><td class="num">0</td><td class="num neg">dead</td></tr>
+</table>
+<p><b>What the data supports:</b> TikTok collapsed hardest (−92%), it was single-item impulse (1.0 item/order), and one SKU drove it (Bio Estimulador TikTok units 10,610→406). Shopify is multi-item (~2.8) and 32% of its orders repeat — structurally more durable.</p>
+<div class="risk"><b>What it does NOT prove (your point, conceded):</b> the P&L logs marketing as a single "Propaganda e Publicidade Online" line — <b>it is not split by channel.</b> So I cannot prove the Shopify base is independent of the influencer/paid bloat. Your read — that the bloat lifted <i>all</i> channels — is the safer assumption. Practically: <b>the durable own-site base may itself shrink as paid spend normalises.</b> That is exactly why the case below is built on a break-even revenue (~R$4.2M net) well under the current run-rate, not on the run-rate holding.</div>
+
+<!-- 5. DURABLE CORE -->
+<h2>5. The durable core (order-by-order)</h2>
+<p><b>Big picture.</b> We reconstructed all 89,648 invoice lines into 45,626 orders. The own-site business is a considered, repeat-purchase business — a real asset, even if its size is uncertain.</p>
+<table>
+<tr><th>Channel</th><th class="num">Mean AOV</th><th class="num">Items/order</th><th>Character</th></tr>
+<tr><td>Shopify (own site)</td><td class="num">R$200</td><td class="num">~2.8</td><td>Considered baskets / kits</td></tr>
+<tr><td>TikTok Shop</td><td class="num">R$90–148</td><td class="num">1.0</td><td>Single-item viral impulse</td></tr>
+</table>
+<div class="good"><b>Retention is real.</b> Over six months, <b>32% of own-site orders came from repeat customers</b> (16.5% of customers). TikTok is almost entirely one-and-done. This is genuine brand equity — but note, with no cross-sell, monetising it still requires Bisyou's <i>own</i> acquisition engine to keep feeding new customers in.</div>
+<p class="small">Own-site destination mix: Southeast 57% (SP 37%, MG 10%, RJ 8%), South 15%, Northeast 17%, Centre-West 8%, North 3%.</p>
+
+<!-- 6. WHY FOR NAMI -->
+<h2>6. Why this works for NAMI — purely operational</h2>
+<p><b>Big picture.</b> There is <b>no demand synergy</b> in this deal. The edge is entirely cost structure: the owners ran a heavy fixed base and rented growth at retainer prices. We run a light base and buy growth at variable, performance prices. Same revenue, very different bottom line.</p>
+<h3>The cost base we would carry — with the build-up (your C5)</h3>
+<table>
+<tr><th>Line</th><th class="num">Theirs (2026 ann.)</th><th class="num">Ours</th><th>Build-up / why different</th></tr>
+<tr><td>Debt service</td><td class="num">~1.5M</td><td class="num pos">0</td><td>No debt assumed in the licence</td></tr>
+<tr><td>Working capital (stock)</td><td class="num">funded by them</td><td class="num pos">0</td><td>Boniteca finances; we pay M+2 after sale</td></tr>
+<tr><td>Administrative</td><td class="num">~1.6M</td><td class="num">~0.3M</td><td>Bisyou Shopify+apps ~R$110k; bookkeeping folded into our finance fn ~R$120k; misc tools/fees ~R$70k</td></tr>
+<tr><td>People</td><td class="num">~1.1M</td><td class="num">~0.95M</td><td>1 brand/ops lead (loaded ~R$220k) + allocated CX / mktg-ops / fulfilment-coord on our shared team (~R$730k)</td></tr>
+<tr><td>Advertising</td><td class="num">~3.2M fixed (48% of net)</td><td class="num">variable</td><td>CPA / affiliate via Flywheel <i>tooling</i> — pay on performance, no retainers. Illustrated at 25% of net below</td></tr>
+</table>
+<h3>The genuine synergies (operational only)</h3>
+<ul>
+<li>Same manufacturer (Boniteca) and distributor model we already run; Boniteca also finances the stock.</li>
+<li>Shared fulfilment, admin platform (Omnify) and finance/ops team — the marginal cost of a second brand on the machine is low.</li>
+<li>The Flywheel affiliate/CPA <b>engine</b> as the variable-cost marketing model (the tooling and discipline — <b>not</b> GE's audience).</li>
+</ul>
+<h3>The prize, in numbers (illustrative — Shopify standalone run-rate)</h3>
+<table>
+<tr><th>Illustrative annual pro-forma</th><th class="num">R$</th></tr>
+<tr><td>Net revenue (Shopify run-rate)</td><td class="num">~7.6M</td></tr>
+<tr><td>Gross profit (80%)</td><td class="num">~6.1M</td></tr>
+<tr><td>Selling + logistics + card (~17%)</td><td class="num">(1.30M)</td></tr>
+<tr><td>Variable marketing / CPA (25% of net)</td><td class="num">(1.91M)</td></tr>
+<tr><td>Lean fixed (people ~0.95M + admin ~0.30M)</td><td class="num">(1.25M)</td></tr>
+<tr><td>Royalty (8% of net)</td><td class="num">(0.61M)</td></tr>
+<tr><td><b>Estimated EBITDA</b></td><td class="num pos"><b>~R$1.0M (14%)</b></td></tr>
+</table>
+<table>
+<tr><th>Sensitivity (net R$7.6M, 8% royalty)</th><th class="num">Mktg 20%</th><th class="num">Mktg 25%</th><th class="num">Mktg 30%</th></tr>
+<tr><td>EBITDA</td><td class="num pos">~R$1.42M</td><td class="num pos">~R$1.04M</td><td class="num pos">~R$0.66M</td></tr>
+</table>
+<div class="callout"><b>The asymmetry, restated honestly.</b> The same brand that loses them ~R$3M/yr could earn us ~R$0.7–1.4M/yr — entirely from the cost structure, with no demand synergy assumed. <b>Break-even marketing is ~39% of net</b> (they ran 48% recently, 32% in their good year) and <b>break-even revenue is ~R$4.2M net</b> vs a ~R$7.6M run-rate. So revenue can nearly halve, or marketing can run far less efficiently than their best, and we still clear. That margin of safety is the case.</div>
+
+<!-- 7. RISKS -->
+<h2>7. The risks, and where the trap lives</h2>
+<div class="risk"><b>1. Standalone acquisition efficiency (the new #1).</b> With no cross-sell, everything rides on buying Bisyou's customers at ≤ ~35% of net. The incumbents — who knew the brand — ran 48%. If we can't beat that materially, the EBITDA evaporates. Mitigant: a paid test before we commit.</div>
+<div class="risk"><b>2. The own-site base keeps sliding / is spend-dependent.</b> Mar (R$909k)→Apr (R$597k) dipped, and per §4 we can't prove Shopify is independent of the old bloat. May/June is the tell.</div>
+<div class="risk"><b>3. The royalty is set wrong.</b> Anything on gross, or with a minimum, transfers the fragility to us. Still unstated — we hold the pen.</div>
+<div class="risk"><b>4. Attention cost.</b> A three-person team; every hour on Bisyou is an hour off GE Beauty.</div>
+<div class="risk"><b>5. Product / inventory risk (not working capital).</b> Boniteca carries the stock, so no cash outlay — but some SKUs are liquids/glass (água micelar, sabonete) with breakage and shelf-life exposure, and demand on slow SKUs is uncertain.</div>
+
+<!-- 8. FREIGHT -->
+<h2>8. Cost-to-serve: freight, corrected</h2>
+<p><b>Your C7 was right and I've corrected it.</b> The "59% shipped free / R$6.52" figure is what Bisyou <b>charged its customers</b> (a revenue/pricing choice), <b>not</b> its cost to ship. I conflated the two and wrongly claimed Unilog would "double" their cost. <b>Their actual carrier (J&T/R3) cost is not in the data</b>, so that comparison cannot be made yet.</p>
+<p>What we <i>can</i> compute is our own cost-to-ship. We priced <b>every one of the 44,969 reconstructed orders</b> against GE's Unilog B2C table (origin: Serra/ES filial), by destination and basket:</p>
+<table>
+<tr><th>Cost to ship via GE's Unilog contract</th><th class="num">Value</th></tr>
+<tr><td>Blended cost-to-ship per order</td><td class="num">~R$26</td></tr>
+<tr><td>As % of AOV</td><td class="num">~17%</td></tr>
+<tr><td>Implied annual freight @ ~84k orders/yr</td><td class="num">~R$2.2M</td></tr>
+</table>
+<p class="small">Full per-order calculation, summary, and the rate-table assumptions are in <b>Bisyou-Unilog-Freight-Cost.xlsx</b>. UF-level representative rates; exact CEP→GEOCOM-zone mapping would refine within a UF. No weight data in the file, so cubed weight is inferred from basket size (Southeast bands are near-flat 0.25–2 kg, so this barely moves the dominant ~57% SE volume).</p>
+<div class="callout"><b>So the freight conclusion is now:</b> our cost-to-ship is ~R$26/order; whether that is cheaper or dearer than what Bisyou pays J&T/R3 today is <b>open until we see one month of their carrier invoices.</b> Don't assume a saving <i>or</i> a loss. The real fulfilment synergy is warehousing/pick-pack consolidation; the carrier itself should be chosen on the actual quote.</div>
+
+<!-- 9. DEAL -->
+<h2>9. Deal terms and negotiation levers</h2>
+<ul>
+<li><b>Royalty:</b> cap at single digits of NET, no minimum; tie step-ups to revenue we actually rebuild.</li>
+<li><b>Purchase option:</b> fix the strike now and low — we rebuild the equity during the licence; don't pay twice for our own work.</li>
+<li><b>Marketing-efficiency proof:</b> structure a short paid test (or an earn-in) so we validate the ≤35%-of-net acquisition before deep commitment.</li>
+<li><b>Agency:</b> decide inherit-vs-break-fee on the Meta/Google contract (to Nov-2026); don't commit to its R$60k/mo minimum beyond our plan.</li>
+<li><b>Dead channels are upside, not value:</b> don't pay for DPSP/B2B (dead) or the TikTok peak. Price the durable base only.</li>
+<li><b>Clean reps:</b> ANVISA active with dates, trademark uncontested, no live litigation, all access at closing.</li>
+</ul>
+
+<!-- 10. VERDICT -->
+<h2>10. Verdict and next steps</h2>
+<div class="verdict"><span class="tag">CONDITIONAL GO</span> &nbsp;The verdict survives your corrections, but the reasoning changed: the downside is <b>lower</b> than v1 (no working capital, no debt, clean licence), while the upside is <b>narrower</b> (no demand synergy — pure operational arbitrage). It holds because the cost structure tolerates a near-halving of revenue or marketing far less efficient than the incumbents' best. It fails if the royalty is greedy, the own-site base is still in free-fall, or we cannot prove standalone acquisition under ~35% of net.</div>
+<p><b>Immediate next steps:</b></p>
+<ol>
+<li>Ask Ivan for <b>May/June own-site revenue</b> and <b>one month of actual J&T/R3 carrier invoices</b>.</li>
+<li>Get the <b>royalty terms and purchase-option strike</b> from Edson, in writing.</li>
+<li>Design a <b>small standalone paid-acquisition test</b> to validate the ≤35%-of-net marketing gate before committing.</li>
+<li>Confirm <b>ANVISA / trademark / litigation</b> reps before any term sheet.</li>
+</ol>
+
+<div class="footer">Sources: Bisyou Road Show deck; trial balances Jan–Apr 2026; relatorio faturamento_GE.xlsx (45,626-order reconstruction); GE Unilog B2C freight table. Working papers in sandbox/bisyou/diligence/ (ANALYSIS.md, FREIGHT-MODEL.md, orders_reconstructed.csv, Bisyou-Unilog-Freight-Cost.xlsx, REVIEW-COMMENTS.md). Management-account based; pro-forma figures illustrative and assumption-driven; internal decision-making only.</div>
+
+</body>
+</html>

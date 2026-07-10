@@ -1,0 +1,68 @@
+{
+  "rose": [
+    {
+      "idx": 0,
+      "mediaId": "gid://shopify/MediaImage/43715054534976"
+    },
+    {
+      "idx": 1,
+      "mediaId": "gid://shopify/MediaImage/43718603866432"
+    },
+    {
+      "idx": 2,
+      "mediaId": "gid://shopify/MediaImage/43718603899200"
+    },
+    {
+      "idx": 3,
+      "mediaId": "gid://shopify/MediaImage/43718603931968"
+    },
+    {
+      "idx": 4,
+      "mediaId": "gid://shopify/MediaImage/43718603964736"
+    }
+  ],
+  "pear": [
+    {
+      "idx": 0,
+      "mediaId": "gid://shopify/MediaImage/43715054666048"
+    },
+    {
+      "idx": 1,
+      "mediaId": "gid://shopify/MediaImage/43718604161344"
+    },
+    {
+      "idx": 2,
+      "mediaId": "gid://shopify/MediaImage/43718604194112"
+    },
+    {
+      "idx": 3,
+      "mediaId": "gid://shopify/MediaImage/43718604226880"
+    },
+    {
+      "idx": 4,
+      "mediaId": "gid://shopify/MediaImage/43718604259648"
+    }
+  ],
+  "santal": [
+    {
+      "idx": 0,
+      "mediaId": "gid://shopify/MediaImage/43715054829888"
+    },
+    {
+      "idx": 1,
+      "mediaId": "gid://shopify/MediaImage/43718604325184"
+    },
+    {
+      "idx": 2,
+      "mediaId": "gid://shopify/MediaImage/43718604357952"
+    },
+    {
+      "idx": 3,
+      "mediaId": "gid://shopify/MediaImage/43718604390720"
+    },
+    {
+      "idx": 4,
+      "mediaId": "gid://shopify/MediaImage/43718604423488"
+    }
+  ]
+}

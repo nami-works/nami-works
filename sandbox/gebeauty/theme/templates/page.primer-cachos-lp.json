@@ -1,0 +1,108 @@
+{
+  "sections": {
+    "main": {
+      "type": "primer-cachos-lp",
+      "settings": {
+        "product": "primer-cachos-definidos",
+        "show_sticky": true
+      },
+      "blocks": {
+        "b1": {
+          "type": "benefit",
+          "settings": {
+            "text": "Define o desenho do cacho por até 24h"
+          }
+        },
+        "b2": {
+          "type": "benefit",
+          "settings": {
+            "text": "Protege a fibra do calor até 230°C"
+          }
+        },
+        "b3": {
+          "type": "benefit",
+          "settings": {
+            "text": "Hidrata sem pesar, com movimento e leveza"
+          }
+        },
+        "r1": {
+          "type": "review",
+          "settings": {
+            "handle": "priscilaossomatica",
+            "text": "esse primer é MOOOOOOOITO bom pra cabelo cacheado!!! Comprei antes de mudar de país e já tô no foco de comprar mais um assim que botar o pé no Brasil!"
+          }
+        },
+        "r2": {
+          "type": "review",
+          "settings": {
+            "handle": "leilanyriosbarreto",
+            "text": "O melhor! Não deixa o cabelo com a textura pesada! Sem falar no cheiro!!!!"
+          }
+        },
+        "r3": {
+          "type": "review",
+          "settings": {
+            "handle": "isadoracruz",
+            "text": "Viciada no meu primer da GE Beauty"
+          }
+        },
+        "s1": {
+          "type": "step",
+          "settings": {
+            "text": "Aplique no cabelo úmido, mecha a mecha, da raiz às pontas."
+          }
+        },
+        "s2": {
+          "type": "step",
+          "settings": {
+            "text": "Distribua com as mãos ou pente, modelando o desenho do cacho."
+          }
+        },
+        "s3": {
+          "type": "step",
+          "settings": {
+            "text": "Finalize ao natural ou com difusor. Cacho definido por até 24h."
+          }
+        },
+        "f1": {
+          "type": "faq",
+          "settings": {
+            "question": "Serve para o meu cabelo?",
+            "answer": "Sim. Foi feito para cachos e ondulados, de qualquer densidade. Ele define o desenho que o seu cabelo já tem, respeitando o seu tipo de cacho."
+          }
+        },
+        "f2": {
+          "type": "faq",
+          "settings": {
+            "question": "Dura mesmo o dia todo?",
+            "answer": "A definição se mantém por até 24h. Você aplica de manhã e segue o dia sem precisar refazer."
+          }
+        },
+        "f3": {
+          "type": "faq",
+          "settings": {
+            "question": "Pesa ou resseca o cabelo?",
+            "answer": "Não. Ele hidrata sem pesar, então o cabelo fica definido, macio e com movimento, nunca duro ou opaco."
+          }
+        }
+      },
+      "block_order": [
+        "b1",
+        "b2",
+        "b3",
+        "r1",
+        "r2",
+        "r3",
+        "s1",
+        "s2",
+        "s3",
+        "f1",
+        "f2",
+        "f3"
+      ]
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

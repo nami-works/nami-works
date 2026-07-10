@@ -1,0 +1,1701 @@
+{
+  "cutoff": "2026-05-21T22:25:00Z",
+  "total": 389,
+  "strong": 67,
+  "rows": [
+    {
+      "name": "81066",
+      "createdAt": "2026-05-21T10:02:26Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPFBHK33-IKNT",
+        "hexagon-whatsapp",
+        "hxo-1ed520428b4f4832a27fe237a5deae88",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81070",
+      "createdAt": "2026-05-21T10:49:55Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPFD8BWX-FPUL",
+        "hexagon-whatsapp",
+        "hxo-333f6f9482764b9185d8faef62f5dce6",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81071",
+      "createdAt": "2026-05-21T10:51:28Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "101298569536",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPFD9CO8-81WE",
+        "hexagon-whatsapp",
+        "hxo-705d64aa13ae4c1caa31bfb05c8e0ce3",
+        "ld_rota-01_26.05.21",
+        "LOCAL",
+        "RioSul"
+      ]
+    },
+    {
+      "name": "81073",
+      "createdAt": "2026-05-21T11:46:58Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPFFAGQY-ONNS",
+        "hexagon-whatsapp",
+        "hxo-80adf103a5d545029cb7effa84175f77",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81077",
+      "createdAt": "2026-05-21T12:36:40Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPFH27QM-NNSG",
+        "hexagon-whatsapp",
+        "hxo-d38b15dd75b34640826efcff58350212",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81080",
+      "createdAt": "2026-05-21T12:49:46Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "97784398144",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPFHJDF2-SGJ9",
+        "hexagon-whatsapp",
+        "hxo-ab126fbf11b54cd29be761197ccf97ce",
+        "ld_rota-01_26.05.21",
+        "LOCAL",
+        "Shops Jardins"
+      ]
+    },
+    {
+      "name": "81087",
+      "createdAt": "2026-05-21T13:33:31Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "SEDEX"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPFIQKGB-BCYQ",
+        "hexagon-whatsapp",
+        "hxo-6aef1a9f66a5406a916d091c27ae2f57",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81106",
+      "createdAt": "2026-05-21T15:35:44Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPFNH18D-MRZJ",
+        "hexagon-whatsapp",
+        "hxo-102c980970b54187b02fa3ea13470379",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81111",
+      "createdAt": "2026-05-21T16:20:38Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "97397014848",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPFP5GXF-CA8D",
+        "hexagon-whatsapp",
+        "hxo-c02e7228efe6456c89c12501ab854878",
+        "ld_method-override",
+        "ld_rota-02_26.05.22",
+        "LOCAL",
+        "Shopping Recife"
+      ]
+    },
+    {
+      "name": "81118",
+      "createdAt": "2026-05-21T17:29:30Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPFRFEYE-87MD",
+        "hexagon-whatsapp",
+        "hxo-42be85605d9043008f76fbde41cedf49",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81124",
+      "createdAt": "2026-05-21T19:06:26Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPFUXH8A-UUOE",
+        "hexagon-whatsapp",
+        "hxo-ef865ce32be246028a0b9aaac292d68a",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81126",
+      "createdAt": "2026-05-21T19:21:10Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "101298569536",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPFVIQHC-WR08",
+        "hexagon-whatsapp",
+        "hxo-e780d52da34c45cc8fc515f124dad8f8",
+        "ld_rota-01_26.05.22",
+        "LOCAL",
+        "RioSul"
+      ]
+    },
+    {
+      "name": "81127",
+      "createdAt": "2026-05-21T19:28:14Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPFVPZZS-501C",
+        "hexagon-whatsapp",
+        "hxo-65aea1984e694068b2dd0fc2701be1d1",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81145",
+      "createdAt": "2026-05-21T21:57:36Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPG0T50I-ZK47",
+        "hexagon-whatsapp",
+        "hxo-905f9e992a3d4b688f050a7ea1f1abfc",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81151",
+      "createdAt": "2026-05-21T22:53:36Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPG2X11F-8GNO",
+        "hexagon-whatsapp",
+        "hxo-bbf3a28c97874c3f8ee709f741d7fc9d",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81163",
+      "createdAt": "2026-05-22T01:59:26Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "SEDEX"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPG9OSCH-RK09",
+        "hexagon-whatsapp",
+        "hxo-da7f693c982b41c58f0a6b44a753c0de",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81164",
+      "createdAt": "2026-05-22T02:20:07Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPGA1RFW-RKYJ",
+        "hexagon-whatsapp",
+        "hxo-f35a4ab439a4408aa6a239841eaeb65a",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81170",
+      "createdAt": "2026-05-22T11:30:27Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPGU4QDW-ZE5V",
+        "hexagon-whatsapp",
+        "hxo-0b81e52a854d4b949c715c2eb80502b7",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81172",
+      "createdAt": "2026-05-22T11:55:55Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPGV10X9-VW94",
+        "hexagon-whatsapp",
+        "hxo-f7ce452b531c4daeace1fa3b6f8535ce",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81174",
+      "createdAt": "2026-05-22T12:03:45Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPGV879I-OJKP",
+        "hexagon-whatsapp",
+        "hxo-53d7d18c5daa40799d9842d21b5ba99d",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81175",
+      "createdAt": "2026-05-22T12:29:35Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPGW4T7Q-ZY99",
+        "hexagon-whatsapp",
+        "hxo-eaa93ed23bec4b6d80dacd22baba2a9b",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81180",
+      "createdAt": "2026-05-22T13:14:51Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "97784398144",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPGXUI7E-QOO6",
+        "hexagon-whatsapp",
+        "hxo-1020e51448f6412285ebc6ad6a54a73a",
+        "ld_rota-01_26.05.22",
+        "LOCAL",
+        "Shops Jardins"
+      ]
+    },
+    {
+      "name": "81182",
+      "createdAt": "2026-05-22T13:40:36Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "SEDEX"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPGYR3MA-TJYG",
+        "hexagon-whatsapp",
+        "hxo-4ed7a97330dd4774add1524ee4a95a1c",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81187",
+      "createdAt": "2026-05-22T14:38:11Z",
+      "sourceName": "shopify_draft_order",
+      "app": "Draft Orders",
+      "signal": "tag=hex-mp2pzke0-nrnm",
+      "intent": null,
+      "methodType": null,
+      "expected": null,
+      "match": null,
+      "shippingLines": [
+        "SEDEX"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MP2PZKE0-NRNM",
+        "hexagon-whatsapp",
+        "hxo-325a838361a142fea01f588d7cffe69e",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81189",
+      "createdAt": "2026-05-22T14:49:22Z",
+      "sourceName": "shopify_draft_order",
+      "app": "Draft Orders",
+      "signal": "tag=hex-mp2vak5v-hjpi",
+      "intent": null,
+      "methodType": null,
+      "expected": null,
+      "match": null,
+      "shippingLines": [
+        "SEDEX"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MP2VAK5V-HJPI",
+        "hexagon-whatsapp",
+        "hxo-63f2b33dfcd84d60839d7a6a9b31ac82",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81190",
+      "createdAt": "2026-05-22T14:55:57Z",
+      "sourceName": "shopify_draft_order",
+      "app": "Draft Orders",
+      "signal": "tag=hex-mp41im8a-xc9h",
+      "intent": null,
+      "methodType": null,
+      "expected": null,
+      "match": null,
+      "shippingLines": [
+        "SEDEX"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MP41IM8A-XC9H",
+        "hexagon-whatsapp",
+        "hxo-afa54f9b7100437b80496e73b3653198",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81191",
+      "createdAt": "2026-05-22T15:03:54Z",
+      "sourceName": "shopify_draft_order",
+      "app": "Draft Orders",
+      "signal": "tag=hex-mp4e8cqu-9dyj",
+      "intent": null,
+      "methodType": null,
+      "expected": null,
+      "match": null,
+      "shippingLines": [
+        "SEDEX"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MP4E8CQU-9DYJ",
+        "hexagon-whatsapp",
+        "hxo-515f8595e1d34cd89424cdf95d4bc587",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81193",
+      "createdAt": "2026-05-22T15:07:48Z",
+      "sourceName": "shopify_draft_order",
+      "app": "Draft Orders",
+      "signal": "tag=hex-mp4j5bnr-e5uf",
+      "intent": null,
+      "methodType": null,
+      "expected": null,
+      "match": null,
+      "shippingLines": [
+        "SEDEX"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MP4J5BNR-E5UF",
+        "hexagon-whatsapp",
+        "hxo-7d2b611d99df481e938d1d8688432153",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81201",
+      "createdAt": "2026-05-22T15:55:59Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPH3MXTU-OMRS",
+        "hexagon-whatsapp",
+        "hxo-5344b7c6be924c66930d5f16e5094147",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81204",
+      "createdAt": "2026-05-22T16:01:25Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPH3TISK-JZFQ",
+        "hexagon-whatsapp",
+        "hxo-1a8fc902caf749ab872f4953c80adf67",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81207",
+      "createdAt": "2026-05-22T16:28:06Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "101298569536",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPH4NYXW-W3TJ",
+        "hexagon-whatsapp",
+        "hxo-3c547197018d4525a80d5a7b8c5010d6",
+        "ld_rota-02_26.05.22",
+        "LOCAL",
+        "RioSul"
+      ]
+    },
+    {
+      "name": "81212",
+      "createdAt": "2026-05-22T17:48:21Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPH6TBIU-Q1F3",
+        "hexagon-whatsapp",
+        "hxo-b3ec887798c54f35ba083caa7391620e",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81215",
+      "createdAt": "2026-05-22T18:20:39Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPH8RHI9-MPLU",
+        "hexagon-whatsapp",
+        "hxo-c664d4999a8c416781f87340018ea8ee",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81227",
+      "createdAt": "2026-05-22T19:36:30Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPHBH48J-0GFJ",
+        "hexagon-whatsapp",
+        "hxo-7b207630420d4c758ed73199f9b97e82",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81229",
+      "createdAt": "2026-05-22T20:19:52Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "97784398144",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPHD0O4O-CESJ",
+        "hexagon-whatsapp",
+        "hxo-7180f70c708140a7af4213499cc7328c",
+        "ld_rota-01_26.05.23",
+        "LOCAL",
+        "Shops Jardins"
+      ]
+    },
+    {
+      "name": "81244",
+      "createdAt": "2026-05-22T22:56:57Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPHIOMY4-L8SQ",
+        "hexagon-whatsapp",
+        "hxo-3950dccdf0154a6081f7230326538b9d",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81249",
+      "createdAt": "2026-05-22T23:36:29Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPHK28EZ-XPJ6",
+        "hexagon-whatsapp",
+        "hxo-f4c55e8d618c41d6a77622067c63b200",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81252",
+      "createdAt": "2026-05-22T23:56:34Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPHKW7A8-OCBP",
+        "hexagon-whatsapp",
+        "hxo-ed0e9a8b32f74f1897a4d5d3b820ffa6",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81256",
+      "createdAt": "2026-05-23T01:55:44Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "97784398144",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPHOZMWK-VPJA",
+        "hexagon-whatsapp",
+        "hxo-a988289715114c88b9e6845930f9e829",
+        "ld_rota-01_26.05.23",
+        "LOCAL",
+        "Shops Jardins"
+      ]
+    },
+    {
+      "name": "81258",
+      "createdAt": "2026-05-23T04:11:33Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "101298569536",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPHTW8W6-8NYM",
+        "hexagon-whatsapp",
+        "hxo-b48d8afd47204b0ba874d4fb3f888c6b",
+        "ld_rota-01",
+        "LOCAL",
+        "RioSul"
+      ]
+    },
+    {
+      "name": "81262",
+      "createdAt": "2026-05-23T11:40:07Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPI9U9GJ-SBWX",
+        "hexagon-whatsapp",
+        "hxo-34fdcfd34c2a40fab072c5c7a60a3a86",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81271",
+      "createdAt": "2026-05-23T14:14:30Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPIF7XP9-MZ9P",
+        "hexagon-whatsapp",
+        "hxo-86a23b577b1949ec8a4ab2e0fb0017a2",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81296",
+      "createdAt": "2026-05-23T18:36:02Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPIOOXAR-KVFI",
+        "hexagon-whatsapp",
+        "hxo-da96045a7576466db5e1b752ee8e38ee",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81302",
+      "createdAt": "2026-05-23T19:32:02Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "SEDEX"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPIQ7LRI-RCR8",
+        "hexagon-whatsapp",
+        "hxo-6a14934633ba46b7b0b32e73d7736359",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81308",
+      "createdAt": "2026-05-23T21:05:02Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPIU0LKK-M1Q8",
+        "hexagon-whatsapp",
+        "hxo-384c5d2ae6b94012b028e4bf738aa194",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81315",
+      "createdAt": "2026-05-23T22:35:07Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "97784398144",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPIX610J-DLMX",
+        "hexagon-whatsapp",
+        "hxo-be23db64e45c4bc99312bd36b8b1158a",
+        "ld_rota-02",
+        "LOCAL",
+        "Shops Jardins"
+      ]
+    },
+    {
+      "name": "81325",
+      "createdAt": "2026-05-24T11:07:02Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPJO1CLW-SL2L",
+        "hexagon-whatsapp",
+        "hxo-ef4153e1f9e44993b1b2e4ea59edb7b2",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81329",
+      "createdAt": "2026-05-24T11:57:02Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPJPWQ2C-U4SL",
+        "hexagon-whatsapp",
+        "hxo-888f9bb8d3ae42ec90f82bfc3216766c",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81332",
+      "createdAt": "2026-05-24T12:36:07Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "SEDEX"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPJR6TCJ-46EN",
+        "hexagon-whatsapp",
+        "hxo-50e03f8370984be19ac3b0c8ae1114cf",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81336",
+      "createdAt": "2026-05-24T13:34:02Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPJTAJF3-OZGO",
+        "hexagon-whatsapp",
+        "hxo-a60c51f22e0c4228bf7e2575b1abe825",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81343",
+      "createdAt": "2026-05-24T14:29:02Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "SEDEX"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPJV9K3N-JH2P",
+        "hexagon-whatsapp",
+        "hxo-b0dfbd6b5a9a4eb8b6a094cf586b4958",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81351",
+      "createdAt": "2026-05-24T16:51:02Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPJU8A4R-RX5L",
+        "hexagon-whatsapp",
+        "hxo-3355060fefdb402d88e9fa181f42f871",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81356",
+      "createdAt": "2026-05-24T17:15:08Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "101298569536",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPK1CCJA-Z2XC",
+        "hexagon-whatsapp",
+        "hxo-73f3395d58974e1b8e081cbe623f51b5",
+        "ld_rota-02",
+        "LOCAL",
+        "RioSul"
+      ]
+    },
+    {
+      "name": "81389",
+      "createdAt": "2026-05-24T20:42:02Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "CORREIOS PAC"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPK8KBY6-AYIM",
+        "hexagon-whatsapp",
+        "hxo-4eae3649727343f7b561216471179d4e",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81400",
+      "createdAt": "2026-05-24T21:42:07Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "97784398144",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPKAVHCO-XL7Y",
+        "hexagon-whatsapp",
+        "hxo-33ce112d9df84c4fbb79ca33fb935e43",
+        "ld_rota-01",
+        "LOCAL",
+        "Shops Jardins"
+      ]
+    },
+    {
+      "name": "81406",
+      "createdAt": "2026-05-24T22:27:06Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "97784398144",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPKCD4X7-7VCF",
+        "hexagon-whatsapp",
+        "hxo-f346171c9c45434788a26855763117f6",
+        "ld_rota-02",
+        "LOCAL",
+        "Shops Jardins"
+      ]
+    },
+    {
+      "name": "81407",
+      "createdAt": "2026-05-24T22:30:21Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "97784398144",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPKC6C8I-QILP",
+        "hexagon-whatsapp",
+        "hxo-6dee35d25fd14faabaebfa4032f6650d",
+        "ld_rota-02",
+        "LOCAL",
+        "Shops Jardins"
+      ]
+    },
+    {
+      "name": "81412",
+      "createdAt": "2026-05-24T22:54:40Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "PICKUP",
+      "methodType": null,
+      "expected": "PICK_UP",
+      "match": false,
+      "shippingLines": [
+        "Shopping Recife"
+      ],
+      "title_signal": "pickup",
+      "loc_attr": "97397014848",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPK74WTX-G9WR",
+        "hexagon-whatsapp",
+        "hxo-eb44bd22a99f43658ede262fc6b6ef64",
+        "PICKUP",
+        "Shopping Recife"
+      ]
+    },
+    {
+      "name": "81417",
+      "createdAt": "2026-05-25T02:29:08Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "101298569536",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPKKYR5Q-3OG9",
+        "hexagon-whatsapp",
+        "hxo-16038ca139b14d5a88c85611cec3cd52",
+        "ld_rota-01",
+        "LOCAL",
+        "RioSul"
+      ]
+    },
+    {
+      "name": "81422",
+      "createdAt": "2026-05-25T04:41:08Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "97784398144",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPKPR4U1-WAVJ",
+        "hexagon-whatsapp",
+        "hxo-9baab6f6a40249a7bddb4f45a91f9c7b",
+        "ld_rota-01",
+        "LOCAL",
+        "Shops Jardins"
+      ]
+    },
+    {
+      "name": "81427",
+      "createdAt": "2026-05-25T11:58:04Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPL5CE89-WBMN",
+        "hexagon-whatsapp",
+        "hxo-d4d39734d5a54aee9c54466669daffdb",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81429",
+      "createdAt": "2026-05-25T12:48:08Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "97784398144",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPL73IBJ-A4QK",
+        "hexagon-whatsapp",
+        "hxo-f6d69289bafc4248baeb13ca0dca8798",
+        "ld_rota-01",
+        "LOCAL",
+        "Shops Jardins"
+      ]
+    },
+    {
+      "name": "81432",
+      "createdAt": "2026-05-25T13:02:03Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "SEDEX"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPL7OYW9-9EC0",
+        "hexagon-whatsapp",
+        "hxo-eecd626ab2e04adfb1a1df2070853de2",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81433",
+      "createdAt": "2026-05-25T13:05:20Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "97784398144",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPL7OPJD-L6BG",
+        "hexagon-whatsapp",
+        "hxo-0da5342aa8c2467d8503c85c2e5a3787",
+        "ld_rota-01",
+        "LOCAL",
+        "Shops Jardins"
+      ]
+    },
+    {
+      "name": "81436",
+      "createdAt": "2026-05-25T13:50:07Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPL5D8KI-LDS8",
+        "hexagon-whatsapp",
+        "hxo-b21f312fde4841a4970d19dc7f98ea3d",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81446",
+      "createdAt": "2026-05-25T15:47:02Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "SHIPPING",
+      "methodType": null,
+      "expected": "SHIPPING",
+      "match": false,
+      "shippingLines": [
+        "Total Express MG"
+      ],
+      "title_signal": "shipping",
+      "loc_attr": null,
+      "assigned_location": null,
+      "tags": [
+        "CD Extrema",
+        "FullComm-7080452587629",
+        "HEX-MPLDIZW9-XEYP",
+        "hexagon-whatsapp",
+        "hxo-a7fede6479db4958b3ea65205f3c989b",
+        "SHIPPING"
+      ]
+    },
+    {
+      "name": "81448",
+      "createdAt": "2026-05-25T16:00:13Z",
+      "sourceName": "316281618433",
+      "app": "Hexagon",
+      "signal": "sourceName=316281618433",
+      "intent": "LOCAL",
+      "methodType": null,
+      "expected": "LOCAL",
+      "match": false,
+      "shippingLines": [
+        "Local Delivery"
+      ],
+      "title_signal": "local",
+      "loc_attr": "97784398144",
+      "assigned_location": null,
+      "tags": [
+        "FullComm-7080452587629",
+        "HEX-MPLDZUME-UF4M",
+        "hexagon-whatsapp",
+        "hxo-bd4956cdc86543e9a5c3f16c90a35c33",
+        "LOCAL",
+        "Shops Jardins"
+      ]
+    }
+  ]
+}

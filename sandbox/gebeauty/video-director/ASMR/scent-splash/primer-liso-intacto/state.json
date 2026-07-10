@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "concept_id": "primer-liso-intacto-asmr-v1",
+  "concept_label": "primer liso intacto — ASMR scent splash",
+  "created_at": "2026-06-12T19:00:00Z",
+  "updated_at": "2026-06-12T19:00:00Z",
+  "state": "STORYBOARD",
+  "lane": "ingredient-splash ASMR (ip.md §3.6)",
+  "product": {
+    "gid": "gid://shopify/Product/9668673798464",
+    "handle": "primer-liso-intacto",
+    "title": "primer liso intacto",
+    "finalidade": "liso duradouro e blindado da umidade",
+    "price_brl": "139.00",
+    "dosagem": "150mL",
+    "benefits": [
+      "brilho, leveza e movimento",
+      "proteção térmica e antifrizz",
+      "alinhamento e hidratação duradoura"
+    ],
+    "magnific_library_id": 1877692,
+    "material_phrase": "opaque cream-bodied haircare bottle with smooth matte finish, coral-red ge wordmark and PRIMER LISO INTACTO label printed on the front, white pump dispenser cap on top, NOT translucent, NOT see-through, NOT frosted glass, NOT teal",
+    "dimensions": {
+      "height_cm": 17,
+      "base_diameter_cm": 5,
+      "widest_cm": 5,
+      "dosagem": "150mL"
+    },
+    "canonical_render_creation_id": "1sIKpPSr4r"
+  },
+  "constitution_refs": {
+    "ip_doc": "docs/ip.md",
+    "dossier": "docs/asmr-splash-situational-dossier.md"
+  },
+  "brief": {
+    "raw_text": "ASMR videos leveraging scent ingredients (melon, peônia, white musk) into ad creatives for primer cachos definidos and primer liso intacto; seeds ge-50057 + ge-49023",
+    "platform": "meta-reels",
+    "aspect_target": "9:16",
+    "variant_mode": "1+2",
+    "decoded_at": "2026-06-12T19:00:00Z"
+  },
+  "seeds": {
+    "ingredients_ge50057": "IazcXIXtvE",
+    "product_splash_ge49023": "62xl435iJO"
+  },
+  "scent_notes": [
+    "melon",
+    "peônia (peony)",
+    "white musk"
+  ],
+  "accent_token": "teal",
+  "accent_color": "#80cecc",
+  "grade": "cool teal grade, sleeker porcelain whites, crisp clean light",
+  "motion_energy": "sleek vertical glide, calmer controlled descent",
+  "narrative_arc": [
+    {
+      "shot_id": "01-melon",
+      "position": 1,
+      "duration_seconds": 6,
+      "dominant_sensation": "juicy-cool",
+      "kinetic_still_effect": "melon slice piercing a glassy waterline, air-entrainment burst of polydisperse bubbles erupting off its wet edges, micro-bubbles clinging to the cut flesh",
+      "off_frame_source": "above the waterline (slice falling in from top of frame)",
+      "audio_direction": "crisp thip of the slice piercing surface + effervescent crackle-rush of the bubble burst + low underwater room-tone",
+      "archetype": "ingredient-splash ASMR (ip.md §3.6)",
+      "time_label": "melon note",
+      "status": "PENDING",
+      "seed_references": [
+        {
+          "type": "image",
+          "identifier": "IazcXIXtvE"
+        }
+      ],
+      "realistic_grounding": "gin-clear colorless water, faint depth-motes only; soft natural caustic light-nets rippling from the disturbed surface above; polydisperse air bubbles (a few large 8-15mm wobbling + a dense cloud of small 1-3mm), rising vertically with specular pips; premium clean Aesop-grade restraint; faceless, no people, no hair, no fish, no sea life, no soap foam/suds, no ice, water stays transparent and uncolored",
+      "grade": "cool teal grade, sleeker porcelain whites, crisp clean light",
+      "motion_energy": "sleek vertical glide, calmer controlled descent"
+    },
+    {
+      "shot_id": "02-peonia",
+      "position": 2,
+      "duration_seconds": 6,
+      "dominant_sensation": "soft floral hush",
+      "kinetic_still_effect": "cream-white peony bloom unfurling underwater, loose petals fluttering and swaying as they drift down, faint sparse micro-bubble stream off the petals",
+      "off_frame_source": "the bloom itself (petals peeling and drifting)",
+      "audio_direction": "almost-silent floral hush + velvety brush of petals through water + occasional single micro-bubble tick",
+      "archetype": "ingredient-splash ASMR (ip.md §3.6)",
+      "time_label": "peônia note",
+      "status": "PENDING",
+      "seed_references": [
+        {
+          "type": "image",
+          "identifier": "IazcXIXtvE"
+        }
+      ],
+      "realistic_grounding": "gin-clear colorless water, faint depth-motes only; soft natural caustic light-nets rippling from the disturbed surface above; polydisperse air bubbles (a few large 8-15mm wobbling + a dense cloud of small 1-3mm), rising vertically with specular pips; premium clean Aesop-grade restraint; faceless, no people, no hair, no fish, no sea life, no soap foam/suds, no ice, water stays transparent and uncolored",
+      "grade": "cool teal grade, sleeker porcelain whites, crisp clean light",
+      "motion_energy": "sleek vertical glide, calmer controlled descent"
+    },
+    {
+      "shot_id": "03-musk-reveal",
+      "position": 3,
+      "duration_seconds": 6,
+      "dominant_sensation": "clean warmth",
+      "kinetic_still_effect": "the primer bottle descending into the same water, a veil of fine micro-bubbles peeling off its matte surface, melon facet + peony petals in a slow loose orbit, bottle settling upright as hero",
+      "off_frame_source": "above the waterline (bottle entering from top), scent resolves into the product",
+      "audio_direction": "soft whoom-then-settle of the bottle displacing water + fine effervescent shimmer of the bubble veil + gentle low resolve in the room-tone",
+      "archetype": "ingredient-splash ASMR (ip.md §3.6)",
+      "time_label": "white musk + reveal",
+      "status": "PENDING",
+      "seed_references": [
+        {
+          "type": "image",
+          "identifier": "62xl435iJO"
+        }
+      ],
+      "product_reference": {
+        "type": "product",
+        "identifier": "1877692"
+      },
+      "realistic_grounding": "gin-clear colorless water, faint depth-motes only; soft natural caustic light-nets rippling from the disturbed surface above; polydisperse air bubbles (a few large 8-15mm wobbling + a dense cloud of small 1-3mm), rising vertically with specular pips; premium clean Aesop-grade restraint; faceless, no people, no hair, no fish, no sea life, no soap foam/suds, no ice, water stays transparent and uncolored",
+      "grade": "cool teal grade, sleeker porcelain whites, crisp clean light",
+      "motion_energy": "sleek vertical glide, calmer controlled descent"
+    }
+  ],
+  "shots": [],
+  "ad_copy": {},
+  "events": [
+    {
+      "ts": "2026-06-12T19:00:00Z",
+      "actor": "brain",
+      "event": "state_init",
+      "from": null,
+      "to": "STORYBOARD"
+    },
+    {
+      "ts": "2026-06-12T19:00:00Z",
+      "actor": "brain",
+      "event": "seeds_uploaded",
+      "ingredients": "IazcXIXtvE",
+      "product_splash": "62xl435iJO"
+    }
+  ]
+}

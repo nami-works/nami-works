@@ -41,6 +41,28 @@ tmp-*.json
 
 # Sensitive / local-only credentials
 *.csv
+**/google_oauth_credentials.json
+**/client_secret*.json
+**/token.json
+
+# Customer / third-party PII (regenerable script outputs — never version)
+sandbox/gebeauty/scripts/customer_*_nf.out.json
+sandbox/gebeauty/scripts/omie_b2b_customers*.out.json
+sandbox/gebeauty/omie-b2b-registry.json
+sandbox/gebeauty/store-credit-holders.json
+sandbox/gebeauty/store-credit-bulk.jsonl
+sandbox/gebeauty/store-credit-orders-since-*.xlsx
+sandbox/gebeauty/store-reviews-corpus.json
+sandbox/gebeauty/loox-reviewers-by-product.json
+sandbox/gebeauty/beautyback-base_*.xlsx
+sandbox/gebeauty/beautyback-zoko_*.xlsx
+sandbox/gebeauty/beautyback-name-overrides.json
+sandbox/gebeauty/beautyback-uncertain-names.json
+sandbox/gebeauty/primer-orders-bulk.jsonl
+sandbox/gebeauty/danfe/
+
+# macOS archive extraction cruft
+**/__MACOSX/
 
 # Claude Code per-machine / transient session state (settings.json IS shipped)
 .claude/settings.local.json

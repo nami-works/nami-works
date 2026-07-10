@@ -1,0 +1,49 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "headline": "Rose Ritual: a bruma floral que não pesa, para cabelo e corpo",
+      "author": { "@type": "Organization", "name": "GE Beauty" },
+      "publisher": { "@type": "Organization", "name": "GE Beauty" },
+      "inLanguage": "pt-BR",
+      "description": "Conheça o Rose Ritual Body & Hair Mist GE Beauty: rosas, lichia e frutas vermelhas num floral musk leve para cabelo e corpo. Veja as notas e como usar."
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "O Rose Ritual é uma fragrância doce?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "É um floral com toque frutado, não um doce pesado. A rosa e o jasmim trazem sofisticação, a lichia e as frutas vermelhas dão um lado suculento, e o fundo amadeirado equilibra tudo numa assinatura leve."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Dá para usar o Rose Ritual no dia a dia?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sim. É uma fragrância delicada que combina com a rotina, do brunch à tarde de livraria. Uma borrifada leve já entrega o aroma; reaplique sempre que quiser renovar."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Posso usar o Rose Ritual no cabelo sem pesar?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Pode. A bruma é leve e não deixa resíduo: perfuma e realça o brilho dos fios sem pesar o cabelo."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Blog GE Beauty" },
+        { "@type": "ListItem", "position": 2, "name": "Rose Ritual: o floral moderno que não pesa" }
+      ]
+    }
+  ]
+}

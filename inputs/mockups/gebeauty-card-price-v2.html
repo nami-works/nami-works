@@ -1,0 +1,125 @@
+<title>GE Beauty — card price (de anchor + price in CTA) v2</title>
+<style>
+  :root{
+    --ge-red:#DF372F;
+    --card-bg:#efeae5;
+    --ink:#1f1c1a;
+    --muted:#8a827b;
+    --radius:16px;
+    --font:'Italian Plate No1','Helvetica Neue',Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#fbf9f7;color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;padding:28px 20px 80px}
+  h1{font-size:22px;font-weight:800;letter-spacing:.2px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 26px;max-width:780px;line-height:1.5}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:34px 0 14px;font-weight:700}
+  .row{display:flex;gap:18px;flex-wrap:wrap}
+  .card{width:240px;background:var(--card-bg);border-radius:var(--radius);padding:14px 14px 16px;position:relative;display:flex;flex-direction:column}
+  .badge{position:absolute;top:14px;left:14px;background:var(--ge-red);color:#fff;font-size:12px;font-weight:700;padding:5px 10px;border-radius:8px;letter-spacing:.3px}
+  .img{height:210px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;background:radial-gradient(120% 100% at 50% 0,#fff 0,#f4efe9 100%)}
+  .img .ge{font-size:30px;font-weight:800;color:var(--ge-red);letter-spacing:-1px}
+  .title{font-size:15px;font-weight:800;line-height:1.25;text-transform:lowercase;margin:0 0 6px}
+  .desc{font-size:12.5px;color:#57514b;line-height:1.35;text-transform:lowercase;margin:0 0 8px;min-height:34px}
+  .stars{color:var(--ge-red);font-size:12px;letter-spacing:1px;margin-bottom:8px}
+  .stars .n{color:var(--muted);margin-left:4px}
+  .spacer{flex:1}
+  /* struck "de" anchor above the CTA (bare, no word) */
+  .card-de{font-size:14px;color:var(--muted);text-decoration:line-through;text-transform:lowercase;margin:2px 0 8px;min-height:19px}
+  .btn{display:block;width:100%;background:var(--ge-red);color:#fff;border:none;border-radius:9px;padding:12px 10px;font-family:var(--font);font-size:14px;font-weight:700;text-transform:lowercase;letter-spacing:.3px;cursor:pointer}
+  .btn .p{font-weight:800}
+  .btn.sold{background:#c9c2bb;color:#fff;cursor:default}
+  .panel{max-width:880px;background:#fff;border:1px solid #ece7e1;border-radius:12px;padding:18px 20px;margin-top:30px}
+  .panel h3{margin:0 0 10px;font-size:15px}
+  .panel ul{margin:0;padding-left:18px}
+  .panel li{font-size:13.5px;line-height:1.6;color:#3d3833;margin-bottom:6px}
+  code{background:#f3efe9;padding:1px 5px;border-radius:4px;font-size:12px}
+  .tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:2px 8px;border-radius:5px;margin-bottom:10px}
+  .tag.before{background:#f3e0df;color:#a33}
+  .tag.after{background:#dcefe1;color:#256b3d}
+  .cols{display:flex;gap:40px;flex-wrap:wrap}
+</style>
+
+<h1>GE Beauty — product card price (de anchor + price in CTA)</h1>
+<p class="sub">Approved direction, revised: <strong>struck compare-at (“de”) sits above the button as the anchor; the selling price stays inside the CTA</strong> (<code>comprar · R$164</code>) so the price is consistent on every card site-wide. Bare style — no “de/por” words; the strikethrough above + the price in the button read as old→new vertically. Off-badge unchanged.</p>
+
+<div class="cols">
+  <div>
+    <h2>Antes — atual</h2>
+    <span class="tag before">price in CTA · no anchor</span>
+    <div class="row">
+      <div class="card">
+        <span class="badge">R$10 off</span>
+        <div class="img"><span class="ge">ge</span></div>
+        <div class="title">dupla leave-in + booster fortificante</div>
+        <div class="desc">força renovada, vitalidade e brilho da raiz às pontas</div>
+        <div class="stars">★★★★½ <span class="n">(8)</span></div>
+        <div class="spacer"></div>
+        <button class="btn">comprar <span class="p">· R$164</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h2>Depois — proposto</h2>
+    <span class="tag after">struck “de” above · price stays in CTA</span>
+    <div class="row">
+      <div class="card">
+        <span class="badge">R$10 off</span>
+        <div class="img"><span class="ge">ge</span></div>
+        <div class="title">dupla leave-in + booster fortificante</div>
+        <div class="desc">força renovada, vitalidade e brilho da raiz às pontas</div>
+        <div class="stars">★★★★½ <span class="n">(8)</span></div>
+        <div class="spacer"></div>
+        <div class="card-de">R$174</div>
+        <button class="btn">comprar <span class="p">· R$164</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>Estados</h2>
+<div class="row">
+  <!-- discounted kit -->
+  <div class="card">
+    <span class="badge">R$104 off</span>
+    <div class="img"><span class="ge">ge</span></div>
+    <div class="title">kit rotina completa</div>
+    <div class="desc">sua jornada para um cabelo saudável</div>
+    <div class="stars">★★★★★ <span class="n">(33)</span></div>
+    <div class="spacer"></div>
+    <div class="card-de">R$666</div>
+    <button class="btn">comprar <span class="p">· R$562</span></button>
+  </div>
+  <!-- full price: no struck line, CTA holds price -->
+  <div class="card">
+    <div class="img"><span class="ge">ge</span></div>
+    <div class="title">dupla travel size | máscara + leave-in</div>
+    <div class="desc">hidratação intensa e proteção térmica em qualquer lugar</div>
+    <div class="stars">★★★★★ <span class="n">(12)</span></div>
+    <div class="spacer"></div>
+    <div class="card-de">&nbsp;</div>
+    <button class="btn">comprar <span class="p">· R$87</span></button>
+  </div>
+  <!-- sold out -->
+  <div class="card">
+    <div class="img"><span class="ge">ge</span></div>
+    <div class="title">booster antifrizz</div>
+    <div class="desc">controle do frizz e alinhamento duradouro</div>
+    <div class="stars">★★★★★ <span class="n">(21)</span></div>
+    <div class="spacer"></div>
+    <div class="card-de">&nbsp;</div>
+    <button class="btn sold">esgotado</button>
+  </div>
+</div>
+<p class="sub" style="margin-top:10px">Note: full-price and sold-out cards reserve the same vertical space (empty <code>card-de</code> line) so card heights stay aligned in the grid. Sold-out shows no price/anchor.</p>
+
+<div class="panel">
+  <h3>Como será implementado (resumo técnico)</h3>
+  <ul>
+    <li><strong>Botão:</strong> mantém como está — <code>comprar · {{ price }}</code> (span <code>gb-card-price</code> intacto). Consistência do preço no CTA em todo o site.</li>
+    <li><strong>Âncora “de”:</strong> inserir um bloco próprio do card (classe <code>gb-card-de</code>, <em>não</em> <code>.price</code>) logo acima do botão, mostrando <code>&lt;s&gt;compare_at_price&lt;/s&gt;</code> só quando <code>compare_at_price &gt; price</code>. Vazio (mas com altura) quando não há desconto, para alinhar as alturas dos cards.</li>
+    <li><strong>Onde:</strong> substitui o <code>{% render 'price' %}</code> hoje escondido no fim de <code>.card-information</code> em <code>card-product.liquid</code> e <code>card-product-kit.liquid</code>.</li>
+    <li><strong>Sem mexer no CSS compartilhado:</strong> como usamos classe própria (<code>gb-card-de</code>), a regra <code>.card-wrapper:has(.gb-card-price) .price{display:none}</code> e o <code>component-price.css</code> da PDP ficam intocados.</li>
+    <li><strong>Complementar à etiqueta:</strong> “R$X off” (badge) diz <em>quanto</em>; o “de” riscado dá a <em>âncora</em>; o CTA dá o preço final. Três sinais coerentes.</li>
+  </ul>
+</div>

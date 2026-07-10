@@ -1,0 +1,15 @@
+{
+  "name": "Magenta — Proposta recebida",
+  "payment_days": null,
+  "monthly_rate": 0.013,
+  "_note": "Preços = proposta Magenta (o que Magenta quer pagar a GE). GEB023/GEB102 ainda sem COGS.",
+  "lines": [
+    {"sku": "GEB022", "volume": 2000, "price": 22.70},
+    {"sku": "GEB029", "volume": 4000, "price": 23.45},
+    {"sku": "GEB024", "volume": 5000, "price": 28.50}
+  ],
+  "_lines_blocked_no_cogs": [
+    {"sku": "GEB023", "volume": 2000, "price": 24.65, "_note": "Booster Antioxidante — COGS ausente"},
+    {"sku": "GEB102", "volume": 4000, "price": 31.00, "_note": "Primer Liso — COGS ausente"}
+  ]
+}

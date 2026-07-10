@@ -1,0 +1,7 @@
+  show_free_shipping_progress = True
+  free_shipping_text = 'Faltam [amount] para o frete grátis'
+  free_shipping_text_come = 'Você ganhou frete grátis!'
+  free_shipping_min_amount = '299'
+  passageA_regional_gone = True
+  passageB_regional_gone = True
+  R$299_now_in_page = True

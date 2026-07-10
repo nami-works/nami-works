@@ -1,0 +1,134 @@
+{
+  "GEB 001": {
+    "folder": "shampoo-sem-sulfato",
+    "inci_labeltruth": null,
+    "source_file": null,
+    "needs_visual": true,
+    "files_tried": []
+  },
+  "GEB 002": {
+    "folder": "mascara-condicionadora",
+    "inci_labeltruth": null,
+    "source_file": null,
+    "needs_visual": true,
+    "files_tried": []
+  },
+  "GEB 003": {
+    "folder": "leave-in-com-protecao-termica",
+    "inci_labeltruth": null,
+    "source_file": null,
+    "needs_visual": true,
+    "files_tried": []
+  },
+  "GEB 008": {
+    "folder": "shampoo-a-seco",
+    "inci_labeltruth": "Ingredientes:Alcohol, Aluminum Starch Octenylsuccinate, Aqua, Glycerin, Rose Extract, Glycyrrhiza Glabra Rhizome/Root, Cichorium Intybus Leaf Extract, Hydrolyzed Rhodophyceae Extract, Panthenol, Linoleic Acid, Xylitol, Caprylic Acid, Disodium EDTA, Caprylyl Glycol, Menthol, Biotin, Parfum, Butane, Propane, Citronellol, Hexyl Cinnamal, Hydroxycitronellal, Limonene, Linalool. Composio (portugus) Fabricado por",
+    "source_file": "shampoo-a-seco\\shampoo-a-seco_Embalagem Shampoo Seco_V15.pdf",
+    "needs_visual": false,
+    "files_tried": [
+      "shampoo-a-seco_Embalagem Shampoo Seco_V15.pdf"
+    ]
+  },
+  "GEB 019": {
+    "folder": "booster-fortificante",
+    "inci_labeltruth": "Aqua, Glycerin , Rose Extract , Glycyrrhiza Glabra ( Licorice ) Rhizome /Root, Cichorium Intybus ( Chicory ) Leaf Extract , Hydrolyzed Rhodophyceae Extract , Panthenol , Linoleic Acid, Xylitol , Caprylic Acid, Disodium EDTA, Caprylyl Glycol , Menthol , Biotin . ",
+    "source_file": "booster-fortificante\\booster-fortificante_Novo texto Booster Fortificante _dup_dup_2.docx",
+    "needs_visual": false,
+    "files_tried": [
+      "booster-fortificante_Novo texto Booster Fortificante _dup_dup_2.docx"
+    ]
+  },
+  "GEB 020": {
+    "folder": "booster-hidratante",
+    "inci_labeltruth": null,
+    "source_file": null,
+    "needs_visual": true,
+    "files_tried": []
+  },
+  "GEB 021": {
+    "folder": "booster-definicao",
+    "inci_labeltruth": null,
+    "source_file": null,
+    "needs_visual": true,
+    "files_tried": [
+      "booster-definicao_Booster Definição.docx"
+    ]
+  },
+  "GEB 022": {
+    "folder": "booster-antifrizz",
+    "inci_labeltruth": null,
+    "source_file": null,
+    "needs_visual": true,
+    "files_tried": []
+  },
+  "GEB 023": {
+    "folder": "booster-antioxidante",
+    "inci_labeltruth": null,
+    "source_file": null,
+    "needs_visual": true,
+    "files_tried": [
+      "booster-antioxidante_Booster Antioxidante.docx"
+    ]
+  },
+  "GEB 101": {
+    "folder": "primer-cachos-definidos",
+    "inci_labeltruth": null,
+    "source_file": null,
+    "needs_visual": true,
+    "files_tried": [
+      "primer-cachos-definidos_Textos embalagens.docx",
+      "primer-cachos-definidos_Protocolo_GE BEAUTY PRIMER CACHOS DEFINIDOS.pdf",
+      "primer-cachos-definidos_Petição_GE BEAUTY PRIMER CACHOS DEFINIDOS.pdf",
+      "primer-cachos-definidos_Anvisa_GE BEAUTY PRIMER CACHOS DEFINIDOS.pdf",
+      "primer-cachos-definidos_Cópia de Petição_GE BEAUTY PRIMER CACHOS DEFINIDOS.pdf"
+    ]
+  },
+  "GEB 102": {
+    "folder": "primer-liso-intacto",
+    "inci_labeltruth": null,
+    "source_file": null,
+    "needs_visual": true,
+    "files_tried": [
+      "primer-liso-intacto_Textos embalagens.docx",
+      "primer-liso-intacto_Protocolo_GE BEAUTY PRIMER LISO INTACTO.pdf",
+      "primer-liso-intacto_Anvisa_GE BEAUTY PRIMER LISO INTACTO.pdf",
+      "primer-liso-intacto_Petição_GE BEAUTY PRIMER LISO INTACTO.pdf",
+      "primer-liso-intacto_Cópia de Petição_GE BEAUTY PRIMER LISO INTACTO.pdf"
+    ]
+  },
+  "GEB 120": {
+    "folder": "leave-in-pluma",
+    "inci_labeltruth": null,
+    "source_file": null,
+    "needs_visual": true,
+    "files_tried": [
+      "leave-in-pluma_Ativos e Claims - Leave in Liquido Ge Beauty.pdf",
+      "leave-in-pluma_RELEASE - Leave-in Pluma.docx",
+      "leave-in-pluma_RELEASE - Leave-in Pluma.docx.pdf",
+      "leave-in-pluma_Informações produto.docx",
+      "Ativos e Claims - Leave in Liquido Ge Beauty (3).pdf"
+    ]
+  },
+  "GEB 121": {
+    "folder": "mascara-mayday",
+    "inci_labeltruth": null,
+    "source_file": null,
+    "needs_visual": true,
+    "files_tried": [
+      "mascara-mayday_1-Protocolo-GE BEAUTY MÁSCARA MAYDAY.pdf",
+      "mascara-mayday_Texto linha reconstrutora.docx",
+      "mascara-mayday_Texto linha reconstrutora_dup.docx"
+    ]
+  },
+  "GEB 024": {
+    "folder": "melon-mood-body-hair-splash",
+    "inci_labeltruth": null,
+    "source_file": null,
+    "needs_visual": true,
+    "files_tried": [
+      "melon-mood-body-hair-splash_Carta de claims.pdf",
+      "melon-mood-body-hair-splash_2-Protocolo-GE BEAUTY MELON MOOD BRUMA PARA CABELO & CORPO.pdf",
+      "melon-mood-body-hair-splash_Hair Body Splash.docx"
+    ]
+  }
+}

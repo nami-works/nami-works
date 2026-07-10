@@ -1,0 +1,132 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GE Beauty . Primer Liso LP (mockup)</title><style>body{margin:0;background:#fff}</style></head><body><style>
+.gepl{--ge-red:#DF372F;--ge-red-dark:#c12d26;--ink:#161616;--muted:#6b6b6b;--line:#ececec;--soft:#fbe9e8;color:var(--ink);max-width:720px;margin:0 auto;font-family:'Helvetica Neue',Arial,sans-serif}
+.gepl *{box-sizing:border-box}
+.gepl-sec{padding:34px 20px}
+.gepl-hero{padding:0 0 8px}
+.gepl-hero-media{position:relative;width:100%;aspect-ratio:4/5;background:linear-gradient(135deg,#eef1f4,#cdd6de);display:flex;align-items:center;justify-content:center;text-align:center;color:#5a6672;font-size:13px;font-weight:600;letter-spacing:.02em}
+.gepl-hero-media span{opacity:.85;padding:12px 18px}
+.gepl-pad{padding:22px 20px 6px}
+.gepl-h1{font-size:clamp(27px,6.2vw,40px);font-weight:800;letter-spacing:-.02em;line-height:1.06;margin:0 0 12px}
+.gepl-sub{font-size:clamp(15px,4vw,18px);color:var(--muted);line-height:1.45;margin:0 0 18px}
+.gepl-cta{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--ge-red);color:#fff !important;font-size:16px;font-weight:800;padding:15px 20px;border-radius:12px;text-decoration:none;width:100%;transition:background .15s}
+.gepl-cta:hover{background:var(--ge-red-dark)}
+.gepl-reassure{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;margin:12px 0 6px;font-size:12.5px;color:var(--muted)}
+.gepl-reassure b{color:var(--ink);font-weight:700}
+.gepl-price{text-align:center;font-size:15px;font-weight:700;margin:14px 0 0}
+.gepl-chips{list-style:none;padding:0;margin:16px 0 0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.gepl-chips li{font-size:12.5px;font-weight:700;background:var(--soft);color:var(--ge-red-dark);padding:7px 12px;border-radius:40px}
+.gepl-eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--ge-red);margin:0 0 8px}
+.gepl-h2{font-size:clamp(21px,4.8vw,28px);font-weight:800;letter-spacing:-.01em;line-height:1.15;margin:0 0 12px}
+.gepl-p{font-size:15px;line-height:1.55;color:#2b2b2b;margin:0 0 12px}
+.gepl-micro{font-size:12.5px;color:var(--muted);margin:4px 0 0}
+.gepl-bene{list-style:none;padding:0;margin:16px 0 0;display:flex;flex-direction:column;gap:10px}
+.gepl-bene li{display:flex;gap:10px;align-items:flex-start;font-size:15px;font-weight:600}
+.gepl-bene li::before{content:"";flex:none;width:20px;height:20px;border-radius:50%;background:var(--soft);background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><path fill=%22%23DF372F%22 d=%22M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z%22/></svg>');background-repeat:no-repeat;background-position:center;background-size:14px;margin-top:1px}
+.gepl-soft{background:var(--soft)}
+.gepl-cols{display:flex;flex-direction:column;gap:14px;margin-top:16px}
+.gepl-col{border:1px solid var(--line);border-radius:14px;padding:16px}
+.gepl-col h3{font-size:15px;font-weight:800;margin:0 0 6px;color:var(--ge-red-dark)}
+.gepl-col p{font-size:14px;line-height:1.5;color:#2b2b2b;margin:0}
+.gepl-steps{counter-reset:s;list-style:none;padding:0;margin:16px 0 0;display:flex;flex-direction:column;gap:14px}
+.gepl-steps li{counter-increment:s;position:relative;padding-left:44px;font-size:15px;line-height:1.4}
+.gepl-steps li::before{content:counter(s);position:absolute;left:0;top:-2px;width:30px;height:30px;border-radius:50%;background:var(--ge-red);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px}
+.gepl-tabres{list-style:none;padding:0;margin:16px 0 0;display:flex;flex-direction:column;gap:10px}
+.gepl-tabres li{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.4}
+.gepl-tabres li::before{content:"\2605";color:var(--ge-red);flex:none}
+.gepl-proof-media{width:100%;aspect-ratio:1/1;background:linear-gradient(135deg,#eef1f4,#d4dde4);border-radius:14px;display:flex;align-items:center;justify-content:center;text-align:center;color:#5a6672;font-size:12.5px;font-weight:600;margin-top:16px;padding:14px}
+.gepl-prod{width:100%;border-radius:14px;display:block;margin:16px auto 0;max-width:360px}
+details.gepl-faq{border-bottom:1px solid var(--line);padding:14px 0}
+details.gepl-faq summary{font-size:15px;font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px}
+details.gepl-faq summary::-webkit-details-marker{display:none}
+details.gepl-faq summary::after{content:"+";color:var(--ge-red);font-weight:800}
+details.gepl-faq[open] summary::after{content:"\2013"}
+details.gepl-faq p{font-size:14px;line-height:1.5;color:var(--muted);margin:10px 0 0}
+.gepl-close{text-align:center}
+.gepl-tag{font-size:15px;font-style:italic;color:var(--ge-red);margin:16px 0 0;font-weight:600}
+.gepl-sticky{position:fixed;left:0;right:0;bottom:0;z-index:50;background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 18px rgba(0,0,0,.08);padding:10px 14px;display:flex;align-items:center;gap:12px}
+.gepl-sticky .p{font-size:14px;font-weight:800;white-space:nowrap}
+.gepl-sticky a{flex:1;background:var(--ge-red);color:#fff !important;text-decoration:none;font-weight:800;font-size:15px;padding:12px;border-radius:10px;text-align:center}
+.gepl-spacer{height:76px}
+.gepl-tabsblock{margin-top:16px}
+.gepl-tabsblock h4{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:18px 0 6px}
+@media(min-width:721px){.gepl-sticky{display:none}.gepl-spacer{display:none}.gepl-hero-media{aspect-ratio:16/9}}
+</style><div class="gepl">
+
+<section class="gepl-hero">
+  <div class="gepl-hero-media"><span>[ HERO: banner de campanha (escova/liso + umidade) . asset Canva em produção ]</span></div>
+  <div class="gepl-pad">
+    <h1 class="gepl-h1">Seu liso intacto, mesmo no dia mais úmido.</h1>
+    <p class="gepl-sub">O primer que prolonga a escova, blinda contra a umidade e protege do calor até 230°C. Você alisa uma vez, e o frizz não volta no meio do dia.</p>
+    <a class="gepl-cta" href="/cart/50023991804224:1">Quero meu liso intacto</a>
+    <div class="gepl-reassure"><span><b>6x</b> sem juros</span><span><b>frete grátis</b> acima de R$299</span><span><b>troca grátis</b> em até 7 dias</span></div>
+    <p class="gepl-price">R$ 139,00</p>
+    <ul class="gepl-chips"><li>brilho, leveza e movimento</li><li>proteção térmica e antifrizz</li><li>alinhamento e hidratação duradoura</li></ul>
+  </div>
+</section>
+
+<section class="gepl-sec">
+  <p class="gepl-eyebrow">o problema</p>
+  <h2 class="gepl-h2">Você alisa de manhã. No meio do dia, o frizz já voltou.</h2>
+  <p class="gepl-p">O calor da escova e da chapinha abre a cutícula do fio. Aí o cabelo absorve a umidade do ar, incha e perde o alinhamento. O liso que era de salão vira frizz, e você acaba refazendo tudo no dia seguinte.</p>
+</section>
+
+<section class="gepl-sec gepl-soft">
+  <p class="gepl-eyebrow">a solução</p>
+  <h2 class="gepl-h2">Um primer que sela o liso antes de você secar.</h2>
+  <p class="gepl-p">O Primer Liso Intacto realinha os fios e forma um filme que funciona como um guarda-chuva: a umidade do ambiente não entra, então o liso não desmancha. Ele protege do calor até 230°C e hidrata sem pesar. Você aplica no cabelo úmido, seca, e o resultado se mantém por até 24h, sem frizz e sem toque pesado.</p>
+  <ul class="gepl-bene">
+    <li>Prolonga a escova e o liso por até 24h</li>
+    <li>Blinda contra a umidade, com efeito guarda-chuva</li>
+    <li>Protege do calor até 230°C e hidrata sem pesar</li>
+  </ul>
+  <img class="gepl-prod" src="https://cdn.shopify.com/s/files/1/0807/8344/2240/files/primer-liso-intacto.png?v=1782919150" alt="Primer Liso Intacto GE Beauty" loading="lazy">
+  <p class="gepl-micro" style="text-align:center">150mL · para cabelos lisos e ondulados</p>
+</section>
+
+<section class="gepl-sec">
+  <p class="gepl-eyebrow">por que funciona</p>
+  <h2 class="gepl-h2">Feito com ativos que entregam.</h2>
+  <div class="gepl-cols">
+    <div class="gepl-col"><h3>Allinea™</h3><p>ativo vegetal que realinha os fios e sela a cutícula, criando o efeito guarda-chuva que segura o liso mesmo no dia úmido.</p></div>
+    <div class="gepl-col"><h3>óleo de girassol</h3><p>rico em ômegas e vitamina E, nutre com leveza, ajuda a controlar o frizz e deixa o toque aveludado.</p></div>
+    <div class="gepl-col"><h3>trehalose</h3><p>protege do calor e preserva a umidade interna do fio contra o secador e a chapinha.</p></div>
+  </div>
+</section>
+
+<section class="gepl-sec gepl-soft">
+  <p class="gepl-eyebrow">quem usa, aprova</p>
+  <h2 class="gepl-h2">cabelo alinhado, liso por mais tempo e sem frizz</h2>
+  <div class="gepl-tabsblock"><p><strong>escova prolongada</strong></p><p>segura o visual liso por dias, mesmo em ambientes úmidos.</p><p><strong>volume controlado</strong></p><p>fios ficam comportados, com caimento natural e sem rigidez.</p><p><strong>brilho e maciez</strong></p><p>hidrata profundamente, destacando o reflexo da luz.</p></div>
+  <div class="gepl-proof-media"><span>[ antes / depois + comentários reais (Loox / UGC) . asset em produção ]</span></div>
+</section>
+
+<section class="gepl-sec">
+  <p class="gepl-eyebrow">como usar</p>
+  <h2 class="gepl-h2">Liso intacto em 3 passos.</h2>
+  <ol class="gepl-steps"><li>Aplique nos cabelos úmidos, do comprimento às pontas, antes de secar ou modelar.</li><li>Seque com secador e finalize como preferir.</li><li>Reaplique pequenas quantidades nos dias seguintes para manter o alinhamento.</li></ol>
+  <div class="gepl-tabsblock">
+    <h4>o que você vê depois</h4>
+    <ul class="gepl-tabres"><li>Escova intacta por mais tempo, sem frizz e sem perder o movimento</li><li>Cabelo hidratado, com brilho e toque sedoso</li><li>Proteção térmica e blindagem contra a umidade por até 24h</li></ul>
+  </div>
+</section>
+
+<section class="gepl-sec gepl-soft">
+  <p class="gepl-eyebrow">ainda em dúvida?</p>
+  <h2 class="gepl-h2">Perguntas rápidas.</h2>
+  <details class="gepl-faq"><summary>Serve para o meu cabelo?</summary><p>Sim. De lisos naturais a ondulados e cacheados que gostam de escovar ou pranchar e querem que o resultado dure mais.</p></details>
+  <details class="gepl-faq"><summary>Protege mesmo do calor?</summary><p>Sim. Protege até 230°C, então você usa secador e chapinha sem ressecar, mantendo os fios hidratados no processo.</p></details>
+  <details class="gepl-faq"><summary>Segura o liso no dia úmido?</summary><p>Sim. Ele cria uma blindagem que mantém o cabelo alinhado por até 24h, mesmo quando o ar está úmido.</p></details>
+  <details class="gepl-faq"><summary>Preciso escovar ou pranchar para usar?</summary><p>Não. O primer também controla o frizz e dá brilho quando você deixa o cabelo secar ao natural.</p></details>
+</section>
+
+<section class="gepl-sec gepl-close">
+  <h2 class="gepl-h2">Seu liso começa hoje, e continua amanhã.</h2>
+  <p class="gepl-p" style="text-align:center">O mesmo resultado de salão, agora na sua rotina.</p>
+  <a class="gepl-cta" href="/cart/50023991804224:1" style="max-width:420px;margin:0 auto">Quero meu liso intacto</a>
+  <div class="gepl-reassure"><span><b>6x</b> sem juros</span><span><b>frete grátis</b> acima de R$299</span><span><b>troca grátis</b> em até 7 dias</span></div>
+  <p class="gepl-tag">no seu tempo, do seu jeito.</p>
+</section>
+
+</div>
+<div class="gepl-spacer"></div>
+<div class="gepl-sticky"><span class="p">R$ 139,00</span><a href="/cart/50023991804224:1">Quero meu liso intacto</a></div></body></html>

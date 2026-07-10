@@ -1,0 +1,49 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "headline": "Santal Skin: a bruma amadeirada para cabelo e corpo",
+      "author": { "@type": "Organization", "name": "GE Beauty" },
+      "publisher": { "@type": "Organization", "name": "GE Beauty" },
+      "inLanguage": "pt-BR",
+      "description": "Conheça o Santal Skin Body & Hair Mist GE Beauty: sândalo, cardamomo e patchouli numa bruma amadeirada para cabelo e corpo. Veja as notas e como usar."
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "O Santal Skin é uma fragrância forte?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "É marcante, mas não pesada. O amadeirado fica próximo da pele, com uma assinatura limpa e elegante que se percebe de perto, sem invadir o ambiente."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Dá para usar o Santal Skin no dia a dia?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sim. Funciona tanto num dia de trabalho quanto à noite. Para o dia, uma borrifada leve já entrega a presença; à noite, dá para reaplicar e intensificar."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Posso usar o Santal Skin no cabelo sem pesar?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Pode. A bruma é leve e não deixa resíduo: perfuma e realça o brilho dos fios sem pesar o cabelo."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Blog GE Beauty" },
+        { "@type": "ListItem", "position": 2, "name": "Santal Skin: o amadeirado que cheira a pele" }
+      ]
+    }
+  ]
+}

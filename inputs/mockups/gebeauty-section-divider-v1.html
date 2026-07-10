@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GE Beauty — divisores de seção (opções)</title>
+<style>
+  :root{--ge-red:#DF372F;--ink:#161616;--muted:#6b6b6b;--line:#e7e3dd;--soft:#f7f6f4;--font:'Helvetica Neue',Arial,sans-serif}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);color:var(--ink);background:#fff}
+  .wrap{max-width:1080px;margin:0 auto;padding:40px 24px 80px}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:16px;margin:0 0 8px;max-width:60ch}
+
+  .opt{border:1px solid var(--line);border-radius:16px;margin-top:26px;overflow:hidden;background:#fff}
+  .opt-head{display:flex;align-items:baseline;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line);background:var(--soft)}
+  .opt-head .tag{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--ge-red);padding:3px 8px;border-radius:6px}
+  .opt-head h2{font-size:18px;font-weight:800;margin:0}
+  .opt-head .rec{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ge-red);border:1.4px solid var(--ge-red);padding:2px 7px;border-radius:6px}
+  .opt-head .desc{color:var(--muted);font-size:13.5px;margin-left:auto;text-align:right;max-width:42ch}
+  .preview{padding:0 26px}
+  .faux{background:#fbfaf8;border:1px dashed #ddd6cc;border-radius:14px;height:68px;display:flex;align-items:center;justify-content:center;color:#b3ada3;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+  code{display:block;background:#0f1115;color:#e8e8ea;font-size:12.5px;line-height:1.5;padding:14px 18px;border-radius:0;white-space:pre;overflow-x:auto;border-top:1px solid var(--line)}
+
+  /* ============ THE DIVIDER OPTIONS ============ */
+  /* A — espaço puro (só respiro, sem traço) */
+  .gebd-a{height:88px}
+
+  /* B — filete fino */
+  .gebd-b{height:1px;background:var(--line);margin:60px auto;max-width:100%}
+
+  /* C — filete esmaecido (gradiente) */
+  .gebd-c{height:1px;margin:60px auto;max-width:100%;background:linear-gradient(90deg,transparent,#d9d4cc 16%,#d9d4cc 84%,transparent)}
+
+  /* D — barra curta vermelha (recomendado) */
+  .gebd-d{margin:60px auto;width:56px;height:4px;border-radius:2px;background:var(--ge-red)}
+
+  /* E — filete com ponto central */
+  .gebd-e{position:relative;height:1px;background:var(--line);margin:60px auto;max-width:100%}
+  .gebd-e::after{content:"";position:absolute;left:50%;top:50%;width:9px;height:9px;border-radius:50%;background:var(--ge-red);transform:translate(-50%,-50%)}
+
+  /* F — marca central entre filetes (losango) */
+  .gebd-f{display:flex;align-items:center;gap:16px;margin:60px auto;max-width:460px}
+  .gebd-f::before,.gebd-f::after{content:"";flex:1;height:1px;background:var(--line)}
+  .gebd-f i{width:8px;height:8px;background:var(--ge-red);transform:rotate(45deg);flex:none}
+
+  @media(max-width:768px){
+    .opt-head{flex-wrap:wrap}
+    .opt-head .desc{margin-left:0;text-align:left;max-width:100%}
+    .gebd-a{height:64px}
+    .gebd-b,.gebd-c,.gebd-d,.gebd-e,.gebd-f{margin-top:44px;margin-bottom:44px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>divisores de seção — opções</h1>
+  <p class="sub">Elementos HTML/CSS puros (sem JS) para dar respiro entre seções. Tokens da marca GE. Cada opção aparece entre duas "seções" de exemplo.</p>
+
+  <!-- A -->
+  <div class="opt">
+    <div class="opt-head"><span class="tag">A</span><h2>espaço puro</h2><span class="desc">Só respiro vertical, sem traço. Máxima leveza.</span></div>
+    <div class="preview">
+      <div class="faux">seção anterior</div>
+      <div class="gebd-a"></div>
+      <div class="faux">próxima seção</div>
+    </div>
+    <code>&lt;div class="gebd-a"&gt;&lt;/div&gt;
+.gebd-a{ height:88px }  /* 64px no mobile */</code>
+  </div>
+
+  <!-- B -->
+  <div class="opt">
+    <div class="opt-head"><span class="tag">B</span><h2>filete fino</h2><span class="desc">Linha discreta de ponta a ponta. Neutra e limpa.</span></div>
+    <div class="preview">
+      <div class="faux">seção anterior</div>
+      <div class="gebd-b"></div>
+      <div class="faux">próxima seção</div>
+    </div>
+    <code>&lt;div class="gebd-b"&gt;&lt;/div&gt;
+.gebd-b{ height:1px; background:#e7e3dd; margin:60px auto }</code>
+  </div>
+
+  <!-- C -->
+  <div class="opt">
+    <div class="opt-head"><span class="tag">C</span><h2>filete esmaecido</h2><span class="desc">Linha que some nas pontas. Elegante e suave.</span></div>
+    <div class="preview">
+      <div class="faux">seção anterior</div>
+      <div class="gebd-c"></div>
+      <div class="faux">próxima seção</div>
+    </div>
+    <code>&lt;div class="gebd-c"&gt;&lt;/div&gt;
+.gebd-c{ height:1px; margin:60px auto;
+  background:linear-gradient(90deg,transparent,#d9d4cc 16%,#d9d4cc 84%,transparent) }</code>
+  </div>
+
+  <!-- D -->
+  <div class="opt">
+    <div class="opt-head"><span class="tag">D</span><h2>barra curta vermelha</h2><span class="rec">recomendado</span><span class="desc">Acento curto na cor da marca. Limpo + claramente GE.</span></div>
+    <div class="preview">
+      <div class="faux">seção anterior</div>
+      <div class="gebd-d"></div>
+      <div class="faux">próxima seção</div>
+    </div>
+    <code>&lt;div class="gebd-d"&gt;&lt;/div&gt;
+.gebd-d{ width:56px; height:4px; border-radius:2px; background:#DF372F; margin:60px auto }</code>
+  </div>
+
+  <!-- E -->
+  <div class="opt">
+    <div class="opt-head"><span class="tag">E</span><h2>filete com ponto</h2><span class="desc">Linha completa com um ponto vermelho no centro.</span></div>
+    <div class="preview">
+      <div class="faux">seção anterior</div>
+      <div class="gebd-e"></div>
+      <div class="faux">próxima seção</div>
+    </div>
+    <code>&lt;div class="gebd-e"&gt;&lt;/div&gt;
+.gebd-e{ position:relative; height:1px; background:#e7e3dd; margin:60px auto }
+.gebd-e::after{ content:""; position:absolute; left:50%; top:50%;
+  width:9px; height:9px; border-radius:50%; background:#DF372F; transform:translate(-50%,-50%) }</code>
+  </div>
+
+  <!-- F -->
+  <div class="opt">
+    <div class="opt-head"><span class="tag">F</span><h2>marca central (losango)</h2><span class="desc">Dois filetes curtos com um losango vermelho ao centro. Mais decorativo.</span></div>
+    <div class="preview">
+      <div class="faux">seção anterior</div>
+      <div class="gebd-f"><i></i></div>
+      <div class="faux">próxima seção</div>
+    </div>
+    <code>&lt;div class="gebd-f"&gt;&lt;i&gt;&lt;/i&gt;&lt;/div&gt;
+.gebd-f{ display:flex; align-items:center; gap:16px; margin:60px auto; max-width:460px }
+.gebd-f::before,.gebd-f::after{ content:""; flex:1; height:1px; background:#e7e3dd }
+.gebd-f i{ width:8px; height:8px; background:#DF372F; transform:rotate(45deg) }</code>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,471 @@
+{
+  "counts": {
+    "canonical_skus": 29,
+    "shopify_retail_variants": 34,
+    "matched": 21,
+    "canonical_only": 8,
+    "shopify_only": 13
+  },
+  "canonical_only": [
+    {
+      "sku": "GEB 122",
+      "name_pt": "SHAMPOO RECONSTRUTOR MAYDAY GE Beauty",
+      "ean": "0631430720338",
+      "ncm": "3305.10.00",
+      "cest": "20.017.00",
+      "shelf_life_days": 1095,
+      "shelf_life_expedicao_days": 180,
+      "net_weight_g": null,
+      "gross_weight_g": 250,
+      "dimensions_mm": {
+        "l": 78,
+        "w": 78,
+        "h": 185
+      },
+      "units_per_carton": 36,
+      "description_short_pt": null,
+      "description_long_pt": null
+    },
+    {
+      "sku": "GEB 123",
+      "name_pt": "CONDICIONADOR RECONSTRUTOR MAYDAY GE Beauty",
+      "ean": "0631430720345",
+      "ncm": "3305.90.00",
+      "cest": "20.020.00",
+      "shelf_life_days": 1095,
+      "shelf_life_expedicao_days": 180,
+      "net_weight_g": null,
+      "gross_weight_g": 213,
+      "dimensions_mm": {
+        "l": 78,
+        "w": 78,
+        "h": 155
+      },
+      "units_per_carton": 36,
+      "description_short_pt": null,
+      "description_long_pt": null
+    },
+    {
+      "sku": "GEB 124",
+      "name_pt": "LEAVE-IN RECONSTRUTOR MAYDAY GE Beauty",
+      "ean": "0631430720352",
+      "ncm": "3305.90.00",
+      "cest": "20.020.00",
+      "shelf_life_days": 1095,
+      "shelf_life_expedicao_days": 180,
+      "net_weight_g": null,
+      "gross_weight_g": 170,
+      "dimensions_mm": {
+        "l": 78,
+        "w": 78,
+        "h": 130
+      },
+      "units_per_carton": 36,
+      "description_short_pt": null,
+      "description_long_pt": null
+    },
+    {
+      "sku": "GEB 125",
+      "name_pt": "KIT RECONSTRUÇÃO MAYDAY",
+      "ean": null,
+      "ncm": "3305.90.00",
+      "cest": null,
+      "shelf_life_days": 1095,
+      "shelf_life_expedicao_days": 180,
+      "net_weight_g": null,
+      "gross_weight_g": null,
+      "dimensions_mm": null,
+      "units_per_carton": null,
+      "description_short_pt": null,
+      "description_long_pt": null
+    },
+    {
+      "sku": "GEB 126",
+      "name_pt": "Sérum Reparador Noturno MayDay",
+      "ean": null,
+      "ncm": "3305.90.00",
+      "cest": "20.020.00",
+      "shelf_life_days": 1095,
+      "shelf_life_expedicao_days": 180,
+      "net_weight_g": null,
+      "gross_weight_g": 170,
+      "dimensions_mm": {
+        "l": 78,
+        "w": 78,
+        "h": 130
+      },
+      "units_per_carton": null,
+      "description_short_pt": null,
+      "description_long_pt": null
+    },
+    {
+      "sku": "GEB 301",
+      "name_pt": "SACHÊ SHAMPOO GE BEAUTY 15ml",
+      "ean": null,
+      "ncm": "3305.10.00",
+      "cest": "20.017.00",
+      "shelf_life_days": 1095,
+      "shelf_life_expedicao_days": 180,
+      "net_weight_g": null,
+      "gross_weight_g": 15,
+      "dimensions_mm": {
+        "l": 65,
+        "w": 65,
+        "h": 100
+      },
+      "units_per_carton": null,
+      "description_short_pt": null,
+      "description_long_pt": null
+    },
+    {
+      "sku": "GEB 302",
+      "name_pt": "SACHÊ MASCARA CONDICIONADORA GE BEAUTY 15ml",
+      "ean": null,
+      "ncm": "3305.90.00",
+      "cest": "20.020.00",
+      "shelf_life_days": 1095,
+      "shelf_life_expedicao_days": 180,
+      "net_weight_g": null,
+      "gross_weight_g": 15,
+      "dimensions_mm": {
+        "l": 65,
+        "w": 65,
+        "h": 100
+      },
+      "units_per_carton": null,
+      "description_short_pt": null,
+      "description_long_pt": null
+    },
+    {
+      "sku": "GEB 303",
+      "name_pt": "SACHÊ LEAVE-IN GE BEAUTY 15ml",
+      "ean": null,
+      "ncm": "3305.90.00",
+      "cest": "20.020.00",
+      "shelf_life_days": 1095,
+      "shelf_life_expedicao_days": 180,
+      "net_weight_g": null,
+      "gross_weight_g": 15,
+      "dimensions_mm": {
+        "l": 65,
+        "w": 65,
+        "h": 100
+      },
+      "units_per_carton": null,
+      "description_short_pt": null,
+      "description_long_pt": null
+    }
+  ],
+  "shopify_only": [
+    {
+      "title": "escova polvo",
+      "status": "ACTIVE",
+      "productType": "acessorio",
+      "sku": "7685GE",
+      "barcode": "7896025540705",
+      "price": "49.00",
+      "compareAtPrice": null,
+      "wt_g": 78.0,
+      "ncm": null,
+      "finalidade": "facilita a finalização de cabelos cacheados e ondulados",
+      "deschtml": true,
+      "descricao_longa": "gid://shopify/Metaobject/45887979840"
+    },
+    {
+      "title": "escova oval",
+      "status": "ACTIVE",
+      "productType": "acessorio",
+      "sku": "7671",
+      "barcode": "7896025537286",
+      "price": "39.00",
+      "compareAtPrice": null,
+      "wt_g": 70.0,
+      "ncm": null,
+      "finalidade": "desembaraça e massageia o couro cabeludo",
+      "deschtml": true,
+      "descricao_longa": "gid://shopify/Metaobject/45888209216"
+    },
+    {
+      "title": "vela GE Beauty rituals",
+      "status": "ACTIVE",
+      "productType": "acessorio",
+      "sku": "1020",
+      "barcode": "0040141049858",
+      "price": "179.00",
+      "compareAtPrice": null,
+      "wt_g": 500.0,
+      "ncm": null,
+      "finalidade": "Para perfumar seu ritual de autocuidado",
+      "deschtml": true,
+      "descricao_longa": "gid://shopify/Metaobject/46158774592"
+    },
+    {
+      "title": "espátula",
+      "status": "ACTIVE",
+      "productType": "acessorio",
+      "sku": "143VR",
+      "barcode": "7898398842332",
+      "price": "5.00",
+      "compareAtPrice": null,
+      "wt_g": 61.0,
+      "ncm": null,
+      "finalidade": null,
+      "deschtml": false,
+      "descricao_longa": null
+    },
+    {
+      "title": "cubeta",
+      "status": "ACTIVE",
+      "productType": "acessorio",
+      "sku": "GE404VR",
+      "barcode": "7898398848204",
+      "price": "15.00",
+      "compareAtPrice": null,
+      "wt_g": 61.0,
+      "ncm": null,
+      "finalidade": null,
+      "deschtml": false,
+      "descricao_longa": null
+    },
+    {
+      "title": "nécessaire clutch mini",
+      "status": "ACTIVE",
+      "productType": "acessorio",
+      "sku": "100667",
+      "barcode": "070341871461",
+      "price": "59.00",
+      "compareAtPrice": null,
+      "wt_g": 10.0,
+      "ncm": null,
+      "finalidade": "cabe o essencial para o seu cabelo",
+      "deschtml": true,
+      "descricao_longa": null
+    },
+    {
+      "title": "clutch vermelha grande",
+      "status": "ACTIVE",
+      "productType": "acessorio",
+      "sku": "100689",
+      "barcode": "074468529656",
+      "price": "110.00",
+      "compareAtPrice": null,
+      "wt_g": 61.0,
+      "ncm": null,
+      "finalidade": null,
+      "deschtml": true,
+      "descricao_longa": null
+    },
+    {
+      "title": "clutch bordô grande",
+      "status": "ACTIVE",
+      "productType": "acessorio",
+      "sku": "100690",
+      "barcode": "074468529663",
+      "price": "110.00",
+      "compareAtPrice": null,
+      "wt_g": 61.0,
+      "ncm": null,
+      "finalidade": null,
+      "deschtml": true,
+      "descricao_longa": null
+    },
+    {
+      "title": "boné \"no seu tempo, do seu jeito\"",
+      "status": "ACTIVE",
+      "productType": "acessorio",
+      "sku": "AMAR2",
+      "barcode": "074468516069",
+      "price": "190.00",
+      "compareAtPrice": null,
+      "wt_g": 61.0,
+      "ncm": null,
+      "finalidade": null,
+      "deschtml": true,
+      "descricao_longa": null
+    },
+    {
+      "title": "pochete GE Beauty",
+      "status": "ACTIVE",
+      "productType": "acessorio",
+      "sku": "200241",
+      "barcode": "074468790032",
+      "price": "79.00",
+      "compareAtPrice": null,
+      "wt_g": 61.0,
+      "ncm": null,
+      "finalidade": null,
+      "deschtml": true,
+      "descricao_longa": null
+    },
+    {
+      "title": "kit mixer e espátula",
+      "status": "ACTIVE",
+      "productType": "acessorio",
+      "sku": "GEBKMIX",
+      "barcode": null,
+      "price": "20.00",
+      "compareAtPrice": null,
+      "wt_g": 0.0,
+      "ncm": null,
+      "finalidade": "praticidade nas customizações",
+      "deschtml": true,
+      "descricao_longa": "gid://shopify/Metaobject/46137508160"
+    },
+    {
+      "title": "caixa para presente vermelha",
+      "status": "ACTIVE",
+      "productType": "acessorio",
+      "sku": "CX-PRSTGE001",
+      "barcode": "074468529670",
+      "price": "15.00",
+      "compareAtPrice": null,
+      "wt_g": 61.0,
+      "ncm": null,
+      "finalidade": null,
+      "deschtml": true,
+      "descricao_longa": null
+    },
+    {
+      "title": "charm bag - travel size - leave-in",
+      "status": "ACTIVE",
+      "productType": "acessorio",
+      "sku": "GEB 111",
+      "barcode": "042882214281",
+      "price": "59.00",
+      "compareAtPrice": null,
+      "wt_g": 61.0,
+      "ncm": "33059000",
+      "finalidade": "protege contra danos térmicos e hidrata",
+      "deschtml": true,
+      "descricao_longa": "gid://shopify/Metaobject/45619937600"
+    }
+  ],
+  "matched_with_diffs": [
+    {
+      "sku": "GEB 001",
+      "shopify_title": "shampoo sem sulfato",
+      "price": "95.00",
+      "diffs": [
+        "NCM missing on Shopify (canon 3305.10.00)"
+      ]
+    },
+    {
+      "sku": "GEB 008",
+      "shopify_title": "shampoo a seco",
+      "price": "69.00",
+      "diffs": [
+        "EAN leading-zero: canon=0630941722534 shopify=630941722534"
+      ]
+    },
+    {
+      "sku": "GEB 024",
+      "shopify_title": "melon mood | body & hair mist",
+      "price": "129.00",
+      "diffs": [
+        "EAN leading-zero: canon=0042882635451 shopify=042882635451"
+      ]
+    },
+    {
+      "sku": "GEB 101",
+      "shopify_title": "primer cachos definidos",
+      "price": "149.00",
+      "diffs": [
+        "EAN leading-zero: canon=0070341871478 shopify=070341871478",
+        "NCM missing on Shopify (canon 3305.90.00)"
+      ]
+    },
+    {
+      "sku": "GEB 102",
+      "shopify_title": "primer liso intacto",
+      "price": "139.00",
+      "diffs": [
+        "EAN leading-zero: canon=0074468261297 shopify=074468261297",
+        "NCM missing on Shopify (canon 3305.90.00)"
+      ]
+    },
+    {
+      "sku": "GEB 120",
+      "shopify_title": "leave-in pluma",
+      "price": "149.00",
+      "diffs": [
+        "EAN leading-zero: canon=0631430152719 shopify=631430152719",
+        "NCM missing on Shopify (canon 3305.90.00)"
+      ]
+    }
+  ],
+  "active_ean_collisions": {
+    "631430152719": [
+      {
+        "title": "leave-in pluma",
+        "status": "ACTIVE",
+        "productType": "product",
+        "sku": "GEB 120",
+        "barcode": "631430152719",
+        "price": "149.00",
+        "compareAtPrice": null,
+        "wt_g": 283.0,
+        "ncm": null,
+        "finalidade": "hidrata, repara, protege até 230 °C, dá brilho e controla o frizz",
+        "deschtml": true,
+        "descricao_longa": "gid://shopify/Metaobject/137862447424"
+      },
+      {
+        "title": "[rappi] leave-in pluma",
+        "status": "ACTIVE",
+        "productType": "rappi",
+        "sku": "GEB 120",
+        "barcode": "631430152719",
+        "price": "149.00",
+        "compareAtPrice": null,
+        "wt_g": 283.0,
+        "ncm": "33059000",
+        "finalidade": "hidrata, repara, protege até 230 °C, dá brilho e controla o frizz",
+        "deschtml": true,
+        "descricao_longa": "gid://shopify/Metaobject/137862447424"
+      }
+    ]
+  },
+  "shopify_missing_barcode": [
+    {
+      "title": "kit mixer e espátula",
+      "status": "ACTIVE",
+      "productType": "acessorio",
+      "sku": "GEBKMIX",
+      "barcode": null,
+      "price": "20.00",
+      "compareAtPrice": null,
+      "wt_g": 0.0,
+      "ncm": null,
+      "finalidade": "praticidade nas customizações",
+      "deschtml": true,
+      "descricao_longa": "gid://shopify/Metaobject/46137508160"
+    }
+  ],
+  "shopify_missing_ncm": [
+    "escova polvo",
+    "escova oval",
+    "shampoo sem sulfato",
+    "vela GE Beauty rituals",
+    "espátula",
+    "cubeta",
+    "nécessaire clutch mini",
+    "clutch vermelha grande",
+    "clutch bordô grande",
+    "primer liso intacto",
+    "primer cachos definidos",
+    "boné \"no seu tempo, do seu jeito\"",
+    "pochete GE Beauty",
+    "kit mixer e espátula",
+    "caixa para presente vermelha",
+    "leave-in pluma"
+  ],
+  "shopify_missing_finalidade": [
+    "espátula",
+    "cubeta",
+    "clutch vermelha grande",
+    "clutch bordô grande",
+    "boné \"no seu tempo, do seu jeito\"",
+    "pochete GE Beauty",
+    "caixa para presente vermelha"
+  ]
+}

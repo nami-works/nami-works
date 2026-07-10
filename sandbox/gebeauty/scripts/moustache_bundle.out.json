@@ -1,0 +1,123 @@
+{
+ "rows": [
+  {
+   "conn": "MATRIZ",
+   "nNF": "00078432",
+   "dEmi": "18/11/2025",
+   "cnpj": "30998254013947",
+   "units": 2082.0,
+   "vNF": 104797.2
+  },
+  {
+   "conn": "MATRIZ",
+   "nNF": "00078438",
+   "dEmi": "18/11/2025",
+   "cnpj": "30998254003550",
+   "units": 200.0,
+   "vNF": 13225.32
+  },
+  {
+   "conn": "SHOPS JARDINS",
+   "nNF": "00000509",
+   "dEmi": "19/12/2025",
+   "cnpj": "30998254013947",
+   "units": 372.0,
+   "vNF": 20678.4
+  },
+  {
+   "conn": "SHOPS JARDINS",
+   "nNF": "00000837",
+   "dEmi": "20/01/2026",
+   "cnpj": "30998254013947",
+   "units": 902.0,
+   "vNF": 49878.0
+  }
+ ],
+ "cancelled": [
+  {
+   "conn": "MATRIZ",
+   "nNF": "00078433",
+   "dEmi": "18/11/2025",
+   "dCan": "18/11/2025",
+   "vNF": 13225.32
+  }
+ ],
+ "by_conn": {
+  "MATRIZ": {
+   "nfs": 2,
+   "units": 2282.0,
+   "value": 118022.51999999999
+  },
+  "SHOPS JARDINS": {
+   "nfs": 2,
+   "units": 1274.0,
+   "value": 70556.4
+  }
+ },
+ "sku_u": {
+  "GEB 002": 320.0,
+  "GEB 003": 320.0,
+  "GEB 023": 323.0,
+  "GEB 001": 204.0,
+  "GEB 021": 323.0,
+  "GEB 020": 313.0,
+  "GEB 019": 323.0,
+  "GEB 024": 188.0,
+  "GEB 008": 192.0,
+  "GEB 013": 198.0,
+  "GEB 010": 198.0,
+  "GEB 011": 198.0,
+  "GEB 101": 152.0,
+  "GEB 102": 152.0,
+  "GEB 120": 152.0
+ },
+ "sku_v": {
+  "GEB 002": 18240.0,
+  "GEB 003": 19008.0,
+  "GEB 023": 14535.0,
+  "GEB 001": 11628.0,
+  "GEB 021": 13372.2,
+  "GEB 020": 12958.2,
+  "GEB 019": 14535.0,
+  "GEB 024": 14664.0,
+  "GEB 008": 11404.8,
+  "GEB 013": 4752.0,
+  "GEB 010": 4752.0,
+  "GEB 011": 5583.599999999999,
+  "GEB 101": 13588.8,
+  "GEB 102": 12676.8,
+  "GEB 120": 13680.0
+ },
+ "sku_d": {
+  "GEB 002": "MASCARA GE BEAUTY 200ML",
+  "GEB 003": "LEAVE-IN GE BEAUTY 150 ML",
+  "GEB 023": "BOOSTER ANTIOXIDANTE GE BEAUTY",
+  "GEB 001": "SHAMPOO GE BEAUTY 250 ML",
+  "GEB 021": "BOOSTER DE DEFINIÇÃO GE BEAUTY",
+  "GEB 020": "BOOSTER HIDRATANTE GE BEAUTY",
+  "GEB 019": "BOOSTER FORTIFICANTE GE BEAUTY",
+  "GEB 024": "BODY HAIR SPLASH MELON MOOD GE Beauty",
+  "GEB 008": "SHAMPOO A SECO GE BEAUTY 150ml",
+  "GEB 013": "Shampoo GE Beauty 60 ml",
+  "GEB 010": "Mascara Condicionadora GE Beauty 50ml",
+  "GEB 011": "Finalizador Leave-in GE Beauty 50ml (GEB 011)",
+  "GEB 101": "PRIMER CACHOS DEFINIDOS GE Beauty",
+  "GEB 102": "PRIMER LISO INTACTO GE Beauty",
+  "GEB 120": "LEAVE-IN PLUMA GE BEAUTY"
+ },
+ "mon_u": {
+  "11/2025": 2282.0,
+  "12/2025": 372.0,
+  "01/2026": 902.0
+ },
+ "mon_v": {
+  "11/2025": 118022.51999999999,
+  "12/2025": 20678.4,
+  "01/2026": 49878.0
+ },
+ "totals": {
+  "nfs": 4,
+  "units": 3556.0,
+  "value": 188578.91999999998
+ }
+}

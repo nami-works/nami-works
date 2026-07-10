@@ -1,0 +1,143 @@
+=== G48 full formula (template) ===
+=IFERROR(INDEX('E-comm'!$1:$1048576,MATCH($B48&$D48,'E-comm'!$A:$A,0),MATCH(EDATE(G$5,$E48*$B$5),'E-comm'!$3:$3,0))*$B$1,0)+IFERROR(INDEX(Lojas_DRE!$1:$1048576,MATCH($B48&$D48,Lojas_DRE!$A:$A,0),MATCH(EDATE(G$5,$E48*$B$5),Lojas_DRE!$3:$3,0))*$B$2,0)
+
+=== G49 full formula ===
+=IFERROR(INDEX('E-comm'!$1:$1048576,MATCH($B49&$D49,'E-comm'!$A:$A,0),MATCH(EDATE(G$5,$E49*$B$5),'E-comm'!$3:$3,0))*$B$1,0)+IFERROR(INDEX(Lojas_DRE!$1:$1048576,MATCH($B49&$D49,Lojas_DRE!$A:$A,0),MATCH(EDATE(G$5,$E49*$B$5),Lojas_DRE!$3:$3,0))*$B$2,0)
+
+=== MACRO consolidation rows (contain 'E-comm'!): row | B | D | E(lag) ===
+r10: B='Receita' D='Máscara 200ml' E=None
+r32: B='Receita' D='Espátula' E=None
+r45: B='Receita' D='Desconto' E=None
+r48: B='Despesa' D='ICMS' E='=INDEX([1]Planilha1!$F:$G,MATCH($D48,[1]Planilha1!$F:$F,0),2)'
+r49: B='Despesa' D='PIS/COFINS' E='=INDEX([1]Planilha1!$F:$G,MATCH($D49,[1]Planilha1!$F:$F,0),2)'
+r50: B='Despesa' D='DIFAL + FCP' E=-1
+r53: B='Despesa' D='Produto' E=-2
+r54: B='Despesa' D='Frete sobre Compras' E='=INDEX([1]Planilha1!$F:$G,MATCH($D54,[1]Planilha1!$F:$F,0),2)'
+r55: B='Despesa' D='Embalagem' E='=INDEX([1]Planilha1!$F:$G,MATCH($D55,[1]Planilha1!$F:$F,0),2)'
+r56: B='Despesa' D='Perdas' E='=INDEX([1]Planilha1!$F:$G,MATCH($D56,[1]Planilha1!$F:$F,0),2)'
+r60: B='Despesa' D='Armazenagem' E='=INDEX([1]Planilha1!$F:$G,MATCH($D60,[1]Planilha1!$F:$F,0),2)'
+r61: B='Despesa' D='Frete sobre Vendas' E='=INDEX([1]Planilha1!$F:$G,MATCH($D61,[1]Planilha1!$F:$F,0),2)'
+r62: B='Despesa' D='Custo de Ocupação' E='=INDEX([1]Planilha1!$F:$G,MATCH($D62,[1]Planilha1!$F:$F,0),2)'
+r63: B='Despesa' D='Outras despesas lojas' E='=INDEX([1]Planilha1!$F:$G,MATCH($D63,[1]Planilha1!$F:$F,0),2)'
+r65: B='Despesa' D='Taxa adquirência' E='=INDEX([1]Planilha1!$F:$G,MATCH($D65,[1]Planilha1!$F:$F,0),2)'
+r66: B='Despesa' D='Fee plataformas' E='=INDEX([1]Planilha1!$F:$G,MATCH($D66,[1]Planilha1!$F:$F,0),2)'
+r69: B='Despesa' D='Facebook' E='=INDEX([1]Planilha1!$F:$G,MATCH($D69,[1]Planilha1!$F:$F,0),2)'
+r70: B='Despesa' D='Google' E='=INDEX([1]Planilha1!$F:$G,MATCH($D70,[1]Planilha1!$F:$F,0),2)'
+r71: B='Despesa' D='TikTok' E='=INDEX([1]Planilha1!$F:$G,MATCH($D71,[1]Planilha1!$F:$F,0),2)'
+r72: B='Despesa' D='Pinterest' E='=INDEX([1]Planilha1!$F:$G,MATCH($D72,[1]Planilha1!$F:$F,0),2)'
+r73: B='Despesa' D='Afiliadas' E='=INDEX([1]Planilha1!$F:$G,MATCH($D73,[1]Planilha1!$F:$F,0),2)'
+r75: B='Despesa' D='Produtos para seeding' E=-2
+r76: B='Despesa' D='Embalagens para seeding' E='=INDEX([1]Planilha1!$F:$G,MATCH($D76,[1]Planilha1!$F:$F,0),2)'
+r77: B='Despesa' D='Envios' E='=INDEX([1]Planilha1!$F:$G,MATCH($D77,[1]Planilha1!$F:$F,0),2)'
+r79: B='Despesa' D='Material para PDVs próprios' E='=INDEX([1]Planilha1!$F:$G,MATCH($D79,[1]Planilha1!$F:$F,0),2)'
+r80: B='Despesa' D='Material para PDVs B2B' E='=INDEX([1]Planilha1!$F:$G,MATCH($D80,[1]Planilha1!$F:$F,0),2)'
+r81: B='Despesa' D='Brindes compre e ganhe' E='=INDEX([1]Planilha1!$F:$G,MATCH($D81,[1]Planilha1!$F:$F,0),2)'
+r82: B='Despesa' D='Ações de marketing lojas' E='=INDEX([1]Planilha1!$F:$G,MATCH($D82,[1]Planilha1!$F:$F,0),2)'
+r83: B='Despesa' D='Reinvestimento  no canal B2B' E=None
+r84: B='Despesa' D='Influência' E=None
+r86: B='Despesa' D='CRM' E='=INDEX([1]Planilha1!$F:$G,MATCH($D86,[1]Planilha1!$F:$F,0),2)'
+r87: B='Despesa' D='Atendimento ao consumidor' E='=INDEX([1]Planilha1!$F:$G,MATCH($D87,[1]Planilha1!$F:$F,0),2)'
+r88: B='Despesa' D='Analytics' E='=INDEX([1]Planilha1!$F:$G,MATCH($D88,[1]Planilha1!$F:$F,0),2)'
+r89: B='Despesa' D='Mensalidade e-comm' E='=INDEX([1]Planilha1!$F:$G,MATCH($D89,[1]Planilha1!$F:$F,0),2)'
+r90: B='Despesa' D='Sistema de PDV' E='=INDEX([1]Planilha1!$F:$G,MATCH($D90,[1]Planilha1!$F:$F,0),2)'
+r96: B='Despesa' D='Salários' E='=INDEX([1]Planilha1!$F:$G,MATCH($D96,[1]Planilha1!$F:$F,0),2)'
+r97: B='Despesa' D='Férias' E='=INDEX([1]Planilha1!$F:$G,MATCH($D97,[1]Planilha1!$F:$F,0),2)'
+r98: B='Despesa' D='13º salário' E='=INDEX([1]Planilha1!$F:$G,MATCH($D98,[1]Planilha1!$F:$F,0),2)'
+r99: B='Despesa' D='Encargos' E='=INDEX([1]Planilha1!$F:$G,MATCH($D99,[1]Planilha1!$F:$F,0),2)'
+r100: B='Despesa' D='Rescisões' E='=INDEX([1]Planilha1!$F:$G,MATCH($D100,[1]Planilha1!$F:$F,0),2)'
+r101: B='Despesa' D='Benefícios' E='=INDEX([1]Planilha1!$F:$G,MATCH($D101,[1]Planilha1!$F:$F,0),2)'
+r102: B='Despesa' D='Comissões' E=0
+r103: B='Despesa' D='Outras despesas de pessoal' E='=INDEX([1]Planilha1!$F:$G,MATCH($D103,[1]Planilha1!$F:$F,0),2)'
+r104: B='Despesa' D='Prestadores de Serviço' E='=INDEX([1]Planilha1!$F:$G,MATCH($D104,[1]Planilha1!$F:$F,0),2)'
+r106: B='Despesa' D='ERP' E='=INDEX([1]Planilha1!$F:$G,MATCH($D106,[1]Planilha1!$F:$F,0),2)'
+r107: B='Despesa' D='E-mail + ferramentas' E='=INDEX([1]Planilha1!$F:$G,MATCH($D107,[1]Planilha1!$F:$F,0),2)'
+r109: B='Despesa' D='Aluguel' E='=INDEX([1]Planilha1!$F:$G,MATCH($D109,[1]Planilha1!$F:$F,0),2)'
+r110: B='Despesa' D='Condomínio' E='=INDEX([1]Planilha1!$F:$G,MATCH($D110,[1]Planilha1!$F:$F,0),2)'
+r111: B='Despesa' D='IPTU' E='=INDEX([1]Planilha1!$F:$G,MATCH($D111,[1]Planilha1!$F:$F,0),2)'
+r112: B='Despesa' D='Energia elétrica' E='=INDEX([1]Planilha1!$F:$G,MATCH($D112,[1]Planilha1!$F:$F,0),2)'
+r113: B='Despesa' D='Manutenção predial' E='=INDEX([1]Planilha1!$F:$G,MATCH($D113,[1]Planilha1!$F:$F,0),2)'
+r114: B='Despesa' D='Materiais de uso e consumo' E='=INDEX([1]Planilha1!$F:$G,MATCH($D114,[1]Planilha1!$F:$F,0),2)'
+r116: B='Despesa' D='Contabilidade' E='=INDEX([1]Planilha1!$F:$G,MATCH($D116,[1]Planilha1!$F:$F,0),2)'
+r117: B='Despesa' D='Advocacia' E='=INDEX([1]Planilha1!$F:$G,MATCH($D117,[1]Planilha1!$F:$F,0),2)'
+r118: B='Despesa' D='Manutenção equipamentos' E='=INDEX([1]Planilha1!$F:$G,MATCH($D118,[1]Planilha1!$F:$F,0),2)'
+r119: B='Despesa' D='Assinaturas e filiações' E='=INDEX([1]Planilha1!$F:$G,MATCH($D119,[1]Planilha1!$F:$F,0),2)'
+r120: B='Despesa' D='Internet' E='=INDEX([1]Planilha1!$F:$G,MATCH($D120,[1]Planilha1!$F:$F,0),2)'
+r121: B='Despesa' D='Consultoria' E='=INDEX([1]Planilha1!$F:$G,MATCH($D121,[1]Planilha1!$F:$F,0),2)'
+r122: B='Despesa' D='Assessoria regulatória' E='=INDEX([1]Planilha1!$F:$G,MATCH($D122,[1]Planilha1!$F:$F,0),2)'
+r123: B='Despesa' D='Sustentação e performance' E='=INDEX([1]Planilha1!$F:$G,MATCH($D123,[1]Planilha1!$F:$F,0),2)'
+r124: B='Despesa' D='Outros serviços pontuais' E='=INDEX([1]Planilha1!$F:$G,MATCH($D124,[1]Planilha1!$F:$F,0),2)'
+r126: B='Despesa' D='Conteúdo' E='=INDEX([1]Planilha1!$F:$G,MATCH($D126,[1]Planilha1!$F:$F,0),2)'
+r127: B='Despesa' D='Design' E='=INDEX([1]Planilha1!$F:$G,MATCH($D127,[1]Planilha1!$F:$F,0),2)'
+r128: B='Despesa' D='Eventos + Produção' E='=INDEX([1]Planilha1!$F:$G,MATCH($D128,[1]Planilha1!$F:$F,0),2)'
+r129: B='Despesa' D='Lançamento de produtos' E='=INDEX([1]Planilha1!$F:$G,MATCH($D129,[1]Planilha1!$F:$F,0),2)'
+r130: B='Despesa' D='Viagens e agendas externas' E=None
+r132: B='Despesa' D='Despesas inaugurais' E='=INDEX([1]Planilha1!$F:$G,MATCH($D132,[1]Planilha1!$F:$F,0),2)'
+r133: B='Despesa' D='Enxoval inaugural' E='=INDEX([1]Planilha1!$F:$G,MATCH($D133,[1]Planilha1!$F:$F,0),2)'
+r134: B='Despesa' D='Mídia inaugural' E='=INDEX([1]Planilha1!$F:$G,MATCH($D134,[1]Planilha1!$F:$F,0),2)'
+r135: B='Despesa' D='Tarifas bancárias' E=None
+r137: B='Despesa' D='Cartório' E='=INDEX([1]Planilha1!$F:$G,MATCH($D137,[1]Planilha1!$F:$F,0),2)'
+r138: B='Despesa' D='Reembolsos' E='=INDEX([1]Planilha1!$F:$G,MATCH($D138,[1]Planilha1!$F:$F,0),2)'
+r139: B='Despesa' D='Taxas legais' E='=INDEX([1]Planilha1!$F:$G,MATCH($D139,[1]Planilha1!$F:$F,0),2)'
+r140: B='Despesa' D='Locação equipamentos' E='=INDEX([1]Planilha1!$F:$G,MATCH($D140,[1]Planilha1!$F:$F,0),2)'
+r141: B='Despesa' D='Cartão Crédito' E='=INDEX([1]Planilha1!$F:$G,MATCH($D141,[1]Planilha1!$F:$F,0),2)'
+r142: B='Despesa' D='Serviços de entrega' E=0
+r163: B=None D='Entradas sem antecipação' E=None
+r228: B='Receita' D='Receita bruta' E=None
+TOTAL consolidation rows: 78
+
+=== MACRO month->col (row 5) all 2026/2027 dated cols ===
+  BH = 2026-01
+  BI = 2026-02
+  BJ = 2026-03
+  BK = 2026-04
+  BL = 2026-05
+  BM = 2026-06
+  BN = 2026-07
+  BO = 2026-08
+  BP = 2026-09
+  BQ = 2026-10
+  BR = 2026-11
+  BS = 2026-12
+  CA = 2027-01
+  CB = 2027-02
+  CC = 2027-03
+  CD = 2027-04
+  CE = 2027-05
+  CF = 2027-06
+  CG = 2027-07
+  CH = 2027-08
+  CI = 2027-09
+  CJ = 2027-10
+  CK = 2027-11
+  CL = 2027-12
+
+=== E-comm month->col (row 3) all 2026/2027 dated cols ===
+  BN = 2026-01
+  BO = 2026-02
+  BP = 2026-03
+  BQ = 2026-04
+  BR = 2026-05
+  BS = 2026-06
+  BT = 2026-07
+  BU = 2026-08
+  BV = 2026-09
+  BW = 2026-10
+  BX = 2026-11
+  BY = 2026-12
+  CD = 2027-01
+  CE = 2027-02
+  CF = 2027-03
+  CG = 2027-04
+  CH = 2027-05
+  CI = 2027-06
+  CJ = 2027-07
+  CK = 2027-08
+  CL = 2027-09
+  CM = 2027-10
+  CN = 2027-11
+  CO = 2027-12
+
+=== MACRO flag area (rows 1-4, cols A-F) ===
+B1=1  D1='E-comm'
+B2=1  D2='Lojas'
+B3=1  D3='B2B'

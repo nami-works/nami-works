@@ -1,0 +1,49 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "headline": "Pear Fresh: a bruma frutada e fresca para cabelo e corpo",
+      "author": { "@type": "Organization", "name": "GE Beauty" },
+      "publisher": { "@type": "Organization", "name": "GE Beauty" },
+      "inLanguage": "pt-BR",
+      "description": "Conheça o Pear Fresh Body & Hair Mist GE Beauty: pêra, lírio e musk numa bruma frutada e fresca para cabelo e corpo. Veja as notas e como usar."
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "O Pear Fresh é uma fragrância doce?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "É frutada, mas não enjoativa. A pêra traz suculência e o melão um brilho aquático, enquanto o ruibarbo no fundo corta a doçura e deixa tudo mais fresco e moderno."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Dá para usar o Pear Fresh durante o dia todo?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sim. É uma fragrância leve e arejada, ótima para começar o dia e acompanhar a rotina em movimento. Reaplique no cabelo e na pele sempre que quiser renovar o frescor."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Posso usar o Pear Fresh no cabelo sem pesar?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Pode. A bruma é leve e não deixa resíduo: perfuma e realça o brilho dos fios sem pesar o cabelo."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Blog GE Beauty" },
+        { "@type": "ListItem", "position": 2, "name": "Pear Fresh: o frutado fresco em movimento" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,190 @@
+--- ROW 2 (time header) ---
+AN=0  AO=0  AP=0  AQ=0  AR=0  AS=0  AT=0  AU=0  AV=0  AW=0  AX=0  AY=0  BN=1.21  BO=0  BP=0  BQ=0  BR=-0.4  BS=-0.3  BT=0  BU=0  BV=0  BW=0  BX=0  BY=0  CD=0.02  CE=0.02  CF=0.02  CG=0.02  CH=0.02  CI=0.02  CJ=0.02  CK=0.02  CL=0.02  CM=0.02  CN=0.02  CO=0.02
+--- ROW 3 (time header) ---
+A=E-comm  F=2023-01  G=2023-02  H=2023-03  I=2023-04  J=2023-05  K=2023-06  L=2023-07  M=2023-08  N=2023-09  O=2023-10  P=2023-11  Q=2023-12  S=2023  T=% Receita  X=2024-01  Y=2024-02  Z=2024-03  AA=2024-04  AB=2024-05  AC=2024-06  AD=2024-07  AE=2024-08  AF=2024-09  AG=2024-10  AH=2024-11  AI=2024-12  AK=2024  AL=% Receita  AN=2025-01  AO=2025-02  AP=2025-03  AQ=2025-04  AR=2025-05  AS=2025-06  AT=2025-07  AU=2025-08  AV=2025-09  AW=2025-10  AX=2025-11  AY=2025-12  BA=2025  BB=% Receita  BF=Curva ABC  BK=Dólar + IOF  BL=5.35  BN=2026-01  BO=2026-02  BP=2026-03  BQ=2026-04  BR=2026-05  BS=2026-06  BT=2026-07  BU=2026-08  BV=2026-09  BW=2026-10  BX=2026-11  BY=2026-12  CA=2026  CB=% Receita  CD=2027-01  CE=2027-02  CF=2027-03  CG=2027-04  CH=2027-05  CI=2027-06  CJ=2027-07  CK=2027-08  CL=2027-09  CM=2027-10  CN=2027-11  CO=2027-12  CQ=2027  CR=% Receita
+
+--- ROW LABELS (A | B | C | D | E) per row ---
+r3: A=E-comm | B= | C= | D= | E=
+r4: A=Total de Mercadoria | B=Receita | C= | D=Faturamento bruto | E=
+r5: A=ReceitaProdutos | B=Receita | C=Total de Mercadoria | D=Produtos | E=
+r6: A=ReceitaFórmulas | B=Receita | C= | D=Fórmulas | E=
+r7: A=ReceitaShampoo 250ml | B=Receita | C=GEB 001 | D=Shampoo 250ml | E=
+r8: A=ReceitaMáscara 200ml | B=Receita | C=GEB 002 | D=Máscara 200ml | E=
+r9: A=ReceitaLeave-in 150ml | B=Receita | C=GEB 003 | D=Leave-in 150ml | E=
+r10: A=ReceitaBooster antioxidante | B=Receita | C=GEB 023 | D=Booster antioxidante | E=
+r11: A=ReceitaBooster definição | B=Receita | C=GEB 021 | D=Booster definição | E=
+r12: A=ReceitaBooster hidratante | B=Receita | C=GEB 020 | D=Booster hidratante | E=
+r13: A=ReceitaBooster fortificante | B=Receita | C=GEB 019 | D=Booster fortificante | E=
+r14: A=ReceitaShampoo a seco 150ml | B=Receita | C=GEB 008 | D=Shampoo a seco 150ml | E=
+r15: A=ReceitaShampoo 60ml | B=Receita | C=GEB 013 | D=Shampoo 60ml | E=
+r16: A=ReceitaMáscara 50ml | B=Receita | C=GEB 010 | D=Máscara 50ml | E=
+r17: A=ReceitaLeave-in 50ml | B=Receita | C=GEB 011 | D=Leave-in 50ml | E=
+r18: A=ReceitaPrimer cachos definidos 250ml | B=Receita | C=GEB 101 | D=Primer cachos definidos 250ml | E=
+r19: A=ReceitaPrimer liso intacto 150ml | B=Receita | C=GEB 102 | D=Primer liso intacto 150ml | E=
+r20: A=ReceitaBooster antifrizz | B=Receita | C=GEB 022 | D=Booster antifrizz | E=
+r21: A=ReceitaLeave-in pluma | B=Receita | C=GEB 120 | D=Leave-in pluma | E=
+r22: A=ReceitaMelon Mood 200ml | B=Receita | C=GEB 024 | D=Melon Mood 200ml | E=
+r23: A=ReceitaMáscara Mayday | B=Receita | C=GEB 121 | D=Máscara Mayday | E=
+r24: A=ReceitaMelon Mood 100ml | B=Receita | C=GEB 029 | D=Melon Mood 100ml | E=
+r25: A=ReceitaExtensão linha BHS | B=Receita | C=2 | D=Extensão linha BHS | E=
+r26: A=ReceitaLinha reconstrutora | B=Receita | C=3 | D=Linha reconstrutora | E=
+r27: A=ReceitaGel fixador | B=Receita | C=4 | D=Gel fixador | E=
+r28: A=ReceitaAcessórios | B=Receita | C= | D=Acessórios | E=
+r29: A=ReceitaCubeta pequena | B=Receita | C=GE404VR | D=Cubeta pequena | E=
+r30: A=ReceitaEspátula | B=Receita | C=143VR | D=Espátula | E=
+r31: A=ReceitaEscova oval | B=Receita | C=7671 | D=Escova oval | E=
+r32: A=ReceitaEscova polvo | B=Receita | C=7685GE | D=Escova polvo | E=
+r33: A=ReceitaNecessaire GE Beauty 2024 | B=Receita | C=100667 | D=Necessaire GE Beauty 2024 | E=
+r34: A=ReceitaNecessaire Clutch G Vermelha | B=Receita | C=100689 | D=Necessaire Clutch G Vermelha | E=
+r35: A=ReceitaNecessaire Clutch G Bordô | B=Receita | C=100690 | D=Necessaire Clutch G Bordô | E=
+r36: A=ReceitaCaixa de presente | B=Receita | C=CXPRSTGE001 | D=Caixa de presente | E=
+r37: A= | B= | C=GEB 111 | D=Charm bag leave-in mini | E=
+r38: A=ReceitaOutros | B=Receita | C=Outros | D=Outros | E=
+r39: A=ReceitaFrete + Seguro | B=Receita | C=Frete | D=Frete + Seguro | E=
+r40: A=ReceitaICMS ST | B=Receita | C= | D=ICMS ST | E=
+r41: A=ReceitaOutras receitas | B=Receita | C= | D=Outras receitas | E=
+r42: A=ReceitaCollab Zerezes | B=Receita | C=COLLAB ZEREZES | D=Collab Zerezes | E=
+r43: A=ReceitaDesconto | B=Receita | C= | D=Desconto | E=
+r44: A=ReceitaReceita bruta | B=Receita | C= | D=Receita bruta | E=
+r45: A=DespesaImpostos sobre receita | B=Despesa | C= | D=Impostos sobre receita | E=
+r46: A=DespesaICMS | B=Despesa | C=Valor do ICMS | D=ICMS | E=
+r47: A=DespesaPIS/COFINS | B=Despesa | C=Valor do COFINS | D=PIS/COFINS | E=
+r48: A=DespesaDIFAL + FCP | B=Despesa | C=ICMS - Difal | D=DIFAL + FCP | E=
+r49: A=DespesaReceita líquida | B=Despesa | C= | D=Receita líquida | E=
+r50: A=DespesaCMV | B=Despesa | C= | D=CMV | E=
+r51: A=DespesaProduto | B=Despesa | C=Mercadoria | D=Produto | E=
+r52: A=DespesaFrete sobre Compras | B=Despesa | C= | D=Frete sobre Compras | E=
+r53: A=DespesaEmbalagem | B=Despesa | C=Embalagens para seeding | D=Embalagem | E=
+r54: A=Perdas | B= | C= | D=Perdas | E=
+r55: A=DespesaMargem bruta | B=Despesa | C= | D=Margem bruta | E=
+r56: A=DespesaDespesas variáveis | B=Despesa | C= | D=Despesas variáveis | E=
+r57: A=DespesaDespesas de venda | B=Despesa | C= | D=Despesas de venda | E=
+r58: A=DespesaArmazenagem | B=Despesa | C=Armazenagem | D=Armazenagem | E=
+r59: A=DespesaFrete sobre Vendas | B=Despesa | C=Transporte/ Frete | D=Frete sobre Vendas | E=
+r60: A=DespesaTaxas comerciais | B=Despesa | C=Taxas Cartão de Crédito | D=Taxas comerciais | E=
+r61: A=DespesaTaxa adquirência | B=Despesa | C= | D=Taxa adquirência | E=
+r62: A=DespesaFee plataformas | B=Despesa | C= | D=Fee plataformas | E=
+r63: A=DespesaDespesas de marketing | B=Despesa | C= | D=Despesas de marketing | E=
+r64: A=DespesaMídia online | B=Despesa | C=Despesas de marketing | D=Mídia online | E=
+r65: A=DespesaFacebook | B=Despesa | C= | D=Facebook | E=
+r66: A=DespesaGoogle | B=Despesa | C= | D=Google | E=
+r67: A=DespesaTikTok | B=Despesa | C= | D=TikTok | E=
+r68: A=DespesaPinterest | B=Despesa | C= | D=Pinterest | E=
+r69: A=DespesaAfiliadas | B=Despesa | C= | D=Afiliadas | E=
+r70: A=DespesaSeeding | B=Despesa | C= | D=Seeding | E=
+r71: A=DespesaProdutos para seeding | B=Despesa | C= | D=Produtos para seeding | E=
+r72: A=DespesaEmbalagens para seeding | B=Despesa | C= | D=Embalagens para seeding | E=
+r73: A=DespesaEnvios | B=Despesa | C= | D=Envios | E=
+r74: A=DespesaTrade marketing | B=Despesa | C= | D=Trade marketing | E=
+r75: A=DespesaMaterial para PDVs B2B | B=Despesa | C= | D=Material para PDVs B2B | E=
+r76: A=DespesaBrindes compre e ganhe | B=Despesa | C= | D=Brindes compre e ganhe | E=
+r77: A=DespesaInfluência | B=Despesa | C= | D=Influência | E=
+r78: A=DespesaSistemas de vendas e marketing | B=Despesa | C=Serviços | D=Sistemas de vendas e marketing | E=
+r79: A=DespesaCRM | B=Despesa | C= | D=CRM | E=
+r80: A=DespesaAtendimento ao consumidor | B=Despesa | C= | D=Atendimento ao consumidor | E=
+r81: A=DespesaAnalytics | B=Despesa | C= | D=Analytics | E=
+r82: A=DespesaMensalidade e-comm | B=Despesa | C= | D=Mensalidade e-comm | E=
+r83: A=DespesaSistema de PDV | B=Despesa | C= | D=Sistema de PDV | E=
+r84: A=DespesaMargem de contribuição | B=Despesa | C= | D=Margem de contribuição | E=
+r85: A=Despesa% Margem de contribuição | B=Despesa | C= | D=% Margem de contribuição | E=
+r86: A=DespesaSG&A | B=Despesa | C= | D=SG&A | E=
+r87: A=DespesaTime CLT | B=Despesa | C= | D=Time CLT | E=
+r88: A=DespesaSalários | B=Despesa | C=Salários | D=Salários | E=
+r89: A=DespesaFérias | B=Despesa | C=Férias | D=Férias | E=
+r90: A=Despesa13º salário | B=Despesa | C=13º salário | D=13º salário | E=
+r91: A=DespesaEncargos | B=Despesa | C=Encargos (FGTS/INSS/IRRF) | D=Encargos | E=
+r92: A=DespesaRescisões | B=Despesa | C=Rescisões | D=Rescisões | E=
+r93: A=DespesaBenefícios | B=Despesa | C=Benefícios (VT/VR /Assistência Médica) | D=Benefícios | E=
+r94: A=DespesaOutras despesas de pessoal | B=Despesa | C=Outras Despesas DP | D=Outras despesas de pessoal | E=
+r95: A=DespesaPrestadores de Serviço | B=Despesa | C=Prestadores de Serviços | D=Prestadores de Serviço | E=Time extra captação
+r96: A=DespesaServiços contratados | B=Despesa | C= | D=Serviços contratados | E=
+r97: A=DespesaContabilidade | B=Despesa | C=Contabilidade  | D=Contabilidade | E=
+r98: A=DespesaAdvocacia | B=Despesa | C=Assinatura Revista / Jornal | D=Advocacia | E=
+r99: A=DespesaConsultoria | B=Despesa | C=Assinatura Revista / Jornal | D=Consultoria | E=
+r100: A=DespesaAssessoria regulatória | B=Despesa | C= | D=Assessoria regulatória | E=
+r101: A=DespesaSustentação e performance | B=Despesa | C= | D=Sustentação e performance | E=
+r102: A=DespesaOutros serviços pontuais | B=Despesa | C=Consultoria em Recrutamento | D=Outros serviços pontuais | E=
+r103: A=DespesaBranding | B=Despesa | C= | D=Branding | E=
+r104: A=DespesaConteúdo | B=Despesa | C= | D=Conteúdo | E=
+r105: A=DespesaDesign | B=Despesa | C= | D=Design | E=
+r106: A=DespesaEventos + Produção | B=Despesa | C= | D=Eventos + Produção | E=
+r107: A=DespesaAssinaturas e filiações | B=Despesa | C=Assinatura Revista / Jornal | D=Assinaturas e filiações | E=
+r108: A=DespesaLançamento de produtos | B=Despesa | C=Diversos | D=Lançamento de produtos | E=
+r109: A=DespesaEscritório | B=Despesa | C= | D=Escritório | E=
+r110: A=DespesaAluguel | B=Despesa | C=Aluguel + Condomínio + IPTU | D=Aluguel | E=
+r111: A=DespesaCondomínio | B=Despesa | C= | D=Condomínio | E=
+r112: A=DespesaIPTU | B=Despesa | C=IPTU | D=IPTU | E=
+r113: A=DespesaEnergia elétrica | B=Despesa | C=Luz | D=Energia elétrica | E=
+r114: A=DespesaInternet | B=Despesa | C=Uso e consumo | D=Internet | E=
+r115: A=DespesaAluguel móveis | B=Despesa | C= | D=Aluguel móveis | E=
+r116: A=DespesaManutenção predial | B=Despesa | C= | D=Manutenção predial | E=
+r117: A=DespesaMateriais de uso e consumo | B=Despesa | C=Internet | D=Materiais de uso e consumo | E=
+r118: A=DespesaSistemas | B=Despesa | C=Sistemas (Omie/Vnda/Monday) | D=Sistemas | E=
+r119: A=DespesaERP | B=Despesa | C= | D=ERP | E=
+r120: A=DespesaE-mail + ferramentas | B=Despesa | C= | D=E-mail + ferramentas | E=
+r121: A=DespesaRateio estrutura corporativa | B=Despesa | C=Passagem Aérea/ Viagens | D=Rateio estrutura corporativa | E=
+r122: A=DespesaViagens e agendas externas | B=Despesa | C=Passagem Aérea/ Viagens | D=Viagens e agendas externas | E=
+r123: A=DespesaTarifas bancárias | B=Despesa | C=Tarifas Bancárias (Mensal/TED/DOC) | D=Tarifas bancárias | E=
+r124: A=DespesaOutras despesas | B=Despesa | C= | D=Outras despesas | E=
+r125: A=DespesaCartório | B=Despesa | C=Cópias /Autenticações/ Custas | D=Cartório | E=
+r126: A=DespesaReembolsos | B=Despesa | C=Reembolso Despesas Gerais Funcionários | D=Reembolsos | E=
+r127: A=DespesaTaxas legais | B=Despesa | C=ISS / Taxas Municipais / Estaduais | D=Taxas legais | E=
+r128: A=DespesaLocação equipamentos | B=Despesa | C=Locação Notebooks e Equipamentos | D=Locação equipamentos | E=
+r129: A=DespesaCartão Crédito | B=Despesa | C=Cartão Crédito | D=Cartão Crédito | E=
+r130: A=DespesaServiços de entrega | B=Despesa | C=Taxi/ Moto Boy / Serviços de Entrega | D=Serviços de entrega | E=
+r131: A=DespesaEBITDA | B=Despesa | C= | D=EBITDA | E=
+r132: A=DespesaDespesas financeiras | B=Despesa | C= | D=Despesas financeiras | E=
+r133: A=DespesaAntecipação recebíveis | B=Despesa | C=Taxa Antecipação Cartão de Crédito | D=Antecipação recebíveis | E=
+r134: A=DespesaIOF | B=Despesa | C= | D=IOF | E=
+r135: A=DespesaRendimentos aplicações | B=Despesa | C= | D=Rendimentos aplicações | E=
+r136: A=DespesaCheque especial | B=Despesa | C=Juros uso limite + IOF | D=Cheque especial | E=
+r137: A=DespesaJuros e multas | B=Despesa | C= | D=Juros e multas | E=
+r138: A=DespesaIRPJ | B=Despesa | C=IRPJ/IRRF | D=IRPJ | E=
+r139: A=DespesaCSLL | B=Despesa | C=CSLL/PCC | D=CSLL | E=
+r140: A=DespesaEmpréstimos | B=Despesa | C=Empréstimos (Amortização) / Acordos | D=Empréstimos | E=
+r141: A=DespesaCAPEX | B=Despesa | C=Imobilizações | D=CAPEX | E=
+r142: A=DespesaMóveis e Utensílios | B=Despesa | C=Móveis e Utensílios | D=Móveis e Utensílios | E=
+r143: A=DespesaEquipamentos e Software | B=Despesa | C= | D=Equipamentos e Software | E=
+r144: A=Lucro líquido | B= | C= | D=Lucro líquido | E=
+r145: A= | B= | C=Resultado Líquido | D= | E=
+r147: A=Quantidade | B= | C= | D=Volume | E=
+r148: A=VolumeFórmulas | B=Volume | C= | D=Fórmulas | E=
+r149: A=VolumeShampoo 250ml | B=Volume | C=GEB 001 | D=Shampoo 250ml | E=
+r150: A=VolumeMáscara 200ml | B=Volume | C=GEB 002 | D=Máscara 200ml | E=
+r151: A=VolumeLeave-in 150ml | B=Volume | C=GEB 003 | D=Leave-in 150ml | E=
+r152: A=VolumeBooster antioxidante | B=Volume | C=GEB 023 | D=Booster antioxidante | E=
+r153: A=VolumeBooster definição | B=Volume | C=GEB 021 | D=Booster definição | E=
+r154: A=VolumeBooster hidratante | B=Volume | C=GEB 020 | D=Booster hidratante | E=
+r155: A=VolumeBooster fortificante | B=Volume | C=GEB 019 | D=Booster fortificante | E=
+r156: A=VolumeShampoo a seco 150ml | B=Volume | C=GEB 008 | D=Shampoo a seco 150ml | E=
+r157: A=VolumeShampoo 60ml | B=Volume | C=GEB 013 | D=Shampoo 60ml | E=
+r158: A=VolumeMáscara 50ml | B=Volume | C=GEB 010 | D=Máscara 50ml | E=
+r159: A=VolumeLeave-in 50ml | B=Volume | C=GEB 011 | D=Leave-in 50ml | E=
+r160: A=VolumePrimer cachos definidos 250ml | B=Volume | C=GEB 101 | D=Primer cachos definidos 250ml | E=
+r161: A=VolumePrimer liso intacto 150ml | B=Volume | C=GEB 102 | D=Primer liso intacto 150ml | E=
+r162: A=VolumeBooster antifrizz | B=Volume | C=GEB 022 | D=Booster antifrizz | E=
+r163: A=VolumeLeave-in pluma | B=Volume | C=GEB 120 | D=Leave-in pluma | E=
+r164: A=VolumeMelon Mood 200ml | B=Volume | C=GEB 024 | D=Melon Mood 200ml | E=
+r165: A=VolumeMáscara Mayday | B=Volume | C=GEB 121 | D=Máscara Mayday | E=
+r166: A=VolumeMelon Mood 100ml | B=Volume | C=GEB 029 | D=Melon Mood 100ml | E=
+r167: A=VolumeExtensão linha BHS | B=Volume | C=2 | D=Extensão linha BHS | E=
+r168: A=VolumeLinha reconstrutora | B=Volume | C=3 | D=Linha reconstrutora | E=
+r169: A=VolumeGel fixador | B=Volume | C=4 | D=Gel fixador | E=
+r170: A=VolumeAcessórios | B=Volume | C= | D=Acessórios | E=
+r171: A=VolumeCubeta pequena | B=Volume | C=GE404VR | D=Cubeta pequena | E=
+r172: A=VolumeEspátula | B=Volume | C=143VR | D=Espátula | E=
+r173: A=VolumeEscova oval | B=Volume | C=7671 | D=Escova oval | E=
+r174: A=VolumeEscova polvo | B=Volume | C=7685GE | D=Escova polvo | E=
+r175: A=VolumeNecessaire GE Beauty | B=Volume | C=1446 | D=Necessaire GE Beauty | E=
+r176: A=VolumeNecessaire GE Beauty 2024 | B=Volume | C=100667 | D=Necessaire GE Beauty 2024 | E=
+r177: A=VolumeNecessaire Clutch G Vermelha | B=Volume | C=100689 | D=Necessaire Clutch G Vermelha | E=
+r178: A=VolumeNecessaire Clutch G Bordô | B=Volume | C=100690 | D=Necessaire Clutch G Bordô | E=
+r179: A=VolumeCaixa de presente | B=Volume | C=CXPRSTGE001 | D=Caixa de presente | E=
+r180: A=VolumeVela Haji + GE Beauty | B=Volume | C=1020 | D=Vela Haji + GE Beauty | E=
+r181: A=VolumeCharm bag leave-in mini | B=Volume | C=GEB 111 | D=Charm bag leave-in mini | E=
+r182: A=VolumeOutros | B=Volume | C=Outros | D=Outros | E=
+r184: A= | B= | C= | D=Fórmulas ex-lançamentos | E=
+r185: A= | B= | C= | D=Ações pontuais | E=
+r186: A= | B= | C= | D=Fórmulas ex-lançamentos final | E=
+r188: A= | B= | C= | D=Produtos em portfólio | E=
+r190: A= | B= | C= | D=# pedidos | E=

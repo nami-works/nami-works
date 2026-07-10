@@ -1,0 +1,8 @@
+primary_text:    alinhamento, brilho e leveza. liso protegido do calor, da umidade e do tempo. do começo ao fim do dia.
+headline:        liso intacto, dia inteiro.
+link_description: conheça primer liso intacto.
+cta_button:      Saiba mais
+
+caption_hook:    
+caption_offer:   24h liso intacto.
+caption_tagline: no seu tempo, do seu jeito.

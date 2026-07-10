@@ -1,0 +1,49 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "headline": "Qual Body & Hair Mist GE Beauty combina com você?",
+      "author": { "@type": "Organization", "name": "GE Beauty" },
+      "publisher": { "@type": "Organization", "name": "GE Beauty" },
+      "inLanguage": "pt-BR",
+      "description": "Pear Fresh, Santal Skin, Rose Ritual ou Melon Mood? Descubra qual Body & Hair Mist GE Beauty combina com a sua personalidade e como usar no cabelo e no corpo."
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Posso usar a bruma no cabelo e no corpo?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sim. As brumas GE Beauty são body & hair: borrife no cabelo e na pele, e reaplique sempre que quiser renovar o aroma."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "A bruma hidrata a pele?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sim. A fórmula tem o ativo AcquaBio, que estimula a hidratação da pele, deixando o toque macio além do perfume."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Posso combinar duas fragrâncias?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Pode, e recomendamos. A técnica de layering mistura duas brumas para criar uma assinatura só sua. Pear Fresh com Melon Mood soma frescor e doçura; Rose Ritual com Santal Skin une delicadeza e presença."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Blog GE Beauty" },
+        { "@type": "ListItem", "position": 2, "name": "Qual Body & Hair Mist combina com você?" }
+      ]
+    }
+  ]
+}

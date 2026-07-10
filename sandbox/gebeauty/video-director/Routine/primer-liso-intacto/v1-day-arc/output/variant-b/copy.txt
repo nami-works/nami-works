@@ -1,0 +1,8 @@
+primary_text:    saiu do banho, escovou, viveu o dia. seu liso intacto, do começo ao fim.
+headline:        do banho ao fim do dia.
+link_description: conheça primer liso intacto.
+cta_button:      Saiba mais
+
+caption_hook:    
+caption_offer:   liso protegido.
+caption_tagline: no seu tempo, do seu jeito.

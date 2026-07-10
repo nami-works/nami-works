@@ -6,16 +6,59 @@
     },
     "next-devtools": {
       "command": "npx",
-      "args": ["-y", "next-devtools-mcp@latest"]
+      "args": [
+        "-y",
+        "next-devtools-mcp@latest"
+      ]
     },
     "shopify-dev-mcp": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@shopify/dev-mcp@latest"]
+      "args": [
+        "-y",
+        "@shopify/dev-mcp@latest"
+      ]
     },
     "figma": {
       "type": "http",
       "url": "https://mcp.figma.com/mcp"
+    },
+    "canva": {
+      "type": "http",
+      "url": "https://mcp.canva.com/mcp"
+    },
+    "magnific": {
+      "type": "http",
+      "url": "https://mcp.magnific.com/mcp"
+    },
+    "adobe-creativity": {
+      "type": "http",
+      "url": "https://adobe-creativity.adobe.io/mcp"
+    },
+    "krea": {
+      "type": "http",
+      "url": "https://api.krea.ai/mcp",
+      "headers": {
+        "Authorization": "Bearer ${KREA_API_TOKEN}"
+      }
+    },
+    "foreplay": {
+      "type": "http",
+      "url": "https://public.api.foreplay.co/mcp"
+    },
+    "fireflies": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://api.fireflies.ai/mcp"
+      ]
+    },
+    "check": {
+      "type": "http",
+      "url": "https://zgbcovzrwybotxsxnpdl.supabase.co/functions/v1/mcp-server/mcp",
+      "headers": {
+        "Authorization": "Bearer ${CHECK_API_TOKEN}"
+      }
     }
   }
 }

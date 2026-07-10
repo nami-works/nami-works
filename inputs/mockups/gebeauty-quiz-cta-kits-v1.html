@@ -1,0 +1,134 @@
+<title>GE Beauty — quiz CTA + discounted-kits section v1</title>
+<style>
+  :root{
+    --ge-red:#DF372F;
+    --card-bg:#efeae5;
+    --band:#f4efe9;
+    --ink:#1f1c1a;
+    --muted:#8a827b;
+    --radius:16px;
+    --font:'Italian Plate No1','Helvetica Neue',Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#fff;color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;padding:28px 20px 80px}
+  h1{font-size:22px;font-weight:800;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 24px;max-width:820px;line-height:1.5}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:36px 0 8px;font-weight:700}
+  .hint{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+  /* ---- quiz CTA band ---- */
+  .quiz{background:var(--band);border-radius:var(--radius);padding:34px 24px;text-align:center;max-width:900px}
+  .quiz p{font-size:19px;line-height:1.4;text-transform:lowercase;margin:0 auto 18px;max-width:640px;color:var(--ink)}
+  .btn{display:inline-block;background:var(--ge-red);color:#fff;border:none;border-radius:9px;padding:13px 30px;font-family:var(--font);font-size:15px;font-weight:700;text-transform:lowercase;letter-spacing:.3px;cursor:pointer;text-decoration:none}
+  .btn.full{display:block;width:100%;padding:12px 10px;font-size:14px}
+  /* ---- kits section ---- */
+  .kits{max-width:1040px;margin-top:8px}
+  .kits__head{margin-bottom:18px}
+  .kits__head h3{font-size:22px;font-weight:800;text-transform:lowercase;margin:0 0 6px}
+  .kits__head p{font-size:14px;color:#57514b;text-transform:lowercase;margin:0;max-width:620px;line-height:1.4}
+  .kits__link{display:inline-block;margin-top:12px;color:var(--ge-red);font-weight:700;text-transform:lowercase;font-size:13px;text-decoration:none;border-bottom:1.5px solid var(--ge-red);padding-bottom:1px}
+  .row{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px}
+  .card{width:232px;background:var(--card-bg);border-radius:var(--radius);padding:14px 14px 16px;position:relative;display:flex;flex-direction:column}
+  .badge{position:absolute;top:14px;left:14px;background:var(--ge-red);color:#fff;font-size:12px;font-weight:700;padding:5px 10px;border-radius:8px}
+  .img{height:190px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;background:radial-gradient(120% 100% at 50% 0,#fff 0,#f4efe9 100%)}
+  .img .ge{font-size:28px;font-weight:800;color:var(--ge-red)}
+  .title{font-size:14.5px;font-weight:800;line-height:1.25;text-transform:lowercase;margin:0 0 5px}
+  .desc{font-size:12px;color:#57514b;line-height:1.35;text-transform:lowercase;margin:0 0 8px;min-height:32px}
+  .rating-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;min-height:18px}
+  .stars{color:var(--ge-red);font-size:14px}
+  .stars .n{color:var(--muted);font-size:12px;margin-left:3px}
+  .price-inline{display:flex;align-items:center;gap:6px}
+  .de{font-size:11px;color:var(--muted);text-decoration:line-through}
+  .por{font-size:14px;font-weight:700}
+  .spacer{flex:1}
+  .panel{max-width:900px;background:#fbf9f7;border:1px solid #ece7e1;border-radius:12px;padding:18px 20px;margin-top:34px}
+  .panel h3{margin:0 0 10px;font-size:15px}
+  .panel ul{margin:0;padding-left:18px}
+  .panel li{font-size:13.5px;line-height:1.6;color:#3d3833;margin-bottom:6px}
+  code{background:#f1ece6;padding:1px 5px;border-radius:4px;font-size:12px}
+</style>
+
+<h1>GE Beauty — quiz CTA + discounted-kits section</h1>
+<p class="sub">Both blocks, GE storefront styling. Copy is locked (content-director). This mockup settles the <strong>look</strong>; placement recommendations + open questions are in the chat message.</p>
+
+<!-- ============ #1 QUIZ CTA ============ -->
+<h2>#1 — Quiz CTA (bottom of every product / collection / page, above footer)</h2>
+<p class="hint">One reusable section, context-adaptive copy. Solid GE-red pill button like the “comprar” CTAs. Below: the three copy variants.</p>
+
+<p class="hint" style="margin-top:8px">▸ on a <strong>product</strong> page</p>
+<div class="quiz">
+  <p>ainda na dúvida se combina com o seu cabelo? faça o quiz e a gente indica o ideal pra você.</p>
+  <a class="btn" href="#">faça o quiz</a>
+</div>
+
+<p class="hint" style="margin-top:20px">▸ on a <strong>collection</strong> page</p>
+<div class="quiz">
+  <p>perdida em tanta opção? responda o quiz e a gente monta a rotina ideal pro seu cabelo.</p>
+  <a class="btn" href="#">faça o quiz</a>
+</div>
+
+<p class="hint" style="margin-top:20px">▸ on a <strong>page</strong> template</p>
+<div class="quiz">
+  <p>quer uma rotina sob medida pro seu cabelo? faça o quiz, leva menos de 1 minuto.</p>
+  <a class="btn" href="#">faça o quiz</a>
+</div>
+
+<!-- ============ #2 KITS SECTION ============ -->
+<h2>#2 — Discounted-kits section (bottom of the descontos-progressivos collection)</h2>
+<p class="hint">A featured row of kit cards, reusing the product-card snippet (so the de/por strike we just shipped shows automatically). Sits at the bottom of the collection, above the quiz CTA.</p>
+
+<div class="kits">
+  <div class="kits__head">
+    <h3>de olho no desconto? o kit já vem com um.</h3>
+    <p>a gente juntou os produtos que mais combinam em kits com preço especial. você leva a rotina completa e paga menos por item.</p>
+  </div>
+  <div class="row">
+    <div class="card">
+      <span class="badge">R$104 off</span>
+      <div class="img"><span class="ge">ge</span></div>
+      <div class="title">kit rotina completa</div>
+      <div class="desc">sua jornada para um cabelo saudável</div>
+      <div class="rating-row"><span class="stars">★★★★★<span class="n">(33)</span></span><span class="price-inline"><s class="de">R$666</s><strong class="por">R$562</strong></span></div>
+      <div class="spacer"></div>
+      <a class="btn full" href="#">comprar</a>
+    </div>
+    <div class="card">
+      <span class="badge">R$39 off</span>
+      <div class="img"><span class="ge">ge</span></div>
+      <div class="title">kit antifrizz</div>
+      <div class="desc">controle total do frizz com proteção térmica</div>
+      <div class="rating-row"><span class="stars">★★★★★<span class="n">(21)</span></span><span class="price-inline"><s class="de">R$208</s><strong class="por">R$169</strong></span></div>
+      <div class="spacer"></div>
+      <a class="btn full" href="#">comprar</a>
+    </div>
+    <div class="card">
+      <span class="badge">R$60 off</span>
+      <div class="img"><span class="ge">ge</span></div>
+      <div class="title">kit boosters</div>
+      <div class="desc">os cinco boosters juntos, a rotina completa</div>
+      <div class="rating-row"><span class="stars">★★★★★<span class="n">(15)</span></span><span class="price-inline"><s class="de">R$388</s><strong class="por">R$328</strong></span></div>
+      <div class="spacer"></div>
+      <a class="btn full" href="#">comprar</a>
+    </div>
+    <div class="card">
+      <span class="badge">R$30 off</span>
+      <div class="img"><span class="ge">ge</span></div>
+      <div class="title">dupla leave-in + booster</div>
+      <div class="desc">força renovada da raiz às pontas</div>
+      <div class="rating-row"><span class="stars">★★★★½<span class="n">(8)</span></span><span class="price-inline"><s class="de">R$194</s><strong class="por">R$164</strong></span></div>
+      <div class="spacer"></div>
+      <a class="btn full" href="#">comprar</a>
+    </div>
+  </div>
+  <a class="kits__link" href="#">ver todos os kits</a>
+</div>
+
+<div class="panel">
+  <h3>Notas de implementação</h3>
+  <ul>
+    <li><strong>#1 Quiz CTA — 1 seção só.</strong> Nova <code>sections/quiz-cta.liquid</code> inserida como PRIMEIRA seção do <code>footer-group</code>. O <code>footer-group</code> já renderiza em todo produto/coleção/página (layout <code>theme.liquid</code>), sempre acima do rodapé = “fim da informação relevante”. Copy troca sozinha por <code>{% case template.name %}</code> (product / collection / page). Botão abre o quiz via o trigger Octane existente (<code>quiz-modal-trigger</code>).</li>
+    <li><strong>Home fica de fora</strong> automaticamente (usa layout <code>theme.ctx.liquid</code>, sem footer-group) — e a home já tem “faça o quiz” no header. Decisão de incluir home/blog está nas perguntas do chat.</li>
+    <li><strong>#2 Kits — template dedicado.</strong> <code>colecao-com-banner</code> é compartilhado por 10 coleções (travel-size, etc.), então NÃO dá pra usar direto. Clonar em <code>collection.descontos-progressivos.json</code> + seção de kits no fim, e apontar só a coleção <code>produtos-full-size</code> (“descontos progressivos”) pra ele.</li>
+    <li><strong>Seção de kits = featured-collection</strong> apontando pra coleção de kits (a definir: <code>kits-ge-beauty</code> 33 / <code>monte-seu-kit</code> / <code>kits-ate-r-300</code>), renderizada com o mesmo <code>card-product</code> (de/por já aparece).</li>
+    <li><strong>Ordem no fim da coleção:</strong> conteúdo → seção de kits → quiz CTA (footer-group) → rodapé.</li>
+  </ul>
+</div>

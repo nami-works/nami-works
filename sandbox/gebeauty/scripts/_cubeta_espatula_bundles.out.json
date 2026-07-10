@@ -1,0 +1,1128 @@
+{
+  "targets": [
+    {
+      "id": "gid://shopify/Product/9269350531392",
+      "title": "cubeta",
+      "handle": "cubeta",
+      "status": "ACTIVE",
+      "totalInventory": 148,
+      "resourcePublicationsCount": {
+        "count": 6
+      },
+      "resourcePublications": {
+        "edges": [
+          {
+            "node": {
+              "isPublished": true,
+              "publication": {
+                "name": "Online Store"
+              }
+            }
+          },
+          {
+            "node": {
+              "isPublished": true,
+              "publication": {
+                "name": "Google & YouTube"
+              }
+            }
+          },
+          {
+            "node": {
+              "isPublished": true,
+              "publication": {
+                "name": "Pinterest"
+              }
+            }
+          },
+          {
+            "node": {
+              "isPublished": true,
+              "publication": {
+                "name": "IGLU POS"
+              }
+            }
+          },
+          {
+            "node": {
+              "isPublished": true,
+              "publication": {
+                "name": "Microsoft Copilot"
+              }
+            }
+          }
+        ]
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/48491185242432",
+              "sku": "GE404VR",
+              "title": "Default Title",
+              "inventoryQuantity": 148,
+              "requiresComponents": false,
+              "sellableOnlineQuantity": 70
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "gid://shopify/Product/9779095503168",
+      "title": "[rappi] cubeta",
+      "handle": "rappi-cubeta",
+      "status": "ACTIVE",
+      "totalInventory": 115,
+      "resourcePublicationsCount": {
+        "count": 2
+      },
+      "resourcePublications": {
+        "edges": [
+          {
+            "node": {
+              "isPublished": true,
+              "publication": {
+                "name": "IGLU POS"
+              }
+            }
+          }
+        ]
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/50525501227328",
+              "sku": "GE404VR",
+              "title": "Default Title",
+              "inventoryQuantity": 115,
+              "requiresComponents": false,
+              "sellableOnlineQuantity": 37
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "gid://shopify/Product/9269348663616",
+      "title": "espátula",
+      "handle": "espatula",
+      "status": "ACTIVE",
+      "totalInventory": 243,
+      "resourcePublicationsCount": {
+        "count": 6
+      },
+      "resourcePublications": {
+        "edges": [
+          {
+            "node": {
+              "isPublished": true,
+              "publication": {
+                "name": "Online Store"
+              }
+            }
+          },
+          {
+            "node": {
+              "isPublished": true,
+              "publication": {
+                "name": "Google & YouTube"
+              }
+            }
+          },
+          {
+            "node": {
+              "isPublished": true,
+              "publication": {
+                "name": "Pinterest"
+              }
+            }
+          },
+          {
+            "node": {
+              "isPublished": true,
+              "publication": {
+                "name": "IGLU POS"
+              }
+            }
+          },
+          {
+            "node": {
+              "isPublished": true,
+              "publication": {
+                "name": "Microsoft Copilot"
+              }
+            }
+          }
+        ]
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/48491177574720",
+              "sku": "143VR",
+              "title": "Default Title",
+              "inventoryQuantity": 243,
+              "requiresComponents": false,
+              "sellableOnlineQuantity": 173
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "gid://shopify/Product/9754732200256",
+      "title": "kit mixer e espátula",
+      "handle": "kit-mixer-e-espatula-1",
+      "status": "ACTIVE",
+      "totalInventory": 148,
+      "resourcePublicationsCount": {
+        "count": 4
+      },
+      "resourcePublications": {
+        "edges": [
+          {
+            "node": {
+              "isPublished": true,
+              "publication": {
+                "name": "Online Store"
+              }
+            }
+          },
+          {
+            "node": {
+              "isPublished": true,
+              "publication": {
+                "name": "Point of Sale"
+              }
+            }
+          }
+        ]
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/50414299283776",
+              "sku": "GEBKMIX",
+              "title": "Default Title",
+              "inventoryQuantity": 148,
+              "requiresComponents": true,
+              "sellableOnlineQuantity": 70
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "gid://shopify/Product/9779095535936",
+      "title": "[rappi] espátula",
+      "handle": "rappi-espatula",
+      "status": "ACTIVE",
+      "totalInventory": 254,
+      "resourcePublicationsCount": {
+        "count": 2
+      },
+      "resourcePublications": {
+        "edges": [
+          {
+            "node": {
+              "isPublished": true,
+              "publication": {
+                "name": "IGLU POS"
+              }
+            }
+          }
+        ]
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/50525501260096",
+              "sku": "143VR",
+              "title": "Default Title",
+              "inventoryQuantity": 254,
+              "requiresComponents": false,
+              "sellableOnlineQuantity": 184
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "all_bundles": [
+    {
+      "bundle": "kit \"todo dia\"",
+      "status": "ACTIVE",
+      "bvid": "50323512459584",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048042086720",
+          "ptitle": "shampoo sem sulfato",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041955648",
+          "ptitle": "máscara condicionadora",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041693504",
+          "ptitle": "leave-in com proteção térmica",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "travel size | kit para todo dia + nécessaire",
+      "status": "ACTIVE",
+      "bvid": "50328904499520",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/49809036673344",
+          "ptitle": "nécessaire clutch mini",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/49787120386368",
+          "ptitle": "travel size | leave-in com proteção térmica",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/49787123990848",
+          "ptitle": "travel size | máscara condicionadora",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/49787112948032",
+          "ptitle": "travel size | shampoo sem sulfato",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "trio de miniaturas | kit para todo dia travel size",
+      "status": "ACTIVE",
+      "bvid": "50329273205056",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/49787120386368",
+          "ptitle": "travel size | leave-in com proteção térmica",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/49787123990848",
+          "ptitle": "travel size | máscara condicionadora",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/49787112948032",
+          "ptitle": "travel size | shampoo sem sulfato",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit antiqueda",
+      "status": "ACTIVE",
+      "bvid": "50329337758016",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048041955648",
+          "ptitle": "máscara condicionadora",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048042086720",
+          "ptitle": "shampoo sem sulfato",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041660736",
+          "ptitle": "booster fortificante",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit tratamento nutrição e hidratação",
+      "status": "ACTIVE",
+      "bvid": "50329399591232",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048041660736",
+          "ptitle": "booster fortificante",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041955648",
+          "ptitle": "máscara condicionadora",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048042086720",
+          "ptitle": "shampoo sem sulfato",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51520462160192",
+          "ptitle": "booster hidratante",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit limpeza hidratante",
+      "status": "ACTIVE",
+      "bvid": "50333197271360",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048042086720",
+          "ptitle": "shampoo sem sulfato",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51520462160192",
+          "ptitle": "booster hidratante",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit força e proteção",
+      "status": "ACTIVE",
+      "bvid": "50333260284224",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048042086720",
+          "ptitle": "shampoo sem sulfato",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041955648",
+          "ptitle": "máscara condicionadora",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048043299136",
+          "ptitle": "booster antioxidante",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041660736",
+          "ptitle": "booster fortificante",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041693504",
+          "ptitle": "leave-in com proteção térmica",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit cabelo renovado",
+      "status": "ACTIVE",
+      "bvid": "50333345087808",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048029897024",
+          "ptitle": "shampoo a seco",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048040612160",
+          "ptitle": "escova oval",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51520462160192",
+          "ptitle": "booster hidratante",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit limpeza calmante",
+      "status": "ACTIVE",
+      "bvid": "50333965812032",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048042086720",
+          "ptitle": "shampoo sem sulfato",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048043299136",
+          "ptitle": "booster antioxidante",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit prevenção de queda",
+      "status": "ACTIVE",
+      "bvid": "50333998514496",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048042086720",
+          "ptitle": "shampoo sem sulfato",
+          "qty": 2
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041660736",
+          "ptitle": "booster fortificante",
+          "qty": 2
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit textura natural",
+      "status": "ACTIVE",
+      "bvid": "50334068801856",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048041693504",
+          "ptitle": "leave-in com proteção térmica",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048031699264",
+          "ptitle": "escova polvo",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51528794669376",
+          "ptitle": "booster definição",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit verão",
+      "status": "ACTIVE",
+      "bvid": "50334208459072",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048043299136",
+          "ptitle": "booster antioxidante",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048040612160",
+          "ptitle": "escova oval",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041693504",
+          "ptitle": "leave-in com proteção térmica",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51313467490624",
+          "ptitle": "máscara mayday",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51528794669376",
+          "ptitle": "booster definição",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit força e hidratação",
+      "status": "ACTIVE",
+      "bvid": "50334244897088",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048041955648",
+          "ptitle": "máscara condicionadora",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048042086720",
+          "ptitle": "shampoo sem sulfato",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041660736",
+          "ptitle": "booster fortificante",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51520462160192",
+          "ptitle": "booster hidratante",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit finalização com brilho",
+      "status": "ACTIVE",
+      "bvid": "50334283006272",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048041693504",
+          "ptitle": "leave-in com proteção térmica",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041955648",
+          "ptitle": "máscara condicionadora",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048042086720",
+          "ptitle": "shampoo sem sulfato",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048040612160",
+          "ptitle": "escova oval",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51520462160192",
+          "ptitle": "booster hidratante",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit coloração duradoura",
+      "status": "ACTIVE",
+      "bvid": "50334523556160",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048043299136",
+          "ptitle": "booster antioxidante",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041693504",
+          "ptitle": "leave-in com proteção térmica",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041955648",
+          "ptitle": "máscara condicionadora",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048042086720",
+          "ptitle": "shampoo sem sulfato",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51520462160192",
+          "ptitle": "booster hidratante",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "dupla protetor solar do cabelo",
+      "status": "ACTIVE",
+      "bvid": "50414184563008",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048043299136",
+          "ptitle": "booster antioxidante",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041693504",
+          "ptitle": "leave-in com proteção térmica",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "dupla leave-in + booster hidratante",
+      "status": "ACTIVE",
+      "bvid": "50414197604672",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048041693504",
+          "ptitle": "leave-in com proteção térmica",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51520462160192",
+          "ptitle": "booster hidratante",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "dupla leave-in + booster fortificante",
+      "status": "ACTIVE",
+      "bvid": "50414269169984",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048041660736",
+          "ptitle": "booster fortificante",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041693504",
+          "ptitle": "leave-in com proteção térmica",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "dupla leave-in + booster definição",
+      "status": "ACTIVE",
+      "bvid": "50414288732480",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048041693504",
+          "ptitle": "leave-in com proteção térmica",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51528794669376",
+          "ptitle": "booster definição",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit mixer e espátula",
+      "status": "ACTIVE",
+      "bvid": "50414299283776",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/48491185242432",
+          "ptitle": "cubeta",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/48491177574720",
+          "ptitle": "espátula",
+          "qty": 1
+        }
+      ],
+      "uses_target": true
+    },
+    {
+      "bundle": "kit rotina completa",
+      "status": "ACTIVE",
+      "bvid": "50414302495040",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048043299136",
+          "ptitle": "booster antioxidante",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041660736",
+          "ptitle": "booster fortificante",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041693504",
+          "ptitle": "leave-in com proteção térmica",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041955648",
+          "ptitle": "máscara condicionadora",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048029897024",
+          "ptitle": "shampoo a seco",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048042086720",
+          "ptitle": "shampoo sem sulfato",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/48491185242432",
+          "ptitle": "cubeta",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/48491177574720",
+          "ptitle": "espátula",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51528794669376",
+          "ptitle": "booster definição",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51520462160192",
+          "ptitle": "booster hidratante",
+          "qty": 1
+        }
+      ],
+      "uses_target": true
+    },
+    {
+      "bundle": "kit antifrizz",
+      "status": "ACTIVE",
+      "bvid": "50452841169216",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/50427623539008",
+          "ptitle": "booster antifrizz",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/50023998685504",
+          "ptitle": "primer cachos definidos",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/50023991804224",
+          "ptitle": "primer liso intacto",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "dupla liso sem frizz",
+      "status": "ACTIVE",
+      "bvid": "50461622436160",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/50427623539008",
+          "ptitle": "booster antifrizz",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/50023991804224",
+          "ptitle": "primer liso intacto",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit cuidados diários",
+      "status": "ACTIVE",
+      "bvid": "50510657880384",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048043299136",
+          "ptitle": "booster antioxidante",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041660736",
+          "ptitle": "booster fortificante",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/48491185242432",
+          "ptitle": "cubeta",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/48491177574720",
+          "ptitle": "espátula",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041693504",
+          "ptitle": "leave-in com proteção térmica",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041955648",
+          "ptitle": "máscara condicionadora",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048042086720",
+          "ptitle": "shampoo sem sulfato",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51528794669376",
+          "ptitle": "booster definição",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51520462160192",
+          "ptitle": "booster hidratante",
+          "qty": 1
+        }
+      ],
+      "uses_target": true
+    },
+    {
+      "bundle": "dupla cachos sem frizz",
+      "status": "ACTIVE",
+      "bvid": "50680143872320",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/50427623539008",
+          "ptitle": "booster antifrizz",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/50023998685504",
+          "ptitle": "primer cachos definidos",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "dupla travel size | shampoo + máscara",
+      "status": "ACTIVE",
+      "bvid": "51023387066688",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/49787123990848",
+          "ptitle": "travel size | máscara condicionadora",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/49787112948032",
+          "ptitle": "travel size | shampoo sem sulfato",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "dupla travel size | shampoo + leave-in",
+      "status": "ACTIVE",
+      "bvid": "51023400042816",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/49787120386368",
+          "ptitle": "travel size | leave-in com proteção térmica",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/49787112948032",
+          "ptitle": "travel size | shampoo sem sulfato",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "dupla travel size | máscara + leave-in",
+      "status": "ACTIVE",
+      "bvid": "51023404892480",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/49787120386368",
+          "ptitle": "travel size | leave-in com proteção térmica",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/49787123990848",
+          "ptitle": "travel size | máscara condicionadora",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit beach hair",
+      "status": "ACTIVE",
+      "bvid": "51255064559936",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/50865250959680",
+          "ptitle": "leave-in pluma",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51183295824192",
+          "ptitle": "melon mood | body & hair splash",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "dupla leave-in + booster antifrizz",
+      "status": "ACTIVE",
+      "bvid": "51255597105472",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048041693504",
+          "ptitle": "leave-in com proteção térmica",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/50427623539008",
+          "ptitle": "booster antifrizz",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit boosters",
+      "status": "ACTIVE",
+      "bvid": "51309209649472",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/50427623539008",
+          "ptitle": "booster antifrizz",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048043299136",
+          "ptitle": "booster antioxidante",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041660736",
+          "ptitle": "booster fortificante",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51528794669376",
+          "ptitle": "booster definição",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51520462160192",
+          "ptitle": "booster hidratante",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit tratamento intensivo",
+      "status": "ACTIVE",
+      "bvid": "51528654324032",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/51313467490624",
+          "ptitle": "máscara mayday",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048042086720",
+          "ptitle": "shampoo sem sulfato",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/47048041955648",
+          "ptitle": "máscara condicionadora",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit tratamento & definição",
+      "status": "ACTIVE",
+      "bvid": "51529054716224",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/47048041693504",
+          "ptitle": "leave-in com proteção térmica",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51528794669376",
+          "ptitle": "booster definição",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51313467490624",
+          "ptitle": "máscara mayday",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit reconstrução & leveza",
+      "status": "ACTIVE",
+      "bvid": "51529136537920",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/51313467490624",
+          "ptitle": "máscara mayday",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/50865250959680",
+          "ptitle": "leave-in pluma",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51183295824192",
+          "ptitle": "melon mood | body & hair splash",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    },
+    {
+      "bundle": "kit travel size",
+      "status": "ACTIVE",
+      "bvid": "51551586910528",
+      "components": [
+        {
+          "vid": "gid://shopify/ProductVariant/49787112948032",
+          "ptitle": "travel size | shampoo sem sulfato",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/49787123990848",
+          "ptitle": "travel size | máscara condicionadora",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/49787120386368",
+          "ptitle": "travel size | leave-in com proteção térmica",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/51514214416704",
+          "ptitle": "travel size | melon mood body & hair splash",
+          "qty": 1
+        },
+        {
+          "vid": "gid://shopify/ProductVariant/49809036673344",
+          "ptitle": "nécessaire clutch mini",
+          "qty": 1
+        }
+      ],
+      "uses_target": false
+    }
+  ]
+}

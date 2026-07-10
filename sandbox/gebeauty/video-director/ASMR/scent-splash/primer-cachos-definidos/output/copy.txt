@@ -1,0 +1,17 @@
+primer cachos definidos — ASMR scent splash (melon → peônia → musk reveal)
+Marcela voice · PT-BR lowercase · no em-dash · no exclamation
+
+ON-SCREEN CAPTIONS (burned in post)
+- hook caption (~0:01):  o cheiro que fica.
+- offer card:            24h, sem frizz.
+- tagline (locked):      no seu tempo, do seu jeito.
+
+META AD COPY
+primary_text  (<=125): melão, peônia e almíscar branco. o cheiro que fica nos seus cachos, do começo ao fim do dia.
+headline      (<=27):  cachos definidos 24h.
+link_description (<=30): primer cachos definidos.
+cta_button:            Comprar
+
+ALT (variant B copy angle — sensorial-led)
+primary_text: um mergulho de melão, peônia e almíscar. é esse o perfume dos seus cachos, o dia inteiro.
+headline:     o perfume que fica.

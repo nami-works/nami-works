@@ -2,6 +2,12 @@
 
 This workspace handles ad-hoc operational tasks for GE Beauty's Shopify store. Every session should be able to pick up and execute tasks immediately using this context.
 
+## Persistent references
+
+- **Canonical product catalog:** `sandbox/gebeauty/products.json` — 17 SKUs, source of truth for all B2B registrations. Assinatura variants excluded (e-commerce only).
+- **Pending fixes:** `sandbox/gebeauty/pending-fixes.md` — non-urgent issues to fix when convenient. Add new findings here instead of leaving them as inline comments.
+- **Hi Platform CS archive (pre-Gorgias migration):** `sandbox/gebeauty/research/cs-knowledge-base/` — the complete customer-service history mined out of Hi Platform before the contract lapses. `cs_archive.sqlite` (~206 MB, 28,080 tickets + 53,694 messages, 15,745 real-customer) is the lossless master; `deliverables/export/*.jsonl` are the Gorgias-handover exports (full + reduced-PII). Local-only, gitignored (holds PII). Check state: `python cs_kb_fetch.py status`; analyze/export: `python analyze.py {index,digest,export}`. Full detail in Claude memory `project_gebeauty_hiplatform_kb.md`.
+
 ## Store Access
 
 - **Store:** `ge-beauty-cosmeticos.myshopify.com`
@@ -9,6 +15,8 @@ This workspace handles ad-hoc operational tasks for GE Beauty's Shopify store. E
 - **Credentials:** `.env` in this directory (SHOPIFY_ADMIN_ACCESS_TOKEN)
 - **Python:** `C:/Python314/python.exe`
 - **Shopify MCP:** Available for schema introspection (`learn_shopify_api`, `introspect_graphql_schema`)
+
+> **HARD RULE — price source:** When fetching prices from Shopify, only read variants whose product `productType` is **`product`** or **`acessorio`**. NEVER take prices from `rappi`, `brinde`, kit/bundle, or any other product type — they carry channel-specific or non-retail prices (e.g. `[rappi] shampoo a seco` = R$99 vs the real `product` retail R$69). Filter on `productType`, not on title prefix.
 
 ### Available Scopes
 `read_customers`, `read_orders`, `read_all_orders`, `read_products`, `write_products`, `read_content`, `write_content`, `read_files`, `write_files`, `read_metaobjects`, `write_metaobjects`, `read_metaobject_definitions`, `write_metaobject_definitions`, `read_discounts`, `write_discounts`, `read_themes`, `write_themes`, `read_locations`, `read_fulfillments`, `read_inventory`, `read_shipping`, `read_markets`, `read_translations`, `read_publications`, `read_online_store_pages`, `read_online_store_navigation`
@@ -51,7 +59,7 @@ def graphql(query, variables=None):
 | Primer Cachos Definidos | GEB 101 | formula/full-size | R$126.65 |
 | Leave-in Pluma | GEB 120 | formula/full-size | R$126.65 |
 | Máscara Mayday | GEB 121 | formula/full-size | R$139.00 |
-| Melon Mood Body & Hair Splash | GEB 024 | formula/full-size | R$129.00 |
+| Melon Mood Body & Hair Mist | GEB 024 | formula/full-size | R$129.00 |
 
 **Note:** Máscara Mayday and Melon Mood are launch products (`lancto` tag) — excluded from campaign discounts.
 
@@ -90,7 +98,12 @@ Pattern: `{NAME}10` — 10% off all items, no end date, unlimited uses. Most do 
 
 ### Active Automatic Discounts
 - **"ganhe uma necessaire"** — BxGy gift-with-purchase, targeted (not publicly announced)
-- **"fg semana consumidor"** — Free shipping ≥ R$199
+
+### Free shipping (R$299, nationwide)
+- **Free shipping ≥ R$299, flat nationwide**, granted by a custom **Function Studio** automatic-discount Function, NOT a native Shopify discount and NOT a coupon. Admin: `apps/function-studio/app/functions/discounts/automatic/1637817647424`.
+- Because it is a Function, it does **not** appear in `automaticDiscountNodes` or in delivery-profile rates — `draftOrderCalculate` on a sub-R$299 cart shows paid carrier rates (Intelipost); R$299+ carts get free shipping applied at checkout by the Function.
+- Backs the announcement bar "frete grátis a partir de R$299" (`anuncio_barra_de_avisos["frete-gratis"]` metaobject).
+- Dead artifacts (ignore): native automatic discount "Frete Grátis" @R$389 is **EXPIRED**; the legacy "fg semana consumidor" @R$199 was a one-off Consumer-Week campaign.
 
 ### Campaign Pricing
 When running a campaign (e.g., Consumer Month), the discount is baked directly into product prices via compareAtPrice/price pairs — NOT through Shopify discount objects. The theme announcement bar and PDP promotional banner communicate the campaign.
@@ -99,13 +112,21 @@ When running a campaign (e.g., Consumer Month), the discount is baked directly i
 
 ## Theme
 
-- **Published theme:** `[Check] - Produção` (id: `181379236160`)
+> **Customizing the theme? Read [../../docs/gebeauty-theme-customization.md](../../docs/gebeauty-theme-customization.md) first.** It's the playbook: Asset API workflow, design tokens, dynamic-source binding rules, scoped-CSS patterns, the reusable techniques + scripts we've built, and the gotchas.
+
+- **Published theme:** `[Check] - Produção` (id: `181379236160`) — but **verify `role == main` before editing** (`GET /themes.json?fields=id,name,role`); CheckCommerce's "badge cache bust" republishes duplicates and can swap the live theme mid-session.
 - **Theme settings key locations:**
   - Announcement bar: `sections/header-group.json` → announcement-bar blocks
   - PDP promotional banner: `config/settings_data.json` → `promotional_bar_pdp_text`
   - Free shipping bar: `config/settings_data.json` → `free_shipping_min_amount`, `free_shipping_text`
   - Gift progress bar: `config/settings_data.json` → `show_promo_bar_progress`, `promo_bar_min_amount`, `promo_bar_text`
 - **Editing:** Read/write via Themes REST API (`GET/PUT /themes/{id}/assets.json`)
+
+---
+
+## Creative / ad imagery (Canva + Magnific)
+
+> **Producing ad images or web banners? Read [../../docs/creative-ad-image-pipeline.md](../../docs/creative-ad-image-pipeline.md) first.** The playbook: the Magnific generative zoom-out recipe, ad-format clear zones, Canva MCP editing mechanics + quirks, the Magnific→Canva ingestion path, logo/asset re-tinting, per-line brand-color harmonization, the Canva template registry, and the filesystem conventions. Base plates live in `imagery/<campaign>/{source,expanded}`.
 
 ---
 
@@ -124,7 +145,7 @@ When running a campaign (e.g., Consumer Month), the discount is baked directly i
 ## Rules
 
 - **Always confirm before writing to the live store.** Any Shopify API mutation (product updates, metafield changes, discount edits, theme writes) must be explicitly approved by the user before execution. Present the proposed changes, wait for confirmation, then apply.
-- **Never mention technical ingredient names** in customer-facing content — describe by benefit only.
+- **Ingredient-as-proof** (updated 2026-06-29): name an active only when bound to the benefit it delivers ("biotina, que fortalece a fibra"), never a bare ingredient list. Replaces the old benefit-only-never-ingredients rule. Canonical voice: `.claude/skills/content-director/references/voice.md`.
 - **Booster Purificante does NOT exist** — was in old prompts, removed from catalog.
 - **Never hardcode the API token** in committed scripts — read from `.env`.
 - **Pagination:** Always use `sortKey` (ID or CREATED_AT) for stable pagination. Default Shopify pagination without a sort key returns inconsistent subsets.

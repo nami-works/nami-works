@@ -1,0 +1,549 @@
+[
+  {
+    "sku": "GEB 001",
+    "name_pt": "Shampoo sem sulfato GE Beauty 250ml",
+    "ean": "7896768471137",
+    "ncm": "3305.10.00",
+    "cest": "20.017.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 250,
+    "gross_weight_g": 281,
+    "dimensions_mm": {
+      "l": 78,
+      "w": 78,
+      "h": 185
+    },
+    "units_per_carton": 36,
+    "description_short_pt": null,
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 002",
+    "name_pt": "Máscara Condicionadora GE Beauty 200ml",
+    "ean": "7896768471144",
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 200,
+    "gross_weight_g": 213,
+    "dimensions_mm": {
+      "l": 78,
+      "w": 78,
+      "h": 155
+    },
+    "units_per_carton": 36,
+    "description_short_pt": null,
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 003",
+    "name_pt": "Leave-in com proteção térmica GE Beauty 150ml",
+    "ean": "7896768471151",
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 150,
+    "gross_weight_g": 170,
+    "dimensions_mm": {
+      "l": 78,
+      "w": 78,
+      "h": 130
+    },
+    "units_per_carton": 36,
+    "description_short_pt": null,
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 008",
+    "name_pt": "Shampoo a Seco GE Beauty 150ml",
+    "ean": "0630941722534",
+    "ncm": "3305.10.00",
+    "cest": "20.017.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 91,
+    "gross_weight_g": 132,
+    "dimensions_mm": {
+      "l": 45,
+      "w": 45,
+      "h": 184
+    },
+    "units_per_carton": 20,
+    "description_short_pt": null,
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 010",
+    "name_pt": "Mascara Condicionadora GE Beauty 50ml",
+    "ean": "7896768412321",
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "shelf_life_expedicao_days": 180,
+    "net_weight_g": null,
+    "gross_weight_g": 58,
+    "dimensions_mm": {
+      "l": 55,
+      "w": 35,
+      "h": 120
+    },
+    "units_per_carton": 49,
+    "description_short_pt": null,
+    "description_long_pt": null
+  },
+  {
+    "sku": "GEB 011",
+    "name_pt": "Leave-in GE Beauty 50ml",
+    "ean": "7896768412314",
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "shelf_life_expedicao_days": 180,
+    "net_weight_g": null,
+    "gross_weight_g": 61,
+    "dimensions_mm": {
+      "l": 55,
+      "w": 35,
+      "h": 120
+    },
+    "units_per_carton": 49,
+    "description_short_pt": null,
+    "description_long_pt": null
+  },
+  {
+    "sku": "GEB 013",
+    "name_pt": "Shampoo GE Beauty 60 ml",
+    "ean": "7896768412338",
+    "ncm": "3305.10.00",
+    "cest": "20.017.00",
+    "shelf_life_days": 1095,
+    "shelf_life_expedicao_days": 180,
+    "net_weight_g": null,
+    "gross_weight_g": 72,
+    "dimensions_mm": {
+      "l": 55,
+      "w": 35,
+      "h": 120
+    },
+    "units_per_carton": 49,
+    "description_short_pt": null,
+    "description_long_pt": null
+  },
+  {
+    "sku": "GEB 019",
+    "name_pt": "Booster Fortificante GE Beauty 15ml",
+    "ean": "7896768404715",
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 15,
+    "gross_weight_g": 41,
+    "dimensions_mm": {
+      "l": 25,
+      "w": 25,
+      "h": 90
+    },
+    "units_per_carton": 260,
+    "description_short_pt": null,
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 020",
+    "name_pt": "Booster Hidratante GE Beauty 15ml",
+    "ean": "7896768471168",
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 15,
+    "gross_weight_g": 38,
+    "dimensions_mm": {
+      "l": 25,
+      "w": 25,
+      "h": 90
+    },
+    "units_per_carton": 260,
+    "description_short_pt": null,
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 021",
+    "name_pt": "Booster Definição GE Beauty 15ml",
+    "ean": "7896768471182",
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 15,
+    "gross_weight_g": 42,
+    "dimensions_mm": {
+      "l": 25,
+      "w": 25,
+      "h": 90
+    },
+    "units_per_carton": 260,
+    "description_short_pt": null,
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 022",
+    "name_pt": "Booster Antifrizz GE Beauty 15ml",
+    "ean": "7896768412703",
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 15,
+    "gross_weight_g": 38,
+    "dimensions_mm": {
+      "l": 30,
+      "w": 30,
+      "h": 95
+    },
+    "units_per_carton": 260,
+    "description_short_pt": null,
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 023",
+    "name_pt": "Booster Antioxidante GE Beauty 15ml",
+    "ean": "7896768471175",
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 15,
+    "gross_weight_g": 43,
+    "dimensions_mm": {
+      "l": 25,
+      "w": 25,
+      "h": 90
+    },
+    "units_per_carton": 260,
+    "description_short_pt": null,
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 024",
+    "name_pt": "Body Hair Mist Melon Mood GE Beauty 200ml",
+    "ean": "0042882635451",
+    "ncm": "3307.20.10",
+    "cest": "20.027.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 200,
+    "gross_weight_g": 260,
+    "dimensions_mm": {
+      "l": 50,
+      "w": 50,
+      "h": 175
+    },
+    "units_per_carton": 36,
+    "description_short_pt": null,
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 032",
+    "name_pt": "Body Hair Mist Rose Ritual GE Beauty 200ml",
+    "ean": "0631911748226",
+    "ncm": "3307.20.10",
+    "cest": "20.027.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 200,
+    "gross_weight_g": 260,
+    "dimensions_mm": {
+      "l": 50,
+      "w": 50,
+      "h": 175
+    },
+    "units_per_carton": 36,
+    "description_short_pt": "Rose Ritual = bruma perfumada p/ cabelo e corpo c/ fragrância de rosas, musk e sândalo. Realça brilho sem pesar. Pele hidratada e macia.",
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 033",
+    "name_pt": "Body Hair Mist Pear Fresh GE Beauty 200ml",
+    "ean": "0631911748219",
+    "ncm": "3307.20.10",
+    "cest": "20.027.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 200,
+    "gross_weight_g": 260,
+    "dimensions_mm": {
+      "l": 50,
+      "w": 50,
+      "h": 175
+    },
+    "units_per_carton": 36,
+    "description_short_pt": "Pear Fresh = bruma perfumada p/ cabelo e corpo c/ fragrância de pêra, frésia e lírio.",
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 031",
+    "name_pt": "Body Hair Mist Santal Skin GE Beauty 200ml",
+    "ean": "0631911748233",
+    "ncm": "3307.20.10",
+    "cest": "20.027.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 200,
+    "gross_weight_g": 260,
+    "dimensions_mm": {
+      "l": 50,
+      "w": 50,
+      "h": 175
+    },
+    "units_per_carton": 36,
+    "description_short_pt": "Santal Skin = bruma perfumada p/ cabelo e corpo c/ fragrância de sândalo, cardamomo e patchouli.",
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 029",
+    "name_pt": "Melon Mood Mini Body & Hair Mist",
+    "ean": "0631911620805",
+    "ncm": "3307.20.10",
+    "cest": "20.027.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": null,
+    "gross_weight_g": 100,
+    "dimensions_mm": {
+      "l": 40,
+      "w": 45,
+      "h": 140
+    },
+    "units_per_carton": 36,
+    "description_short_pt": null,
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 101",
+    "name_pt": "Primer Cachos Definidos GE Beauty 250ml",
+    "ean": "0070341871478",
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 250,
+    "gross_weight_g": 283,
+    "dimensions_mm": {
+      "l": 50,
+      "w": 50,
+      "h": 170
+    },
+    "units_per_carton": 12,
+    "description_short_pt": null,
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 102",
+    "name_pt": "Primer Liso Intacto GE Beauty 150ml",
+    "ean": "0074468261297",
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 150,
+    "gross_weight_g": 178,
+    "dimensions_mm": {
+      "l": 45,
+      "w": 45,
+      "h": 145
+    },
+    "units_per_carton": 12,
+    "description_short_pt": null,
+    "description_long_pt": null,
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 120",
+    "name_pt": "Leave-in Pluma GE Beauty 200ml",
+    "ean": "0631430152719",
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "net_weight_g": 200,
+    "gross_weight_g": 230,
+    "dimensions_mm": {
+      "l": 50,
+      "w": 50,
+      "h": 180
+    },
+    "units_per_carton": 12,
+    "description_short_pt": "Fluido multifuncional em spray. Leveza potente para todos os momentos.",
+    "description_long_pt": "O Leave-in Pluma foi criado para ser tudo o que você espera de um finalizador — e mais um pouco. Com uma fórmula leve como uma pluma, mas cheia de potência, ele hidrata, repara, protege e dá brilho sem pesar nos fios, nem na sua rotina. Ideal para quem busca praticidade, multifuncionalidade e liberdade no cuidado com o cabelo.",
+    "shelf_life_expedicao_days": 180
+  },
+  {
+    "sku": "GEB 121",
+    "name_pt": "MÁSCARA RECONSTRUTORA MAYDAY GE Beauty (200ml)",
+    "ean": "0042882635116",
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "shelf_life_expedicao_days": 180,
+    "net_weight_g": null,
+    "gross_weight_g": 252,
+    "dimensions_mm": {
+      "l": 104,
+      "w": 104,
+      "h": 42
+    },
+    "units_per_carton": 9,
+    "description_short_pt": null,
+    "description_long_pt": null
+  },
+  {
+    "sku": "GEB 122",
+    "name_pt": "SHAMPOO RECONSTRUTOR MAYDAY GE Beauty",
+    "ean": "0631430720338",
+    "ncm": "3305.10.00",
+    "cest": "20.017.00",
+    "shelf_life_days": 1095,
+    "shelf_life_expedicao_days": 180,
+    "net_weight_g": null,
+    "gross_weight_g": 250,
+    "dimensions_mm": {
+      "l": 78,
+      "w": 78,
+      "h": 185
+    },
+    "units_per_carton": 36,
+    "description_short_pt": null,
+    "description_long_pt": null
+  },
+  {
+    "sku": "GEB 123",
+    "name_pt": "CONDICIONADOR RECONSTRUTOR MAYDAY GE Beauty",
+    "ean": "0631430720345",
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "shelf_life_expedicao_days": 180,
+    "net_weight_g": null,
+    "gross_weight_g": 213,
+    "dimensions_mm": {
+      "l": 78,
+      "w": 78,
+      "h": 155
+    },
+    "units_per_carton": 36,
+    "description_short_pt": null,
+    "description_long_pt": null
+  },
+  {
+    "sku": "GEB 124",
+    "name_pt": "LEAVE-IN RECONSTRUTOR MAYDAY GE Beauty",
+    "ean": "0631430720352",
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "shelf_life_expedicao_days": 180,
+    "net_weight_g": null,
+    "gross_weight_g": 170,
+    "dimensions_mm": {
+      "l": 78,
+      "w": 78,
+      "h": 130
+    },
+    "units_per_carton": 36,
+    "description_short_pt": null,
+    "description_long_pt": null
+  },
+  {
+    "sku": "GEB 125",
+    "name_pt": "KIT RECONSTRUÇÃO MAYDAY",
+    "ean": null,
+    "ncm": "3305.90.00",
+    "cest": null,
+    "shelf_life_days": 1095,
+    "shelf_life_expedicao_days": 180,
+    "net_weight_g": null,
+    "gross_weight_g": null,
+    "dimensions_mm": null,
+    "units_per_carton": null,
+    "description_short_pt": null,
+    "description_long_pt": null
+  },
+  {
+    "sku": "GEB 126",
+    "name_pt": "Sérum Reparador Noturno MayDay",
+    "ean": null,
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "shelf_life_expedicao_days": 180,
+    "net_weight_g": null,
+    "gross_weight_g": 170,
+    "dimensions_mm": {
+      "l": 78,
+      "w": 78,
+      "h": 130
+    },
+    "units_per_carton": null,
+    "description_short_pt": null,
+    "description_long_pt": null
+  },
+  {
+    "sku": "GEB 301",
+    "name_pt": "SACHÊ SHAMPOO GE BEAUTY 15ml",
+    "ean": null,
+    "ncm": "3305.10.00",
+    "cest": "20.017.00",
+    "shelf_life_days": 1095,
+    "shelf_life_expedicao_days": 180,
+    "net_weight_g": null,
+    "gross_weight_g": 15,
+    "dimensions_mm": {
+      "l": 65,
+      "w": 65,
+      "h": 100
+    },
+    "units_per_carton": null,
+    "description_short_pt": null,
+    "description_long_pt": null
+  },
+  {
+    "sku": "GEB 302",
+    "name_pt": "SACHÊ MASCARA CONDICIONADORA GE BEAUTY 15ml",
+    "ean": null,
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "shelf_life_expedicao_days": 180,
+    "net_weight_g": null,
+    "gross_weight_g": 15,
+    "dimensions_mm": {
+      "l": 65,
+      "w": 65,
+      "h": 100
+    },
+    "units_per_carton": null,
+    "description_short_pt": null,
+    "description_long_pt": null
+  },
+  {
+    "sku": "GEB 303",
+    "name_pt": "SACHÊ LEAVE-IN GE BEAUTY 15ml",
+    "ean": null,
+    "ncm": "3305.90.00",
+    "cest": "20.020.00",
+    "shelf_life_days": 1095,
+    "shelf_life_expedicao_days": 180,
+    "net_weight_g": null,
+    "gross_weight_g": 15,
+    "dimensions_mm": {
+      "l": 65,
+      "w": 65,
+      "h": 100
+    },
+    "units_per_carton": null,
+    "description_short_pt": null,
+    "description_long_pt": null
+  }
+]

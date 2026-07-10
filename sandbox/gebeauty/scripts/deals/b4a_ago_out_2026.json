@@ -1,0 +1,10 @@
+﻿{
+  "name": "B4A — Ago/Set/Out 2026",
+  "payment_days": 53,
+  "monthly_rate": 0.013,
+  "lines": [
+    {"sku": "GEB003", "volume": 15000, "price": 12.00},
+    {"sku": "GEB008", "volume": 15000, "price": 14.00},
+    {"sku": "GEB022", "volume": 20000, "price": 12.00}
+  ]
+}

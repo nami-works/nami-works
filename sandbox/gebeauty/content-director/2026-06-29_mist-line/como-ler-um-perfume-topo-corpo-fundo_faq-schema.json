@@ -1,0 +1,49 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "headline": "Como ler um perfume: topo, corpo e fundo (e por que o cheiro fixa mais no cabelo)",
+      "author": { "@type": "Organization", "name": "GE Beauty" },
+      "publisher": { "@type": "Organization", "name": "GE Beauty" },
+      "inLanguage": "pt-BR",
+      "description": "Entenda a pirâmide olfativa: o que são topo, corpo e fundo de uma fragrância e por que o cheiro fixa mais no cabelo do que na pele."
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Por que o perfume some da pele e fica no cabelo?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Porque a pele é dinâmica, com oleosidade, temperatura e evaporação que dispersam o aroma mais rápido. O fio capilar é poroso, absorve as moléculas de fragrância e as libera aos poucos, então o cheiro permanece mais tempo no cabelo."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "O que dura mais, o topo ou o fundo?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "O fundo. O topo é feito de moléculas leves e voláteis que aparecem nos primeiros minutos e somem rápido. O fundo é feito de moléculas maiores e pouco voláteis, que se soltam devagar e permanecem nas últimas horas, garantindo a fixação."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Em quanto tempo dá para sentir o perfil completo de um perfume?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Alguns minutos depois de borrifar. O topo chega primeiro, com impacto e frescor; o corpo aparece nas horas seguintes com a personalidade da fragrância; e o fundo se revela por último, deixando a assinatura. Por isso vale conviver com o aroma antes de decidir se ele é o seu."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Blog GE Beauty" },
+        { "@type": "ListItem", "position": 2, "name": "Como ler um perfume: topo, corpo e fundo" }
+      ]
+    }
+  ]
+}

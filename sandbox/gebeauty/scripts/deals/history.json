@@ -1,0 +1,271 @@
+{
+  "_note": "Histórico de deals B2B fechados. Adicionar entrada manualmente após NF emitida (ou proposta rejeitada com status=rejected). retail_at_time = preço de tabela Shopify na época do deal.",
+  "deals": [
+    {
+      "id": "b4a_2025-10-03_nf00076502",
+      "operator": "B4A",
+      "date": "2025-10-03",
+      "status": "completed",
+      "nf": "00076502",
+      "payment_days": 46,
+      "monthly_rate": 0.013,
+      "_note": "NF 00076502 emitida 03/10/2025 — B4A SERVICOS DE TECNOLOGIA E COMERCIO S. via MATRIZ. vNF=R$4,500.",
+      "lines": [
+        {
+          "sku": "GEB 008",
+          "volume": 300,
+          "price": 15.0,
+          "retail_at_time": null
+        }
+      ]
+    },
+    {
+      "id": "uaubox_2025-11-06_nf00077620",
+      "operator": "UAU Box",
+      "date": "2025-11-06",
+      "status": "completed",
+      "nf": "00077620",
+      "payment_days": 90,
+      "monthly_rate": 0.013,
+      "_note": "NF 00077620 emitida 06/11/2025 — UAUBOX S.A. via MATRIZ. vNF=R$43,362.",
+      "lines": [
+        {
+          "sku": "GEB 019",
+          "volume": 1250,
+          "price": 16.37,
+          "retail_at_time": null
+        },
+        {
+          "sku": "GEB 023",
+          "volume": 1250,
+          "price": 18.32,
+          "retail_at_time": null
+        }
+      ]
+    },
+    {
+      "id": "uaubox-2026-02",
+      "operator": "UAU Box",
+      "date": "2026-02-09",
+      "status": "completed",
+      "nf": "84.166",
+      "payment_days": 90,
+      "monthly_rate": 0.013,
+      "_note": "NF emitida 09/02/2026. Pagamento em 4x (até 09/06/2026).",
+      "lines": [
+        {
+          "sku": "GEB 008",
+          "volume": 17000,
+          "price": 17.19,
+          "retail_at_time": 58.65
+        }
+      ]
+    },
+    {
+      "id": "uaubox_2026-03-31_nf00001921",
+      "operator": "UAU Box",
+      "date": "2026-03-31",
+      "status": "completed",
+      "nf": "00001921",
+      "payment_days": 125,
+      "monthly_rate": 0.013,
+      "_note": "NF 00001921 emitida 31/03/2026 — UAUBOX S.A. via SHOPS JARDINS. vNF=R$310,930.",
+      "lines": [
+        {
+          "sku": "GEB 020",
+          "volume": 17000,
+          "price": 18.29,
+          "retail_at_time": null
+        }
+      ]
+    },
+    {
+      "id": "magenta_2026-03-31_nf00001928",
+      "operator": "Magenta",
+      "date": "2026-03-31",
+      "status": "completed",
+      "nf": "00001928",
+      "payment_days": 45,
+      "monthly_rate": 0.013,
+      "_note": "NF 00001928 emitida 31/03/2026 — MAGENTA COMERCIO DE COSMETICOS LTDA via SHOPS JARDINS. vNF=R$36,240.",
+      "lines": [
+        {
+          "sku": "GEB 003",
+          "volume": 2000,
+          "price": 13.5,
+          "retail_at_time": null
+        },
+        {
+          "sku": "GEB 002",
+          "volume": 560,
+          "price": 16.5,
+          "retail_at_time": null
+        }
+      ]
+    },
+    {
+      "id": "uaubox_2026-04-17_nf00002174",
+      "operator": "UAU Box",
+      "date": "2026-04-17",
+      "status": "completed",
+      "nf": "00002174",
+      "payment_days": 125,
+      "monthly_rate": 0.013,
+      "_note": "NF 00002174 emitida 17/04/2026 — UAUBOX S.A. via SHOPS JARDINS. vNF=R$27,435.",
+      "lines": [
+        {
+          "sku": "GEB 020",
+          "volume": 1500,
+          "price": 18.29,
+          "retail_at_time": null
+        }
+      ]
+    },
+    {
+      "id": "magenta_2026-05-27_nf00002682",
+      "operator": "Magenta",
+      "date": "2026-05-27",
+      "status": "completed",
+      "nf": "00002682",
+      "payment_days": 45,
+      "monthly_rate": 0.013,
+      "_note": "NF 00002682 emitida 27/05/2026 — MAGENTA COMERCIO DE COSMETICOS LTDA via SHOPS JARDINS. vNF=R$37,980.",
+      "lines": [
+        {
+          "sku": "GEB 003",
+          "volume": 1000,
+          "price": 18.81,
+          "retail_at_time": null
+        },
+        {
+          "sku": "GEB 002",
+          "volume": 1000,
+          "price": 19.17,
+          "retail_at_time": null
+        }
+      ]
+    },
+    {
+      "id": "b4a_2026-05-29_nf00002701",
+      "operator": "B4A",
+      "date": "2026-05-29",
+      "status": "completed",
+      "nf": "00002701",
+      "payment_days": 120,
+      "monthly_rate": 0.013,
+      "_note": "NF 00002701 emitida 29/05/2026 — B4A SERVICOS DE TECNOLOGIA E COMERCIO S. via SHOPS JARDINS. vNF=R$105,000.",
+      "lines": [
+        {
+          "sku": "GEB 013",
+          "volume": 15000,
+          "price": 7.0,
+          "retail_at_time": null
+        }
+      ]
+    },
+    {
+      "id": "b4a_2026-05-29_nf00002702",
+      "operator": "B4A",
+      "date": "2026-05-29",
+      "status": "completed",
+      "nf": "00002702",
+      "payment_days": 120,
+      "monthly_rate": 0.013,
+      "_note": "NF 00002702 emitida 29/05/2026 — B4A SERVICOS DE TECNOLOGIA E COMERCIO S. via SHOPS JARDINS. vNF=R$105,000.",
+      "lines": [
+        {
+          "sku": "GEB 010",
+          "volume": 15000,
+          "price": 7.0,
+          "retail_at_time": null
+        }
+      ]
+    },
+    {
+      "id": "uaubox_2026-11_contracted",
+      "operator": "UAU Box",
+      "date": "2026-10-15",
+      "status": "contracted",
+      "nf": null,
+      "payment_days": 120,
+      "monthly_rate": 0.013,
+      "_note": "Novembro 2026 box. Contrato Clicksign f7d8c570 (24/11/2025). Booster Definição, entrega até 15/10/2026. 4x parcelas 30/60/90/120d — último pagamento ~fev/2027.",
+      "lines": [
+        {
+          "sku": "GEB 021",
+          "volume": 17000,
+          "price": 21.83,
+          "retail_at_time": null
+        }
+      ]
+    },
+    {
+      "id": "b4a-2026-ago-out",
+      "operator": "B4A",
+      "date": "2026-08-01",
+      "status": "completed",
+      "nf": null,
+      "payment_days": 53,
+      "monthly_rate": 0.013,
+      "_note": "Box Ago/Set/Out 2026. Data estimada — confirmar com Raphael. 3 edições mensais.",
+      "lines": [
+        {
+          "sku": "GEB 003",
+          "volume": 15000,
+          "price": 12.0,
+          "retail_at_time": 84.15
+        },
+        {
+          "sku": "GEB 008",
+          "volume": 15000,
+          "price": 14.0,
+          "retail_at_time": 58.65
+        },
+        {
+          "sku": "GEB 022",
+          "volume": 20000,
+          "price": 12.0,
+          "retail_at_time": 67.15
+        }
+      ]
+    },
+    {
+      "id": "uaubox_proposta_2026-07-02",
+      "operator": "UAU Box",
+      "date": "2026-07-02",
+      "status": "sent",
+      "nf": null,
+      "payment_days": null,
+      "monthly_rate": 0.013,
+      "_note": "Proposta enviada 02/07/2026 — 5 SKUs, 100.000 un, R$3.899.000. Disponibilidade sob consulta, prazo a combinar. HTML: B2B_Proposta_UAUBOXSA_v3_20260702.html.",
+      "lines": [
+        {"sku": "GEB 024", "volume": 20000, "price": 45.15, "retail_at_time": 129.00},
+        {"sku": "GEB 001", "volume": 20000, "price": 33.25, "retail_at_time": 95.00},
+        {"sku": "GEB 002", "volume": 20000, "price": 33.25, "retail_at_time": 95.00},
+        {"sku": "GEB 121", "volume": 20000, "price": 48.65, "retail_at_time": 139.00},
+        {"sku": "GEB 003", "volume": 20000, "price": 34.65, "retail_at_time": 99.00}
+      ]
+    },
+    {
+      "id": "magenta_proposta_2026-07-01",
+      "operator": "Magenta",
+      "date": "2026-07-01",
+      "status": "sent",
+      "nf": null,
+      "payment_days": null,
+      "monthly_rate": 0.013,
+      "_note": "Proposta enviada 01/07/2026 — aguardando confirmação. PDF: B2B_Proposta_Magenta_20260701.pdf.",
+      "lines": [
+        {"sku": "GEB 024", "volume": 5000, "price": 28.50, "retail_at_time": 129.00},
+        {"sku": "GEB 102", "volume": 4000, "price": 31.00, "retail_at_time": 118.15},
+        {"sku": "GEB 029", "volume": 4000, "price": 23.45, "retail_at_time": 79.00},
+        {"sku": "GEB 023", "volume": 3000, "price": 24.65, "retail_at_time": 63.75},
+        {"sku": "GEB 011", "volume": 3000, "price": 12.00, "retail_at_time": null},
+        {"sku": "GEB 013", "volume": 3000, "price": 11.00, "retail_at_time": 40.00},
+        {"sku": "GEB 010", "volume": 3000, "price": 11.00, "retail_at_time": 40.00},
+        {"sku": "GEB 022", "volume": 2000, "price": 22.70, "retail_at_time": 67.15},
+        {"sku": "GEB 008", "volume": 1000, "price": 18.00, "retail_at_time": 58.65}
+      ]
+    }
+  ]
+}

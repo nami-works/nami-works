@@ -1,0 +1,156 @@
+
+r4 Faturamento bruto:
+   BN(2026-01): '=BN5+BN39+BN40+BN41'  -> 963432.88
+   BO(2026-02): '=BO5+BO39+BO40+BO41'  -> 683413.47
+   CA(2026 ann): '=SUM(BN4:BY4)'  -> 14477357.788
+   CB(% rec): '=CA4/CA$44'  -> 1.201
+
+r6 Receita Formulas:
+   BN(2026-01): '=SUM(BN7:BN27)'  -> 914773.92
+   BO(2026-02): '=SUM(BO7:BO27)'  -> 647709.68
+   CA(2026 ann): '=SUM(BN6:BY6)'  -> 13718037.09
+   CB(% rec): '=CA6/CA$44'  -> 1.138
+
+r44 Receita bruta:
+   BN(2026-01): '=BN4+BN43'  -> 809332.57
+   BO(2026-02): '=BO4+BO43'  -> 568492.1
+   CA(2026 ann): '=SUM(BN44:BY44)'  -> 12058713.857
+   CB(% rec): '=CA44/CA$44'  -> 1
+
+r45 Impostos s/ rec:
+   BN(2026-01): '=SUM(BN46:BN48)'  -> -89611.16
+   BO(2026-02): '=SUM(BO46:BO48)'  -> -73774.89
+   CA(2026 ann): '=SUM(BN45:BY45)'  -> -1874317.071
+   CB(% rec): '=CA45/CA$44'  -> -0.155
+
+r46 ICMS:
+   BN(2026-01): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A60329AC90>  -> -43046.66
+   BO(2026-02): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A60329ACF0>  -> -27170.56
+   CA(2026 ann): '=SUM(BN46:BY46)'  -> -258968.043
+   CB(% rec): '=CA46/CA$44'  -> -0.021
+
+r47 PIS/COFINS:
+   BN(2026-01): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A60329B7D0>  -> -541.5
+   BO(2026-02): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A60329B830>  -> -550.33
+   CA(2026 ann): '=SUM(BN47:BY47)'  -> -16791.903
+   CB(% rec): '=CA47/CA$44'  -> -0.001
+
+r49 Receita liquida:
+   BN(2026-01): '=BN44+BN45'  -> 719721.41
+   BO(2026-02): '=BO44+BO45'  -> 494717.21
+   CA(2026 ann): '=SUM(BN49:BY49)'  -> 10184396.785
+   CB(% rec): '=CA49/CA$44'  -> 0.845
+
+r50 CMV:
+   BN(2026-01): '=SUM(BN51:BN54)'  -> -175226.673
+   BO(2026-02): '=SUM(BO51:BO54)'  -> -131172.58
+   CA(2026 ann): '=SUM(BN50:BY50)'  -> -2633326.237
+   CB(% rec): '=CA50/CA$44'  -> -0.218
+
+r51 Produto(CMV):
+   BN(2026-01): '=-SUMPRODUCT(BN$149:BN$182,$BE$149:$BE$182)*(1+$BK51*--(BN$3>=$BL51))'  -> -170271.393
+   BO(2026-02): '=-SUMPRODUCT(BO$149:BO$182,$BE$149:$BE$182)*(1+$BK51*--(BO$3>=$BL51))'  -> -116054.99
+   CA(2026 ann): '=SUM(BN51:BY51)'  -> -2318076.685
+   CB(% rec): '=CA51/CA$44'  -> -0.192
+
+r55 Margem bruta:
+   BN(2026-01): '=BN49+BN50'  -> 544494.737
+   BO(2026-02): '=BO49+BO50'  -> 363544.63
+   CA(2026 ann): '=SUM(BN55:BY55)'  -> 7551070.549
+   CB(% rec): '=CA55/CA$44'  -> 0.626
+
+r58 Armazenagem:
+   BN(2026-01): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A6033079B0>  -> -37285.98
+   BO(2026-02): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A603307A10>  -> -46515.55
+   CA(2026 ann): '=SUM(BN58:BY58)'  -> -282631.74
+   CB(% rec): '=CA58/CA$44'  -> -0.023
+
+r59 Frete s/ vendas:
+   BN(2026-01): '=IFERROR(INDEX(Despesas_canal!$1:$1048576,MATCH($A$3&$D59,Despesas_canal!$AL:$AL,0),MATCH(BN$3,Despesas_canal!$1:$1,0)),0)'  -> -78282.46
+   BO(2026-02): '=IFERROR(INDEX(Despesas_canal!$1:$1048576,MATCH($A$3&$D59,Despesas_canal!$AL:$AL,0),MATCH(BO$3,Despesas_canal!$1:$1,0)),0)'  -> -71663.19
+   CA(2026 ann): '=SUM(BN59:BY59)'  -> -2022343.593
+   CB(% rec): '=CA59/CA$44'  -> -0.168
+
+r60 Taxas comerciais:
+   BN(2026-01): '=SUM(BN61:BN62)'  -> -31648.74
+   BO(2026-02): '=SUM(BO61:BO62)'  -> -19739.07
+   CA(2026 ann): '=SUM(BN60:BY60)'  -> -379948.227
+   CB(% rec): '=CA60/CA$44'  -> -0.032
+
+r64 Midia online:
+   BN(2026-01): '=SUM(BN65:BN77)'  -> -120756.196
+   BO(2026-02): '=SUM(BO65:BO77)'  -> -114675.573
+   CA(2026 ann): '=SUM(BN64:BY64)'  -> -1105288.833
+   CB(% rec): '=CA64/CA$44'  -> -0.092
+
+r69 Afiliadas:
+   BN(2026-01): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A6033CE510>  -> -786.24
+   BO(2026-02): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A6033CE570>  -> -1978.51
+   CA(2026 ann): '=SUM(BN69:BY69)'  -> -54937.418
+   CB(% rec): '=CA69/CA$44'  -> -0.005
+
+r77 Influencia:
+   BN(2026-01): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A60342AC90>  -> -12400
+   BO(2026-02): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A60342ACF0>  -> -5101.54
+   CA(2026 ann): '=SUM(BN77:BY77)'  -> -31601.54
+   CB(% rec): '=CA77/CA$44'  -> -0.003
+
+r84 Margem contribuicao:
+   BN(2026-01): '=BN55+BN56'  -> 204293.228
+   BO(2026-02): '=BO55+BO56'  -> 65938.756
+   CA(2026 ann): '=SUM(BN84:BY84)'  -> 3106037.454
+   CB(% rec): '=CA84/CA$44'  -> 0.258
+
+r86 SG&A:
+   BN(2026-01): '=BN87+BN95+BN96+BN103+BN109+BN118+BN122+BN123+BN124'  -> -219657.66
+   BO(2026-02): '=BO87+BO95+BO96+BO103+BO109+BO118+BO122+BO123+BO124'  -> -191626.44
+   CA(2026 ann): '=SUM(BN86:BY86)'  -> -2310527.587
+   CB(% rec): '=CA86/CA$44'  -> -0.192
+
+r88 Salarios:
+   BN(2026-01): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A6034C5310>  -> -16501.91
+   BO(2026-02): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A6034C5370>  -> -16239.35
+   CA(2026 ann): '=SUM(BN88:BY88)'  -> -262852.65
+   CB(% rec): '=CA88/CA$44'  -> -0.022
+
+r97 Contabilidade:
+   BN(2026-01): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A603512210>  -> -8231
+   BO(2026-02): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A603512270>  -> -10015
+   CA(2026 ann): '=SUM(BN97:BY97)'  -> -85176
+   CB(% rec): '=CA97/CA$44'  -> -0.007
+
+r118 Sistemas:
+   BN(2026-01): '=SUM(BN119:BN120)'  -> -4271.04
+   BO(2026-02): '=SUM(BO119:BO120)'  -> -5239.54
+   CA(2026 ann): '=SUM(BN118:BY118)'  -> -60817.92
+   CB(% rec): '=CA118/CA$44'  -> -0.005
+
+r121 Rateio corp:
+   BN(2026-01): '=(BN87+BN95+BN96+BN103+BN109+BN118+BN122+BN123+BN124)*(1-(BN$44/(BN$44+INDEX(Lojas_DRE!$41:$41,1,MATCH(BN$3,Lojas_DRE!$3:$3,0)))))'  -> -55751.894
+   BO(2026-02): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A60362DD90>  -> 0
+   CA(2026 ann): '=SUM(BN121:BY121)'  -> -55751.894
+   CB(% rec): '=CA121/CA$44'  -> -0.005
+
+r131 EBITDA:
+   BN(2026-01): '=BN84+BN86'  -> -15364.432
+   BO(2026-02): '=BO84+BO86'  -> -125687.684
+   CA(2026 ann): '=SUM(BN131:BY131)'  -> 795509.867
+   CB(% rec): '=CA131/CA$44'  -> 0.066
+
+r138 IRPJ:
+   BN(2026-01): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A6036D3B90>  -> 0
+   BO(2026-02): <openpyxl.worksheet.formula.ArrayFormula object at 0x000002A6036D3BF0>  -> 0
+   CA(2026 ann): '=SUM(BN138:BY138)'  -> 0
+   CB(% rec): '=CA138/CA$44'  -> 0
+
+r144 Lucro liquido:
+   BN(2026-01): '=BN131+BN132+BN138+SUM(BN139:BN141)'  -> -35422.488
+   BO(2026-02): '=BO131+BO132+BO138+SUM(BO139:BO141)'  -> -138997.746
+   CA(2026 ann): '=SUM(BN144:BY144)'  -> 519330.028
+   CB(% rec): '=CA144/CA$44'  -> 0.043
+
+r190 # pedidos:
+   BN(2026-01): '=ROUND(BN44/$BE190,0)'  -> 2890
+   BO(2026-02): '=ROUND(BO44/$BE190,0)'  -> 2030
+   CA(2026 ann): None  -> None
+   CB(% rec): None  -> None

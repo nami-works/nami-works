@@ -1,0 +1,49 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "headline": "Layering de brumas: como criar a sua assinatura olfativa",
+      "author": { "@type": "Organization", "name": "GE Beauty" },
+      "publisher": { "@type": "Organization", "name": "GE Beauty" },
+      "inLanguage": "pt-BR",
+      "description": "Layering é combinar duas brumas para criar um cheiro só seu. Veja as 6 combinações das brumas GE Beauty e o passo a passo no cabelo e na pele."
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Quantas brumas posso combinar de uma vez?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A gente recomenda começar com duas, que já cria uma assinatura rica e equilibrada. Com duas fica fácil controlar a dose e perceber como cada fragrância contribui antes de ousar mais."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Posso fazer layering no cabelo e na pele juntos?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Pode. As brumas são Body & Hair: borrife nos fios e na pele que o resultado fica mais envolvente. No cabelo, o ProShine ainda realça o brilho; na pele, o AcquaBio estimula a hidratação."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "A combinação dura o dia todo?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A bruma é leve por natureza, então o aroma é mais discreto e próximo da pele. Para manter a sua assinatura ao longo do dia, é só reaplicar sempre que quiser renovar."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Blog GE Beauty" },
+        { "@type": "ListItem", "position": 2, "name": "Layering de brumas: como criar a sua assinatura olfativa" }
+      ]
+    }
+  ]
+}

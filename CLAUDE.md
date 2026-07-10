@@ -126,6 +126,10 @@ Lucas's terminal and Claude's `PowerShell` tool both run in Windows PowerShell 5
 
 The `Bash` tool (POSIX) still accepts `&&` — only PowerShell breaks. Watch for this when copying example commands from documentation.
 
+## Excel / spreadsheets
+
+When building or editing any `.xlsx` for Lucas, read **`docs/excel-conventions.md`** first. It captures his house style (derived from the GE Beauty BP), the canonical DRE line order, sensitivity-grid patterns, file/Drive naming, and the hard rule that formulas are authored in **English tokens** (`SUMIF`, comma args) because Excel renders them in pt-BR (`SOMASE`, `;`) automatically — writing literal Portuguese into the file breaks it. Append to that doc's running log whenever Lucas corrects a spreadsheet.
+
 ## Risky actions
 
 Confirm before taking risky actions — destructive git, external API writes, production deploys, anything visible to customers. Match the scope of action to what was asked. A previous "yes" doesn't authorize a similar action later unless explicitly scoped that way.

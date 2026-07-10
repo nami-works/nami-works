@@ -1,0 +1,10 @@
+# Raw CS archive mirror holds unanonymized customer PII (CPF, phone, email,
+# names). Never commit. Anonymization happens at the deliverable stage.
+*.sqlite
+*.sqlite-journal
+*.out.json
+*.log
+*.log.err
+*.jsonl
+export/
+raw/

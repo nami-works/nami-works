@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Bisyou: Memorando de Investimento</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 16mm 16mm; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: "Segoe UI", Calibri, Arial, sans-serif; color: #1a1f29; font-size: 10.5pt; line-height: 1.5; margin: 0; }
+  h1 { font-size: 23pt; margin: 0 0 2px 0; letter-spacing: -0.4px; }
+  h2 { font-size: 14pt; margin: 26px 0 8px; padding: 7px 11px; background: #11243f; color: #fff; border-radius: 4px; }
+  h3 { font-size: 11.5pt; margin: 16px 0 4px; color: #11243f; }
+  p { margin: 6px 0; }
+  .meta { color: #5b6677; font-size: 9pt; margin-top: 4px; }
+  .rule { height: 3px; background: linear-gradient(90deg,#c79a3a,#11243f); border: 0; margin: 10px 0 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 9.3pt; }
+  th, td { border: 1px solid #d4dae3; padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: #eef2f7; font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .verdict { border: 2px solid #11243f; border-radius: 8px; padding: 14px 18px; margin: 14px 0; background: #f5f8fc; }
+  .verdict .tag { display: inline-block; background: #1f7a3f; color: #fff; font-weight: 700; padding: 3px 12px; border-radius: 20px; font-size: 10pt; }
+  .callout { border-left: 4px solid #c79a3a; background: #fdf8ee; padding: 9px 14px; margin: 12px 0; border-radius: 0 4px 4px 0; }
+  .risk { border-left: 4px solid #b23b3b; background: #fcf1f1; padding: 9px 14px; margin: 12px 0; border-radius: 0 4px 4px 0; }
+  .good { border-left: 4px solid #1f7a3f; background: #f0f8f2; padding: 9px 14px; margin: 12px 0; border-radius: 0 4px 4px 0; }
+  ul, ol { margin: 6px 0; padding-left: 20px; } li { margin: 3px 0; }
+  .small { font-size: 8.6pt; color: #5b6677; }
+  .kpi-row { display: flex; gap: 10px; margin: 12px 0; }
+  .kpi { flex: 1; border: 1px solid #d4dae3; border-radius: 6px; padding: 9px 11px; background: #fff; }
+  .kpi .v { font-size: 15pt; font-weight: 700; color: #11243f; } .kpi .l { font-size: 8pt; color: #5b6677; text-transform: uppercase; }
+  .pos { color: #1f7a3f; font-weight: 600; } .neg { color: #b23b3b; font-weight: 600; }
+  h2 { page-break-after: avoid; } table, .verdict, .callout, .risk, .good { page-break-inside: avoid; }
+  .footer { margin-top: 26px; border-top: 1px solid #d4dae3; padding-top: 8px; color: #5b6677; font-size: 8.4pt; }
+</style>
+</head>
+<body>
+
+<h1>Bisyou: devemos assumir a marca?</h1>
+<hr class="rule">
+<div class="meta"><b>Memorando de investimento confidencial.</b> GE Beauty &nbsp;·&nbsp; junho de 2026.</div>
+
+<!-- 1. RECOMENDACAO -->
+<h2>1. Recomendação em resumo</h2>
+<div class="verdict"><span class="tag">AVANÇAR (CONDICIONAL)</span> &nbsp;<b>Avançar para um term sheet</b>, dentro das condições abaixo. O caso é uma <b>arbitragem operacional de custos</b>: assumir a receita própria da Bisyou e operá-la com uma base de custos muito mais enxuta do que os atuais donos conseguem. O downside é genuinamente limitado; o upside é real, porém modesto, e depende de uma coisa: se conseguimos adquirir os clientes da Bisyou de forma eficiente na <i>própria</i> marca dela.</div>
+
+<p><b>Visão geral.</b> A Bisyou perde ~R$3M/ano em run-rate e foi lucrativa em apenas um de cinco anos: o custo de adquirir clientes sempre consumiu sua excelente margem (~80%). Mas a estrutura de licenciamento nos entrega a <i>operação</i> sem dívida, sem passivo trabalhista, sem contas a pagar legadas e (porque a Boniteca financia o estoque) sem desembolso de capital de giro. Na nossa base de custos, sem serviço de dívida, com estrutura compartilhada enxuta e marketing como CPA variável em vez de contratos fixos de influenciadores, a mesma receita se converte em aproximadamente <b>R$1M de EBITDA</b>. O negócio de site próprio da marca é durável (32% dos pedidos são recompra), então há um ativo real por baixo. A aposta é operar enxuto e adquirir com disciplina onde os atuais donos não conseguiram.</p>
+
+<p><b>As condições (todas precisam se sustentar, ou desistimos):</b></p>
+<ol>
+<li><b>Royalty ≤ ~5–8% da receita LÍQUIDA, sem mínimo fixo.</b> Sobre o bruto, ou com um mínimo, a conta não fecha.</li>
+<li><b>Conseguimos rodar aquisição standalone a ≤ ~35% da receita líquida.</b> Este é o ponto central: o upside depende da eficiência de marketing. O break-even é ~39%; os donos rodaram 48% (recente) e 32% (no único ano bom). <b>Comprovar com um teste pago pequeno antes de assumir compromisso.</b></li>
+<li><b>A receita de site próprio de maio/junho está estabilizando, não ainda caindo.</b> Ainda não temos esses dois meses; é um ponto de diligência prospectivo.</li>
+<li><b>Prazo de licença longo e barato o suficiente para sair</b>, comprovando o modelo antes da compra; além de ANVISA regular, marca registrada e sem litígio ativo.</li>
+<li><b>Limitamos a atenção da liderança comprometida.</b> O custo real é a atenção de gestão tirada da GE Beauty, não caixa.</li>
+</ol>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="v neg">−R$3,0M</div><div class="l">Queima de caixa atual deles (run-rate 2026)</div></div>
+  <div class="kpi"><div class="v pos">~R$1,0M</div><div class="l">EBITDA est. na nossa base (ilustrativo)</div></div>
+  <div class="kpi"><div class="v">~39%</div><div class="l">Marketing de break-even (% da líq.)</div></div>
+  <div class="kpi"><div class="v pos">~R$4,2M</div><div class="l">Receita líquida de break-even (vs ~R$7,6M run-rate)</div></div>
+</div>
+
+<!-- 2. A PROPOSTA -->
+<h2>2. O que está sendo proposto</h2>
+<p><b>Visão geral.</b> Um licenciamento de marca com assunção da operação, não uma aquisição. Operamos a Bisyou e pagamos um royalty, com opção de compra futura (~ano cinco). Assumimos a operação; não assumimos o balanço.</p>
+<h3>Estrutura (transição limpa)</h3>
+<ul>
+<li><b>Nenhum passivo transferido:</b> sem passivos trabalhistas, sem dívida bancária, nenhuma das ~R$1,9M de contas a pagar legadas. Itens pré-fechamento ficam com os donos.</li>
+<li><b>Fornecimento inalterado:</b> fabricado pela <b>Boniteca</b> (mesmo fabricante da GE). O fee da Boniteca é uma taxa de sucesso regressiva de 10%→5%, paga apenas após a venda.</li>
+<li><b>Sem desembolso de capital de giro:</b> a Boniteca <i>financia o estoque</i>; pagamos em condições estilo consignação, ~M+2 após a venda (ex.: vendas de junho pagas no 5º dia útil de agosto). Pagamos só depois que o caixa entra. Não há pré-financiamento de estoque de ~R$1M.</li>
+<li><b>Marketing hoje:</b> contratos de influenciadores já cancelados; a agência de Meta/Google vai até nov/2026 (~R$60k/mês de mídia + R$6,5k de serviço, com multa por saída antecipada).</li>
+</ul>
+<h3>Com quem estamos lidando</h3>
+<p>Cap table: <b>Disruptive Participações S/A 76%</b>, Ivan Pinheiro 12%, Carolina Viudes 12%. Um detentor financeiro controlando 76% e licenciando a operação é um leve <b>sinal de seleção adversa</b>: não conseguiram financiar ou consertar. Por isso o royalty e o preço de exercício da compra precisam ser precificados como a opção (call) que isto é.</p>
+
+<!-- 3. REALIDADE FINANCEIRA -->
+<h2>3. A realidade financeira da marca</h2>
+<p><b>Visão geral.</b> A Bisyou escalou para ~R$15M em 2024 e ganhou dinheiro em exatamente um ano. Em 2025 virou um prejuízo líquido de R$1,8M. Os quatro meses de 2026 que temos (jan–abr) rodam bem abaixo de 2025.</p>
+<table>
+<tr><th>R$ (visão contábil)</th><th class="num">2021</th><th class="num">2022</th><th class="num">2023</th><th class="num">2024</th><th class="num">2025</th></tr>
+<tr><td>Receita bruta</td><td class="num">2,47M</td><td class="num">6,40M</td><td class="num">9,81M</td><td class="num">15,44M</td><td class="num">14,79M</td></tr>
+<tr><td>Margem bruta</td><td class="num">77,5%</td><td class="num">82,4%</td><td class="num">84,5%</td><td class="num">85,2%</td><td class="num">80,2%</td></tr>
+<tr><td>Gasto comercial (mkt)</td><td class="num">0,91M</td><td class="num">2,34M</td><td class="num">3,14M</td><td class="num">4,45M</td><td class="num">5,20M</td></tr>
+<tr><td>Lucro / (prejuízo) líquido</td><td class="num neg">(0,20M)</td><td class="num neg">(0,22M)</td><td class="num neg">(0,40M)</td><td class="num pos">0,62M</td><td class="num neg">(1,78M)</td></tr>
+</table>
+<div class="callout"><b>Sobre 2026:</b> temos apenas <b>4 meses reais (jan–abr)</b>. O "−46% vs 2025 / ~R$3M de queima" é um <b>run-rate anualizado, não um número de ano fechado confirmado</b>: trate como direcional. Dentro desses meses, a publicidade rodou ~48% da receita líquida enquanto a empresa ainda perdia ~R$300k/mês: uma espiral de aquisição paga, gastando uma fatia crescente das vendas para perseguir um faturamento em queda.</div>
+
+<!-- 4. O QUE QUEBROU -->
+<h2>4. O que quebrou, e o que a evidência prova (e não prova)</h2>
+<p><b>Visão geral.</b> O colapso está concentrado no <b>TikTok Shop</b>, puxado por um produto viral (Bio Estimulador). O canal de site próprio aguentou bem melhor. Mas vale ser preciso sobre o que os dados provam.</p>
+<table>
+<tr><th>Receita bruta por canal</th><th class="num">nov/25</th><th class="num">dez/25</th><th class="num">jan/26</th><th class="num">fev/26</th><th class="num">mar/26</th><th class="num">abr/26</th><th class="num">Tendência</th></tr>
+<tr><td>TikTok Shop</td><td class="num">965k</td><td class="num">573k</td><td class="num">174k</td><td class="num">90k</td><td class="num">128k</td><td class="num">76k</td><td class="num neg">−92%</td></tr>
+<tr><td>Shopify (site próprio)</td><td class="num">1.312k</td><td class="num">987k</td><td class="num">562k</td><td class="num">476k</td><td class="num">909k</td><td class="num">597k</td><td class="num">−54%, oscilando</td></tr>
+<tr><td>B2B (DPSP)</td><td class="num">74k</td><td class="num">26k</td><td class="num">59k</td><td class="num">2k</td><td class="num">0</td><td class="num">0</td><td class="num neg">morto</td></tr>
+</table>
+<p><b>O que os dados sustentam:</b> o TikTok caiu mais forte (−92%), era impulso de item único (1,0 item/pedido) e um SKU puxou tudo (unidades do Bio Estimulador no TikTok 10.610→406). O Shopify é multi-item (~2,8) e 32% dos seus pedidos são recompra: estruturalmente mais durável.</p>
+<div class="risk"><b>O que NÃO prova:</b> o P&L registra marketing como uma única linha ("Propaganda e Publicidade Online"), <b>não segmentada por canal.</b> Portanto não consigo provar que a base do Shopify é independente do inchaço de mídia paga e influenciadores. A hipótese mais segura é que o inchaço levantou <i>todos</i> os canais. Na prática: <b>a base durável de site próprio pode encolher à medida que a mídia paga se normaliza.</b> É exatamente por isso que o caso abaixo é construído sobre uma receita de break-even (~R$4,2M líq.) bem abaixo do run-rate atual, e não sobre o run-rate se manter.</div>
+
+<!-- 5. NUCLEO DURAVEL -->
+<h2>5. O núcleo durável (pedido a pedido)</h2>
+<p><b>Visão geral.</b> Reconstruímos todas as 89.648 linhas de nota em 45.626 pedidos. O negócio de site próprio é um negócio de compra planejada e recorrente: um ativo real, ainda que seu tamanho seja incerto.</p>
+<table>
+<tr><th>Canal</th><th class="num">AOV médio</th><th class="num">Itens/pedido</th><th>Caráter</th></tr>
+<tr><td>Shopify (site próprio)</td><td class="num">R$200</td><td class="num">~2,8</td><td>Compra planejada / kits</td></tr>
+<tr><td>TikTok Shop</td><td class="num">R$90–148</td><td class="num">1,0</td><td>Impulso viral de item único</td></tr>
+</table>
+<div class="good"><b>A retenção é real.</b> Em seis meses, <b>32% dos pedidos de site próprio vieram de clientes recorrentes</b> (16,5% dos clientes). O TikTok é quase todo de compra única. Isto é equity de marca genuíno, mas monetizá-lo ainda exige o <i>próprio</i> motor de aquisição da Bisyou para continuar trazendo novos clientes.</div>
+<p class="small">Mix de destino do site próprio: Sudeste 57% (SP 37%, MG 10%, RJ 8%), Sul 15%, Nordeste 17%, Centro-Oeste 8%, Norte 3%.</p>
+
+<!-- 6. POR QUE FUNCIONA -->
+<h2>6. Por que isto funciona para a GE Beauty (puramente operacional)</h2>
+<p><b>Visão geral.</b> A vantagem está inteiramente na estrutura de custo: os donos rodaram uma base fixa pesada e contrataram crescimento a preços fixos. Nós rodamos uma base leve e compramos crescimento a preços variáveis, por performance. Mesma receita, resultado final muito diferente.</p>
+<h3>A base de custos que carregaríamos</h3>
+<table>
+<tr><th>Linha</th><th class="num">Deles (2026 anual.)</th><th class="num">Nossa</th><th>Detalhamento / por que difere</th></tr>
+<tr><td>Serviço de dívida</td><td class="num">~1,5M</td><td class="num pos">0</td><td>Nenhuma dívida assumida no licenciamento</td></tr>
+<tr><td>Capital de giro (estoque)</td><td class="num">financiado por eles</td><td class="num pos">0</td><td>Boniteca financia; pagamos M+2 após a venda</td></tr>
+<tr><td>Administrativo</td><td class="num">~1,6M</td><td class="num">~0,3M</td><td>Shopify+apps da Bisyou ~R$110k; contabilidade absorvida na nossa função financeira ~R$120k; ferramentas/taxas diversas ~R$70k</td></tr>
+<tr><td>Pessoas</td><td class="num">~1,1M</td><td class="num">~0,95M</td><td>1 líder de marca/ops (custo total ~R$220k) + CX / mkt-ops / coord. de fulfillment alocados no nosso time compartilhado (~R$730k)</td></tr>
+<tr><td>Publicidade</td><td class="num">~3,2M fixo (48% da líq.)</td><td class="num">variável</td><td>CPA / afiliados via ferramentas do Flywheel, pagar por performance, sem contratos fixos. Ilustrado a 25% da líq. abaixo</td></tr>
+</table>
+<h3>As sinergias genuínas (apenas operacionais)</h3>
+<ul>
+<li>Mesmo fabricante (Boniteca) e modelo de distribuição que já operamos; a Boniteca ainda financia o estoque.</li>
+<li>Fulfillment, plataforma administrativa (Omnify) e time de financeiro/ops compartilhados: o custo marginal de uma segunda marca na máquina é baixo.</li>
+<li>O motor de afiliados/CPA do Flywheel como modelo de marketing de custo variável: a disciplina de pagar por performance, sem contratos fixos.</li>
+</ul>
+<h3>O prêmio, em números (ilustrativo, run-rate do Shopify standalone)</h3>
+<table>
+<tr><th>Pró-forma anual ilustrativo</th><th class="num">R$</th></tr>
+<tr><td>Receita líquida (run-rate Shopify)</td><td class="num">~7,6M</td></tr>
+<tr><td>Lucro bruto (80%)</td><td class="num">~6,1M</td></tr>
+<tr><td>Vendas + logística + cartão (~17%)</td><td class="num">(1,30M)</td></tr>
+<tr><td>Marketing variável / CPA (25% da líq.)</td><td class="num">(1,91M)</td></tr>
+<tr><td>Fixo enxuto (pessoas ~0,95M + adm ~0,30M)</td><td class="num">(1,25M)</td></tr>
+<tr><td>Royalty (8% da líq.)</td><td class="num">(0,61M)</td></tr>
+<tr><td><b>EBITDA estimado</b></td><td class="num pos"><b>~R$1,0M (14%)</b></td></tr>
+</table>
+<table>
+<tr><th>Sensibilidade (líq. R$7,6M, royalty 8%)</th><th class="num">Mkt 20%</th><th class="num">Mkt 25%</th><th class="num">Mkt 30%</th></tr>
+<tr><td>EBITDA</td><td class="num pos">~R$1,42M</td><td class="num pos">~R$1,04M</td><td class="num pos">~R$0,66M</td></tr>
+</table>
+<div class="callout"><b>A assimetria, sem rodeios.</b> A mesma marca que faz eles perderem ~R$3M/ano poderia nos render ~R$0,7–1,4M/ano, inteiramente pela estrutura de custos. <b>O marketing de break-even é ~39% da líquida</b> (rodaram 48% recente, 32% no ano bom) e <b>a receita de break-even é ~R$4,2M líq.</b> vs run-rate de ~R$7,6M. Então a receita pode cair quase pela metade, ou o marketing rodar bem menos eficiente que o melhor deles, e ainda assim ficamos no azul. Essa margem de segurança é o caso.</div>
+
+<!-- 7. RISCOS -->
+<h2>7. Os riscos, e onde está a armadilha</h2>
+<div class="risk"><b>1. Eficiência de aquisição standalone.</b> Tudo depende de comprar os clientes da Bisyou a ≤ ~35% da líquida. Os donos atuais, que conheciam a marca, rodaram 48%. Se não superarmos isso de forma relevante, o EBITDA evapora. Mitigante: um teste pago antes de assumir compromisso.</div>
+<div class="risk"><b>2. A base de site próprio segue caindo / é dependente de mídia.</b> Mar (R$909k) → Abr (R$597k) recuou, e conforme a §4 não conseguimos provar que o Shopify é independente do inchaço antigo. Maio/junho é o termômetro.</div>
+<div class="risk"><b>3. O royalty é fixado errado.</b> Qualquer coisa sobre o bruto, ou com mínimo, transfere a fragilidade para nós. Ainda não definido, e somos nós que ditamos os termos.</div>
+<div class="risk"><b>4. Custo de atenção.</b> Um time de três pessoas; cada hora na Bisyou é uma hora a menos na GE Beauty.</div>
+<div class="risk"><b>5. Risco de produto / estoque (não de capital de giro).</b> A Boniteca carrega o estoque, então não há desembolso de caixa, mas alguns SKUs são líquidos/vidro (água micelar, sabonete) com exposição a quebra e prazo de validade, e a demanda em SKUs de baixo giro é incerta.</div>
+
+<!-- 8. FRETE -->
+<h2>8. Custo de entrega: frete</h2>
+<p>Uma distinção importante no frete: o número "59% enviado grátis / R$6,52" é o que a Bisyou <b>cobrou dos clientes</b> (uma escolha de receita/precificação), <b>não</b> o seu custo de envio. <b>O custo real da transportadora atual deles (J&T/R3) não está nos dados</b>, então essa comparação ainda não pode ser feita.</p>
+<p>O que <i>podemos</i> calcular é o nosso próprio custo de envio. Precificamos <b>cada um dos 44.969 pedidos reconstruídos</b> contra a tabela B2C da Unilog da GE (origem: filial de Serra/ES), por destino e cesta:</p>
+<table>
+<tr><th>Custo de envio via contrato Unilog da GE</th><th class="num">Valor</th></tr>
+<tr><td>Custo de envio médio por pedido</td><td class="num">~R$26</td></tr>
+<tr><td>Como % do AOV</td><td class="num">~17%</td></tr>
+<tr><td>Frete anual implícito @ ~84k pedidos/ano</td><td class="num">~R$2,2M</td></tr>
+</table>
+<p class="small">Cálculo completo por pedido, resumo e premissas da tabela de tarifas em <b>Bisyou-Unilog-Freight-Cost.xlsx</b>. Tarifas representativas por UF; o mapeamento exato CEP→zona GEOCOM refinaria dentro de uma UF. Sem dado de peso no arquivo, o peso cubado é inferido pelo tamanho do pedido (faixas do Sudeste quase planas, 0,25–2 kg, então isso quase não move o volume dominante de ~57% do SE).</p>
+<div class="callout"><b>A conclusão sobre frete:</b> nosso custo de envio é ~R$26/pedido; se isso é mais barato ou mais caro do que a Bisyou paga à J&T/R3 hoje fica <b>em aberto até vermos um mês das faturas de transportadora deles.</b> Não assuma uma economia <i>nem</i> uma perda. A sinergia real de fulfillment é a consolidação de armazenagem/separação; a transportadora em si deve ser escolhida pela cotação real.</div>
+
+<!-- 9. TERMOS -->
+<h2>9. Termos do negócio e alavancas de negociação</h2>
+<ul>
+<li><b>Royalty:</b> limitar a um dígito da LÍQUIDA, sem mínimo; atrelar aumentos à receita que de fato reconstruirmos.</li>
+<li><b>Opção de compra:</b> fixar o preço de exercício agora e baixo, reconstruímos o equity durante a licença; não pagar duas vezes pelo nosso próprio trabalho.</li>
+<li><b>Prova de eficiência de marketing:</b> estruturar um teste pago curto (ou um earn-in) para validar a aquisição a ≤35% da líquida antes de compromisso profundo.</li>
+<li><b>Agência:</b> decidir entre assumir o contrato Meta/Google ou pagar a multa de saída (o contrato vai até nov/2026); não se comprometer com o mínimo de R$60k/mês além do nosso plano.</li>
+<li><b>Canais mortos são potencial futuro, não valor a pagar hoje:</b> não pagar por DPSP/B2B (mortos) nem pelo pico do TikTok. Precificar apenas a base durável.</li>
+<li><b>Declarações e garantias limpas:</b> ANVISA ativa com datas, marca sem contestação, sem litígio ativo, todos os acessos no fechamento.</li>
+</ul>
+
+<!-- 10. VEREDITO -->
+<h2>10. Veredito e próximos passos</h2>
+<div class="verdict"><span class="tag">AVANÇAR (CONDICIONAL)</span> &nbsp;O downside é genuinamente limitado (sem capital de giro, sem dívida, licença limpa) e o upside vem de pura arbitragem operacional. Sustenta-se porque a estrutura de custos tolera uma queda de quase metade da receita, ou um marketing bem menos eficiente do que o melhor que os donos atuais conseguiram. Falha se o royalty for ganancioso, se a base de site próprio ainda estiver em queda livre, ou se não conseguirmos provar aquisição standalone abaixo de ~35% da líquida.</div>
+<p><b>Próximos passos imediatos:</b></p>
+<ol>
+<li>Pedir ao Ivan a <b>receita de site próprio de maio/junho</b> e <b>um mês de faturas reais de transportadora (J&T/R3)</b>.</li>
+<li>Obter os <b>termos de royalty e o preço de exercício da opção de compra</b> do Edson, por escrito.</li>
+<li>Desenhar um <b>teste pequeno de aquisição paga standalone</b> para validar o teto de marketing de ≤35% da líquida antes do compromisso.</li>
+<li>Confirmar <b>declarações sobre ANVISA / marca / litígio</b> antes de qualquer term sheet.</li>
+</ol>
+
+<div class="footer">Fontes: deck Road Show da Bisyou; balancetes jan–abr 2026; relatorio faturamento_GE.xlsx (reconstrução de 45.626 pedidos); tabela de frete B2C Unilog da GE. Papéis de trabalho em sandbox/bisyou/diligence/ (ANALYSIS.md, FREIGHT-MODEL.md, orders_reconstructed.csv, Bisyou-Unilog-Freight-Cost.xlsx). Baseado em contabilidade gerencial; números pró-forma ilustrativos e dirigidos por premissas; uso interno de decisão apenas.</div>
+
+</body>
+</html>

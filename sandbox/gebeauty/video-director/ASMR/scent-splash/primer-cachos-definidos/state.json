@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "concept_id": "primer-cachos-definidos-asmr-v1",
+  "concept_label": "primer cachos definidos — ASMR scent splash",
+  "created_at": "2026-06-12T19:00:00Z",
+  "updated_at": "2026-06-12T19:30:00Z",
+  "state": "STORYBOARD",
+  "lane": "ingredient-splash ASMR (ip.md §3.6)",
+  "product": {
+    "gid": "gid://shopify/Product/9668674879808",
+    "handle": "primer-cachos-definidos",
+    "title": "primer cachos definidos",
+    "finalidade": "cachos definidos, macios e sem pesar os fios",
+    "price_brl": "149.00",
+    "dosagem": "250mL",
+    "benefits": [
+      "definição leve e natural",
+      "controla o frizz e blinda por até 24h",
+      "brilho e hidratação sem rigidez"
+    ],
+    "magnific_library_id": 1872735,
+    "material_phrase": "opaque coral-red plastic haircare spray bottle with smooth matte finish, cream 'ge' wordmark and PRIMER CACHOS DEFINIDOS label printed on the front, white pump dispenser cap on top, NOT translucent, NOT see-through, NOT frosted glass",
+    "dimensions": {
+      "height_cm": 20,
+      "base_diameter_cm": 6,
+      "widest_cm": 6,
+      "dosagem": "250mL"
+    },
+    "body_color": "coral-red"
+  },
+  "constitution_refs": {
+    "ip_doc": "docs/ip.md",
+    "dossier": "docs/asmr-splash-situational-dossier.md"
+  },
+  "brief": {
+    "raw_text": "ASMR videos leveraging scent ingredients (melon, peônia, white musk) into ad creatives for primer cachos definidos and primer liso intacto; seeds ge-50057 + ge-49023",
+    "platform": "meta-reels",
+    "aspect_target": "9:16",
+    "variant_mode": "1+2",
+    "decoded_at": "2026-06-12T19:00:00Z"
+  },
+  "seeds": {
+    "ingredients_ge50057": "IazcXIXtvE",
+    "product_splash_ge49023": "62xl435iJO"
+  },
+  "scent_notes": [
+    "melon",
+    "peônia (peony)",
+    "white musk"
+  ],
+  "accent_token": "yellow-sun",
+  "accent_color": "#ffd48d",
+  "grade": "warm golden grade, sunlit caustics, honeyed highlights",
+  "motion_energy": "livelier/bouncier splash, more spring + orbit liveliness",
+  "narrative_arc": [
+    {
+      "shot_id": "01-melon",
+      "position": 1,
+      "duration_seconds": 6,
+      "dominant_sensation": "juicy-cool",
+      "kinetic_still_effect": "melon slice piercing a glassy waterline, air-entrainment burst of polydisperse bubbles erupting off its wet edges, micro-bubbles clinging to the cut flesh",
+      "off_frame_source": "above the waterline (slice falling in from top of frame)",
+      "audio_direction": "crisp thip of the slice piercing surface + effervescent crackle-rush of the bubble burst + low underwater room-tone",
+      "archetype": "ingredient-splash ASMR (ip.md §3.6)",
+      "time_label": "melon note",
+      "status": "STILL_LOCKED",
+      "seed_references": [
+        {
+          "type": "image",
+          "identifier": "IazcXIXtvE"
+        }
+      ],
+      "realistic_grounding": "gin-clear colorless water, faint depth-motes only; soft natural caustic light-nets rippling from the disturbed surface above; polydisperse air bubbles (a few large 8-15mm wobbling + a dense cloud of small 1-3mm), rising vertically with specular pips; premium clean Aesop-grade restraint; faceless, no people, no hair, no fish, no sea life, no soap foam/suds, no ice, water stays transparent and uncolored",
+      "grade": "warm golden grade, sunlit caustics, honeyed highlights",
+      "motion_energy": "livelier/bouncier splash, more spring + orbit liveliness",
+      "start_keyframe_creation_id": "62xlNNQiJO",
+      "seed_local": "01-melon/seeds/start.png"
+    },
+    {
+      "shot_id": "02-peonia",
+      "position": 2,
+      "duration_seconds": 6,
+      "dominant_sensation": "soft floral hush",
+      "kinetic_still_effect": "cream-white peony bloom unfurling underwater, loose petals fluttering and swaying as they drift down, faint sparse micro-bubble stream off the petals",
+      "off_frame_source": "the bloom itself (petals peeling and drifting)",
+      "audio_direction": "almost-silent floral hush + velvety brush of petals through water + occasional single micro-bubble tick",
+      "archetype": "ingredient-splash ASMR (ip.md §3.6)",
+      "time_label": "peônia note",
+      "status": "STILL_LOCKED",
+      "seed_references": [
+        {
+          "type": "image",
+          "identifier": "IazcXIXtvE"
+        }
+      ],
+      "realistic_grounding": "gin-clear colorless water, faint depth-motes only; soft natural caustic light-nets rippling from the disturbed surface above; polydisperse air bubbles (a few large 8-15mm wobbling + a dense cloud of small 1-3mm), rising vertically with specular pips; premium clean Aesop-grade restraint; faceless, no people, no hair, no fish, no sea life, no soap foam/suds, no ice, water stays transparent and uncolored",
+      "grade": "warm golden grade, sunlit caustics, honeyed highlights",
+      "motion_energy": "livelier/bouncier splash, more spring + orbit liveliness",
+      "start_keyframe_creation_id": "brBtblt5Y2",
+      "seed_local": "02-peonia/seeds/start.png"
+    },
+    {
+      "shot_id": "03-musk-reveal",
+      "position": 3,
+      "duration_seconds": 6,
+      "dominant_sensation": "clean warmth",
+      "kinetic_still_effect": "the primer bottle descending into the same water, a veil of fine micro-bubbles peeling off its matte surface, melon facet + peony petals in a slow loose orbit, bottle settling upright as hero",
+      "off_frame_source": "above the waterline (bottle entering from top), scent resolves into the product",
+      "audio_direction": "soft whoom-then-settle of the bottle displacing water + fine effervescent shimmer of the bubble veil + gentle low resolve in the room-tone",
+      "archetype": "ingredient-splash ASMR (ip.md §3.6)",
+      "time_label": "white musk + reveal",
+      "status": "STILL_LOCKED",
+      "seed_references": [
+        {
+          "type": "image",
+          "identifier": "62xl435iJO"
+        }
+      ],
+      "product_reference": {
+        "type": "product",
+        "identifier": "1872735"
+      },
+      "realistic_grounding": "gin-clear colorless water, faint depth-motes only; soft natural caustic light-nets rippling from the disturbed surface above; polydisperse air bubbles (a few large 8-15mm wobbling + a dense cloud of small 1-3mm), rising vertically with specular pips; premium clean Aesop-grade restraint; faceless, no people, no hair, no fish, no sea life, no soap foam/suds, no ice, water stays transparent and uncolored",
+      "grade": "warm golden grade, sunlit caustics, honeyed highlights",
+      "motion_energy": "livelier/bouncier splash, more spring + orbit liveliness",
+      "start_keyframe_creation_id": "jSvEj2ZLD0",
+      "seed_local": "03-musk-reveal/seeds/start.png"
+    }
+  ],
+  "shots": [],
+  "ad_copy": {},
+  "events": [
+    {
+      "ts": "2026-06-12T19:00:00Z",
+      "actor": "brain",
+      "event": "state_init",
+      "from": null,
+      "to": "STORYBOARD"
+    },
+    {
+      "ts": "2026-06-12T19:00:00Z",
+      "actor": "brain",
+      "event": "seeds_uploaded",
+      "ingredients": "IazcXIXtvE",
+      "product_splash": "62xl435iJO"
+    },
+    {
+      "ts": "2026-06-12T19:30:00Z",
+      "actor": "human",
+      "event": "stills_picked",
+      "picks": {
+        "01-melon": "62xlNNQiJO",
+        "02-peonia": "brBtblt5Y2",
+        "03-musk-reveal": "jSvEj2ZLD0"
+      },
+      "note": "beat1=A livelier, beat2=B layered, beat3=B as-is (coral bottle confirmed via Shopify hero)"
+    }
+  ]
+}

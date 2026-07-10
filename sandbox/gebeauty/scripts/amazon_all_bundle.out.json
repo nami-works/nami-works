@@ -1,0 +1,928 @@
+{
+ "rows": [
+  {
+   "nNF": "00000470",
+   "cnpj": "15436940000367",
+   "dEmi": "15/12/2025",
+   "tpNF": "1",
+   "units": 198.0,
+   "vNF": 12307.68,
+   "skus": {
+    "GEB 021": {
+     "q": 18.0,
+     "v": 1092.96,
+     "descr": "BOOSTER DE DEFINIÇÃO GE BEAUTY"
+    },
+    "GEB 003": {
+     "q": 18.0,
+     "v": 1568.16,
+     "descr": "LEAVE-IN GE BEAUTY 150 ML"
+    },
+    "GEB 023": {
+     "q": 18.0,
+     "v": 1188.0,
+     "descr": "BOOSTER ANTIOXIDANTE GE BEAUTY"
+    },
+    "GEB 022": {
+     "q": 18.0,
+     "v": 1251.36,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 013": {
+     "q": 18.0,
+     "v": 633.6,
+     "descr": "Shampoo GE Beauty 60 ml"
+    },
+    "GEB 001": {
+     "q": 18.0,
+     "v": 1504.8,
+     "descr": "SHAMPOO GE BEAUTY 250 ML"
+    },
+    "GEB 010": {
+     "q": 18.0,
+     "v": 633.6,
+     "descr": "Mascara Condicionadora GE Beauty 50ml"
+    },
+    "GEB 011": {
+     "q": 18.0,
+     "v": 744.48,
+     "descr": "Finalizador Leave-in GE Beauty 50ml (GEB 011)"
+    },
+    "GEB 002": {
+     "q": 18.0,
+     "v": 1504.8,
+     "descr": "MASCARA GE BEAUTY 200ML"
+    },
+    "GEB 020": {
+     "q": 18.0,
+     "v": 1092.96,
+     "descr": "BOOSTER HIDRATANTE GE BEAUTY"
+    },
+    "GEB 008": {
+     "q": 18.0,
+     "v": 1092.96,
+     "descr": "SHAMPOO A SECO GE BEAUTY 150ml"
+    }
+   }
+  },
+  {
+   "nNF": "00000471",
+   "cnpj": "15436940000367",
+   "dEmi": "15/12/2025",
+   "tpNF": "1",
+   "units": 252.0,
+   "vNF": 18057.6,
+   "skus": {
+    "GEB 019": {
+     "q": 18.0,
+     "v": 1188.0,
+     "descr": "BOOSTER FORTIFICANTE GE BEAUTY"
+    },
+    "GEB 101": {
+     "q": 18.0,
+     "v": 2360.16,
+     "descr": "PRIMER CACHOS DEFINIDOS GE Beauty"
+    },
+    "GEB 008": {
+     "q": 18.0,
+     "v": 1092.96,
+     "descr": "SHAMPOO A SECO GE BEAUTY 150ml"
+    },
+    "GEB 002": {
+     "q": 18.0,
+     "v": 1504.8,
+     "descr": "MASCARA GE BEAUTY 200ML"
+    },
+    "GEB 001": {
+     "q": 18.0,
+     "v": 1504.8,
+     "descr": "SHAMPOO GE BEAUTY 250 ML"
+    },
+    "GEB 021": {
+     "q": 18.0,
+     "v": 1092.96,
+     "descr": "BOOSTER DE DEFINIÇÃO GE BEAUTY"
+    },
+    "GEB 102": {
+     "q": 18.0,
+     "v": 2201.76,
+     "descr": "PRIMER LISO INTACTO GE Beauty"
+    },
+    "GEB 022": {
+     "q": 18.0,
+     "v": 1251.36,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 010": {
+     "q": 18.0,
+     "v": 633.6,
+     "descr": "Mascara Condicionadora GE Beauty 50ml"
+    },
+    "GEB 023": {
+     "q": 18.0,
+     "v": 1188.0,
+     "descr": "BOOSTER ANTIOXIDANTE GE BEAUTY"
+    },
+    "GEB 003": {
+     "q": 18.0,
+     "v": 1568.16,
+     "descr": "LEAVE-IN GE BEAUTY 150 ML"
+    },
+    "GEB 011": {
+     "q": 18.0,
+     "v": 744.48,
+     "descr": "Finalizador Leave-in GE Beauty 50ml (GEB 011)"
+    },
+    "GEB 020": {
+     "q": 18.0,
+     "v": 1092.96,
+     "descr": "BOOSTER HIDRATANTE GE BEAUTY"
+    },
+    "GEB 013": {
+     "q": 18.0,
+     "v": 633.6,
+     "descr": "Shampoo GE Beauty 60 ml"
+    }
+   }
+  },
+  {
+   "nNF": "00000853",
+   "cnpj": "15436940000367",
+   "dEmi": "20/01/2026",
+   "tpNF": "1",
+   "units": 35.0,
+   "vNF": 2415.6,
+   "skus": {
+    "GEB 021": {
+     "q": 24.0,
+     "v": 1457.28,
+     "descr": "BOOSTER DE DEFINIÇÃO GE BEAUTY"
+    },
+    "GEB 003": {
+     "q": 11.0,
+     "v": 958.32,
+     "descr": "LEAVE-IN GE BEAUTY 150 ML"
+    }
+   }
+  },
+  {
+   "nNF": "00001022",
+   "cnpj": "15436940000367",
+   "dEmi": "26/01/2026",
+   "tpNF": "1",
+   "units": 26.0,
+   "vNF": 1948.32,
+   "skus": {
+    "GEB 021": {
+     "q": 12.0,
+     "v": 728.64,
+     "descr": "BOOSTER DE DEFINIÇÃO GE BEAUTY"
+    },
+    "GEB 003": {
+     "q": 14.0,
+     "v": 1219.68,
+     "descr": "LEAVE-IN GE BEAUTY 150 ML"
+    }
+   }
+  },
+  {
+   "nNF": "00001129",
+   "cnpj": "15436940000367",
+   "dEmi": "03/02/2026",
+   "tpNF": "1",
+   "units": 54.0,
+   "vNF": 3437.28,
+   "skus": {
+    "GEB 021": {
+     "q": 48.0,
+     "v": 2914.56,
+     "descr": "BOOSTER DE DEFINIÇÃO GE BEAUTY"
+    },
+    "GEB 003": {
+     "q": 6.0,
+     "v": 522.72,
+     "descr": "LEAVE-IN GE BEAUTY 150 ML"
+    }
+   }
+  },
+  {
+   "nNF": "00001200",
+   "cnpj": "15436940000367",
+   "dEmi": "09/02/2026",
+   "tpNF": "1",
+   "units": 26.0,
+   "vNF": 1948.32,
+   "skus": {
+    "GEB 008": {
+     "q": 12.0,
+     "v": 728.64,
+     "descr": "SHAMPOO A SECO GE BEAUTY 150ml"
+    },
+    "GEB 003": {
+     "q": 14.0,
+     "v": 1219.68,
+     "descr": "LEAVE-IN GE BEAUTY 150 ML"
+    }
+   }
+  },
+  {
+   "nNF": "00001331",
+   "cnpj": "15436940000367",
+   "dEmi": "20/02/2026",
+   "tpNF": "1",
+   "units": 28.0,
+   "vNF": 1886.72,
+   "skus": {
+    "GEB 022": {
+     "q": 6.0,
+     "v": 337.92,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 003": {
+     "q": 22.0,
+     "v": 1548.8,
+     "descr": "LEAVE-IN GE BEAUTY 150 ML"
+    }
+   }
+  },
+  {
+   "nNF": "00001396",
+   "cnpj": "15436940000367",
+   "dEmi": "24/02/2026",
+   "tpNF": "1",
+   "units": 4.0,
+   "vNF": 366.08,
+   "skus": {
+    "GEB 024": {
+     "q": 4.0,
+     "v": 366.08,
+     "descr": "BODY HAIR SPLASH MELON MOOD GE Beauty"
+    }
+   }
+  },
+  {
+   "nNF": "00001401",
+   "cnpj": "15436940000367",
+   "dEmi": "24/02/2026",
+   "tpNF": "1",
+   "units": 63.0,
+   "vNF": 3893.12,
+   "skus": {
+    "GEB 102": {
+     "q": 12.0,
+     "v": 1182.72,
+     "descr": "PRIMER LISO INTACTO GE Beauty"
+    },
+    "GEB 022": {
+     "q": 20.0,
+     "v": 1126.4,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 021": {
+     "q": 30.0,
+     "v": 1478.4,
+     "descr": "BOOSTER DE DEFINIÇÃO GE BEAUTY"
+    },
+    "GEB 120": {
+     "q": 1.0,
+     "v": 105.6,
+     "descr": "LEAVE-IN PLUMA GE BEAUTY"
+    }
+   }
+  },
+  {
+   "nNF": "00001494",
+   "cnpj": "15436940000367",
+   "dEmi": "02/03/2026",
+   "tpNF": "1",
+   "units": 34.0,
+   "vNF": 1957.12,
+   "skus": {
+    "GEB 008": {
+     "q": 6.0,
+     "v": 295.68,
+     "descr": "SHAMPOO A SECO GE BEAUTY 150ml"
+    },
+    "GEB 022": {
+     "q": 13.0,
+     "v": 732.16,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 001": {
+     "q": 6.0,
+     "v": 401.28,
+     "descr": "SHAMPOO GE BEAUTY 250 ML"
+    },
+    "GEB 019": {
+     "q": 6.0,
+     "v": 316.8,
+     "descr": "BOOSTER FORTIFICANTE GE BEAUTY"
+    },
+    "GEB 003": {
+     "q": 3.0,
+     "v": 211.2,
+     "descr": "LEAVE-IN GE BEAUTY 150 ML"
+    }
+   }
+  },
+  {
+   "nNF": "00001496",
+   "cnpj": "15436940000367",
+   "dEmi": "02/03/2026",
+   "tpNF": "1",
+   "units": 1.0,
+   "vNF": 91.52,
+   "skus": {
+    "GEB 024": {
+     "q": 1.0,
+     "v": 91.52,
+     "descr": "BODY HAIR SPLASH MELON MOOD GE Beauty"
+    }
+   }
+  },
+  {
+   "nNF": "00001616",
+   "cnpj": "15436940000367",
+   "dEmi": "10/03/2026",
+   "tpNF": "1",
+   "units": 56.0,
+   "vNF": 3512.96,
+   "skus": {
+    "GEB 001": {
+     "q": 24.0,
+     "v": 1605.12,
+     "descr": "SHAMPOO GE BEAUTY 250 ML"
+    },
+    "GEB 022": {
+     "q": 9.0,
+     "v": 506.88,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 003": {
+     "q": 10.0,
+     "v": 704.0,
+     "descr": "LEAVE-IN GE BEAUTY 150 ML"
+    },
+    "GEB 021": {
+     "q": 12.0,
+     "v": 591.36,
+     "descr": "BOOSTER DE DEFINIÇÃO GE BEAUTY"
+    },
+    "GEB 120": {
+     "q": 1.0,
+     "v": 105.6,
+     "descr": "LEAVE-IN PLUMA GE BEAUTY"
+    }
+   }
+  },
+  {
+   "nNF": "00001617",
+   "cnpj": "15436940000367",
+   "dEmi": "10/03/2026",
+   "tpNF": "1",
+   "units": 6.0,
+   "vNF": 549.12,
+   "skus": {
+    "GEB 024": {
+     "q": 6.0,
+     "v": 549.12,
+     "descr": "BODY HAIR SPLASH MELON MOOD GE Beauty"
+    }
+   }
+  },
+  {
+   "nNF": "00001693",
+   "cnpj": "15436940000367",
+   "dEmi": "16/03/2026",
+   "tpNF": "1",
+   "units": 55.0,
+   "vNF": 3280.64,
+   "skus": {
+    "GEB 022": {
+     "q": 8.0,
+     "v": 450.56,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 003": {
+     "q": 3.0,
+     "v": 211.2,
+     "descr": "LEAVE-IN GE BEAUTY 150 ML"
+    },
+    "GEB 021": {
+     "q": 36.0,
+     "v": 1774.08,
+     "descr": "BOOSTER DE DEFINIÇÃO GE BEAUTY"
+    },
+    "GEB 120": {
+     "q": 8.0,
+     "v": 844.8,
+     "descr": "LEAVE-IN PLUMA GE BEAUTY"
+    }
+   }
+  },
+  {
+   "nNF": "00001694",
+   "cnpj": "15436940001258",
+   "dEmi": "16/03/2026",
+   "tpNF": "1",
+   "units": 6.0,
+   "vNF": 295.68,
+   "skus": {
+    "GEB 021": {
+     "q": 6.0,
+     "v": 295.68,
+     "descr": "BOOSTER DE DEFINIÇÃO GE BEAUTY"
+    }
+   }
+  },
+  {
+   "nNF": "00001823",
+   "cnpj": "15436940000367",
+   "dEmi": "23/03/2026",
+   "tpNF": "1",
+   "units": 45.0,
+   "vNF": 2259.84,
+   "skus": {
+    "GEB 022": {
+     "q": 3.0,
+     "v": 168.96,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 019": {
+     "q": 6.0,
+     "v": 316.8,
+     "descr": "BOOSTER FORTIFICANTE GE BEAUTY"
+    },
+    "GEB 021": {
+     "q": 36.0,
+     "v": 1774.08,
+     "descr": "BOOSTER DE DEFINIÇÃO GE BEAUTY"
+    }
+   }
+  },
+  {
+   "nNF": "00001915",
+   "cnpj": "15436940001258",
+   "dEmi": "30/03/2026",
+   "tpNF": "1",
+   "units": 2.0,
+   "vNF": 112.64,
+   "skus": {
+    "GEB 022": {
+     "q": 2.0,
+     "v": 112.64,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    }
+   }
+  },
+  {
+   "nNF": "00001978",
+   "cnpj": "15436940001258",
+   "dEmi": "06/04/2026",
+   "tpNF": "1",
+   "units": 10.0,
+   "vNF": 816.64,
+   "skus": {
+    "GEB 022": {
+     "q": 4.0,
+     "v": 225.28,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 102": {
+     "q": 6.0,
+     "v": 591.36,
+     "descr": "PRIMER LISO INTACTO GE Beauty"
+    }
+   }
+  },
+  {
+   "nNF": "00001980",
+   "cnpj": "15436940001258",
+   "dEmi": "06/04/2026",
+   "tpNF": "1",
+   "units": 10.0,
+   "vNF": 816.64,
+   "skus": {
+    "GEB 022": {
+     "q": 4.0,
+     "v": 225.28,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 102": {
+     "q": 6.0,
+     "v": 591.36,
+     "descr": "PRIMER LISO INTACTO GE Beauty"
+    }
+   }
+  },
+  {
+   "nNF": "00001985",
+   "cnpj": "15436940001258",
+   "dEmi": "06/04/2026",
+   "tpNF": "1",
+   "units": 17.0,
+   "vNF": 1555.84,
+   "skus": {
+    "GEB 024": {
+     "q": 17.0,
+     "v": 1555.84,
+     "descr": "BODY HAIR SPLASH MELON MOOD GE Beauty"
+    }
+   }
+  },
+  {
+   "nNF": "00002001",
+   "cnpj": "15436940000367",
+   "dEmi": "07/04/2026",
+   "tpNF": "1",
+   "units": 7.0,
+   "vNF": 640.64,
+   "skus": {
+    "GEB 024": {
+     "q": 7.0,
+     "v": 640.64,
+     "descr": "BODY HAIR SPLASH MELON MOOD GE Beauty"
+    }
+   }
+  },
+  {
+   "nNF": "00002110",
+   "cnpj": "15436940001258",
+   "dEmi": "13/04/2026",
+   "tpNF": "1",
+   "units": 1.0,
+   "vNF": 91.52,
+   "skus": {
+    "GEB 024": {
+     "q": 1.0,
+     "v": 91.52,
+     "descr": "BODY HAIR SPLASH MELON MOOD GE Beauty"
+    }
+   }
+  },
+  {
+   "nNF": "00002111",
+   "cnpj": "15436940001258",
+   "dEmi": "13/04/2026",
+   "tpNF": "1",
+   "units": 14.0,
+   "vNF": 936.32,
+   "skus": {
+    "GEB 022": {
+     "q": 6.0,
+     "v": 337.92,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 003": {
+     "q": 7.0,
+     "v": 492.8,
+     "descr": "LEAVE-IN GE BEAUTY 150 ML"
+    },
+    "GEB 120": {
+     "q": 1.0,
+     "v": 105.6,
+     "descr": "LEAVE-IN PLUMA GE BEAUTY"
+    }
+   }
+  },
+  {
+   "nNF": "00002228",
+   "cnpj": "15436940001258",
+   "dEmi": "22/04/2026",
+   "tpNF": "1",
+   "units": 12.0,
+   "vNF": 633.6,
+   "skus": {
+    "GEB 019": {
+     "q": 12.0,
+     "v": 633.6,
+     "descr": "BOOSTER FORTIFICANTE GE BEAUTY"
+    }
+   }
+  },
+  {
+   "nNF": "00002229",
+   "cnpj": "15436940001258",
+   "dEmi": "22/04/2026",
+   "tpNF": "1",
+   "units": 1.0,
+   "vNF": 91.52,
+   "skus": {
+    "GEB 024": {
+     "q": 1.0,
+     "v": 91.52,
+     "descr": "BODY HAIR SPLASH MELON MOOD GE Beauty"
+    }
+   }
+  },
+  {
+   "nNF": "00002230",
+   "cnpj": "15436940001258",
+   "dEmi": "22/04/2026",
+   "tpNF": "1",
+   "units": 27.0,
+   "vNF": 1872.64,
+   "skus": {
+    "GEB 102": {
+     "q": 6.0,
+     "v": 591.36,
+     "descr": "PRIMER LISO INTACTO GE Beauty"
+    },
+    "GEB 022": {
+     "q": 19.0,
+     "v": 1070.08,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 120": {
+     "q": 2.0,
+     "v": 211.2,
+     "descr": "LEAVE-IN PLUMA GE BEAUTY"
+    }
+   }
+  },
+  {
+   "nNF": "00002337",
+   "cnpj": "15436940001258",
+   "dEmi": "28/04/2026",
+   "tpNF": "1",
+   "units": 20.0,
+   "vNF": 1189.76,
+   "skus": {
+    "GEB 003": {
+     "q": 7.0,
+     "v": 492.8,
+     "descr": "LEAVE-IN GE BEAUTY 150 ML"
+    },
+    "GEB 021": {
+     "q": 12.0,
+     "v": 591.36,
+     "descr": "BOOSTER DE DEFINIÇÃO GE BEAUTY"
+    },
+    "GEB 120": {
+     "q": 1.0,
+     "v": 105.6,
+     "descr": "LEAVE-IN PLUMA GE BEAUTY"
+    }
+   }
+  },
+  {
+   "nNF": "00002438",
+   "cnpj": "15436940001258",
+   "dEmi": "04/05/2026",
+   "tpNF": "1",
+   "units": 7.0,
+   "vNF": 640.64,
+   "skus": {
+    "GEB 024": {
+     "q": 7.0,
+     "v": 640.64,
+     "descr": "BODY HAIR SPLASH MELON MOOD GE Beauty"
+    }
+   }
+  },
+  {
+   "nNF": "00002454",
+   "cnpj": "15436940001258",
+   "dEmi": "05/05/2026",
+   "tpNF": "1",
+   "units": 26.0,
+   "vNF": 2210.56,
+   "skus": {
+    "GEB 102": {
+     "q": 6.0,
+     "v": 591.36,
+     "descr": "PRIMER LISO INTACTO GE Beauty"
+    },
+    "GEB 022": {
+     "q": 10.0,
+     "v": 563.2,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 120": {
+     "q": 10.0,
+     "v": 1056.0,
+     "descr": "LEAVE-IN PLUMA GE BEAUTY"
+    }
+   }
+  },
+  {
+   "nNF": "00002510",
+   "cnpj": "15436940001258",
+   "dEmi": "11/05/2026",
+   "tpNF": "1",
+   "units": 18.0,
+   "vNF": 887.04,
+   "skus": {
+    "GEB 021": {
+     "q": 18.0,
+     "v": 887.04,
+     "descr": "BOOSTER DE DEFINIÇÃO GE BEAUTY"
+    }
+   }
+  },
+  {
+   "nNF": "00002621",
+   "cnpj": "15436940001258",
+   "dEmi": "18/05/2026",
+   "tpNF": "1",
+   "units": 18.0,
+   "vNF": 887.04,
+   "skus": {
+    "GEB 021": {
+     "q": 12.0,
+     "v": 591.36,
+     "descr": "BOOSTER DE DEFINIÇÃO GE BEAUTY"
+    },
+    "GEB 008": {
+     "q": 6.0,
+     "v": 295.68,
+     "descr": "SHAMPOO A SECO GE BEAUTY 150ml"
+    }
+   }
+  },
+  {
+   "nNF": "00002669",
+   "cnpj": "15436940001258",
+   "dEmi": "25/05/2026",
+   "tpNF": "1",
+   "units": 40.0,
+   "vNF": 2745.6,
+   "skus": {
+    "GEB 021": {
+     "q": 6.0,
+     "v": 295.68,
+     "descr": "BOOSTER DE DEFINIÇÃO GE BEAUTY"
+    },
+    "GEB 102": {
+     "q": 6.0,
+     "v": 591.36,
+     "descr": "PRIMER LISO INTACTO GE Beauty"
+    },
+    "GEB 022": {
+     "q": 2.0,
+     "v": 112.64,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 003": {
+     "q": 24.0,
+     "v": 1689.6,
+     "descr": "LEAVE-IN GE BEAUTY 150 ML"
+    },
+    "GEB 013": {
+     "q": 2.0,
+     "v": 56.32,
+     "descr": "Shampoo GE Beauty 60 ml"
+    }
+   }
+  },
+  {
+   "nNF": "00002714",
+   "cnpj": "15436940001258",
+   "dEmi": "01/06/2026",
+   "tpNF": "1",
+   "units": 42.0,
+   "vNF": 2583.68,
+   "skus": {
+    "GEB 021": {
+     "q": 24.0,
+     "v": 1182.72,
+     "descr": "BOOSTER DE DEFINIÇÃO GE BEAUTY"
+    },
+    "GEB 102": {
+     "q": 6.0,
+     "v": 591.36,
+     "descr": "PRIMER LISO INTACTO GE Beauty"
+    },
+    "GEB 022": {
+     "q": 1.0,
+     "v": 56.32,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 003": {
+     "q": 5.0,
+     "v": 352.0,
+     "descr": "LEAVE-IN GE BEAUTY 150 ML"
+    },
+    "GEB 001": {
+     "q": 6.0,
+     "v": 401.28,
+     "descr": "SHAMPOO GE BEAUTY 250 ML"
+    }
+   }
+  },
+  {
+   "nNF": "00002755",
+   "cnpj": "15436940001258",
+   "dEmi": "08/06/2026",
+   "tpNF": "1",
+   "units": 20.0,
+   "vNF": 1246.08,
+   "skus": {
+    "GEB 008": {
+     "q": 6.0,
+     "v": 295.68,
+     "descr": "SHAMPOO A SECO GE BEAUTY 150ml"
+    },
+    "GEB 022": {
+     "q": 6.0,
+     "v": 337.92,
+     "descr": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML"
+    },
+    "GEB 120": {
+     "q": 5.0,
+     "v": 528.0,
+     "descr": "LEAVE-IN PLUMA GE BEAUTY"
+    },
+    "GEB 013": {
+     "q": 3.0,
+     "v": 84.48,
+     "descr": "Shampoo GE Beauty 60 ml"
+    }
+   }
+  }
+ ],
+ "by_cnpj": {
+  "15436940000367": {
+   "nfs": 16,
+   "units": 890.0,
+   "value": 58552.56
+  },
+  "15436940001258": {
+   "nfs": 18,
+   "units": 291.0,
+   "value": 19613.440000000002
+  }
+ },
+ "by_month_u": {
+  "12/2025": 450.0,
+  "01/2026": 61.0,
+  "02/2026": 175.0,
+  "03/2026": 205.0,
+  "04/2026": 119.0,
+  "05/2026": 109.0,
+  "06/2026": 62.0
+ },
+ "by_month_v": {
+  "12/2025": 30365.28,
+  "01/2026": 4363.92,
+  "02/2026": 11531.52,
+  "03/2026": 12059.52,
+  "04/2026": 8645.12,
+  "05/2026": 7370.879999999999,
+  "06/2026": 3829.7599999999998
+ },
+ "sku_units": {
+  "GEB 021": 312.0,
+  "GEB 003": 162.0,
+  "GEB 023": 36.0,
+  "GEB 022": 149.0,
+  "GEB 013": 41.0,
+  "GEB 001": 72.0,
+  "GEB 010": 36.0,
+  "GEB 011": 36.0,
+  "GEB 002": 36.0,
+  "GEB 020": 36.0,
+  "GEB 008": 66.0,
+  "GEB 019": 42.0,
+  "GEB 101": 18.0,
+  "GEB 102": 66.0,
+  "GEB 024": 44.0,
+  "GEB 120": 29.0
+ },
+ "sku_value": {
+  "GEB 021": 16748.160000000003,
+  "GEB 003": 12759.12,
+  "GEB 023": 2376.0,
+  "GEB 022": 8866.88,
+  "GEB 013": 1408.0,
+  "GEB 001": 5417.28,
+  "GEB 010": 1267.2,
+  "GEB 011": 1488.96,
+  "GEB 002": 3009.6,
+  "GEB 020": 2185.92,
+  "GEB 008": 3801.5999999999995,
+  "GEB 019": 2455.2,
+  "GEB 101": 2360.16,
+  "GEB 102": 6932.639999999999,
+  "GEB 024": 4026.8799999999997,
+  "GEB 120": 3062.3999999999996
+ },
+ "sku_descr": {
+  "GEB 021": "BOOSTER DE DEFINIÇÃO GE BEAUTY",
+  "GEB 003": "LEAVE-IN GE BEAUTY 150 ML",
+  "GEB 023": "BOOSTER ANTIOXIDANTE GE BEAUTY",
+  "GEB 022": "BOOSTER ANTIFRIZZ GE BEAUTY 15 ML",
+  "GEB 013": "Shampoo GE Beauty 60 ml",
+  "GEB 001": "SHAMPOO GE BEAUTY 250 ML",
+  "GEB 010": "Mascara Condicionadora GE Beauty 50ml",
+  "GEB 011": "Finalizador Leave-in GE Beauty 50ml (GEB 011)",
+  "GEB 002": "MASCARA GE BEAUTY 200ML",
+  "GEB 020": "BOOSTER HIDRATANTE GE BEAUTY",
+  "GEB 008": "SHAMPOO A SECO GE BEAUTY 150ml",
+  "GEB 019": "BOOSTER FORTIFICANTE GE BEAUTY",
+  "GEB 101": "PRIMER CACHOS DEFINIDOS GE Beauty",
+  "GEB 102": "PRIMER LISO INTACTO GE Beauty",
+  "GEB 024": "BODY HAIR SPLASH MELON MOOD GE Beauty",
+  "GEB 120": "LEAVE-IN PLUMA GE BEAUTY"
+ }
+}

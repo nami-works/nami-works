@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "concept_id": "proof-heat-cachos-v1",
+  "concept_label": "primer cachos definidos — heat-protection proof demo (peônia + flame)",
+  "lane": "ingredient-as-proof-hook (heat protection)",
+  "product_handle": "primer-cachos-definidos",
+  "product_library_id": 1872735,
+  "product_texture": "opaque cream-beige gel-creme, soft glossy satin sheen, medium body (settles into a smooth puddle), pale cream/ivory color, NOT clear, NOT watery — ref: Lucas ELLE swatch 2026-06-12",
+  "structure": "sequential 2-segment: (1) sem primer — idle peônia, flame, flower burns; (2) com primer — bottle cap releases gel-creme, Marcela's fingertip applies it to the petal, then flame, flower survives",
+  "marcela_hand": {
+    "canonical_right": "gJCbKReSXO",
+    "manicure": "coral-red french-tip",
+    "ring": "twisted gold, middle finger"
+  },
+  "stills": {
+    "seg1_start_idle_flame": "LUaQcVbswO",
+    "seg2_apply_A_composition": "XtZnsioBfo (texture being corrected)"
+  },
+  "heat_source": "open flame (utility lighter); flat-iron variant optional/pending",
+  "events": [
+    {
+      "ts": "2026-06-12T20:10:00Z",
+      "actor": "brain",
+      "event": "concept_init+seg1_locked+texture_received"
+    },
+    {
+      "ts": "2026-06-12T20:40:00Z",
+      "actor": "human+brain",
+      "event": "all_heat_stills_locked",
+      "note": "seg1 burn pair, application A (cap+texture fixed), seg2 survive pair"
+    }
+  ],
+  "keyframes": {
+    "clip1_burn": {
+      "start": "LUaQcVbswO",
+      "end": "rlmCf3nxtc"
+    },
+    "clip2_apply": {
+      "start": "1stf1yer4r"
+    },
+    "clip3_survive": {
+      "start": "J9qrPEEOq4",
+      "end": "0pP3DnbTfW"
+    }
+  }
+}

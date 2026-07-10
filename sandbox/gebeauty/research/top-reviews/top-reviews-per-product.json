@@ -1,0 +1,4037 @@
+{
+  "Leave-in com Proteção Térmica": {
+    "tier": "hero",
+    "pooled": 297,
+    "source_handles": [
+      "leave-in-com-protecao-termica",
+      "leave-in-com-protecao-termica-ge-beauty-150ml",
+      "leave-in-com-protecao-termica-travel-size"
+    ],
+    "top10": [
+      {
+        "id": "zeh35h_mm",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/3/1/zeh35h_mm_tBGtLnTuS_orig.jpg",
+        "name": "Karolina Monteiro",
+        "date": "2026-03-01",
+        "src_handle": "leave-in-com-protecao-termica",
+        "score": 171,
+        "review": "Muito cheiroso, levinho (não pesa nada no cabelo), deixou meu cabelo muito macio! \nRecomendo demais!!!"
+      },
+      {
+        "id": "VIDVwLcKKC",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/4/16/2vREDRJ0p7.jpg",
+        "name": "Júlia Uchoa",
+        "date": "2026-04-16",
+        "src_handle": "leave-in-com-protecao-termica",
+        "score": 159,
+        "review": "melhor leave in ever!!!! nunca usava leave in em creme pois pesavam muito meu cabelo, mas como sempre ge se superando e entregando o melhor produto do mundo!"
+      },
+      {
+        "id": "ie31cMrpV",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/4/21/ie31cMrpV_7x4Vp75m__orig.jpg",
+        "name": "Larissa Erler Lopes",
+        "date": "2026-04-21",
+        "src_handle": "leave-in-com-protecao-termica",
+        "score": 159,
+        "review": "Produto maravilhoso, deixa o cabelo muito  alinhado , brilhoso e hidratado"
+      },
+      {
+        "id": "dmseFPLAZ",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/10/20/5xu4Z0r1V.jpg",
+        "name": "milena alves costa",
+        "date": "2025-10-20",
+        "src_handle": "leave-in-com-protecao-termica-ge-beauty-150ml",
+        "score": 153,
+        "review": "Gosto do leave-in tanto para definição de ondas junto ao booster definidor como pré-escova. Adquiri o primer liso intacto, mas infelizmente ele pesou o meu cabelo e não deixou a escova modelada como o leave-in. Entrou no rol de compras recorrentes obrigatórias."
+      },
+      {
+        "id": "2flz5ZUGR",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/5/18/ZHadeaGGD.jpg",
+        "name": "Bianca Parreira",
+        "date": "2026-05-18",
+        "src_handle": "leave-in-com-protecao-termica",
+        "score": 153,
+        "review": "Incrível o brilho e toque que deixa no cabelo! Eu estou amando 😻"
+      },
+      {
+        "id": "gI9ykYVLa",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Danielle Eduarda Pessoa",
+        "date": "2025-10-09",
+        "src_handle": "leave-in-com-protecao-termica-ge-beauty-150ml",
+        "score": 120,
+        "review": "Eu amei! Antes achava que esse tipo de produto era só mkt de influencers, mas é real. Deixou meu cabelo macio, hidratado, bem definido e com as ondas que eu nunca achei que tinha. Meu cabelo não era \"bagunçado\", só era mal finalizado mesmo. haha"
+      },
+      {
+        "id": "j-oLRaAEb",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Greyceane Miguel",
+        "date": "2026-03-05",
+        "src_handle": "leave-in-com-protecao-termica",
+        "score": 120,
+        "review": "Creme superou minhas expectativas! Leve, hidratante, o cheiro é suave e não deixe o cabelo pesado. Amei!!!"
+      },
+      {
+        "id": "sZe4_YT1z",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Ariane Lara de Brito",
+        "date": "2026-05-21",
+        "src_handle": "leave-in-com-protecao-termica",
+        "score": 120,
+        "review": "leave-in Foi igual ao shampoo, primeiros dias não senti firmeza, o cabelo ficou opaco e sem formato, depois de 4 dias de uso o resultado chegou…cachos definidos e macios, achei que não me acostumaria, mas insisti e acreditei que o cabelo poderia se adaptar, deu certo!"
+      },
+      {
+        "id": "xsRGmMKVS-n",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Renata Valente",
+        "date": "2021-06-09",
+        "src_handle": "leave-in-com-protecao-termica-ge-beauty-150ml",
+        "score": 118,
+        "review": "O leave-in é super leve e fluido, não pesando sobre o cabelo, com os boosters hidratante e de definição alcançaram um ótimo resultado! Estou super satisfeita com os produtos e recomendo! Além da textura do produto me agradou, fiquei também muito satisfeita com o perfume dos produtos, leves e agradáveis."
+      },
+      {
+        "id": "Dr4YqGf9o",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Marina Weis",
+        "date": "2025-09-28",
+        "src_handle": "leave-in-com-protecao-termica-ge-beauty-150ml",
+        "score": 114,
+        "review": "O leave in é incrível, deixa o cabelo lindo, diminui muito o frizz e o cheiro é impecável!"
+      }
+    ]
+  },
+  "Shampoo sem Sulfato": {
+    "tier": "hero",
+    "pooled": 179,
+    "source_handles": [
+      "rappi-shampoo-sem-sulfato-ge-beauty-250ml",
+      "shampoo-sem-sulfato",
+      "shampoo-sem-sulfato-ge-beauty-250ml",
+      "shampoo-sem-sulfato-travel-size"
+    ],
+    "top10": [
+      {
+        "id": "n5hwt1y5_z",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/8/27/n5hwt1y5_z_vqv5VTs1q_orig.jpg",
+        "name": "Silvia Mundim",
+        "date": "2025-08-27",
+        "src_handle": "shampoo-sem-sulfato-ge-beauty-250ml",
+        "score": 165,
+        "review": "O shampoo é realmente sensacional, limpa de forma delicada e não resseca os fios. Eu lavo o cabelo todos os dias porque faço corrida pela manhã e esse produto salvou meu cabelo. E o cheiro também delicado é sensacional."
+      },
+      {
+        "id": "bpxZINWO-",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/3/10/bpxZINWO-_helB8IppfK_orig.jpg",
+        "name": "Joana De Freitas Honorato",
+        "date": "2026-03-10",
+        "src_handle": "shampoo-sem-sulfato",
+        "score": 159,
+        "review": "Usei o shampoo e o leave in para cabelos cacheados. Deu bastante volume, maciez e definição. Adorei!"
+      },
+      {
+        "id": "ZUXfIq7Oh",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/3/18/mR_6ZwFP6.jpg",
+        "name": "Ana Lucia",
+        "date": "2026-03-18",
+        "src_handle": "shampoo-sem-sulfato",
+        "score": 159,
+        "review": "Apaixonada pelos produtos da Ge Beauty\n Meu cabelo está lindo .\nOs produtos são maravilhosos."
+      },
+      {
+        "id": "f7dHcKqRm",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/10/15/Vxe-EWi_7.jpg",
+        "name": "Patida Mauad",
+        "date": "2025-10-15",
+        "src_handle": "shampoo-sem-sulfato-ge-beauty-250ml",
+        "score": 153,
+        "review": "Já tem uns anos que estou usando o shampoo meu cabelo ama, fica com textura e brilho muito especial."
+      },
+      {
+        "id": "NZRp_-SEh",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/3/21/PUk8xyzzW.jpg",
+        "name": "Luciana Hazin Glasner",
+        "date": "2026-03-21",
+        "src_handle": "shampoo-sem-sulfato",
+        "score": 153,
+        "review": "A familia toda usa Ge Beauty em todas as ocasiões. Para onde vamos levamos esses produtos maravilhosos e saudáveis para manter nossos cabelos saudáveis e lindos seja no sol, piscina, mar ou frio"
+      },
+      {
+        "id": "rdYPKi9WT",
+        "rating": "4",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/5/24/ptzHEpuNl.jpg",
+        "name": "Cristiane Parente",
+        "date": "2026-05-24",
+        "src_handle": "shampoo-sem-sulfato",
+        "score": 133,
+        "review": "Comprei os produtos da GE Beauty pela primeira vez. O retorno do investimento valeu a pena. Sinto claramente a diferença após lavar o cabelo com os produtos adquiridos."
+      },
+      {
+        "id": "JOCNaG7xi",
+        "rating": "4",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/3/9/JOCNaG7xi_rvx3o-GPr_orig.jpg",
+        "name": "Vinicius Alberto de Santana",
+        "date": "2026-03-09",
+        "src_handle": "shampoo-sem-sulfato",
+        "score": 127,
+        "review": "O shampoo limpa de vdd e não ressaca. Isso é mto importante quando se trata de cabelo crespos"
+      },
+      {
+        "id": "bPqcmxdea",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/12/11/gy5d1cVdI.jpg",
+        "name": "Thainá Lima",
+        "date": "2025-12-11",
+        "src_handle": "shampoo-sem-sulfato-travel-size",
+        "score": 121,
+        "review": "Perfeito!"
+      },
+      {
+        "id": "RF1t4QTcN1",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/3/18/RF1t4QTcN1_GT6FMn8L-_orig.jpg",
+        "name": "Ana Lucia",
+        "date": "2026-03-11",
+        "src_handle": "shampoo-sem-sulfato",
+        "score": 121,
+        "review": ""
+      },
+      {
+        "id": "4eOzErjoo",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "LORENA FALCAO",
+        "date": "2025-11-10",
+        "src_handle": "shampoo-sem-sulfato",
+        "score": 120,
+        "review": "Usando conforme as indicaçoes e necessidades, cabelo fica macio, definico e brilho. Cheiro muito bom!"
+      }
+    ]
+  },
+  "Máscara Condicionadora": {
+    "tier": "hero",
+    "pooled": 171,
+    "source_handles": [
+      "mascara-condicionadora",
+      "mascara-condicionadora-ge-beauty-200ml",
+      "mascara-condicionadora-travel-size",
+      "rappi-mascara-condicionadora-ge-beauty-200ml"
+    ],
+    "top10": [
+      {
+        "id": "JYIhqUfCt",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/1/6/10mgZcdb5.jpg",
+        "name": "Poliana L A Angelo",
+        "date": "2026-01-06",
+        "src_handle": "mascara-condicionadora",
+        "score": 159,
+        "review": "Máscara condicionadora maravilhosa. Desde o primeiro uso, o cabelo ficou incrível. Macio, hidratado e brilhoso."
+      },
+      {
+        "id": "ZTnNdJayZ",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/3/9/ZTnNdJayZ_k4uvCKnOb_orig.jpg",
+        "name": "Vinicius Alberto de Santana",
+        "date": "2026-03-09",
+        "src_handle": "mascara-condicionadora",
+        "score": 159,
+        "review": "O condicionador funciona quase como um hidratação, é bem denso e o cheiro é delicioso"
+      },
+      {
+        "id": "1Bu5U4HhlJ",
+        "rating": "5",
+        "verified": false,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/9/10/N58RRmH8b.jpg",
+        "name": "Gabriella Gomes",
+        "date": "2025-09-10",
+        "src_handle": "mascara-condicionadora-ge-beauty-200ml",
+        "score": 135,
+        "review": "Meu cabelo está extremamente hidratado após usar o condicionador há um mês, na expectativa do shampoo agora"
+      },
+      {
+        "id": "PnN2gFe1g",
+        "rating": "4",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/9/26/PnN2gFe1g_u1zMopsyG_orig.jpg",
+        "name": "Vanessa Souza",
+        "date": "2025-09-26",
+        "src_handle": "mascara-condicionadora-ge-beauty-200ml",
+        "score": 133,
+        "review": "Achei a combinação shampoo/condicionador bem levinha, e o leave in pluma deu o toque que faltava para finalizar sem frizz e sem pesar. Meu trio perfeito!"
+      },
+      {
+        "id": "ewfy_Glsy",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/12/16/YxUba5djJ.jpg",
+        "name": "Lisia P Rodrigues",
+        "date": "2025-12-16",
+        "src_handle": "mascara-condicionadora",
+        "score": 129,
+        "review": "Amei o cheirinho e consistência da máscara. Perfeito!"
+      },
+      {
+        "id": "RhqDZMmWb",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "STEPHANIE BELLETTI",
+        "date": "2025-10-19",
+        "src_handle": "mascara-condicionadora-travel-size",
+        "score": 126,
+        "review": "Eu estou apaixonada pelos produtinhos, cheiroso e deixa meu cabelo super hidratado"
+      },
+      {
+        "id": "lNgbrE9Gk",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/12/22/gPz4cFHDH.jpg",
+        "name": "Ariana Costa",
+        "date": "2025-12-22",
+        "src_handle": "mascara-condicionadora",
+        "score": 121,
+        "review": "Adorei o kit"
+      },
+      {
+        "id": "dBisuqA2Z",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "VIRGINIA NETA",
+        "date": "2025-10-26",
+        "src_handle": "mascara-condicionadora-ge-beauty-200ml",
+        "score": 120,
+        "review": "Cabelo 3c, e até o momento melhor máscara…cabelo fica macio! Amo."
+      },
+      {
+        "id": "3JPlsjo7k",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Debora Pazzim",
+        "date": "2025-11-07",
+        "src_handle": "mascara-condicionadora-travel-size",
+        "score": 120,
+        "review": "O melhor creme que já usei. Na primeira usada já melhora o cabelo e deixa macio e brilhoso. Eu estou agora comprando o grande, tinha pego o travel size para testar."
+      },
+      {
+        "id": "7xKv-ucLF",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Amanda Lages",
+        "date": "2025-09-18",
+        "src_handle": "mascara-condicionadora-ge-beauty-200ml",
+        "score": 114,
+        "review": "Adorei a máscara condicionadora, o produto é muito emoliente e os fios ficam instantaneamente mais macios. Para completar o cheiro é maravilhoso!"
+      }
+    ]
+  },
+  "Booster Definição": {
+    "tier": "hero",
+    "pooled": 126,
+    "source_handles": [
+      "booster-definicao",
+      "booster-definicao-ge-beauty-15ml",
+      "leave-in-booster-definicao-b",
+      "rappi-booster-definicao-ge-beauty-15ml"
+    ],
+    "top10": [
+      {
+        "id": "'-Y4aNo8DQ",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/8/27/-Y4aNo8DQ__ifQG72kl_orig.jpg",
+        "name": "Claudia Mele",
+        "date": "2025-08-27",
+        "src_handle": "booster-definicao-ge-beauty-15ml",
+        "score": 159,
+        "review": "Adorei o resultado. Realmente a textura do cabelo muda e fica bem mais definido"
+      },
+      {
+        "id": "'-t0vYd8t6",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/10/15/RoaE8pbRy.jpg",
+        "name": "Patida Mauad",
+        "date": "2025-10-15",
+        "src_handle": "booster-definicao-ge-beauty-15ml",
+        "score": 159,
+        "review": "A definição é absurda no meu cabelo. O dia seguinte fica mais bonito ainda.\nMeu cabelo bem hidratado e o booster acentua tudo. Uso com o finalizador/live-in também. \nFã 😊"
+      },
+      {
+        "id": "7nRJ1KbEj",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/5/5/Mo7K3MV2Mn.jpg",
+        "name": "Carolina Yassui",
+        "date": "2026-05-05",
+        "src_handle": "booster-definicao",
+        "score": 153,
+        "review": "Achei incrível, reviveu meus cachos e segurou bem mais a finalização. Quando quero um good hair day vou nele que é sucesso."
+      },
+      {
+        "id": "BUzFPZk-N",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/11/12/BUzFPZk-N_TH74bZUHW_orig.jpg",
+        "name": "Ludmilla Araujo",
+        "date": "2025-11-12",
+        "src_handle": "booster-definicao-ge-beauty-15ml",
+        "score": 147,
+        "review": "Meu novo item indispensável da necessaire! TODO mundo passou a elogiar meu cabelo depois que comecei a finalizar com esse booster"
+      },
+      {
+        "id": "_tCyODpmL",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/12/15/_tCyODpmL_54FtoyOS4_orig.jpg",
+        "name": "Juliane Araújo",
+        "date": "2025-12-15",
+        "src_handle": "booster-definicao",
+        "score": 141,
+        "review": "Eu tô muito apaixonada @gebeauty"
+      },
+      {
+        "id": "6t9t1W0Pk",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/3/5/6t9t1W0Pk_DBaiHMR9Z_orig.jpg",
+        "name": "Carolina Marques",
+        "date": "2026-03-05",
+        "src_handle": "booster-definicao",
+        "score": 141,
+        "review": "Não fico sem! O melhor booster p mim…"
+      },
+      {
+        "id": "RwwZ9LDhD",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/10/8/tn5rHdX9a.jpg",
+        "name": "Juliana Ferreira de Souza Sá",
+        "date": "2025-10-08",
+        "src_handle": "booster-definicao-ge-beauty-15ml",
+        "score": 135,
+        "review": "Meu cabelo ganhou volume sem pesar"
+      },
+      {
+        "id": "CPwqdwFTX",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/4/10/CPwqdwFTX_vc5DXvsHO_orig.jpg",
+        "name": "Ana Cavalli",
+        "date": "2026-04-09",
+        "src_handle": "booster-definicao",
+        "score": 129,
+        "review": "Ele dá uma textura linda no cabelo e não fica duro."
+      },
+      {
+        "id": "4fMzm4QLE",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/11/22/a42OgrIpo.jpg",
+        "name": "Aparecida BESSA",
+        "date": "2025-11-22",
+        "src_handle": "booster-definicao",
+        "score": 121,
+        "review": "Maravilhoso!!!"
+      },
+      {
+        "id": "oHV7jVzkb",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Isavania Patricia De Barros E Silva",
+        "date": "2025-10-28",
+        "src_handle": "booster-definicao-ge-beauty-15ml",
+        "score": 114,
+        "review": "Esse booster é meu queridinho. Meu cabelo não tem volume e usando ele consigo volume no cabelo. \nMeu jeito favorito são 10 gotas misturadas na máscara. \nTambém amo usar ele após o babyliss. As ondas duram até o dia seguinte e não deixa o cabelo duro, muito pelo contrário, fica super macio e brilhoso."
+      }
+    ]
+  },
+  "Melon Mood Body & Hair Splash": {
+    "tier": "hero",
+    "pooled": 114,
+    "source_handles": [
+      "melon-mood-body-hair-splash",
+      "melon-mood-body-hair-splash-travel-size"
+    ],
+    "top10": [
+      {
+        "id": "khyXm1Z_1",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/11/22/aJOVkZ52b.jpg",
+        "name": "Jamine Tinoco",
+        "date": "2025-11-22",
+        "src_handle": "melon-mood-body-hair-splash",
+        "score": 165,
+        "review": "Amei! Embalagem linda, fácil de colocar na mala e o cheiro….  Maravilhoso!\nViciada e já quero comprar mais"
+      },
+      {
+        "id": "6Eshw77Yg",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/12/26/FZ0Ju2twK.jpg",
+        "name": "Ana paula Borges",
+        "date": "2025-12-26",
+        "src_handle": "melon-mood-body-hair-splash",
+        "score": 165,
+        "review": "Eu amei perfeito o melhor perfume que já tive já tá acabado uso todos os dias no meu trabalho todo mundo adorou"
+      },
+      {
+        "id": "oZeusYCi4",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/2/23/CXGHirhxb.jpg",
+        "name": "Isabel Scarlazzari",
+        "date": "2026-02-23",
+        "src_handle": "melon-mood-body-hair-splash",
+        "score": 165,
+        "review": "Estou viciada nele! O cheiro é maravilhoso e já quero comprar a versão mini para levar pra todo canto 💕"
+      },
+      {
+        "id": "7OzICwuw-",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/4/26/7OzICwuw-_ZrFs2CV7k_orig.jpg",
+        "name": "Ione Fernandez",
+        "date": "2026-04-26",
+        "src_handle": "melon-mood-body-hair-splash-travel-size",
+        "score": 165,
+        "review": "Cheiro maravilhoso, refrescante. Eu e meu marido estamos viciados"
+      },
+      {
+        "id": "7nuhdBlBW",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/5/15/7nuhdBlBW_NW_OyZRVx_orig.jpg",
+        "name": "Ina Soares",
+        "date": "2026-05-15",
+        "src_handle": "melon-mood-body-hair-splash",
+        "score": 165,
+        "review": "O melhor body splash da vida.\nTextura perfeita e o cheiro é muito, muito bom!"
+      },
+      {
+        "id": "M00fnaXTJ",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/4/10/2jYnjVbri.jpg",
+        "name": "Veronica Laclau",
+        "date": "2026-04-10",
+        "src_handle": "melon-mood-body-hair-splash-travel-size",
+        "score": 159,
+        "review": "Maravilhoso!! Hidrata e perfuma! Fiz estoque pois não tem como ficar sem! E o travel site é perfeito pra levar na bolsa!!!"
+      },
+      {
+        "id": "SK4X2LXqQ",
+        "rating": "5",
+        "verified": false,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/11/7/-mjWxH3k1.jpg,https://images.loox.io/uploads/2025/11/7/g4c2SeNrx.jpg",
+        "name": "Fabiana Rodrigues",
+        "date": "2025-11-07",
+        "src_handle": "melon-mood-body-hair-splash",
+        "score": 153,
+        "review": "Recebi meu produto hoje e estou muito apaixonada pelo cheiro, uma docinho frutado bem fresco. Ainda não deu tempo de avaliar a fixação e o resultado do cabelo, mas pelo cheiro esta aprovádissimo.Fazia tempo que estava atrás de um perfume de cabelo, não conhecia a marca comprei para testar e adorei deixou meu cabelo muito cheiroso."
+      },
+      {
+        "id": "mtKK-q_6n",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/11/16/mtKK-q_6n_2xJ2Zzb-q_orig.jpg",
+        "name": "Beatriz Jardim da Silva",
+        "date": "2025-11-16",
+        "src_handle": "melon-mood-body-hair-splash",
+        "score": 153,
+        "review": "Pensa em um trem cheiroso! Pensou? Multiplica. Eu amei,  valeu a pena demais, passa um frescor na pele. Quando uso me elogiam, sempre."
+      },
+      {
+        "id": "C4dBojgAN",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/12/19/C4dBojgAN_hdkR46dZd_orig.jpg",
+        "name": "Jaqueline Ferreira",
+        "date": "2025-12-19",
+        "src_handle": "melon-mood-body-hair-splash",
+        "score": 153,
+        "review": "O body splash é leve, com boa fixação. Ótimo para o clima do verão brasileiro."
+      },
+      {
+        "id": "mL5pM_6rX",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/3/9/mL5pM_6rX_eXqtqmt0C_orig.jpg",
+        "name": "Graziella Costa",
+        "date": "2026-03-09",
+        "src_handle": "melon-mood-body-hair-splash",
+        "score": 153,
+        "review": "Estou usando há mais de 1 mês todos dias, ele dura muuuuito. É bastante cheiroso, bem suave e tem uma boa fixação nos cabelos. Senti que a fixação foi melhor nos cabelos de que no corpo. Toda via o produto é ótimo. Estou amando!"
+      }
+    ]
+  },
+  "Booster Hidratante": {
+    "tier": "hero",
+    "pooled": 68,
+    "source_handles": [
+      "booster-hidratante",
+      "booster-hidratante-ge-beauty-15ml",
+      "leave-in-booster-hidratante-b"
+    ],
+    "top10": [
+      {
+        "id": "8eKvKtJsO",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/6/7/8eKvKtJsO_wGFe-Z8x1_orig.jpg",
+        "name": "Alana Polliana",
+        "date": "2026-06-07",
+        "src_handle": "booster-hidratante",
+        "score": 159,
+        "review": "Maravilhoso, você já sente seu cabelo hidratado após o primeiro uso🩷 o brilho que deixa 🥰 primeira compra de muitas que estão a vim"
+      },
+      {
+        "id": "yvGumwYCs",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/5/16/pRoEmYeFW.jpg",
+        "name": "Rosangela Rangel",
+        "date": "2026-05-16",
+        "src_handle": "booster-hidratante",
+        "score": 129,
+        "review": "Adorei o produto!!! Entrega exatamente o que promete!!!"
+      },
+      {
+        "id": "QpwhcAg4S",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Greice Cardoso de Carvalho",
+        "date": "2025-10-17",
+        "src_handle": "booster-hidratante-ge-beauty-15ml",
+        "score": 116,
+        "review": "Nossa!!!! Faço minhas hidratações com os booster diversos,  já tenho todo e uso. Misturo sempre com a máscara condicionador. \nAtendimento perfeito no shopping Iguatemi,  as meninas nos dão todas as explicações,  Rachel em particular me atende, mas quando ela não está as outras são também maravilhosas. \nQuero deixar aqui uma observação para quem está em dúvida; tenho 60 anos e estou em transição capilar, minha dermatologista adorou como minhas madeixas estão ficando forte e saudáveis. \nRecomendo!!!!"
+      },
+      {
+        "id": "66Gyj7DNc",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Thais Meneghelli",
+        "date": "2025-10-25",
+        "src_handle": "booster-hidratante-ge-beauty-15ml",
+        "score": 114,
+        "review": "Um dos melhores hidratantes que já usei. Deixa o cabelo com brilho sem pesar."
+      },
+      {
+        "id": "hxLqzZMPF",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Marielle ribeiro",
+        "date": "2026-05-05",
+        "src_handle": "booster-hidratante",
+        "score": 114,
+        "review": "O frizz do cabelo realmente minimiza e deixa com aspecto mais saudável e bonito."
+      },
+      {
+        "id": "WcFf0U3xC",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "milena alves costa",
+        "date": "2025-08-28",
+        "src_handle": "booster-hidratante-ge-beauty-15ml",
+        "score": 108,
+        "review": "Sempre uso com meu condicionador para maciez e brilho do cabelo."
+      },
+      {
+        "id": "nQO8d0r-Q",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Julieth Paula",
+        "date": "2025-10-08",
+        "src_handle": "booster-hidratante-ge-beauty-15ml",
+        "score": 108,
+        "review": "O meu booster vazou durante a entrega, mas enviaram outro rapidamente. Ótimo hidratante e atendimento."
+      },
+      {
+        "id": "q6qmkKZTN",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "LIDIA AZEVEDO",
+        "date": "2025-11-10",
+        "src_handle": "booster-hidratante",
+        "score": 108,
+        "review": "Faz toda diferença com a máscara. Meu cabelo está com cara de cuidado."
+      },
+      {
+        "id": "TDe_TafUV",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Thaís Martins de Moraes",
+        "date": "2025-11-16",
+        "src_handle": "booster-hidratante",
+        "score": 108,
+        "review": "Hidratação super-potente! Amei usar nos cabelos do meio para as pontas antes de usar o secador. Tb misturo do liso intacto."
+      },
+      {
+        "id": "Q3pX5zVuo",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Lais Jacques",
+        "date": "2025-11-17",
+        "src_handle": "booster-hidratante",
+        "score": 108,
+        "review": "Sensacional!!! Eficaz de verdade, não é só “cheirinho e promessa” ele HIDRATA REAL! usei pela primeira vez num cronograma hidratante seguindo as instruções da embalagem: usei no shampoo e na máscara condicionadora, você sente o efeito AINDA NO CHUVEIRO TA? Sensacional"
+      }
+    ]
+  },
+  "Booster Fortificante": {
+    "tier": "hero",
+    "pooled": 66,
+    "source_handles": [
+      "booster-fortificante",
+      "booster-fortificante-ge-beauty-15ml"
+    ],
+    "top10": [
+      {
+        "id": "xYU13mEfc",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Andrea FRAZATTO",
+        "date": "2025-12-10",
+        "src_handle": "booster-fortificante",
+        "score": 120,
+        "review": "Completamente viciada nos produtos, o leave in é maravilhoso, mudou a textura do meu cabelo!"
+      },
+      {
+        "id": "4NwUiirC3",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Sandra Fernandes da Silva",
+        "date": "2026-06-08",
+        "src_handle": "booster-fortificante",
+        "score": 120,
+        "review": "Ajuda muito no controle da queda de cabelo! \nIndico d+!!!!!!!"
+      },
+      {
+        "id": "tGAbQfKFiHx",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "#gebeautie anônima",
+        "date": "2025-08-19",
+        "src_handle": "booster-fortificante-ge-beauty-15ml",
+        "score": 108,
+        "review": "Esse é o meu queridinho. Meu cabelo é outro depois do booster fortificante, cresce muito mais forte e saudável e tem caído bem menos. Recomendo de olhos fechados."
+      },
+      {
+        "id": "vpS7RHcIP",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Fernanda Pellacani",
+        "date": "2025-11-25",
+        "src_handle": "booster-fortificante",
+        "score": 108,
+        "review": "Mesmo utilizando durante um curto período senti que a queda de cabelo diminuiu e percebi o fortalecimento do fios :)\n\nNão me vejo mais sem o booster na minha vida <3"
+      },
+      {
+        "id": "p3uXTlqo5",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Getúlio Vieira",
+        "date": "2025-11-24",
+        "src_handle": "booster-fortificante",
+        "score": 102,
+        "review": "Muito satisfeito. Tanto com o produto quanto com a representante Isabel Lira que demonstrou, falou sobre e forneceu o link para compra."
+      },
+      {
+        "id": "TysTXuVm6",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Gabriela Santos",
+        "date": "2026-02-27",
+        "src_handle": "booster-fortificante",
+        "score": 102,
+        "review": "Amei! A ideia de poder fornecer o que seu cabelo precisa sem ter mil\nShampoos e condicionadores é incrível"
+      },
+      {
+        "id": "nBPbpbErXb",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Lucas Morais",
+        "date": "2021-01-14",
+        "src_handle": "booster-fortificante-ge-beauty-15ml",
+        "score": 100,
+        "review": "Estou usando o booster junto com o shampoo faz 15 dias e estou sentindo muita diferença na oleosidade da minha raiz e consequentemente na quantidade da queda do meu cabelo. Já recomendei para outras pessoas :)"
+      },
+      {
+        "id": "Rr3Jvosrg",
+        "rating": "4",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Themisa Pimentel",
+        "date": "2026-04-10",
+        "src_handle": "booster-fortificante",
+        "score": 100,
+        "review": "Comprei a linha completa e esse é o melhor booster. Realmente ajuda a dar uma fortalecida no cabelo quando você não está com tempo de aguardar 5min no banho com a máscara de estrutura da Wella"
+      },
+      {
+        "id": "Baw4W1VaZFQ",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Juliana De Lima Montenegro",
+        "date": "2024-02-11",
+        "src_handle": "booster-fortificante-ge-beauty-15ml",
+        "score": 98,
+        "review": "Utilizo de 05 a 07 gotas junto com o shampoo e a combinação tem sido perfeita. Percebi uma redução na oleosidade do cabelo e diminuição na queda, em pouco tempo de uso. Recomendo!"
+      },
+      {
+        "id": "GBZA4bvfzIx",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Ana Karina Paulino",
+        "date": "2021-02-05",
+        "src_handle": "booster-fortificante-ge-beauty-15ml",
+        "score": 94,
+        "review": "Ainda estou no começo de uso, mas já sinto meu cabelo mais hidratado e a cada dia com mais definição, está me ajudando no processo de transição"
+      }
+    ]
+  },
+  "Primer Cachos Definidos": {
+    "tier": "hero",
+    "pooled": 56,
+    "source_handles": [
+      "primer-cachos-definidos"
+    ],
+    "top10": [
+      {
+        "id": "txROeZ9Z6",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/10/15/wSU1WE5Oy.jpg,https://images.loox.io/uploads/2025/10/15/T46RLnym5.jpg",
+        "name": "Flavia Armendariz",
+        "date": "2025-10-15",
+        "src_handle": "primer-cachos-definidos",
+        "score": 159,
+        "review": "Amei meus produtinhos, além do óleo comprei o primeiro cachos definidos também...perfeitos e cheirosos."
+      },
+      {
+        "id": "INy17Tl1d",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/1/19/INy17Tl1d_O1i7CjF9R_orig.jpg",
+        "name": "Cássia de Oliveira Sbrisse",
+        "date": "2026-01-19",
+        "src_handle": "primer-cachos-definidos",
+        "score": 159,
+        "review": "Maravilhoso o cabelo ficou muito definido por horas. Sou ondulada naturalmente e amei 🥰"
+      },
+      {
+        "id": "aZ3JhKzJF",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/4/23/8dY6uH6Lg.jpg,https://images.loox.io/uploads/2026/4/23/S2TwQ5w9l.jpg",
+        "name": "Carolina Feuer",
+        "date": "2026-04-23",
+        "src_handle": "primer-cachos-definidos",
+        "score": 159,
+        "review": "Impressionada com esse produto! Ele fica perfeito tanto misturando com creme ou sozinho. Recompraria com certeza! Recomendo!"
+      },
+      {
+        "id": "qvd4pO3jI",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/6/9/FwWLAssIK.jpg",
+        "name": "Mariana Lopes",
+        "date": "2026-06-09",
+        "src_handle": "primer-cachos-definidos",
+        "score": 159,
+        "review": "O cabelo fica macio e zero pesado e os cachos bem mais definidos."
+      },
+      {
+        "id": "4GzoQtBr_",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/9/8/l4SQ0HBrw.jpg",
+        "name": "Tatiane Zerbini de Lima",
+        "date": "2025-09-08",
+        "src_handle": "primer-cachos-definidos",
+        "score": 153,
+        "review": "Perfeito! Define sem pesar ou deixar aspecto molhado (que não me agrada). Usava o leave-in com booster definição e já gostava muito. Decidi testar o primeiro e amei, não quero mais ficar sem."
+      },
+      {
+        "id": "SJJuIMsWJx",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/8/26/LSKvZ8nVy.jpg",
+        "name": "Vanessa Líma",
+        "date": "2025-08-26",
+        "src_handle": "primer-cachos-definidos",
+        "score": 147,
+        "review": "O melhor que já usei para a minha transição capilar. <3"
+      },
+      {
+        "id": "flSrBr5fo",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/9/17/Y7hCSuuZr.jpg",
+        "name": "Myrna Vieira",
+        "date": "2025-09-17",
+        "src_handle": "primer-cachos-definidos",
+        "score": 147,
+        "review": "Ele realmente cumpre o que promete, Perfeitooo!!! Pena que é pouco produto, não dura um mês 😭"
+      },
+      {
+        "id": "OUYpYIPoZ",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/3/26/OUYpYIPoZ_l3D29tYwR_orig.jpg",
+        "name": "Marina Bannwart",
+        "date": "2026-03-26",
+        "src_handle": "primer-cachos-definidos",
+        "score": 147,
+        "review": "Meu cabelo NUNCA ficou tão lindo!!! Eu moro na Inglaterra e fui ao Brasil e vi a influencer Carolina Castro postando nos stories testando e comprei. MEU DEUS DO CÉU eu tive que comprar mais 4 potes para os meus próximos meses na Inglaterra até voltar de novo ao Brasil! 😭😭😭😭💝💝💝💝💝"
+      },
+      {
+        "id": "ql7tPTKxA",
+        "rating": "5",
+        "verified": false,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/5/3/ql7tPTKxA_saWSPZHkU_orig.jpg",
+        "name": "Rose Catani",
+        "date": "2026-05-03",
+        "src_handle": "primer-cachos-definidos",
+        "score": 147,
+        "review": "Creme super leve e que espalha bem! No começo achei que não ia definir nada, mas além de cheiroso deixou meus cachos definidos, soltos e sem aquele aspecto de “gel” sabe? Vale suuuuuuper a pena!"
+      },
+      {
+        "id": "MWHi9BiqG",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/3/10/MWHi9BiqG_AYbUB_vGl_orig.jpg",
+        "name": "Joana De Freitas Honorato",
+        "date": "2026-03-10",
+        "src_handle": "primer-cachos-definidos",
+        "score": 141,
+        "review": "Deu muita definição. Realmente fez diferença"
+      }
+    ]
+  },
+  "Primer Liso Intacto": {
+    "tier": "hero",
+    "pooled": 42,
+    "source_handles": [
+      "primer-liso-intacto"
+    ],
+    "top10": [
+      {
+        "id": "o-6g_TbpY",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/9/1/bI-5Lchei.jpg",
+        "name": "Isavania Patricia De Barros E Silva",
+        "date": "2025-09-01",
+        "src_handle": "primer-liso-intacto",
+        "score": 159,
+        "review": "Amo o primer. Deixa o cabelo macio, leve e super brilhoso. Facilita muito a escovação. Uso ele misturado a 5 gotas do booster definição e 3 gotas do antioxidante."
+      },
+      {
+        "id": "EL_gn26tk",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/1/19/60g7nszs0.jpg",
+        "name": "Cássia de Oliveira Sbrisse",
+        "date": "2026-01-19",
+        "src_handle": "primer-liso-intacto",
+        "score": 159,
+        "review": "Maravilhoso o cabelo durou por horas. Sou ondulada naturalmente e a escova super resistente ao calor e tudo!"
+      },
+      {
+        "id": "e7Wy7HPIF",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/2/20/e7Wy7HPIF__uuZTQdcK_orig.jpg",
+        "name": "Monique Leao",
+        "date": "2026-02-20",
+        "src_handle": "primer-liso-intacto",
+        "score": 153,
+        "review": "Amo muito, não fico mais sem, único que não pesou meu cabelo e deixa com ondas sem frizz."
+      },
+      {
+        "id": "18J43er2P",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/6/6/lT6tXJlEC.jpg",
+        "name": "FABRINE FURNKRANZ",
+        "date": "2026-06-06",
+        "src_handle": "primer-liso-intacto",
+        "score": 153,
+        "review": "Ameiiiii os 2 produtos..... realmente entregam oq promete ...e o liso intacto deixou meu cabelo muito sedoso"
+      },
+      {
+        "id": "P3Xeq2KEKX",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "OLIVIA DE MOURA FE CARVALHO",
+        "date": "2026-04-23",
+        "src_handle": "primer-liso-intacto",
+        "score": 128,
+        "review": "Meu cabelo teve um queda brusca recentemente, daí começaram a crescer fios novos bem rebeldes que já não sabia mais o que fazer para deixá-los calmos. Então resolvi testar os produtos da GE Beauty que vi a propaganda na página do Pinterest. Olha eu tive uma surpresa muuuuito feliz, pois tanto o booster antifrizz quanto o primer liso intacto deixaram meu cabelo tranquilo, lindo, brilhoso e cheiroso. Amei, super indico!!!"
+      },
+      {
+        "id": "iHT0zjtTB",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/12/11/niab1qwKz.jpg",
+        "name": "Thainá Lima",
+        "date": "2025-12-11",
+        "src_handle": "primer-liso-intacto",
+        "score": 121,
+        "review": "Incrivel!"
+      },
+      {
+        "id": "xiVZ5ccTr",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Luciane Rodrigues Azevedo Rodrigues Azevedo",
+        "date": "2025-11-26",
+        "src_handle": "primer-liso-intacto",
+        "score": 120,
+        "review": "Esse liso entrega exatamente o que promete. Com certeza vou comprar novamente. Cabelo com brilho, macio, torna a escova muito mais rápida. Estou completamente apaixonada."
+      },
+      {
+        "id": "m9rzg_Z14",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Monica Cunha Cunha",
+        "date": "2026-05-22",
+        "src_handle": "primer-liso-intacto",
+        "score": 120,
+        "review": "Adorei o produto primer. Fez diferença no meu cabelo . Mais liso e hidratado . E também  mais macio. \n\nVou comprar outra vez, sem dúvida. \n\nBjs. Monica ❤️"
+      },
+      {
+        "id": "MFZSVoyms",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Greice Cardoso de Carvalho",
+        "date": "2025-10-17",
+        "src_handle": "primer-liso-intacto",
+        "score": 116,
+        "review": "Nossa!!!! Faço minhas hidratações com os booster diversos,  já tenho todos e uso. Misturo sempre com a máscara condicionadora da marca.\nAtendimento perfeito no shopping Iguatemi,  as meninas nos dão todas as explicações, Rachel em particular me atende, mas quando ela não está as outras são também maravilhosas. \nQuero deixar aqui uma observação para quem está em dúvida; tenho 60 anos e estou em transição capilar, minha dermatologista adorou como minhas madeixas estão ficando forte e saudáveis. \nRecomendo!!!!"
+      },
+      {
+        "id": "FfjYWVbfs",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Maria Santos",
+        "date": "2025-08-28",
+        "src_handle": "primer-liso-intacto",
+        "score": 114,
+        "review": "adorei esse produto, meu preferido de todos, eu passo ele, seco o cabelo, e o cabelo fica macio, cheiroso e ajeitado muito mais fácil e por muito mais tempo"
+      }
+    ]
+  },
+  "Leave-in Pluma": {
+    "tier": "hero",
+    "pooled": 36,
+    "source_handles": [
+      "leave-in-pluma"
+    ],
+    "top10": [
+      {
+        "id": "BNRXIQ1QS",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/3/4/Ot7ikLEwk.jpg",
+        "name": "Carolina Marques",
+        "date": "2026-03-04",
+        "src_handle": "leave-in-pluma",
+        "score": 165,
+        "review": "Meu cabelo sempre fica definido com os produtos da GE, tenho o cabelo com pouco volume e fino. O booster, leave-in, shampoo, condicionador, já usei todos e nenhum pesa meu cabelo, e olhe que já experimentei muitos produtos. Indico demais, chego no quiosque do shopping e falo p às pessoas comprarem rsrsrs"
+      },
+      {
+        "id": "tWA3VGRii",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/4/1/SxlYtpeif.jpg",
+        "name": "Giulia Finatti",
+        "date": "2026-04-01",
+        "src_handle": "leave-in-pluma",
+        "score": 161,
+        "review": "Bi-zar-ro!!! Eu estou simplesmente apaixonada por esse produto, ele é um leave in beeem levinho, eu dou de 3 a 4 espirradas na mão, misturo com 3 gotas do booster antioxidante e passo no cabelo úmido antes de pentear, depois seco o cabelo e ele fica uma sedaaa, super leve, macio e sem frizz, se esse produto já deixa sem frizz imagina o primer liso intacto, só me fez querer mais ainda! e nem se fala no brilho que meu cabelo fica, as pessoas têm comentado bastante sobre meu cabelo desde que comecei a usar e fazer essa rotina, e eu seeempre indico todos os produtos! faço a maior propaganda com gosto :)"
+      },
+      {
+        "id": "'-dCYJ-iiq",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/5/12/-dCYJ-iiq_mJCucZruP_orig.jpg",
+        "name": "Raquel Duarte Venturato Landmann",
+        "date": "2026-05-12",
+        "src_handle": "leave-in-pluma",
+        "score": 153,
+        "review": "O finalizador que faltava na minha rotina! Fácil de usar, prático de transportar, deixa um efeito bem refrescante e extremamente cheiroso."
+      },
+      {
+        "id": "RJ5B3juPR",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/11/16/NlLc5Q2mF.jpg",
+        "name": "Raffaella Pires",
+        "date": "2025-11-16",
+        "src_handle": "leave-in-pluma",
+        "score": 147,
+        "review": "Amei não precisar fazer o tri ondas, não usar mais fonte de calor! Agora consigo um cabelo de praia com GE!"
+      },
+      {
+        "id": "EJ21IC9Pu",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Larissa Clara Stefenoni harada",
+        "date": "2025-10-15",
+        "src_handle": "leave-in-pluma",
+        "score": 126,
+        "review": "Já experimentei outros nessa proposta, mas esse foi o que eu mais gostei. Ele é bem leve com fragrância suave (o que para mim é ótimo pq tenho muita alergia com alguns cheiros). Eles realinha o cabelo e deixa uma textura ótima.  Para informação: meu tipo de cabelo é fino, sem química, com muito volume e levemente ondulado."
+      },
+      {
+        "id": "FTVf-TexT",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Paula Miranda",
+        "date": "2025-12-08",
+        "src_handle": "leave-in-pluma",
+        "score": 120,
+        "review": "Leave-in muito bom primeira vez que compro os produtos qualidade sem igual muito bom ,deixou o cabelo bem hidratado  não fico pesado leve solto cheiroso 🥰🤩"
+      },
+      {
+        "id": "NPL-ypsK8cO",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Glaucia Morais",
+        "date": "2025-08-19",
+        "src_handle": "leave-in-pluma",
+        "score": 114,
+        "review": "O melhor day after da vida. Não tinha achado nenhum produto leve o suficiente para o meu cabelo que é fino e oleoso. Eu misturava o leave in com água e borrifava, mas nem sempre ficava bom. Amei o produto, pouca quantidade já faz uma diferença enorme e o cheiro é maravilhoso."
+      },
+      {
+        "id": "hn3ui-B9h",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Mariana Rodrigues de Freitas",
+        "date": "2025-10-17",
+        "src_handle": "leave-in-pluma",
+        "score": 114,
+        "review": "Já virou meu favorito! Tenho cabelo bastante ondulado e uso todos os dias pós lavar o cabelo, dá brilho e ajuda a manter as ondas sem muito frizz"
+      },
+      {
+        "id": "gcxpzZrMxV",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Tathiana Lourenço",
+        "date": "2025-10-23",
+        "src_handle": "leave-in-pluma",
+        "score": 114,
+        "review": "Melhor lançamento dos últimos tempos! Sou heavy user de sprays de day after e esse foi o melhor que já usei na vida! Virou meu queridinho de GE Beauty"
+      },
+      {
+        "id": "OdfQkve5f",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Maria Cecilia Almeida",
+        "date": "2026-03-15",
+        "src_handle": "leave-in-pluma",
+        "score": 114,
+        "review": "Eu gosto muito desse leave in. USO no day after para reativar meus cachos e da muito certo. É um dos mais leves que já usei. Meu cabelo é bem fino! Tenho que ter muito cuidado em não chegar perto da raiz senão fica goguento"
+      }
+    ]
+  },
+  "Shampoo a Seco": {
+    "tier": "hero",
+    "pooled": 35,
+    "source_handles": [
+      "shampoo-a-seco"
+    ],
+    "top10": [
+      {
+        "id": "oZRIfN_Jn",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Olga Machado Silva",
+        "date": "2025-10-16",
+        "src_handle": "shampoo-a-seco",
+        "score": 126,
+        "review": "É o shampoo seco mais cheiroso que já usei. É o melhor também! Deixa o cabelo brilhoso e soltinho e segura superbem a oleosidade! Também achei que ele não deixa o cabelo esbranquiçado com outras marcas. Já comprei mais!"
+      },
+      {
+        "id": "JN-br-R7y",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Caroline Nishiyamamoto",
+        "date": "2025-08-26",
+        "src_handle": "shampoo-a-seco",
+        "score": 114,
+        "review": "É um produto excelente, recomendo demais a todos as minhas amigas!"
+      },
+      {
+        "id": "KygCEDMKe",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Isavania Patricia De Barros E Silva",
+        "date": "2025-10-28",
+        "src_handle": "shampoo-a-seco",
+        "score": 114,
+        "review": "Não tinha costume de usar shampoo seco até conhecer o da Ge. Simplesmente perfeito. Amo conseguir dar mais volume no cabelo no day after e o cheiro que fica no cabelo parece perfume. Maravilhoso 🤌🏻✨"
+      },
+      {
+        "id": "goHA2diNH",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Maria Santos",
+        "date": "2025-08-28",
+        "src_handle": "shampoo-a-seco",
+        "score": 108,
+        "review": "eu amo esse produto, aproveitei a promo pra fazer estoque, ele funciona super bem, é leve, não dá coceira e tem um cheirinho maravilhoso, a embalagem é ótima, nem pequena e nem grande"
+      },
+      {
+        "id": "G_f5H8dof",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Maria Luna",
+        "date": "2025-10-20",
+        "src_handle": "shampoo-a-seco",
+        "score": 108,
+        "review": "Me surpreendi com a qualidade do produto. Além de uma ótima fragrante, o shampoo segura bem a oleosidade e não deixou o meu cabelo pesado."
+      },
+      {
+        "id": "OIh6BGE2p",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Samantha Moreira",
+        "date": "2025-12-04",
+        "src_handle": "shampoo-a-seco",
+        "score": 108,
+        "review": "Eu estou totalmente OBSECADA por esse shampoo a seco! Não deixa branco, realmente tira a oleosidade dos fios e tem a fragrância perfeito de Ge Beauty ♥"
+      },
+      {
+        "id": "YeMl_xLwu",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Louise Warnava",
+        "date": "2025-08-27",
+        "src_handle": "shampoo-a-seco",
+        "score": 102,
+        "review": "Produto excelente, mantém o aspecto de limpeza do cabelo por um longo período. Fiquei muitíssimo satisfeita."
+      },
+      {
+        "id": "kye0D0INd",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Getúlio Vieira",
+        "date": "2025-11-24",
+        "src_handle": "shampoo-a-seco",
+        "score": 102,
+        "review": "Muito satisfeito. Tanto com o produto quanto com a representante Isabel Lira que demonstrou, falou sobre e forneceu o link para compra."
+      },
+      {
+        "id": "gUZ0gGHyF",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Luciane Rodrigues Azevedo Rodrigues Azevedo",
+        "date": "2025-11-26",
+        "src_handle": "shampoo-a-seco",
+        "score": 102,
+        "review": "Tinha aquele pensamento que não fazia efeito, mas a surpresa foi das melhores. Tira realmente a oleosidade e tem um cheirinho delicioso.  Muito fácil de aplicar!"
+      },
+      {
+        "id": "ANuBwNhEk",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Lorrine Sampaio",
+        "date": "2026-05-16",
+        "src_handle": "shampoo-a-seco",
+        "score": 102,
+        "review": "O melhor que já usei e ainda deixa o cabelo muito cheiroso!"
+      }
+    ]
+  },
+  "Booster Antifrizz": {
+    "tier": "hero",
+    "pooled": 32,
+    "source_handles": [
+      "booster-antifrizz",
+      "brinde-booster-antifrizz"
+    ],
+    "top10": [
+      {
+        "id": "0AVyzWUjR",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/4/1/0AVyzWUjR_YrDu0Riz-_orig.jpg",
+        "name": "Giulia Finatti",
+        "date": "2026-04-01",
+        "src_handle": "brinde-booster-antifrizz",
+        "score": 171,
+        "review": "eu já tinha comprado um o ano passado em julho (inclusive esse vídeo é dessa época), e fiquei chocada com o resultado!!! eu lembro de levar no trabalho e sair passando no cabelo de todo mundo, e todos ficaram impressionados, tira o frizz na hora e deixa o cabelo super leve além de mega brilhoso e cheiroso. queria que existisse um tamanho maior dele, esse produto é incrível!"
+      },
+      {
+        "id": "qjwj5_LaX_",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/1/19/qjwj5_LaX__PG9KGtrRf_orig.jpg",
+        "name": "Cássia de Oliveira Sbrisse",
+        "date": "2026-01-19",
+        "src_handle": "booster-antifrizz",
+        "score": 159,
+        "review": "Maravilhoso o cabelo durou por horas. Sou ondulada naturalmente e a escova super resistente ao calor e tudo!"
+      },
+      {
+        "id": "bT2DlE-NE",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/8/28/JobpcBa38.jpg",
+        "name": "Karen Pompili",
+        "date": "2025-08-28",
+        "src_handle": "booster-antifrizz",
+        "score": 153,
+        "review": "Produto que faz a maior diferença na finalização. Achei que era exagero, mas estou amando..."
+      },
+      {
+        "id": "U8XQ6YiDT",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/5/16/E0O6l16Ss.jpg",
+        "name": "Rosangela Rangel",
+        "date": "2026-05-16",
+        "src_handle": "brinde-booster-antifrizz",
+        "score": 121,
+        "review": "Maravilhoso! Amei!!!"
+      },
+      {
+        "id": "LJAMPbuaY",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Greice Cardoso de Carvalho",
+        "date": "2025-10-17",
+        "src_handle": "booster-antifrizz",
+        "score": 116,
+        "review": "Nossa!!!! Faço minhas hidratações com os booster diversos,  já tenho todos e uso. Misturo sempre com a máscara condicionadora da marca.\nAtendimento perfeito no shopping Iguatemi,  as meninas nos dão todas as explicações, Rachel em particular me atende, mas quando ela não está as outras são também maravilhosas. \nQuero deixar aqui uma observação para quem está em dúvida; tenho 60 anos e estou em transição capilar, minha dermatologista adorou como minhas madeixas estão ficando forte e saudáveis. \nRecomendo!!!!"
+      },
+      {
+        "id": "Z0GQhqSW4H",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "DIANA ROQUE",
+        "date": "2026-02-26",
+        "src_handle": "booster-antifrizz",
+        "score": 114,
+        "review": "Comprei o booster antifrizz e o primer. Produtos são muitos bons, realmente cumprem o que promete.\nSó o pump do primer é péssimo. Muito duro, tem que fazer muita força para acioná-lo o que desperdiça produto, porque com essa força acaba saindo muito do frasco.\nSe puderem pensar nisso e melhorar, ficará 100%."
+      },
+      {
+        "id": "VPKQGfUdr",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Bruna Silva",
+        "date": "2025-08-27",
+        "src_handle": "booster-antifrizz",
+        "score": 108,
+        "review": "Adorei a praticidade e a necessidade de apenas 2 gotinhas para um ótimo resultado."
+      },
+      {
+        "id": "itsrbbS8J",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Mirian Perez Maluf",
+        "date": "2025-12-22",
+        "src_handle": "booster-antifrizz",
+        "score": 108,
+        "review": "Deixa o cabelo brilhante e domado. E tem um cheiro muito bom."
+      },
+      {
+        "id": "Yp6fpCDi9",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "RAÍSA SLYWITCH",
+        "date": "2025-08-26",
+        "src_handle": "booster-antifrizz",
+        "score": 102,
+        "review": "Os produtos são ótimos! Minha filha de 14 anos quem está usando, está sendo maravilhoso para sua rotina. A grande questão foi a demora para entrega. E aí ao entrar em contato depois de dias passados, disseram ser problema de logística e após esse contato, em dois dias a encomenda chegou."
+      },
+      {
+        "id": "W3pxRho0F",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Rossana Mello",
+        "date": "2025-09-06",
+        "src_handle": "booster-antifrizz",
+        "score": 102,
+        "review": "Faço uso desse produto, após secar o cabelo, para dar uma acabamento"
+      }
+    ]
+  },
+  "Booster Antioxidante": {
+    "tier": "hero",
+    "pooled": 27,
+    "source_handles": [
+      "booster-antioxidante",
+      "booster-antioxidante-ge-beauty-15ml",
+      "leave-in-booster-antioxidante-b"
+    ],
+    "top10": [
+      {
+        "id": "B2Wj0y8iQ",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/12/23/sSUhPePMn.jpg",
+        "name": "Renata Vieira",
+        "date": "2025-12-23",
+        "src_handle": "booster-antioxidante",
+        "score": 165,
+        "review": "Protege os fios, acrescenta textura ao cabelo, no meu caso melhor forma de aplicar eh com o cabelo bem molhado."
+      },
+      {
+        "id": "6KFQjPPIh",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/4/1/6KFQjPPIh_jrS1PT8VX2_orig.jpg",
+        "name": "Giulia Finatti",
+        "date": "2026-04-01",
+        "src_handle": "booster-antioxidante",
+        "score": 147,
+        "review": "estou usando ele todas as vezes que lavo o cabelo, pingo 3 gotinhas no creme de pentear que vou usar, misturo tudo na palma da mão mesmo e passo no cabelo úmido, senti que a cor do meu cabelo deu uma realçada, não sei se é patológico hahaha mas tenho amado!"
+      },
+      {
+        "id": "qvVjDRuuF",
+        "rating": "4",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2025/12/17/ATNZMAR7q.jpg,https://images.loox.io/uploads/2025/12/17/GUzPGg_6J.jpg,https://images.loox.io/uploads/2025/12/17/IpbkY8DGd.jpg,https://images.loox.io/uploads/2025/12/17/0jkX1OoIC.jpg",
+        "name": "Luiza Ferreira",
+        "date": "2025-12-17",
+        "src_handle": "booster-antioxidante",
+        "score": 127,
+        "review": "amei amei amei a ação do produto. meu cabelo é bem loiro e sempre que uso sinto que dá uma renovada na cor. a embalagem é bem pequenininha e de plástico, achei que fosse de vidro, mas é segura de carregar na bolsa de praia!"
+      },
+      {
+        "id": "gJBlGdmCeu8",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Luisa Moraes",
+        "date": "2021-04-10",
+        "src_handle": "leave-in-booster-antioxidante-b",
+        "score": 108,
+        "review": "Achei que tivesse que esperar umas duas semanas de uso pra ver os resultados mas eles foram imediatos. Comprei o kit detox e o booster de definição e foi game changer. Estou usando os boosters com finalizador de outra marca, alternando os três por semana seguindo um cronograma capilar bem simples. Quando comprei meu cabelo estava precisando cortar, bem ressecado e quebrado, mas ainda assim fez muita diferença. Fazia anos que meu cabelo estava sem brilho nenhum, ressecadíssimo. Foram só três gotinhas no finalizador do booster de definição e o cabelo já ficou com aspecto de saudável, cachos definidos, brilhoso, com muito menos frizz. Achei que só ia ter esse efeito com o primeiro booster mas o antioxidante e o fortificante também deu o mesmo efeito. Os produtos me surpreenderam MUITO, isso não é uma simulação, os boosters funcionam real. Melhor investimento que já fiz, vou comprar sempre. E o melhor = não deixam cheiro nenhum no cabelo, continuo curtindo o cheirinho suave de coco do meu finalizador, e o dayafter dura muito mais. Virei fã n.° 1 dos boosters. Vi algumas meninas falando que o cabelo fica pesado. No meu caso, só se colocar mais do que o indicado (06 gotas) que fica com esse aspecto."
+      },
+      {
+        "id": "Hjk2M3RsQ",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Camila Massaro",
+        "date": "2026-01-08",
+        "src_handle": "booster-antioxidante",
+        "score": 108,
+        "review": "Eu amei o Booster antioxidante!!! O brilho do cabelo após o uso é fantástico!!!"
+      },
+      {
+        "id": "BuJVSEebU3h",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "#gebeautie anônima",
+        "date": "2025-08-19",
+        "src_handle": "booster-antioxidante-ge-beauty-15ml",
+        "score": 90,
+        "review": "Meu cabelo tem luzes e é nitida a diferença com o booster antioxidante em manter a cor e não deixar desbotar de uma maneira facil e descomplicada de incorporar aos cuidados diarios"
+      },
+      {
+        "id": "'-qzkWbuga",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "BARBARA MANZ",
+        "date": "2025-12-02",
+        "src_handle": "booster-antioxidante",
+        "score": 90,
+        "review": "Deixa o cabelo grisalho com brilho e proteção que preciso."
+      },
+      {
+        "id": "xNlwDEjbafh",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Valessandra Medeiros Fernandes",
+        "date": "2023-11-15",
+        "src_handle": "booster-antioxidante-ge-beauty-15ml",
+        "score": 88,
+        "review": "Uso os boosters no shampoo, condicionador e máscara. Sinto que meu cabelo está crescendo mais rápido, a queda diminuiu consideravelmente e o frizz melhorou muito."
+      },
+      {
+        "id": "cL1jD2DsaCP",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Carolina Polidoro De Moura",
+        "date": "2021-01-22",
+        "src_handle": "booster-antioxidante-ge-beauty-15ml",
+        "score": 88,
+        "review": "Nota 10 para booster ... desde de que comecei a usar, senti meu cabelo mais saudável e com brilho lindo."
+      },
+      {
+        "id": "G6hk5qY_SDs",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Ana Beatriz Alini",
+        "date": "2020-11-24",
+        "src_handle": "booster-antioxidante-ge-beauty-15ml",
+        "score": 88,
+        "review": "Apliquei 5 gotas do booster definição no meu creme de pentear, meu cabelo não ficou pesado e mesmo depois dos treinos permaneceu definido. Fiquei encantada com o resultado, nos dias seguintes meu cabelo permaneceu com um textura incrível, os cachos se mantinham e foi super fácil lidar com o day after. Não quero mais finalizar sem o booster definição."
+      }
+    ]
+  },
+  "Máscara Mayday": {
+    "tier": "hero",
+    "pooled": 19,
+    "source_handles": [
+      "mascara-mayday"
+    ],
+    "top10": [
+      {
+        "id": "qfoVxOg6V",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/5/12/qfoVxOg6V_XDR8Cuikt_orig.jpg",
+        "name": "Raquel Duarte Venturato Landmann",
+        "date": "2026-05-12",
+        "src_handle": "mascara-mayday",
+        "score": 165,
+        "review": "Experiência maravilhosa! Já no primeiro uso reparei diferença no meu cabelo. Alinhado, com balanço macio e extremamente cheiroso."
+      },
+      {
+        "id": "LQL49zicF",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/4/14/LQL49zicF_plM8ISHq4_orig.jpg",
+        "name": "Jessica Jucius Barbosa",
+        "date": "2026-04-14",
+        "src_handle": "mascara-mayday",
+        "score": 153,
+        "review": "Deixa o cabelo solto, bem hidratado, não parece que fiz a descoloração apenas 25 dias atrás! Ajudou antes do processo pois eu fiz os cuidados necessários com a mesma linha e o após! Maravilhoso"
+      },
+      {
+        "id": "AtrxY_ZGf",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/3/18/iatF_jgFo.jpg",
+        "name": "Ana Lucia",
+        "date": "2026-03-18",
+        "src_handle": "mascara-mayday",
+        "score": 147,
+        "review": "Essa máscara é um luxo !\nAliás os produtos da Ge Beauty são maravilhosos."
+      },
+      {
+        "id": "ylF1kDMK9",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/5/24/5ii3qF3_C.jpg",
+        "name": "Cristiane Parente",
+        "date": "2026-05-24",
+        "src_handle": "mascara-mayday",
+        "score": 147,
+        "review": "Não costumava fazer massagens em casa, mas a máscara da GE Beauty me animou bastante após o primeiro uso."
+      },
+      {
+        "id": "F1pgWFCId",
+        "rating": "5",
+        "verified": true,
+        "has_photo": true,
+        "img": "https://images.loox.io/uploads/2026/5/16/x611YJ8Vr.jpg",
+        "name": "Rosangela Rangel",
+        "date": "2026-05-16",
+        "src_handle": "mascara-mayday",
+        "score": 129,
+        "review": "Muito boa! Deixa o cabelo maravilhoso!!"
+      },
+      {
+        "id": "ihMoZgpip",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Juliana Barcelos",
+        "date": "2026-02-06",
+        "src_handle": "mascara-mayday",
+        "score": 114,
+        "review": "Pode dar mais que 5 ⭐️? \nReconstrução perfeita! O cheiro e a textura são maravilhoso. O cabelo fica desmaiado, gostoso ao toque e com brilho. Excelente"
+      },
+      {
+        "id": "QACIiq537",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Ariane Lara de Brito",
+        "date": "2026-05-21",
+        "src_handle": "mascara-mayday",
+        "score": 114,
+        "review": "A máscara reage bem aos cachos, eu acabo usando todos os dias e não enxugo como pede no modo de usar…saio no banho com ele no cabelo e notei que o cabelo fica mais macio (depois de usar o shampoo e condicionador)"
+      },
+      {
+        "id": "ZXFb910N8",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Isavania Patricia",
+        "date": "2026-01-03",
+        "src_handle": "mascara-mayday",
+        "score": 108,
+        "review": "Melhor reconstrução que já usei. Deixa o cabelo super macio e brilhoso. Podem comprar sem medo."
+      },
+      {
+        "id": "iUsLiw9WR",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Christiana de Sousa",
+        "date": "2026-04-24",
+        "src_handle": "mascara-mayday",
+        "score": 108,
+        "review": "O CHEIRO É SURREAL E A MASCARA INCRÍVEL!! ATÉ MINHA FILHA ESTÁ USANDO ELA!!"
+      },
+      {
+        "id": "rcdNSv0RQ",
+        "rating": "5",
+        "verified": true,
+        "has_photo": false,
+        "img": "",
+        "name": "Renata Pires Ferreira",
+        "date": "2026-02-12",
+        "src_handle": "mascara-mayday",
+        "score": 102,
+        "review": "Amei o produto. usei apenas duas vezes mas o cabelo amou. Tudo da GE é incrível."
+      }
+    ]
+  },
+  "Kit Completo": {
+    "tier": "kit",
+    "pooled": 108,
+    "source_handles": [
+      "kit-completo"
+    ],
+    "top10": [
+      {
+        "id": "UrFP64hZolJ",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Marina Talamini Zilli",
+        "date": "2021-01-18",
+        "src_handle": "kit-completo",
+        "score": 108,
+        "review": "Amei tudo, comprei no final de setembro logo depois de ver uma live da Camila Coutinho explicando e demonstrando o uso. Adorei desde o primeiro dia de uso: a textura, o efeito, o perfume e a diversão de combinar os usos dos boosters, cada dia de um jeito. Tem dias que até uso outros shampoos e condicionadores, mas acrescento os boosters sempre. Já são parte da minha rotina diária. E o leave in e o booster de definição tem um efeito natural e leve, não fica com cara de cabelo emplastrado de pomadas ou sprays, o cabelo não fica duro , mantém o movimento natural dele, mas com mais volume e definição. Amo de paixão e tenho recomendado para todo mundo nos últimos quatro meses ! Só queria que tive opções de frete mais baratas no site... hehehe no kit o frete é grátis, mas para comprar itens avulsos acaba ficando proporcionalmente caro."
+      },
+      {
+        "id": "pnl0fQPfCF",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Carolina Cruz",
+        "date": "2020-11-03",
+        "src_handle": "kit-completo",
+        "score": 108,
+        "review": "Eu adoro testar novos produtos de cabelo. O meu é descolorido, sempre precisa de uma atenção extra e para ser bem sincera, comprei o kit sem grandes expectativas - afinal, quem é loira sabe o quanto os fios demandam cuidados especiais, né? Mas para a minha grande surpresa, usando o kit e a minha máscara nutritiva de costume, alcancei um resultado MARAVILHOSO! Cabelo macio, brilhos, super alinhado e com o melhor cheiro da vida! Além do mais, com o booster fortificante, já notei diminuição na queda - o que vinha me incomodando muito! AMEI E NÃO VIVO MAIS SEM. <3"
+      },
+      {
+        "id": "kOEIe-2OxA9",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Cristiane Araújo Da Silva",
+        "date": "2020-12-28",
+        "src_handle": "kit-completo",
+        "score": 106,
+        "review": "Superou bem mais minhas expectativas, ameeeiii são TODOS PERFEITOS, quem ainda não comprou por medo TEM QUE COMPRAR vão amar o resultado, o cheiro nem vou comentar... o melhor cheiro que eu já tive de produtos de cabelo, o brilho, a maciez que fica o cabelo não existe nada igual ❤ COMPLETAMENTE APAIXONADA PELO KIT COMPLETO ❤ essa linha eu não largo mais ❤"
+      },
+      {
+        "id": "r8uuTIMb626",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Rouse Vilar",
+        "date": "2020-11-28",
+        "src_handle": "kit-completo",
+        "score": 106,
+        "review": "Meu cabelo estava caindo muito, com bastante frizz e ressecado. Comprei o kit completo e ameiiiiii. Uso o booster força sempre que lavo, o hidratação também como finalizador , o antioxidante pra praia e o definição quando vou sair. O shampoo, condicionador e leav in são absurdamente cheirosos e deixam meu cabelo muito macio, hidratado, brilhante e perfumado. Melhor aquisição desse ano!"
+      },
+      {
+        "id": "jxFMGcn8HYk",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Brenda Barreto Moraes Pinheiro",
+        "date": "2021-01-05",
+        "src_handle": "kit-completo",
+        "score": 102,
+        "review": "Comprei os produtos pelos depoimentos da internet e das amigas. meu cabelo é ondulado com a raiz lisa, fino e com mechas. O shampoo: eu amei achei o cheiro maravilhoso!!! Já senti diferença na primeira lavagem, as pontas não ficaram secas como nos outros produtos. A Máscara: Não deixa a sensação de maciez dos produtos que usava antes, mas ok! gosto sempre de usar misturando com o hidratante. Leave-in: Achei ótimo, principalmente misturando com booster de hidratação ou de definição. Booster: Gostei principalmente do fornicante e hidratação, meu cabelo estava em uma fase, caindo muito e com muito frizz, mais seco que o normal. Já uso os produtos a mais de dois meses, nunca consegui passar tanto tempo com a mesma linha, pois meu cabelo sempre se \"acostuma\" com os produtos, continuo achando que ele responde bem ao uso, diminuiu a queda, meus cachos estão saudáveis, sem frizz e com aspecto hidratado mesmo saindo de casa com ele molhado (o que é muito importante pra mim, com dois filhos) inclusive Natal e Ano Novo, não precisei de chapinha ou secador o que foi inédito na minha vida!!!! Os cheiros são maravilhosos! Acertou muitooo! Bem satisfeita :)"
+      },
+      {
+        "id": "2tkCbTtl_c",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Karoline Corrêa Trindade",
+        "date": "2020-11-08",
+        "src_handle": "kit-completo",
+        "score": 102,
+        "review": "Eu pinto meu cabelo e ele andava meio ressecado, eu estava bem desmotivada, pois comprava produto de todo jeito e preço (do mais barato ao mais caro)!\nQuando a linha foi lançada, fiquei pensando: será que eu compro? toda vez não tenho sorte, já gastei tanto dinheiro e nada se da com meu cabelo. \nPorém, comecei a assistir as lives de Cami Coutinho, os vídeos das pessoas mostrando os resultados... e então eu disse: Vou comprar! Mas é a última vez que vou investir em produto bom para meu cabelo!!\nQuando o kit chegou fiquei mega empolgada! Tudo muito bem embalado e cheiroso!\nQuando lavei meu cabelo, seguindo as dicas, tive uma surpresa muito grande: meu cabelo ficou extremamente bonito, macio com os cachinhos MUITO bem definidos! \nEntão para minha alegria, o investimento que fiz foi o melhor e não pretendo deixar de usar! Não vou mais precisar fazer inúmeras pesquisa, procurar produtos que atendam meu cabelo, porque GE Beauty foi o único produto capaz de restaurar meu cabelo, dando brilho, maciez e leveza!\nObrigada a toda equipe GE e a Cami Coutinho pelas inúmeras lives que fez para apresentar o produto!\nGrande abraço e sucesso!!"
+      },
+      {
+        "id": "BQeDzXL1t8W",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Luana Machado",
+        "date": "2021-02-08",
+        "src_handle": "kit-completo",
+        "score": 100,
+        "review": "Deixou meu cabelo super limpo sem machucar o couro cabeludo e ao mesmo tempo foi possível manter as pontas hidratadas. Resultado muito melhor do que o esperado."
+      },
+      {
+        "id": "t9Jyph7Oh_h",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Liza Vieira",
+        "date": "2020-12-21",
+        "src_handle": "kit-completo",
+        "score": 100,
+        "review": "meu cabelo estava bem ressecado e sem vida, além de estar cada dia mais difícil de fazer com que ficasse com uma textura bonita e natural. com o uso constante dos produtos, notei que o brilho do cabelo foi voltando e a textura ondulada natural dele também! além do cheiro que é simplesmente perfeitoo <3"
+      },
+      {
+        "id": "aMKneP-zGFB",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Andrea Beltrao Soldani",
+        "date": "2020-12-04",
+        "src_handle": "kit-completo",
+        "score": 100,
+        "review": "Meu cabelo é levemente ondulado e fino. AMEI!!! Uso todos os produtos e todos os boosters, já estou na minha segunda compra de shampoo e condicionador. Não tenho mais trabalho nenhum com meu cabelo, no banho shampoo e condicionador, depois leave-in com booster hidratante e definição, deixo secar naturalmente e fica lindo!!\nDemorei 55 anos pra descobrir como lidar com meu cabelo sem trabalho e o deixando ótimo"
+      },
+      {
+        "id": "Dz7iATVTm4v",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Renata Pires Ferreira",
+        "date": "2020-11-09",
+        "src_handle": "kit-completo",
+        "score": 100,
+        "review": "produtos excelentes. cabelo cheiroso, macio, brilhoso, lindo! Já recomendei pra meu grupo de amigas que brincamos que somos influenciadas presencialmente, rs. Vou comprar novamente. Meu cabelo estava ressecado e poroso e está infinitamente melhor depois de começar a usar os produtos. Fora que vou pra academia, uso máscara e quando começo a suar, sinto o cheiro dos produtos exalando do meu cabelo. SURREAL!"
+      }
+    ]
+  },
+  "Kit Diario": {
+    "tier": "kit",
+    "pooled": 76,
+    "source_handles": [
+      "kit-diario"
+    ],
+    "top10": [
+      {
+        "id": "bUfXEJYwVHe",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Luiza Giuliani",
+        "date": "2021-09-06",
+        "src_handle": "kit-diario",
+        "score": 106,
+        "review": "Senti mudança na textura e no comportamento do cabelo, efeito maravilhoso. Os peodutos tem O MELHOR CHEIRO, ate meu marido ta usando. Melhorou muito a forma e a força do meu cabelo eu amei e recomendo. Tb gostaria de aumentar o tamanho do leave in, é o produto q uso em maior quantidade e com maior frequência. Tb sugiro uma opção com outra textura tipo mousse."
+      },
+      {
+        "id": "Yr4DlYTLdj",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Michele Lima",
+        "date": "2022-03-22",
+        "src_handle": "kit-diario",
+        "score": 100,
+        "review": "Experiência ótima! Já to sentindo uma diferença no meu cabelo! Ultimamente estou usando a ampola de fortificante para queda, já senti uma diferença de cabelos crescendo! Amando! Super indico!!!!"
+      },
+      {
+        "id": "PCVQK9hw13v",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Priscila Franco",
+        "date": "2022-02-08",
+        "src_handle": "kit-diario",
+        "score": 100,
+        "review": "Comprei baseada nas avaliações do site e não me arrependi. Meu cabelo é oleoso e o shampoo limpou super bem, sem deixar ressecado. Condicionador não deixou pesado e o creme também achei bom - não usei tempo suficiente para comentar sobre o efeito do booster fortificante. Mas super recomendo os produtos. Além de deixarem o cabelo limpo e leve, têm um cheiro maravilhoso!"
+      },
+      {
+        "id": "4YOq8_6jGv",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Paula Santos",
+        "date": "2021-07-26",
+        "src_handle": "kit-diario",
+        "score": 100,
+        "review": "Eu amei os produtos! Comprei focando mais no booster fortificante por conta da queda de cabelo mas me surpreendi com o resultado. Usei shampoo, máscara condicionadora e leave-in. O cheirinho é maravilhoso, fica no cabelo o dia todo. Meu cabelo ficou macio, definido e o efeito durou mais do que estou acostumada. Já quero experimentar os outros boosters também. Amei!"
+      },
+      {
+        "id": "D6pDaLgTJ3U",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Bruna Lara Zandoná",
+        "date": "2022-11-01",
+        "src_handle": "kit-diario",
+        "score": 96,
+        "review": "Essa é a 2a vez que eu compro o kit. Meu cabelo fica super macio e sedoso, com um brilho muito bonito, além de ter diminuído muito o frizz. O cabelo fica com uma sensação de limpo por dias sabe? Até as minhas amigas comentaram como o meu cabelo está mais bonito e hidratado. Tenho cabelo ondulado, leve e fino e sempre tive muito frizz, além de que muitos shampoos e condicionadores acabavam deixando ele um pouco pesado. Uso todos os dias e combino o leave in com os boosters (gosto da combinação do fortificante com o de definição, ajuda a definir as ondas um pouco mais). Fazia tempo que não me acertava tão bem com uma linha para cabelos! Recomendo super"
+      },
+      {
+        "id": "d5swUxoxK1s",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Maria Pia Gigena",
+        "date": "2022-10-16",
+        "src_handle": "kit-diario",
+        "score": 96,
+        "review": "Em geral, gostei muito dos produtos. O shampoo não faz muita espuma e deixa uma sensação de ressecado, porém junto com a máscara condicionadora, a combinação é muito positiva. No meu caso, o melhor do kit que compre foi o Leave-in junto com o Booster de definição, usado no cabelo úmido. Meu cabelo está mais macio, os cachos mais ondulados (2C ) e não preciso lavar todo dia. O booster hidratante ainda estou avaliando onde funciona melhor para mim."
+      },
+      {
+        "id": "Es_2WeYlxmU",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Andressa Gondim",
+        "date": "2022-12-06",
+        "src_handle": "kit-diario",
+        "score": 94,
+        "review": "Produtos excelentes. Estava com dificuldade de achar algo que cuidasse de verdade do meu cabelo. Temho mechas e ge beauty tem feito a diferença. Meu cabelo está voltando a ser saudável. Já comprei de novo!! Agora os booster de hidratação (só tinha o fortificante, que diminuiu absurdamente a queda)!!"
+      },
+      {
+        "id": "36QYuRg52Y8",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Paula Gomes",
+        "date": "2022-01-22",
+        "src_handle": "kit-diario",
+        "score": 94,
+        "review": "Os produtos são muito bons e cheirosos! O cabelo fica bem hidratado e macio."
+      },
+      {
+        "id": "yGfcZPoKpIP",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Amanda Brandão Lima",
+        "date": "2022-01-14",
+        "src_handle": "kit-diario",
+        "score": 94,
+        "review": "Os produtos são incríveis, com um cheirinho que surpreende (lembram os cheirinhos de SPA!). Fiquei apaixonada pela maciez e leveza que dão ao cabelo! Mesmo sem secar, o cabelo fica com um ar fresh e extremamente brilhante!"
+      },
+      {
+        "id": "GuyfK2l-x_K",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Laríssa Amorim",
+        "date": "2021-09-22",
+        "src_handle": "kit-diario",
+        "score": 94,
+        "review": "Não esperava que fosse tão bom. Sinceramente: é o melhor cheiro do mundo."
+      }
+    ]
+  },
+  "Kit Cabelo Saudavel": {
+    "tier": "kit",
+    "pooled": 73,
+    "source_handles": [
+      "kit-cabelo-saudavel"
+    ],
+    "top10": [
+      {
+        "id": "U24fcL-Wa7l",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Luiza Folly Aor",
+        "date": "2022-03-27",
+        "src_handle": "kit-cabelo-saudavel",
+        "score": 108,
+        "review": "amei! amo tanto o ritual de misturar o boosters e descobrir a melhor combinação quanto a qualidade dos produtos. desde a primeira lavagem já fez toda a diferença. \n\nshampoo - não faz tanta espuma, mas o cheiro compensa. muito gostoso e não agride os fios\n\ncondicionador - to apaixonada! saio do banho com o cabelo super macio (especial quando misturo o booster hidratante)\n\nleave-in - consistência deliciosa, rende bastante e faz maravilhas. cabelo brilhoso, cheiroso e bem definido.\n\nsou muito fã!"
+      },
+      {
+        "id": "X2crFxUg-H8",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Bruna Carolina Araújo",
+        "date": "2021-09-10",
+        "src_handle": "kit-cabelo-saudavel",
+        "score": 108,
+        "review": "De modo geral os produtos são excelentes, mas para prefiro detalhar um a um pois eles possuem suas peculiaridades. O shampoo tem um aroma delicioso e uma textura mais grossa o que faz você utilizar em maior quantidade comparado a outros produtos, então para quem tem muito cabelo ele não pode ser o melhor custo-benefício. A mascará condicionadora também é bem espessa e uma pequena quantidade é o suficiente para manter o cabelo bem hidratado. O leave in fez uma enorme diferença no meu cabelo comparado a outros produtos, então ele se tornou um item indispensável. Em relação aos Booster, tenho só elogios. O Booster de fortalecimento é potente e fez uma enorme diferença em relação a queda de cabelo, o que diminuiu muito ao utilizá-lo junto ao shampoo. O booster hidratação dá um brilho a mais no cabelo. A ideia da utilização dos booster em momentos que acharmos mais oportunos durante o cuidado cabelo é bem interessante e promove o maior conhecimento sobre a nossos cabelos. Uma experiência muito boa."
+      },
+      {
+        "id": "OmZvWTay4Q2",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Isabella Lima",
+        "date": "2021-05-13",
+        "src_handle": "kit-cabelo-saudavel",
+        "score": 106,
+        "review": "Estou em transição capilar e os produtos estão me ajudando bastante nessa fase tão importante! O momento de lavar o cabelo, hidratar e finalizar virou meu ritual preferido! Muito feliz com a compra e com o resultado! Valeu cada centavinho! ????"
+      },
+      {
+        "id": "2UHpPBvkr2A",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Monica Tenorio De Mello",
+        "date": "2022-06-13",
+        "src_handle": "kit-cabelo-saudavel",
+        "score": 100,
+        "review": "Uso os produtos desde o lançamento dos mesmos. São maravilhosos. Meus cabelos passaram a ficar mais hidratados, mais brilhantes e mais macios. Super recomendo."
+      },
+      {
+        "id": "VmTgH0F4Vrl",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Alcione Eleuterio De Assuncao",
+        "date": "2022-05-09",
+        "src_handle": "kit-cabelo-saudavel",
+        "score": 100,
+        "review": "Adorei os produtos, mas principalmente o leavin e os boosters (hidratação e fortalecimento - cumprem perfeitamente o que propõe). Super Recomendo. Os produtos são mt bons. Adorei !"
+      },
+      {
+        "id": "8b5byGQTQHg",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Aldineide Silva",
+        "date": "2022-02-08",
+        "src_handle": "kit-cabelo-saudavel",
+        "score": 100,
+        "review": "Tenho cabelo misto, oleoso na raiz e seco nas pontas, limpa com eficiência a raiz sem ressecar as pontas, venho notando um brilho natural, pontas mais macias e cabelo que derrete no toque. Super recomendo e não vou viver mais sem."
+      },
+      {
+        "id": "YXoBBWM21-t",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Mariana Mota A Da Silveira",
+        "date": "2021-08-24",
+        "src_handle": "kit-cabelo-saudavel",
+        "score": 100,
+        "review": "Já no primeiro uso notei uma grande diferença em meu cabelo, porém o shampoo não faz tanta espuma e é necessário aplicar uma quantidade maior.\nQuando uso apenas shampoo+ máscara noto que o cabelo não fica tão hidratado. Para mim, o melhor produto/combinação é o leave-in + booster hidratante."
+      },
+      {
+        "id": "u0ftwmrDEOj",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Thamara Bittencourt",
+        "date": "2021-09-13",
+        "src_handle": "kit-cabelo-saudavel",
+        "score": 96,
+        "review": "Amei comprar o kit completo, pois puder usar tudo e avaliar o que deu certo ou não. Felizmente me identifiquei com todos os produtos, o shampoo é bem grandão e limpa muito bem, a máscara é bem grossa e rende muitooo, também gostei bastante do leave-in, porém acho ele muito leve e aguadinho, então acabo tendo que gastar bastante produto pro meu cabelo que muito seco. Os boosters são indescritíveis de maravilhosos! No shampoo uso somente o de fortalecimento, na máscara uso todos menos o antioxidante e no leave-in uso todos! Cada etapa em proporções diferentes p/ enfatizar o que preciso, mas posso dizer que o resultado foi maravilhoso! Tive uma diminuição significativa na queda, quebra e crescimento, nunca cresceram tão rápido! P/ quem tem ondas ou cachos os de definição e hidratação são indispensáveis, mas amo todos! Quem puder, invista!"
+      },
+      {
+        "id": "z87P0XUhGbI",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Isabella Lopes",
+        "date": "2021-06-15",
+        "src_handle": "kit-cabelo-saudavel",
+        "score": 96,
+        "review": "Tanto o shampoo quanto o condicionador estão dando super certo no meu cabelo. Gostei super do leave in e do jeito que da para misturar os boosters e cheirinho delicioso dos produtos! Deixou meu cabelo super gostoso macio e saudável! Minha experiência com os produtos são mega positivas e super indico o kit com a linha toda. Meu cabelo é ondulado e o booster de definição deu super certo pra deixar as ondinhas mais definidas e cheias. O único \"problema\" é que o leve in acaba um pouco rápido para o dia a dia, mas mesmo assim estou amando a experiência! Super recomendo <3"
+      },
+      {
+        "id": "ddSEWGjwFr",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Isabela Saori Ishizu",
+        "date": "2023-10-03",
+        "src_handle": "kit-cabelo-saudavel",
+        "score": 94,
+        "review": "Meu cabelo ficou brilhoso, saudável e todo mundo pergunta meus produtos de cabelo! Tirando o cheiro que é incrível !"
+      }
+    ]
+  },
+  "Kit Para Todo Dia": {
+    "tier": "kit",
+    "pooled": 49,
+    "source_handles": [
+      "kit-para-todo-dia"
+    ],
+    "top10": [
+      {
+        "id": "sUsG1kTYYJw",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Milena Ramos Maggi Brennand",
+        "date": "2021-01-29",
+        "src_handle": "kit-para-todo-dia",
+        "score": 100,
+        "review": "Eu amei! Me surpreendi positivamente! Admito que fiquei com receio, por achar que seja um produto mto particular, que depende do tipo de cabelo e tal, mas já no primeiro uso, já foi incrível! Agora com uso contínuo estou achando o máximo!! Amando o resultado, meu cabelo está macio, sedoso, brilhoso, saudável! Maravilhoso e super cheiroso! AMANDO!"
+      },
+      {
+        "id": "8lZkPdtSy7v",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Juliana Bastos",
+        "date": "2021-01-12",
+        "src_handle": "kit-para-todo-dia",
+        "score": 100,
+        "review": "Superaram minhas expectativas. Meu cabelo está macio, definido e hidratado. Estou adorando, o shampoo tem um cheiro ótimo, a mascara condicionadora e o booster fortificante auxiliam na hidratação do meu cabelo, e o leave-in com o booster definição ajudam a definir meus cachos. Agora quero testar os outros boosters!!!"
+      },
+      {
+        "id": "Kku41u3yfr1",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "#gebeautie anônima",
+        "date": "2025-05-21",
+        "src_handle": "kit-para-todo-dia",
+        "score": 98,
+        "review": "Comprei primeiro o kit viagem para testar, e digo sem a menor hesitação de que nunca tive um cabelo tão brilhoso, solto e macio. Sempre fui de comprar produtos estrangeiros porque meu cabelo tem química, luzes, etc., mas nenhum teve o mesmo efeito que os da GE! O shampoo limpa super bem (eu sempre tive o hábito de passar o shampoo 2x, pq não lavo todos os dias) e a máscara e o leave-in deixam o cabelo com um brilho sem igual. Apaixonada!"
+      },
+      {
+        "id": "NdUU5VVdPC",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Glaucia Morais",
+        "date": "2021-02-03",
+        "src_handle": "kit-para-todo-dia",
+        "score": 96,
+        "review": "Pela primeira vez consigo deixar meu cabelo secar ao natural. Meu cabelo é crespo embaixo e mais liso em cima, então quando secava ficava sempre horrível, se não usava secador. Comprei o kit completo e estou usando o booster definição na máscara e no leave in, além de finalizar com ele. Como meu cabelo é oleoso, uso o fortificante na segunda passada do shampoo e uso o hidratante na máscara. O antioxidante fica perfeito misturado ao leave in, para proteger minhas mechas do sol. Recomendo muito, melhor linha para cabelo, vale cada centavo."
+      },
+      {
+        "id": "DFuFiqfi2oP",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Ana Maria Castro Barbosa",
+        "date": "2022-08-01",
+        "src_handle": "kit-para-todo-dia",
+        "score": 94,
+        "review": "Estou adorando. Tenho cabelo cacheado e finalmente encontrei produtos que deixam meus cachos soltos e com o volume perfeito. Foi minha neta que recomendou e estou super satisfeita. E já na hora de pedir novamente."
+      },
+      {
+        "id": "iFyiIV2Zxsr",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Iolanda Paiva",
+        "date": "2021-07-04",
+        "src_handle": "kit-para-todo-dia",
+        "score": 94,
+        "review": "De longe os melhores produtos que meus cabelos já experimentaram. Além de deixar o cabelo super cheiroso, fica super hidratado e brilhoso. Notei inclusive que ficou menos oleoso do que o de costume. Amei! ♥️"
+      },
+      {
+        "id": "13jf81Gyd6",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Andreia Carvalho Solha",
+        "date": "2021-06-28",
+        "src_handle": "kit-para-todo-dia",
+        "score": 94,
+        "review": "Eu já havia experimentado produtos veganos e mais naturais, mas ainda não havia conseguido obter os resultados que o GE Beaty oferece. O cabelo fica solto, cheiroso e hidratado. Estou adorando a experiência."
+      },
+      {
+        "id": "31tcBpxFGuB",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Andrea Moura",
+        "date": "2021-04-13",
+        "src_handle": "kit-para-todo-dia",
+        "score": 94,
+        "review": "Adorei muito do shampoo e condicionador! Deixou meu cabelo soltinho! O booster fortificante tb é muito bom, senti q meu cabelo não caiu mais e está mais forte e volumoso! Recomendo e já comprei de novo para experimentar os outros booster!"
+      },
+      {
+        "id": "02hUvkC1ZYv",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Isabela Varjao",
+        "date": "2021-04-09",
+        "src_handle": "kit-para-todo-dia",
+        "score": 94,
+        "review": "Completamente apaixonada! Desde o site, passando pela entrega, até a hora do banho com aquele cheiro maravilhoso e cabelo lindo! Virei cliente fiel"
+      },
+      {
+        "id": "rFVGHtZ9zdv",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Lidiane De Oliveira Aragao",
+        "date": "2021-03-19",
+        "src_handle": "kit-para-todo-dia",
+        "score": 92,
+        "review": "Meu cabelo é cacheado tipo 3b/3c, volumoso. Os produtos deixaram ele com bastante definição {consequentemente um pouco mais de fator encolhimento}. Usei o booster hidratante na máscara e no leave in. A linha tem um cheiro incrível. O leave in é bastante líquido, leve, não pesa, porém termina super rápido. Recomendo a linha."
+      }
+    ]
+  },
+  "Kit Rotina Completa": {
+    "tier": "kit",
+    "pooled": 31,
+    "source_handles": [
+      "kit-rotina-completa"
+    ],
+    "top10": [
+      {
+        "id": "UGqoac4yHMx",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Marina Tavares",
+        "date": "2021-02-02",
+        "src_handle": "kit-rotina-completa",
+        "score": 100,
+        "review": "Adorei cada item. Cada \"bóster\". Shampoo deixa o cabelo limpo, leve, sedoso. O condicionador e a máscara não pesam o fio. Meu cabelo está brilhoso, sedoso, soltinho, sem frizz, e o melhor: com os cachos lindos e definidos por mais de um dia. Meu cachos não duram apenas uma tarde como antes."
+      },
+      {
+        "id": "Osd6rYs9_p",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Renata Augusto",
+        "date": "2021-05-19",
+        "src_handle": "kit-rotina-completa",
+        "score": 94,
+        "review": "O shampoo tem um cheiro delicioso e limpa profundamente sem ressecar. A máscara realmente hidrata e intercalo os boosters conforme a situação desejada. O leave in foi usado por minha filha equipe tem os cabelos ondulados, para fazer definição com o boosters. Ela amou!"
+      },
+      {
+        "id": "g7Lgx0VHCJ2",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Najla Nazif",
+        "date": "2021-03-20",
+        "src_handle": "kit-rotina-completa",
+        "score": 94,
+        "review": "Adorei o shampoo principalmente o cheiro. O cabelo fica super leve, gostoso e definido. Amei a experiência."
+      },
+      {
+        "id": "j_CtmMb4qmS",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Rose Gomes",
+        "date": "2021-03-19",
+        "src_handle": "kit-rotina-completa",
+        "score": 94,
+        "review": "Eu não sou de comprar coisas na internet, gosto do sensorial da coisa, mas esse produto foi um das melhores surpresas que eu poderia ter, saindo do banho o cabelo já fica uma delícia, o banho se torna uma laboratório e de fato uma experiência de auto cuidado, e por fim com o cabelo cheiroso, macio e com volume e brilho lindos"
+      },
+      {
+        "id": "67ZCfUNUEj6",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Amanda Campelo Maciel Baima",
+        "date": "2021-03-17",
+        "src_handle": "kit-rotina-completa",
+        "score": 90,
+        "review": "Todos os produtos me surpreenderam positivamente! O cheirinho do shampoo e condicionador é maravilhoso, nada enjoativo, dá uma sensação de limpeza maior ainda! O leave-in foi o primeiro que usei e não deixou meu cabelo pesado, tenho pouco cabelo, e é fininho e oleoso, então fiquei bem receosa, mas o resultado no meu cabelo foi ótimo! Declaro amor total aos boosters de definição e fortificante! Meu cabelo agora parece mais saudável, brilhoso e com as leves ondinhas de \"cabelo de surfista\" por mais tempo, hahaha. Adorei! :)"
+      },
+      {
+        "id": "AsnSlTsNUXL",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Wyllyanna Barros",
+        "date": "2021-04-09",
+        "src_handle": "kit-rotina-completa",
+        "score": 88,
+        "review": "Excelentes, o melhor shampoo que já usei!! Não resseca nadinha. As ampolas também são maravilhosas."
+      },
+      {
+        "id": "qv0uyFJO_T",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Daniella Lôbo Lobo",
+        "date": "2021-02-23",
+        "src_handle": "kit-rotina-completa",
+        "score": 88,
+        "review": "Maravilhosos, utilizo em mim que tenho processos químicos e na minha filha de 5 anos que tem cabelos cacheados. Estou apaixonada. A escova é perfeita"
+      },
+      {
+        "id": "QnkDnPqlEEb",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Morgana Santos",
+        "date": "2021-01-31",
+        "src_handle": "kit-rotina-completa",
+        "score": 88,
+        "review": "Não teve um produto que não deixasse meu cabelo impecável! Shampoo limpa na medida certa, sem deixar revessado. Máscara condicionadora deixa meus cabelos mega hidratados! E o finalizador foi minha grande surpresa... por achar ele levinho (na textura), achei que não iria funcionar para definir meus cachos, mas ele deixou perfeito! Definiu sem deixar pesado."
+      },
+      {
+        "id": "FIP3Pb1I_kp",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Isadora Dalaqua Til",
+        "date": "2021-01-26",
+        "src_handle": "kit-rotina-completa",
+        "score": 88,
+        "review": "Tenho os cabelos cacheados e agora com um pouco dos grisalhos que estou deixando devido a gravidez, usei os produtos e finalizei com o booster de definição, ficaram ótimos! Hidratados e definidos."
+      },
+      {
+        "id": "Orq_qqOiXWA",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Juliana Mary Motta Ganimi Fontes",
+        "date": "2021-04-05",
+        "src_handle": "kit-rotina-completa",
+        "score": 82,
+        "review": "Adorei os produtos. O cheiro é maravilhoso, suave e agradável. Geralmente não uso óleo e nem leave in no cabelo, mas os da GE BEauty ficaram ótimos no meu cabelo, não pesou."
+      }
+    ]
+  },
+  "Kit Cabelos Ondulados": {
+    "tier": "kit",
+    "pooled": 20,
+    "source_handles": [
+      "kit-cabelos-ondulados"
+    ],
+    "top10": [
+      {
+        "id": "6lIERhCSL5",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Caroline Lacerda",
+        "date": "2023-02-10",
+        "src_handle": "kit-cabelos-ondulados",
+        "score": 100,
+        "review": "único produto que realmente hidratou meu cabelo, deu vida! está muito macio, super recomendo :)"
+      },
+      {
+        "id": "m3E6CqsFYcm",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Juliana Gomes",
+        "date": "2024-04-04",
+        "src_handle": "kit-cabelos-ondulados",
+        "score": 98,
+        "review": "Já tinha usado o leave in com o booster e desta vez resolvi experimentar o shampoo e a máscara também com os boosters e amei o resultado! Fiquei fã e recomendo à todos que perguntam do meu cabelo!"
+      },
+      {
+        "id": "7P2PbgzSlyS",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Aline Medeiros",
+        "date": "2022-11-10",
+        "src_handle": "kit-cabelos-ondulados",
+        "score": 96,
+        "review": "Nunca usei marcas renomadas ou importadas, sempre usei o velho shampoo de mercado. Mas como boa fã de Camila Coutinho, resolvi dar uma chance para os produtos, investir no kit Mari Saad para testar. Estou amando! Realmente faz diferença. Ainda não usei como forma de cronograma capilar e nem fiz hidratações semanais frequentes. Estou usando o básico + leave in e boosters para finalizar. O cabelo fica realmente muito mais brilhoso. Apesar de ser um preço salgado comparado ao de mercado, recomendo demais! É toda uma experiência sabe? Desde a compra até o uso. Minha mãe acabou comprando um kit também só de ver como meu cabelo estava (eu nem indiquei, ela viu que estava bonito e perguntou quais produtos eu estava usando) e amou."
+      },
+      {
+        "id": "eLghFhd-dxG",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Leticia Silva",
+        "date": "2023-02-23",
+        "src_handle": "kit-cabelos-ondulados",
+        "score": 94,
+        "review": "Após ser bastante impactada por GE beauty resolvi comprar. Na verdade, fui influenciada pela mãe de um amigo que é super cacheada e usa muito produtos “gringos”. Como era uma\nPessoa que eu vi o resultado ao vivo, fiquei impressionada com o brilho e definicao dos cachos. Amei o produto, de fato meu cabelo nao ficou com aquela aparencia de poroso que muitos do produtos sucesso de mercado deixam."
+      },
+      {
+        "id": "WiaEiy0BYa",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Georgia Gomes Barbosa",
+        "date": "2022-09-02",
+        "src_handle": "kit-cabelos-ondulados",
+        "score": 88,
+        "review": "Sinto meus cabelos mais limpos e sem agredi-los. O perfume é suave e a máscara condicionadora deixa o cabelo sedoso sem pesar. GEbeauty já é meu favorito!"
+      },
+      {
+        "id": "9VabwbG739",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Marjorye Dias",
+        "date": "2022-08-14",
+        "src_handle": "kit-cabelos-ondulados",
+        "score": 88,
+        "review": "Na primeira utilização, já senti muita diferença! Meus cabelos estão super hidratados como nunca antes. Sempre utilizei marcas renomadas e importaras mas que nunca deixaram o meu cabelo como GE beauty"
+      },
+      {
+        "id": "QXqzIs_V0pX",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Carolina Ikeda",
+        "date": "2023-07-24",
+        "src_handle": "kit-cabelos-ondulados",
+        "score": 84,
+        "review": "gostei bastante da experiência de poder personalizar o tratamento dentro do que você busca. tenho pouco cabelo e fino, então sempre busco hidratá-lo e mais volume e corpo. estou usando a combinação do booster de hidratação no shampoo e o de definição no condicionador e sinto um resultado bem legal dentro do que busco, o cabelo fica bem volumoso. também é legal usar o booster de definição no leave-in, mas precisa ser beem pouco no meu caso, senão o cabelo pesa. ainda não percebi grande diferença com o o booster de fortificação, mas não testei muito ainda. no geral, gostei bastante dos produtos e, em comparação a shampoos importados que costumava usar, não perde em nada e acho que dá ainda mais volume."
+      },
+      {
+        "id": "SV5kRjUEanG",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Caroline Souza",
+        "date": "2023-04-19",
+        "src_handle": "kit-cabelos-ondulados",
+        "score": 84,
+        "review": "Eu nunca fui de cuidar muito do cabelo, sempre fiz o básico, depois que vi o post de curiosidade do cabelão da Camila Coutinho resolvi dar uma chance! Meu cabelo nunca esteve tão saudável e bem cuidado! Estou amando, comprei o kit Mari Saad e tenho indicado pra todo mundo que converso sobre o assunto! Toda a experiência de customizar cada vez que vou usar os produtos é um ritual prazeroso de auto-cuidado! Estou muito feliz, vale cada centavo!"
+      },
+      {
+        "id": "3OyBTDwTlVR",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Hanna Boeing",
+        "date": "2022-11-14",
+        "src_handle": "kit-cabelos-ondulados",
+        "score": 84,
+        "review": "Gostei muito do resultado pós lavação, usando os boosters conforme a necessidade do meu cabelo, um dia mais hidratação, no outro mais fortalecimento. No final do creme, acabei adicionando um tiquinho de água na embalagem e pinguei as gotinhas misturadas dos boosters para aproveitar atéééé o final, ainda rendeu mais umas 3 aplicações, tranquilamente. Podia ter mais ml na embalagem, o shampoo acabou durando mais. Mas de toda forma, vou acabar encomendando +1 hidratante para completar 2 meses de uso."
+      },
+      {
+        "id": "gDa5c1CJK2k",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Rita Escobar",
+        "date": "2023-09-08",
+        "src_handle": "kit-cabelos-ondulados",
+        "score": 82,
+        "review": "produtos maravilhosos! eu já tinha utilizado somente um produtos isolado com o de outras marcas e agora que usei a linha inteira, vi muita diferença!"
+      }
+    ]
+  },
+  "Kit Ondas Naturais": {
+    "tier": "kit",
+    "pooled": 20,
+    "source_handles": [
+      "kit-ondas-naturais"
+    ],
+    "top10": [
+      {
+        "id": "0h4rOe2Ou",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Jamile Pinheiro",
+        "date": "2021-05-07",
+        "src_handle": "kit-ondas-naturais",
+        "score": 100,
+        "review": "Amei o leave-in por ser leve, ter um cheirinho ótimo e deixar o cabelo incrível. Os boosters também parece que fazem milagre. O de definição nunca vi coisa parecida antes. Meus canelos ondulados sem forma hoje estão lindos e cheio de ondinhas definidas. Amo!! Recomendo super"
+      },
+      {
+        "id": "NlWNwBUxvfM",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Sophia Cipriani",
+        "date": "2021-03-19",
+        "src_handle": "kit-ondas-naturais",
+        "score": 100,
+        "review": "Eu estou apaixonada!! Meu cabelo é mega liso e aceita sem problemas as texturas que eu quero quando uso o leave in junto do booster de definição. \nO booster antioxidante eu tenho usado junto ao shampoo e condicionador e meu cabelo fica realmente limpo por mais tempo, sem contar o brilho surreal. Indico muito!!!"
+      },
+      {
+        "id": "c6ysj_2TKnz",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Julia Brito",
+        "date": "2021-05-19",
+        "src_handle": "kit-ondas-naturais",
+        "score": 94,
+        "review": "Amei o kit xampu, condicionador e booster fortificante. A minha queda de cabelo diminuiu bastante, a maciez e o brilho aumentaram. Além do booster fortificante, alio também o uso aos outros boosters: antioxidante e definição. E o cheirinho então, maravilhoso!"
+      },
+      {
+        "id": "mvIHfchYhGB",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Aryadne Zonetti",
+        "date": "2021-05-09",
+        "src_handle": "kit-ondas-naturais",
+        "score": 94,
+        "review": "Muito bons! Tenho cabelo volumoso e grosso, nem tudo funciona nele, mas esse kit me ajudou demais a modelar o cabelo e sem pesar. Cheirinho leve, bom e enfim, fiquei apaixonada! Indico demais."
+      },
+      {
+        "id": "_mErOfBNhX7",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Daniela Rocha",
+        "date": "2023-03-10",
+        "src_handle": "kit-ondas-naturais",
+        "score": 88,
+        "review": "O leave in é maravilhoso mas precisa de um tempo de uso para ver os benefícios dele. O booster antioxidante é maravilhoso e deixou meu cabelo macio e brilhoso já no primeiro uso. O booster definição define o cabelo de maneira incrível, deixando o ondulado perfeito."
+      },
+      {
+        "id": "e0RQhSAFzJ5",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Jennifer Tiburcio",
+        "date": "2022-04-09",
+        "src_handle": "kit-ondas-naturais",
+        "score": 88,
+        "review": "Me surpreendi com o resultado logo no primeiro uso. Muito bom todos os produtos. E meu queridinho é o definição s2"
+      },
+      {
+        "id": "h7Gdao4xHO-",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Anna Marques",
+        "date": "2021-05-11",
+        "src_handle": "kit-ondas-naturais",
+        "score": 88,
+        "review": "Adorei os produtos! O cheiro e textura são bem gostosos e tenho a sensação que o leave-in tem sido fundamental para meu cabelo pois tenho usado o secador sempre e meu cabelo continua macio, com brilho e sem o aspecto de queimado por secador"
+      },
+      {
+        "id": "BKYVZFXggEn",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Amanda Mello",
+        "date": "2021-07-10",
+        "src_handle": "kit-ondas-naturais",
+        "score": 84,
+        "review": "O leave in é perfeito. Pela primeira vez em anos meu cabelo ondulado não ficou com frizz. O booster definição foi o único que me ajudou a controlar o volume e a deixar as ondas muito mais definidas. Nunca mais vivo sem GE beauty. Essa marca ajudou a me livrar da chapinha definitivamente. Mas quando quero fazer uma escova o booster definição ajuda a manter o cabelo liso por muuiito tempo. E uso diariamente o booster antioxidante para proteger o cabelo do sol e manter a cor das luzes no meu cabelo. O preço dos produtos também é fantástico pois aqueles que são considerados de “alta performance” custam uma nota e na maioria das vezes, não dão certo. Eu adorei cada produto que adquiri e nunca mais vou me desfazer deles!"
+      },
+      {
+        "id": "jdZSwGXUbjo",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Rafaela Mancini",
+        "date": "2022-03-05",
+        "src_handle": "kit-ondas-naturais",
+        "score": 82,
+        "review": "Adorei o cheirinho e me surpreendi positivamente com o booster definição que realmente deixa o cabelo mais definido seja pro cacheado, seja pro liso (a escova dura bem mais)."
+      },
+      {
+        "id": "TOaj4Bhiovj",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Nathália Jaria",
+        "date": "2022-02-10",
+        "src_handle": "kit-ondas-naturais",
+        "score": 82,
+        "review": "Melhor leave in que já usei. Não pesa no cabelo e eu realmente senti que protege muito! Junto com o booster de definição, a finalização fica simplesmente perfeita!"
+      }
+    ]
+  },
+  "Kit Forca E Hidratacao": {
+    "tier": "kit",
+    "pooled": 20,
+    "source_handles": [
+      "kit-forca-e-hidratacao"
+    ],
+    "top10": [
+      {
+        "id": "nNy7O6ywrUo",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Liana Teixeira",
+        "date": "2021-02-01",
+        "src_handle": "kit-forca-e-hidratacao",
+        "score": 108,
+        "review": "O shampoo achei ele ótimo, atendeu todas as expectativa, o cheiro delicioso, limpa muito bem os fios, usei ele com o booster foritficante, agora depois de algumas semanas que estou tendo resultado na queda, mas também estou utilizando medicamentos e acho que a queda melhorou devido ao combo. A máscara achei perfeita, deixa o cabelo molinho logo depois de alguns minutos de aplicado, combinei ela com o booster hidratante, e meu cabelo ficou brilhoso, macio e soltinho. Amei, super recomendo."
+      },
+      {
+        "id": "ZurecnEbco1",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Bruna Amorim",
+        "date": "2021-11-30",
+        "src_handle": "kit-forca-e-hidratacao",
+        "score": 94,
+        "review": "Os produtos deixa o cabelo super hidratado e macio. Além da fragância maravilhosa! O cabelo fica leve e natural. Excelente produto!"
+      },
+      {
+        "id": "vwt-1ehZjrD",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Taynara Rios",
+        "date": "2021-04-16",
+        "src_handle": "kit-forca-e-hidratacao",
+        "score": 94,
+        "review": "Perfeitos, salvaram meu cabelo, diminuindo a queda e deixando os fios super hidratados. Além do cheiro que é uma delícia!"
+      },
+      {
+        "id": "rjJgi6aKq_j",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Najara Felisberto",
+        "date": "2021-01-08",
+        "src_handle": "kit-forca-e-hidratacao",
+        "score": 94,
+        "review": "Não lembro a última vez que amei tanto meu cabelo! Especialmente depois da queda por conta da amamentação... Meu cabelo está macio, leve e o cheiro maravilhoso!"
+      },
+      {
+        "id": "ga_Okjxy4Kt",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Debora Yumi Shirane",
+        "date": "2022-08-22",
+        "src_handle": "kit-forca-e-hidratacao",
+        "score": 90,
+        "review": "Nossa, como mudaram o meu cabelo! O shampoo é maravilhoso, é diferente com o que estamos acostumades, digo em quatidade da espuma, mas depois que passa a fase de adaptação é só sucesso! Os fios ficam limpos, muito soltinhos e com um cheiro maravilhoso! O conficionador hidrata muito, mais que máscaras de marcas cara que já usei, e se adicionar o booster de hidratação, então!! Mas meu queridinho é o booster de fortalecimento, eu tinha uma falha, que agora está bem mais amenizada, meus feios estão crescendo muito! Sem contar que deste que comecei o uso do kit meu cabelo está mais saudável, com um brilho e maciez incrível!"
+      },
+      {
+        "id": "x2MDT0QUYHc",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Carolina Orsi",
+        "date": "2020-12-28",
+        "src_handle": "kit-forca-e-hidratacao",
+        "score": 88,
+        "review": "Os produtos foram além das expectativas, pois achei que meu cabelo por ser oleoso e conter tintura achei que não iria funcionar, pelo contrário, eu lavando com o shampoo e condicionador sem o booster e adicionando ele meu cabelo fica sedoso, macio, não resseca e até ressalta minhas luzes, deixando elas mais bonitas. Sem falar do cheiro do shampoo que é maravilhoso!!"
+      },
+      {
+        "id": "iOHcdVQTJz2",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Alissa Magalhães",
+        "date": "2021-01-06",
+        "src_handle": "kit-forca-e-hidratacao",
+        "score": 84,
+        "review": "Eu adorei o conceito da GE Beauty porque tô tendo uma verdadeira experiência na hora do banho. Meu cabelo tá mais saudável, com mais brilho, sem embaraço, mais maleável. É como se as características naturais do meu cabelo fossem potencializadas. uralmente ondulado, um 2B-2C\nUso o shampoo com 3 gotas do booster fortificante e a máscara condicionadora com 2 gotas do booster hidratante, foi a mistura que mais funcionou pra mim. Meu cabelo tá sedoso e saudável!"
+      },
+      {
+        "id": "bCBqv6Jfl_v",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Letícia Ferro",
+        "date": "2020-12-21",
+        "src_handle": "kit-forca-e-hidratacao",
+        "score": 82,
+        "review": "Maravilhosos, deixaram meu cabelo super brilhoso, sedoso, macio e protegido :)"
+      },
+      {
+        "id": "bIdv1KO3Sq2",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Caroline Tuna Quintal",
+        "date": "2021-04-18",
+        "src_handle": "kit-forca-e-hidratacao",
+        "score": 70,
+        "review": "Busquei o kit porque já era exatamente a misturinha que eu fazia, comprando individualmente. \nO fortificante tratou bem na primeira vez da queda do meu cabelo, mas na segunda e terceira compra, parece que o cabelo acostumou e voltou a cair. Então tive que comprar um shampoo específico pra queda da Vichy. \nO cheiro é uma delícia, mas fica pouco tempo no cabelo. Dura só algumas horas (umas 2h) no cabelo, depois dele secar naturalmente.\nApesar do meu cabelo ser liso, eu uso 10 gotas do booster hidratante, senão, não dá pra perceber a hidratação."
+      },
+      {
+        "id": "ZkK7qVzbssJ",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Carolina Maeda",
+        "date": "2020-12-21",
+        "src_handle": "kit-forca-e-hidratacao",
+        "score": 70,
+        "review": "Os produtos me agradaram muito e o cheiro é realmente maravilhoso. Senti meu cabelo mais hidratado e com mais brilho e força. Só não dei 5 estrelas pois o booster fortificante ainda não fez efeito no sentido de menos oleosidade e menos queda. Talvez eu ainda não tenha encontrado a quantidade de gotas certa. Mas, para mim, o ponto mais crítico é o bico dosador do leave-in. O produto cai em excesso, é difícil controlar. Eu viro o frasco e o produto sai sem nem apertar a embalagem e sai em muita quantidade, pois ele é mais líquido. Não sei se foi um defeito na minha embalagem ou se é um problema geral, mas isso, pra mim, é o maior defeito da linha. Mas de uma forma geral eu gostei."
+      }
+    ]
+  },
+  "Kit Forca E Nutricao": {
+    "tier": "kit",
+    "pooled": 12,
+    "source_handles": [
+      "kit-forca-e-nutricao"
+    ],
+    "top10": [
+      {
+        "id": "axj5aQzuQx8",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Mariah Blois",
+        "date": "2023-05-24",
+        "src_handle": "kit-forca-e-nutricao",
+        "score": 112,
+        "review": "recomendo. gostei mto dos produtos, da textura e principalmente do cheiro do shampoo . deixa o cabelo leve e não pesa. tbm melhorou o brilho, estava mto opaco. estou usando para ver o resultado com o boost de fortalecimento."
+      },
+      {
+        "id": "zGfb93Wufv4",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Maria Eduarda Nogueira",
+        "date": "2023-06-18",
+        "src_handle": "kit-forca-e-nutricao",
+        "score": 94,
+        "review": "GE Beauty conquistou meu cabelo há um ano já. Desde então, não consigo ficar sem. Comecei a ter alguns problemas com queda de cabelo e o booster fortificante está me ajudando a resolver essa questão. Recomendo demais. Não consigo mais viver sem GE."
+      },
+      {
+        "id": "RALR9yGaqF",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Bruna Amorim",
+        "date": "2023-01-24",
+        "src_handle": "kit-forca-e-nutricao",
+        "score": 94,
+        "review": "Super recomendo. Produto de altissima qualidade, leve. O cabelo fica com aspecto solto, brilhoso, resistente. Vale super a pena adquirir."
+      },
+      {
+        "id": "wV3N8F0kxG6",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Mariana Brito",
+        "date": "2023-05-25",
+        "src_handle": "kit-forca-e-nutricao",
+        "score": 88,
+        "review": "Percebi que ele limpa o cabelo … é uma leve diminuição da queda (ainda estou no primeiro mês) as ampolas são incríveis eu amei as duas!"
+      },
+      {
+        "id": "aitd4xP8Ws",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Flavia Barroso",
+        "date": "2023-06-20",
+        "src_handle": "kit-forca-e-nutricao",
+        "score": 84,
+        "review": "Ta aí um produto que me surpreendeu de forma positiva. Sempre comprei produtos fora do brasil quando viajava, nunca achei um produto genuinamente brasileiro que casasse com meu tipo de cabelo. Ia testar só o leave in por que o meu havia acabado, resolvi testar o kit de fortificante e o antioxidante. MEU DEUS. eu to tãoapaixonada por tudo, que é até difícil relacionar tudo que gostei. Mas vou começar pelo fato de ser uma marca brasileira de uma mulher empreendedora, que alegria ter me dado tão bem com algo que tanto admiro. A segunda coisa é como o shampoo funciona de tantas formas, ele limpa realmente o couro cabeludo sem agredir, usava shampoos que limpavam mas evitava, por que deixavam o cabelo ressecado, mas o shampoo da GE é tudo que promete e mais um pouco, por que o cheiro é absurdamente bom demais, vontade de morar naquele produto. Outro ponto bom é a possibilidade de você escolher como precisa do produto em determinado dia, isso é incrível demais! Tem dias que o cabelo tá lindo, não precisa de muita coisa, mas aí vem aqueles dias(a maioria) que o cabelo tá terrível e poder manusear do jeito que preciso é maravilhoso. Antes tinha e ainda tenho, vários produtos para cada dia que o cabelo estava de um jeito, porém ultimamente só tenho usado os produtos da GE, por que são bons em nível elevadíssimo. Resumindo, estou viciada nos outros, não largo mais. Já quero uma linha infantil para a minha filha e a perpetuação dessa marca. Inclusive já recomendei para todo mundo ao meu redor, hehehe"
+      },
+      {
+        "id": "NdoV6IAZriA",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Maria Fernanda Veloso",
+        "date": "2023-08-20",
+        "src_handle": "kit-forca-e-nutricao",
+        "score": 82,
+        "review": "ADOREI O PRODUTO! DEIXA O CABELO LIMPO, HIDRATADO E BRILHANTE!!"
+      },
+      {
+        "id": "grguZcPOEz",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Samanta P M Dos Santos",
+        "date": "2023-07-04",
+        "src_handle": "kit-forca-e-nutricao",
+        "score": 78,
+        "review": "Os produtos da Ge Beauty são incríveis, maravilhosos, estava com muita queda de cabelo e já tinha usado vários produtos e meus cabelos continuavam a cair, uma queda muito significativa, então como sou fã da Camila a muitos anos resolvi comprar os produtos da Ge Beauty e em menos de 01 mês a queda diminuiu absurdamente e o brilho do meu cabelo voltou, já indiquei para amigas e se depender de mim não largo mais os produtos, tudo incrível, um produto brasileiro jamais visto antes. ❤️"
+      },
+      {
+        "id": "fQSVqAx4PLF",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Giovanna Pereira",
+        "date": "2023-05-31",
+        "src_handle": "kit-forca-e-nutricao",
+        "score": 78,
+        "review": "No último mês, tenho usado exclusivamente o shampoo e a máscara do GE e tenho amado! Meu cabelo fica super limpo, bem soltinho e muito macio. O efeito antiqueda, no meu caso, foi perceptível muito rápido (meu cabelo estava caindo demais)! Tenho usado as gotinhas do booster fortificante no shampoo nas lavagens \"comuns\" e, uma vez por semana, uso na máscara. É perfeito! A qualidade é, de fato, surpreendente. Estou encantada pelos produtos, desde a embalagem até o cheirinho. Já quero todos!"
+      },
+      {
+        "id": "'-IrYUFgDSU-",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Camilla Nagle",
+        "date": "2023-07-07",
+        "src_handle": "kit-forca-e-nutricao",
+        "score": 74,
+        "review": "Textura ótima. Cheiro maravilhoso. Deixou meu cabelo macio. Ainda estou aguardando o efeito de reduzir a oleosidade da raiz. O booster nutrição é ótimo."
+      },
+      {
+        "id": "I96VHpg-gHa",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Camila Barbosa De Andrade",
+        "date": "2023-05-25",
+        "src_handle": "kit-forca-e-nutricao",
+        "score": 74,
+        "review": "Ainda preciso de mais tempo pra avaliar qto a recuperaçao dos fios e efeito anti queda mas por enqto tenho gostado do resultado. O shampoo limpa super bem mas poderia fazer mais espuma. O condicionador deixa o cabelo bem macio. E soltinho. Com o tempo de uso esse efeito reduz um pouco mas nada que um leave in nao resolva."
+      }
+    ]
+  },
+  "Kit Tratamento Nutricao E Hidratacao": {
+    "tier": "kit",
+    "pooled": 10,
+    "source_handles": [
+      "kit-tratamento-nutricao-e-hidratacao"
+    ],
+    "top10": [
+      {
+        "id": "WO4xxQf_rdS",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Simey Silva De Abreu Assunção",
+        "date": "2024-02-16",
+        "src_handle": "kit-tratamento-nutricao-e-hidratacao",
+        "score": 92,
+        "review": "M~eu cabelo é relaxado, super seco e sem brilho, mas com os produtos GEBeauty eles hoje estão mcios e com brilho, deu certo demais e eu não pretendo mudar , achei meus produtos , o xampu não vi muito feito eu usava o Densiage da ducray, mas estou satisfeita com o resultado. a máscara é perfeita."
+      },
+      {
+        "id": "WDhoO-62VXt",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Renata Diniz",
+        "date": "2023-12-17",
+        "src_handle": "kit-tratamento-nutricao-e-hidratacao",
+        "score": 90,
+        "review": "Eu tô adorando os produtos. Sensação de cabelo soltinho, hidratado e cheiroso. Acho o custo x benefício bem razoável. Confesso que às vezes fico com preguiça de colocar os pingos dos boosters. Não acharia ruim se o condicionador já viesse misturado e não precisasse de boosters por fora. Só pela praticidade. Mas uso o meu kit todos os dias. O resultado é muito bom. Kerastase deixa meu cabelo pesado. Morroccanoil deixa seco. Redken eu adoro, mas é preciso variar senão o cabelo acostuma. Então o GE entrou na minha listinha dos ótimos shampoos do meu rodízio."
+      },
+      {
+        "id": "1fVa1ttZIko",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Marilia Olivetti",
+        "date": "2023-03-29",
+        "src_handle": "kit-tratamento-nutricao-e-hidratacao",
+        "score": 90,
+        "review": "Tive Covid 2 vezes, passei por alguns momentos de estresse na área da saúde e íntima. Acredito que tudo isso levou ao enfraquecimento do meu cabelo que cresce fraco, quebradiço e tenho muita queda dos fios há quase 1 ano. É a primeira vez que estou experimentando esse kit. De cara gostei da embalagem, da experiência de compra e também adorei quando usei, muito prático, possui um aroma refrescante e meus cabelos começaram a ganhar mais brilho, maciez e a crescer mais rápido durante um bom período de uso. Estou apostando que os produtos da GE Beauty vão me ajudar a conquistar um cabelo mais bonito e encorpado."
+      },
+      {
+        "id": "xupz4O_HIKc",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Maria Fernanda Bezerra De Medeiros",
+        "date": "2023-04-18",
+        "src_handle": "kit-tratamento-nutricao-e-hidratacao",
+        "score": 88,
+        "review": "Meu cabelo ficou muito ressacado após o período de veraneio + Carnaval , o que salvou foi esse kit ! Meu cabelo é outro ! Super recomendo!"
+      },
+      {
+        "id": "TSB_16Lipjo",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Cristina Rotta",
+        "date": "2023-05-31",
+        "src_handle": "kit-tratamento-nutricao-e-hidratacao",
+        "score": 82,
+        "review": "Minha questão era com manutenção da cor e limpeza profunda e com o shampoo e a máscara mais o booster anti- oxidante tive um ótimo resultado"
+      },
+      {
+        "id": "mxBMf_nbcfc",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Natalia Fonseca",
+        "date": "2023-04-20",
+        "src_handle": "kit-tratamento-nutricao-e-hidratacao",
+        "score": 82,
+        "review": "Condicionador e creme de pentear muito bom, deixou meus cabelos macios"
+      },
+      {
+        "id": "9Xu8UGA-6WW",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Marina Lima",
+        "date": "2024-04-05",
+        "src_handle": "kit-tratamento-nutricao-e-hidratacao",
+        "score": 80,
+        "review": "Muito bom, fiquei surpresa com a qualidade e como ficou meu cabelo após o uso. Comprarei novamente."
+      },
+      {
+        "id": "fptObDH20cX",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Camila Jandiroba",
+        "date": "2023-07-10",
+        "src_handle": "kit-tratamento-nutricao-e-hidratacao",
+        "score": 70,
+        "review": "Sensacional. Estou viciada. Meu cabelo é outro."
+      },
+      {
+        "id": "COTIbqCNNPJ",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Eleica Mendonça",
+        "date": "2023-12-10",
+        "src_handle": "kit-tratamento-nutricao-e-hidratacao",
+        "score": 58,
+        "review": "Os produtos são muito bons"
+      },
+      {
+        "id": "ReAxUaKzS4i",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Ana Patricia Cruz",
+        "date": "2024-01-04",
+        "src_handle": "kit-tratamento-nutricao-e-hidratacao",
+        "score": 54,
+        "review": "Muito bons"
+      }
+    ]
+  },
+  "Kit Camila Coutinho": {
+    "tier": "kit",
+    "pooled": 9,
+    "source_handles": [
+      "kit-camila-coutinho"
+    ],
+    "top10": [
+      {
+        "id": "0jQt2fN0UKJ",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Thaisa Coelho",
+        "date": "2022-12-08",
+        "src_handle": "kit-camila-coutinho",
+        "score": 94,
+        "review": "Meu cabelo está super saudável. Os oleos sao leves e poderosos! O oleo de definição é impecável, leve e deixa as ondas lindas. Estou usando so GE ha 4 meses e não largo mais. E olha que eu usava produtos bons e caros como Sebastian, wella. \nLavo meu cabelo todos os dias porque eu treino todos os dias. Antes de treinar eu passo óleo antioxidante para proteger do suor."
+      },
+      {
+        "id": "sxUHZ_0Us2z",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Jessyca Pimentel",
+        "date": "2024-02-18",
+        "src_handle": "kit-camila-coutinho",
+        "score": 92,
+        "review": "Meu favorito é shampoo, mascara e booster fortificante com hidratação. O Shampoo demanda uma quantidade grande de produto para acessar ao meu volume de cabelo, ainda estou me adaptando com a rotina, mas estou amando a maneira como meu cabelo fica no dia da lavagem. O segundo dia acho que ele muito unidos venceremos então tenho buscado acertar na dose dos booster. Não curti muito o aspecto com o uso do Leave in."
+      },
+      {
+        "id": "RZO2zLExEjL",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Bruna Filgueiras Pimentel",
+        "date": "2023-06-12",
+        "src_handle": "kit-camila-coutinho",
+        "score": 88,
+        "review": "Deixou meu cabelo levinho, hidratado e brilhoso. Amei a experiência de usar uma linha customizável. Não troco por nada. Os boosters são maravilhosos! Os meus favoritos são: fortificante e hidratante. Obrigada por tudo, GE Beauty <3"
+      },
+      {
+        "id": "EBav-nFZDM3",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Juliana Azevedo",
+        "date": "2023-03-22",
+        "src_handle": "kit-camila-coutinho",
+        "score": 88,
+        "review": "Amei o cheiro e a hidratação que eles proporcionam aos cabelos."
+      },
+      {
+        "id": "eHljHAvi1X",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Ana Cristina Bertolini Paim",
+        "date": "2023-01-27",
+        "src_handle": "kit-camila-coutinho",
+        "score": 88,
+        "review": "Os produtos sozinhos ja são ótimos, deixam o cabelo soltinho, leve e com aparência de saudável! Mas com os boosters…. Fica maravilhoso! Uso eles até em outros shampoos que ja tinha"
+      },
+      {
+        "id": "VlWxcnV13ai",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Adriana Lins",
+        "date": "2022-12-16",
+        "src_handle": "kit-camila-coutinho",
+        "score": 80,
+        "review": "Percebi que meu cabelo está mais encorpado mas a hidratação é insuficiente. Tenho cabelos grisalhos e acho que o produto não é muito indicado para essa textura de cabelo. Estou no primeiro tubo, vou insistir para ver se o resultado melhora."
+      },
+      {
+        "id": "bEUoTJ7sRTh",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Anna Castiñeiras",
+        "date": "2023-12-24",
+        "src_handle": "kit-camila-coutinho",
+        "score": 76,
+        "review": "Cheirinho maravilhoso e o cabelo fica ótimo em todas as combinações."
+      },
+      {
+        "id": "3Qqi4uguyWY",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Vivian Lobato",
+        "date": "2023-04-09",
+        "src_handle": "kit-camila-coutinho",
+        "score": 50,
+        "review": "Perfeitos"
+      },
+      {
+        "id": "C9t5oX3IOL5",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Valessandra Medeiros Fernandes",
+        "date": "2023-04-16",
+        "src_handle": "kit-camila-coutinho",
+        "score": 30,
+        "review": "'-"
+      }
+    ]
+  },
+  "Kit Cabelos Cacheados": {
+    "tier": "kit",
+    "pooled": 7,
+    "source_handles": [
+      "kit-cabelos-cacheados"
+    ],
+    "top10": [
+      {
+        "id": "N36NrRBSJeg",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Ana Paula Portela",
+        "date": "2023-08-30",
+        "src_handle": "kit-cabelos-cacheados",
+        "score": 94,
+        "review": "Amei os produtos me surpreendeu, meu cabelo ficou macio cachos definidos, o cheiro do produto maravilhoso"
+      },
+      {
+        "id": "BWw31sx_3fV",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Thamires Carelli",
+        "date": "2023-04-23",
+        "src_handle": "kit-cabelos-cacheados",
+        "score": 94,
+        "review": "Adorei! Meu cabelo vivia com frizz em algumas partes e o combo do booster hidratante + definição tem sido a salvação dos meus cachos, fora o cheiro que é maravilhoso!!"
+      },
+      {
+        "id": "LvsjGBLRhB6",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Daniela Viegas",
+        "date": "2024-04-04",
+        "src_handle": "kit-cabelos-cacheados",
+        "score": 92,
+        "review": "ainda estou testando combinações com boosters, mas o antioxidante no condicionador deixa meu cabelo maravilhoso. o booster definição pra finalização também deixa o cabelo lindo. como tenho muito cabelo e ele é muito cacheado, o cabelo fica soltinho e super definido. adorei."
+      },
+      {
+        "id": "KUOw23tBRRf",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Marta Garcia De Miranda Carvalho",
+        "date": "2022-10-24",
+        "src_handle": "kit-cabelos-cacheados",
+        "score": 82,
+        "review": "Amei os produtos e já estou sentindo a diferença na textura do cabelo. O processo pra utilizar os booster é muito simples e prático. Adorei!"
+      },
+      {
+        "id": "Oqp-COo12UP",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Bianca Oliveira Lima",
+        "date": "2023-08-30",
+        "src_handle": "kit-cabelos-cacheados",
+        "score": 78,
+        "review": "Estou adorando os produtos, meu cabelo fica muito cheiroso e macio. Minha combinação favorita até agora é o shampoo + boster fortificante, na máscara, combino até 2 bosters depenado que eu acho que meu cabelo está precisando no dia. O leave in é maravilhoso, passei no cabelo da minha mãe e ela até percebeu a prancha deslizando mais fácil pela mecha. Uma sugestão: frasco maior para a máscara e para o leave in porque como meu cabelo é cacheado eu acabo usando uma quantidade maior de produto e só 200/150 ml para o meu cabelo não dura muito."
+      },
+      {
+        "id": "Mez7-3dkhs",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Carolina Pinheiro De Souza",
+        "date": "2023-06-28",
+        "src_handle": "kit-cabelos-cacheados",
+        "score": 56,
+        "review": "Meu cabelo ficou bem bonito, mas não achei prático ficar pingando as gotinhas em cada processo e o finalizador é muito ralo para meu tipo de cabelo. Preciso de muito produto quando é assim e acabou que ele durou só 6 lavagens."
+      },
+      {
+        "id": "MJvLuPs9Mi",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Vanessa Zancheta",
+        "date": "2022-08-15",
+        "src_handle": "kit-cabelos-cacheados",
+        "score": 50,
+        "review": "Ótimo produto"
+      }
+    ]
+  },
+  "Kit Mixer E Espatula": {
+    "tier": "kit",
+    "pooled": 6,
+    "source_handles": [
+      "kit-mixer-e-espatula"
+    ],
+    "top10": [
+      {
+        "id": "7uc-IzWsNRk",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Jaqueline Pereira Dos Santos",
+        "date": "2022-07-22",
+        "src_handle": "kit-mixer-e-espatula",
+        "score": 76,
+        "review": "Produto de boa qualidade e muito útil, facilita bastante a mistura dos booster com os demais produtos."
+      },
+      {
+        "id": "kC0Hrg660nK",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Lorena Rêgo",
+        "date": "2022-05-16",
+        "src_handle": "kit-mixer-e-espatula",
+        "score": 76,
+        "review": "Produto excelente, o pote é flexível, o que ajuda bastante o manuseio durante o banho."
+      },
+      {
+        "id": "QJRamlD6dHO",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Mariuche Ismerim",
+        "date": "2020-10-26",
+        "src_handle": "kit-mixer-e-espatula",
+        "score": 58,
+        "review": "Lindo, prático, funcional e qualidade excelente!"
+      },
+      {
+        "id": "'-WJQ3n_jVwP",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "#gebeautie anônima",
+        "date": "2025-07-28",
+        "src_handle": "kit-mixer-e-espatula",
+        "score": 58,
+        "review": "'-"
+      },
+      {
+        "id": "Vx1bWPifAcW",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Samara Meneses",
+        "date": "2021-09-03",
+        "src_handle": "kit-mixer-e-espatula",
+        "score": 38,
+        "review": "Boa matéria prima, reutilizável, porém, dispensável."
+      },
+      {
+        "id": "Xtn7oxyPbjM",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Juliana Sousa De Almeida",
+        "date": "2020-12-04",
+        "src_handle": "kit-mixer-e-espatula",
+        "score": 38,
+        "review": "Bom material, resistente e não fica manchado"
+      }
+    ]
+  },
+  "Kit Controle Da Oleosidade": {
+    "tier": "kit",
+    "pooled": 5,
+    "source_handles": [
+      "kit-controle-da-oleosidade"
+    ],
+    "top10": [
+      {
+        "id": "wUeBiLjLojN",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Barbara Melgaço",
+        "date": "2024-02-24",
+        "src_handle": "kit-controle-da-oleosidade",
+        "score": 98,
+        "review": "Essa foi a minha primeira compra na GE Beauty para testar e eu simplesmente AMEI! Adorei descobrir como usar os boosters junto de cada produto e qual seria o melhor para o meu cabelo. E não posso ficar sem falar do cheiro, MUITO BOM!!! \nPróximo passo é experimentar o shampoo a seco :D"
+      },
+      {
+        "id": "KEMh77Ns_NY",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Thais Langhinotti",
+        "date": "2024-01-05",
+        "src_handle": "kit-controle-da-oleosidade",
+        "score": 92,
+        "review": "Meu cabelo se tranformou. No começo demorou um pouco para o cabelo se adaptar aos produtos, mas depois foi só maravilhas. Até mesmo fui pra praia e meu cabelo continuou muito bonito, só com o uso dos produtos. Recomendo a todos."
+      },
+      {
+        "id": "88FSkHXbUvk",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Camila Almeida",
+        "date": "2023-08-25",
+        "src_handle": "kit-controle-da-oleosidade",
+        "score": 90,
+        "review": "Estou impressionada com a qualidade dos produtos. Virou meu momento de cuidado preferido. Meu cabelo é outro! tenho cabelo oleoso e não sinto a necessidade de lavar diariamente, está hidratado e suuuper cheiroso. Além disso, aboli o secador! O finalizador deixa meu cabelo tão lindo e sem frizz que fiz as pazes com meu cabelo natural! Estou ansiosa para testar o shampoo a seco agora! Virei fã, cliente e propagadora da marca."
+      },
+      {
+        "id": "FKnPEAtoi10",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Juliana Lucca",
+        "date": "2023-07-13",
+        "src_handle": "kit-controle-da-oleosidade",
+        "score": 58,
+        "review": "Boa qualidade, boa limpeza!"
+      },
+      {
+        "id": "DaAOXsYJlhJ",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Valeria Braun",
+        "date": "2023-12-24",
+        "src_handle": "kit-controle-da-oleosidade",
+        "score": 50,
+        "review": "Excelente"
+      }
+    ]
+  },
+  "Kit Reposicao Shampoo": {
+    "tier": "kit",
+    "pooled": 5,
+    "source_handles": [
+      "kit-reposicao-shampoo"
+    ],
+    "top10": [
+      {
+        "id": "np4fq7plnp",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Bruna Martins",
+        "date": "2023-02-06",
+        "src_handle": "kit-reposicao-shampoo",
+        "score": 96,
+        "review": "Como é um produto diferente de tudo que já havia usado, no primeiro momento não consegui fazer com que ele desempenhasse o que foi prometido, mas mesmo assim já havia gostado muito. O shampoo junto ao booster fortificante proporcionaram ao meu cabelo um crescimento enorme desde que comecei a utilizar, além de sempre estar com o cabelo hidratado e com a raiz soltinha, quanto à máscara/ao condicionador, uso junto ao booster hidratação, e assim tenho um cabelo extremamente macio e alinhado. Por fim, finalizado com o leave-in e o booster antioxidante, que garante que o meu cabelo seque naturalmente com o frizz controlado e as pontas alinhadas. Além disso, quando vou utilizar escova secadora e/ou babyliss, sempre acrescento a essa última combinação do leave-in, o booster definição que faz milagre, o meu cabelo não seguro escova, nem tampouco babyliss, mas quando uso o booster consigo passar a noite toda com o cabelo impecável."
+      },
+      {
+        "id": "aGxYnUkyl-A",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Luiza Rosa",
+        "date": "2023-12-01",
+        "src_handle": "kit-reposicao-shampoo",
+        "score": 94,
+        "review": "Eu amo esse shampo, depois que eu descobri a maneira certa de misturar o booster hidratante, o que funciona para o meu tipo de cabelo que é seco, com volume e ainda moro em uma cidade de clima seco. Mudou a minha vida!"
+      },
+      {
+        "id": "g1gGh4bSl1H",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Amanda Lombardi",
+        "date": "2023-11-01",
+        "src_handle": "kit-reposicao-shampoo",
+        "score": 88,
+        "review": "No início eu tava com dificuldade de ajustar o shampoo no cabelo (tenho bastante cabelo), porque a primeira lavagem não fazia muita espuma. Daí eu fiz aquele truquinho de colocar no potinho com o booster fortificante, mexer com a espátula e acrescentar um pouco de água na mistura. Aí ficou perfeito! Amo e com o tempo de uso sinto e vejo que meu cabelo está mais saudável mesmo."
+      },
+      {
+        "id": "oB8kME3Eg2w",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Fabiana Fukuti",
+        "date": "2023-12-17",
+        "src_handle": "kit-reposicao-shampoo",
+        "score": 56,
+        "review": "Gosto do shampoo porque ele limpa bem o meu cabelo oleoso, sem ressecar as pontas. Só não ganha 5 estrelas porque não rende muito! É mais difícil de espalhar no cabelo, então acabo usando mais do que outros shampoos, o que torna o custo benefício não tão interessante."
+      },
+      {
+        "id": "zE1YYSse1iW",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Fernanda Cavalheiro",
+        "date": "2023-10-26",
+        "src_handle": "kit-reposicao-shampoo",
+        "score": 50,
+        "review": "Eu smo"
+      }
+    ]
+  },
+  "Kit Forca E Nutricao B": {
+    "tier": "kit",
+    "pooled": 5,
+    "source_handles": [
+      "kit-forca-e-nutricao-b"
+    ],
+    "top10": [
+      {
+        "id": "_I2yZh9rCD",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Carina Andari",
+        "date": "2021-06-23",
+        "src_handle": "kit-forca-e-nutricao-b",
+        "score": 94,
+        "review": "Toda a linha de produtos é ótima, inclusive para meu cabelo enrolado! Foi o que impulsionou minha transição capilar! O booster de definição faz toda a diferença para o dia-a-dia!"
+      },
+      {
+        "id": "xDrVYYA82yV",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Carolina Souza",
+        "date": "2021-07-06",
+        "src_handle": "kit-forca-e-nutricao-b",
+        "score": 88,
+        "review": "Expectativa atendida!\nMeu cabelo está caindo 1/3 do que caía normalmente, o cabelo parece estar com mais volume do que antes. Além disso, os fios de bebê começaram a crescer de verdade, não só na frente, mas em todo o couro cabeludo. Meu cabelo está bem maior do que o normal.\nMuitas meninas falam da alteração da textura do fio (em ficar mais seco), e de fato isso acontece, mas nada a ponto do cabelo não ficar legal."
+      },
+      {
+        "id": "PgRT9Y22r",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Patrícia Saito",
+        "date": "2021-06-29",
+        "src_handle": "kit-forca-e-nutricao-b",
+        "score": 88,
+        "review": "Eu amei o meu kit de shampoo e condicionador. Meu cabelo ficou macio, volumoso e saudável. Meu marido curtiu tanto que acabou usando junto comigo"
+      },
+      {
+        "id": "K0U8LPT2oio",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Nicole Franceschini",
+        "date": "2021-07-20",
+        "src_handle": "kit-forca-e-nutricao-b",
+        "score": 82,
+        "review": "De todos os produtos que adquiri o shampoo é o melhor de todos, a fragrância gostosa, bem leve. Deixa o cabelo limpo e gostoso por até 2 dias, o que é uma maravilha se o seu cabelo for oleoso como o meu. Ainda não notei diferença no uso do booster de nutrição, a textura é bem aguada e aplicada no condicionador não misturou muito bem, tenho aplicado junto com um óleo para ganhar mais consistência. O único produto que desaprovo é a escova de cabelo, achei bastante dura, tem que escovar com muiiiito cuidado para não puxar os fios."
+      },
+      {
+        "id": "yt1z_G-uHN",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Fernanda Svaizer Do Brito",
+        "date": "2021-05-31",
+        "src_handle": "kit-forca-e-nutricao-b",
+        "score": 56,
+        "review": "Gostei muito do condicionador e do reparador, mas não me dei bem com o shampoo. Meu cabelo tem raiz oleosa, e ele atenuou mais essa oleosidade."
+      }
+    ]
+  },
+  "Kit Limpeza Fortificante": {
+    "tier": "kit",
+    "pooled": 3,
+    "source_handles": [
+      "kit-limpeza-fortificante"
+    ],
+    "top10": [
+      {
+        "id": "ckKLpVh33w",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Aline Balazina",
+        "date": "2023-10-05",
+        "src_handle": "kit-limpeza-fortificante",
+        "score": 74,
+        "review": "O shampoo limpa super bem o couro cabeludo mas senti que com o tempo foi deixando as pontas bem ressecadas. Meu cabelo é bem oleoso então eu lavo dia sim dia não meu cabelo e tive que reforçar a hidratação depois de usar o shampoo + booster com uma máscara bem potente. Ainda não senti muita diferença na queda do cabelo pois acredito que preciso de mais tempo de uso para perceber mudanças."
+      },
+      {
+        "id": "enDCSjKfACI",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Ines B Almeida",
+        "date": "2023-11-03",
+        "src_handle": "kit-limpeza-fortificante",
+        "score": 64,
+        "review": "Senti meu cabelo com mais volume e menos ressecado."
+      },
+      {
+        "id": "KunKugkFmS",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Ana Carolina Honda",
+        "date": "2023-09-28",
+        "src_handle": "kit-limpeza-fortificante",
+        "score": 64,
+        "review": "Bom e cheiroso, realmente funciona"
+      }
+    ]
+  },
+  "Kit Cachos Definidos": {
+    "tier": "kit",
+    "pooled": 3,
+    "source_handles": [
+      "kit-cachos-definidos"
+    ],
+    "top10": [
+      {
+        "id": "FfeClij1v8g",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Camila Rangel",
+        "date": "2023-08-31",
+        "src_handle": "kit-cachos-definidos",
+        "score": 82,
+        "review": "Os produtos são ótimos. Amei a finalização, embora meu cabelo não seja ondulado. Só achei a entrega muito demorada!"
+      },
+      {
+        "id": "B1cNzkG6w41",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Livia Topan",
+        "date": "2023-07-17",
+        "src_handle": "kit-cachos-definidos",
+        "score": 82,
+        "review": "O booster definição e o leave in são maravilhosos. Tenho muita vontade de experimentar o restante da linha, no entanto o preço não é acessível... entendo que a qualidade é excepcional, mas poucas pessoas podem gastar esse valor em shapo e condicionador, por exemplo, que são usados diariamente. O booster é o leave in, que não são usados todo dia vão durar bastante tempo, então tive condições de comprar."
+      },
+      {
+        "id": "iw2UlAZSqRl",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Lígia Baseggio",
+        "date": "2023-08-19",
+        "src_handle": "kit-cachos-definidos",
+        "score": 76,
+        "review": "Os booster são PERFEITOOOS! Dão um \"boom\" no cabelo, deixando ele do jeitinho que eu gosto. Virei fã dessa marca!"
+      }
+    ]
+  },
+  "Kit Cabelos Loiros": {
+    "tier": "kit",
+    "pooled": 3,
+    "source_handles": [
+      "kit-cabelos-loiros"
+    ],
+    "top10": [
+      {
+        "id": "vxCH-BnU-H",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Juliana Borges Resende Sepulveda",
+        "date": "2022-08-16",
+        "src_handle": "kit-cabelos-loiros",
+        "score": 64,
+        "review": "Amei! Cabelo ficou lindo.. e o cheiro! Surreal!"
+      },
+      {
+        "id": "gBUXVmP3O",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Marcia Sponchiado",
+        "date": "2022-09-27",
+        "src_handle": "kit-cabelos-loiros",
+        "score": 56,
+        "review": "cheiro maravilhoso"
+      },
+      {
+        "id": "GQc5fiPKMaH",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Livia Barreiros Pinheiro Lima",
+        "date": "2022-08-28",
+        "src_handle": "kit-cabelos-loiros",
+        "score": 50,
+        "review": "Produtos maravilhosos."
+      }
+    ]
+  },
+  "Kit Prevencao Da Queda": {
+    "tier": "kit",
+    "pooled": 2,
+    "source_handles": [
+      "kit-prevencao-da-queda"
+    ],
+    "top10": [
+      {
+        "id": "Qah6ZFTLWh6",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Eliane Porto",
+        "date": "2024-01-10",
+        "src_handle": "kit-prevencao-da-queda",
+        "score": 92,
+        "review": "Não me canso de recomendar. Tenho uma profusão de novos fios que nascem sem parar desde que comecei a usar o combo shampoo e booster. Amo!"
+      },
+      {
+        "id": "xzhB5UfwhTs",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Lais Chaves",
+        "date": "2024-02-05",
+        "src_handle": "kit-prevencao-da-queda",
+        "score": 86,
+        "review": "Primeira vez que uso e amei o resultado, com certeza comprarei novamente."
+      }
+    ]
+  },
+  "Kit Coloracao Duradoura": {
+    "tier": "kit",
+    "pooled": 2,
+    "source_handles": [
+      "kit-coloracao-duradoura"
+    ],
+    "top10": [
+      {
+        "id": "lDQ0dfMbbHr",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Marcela Menezes Filgueiras",
+        "date": "2023-08-07",
+        "src_handle": "kit-coloracao-duradoura",
+        "score": 82,
+        "review": "amei! meu cabelo ficou incrivel! adorei o folhete que vem com as combinações dos produtos para o tipo de resultado final que quero. Cada dia faço uma mistura diferente!"
+      },
+      {
+        "id": "6QXiKQ5YYd0",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Taisa Berlingieri",
+        "date": "2023-04-17",
+        "src_handle": "kit-coloracao-duradoura",
+        "score": 58,
+        "review": "Adorei os produtos, são maravilhosos!"
+      }
+    ]
+  },
+  "Kit Cabelos Mistos": {
+    "tier": "kit",
+    "pooled": 2,
+    "source_handles": [
+      "kit-cabelos-mistos"
+    ],
+    "top10": [
+      {
+        "id": "jziUhMIj02z",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Giovanna Reis",
+        "date": "2023-06-01",
+        "src_handle": "kit-cabelos-mistos",
+        "score": 90,
+        "review": "Eu gostei muito da linha toda. Começando pelo shampoo, ele tem uma textura bem firme e não faz muita espuma, mas ele dá uma sensação de limpeza muito boa. Eu tenho MUITO cabelo, então pra mim ele rende \"pouco\", preciso usar bastante. Sobre a máscara, ela é TUDO! Muito gostosa a sensação depois de passar no cabelo. O cabelo fica leve e com aquela textura boa sabe? Sobre o leave-in, ainda tô me adaptando. Eu nunca usei creme assim, só óleo, então ainda encontro dificuldade em dosar a quantidade no meu cabelo. Mas ele sempre seca - com secador e natural - de um jeito muito bonito. Quando eu acerto a quantidade, ele fica bem leve e sem frizz, que é um problema que enfrento porque moro muito perto da praia. Os booster são ótimos, uso o fortificante no shampoo toda lavagem e no leave-in os outros 3. Quando faço tratamento semanal, uso o booster fortificante e o hidratante na máscara. Sinto que as pontas do meu cabelo tão bem definidas, fica com um movimento que eu não conseguia ter antes e super alinhado."
+      },
+      {
+        "id": "u_3eeSToLLv",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Nataly Margonato",
+        "date": "2023-04-09",
+        "src_handle": "kit-cabelos-mistos",
+        "score": 86,
+        "review": "O shampoo é bom, mas não vi diferença no meu cabelo. Talvez eu precise usar por mais tempo, mas o leave in é espetacular, esse sim eu recomendo fortemente. Não deixa o cabelo pesado, amacia, dá brilho, protege e ajuda na definição quando usado com o booster."
+      }
+    ]
+  },
+  "Kit Verao": {
+    "tier": "kit",
+    "pooled": 1,
+    "source_handles": [
+      "kit-verao"
+    ],
+    "top10": [
+      {
+        "id": "3_gap_UGzzM",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Manuela Costa",
+        "date": "2024-03-20",
+        "src_handle": "kit-verao",
+        "score": 98,
+        "review": "Adorei o resultado do leave in com o booster de definição, me deu segurança para usar meu cabelo natural e aposentar um pouco o secador. \n\nAcho que já fazia uns 25 anos que não usava meu cabelo de forma natural."
+      }
+    ]
+  },
+  "Kit Lava E Vai": {
+    "tier": "kit",
+    "pooled": 1,
+    "source_handles": [
+      "kit-lava-e-vai"
+    ],
+    "top10": [
+      {
+        "id": "h3ZfxThPaLb",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Juliana Bastos",
+        "date": "2024-03-04",
+        "src_handle": "kit-lava-e-vai",
+        "score": 86,
+        "review": "Tenho quase toda a linha, falta um booster. Amo o cheiro! O condicionador é fantástico, mas os preferidos são creme de pentear com booster antioxidante!!!! Fica uma combinação perfeito e cabelo cheiroso e brilhante!!!!! Sou fã da Ge Beauty!"
+      }
+    ]
+  },
+  "Kit Seco Ao Vento": {
+    "tier": "kit",
+    "pooled": 1,
+    "source_handles": [
+      "kit-seco-ao-vento"
+    ],
+    "top10": [
+      {
+        "id": "EmU0FmpdY43",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Fernanda Ramos",
+        "date": "2024-01-09",
+        "src_handle": "kit-seco-ao-vento",
+        "score": 92,
+        "review": "Tenho o cabelo cacheado, fino e volumoso. É mto difícil conseguir um leave in que não deixe um aspecto oleoso. Mas surpreendentemente os produtos deixaram o meu cabelo super hidratado e brilhoso, sem pesar os fios."
+      }
+    ]
+  },
+  "Kit Cabelo Renovado": {
+    "tier": "kit",
+    "pooled": 1,
+    "source_handles": [
+      "kit-cabelo-renovado"
+    ],
+    "top10": [
+      {
+        "id": "RVyfinaafCo",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Poleanny Ribeiro",
+        "date": "2024-01-02",
+        "src_handle": "kit-cabelo-renovado",
+        "score": 54,
+        "review": "Excelente produto."
+      }
+    ]
+  },
+  "Kit Limpeza Hidratante": {
+    "tier": "kit",
+    "pooled": 1,
+    "source_handles": [
+      "kit-limpeza-hidratante"
+    ],
+    "top10": [
+      {
+        "id": "Qp3kPSvSY0",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Kelly Sustek Dangelo",
+        "date": "2023-10-05",
+        "src_handle": "kit-limpeza-hidratante",
+        "score": 50,
+        "review": "Bom"
+      }
+    ]
+  },
+  "Kit Reposicao Mascara Condicionadora": {
+    "tier": "kit",
+    "pooled": 1,
+    "source_handles": [
+      "kit-reposicao-mascara-condicionadora"
+    ],
+    "top10": [
+      {
+        "id": "RNf-hgpkk7Q",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Renata Sales Araujo",
+        "date": "2023-09-19",
+        "src_handle": "kit-reposicao-mascara-condicionadora",
+        "score": 82,
+        "review": "Não largo essa máscara condicionadora. Pontos de destaque: efeito no cabelo e cheiro."
+      }
+    ]
+  },
+  "Kit Forca E Hidratacao B": {
+    "tier": "kit",
+    "pooled": 1,
+    "source_handles": [
+      "kit-forca-e-hidratacao-b"
+    ],
+    "top10": [
+      {
+        "id": "c8qyb5RAzS6",
+        "rating": "5",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "#gebeautie anônima",
+        "date": "2025-07-01",
+        "src_handle": "kit-forca-e-hidratacao-b",
+        "score": 58,
+        "review": "'-"
+      }
+    ]
+  },
+  "Kit Finalizacao Com Brilho": {
+    "tier": "kit",
+    "pooled": 1,
+    "source_handles": [
+      "kit-finalizacao-com-brilho"
+    ],
+    "top10": [
+      {
+        "id": "hJIPj1sbbpn",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Juliana Arroyo",
+        "date": "2023-11-26",
+        "src_handle": "kit-finalizacao-com-brilho",
+        "score": 80,
+        "review": "Shampoo e booster fortificante ótimos, senti muita diferença em relação a queda e já vejo cabelos novos, leave in bom, modela bem, especialmente e segura, mas a textura do cabelo fica meio diferente, não consegui definir como. Já o booster hidratante pesa no cabelo dando aspecto oleoso, já revi as explicações de como se pode usar, mas realmente não rolou. e máscara condicionadores ok, ajuda no desembaraço."
+      }
+    ]
+  },
+  "Kit Cabelos Crespos": {
+    "tier": "kit",
+    "pooled": 1,
+    "source_handles": [
+      "kit-cabelos-crespos"
+    ],
+    "top10": [
+      {
+        "id": "IsQGl6-Sh1",
+        "rating": "4",
+        "verified": false,
+        "has_photo": false,
+        "img": "",
+        "name": "Mariana Lacerda",
+        "date": "2023-06-25",
+        "src_handle": "kit-cabelos-crespos",
+        "score": 30,
+        "review": "'-"
+      }
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "_meta": {
+    "purpose": "Proposed ingredient x product matrix for custom.ingredientes_com_foto (redesign PDP carousel). One reusable card per natural ingredient; each card = nome_do_ingrediente + descri_o + imagem(later). Natural focus, chemicals/preservatives excluded. Descriptions in GE voice, ingredient-as-proof, no em-dashes. Awaiting Lucas approval before metaobject creation.",
+    "card_metaobject_type": "ingredientes_com_descri_o",
+    "image_status": "deferred (text-first per Lucas)"
+  },
+  "ingredients": {
+    "manteiga-de-murumuru": {"nome": "Manteiga de murumuru", "descri": "Semente amazônica de ação super hidratante e nutritiva. Repõe a maciez natural dos fios e dá cremosidade à fórmula."},
+    "manteiga-de-cupuacu": {"nome": "Manteiga de cupuaçu", "descri": "Manteiga amazônica rica em ácidos graxos que nutre em profundidade, sela a hidratação e traz bem-estar ao toque."},
+    "oleo-de-abacate": {"nome": "Óleo de abacate", "descri": "Rico em vitaminas e gorduras boas, nutre a fibra e devolve brilho e maciez sem pesar."},
+    "oleo-de-girassol": {"nome": "Óleo de girassol", "descri": "Fonte natural de ômegas e vitamina E. Nutre com leveza, ajuda a controlar o frizz e deixa o toque aveludado."},
+    "oleo-de-macadamia": {"nome": "Óleo de macadâmia", "descri": "Óleo emoliente que devolve maciez e elasticidade e facilita o desembaraço."},
+    "oleo-de-gergelim": {"nome": "Óleo de gergelim", "descri": "Rico em ômegas, repõe a emoliência perdida na lavagem e realça o brilho dos fios."},
+    "oleo-de-oliva": {"nome": "Óleo de oliva", "descri": "Nutre e sela a hidratação, deixando os fios macios e com brilho saudável."},
+    "oleo-de-coco": {"nome": "Óleo de coco", "descri": "Rico em ácidos graxos, nutre profundamente, melhora a maleabilidade e ajuda a controlar o frizz."},
+    "crambe": {"nome": "Crambe", "descri": "Óleo vegetal que forma um filme leve na fibra, trazendo brilho, maciez e penteabilidade sem acumular resíduo."},
+    "chia": {"nome": "Chia", "descri": "Semente rica em ômegas e minerais que forma um filme flexível, protege da umidade e ajuda a definir os fios."},
+    "linhaca": {"nome": "Linhaça", "descri": "Rica em ômegas, forma um filme que sela a cutícula, controla o frizz e dá movimento definido."},
+    "pantenol": {"nome": "Pantenol (pró-vitamina B5)", "descri": "Pró-vitamina B5 de alto poder hidratante que reforça a estrutura do fio, dá brilho e maciez e reduz a quebra."},
+    "biotina": {"nome": "Biotina", "descri": "Vitamina que fortalece a fibra e favorece o crescimento saudável, com ação preventiva contra a queda."},
+    "arginina": {"nome": "Arginina", "descri": "Aminoácido que sela as cutículas e reconstrói a fibra por dentro, devolvendo força, brilho e maciez."},
+    "algas-vermelhas": {"nome": "Algas vermelhas", "descri": "Preservam e fortalecem a integridade da fibra, deixando os fios mais resistentes."},
+    "alcacuz": {"nome": "Alcaçuz", "descri": "Adstringente natural que equilibra a oleosidade e acalma o couro cabeludo."},
+    "cha-verde": {"nome": "Chá verde", "descri": "Antioxidante que protege da poluição e da luz solar, preservando a cor e a saúde do fio."},
+    "trehalose": {"nome": "Trehalose", "descri": "Açúcar natural com ação de proteção térmica que preserva a umidade interna do fio contra secador e chapinha."},
+    "salvia": {"nome": "Sálvia", "descri": "Extrato que ajuda a reter a umidade e a formar a barreira de proteção contra o calor."},
+    "mentol": {"nome": "Mentol", "descri": "Traz refrescância imediata e sensação de leveza ao couro cabeludo."},
+    "extrato-de-angico": {"nome": "Extrato de angico (AcquaBio)", "descri": "Ativo natural que hidrata a pele e prolonga a sensação de maciez por mais tempo."},
+    "oleo-de-mamona": {"nome": "Óleo de mamona", "descri": "Óleo vegetal rico em ácidos graxos, de alto poder hidratante. Sela a umidade, realça o brilho e deixa fios e pele macios."}
+  },
+  "products": {
+    "GEB 001": ["manteiga-de-murumuru", "oleo-de-abacate", "oleo-de-girassol", "pantenol"],
+    "GEB 002": ["manteiga-de-murumuru", "manteiga-de-cupuacu", "oleo-de-macadamia", "chia", "linhaca"],
+    "GEB 003": ["salvia", "trehalose", "manteiga-de-murumuru", "manteiga-de-cupuacu", "oleo-de-girassol"],
+    "GEB 008": ["biotina", "algas-vermelhas", "pantenol", "mentol"],
+    "GEB 019": ["biotina", "algas-vermelhas", "pantenol", "alcacuz"],
+    "GEB 020": ["oleo-de-girassol", "oleo-de-macadamia", "oleo-de-oliva", "oleo-de-gergelim"],
+    "GEB 021": ["chia", "linhaca", "trehalose"],
+    "GEB 022": ["oleo-de-coco", "chia", "trehalose"],
+    "GEB 023": ["cha-verde", "pantenol", "chia", "trehalose"],
+    "GEB 101": ["chia", "linhaca", "trehalose", "oleo-de-macadamia"],
+    "GEB 102": ["crambe", "oleo-de-girassol", "oleo-de-abacate", "trehalose"],
+    "GEB 120": ["pantenol", "arginina", "oleo-de-girassol", "trehalose"],
+    "GEB 121": ["arginina", "pantenol", "oleo-de-abacate", "chia", "linhaca"],
+    "GEB 024": ["oleo-de-mamona", "extrato-de-angico"],
+    "GEB 029": ["oleo-de-mamona", "extrato-de-angico"],
+    "GEB 031": ["oleo-de-mamona", "extrato-de-angico"],
+    "GEB 032": ["oleo-de-mamona", "extrato-de-angico"],
+    "GEB 033": ["oleo-de-mamona", "extrato-de-angico"]
+  }
+}

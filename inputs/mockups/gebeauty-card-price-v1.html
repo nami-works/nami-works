@@ -1,0 +1,142 @@
+<title>GE Beauty — card price (de/por) v1</title>
+<style>
+  :root{
+    --ge-red:#DF372F;
+    --card-bg:#efeae5;
+    --ink:#1f1c1a;
+    --muted:#8a827b;
+    --radius:16px;
+    --font:'Italian Plate No1','Helvetica Neue',Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#fbf9f7;color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;padding:28px 20px 80px}
+  h1{font-size:22px;font-weight:800;letter-spacing:.2px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 26px;max-width:760px;line-height:1.5}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:34px 0 14px;font-weight:700}
+  .row{display:flex;gap:18px;flex-wrap:wrap}
+  /* ---- storefront card replica ---- */
+  .card{width:240px;background:var(--card-bg);border-radius:var(--radius);padding:14px 14px 16px;position:relative;display:flex;flex-direction:column}
+  .badge{position:absolute;top:14px;left:14px;background:var(--ge-red);color:#fff;font-size:12px;font-weight:700;padding:5px 10px;border-radius:8px;letter-spacing:.3px;lowercase}
+  .img{height:210px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;background:radial-gradient(120% 100% at 50% 0,#fff 0,#f4efe9 100%)}
+  .img .ge{font-size:30px;font-weight:800;color:var(--ge-red);letter-spacing:-1px}
+  .title{font-size:15px;font-weight:800;line-height:1.25;text-transform:lowercase;margin:0 0 6px}
+  .desc{font-size:12.5px;color:#57514b;line-height:1.35;text-transform:lowercase;margin:0 0 8px;min-height:34px}
+  .stars{color:var(--ge-red);font-size:12px;letter-spacing:1px;margin-bottom:8px}
+  .stars .n{color:var(--muted);margin-left:4px}
+  .spacer{flex:1}
+  /* ---- current (button holds price) ---- */
+  .btn{display:block;width:100%;background:var(--ge-red);color:#fff;border:none;border-radius:9px;padding:12px 10px;font-family:var(--font);font-size:14px;font-weight:700;text-transform:lowercase;letter-spacing:.3px;cursor:pointer}
+  .btn.sold{background:#c9c2bb;color:#fff;cursor:default}
+  /* ---- proposed de/por block ---- */
+  .price{display:flex;align-items:baseline;gap:8px;margin:2px 0 10px;text-transform:lowercase}
+  .price .de{font-size:14px;color:var(--muted);text-decoration:line-through}
+  .price .now{font-size:18px;font-weight:800;color:var(--ink)}
+  .price.single .now{color:var(--ink)}
+  /* variant B: red now-price */
+  .price.rednow .now{color:var(--ge-red)}
+  .panel{max-width:860px;background:#fff;border:1px solid #ece7e1;border-radius:12px;padding:18px 20px;margin-top:30px}
+  .panel h3{margin:0 0 10px;font-size:15px}
+  .panel ul{margin:0;padding-left:18px}
+  .panel li{font-size:13.5px;line-height:1.6;color:#3d3833;margin-bottom:6px}
+  code{background:#f3efe9;padding:1px 5px;border-radius:4px;font-size:12px}
+  .tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:2px 8px;border-radius:5px;margin-bottom:10px}
+  .tag.before{background:#f3e0df;color:#a33}
+  .tag.after{background:#dcefe1;color:#256b3d}
+  .cols{display:flex;gap:40px;flex-wrap:wrap}
+</style>
+
+<h1>GE Beauty — product card price (de/por)</h1>
+<p class="sub">Restoring the discount anchor on product cards. Approved direction: <strong>de/por line above the button, button simplified to “comprar”.</strong> Applies to all product cards site-wide (carousel + collections + search). This mockup replicates the storefront card so we can settle the exact price look before touching <code>card-product.liquid</code>.</p>
+
+<div class="cols">
+  <div>
+    <h2>Antes — atual</h2>
+    <span class="tag before">price fused into button · no anchor</span>
+    <div class="row">
+      <div class="card">
+        <span class="badge">R$10 off</span>
+        <div class="img"><span class="ge">ge</span></div>
+        <div class="title">dupla leave-in + booster fortificante</div>
+        <div class="desc">força renovada, vitalidade e brilho da raiz às pontas</div>
+        <div class="stars">★★★★½ <span class="n">(8)</span></div>
+        <div class="spacer"></div>
+        <button class="btn">comprar · R$164</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h2>Depois — proposto (recomendado)</h2>
+    <span class="tag after">de/por above · button = “comprar”</span>
+    <div class="row">
+      <!-- discounted -->
+      <div class="card">
+        <span class="badge">R$10 off</span>
+        <div class="img"><span class="ge">ge</span></div>
+        <div class="title">dupla leave-in + booster fortificante</div>
+        <div class="desc">força renovada, vitalidade e brilho da raiz às pontas</div>
+        <div class="stars">★★★★½ <span class="n">(8)</span></div>
+        <div class="spacer"></div>
+        <div class="price"><span class="de">de <s>R$174</s></span><span class="por">por</span><span class="now">R$164</span></div>
+        <button class="btn">comprar</button>
+      </div>
+      <!-- full price -->
+      <div class="card">
+        <div class="img"><span class="ge">ge</span></div>
+        <div class="title">dupla travel size | máscara + leave-in</div>
+        <div class="desc">hidratação intensa e proteção térmica em qualquer lugar</div>
+        <div class="stars">★★★★★ <span class="n">(12)</span></div>
+        <div class="spacer"></div>
+        <div class="price single"><span class="now">R$87</span></div>
+        <button class="btn">comprar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>Variações do preço “por” + estados</h2>
+<div class="row">
+  <!-- variant A: ink now -->
+  <div class="card">
+    <span class="badge">R$104 off</span>
+    <div class="img"><span class="ge">ge</span></div>
+    <div class="title">kit rotina completa</div>
+    <div class="desc">sua jornada para um cabelo saudável</div>
+    <div class="stars">★★★★★ <span class="n">(33)</span></div>
+    <div class="spacer"></div>
+    <div class="price"><span class="de">de <s>R$666</s></span><span class="por">por</span><span class="now">R$562</span></div>
+    <button class="btn">comprar</button>
+  </div>
+  <!-- variant B: red now -->
+  <div class="card">
+    <span class="badge">R$104 off</span>
+    <div class="img"><span class="ge">ge</span></div>
+    <div class="title">kit rotina completa</div>
+    <div class="desc"><em>variação B: preço “por” em vermelho GE</em></div>
+    <div class="stars">★★★★★ <span class="n">(33)</span></div>
+    <div class="spacer"></div>
+    <div class="price rednow"><span class="de">de <s>R$666</s></span><span class="por">por</span><span class="now">R$562</span></div>
+    <button class="btn">comprar</button>
+  </div>
+  <!-- sold out -->
+  <div class="card">
+    <div class="img"><span class="ge">ge</span></div>
+    <div class="title">booster antifrizz</div>
+    <div class="desc">controle do frizz e alinhamento duradouro</div>
+    <div class="stars">★★★★★ <span class="n">(21)</span></div>
+    <div class="spacer"></div>
+    <div class="price single"><span class="now">R$79</span></div>
+    <button class="btn sold">esgotado</button>
+  </div>
+</div>
+
+<div class="panel">
+  <h3>Como será implementado (resumo técnico)</h3>
+  <ul>
+    <li><strong>Botão:</strong> remover o trecho <code>&lt;span class="gb-card-price"&gt; · {{ price }}&lt;/span&gt;</code> do CTA em <code>card-product.liquid</code> (e <code>card-product-kit.liquid</code>) → botão volta a ser só “comprar”.</li>
+    <li><strong>Bloco de/por:</strong> inserir um bloco próprio e enxuto acima do botão (classe <code>gb-price</code>), mostrando <code>de &lt;s&gt;compare_at&lt;/s&gt; por &lt;strong&gt;price&lt;/strong&gt;</code> quando <code>compare_at_price &gt; price</code>, e só o preço quando não há desconto.</li>
+    <li><strong>Por que bloco próprio e não “desligar o esconde”:</strong> o <code>component-price.css</code> esconde <code>.price__sale</code> (e <code>.price__regular</code> em promoção) — CSS compartilhado com a PDP. Reaproveitar o bloco padrão exigiria mexer nesse CSS e arriscaria o preço da página de produto. O bloco próprio fica isolado no card.</li>
+    <li><strong>Limpeza:</strong> remover o <code>{% render 'price' %}</code> escondido do card e a regra morta <code>.card-wrapper:has(.gb-card-price) .price{display:none}</code> do <code>base.css</code>.</li>
+    <li><strong>Sem regressão:</strong> a etiqueta “R$X off” (canto sup. esq.) continua como está — o de/por dá a <em>âncora</em> (“de”), a etiqueta dá o <em>quanto</em>. Complementares, não redundantes.</li>
+  </ul>
+</div>

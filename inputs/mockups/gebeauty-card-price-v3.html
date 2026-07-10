@@ -1,0 +1,135 @@
+<title>GE Beauty — card price v3 (strike on stars row)</title>
+<style>
+  :root{
+    --ge-red:#DF372F;
+    --card-bg:#efeae5;
+    --ink:#1f1c1a;
+    --muted:#8a827b;
+    --radius:16px;
+    --font:'Italian Plate No1','Helvetica Neue',Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#fbf9f7;color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;padding:28px 20px 80px}
+  h1{font-size:22px;font-weight:800;letter-spacing:.2px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 26px;max-width:820px;line-height:1.5}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:34px 0 14px;font-weight:700}
+  .row{display:flex;gap:18px;flex-wrap:wrap}
+  .card{width:240px;background:var(--card-bg);border-radius:var(--radius);padding:14px 14px 16px;position:relative;display:flex;flex-direction:column}
+  .badge{position:absolute;top:14px;left:14px;background:var(--ge-red);color:#fff;font-size:12px;font-weight:700;padding:5px 10px;border-radius:8px;letter-spacing:.3px}
+  .img{height:210px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;background:radial-gradient(120% 100% at 50% 0,#fff 0,#f4efe9 100%)}
+  .img .ge{font-size:30px;font-weight:800;color:var(--ge-red);letter-spacing:-1px}
+  .title{font-size:15px;font-weight:800;line-height:1.25;text-transform:lowercase;margin:0 0 6px}
+  .desc{font-size:12.5px;color:#57514b;line-height:1.35;text-transform:lowercase;margin:0 0 8px;min-height:34px}
+  .stars{color:var(--ge-red);font-size:12px;letter-spacing:1px}
+  .stars .n{color:var(--muted);margin-left:4px}
+  .spacer{flex:1}
+  /* v3: stars + strike share a row */
+  .rating-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px;min-height:16px}
+  .rating-row .de{font-size:14px;color:var(--muted);text-decoration:line-through;text-transform:lowercase;white-space:nowrap}
+  /* v2 reference: strike above button */
+  .card-de{font-size:14px;color:var(--muted);text-decoration:line-through;text-transform:lowercase;margin:2px 0 8px;min-height:19px}
+  .stars-only{margin-bottom:10px}
+  .btn{display:block;width:100%;background:var(--ge-red);color:#fff;border:none;border-radius:9px;padding:12px 10px;font-family:var(--font);font-size:14px;font-weight:700;text-transform:lowercase;letter-spacing:.3px;cursor:pointer}
+  .btn .p{font-weight:800}
+  .btn.sold{background:#c9c2bb;color:#fff;cursor:default}
+  .panel{max-width:880px;background:#fff;border:1px solid #ece7e1;border-radius:12px;padding:18px 20px;margin-top:30px}
+  .panel h3{margin:0 0 10px;font-size:15px}
+  .panel ul{margin:0;padding-left:18px}
+  .panel li{font-size:13.5px;line-height:1.6;color:#3d3833;margin-bottom:6px}
+  code{background:#f3efe9;padding:1px 5px;border-radius:4px;font-size:12px}
+  .tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:2px 8px;border-radius:5px;margin-bottom:10px}
+  .tag.b{background:#e7e0f0;color:#5b3f8a}
+  .tag.a{background:#dcefe1;color:#256b3d}
+  .cols{display:flex;gap:40px;flex-wrap:wrap}
+</style>
+
+<h1>GE Beauty — strike on the stars row (v3)</h1>
+<p class="sub">Compare the anchor placement. <strong>A</strong> = struck “de” above the button (v2). <strong>B</strong> = struck “de” right-aligned on the same row as the star rating. B saves a vertical line and pairs the anchor with the social proof; the selling price stays in the CTA in both.</p>
+
+<div class="cols">
+  <div>
+    <h2>A — strike above button (v2)</h2>
+    <span class="tag a">anchor above CTA</span>
+    <div class="row">
+      <div class="card">
+        <span class="badge">R$10 off</span>
+        <div class="img"><span class="ge">ge</span></div>
+        <div class="title">dupla leave-in + booster fortificante</div>
+        <div class="desc">força renovada, vitalidade e brilho da raiz às pontas</div>
+        <div class="stars stars-only">★★★★½ <span class="n">(8)</span></div>
+        <div class="spacer"></div>
+        <div class="card-de">R$174</div>
+        <button class="btn">comprar <span class="p">· R$164</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h2>B — strike on stars row (proposed)</h2>
+    <span class="tag b">anchor beside rating</span>
+    <div class="row">
+      <div class="card">
+        <span class="badge">R$10 off</span>
+        <div class="img"><span class="ge">ge</span></div>
+        <div class="title">dupla leave-in + booster fortificante</div>
+        <div class="desc">força renovada, vitalidade e brilho da raiz às pontas</div>
+        <div class="rating-row"><span class="stars">★★★★½ <span class="n">(8)</span></span><span class="de">R$174</span></div>
+        <div class="spacer"></div>
+        <button class="btn">comprar <span class="p">· R$164</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>B — estados (edge cases)</h2>
+<div class="row">
+  <!-- discounted + rating -->
+  <div class="card">
+    <span class="badge">R$104 off</span>
+    <div class="img"><span class="ge">ge</span></div>
+    <div class="title">kit rotina completa</div>
+    <div class="desc">sua jornada para um cabelo saudável</div>
+    <div class="rating-row"><span class="stars">★★★★★ <span class="n">(33)</span></span><span class="de">R$666</span></div>
+    <div class="spacer"></div>
+    <button class="btn">comprar <span class="p">· R$562</span></button>
+  </div>
+  <!-- discounted, NO rating: strike sits alone, right-aligned -->
+  <div class="card">
+    <span class="badge">R$39 off</span>
+    <div class="img"><span class="ge">ge</span></div>
+    <div class="title">kit antifrizz</div>
+    <div class="desc">controle total do frizz com proteção térmica</div>
+    <div class="rating-row"><span class="stars"></span><span class="de">R$208</span></div>
+    <div class="spacer"></div>
+    <button class="btn">comprar <span class="p">· R$169</span></button>
+  </div>
+  <!-- full price + rating: no strike -->
+  <div class="card">
+    <div class="img"><span class="ge">ge</span></div>
+    <div class="title">dupla travel size | máscara + leave-in</div>
+    <div class="desc">hidratação intensa e proteção térmica em qualquer lugar</div>
+    <div class="rating-row"><span class="stars">★★★★★ <span class="n">(12)</span></span></div>
+    <div class="spacer"></div>
+    <button class="btn">comprar <span class="p">· R$87</span></button>
+  </div>
+  <!-- full price, NO rating: empty row keeps height aligned -->
+  <div class="card">
+    <div class="img"><span class="ge">ge</span></div>
+    <div class="title">booster antioxidante</div>
+    <div class="desc">proteção diária contra danos e radicais livres</div>
+    <div class="rating-row"><span class="stars"></span></div>
+    <div class="spacer"></div>
+    <button class="btn">comprar <span class="p">· R$63,75</span></button>
+  </div>
+</div>
+
+<div class="panel">
+  <h3>Notas de implementação (B)</h3>
+  <ul>
+    <li><strong>Linha compartilhada:</strong> a <code>.loox-rating</code> (hoje sozinha na linha) passa a viver dentro de um wrapper flex <code>justify-content:space-between</code>, com o <code>&lt;s&gt;compare_at_price&lt;/s&gt;</code> à direita.</li>
+    <li><strong>Sem avaliação:</strong> quando o produto não tem estrelas, o Loox não renderiza nada — o strike encosta à direita normalmente (a coluna esquerda fica vazia).</li>
+    <li><strong>Sem desconto:</strong> não renderiza o strike; a linha fica só com as estrelas (ou vazia, mantendo a altura para alinhar os cards no grid).</li>
+    <li><strong>Botão:</strong> intacto — <code>comprar · {{ price }}</code>. Igual à v2.</li>
+    <li><strong>Risco a validar no tema real:</strong> o Loox injeta a nota via JS depois do carregamento; o wrapper precisa reservar a linha (min-height) para não “pular” quando a nota aparece. Verifico no HTML renderizado antes de fechar.</li>
+  </ul>
+</div>

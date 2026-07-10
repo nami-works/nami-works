@@ -1,0 +1,1194 @@
+{
+  "schema_version": 1,
+  "concept_id": "primer-liso-intacto-v1",
+  "concept_label": "primer liso intacto - day-arc v1",
+  "created_at": "2026-06-09T14:58:35Z",
+  "updated_at": "2026-06-11T20:43:00Z",
+  "state": "MOTION",
+  "events": [
+    {
+      "ts": "2026-06-09T14:58:35Z",
+      "actor": "brain",
+      "event": "state_init",
+      "from": null,
+      "to": "DRAFT"
+    },
+    {
+      "ts": "2026-06-09T14:58:35Z",
+      "actor": "brain",
+      "event": "state_transition",
+      "from": "DRAFT",
+      "to": "STORYBOARD",
+      "reason": "brief + ingest + narrative locked"
+    },
+    {
+      "ts": "2026-06-09T14:58:35Z",
+      "actor": "brain",
+      "event": "brief_decoded_and_ingested",
+      "product_handle": "primer-liso-intacto"
+    },
+    {
+      "ts": "2026-06-09T15:02:13Z",
+      "actor": "brain",
+      "event": "doctrine_fields_populated",
+      "library_id": 1877692
+    },
+    {
+      "ts": "2026-06-09T15:04:58Z",
+      "actor": "download",
+      "event": "stills_downloaded",
+      "version": "v1",
+      "files": [
+        "01-bathroom_A",
+        "01-bathroom_B",
+        "02-cafe_A",
+        "02-cafe_B",
+        "03-apartment_A",
+        "03-apartment_B"
+      ]
+    },
+    {
+      "ts": "2026-06-09T15:20:40Z",
+      "actor": "download",
+      "event": "stills_downloaded",
+      "version": "v1-swap",
+      "files": [
+        "01-bathroom-swap_A",
+        "01-bathroom-swap_B",
+        "02-cafe-swap_A",
+        "02-cafe-swap_B",
+        "03-apartment-start-swap_A",
+        "03-apartment-start-swap_B",
+        "03-apartment-end-swap_A",
+        "03-apartment-end-swap_B"
+      ]
+    },
+    {
+      "ts": "2026-06-09T15:23:59Z",
+      "actor": "brain",
+      "event": "material_phrase_corrected",
+      "note": "bottle is cream-bodied, not teal — ip.md teal is brand color not bottle color"
+    },
+    {
+      "ts": "2026-06-09T15:26:11Z",
+      "actor": "download",
+      "event": "stills_downloaded",
+      "version": "v1-swap-r2",
+      "files": [
+        "01-bathroom_A",
+        "01-bathroom_B",
+        "02-cafe_A",
+        "02-cafe_B",
+        "03-apt-start_A",
+        "03-apt-start_B",
+        "03-apt-end_A",
+        "03-apt-end_B"
+      ]
+    },
+    {
+      "ts": "2026-06-09T15:30:03Z",
+      "actor": "compose",
+      "event": "stills_recorded",
+      "picks": {
+        "01-morning-styling": "IaGllYMtvE",
+        "02-afternoon-rain": "KjoRRQSkqp"
+      }
+    },
+    {
+      "ts": "2026-06-09T15:30:22Z",
+      "actor": "compose",
+      "event": "shot3_single_end_keyframe",
+      "creation_id": "nTwEuXVYQD"
+    },
+    {
+      "ts": "2026-06-09T15:36:14Z",
+      "actor": "download",
+      "event": "clips_downloaded",
+      "shots": [
+        "01-morning-styling",
+        "02-afternoon-rain",
+        "03-evening-arrival"
+      ],
+      "archived_to": null
+    },
+    {
+      "ts": "2026-06-09T15:43:57Z",
+      "actor": "download",
+      "event": "stills_downloaded",
+      "version": "v1-shot3-empty",
+      "files": [
+        "03-apartment-empty-from-end_A",
+        "03-apartment-empty-from-end_B"
+      ]
+    },
+    {
+      "ts": "2026-06-09T15:48:40Z",
+      "actor": "download",
+      "event": "clips_downloaded",
+      "shots": [
+        "03-evening-arrival"
+      ],
+      "archived_to": "v1"
+    },
+    {
+      "ts": "2026-06-09T15:54:54Z",
+      "actor": "download",
+      "event": "clips_downloaded",
+      "shots": [
+        "03-evening-arrival"
+      ],
+      "archived_to": "v2"
+    },
+    {
+      "ts": "2026-06-09T16:08:23Z",
+      "actor": "download",
+      "event": "clips_downloaded",
+      "shots": [
+        "03-evening-arrival"
+      ],
+      "archived_to": "v3"
+    },
+    {
+      "ts": "2026-06-09T16:15:04Z",
+      "actor": "download",
+      "event": "clips_downloaded",
+      "shots": [
+        "03-evening-arrival"
+      ],
+      "archived_to": "v4"
+    },
+    {
+      "ts": "2026-06-09T16:15:41Z",
+      "actor": "brain",
+      "event": "state_transition",
+      "from": "STORYBOARD",
+      "to": "ALL_PASS",
+      "reason": "all 3 clips reviewed and approved"
+    },
+    {
+      "ts": "2026-06-09T16:15:41Z",
+      "actor": "brain",
+      "event": "state_finalized_for_delivery"
+    },
+    {
+      "ts": "2026-06-09T16:16:25Z",
+      "actor": "assembler",
+      "event": "state_transition",
+      "from": "ALL_PASS",
+      "to": "ASSEMBLED",
+      "variant": "base"
+    },
+    {
+      "ts": "2026-06-09T16:17:06Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-a"
+    },
+    {
+      "ts": "2026-06-09T16:17:36Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-b"
+    },
+    {
+      "ts": "2026-06-09T16:17:36Z",
+      "actor": "variants",
+      "event": "variants_run",
+      "results": {
+        "variant-a": "ok",
+        "variant-b": "ok"
+      }
+    },
+    {
+      "ts": "2026-06-09T16:17:37Z",
+      "actor": "deliver",
+      "event": "state_transition",
+      "from": "ASSEMBLED",
+      "to": "DELIVERED",
+      "packages": [
+        "base",
+        "variant-a",
+        "variant-b"
+      ]
+    },
+    {
+      "ts": "2026-06-09T18:56:30Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "base"
+    },
+    {
+      "ts": "2026-06-09T18:57:18Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-a"
+    },
+    {
+      "ts": "2026-06-09T18:58:06Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-b"
+    },
+    {
+      "ts": "2026-06-09T18:58:06Z",
+      "actor": "variants",
+      "event": "variants_run",
+      "results": {
+        "variant-a": "ok",
+        "variant-b": "ok"
+      }
+    },
+    {
+      "ts": "2026-06-09T18:58:06Z",
+      "actor": "deliver",
+      "event": "redelivered",
+      "packages": [
+        "base",
+        "variant-a",
+        "variant-b"
+      ]
+    },
+    {
+      "ts": "2026-06-09T19:57:52Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "base"
+    },
+    {
+      "ts": "2026-06-09T19:59:14Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-a"
+    },
+    {
+      "ts": "2026-06-09T20:00:19Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-b"
+    },
+    {
+      "ts": "2026-06-09T20:00:19Z",
+      "actor": "variants",
+      "event": "variants_run",
+      "results": {
+        "variant-a": "ok",
+        "variant-b": "ok"
+      }
+    },
+    {
+      "ts": "2026-06-09T20:00:19Z",
+      "actor": "deliver",
+      "event": "redelivered",
+      "packages": [
+        "base",
+        "variant-a",
+        "variant-b"
+      ]
+    },
+    {
+      "ts": "2026-06-09T20:43:08Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "base"
+    },
+    {
+      "ts": "2026-06-09T20:47:18Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-a"
+    },
+    {
+      "ts": "2026-06-09T20:53:41Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-b"
+    },
+    {
+      "ts": "2026-06-09T20:53:42Z",
+      "actor": "variants",
+      "event": "variants_run",
+      "results": {
+        "variant-a": "ok",
+        "variant-b": "ok"
+      }
+    },
+    {
+      "ts": "2026-06-09T20:53:45Z",
+      "actor": "deliver",
+      "event": "redelivered",
+      "packages": [
+        "base",
+        "variant-a",
+        "variant-b"
+      ]
+    },
+    {
+      "ts": "2026-06-09T20:55:42Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-a"
+    },
+    {
+      "ts": "2026-06-09T20:59:54Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-b"
+    },
+    {
+      "ts": "2026-06-09T20:59:54Z",
+      "actor": "variants",
+      "event": "variants_run",
+      "results": {
+        "variant-a": "ok",
+        "variant-b": "ok"
+      }
+    },
+    {
+      "ts": "2026-06-09T20:59:57Z",
+      "actor": "deliver",
+      "event": "redelivered",
+      "packages": [
+        "base",
+        "variant-a",
+        "variant-b"
+      ]
+    },
+    {
+      "ts": "2026-06-09T21:33:57Z",
+      "actor": "brain",
+      "event": "persona_dims_locked",
+      "note": "Marcela 16cm hand + 14cm wrist + 23cm forearm; product 17cm tall"
+    },
+    {
+      "ts": "2026-06-09T21:43:04Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "base"
+    },
+    {
+      "ts": "2026-06-09T21:43:53Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-a"
+    },
+    {
+      "ts": "2026-06-09T21:44:29Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-b"
+    },
+    {
+      "ts": "2026-06-09T21:44:29Z",
+      "actor": "variants",
+      "event": "variants_run",
+      "results": {
+        "variant-a": "ok",
+        "variant-b": "ok"
+      }
+    },
+    {
+      "ts": "2026-06-09T21:44:37Z",
+      "actor": "deliver",
+      "event": "redelivered",
+      "packages": [
+        "base",
+        "variant-a",
+        "variant-b"
+      ]
+    },
+    {
+      "ts": "2026-06-09T21:58:23Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "base"
+    },
+    {
+      "ts": "2026-06-09T21:59:21Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-a"
+    },
+    {
+      "ts": "2026-06-09T21:59:56Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-b"
+    },
+    {
+      "ts": "2026-06-09T21:59:56Z",
+      "actor": "variants",
+      "event": "variants_run",
+      "results": {
+        "variant-a": "ok",
+        "variant-b": "ok"
+      }
+    },
+    {
+      "ts": "2026-06-09T21:59:56Z",
+      "actor": "deliver",
+      "event": "redelivered",
+      "packages": [
+        "base",
+        "variant-a",
+        "variant-b"
+      ]
+    },
+    {
+      "ts": "2026-06-09T22:31:00Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "base"
+    },
+    {
+      "ts": "2026-06-09T22:31:57Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-a"
+    },
+    {
+      "ts": "2026-06-09T22:32:57Z",
+      "actor": "assembler",
+      "event": "assembled",
+      "variant": "variant-b"
+    },
+    {
+      "ts": "2026-06-09T22:32:57Z",
+      "actor": "variants",
+      "event": "variants_run",
+      "results": {
+        "variant-a": "ok",
+        "variant-b": "ok"
+      }
+    },
+    {
+      "ts": "2026-06-09T22:32:57Z",
+      "actor": "deliver",
+      "event": "redelivered",
+      "packages": [
+        "base",
+        "variant-a",
+        "variant-b"
+      ]
+    },
+    {
+      "ts": "2026-06-10T23:15:00Z",
+      "actor": "brain",
+      "event": "shot1_motion_relocked_to_v27",
+      "note": "Reverted shot 1 motion to v27 single-8s Seedance clip (iAx6TnD3uK) after v28/v29/v30 trials. Lucas: 'It is the best so far.'"
+    },
+    {
+      "ts": "2026-06-10T23:25:00Z",
+      "actor": "brain",
+      "event": "shot1_motion_v27_locked_final",
+      "note": "Click-trim trial rejected. Original v27 (iAx6TnD3uK, 8s) is the LOCKED final motion for shot 1."
+    },
+    {
+      "ts": "2026-06-10T23:50:00Z",
+      "actor": "brain",
+      "event": "shot1b_2_3_keyframes_locked",
+      "picks": {
+        "01b-late-morning-desk": {"start": "J9H7jVqOq4", "end": null, "note": "single-keyframe witness (mouse-navigation pose), no END derived"},
+        "02-afternoon-rain": {"start": "J9H7j1ZOq4", "end": null, "note": "single-keyframe witness (rain animation only)"},
+        "03-evening-arrival": {"start": "NZ19wVi6D9", "end": "oh2oZrV829", "note": "dual-keyframe (empty counter → keys settled)"}
+      }
+    }
+  ],
+  "brief": {
+    "raw_text": "faça um criativo em 3 atos para o Primer Liso Intacto mostrando ele fazendo a finalização durar o dia todo, sendo a primeira usando o secador em casa, depois se expondo a um ambiente úmido com chuva, e depois chegando em casa",
+    "decoded_product_gid": "gid://shopify/Product/9668673798464",
+    "decoded_arc": [
+      "morning bathroom heat",
+      "afternoon humid commute rain",
+      "evening home arrival"
+    ],
+    "decoded_at": "2026-06-09T14:58:35Z"
+  },
+  "product": {
+    "gid": "gid://shopify/Product/9668673798464",
+    "handle": "primer-liso-intacto",
+    "title": "primer liso intacto",
+    "price_brl": "139.00",
+    "dosagem": "150mL",
+    "hero_image": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__85501.png",
+    "accent_color": "coral-red",
+    "accent_token": "teal",
+    "material_phrase": "opaque cream-bodied haircare bottle with smooth matte finish, coral-red ge wordmark and PRIMER LISO INTACTO label printed on the front, white pump dispenser cap on top, NOT translucent, NOT see-through, NOT frosted glass, NOT teal",
+    "magnific_library_id": 1877692,
+    "magnific_library_identifier": "BC5N0oQRmD",
+    "body_color": "cream",
+    "dimensions": {
+      "height_cm": 17,
+      "base_diameter_cm": 5,
+      "widest_cm": 5,
+      "dosagem": "150mL",
+      "weight_g_approx": 200
+    },
+    "canonical_render_creation_id": "1sIKpPSr4r"
+  },
+  "finalidade": "liso duradouro e blindado da umidade",
+  "benefits": [
+    "brilho, leveza e movimento",
+    "proteção térmica e antifrizz",
+    "alinhamento e hidratação duradoura"
+  ],
+  "narrative_arc": [
+    {
+      "shot_id": "01-morning-styling",
+      "position": 1,
+      "time_of_day": "morning",
+      "intent": "demonstrate heat protection + smooth alignment during blowdry",
+      "archetype": "in-frame partial signifier (premium dryer)",
+      "duration_seconds": 6
+    },
+    {
+      "shot_id": "02-afternoon-rain",
+      "position": 2,
+      "time_of_day": "afternoon",
+      "intent": "demonstrate humidity shield - hair stays smooth despite the storm",
+      "archetype": "grounded slice-of-life (cafe + rain on window)",
+      "duration_seconds": 6
+    },
+    {
+      "shot_id": "03-evening-arrival",
+      "position": 3,
+      "time_of_day": "evening",
+      "intent": "the smoothness lasted: brilho/leveza/movimento payoff at arrival",
+      "archetype": "arrival witness (apartment, dual-keyframe keys land)",
+      "duration_seconds": 6
+    }
+  ],
+  "shots": [
+    {
+      "shot_id": "01-morning-styling",
+      "status": "PASS",
+      "duration_s": 8,
+      "aspect_ratio": "9:16",
+      "scene_description": "stands perfectly upright, slightly off-center to the LEFT of frame center, on a cream marble bathroom vanity counter. Large round vanity mirror behind the bottle catches soft daylight from a window upper-left. White tiled wall. Folded warm-cream linen hand towel slightly rumpled at frame-left-edge.",
+      "proportion_directive": "The bottle is a 150ml haircare bottle, approximately 17 cm tall. The marble vanity counter is approximately 80 cm wide — about 5× the bottle's height in width. The round mirror is approximately 80 cm in diameter. The bottle occupies the LOWER 25 percent of vertical frame; the surface fills the bottom strip with empty space around the bottle. Compare scale: the bottle should look like a coffee mug on a vanity — present and deliberately placed, not the surface's purpose.",
+      "realistic_grounding": "(1) Soft natural CONTACT SHADOW beneath the bottle, matching the scene's dominant light angle. (2) Subtle SPECULAR REFLECTION of the bottle's base on the surface beneath it. (3) The bottle is LIT BY THE SCENE — warm key on one side, cool fill on the other, NOT lit by an external studio light. (4) Casual PLACEMENT — slightly off-center, slightly angled, as if just placed without thinking. (5) The bottle's smooth matte teal surface CATCHES REFLECTIONS from the scene around it.",
+      "partial_signifier": "From the RIGHT EDGE of the frame, a premium professional hair dryer — brushed-metal salon-grade body and modern minimalist industrial design — is PARTIALLY VISIBLE, with approximately 30 percent of the dryer's body and nozzle entering the frame from the right. The nozzle is pointed slightly toward the bottle/mirror area. The dryer is sleek, polished, premium salon-grade. The dryer catches the warm vanity light on its body. NO HEAT-MIRAGE EFFECT — the dryer's presence alone signifies the heat.",
+      "lighting_description": "Soft warm 3000K key light from upper-left through window. Cool 5500K daylight fill from camera-right. Warm key on left shoulder, cooler ambient on right. Clean elliptical shadow falling rightward at 4 o'clock.",
+      "negatives": "No heat-mirage, no wavy distortion, no refracted-air effect, no steam, no mist, no fog, no condensation on the mirror, no water droplets, no hands, no hair, no face, no people, no second bottle, no text other than on the bottle, no logo other than 'ge', no flames, no fire, no orange tint",
+      "motion_pattern": "B",
+      "motion_direction": "DUAL-KEYFRAME PATTERN B (frame-entry, mandatory). The bottle is COMPLETELY MOTIONLESS throughout. The camera is COMPLETELY LOCKED — no pan, no dolly, no zoom, no tilt, no shake. Lens approximately 50mm equivalent at eye-level macro distance, realistic scale and lens compression. 0.0–2.5s: matches START keyframe exactly — bottle uncapped (white pump nozzle fully exposed), small transparent cylindrical cap standing upright on the counter ~6cm right of the bottle base, NO dryer, NO hand. Frame holds completely still — NO light shift, NO time-of-day drift, ambient lighting stays exactly as in the keyframe (the 2.5 seconds are a single moment of pause, not time passing). 2.5s: the blow-dryer audio CUTS abruptly to silence (off-frame switch-off). 2.6–5.0s BEAT 1 (dryer placement): a SINGLE right arm in a long cream sleeve sweeps in horizontally from the right edge of frame carrying a chrome brushed-metal Dyson-style salon hair dryer by its handle. HAND PROPORTION ANCHOR (locked from Marcela persona dims — 16cm hand, 14cm wrist, 23cm forearm; product is 17cm bottle, ~2.5cm cap, ~25cm dryer): the hand is approximately 5–6× the height of the cap, approximately the same height as the bottle's body, and roughly 60–70% the width of the bottle's diameter. Wrist reads narrower than the bottle; fingers are clearly thicker than the small transparent cap. Hand fills a substantial portion of the lower-right quadrant of the frame when present, NOT tiny, NOT distant. The arm sets the dryer on its side on the marble counter ~12cm right of the bottle (nozzle toward camera-left, body parallel to the counter edge). The arm IMMEDIATELY withdraws right — no pause, no float, no hover. 5.0–7.5s BEAT 2 (cap placement): the SAME right arm re-enters from the right edge of frame. Same hand proportions hold — fingers visibly larger than the cap. Thumb and index finger pinch the cap (the cap reads as a small object dwarfed between two fingertips), lift ~3cm, move left horizontally, and PRESS the cap down onto the bottle's white pump nozzle tip. The cap snaps into place. The arm IMMEDIATELY withdraws right. 7.5–8.0s: silent witness. Final state matches the END keyframe exactly — bottle CAPPED, dryer placed at right, hand gone. SINGLE-ARM RULE: only ONE right arm (right-edge entry) appears in the entire 8-second clip. NO second hand. NO hand touching the bottle's body. NO floating, NO hovering, NO pause-padding.",
+      "audio_direction": "0.0–2.5s: LOUD CONTINUOUS HIGH-INTENSITY industrial salon BLOW-DRYER HUM AT MAXIMUM POWER, dominant in the mix, sustained. 2.5s: blow-dryer audio CUTS ABRUPTLY to silence (off-frame switch-off). 2.6–5.0s: near-silent room tone; soft 'clack' as the chrome dryer body touches the marble counter around 4.7s. 5.0–7.5s: near-silent room tone; soft 'tick' as the transparent cap snaps onto the pump nozzle around 7.2s. 7.5–8.0s: room tone only. No voice, no music, no spray sound.",
+      "scene_brief_for_motion": "centered on a cream marble bathroom vanity counter; large round vanity mirror behind, soft daylight from a window upper-left, white tiled wall, folded warm-cream linen hand towel rumpled at frame-left-edge; in the START frame the bottle is UNCAPPED (white pump nozzle fully exposed) with the small transparent cylindrical cap (~2.5cm tall) standing upright on the marble counter approximately 6cm to the right of the bottle base, NO dryer; in the END frame the bottle is CAPPED (small transparent cap pressed onto the pump nozzle tip, the white pump collar still visible beneath) and a chrome brushed-metal Dyson-style salon-grade hair dryer rests on its side on the marble counter approximately 12cm to the right of the bottle, nozzle pointing toward camera-left",
+      "motion_negatives": "no tiny hand, no miniature hand, no doll-size hand, no foreshortened-far-away hand, no hand smaller than the bottle pump, no second hand, no left hand, no second arm, no hand touching the bottle body, no rotation of the bottle, no zoom, no camera motion, no fingers entering the frame from anywhere except the right edge, no hand pause or hover before placement, no floating dryer, no levitating cap, no steam, no fog, no spray from the pump, no liquid splash, no rectangular mirror (round mirror only), no change in bathroom geometry between start and end, no light shift, no time-of-day change",
+      "seed_image_creation_id": "J9HwbrWOq4",
+      "history": [
+        {
+          "timestamp": "2026-06-09T15:30:03Z",
+          "event": "still_picked",
+          "magnific_creation_id": "IaGllYMtvE"
+        },
+        {
+          "timestamp": "2026-06-09T15:36:14Z",
+          "event": "clip_downloaded",
+          "size_bytes": 2264323
+        },
+        {
+          "timestamp": "2026-06-09T16:15:41Z",
+          "event": "status_promoted_to_PASS",
+          "note": "final motion clips approved (shot 3 via Kling 3.0)"
+        },
+        {
+          "timestamp": "2026-06-10T00:41:13.893476Z",
+          "event": "shot1_v9_cap_anchored_locked",
+          "start_kf": "BmZJWyBoQR",
+          "end_kf": "3GjQwj4REY",
+          "pattern": "B",
+          "duration_s": 8,
+          "model": "bytedance-seedance-pro-2.0"
+        },
+        {
+          "timestamp": "2026-06-10T01:32:47.345377+00:00",
+          "event": "shot1_v13_seed_derived_pair_locked",
+          "seed_frame": "3GjQwj4REY (end-A)",
+          "derived_frame": "9RkCXFmNYZ (start-I)",
+          "derivation_model": "imagen-nano-banana-2 (Nano Banana Pro)",
+          "edits_applied": [
+            "REMOVE dryer",
+            "UNCAP bottle",
+            "ADD upright cap on counter"
+          ]
+        },
+        {
+          "timestamp": "2026-06-09T22:45:00Z",
+          "event": "shot1_v14_hand_proportion_fix",
+          "note": "anchored hand to 16cm = 5× cap height; added per-beat scale clauses + tiny-doll-hand negatives"
+        },
+        {
+          "timestamp": "2026-06-10T01:53:11.364763+00:00",
+          "event": "shot1_v14_doctrine_updated",
+          "edits": [
+            "2.5s hold (down from 5.4s)",
+            "no light shift / no time drift",
+            "hand proportion anchor preserved"
+          ],
+          "dispatch_creation_id": "rltMBqbxtc"
+        },
+        {
+          "timestamp": "2026-06-10T10:49:56.274666+00:00",
+          "event": "shot1_v15_3keyframe_concat_locked",
+          "mid_frame": "rltmJnzxtc (mid-D, Marcela hand identity, red french tips, no jewelry, cap mid-air ~2cm above pump)",
+          "derivation_chain": "end-A (seed) -> start-I (Nano Banana Pro pixel-edit, remove dryer + uncap + add cap upright) -> mid-D (Nano Banana Pro pixel-edit of end-A, uncap + insert hand mid-air with cap)",
+          "motion_path": "2-clip Seedance concat: clipA (start-I -> mid-D, 5s) + clipB (mid-D -> end-A, 3s) = 8s total"
+        },
+        {
+          "timestamp": "2026-06-10T17:00:31.006847+00:00",
+          "event": "shot1_v17_end_locked",
+          "two_step_method": "step1 bathroom base from Pinterest jShb0ykLD0 -> base 43KUK6K9Aa; step2 add product 3GjQwj4REY + dryer -> end 5xBEmg9Kxe",
+          "composition": "Pinterest warm-minimalist bathroom + bottle in BACKGROUND (secondary importance) + chrome Dyson dryer in mid-foreground"
+        },
+        {
+          "timestamp": "2026-06-10T17:11:31.237898+00:00",
+          "event": "shot1_v17_start_locked",
+          "note": "cap mutation dropped — bottle stays capped in both START and END; only the dryer mutates."
+        },
+        {
+          "timestamp": "2026-06-10T17:31:48.116623+00:00",
+          "event": "shot1_v18_end_locked_tightest_closeup",
+          "note": "tightest close-up framing locked; mirror mostly off-frame, glass shower cut, bottle + dryer larger; old start.png removed pending re-derivation from new END"
+        },
+        {
+          "timestamp": "2026-06-10T17:58:15.723168+00:00",
+          "event": "shot1_v20_pixel_perfect_pair_locked",
+          "note": "tightest close-up framing + product fidelity tightened via 10-detail spec list; START = 5xBua1SKxe, END = dI3TYnpXSL"
+        },
+        {
+          "timestamp": "2026-06-10T21:00:40.844695+00:00",
+          "event": "shot1_v26_end_locked",
+          "canonicals_applied": [
+            "bathroom: jShb0ykLD0 (Pinterest)",
+            "product: 1sIKpPSr4r (Shopify hero)",
+            "dryer: kL8b22L16B (canonical hairdryer angle1 horizontal-rest)"
+          ]
+        },
+        {
+          "timestamp": "2026-06-10T21:04:17.964919+00:00",
+          "event": "shot1_v26_start_locked",
+          "derivation_chain": "END (74FUaVOJAL) -> START (J9HwbrWOq4) via Nano Banana Pro pixel-edit (remove dryer only)"
+        },
+        {
+          "timestamp": "2026-06-10T22:08:27.357530+00:00",
+          "event": "shot1_v29_mid_locked_end-seeded",
+          "note": "MID derived from END pixel-edit (hand added gripping placed dryer). Bathroom+bottle+dryer all pixel-preserved from END. 2-clip concat path: start->mid 5s + mid->end 4s."
+        },
+        {
+          "timestamp": "2026-06-10T23:15:00Z",
+          "event": "shot1_v27_relocked_as_baseline",
+          "motion_creation_id": "iAx6TnD3uK",
+          "note": "Reverted to v27 single-8s Seedance clip after v29 (2-clip concat) and v30 (dead-dryer framing) trials. v27 (canonical pistol grip + beat-by-beat motion + hum-cuts-at-2.5s + upper-left entry + diagonal descent) judged best so far. split_at_mid set to false; clip A/B path retired. Mid frame WMJYwGZcXe retained as historical record only.",
+          "superseded_versions": ["v28", "v29", "v30"],
+          "clip_file": "clips/01-morning-styling.mp4"
+        },
+        {
+          "timestamp": "2026-06-10T23:25:00Z",
+          "event": "shot1_v27_click_trim_rejected",
+          "trial_file": "_validation/shot1_v27_trimmed_no-click.mp4",
+          "trim_window": "3.0s-4.1s removed (1.1s snipped)",
+          "note": "Attempted ffmpeg snip to remove post-placement hand-on-dryer fiddle frames. Lucas: 'Not good. Back to the original v27.' Original v27 untouched at clips/01-morning-styling.mp4; trimmed trial kept in _validation/ for record.",
+          "decision": "LOCKED — original v27 is the final shot 1 motion."
+        },
+        {
+          "timestamp": "2026-06-11T13:12:00Z",
+          "event": "shot1_v32_dispatched_two_approaches",
+          "trigger": "v27 had two artifacts (mid-flight dryer nozzle hallucination + static beat compression). Lucas: 'Try a) suggested approach (start scene on movement, attach still phase afterwards) b) requesting a longer scene (10 sec) with specific instructions to make the still part 2s long.'",
+          "v32A": {
+            "creation_id_clipA": "brBOlm85Y2",
+            "creation_id_clipB": "LUa3PYDswO",
+            "approach": "2s local freeze pad (extracted v27 hum) + 2-clip Seedance concat with MID anchor vucxBNja47 + ffmpeg concat (10s total)",
+            "MID_creation_id": "vucxBNja47"
+          },
+          "v32B": {
+            "creation_id": "SOuAi3PUb8",
+            "approach": "Single 10s Seedance, dual-keyframe (START + END), no MID, prompt explicitly mandates 0.0-2.0s STATIC HOLD then 8s motion"
+          },
+          "verdict": "v32B WINS. Lucas: 'shot1_v32B_explicit-static_SOuAi3PUb8 is final and validated! Congratulations!' v32A discarded.",
+          "result_file": "clips/01-morning-styling.mp4"
+        }
+      ],
+      "clip_path": "clips/01-morning-styling.mp4",
+      "clip_downloaded_at": "2026-06-09T15:36:14Z",
+      "end_keyframe_creation_id": "74FUaVOJAL",
+      "motion_model_slug": "bytedance-seedance-pro-2.0",
+      "resolution": "1080p",
+      "keyframe_seed_direction": "end-derived",
+      "motion_creation_id": "SOuAi3PUb8",
+      "motion_locked_version": "v32B",
+      "mid_frame_creation_id": "WMJYwGZcXe",
+      "split_at_mid": false,
+      "keyframe_chain": {
+        "start": "J9HwbrWOq4",
+        "mid": "WMJYwGZcXe",
+        "end": "74FUaVOJAL"
+      },
+      "end_keyframe_file": "01-morning-styling/seeds/end.png",
+      "seed_image_file": "01-morning-styling/seeds/start.png",
+      "mid_frame_file": "01-morning-styling/seeds/mid.png"
+    },
+    {
+      "shot_id": "01b-late-morning-desk",
+      "shot_index": 1.5,
+      "duration_s": 6,
+      "aspect_ratio": "9:16",
+      "resolution": "1080p",
+      "motion_pattern": "A-with-gesture",
+      "motion_model_slug": "bytedance-seedance-pro-2.0",
+      "dominant_sensation": "calm-focus",
+      "seed_image_creation_id": "J9H7jVqOq4",
+      "seed_image_file": "01b-late-morning-desk/seeds/start.png",
+      "end_keyframe_creation_id": null,
+      "keyframe_seed_direction": "single",
+      "motion_creation_id": "1st96I4r4r",
+      "motion_locked_version": "v3a",
+      "clip_path": "clips/01b-late-morning-desk.mp4",
+      "status": "PASS",
+      "scene_description": "Marcela's open-plan office desk corner on Av. Paulista at 10:50 AM, between meetings. Bottle stands on pale oak veneer beside a closed black leather pocket notebook, a black ballpoint resting diagonally across the notebook, and a small white ceramic mug of cold green tea (steam already gone — she made it 40 minutes ago).",
+      "scene_brief_for_motion": "centered on a pale oak veneer office desk corner with a closed black leather pocket notebook just to the right of the bottle (long edge of notebook squared with the desk edge in the END frame; angled ~30° off-square in the START frame), a black ballpoint resting diagonally across the top of the notebook, a small white ceramic mug of cold green tea sits behind the notebook. Soft north-facing window light from upper-left, no direct sun.",
+      "motion_direction": "SINGLE-KEYFRAME WITNESS with mouse-navigation gesture. The bottle is COMPLETELY MOTIONLESS throughout. The camera is COMPLETELY LOCKED — no pan, no dolly, no zoom, no tilt, no shake. Lens approximately 50mm equivalent at eye-level macro distance. The LEFT hand on the laptop (Marcela's hand identity per canonical_left: cardigan sleeve, ornate gold band on middle finger, coral-red french-tip manicure, all other fingers BARE, wrist BARE) is in MOUSE-NAVIGATION mode for the entire 6 seconds — NOT typing, NOT pressing keyboard keys. The hand performs SUBTLE mouse-control gestures: the index finger glides over the trackpad in small scrolling / cursor-control motions, occasionally tapping the trackpad surface to click. NO movement of any other finger except the index. NO finger ever touches the keyboard keys. NO typing motion. The hand stays anchored at the trackpad/palm-rest area throughout. The Moleskine notebook stays exactly where it is (angled ~30° off-square, ballpoint diagonally across) — NEVER touched. The bottle, mug, and tote-handle stay exactly where they are. SINGLE-HAND RULE: only the LEFT hand is visible; NO right hand, NO second arm. NO hand touching the bottle. NO hand touching the keyboard keys. The hand reads as CONTINUOUS GENTLE MOUSE NAVIGATION on the laptop — Marcela checking something, scrolling, clicking, not typing.",
+      "audio_direction": "0.0–6.0s: distant open-plan office murmur (low, indistinct — no specific words audible), low warm ambient pad underneath. Occasional very faint trackpad-tap clicks (2-3 across the 6s, soft and brief, at unpredictable intervals around 1.4s, 3.2s, and 4.8s). NO keyboard typing sounds, NO voice, NO music.",
+      "motion_negatives": "no typing, no fingers pressing keyboard keys, no key-press sounds, no second hand, no right hand, no second arm, no hand touching the bottle, no hand touching the notebook, no hand touching the mug, no rotation of the bottle, no rotation of the notebook, no movement of the ballpoint, no zoom, no camera motion, no steam from the mug (the tea is cold), no phone, no glasses, no laptop screen content changing dramatically, no rotation of the bottle, no change in desk geometry, no light shift, no time-of-day change, no hair, no face, no people in frame, no second bottle, no translucent bottle, no frosted glass, no teal",
+      "history": [
+        {
+          "timestamp": "2026-06-10T10:18:01.833780+00:00",
+          "event": "shot_authored_for_variant_b",
+          "candidate": "B (office desk corner, 10:50am, calm-focus)",
+          "source_brief": "variant-b-scenarios.md",
+          "decision_rule": "Pattern A doctrine with one Pattern B micro-beat on secondary prop (notebook), bottle never touched"
+        },
+        {
+          "timestamp": "2026-06-10T23:50:00Z",
+          "event": "shot1b_pivot_to_mouse_navigation_witness",
+          "start_locked": "J9H7jVqOq4",
+          "note": "Pivoted from Pattern B (notebook-squaring with right-arm intervention) to SINGLE-KEYFRAME WITNESS with subtle mouse-navigation gesture on left hand. No END keyframe needed. Motion: index finger glides over trackpad, no typing, no key presses, no other props touched. Lucas: 'no need for end-frame. The scene should show Marcela using the mouse to navigate the computer, but not type anything.' Trackpad-pose START regen rejected; current start.png (J9H7jVqOq4, home-row pose) accepted as good baseline — Seedance motion will animate the hand into mouse-navigation behavior."
+        },
+        {
+          "timestamp": "2026-06-11T13:30:00Z",
+          "event": "shot1b_v3a_locked_final",
+          "motion_creation_id": "1st96I4r4r",
+          "note": "Iterated v1 (subtle left-finger trackpad gestures) → v2 (left hand motionless + steam wisps + WhatsApp→Gmail screen swap + off-frame right hand mouse clicks) → v3 (right-hand-on-touchpad vs right-hand-off-frame variants). Lucas picked v3a (right hand visible on laptop's built-in touchpad). Lucas: 'shot1b_v3a_right-hand-touchpad_1st96I4r4r also locked as final. Good progress, we're getting there!' v2/v3b discarded.",
+          "clip_file": "clips/01b-late-morning-desk.mp4"
+        }
+      ]
+    },
+    {
+      "shot_id": "02-afternoon-rain",
+      "status": "PASS",
+      "duration_s": 6,
+      "aspect_ratio": "9:16",
+      "scene_description": "is CASUALLY SET DOWN on a small round dark-wood bistro cafe table, slightly off-center near the table edge, as if just placed without thinking. The cafe table is pulled up directly in front of a full-height window. Beyond the window: wet São Paulo street at 4 PM, blurred bokeh of slow traffic — red taillights, white headlights, wet asphalt. A small white ceramic saucer rests at frame-edge.",
+      "proportion_directive": "The bottle is a 150ml haircare bottle, approximately 17 cm tall. The round bistro table is approximately 75 cm tall and 60 cm in diameter — about 4× the bottle's height in diameter. The window behind is full-height approximately 200 cm tall. The bottle occupies the LOWER 25 percent of vertical frame; the surface fills the bottom strip with empty space around the bottle. Compare scale: the bottle should look like a glass of water on a side table — present and deliberately placed, not the surface's purpose.",
+      "realistic_grounding": "(1) Soft natural CONTACT SHADOW beneath the bottle, matching the scene's dominant light angle. (2) Subtle SPECULAR REFLECTION of the bottle's base on the surface beneath it. (3) The bottle is LIT BY THE SCENE — warm key on one side, cool fill on the other, NOT lit by an external studio light. (4) Casual PLACEMENT — slightly off-center, slightly angled, as if just placed without thinking. (5) The bottle's smooth matte teal surface CATCHES REFLECTIONS from the scene around it.",
+      "kinetic_still_effect": "On the OUTSIDE surface of the window directly behind the bottle, heavy São Paulo rain visibly streams down in DENSE CONTINUOUS VERTICAL STREAKS at peak compression. Fat droplets impact and break across the glass. Frozen instant of peak rain — hundreds of droplets visible at different fall stages. Rain stays OUTSIDE the window — does NOT enter the cafe. Bottle remains completely dry.",
+      "lighting_description": "Warm 2700K pendant interior from camera-left off-frame. Cool 6500K diffused storm light from behind through window. Warm key on left, cool silhouette ambient on right. Soft long shadow rightward across dark wood.",
+      "negatives": "No rain inside the cafe, no water droplets on the bottle, no condensation on the bottle, no steam, no people, no faces, no hair, no hands, no coffee cup in frame, no phone, no text other than on the bottle, no logo other than 'ge', no fire",
+      "motion_pattern": "A",
+      "motion_direction": "Hold the frame as a calm 6-second still witness. The only motion in the entire frame is the rain on the OUTSIDE surface of the window behind the bottle, which continues streaming down in continuous vertical streaks with occasional fat droplets impacting and breaking across the glass, and the slow soft drift of out-of-focus headlight and taillight bokeh in the wet city beyond. The bottle does not move. The table does not move. The contact shadow stays steady.",
+      "audio_direction": "heavy rain on glass with droplet impacts, wet-tire hiss from the street outside, soft distant cafe murmur, low warm ambient pad",
+      "scene_brief_for_motion": "on a small round dark-wood bistro cafe table by a full-height window streaming with heavy São Paulo rain, with blurred city bokeh beyond",
+      "motion_negatives": "no rain inside the cafe, no condensation on the bottle, no coffee cup motion",
+      "seed_image_creation_id": "KjoRRQSkqp",
+      "history": [
+        {
+          "timestamp": "2026-06-09T15:30:03Z",
+          "event": "still_picked",
+          "magnific_creation_id": "KjoRRQSkqp"
+        },
+        {
+          "timestamp": "2026-06-09T15:36:14Z",
+          "event": "clip_downloaded",
+          "size_bytes": 2413259
+        },
+        {
+          "timestamp": "2026-06-09T16:15:41Z",
+          "event": "status_promoted_to_PASS",
+          "note": "final motion clips approved (shot 3 via Kling 3.0)"
+        },
+        {
+          "timestamp": "2026-06-10T00:00:00Z",
+          "event": "shot2_v26_keyframes_regen_with_canonicals",
+          "note": "regenerated START + END keyframes with new canonical product fidelity (1sIKpPSr4r) over v12 cafe composition seed (KjoRRQSkqp). Candidates saved to _validation/ for Lucas's pick. No seed locked yet.",
+          "candidates": {
+            "start_A": "YV7nEtwWeC",
+            "start_B": "jShxGiULD0",
+            "end_A": "l7fsYYvgv9",
+            "end_B": "kL8KRRk16B"
+          },
+          "references_used": [
+            "KjoRRQSkqp (v12 cafe composition seed)",
+            "1sIKpPSr4r (canonical primer-liso product)"
+          ],
+          "model": "imagen-nano-banana-2",
+          "aspect_ratio": "9:16"
+        }
+      ],
+      "clip_path": "clips/02-afternoon-rain.mp4",
+      "clip_downloaded_at": "2026-06-09T15:36:14Z"
+    },
+    {
+      "shot_id": "03-evening-arrival",
+      "status": "PASS",
+      "duration_s": 6,
+      "aspect_ratio": "9:16",
+      "scene_description": "stands casually upright on a warm-gray concrete kitchen island corner, slightly off-center in the right portion of frame. A tan leather tote bag handle just enters frame at the LEFT edge. The kitchen is a modern Brazilian apartment — light wood cabinetry back wall, concrete island base, comfortable sofa visible in soft focus background. Through a floor-to-ceiling window beyond — the São Paulo skyline at golden hour, mixed-height buildings in soft amber and violet bokeh.",
+      "proportion_directive": "The bottle is a 150ml haircare bottle, approximately 17 cm tall. The kitchen island is approximately 90 cm tall and 120 cm wide — about 7× the bottle's height in width. The bottle occupies the LOWER 25 percent of vertical frame; the surface fills the bottom strip with empty space around the bottle. Compare scale: the bottle should look like a coffee mug on a kitchen counter — present and deliberately placed, not the surface's purpose.",
+      "realistic_grounding": "(1) Soft natural CONTACT SHADOW beneath the bottle, matching the scene's dominant light angle. (2) Subtle SPECULAR REFLECTION of the bottle's base on the surface beneath it. (3) The bottle is LIT BY THE SCENE — warm key on one side, cool fill on the other, NOT lit by an external studio light. (4) Casual PLACEMENT — slightly off-center, slightly angled, as if just placed without thinking. (5) The bottle's smooth matte teal surface CATCHES REFLECTIONS from the scene around it.",
+      "kinetic_still_effect": "CRITICAL — EMPTY LANDING ZONE: The concrete counter surface to the right of the bottle is COMPLETELY EMPTY, CLEAN, AND UNOBSTRUCTED — NO keys, NO objects, NO clutter. Roughly 25cm × 20cm of clear concrete surface. (Keys will fly in via motion synthesis.) Kinetic background: at the UPPER-RIGHT corner, soft warm golden lens-flare beams enter at peak intensity, painting a warm wash across the concrete counter. Faint dust motes in the beam. Light is purely golden warm — no orange tint, no fire, no visible sun disc.",
+      "lighting_description": "Warm 2400K pendant above the island. Golden-hour wash from window behind. Teal plastic reads deeper and richer against the warm tones.",
+      "negatives": "NO KEYS in this still (they arrive in motion). No paper bag, no shopping bag, no groceries, no food, no plates, no wine, no cups, no phone, no laptop, no mail, no second bottle, no people, no faces, no hair, no hands, no visible sun disc, no aura, no halo, no fire",
+      "motion_pattern": "B-end-only",
+      "motion_direction": "Between frame 1 (empty concrete counter beside bottle) and frame N (keys settled on counter), the ONLY thing that happens is a ring of HOUSE KEYS WITH A SMALL TAN LEATHER FOB enters the scene with NATURAL PROJECTILE PHYSICS. At approximately 1.5 seconds, the keys appear at the UPPER-LEFT edge of frame, having been tossed from off-frame. The keys travel through the air in a REALISTIC PARABOLIC ARC — initial forward momentum carries them diagonally down-and-right, gravity progressively pulls them down with proper acceleration, they reach apex around 2 seconds, then descend toward the counter. At approximately 2.5 seconds the keys IMPACT the counter beside the bottle with REALISTIC PHYSICS — a small natural bounce of 3-5 cm with reduced energy on the second contact, then a brief skid forward of 5 cm carrying their remaining inertia, then they settle motionless. The motion MUST OBEY real-world physics (gravity 9.8 m/s², proper momentum, energy loss on impact, friction slows the skid). The keys are NOT floating, NOT levitating. The bottle does not react, does not move. The tote does not move. After settle around 3.5 seconds, the rest of the shot holds calm with subtle drift of the golden lens flare.",
+      "audio_direction": "1.5 seconds of warm quiet home ambient with distant city hush, then a soft swish of keys flying through air for 0.5 seconds, then a SHARP metallic clink and soft thud as the keys impact the concrete counter at 2.5 seconds, then a brief second softer metallic chime as they bounce, then quiet settle, then continued warm ambient pad with distant city hush for the remainder. No music, no voice.",
+      "scene_brief_for_motion": "on the warm-gray concrete kitchen island corner with a tan tote handle visible at left edge, São Paulo skyline through the window beyond at golden hour, sofa visible behind in soft focus",
+      "motion_negatives": "no food, no groceries, no paper bag, no phone, no second bottle",
+      "end_keyframe_creation_id": "nTwEuXVYQD",
+      "history": [
+        {
+          "timestamp": "2026-06-09T15:30:22Z",
+          "event": "still_picked_end_only",
+          "magnific_creation_id": "nTwEuXVYQD",
+          "note": "Lucas chose single-frame approach with keys-settled as end; prompt drives empty start"
+        },
+        {
+          "timestamp": "2026-06-09T15:36:14Z",
+          "event": "clip_downloaded",
+          "size_bytes": 1862517
+        },
+        {
+          "timestamp": "2026-06-09T15:48:40Z",
+          "event": "clip_downloaded",
+          "size_bytes": 2325882
+        },
+        {
+          "timestamp": "2026-06-09T15:54:54Z",
+          "event": "clip_downloaded",
+          "size_bytes": 2491145
+        },
+        {
+          "timestamp": "2026-06-09T16:08:23Z",
+          "event": "clip_downloaded",
+          "size_bytes": 2612831
+        },
+        {
+          "timestamp": "2026-06-09T16:15:04Z",
+          "event": "clip_downloaded",
+          "size_bytes": 5299199
+        },
+        {
+          "timestamp": "2026-06-09T16:15:41Z",
+          "event": "status_promoted_to_PASS",
+          "note": "final motion clips approved (shot 3 via Kling 3.0)"
+        },
+        {
+          "timestamp": "2026-06-10T01:58:21.865570+00:00",
+          "event": "shot3_v14_dual_keyframe_locked",
+          "seed_frame": "nTwEuXVYQD (original end)",
+          "derived_frame": "l7fXa7bgv9 (start with keys removed via Nano Banana Pro)",
+          "dispatch_creation_id": "XtRJZfdBfo"
+        },
+        {
+          "event": "shot3_v26_keyframes_regen_with_canonicals",
+          "timestamp": "2026-06-10T21:42:03Z",
+          "note": "Regenerated START + END keyframes for shot 3 (evening arrival) using new canonical product reference 1sIKpPSr4r as fidelity anchor. v14 seeds l7fXa7bgv9 (start) and nTwEuXVYQD (end) used as composition refs. Candidates saved to _validation/, awaiting Lucas pick. No locks.",
+          "candidates": {
+            "start": [
+              "74FwVkHJAL",
+              "3GjiIU4REY"
+            ],
+            "end": [
+              "0pycFYCTfW",
+              "brXq6FR5Y2"
+            ]
+          },
+          "files": [
+            "_validation/shot3_v26_start_A_74FwVkHJAL.png",
+            "_validation/shot3_v26_start_B_3GjiIU4REY.png",
+            "_validation/shot3_v26_end_A_0pycFYCTfW.png",
+            "_validation/shot3_v26_end_B_brXq6FR5Y2.png"
+          ]
+        }
+      ],
+      "clip_path": "clips/03-evening-arrival.mp4",
+      "clip_downloaded_at": "2026-06-09T16:15:04Z",
+      "seed_image_creation_id": "l7fXa7bgv9",
+      "keyframe_seed_direction": "end-derived",
+      "motion_model_slug": "bytedance-seedance-pro-2.0"
+    }
+  ],
+  "seeds_index": {
+    "v1": {
+      "01-bathroom_A": "seeds/v1/01-bathroom_A.png",
+      "01-bathroom_B": "seeds/v1/01-bathroom_B.png",
+      "02-cafe_A": "seeds/v1/02-cafe_A.png",
+      "02-cafe_B": "seeds/v1/02-cafe_B.png",
+      "03-apartment_A": "seeds/v1/03-apartment_A.png",
+      "03-apartment_B": "seeds/v1/03-apartment_B.png"
+    },
+    "v1-swap": {
+      "01-bathroom-swap_A": "seeds/v1-swap/01-bathroom-swap_A.png",
+      "01-bathroom-swap_B": "seeds/v1-swap/01-bathroom-swap_B.png",
+      "02-cafe-swap_A": "seeds/v1-swap/02-cafe-swap_A.png",
+      "02-cafe-swap_B": "seeds/v1-swap/02-cafe-swap_B.png",
+      "03-apartment-start-swap_A": "seeds/v1-swap/03-apartment-start-swap_A.png",
+      "03-apartment-start-swap_B": "seeds/v1-swap/03-apartment-start-swap_B.png",
+      "03-apartment-end-swap_A": "seeds/v1-swap/03-apartment-end-swap_A.png",
+      "03-apartment-end-swap_B": "seeds/v1-swap/03-apartment-end-swap_B.png"
+    },
+    "v1-swap-r2": {
+      "01-bathroom_A": "seeds/v1-swap-r2/01-bathroom_A.png",
+      "01-bathroom_B": "seeds/v1-swap-r2/01-bathroom_B.png",
+      "02-cafe_A": "seeds/v1-swap-r2/02-cafe_A.png",
+      "02-cafe_B": "seeds/v1-swap-r2/02-cafe_B.png",
+      "03-apt-start_A": "seeds/v1-swap-r2/03-apt-start_A.png",
+      "03-apt-start_B": "seeds/v1-swap-r2/03-apt-start_B.png",
+      "03-apt-end_A": "seeds/v1-swap-r2/03-apt-end_A.png",
+      "03-apt-end_B": "seeds/v1-swap-r2/03-apt-end_B.png"
+    },
+    "v1-shot3-empty": {
+      "03-apartment-empty-from-end_A": "seeds/v1-shot3-empty/03-apartment-empty-from-end_A.png",
+      "03-apartment-empty-from-end_B": "seeds/v1-shot3-empty/03-apartment-empty-from-end_B.png"
+    }
+  },
+  "budget": {
+    "approved_at": "2026-06-09T16:15:41Z",
+    "approved_by": "lucas-implicit",
+    "cap_usd": 5.0,
+    "by_shot": {},
+    "spent_usd": 0
+  },
+  "ad_copy": {
+    "primary_text": "alinhamento, brilho e leveza. liso protegido do calor, da umidade e do tempo. do começo ao fim do dia.",
+    "headline": "liso intacto, dia inteiro.",
+    "link_description": "conheça primer liso intacto.",
+    "cta_button": "Saiba mais",
+    "caption_offer": "24h liso intacto.",
+    "caption_tagline": "no seu tempo, do seu jeito."
+  },
+  "ad_copy_variant_b": {
+    "primary_text": "saiu do banho, escovou, viveu o dia. seu liso intacto, do começo ao fim.",
+    "headline": "do banho ao fim do dia.",
+    "link_description": "conheça primer liso intacto.",
+    "cta_button": "Saiba mais",
+    "caption_offer": "liso protegido.",
+    "caption_tagline": "no seu tempo, do seu jeito."
+  },
+  "assembly": {
+    "base": {
+      "creative_path": "output/base/creative.mp4",
+      "thumbnail_path": "output/base/thumbnail.jpg",
+      "captions_path": "output/base/captions.srt",
+      "copy_path": "output/base/copy.txt",
+      "duration_s": 21.95,
+      "shots_in_order": [
+        "01-morning-styling",
+        "02-afternoon-rain",
+        "03-evening-arrival"
+      ],
+      "audio_enabled": true,
+      "crossfade_s": 0.6,
+      "zoom_end_scale": 1.06,
+      "assembled_at": "2026-06-09T22:31:00Z"
+    },
+    "variant-a": {
+      "creative_path": "output/variant-a/creative.mp4",
+      "thumbnail_path": "output/variant-a/thumbnail.jpg",
+      "captions_path": "output/variant-a/captions.srt",
+      "copy_path": "output/variant-a/copy.txt",
+      "duration_s": 21.95,
+      "shots_in_order": [
+        "03-evening-arrival",
+        "01-morning-styling",
+        "02-afternoon-rain"
+      ],
+      "audio_enabled": true,
+      "crossfade_s": 0.6,
+      "zoom_end_scale": 1.06,
+      "assembled_at": "2026-06-09T22:31:57Z"
+    },
+    "variant-b": {
+      "creative_path": "output/variant-b/creative.mp4",
+      "thumbnail_path": "output/variant-b/thumbnail.jpg",
+      "captions_path": "output/variant-b/captions.srt",
+      "copy_path": "output/variant-b/copy.txt",
+      "duration_s": 21.95,
+      "shots_in_order": [
+        "01-morning-styling",
+        "02-afternoon-rain",
+        "03-evening-arrival"
+      ],
+      "audio_enabled": true,
+      "crossfade_s": 0.6,
+      "zoom_end_scale": 1.06,
+      "assembled_at": "2026-06-09T22:32:57Z"
+    }
+  },
+  "delivery": {
+    "delivered_at": "2026-06-09T22:32:57Z",
+    "packages": [
+      "base",
+      "variant-a",
+      "variant-b"
+    ],
+    "output_dir": "output"
+  },
+  "persona_dims": {
+    "tenant": "ge-beauty",
+    "persona": "marcela",
+    "height_cm": 170,
+    "hand_length_cm": 16,
+    "wrist_circumference_cm": 14,
+    "forearm_length_cm": 23,
+    "skin_tone": "light Brazilian, slight olive undertone",
+    "manicure": "glossy red french-tip (red tips on nude base)",
+    "jewelry_locked": "chunky gold textured ring on middle finger + gold band ring on ring finger + thin gold bracelet at wrist",
+    "wardrobe_by_time_of_day": {
+      "morning_bathroom": "cream silk morning robe",
+      "afternoon_cafe": "oatmeal/cream knit cardigan",
+      "evening_apartment": "black ribbed top OR cardigan continuity"
+    },
+    "hand_in_frame_scale_9_16": "~15-20% horizontal frame width at counter level; wrist visible at edge, no forearm above wrist",
+    "hand_references_by_shot": {
+      "shot1_7-50am_bathroom": {
+        "wardrobe": "cream silk robe sleeve",
+        "jewelry": "NO rings, NO bracelet, NO watch (morning, pre-dressing)",
+        "lighting": "soft warm bathroom daylight",
+        "angles": {
+          "angle1_natural_rest": "BmZGifdoQR",
+          "angle2_topdown": "gJCQ1lDSXO",
+          "angle3_sideprofile": "brX8E8A5Y2"
+        }
+      },
+      "shot1b_10-50am_office": {
+        "hand": "LEFT hand",
+        "wardrobe": "oatmeal-cream cardigan sleeve",
+        "jewelry": "1 ornate gold band on left middle finger",
+        "lighting": "cool diffuse north-window daylight",
+        "angles": {
+          "angle1_typing_ready": "hEY0GpMvqL",
+          "angle2_palmup": "xgmaKtgjfW",
+          "angle3_3-4_sideview": "XtRApjuBfo"
+        }
+      },
+      "shot2_3-15pm_cafe": {
+        "hand": "RIGHT hand",
+        "wardrobe": "oatmeal-cream cardigan sleeve (same as office, daytime continuity)",
+        "jewelry": "1 twisted gold ring on right middle finger ONLY",
+        "lighting": "cool overcast storm light through cafe glass",
+        "angles": {
+          "angle1_cup_cradle": "y6b12oCPW9",
+          "angle2_palmdown": "Pi5rGDR42C",
+          "angle3_sideprofile": "rltv13yxtc"
+        }
+      },
+      "shot3_6-40pm_apartment": {
+        "hand": "RIGHT hand",
+        "wardrobe": "oatmeal-cream cardigan sleeve (same as office and cafe, full-day continuity)",
+        "jewelry": "1 twisted gold ring on right middle finger ONLY",
+        "lighting": "warm low golden-hour São Paulo apartment light",
+        "angles": {
+          "angle1_keys_released": "SOEH6lYUb8",
+          "angle2_palmup": "ONqKOvcynm",
+          "angle3_3-4_view": "74F5ZhXJAL"
+        }
+      }
+    },
+    "hand_reference_canonical_origin": "YV79SyJWeC",
+    "hand_reference_locked_at": "2026-06-10T12:24:56.465688+00:00",
+    "hand_reference_doctrine": "Per-shot hand references are TIME-OF-DAY + WARDROBE specific. For any keyframe regen involving a hand, pass the matching angle from this map as a `references[].identifier` with `type: image`. DO NOT pass LUvvrK1swO directly for right-hand shots — it shows 2 rings across both hands and the model duplicates that on the right hand. Use only the per-shot reference for right-hand frames; use LUvvrK1swO only for the original canonical identity check during NEW shot authoring.",
+    "hand_reference_canonical_origin_file": "shared/marcela-hands/canonical_master.png",
+    "hand_reference_canonical_origin_locked_at": "2026-06-10T13:47:20.498651+00:00",
+    "hand_canonical_jewelry_placement": {
+      "left_hand": {
+        "middle_finger": "ornate gold band (engraved/filigree pattern)",
+        "others": "BARE"
+      },
+      "right_hand": {
+        "middle_finger": "twisted gold ring (helical/braided pattern)",
+        "others": "BARE"
+      },
+      "wrists": "BARE (no bracelet, no watch)"
+    },
+    "hand_canonical_skin": "early-30s, well-hydrated, smooth, plump finger silhouette, veins barely visible",
+    "hand_canonical_manicure": "crisp coral-red french-tip on every nail, both hands (constant across all shots)",
+    "hand_reference_canonical_left": "SOE5KezUb8",
+    "hand_reference_canonical_left_file": "shared/marcela-hands/canonical_left.png",
+    "hand_reference_canonical_right": "gJCbKReSXO",
+    "hand_reference_canonical_right_file": "shared/marcela-hands/canonical_right.png",
+    "hand_reference_canonical_crops_locked_at": "2026-06-10T15:58:56.702408+00:00"
+  },
+  "variants": {
+    "B": {
+      "authored_at": "2026-06-10T10:18:01.833802+00:00",
+      "shots": [
+        "01-morning-styling",
+        "01b-late-morning-desk",
+        "02-afternoon-rain",
+        "03-evening-arrival"
+      ],
+      "notes": "A/B test: B adds a calm-focus office moment between bathroom application and cafe storm."
+    },
+    "A": {
+      "shots": [
+        "01-morning-styling",
+        "02-afternoon-rain",
+        "03-evening-arrival"
+      ],
+      "notes": "Original 3-shot day-arc reel."
+    }
+  },
+  "style_refs": {
+    "bathroom": {
+      "creation_id": "jShb0ykLD0",
+      "file": "shared/style-refs/bathroom/pin_893401644883946887_small-european-bathroom.jpg",
+      "source": "Pinterest pin 893401644883946887",
+      "aesthetic": "warm minimalist European bathroom — cream walls, oak vanity, round backlit mirror, stacked white towels, woven pendant lights, plant",
+      "uploaded_at": "2026-06-10T16:40:32.959304+00:00"
+    }
+  },
+  "objects": {
+    "hairdryer": {
+      "name": "champagne-cream salon hair dryer (Shark FlexStyle silhouette, branding removed)",
+      "canonical_folder": "shared/objects/canonical_hairdryer/",
+      "angles": {
+        "angle1_horizontal_rest.png": {
+          "file": "shared/objects/canonical_hairdryer/angle1_horizontal_rest.png",
+          "creation_id": "kL8b22L16B"
+        },
+        "angle2_standing_3-4.png": {
+          "file": "shared/objects/canonical_hairdryer/angle2_standing_3-4.png",
+          "creation_id": "jSh1YPkLD0"
+        },
+        "angle3_diagonal_descent.png": {
+          "file": "shared/objects/canonical_hairdryer/angle3_diagonal_descent.png",
+          "creation_id": "NZ1Pudo6D9"
+        },
+        "angle6_near_placement.png": {
+          "file": "shared/objects/canonical_hairdryer/angle6_near_placement.png",
+          "creation_id": "l7fjh2Zgv9"
+        },
+        "angle7_front_ring_inlet.png": {
+          "file": "shared/objects/canonical_hairdryer/angle7_front_ring_inlet.png",
+          "creation_id": "wPQgEOo7EI"
+        },
+        "angle8_pistol_grip_vertical.png": {
+          "file": "shared/objects/canonical_hairdryer/angle8_pistol_grip_vertical.png",
+          "creation_id": "TePWOxnVNR"
+        },
+        "source_shark_hand_pistol_grip.jpg": {
+          "file": "shared/objects/canonical_hairdryer/source_shark_hand_pistol_grip.jpg",
+          "creation_id": "UyulTICwny"
+        },
+        "source_shark_full_body.jpg": {
+          "file": "shared/objects/canonical_hairdryer/source_shark_full_body.jpg",
+          "creation_id": "KjoqRVZkqp"
+        },
+        "source_shark_standing_isolated.jpg": {
+          "file": "shared/objects/canonical_hairdryer/source_shark_standing_isolated.jpg",
+          "creation_id": "gJCLc8QSXO"
+        }
+      },
+      "locked_at": "2026-06-10T20:06:53.657919+00:00"
+    }
+  }
+}

@@ -1,0 +1,167 @@
+# settings_data.json keys (configured values)
+  current.show_free_shipping_progress = False
+  current.free_shipping_min_amount = 299
+  current.free_shipping_text = frete calculado no checkout
+  current.free_shipping_text_come = opções de frete calculadas no checkout
+  current.show_promo_bar_progress = False
+  current.promo_bar_min_amount = 250;299
+  current.promo_bar_text = compre +[amount] e ganhe necessaire
+  current.promo_bar_top_text = necessaire clutch;frete grátis
+  current.promo_bar_text_come = você ganhou necessaire + frete 🎉
+  current.background_color_promo_bar = #e79292
+  current.shipping_calculator_fixed_text = False
+  current.shipping_calculator_default_text = 
+  current.shipping_calculator_specific_text = 
+  current.shipping_calculator = True
+  current.shipping_calculator_default_country = Brazil
+
+# snippets/shipping-bar.liquid  (29 lines)
+  L3: assign min_amount_to_free_shipping = settings.free_shipping_min_amount | replace: ',', '.' | times: 100
+  L4: assign min_amount_numeric = min_amount_to_free_shipping | times: 1
+  L7: assign text_free_shipping_amount = settings.free_shipping_text
+  L8: assign text_free_shipping_amount_rechead = settings.free_shipping_text_come
+  L11: assign percentage_to_free_shipping = 100
+  L12: assign missing_to_free_shipping = 0 | money
+  L13: assign text_display = text_free_shipping_amount_rechead
+  L15: assign percentage_to_free_shipping = total_cart_numeric | times: 100 | divided_by: min_amount_numeric
+  L17: assign missing_to_free_shipping = missing_amount | money
+  L18: assign text_display = text_free_shipping_amount | replace: '[amount]', missing_to_free_shipping
+  L23: <strong class="cart__free-shipping-bar-rest">{{ missing_to_free_shipping }}</strong>
+  L26: {% if settings.show_free_shipping_progress %}
+  L28: #free-shipping-bar {
+  L32: .cart__free-shipping-bar-text {
+  L44: .cart__free-shipping-bar-text svg {
+  L49: .cart__free-shipping-bar {
+  L57: .cart__free-shipping-bar-progress {
+  L69: {% if percentage_to_free_shipping >= 100 %}
+  L70: .cart__free-shipping-bar {
+  L78: {% assign text_shipping = badge.texto | downcase | strip %}
+  L79: {% if text_shipping == 'frete grátis' or text_shipping == 'frete gratis' %}
+  L80: {% assign percentage_to_free_shipping = 100 %}
+  L81: {% assign text_display = text_free_shipping_amount_rechead %}
+  L87: <div id="free-shipping-bar" class="shopify-section">
+  L88: <span class="cart__free-shipping-bar-text">
+  L91: <div class="cart__free-shipping-bar">
+  L92: <div class="cart__free-shipping-bar-progress" style="width: {{ percentage_to_free_shipping }}%;"></div>
+  L99: window.ShopifyInfo.freeShippingGoal = {{ min_amount_numeric | default: 9999999 }};
+  L102: window.ShopifyInfo.freeShippingCoverage = "{{ settings.free_shipping_coverage | default: 'all' }}";
+
+# snippets/promo-bar.liquid  (7 lines)
+  L28: {% assign missing_to_free_shipping = first_milestone | minus: total_cart | money %}
+  L29: {% assign text_display = milestone_texts[0] | replace: '[amount]', missing_to_free_shipping %}
+  L31: {% assign missing_to_free_shipping = second_milestone | minus: total_cart | money %}
+  L32: {% assign text_display = milestone_texts[1] | replace: '[amount]', missing_to_free_shipping %}
+  L34: {% assign missing_to_free_shipping = third_milestone | minus: total_cart | money %}
+  L35: {% assign text_display = milestone_texts[2] | replace: '[amount]', missing_to_free_shipping %}
+  L152: {% render 'icon-shipping' %}
+
+# snippets/cart-drawer.liquid  (19 lines)
+  L45: {% if settings.show_free_shipping_progress and localization.country.iso_code == 'BR' %}
+  L46: {% render 'shipping-bar' %}
+  L65: {% if settings.shipping_calculator %}
+  L68: <script src="{{ 'shipping-calculator.js' | asset_url }}" defer></script>
+  L76: const msg_shipping = document.getElementById("message-shipping")
+  L77: const shipping_container = document.getElementById("shipping-calculator-container")
+  L78: msg_shipping.style.display = "block"
+  L79: shipping_container.style.display = "none"
+  L507: {% if settings.shipping_calculator %}
+  L509: <button type="button" class="drawer__calc-toggle" onclick="this.classList.toggle('active'); document.getElementById('shipping-calc-content').classList.toggle('active');">
+  L510: {% render 'icon-shipping' %}
+  L511: <span class="drawer__calc-toggle-text">frete</span>
+  L514: <div id="shipping-calc-content" class="drawer__calc-content">
+  L515: <div id="shipping-calculator-container">
+  L516: {%- render 'shipping-calculator', id: section.id, default_country: 'Brazil' -%}
+  L518: <span id="message-shipping" style="display: none; font-size: 14px;">O valor de frete será exibido diretamente no checkout. Clique em <strong style="color: rgb(223, 54, 48);">Finalizar a compra</strong> para calcular.</span>
+  L583: {% if settings.shipping_calculator_fixed_text %}
+  L585: {{ settings.shipping_calculator_specific_text }}
+  L586: {{ settings.shipping_calculator_default_text }}
+
+# sections/header-group.json  (2 lines)
+  L27: "text": "{{ metaobjects.anuncio_barra_de_avisos[\"frete-gratis\"].texto_nao_sublinhado.value }}",
+  L28: "text2": "{{ metaobjects.anuncio_barra_de_avisos[\"frete-gratis\"].texto_sublinhado.value }}",
+
+# locales/pt-BR.json  (10 lines)
+  L47: "shipping_calculator": {
+  L49: "hide": "Esconder cálculo de frete",
+  L50: "title": "Estimativa de frete",
+  L174: "shipping_policy_html": "",
+  L310: "taxes_and_shipping_policy_at_checkout_html": "Tributos, descontos e <a href=\"{{ link }}\">frete<\/a> calculados no checkout",
+  L311: "taxes_included_but_shipping_at_checkout": "Tributos incluídos e frete e descontos calculados no checkout",
+  L312: "taxes_included_and_shipping_policy_html": "Tributos incluídos. <a href=\"{{ link }}\">Frete<\/a> e descontos calculados no checkout.",
+  L313: "taxes_and_shipping_at_checkout": "Tributos, descontos e frete calculados no checkout",
+  L494: "shipping_address": "Endereço de entrega",
+  L497: "shipping": "Frete",
+
+# sections/main-product.liquid  (5 lines)
+  L119: {%- when 'shipping_calculator' -%}
+  L319: {%- if shop.shipping_policy.body != blank -%}
+  L320: {{ 'products.product.shipping_policy_html' | t: link: shop.shipping_policy.url }}
+  L1352: "type": "shipping_calculator",
+  L1353: "name": "t:sections.main-product.blocks.shipping_calculator.name",
+
+# sections/main-cart-footer.liquid  (5 lines)
+  L23: {% if settings.shipping_calculator %}
+  L24: {%- render 'shipping-calculator', id: section.id, default_country: 'Brazil' -%}
+  L66: {% if settings.shipping_calculator_fixed_text %}
+  L68: {{ settings.shipping_calculator_specific_text }}
+  L69: {{ settings.shipping_calculator_default_text }}
+
+# sections/featured-product.liquid  (3 lines)
+  L184: {%- if cart.taxes_included or shop.shipping_policy.body != blank -%}
+  L189: {%- if shop.shipping_policy.body != blank -%}
+  L190: {{ 'products.product.shipping_policy_html' | t: link: shop.shipping_policy.url }}
+
+# snippets/shipping-calculator.liquid  (16 lines)
+  L7: {% render 'shipping-calculator', id: 'some-id', default_country: 'United States' %}
+  L10: <script src="{{ 'shipping-calculator.js' | asset_url }}" defer></script>
+  L13: <shipping-calculator>
+  L14: <div class="title-wrapper-with-link title-wrapper-shipping title-wrapper-with-link">
+  L15: <h3 class="shipping-heading">{{ settings.shipping_calculator_heading }}</h3>
+  L22: <label class="block" for="{{ id }}-shipping-country">
+  L23: {{- 'general.cart.shipping_calculator.country' | t -}}
+  L28: id="{{ id }}-shipping-country"
+  L40: <label class="block" for="{{ id }}-shipping-province">
+  L41: {{- 'general.cart.shipping_calculator.province' | t -}}
+  L46: id="{{ id }}-shipping-province"
+  L58: placeholder="{{ 'general.cart.shipping_calculator.zip' | t }}"
+  L60: id="{{ id }}-shipping-zip"
+  L65: <span class="button-text">{{- 'general.cart.shipping_calculator.submit' | t -}}</span>
+  L83: <div class="" role="heading" aria-level="3">{{ 'general.cart.shipping_calculator.error' | t }}</div>
+  L86: </shipping-calculator>
+
+# layout/theme.liquid  (4 lines)
+  L493: shippingCalculator: {
+  L494: singleRate: {{ 'general.cart.shipping_calculator.single_rate' | t | json }},
+  L495: multipleRates: {{ 'general.cart.shipping_calculator.multiple_rates' | t | json }},
+  L496: noRates: {{ 'general.cart.shipping_calculator.no_rates' | t | json }}
+
+# sections/quick-order-list.liquid  (6 lines)
+  L184: {%- if cart.taxes_included and shop.shipping_policy.body != blank -%}
+  L185: {{ 'sections.cart.taxes_included_and_shipping_policy_html' | t: link: shop.shipping_policy.url }}
+  L187: {{ 'sections.cart.taxes_included_but_shipping_at_checkout' | t }}
+  L188: {%- elsif shop.shipping_policy.body != blank -%}
+  L189: {{ 'sections.cart.taxes_and_shipping_policy_at_checkout_html' | t: link: shop.shipping_policy.url }}
+  L191: {{ 'sections.cart.taxes_and_shipping_at_checkout' | t }}
+
+# sections/main-order.liquid  (8 lines)
+  L265: {%- for shipping_method in order.shipping_methods -%}
+  L267: <td id="RowShipping" role="rowheader" scope="row" colspan="4">
+  L268: {{ 'customer.order.shipping' | t }} ({{ shipping_method.title }})
+  L271: headers="RowShipping"
+  L273: data-label="{{ 'customer.order.shipping' | t }} ({{ shipping_method.title }})"
+  L275: {{ shipping_method.price | money }}
+  L336: <h2>{{ 'customer.order.shipping_address' | t }}</h2>
+  L341: {{ order.shipping_address | format_address }}
+
+# PAGES
+  [politica-de-pre-venda] Política de Pré-Venda GE Beauty
+     frete grátis
+     , conforme o valor total do carrinho. Os valores mínimos para frete grátis para cada região podem ser conferidos
+     8. Frete e promoções
+     cupons de frete grátis
+     no site da GE Beauty. Os pedidos elegíveis a frete grátis seguem as regras da
+     Política de Frete
+     cálculo do frete será feito normalmente
+
+# POLICIES
+[{"query_errors": [{"message": "Field 'shippingPolicy' doesn't exist on type 'Shop'", "locations": [{"line": 1, "column": 10}], "path": ["query", "shop", "shippingPolicy"], "extensions": {"code": "undefinedField", "typeName": "Shop", "fieldName": "shippingPolicy"}}, {"message": "Field 'refundPolicy' doesn't exist on type 'Shop'", "locations": [{"line": 1, "column": 38}], "path": ["query", "shop", "refundPolicy"], "extensions": {"code": "undefinedField", "typeName": "Shop", "fieldName": "refundPolicy"}}]}]

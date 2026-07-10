@@ -1,0 +1,183 @@
+# Excel Conventions — Building Spreadsheets for Lucas
+
+How Lucas works in Excel, so every file Claude generates is **takeover-ready**: Lucas
+opens it in his pt-BR Excel, reads it, and edits it without surprises. Append to this
+doc whenever Lucas corrects a spreadsheet or states a preference (see the running log
+at the bottom). Repo-wide: applies to the BP, B2B models, and any future workbook.
+
+---
+
+## 0. HARD RULE — formula localization (author English, Lucas sees Portuguese)
+
+The `.xlsx`/OOXML format stores every formula in the **English/invariant** layer:
+English function tokens (`SUMIF`, `IF`, `INDEX`) and **comma** argument separators.
+Excel then *renders* them in the user's locale. Lucas runs **pt-BR**, so he sees
+`SOMASE`, `SE`, `ÍNDICE`, semicolons, and `,` as the decimal mark — automatically.
+
+- **ALWAYS author the English token** (`=SUMIF(...)`, commas, `.` decimals) via openpyxl.
+- **NEVER write literal Portuguese** (`=SOMASE(...)`) into the file — Excel rejects the
+  stored token as `#NOME?`.
+- Pure arithmetic (`* + - /` + cell refs) is locale-independent and needs nothing special.
+- If Lucas ever opens a file and sees a **raw English function name** or **comma-separated
+  args inside a function**, that's a genuine defect — investigate. (Under correct OOXML
+  storage he won't.)
+
+**EN → pt-BR cheat-sheet** (what to author → what Lucas sees):
+`SUM`→SOMA · `SUMIF`→SOMASE · `SUMIFS`→SOMASES · `SUMPRODUCT`→SOMARPRODUTO ·
+`IF`→SE · `IFERROR`→SEERRO · `INDEX`→ÍNDICE · `MATCH`→CORRESP · `VLOOKUP`→PROCV ·
+`XLOOKUP`→PROCX · `ROUND`→ARRED · `AVERAGE`→MÉDIA · `COUNT`→CONT.NÚM ·
+`COUNTIF`→CONT.SE · `AND`→E · `OR`→OU · `TEXT`→TEXTO · `EOMONTH`→FIMMÊS.
+
+---
+
+## 1. House style (mirrors `GEB_Financeiro/.../GE Beauty_BP_v2026.xlsx`)
+
+- **Font:** Calibri, uniform **8pt**. Bold only for headers, labels, and totals — no mixed sizes.
+- **Headers:** brand red fill `#DF3630`, white bold text. No black fills anywhere.
+- **Manual inputs:** pale fill `#FFF2CC` + thin border so Lucas spots what's editable.
+  Outputs/formulas: near-white `#F7F7F7` fill.
+- **Number formats:** `"R$" #,##0` (no decimals) for R$ amounts; `0%` for margins;
+  `0.00%` for tax rates only; `#,##0` for integers; `DD/MM/YYYY` for dates.
+- **Row height:** default **10.5** on every sheet (`ws.sheet_format.defaultRowHeight = 10.5`).
+  Spacer/padding rows stay at 10.5 — never shrink them. Only intentionally tall rows
+  (title bars ≈18, column-header rows ≈26) set heights explicitly.
+- **No merged cells — EVER.** Use **"Centralizar seleção"** (`Alignment(horizontal="centerContinuous")`)
+  for centered spanning text. For full-width title/section bars, apply the fill to every cell
+  in the row range and let the text overflow from the first cell. Merging breaks row/column
+  selection, copy-paste, and navigation — avoid it entirely.
+- **Sheet:** gridlines off, freeze panes, zoom ~115.
+
+## 2. DRE line order (canonical, from BP `B2B_DRE`)
+
+Use this order and these PT labels:
+
+```
+GMV → Receita (produtos + acessórios) → Frete → Desconto
+→ RECEITA BRUTA
+  (−) Impostos sobre receita: ICMS, PIS/COFINS
+→ RECEITA LÍQUIDA
+  (−) CMV: produto, frete s/ compras, embalagem
+→ MARGEM BRUTA
+  (−) Despesas variáveis (venda, logística, ...)
+→ ... → EBITDA / RESULTADO
+```
+
+## 3. Modeling patterns Lucas asks for
+
+- **Everything is a variable to "play with":** every driver is an editable input cell;
+  formulas reference it. Never bury a driver as a literal inside a formula.
+- **Sensitivity grids:** put the variable under negotiation on an axis; **wire the median
+  row/column to the relevant input cell** so the grid re-centers when the input changes;
+  neighbours step by a fixed amount. Conditional-format green (≥0) / red (<0).
+- **Multi-line COGS:** costs can split across lines with different bases — e.g. *Produto*
+  as % of **sell-out**, *fee* as % of **sell-in**. Apply each to its correct base.
+- **Sell-in vs sell-out are distinct and explicit:** `sell-in = sell-out × (1 − margem do varejista)`.
+- **Keep break-even helper cells:** volume needed, max investment, etc.
+
+## 4. Vocabulary & filing
+
+- PT labels: Premissas, Receita bruta/líquida, Margem bruta, CMV, Bonificação, Sell-in,
+  Sell-out, Investimento trade, Margem de contribuição.
+- **Shared-drive file naming:** `GE Beauty_<descrição>.xlsx`.
+- **B2B home:** `GEB_B2B/<categoria-de-canal>/<varejista>/` (e.g. `Farma/Drogaria Iguatemi/`).
+
+## 5. Tooling
+
+- Built with **openpyxl** (Python `C:/Python314/python.exe`). Generators live at
+  `sandbox/<tenant>/scripts/build_*.py`.
+- Generator writes to a **staging path**; the canonical file lives on the **Drive**;
+  copy over only after verifying.
+- **Always recompute the model independently in Python** to confirm formulas tie out
+  before shipping (no LibreOffice headless available for a real recalc).
+
+## 6. B2B Dashboard — design patterns (B2B_Box_Dashboard.xlsx)
+
+Generated by `sandbox/gebeauty/scripts/_b2b_excel_dashboard.py` (v6 as of 2026-06-29).
+
+### Sheet layout (with padding — every sheet)
+Every sheet has **col A (width 2.5) and row 1 (height 5) empty** as padding. All content
+starts at B2. Filter cell: `$D$4`. Chart anchor: `F8`.
+
+- **Dashboard** (red tab): filter at D4; KPI strip rows 6–11; chart helper data rows 13–25
+  cols B–D (visible, not hidden); bar chart anchored F8; Ledger at row 29; Proposta below ledger.
+- **COGS** (grey tab): plain interval B3:G{last}; Retail column fetched live from Shopify at
+  generation time (`product_type:product OR product_type:acessorio` — HARD RULE). No Table objects.
+- **Histórico** (grey tab): plain interval B3:O{last}, 14 data columns (B–O, no Table objects).
+  NF sits between Data and Status. Two helper columns at the right:
+  - **N = Mês**: `=EOMONTH(C,-1)+1` — normalises each deal date to the 1st of its
+    month (date value). EOMONTH renders as FIMMÊS in pt-BR Excel.
+  - **O = Receita**: `=J*I` (Preco × Volume) — scalar revenue per line.
+
+### No Table objects — always use explicit cell intervals
+Lucas prefers **plain intervals** over openpyxl `Table` objects. All cross-sheet formulas
+reference ranges like `'Histórico'!$N$4:$N$503` (not `TblHistorico[Mês]`).
+Reasons: tables add hidden named scope complexity, can conflict with manual edits, and
+structured references are harder to audit.
+
+### Chart formula pattern (SUMIF/SUMIFS on EOMONTH-normalised dates)
+Chart helper data is placed **at rows 13–25 cols B–D of Dashboard** (visible, not hidden).
+Column D per month (filter cell `$D$4`, date anchor in col C same row):
+```
+=IF($D$4="Todos",
+   SUMIF('Histórico'!$N$4:$N$503,$C{r},'Histórico'!$O$4:$O$503),
+   SUMIFS('Histórico'!$O$4:$O$503,'Histórico'!$N$4:$N$503,$C{r},'Histórico'!$B$4:$B$503,$D$4))
+```
+`SUMIF` on `'Histórico'!$N` works because EOMONTH produces exact date values;
+comparing two EOMONTH-normalised dates is an exact match. Lucas confirmed this approach —
+do not reintroduce YEAR/MONTH/SUMPRODUCT.
+
+### Number formats (0 decimal preference)
+- R$ amounts: `"R$" #,##0` (no cents)
+- Percentages: `0%` (not `0.0%` or `0.00%`)
+- Integers: `#,##0`
+- Dates: `DD/MM/YYYY`; month helpers: `MM/YYYY` or `MMM/YY`
+
+### Font
+Uniform **8pt Calibri** across the whole file. Bold only for headers, labels, and totals.
+No 9pt, 14pt, or mixed sizes.
+
+### Colors (matching GE Beauty BP reference)
+- Header fills (title bars, column headers): `#DF3630` (GEB red), white bold text
+- Input cells: `#FFF2CC` (pale yellow)
+- Formula/calc cells: `#F7F7F7` (near-white)
+- Alternating rows: `#F4F3F0` (light grey) on even rows
+- KPI tiles: `#E8EFF8` (light blue)
+- No black fills anywhere.
+
+### Proposta dynamic columns (all locked to $D$4 client filter)
+- Hist_min/max_cli (cols L/M): MINIFS/MAXIFS filtered by SKU **and** Operador=$D$4.
+- Hist_min/max_geral (cols N/O): MINIFS/MAXIFS filtered by SKU only.
+- Flag (col P): text flag derived from how current Desc% sits vs historical range.
+- XLOOKUP auto-populates Produto, COGS_ES, Retail from COGS interval on SKU entry.
+
+---
+
+## 7. Running log — corrections & preferences
+
+- **2026-06-29** (B2B break-even, Drogaria Iguatemi): investment (not margin) on the
+  sensitivity X-axis; median row/col wired to input cells (sell-out→C7, investment→C17);
+  COGS split into *Produto* (% sell-out) + *fee Boniteca* (% sell-in); confirmed
+  formulas authored in EN render as pt-BR on his side.
+
+- **2026-06-29** (all files): Two new hard rules added to §1:
+  (1) Never merge cells — use Centralizar seleção (centerContinuous) instead;
+  (2) Default row height 10.5; spacer rows stay at 10.5, never shrink them.
+
+- **2026-06-29** (B2B_Box_Dashboard v6): Lucas made manual changes to the v5 file and
+  stated new preferences: padding col A (2.5 wide) + row 1 on every sheet; chart data
+  visible near the chart (not hidden at row 200+); chart labels + x-axis; 0-decimal
+  number formats; 8pt font everywhere; red headers matching BP (no black fills);
+  intervals not Table objects; canonical SKU handles ("GEB 001" with space).
+
+- **2026-06-29** (B2B_Box_Dashboard v7): Lucas prefers **INDEX+MATCH** over XLOOKUP for all
+  cross-sheet lookups. Canonical pattern:
+  `=IFERROR(INDEX(return_range,MATCH(lookup_val,lookup_range,0)),"")`.
+  XLOOKUP is cleaner but INDEX+MATCH is more portable and Lucas explicitly audited and fixed
+  existing XLOOKUP calls to this pattern. Never introduce new XLOOKUP in B2B files.
+
+- **2026-06-29** (B2B_Box_Dashboard): Lucas asked "change all formulas to Portuguese
+  (somase not sumif)." Claude complied — result was empty chart cells (Excel discards
+  stored PT tokens as #NOME?). **The §0 rule wins over verbal asks**: always author EN
+  tokens; openpyxl/OOXML has no locale layer. When Lucas says "use SOMASE," he means
+  "I want to see SOMASE in the formula bar" — that happens automatically on pt-BR Excel
+  when EN is stored. Do not write literal PT tokens.

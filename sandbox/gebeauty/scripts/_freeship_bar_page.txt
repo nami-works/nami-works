@@ -1,0 +1,14 @@
+handle: entrega-expressa
+   titulo: Entrega expressa
+   texto_nao_sublinhado: receba até amanhã com a
+   texto_sublinhado: entrega expressa
+handle: aviso-promocional
+   titulo: Aviso promocional
+   texto_nao_sublinhado: monte seu ritual com
+   texto_sublinhado: até 15% off
+handle: frete-gratis
+   titulo: Frete grátis
+   texto_nao_sublinhado: frete grátis
+   texto_sublinhado: a partir de R$299
+
+=== PAGES with frete/envio/entrega in handle or title ===

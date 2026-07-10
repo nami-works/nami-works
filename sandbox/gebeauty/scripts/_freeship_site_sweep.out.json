@@ -1,0 +1,3895 @@
+{
+  "theme": {
+    "id": 181379236160,
+    "name": "[Check] - Produção"
+  },
+  "domain": {
+    "url": "https://www.gebeauty.com.br",
+    "host": "www.gebeauty.com.br"
+  },
+  "asset_hits": [
+    {
+      "asset": "assets/base.css",
+      "count": 7,
+      "lines": [
+        {
+          "line": 3754,
+          "text": "shipping-calculator .js-rates-text li {"
+        },
+        {
+          "line": 3761,
+          "text": "shipping-calculator .js-rates-text li span {"
+        },
+        {
+          "line": 3766,
+          "text": "shipping-calculator .js-rates-text li strong {"
+        },
+        {
+          "line": 3894,
+          "text": "shipping-calculator button.disabled {"
+        },
+        {
+          "line": 3898,
+          "text": "shipping-calculator button.enabled {"
+        },
+        {
+          "line": 3902,
+          "text": ".shipping-calc-wrapper .shippingCalcButton.disabled {"
+        },
+        {
+          "line": 3906,
+          "text": ".shipping-calc-wrapper .shippingCalcButton.enabled {"
+        }
+      ]
+    },
+    {
+      "asset": "assets/component-cart-drawer.css",
+      "count": 3,
+      "lines": [
+        {
+          "line": 898,
+          "text": ".drawer__calc .title-wrapper-shipping {"
+        },
+        {
+          "line": 997,
+          "text": ".drawer__calc .shipping-response p,"
+        },
+        {
+          "line": 1006,
+          "text": ".drawer__calc .shipping-list,"
+        }
+      ]
+    },
+    {
+      "asset": "assets/get-estimates-product.js",
+      "count": 57,
+      "lines": [
+        {
+          "line": 5,
+          "text": "https://freakdesign.com.au/blogs/news/get-shipping-estimates-on-a-product-page"
+        },
+        {
+          "line": 14,
+          "text": "var shippingCalcExist = document.querySelector('.shipping-calc-wrapper');"
+        },
+        {
+          "line": 15,
+          "text": "if(shippingCalcExist) return;"
+        },
+        {
+          "line": 16,
+          "text": "/* The ID of the element that you want to add the shipping fields into */"
+        },
+        {
+          "line": 23,
+          "text": "var shippingMessage = document.createElement('p');"
+        },
+        {
+          "line": 24,
+          "text": "var shippingCountry = document.createElement('select');"
+        },
+        {
+          "line": 25,
+          "text": "var shippingProvince = document.createElement('select');"
+        },
+        {
+          "line": 26,
+          "text": "var shippingZip = document.createElement('input');"
+        },
+        {
+          "line": 32,
+          "text": "shippingCountry.add(new Option(countries[i], countries[i], i===0));"
+        },
+        {
+          "line": 34,
+          "text": "shippingCountry.name = 'shipping_address[country]';"
+        },
+        {
+          "line": 38,
+          "text": "shippingProvince.add(new Option(provinces[i], provinces[i], i===0));"
+        },
+        {
+          "line": 40,
+          "text": "shippingProvince.name = 'shipping_address[province]';"
+        },
+        {
+          "line": 42,
+          "text": "shippingZip.type = 'text';"
+        },
+        {
+          "line": 43,
+          "text": "shippingZip.name = 'shipping_address[zip]';"
+        },
+        {
+          "line": 44,
+          "text": "shippingZip.value = '';"
+        },
+        {
+          "line": 45,
+          "text": "shippingZip.placeholder = 'Insira seu CEP';"
+        },
+        {
+          "line": 46,
+          "text": "shippingZip.addEventListener('input', function(e) {"
+        },
+        {
+          "line": 51,
+          "text": "const calcButton = document.querySelector('.shippingCalcButton');"
+        },
+        {
+          "line": 64,
+          "text": "shippingZip.addEventListener('keypress', function(e) {"
+        },
+        {
+          "line": 78,
+          "text": "var shippingCalcWrapper = document.createElement('form');"
+        },
+        {
+          "line": 79,
+          "text": "shippingCalcWrapper.className = 'shipping-calc-wrapper';"
+        },
+        {
+          "line": 81,
+          "text": "var shippingCalcTitle = document.createElement('p');"
+        },
+        {
+          "line": 82,
+          "text": "shippingCalcTitle.innerHTML = '<svg width=\"24\" height=\"16\" viewBox=\"0 0 24 16\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M23.1956 5.96875L21.8831 2.6875C21.7718 2.40988 21.5796 2.17209 21.3316 2.00494C21.0835 1.83778 20.791 1.74897 20.4919 1.75H17.25V1C17.25 0.801088 17.171 0.610322 17"
+        },
+        {
+          "line": 84,
+          "text": "var shippingCalcButton = document.createElement('button');"
+        },
+        {
+          "line": 85,
+          "text": "shippingCalcButton.innerText = 'Calcular';"
+        },
+        {
+          "line": 86,
+          "text": "shippingCalcButton.className = 'button shippingCalcButton';"
+        },
+        {
+          "line": 87,
+          "text": "shippingCalcWrapper.addEventListener('submit', function(e) {"
+        },
+        {
+          "line": 92,
+          "text": "const zipValue = shippingZip.value.replace(/\\D/g, '');"
+        },
+        {
+          "line": 94,
+          "text": "shippingMessage.innerHTML = '<p style=\"color: #df3630; font-size: 14px;\">Por favor, digite um CEP válido com 8 dígitos.</p>';"
+        },
+        {
+          "line": 98,
+          "text": "if(shippingZip.value != ''){"
+        },
+        {
+          "line": 99,
+          "text": "shippingCalcButton.innerText = 'Calculando...';"
+        },
+        {
+          "line": 100,
+          "text": "shippingCalcButton.className += ' disabled';"
+        },
+        {
+          "line": 129,
+          "text": "shippingCalcWrapper.appendChild(shippingCalcTitle);"
+        },
+        {
+          "line": 130,
+          "text": "// shippingCalcWrapper.appendChild(labels[0]);"
+        },
+        {
+          "line": 131,
+          "text": "// shippingCalcWrapper.appendChild(shippingCountry);"
+        },
+        {
+          "line": 132,
+          "text": "// shippingCalcWrapper.appendChild(labels[0]);"
+        },
+        {
+          "line": 133,
+          "text": "// shippingCalcWrapper.appendChild(shippingProvince);"
+        },
+        {
+          "line": 134,
+          "text": "// shippingCalcWrapper.appendChild(labels[1]);"
+        },
+        {
+          "line": 135,
+          "text": "shippingCalcWrapper.appendChild(shippingZip);"
+        },
+        {
+          "line": 136,
+          "text": "shippingCalcWrapper.appendChild(shippingCalcButton);"
+        },
+        {
+          "line": 137,
+          "text": "shippingCalcWrapper.appendChild(dontKnowZipLink);"
+        },
+        {
+          "line": 138,
+          "text": "shippingCalcWrapper.appendChild(shippingMessage);"
+        },
+        {
+          "line": 140,
+          "text": "productSection.appendChild(shippingCalcWrapper);"
+        },
+        {
+          "line": 190,
+          "text": "fetch('/cart/shipping_rates.json?' + new URLSearchParams({"
+        },
+        {
+          "line": 191,
+          "text": "'shipping_address[country]':shippingCountry.value,"
+        },
+        {
+          "line": 192,
+          "text": "'shipping_address[province]':shippingProvince.value,"
+        },
+        {
+          "line": 193,
+          "text": "'shipping_address[zip]':shippingZip.value"
+        },
+        {
+          "line": 197,
+          "text": "if(result.shipping_rates && result.shipping_rates.length){"
+        },
+        {
+          "line": 200,
+          "text": "for (let i = 0; i < result.shipping_rates.length; i++) {"
+        },
+        {
+          "line": 201,
+          "text": "const element = result.shipping_rates[i];"
+        },
+        {
+          "line": 216,
+          "text": "precoFinal = \"<strong>GRÁTIS</strong>\";"
+        },
+        {
+          "line": 227,
+          "text": "shippingMessage.innerHTML = `<ul>${messageHtml}</ul>`;"
+        },
+        {
+          "line": 228,
+          "text": "document.querySelector('.shippingCalcButton').innerText = 'Calcular';"
+        },
+        {
+          "line": 229,
+          "text": "document.querySelector('.shippingCalcButton').className = 'button shippingCalcButton';"
+        },
+        {
+          "line": 234,
+          "text": "shippingMessage.innerHTML = '';"
+        },
+        {
+          "line": 235,
+          "text": "document.querySelector('.shippingCalcButton').innerText = 'Calcular';"
+        },
+        {
+          "line": 236,
+          "text": "document.querySelector('.shippingCalcButton').className = 'button shippingCalcButton';"
+        }
+      ]
+    },
+    {
+      "asset": "assets/instant-pixel-site_9ca9cf311ce74ea58aed48e576b33f7c.js",
+      "count": 2,
+      "lines": [
+        {
+          "line": 7,
+          "text": "`+i):r.stack=i}catch{}}throw r}}_request(t,n){typeof t==\"string\"?(n=n||{},n.url=t):n=t||{},n=Ot(this.defaults,n);const{transitional:r,paramsSerializer:o,headers:i}=n;r!==void 0&&Kn.assertOptions(r,{silentJSONParsing:qe.transitional(qe.boolean),forcedJSONParsing:qe.transitional(qe.boolean),clarifyTim"
+        },
+        {
+          "line": 12,
+          "text": "`,{payload:s});const c=Ds(JSON.stringify(s));await Promise.all([Wg({trackEventPayload:s,compressedPayload:c}),Vg({trackEventPayload:s,compressedPayload:c})])}const Ws=100,ir=\"_instant_qu_\";function Vs(e){return`${`${ir}${e}`}|${Ue.id}`}function Ys(){const e=[];if(tr()){const n=ko();for(let r=0;r<n;r"
+        }
+      ]
+    },
+    {
+      "asset": "assets/jquery.cart.min.js",
+      "count": 18,
+      "lines": [
+        {
+          "line": 2,
+          "text": "* Module to add a shipping rates calculator to cart page."
+        },
+        {
+          "line": 25,
+          "text": "(Shopify.Cart.ShippingCalculator = (function () {"
+        },
+        {
+          "line": 29,
+          "text": "templateId: \"shipping-calculator-response-template\","
+        },
+        {
+          "line": 59,
+          "text": "\"#wrapper-response span.money, #estimated-shipping span.money\""
+        },
+        {
+          "line": 76,
+          "text": "_getCartShippingRatesForDestination = function (e) {"
+        },
+        {
+          "line": 79,
+          "text": "url: \"/cart/prepare_shipping_rates\","
+        },
+        {
+          "line": 80,
+          "text": "data: jQuery.param({ shipping_address: e }),"
+        },
+        {
+          "line": 81,
+          "text": "success: _pollForCartShippingRatesForDestination(e),"
+        },
+        {
+          "line": 86,
+          "text": "_pollForCartShippingRatesForDestination = function (e) {"
+        },
+        {
+          "line": 88,
+          "text": "jQuery.ajax(\"/cart/async_shipping_rates\", {"
+        },
+        {
+          "line": 92,
+          "text": "? _onCartShippingRatesUpdate(r.shipping_rates, e)"
+        },
+        {
+          "line": 112,
+          "text": "jQuery(\"#estimated-shipping\").hide(),"
+        },
+        {
+          "line": 113,
+          "text": "jQuery(\"#estimated-shipping em\").empty(),"
+        },
+        {
+          "line": 125,
+          "text": "_onCartShippingRatesUpdate = function (e, t) {"
+        },
+        {
+          "line": 135,
+          "text": "? jQuery(\"#estimated-shipping em\").html(\"FREE\")"
+        },
+        {
+          "line": 136,
+          "text": ": jQuery(\"#estimated-shipping em\").html(_formatRate(e[0].price));"
+        },
+        {
+          "line": 141,
+          "text": "jQuery(\"#\" + _config.wrapperId + \", #estimated-shipping\").fadeIn();"
+        },
+        {
+          "line": 205,
+          "text": "_getCartShippingRatesForDestination(e);"
+        }
+      ]
+    },
+    {
+      "asset": "assets/section-main-product.css",
+      "count": 8,
+      "lines": [
+        {
+          "line": 1934,
+          "text": ".shipping-calc-wrapper {"
+        },
+        {
+          "line": 1940,
+          "text": ".shipping-calc-wrapper > p {"
+        },
+        {
+          "line": 1952,
+          "text": ".shipping-calc-wrapper > p svg path {"
+        },
+        {
+          "line": 1956,
+          "text": ".shipping-calc-wrapper > input {"
+        },
+        {
+          "line": 1967,
+          "text": ".shipping-calc-wrapper > button {"
+        },
+        {
+          "line": 1976,
+          "text": ".shipping-calc-wrapper > p > ul {"
+        },
+        {
+          "line": 1985,
+          "text": ".shipping-calc-wrapper > p > ul li {"
+        },
+        {
+          "line": 1993,
+          "text": ".shipping-calc-wrapper > p > ul li span {"
+        }
+      ]
+    },
+    {
+      "asset": "assets/shipping-calculator.js",
+      "count": 17,
+      "lines": [
+        {
+          "line": 1,
+          "text": "if (!customElements.get(\"shipping-calculator\")) {"
+        },
+        {
+          "line": 2,
+          "text": "class ShippingCalculator extends HTMLElement {"
+        },
+        {
+          "line": 71,
+          "text": "const params = `shipping_address[zip]=${this.zip.value}&shipping_address[country]=${this.country.value}&shipping_address[province]=${this.province.value}`;"
+        },
+        {
+          "line": 82,
+          "text": "`${theme.routes.cart}/shipping_rates.json?${params}`"
+        },
+        {
+          "line": 101,
+          "text": "* Formats and shows a list of available shipping rates."
+        },
+        {
+          "line": 105,
+          "text": "* Formats and shows a list of available shipping rates."
+        },
+        {
+          "line": 113,
+          "text": "const metaFreeShipping = window.ShopifyInfo?.freeShippingGoal ?? Infinity;"
+        },
+        {
+          "line": 115,
+          "text": "const coverage = window.ShopifyInfo?.freeShippingCoverage || 'all';"
+        },
+        {
+          "line": 131,
+          "text": "if (data.shipping_rates && data.shipping_rates.length) {"
+        },
+        {
+          "line": 133,
+          "text": "data.shipping_rates.length === 1 ? \"singleRate\" : \"multipleRates\";"
+        },
+        {
+          "line": 136,
+          "text": "data.shipping_rates.forEach((rate) => {"
+        },
+        {
+          "line": 153,
+          "text": "formattedRate = \"<strong>GRÁTIS</strong>\";"
+        },
+        {
+          "line": 154,
+          "text": "} else if (valorTotalCarrinho >= metaFreeShipping && isEligible) {"
+        },
+        {
+          "line": 155,
+          "text": "formattedRate = `<span style=\"text-decoration: line-through; opacity: 0.6; margin-right: 5px;\">${precoFormatadoBase}</span> <strong style=\"color: #2e8b57;\">GRÁTIS</strong>`;"
+        },
+        {
+          "line": 169,
+          "text": "theme.strings.shippingCalculator[headingLocaleStr];"
+        },
+        {
+          "line": 173,
+          "text": "textEl.innerHTML = theme.strings.shippingCalculator.noRates;"
+        },
+        {
+          "line": 197,
+          "text": "customElements.define(\"shipping-calculator\", ShippingCalculator);"
+        }
+      ]
+    },
+    {
+      "asset": "config/settings_data.json",
+      "count": 28,
+      "lines": [
+        {
+          "line": 142,
+          "text": "\"show_free_shipping_progress\": false,"
+        },
+        {
+          "line": 143,
+          "text": "\"free_shipping_min_amount\": \"299\","
+        },
+        {
+          "line": 144,
+          "text": "\"free_shipping_text\": \"frete calculado no checkout\","
+        },
+        {
+          "line": 145,
+          "text": "\"free_shipping_text_come\": \"opções de frete calculadas no checkout\","
+        },
+        {
+          "line": 152,
+          "text": "\"promo_bar_top_text\": \"necessaire clutch;frete grátis\","
+        },
+        {
+          "line": 153,
+          "text": "\"promo_bar_text_come\": \"você ganhou necessaire + frete 🎉\","
+        },
+        {
+          "line": 157,
+          "text": "\"shipping_calculator_fixed_text\": false,"
+        },
+        {
+          "line": 158,
+          "text": "\"shipping_calculator_default_text\": \"\","
+        },
+        {
+          "line": 159,
+          "text": "\"shipping_calculator_specific_text\": \"\","
+        },
+        {
+          "line": 160,
+          "text": "\"shipping_calculator\": true,"
+        },
+        {
+          "line": 161,
+          "text": "\"shipping_calculator_default_country\": \"Brazil\","
+        },
+        {
+          "line": 190,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 235,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 280,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 325,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 370,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 415,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 460,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 505,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 550,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 595,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 640,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 685,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 730,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 775,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 820,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 865,
+          "text": "\"text\": \"frete calculado\","
+        },
+        {
+          "line": 965,
+          "text": "\"text\": \"frete calculado\","
+        }
+      ]
+    },
+    {
+      "asset": "config/settings_schema.json",
+      "count": 52,
+      "lines": [
+        {
+          "line": 1631,
+          "text": "\"name\": \"t:settings_schema.shipping_progress_bar.name\","
+        },
+        {
+          "line": 1635,
+          "text": "\"content\": \"t:settings_schema.shipping_progress_bar.settings.header.content\""
+        },
+        {
+          "line": 1639,
+          "text": "\"id\": \"show_free_shipping_progress\","
+        },
+        {
+          "line": 1640,
+          "text": "\"label\": \"t:settings_schema.shipping_progress_bar.settings.show_free_shipping_progress.label\""
+        },
+        {
+          "line": 1644,
+          "text": "\"id\": \"free_shipping_min_amount\","
+        },
+        {
+          "line": 1645,
+          "text": "\"label\": \"t:settings_schema.shipping_progress_bar.settings.free_shipping_min_amount.label\","
+        },
+        {
+          "line": 1646,
+          "text": "\"info\": \"t:settings_schema.shipping_progress_bar.settings.free_shipping_min_amount.info\""
+        },
+        {
+          "line": 1650,
+          "text": "\"content\": \"t:settings_schema.shipping_progress_bar.settings.header_region_rules.content\","
+        },
+        {
+          "line": 1651,
+          "text": "\"info\": \"t:settings_schema.shipping_progress_bar.settings.header_region_rules.info\""
+        },
+        {
+          "line": 1655,
+          "text": "\"id\": \"free_shipping_coverage\","
+        },
+        {
+          "line": 1656,
+          "text": "\"label\": \"t:settings_schema.shipping_progress_bar.settings.free_shipping_coverage.label\","
+        },
+        {
+          "line": 1676,
+          "text": "\"label\": \"t:settings_schema.shipping_progress_bar.settings.fs_region_sul.label\","
+        },
+        {
+          "line": 1682,
+          "text": "\"label\": \"t:settings_schema.shipping_progress_bar.settings.fs_region_sudeste.label\","
+        },
+        {
+          "line": 1688,
+          "text": "\"label\": \"t:settings_schema.shipping_progress_bar.settings.fs_region_centro_oeste.label\","
+        },
+        {
+          "line": 1694,
+          "text": "\"label\": \"t:settings_schema.shipping_progress_bar.settings.fs_region_nordeste.label\","
+        },
+        {
+          "line": 1700,
+          "text": "\"label\": \"t:settings_schema.shipping_progress_bar.settings.fs_region_norte.label\","
+        },
+        {
+          "line": 1706,
+          "text": "\"label\": \"t:settings_schema.shipping_progress_bar.settings.fs_local_zips.label\","
+        },
+        {
+          "line": 1707,
+          "text": "\"info\": \"t:settings_schema.shipping_progress_bar.settings.fs_local_zips.info\""
+        },
+        {
+          "line": 1711,
+          "text": "\"content\": \"t:settings_schema.shipping_progress_bar.settings.header_visuals.content\""
+        },
+        {
+          "line": 1715,
+          "text": "\"id\": \"free_shipping_text\","
+        },
+        {
+          "line": 1716,
+          "text": "\"label\": \"t:settings_schema.shipping_progress_bar.settings.free_shipping_text.label\","
+        },
+        {
+          "line": 1717,
+          "text": "\"default\": \"Faltam [amount] para ganhar Frete Grátis\""
+        },
+        {
+          "line": 1721,
+          "text": "\"id\": \"free_shipping_text_come\","
+        },
+        {
+          "line": 1722,
+          "text": "\"label\": \"t:settings_schema.shipping_progress_bar.settings.free_shipping_text_come.label\","
+        },
+        {
+          "line": 1723,
+          "text": "\"default\": \"Você ganhou Frete Grátis!\""
+        },
+        {
+          "line": 1728,
+          "text": "\"label\": \"t:settings_schema.shipping_progress_bar.settings.background_color_bar.label\""
+        },
+        {
+          "line": 1733,
+          "text": "\"label\": \"t:settings_schema.shipping_progress_bar.settings.background_color_progress.label\""
+        },
+        {
+          "line": 1738,
+          "text": "\"label\": \"t:settings_schema.shipping_progress_bar.settings.background_color_progress_done.label\""
+        },
+        {
+          "line": 1764,
+          "text": "\"default\": \"Faltam [amount] para ganhar Frete Grátis\""
+        },
+        {
+          "line": 1770,
+          "text": "\"default\": \"Mini;Frete Grátis\""
+        },
+        {
+          "line": 1776,
+          "text": "\"default\": \"Você ganhou Frete Grátis!\""
+        },
+        {
+          "line": 1796,
+          "text": "\"name\": \"t:settings_schema.shipping_calculator.name\","
+        },
+        {
+          "line": 1800,
+          "text": "\"id\": \"shipping_calculator_fixed_text\","
+        },
+        {
+          "line": 1801,
+          "text": "\"label\": \"t:settings_schema.shipping_calculator.settings.shipping_calculator_fixed_text.label\","
+        },
+        {
+          "line": 1806,
+          "text": "\"id\": \"shipping_calculator_default_text\","
+        },
+        {
+          "line": 1807,
+          "text": "\"label\": \"t:settings_schema.shipping_calculator.settings.shipping_calculator_default_text.label\","
+        },
+        {
+          "line": 1808,
+          "text": "\"default\": \"<p>Frete demais estados: <strong>R$ 24,99<\\/strong><\\/p>\""
+        },
+        {
+          "line": 1812,
+          "text": "\"id\": \"shipping_calculator_specific_text\","
+        },
+        {
+          "line": 1813,
+          "text": "\"label\": \"t:settings_schema.shipping_calculator.settings.shipping_calculator_specific_text.label\","
+        },
+        {
+          "line": 1814,
+          "text": "\"default\": \"<p>Frete estado de São Paulo: <strong>R$ 14,99<\\/strong><\\/p>\""
+        },
+        {
+          "line": 1818,
+          "text": "\"id\": \"shipping_calculator\","
+        },
+        {
+          "line": 1819,
+          "text": "\"label\": \"t:settings_schema.shipping_calculator.settings.show_shipping_calculator.label\","
+        },
+        {
+          "line": 1824,
+          "text": "\"id\": \"shipping_calculator_heading\","
+        },
+        {
+          "line": 1825,
+          "text": "\"label\": \"t:settings_schema.shipping_calculator.settings.shipping_calculator_heading.label\","
+        },
+        {
+          "line": 1826,
+          "text": "\"default\": \"Calcule o Frete:\""
+        },
+        {
+          "line": 1830,
+          "text": "\"id\": \"shipping_calculator_default_country\","
+        },
+        {
+          "line": 1831,
+          "text": "\"label\": \"t:settings_schema.shipping_calculator.settings.shipping_calculator_default_country.label\","
+        },
+        {
+          "line": 1836,
+          "text": "\"id\": \"shipping_calculator_submit_button_label\","
+        },
+        {
+          "line": 1837,
+          "text": "\"label\": \"t:settings_schema.shipping_calculator.settings.shipping_calculator_submit_button_label.label\","
+        },
+        {
+          "line": 1842,
+          "text": "\"id\": \"shipping_calculator_submit_button_label_disabled\","
+        },
+        {
+          "line": 1843,
+          "text": "\"label\": \"t:settings_schema.shipping_calculator.settings.shipping_calculator_submit_button_label_disabled.label\","
+        },
+        {
+          "line": 1849,
+          "text": "\"label\": \"t:settings_schema.shipping_calculator.settings.dont_know_zip_label.label\","
+        }
+      ]
+    },
+    {
+      "asset": "layout/theme.ctx.liquid",
+      "count": 4,
+      "lines": [
+        {
+          "line": 504,
+          "text": "shippingCalculator: {"
+        },
+        {
+          "line": 505,
+          "text": "singleRate: {{ 'general.cart.shipping_calculator.single_rate' | t | json }},"
+        },
+        {
+          "line": 506,
+          "text": "multipleRates: {{ 'general.cart.shipping_calculator.multiple_rates' | t | json }},"
+        },
+        {
+          "line": 507,
+          "text": "noRates: {{ 'general.cart.shipping_calculator.no_rates' | t | json }}"
+        }
+      ]
+    },
+    {
+      "asset": "layout/theme.liquid",
+      "count": 4,
+      "lines": [
+        {
+          "line": 493,
+          "text": "shippingCalculator: {"
+        },
+        {
+          "line": 494,
+          "text": "singleRate: {{ 'general.cart.shipping_calculator.single_rate' | t | json }},"
+        },
+        {
+          "line": 495,
+          "text": "multipleRates: {{ 'general.cart.shipping_calculator.multiple_rates' | t | json }},"
+        },
+        {
+          "line": 496,
+          "text": "noRates: {{ 'general.cart.shipping_calculator.no_rates' | t | json }}"
+        }
+      ]
+    },
+    {
+      "asset": "locales/bg-BG.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 157,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Доставката<\\/a> се изчислява при плащане.\","
+        },
+        {
+          "line": 279,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Данъците, отстъпките и <a href=\\\"{{ link }}\\\">доставката<\\/a> се изчисляват при плащане\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Данъците са включени, а доставката и отстъпките се изчисляват при плащане\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"С включени данъци. <a href=\\\"{{ link }}\\\">Доставката<\\/a> и отстъпките се изчисляват при плащане.\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Данъците, отстъпките и доставката се изчисляват при плащане\","
+        },
+        {
+          "line": 459,
+          "text": "\"shipping_address\": \"Адрес за доставка\","
+        },
+        {
+          "line": 462,
+          "text": "\"shipping\": \"Доставка\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/cs.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 159,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Poštovné<\\/a> se vypočítá na pokladně.\","
+        },
+        {
+          "line": 300,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Daně, slevy a <a href=\\\"{{ link }}\\\">poštovné<\\/a> se vypočítají na pokladně.\","
+        },
+        {
+          "line": 301,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Příslušná daň, poštovné a slevy se vypočítají na pokladně.\","
+        },
+        {
+          "line": 302,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Včetně daní. <a href=\\\"{{ link }}\\\">Poštovné<\\/a> a slevy se vypočítají na pokladně.\","
+        },
+        {
+          "line": 303,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Daně, slevy a poštovné se vypočítají na pokladně.\","
+        },
+        {
+          "line": 483,
+          "text": "\"shipping_address\": \"Dodací adresa\","
+        },
+        {
+          "line": 486,
+          "text": "\"shipping\": \"Doprava\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/da.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 157,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Levering<\\/a> beregnes ved betaling.\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Skatter, rabatter og <a href=\\\"{{ link }}\\\">levering<\\/a> beregnes ved betaling\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Inklusive skat. Levering og rabatter beregnes ved betaling\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Inklusive skat. <a href=\\\"{{ link }}\\\">Levering<\\/a> og rabatter beregnes ved betaling.\","
+        },
+        {
+          "line": 283,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Skatter, rabatter og levering beregnes ved betaling\","
+        },
+        {
+          "line": 459,
+          "text": "\"shipping_address\": \"Leveringsadresse\","
+        },
+        {
+          "line": 462,
+          "text": "\"shipping\": \"Levering\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/de.json",
+      "count": 29,
+      "lines": [
+        {
+          "line": 46,
+          "text": "\"shipping_calculator\": {"
+        },
+        {
+          "line": 172,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Versand<\\/a> wird beim Checkout berechnet\","
+        },
+        {
+          "line": 305,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Steuern, Rabatte und <a href=\\\"{{ link }}\\\">Versand<\\/a> werden beim Checkout berechnet\","
+        },
+        {
+          "line": 306,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Inklusive Steuern, Versand und Rabatte werden beim Checkout berechnet\","
+        },
+        {
+          "line": 307,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Inklusive Steuern. <a href=\\\"{{ link }}\\\">Versand<\\/a> und Rabatte werden beim Checkout berechnet.\","
+        },
+        {
+          "line": 308,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Steuern, Rabatte und Versand werden beim Checkout berechnet\","
+        },
+        {
+          "line": 489,
+          "text": "\"shipping_address\": \"Lieferadresse\","
+        },
+        {
+          "line": 492,
+          "text": "\"shipping\": \"Versand\","
+        },
+        {
+          "line": 598,
+          "text": "\"shipping\": {"
+        },
+        {
+          "line": 629,
+          "text": "\"free_shipping_cycles\": {"
+        },
+        {
+          "line": 632,
+          "text": "\"free_shipping_cycles_delivery_not_included\": {"
+        },
+        {
+          "line": 636,
+          "text": "\"many\": \"Kostenloser Versand für mehr %{count} Lieferungen, dann %{recurring_order_shipping_price}\""
+        },
+        {
+          "line": 639,
+          "text": "\"many\": \"Kostenloser Versand für %{count} Lieferungen, danach %{recurring_order_shipping_price}\""
+        },
+        {
+          "line": 641,
+          "text": "\"max_cycles_base_shipping\": {"
+        },
+        {
+          "line": 642,
+          "text": "\"many\": \"Weitere %{count} Lieferungen für jeweils %{shipping_price}\""
+        },
+        {
+          "line": 644,
+          "text": "\"max_cycles_base_shipping_delivery_not_included\": {"
+        },
+        {
+          "line": 645,
+          "text": "\"many\": \"Weitere %{count} Lieferungen für jeweils %{shipping_price}\""
+        },
+        {
+          "line": 647,
+          "text": "\"prepaid_free_shipping_with_cycles\": {"
+        },
+        {
+          "line": 648,
+          "text": "\"many\": \"Kostenloser Versand für den ersten %{cycle}, dann %{recurring_order_shipping_price}\""
+        },
+        {
+          "line": 651,
+          "text": "\"many\": \"%{shipping_price} für weitere %{count} Lieferungen (%{per_delivery_cost})\""
+        },
+        {
+          "line": 654,
+          "text": "\"many\": \"%{shipping_price} für %{count} Lieferungen (%{per_delivery_cost})\""
+        },
+        {
+          "line": 657,
+          "text": "\"many\": \"%{shipping_price} für weitere %{count} Lieferungen (%{per_delivery_cost}), dann %{recurring_order_shipping_price}\""
+        },
+        {
+          "line": 660,
+          "text": "\"many\": \"%{shipping_price} für %{count} Lieferungen (%{per_delivery_cost}), dann %{recurring_order_shipping_price}\""
+        },
+        {
+          "line": 663,
+          "text": "\"shipping_method_first_shipment_group_title\": {"
+        },
+        {
+          "line": 666,
+          "text": "\"shipping_method_recurring_shipments_group_title\": {"
+        },
+        {
+          "line": 684,
+          "text": "\"shipping_errors\": {"
+        },
+        {
+          "line": 685,
+          "text": "\"shipping_method_not_available_generic\": {"
+        },
+        {
+          "line": 688,
+          "text": "\"shipping_method_not_available_updated\": {"
+        },
+        {
+          "line": 754,
+          "text": "\"recurring_totals_with_initial_order_shipping_discount_with_policies\": {"
+        }
+      ]
+    },
+    {
+      "asset": "locales/el.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 158,
+          "text": "\"shipping_policy_html\": \"Τα <a href=\\\"{{ link }}\\\">έξοδα αποστολής<\\/a> υπολογίζονται κατά την ολοκλήρωση της αγοράς.\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Οι φόροι, οι εκπτώσεις και τα έξοδα <a href=\\\"{{ link }}\\\">αποστολής<\\/a> υπολογίζονται κατά την ολοκλήρωση της αγοράς\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Ο φόρος που συμπεριλαμβάνεται, τα έξοδα αποστολής και οι εκπτώσεις υπολογίζονται κατά την ολοκλήρωση της αγοράς\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Ο φόρος συμπεριλαμβάνεται. Τα έξοδα <a href=\\\"{{ link }}\\\">αποστολής<\\/a> και οι εκπτώσεις υπολογίζονται κατά την ολοκλήρωση της αγοράς.\","
+        },
+        {
+          "line": 283,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Οι φόροι, οι εκπτώσεις και τα έξοδα αποστολής υπολογίζονται κατά την ολοκλήρωση της αγοράς\","
+        },
+        {
+          "line": 459,
+          "text": "\"shipping_address\": \"Διεύθυνση αποστολής\","
+        },
+        {
+          "line": 462,
+          "text": "\"shipping\": \"Έξοδα αποστολής\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/en.default.json",
+      "count": 23,
+      "lines": [
+        {
+          "line": 47,
+          "text": "\"shipping_calculator\": {"
+        },
+        {
+          "line": 48,
+          "text": "\"show\": \"Estimate shipping\","
+        },
+        {
+          "line": 49,
+          "text": "\"hide\": \"Hide shipping calculator\","
+        },
+        {
+          "line": 50,
+          "text": "\"title\": \"Estimate shipping\","
+        },
+        {
+          "line": 55,
+          "text": "\"single_rate\": \"There is one shipping rate for this destination:\","
+        },
+        {
+          "line": 56,
+          "text": "\"multiple_rates\": \"There are multiple shipping rates for this destination:\","
+        },
+        {
+          "line": 193,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Shipping<\\/a> calculated at checkout.\""
+        },
+        {
+          "line": 393,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Taxes, Discounts and <a href=\\\"{{ link }}\\\">shipping<\\/a> calculated at checkout\","
+        },
+        {
+          "line": 394,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Tax included and shipping and discounts calculated at checkout\","
+        },
+        {
+          "line": 395,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Tax included. <a href=\\\"{{ link }}\\\">Shipping<\\/a> and discounts calculated at checkout.\","
+        },
+        {
+          "line": 396,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Taxes, discounts and shipping calculated at checkout\","
+        },
+        {
+          "line": 538,
+          "text": "\"shipping_address\": \"Shipping Address\","
+        },
+        {
+          "line": 541,
+          "text": "\"shipping\": \"Shipping\","
+        },
+        {
+          "line": 640,
+          "text": "\"many\": \"These items will be removed from your cart because there are no shipping options available to your address.\""
+        },
+        {
+          "line": 674,
+          "text": "\"shipping\": {"
+        },
+        {
+          "line": 706,
+          "text": "\"shipping_method_first_shipment_group_title\": {"
+        },
+        {
+          "line": 709,
+          "text": "\"shipping_method_recurring_shipments_group_title\": {"
+        },
+        {
+          "line": 727,
+          "text": "\"shipping_errors\": {"
+        },
+        {
+          "line": 728,
+          "text": "\"shipping_method_not_available_generic\": {"
+        },
+        {
+          "line": 731,
+          "text": "\"shipping_method_not_available_updated\": {"
+        },
+        {
+          "line": 732,
+          "text": "\"many\": \"One or more items you added are not shipping to your location. Remove them to checkout or contact the store.\""
+        },
+        {
+          "line": 797,
+          "text": "\"recurring_totals_with_initial_order_shipping_discount_with_policies\": {"
+        },
+        {
+          "line": 825,
+          "text": "\"many\": \"These items will be removed from your cart because there are no shipping options available to your address.\""
+        }
+      ]
+    },
+    {
+      "asset": "locales/en.default.schema.json",
+      "count": 31,
+      "lines": [
+        {
+          "line": 489,
+          "text": "\"shipping_progress_bar\": {"
+        },
+        {
+          "line": 490,
+          "text": "\"name\": \"Free Shipping\","
+        },
+        {
+          "line": 493,
+          "text": "\"content\": \"Free Shipping Settings\""
+        },
+        {
+          "line": 495,
+          "text": "\"show_free_shipping_progress\": {"
+        },
+        {
+          "line": 496,
+          "text": "\"label\": \"Enable free shipping progress bar\""
+        },
+        {
+          "line": 498,
+          "text": "\"free_shipping_min_amount\": {"
+        },
+        {
+          "line": 499,
+          "text": "\"label\": \"Minimum free shipping amount\","
+        },
+        {
+          "line": 504,
+          "text": "\"info\": \"All of Brazil: any ZIP code gets free shipping; Specific regions: free shipping only for customers in selected regions; Local ZIPs: free shipping only for ZIP codes starting with defined numbers.\""
+        },
+        {
+          "line": 506,
+          "text": "\"free_shipping_coverage\": {"
+        },
+        {
+          "line": 507,
+          "text": "\"label\": \"Free Shipping Coverage\""
+        },
+        {
+          "line": 531,
+          "text": "\"free_shipping_text\": {"
+        },
+        {
+          "line": 532,
+          "text": "\"label\": \"Free shipping text\""
+        },
+        {
+          "line": 534,
+          "text": "\"free_shipping_text_come\": {"
+        },
+        {
+          "line": 535,
+          "text": "\"label\": \"Free shipping text reached\""
+        },
+        {
+          "line": 552,
+          "text": "\"content\": \"Free Shipping Promo bar Settings\""
+        },
+        {
+          "line": 562,
+          "text": "\"label\": \"Free shipping text\""
+        },
+        {
+          "line": 581,
+          "text": "\"shipping_calculator\": {"
+        },
+        {
+          "line": 582,
+          "text": "\"name\": \"Shipping calculator\","
+        },
+        {
+          "line": 584,
+          "text": "\"shipping_calculator_fixed_text\": {"
+        },
+        {
+          "line": 587,
+          "text": "\"shipping_calculator_default_text\": {"
+        },
+        {
+          "line": 590,
+          "text": "\"shipping_calculator_specific_text\": {"
+        },
+        {
+          "line": 593,
+          "text": "\"header_shipping_calculator\": {"
+        },
+        {
+          "line": 594,
+          "text": "\"label\": \"Shipping calculator\""
+        },
+        {
+          "line": 596,
+          "text": "\"show_shipping_calculator\": {"
+        },
+        {
+          "line": 597,
+          "text": "\"label\": \"Show shipping calculator\""
+        },
+        {
+          "line": 599,
+          "text": "\"shipping_calculator_heading\": {"
+        },
+        {
+          "line": 602,
+          "text": "\"shipping_calculator_default_country\": {"
+        },
+        {
+          "line": 605,
+          "text": "\"shipping_calculator_submit_button_label\": {"
+        },
+        {
+          "line": 608,
+          "text": "\"shipping_calculator_submit_button_label_disabled\": {"
+        },
+        {
+          "line": 2284,
+          "text": "\"shipping_calculator\": {"
+        },
+        {
+          "line": 2285,
+          "text": "\"name\": \"Shipping calculator\""
+        }
+      ]
+    },
+    {
+      "asset": "locales/es.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 158,
+          "text": "\"shipping_policy_html\": \"Los <a href=\\\"{{ link }}\\\">gastos de envío<\\/a> se calculan en la pantalla de pago.\","
+        },
+        {
+          "line": 290,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Impuestos, descuentos y <a href=\\\"{{ link }}\\\">envío<\\/a> calculados en la pantalla de pago\","
+        },
+        {
+          "line": 291,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Impuesto incluido, envío y descuentos calculados en la pantalla de pago\","
+        },
+        {
+          "line": 292,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Impuesto incluido. <a href=\\\"{{ link }}\\\">Envío<\\/a> y descuentos calculados en la pantalla de pago.\","
+        },
+        {
+          "line": 293,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Impuestos, descuentos y envío calculados en la pantalla de pago\","
+        },
+        {
+          "line": 471,
+          "text": "\"shipping_address\": \"Dirección de envío\","
+        },
+        {
+          "line": 474,
+          "text": "\"shipping\": \"Envío\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/fi.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 157,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Toimituskulut<\\/a> lasketaan kassalla.\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Verot, alennukset ja <a href=\\\"{{ link }}\\\">toimituskulut<\\/a> lasketaan kassalla\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Sisältää veron; toimituskulut ja alennukset lasketaan kassalla\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Sisältää veron. <a href=\\\"{{ link }}\\\">Toimituskulut<\\/a> ja alennukset lasketaan kassalla.\","
+        },
+        {
+          "line": 283,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Verot, alennukset ja toimituskulut lasketaan kassalla\","
+        },
+        {
+          "line": 459,
+          "text": "\"shipping_address\": \"Toimitusosoite\","
+        },
+        {
+          "line": 462,
+          "text": "\"shipping\": \"Toimitus\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/fr.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 159,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Frais d'expédition<\\/a> calculés à l'étape de paiement.\","
+        },
+        {
+          "line": 290,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Taxes, réductions et <a href=\\\"{{ link }}\\\">frais d’expédition<\\/a> calculés à l’étape du paiement\","
+        },
+        {
+          "line": 291,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Taxe incluse, frais d’expédition et réductions calculés à l’étape du paiement\","
+        },
+        {
+          "line": 292,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Taxe incluse. <a href=\\\"{{ link }}\\\">Frais d’expédition<\\/a> et réductions calculés à l’étape du paiement.\","
+        },
+        {
+          "line": 293,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Taxes, réductions et frais d’expédition calculés à l’étape du paiement\","
+        },
+        {
+          "line": 471,
+          "text": "\"shipping_address\": \"Adresse d'expédition\","
+        },
+        {
+          "line": 474,
+          "text": "\"shipping\": \"Expédition\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/hr-HR.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 159,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Poštarina <\\/a> se obračunava prilikom završetka kupnje.\","
+        },
+        {
+          "line": 290,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Porezi, popusti i <a href=\\\"{{ link }}\\\">poštarina<\\/a> obračunavaju se prilikom plaćanja\","
+        },
+        {
+          "line": 291,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Porez je uključen u cijenu, a poštarina i popusti obračunavaju se prilikom plaćanja\","
+        },
+        {
+          "line": 292,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Porez je uključen. <a href=\\\"{{ link }}\\\">Poštarina<\\/a> i popusti obračunavaju se prilikom plaćanja.\","
+        },
+        {
+          "line": 293,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Porezi, popusti i poštarina obračunavaju se prilikom plaćanja\","
+        },
+        {
+          "line": 471,
+          "text": "\"shipping_address\": \"Adresa za dostavu\","
+        },
+        {
+          "line": 474,
+          "text": "\"shipping\": \"Dostava\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/hu.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 158,
+          "text": "\"shipping_policy_html\": \"A <a href=\\\"{{ link }}\\\">szállítási költséget<\\/a> a megrendeléskor számítjuk ki.\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Az adókat, a kedvezményeket és a <a href=\\\"{{ link }}\\\">szállítási költséget<\\/a> a megrendeléskor számítjuk ki\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Tartalmazza az adót. A szállítási költséget és a kedvezményeket a megrendeléskor számítjuk ki\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Tartalmazza az adót. A <a href=\\\"{{ link }}\\\">szállítási költséget<\\/a> és a kedvezményeket a megrendeléskor számítjuk ki.\","
+        },
+        {
+          "line": 283,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Az adókat, a kedvezményeket és a szállítási költséget a megrendeléskor számítjuk ki\","
+        },
+        {
+          "line": 459,
+          "text": "\"shipping_address\": \"Szállítási cím\","
+        },
+        {
+          "line": 462,
+          "text": "\"shipping\": \"Szállítás\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/id.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 158,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Biaya pengiriman<\\/a> dihitung saat checkout.\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Pajak, Diskon dan <a href=\\\"{{ link }}\\\">biaya pengiriman<\\/a> dihitung saat checkout\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Pajak yang berlaku dan biaya pengiriman serta diskon dihitung saat checkout\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Termasuk pajak. <a href=\\\"{{ link }}\\\">Biaya pengiriman<\\/a> dan diskon dihitung saat checkout.\","
+        },
+        {
+          "line": 283,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Pajak, diskon dan biaya pengiriman dihitung saat checkout\","
+        },
+        {
+          "line": 459,
+          "text": "\"shipping_address\": \"Alamat Pengiriman\","
+        },
+        {
+          "line": 462,
+          "text": "\"shipping\": \"Pengiriman\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/it.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 158,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Spese di spedizione<\\/a> calcolate al check-out.\","
+        },
+        {
+          "line": 290,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Imposte, sconti e <a href=\\\"{{ link }}\\\">spedizione<\\/a> calcolati al check-out\","
+        },
+        {
+          "line": 291,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Imposte incluse e spedizione e sconti calcolati al check-out\","
+        },
+        {
+          "line": 292,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Imposte incluse. <a href=\\\"{{ link }}\\\">Spedizione<\\/a> e sconti calcolati al check-out.\","
+        },
+        {
+          "line": 293,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Imposte, sconti e spedizione calcolati al check-out\","
+        },
+        {
+          "line": 441,
+          "text": "\"shipping_address\": \"Indirizzo di spedizione\","
+        },
+        {
+          "line": 444,
+          "text": "\"shipping\": \"Spedizione\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/ja.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 158,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">配送料<\\/a>はチェックアウト時に計算されます。\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"税、ディスカウント、および<a href=\\\"{{ link }}\\\">配送料<\\/a>はチエックアウト時に計算されます\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"税込みで、配送料とディスカウントはチェックアアウト時に計算されます\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"税込。<a href=\\\"{{ link }}\\\">配送料<\\/a>とディスカウントはチエックアウト時に計算されます\","
+        },
+        {
+          "line": 283,
+          "text": "\"taxes_and_shipping_at_checkout\": \"税、ディスカウント、および配送料はチエックアウト時に計算されます\","
+        },
+        {
+          "line": 459,
+          "text": "\"shipping_address\": \"配送先住所\","
+        },
+        {
+          "line": 462,
+          "text": "\"shipping\": \"配送\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/ko.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 158,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">배송료<\\/a>는 결제 시 계산됩니다.\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"결제 시 세금, 할인 및 <a href=\\\"{{ link }}\\\">배송료<\\/a> 계산됨\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"세금 포함 및 결제 시 배송료 계산됨\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"세금이 포함된 가격입니다. <a href=\\\"{{ link }}\\\">배송료<\\/a> 및 할인은 결제 시 계산됩니다.\","
+        },
+        {
+          "line": 283,
+          "text": "\"taxes_and_shipping_at_checkout\": \"결제 시 세금, 할인 및 배송료 계산됨\","
+        },
+        {
+          "line": 459,
+          "text": "\"shipping_address\": \"배송 주소\","
+        },
+        {
+          "line": 462,
+          "text": "\"shipping\": \"배송\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/lt-LT.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 160,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Siuntimo išlaidos<\\/a> apskaičiuojamos atsiskaitant.\","
+        },
+        {
+          "line": 300,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Mokesčiai, nuolaidos ir <a href=\\\"{{ link }}\\\">siuntimo išlaidos<\\/a> apskaičiuojami atsiskaitant\","
+        },
+        {
+          "line": 301,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Mokesčiai įtraukti, o siuntimo išlaidos ir nuolaidos apskaičiuojamos atsiskaitant\","
+        },
+        {
+          "line": 302,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Mokesčiai įtraukti. <a href=\\\"{{ link }}\\\">Siuntimo išlaidos<\\/a> ir nuolaidos apskaičiuojamos atsiskaitant.\","
+        },
+        {
+          "line": 303,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Mokesčiai, nuolaidos ir siuntimo išlaidos apskaičiuojami atsiskaitant\","
+        },
+        {
+          "line": 453,
+          "text": "\"shipping_address\": \"Pristatymo adresas\","
+        },
+        {
+          "line": 456,
+          "text": "\"shipping\": \"Siuntimas\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/nb.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 157,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Frakt<\\/a> beregnes ved kassen.\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Avgifter, rabatter og <a href=\\\"{{ link }}\\\">frakt<\\/a> beregnes i kassen\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Inkluderte avgifter, frakt og rabatter beregnes i kassen\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Inkluderte avgifter. <a href=\\\"{{ link }}\\\">Frakt<\\/a> og rabatter beregnes i kassen.\","
+        },
+        {
+          "line": 283,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Avgifter, rabatter og frakt beregnes i kassen\","
+        },
+        {
+          "line": 429,
+          "text": "\"shipping_address\": \"Leveringsadresse\","
+        },
+        {
+          "line": 432,
+          "text": "\"shipping\": \"Frakt\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/nl.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 157,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Verzendkosten<\\/a> worden berekend bij de checkout.\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Belastingen, kortingen en <a href=\\\"{{ link }}\\\">verzending<\\/a> worden bij de checkout berekend\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Inclusief belasting; verzendkosten en kortingen worden bij de checkout berekend\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Inclusief belasting. <a href=\\\"{{ link }}\\\">Verzending<\\/a> en kortingen worden bij de checkout berekend.\","
+        },
+        {
+          "line": 283,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Belastingen, kortingen en verzending worden bij de checkout berekend\","
+        },
+        {
+          "line": 459,
+          "text": "\"shipping_address\": \"Bezorgadres\","
+        },
+        {
+          "line": 462,
+          "text": "\"shipping\": \"Verzending\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/pl.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 159,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Koszt wysyłki<\\/a> obliczony przy realizacji zakupu.\","
+        },
+        {
+          "line": 300,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Podatki, rabaty i <a href=\\\"{{ link }}\\\">wysyłki<\\/a> obliczane przy realizacji zakupu\","
+        },
+        {
+          "line": 301,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Podatek wliczony w cenę, koszty wysyłki i rabaty są obliczane przy realizacji zakupu\","
+        },
+        {
+          "line": 302,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Z wliczonym podatkiem. Koszt wysyłki obliczony przy realizacji zakupu. <a href=\\\"{{ link }}\\\">Wysyłka<\\/a> i rabaty obliczone przy realizacji zakupu.\","
+        },
+        {
+          "line": 303,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Podatki, rabaty i wysyłki obliczane przy realizacji zakupu\","
+        },
+        {
+          "line": 453,
+          "text": "\"shipping_address\": \"Adres wysyłki\","
+        },
+        {
+          "line": 456,
+          "text": "\"shipping\": \"Wysyłka\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/pt-BR.json",
+      "count": 10,
+      "lines": [
+        {
+          "line": 47,
+          "text": "\"shipping_calculator\": {"
+        },
+        {
+          "line": 49,
+          "text": "\"hide\": \"Esconder cálculo de frete\","
+        },
+        {
+          "line": 50,
+          "text": "\"title\": \"Estimativa de frete\","
+        },
+        {
+          "line": 174,
+          "text": "\"shipping_policy_html\": \"\","
+        },
+        {
+          "line": 310,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Tributos, descontos e <a href=\\\"{{ link }}\\\">frete<\\/a> calculados no checkout\","
+        },
+        {
+          "line": 311,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Tributos incluídos e frete e descontos calculados no checkout\","
+        },
+        {
+          "line": 312,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Tributos incluídos. <a href=\\\"{{ link }}\\\">Frete<\\/a> e descontos calculados no checkout.\","
+        },
+        {
+          "line": 313,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Tributos, descontos e frete calculados no checkout\","
+        },
+        {
+          "line": 494,
+          "text": "\"shipping_address\": \"Endereço de entrega\","
+        },
+        {
+          "line": 497,
+          "text": "\"shipping\": \"Frete\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/pt-BR.schema.json",
+      "count": 30,
+      "lines": [
+        {
+          "line": 489,
+          "text": "\"shipping_progress_bar\": {"
+        },
+        {
+          "line": 490,
+          "text": "\"name\": \"Frete Grátis\","
+        },
+        {
+          "line": 493,
+          "text": "\"content\": \"Configurações de frete grátis\""
+        },
+        {
+          "line": 495,
+          "text": "\"show_free_shipping_progress\": {"
+        },
+        {
+          "line": 496,
+          "text": "\"label\": \"Habilitar barra de progresso de frete\""
+        },
+        {
+          "line": 498,
+          "text": "\"free_shipping_min_amount\": {"
+        },
+        {
+          "line": 499,
+          "text": "\"label\": \"Valor mínimo de frete grátis\","
+        },
+        {
+          "line": 504,
+          "text": "\"info\": \"Todo o Brasil: qualquer CEP tem frete grátis; Regiões específicas: frete grátis apenas para clientes em regiões selecionadas; CEPs locais: frete grátis apenas para CEPs que começam com números definidos.\""
+        },
+        {
+          "line": 506,
+          "text": "\"free_shipping_coverage\": {"
+        },
+        {
+          "line": 507,
+          "text": "\"label\": \"Abrangência do Frete Grátis Visual\""
+        },
+        {
+          "line": 531,
+          "text": "\"free_shipping_text\": {"
+        },
+        {
+          "line": 532,
+          "text": "\"label\": \"Texto de frete grátis\""
+        },
+        {
+          "line": 534,
+          "text": "\"free_shipping_text_come\": {"
+        },
+        {
+          "line": 535,
+          "text": "\"label\": \"Texto de frete grátis alcançado\""
+        },
+        {
+          "line": 581,
+          "text": "\"shipping_calculator\": {"
+        },
+        {
+          "line": 582,
+          "text": "\"name\": \"Cálculo de Frete\","
+        },
+        {
+          "line": 584,
+          "text": "\"shipping_calculator_fixed_text\": {"
+        },
+        {
+          "line": 587,
+          "text": "\"shipping_calculator_default_text\": {"
+        },
+        {
+          "line": 590,
+          "text": "\"shipping_calculator_specific_text\": {"
+        },
+        {
+          "line": 593,
+          "text": "\"header_shipping_calculator\": {"
+        },
+        {
+          "line": 594,
+          "text": "\"label\": \"Calculo de frete\""
+        },
+        {
+          "line": 596,
+          "text": "\"show_shipping_calculator\": {"
+        },
+        {
+          "line": 597,
+          "text": "\"label\": \"Exibir cálculo de frete\""
+        },
+        {
+          "line": 599,
+          "text": "\"shipping_calculator_heading\": {"
+        },
+        {
+          "line": 600,
+          "text": "\"label\": \"Calcule o frete\""
+        },
+        {
+          "line": 602,
+          "text": "\"shipping_calculator_default_country\": {"
+        },
+        {
+          "line": 605,
+          "text": "\"shipping_calculator_submit_button_label\": {"
+        },
+        {
+          "line": 608,
+          "text": "\"shipping_calculator_submit_button_label_disabled\": {"
+        },
+        {
+          "line": 1946,
+          "text": "\"shipping_calculator\": {"
+        },
+        {
+          "line": 1947,
+          "text": "\"name\": \"Calculadora de frete\""
+        }
+      ]
+    },
+    {
+      "asset": "locales/pt-PT.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 160,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Envio<\\/a> calculado na finalização da compra.\","
+        },
+        {
+          "line": 291,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Impostos, descontos e <a href=\\\"{{ link }}\\\">envio<\\/a> calculados na finalização da compra\","
+        },
+        {
+          "line": 292,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Imposto incluído, envio e descontos calculados na finalização da compra\","
+        },
+        {
+          "line": 293,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Imposto incluído. <a href=\\\"{{ link }}\\\">Envio<\\/a> e descontos calculados na finalização da compra.\","
+        },
+        {
+          "line": 294,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Impostos, descontos e envio calculados na finalização da compra\","
+        },
+        {
+          "line": 442,
+          "text": "\"shipping_address\": \"Endereço de envio\","
+        },
+        {
+          "line": 445,
+          "text": "\"shipping\": \"Envio\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/ro-RO.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 159,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Taxele de expediere<\\/a> sunt calculate la finalizarea comenzii.\","
+        },
+        {
+          "line": 290,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Taxele, reducerile și <a href=\\\"{{ link }}\\\">transportul<\\/a> sunt calculate la finalizarea comenzii\","
+        },
+        {
+          "line": 291,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Taxele sunt incluse, iar transportul și reducerile sunt calculate la finalizarea comenzii\","
+        },
+        {
+          "line": 292,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Taxele sunt incluse. <a href=\\\"{{ link }}\\\">Transportul<\\/a> și reducerile sunt calculate la finalizarea comenzii.\","
+        },
+        {
+          "line": 293,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Taxele, reducerile și transportul sunt calculate la finalizarea comenzii\","
+        },
+        {
+          "line": 471,
+          "text": "\"shipping_address\": \"Adresa de expediere\","
+        },
+        {
+          "line": 474,
+          "text": "\"shipping\": \"Expediere\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/ru.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 159,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Стоимость доставки<\\/a> рассчитывается при оформлении заказа.\","
+        },
+        {
+          "line": 300,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Налоги, скидки и <a href=\\\"{{ link }}\\\">стоимость доставки<\\/a>, рассчитанные при оформлении заказа\","
+        },
+        {
+          "line": 301,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Сумма налога, скидки и стоимость доставки, рассчитанные при оформлении заказа\","
+        },
+        {
+          "line": 302,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Налоги включены. <a href=\\\"{{ link }}\\\">Стоимость доставки<\\/a> и скидки рассчитываются при оформлении заказа.\","
+        },
+        {
+          "line": 303,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Налоги, скидки и стоимость доставки, рассчитанные при оформлении заказа\","
+        },
+        {
+          "line": 483,
+          "text": "\"shipping_address\": \"Адрес доставки\","
+        },
+        {
+          "line": 486,
+          "text": "\"shipping\": \"Доставка\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/sk-SK.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 160,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Doprava<\\/a> sa vypočíta pri platbe.\","
+        },
+        {
+          "line": 300,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Dane, zľavy a <a href=\\\"{{ link }}\\\">doprava<\\/a> sa vypočítajú pri platbe\","
+        },
+        {
+          "line": 301,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Dane sa zahrnú a doprava a zľavy sa vypočítajú pri platbe\","
+        },
+        {
+          "line": 302,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Vrátane dane. <a href=\\\"{{ link }}\\\">Doprava<\\/a> a zľavy sa vypočítajú pri platbe.\","
+        },
+        {
+          "line": 303,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Dane, zľavy a doprava sa vypočítajú pri platbe\","
+        },
+        {
+          "line": 483,
+          "text": "\"shipping_address\": \"Dodacia adresa\","
+        },
+        {
+          "line": 486,
+          "text": "\"shipping\": \"Doprava\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/sl-SI.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 160,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Dostava<\\/a> se obračuna ob zaključku nakupa.\","
+        },
+        {
+          "line": 300,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Davki, popusti in <a href=\\\"{{ link }}\\\">strošek dostave<\\/a> se obračunajo ob zaključku nakupa\","
+        },
+        {
+          "line": 301,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Vključeni davek ter strošek dostave in popusti se obračunajo ob zaključku nakupa\","
+        },
+        {
+          "line": 302,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Davek vključen. <a href=\\\"{{ link }}\\\">Strošek dostave<\\/a> in popusti se obračunajo ob zaključku nakupa.\","
+        },
+        {
+          "line": 303,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Davki, popusti in strošek dostave se obračunajo ob zaključku nakupa\","
+        },
+        {
+          "line": 453,
+          "text": "\"shipping_address\": \"Naslov za dostavo\","
+        },
+        {
+          "line": 456,
+          "text": "\"shipping\": \"Dostava\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/sv.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 157,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Frakt<\\/a> beräknas i kassan.\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Skatter, rabatter och <a href=\\\"{{ link }}\\\">leverans<\\/a> beräknas i kassan\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Skatt ingår och leverans och rabatter beräknas i kassan\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Skatt ingår. <a href=\\\"{{ link }}\\\">Leverans<\\/a> och rabatter beräknas i kassan.\","
+        },
+        {
+          "line": 283,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Skatter, rabatter och leverans beräknas i kassan\","
+        },
+        {
+          "line": 459,
+          "text": "\"shipping_address\": \"Leveransadress\","
+        },
+        {
+          "line": 462,
+          "text": "\"shipping\": \"Frakt\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/th.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 157,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">ค่าจัดส่ง<\\/a>ที่คำนวณในขั้นตอนการชำระเงิน\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"ระบบจะคำนวณภาษี ส่วนลด และ<a href=\\\"{{ link }}\\\">ค่าจัดส่ง<\\/a>ในขั้นตอนการชำระเงิน\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"ภาษีที่ใส่และค่าจัดส่งและส่วนลดที่คำนวณไว้ในขั้นตอนการชำระเงิน\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"รวมภาษีแล้ว ระบบจะคำนวณ<a href=\\\"{{ link }}\\\">ค่าจัดส่ง<\\/a>และส่วนลดในขั้นตอนการชำระเงิน\","
+        },
+        {
+          "line": 283,
+          "text": "\"taxes_and_shipping_at_checkout\": \"ระบบจะคำนวณภาษีและค่าจัดส่งในขั้นตอนการชำระเงิน\","
+        },
+        {
+          "line": 459,
+          "text": "\"shipping_address\": \"ที่อยู่ที่จัดส่ง\","
+        },
+        {
+          "line": 462,
+          "text": "\"shipping\": \"การจัดส่ง\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/tr.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 157,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Kargo<\\/a>, ödeme sayfasında hesaplanır.\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Vergiler, indirimler ve <a href=\\\"{{ link }}\\\">kargo<\\/a>, ödeme sayfasında hesaplanır\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Vergi dahildir ve kargo ile indirimler, ödeme sayfasında hesaplanır\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Vergi dahildir. <a href=\\\"{{ link }}\\\">Kargo<\\/a> ve indirimler, ödeme sayfasında hesaplanır.\","
+        },
+        {
+          "line": 283,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Vergiler, indirimler ve kargo, ödeme sayfasında hesaplanır\","
+        },
+        {
+          "line": 459,
+          "text": "\"shipping_address\": \"Kargo Adresi\","
+        },
+        {
+          "line": 462,
+          "text": "\"shipping\": \"Kargo\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/vi.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 158,
+          "text": "\"shipping_policy_html\": \"<a href=\\\"{{ link }}\\\">Phí vận chuyển<\\/a> được tính khi thanh toán.\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"Thuế, ưu đãi giảm giá và <a href=\\\"{{ link }}\\\">phí vận chuyển<\\/a> được tính khi thanh toán\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"Đã bao gồm thuế, còn phí vận chuyển và ưu đãi giảm giá được tính khi thanh toán\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"Đã bao gồm thuế. <a href=\\\"{{ link }}\\\">Phí vận chuyển<\\/a> và ưu đãi giảm giá được tính khi thanh toán.\","
+        },
+        {
+          "line": 283,
+          "text": "\"taxes_and_shipping_at_checkout\": \"Thuế, ưu đãi giảm giá và phí vận chuyển được tính khi thanh toán\","
+        },
+        {
+          "line": 459,
+          "text": "\"shipping_address\": \"Địa chỉ giao hàng\","
+        },
+        {
+          "line": 462,
+          "text": "\"shipping\": \"Vận chuyển\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/zh-CN.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 158,
+          "text": "\"shipping_policy_html\": \"结账时计算的<a href=\\\"{{ link }}\\\">运费<\\/a>。\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"结账时计算的税费、折扣和<a href=\\\"{{ link }}\\\">运费<\\/a>\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"含税费以及结账时计算的运费和折扣\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"含税费。结账时计算的<a href=\\\"{{ link }}\\\">运费<\\/a>和折扣。\","
+        },
+        {
+          "line": 283,
+          "text": "\"taxes_and_shipping_at_checkout\": \"结账时计算的税费、折扣和运费\","
+        },
+        {
+          "line": 459,
+          "text": "\"shipping_address\": \"收货地址\","
+        },
+        {
+          "line": 462,
+          "text": "\"shipping\": \"运输\","
+        }
+      ]
+    },
+    {
+      "asset": "locales/zh-TW.json",
+      "count": 7,
+      "lines": [
+        {
+          "line": 158,
+          "text": "\"shipping_policy_html\": \"結帳時計算<a href=\\\"{{ link }}\\\">運費<\\/a>。\","
+        },
+        {
+          "line": 280,
+          "text": "\"taxes_and_shipping_policy_at_checkout_html\": \"結帳時計算稅金、折扣和<a href=\\\"{{ link }}\\\">運費<\\/a>\","
+        },
+        {
+          "line": 281,
+          "text": "\"taxes_included_but_shipping_at_checkout\": \"內含稅金，結帳時計算運費和折扣\","
+        },
+        {
+          "line": 282,
+          "text": "\"taxes_included_and_shipping_policy_html\": \"內含稅金。結帳時計算<a href=\\\"{{ link }}\\\">運費<\\/a>和折扣。\","
+        },
+        {
+          "line": 283,
+          "text": "\"taxes_and_shipping_at_checkout\": \"結帳時計算稅金、折扣和運費\","
+        },
+        {
+          "line": 459,
+          "text": "\"shipping_address\": \"運送地址\","
+        },
+        {
+          "line": 462,
+          "text": "\"shipping\": \"運送\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-afi_-qrunbrjraubfs6a6.liquid",
+      "count": 4,
+      "lines": [
+        {
+          "line": 254,
+          "text": "\"info\": \"{ES,RS,SE} frete R$399 + WhatsApp Recife\""
+        },
+        {
+          "line": 259,
+          "text": "\"info\": \"{bahia,paraná} frete R$349 + WhatsApp Shops\""
+        },
+        {
+          "line": 379,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 380,
+          "text": "\"text2\": \"a partir de R$349\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-bbr5d2jzh28tvrsfymodu.liquid",
+      "count": 2,
+      "lines": [
+        {
+          "line": 368,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 369,
+          "text": "\"text2\": \"a partir de R$299\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-btkfmgmq4rty7iqjinkar.liquid",
+      "count": 5,
+      "lines": [
+        {
+          "line": 260,
+          "text": "\"info\": \"{PA} frete R$549, WhatsApp Fortaleza\""
+        },
+        {
+          "line": 265,
+          "text": "\"info\": \"{MA,MT,RN} frete R$499, WhatsApp Recife\""
+        },
+        {
+          "line": 270,
+          "text": "\"info\": \"{DF,MG,PE,ex-REC} frete R$299, WhatsApp Recife\""
+        },
+        {
+          "line": 390,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 391,
+          "text": "\"text2\": \"a partir de R$499\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-f7qak5ga5u-wufuz0fkwt.liquid",
+      "count": 4,
+      "lines": [
+        {
+          "line": 254,
+          "text": "\"info\": \"{RO} frete R$1.199, WhatsApp RioMar\""
+        },
+        {
+          "line": 259,
+          "text": "\"info\": \"{PB} frete R$479, WhatsApp RioMar\""
+        },
+        {
+          "line": 379,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 380,
+          "text": "\"text2\": \"a partir de R$479\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-f8rhpzyuiomxows6xjdud.liquid",
+      "count": 2,
+      "lines": [
+        {
+          "line": 368,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 369,
+          "text": "\"text2\": \"a partir de R$299\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-h-3bnsivimy-45h5my7bx.liquid",
+      "count": 5,
+      "lines": [
+        {
+          "line": 260,
+          "text": "\"info\": \"{AL,CE,GO} frete R$449, WhatsApp Fortaleza\""
+        },
+        {
+          "line": 265,
+          "text": "\"info\": \"{ES,RS,SE} frete R$399 + WhatsApp Recife\""
+        },
+        {
+          "line": 270,
+          "text": "\"info\": \"{bahia,paraná} frete R$349 + WhatsApp Shops\""
+        },
+        {
+          "line": 390,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 391,
+          "text": "\"text2\": \"a partir de R$399\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-hah4de8kosw5wwvaz2p05.liquid",
+      "count": 4,
+      "lines": [
+        {
+          "line": 254,
+          "text": "\"info\": \"{PI} frete R$599, WhatsApp RioMar\""
+        },
+        {
+          "line": 259,
+          "text": "\"info\": \"{PB} frete R$479, WhatsApp RioMar\""
+        },
+        {
+          "line": 379,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 380,
+          "text": "\"text2\": \"a partir de R$479\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-icq7in-xsop0_vju5egip.liquid",
+      "count": 3,
+      "lines": [
+        {
+          "line": 248,
+          "text": "\"info\": \"{PB} frete R$479, WhatsApp RioMar\""
+        },
+        {
+          "line": 368,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 369,
+          "text": "\"text2\": \"a partir de R$299\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-kfl6trebmx7jzvyiwcv7j.liquid",
+      "count": 6,
+      "lines": [
+        {
+          "line": 266,
+          "text": "\"info\": \"{AP} frete R$899, WhatsApp Fortaleza\""
+        },
+        {
+          "line": 271,
+          "text": "\"info\": \"{AL,CE,GO} frete R$449, WhatsApp Fortaleza\""
+        },
+        {
+          "line": 276,
+          "text": "\"info\": \"{ES,RS,SE} frete R$399 + WhatsApp Recife\""
+        },
+        {
+          "line": 281,
+          "text": "\"info\": \"{bahia,paraná} frete R$349 + WhatsApp Shops\""
+        },
+        {
+          "line": 401,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 402,
+          "text": "\"text2\": \"a partir de R$449\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-mej-up63r_-g4yexhq3ri.liquid",
+      "count": 7,
+      "lines": [
+        {
+          "line": 272,
+          "text": "\"info\": \"{RR} frete R$1.399, WhatsApp Fortaleza\""
+        },
+        {
+          "line": 277,
+          "text": "\"info\": \"{AP} frete R$899, WhatsApp Fortaleza\""
+        },
+        {
+          "line": 282,
+          "text": "\"info\": \"{AL,CE,GO} frete R$449, WhatsApp Fortaleza\""
+        },
+        {
+          "line": 287,
+          "text": "\"info\": \"{ES,RS,SE} frete R$399 + WhatsApp Recife\""
+        },
+        {
+          "line": 292,
+          "text": "\"info\": \"{bahia,paraná} frete R$349 + WhatsApp Shops\""
+        },
+        {
+          "line": 412,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 413,
+          "text": "\"text2\": \"a partir de R$899\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-mrxj0zoo-rbncgke7wdm7.liquid",
+      "count": 2,
+      "lines": [
+        {
+          "line": 368,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 369,
+          "text": "\"text2\": \"a partir de R$299\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-oaohlctwh30-0pyb3fn_w.liquid",
+      "count": 4,
+      "lines": [
+        {
+          "line": 254,
+          "text": "\"info\": \"{MA,MT,RN} frete R$499, WhatsApp Recife\""
+        },
+        {
+          "line": 259,
+          "text": "\"info\": \"{DF,MG,PE,ex-REC} frete R$299, WhatsApp Recife\""
+        },
+        {
+          "line": 379,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 380,
+          "text": "\"text2\": \"a partir de R$299\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-ro4pelnmeumzo9uzkhfdf.liquid",
+      "count": 2,
+      "lines": [
+        {
+          "line": 368,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 369,
+          "text": "\"text2\": \"a partir de R$299\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-rwdxf2eaudwxhh6jrnt5a.liquid",
+      "count": 2,
+      "lines": [
+        {
+          "line": 368,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 369,
+          "text": "\"text2\": \"a partir de R$299\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-tzz_zb1rmy0ex43dh_4oy.liquid",
+      "count": 3,
+      "lines": [
+        {
+          "line": 248,
+          "text": "\"info\": \"{bahia,paraná} frete R$349 + WhatsApp Shops\""
+        },
+        {
+          "line": 368,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 369,
+          "text": "\"text2\": \"a partir de R$299\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-uzy3ic39pylbxeb66auha.liquid",
+      "count": 2,
+      "lines": [
+        {
+          "line": 368,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 369,
+          "text": "\"text2\": \"a partir de R$299\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-vym_zzeokrzt-t3hsv6pu.liquid",
+      "count": 4,
+      "lines": [
+        {
+          "line": 254,
+          "text": "\"info\": \"{MS,TO} frete R$699, WhatsApp São Paulo\""
+        },
+        {
+          "line": 259,
+          "text": "\"info\": \"{bahia,paraná} frete R$349 + WhatsApp Shops\""
+        },
+        {
+          "line": 379,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 380,
+          "text": "\"text2\": \"a partir de R$349\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-vyt-fc0hdvkyxrgr1oomq.liquid",
+      "count": 2,
+      "lines": [
+        {
+          "line": 376,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 377,
+          "text": "\"text2\": \"a partir de R$299\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-y2yycbdttwoflirdvqycf.liquid",
+      "count": 3,
+      "lines": [
+        {
+          "line": 248,
+          "text": "\"info\": \"{DF,MG,PE,ex-REC} frete R$299, WhatsApp Recife\""
+        },
+        {
+          "line": 368,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 369,
+          "text": "\"text2\": \"a partir de R$299\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-zgqp7mg4ktjagpdp7rym3.liquid",
+      "count": 2,
+      "lines": [
+        {
+          "line": 368,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 369,
+          "text": "\"text2\": \"a partir de R$299\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/ctx-zphpsrfnade_kpx3kl3wr.liquid",
+      "count": 5,
+      "lines": [
+        {
+          "line": 260,
+          "text": "\"info\": \"{AC,AM} frete R$1.199, WhatsApp Recife\""
+        },
+        {
+          "line": 265,
+          "text": "\"info\": \"{ES,RS,SE} frete R$399 + WhatsApp Recife\""
+        },
+        {
+          "line": 270,
+          "text": "\"info\": \"{bahia,paraná} frete R$349 + WhatsApp Shops\""
+        },
+        {
+          "line": 390,
+          "text": "\"text\": \"frete grátis\","
+        },
+        {
+          "line": 391,
+          "text": "\"text2\": \"a partir de R$399\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/featured-product.liquid",
+      "count": 3,
+      "lines": [
+        {
+          "line": 184,
+          "text": "{%- if cart.taxes_included or shop.shipping_policy.body != blank -%}"
+        },
+        {
+          "line": 189,
+          "text": "{%- if shop.shipping_policy.body != blank -%}"
+        },
+        {
+          "line": 190,
+          "text": "{{ 'products.product.shipping_policy_html' | t: link: shop.shipping_policy.url }}"
+        }
+      ]
+    },
+    {
+      "asset": "sections/header-group.json",
+      "count": 2,
+      "lines": [
+        {
+          "line": 27,
+          "text": "\"text\": \"{{ metaobjects.anuncio_barra_de_avisos[\\\"frete-gratis\\\"].texto_nao_sublinhado.value }}\","
+        },
+        {
+          "line": 28,
+          "text": "\"text2\": \"{{ metaobjects.anuncio_barra_de_avisos[\\\"frete-gratis\\\"].texto_sublinhado.value }}\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/main-cart-footer.liquid",
+      "count": 5,
+      "lines": [
+        {
+          "line": 23,
+          "text": "{% if settings.shipping_calculator %}"
+        },
+        {
+          "line": 24,
+          "text": "{%- render 'shipping-calculator', id: section.id, default_country: 'Brazil' -%}"
+        },
+        {
+          "line": 66,
+          "text": "{% if settings.shipping_calculator_fixed_text %}"
+        },
+        {
+          "line": 68,
+          "text": "{{ settings.shipping_calculator_specific_text }}"
+        },
+        {
+          "line": 69,
+          "text": "{{ settings.shipping_calculator_default_text }}"
+        }
+      ]
+    },
+    {
+      "asset": "sections/main-order.liquid",
+      "count": 8,
+      "lines": [
+        {
+          "line": 265,
+          "text": "{%- for shipping_method in order.shipping_methods -%}"
+        },
+        {
+          "line": 267,
+          "text": "<td id=\"RowShipping\" role=\"rowheader\" scope=\"row\" colspan=\"4\">"
+        },
+        {
+          "line": 268,
+          "text": "{{ 'customer.order.shipping' | t }} ({{ shipping_method.title }})"
+        },
+        {
+          "line": 271,
+          "text": "headers=\"RowShipping\""
+        },
+        {
+          "line": 273,
+          "text": "data-label=\"{{ 'customer.order.shipping' | t }} ({{ shipping_method.title }})\""
+        },
+        {
+          "line": 275,
+          "text": "{{ shipping_method.price | money }}"
+        },
+        {
+          "line": 336,
+          "text": "<h2>{{ 'customer.order.shipping_address' | t }}</h2>"
+        },
+        {
+          "line": 341,
+          "text": "{{ order.shipping_address | format_address }}"
+        }
+      ]
+    },
+    {
+      "asset": "sections/main-product.liquid",
+      "count": 5,
+      "lines": [
+        {
+          "line": 119,
+          "text": "{%- when 'shipping_calculator' -%}"
+        },
+        {
+          "line": 319,
+          "text": "{%- if shop.shipping_policy.body != blank -%}"
+        },
+        {
+          "line": 320,
+          "text": "{{ 'products.product.shipping_policy_html' | t: link: shop.shipping_policy.url }}"
+        },
+        {
+          "line": 1352,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 1353,
+          "text": "\"name\": \"t:sections.main-product.blocks.shipping_calculator.name\","
+        }
+      ]
+    },
+    {
+      "asset": "sections/quick-order-list.liquid",
+      "count": 6,
+      "lines": [
+        {
+          "line": 184,
+          "text": "{%- if cart.taxes_included and shop.shipping_policy.body != blank -%}"
+        },
+        {
+          "line": 185,
+          "text": "{{ 'sections.cart.taxes_included_and_shipping_policy_html' | t: link: shop.shipping_policy.url }}"
+        },
+        {
+          "line": 187,
+          "text": "{{ 'sections.cart.taxes_included_but_shipping_at_checkout' | t }}"
+        },
+        {
+          "line": 188,
+          "text": "{%- elsif shop.shipping_policy.body != blank -%}"
+        },
+        {
+          "line": 189,
+          "text": "{{ 'sections.cart.taxes_and_shipping_policy_at_checkout_html' | t: link: shop.shipping_policy.url }}"
+        },
+        {
+          "line": 191,
+          "text": "{{ 'sections.cart.taxes_and_shipping_at_checkout' | t }}"
+        }
+      ]
+    },
+    {
+      "asset": "snippets/cart-drawer.liquid",
+      "count": 19,
+      "lines": [
+        {
+          "line": 45,
+          "text": "{% if settings.show_free_shipping_progress and localization.country.iso_code == 'BR' %}"
+        },
+        {
+          "line": 46,
+          "text": "{% render 'shipping-bar' %}"
+        },
+        {
+          "line": 65,
+          "text": "{% if settings.shipping_calculator %}"
+        },
+        {
+          "line": 68,
+          "text": "<script src=\"{{ 'shipping-calculator.js' | asset_url }}\" defer></script>"
+        },
+        {
+          "line": 76,
+          "text": "const msg_shipping = document.getElementById(\"message-shipping\")"
+        },
+        {
+          "line": 77,
+          "text": "const shipping_container = document.getElementById(\"shipping-calculator-container\")"
+        },
+        {
+          "line": 78,
+          "text": "msg_shipping.style.display = \"block\""
+        },
+        {
+          "line": 79,
+          "text": "shipping_container.style.display = \"none\""
+        },
+        {
+          "line": 507,
+          "text": "{% if settings.shipping_calculator %}"
+        },
+        {
+          "line": 509,
+          "text": "<button type=\"button\" class=\"drawer__calc-toggle\" onclick=\"this.classList.toggle('active'); document.getElementById('shipping-calc-content').classList.toggle('active');\">"
+        },
+        {
+          "line": 510,
+          "text": "{% render 'icon-shipping' %}"
+        },
+        {
+          "line": 511,
+          "text": "<span class=\"drawer__calc-toggle-text\">frete</span>"
+        },
+        {
+          "line": 514,
+          "text": "<div id=\"shipping-calc-content\" class=\"drawer__calc-content\">"
+        },
+        {
+          "line": 515,
+          "text": "<div id=\"shipping-calculator-container\">"
+        },
+        {
+          "line": 516,
+          "text": "{%- render 'shipping-calculator', id: section.id, default_country: 'Brazil' -%}"
+        },
+        {
+          "line": 518,
+          "text": "<span id=\"message-shipping\" style=\"display: none; font-size: 14px;\">O valor de frete será exibido diretamente no checkout. Clique em <strong style=\"color: rgb(223, 54, 48);\">Finalizar a compra</strong> para calcular.</span>"
+        },
+        {
+          "line": 583,
+          "text": "{% if settings.shipping_calculator_fixed_text %}"
+        },
+        {
+          "line": 585,
+          "text": "{{ settings.shipping_calculator_specific_text }}"
+        },
+        {
+          "line": 586,
+          "text": "{{ settings.shipping_calculator_default_text }}"
+        }
+      ]
+    },
+    {
+      "asset": "snippets/promo-bar.liquid",
+      "count": 7,
+      "lines": [
+        {
+          "line": 28,
+          "text": "{% assign missing_to_free_shipping = first_milestone | minus: total_cart | money %}"
+        },
+        {
+          "line": 29,
+          "text": "{% assign text_display = milestone_texts[0] | replace: '[amount]', missing_to_free_shipping %}"
+        },
+        {
+          "line": 31,
+          "text": "{% assign missing_to_free_shipping = second_milestone | minus: total_cart | money %}"
+        },
+        {
+          "line": 32,
+          "text": "{% assign text_display = milestone_texts[1] | replace: '[amount]', missing_to_free_shipping %}"
+        },
+        {
+          "line": 34,
+          "text": "{% assign missing_to_free_shipping = third_milestone | minus: total_cart | money %}"
+        },
+        {
+          "line": 35,
+          "text": "{% assign text_display = milestone_texts[2] | replace: '[amount]', missing_to_free_shipping %}"
+        },
+        {
+          "line": 152,
+          "text": "{% render 'icon-shipping' %}"
+        }
+      ]
+    },
+    {
+      "asset": "snippets/shipping-bar.liquid",
+      "count": 29,
+      "lines": [
+        {
+          "line": 3,
+          "text": "assign min_amount_to_free_shipping = settings.free_shipping_min_amount | replace: ',', '.' | times: 100"
+        },
+        {
+          "line": 4,
+          "text": "assign min_amount_numeric = min_amount_to_free_shipping | times: 1"
+        },
+        {
+          "line": 7,
+          "text": "assign text_free_shipping_amount = settings.free_shipping_text"
+        },
+        {
+          "line": 8,
+          "text": "assign text_free_shipping_amount_rechead = settings.free_shipping_text_come"
+        },
+        {
+          "line": 11,
+          "text": "assign percentage_to_free_shipping = 100"
+        },
+        {
+          "line": 12,
+          "text": "assign missing_to_free_shipping = 0 | money"
+        },
+        {
+          "line": 13,
+          "text": "assign text_display = text_free_shipping_amount_rechead"
+        },
+        {
+          "line": 15,
+          "text": "assign percentage_to_free_shipping = total_cart_numeric | times: 100 | divided_by: min_amount_numeric"
+        },
+        {
+          "line": 17,
+          "text": "assign missing_to_free_shipping = missing_amount | money"
+        },
+        {
+          "line": 18,
+          "text": "assign text_display = text_free_shipping_amount | replace: '[amount]', missing_to_free_shipping"
+        },
+        {
+          "line": 23,
+          "text": "<strong class=\"cart__free-shipping-bar-rest\">{{ missing_to_free_shipping }}</strong>"
+        },
+        {
+          "line": 26,
+          "text": "{% if settings.show_free_shipping_progress %}"
+        },
+        {
+          "line": 28,
+          "text": "#free-shipping-bar {"
+        },
+        {
+          "line": 32,
+          "text": ".cart__free-shipping-bar-text {"
+        },
+        {
+          "line": 44,
+          "text": ".cart__free-shipping-bar-text svg {"
+        },
+        {
+          "line": 49,
+          "text": ".cart__free-shipping-bar {"
+        },
+        {
+          "line": 57,
+          "text": ".cart__free-shipping-bar-progress {"
+        },
+        {
+          "line": 69,
+          "text": "{% if percentage_to_free_shipping >= 100 %}"
+        },
+        {
+          "line": 70,
+          "text": ".cart__free-shipping-bar {"
+        },
+        {
+          "line": 78,
+          "text": "{% assign text_shipping = badge.texto | downcase | strip %}"
+        },
+        {
+          "line": 79,
+          "text": "{% if text_shipping == 'frete grátis' or text_shipping == 'frete gratis' %}"
+        },
+        {
+          "line": 80,
+          "text": "{% assign percentage_to_free_shipping = 100 %}"
+        },
+        {
+          "line": 81,
+          "text": "{% assign text_display = text_free_shipping_amount_rechead %}"
+        },
+        {
+          "line": 87,
+          "text": "<div id=\"free-shipping-bar\" class=\"shopify-section\">"
+        },
+        {
+          "line": 88,
+          "text": "<span class=\"cart__free-shipping-bar-text\">"
+        },
+        {
+          "line": 91,
+          "text": "<div class=\"cart__free-shipping-bar\">"
+        },
+        {
+          "line": 92,
+          "text": "<div class=\"cart__free-shipping-bar-progress\" style=\"width: {{ percentage_to_free_shipping }}%;\"></div>"
+        },
+        {
+          "line": 99,
+          "text": "window.ShopifyInfo.freeShippingGoal = {{ min_amount_numeric | default: 9999999 }};"
+        },
+        {
+          "line": 102,
+          "text": "window.ShopifyInfo.freeShippingCoverage = \"{{ settings.free_shipping_coverage | default: 'all' }}\";"
+        }
+      ]
+    },
+    {
+      "asset": "snippets/shipping-calculator.liquid",
+      "count": 16,
+      "lines": [
+        {
+          "line": 7,
+          "text": "{% render 'shipping-calculator', id: 'some-id', default_country: 'United States' %}"
+        },
+        {
+          "line": 10,
+          "text": "<script src=\"{{ 'shipping-calculator.js' | asset_url }}\" defer></script>"
+        },
+        {
+          "line": 13,
+          "text": "<shipping-calculator>"
+        },
+        {
+          "line": 14,
+          "text": "<div class=\"title-wrapper-with-link title-wrapper-shipping title-wrapper-with-link\">"
+        },
+        {
+          "line": 15,
+          "text": "<h3 class=\"shipping-heading\">{{ settings.shipping_calculator_heading }}</h3>"
+        },
+        {
+          "line": 22,
+          "text": "<label class=\"block\" for=\"{{ id }}-shipping-country\">"
+        },
+        {
+          "line": 23,
+          "text": "{{- 'general.cart.shipping_calculator.country' | t -}}"
+        },
+        {
+          "line": 28,
+          "text": "id=\"{{ id }}-shipping-country\""
+        },
+        {
+          "line": 40,
+          "text": "<label class=\"block\" for=\"{{ id }}-shipping-province\">"
+        },
+        {
+          "line": 41,
+          "text": "{{- 'general.cart.shipping_calculator.province' | t -}}"
+        },
+        {
+          "line": 46,
+          "text": "id=\"{{ id }}-shipping-province\""
+        },
+        {
+          "line": 58,
+          "text": "placeholder=\"{{ 'general.cart.shipping_calculator.zip' | t }}\""
+        },
+        {
+          "line": 60,
+          "text": "id=\"{{ id }}-shipping-zip\""
+        },
+        {
+          "line": 65,
+          "text": "<span class=\"button-text\">{{- 'general.cart.shipping_calculator.submit' | t -}}</span>"
+        },
+        {
+          "line": 83,
+          "text": "<div class=\"\" role=\"heading\" aria-level=\"3\">{{ 'general.cart.shipping_calculator.error' | t }}</div>"
+        },
+        {
+          "line": 86,
+          "text": "</shipping-calculator>"
+        }
+      ]
+    },
+    {
+      "asset": "templates/collection.colecao-com-banner.json",
+      "count": 3,
+      "lines": [
+        {
+          "line": 138,
+          "text": "\"source\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"] }}\","
+        },
+        {
+          "line": 140,
+          "text": "\"icon\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].imagem.value }}\","
+        },
+        {
+          "line": 141,
+          "text": "\"title\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].texto.value }}\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/collection.colecao-com-secoes.json",
+      "count": 3,
+      "lines": [
+        {
+          "line": 67,
+          "text": "\"source\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"] }}\","
+        },
+        {
+          "line": 69,
+          "text": "\"icon\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].imagem.value }}\","
+        },
+        {
+          "line": 70,
+          "text": "\"title\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].texto.value }}\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/collection.colecao-landing-page.json",
+      "count": 3,
+      "lines": [
+        {
+          "line": 157,
+          "text": "\"source\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"] }}\","
+        },
+        {
+          "line": 159,
+          "text": "\"icon\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].imagem.value }}\","
+        },
+        {
+          "line": 160,
+          "text": "\"title\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].texto.value }}\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/index.ctx-u6wqima9irmxozzn2-dkh.json",
+      "count": 1,
+      "lines": [
+        {
+          "line": 17,
+          "text": "\"link_title\": \"Frete Grátis\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/index.ctx-warrxraojm5ealxdnlqtj.json",
+      "count": 1,
+      "lines": [
+        {
+          "line": 20,
+          "text": "\"title\": \"frete grátis a partir de R$200\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/page.faq.json",
+      "count": 1,
+      "lines": [
+        {
+          "line": 125,
+          "text": "\"row_content\": \"<p>O Shampoo, a Máscara Condicionadora e o Finalizador Leave-in GE Beauty têm performance percebida desde o primeiro uso.<\\/p><p>Para os Boosters GE Beauty:<\\/p><p>Antioxidante: desde o primeiro uso é garantida a proteção contra as ações do meio ambiente, como a poluição e os raios u"
+        }
+      ]
+    },
+    {
+      "asset": "templates/page.Forms_padrao.json",
+      "count": 2,
+      "lines": [
+        {
+          "line": 45,
+          "text": "\"icon\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].imagem.value }}\","
+        },
+        {
+          "line": 46,
+          "text": "\"title\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].texto.value }}\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/page.presenteaveis.json",
+      "count": 6,
+      "lines": [
+        {
+          "line": 88,
+          "text": "\"title\": \"até 10% off + caixa de presente grátis\","
+        },
+        {
+          "line": 172,
+          "text": "\"title\": \"<strong>kits  para presentear <\\/strong><span style=\\\"text-decoration:underline\\\"><strong>a partir de R$69<\\/strong><\\/span>\","
+        },
+        {
+          "line": 174,
+          "text": "\"description\": \"<p><a href=\\\"\\/products\\/caixa-para-presente-vermelha\\\" target=\\\"_blank\\\" title=\\\"caixa para presente vermelha\\\"><span style=\\\"text-decoration:underline\\\"><strong>caixa para presente grátis<\\/strong><\\/span><\\/a> com o cupom <strong>NATAL<\\/strong><\\/p>\","
+        },
+        {
+          "line": 201,
+          "text": "\"title\": \"<span style=\\\"text-decoration:underline\\\"><strong>monte seu kit com 5% off<\\/strong><\\/span><strong> a partir de 2 unidades<\\/strong>\","
+        },
+        {
+          "line": 203,
+          "text": "\"description\": \"<p><a href=\\\"\\/products\\/caixa-para-presente-vermelha\\\" target=\\\"_blank\\\" title=\\\"caixa para presente vermelha\\\"><span style=\\\"text-decoration:underline\\\"><strong>caixa para presente grátis<\\/strong><\\/span><\\/a> a partir de 2 unidades com o cupom <strong>NATAL <\\/strong><\\/p>\","
+        },
+        {
+          "line": 232,
+          "text": "\"description\": \"<p><a href=\\\"\\/products\\/caixa-para-presente-vermelha\\\" target=\\\"_blank\\\" title=\\\"caixa para presente vermelha\\\"><span style=\\\"text-decoration:underline\\\"><strong>caixa para presente grátis<\\/strong><\\/span><\\/a> com o cupom <strong>NATAL<\\/strong><\\/p>\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.ctx-qsjvzdcblcnydm9amt9jd.json",
+      "count": 3,
+      "lines": [
+        {
+          "line": 154,
+          "text": "\"shipping_calculator_wAw86n\": {"
+        },
+        {
+          "line": 155,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 182,
+          "text": "\"shipping_calculator_wAw86n\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.json",
+      "count": 6,
+      "lines": [
+        {
+          "line": 99,
+          "text": "\"shipping_calculator_wAw86n\": {"
+        },
+        {
+          "line": 100,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 122,
+          "text": "\"shipping_calculator_wAw86n\","
+        },
+        {
+          "line": 166,
+          "text": "\"source\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"] }}\","
+        },
+        {
+          "line": 168,
+          "text": "\"icon\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].imagem.value }}\","
+        },
+        {
+          "line": 169,
+          "text": "\"title\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].texto.value }}\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.kit.json",
+      "count": 6,
+      "lines": [
+        {
+          "line": 56,
+          "text": "\"shipping_calculator_pmKqA7\": {"
+        },
+        {
+          "line": 57,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 73,
+          "text": "\"shipping_calculator_pmKqA7\""
+        },
+        {
+          "line": 117,
+          "text": "\"source\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"] }}\","
+        },
+        {
+          "line": 119,
+          "text": "\"icon\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].imagem.value }}\","
+        },
+        {
+          "line": 120,
+          "text": "\"title\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].texto.value }}\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.kit_beauty-monday.json",
+      "count": 5,
+      "lines": [
+        {
+          "line": 114,
+          "text": "\"shipping_calculator_zrK6Xt\": {"
+        },
+        {
+          "line": 115,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 116,
+          "text": "\"name\": \"cálculo frete\","
+        },
+        {
+          "line": 133,
+          "text": "\"shipping_calculator_zrK6Xt\""
+        },
+        {
+          "line": 170,
+          "text": "\"title\": \"frete grátis a partir de R$200\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.kit_promo.json",
+      "count": 5,
+      "lines": [
+        {
+          "line": 114,
+          "text": "\"shipping_calculator_zrK6Xt\": {"
+        },
+        {
+          "line": 115,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 116,
+          "text": "\"name\": \"cálculo frete\","
+        },
+        {
+          "line": 133,
+          "text": "\"shipping_calculator_zrK6Xt\""
+        },
+        {
+          "line": 170,
+          "text": "\"title\": \"frete grátis a partir de R$200\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.produto-booster.json",
+      "count": 3,
+      "lines": [
+        {
+          "line": 97,
+          "text": "\"shipping_calculator_wAw86n\": {"
+        },
+        {
+          "line": 98,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 120,
+          "text": "\"shipping_calculator_wAw86n\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.produto-brinde.json",
+      "count": 3,
+      "lines": [
+        {
+          "line": 61,
+          "text": "\"shipping_calculator_wAw86n\": {"
+        },
+        {
+          "line": 62,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 83,
+          "text": "\"shipping_calculator_wAw86n\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.produto-kit.json",
+      "count": 3,
+      "lines": [
+        {
+          "line": 67,
+          "text": "\"shipping_calculator_pmKqA7\": {"
+        },
+        {
+          "line": 68,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 85,
+          "text": "\"shipping_calculator_pmKqA7\""
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.produto-lancamento.json",
+      "count": 3,
+      "lines": [
+        {
+          "line": 107,
+          "text": "\"shipping_calculator_wAw86n\": {"
+        },
+        {
+          "line": 108,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 131,
+          "text": "\"shipping_calculator_wAw86n\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.produto_beauty-monday.json",
+      "count": 5,
+      "lines": [
+        {
+          "line": 120,
+          "text": "\"shipping_calculator_wAw86n\": {"
+        },
+        {
+          "line": 121,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 122,
+          "text": "\"name\": \"cálculo frete\","
+        },
+        {
+          "line": 146,
+          "text": "\"shipping_calculator_wAw86n\","
+        },
+        {
+          "line": 218,
+          "text": "\"title\": \"frete grátis a partir de R$200\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.produto_booster.json",
+      "count": 6,
+      "lines": [
+        {
+          "line": 113,
+          "text": "\"shipping_calculator_wAw86n\": {"
+        },
+        {
+          "line": 114,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 137,
+          "text": "\"shipping_calculator_wAw86n\","
+        },
+        {
+          "line": 181,
+          "text": "\"source\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"] }}\","
+        },
+        {
+          "line": 183,
+          "text": "\"icon\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].imagem.value }}\","
+        },
+        {
+          "line": 184,
+          "text": "\"title\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].texto.value }}\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.produto_compre-e-ganhe.json",
+      "count": 3,
+      "lines": [
+        {
+          "line": 118,
+          "text": "\"shipping_calculator_wAw86n\": {"
+        },
+        {
+          "line": 119,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 143,
+          "text": "\"shipping_calculator_wAw86n\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.produto_esgotado.json",
+      "count": 3,
+      "lines": [
+        {
+          "line": 129,
+          "text": "\"shipping_calculator_wAw86n\": {"
+        },
+        {
+          "line": 130,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 155,
+          "text": "\"shipping_calculator_wAw86n\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.produto_full-size.json",
+      "count": 6,
+      "lines": [
+        {
+          "line": 98,
+          "text": "\"shipping_calculator_wAw86n\": {"
+        },
+        {
+          "line": 99,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 121,
+          "text": "\"shipping_calculator_wAw86n\","
+        },
+        {
+          "line": 165,
+          "text": "\"source\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"] }}\","
+        },
+        {
+          "line": 167,
+          "text": "\"icon\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].imagem.value }}\","
+        },
+        {
+          "line": 168,
+          "text": "\"title\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].texto.value }}\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.produto_pre-venda.json",
+      "count": 3,
+      "lines": [
+        {
+          "line": 118,
+          "text": "\"shipping_calculator_wAw86n\": {"
+        },
+        {
+          "line": 119,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 143,
+          "text": "\"shipping_calculator_wAw86n\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.produto_presenteaveis.json",
+      "count": 6,
+      "lines": [
+        {
+          "line": 111,
+          "text": "\"shipping_calculator_wAw86n\": {"
+        },
+        {
+          "line": 112,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 135,
+          "text": "\"shipping_calculator_wAw86n\","
+        },
+        {
+          "line": 179,
+          "text": "\"source\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"] }}\","
+        },
+        {
+          "line": 181,
+          "text": "\"icon\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].imagem.value }}\","
+        },
+        {
+          "line": 182,
+          "text": "\"title\": \"{{ metaobjects.icones[\\\"oferta-frete\\\"].texto.value }}\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.produto_promo.json",
+      "count": 5,
+      "lines": [
+        {
+          "line": 120,
+          "text": "\"shipping_calculator_wAw86n\": {"
+        },
+        {
+          "line": 121,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 122,
+          "text": "\"name\": \"cálculo frete\","
+        },
+        {
+          "line": 146,
+          "text": "\"shipping_calculator_wAw86n\","
+        },
+        {
+          "line": 218,
+          "text": "\"title\": \"frete grátis a partir de R$200\","
+        }
+      ]
+    },
+    {
+      "asset": "templates/product.produto_xx-xx.json",
+      "count": 3,
+      "lines": [
+        {
+          "line": 118,
+          "text": "\"shipping_calculator_wAw86n\": {"
+        },
+        {
+          "line": 119,
+          "text": "\"type\": \"shipping_calculator\","
+        },
+        {
+          "line": 143,
+          "text": "\"shipping_calculator_wAw86n\","
+        }
+      ]
+    }
+  ],
+  "settings_keys": [
+    {
+      "key": "current.show_free_shipping_progress",
+      "value": false
+    },
+    {
+      "key": "current.free_shipping_min_amount",
+      "value": "299"
+    },
+    {
+      "key": "current.free_shipping_text",
+      "value": "frete calculado no checkout"
+    },
+    {
+      "key": "current.free_shipping_text_come",
+      "value": "opções de frete calculadas no checkout"
+    },
+    {
+      "key": "current.show_promo_bar_progress",
+      "value": false
+    },
+    {
+      "key": "current.promo_bar_min_amount",
+      "value": "250;299"
+    },
+    {
+      "key": "current.promo_bar_text",
+      "value": "compre +[amount] e ganhe necessaire"
+    },
+    {
+      "key": "current.promo_bar_top_text",
+      "value": "necessaire clutch;frete grátis"
+    },
+    {
+      "key": "current.promo_bar_text_come",
+      "value": "você ganhou necessaire + frete 🎉"
+    },
+    {
+      "key": "current.background_color_promo_bar",
+      "value": "#e79292"
+    },
+    {
+      "key": "current.shipping_calculator_fixed_text",
+      "value": false
+    },
+    {
+      "key": "current.shipping_calculator_default_text",
+      "value": ""
+    },
+    {
+      "key": "current.shipping_calculator_specific_text",
+      "value": ""
+    },
+    {
+      "key": "current.shipping_calculator",
+      "value": true
+    },
+    {
+      "key": "current.shipping_calculator_default_country",
+      "value": "Brazil"
+    }
+  ],
+  "pages": [
+    {
+      "title": "Política de Pré-Venda GE Beauty",
+      "handle": "politica-de-pre-venda",
+      "snippets": [
+        "frete grátis",
+        ", conforme o valor total do carrinho. Os valores mínimos para frete grátis para cada região podem ser conferidos",
+        "8. Frete e promoções",
+        "cupons de frete grátis",
+        "no site da GE Beauty. Os pedidos elegíveis a frete grátis seguem as regras da",
+        "Política de Frete",
+        "cálculo do frete será feito normalmente"
+      ]
+    }
+  ],
+  "policies": [
+    {
+      "query_errors": [
+        {
+          "message": "Field 'shippingPolicy' doesn't exist on type 'Shop'",
+          "locations": [
+            {
+              "line": 1,
+              "column": 10
+            }
+          ],
+          "path": [
+            "query",
+            "shop",
+            "shippingPolicy"
+          ],
+          "extensions": {
+            "code": "undefinedField",
+            "typeName": "Shop",
+            "fieldName": "shippingPolicy"
+          }
+        },
+        {
+          "message": "Field 'refundPolicy' doesn't exist on type 'Shop'",
+          "locations": [
+            {
+              "line": 1,
+              "column": 38
+            }
+          ],
+          "path": [
+            "query",
+            "shop",
+            "refundPolicy"
+          ],
+          "extensions": {
+            "code": "undefinedField",
+            "typeName": "Shop",
+            "fieldName": "refundPolicy"
+          }
+        }
+      ]
+    }
+  ]
+}

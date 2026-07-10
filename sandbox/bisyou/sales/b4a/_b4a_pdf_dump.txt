@@ -1,0 +1,624 @@
+PAGES: 22
+
+========== PAGE 1 ==========
+Proposta
+Uma
+empresa
+B4A
+
+--- TABLE 1.0 ---
+Proposta
+Uma
+empresa
+B4A | 
+ | Uma
+empresa
+B4A
+
+--- TABLE 1.1 ---
+Proposta | 
+
+========== PAGE 2 ==========
+Fazemos
+A beauty tech responsável por clubes de
+compras como glam e Men’s Market
+parte da
+e marcas próprias de beleza como ella,
+Glam Beauty, Men’s e Malmo.
+Sabemos as dores das marcas e
+conhecemos o mercado.
+
+--- TABLE 2.0 ---
+Fazemos
+A beauty tech responsável por clubes de
+compras como glam e Men’s Market
+parte da
+e marcas próprias de beleza como ella,
+Glam Beauty, Men’s e Malmo. |  | 
+ | Sabemos as dores das marcas e
+conhecemos o mercado. | 
+
+========== PAGE 3 ==========
+O maior aplicativo de
+desenvolvimento e
+monetização de micro
+influenciadores de
+beleza, moda e lifestyle
+da América Latina com
+mais de 25 mil
+criadores de conteúdo
+especializados!
+
+--- TABLE 3.0 ---
+ | 
+ | 
+
+--- TABLE 3.1 ---
+O maior aplicativo de
+desenvolvimento e
+monetização de micro
+influenciadores de
+beleza, moda e lifestyle
+da América Latina com
+mais de 25 mil
+criadores de conteúdo
+especializados! | 
+
+========== PAGE 4 ==========
+Conectamos
+marcas com
+bflus!
+Criamos projetos totalmente personalizados e
+fazemos a gestão completa.
+Tecnologia, Creator Economy e Marketing de
+Influência combinados para a sua marca
+crescer!
+
+--- TABLE 4.0 ---
+Conectamos
+marcas com
+bflus!
+Criamos projetos totalmente personalizados e
+fazemos a gestão completa.
+Tecnologia, Creator Economy e Marketing de
+Influência combinados para a sua marca
+crescer! | 
+ | Conectamos
+marcas com
+bflus!
+ma
+bflu
+Criamos pr
+fazemos a
+Tecnologia
+Influência c
+crescer! | ma
+bflu
+
+========== PAGE 5 ==========
+Planejamos do seu jeito
+Comunidade Campanha
+exclusiva pontual
+Monte seu time ✓ ✗
+Seleção de perfis ✓ ✓
+Match Perfeito
+✓ ✓
+Crie especialistas ✓ ✗
+Gere conteúdo ✓ ✓
+Controle de qualidade ✓ ✓
+Página no app ✓ ✗
+Incentive performance ✓ ✓
+Tudo é com a gente ✓ ✓
+
+--- TABLE 5.0 ---
+Planejamos do seu jeito | 
+ | jeito
+
+========== PAGE 6 ==========
+Montamos o seu time de
+embaixadores da marca
+Nossa tecnologia permite
+segmentar os bflus de acordo
+com preferências e dados
+demográficos. Só quem tem fit
+consegue se inscrever!
+Sua marca tem acesso aos
+nossos mais de 25k bflus e você
+também pode trazer os seus.
+
+========== PAGE 7 ==========
+Influenciadores qualificados
+Informações sobre a marca em uma
+página personalizada no app para
+os bflus serem especialistas de
+branding.
+Gerenciamos um grupo no
+whatsapp, CRM e posts no instagram
+para ter uma comunicação always
+on sobre a marca.
+Sem burocracia, com processos de
+contrato e pagamento
+automatizados pelo app.
+
+========== PAGE 8 ==========
+Incentivamos performance
+Publis obrigatórias Ações orgânicas Academia de Influência
+com briefing e squad fixa com diversos conteúdos evento com +200 bflus presentes
+
+========== PAGE 9 ==========
+Extra!
+Criamos cupons personalizados
+Os bflus podem ter um cupom de
+desconto personalizado para incentivar
+vendas e ganhar um bônus a cada
+conversão.
+Pode ser feito por integração via API
+com o seu próprio e-commerce ou pelo
+e-commerce das marcas parceiras
+glam e Men’s Market como um novo
+canal de vendas.
+Você define o valor do bônus e o
+desconto e nós fazemos o repasse.
+
+========== PAGE 10 ==========
+ações
+Objetivo da proposta
+Gerar awareness para Bisyou de
+forma leve e próxima através de
+uma Comunidade Exclusiva.
+
+--- TABLE 10.0 ---
+ações | 
+ | ações
+
+--- TABLE 10.1 ---
+ | 
+ | 
+
+========== PAGE 11 ==========
+proposta
+Proposta comunidade exclusiva
+➔ squad de bflus
+➔ cupons personalizados
+➔ comissão por vendas*
+8 ações/mês TikTok ou Reels
+➔ venda no e-commerce glam
+96 ações em 12 meses publis fixas mensais
+-25% OFF
+exclusivo para essa proposta
+R$ 7.708/mês
+R$ 10.277/mês
+incluso
+Criação de um briefing mensal, aprovação e ajustes Segmentação de bflus por atributos físicos e região Página exclusiva no app bfluence
+do conteúdo
+Relatório mensal com os resultados da comunidade Uso dos conteúdos nas mídias da marca Envios de produtos nas publis fixas
+Gestão completa da operação Desafios mensais para estímulo da comunidade Grupo no whatsapp para relacionamento e incentivo
+extras
+seeding estratégico para bflus além das publis *comissão por vendas variável e por performance
+
+--- TABLE 11.0 ---
+
+proposta
+
+--- TABLE 11.1 ---
+ | 
+ | -25% OFF
+exclusivo para essa proposta
+R$ 7.708/mês | 
+
+--- TABLE 11.2 ---
+
+R$ 10.277/mês
+
+--- TABLE 11.3 ---
+incluso | 
+ | 
+Criação de um briefing mensal, aprovação e ajustes
+do conteúdo | Página exclusiva no app bfluence
+Relatório mensal com os resultados da comunidade | 
+
+--- TABLE 11.4 ---
+
+Segmentação de bflus por atributos físicos e região
+
+========== PAGE 12 ==========
+Comunidade
+27%
+glam
+da receita total da glam é gerada por
+bflus
+3,2k
+é a média de transações geradas por bflus por mês
+5,9k
+é a média de produtos vendidos por bflus por mês
+40k
+impressões orgânicas pelos desafios por mês
+1k
+novos clientes por mês fazem a 1ª compra por bflus
+
+--- TABLE 12.0 ---
+Comunidade
+27%
+glam
+da receita total da glam é gerada por
+bflus
+3,2k
+é a média de transações geradas por bflus por mês
+5,9k
+é a média de produtos vendidos por bflus por mês
+40k
+impressões orgânicas pelos desafios por mês
+1k
+novos clientes por mês fazem a 1ª compra por bflus |  |  | 
+ | Comunidade
+27%
+glam
+da receita total da glam é gerada por
+bflus |  | 
+ |  | glam | 
+ |  |  | 
+ |  |  | 3,2k
+é a média de transações geradas por bflus por mês
+ |  |  | 
+ |  |  | 5,9k
+é a média de produtos vendidos por bflus por mês
+ |  |  | 
+ |  |  | 40k
+impressões orgânicas pelos desafios por mês
+ |  |  | 
+ |  |  | 1k
+novos clientes por mês fazem a 1ª compra por bflus
+ |  |  | 
+ |  |  | 
+
+========== PAGE 13 ==========
+Campanha Kylie
+Para divulgar o lip kit da Kylie Cosmetics como um combo
+essencial e uma opção para presentes de natal, contamos
+com 49 bflus publicando no Reels e Stories.
++666k
+impressões
++33k
+interações
+37%
+dos posts foram extras
+
+--- TABLE 13.0 ---
+ |  | 
+Campanha Kylie
+Para divulgar o lip kit da Kylie Cosmetics como um combo
+essencial e uma opção para presentes de natal, contamos
+com 49 bflus publicando no Reels e Stories.
++666k
+impressões
++33k
+interações
+37%
+dos posts foram extras |  | 
+ | Campanha Kylie | 
+ |  | 
+ |  | 
+
+========== PAGE 14 ==========
+Termos e Condições
+
+--- TABLE 14.0 ---
+Termos e Condições | 
+ | 
+
+--- TABLE 14.1 ---
+Termos e Condições | 
+
+========== PAGE 15 ==========
+termos
+Orientações Tributárias
+Para garantir o sucesso de nossa parceria é fundamental a total conformidade com as exigências tributárias, incluindo mas não limitando as regras de ICMS-ST
+que detalhamos a seguir. Esta conformidade além de facilitar fluxo de trabalho assertivo e evitar possíveis riscos e travas na negociação, também fortalece a
+transparência e a confiança da B4A e seus Parceiros. Revise cuidadosamente as informações e exigências junto ao seu time fiscal e sinta-se à vontade para nos contatar
+para esclarecimentos. Estamos aqui para ajudar e assegurar uma parceria eficiente e produtiva.
+Tipo de Localização do
+Responsabilidade de ICMS-ST Observações
+Parceiro Parceiro (UF)
+De acordo com NCM pode haver incidência de ICMS-ST, sendo
+Indústria São Paulo Verificar a classificação fiscal (NCM) do(s) produto(s)
+necessário destacar Base de Cálculo e valor do ICMS-ST na NF
+De acordo com NCM deverá ser mencionado em cada item da NF a
+Comércio São Paulo Verificar a classificação fiscal (NCM) do(s) produto(s)
+Base de Cálculo e valor do ICMS-ST recolhido anteriormente
+Verificar a classificação fiscal (NCM) do(s) produto(s)
+Indústria ou Fora de São De acordo com localização e NCM pode haver incidência de ICMS-ST,
+Emissão por Mato Grosso, Alagoas, Minas Gerais, Paraná, Rio de Janeiro e Rio Grande do
+Comércio Paulo sendo necessário destacar Base de Cálculo e valor do ICMS-ST na NF
+Sul: há convênio com SP e necessário destacar Base de Cálculo e valor do ICMS-ST na NF
+Essas regras valem para a maioria dos produtos, mas alguns podem ter tratamento diferente, sempre verificar a classificação fiscal (NCM) dos produtos. Regras
+também se aplicam para regime Simples Nacional. Em caso de dúvidas, nos consulte antes da formalização da parceria, para que não haja nenhum impacto posterior na
+negociação.
+Orientação sobre NF
+Razão Social: B4A SERVIÇOS DE TECNOLOGIA E COMÉRCIO S.A.
+CNPJ: 13.475.001/0001-34
+Inscr. Municipal: 36557
+Inscr. Estadual: 373.292.635.112
+Natureza da Operação todos os produtos que forem enviados aos bflus, devem ter como natureza: BONIFICAÇÃO, DOAÇÃO OU BRINDE
+PIX B4A: CNPJ 13.475.001.0001-34
+
+--- TABLE 15.0 ---
+termos
+
+
+--- TABLE 15.1 ---
+Tipo de
+Parceiro | Localização do
+Parceiro (UF) | Responsabilidade de ICMS-ST | Observações
+Indústria | São Paulo | De acordo com NCM pode haver incidência de ICMS-ST, sendo
+necessário destacar Base de Cálculo e valor do ICMS-ST na NF | Verificar a classificação fiscal (NCM) do(s) produto(s)
+Comércio | São Paulo | De acordo com NCM deverá ser mencionado em cada item da NF a
+Base de Cálculo e valor do ICMS-ST recolhido anteriormente | Verificar a classificação fiscal (NCM) do(s) produto(s)
+Indústria ou
+Comércio | Fora de São
+Paulo | De acordo com localização e NCM pode haver incidência de ICMS-ST,
+sendo necessário destacar Base de Cálculo e valor do ICMS-ST na NF | Verificar a classificação fiscal (NCM) do(s) produto(s)
+Emissão por Mato Grosso, Alagoas, Minas Gerais, Paraná, Rio de Janeiro e Rio Grande do
+Sul: há convênio com SP e necessário destacar Base de Cálculo e valor do ICMS-ST na NF
+
+--- TABLE 15.2 ---
+Essas regras valem para a maioria dos produtos, mas alguns podem ter tratamento diferente, sempre verificar a classificação fiscal (NCM) dos produtos. Regras
+também se aplicam para regime Simples Nacional. Em caso de dúvidas, nos consulte antes da formalização da parceria, para que não haja nenhum impacto posterior na
+negociação.
+Orientação sobre NF
+Razão Social: B4A SERVIÇOS DE TECNOLOGIA E COMÉRCIO S.A.
+CNPJ: 13.475.001/0001-34
+Inscr. Municipal: 36557
+Inscr. Estadual: 373.292.635.112
+Natureza da Operação todos os produtos que forem enviados aos bflus, devem ter como natureza: BONIFICAÇÃO, DOAÇÃO OU BRINDE
+PIX B4A: CNPJ 13.475.001.0001-34
+
+========== PAGE 16 ==========
+termos
+Termos e Condições Comerciais
+Além disso, as Partes, desde já, acordam a data do Onboarding, que está
+- Parceria prevista neste Termo e, caso ela não seja cumprida pela Parceira, ficará a
+As Partes acordam e concordam com o objeto da presente Parceria, critério da B4A a disponibilidade de dar andamento ou não a Parceria, sem
+conforme descrito nesta Proposta, que contém deveres e obrigações que qualquer indenização, obrigação, ressarcimento ou valor seja devido
+mútuas e proporcionais entre ambas as Partes. As Partes acordam que pela B4A à Parceira.
+as contrapartidas de responsabilidade da B4A serão baseadas nos
+valores indicados na presente Proposta. A presente Parceria vigorará pelo prazo em que perdurar as obrigações
+assumidas por uma parte à outra. O término da Parceria,
+Para o desenvolvimento das atividades, a Parceira permite o uso, durante independentemente do motivo, não afetará qualquer direito ou obrigação
+o prazo que perdurar a Parceria, da sua marca para as ações que forem das Partes, ainda que seu exercício ou cumprimento deva ocorrer após o
+de responsabilidade da B4A. Além disso, a Parceira declara e reconhece término da Parceria. Da mesma forma, não libera as Partes das obrigações
+que para o desenvolvimento das obrigações assumidas pela B4A, há a devidas até a sua data e não afeta ou limita qualquer direito que,
+necessidade de as Partes atuarem em conjunto, razão pela qual, na expressamente ou por sua natureza, deva permanecer em pleno vigor e
+hipótese de a B4A não puder seguir com as atividades assumidas, por efeito após o término da Parceria ou que dele decorra.
+conta de atos ou omissões da Parceira, por prazo superior a 04 (quatro)
+meses, contados a partir do Início do Projeto (“Início do Projeto”) - sem A B4A será responsável por definir o valor das comissões a serem
+prejuízo de a Parceira cumprir e atender aos prazos de entrega e repassadas aos bflus em relação às campanhas e comunidades,
+respostas previstos na presente proposta -, a Parceria estará ressalvadas as propostas especificamente relacionadas às comunidades,
+definitivamente rescindida, sem que qualquer indenização, obrigação, nas quais a Parceira será responsável pela definição dos valores. Não
+ressarcimento ou valor seja devido pela B4A à Parceira, e sem prejuízo obstante, a Parceira poderá propor comissões adicionais, pelas quais
+das cominações existentes e cabíveis. assumirá integral responsabilidade pelo pagamento à B4A, a fim de que
+esta realize o repasse correspondente aos bflus. Adicionalmente, a Parceira
+Sendo necessário que as Partes atuem em conjunto para o poderá solicitar à B4A a elaboração de relatório contendo a descrição dos
+desenvolvimento da Parceria, a Parceira deverá preencher o briefing serviços prestados e os pagamentos de comissões realizados aos bflus,
+enviado pela B4A até o dia de entrega dos Bens, Produtos e/ou Serviços desde que tal solicitação seja efetuada até a data de onboarding, a fim de
+ou pagamento para a B4A. Na hipótese de não haver o preenchimento, a possibilitar a segregação dos valores pagos dos eventualmente
+B4A poderá tomar, unilateralmente, todas as decisões criativas e relacionados a outros clientes da B4A.
+administrativas referentes à Parceria. Além disso, a Parceira deverá
+retornar as solicitações/contatos da B4A em até 05 (cinco) dias úteis, sob A B4A detém o direito irrestrito de utilizar, em qualquer meio e formato
+pena de, não o fazendo, a B4A poder tomar todas as decisões criativas e (digital, impresso, eventos, postagens em redes sociais, etc.), os nomes,
+administrativas, referentes a Parceria. logotipos, slogans e demais referências à Parceira para fins de divulgação
+
+--- TABLE 16.0 ---
+termos
+
+
+========== PAGE 17 ==========
+termos
+Termos e Condições Comerciais
+da parceria. Isso inclui, mas não se limita, à criação de materiais Na hipótese de o atraso na entrega dos Bens, Produtos e/ou Serviços
+promocionais, campanhas publicitárias, apresentações, websites e conteúdos (seja de forma total ou parcial), for superior a 30 (trinta) dias, a B4A
+para redes sociais. A Parceira concorda em autorizar o uso de suas marcas poderá resolver a presente Parceria, sem prejuízo de cobrar as multas e
+pela B4A, com o objetivo de destacar a parceria e aumentar a visibilidade de indenizações eventualmente devidas pela Parceira. Além disso, as Partes
+ambas as partes, inclusive para fins institucionais, apresentações, publicações deverão negociar, em boa-fé, os novos termos e condições para eventual
+via linkedin e outras redes sociais que sejam de interesse da B4A. prosseguimento da contratação.
+O material de divulgação usado no projeto passará pela avaliação do cliente e A Parceira se compromete a fornecer Produtos que atendam
+deverá ser aprovado por ele, estando também em consenso com o tom e as integralmente às normas regulamentadoras e detenham os registros
+normas da B4A. A Parceira se responsabilizará pelo preenchimento do necessários para a operação, inclusive, mas não se limitando, a eventuais
+briefing com os devidos direcionamentos, sendo certo que, após a aprovação registros e/ou notificações perante a Anvisa e demais órgãos
+do referido briefing, não haverá alterações ou questionamentos quanto a competentes, garantindo que todos os itens estejam em condições
+pontos que não estejam nele previstos. adequadas para consumo e operação, com rotulagem adequada que
+contenha as seguintes informações impressas: Modo de Uso;
+- Entrega Composição; Validade; Registro da Anvisa (se houver); EAN (código de
+Cabe à Parceira entregar à B4A todos os Produtos e/ou Serviços que barra), bem como todas as demais que a legislação exija e que as
+pretenda divulgar (bem como as orientações a respeito de cada produto e/ou embalagens estejam íntegras e sem violação, e prazo de validade não
+serviço). Os produtos e/ou serviços deverão ser entregues em quantidade inferior a 06 (seis) meses contados da data efetiva de entrega aos bflus,
+informada pela Parceira, até a data acordada, no local e horário indicados, sendo a Parceira integralmente responsável pela qualidade dos Produtos
+com brevidade suficiente para que possam ser entregues/utilizados dentro ou Serviços, bem como por quaisquer fatos a eles relacionados,
+de prazo hábil. incluindo, mas não se limitando, a ocorrência de alergias, irregularidades
+em registros e descumprimento de normas sanitárias.
+Na hipótese de atraso na entrega dos Produtos, a Parceira deverá comunicar
+à B4A com antecedência necessária para que a B4A possa reprogramar as Até que ocorra a efetiva entrega dos Bens, Produtos e/ou Serviços pela
+suas atividades, sendo que tal comunicação nunca será inferior a 10 (dez) dias Parceira à B4A, a Parceira será responsável pelos riscos que recaírem
+úteis da data originalmente prevista. A Parceira somente poderá comunicar e sobre os Bens, Produtos e/ou Serviços, inclusive, mas não se limitando,
+alterar a data de entrega ajustada 01 (uma) única vez, e desde que o prazo riscos de transporte e manuseio.
+para entrega não ultrapasse do indicado para entrega original, sob pena de
+haver a rescisão da presente Proposta, por culpa da Parceira. As caixas enviadas para o CD da B4A devem estar sem sinais de violação
+ou avaria (rasgadas, amassadas e molhadas). Para que seja realizado o
+trabalho de segmentação, as caixas precisam estar classificadas da
+seguinte forma: cada tipo de produto em uma caixa (não misturar SKUs),
+com identificação externa de quantidade e descrição do produto.
+
+--- TABLE 17.0 ---
+termos
+
+
+========== PAGE 18 ==========
+termos
+Termos e Condições Comerciais
+A Parceira se compromete a adotar medidas adequadas para garantir Além das demais previsões e cominações previstas, no caso de entrega
+que os Bens e/ou Produtos contenham uma embalagem segura e parcial; ou, falta de entrega dos Bens, Produtos e/ou Serviços, a B4A
+resistente, de modo a minimizar os riscos de abertura ou dano durante o poderá, a sua exclusiva escolha, e sem qualquer direito de indenização à
+transporte. Parceira: (i) suspender os Serviços que forem de sua responsabilidade até
+que a entrega integral ocorra; ou, (ii) prestar os Serviços de forma
+Na hipótese de ser verificados eventuais vícios, avarias e/ou proporcional, aos que os itens/produtos sejam entregues.
+inconformidades nos produtos, incluindo em suas embalagens e/ou
+estes vierem a danificar os produtos enviados pela B4A, inclusive durante A Parceira não poderá contatar e/ou de qualquer forma contratar, direta
+o transporte, a Parceira se compromete a enviar novos produtos, em ou indiretamente as/os influenciadoras(es) para a prestação de serviços
+igual número aos produtos danificados/avariados. de marketing ou publicidade, seja online ou físico, pelo prazo de 36
+(trinta e seis) meses após o encerramento da Parceria, sob pena de arcar
+Além das disposições acima, as Partes acordam que, caso tenha sido com multa de 10% (dez por cento) calculada sobre o valor total dos
+estabelecida a entrega física de quaisquer Bens ou Produtos pela Serviços propostos pela B4A nesta proposta (sem a incidência de
+Parceira a prestação de serviços ou contrapartidas pela B4A estarão qualquer desconto, abatimento ou compensação).
+condicionados à entrega integral dos respectivos Bens ou Produtos.
+- Disposições Gerais
+- Inadimplemento Contratual Além das condições específicas e expressas previstas nessa Proposta, a
+Salvo as exceções expressamente previstas e os casos que comportem B4A não garantirá qualquer índice de sucesso, grau de retorno ou
+penalidades específicas, caso a Parceira: (i) não cumpra com suas lucratividade; e todos os números informados são métricas tomadas em
+obrigações, inclusive, mas não se limitando as entregas; (ii) atrase os ações, que não são vinculativos e/ou garantem qualquer tipo de retorno.
+pagamentos que forem de sua responsabilidade; ou, (iii) solicite a
+rescisão da Parceria, ou esta se dê por sua culpa; será cobrada uma multa Declaram as Partes, para os devidos fins, que todas as cláusulas e
+não compensatória de 30% (trinta por cento) sobre o valor total dos condições desta Proposta foram previamente discutidas, representando
+Serviços propostos pela B4A (sem a incidência de qualquer desconto). fielmente o negócio jurídico entabulado.
+Além da multa prevista acima, a Parceira deverá ressarcir a B4A pelos Na hipótese de incidir sobre alguma das etapas da Parceria tributos, tais
+investimentos realizados para viabilizar a presente Parceria, reconhecidos como, mas não se limitando a ICMS (inclusive na modalidade ST), IPI ou
+no valor mínimo de 10% (dez por cento) sobre o valor total das Serviços outro que venha a substituí-los, incluindo eventual IVA (inclusive quanto
+propostos pela B4A (sem a incidência de qualquer desconto, abatimento a sua eventual seletividade), IBS e/ou CBS, a Parceira estará obrigada a
+ou compensação). informar corretamente tais valores (ainda que não estejam obrigados ao
+destaque de tal tributo em Nota Fiscal {ou documento equivalente}),
+
+--- TABLE 18.0 ---
+termos
+
+
+========== PAGE 19 ==========
+termos
+Termos e Condições Comerciais
+alíquotas, regras de incidência, sujeitos ativos e passivos, protocolos ou O início do projeto será a partir do recebimento dos produtos, o Briefing
+convênios, bem como outras informações solicitadas e/ou que sejam de da Ação preenchido e após o pagamento previsto na presente Proposta.
+interesse da B4A, ainda que não tenham sido por ela solicitadas, a fim de Caso um destes pontos não seja cumprido, fica autorizado à B4A decidir
+que a B4A possa realizar a correta apuração dos tributos e custos sobre o andamento dos serviços deste Termo.
+incidentes.
+Exceto quando expressamente previsto de forma contrária nesta
+A B4A não arcará com qualquer tributo que seja de responsabilidade da Proposta e/ou em Proposta específica, a Parceira, declara e reconhece
+Parceira ou valores excedentes. que na hipótese de ser prevista a publicação, postagem e/ou divulgação
+de vídeos, imagens, postagens e/ou quaisquer outros conteúdos
+No(s) preço(s) acordado(s), indicado(s) na presente Proposta, estão (“materiais”), seja em ambiente físico e/ou digital, incluindo, mas não se
+inclusos todos os tributos, tarifas, pedágios e custos, incluindo, taxas, limitando a redes sociais, seja pela B4A ou por terceiros a ela
+impostos, contribuições incidentes. relacionados, inclusive, mas sem se limitar aos Influenciadores, os
+Materiais não poderão ser utilizados, republicados ou de qualquer forma
+Independentemente da assinatura da presente Proposta, as Partes empregados pela Parceira, seja para fins comerciais, de divulgação,
+declaram que os Serviços terão aceitação tácita após o pagamento e institucionais e/ou outros sem o consentimento prévio por escrito da
+entrega dos produtos. B4A, para o qual haverá a cobrança de um valor adicional e proporcional.
+Qualquer uso não autorizado dos Materiais constituirá violação dos
+A presente Proposta consiste em relação cível, portanto regida pelo direitos de propriedade intelectual da B4A e poderá resultar em medidas
+Direito Civil, devendo, no caso de omissão ou dúvida, ser integrado e legais, inclusive de remoção e indenização, sem prejuízo das multas
+interpretado com base na Lei nº.: 10.406/02. As atribuições da B4A estão contratualmente previstas, que em nenhuma hipótese serão
+descritas exaustivamente nesta Proposta, não se admitindo compensatórias e/ou poderão ser compensadas com as indenizações
+interpretação ampliativa. eventualmente devidas.
+
+--- TABLE 19.0 ---
+termos
+
+
+========== PAGE 20 ==========
+termos
+Termos e Condições Comerciais
+Na hipótese de ser prevista a utilização dos Materiais pela Parceira, tal As Partes se comprometem, no exercício de seus direitos e deveres
+utilização estará limitada aos termos específicos contidos nesta Proposta inerentes a esta Proposta a cumprir toda a legislação aplicável sobre
+e/ou em Proposta específica, sendo certo que, independentemente de privacidade, segurança da informação e proteção de dados pessoais e
+qualquer previsão em contrário, tal uso vigerá da sua data da publicação anticorrupção, em especial o disposto no Marco Civil da Internet (Lei
+e/ou postagem (“Data Inicial”) até 03 (três) meses após a Data Inicial Federal nº.: 12.965/2014), em seu decreto regulamentador (Decreto
+(“Data Final”), sendo certo que após esta data não poderá haver qualquer 8.771/2016), na Lei Geral de Proteção de Dados Pessoais (Lei Federal nº.:
+tipo de impulsionamento, postagem e/ou utilização dos Materiais. Sendo 13.709/2018), Lei Anticorrupção (Lei Federal nº.: 12.846/2013) e nas demais
+possibilitado, na medida do possível e aplicável, somente a manutenção normas setoriais sobre o tema.
+nas redes sociais, sem qualquer espécie de reativação, e até a data na
+qual haja eventual solicitação de retirada. Desde já a Parceira autoriza que, caso haja inadimplemento da sua parte,
+a B4A realize a cobrança por todos os meios cabíveis, inclusive protesto,
+Todas as informações contidas nesta Proposta deverão ser tratadas com inclusão da Parceira junto ao rol de maus pagadores dos órgãos de
+o mais absoluto sigilo e a mais rigorosa confidencialidade, de modo a proteção ao crédito, entre outros. Conferindo à presente Proposta, força
+evitar o conhecimento do seu conteúdo por parte de terceiros, sob pena de título Executivo Extrajudicial.
+de irrestrita indenização por todos os danos e prejuízos causados.
+A Parceira, por meio desta Proposta, nomeia e constitui a(s) pessoa(s)
+Esta Proposta representa o acordo integral entre as Partes em relação ao designada(s) como preposta(s) na Proposta Comercial seu(s) bastante(s)
+seu objeto e revoga quaisquer outros entendimentos, compromissos ou procurador(es), a quem conferem poderes para que possam,
+contratos, prévios ou contemporâneos, sejam escritos ou orais. isoladamente, representá-lo em toda e qualquer tratativa com a B4A,
+inclusive a presente contratação.
+As Partes reconhecem como válida eventual formalização dos termos ora
+acordados em formato eletrônico, ainda que não utilizem certificado As Partes elegem o Foro da Comarca de São Paulo/SP como o único
+digital emitido pela Infraestrutura de Chaves Públicas Brasileira – competente para dirimir quaisquer questões oriundas da presente
+(ICP-Brasil), conforme disposto no artigo 10, § 2º, da Medida Provisória no Proposta, com renúncia expressa a qualquer outro, por mais privilegiado
+2.200-2, suficientes para a assegurar anuência e vinculação das Partes à que seja.
+presente Proposta, nos termos dos artigos 107, 219 e 220 do Código Civil.
+
+--- TABLE 20.0 ---
+termos
+
+
+========== PAGE 21 ==========
+termos
+Termos e Condições Comerciais
+- Regras Específicas para Comunidades bfluence - Setup de Integração
+Essas regras são aplicadas, exclusivamente, às Comunidades bfluence, 1 - Necessidade de Integração
+sendo, no que forem omissas, aplicáveis os Termos e Condições e demais Para que os bflus possam divulgar cupons aplicáveis no e-commerce da
+disposições da presente Proposta, desde que não sejam com elas Parceira e/ou da B4A (“glam”, “Mens Market” e/ou outro que exista ou
+incompatíveis. venha a existir), será necessária uma integração sistêmica entre as
+plataformas bfluence e o e-commerce da Parceira.
+- Taxa bfluence
+A B4A aplicará uma taxa, conforme definido na presente Proposta e/ou 2 - Custo de Integração
+em proposta própria e específica, sobre o valor da venda gerada pelos As Partes acordam que haverá um custo fixo e único que será aplicado
+bflus (micro influenciadores participantes do bfluence), para o qual para esse setup de integração, conforme definido na presente Proposta
+haverá um valor mínimo mensal, conforme definido na presente e/ou em proposta própria e específica.
+Proposta e/ou em proposta própria e específica. A B4A reserva-se o
+direito de cobrar o valor remanescente em caso de não alcance do 3 - Análise de Compatibilidade
+mínimo estipulado, salvo acordo expresso entre as partes de forma A execução da integração está condicionada à análise da
+diversa. compatibilidade da plataforma da marca. Caso a integração não seja
+tecnicamente viável, a B4A não assumirá qualquer responsabilidade
+- Taxa de comissionamento financeira decorrente, tampouco reembolsará qualquer valor pago pela
+O comissionamento aos bflus será definido pela Parceira e será aplicável Parceira.
+tanto às vendas realizadas no e-commerce dela quanto nos
+e-commerces da B4A. As Partes se comprometem a cumprir as - Controle de Vendas e Pagamentos
+obrigações fiscais e tributárias associadas ao pagamento de comissões, O controle das vendas realizadas será feito via API ou relatório,
+em conformidade com a legislação vigente e conforme definido na dependendo da plataforma utilizada. A B4A fornecerá um relatório
+presente Proposta e/ou em proposta própria e específica. mensal detalhado para as vendas realizadas nos seus e-commerces, com
+fechamento no último dia do mês e pagamento até o dia 07 do mês
+- Uso de Conteúdos e Direito de Imagem subsequente.
+Os conteúdos gerados pelos bflus, como vídeos, fotos, postagens e outros
+materiais, somente poderão ser utilizados pela marca parceira, desde
+que haja autorização expressa e por escrito da B4A. Qualquer uso
+indevido de materiais sem prévia autorização estará sujeito a multa
+contratual de 30% (trinta por cento) do valor total dos serviços previstos
+pela B4A na presente proposta, além das sanções previstas na legislação
+de direitos autorais (Lei nº.: 9.610/98) e no Código Civil Brasileiro.
+
+--- TABLE 21.0 ---
+termos
+
+
+========== PAGE 22 ==========
+VANESSA MAIA
+vanessa.maia@b4a.com.br
+(11) 997621-6866
+www.b4a.com.br
+Uma
+empresa
+B4A
+
+--- TABLE 22.0 ---
+VANESSA MAIA
+vanessa.maia@b4a.com.br
+(11) 997621-6866
+www.b4a.com.br
+Uma
+empresa
+B4A | 
+ | Uma
+empresa
+B4A
+
+--- TABLE 22.1 ---
+ | 
+
+--- TABLE 22.2 ---
+VANESSA MAIA
+vanessa.maia@b4a.com.br
+(11) 997621-6866
+www.b4a.com.br | 

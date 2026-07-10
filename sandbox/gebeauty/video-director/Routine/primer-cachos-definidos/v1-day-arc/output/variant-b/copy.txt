@@ -1,0 +1,8 @@
+primary_text:    definição leve, 24h sem frizz, brilho que dura. seus cachos, do começo ao fim do dia.
+headline:        24h sem frizz, sem peso.
+link_description: conheça primer cachos.
+cta_button:      Saiba mais
+
+caption_hook:    definição.
+caption_offer:   24h sem frizz.
+caption_tagline: no seu tempo, do seu jeito.

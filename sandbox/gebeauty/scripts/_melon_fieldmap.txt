@@ -1,0 +1,61 @@
+===== descricao_longa metaobject DEFINITION =====
+  field key='o_que_e' name='O que é' type=multi_line_text_field
+  field key='ingredientes' name='Ingredientes' type=multi_line_text_field
+  field key='modo_de_uso' name='Modo de uso' type=multi_line_text_field
+  field key='passo_a_passo' name='Passo a passo de uso' type=rich_text_field
+  field key='resultado' name='Resultado em tópicos' type=rich_text_field
+  field key='itens_do_kit' name='Itens do kit' type=list.product_reference
+
+MELON descricao_longa_com_abas -> gid://shopify/Metaobject/153980862784
+  handle=descricao-longa-5dvyu2kv
+  --- field 'o_que_e' (multi_line_text_field) len=479 ---
+      A sensação de frescor, a leveza e a combinação da fragrância de melão, peônias e white musk, agora em formato de bruma para cabelo e corpo. O Melon Mood da GE Beauty é aquele toque final que deixa tudo mais gostoso — perfeito para usar depois do banho, antes de sair ou sempre que quiser.  Ideal para perfumar suavemente os fios e a pele: ajuda a selar as cutículas, realça o brilho do cabelo e mantém a pele hidratada e macia. Com fórmula limpa, leve e sem acúmulos de resíduos.
+  --- field 'ingredientes' (multi_line_text_field) len=332 ---
+      Aqua, Alcohol, PEG-40 Hydrogenated Castor Oil, Parfum, Hexylene Glycol, Ceteareth-20, Glycerin, Castor Oil Propanediol Esters, Xylityl Sesquicaprylate, Caprylyl Glycol, Anadenanthera Colubrina Bark Extract, Disodium EDTA, Xylitol, Caprylic Acid, Citral, Citronellol, Geraniol, Hexyl Cinnamal, Hydroxycitronellal, Limonene, Linalool.
+  --- field 'modo_de_uso' (multi_line_text_field) len=0 ---
+      
+  --- field 'passo_a_passo' (rich_text_field) len=275 ---
+      {"type":"root","children":[{"listType":"ordered","type":"list","children":[{"type":"list-item","children":[{"type":"text","value":"Aplique diretamente sobre a pele e cabelo."}]},{"type":"list-item","children":[{"type":"text","value":"Reaplique sempre que desejar.\n\n"}]}]}]}
+  --- field 'resultado' (rich_text_field) len=255 ---
+      {"type":"root","children":[{"listType":"unordered","type":"list","children":[{"type":"list-item","children":[{"type":"text","value":"pele macia e perfumada"}]},{"type":"list-item","children":[{"type":"text","value":"cabelos hidratados e protegidos"}]}]}]}
+  --- field 'itens_do_kit' (list.product_reference) len=0 ---
+      
+
+===== METAFIELD PRESENCE (key -> MELON / rose / pear / santal) =====
+  custom.ai_readiness                                         37      -      -      -
+  custom.beneficio_em_destaque_1                              33      -      -      -
+  custom.beneficio_em_destaque_2                              40      -      -      -
+  custom.beneficio_em_destaque_3                              26      -      -      -
+  custom.benefits                                            261    182    182    182
+  custom.caracteristicas                                     665    617    617    617
+  custom.descricao_completa_em_markdown                     5019      -      -      -
+  custom.descricao_longa_com_abas                             37      -      -      -
+  custom.dosagem                                               5      5      5      5
+  custom.etiquetas                                            41      -      -      -
+  custom.finalidade                                           33     33     33     33
+  custom.imagem_beneficio_em_destaque_1                       39      -      -      -
+  custom.imagem_beneficio_em_destaque_2                       39      -      -      -
+  custom.imagem_beneficio_em_destaque_3                       39      -      -      -
+  custom.ingredients                                         167    331    312    264
+  custom.texto_promo                                          38      -      -      -
+  custom.texto_promocional                                   224      -      -      -
+  custom.texture                                              24      -      -      -
+  fullcomm.ncm                                                 8      8      8      8
+  global.description_tag                                       -    151    150    147
+  global.title_tag                                            39     57     54     61
+  loox.avg_rating                                              3      -      -      -
+  loox.num_reviews                                             3      -      -      -
+  loox.reviews                                             20057      -      -      -
+  mc-facebook.google_product_category                          3      3      3      3
+  mm-google-shopping.google_product_category                   3      3      3      3
+  reviews.rating                                              51      -      -      -
+  reviews.rating_count                                         3      -      -      -
+  shopify--discovery--product_recommendation.complementary_products    267      -      -      -
+  shopify--discovery--product_recommendation.related_products    267      -      -      -
+  shopify--discovery--product_recommendation.related_products_display      5      -      -      -
+
+===== descriptionHtml lengths =====
+  MELON   195  :: <h3><strong>fragrância e hidratação para cabelo e corpo</strong></h3> <p>bruma perfumada de melão, peônias e white musk, perfeita para usar depois do banho, ant
+  rose    964  :: <h3><strong>perfume e brilho numa bruma de rosas para cabelo e corpo</strong></h3> <p>bruma perfumada de rosas, com um toque cítrico e um fundo suave de musk e 
+  pear    966  :: <h3><strong>o frescor leve da pêra que perfuma e realça o brilho</strong></h3> <p>bruma perfumada de pêra e frutas verdes, com um coração delicado de frésia e l
+  santal  985  :: <h3><strong>amadeirado contemporâneo com sândalo para perfumar e realçar o brilho</strong></h3> <p>bruma perfumada de sândalo, com o frescor do cardamomo e a pr

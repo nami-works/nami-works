@@ -1,0 +1,115 @@
+{
+ "connection": "SHOPS JARDINS",
+ "nfs": {
+  "2701": {
+   "serie": "001",
+   "dEmi": "29/05/2026",
+   "tpNF": "1",
+   "dest_cnpj": "13.475.001/0001-34",
+   "dest_razao": "B4A SERVICOS DE TECNOLOGIA E COMERCIO S. A.",
+   "vNF": 105000.0,
+   "cancelled": false,
+   "items": [
+    {
+     "sku": "GEB 013",
+     "desc": "Shampoo GE Beauty 60 ml",
+     "qty": 15000.0,
+     "unit": 7.0,
+     "line_total": 105000.0,
+     "cfop": "5102"
+    }
+   ]
+  },
+  "2702": {
+   "serie": "001",
+   "dEmi": "29/05/2026",
+   "tpNF": "1",
+   "dest_cnpj": "13.475.001/0001-34",
+   "dest_razao": "B4A SERVICOS DE TECNOLOGIA E COMERCIO S. A.",
+   "vNF": 105000.0,
+   "cancelled": false,
+   "items": [
+    {
+     "sku": "GEB 010",
+     "desc": "Mascara Condicionadora GE Beauty 50ml",
+     "qty": 15000.0,
+     "unit": 7.0,
+     "line_total": 105000.0,
+     "cfop": "5102"
+    }
+   ]
+  }
+ },
+ "receivables": {
+  "2701": [
+   {
+    "lancamento": 5252093892,
+    "parcela": "001/003",
+    "valor": 35000.0,
+    "data_emissao": "29/05/2026",
+    "data_vencimento": "28/07/2026",
+    "data_previsao": "28/07/2026",
+    "status": "RECEBIDO",
+    "obs": "",
+    "numero_documento": "DESCONTO DE DUPLICAT"
+   },
+   {
+    "lancamento": 5252093893,
+    "parcela": "002/003",
+    "valor": 35000.0,
+    "data_emissao": "29/05/2026",
+    "data_vencimento": "27/08/2026",
+    "data_previsao": "27/08/2026",
+    "status": "RECEBIDO",
+    "obs": "",
+    "numero_documento": "DESCONTO DE DUPLICAT"
+   },
+   {
+    "lancamento": 5252093894,
+    "parcela": "003/003",
+    "valor": 35000.0,
+    "data_emissao": "29/05/2026",
+    "data_vencimento": "26/09/2026",
+    "data_previsao": "09/06/2026",
+    "status": "RECEBIDO",
+    "obs": "",
+    "numero_documento": "DESCONTO DE DUPLICAT"
+   }
+  ],
+  "2702": [
+   {
+    "lancamento": 5252093970,
+    "parcela": "001/003",
+    "valor": 35000.0,
+    "data_emissao": "29/05/2026",
+    "data_vencimento": "28/07/2026",
+    "data_previsao": "28/07/2026",
+    "status": "RECEBIDO",
+    "obs": "",
+    "numero_documento": "DESCONTO DE DUPLICAT"
+   },
+   {
+    "lancamento": 5252093971,
+    "parcela": "002/003",
+    "valor": 35000.0,
+    "data_emissao": "29/05/2026",
+    "data_vencimento": "27/08/2026",
+    "data_previsao": "09/06/2026",
+    "status": "RECEBIDO",
+    "obs": "",
+    "numero_documento": "DESCONTO DE DUPLICAT"
+   },
+   {
+    "lancamento": 5252093972,
+    "parcela": "003/003",
+    "valor": 35000.0,
+    "data_emissao": "29/05/2026",
+    "data_vencimento": "26/09/2026",
+    "data_previsao": "28/09/2026",
+    "status": "RECEBIDO",
+    "obs": "",
+    "numero_documento": "DESCONTO DE DUPLICAT"
+   }
+  ]
+ }
+}
