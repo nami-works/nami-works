@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageFilter, ImageDraw
 sys.stdout.reconfigure(encoding='utf-8')
-CUT=Path('C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--Users-Lucas-Guimar-es-Desktop-nami-works/b4078ee5-bd3e-40ec-8f18-b2a031134f3e/scratchpad/cutouts')
+CUT=Path('C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--claude/b4078ee5-bd3e-40ec-8f18-b2a031134f3e/scratchpad/cutouts')
 REGEN=Path('c:/claude/gebeauty/hero-validation-regen')
 C=2000; TARGET=np.array([236,237,233],float)
 # spec: (cutout-name, center_x_frac, baseline_y_frac, height_frac)  in back-to-front order

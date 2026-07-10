@@ -10,7 +10,7 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 TOKEN = os.environ["SHOPIFY_ADMIN_ACCESS_TOKEN"]
 URL = "https://ge-beauty-cosmeticos.myshopify.com/admin/api/2026-01/graphql.json"
 HDRS = {"Content-Type": "application/json", "X-Shopify-Access-Token": TOKEN}
-SCR = Path(r"C:\Users\LUCASG~1\AppData\Local\Temp\claude\c--Users-Lucas-Guimar-es-Desktop-nami-works\4b6a594b-52ae-4c5e-9200-272ffa0418cb\scratchpad\squares_final")
+SCR = Path(r"C:\Users\LUCASG~1\AppData\Local\Temp\claude\c--claude\4b6a594b-52ae-4c5e-9200-272ffa0418cb\scratchpad\squares_final")
 MEDIA = json.loads((Path(__file__).resolve().parent / "_mist_media.json").read_text(encoding="utf-8"))
 
 ALT = {"rose": "Rose Ritual Body & Hair Mist GE Beauty, bruma perfumada de rosas para cabelo e corpo",

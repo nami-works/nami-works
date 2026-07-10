@@ -11,7 +11,7 @@ TOKEN = os.environ["SHOPIFY_ADMIN_ACCESS_TOKEN"]
 URL = "https://ge-beauty-cosmeticos.myshopify.com/admin/api/2026-01/graphql.json"
 
 MELON = "gid://shopify/Product/9946377617728"
-OUT = Path(r"C:\Users\LUCASG~1\AppData\Local\Temp\claude\c--Users-Lucas-Guimar-es-Desktop-nami-works\977f9199-b70b-493d-8425-b7206ac0c70c\scratchpad\mist-images\melon-reference")
+OUT = Path(r"C:\Users\LUCASG~1\AppData\Local\Temp\claude\c--claude\977f9199-b70b-493d-8425-b7206ac0c70c\scratchpad\mist-images\melon-reference")
 OUT.mkdir(parents=True, exist_ok=True)
 
 Q = """

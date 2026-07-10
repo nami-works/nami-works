@@ -11,7 +11,7 @@ next_blocker: Roles gating + Google login BUILT, TESTED, DEPLOYED live, and merg
 next_owner: cto
 stakeholders:
   - GE Beauty (owner: Lucas; operators onboarded later)
-working_agreement: ~/.claude/projects/c--Users-Lucas-Guimar-es-Desktop-nami-works/memory/feedback_cto_contract.md
+working_agreement: ~/.claude/projects/c--claude/memory/feedback_cto_contract.md
 ---
 
 ## Why

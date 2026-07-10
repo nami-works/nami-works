@@ -41,7 +41,7 @@ next_blocker: <one line>            # what's stopping the next move
 next_owner: <skill-or-person>       # who should pick up — /integrations-engineer, /observability-engineer, lucas, customer, vendor
 stakeholders:
   - <person or tenant>              # only when relevant
-working_agreement: ~/.claude/projects/c--Users-Lucas-Guimar-es-Desktop-nami-works/memory/feedback_cto_contract.md
+working_agreement: ~/.claude/projects/c--claude/memory/feedback_cto_contract.md
 ---
 
 ## Why
@@ -129,7 +129,7 @@ next_owner: lucas
 stakeholders:
   - ACME Skincare (customer)
   - Lucas (signed the contract)
-working_agreement: ~/.claude/projects/c--Users-Lucas-Guimar-es-Desktop-nami-works/memory/feedback_cto_contract.md
+working_agreement: ~/.claude/projects/c--claude/memory/feedback_cto_contract.md
 ---
 
 ## Why

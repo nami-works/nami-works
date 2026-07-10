@@ -10,7 +10,7 @@ TOKEN=None
 for line in open(Path(__file__).resolve().parent.parent / ".env", encoding='utf-8'):
     if line.startswith('SHOPIFY_ADMIN_ACCESS_TOKEN='): TOKEN=line.strip().split('=',1)[1]
 URL='https://ge-beauty-cosmeticos.myshopify.com/admin/api/2026-01/graphql.json'
-SC=r"C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--Users-Lucas-Guimar-es-Desktop-nami-works/0823b26b-fda8-4dcd-b164-b799bf85aa82/scratchpad/boosters-hero"
+SC=r"C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--claude/0823b26b-fda8-4dcd-b164-b799bf85aa82/scratchpad/boosters-hero"
 JOBS=[('booster-fortificante', SC+'/flat_booster-fortificante.png'),
       ('booster-hidratante',   SC+'/flat_booster-hidratante.png'),
       ('booster-definicao',    SC+'/flat_booster-definicao.png'),

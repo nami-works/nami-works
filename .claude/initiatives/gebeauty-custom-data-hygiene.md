@@ -11,7 +11,7 @@ next_blocker: 4 product decisions gate Tiers 3-4 (pre-sale keep/kill, etiqueta R
 next_owner: lucas
 stakeholders:
   - GE Beauty (tenant #1)
-working_agreement: ~/.claude/projects/c--Users-Lucas-Guimar-es-Desktop-nami-works/memory/feedback_cto_contract.md
+working_agreement: ~/.claude/projects/c--claude/memory/feedback_cto_contract.md
 ---
 
 ## Why

@@ -26,7 +26,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
 PLAN_PATH = Path(
-    r"C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--Users-Lucas-Guimar-es-Desktop-nami-works"
+    r"C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--claude"
     r"/0de7f476-47ed-49a6-a5ea-6f213d8fa03c/scratchpad/audit_plan.json"
 )
 CONFIRM = "--confirm" in sys.argv

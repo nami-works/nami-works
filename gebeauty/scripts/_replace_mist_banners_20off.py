@@ -14,7 +14,7 @@ for line in open(Path(__file__).resolve().parent.parent / ".env", encoding='utf-
 API = 'https://ge-beauty-cosmeticos.myshopify.com/admin/api/2026-01'
 MAIN_THEME = 181379236160
 COLLECTION_GID = "gid://shopify/Collection/515330376000"
-SC = Path(r"C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--Users-Lucas-Guimar-es-Desktop-nami-works/1a71e06c-72a4-46bf-832b-900de4a1ac01/scratchpad")
+SC = Path(r"C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--claude/1a71e06c-72a4-46bf-832b-900de4a1ac01/scratchpad")
 
 # escaped-slash forms as stored in the JSON template
 OLD_HOME_WEB = r"shopify:\/\/shop_images\/lancamento-novos-body-hair-mists_banner-web_home.png"

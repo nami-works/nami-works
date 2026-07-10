@@ -15,7 +15,7 @@ def gql(q,v=None):
     req=urllib.request.Request(URL,data=body,headers={'Content-Type':'application/json','X-Shopify-Access-Token':TOKEN})
     return json.loads(urllib.request.urlopen(req).read().decode())
 
-SWEEP=json.loads(Path("C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--Users-Lucas-Guimar-es-Desktop-nami-works/b4078ee5-bd3e-40ec-8f18-b2a031134f3e/scratchpad/hero_product_active.json").read_text(encoding='utf-8'))
+SWEEP=json.loads(Path("C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--claude/b4078ee5-bd3e-40ec-8f18-b2a031134f3e/scratchpad/hero_product_active.json").read_text(encoding='utf-8'))
 TARGETS=['primer-liso-intacto','primer-cachos-definidos','leave-in-pluma','booster-antifrizz',
  'melon-mood-body-hair-mist','shampoo-a-seco','mascara-condicionadora-travel-size',
  'shampoo-sem-sulfato-travel-size','mascara-condicionadora']

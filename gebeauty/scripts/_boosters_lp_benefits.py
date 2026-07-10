@@ -11,7 +11,7 @@ from PIL import Image
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 D=os.environ["SHOPIFY_SHOP_DOMAIN"]; T=os.environ["SHOPIFY_ADMIN_ACCESS_TOKEN"]; V=os.environ.get("SHOPIFY_API_VERSION","2024-10")
 U=f"https://{D}/admin/api/{V}/graphql.json"; H={"X-Shopify-Access-Token":T,"Content-Type":"application/json"}
-SC=Path(r"C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--Users-Lucas-Guimar-es-Desktop-nami-works/0823b26b-fda8-4dcd-b164-b799bf85aa82/scratchpad")
+SC=Path(r"C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--claude/0823b26b-fda8-4dcd-b164-b799bf85aa82/scratchpad")
 OLE_URL="https://pikaso.cdnpk.net/private/production/4817801533/render.png?token=exp=1783814400~hmac=251cbeb7b700332b19921be754a3fe21d4e842f5b350dc2e712e90fdfa5f8fdc"
 
 def gql(q,v=None):

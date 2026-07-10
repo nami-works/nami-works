@@ -17,7 +17,7 @@ from PIL import Image
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 D = os.environ["SHOPIFY_SHOP_DOMAIN"]; T = os.environ["SHOPIFY_ADMIN_ACCESS_TOKEN"]; V = os.environ.get("SHOPIFY_API_VERSION", "2024-10")
 GQL = f"https://{D}/admin/api/{V}/graphql.json"; H = {"X-Shopify-Access-Token": T, "Content-Type": "application/json"}
-SCRATCH = Path(r"C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--Users-Lucas-Guimar-es-Desktop-nami-works/0823b26b-fda8-4dcd-b164-b799bf85aa82/scratchpad")
+SCRATCH = Path(r"C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--claude/0823b26b-fda8-4dcd-b164-b799bf85aa82/scratchpad")
 
 def gql(q, v=None):
     r = requests.post(GQL, headers=H, json={"query": q, "variables": v or {}})

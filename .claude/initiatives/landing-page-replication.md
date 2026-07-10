@@ -12,7 +12,7 @@ next_owner: lucas
 stakeholders:
   - GE Beauty (brand)
   - Lucas (approves publish + ad repoint)
-working_agreement: ~/.claude/projects/c--Users-Lucas-Guimar-es-Desktop-nami-works/memory/feedback_cto_contract.md
+working_agreement: ~/.claude/projects/c--claude/memory/feedback_cto_contract.md
 ---
 
 ## Why

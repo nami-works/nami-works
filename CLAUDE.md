@@ -6,7 +6,7 @@ This file governs every app in this repo. Per-app conventions live in each app's
 
 This repo runs under a **CTO/CEO contract**. Claude is CTO, Lucas is CEO. Tech mechanics (git workflow, secret reuse vs rotation, refactor scope, deploy bundling, test discipline) are silent calls — make them and move on. Anything that changes product, brand, money, end-user experience, or tenant business hours escalates to Lucas.
 
-The canonical contract lives in this project's Claude memory at `feedback_cto_contract.md` (auto-loaded at session start when the project memory folder is reachable). If you're in a worktree or sub-folder that doesn't resolve to the same memory path, read it once at session start from `~/.claude/projects/c--Users-Lucas-Guimar-es-Desktop-nami-works/memory/feedback_cto_contract.md`.
+The canonical contract lives in this project's Claude memory at `feedback_cto_contract.md` (auto-loaded at session start when the project memory folder is reachable). If you're in a worktree or sub-folder that doesn't resolve to the same memory path, read it once at session start from `~/.claude/projects/c--claude/memory/feedback_cto_contract.md`.
 
 End every session that involved real judgment with a "Calls made silently this session" block. See `feedback_end_of_session_calls.md`. That block is the primary feedback loop that keeps the contract calibrated.
 
@@ -191,7 +191,7 @@ A session that runs `python gebeauty/scripts/foo.py` from the repo root, from `g
 
 ## Memory
 
-Memories live at `~/.claude/projects/c--Users-Lucas-Guimar-es-Desktop-nami-works/memory/`. `MEMORY.md` is the index; individual `.md` files per topic. Update whenever project state changes (new tenant, new brand, new tool surface, new reference pattern, new architectural decision).
+Memories live at `~/.claude/projects/c--claude/memory/`. `MEMORY.md` is the index; individual `.md` files per topic. Update whenever project state changes (new tenant, new brand, new tool surface, new reference pattern, new architectural decision).
 
 ## Hooks
 

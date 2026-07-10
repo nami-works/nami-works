@@ -66,7 +66,7 @@ MEDIA = "query($id:ID!){ product(id:$id){ media(first:25){ nodes{ id ... on Medi
 
 def resolve_blank_ids():
     """Map the GEBxxx_pN placeholders to real MediaImage ids from the blanks index."""
-    idx = Path("C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--Users-Lucas-Guimar-es-Desktop-nami-works/f1b793b4-d70c-4765-8c5d-5a5545260e9d/scratchpad/blanks/_index.json")
+    idx = Path("C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--claude/f1b793b4-d70c-4765-8c5d-5a5545260e9d/scratchpad/blanks/_index.json")
     m = {}
     for b in json.loads(idx.read_text(encoding="utf-8")):
         key = f"{b['sku'].replace(' ','')}_p{b['pos']}"

@@ -10,7 +10,7 @@ for line in open(Path(__file__).resolve().parent.parent / ".env", encoding='utf-
     if line.startswith('SHOPIFY_ADMIN_ACCESS_TOKEN='):
         TOKEN = line.strip().split('=', 1)[1]
 API = 'https://ge-beauty-cosmeticos.myshopify.com/admin/api/2026-01'
-REPORT = Path(r"C:\Users\LUCASG~1\AppData\Local\Temp\claude\c--Users-Lucas-Guimar-es-Desktop-nami-works\e7e4e8ad-180d-49a7-b2d1-99278f216db1\scratchpad\REPORT.json")
+REPORT = Path(r"C:\Users\LUCASG~1\AppData\Local\Temp\claude\c--claude\e7e4e8ad-180d-49a7-b2d1-99278f216db1\scratchpad\REPORT.json")
 APPLY = len(sys.argv) > 1 and sys.argv[1] == 'apply'
 
 

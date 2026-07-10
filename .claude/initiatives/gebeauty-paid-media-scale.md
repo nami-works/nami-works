@@ -12,7 +12,7 @@ next_owner: lucas
 stakeholders:
   - GE Beauty (brand / end-consumer acquisition)
   - Lucas (owns budget ceiling + MER floor)
-working_agreement: ~/.claude/projects/c--Users-Lucas-Guimar-es-Desktop-nami-works/memory/feedback_cto_contract.md
+working_agreement: ~/.claude/projects/c--claude/memory/feedback_cto_contract.md
 ---
 
 ## Why

@@ -16,7 +16,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT     = Path(__file__).resolve().parent
 ASSETS   = ROOT / "_b2b_magenta_assets.json"
-OUT_HTML = Path.home() / "AppData/Local/Temp/claude/c--Users-Lucas-Guimar-es-Desktop-nami-works/a2c061e3-8713-4ea9-b77f-5ab2d67ebe63/scratchpad/proposta-canonical.html"
+OUT_HTML = Path.home() / "AppData/Local/Temp/claude/c--claude/a2c061e3-8713-4ea9-b77f-5ab2d67ebe63/scratchpad/proposta-canonical.html"
 
 # ── Proposal data ─────────────────────────────────────────────────────────────
 # (SKU, display_name, qty_units, proposal_price)  — sorted by qty desc, then total desc

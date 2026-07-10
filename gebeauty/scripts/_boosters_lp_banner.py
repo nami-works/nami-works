@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 D = os.environ["SHOPIFY_SHOP_DOMAIN"]; T = os.environ["SHOPIFY_ADMIN_ACCESS_TOKEN"]; V = os.environ.get("SHOPIFY_API_VERSION", "2024-10")
 GQL = f"https://{D}/admin/api/{V}/graphql.json"; H = {"X-Shopify-Access-Token": T, "Content-Type": "application/json"}
-SC = Path(r"C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--Users-Lucas-Guimar-es-Desktop-nami-works/0823b26b-fda8-4dcd-b164-b799bf85aa82/scratchpad")
+SC = Path(r"C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--claude/0823b26b-fda8-4dcd-b164-b799bf85aa82/scratchpad")
 PAGE_GID = "gid://shopify/Page/164373692736"
 
 def gql(q, v=None):

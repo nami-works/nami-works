@@ -16,7 +16,7 @@ CHROME = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 SCRATCHPAD = (
     Path.home()
     / "AppData/Local/Temp/claude"
-    / "c--Users-Lucas-Guimar-es-Desktop-nami-works"
+    / "c--claude"
     / "a2c061e3-8713-4ea9-b77f-5ab2d67ebe63"
     / "scratchpad"
 )

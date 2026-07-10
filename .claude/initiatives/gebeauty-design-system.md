@@ -11,7 +11,7 @@ next_blocker: Foundations v0 awaiting Lucas review (palette completeness, font c
 next_owner: lucas
 stakeholders:
   - GE Beauty
-working_agreement: ~/.claude/projects/c--Users-Lucas-Guimar-es-Desktop-nami-works/memory/feedback_cto_contract.md
+working_agreement: ~/.claude/projects/c--claude/memory/feedback_cto_contract.md
 ---
 
 ## Why

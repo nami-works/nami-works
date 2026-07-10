@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageFilter, ImageDraw
 sys.stdout.reconfigure(encoding='utf-8')
-OUT=Path("C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--Users-Lucas-Guimar-es-Desktop-nami-works/b4078ee5-bd3e-40ec-8f18-b2a031134f3e/scratchpad")
+OUT=Path("C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--claude/b4078ee5-bd3e-40ec-8f18-b2a031134f3e/scratchpad")
 TOKEN=None
 for line in open(Path(__file__).resolve().parent.parent / ".env", encoding='utf-8'):
     if line.startswith('SHOPIFY_ADMIN_ACCESS_TOKEN='): TOKEN=line.strip().split('=',1)[1]

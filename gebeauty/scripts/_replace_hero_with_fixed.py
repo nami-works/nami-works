@@ -13,7 +13,7 @@ def gql(q,v=None):
     body=json.dumps({'query':q,**({'variables':v} if v else {})}).encode()
     req=urllib.request.Request(URL,data=body,headers={'Content-Type':'application/json','X-Shopify-Access-Token':TOKEN})
     return json.loads(urllib.request.urlopen(req).read().decode())
-SC="C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--Users-Lucas-Guimar-es-Desktop-nami-works/b4078ee5-bd3e-40ec-8f18-b2a031134f3e/scratchpad"
+SC="C:/Users/LUCASG~1/AppData/Local/Temp/claude/c--claude/b4078ee5-bd3e-40ec-8f18-b2a031134f3e/scratchpad"
 JOBS=[('mascara-mayday', SC+'/hero_fixed_mascara-mayday.png'),
       ('kit-travel-size', SC+'/hero_fixed_kit-travel-size.png')]
 

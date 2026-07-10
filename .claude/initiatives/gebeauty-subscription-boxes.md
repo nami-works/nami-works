@@ -13,7 +13,7 @@ stakeholders:
   - GE Beauty
   - B4A (subscription box operator)
   - Magenta (subscription box operator)
-working_agreement: ~/.claude/projects/c--Users-Lucas-Guimar-es-Desktop-nami-works/memory/feedback_cto_contract.md
+working_agreement: ~/.claude/projects/c--claude/memory/feedback_cto_contract.md
 ---
 
 ## Why
