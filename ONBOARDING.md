@@ -35,7 +35,7 @@ Top MCP Servers:
 ## Your Setup Checklist
 
 ### Codebases
-- [ ] nami-works — https://github.com/nami-works/nami-works (the monorepo: MCP connector, Omnify Shopify app, public site, satellite APIs, and the GE Beauty ops sandbox)
+- [ ] nami-works — https://github.com/nami-works/nami-works (the repo: GE Beauty operational tooling at `gebeauty/` as the primary surface, plus the secondary deployable apps — MCP connector, Omnify Shopify app, public site, satellite APIs)
 
 ### MCP Servers to Activate
 - [ ] Gmail — read/label/draft email across the shared inbox workflow. Connect via claude.ai → Connectors (Google auth).

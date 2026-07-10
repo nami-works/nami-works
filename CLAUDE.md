@@ -18,7 +18,9 @@ Schema, conventions, and examples are in `.claude/initiatives/README.md`. Treat 
 
 ## What this repo is
 
-`github.com/nami-works/nami-works` ships **six production surfaces** from one codebase:
+**Primary purpose: the operations control center for GE Beauty** — NAMI Works' first and primary customer (a Brazilian beauty brand, run under the CPG Labs brand). The bulk of day-to-day session work lives at **`gebeauty/`** at the repo root: catalog, orders, local delivery, B2B channels, content, imagery, financial modeling, vendor and contract management. When in doubt about what this repo is *for*, it's running GE Beauty.
+
+**Secondary: deployable software surfaces.** The same codebase also ships the products below. These are real and in production, but they are secondary initiatives — worked on when a product push calls for it, not the daily driver.
 
 | Surface | Domain | App | Stack |
 |---|---|---|---|
@@ -29,7 +31,7 @@ Schema, conventions, and examples are in `.claude/initiatives/README.md`. Treat 
 | Public marketing site | `cpg-labs.io` | `apps/omnify-site` | Astro 5 (static) + AWS S3 + CloudFront |
 | Two satellite APIs | TBD | `apps/content-gen-api` + `apps/content-scraper-api` | Python (FastAPI / etc.) |
 
-Production targets, DNS, secrets backends, and deploy domains do not change with this merge. Only the source tree colocates.
+Production targets, DNS, secrets backends, and deploy domains are unchanged by the repo relocation to `c:\claude` and the `sandbox/gebeauty` → `gebeauty` move. Only the source tree layout changed.
 
 ## Brand + tenant model
 
@@ -43,7 +45,7 @@ Multiple Claude Code sessions can run against this repo at the same time. The co
 
 ### Cross-app sessions — unlimited, no worktree required
 
-Sessions touching only one app's files (`apps/connector/`, `apps/omnify-admin/`, `apps/omnify-site/`, `apps/fulfillment/`, `apps/content-gen-api/`, `apps/content-scraper-api/`) don't collide with each other. Each app's tree is disjoint — different paths, different builds, different deploys. Just open the main checkout (`Desktop\nami-works\`) in both sessions and go.
+Sessions touching only one app's files (`apps/connector/`, `apps/omnify-admin/`, `apps/omnify-site/`, `apps/fulfillment/`, `apps/content-gen-api/`, `apps/content-scraper-api/`) don't collide with each other. Each app's tree is disjoint — different paths, different builds, different deploys. Just open the main checkout (`c:\claude\`) in both sessions and go.
 
 ### Same-app sessions — 2 max, separate worktrees
 
@@ -102,11 +104,11 @@ The repo runs a **two-tier discipline** because the unit of value differs across
 | Zone | Discipline |
 |---|---|
 | **`apps/**`** (deployable app code) | **Full app-building.** Branch-per-task, PR, squash-merge, deploy queue, pre-commit gates, tests. Every commit is a candidate for prod. |
-| **`sandbox/**`** (per-tenant operational tooling) | **Loose ops.** Direct `main` commits OK. No branch requirement, no PR, no deploy queue. Pre-commit gates still run but skip Python one-shots. **Commit only when the artifact has enduring value** — reusable scripts, docs, specs, initiative files, saved outputs worth reproducing. One-shot investigation scripts that printed their results and rest? Leave them untracked. |
+| **`gebeauty/**`** (primary tenant ops) and **`sandbox/<tenant>/**`** (secondary tenant ops, e.g. bisyou) | **Loose ops.** Direct `main` commits OK. No branch requirement, no PR, no deploy queue. Pre-commit gates still run but skip Python one-shots. **Commit only when the artifact has enduring value** — reusable scripts, docs, specs, initiative files, saved outputs worth reproducing. One-shot investigation scripts that printed their results and rest? Leave them untracked. |
 | **Root state** (`CLAUDE.md`, `.mcp.json`, `.claude/**`, `docs/**`, root config) | **Semi-strict.** Branch for non-trivial changes. Direct `main` OK for typos, single-line configs, memory index tweaks, hook config, small doc appends. |
 | **Memory** (`~/.claude/projects/.../memory/`) | Per-machine, never committed. Unchanged. |
 
-**Why two tiers:** the repo started as an app-building monorepo but shifted toward being an operations control center for GE Beauty. Roughly 80% of session work is now in `sandbox/**` — investigations, spreadsheets, mockups, content, vendor management, contract reviews — where the unit of value is the outcome (an order fixed, a spreadsheet delivered, a vendor unblocked), not persistent code. Treating operational work like app-building added ceremony without protection. This tier system sanctions what was already happening implicitly.
+**Why two tiers:** the repo started as an app-building monorepo but shifted toward being an operations control center for GE Beauty — which is why GE ops now sits at the repo root (`gebeauty/**`) rather than buried under `sandbox/`. Roughly 80% of session work is in `gebeauty/**` — investigations, spreadsheets, mockups, content, vendor management, contract reviews — where the unit of value is the outcome (an order fixed, a spreadsheet delivered, a vendor unblocked), not persistent code. Treating operational work like app-building added ceremony without protection. This tier system sanctions what was already happening implicitly.
 
 **Signals you picked the wrong tier:**
 - Committing a one-shot investigation script that will never run again → too heavy for the zone
@@ -118,7 +120,7 @@ Applies to **`apps/**` and non-trivial root state**. `sandbox/**` follows the "l
 
 - Every non-trivial change to `apps/**` or root state happens on a feature branch, not directly on `main`. Naming: `feat/<slug>`, `fix/<slug>`, `chore/<slug>`, `docs/<slug>`.
 - Cut from latest `main`: `git checkout main && git pull && git checkout -b feat/<slug>`.
-- **Skip the branch** for: typo edits, single-line config tweaks, memory/`MEMORY.md` updates, explicit user-approved hotfixes, **or any change confined to `sandbox/**`** (per the loose-ops tier).
+- **Skip the branch** for: typo edits, single-line config tweaks, memory/`MEMORY.md` updates, explicit user-approved hotfixes, **or any change confined to `gebeauty/**` or `sandbox/<tenant>/**`** (per the loose-ops tier).
 - **Stale `main` at session start:** if the working tree is dirty when you start, do not silently inherit it into your branch. Ask whose work it is.
 - **Merge to `main` via squash-merge** when the branch is complete and gates pass. One commit per branch on `main`. Delete the branch after merge.
 
@@ -166,22 +168,22 @@ Confirm before taking risky actions — destructive git, external API writes, pr
 
 Manual scripts that talk to a tenant's Shopify store directly need that tenant's credentials available on disk. Convention:
 
-- **One `.env` per tenant, under `sandbox/<tenant>/.env`** — NOT at the repo root, NOT inside `apps/`. Each tenant's secrets stay scoped to that tenant's folder.
-- **Today there is one tenant on disk: `gebeauty/.env`.** Contains GE Beauty's `SHOPIFY_SHOP_DOMAIN`, `SHOPIFY_ADMIN_ACCESS_TOKEN`, `SHOPIFY_API_VERSION`, and the various tool credentials (Lalamove, Omie, etc.) the operational scripts at `gebeauty/scripts/` consume.
+- **One `.env` per tenant, scoped to that tenant's folder** — NOT inside `apps/`. The **primary tenant (GE Beauty) lives at the repo root**, so its env is **`gebeauty/.env`**. Secondary tenants stay under `sandbox/<tenant>/.env` (e.g. a future `sandbox/bisyou/.env`). Each tenant's secrets stay scoped to its own folder either way.
+- **Today the active tenant on disk is `gebeauty/.env`.** Contains GE Beauty's `SHOPIFY_SHOP_DOMAIN`, `SHOPIFY_ADMIN_ACCESS_TOKEN`, `SHOPIFY_API_VERSION`, and the various tool credentials (Lalamove, Omie, etc.) the operational scripts at `gebeauty/scripts/` consume.
 - **The omnify-admin app has its own dev-store `.env` at `apps/omnify-admin/.env`** — that one targets the TEST store. Not GE Beauty prod.
 
 **How scripts must load it.** Always resolve `.env` from the script's own location, never from the invocation cwd:
 
 ```python
-# Python (sandbox/<tenant>/scripts/foo.py)
+# Python (gebeauty/scripts/foo.py — resolve the tenant .env from the script's own location)
 from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 ```
 
-A session that runs `python gebeauty/scripts/foo.py` from the repo root, from `gebeauty/`, or from anywhere else — all three should work without a `cd`. If you find a script that calls bare `load_dotenv()` (cwd-relative), patch it to the `__file__`-relative form. The pre-existing `nami_control.py`, `render_routes_local.py`, `omie_fetch_transportadora.py`, `fix_stragglers.py` follow this convention.
+A session that runs `python gebeauty/scripts/foo.py` from the repo root, from `gebeauty/`, or from anywhere else — all three should work without a `cd`. If you find a script that calls bare `load_dotenv()` (cwd-relative), patch it to the `__file__`-relative form. The pre-existing `nami_control.py`, `render_routes_local.py`, `omie_fetch_transportadora.py`, `fix_stragglers.py` follow this convention. (Scripts elsewhere in the tree — e.g. `scripts/omnify/*.py` — reach the tenant env with `Path(__file__).resolve().parents[N] / "gebeauty" / ".env"`, walking up to the repo root.)
 
-**Why we don't put `.env` at the repo root.** The connector is multi-tenant by design (`/nami-works/tenants/<slug>/*` SSM paths reflect this). A root `.env` would imply "this is THE project env"; the next tenant's secrets would then need to either co-mingle there or move to per-tenant folders anyway. Keep the tenant boundary visible in the filesystem from day one. The `.gitignore` covers `**/.env` so per-tenant files don't leak.
+**Why the tenant boundary stays a folder, not the repo root itself.** The primary tenant's `.env` sits *inside* `gebeauty/`, not as a bare repo-root `.env`. A root `.env` would imply "this is THE project env" and blur the tenant boundary; keeping it under `gebeauty/` (and secondary tenants under `sandbox/<tenant>/`) keeps each tenant's secrets visibly scoped to its own folder. The `.gitignore` covers `**/.env` so no tenant file leaks.
 
 ## Two Prisma schemas — no collision
 

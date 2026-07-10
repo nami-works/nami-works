@@ -1,6 +1,6 @@
 # NAMI Works
 
-Multi-app monorepo for NAMI Works (`lucas@nami.works`). Ships six production surfaces from one codebase:
+Repo for NAMI Works (`lucas@nami.works`). **Primary purpose: the operations control center for GE Beauty**, the first and primary customer — its day-to-day operational tooling and state live at [`gebeauty/`](gebeauty/) at the repo root. **Secondarily**, the same codebase ships the deployable software surfaces below (real, in production, but not the daily driver):
 
 | App | Domain | Stack | Workspace |
 |---|---|---|---|
@@ -14,7 +14,8 @@ Multi-app monorepo for NAMI Works (`lucas@nami.works`). Ships six production sur
 ## Layout
 
 ```
-apps/                       Six deployable apps
+gebeauty/                   PRIMARY: GE Beauty operational state, scripts, content, docs (canonical)
+apps/                       Secondary: six deployable apps
 extensions/                 Shopify extensions shared across admin variants
 packages/                   Shared workspace libraries:
   letterbox/                Handover docs (markdown-only)
@@ -43,8 +44,7 @@ scripts/                    Cross-cutting CLI tooling:
   omnify/                   Omnify operational scripts
   debug/                    Omnify forensic scripts
 sandbox/
-  gebeauty/                 GE Beauty operational state + scripts (canonical)
-  cogan/                    Other tenant sandbox
+  bisyou/                   Secondary-tenant sandbox (diligence / evaluation)
 docs/                       Cross-cutting docs (cpg-labs/ subdir for omnify-side)
 .claude/                    Project-shared Claude Code config + hooks + skills + commands
 ```
@@ -83,3 +83,5 @@ Cross-cutting rules (parallel sessions, deploy queue, branch-per-task, shell com
 ## Status
 
 Monorepo merge from `nami-works` + `cpg-labs` landed 2026-05-21. See `~/.claude/work-orders/2026-05-20-nami-works-monorepo-merger.md` for the full Phase A → D record.
+
+Repo relocated to `c:\claude` and GE Beauty operational tooling promoted from `sandbox/gebeauty` to `gebeauty/` at the repo root (2026-07-10), reflecting that day-to-day GE Beauty operations are the primary use of this repo and the deployable apps are secondary initiatives.
