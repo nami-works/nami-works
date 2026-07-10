@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { Prisma } from "@prisma/client-connector";
 import { prisma } from "../../db/prisma.js";
+import { ensureFreshInstagram } from "../../services/instagram/ingest.js";
 import { registerToolDefinition } from "../../mcp/registry.js";
 import type { ToolContext, ToolResult } from "../../mcp/types.js";
 
@@ -21,6 +22,8 @@ export async function recentPostsHandler(
   ctx: ToolContext,
 ): Promise<ToolResult> {
   const limit = Math.min(Math.max(args.limit ?? 20, 1), 100);
+
+  await ensureFreshInstagram({ tenantId: ctx.tenant.id, prisma, logger: ctx.logger });
 
   const where: Prisma.InstagramPostWhereInput = { tenantId: ctx.tenant.id };
   if (args.mediaType) where.mediaType = args.mediaType;
@@ -68,7 +71,7 @@ export async function recentPostsHandler(
 registerToolDefinition({
   name: "instagram_recent_posts",
   description:
-    "Lists the tenant's most recent ingested Instagram posts with captions, engagement counts, and permalinks. Filterable by media type and date range. Read-only — operates on the InstagramPost table; run instagram_refresh_ingest to pull newer posts.",
+    "Lists the tenant's most recent ingested Instagram posts with captions, engagement counts, and permalinks. Filterable by media type and date range. Read-only — auto-refreshes the corpus from Instagram if it's stale (older than ~6h) before answering.",
   inputSchema: {
     limit: z
       .number()

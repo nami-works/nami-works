@@ -59,6 +59,8 @@ export async function namiFeedbackHandler(
         category,
         message,
         ...(args.relatedTool ? { relatedTool: args.relatedTool } : {}),
+        ...(ctx.tenant.principalId ? { principalId: ctx.tenant.principalId } : {}),
+        ...(ctx.tenant.actorLabel ? { principalLabel: ctx.tenant.actorLabel } : {}),
       },
       select: { id: true, createdAt: true },
     });

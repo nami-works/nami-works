@@ -95,11 +95,30 @@ No file writes, no risk.
 
 `.claude/deploy-queue.md` serializes deploys per-app: one Pending entry per app at a time, regardless of which session created it. Read the queue and check for other sessions' entries before proposing a deploy. See deploy-queue.md for the full schema.
 
+## Discipline by zone
+
+The repo runs a **two-tier discipline** because the unit of value differs across zones. What deserves a branch + PR + deploy queue in `apps/` is overkill for one-shot operational scripts in `sandbox/`. Match discipline to the zone.
+
+| Zone | Discipline |
+|---|---|
+| **`apps/**`** (deployable app code) | **Full app-building.** Branch-per-task, PR, squash-merge, deploy queue, pre-commit gates, tests. Every commit is a candidate for prod. |
+| **`sandbox/**`** (per-tenant operational tooling) | **Loose ops.** Direct `main` commits OK. No branch requirement, no PR, no deploy queue. Pre-commit gates still run but skip Python one-shots. **Commit only when the artifact has enduring value** — reusable scripts, docs, specs, initiative files, saved outputs worth reproducing. One-shot investigation scripts that printed their results and rest? Leave them untracked. |
+| **Root state** (`CLAUDE.md`, `.mcp.json`, `.claude/**`, `docs/**`, root config) | **Semi-strict.** Branch for non-trivial changes. Direct `main` OK for typos, single-line configs, memory index tweaks, hook config, small doc appends. |
+| **Memory** (`~/.claude/projects/.../memory/`) | Per-machine, never committed. Unchanged. |
+
+**Why two tiers:** the repo started as an app-building monorepo but shifted toward being an operations control center for GE Beauty. Roughly 80% of session work is now in `sandbox/**` — investigations, spreadsheets, mockups, content, vendor management, contract reviews — where the unit of value is the outcome (an order fixed, a spreadsheet delivered, a vendor unblocked), not persistent code. Treating operational work like app-building added ceremony without protection. This tier system sanctions what was already happening implicitly.
+
+**Signals you picked the wrong tier:**
+- Committing a one-shot investigation script that will never run again → too heavy for the zone
+- Skipping a PR on an `apps/**` change that touches user-visible logic → too loose for the zone
+
 ## Branch-per-task
 
-- Every non-trivial change happens on a feature branch, not directly on `main`. Naming: `feat/<slug>`, `fix/<slug>`, `chore/<slug>`, `docs/<slug>`.
+Applies to **`apps/**` and non-trivial root state**. `sandbox/**` follows the "loose ops" tier — see "Discipline by zone" above.
+
+- Every non-trivial change to `apps/**` or root state happens on a feature branch, not directly on `main`. Naming: `feat/<slug>`, `fix/<slug>`, `chore/<slug>`, `docs/<slug>`.
 - Cut from latest `main`: `git checkout main && git pull && git checkout -b feat/<slug>`.
-- **Skip the branch** only for: typo edits, single-line config tweaks, memory/`MEMORY.md` updates, or explicit user-approved hotfixes.
+- **Skip the branch** for: typo edits, single-line config tweaks, memory/`MEMORY.md` updates, explicit user-approved hotfixes, **or any change confined to `sandbox/**`** (per the loose-ops tier).
 - **Stale `main` at session start:** if the working tree is dirty when you start, do not silently inherit it into your branch. Ask whose work it is.
 - **Merge to `main` via squash-merge** when the branch is complete and gates pass. One commit per branch on `main`. Delete the branch after merge.
 

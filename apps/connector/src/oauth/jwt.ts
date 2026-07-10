@@ -1,3 +1,4 @@
+import type { PrincipalRole } from "@prisma/client-connector";
 import { SignJWT, jwtVerify } from "jose";
 
 /**
@@ -40,24 +41,93 @@ const ISSUER = process.env.OAUTH_ISSUER ?? "https://mcp.nami.works";
 
 export type AccessTokenClaims = {
   iss: string;
-  sub: string; // tenant:<slug>
+  sub: string; // principal:<id> when per-user, else tenant:<slug>
   tenant: string;
+  role?: PrincipalRole;
+  pid?: string; // principal id — re-resolved live on each request
+  label?: string;
   iat: number;
   exp: number;
 };
 
 export async function signAccessToken(args: {
   tenantSlug: string;
+  role?: PrincipalRole;
+  principalId?: string;
+  actorLabel?: string | null;
   ttlSeconds?: number;
 }): Promise<string> {
   const ttl = args.ttlSeconds ?? 60 * 60 * 24; // 24h
-  return await new SignJWT({ tenant: args.tenantSlug })
+  const payload: Record<string, unknown> = { tenant: args.tenantSlug };
+  if (args.role) payload.role = args.role;
+  if (args.principalId) payload.pid = args.principalId;
+  if (args.actorLabel) payload.label = args.actorLabel;
+  return await new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
     .setIssuer(ISSUER)
-    .setSubject(`tenant:${args.tenantSlug}`)
+    .setSubject(
+      args.principalId
+        ? `principal:${args.principalId}`
+        : `tenant:${args.tenantSlug}`,
+    )
     .setIssuedAt()
     .setExpirationTime(`${ttl}s`)
     .sign(getSigningKey());
+}
+
+// ---- Google-login state: a short-lived signed blob that carries the MCP OAuth
+// params across the redirect to Google and back, so the callback can resume the
+// connector's own authorization-code flow. Signed with the same key. ----
+
+export type GoogleStateClaims = {
+  tenant: string;
+  clientId: string;
+  redirectUri: string;
+  mcpState: string;
+  codeChallenge: string;
+  nonce: string;
+};
+
+export async function signGoogleState(s: GoogleStateClaims): Promise<string> {
+  return await new SignJWT({ ...s })
+    .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+    .setIssuer(ISSUER)
+    .setSubject("google-state")
+    .setIssuedAt()
+    .setExpirationTime("10m")
+    .sign(getSigningKey());
+}
+
+export async function verifyGoogleState(
+  token: string,
+): Promise<GoogleStateClaims | null> {
+  try {
+    const { payload } = await jwtVerify(token, getSigningKey(), {
+      issuer: ISSUER,
+      subject: "google-state",
+    });
+    const { tenant, clientId, redirectUri, mcpState, codeChallenge, nonce } =
+      payload as Record<string, unknown>;
+    if (
+      typeof tenant !== "string" ||
+      typeof clientId !== "string" ||
+      typeof redirectUri !== "string" ||
+      typeof codeChallenge !== "string" ||
+      typeof nonce !== "string"
+    ) {
+      return null;
+    }
+    return {
+      tenant,
+      clientId,
+      redirectUri,
+      mcpState: typeof mcpState === "string" ? mcpState : "",
+      codeChallenge,
+      nonce,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function verifyAccessToken(

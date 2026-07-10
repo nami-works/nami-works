@@ -28,6 +28,8 @@ export type InvocationRecord = {
   status: "ok" | "err";
   durationMs: number;
   requestId: string;
+  principalId?: string | null;
+  actorLabel?: string | null;
 };
 
 export async function recordInvocation(args: InvocationRecord): Promise<void> {

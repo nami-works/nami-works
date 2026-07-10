@@ -2,6 +2,9 @@ import { performance } from "node:perf_hooks";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ZodRawShape } from "zod";
 import { recordInvocation } from "../lib/logger.js";
+import { canUseTool } from "./access.js";
+import { DISABLED_TOOLS, TOOL_CATALOG } from "./tool-catalog.js";
+import { toolDisplayTitle } from "./tool-titles.js";
 import type { ToolContext, ToolDefinition, ToolResult } from "./types.js";
 
 const definitions: ToolDefinition<ZodRawShape>[] = [];
@@ -46,14 +49,33 @@ export function createMcpServerForTenant(ctx: ToolContext): McpServer {
         `Read-only and write-with-confirm tools for Shopify, Instagram, brand voice, and operations.`,
         ``,
         `Feedback loop: if any tool returns something off, the brand voice feels outdated, or you wish a tool worked differently, call \`nami_feedback\` with a short message describing what happened. It routes to NAMI Works for review and powers system improvements over time.`,
+        `Proactive feedback: judge how hard the current task is going. If getting to the outcome has been a struggle — a tool kept failing, data was missing or wrong, you had to work around a limitation, or the user repeated themselves to get what they wanted — offer to file feedback for them before they ask: briefly summarize the friction and ask if they want it sent via \`nami_feedback\`. Don't wait for the user to remember the feedback tool exists.`,
       ].join("\n"),
     },
   );
 
   for (const def of definitions) {
+    // Removed from the exposed surface (see DISABLED_TOOLS). Skipped entirely —
+    // never registered, so it can't appear in tools/list or be called.
+    if (DISABLED_TOOLS.has(def.name)) continue;
+    // Access gate. Owner-only admin tools require owner. Every other tool is
+    // filtered by the principal's effective per-system access (union of their
+    // roles' grants; read vs write) via the tool catalog. A registered tool
+    // missing from the catalog fails closed (owner-only).
+    if (def.requiredRole === "owner" && !ctx.tenant.access.isOwner) continue;
+    const catalogEntry = TOOL_CATALOG[def.name];
+    if (catalogEntry) {
+      if (!canUseTool(ctx.tenant.access, catalogEntry)) continue;
+    } else if (!ctx.tenant.access.isOwner) {
+      continue;
+    }
     server.registerTool(
       def.name,
-      { description: def.description, inputSchema: def.inputSchema },
+      {
+        title: toolDisplayTitle(def.name),
+        description: def.description,
+        inputSchema: def.inputSchema,
+      },
       async (args: unknown) => {
         const start = performance.now();
         let result: ToolResult;
@@ -96,6 +118,8 @@ export function createMcpServerForTenant(ctx: ToolContext): McpServer {
           status,
           durationMs,
           requestId: ctx.requestId,
+          principalId: ctx.tenant.principalId,
+          actorLabel: ctx.tenant.actorLabel,
         });
         return result;
       },

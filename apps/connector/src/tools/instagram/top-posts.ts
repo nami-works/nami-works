@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { Prisma } from "@prisma/client-connector";
 import { prisma } from "../../db/prisma.js";
+import { ensureFreshInstagram } from "../../services/instagram/ingest.js";
 import { registerToolDefinition } from "../../mcp/registry.js";
 import type { ToolContext, ToolResult } from "../../mcp/types.js";
 
@@ -23,6 +24,8 @@ export async function topPostsHandler(
 ): Promise<ToolResult> {
   const limit = Math.min(Math.max(args.limit ?? 10, 1), 50);
   const metric = args.metric ?? "engagement";
+
+  await ensureFreshInstagram({ tenantId: ctx.tenant.id, prisma, logger: ctx.logger });
 
   const where: Prisma.InstagramPostWhereInput = { tenantId: ctx.tenant.id };
   if (args.mediaType) where.mediaType = args.mediaType;

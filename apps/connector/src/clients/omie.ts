@@ -49,10 +49,43 @@ function defaultBackoff(attempt: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Omie throttles per account across all app_keys (one request per method at a
+// time; bursts trip "consumo redundante" / "API bloqueada"). We proactively
+// SERIALIZE every Omie call through one module-level gate with a minimum gap
+// between calls, so the connector stays under Omie's limits by construction
+// rather than reacting to blocks. Gap defaults to 600ms (0 in tests).
+const OMIE_MIN_GAP_MS = Number(
+  process.env.OMIE_MIN_GAP_MS ?? (process.env.NODE_ENV === "test" ? 0 : 600),
+);
+let omieTail: Promise<unknown> = Promise.resolve();
+let omieLastEnd = 0;
+
+function serializeOmieCall<T>(fn: () => Promise<T>, gapMs: number): Promise<T> {
+  const run = omieTail.then(async () => {
+    const wait = Math.max(0, omieLastEnd + gapMs - Date.now());
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    try {
+      return await fn();
+    } finally {
+      omieLastEnd = Date.now();
+    }
+  });
+  // Keep the chain alive regardless of this call's outcome.
+  omieTail = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
 export type BuildClientOptions = {
   baseUrl?: string;
   fetchImpl?: typeof fetch;
   backoff?: (attempt: number) => Promise<void>;
+  /** Wait for a throttle window (ms). Injectable so tests don't really sleep. */
+  throttleWait?: (ms: number) => Promise<void>;
+  /** Minimum ms between Omie calls (serial gate). Defaults per env; 0 in tests. */
+  minGapMs?: number;
 };
 
 export function buildOmieClient(
@@ -63,11 +96,22 @@ export function buildOmieClient(
   const baseUrl = opts.baseUrl ?? OMIE_BASE_URL;
   const fetchImpl = opts.fetchImpl ?? fetch;
   const sleep = opts.backoff ?? defaultBackoff;
+  const throttleWait =
+    opts.throttleWait ?? ((ms: number) => new Promise((r) => setTimeout(r, ms)));
+  const minGap = opts.minGapMs ?? OMIE_MIN_GAP_MS;
 
   return {
-    async call<TParam, TResponse>(
+    call<TParam, TResponse>(
       args: OmieCallArgs<TParam>,
     ): Promise<OmieCallResult<TResponse>> {
+      return serializeOmieCall(() => doCall(args), minGap);
+    },
+  };
+
+  async function doCall<TParam, TResponse>(
+    args: OmieCallArgs<TParam>,
+  ): Promise<OmieCallResult<TResponse>> {
+    {
       const url = `${baseUrl}/${args.resource.replace(/^\/+|\/+$/g, "")}/`;
       const body = JSON.stringify({
         app_key: appKey,
@@ -106,6 +150,17 @@ export function buildOmieClient(
           const fs = (json as { faultstring?: unknown }).faultstring;
           if (typeof fs === "string") {
             const fc = (json as { faultcode?: unknown }).faultcode;
+            // Omie serializes one call per method at a time per account. When a
+            // prior call is still running it returns "Já existe uma requisição
+            // desse método" (HTTP 200) — that IS transient, so wait briefly and
+            // retry. Do NOT retry "Consumo redundante" (duplicate-query dedup):
+            // resending the identical request just re-trips it. Return it so the
+            // tool can surface a friendly "retry in a moment" instead of hanging.
+            const concurrent = /j[áa] existe uma requisi/i.test(fs);
+            if (concurrent && attempt < MAX_RETRIES) {
+              await throttleWait(8000);
+              continue;
+            }
             return {
               ok: false,
               status: 200,
@@ -136,11 +191,222 @@ export function buildOmieClient(
           faultstring: "max retries exceeded",
         }
       );
-    },
-  };
+    }
+  }
 }
 
+// Omie per-account throttle / duplicate-query faults (returned as HTTP-200
+// faultstrings). Tools can surface a friendly "retry shortly" instead of a hard
+// error. "Consumo redundante" = same query too soon; "Já existe uma requisição"
+// = a call of this method is still running.
+export function isOmieThrottleFault(faultstring: string): boolean {
+  return /consumo redundante|consumo indevido|api bloqueada|j[áa] existe uma requisi|aguarde\s+\d+\s+segundo|tente novamente em\s+\d+\s+segundo/i.test(
+    faultstring,
+  );
+}
+
+export const OMIE_THROTTLE_MESSAGE =
+  "⏳ A API da Omie limitou esta consulta temporariamente (limite de uso imposto pela própria Omie — não é uma limitação do Claude, que segue funcionando normalmente). Aguarde cerca de 1 minuto e tente novamente, ou consulte por nome (que resolve pelo registro local, sem chamar a Omie).";
+
 export type OmieClientArgs = { ssmPrefix: string };
+
+// One Omie legal entity (empresa) the tenant operates, with its own API client.
+export type OmieCompany = { code: string; label?: string; client: OmieClient };
+
+type CompaniesCacheEntry = { companies: OmieCompany[]; expiresAt: number };
+const companiesCache = new Map<string, CompaniesCacheEntry>();
+
+type CompanyManifestEntry = {
+  code: string;
+  label?: string;
+  appKey: string;
+  appSecret: string;
+};
+
+/**
+ * All Omie companies configured for a tenant. GE runs several Omie legal
+ * entities, so the Omie tools query every configured company and aggregate.
+ *
+ * Source of truth is a JSON manifest at `${ssmPrefix}/omie/companies`:
+ *   [{ "code": "000174", "label": "…", "appKey": "…", "appSecret": "…" }, …]
+ * When the manifest is absent (or placeholder), we fall back to the legacy
+ * single-company pair `${ssmPrefix}/omie/app_key` + `/app_secret` as one
+ * company keyed "principal", so older provisioning keeps working.
+ */
+export async function getOmieCompanies(
+  args: OmieClientArgs,
+): Promise<OmieCompany[]> {
+  const now = Date.now();
+  const hit = companiesCache.get(args.ssmPrefix);
+  if (hit && hit.expiresAt > now) return hit.companies;
+
+  const manifestRaw = await getSecret(
+    `${args.ssmPrefix}/omie/companies`,
+  ).catch(() => null);
+
+  let companies: OmieCompany[];
+  if (manifestRaw && manifestRaw !== "REPLACE_ME") {
+    let parsed: CompanyManifestEntry[];
+    try {
+      parsed = JSON.parse(manifestRaw) as CompanyManifestEntry[];
+    } catch {
+      throw new Error(
+        `Omie companies manifest at ${args.ssmPrefix}/omie/companies is not valid JSON.`,
+      );
+    }
+    companies = parsed
+      .filter(
+        (c) =>
+          c.appKey &&
+          c.appSecret &&
+          c.appKey !== "REPLACE_ME" &&
+          c.appSecret !== "REPLACE_ME",
+      )
+      .map((c) => ({
+        code: c.code,
+        ...(c.label ? { label: c.label } : {}),
+        client: buildOmieClient(c.appKey, c.appSecret),
+      }));
+    if (companies.length === 0) {
+      throw new Error(
+        `Omie companies manifest at ${args.ssmPrefix}/omie/companies has no usable entries (all missing or placeholder credentials).`,
+      );
+    }
+  } else {
+    // Legacy single-company fallback (throws on placeholder, as before).
+    const client = await getOmieClient({ ssmPrefix: args.ssmPrefix });
+    companies = [{ code: "principal", client }];
+  }
+
+  companiesCache.set(args.ssmPrefix, {
+    companies,
+    expiresAt: now + CLIENT_CACHE_TTL_MS,
+  });
+  return companies;
+}
+
+// Canonical B2B customer registry (SSM `/omie/b2b_registry`, JSON). Maps a
+// customer name → its codigo_cliente_omie per company, so name lookups resolve
+// locally without hitting Omie's throttled ListarClientes. Curated + backfilled
+// from sales history; the tool falls back to a live Omie search on a miss.
+export type B2BRegistryEntry = {
+  nome: string;
+  aliases?: string[];
+  cnpj?: string;
+  codigos: Record<string, number>; // company code/label → codigo_cliente_omie
+};
+
+const b2bRegistryCache = new Map<
+  string,
+  { entries: B2BRegistryEntry[]; expiresAt: number }
+>();
+
+export async function getB2BRegistry(
+  args: OmieClientArgs,
+): Promise<B2BRegistryEntry[]> {
+  const now = Date.now();
+  const hit = b2bRegistryCache.get(args.ssmPrefix);
+  if (hit && hit.expiresAt > now) return hit.entries;
+
+  const raw = await getSecret(`${args.ssmPrefix}/omie/b2b_registry`).catch(
+    () => null,
+  );
+  let entries: B2BRegistryEntry[] = [];
+  if (raw && raw !== "REPLACE_ME") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) entries = parsed as B2BRegistryEntry[];
+    } catch {
+      // Malformed registry → treat as empty; live Omie search still works.
+      entries = [];
+    }
+  }
+  b2bRegistryCache.set(args.ssmPrefix, {
+    entries,
+    expiresAt: now + CLIENT_CACHE_TTL_MS,
+  });
+  return entries;
+}
+
+// Find the registry entry matching a customer name (case/accent-insensitive,
+// substring either way). Lets the pedidos/financeiro tools accept a name and
+// resolve it to per-company códigos without an Omie call.
+export function resolveRegistryEntry(
+  registry: B2BRegistryEntry[],
+  nome: string,
+): B2BRegistryEntry | null {
+  const q = normalizeName(nome);
+  if (!q) return null;
+  return (
+    registry.find((e) =>
+      [e.nome, ...(e.aliases ?? [])]
+        .map(normalizeName)
+        .some((n) => n.includes(q) || q.includes(n)),
+    ) ?? null
+  );
+}
+
+export type CompaniesResolution =
+  | { kind: "companies"; companies: OmieCompany[] } // one or more to query
+  | { kind: "ambiguous"; companies: OmieCompany[] } // ask the user which
+  | { kind: "notfound"; requested: string[]; companies: OmieCompany[] };
+
+function normalizeName(s: string): string {
+  return s
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, ""); // strip accents
+}
+
+// Resolve which Omie companies to query. `empresa` may be one name/code or a
+// list (multi-select). Matches case/accent-insensitively on code or label.
+// - none requested + one company  → that company
+// - none requested + several      → ambiguous (ask the user, multi-select)
+// - some requested                → the matching companies (or notfound)
+export function resolveOmieCompanies(
+  companies: OmieCompany[],
+  requested?: string | string[],
+): CompaniesResolution {
+  const req = (
+    requested == null ? [] : Array.isArray(requested) ? requested : [requested]
+  ).filter((r) => r && r.trim().length > 0);
+
+  if (req.length === 0) {
+    if (companies.length === 1) return { kind: "companies", companies };
+    return { kind: "ambiguous", companies };
+  }
+
+  const chosen: OmieCompany[] = [];
+  const missing: string[] = [];
+  for (const r of req) {
+    const match = companies.find(
+      (c) =>
+        normalizeName(c.code) === normalizeName(r) ||
+        (c.label !== undefined && normalizeName(c.label) === normalizeName(r)),
+    );
+    if (match && !chosen.includes(match)) chosen.push(match);
+    else if (!match) missing.push(r);
+  }
+  if (missing.length > 0) return { kind: "notfound", requested: missing, companies };
+  return { kind: "companies", companies: chosen };
+}
+
+// Human-friendly listing of the configured companies, for the disambiguation
+// prompt. Shows the label (name) callers should pick.
+export function describeOmieCompanies(companies: OmieCompany[]): string {
+  return companies.map((c) => `- ${c.label ?? c.code}`).join("\n");
+}
+
+// Disambiguation message returned when the caller didn't say which company and
+// there's more than one. Instructs the assistant to ask the user with a
+// multi-select question and re-call with the chosen names in `empresa`.
+export function omieAmbiguousPrompt(companies: OmieCompany[]): string {
+  return [
+    "Esta conta tem várias empresas no Omie. Pergunte ao usuário, com uma pergunta de múltipla escolha (seleção múltipla habilitada), quais empresas usar, e chame a tool de novo passando `empresa` com os nomes escolhidos (uma ou mais). Empresas disponíveis:",
+    describeOmieCompanies(companies),
+  ].join("\n");
+}
 
 export async function getOmieClient(args: OmieClientArgs): Promise<OmieClient> {
   const key = args.ssmPrefix;
@@ -166,4 +432,6 @@ export async function getOmieClient(args: OmieClientArgs): Promise<OmieClient> {
 
 export function __clearOmieClientCacheForTesting(): void {
   cache.clear();
+  companiesCache.clear();
+  b2bRegistryCache.clear();
 }

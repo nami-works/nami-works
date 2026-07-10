@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { buildOmieClient } from "./omie.js";
+import { buildOmieClient, isOmieThrottleFault } from "./omie.js";
 
 const noBackoff = async () => undefined;
 
@@ -96,6 +96,56 @@ describe("buildOmieClient", () => {
     expect(r.ok).toBe(true);
   });
 
+  it("retries the concurrency fault ('Já existe uma requisição'), then succeeds", async () => {
+    const waits: number[] = [];
+    const client = buildOmieClient("k", "s", {
+      fetchImpl: fakeFetch([
+        {
+          status: 200,
+          body: { faultstring: "Já existe uma requisição desse método sendo executada" },
+        },
+        { status: 200, body: { clientes_cadastro: [{ codigo_cliente_omie: 1 }] } },
+      ]),
+      backoff: noBackoff,
+      throttleWait: async (ms) => {
+        waits.push(ms);
+      },
+    });
+    const r = await client.call({
+      resource: "geral/clientes",
+      method: "ListarClientes",
+      param: {},
+    });
+    expect(r.ok).toBe(true);
+    expect(waits).toEqual([8000]);
+  });
+
+  it("does NOT retry 'Consumo redundante' — returns it immediately (no wait)", async () => {
+    const waits: number[] = [];
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            faultstring:
+              "ERROR: Consumo redundante detectado. Aguarde 31 segundos para tentar novamente (REDUNDANT).",
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+    );
+    const client = buildOmieClient("k", "s", {
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      backoff: noBackoff,
+      throttleWait: async (ms) => {
+        waits.push(ms);
+      },
+    });
+    const r = await client.call({ resource: "x", method: "ListarClientes", param: {} });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.faultstring).toContain("Consumo redundante");
+    expect(waits).toEqual([]); // no wait
+    expect(fetchImpl).toHaveBeenCalledTimes(1); // no retry
+  });
+
   it("returns the last error when retries are exhausted", async () => {
     const client = buildOmieClient("k", "s", {
       fetchImpl: fakeFetch([
@@ -155,6 +205,25 @@ describe("buildOmieClient", () => {
 
 // In-process state from getOmieClient (cache + SSM fetches) tested separately
 // in the SSM module's own tests; we don't repeat that wiring here.
+
+describe("isOmieThrottleFault", () => {
+  it("matches all three Omie throttle/block wordings", () => {
+    expect(
+      isOmieThrottleFault("Já existe uma requisição desse método sendo executada"),
+    ).toBe(true);
+    expect(
+      isOmieThrottleFault(
+        "ERROR: Consumo redundante detectado. Aguarde 31 segundos para tentar novamente (REDUNDANT).",
+      ),
+    ).toBe(true);
+    expect(
+      isOmieThrottleFault(
+        "ERROR: API bloqueada por consumo indevido. Tente novamente em 166 segundos.",
+      ),
+    ).toBe(true);
+    expect(isOmieThrottleFault("Cliente não cadastrado")).toBe(false);
+  });
+});
 
 describe("client cache reset helper", () => {
   beforeEach(() => undefined);

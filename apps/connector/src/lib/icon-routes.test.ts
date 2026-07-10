@@ -1,33 +1,45 @@
 import Fastify from "fastify";
 import { describe, expect, it } from "vitest";
-import { NAMI_WORKS_ICON_SVG, mountIconRoutes } from "./icon-routes.js";
+import { mountIconRoutes } from "./icon-routes.js";
 
 describe("icon routes", () => {
-  it("serves the NAMI Works mark at /favicon.ico with image/svg+xml type", async () => {
+  it("serves the holographic PNG tile at /favicon.ico (claude.ai reads the connector icon here)", async () => {
     const app = Fastify({ logger: false });
     mountIconRoutes(app);
     const res = await app.inject({ method: "GET", url: "/favicon.ico" });
     expect(res.statusCode).toBe(200);
-    expect(res.headers["content-type"]).toContain("image/svg+xml");
-    expect(res.body).toContain("<svg");
+    expect(res.headers["content-type"]).toContain("image/png");
+    expect(res.rawPayload.length).toBeGreaterThan(1000);
     await app.close();
   });
 
-  it("serves the same SVG at /icon.svg", async () => {
+  it("serves the holo tile as an SVG at /icon.svg (claude.ai's connector-list icon)", async () => {
     const app = Fastify({ logger: false });
     mountIconRoutes(app);
     const res = await app.inject({ method: "GET", url: "/icon.svg" });
     expect(res.statusCode).toBe(200);
     expect(res.headers["content-type"]).toContain("image/svg+xml");
-    expect(res.body).toBe(NAMI_WORKS_ICON_SVG);
+    expect(res.body).toContain("<svg");
+    // Wraps the holo PNG tile rather than a flat mark.
+    expect(res.body).toContain("data:image/png;base64,");
     await app.close();
   });
 
-  it("sets a 1-day Cache-Control header so MCP clients and browsers cache the icon", async () => {
+  it("serves the holographic PNG tile at /icon.png", async () => {
+    const app = Fastify({ logger: false });
+    mountIconRoutes(app);
+    const res = await app.inject({ method: "GET", url: "/icon.png" });
+    expect(res.statusCode).toBe(200);
+    expect(res.headers["content-type"]).toContain("image/png");
+    expect(res.rawPayload.length).toBeGreaterThan(1000);
+    await app.close();
+  });
+
+  it("sets a no-store Cache-Control header so clients never hold a stale icon", async () => {
     const app = Fastify({ logger: false });
     mountIconRoutes(app);
     const res = await app.inject({ method: "GET", url: "/icon.svg" });
-    expect(res.headers["cache-control"]).toContain("max-age=86400");
+    expect(res.headers["cache-control"]).toContain("no-store");
     await app.close();
   });
 });
