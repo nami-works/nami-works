@@ -12,7 +12,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from collections import defaultdict
 
-ENV_PATH = Path(r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\gebeauty\.env")
+ENV_PATH = Path(__file__).resolve().parents[2] / "gebeauty" / ".env"
 
 # Cutoff: end of yesterday BRT (2026-05-18 23:59 BRT = 2026-05-19 03:00 UTC).
 # Today is Tue 2026-05-19, so this includes everything up to and including Mon.

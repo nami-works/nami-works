@@ -11,7 +11,7 @@ Bucket the 257 orders, dump samples + summary, and persist to JSON.
 Read-only.
 
 Uses Shopify admin token + Omie creds from
-  C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\gebeauty\.env
+  <repo-root>/gebeauty/.env
 """
 import json
 import sys
@@ -21,7 +21,7 @@ import urllib.error
 from collections import Counter
 from pathlib import Path
 
-ENV_PATH = Path(r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\gebeauty\.env")
+ENV_PATH = Path(__file__).resolve().parents[2] / "gebeauty" / ".env"
 
 
 def load_env(path):

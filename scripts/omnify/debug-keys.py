@@ -4,7 +4,7 @@ import urllib.request
 import openpyxl
 from pathlib import Path
 
-ENV_PATH = Path(r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\gebeauty\.env")
+ENV_PATH = Path(__file__).resolve().parents[2] / "gebeauty" / ".env"
 SRC = Path(r"C:\Users\Lucas Guimarães\Desktop\Pedidos_2026_05_19_142420.xlsx")
 
 env = {l.split("=",1)[0].strip(): l.split("=",1)[1].strip()

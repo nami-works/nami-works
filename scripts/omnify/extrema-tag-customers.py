@@ -15,7 +15,7 @@ import time
 import urllib.request
 from pathlib import Path
 
-ENV_PATH = Path(r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\gebeauty\.env")
+ENV_PATH = Path(__file__).resolve().parents[2] / "gebeauty" / ".env"
 TAG = "fiscal-hold-extrema-2026-05"
 # Email scope cutoff in BRT date (inclusive). The breakdown JSON keys are
 # YYYY-MM-DD in BRT. Everything <= 2026-05-15 is in scope.

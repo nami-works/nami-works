@@ -5,7 +5,7 @@
 
 import fs from "node:fs";
 
-const envPath = "C:/Users/Lucas Guimarães/Desktop/nami-works/sandbox/gebeauty/.env";
+const envPath = new URL("../../gebeauty/.env", import.meta.url);
 for (const l of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
   const m = l.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
   if (!m) continue;

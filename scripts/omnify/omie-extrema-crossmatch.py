@@ -20,7 +20,7 @@ import urllib.request
 import urllib.error
 from pathlib import Path
 
-ENV_PATH = Path(r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\gebeauty\.env")
+ENV_PATH = Path(__file__).resolve().parents[2] / "gebeauty" / ".env"
 
 # Snapshot of 257 Shopify Order IDs (numeric) currently UNFULFILLED at CD Extrema.
 # Source: this script pulls them live; this is the static fallback for re-runs.

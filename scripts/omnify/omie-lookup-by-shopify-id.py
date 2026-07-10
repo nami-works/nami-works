@@ -9,7 +9,7 @@ import urllib.request
 import urllib.error
 from pathlib import Path
 
-ENV_PATH = Path(r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\gebeauty\.env")
+ENV_PATH = Path(__file__).resolve().parents[2] / "gebeauty" / ".env"
 
 # (Shopify order name, Shopify Order numeric ID)
 TARGETS = [

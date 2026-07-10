@@ -14,7 +14,7 @@ from pathlib import Path
 import openpyxl
 from openpyxl.styles import PatternFill, Font
 
-ENV_PATH = Path(r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\gebeauty\.env")
+ENV_PATH = Path(__file__).resolve().parents[2] / "gebeauty" / ".env"
 SRC = Path(r"C:\Users\Lucas Guimarães\Desktop\Pedidos_2026_05_19_142420.xlsx")
 DST = Path(r"C:\Users\Lucas Guimarães\Desktop\Pedidos_2026_05_19_142420_enriched.xlsx")
 

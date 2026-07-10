@@ -46,20 +46,20 @@ tmp-*.json
 **/token.json
 
 # Customer / third-party PII (regenerable script outputs — never version)
-sandbox/gebeauty/scripts/customer_*_nf.out.json
-sandbox/gebeauty/scripts/omie_b2b_customers*.out.json
-sandbox/gebeauty/omie-b2b-registry.json
-sandbox/gebeauty/store-credit-holders.json
-sandbox/gebeauty/store-credit-bulk.jsonl
-sandbox/gebeauty/store-credit-orders-since-*.xlsx
-sandbox/gebeauty/store-reviews-corpus.json
-sandbox/gebeauty/loox-reviewers-by-product.json
-sandbox/gebeauty/beautyback-base_*.xlsx
-sandbox/gebeauty/beautyback-zoko_*.xlsx
-sandbox/gebeauty/beautyback-name-overrides.json
-sandbox/gebeauty/beautyback-uncertain-names.json
-sandbox/gebeauty/primer-orders-bulk.jsonl
-sandbox/gebeauty/danfe/
+gebeauty/scripts/customer_*_nf.out.json
+gebeauty/scripts/omie_b2b_customers*.out.json
+gebeauty/omie-b2b-registry.json
+gebeauty/store-credit-holders.json
+gebeauty/store-credit-bulk.jsonl
+gebeauty/store-credit-orders-since-*.xlsx
+gebeauty/store-reviews-corpus.json
+gebeauty/loox-reviewers-by-product.json
+gebeauty/beautyback-base_*.xlsx
+gebeauty/beautyback-zoko_*.xlsx
+gebeauty/beautyback-name-overrides.json
+gebeauty/beautyback-uncertain-names.json
+gebeauty/primer-orders-bulk.jsonl
+gebeauty/danfe/
 
 # macOS archive extraction cruft
 **/__MACOSX/
@@ -78,11 +78,11 @@ sandbox/gebeauty/danfe/
 storage/
 z_playground/
 .streamlit/
-sandbox/gebeauty/state.json
-sandbox/gebeauty/recife_*.json
-sandbox/gebeauty/rio_*.json
-sandbox/gebeauty/sp_*.json
-sandbox/gebeauty/route-maps/[0-9]*/
+gebeauty/state.json
+gebeauty/recife_*.json
+gebeauty/rio_*.json
+gebeauty/sp_*.json
+gebeauty/route-maps/[0-9]*/
 
 # Local databases (dev / test)
 *.sqlite
