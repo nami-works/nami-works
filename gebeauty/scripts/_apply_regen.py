@@ -7,7 +7,7 @@ APPLY = len(sys.argv)>1 and sys.argv[1]=='apply'
 HANDLES=sys.argv[2:]
 TOKEN=[l.strip().split('=',1)[1] for l in open(Path(__file__).resolve().parent.parent/'.env',encoding='utf-8') if l.startswith('SHOPIFY_ADMIN_ACCESS_TOKEN=')][0]
 URL='https://ge-beauty-cosmeticos.myshopify.com/admin/api/2026-01/graphql.json'
-FOLDER=Path('c:/Users/Lucas Guimarães/Desktop/nami-works/sandbox/gebeauty/hero-validation-regen')
+FOLDER=Path('c:/claude/gebeauty/hero-validation-regen')
 def gql(q,v=None):
     body=json.dumps({'query':q,**({'variables':v} if v else {})}).encode()
     req=urllib.request.Request(URL,data=body,headers={'Content-Type':'application/json','X-Shopify-Access-Token':TOKEN})

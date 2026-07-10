@@ -11,7 +11,7 @@ Data source: Excel simulator at
   → Dashboard sheet, rows 55–69, cols B=SKU C=Produto E=Volume F=PrecoUnit H=Retail
 
 Usage:
-  C:/Python314/python.exe sandbox/gebeauty/scripts/_b2b_proposta.py \
+  C:/Python314/python.exe gebeauty/scripts/_b2b_proposta.py \
     --mode full \
     --client-name "UAUBOX S.A." \
     --client-display "UAU Box" \
@@ -37,8 +37,8 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT   = SCRIPT_DIR.parent.parent         # sandbox/gebeauty/scripts → repo root
-ENV_FILE    = SCRIPT_DIR.parent / ".env"       # sandbox/gebeauty/.env
+REPO_ROOT   = SCRIPT_DIR.parent.parent         # gebeauty/scripts → repo root
+ENV_FILE    = SCRIPT_DIR.parent / ".env"       # gebeauty/.env
 
 EXCEL_PATH  = Path(
     "G:/Drives compartilhados/GEB_Comercial/Boxes/GEB_B2B_Box_Dashboard.xlsx"
@@ -100,7 +100,7 @@ VOLS = {
 # ─────────────────────────────────────────────────────────────────────────────
 
 def load_env():
-    """Load key=value pairs from sandbox/gebeauty/.env."""
+    """Load key=value pairs from gebeauty/.env."""
     env = {}
     if not ENV_FILE.exists():
         return env

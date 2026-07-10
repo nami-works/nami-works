@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import openpyxl, shutil, re
-SRC=r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\Diligência Bisyou.xlsx"
-OUT=r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\Diligência Bisyou - PT.xlsx"
+SRC=r"c:\claude\sandbox\bisyou\diligence\Diligência Bisyou.xlsx"
+OUT=r"c:\claude\sandbox\bisyou\diligence\Diligência Bisyou - PT.xlsx"
 EM="—"; EN="–"; ARR="→"
 
 T={

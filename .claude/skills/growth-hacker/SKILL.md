@@ -245,7 +245,7 @@ Sections above are the default starting structure. Cut sections that don't serve
 
 - **CPG Labs marketing site:** React Router v7 routes, likely under `app/routes/_site.*` or similar host-aware paths. Host-aware dispatch splits cpg-labs.io (parent homepage) from omnify.cpg-labs.io (Omnify site). Mobile-first, Figma design loop documented in memory.
 - **Omnify app onboarding:** `app/routes/app.*` embedded inside Shopify admin. Polaris web components; strict CLAUDE.md layout rules. Usually not a standalone acquisition LP — more a post-install flow.
-- **GE Beauty standalone LPs:** Shopify theme pages (custom page templates). Liquid templates, theme sections, brand-consistent with the store. For paid campaigns, the LP is typically a dedicated `pages/` route wired to a custom page template. Theme reference + store access context lives in the `nami-works` repo at `sandbox/gebeauty/CLAUDE.md`.
+- **GE Beauty standalone LPs:** Shopify theme pages (custom page templates). Liquid templates, theme sections, brand-consistent with the store. For paid campaigns, the LP is typically a dedicated `pages/` route wired to a custom page template. Theme reference + store access context lives in the `nami-works` repo at `gebeauty/CLAUDE.md`.
 - **Quick-turn standalone LPs:** if speed matters more than integration, hosted options (Unbounce, Instapage, Leadpages) are acceptable for 1-week tests. Flag this to the user as a tradeoff: speed vs integration.
 
 ---

@@ -17,7 +17,7 @@ The user operates real stores (e.g., GE Beauty on Shopify) and builds apps (e.g.
 
 Parse the argument:
 - **First argument (required):** The app route file to enhance (e.g., `app/routes/app.merchandising.tsx`)
-- **Second argument (optional):** Path to field notes (defaults to `../nami-works/sandbox/gebeauty/field-notes.md`)
+- **Second argument (optional):** Path to field notes (defaults to `gebeauty/field-notes.md`)
 
 If no argument is provided, ask the user which route to target.
 

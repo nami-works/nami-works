@@ -13,7 +13,7 @@ Steps:
 Auth:
     First run opens a browser for Google OAuth consent.
     Credentials are saved to token.json for subsequent runs.
-    Place your OAuth credentials JSON at: sandbox/gebeauty/scripts/google_oauth_credentials.json
+    Place your OAuth credentials JSON at: gebeauty/scripts/google_oauth_credentials.json
 """
 
 import argparse

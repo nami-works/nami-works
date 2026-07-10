@@ -171,5 +171,5 @@ bullets([
 
 meta("Fontes: deck Road Show da Bisyou; balancetes jan-abr 2026; relatorio faturamento_GE.xlsx (reconstrução de 45.626 pedidos); tabela de frete B2C Unilog da GE. Papéis de trabalho em sandbox/bisyou/diligence/. Números pró-forma ilustrativos e dirigidos por premissas; uso interno de decisão apenas.")
 
-doc.save(r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\Bisyou-Memorando-Investimento-PT.docx")
+doc.save(r"c:\claude\sandbox\bisyou\diligence\Bisyou-Memorando-Investimento-PT.docx")
 print("saved docx PT")

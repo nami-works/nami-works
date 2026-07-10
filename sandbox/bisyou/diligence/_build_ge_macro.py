@@ -3,8 +3,8 @@ import openpyxl, json
 from openpyxl.styles import Font, PatternFill
 from openpyxl.utils import get_column_letter
 
-F=r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\GE Beauty_BP_v2026__+Bisyou.xlsx"
-D=json.load(open(r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\_ge_macro_data.json",encoding="utf-8"))
+F=r"c:\claude\sandbox\bisyou\diligence\GE Beauty_BP_v2026__+Bisyou.xlsx"
+D=json.load(open(r"c:\claude\sandbox\bisyou\diligence\_ge_macro_data.json",encoding="utf-8"))
 wb=openpyxl.load_workbook(F)
 
 NAVY="11243F"; YEL="FFF3CD"; HEAD=Font(bold=True,color="FFFFFF"); BOLD=Font(bold=True)

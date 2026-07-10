@@ -1,5 +1,5 @@
 """Download the 22 generated ingredient-card images (+ alt options) to
-sandbox/gebeauty/ingredient-cards/ with ingredient-named files. Verifies each
+gebeauty/ingredient-cards/ with ingredient-named files. Verifies each
 download is a real image (size check) and flags failures."""
 import urllib.request
 from pathlib import Path

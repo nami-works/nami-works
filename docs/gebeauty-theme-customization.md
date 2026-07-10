@@ -6,7 +6,7 @@ How to customize the GE Beauty Shopify theme fast and safely, without re-derivin
 
 ## 0. Before you touch the theme
 - **Verify which theme is live.** `GET /admin/api/2026-01/themes.json?fields=id,name,role` and edit the theme whose `role == main`. Do NOT trust the hardcoded id `181379236160` — CheckCommerce's "badge cache bust" flow republishes duplicates and silently swaps the live theme mid-session (see `reference_gebeauty_theme_publish_role`). If edits look "not applied" on the storefront, you're probably editing the wrong theme.
-- **Creds:** token from `sandbox/gebeauty/.env` (`SHOPIFY_ADMIN_ACCESS_TOKEN`), never hardcode. API `2026-01`. Python `C:/Python314/python.exe`, urllib (no deps).
+- **Creds:** token from `gebeauty/.env` (`SHOPIFY_ADMIN_ACCESS_TOKEN`), never hardcode. API `2026-01`. Python `C:/Python314/python.exe`, urllib (no deps).
 - **Edits are LIVE** (the published theme is edited directly — authorized while Homologação isn't ready). Keep draft pages draft unless told otherwise.
 
 ## 1. Theme facts / design tokens
@@ -20,7 +20,7 @@ How to customize the GE Beauty Shopify theme fast and safely, without re-derivin
 - **Write:** `PUT /themes/{id}/assets.json` body `{"asset":{"key":<key>,"value":<string>}}`. `200` OK; `422` returns a **specific** message — read it (e.g. "dynamic source does not exist", "top level nodes must be `<p>`…", "URL scheme").
 - **Always read a section's schema before editing its settings:** fetch `sections/<type>.liquid`, parse the `{% schema %}` JSON → gives setting `id`s + `type`s + block types. The setting *type* dictates the binding syntax (§3).
 - **JSON template shape:** `{ "sections": { "<key>": { "type", "settings", "blocks": { "<bk>": {"type","settings"} }, "block_order":[…] } }, "order":[…] }`. The `order` array is section sequence. **Reusing a section key with a different `type`** swaps that section in place (used to swap `multicolumn` → `tabs`).
-- Reusable helper pattern (`call()` / `asset_get()` / `asset_put()`): copy from any `sandbox/gebeauty/scripts/_*.py`.
+- Reusable helper pattern (`call()` / `asset_get()` / `asset_put()`): copy from any `gebeauty/scripts/_*.py`.
 
 ## 3. Dynamic sources (binding settings to metafields)
 Full rules: `reference_shopify_dynamic_sources`. Summary:
@@ -43,7 +43,7 @@ Full rules: `reference_shopify_dynamic_sources`. Summary:
 - **Swap a section type in place:** redefine `tpl['sections'][key]` with a new `type` (e.g. `multicolumn` → `tabs`); leave `order` untouched. The `tabs` section renders ordered/unordered rich-text lists as numbered circles / star bullets automatically.
 - **Duplicate a file (give a section its own image):** `fileCreate` with `originalSource` = the existing file's CDN URL (Shopify re-fetches it), poll `fileStatus` until `READY`, then set the new MediaImage gid on the target metafield. Script: `_dup_problem_image.py`.
 
-## 6. Reusable scripts (`sandbox/gebeauty/scripts/`)
+## 6. Reusable scripts (`gebeauty/scripts/`)
 - `_copy_pdp_sections_to_lp.py` — replicate metaobject subfields → page metafields, bind sections, copy static sections.
 - `_wire_lp_texts.py` / `_bind_lp_texts.py` — create page-metafield defs+values (incl. HTML→rich_text AST converter) + bind section settings.
 - `_dup_problem_image.py` — fileCreate-from-URL duplicate + wire to a metafield.
@@ -57,4 +57,4 @@ Full rules: `reference_shopify_dynamic_sources`. Summary:
 - 422s are specific — read the message rather than guessing.
 - CSS not showing? CDN/browser cache — hard-refresh; confirm you edited the live theme.
 - `rich_text_field` = JSON AST, not HTML. `url` metafield = absolute URL.
-- Confirm before any store mutation (theme write, metafield set) per `sandbox/gebeauty/CLAUDE.md`.
+- Confirm before any store mutation (theme write, metafield set) per `gebeauty/CLAUDE.md`.

@@ -273,7 +273,7 @@ The mechanism was added during the original watchdog work but the auto-trigger w
 ## 10. CLI gaps for the needs-review resolution workflow
 
 Already partially shipped — `mark-stop-delivered`, `mark-stop-failed`, `clear-needs-review` exist as `/api/control/*` intents. Still missing:
-- Python wrapper in `nami-works/sandbox/gebeauty/scripts/cpg_control.py` for `mark-stop-failed` and `clear-needs-review` (only `mark-stop-delivered` is wired today).
+- Python wrapper in `gebeauty/scripts/cpg_control.py` for `mark-stop-failed` and `clear-needs-review` (only `mark-stop-delivered` is wired today).
 - The route-details modal banner exists (per [inputs/mockups/watchdog-mark-delivered-ui-v1.html](../inputs/mockups/watchdog-mark-delivered-ui-v1.html)) but currently the operator has no in-UI affordance to act on it; the implied workflow is to use the CLI. Long-term that's fine; short-term the operator has no way to dispatch from the UI without dropping to terminal.
 
 ---

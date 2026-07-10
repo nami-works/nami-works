@@ -5,7 +5,7 @@ CPG Labs Control API client — Python wrapper for
 Lets Claude Code (or any script) observe + drive the Local Delivery
 pipeline without going through the embedded UI.
 
-Env vars (add to sandbox/gebeauty/.env):
+Env vars (add to gebeauty/.env):
   CPG_LABS_CONTROL_URL    — base URL, e.g. https://omnify.cpg-labs.io/full
   CPG_LABS_CONTROL_TOKEN  — bearer token matching the server env
 
@@ -205,9 +205,9 @@ def main():
     p_qt.add_argument("--route", action="append", required=True,
                       help="Comma-separated order gids for one route. Repeat for multiple routes.")
 
-    p_rr = sub.add_parser("render-routes", help="Render Google Static Maps PNGs (one per active-route location) so Claude can spatially review the clustering. Downloads to sandbox/gebeauty/route-maps/YYYY-MM-DD/.")
+    p_rr = sub.add_parser("render-routes", help="Render Google Static Maps PNGs (one per active-route location) so Claude can spatially review the clustering. Downloads to gebeauty/route-maps/YYYY-MM-DD/.")
     p_rr.add_argument("--location", default=None, help="Optional location gid (omit to render all)")
-    p_rr.add_argument("--output-dir", default=None, help="Override output directory (default: sandbox/gebeauty/route-maps/YYYY-MM-DD/)")
+    p_rr.add_argument("--output-dir", default=None, help="Override output directory (default: gebeauty/route-maps/YYYY-MM-DD/)")
     p_rr.add_argument("--prune-days", type=int, default=30, help="Auto-prune older date-folders (default: 30)")
 
     p_cr = sub.add_parser("close-route", help="Phase A: archive ld_rota tags (ld_rota-NN → ld_rota-NN_YY.MM.DD) and close DB job. No Shopify fulfillment.")

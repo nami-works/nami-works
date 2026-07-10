@@ -6,7 +6,7 @@ Build client-facing Magenta proposal HTML (landscape A4) with:
   - Sorted by volume desc
 
 Run:
-  C:/Python314/python.exe sandbox/gebeauty/scripts/_b2b_build_proposta_html.py
+  C:/Python314/python.exe gebeauty/scripts/_b2b_build_proposta_html.py
 """
 import json, sys, io, base64, urllib.request
 from pathlib import Path

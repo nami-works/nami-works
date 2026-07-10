@@ -71,7 +71,7 @@ Skip call 2 and use the defaults above unless Lucas has already indicated otherw
 ### 5. Run the generator
 
 **Filing rule by file format — applies regardless of mode:**
-- `.html` → local only (`sandbox/gebeauty/`), never Drive
+- `.html` → local only (`gebeauty/`), never Drive
 - `.pdf` → local + Drive copy (pass `--drive-folder`)
 
 Before any PDF run, resolve the Drive deal folder:
@@ -85,7 +85,7 @@ G:\Drives compartilhados\GEB_Comercial\
 ```
 
 ```powershell
-C:/Python314/python.exe sandbox/gebeauty/scripts/_b2b_proposta.py `
+C:/Python314/python.exe gebeauty/scripts/_b2b_proposta.py `
   --mode full `          # or lite
   --client-name "UAUBOX S.A." `
   --client-display "UAU Box" `
@@ -96,16 +96,16 @@ C:/Python314/python.exe sandbox/gebeauty/scripts/_b2b_proposta.py `
   --drive-folder "G:/Drives compartilhados/GEB_Comercial/Boxes/Uau Box/002_jul-26"
 ```
 
-Omit `--drive-folder` for HTML output (silently ignored for non-PDF anyway). Omit `--out` to auto-derive the filename (`B2B_Proposta_<ClientSlug>_<YYYYMMDD>.<ext>` in `sandbox/gebeauty/`).
+Omit `--drive-folder` for HTML output (silently ignored for non-PDF anyway). Omit `--out` to auto-derive the filename (`B2B_Proposta_<ClientSlug>_<YYYYMMDD>.<ext>` in `gebeauty/`).
 
 ### 6. Report result
 
 **For `full` mode (HTML):**
 
-> Proposal written: `sandbox/gebeauty/B2B_Proposta_UAUBox_20260702.html`
+> Proposal written: `gebeauty/B2B_Proposta_UAUBox_20260702.html`
 >
 > ```powershell
-> Start-Process "c:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\gebeauty\B2B_Proposta_UAUBox_20260702.html"
+> Start-Process "c:\claude\gebeauty\B2B_Proposta_UAUBox_20260702.html"
 > ```
 > In browser: **Ctrl+P → A4 Landscape → Minimum margins → Save as PDF**
 
@@ -114,7 +114,7 @@ Omit `--drive-folder` for HTML output (silently ignored for non-PDF anyway). Omi
 > Proposal written locally + Drive copy: `G:\...\Uau Box\002_jul-26\B2B_Proposta_UAUBox_20260702.pdf`
 >
 > ```powershell
-> Start-Process "c:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\gebeauty\B2B_Proposta_UAUBox_20260702.pdf"
+> Start-Process "c:\claude\gebeauty\B2B_Proposta_UAUBox_20260702.pdf"
 > ```
 
 ### 7. Do NOT open the file automatically
@@ -125,6 +125,6 @@ Never call `Start-Process` yourself. Always present it as a code block for Lucas
 
 - **Data source**: The script reads from the Excel simulator, not from any hardcoded list. If prices changed in the Excel, re-run the skill.
 - **Retail column**: column H in the simulator is the retail (varejo) price. The script derives Desc. s/Tabela as `round((retail - preco_atacado) / retail * 100)%`.
-- **Images in full mode**: Fetches product images via Shopify GraphQL (`productByHandle`) using `SHOPIFY_ADMIN_ACCESS_TOKEN` from `sandbox/gebeauty/.env`. If the token is missing, the table still renders — just without thumbnails.
+- **Images in full mode**: Fetches product images via Shopify GraphQL (`productByHandle`) using `SHOPIFY_ADMIN_ACCESS_TOKEN` from `gebeauty/.env`. If the token is missing, the table still renders — just without thumbnails.
 - **Lite mode dependencies**: requires `reportlab`. If missing: `C:/Python314/python.exe -m pip install reportlab`.
 - **Full mode dependencies**: requires `openpyxl` and `Pillow`. If missing: `C:/Python314/python.exe -m pip install openpyxl Pillow`.

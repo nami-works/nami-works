@@ -1,6 +1,6 @@
 # GE Beauty — Theme / Storefront Backlog
 
-Enhancement ideas for the GE Beauty storefront theme (growth, merchandising, UX). Bigger than a quick fix, not yet scheduled. Distinct from `sandbox/gebeauty/pending-fixes.md` (which is for operational defects). Read `docs/gebeauty-theme-customization.md` before implementing any of these.
+Enhancement ideas for the GE Beauty storefront theme (growth, merchandising, UX). Bigger than a quick fix, not yet scheduled. Distinct from `gebeauty/pending-fixes.md` (which is for operational defects). Read `docs/gebeauty-theme-customization.md` before implementing any of these.
 
 Status legend: 🔵 idea · 🟡 scoped · 🟢 in progress · ✅ done
 
@@ -9,7 +9,7 @@ Status legend: 🔵 idea · 🟡 scoped · 🟢 in progress · ✅ done
 ## 🔵 Site-wide quiz CTA — "não sabe o que comprar? faça o quiz"
 - **What:** A persistent, site-wide call-to-action that routes undecided visitors to the Octane AI quiz. Copy (GE voice, lowercase): *"não sabe o que comprar? faça o quiz"*. Present on all pages, not just the homepage.
 - **Why:** Don't lose the traffic. Visitors who land without a clear intent (ads, SEO, direct) currently have no nudge toward a guided path — the quiz converts "just browsing" into a qualified recommendation.
-- **Where / how (to scope):** Options — a slim CTA near the floating WhatsApp widget, a dismissible strip, a footer module, or reuse the header `quiz-modal-trigger` (`data-quiz-modal="toggle"`) so it opens the existing quiz modal from anywhere. Quiz = Octane AI (see `sandbox/gebeauty/quiz/`; trigger class `quiz-modal-trigger` already in the header).
+- **Where / how (to scope):** Options — a slim CTA near the floating WhatsApp widget, a dismissible strip, a footer module, or reuse the header `quiz-modal-trigger` (`data-quiz-modal="toggle"`) so it opens the existing quiz modal from anywhere. Quiz = Octane AI (see `gebeauty/quiz/`; trigger class `quiz-modal-trigger` already in the header).
 - **Added:** 2026-07-05
 
 ## 🔵 Show discounted kits on the progressive-discounts page (and similar)

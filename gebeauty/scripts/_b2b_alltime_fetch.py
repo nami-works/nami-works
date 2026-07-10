@@ -5,7 +5,7 @@ Fetch B2B Box NFs for UAU Box, B4A, Magenta with expanded date ranges.
 - MATRIZ / EXTREMA: 2024 only (all-time too large)
 
 Run:
-  C:/Python314/python.exe sandbox/gebeauty/scripts/_b2b_alltime_fetch.py
+  C:/Python314/python.exe gebeauty/scripts/_b2b_alltime_fetch.py
 """
 import json, time, sys, urllib.request, urllib.error
 from pathlib import Path

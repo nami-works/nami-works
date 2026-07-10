@@ -1,6 +1,6 @@
 # Session Handover — Local Delivery Control API — 2026-04-19
 
-> **Note (2026-04-23):** Paths in this document refer to `gebeauty-workspace/` as it existed at the time of writing. That workspace has since been migrated to the `nami-works` repo at `sandbox/gebeauty/` — the Python client, shipping journal, and `.env` all live there now. The `/api/control/*` server side is unchanged.
+> **Note (2026-04-23):** Paths in this document refer to `gebeauty-workspace/` as it existed at the time of writing. That workspace has since been migrated to the `nami-works` repo at `gebeauty/` — the Python client, shipping journal, and `.env` all live there now. The `/api/control/*` server side is unchanged.
 
 ## What was done
 

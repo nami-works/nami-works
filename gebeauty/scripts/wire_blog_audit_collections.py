@@ -10,8 +10,8 @@ count are cleared (a post now with 2 collections gets slots 3-4 deleted).
 Idempotent: reads existing slot values, sets only what differs, clears stale slots.
 Dry-run by default; mutates only with --confirm.
 
-Run (dry):    C:/Python314/python.exe sandbox/gebeauty/scripts/wire_blog_audit_collections.py
-Run (commit): C:/Python314/python.exe sandbox/gebeauty/scripts/wire_blog_audit_collections.py --confirm
+Run (dry):    C:/Python314/python.exe gebeauty/scripts/wire_blog_audit_collections.py
+Run (commit): C:/Python314/python.exe gebeauty/scripts/wire_blog_audit_collections.py --confirm
 """
 
 import json, sys, time, urllib.request, urllib.error

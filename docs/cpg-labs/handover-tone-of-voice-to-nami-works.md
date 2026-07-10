@@ -135,7 +135,7 @@ Expose the same data as MCP tools inside the existing `mcp.nami.works` server (w
 - `accept_hypothesis(tenant, id)` / `reject_hypothesis(tenant, id)`.
 - `refresh_tone(tenant)` → trigger the sample + inference pipeline.
 
-Tool implementations are thin: each one wraps the HTTP API above using the tenant's service token. This means the API is the source of truth; MCP is just an adapter shape Claude conversations can call. The Python client pattern at `nami-works/sandbox/gebeauty/scripts/cpg_control.py` is the model — same idea, MCP tool surface instead of CLI subcommand.
+Tool implementations are thin: each one wraps the HTTP API above using the tenant's service token. This means the API is the source of truth; MCP is just an adapter shape Claude conversations can call. The Python client pattern at `gebeauty/scripts/cpg_control.py` is the model — same idea, MCP tool surface instead of CLI subcommand.
 
 ### 4. Web UI (for non-Shopify users)
 
@@ -155,7 +155,7 @@ Move `shopify.server.ts`, `meta.server.ts`, `monday.server.ts`, `manual.server.t
 
 **Phase 0 — design alignment (this handover).** Read this doc + the actual cpg-labs source listed above. Decide tenant model, naming conventions, where the web UI lives in the nami-works repo.
 
-**Phase 1 — schema + API live in parallel.** Build the tables + endpoints in nami-works. No data migration yet. The Shopify admin still uses cpg-labs Postgres. Smoke-test the API with a test tenant (the GE Beauty tenant is the obvious one — already in nami-works as `sandbox/gebeauty/`).
+**Phase 1 — schema + API live in parallel.** Build the tables + endpoints in nami-works. No data migration yet. The Shopify admin still uses cpg-labs Postgres. Smoke-test the API with a test tenant (the GE Beauty tenant is the obvious one — already in nami-works as `gebeauty/`).
 
 **Phase 2 — Shopify admin reads from nami-works (write still cpg-labs).** Loader on `app.settings_.brand_.tone-sources.tsx` hits nami-works for `sources` + `hypotheses` + `batches`. Action handlers still write to cpg-labs Postgres. This proves the read path end-to-end without risking the write path.
 

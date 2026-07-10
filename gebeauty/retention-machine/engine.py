@@ -18,7 +18,7 @@ from collections import defaultdict
 from datetime import date, datetime, timezone
 
 HERE = Path(__file__).resolve().parent
-TEN = HERE.parent                      # sandbox/gebeauty
+TEN = HERE.parent                      # gebeauty
 CACHE = HERE / "_cache"; CACHE.mkdir(exist_ok=True)
 CFG = json.loads((HERE / "config.json").read_text(encoding="utf-8"))
 sys.path.insert(0, str(TEN / "scripts"))

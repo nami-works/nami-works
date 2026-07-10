@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Minimal Krea public-API client (direct HTTP; bypasses the MCP client).
 
-Auth + endpoint come from sandbox/gebeauty/.env (KREA_API_TOKEN), resolved
+Auth + endpoint come from gebeauty/.env (KREA_API_TOKEN), resolved
 relative to THIS file so it works from any cwd. The MCP JSON-RPC endpoint is
 https://api.krea.ai/mcp; large asset uploads use REST POST https://api.krea.ai/assets.
 

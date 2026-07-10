@@ -1,7 +1,7 @@
 """
 Fetch DANFE PDF + XML of GE Beauty PURCHASE NF-e (entrada) from suppliers via
 Omie produtos/dfedocs/ObterNfe. Read-only against Omie; writes files locally to
-sandbox/gebeauty/danfe/.
+gebeauty/danfe/.
 
 ObterNfe(param={"nIdNfe": <int>}) -> cXmlNfe (full XML), cPdf (DANFE pdf link),
 cLinkPortal, cCodStatus ("0"=ok), cDesStatus. We try the recebimento id first,

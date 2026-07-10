@@ -33,7 +33,7 @@ If this chain-of-thought feels off — *especially* the "Shopify-only locks out 
 | Phase | What | Risk |
 |---|---|---|
 | **0** | Read the handover (Part 3 below). Answer 6 open questions. Decide tenant identity model. | None — design work. |
-| **1** | Build the schema + API endpoints in nami-works. No data migration yet. Smoke-test with GE Beauty tenant (already in nami-works at `sandbox/gebeauty/`). | None — parallel infra. cpg-labs untouched. |
+| **1** | Build the schema + API endpoints in nami-works. No data migration yet. Smoke-test with GE Beauty tenant (already in nami-works at `gebeauty/`). | None — parallel infra. cpg-labs untouched. |
 | **2** | Shopify admin loader on `tone-sources` reads from nami-works API. Action handlers still write to cpg-labs Postgres. Proves the read path. | Low — read-only path. |
 | **3** | **Cutover.** One-shot migration script: copy every cpg-labs `BrandToneSource` / `BrandToneHypothesis` / `BrandIntegrationConfig` / `BrandAssets` / `BrandLearning` row into nami-works (rewriting `shop → tenantId`). Re-encrypt `configCipher` under nami-works key. Flip admin action handlers to write to nami-works too. Cpg-labs tables become read-only fallback for 2 weeks, then drop. | High — schema migration + credential re-encryption + write-path swap. Ship behind a feature flag. |
 | **4** | Expose MCP tools on `mcp.nami.works`: `get_tone_of_voice(tenant)`, `get_brand_bible(tenant, format)`, `list_pending_hypotheses`, `accept_hypothesis`, `reject_hypothesis`, `refresh_tone`. Each wraps the HTTP API. | None — read tools first, write tools after threat-model review. |

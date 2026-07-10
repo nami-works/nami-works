@@ -1,5 +1,5 @@
 """Apply approved corrected heroes from the validation folder: for each approved handle,
-upload sandbox/gebeauty/hero-validation/<handle>.png -> attach -> reorder to #1 -> delete old #1.
+upload gebeauty/hero-validation/<handle>.png -> attach -> reorder to #1 -> delete old #1.
 Approved = folder files MINUS the 7 reproved MINUS already-live mascara-mayday.
 Dry-run unless argv[1]=='apply'."""
 import json, urllib.request, sys, os, time
@@ -10,7 +10,7 @@ TOKEN=None
 for line in open(Path(__file__).resolve().parent.parent / ".env", encoding='utf-8'):
     if line.startswith('SHOPIFY_ADMIN_ACCESS_TOKEN='): TOKEN=line.strip().split('=',1)[1]
 URL='https://ge-beauty-cosmeticos.myshopify.com/admin/api/2026-01/graphql.json'
-FOLDER=Path('c:/Users/Lucas Guimarães/Desktop/nami-works/sandbox/gebeauty/hero-validation')
+FOLDER=Path('c:/claude/gebeauty/hero-validation')
 REPROVED={'kit-cabelo-renovado','kit-finalizacao-com-brilho-1','kit-beach-hair','kit-reconstrucao-leveza','kit-travel-size','shampoo-sem-sulfato-travel-size','travel-size-kit-para-todo-dia'}
 ALREADY={'mascara-mayday'}
 approved=sorted({p.stem for p in FOLDER.glob('*.png')} - REPROVED - ALREADY)

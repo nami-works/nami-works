@@ -7,7 +7,7 @@ Cashback policy (defaults; all overridable via CLI):
   - if min_purch ≤ R$ 200 (cap)   → fixed-R$ code, min_purch enforced
   - if min_purch  > R$ 200 (cap)  → flat 25% percentage code, no min enforced
 
-Recurring delta: state lives at sandbox/gebeauty/cashback/state.json.
+Recurring delta: state lives at gebeauty/cashback/state.json.
 A customer is processed iff their `lastOrder.id` differs from what we issued
 last time. First run = full backfill. Re-runs = only deltas.
 
@@ -24,7 +24,7 @@ Usage:
   python scripts/cashback_generate.py --campaign-id ... --no-pause          # unattended
 
 Requires: openpyxl (`pip install openpyxl`).
-See sandbox/gebeauty/actions-unlocked/issue-beautyback-cashback.md for the playbook.
+See gebeauty/actions-unlocked/issue-beautyback-cashback.md for the playbook.
 
 NOTE: Reconstructed 2026-06-30 from scripts/__pycache__/cashback_generate.cpython-314.pyc
 after the source was lost from disk (untracked file, removed by a tree clean).

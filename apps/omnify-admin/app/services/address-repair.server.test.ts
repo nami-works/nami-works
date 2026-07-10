@@ -1,6 +1,6 @@
 /**
  * Unit tests for address-repair.server.ts — the four §6.7 patterns + negative
- * cases. Mirrors `nami-works/sandbox/gebeauty/scripts/test_address_repair.py`
+ * cases. Mirrors `gebeauty/scripts/test_address_repair.py`
  * to keep parity with the Python source of truth.
  *
  * Run: npx tsx --test app/services/address-repair.server.test.ts

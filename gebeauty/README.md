@@ -1,4 +1,4 @@
-# sandbox/gebeauty/
+# gebeauty/
 
 Claude Code operational workspace for the GE Beauty tenant.
 
@@ -11,7 +11,7 @@ This directory is where ad-hoc operational work against the GE Beauty Shopify st
 npx tsx scripts/ssm-to-env.ts --tenant gebeauty
 
 # Run a read-only script to confirm auth
-python sandbox/gebeauty/scripts/retail_revenue_mtd.py
+python gebeauty/scripts/retail_revenue_mtd.py
 ```
 
 Credentials source: SSM (`/nami-works/tenants/gebeauty/*`). Never commit a real `.env`.

@@ -8,7 +8,7 @@ import json, sys, time, urllib.request
 DRY = '--execute' not in sys.argv
 
 TOKEN = [l.split('=', 1)[1].strip().strip('"').strip("'")
-         for l in open('sandbox/gebeauty/.env', encoding='utf-8')
+         for l in open('gebeauty/.env', encoding='utf-8')
          if l.startswith('SHOPIFY_ADMIN_ACCESS_TOKEN=')][0]
 URL = 'https://ge-beauty-cosmeticos.myshopify.com/admin/api/2026-01/graphql.json'
 

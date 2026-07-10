@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageFilter, ImageDraw
 sys.stdout.reconfigure(encoding='utf-8')
-REGEN=Path('c:/Users/Lucas Guimarães/Desktop/nami-works/sandbox/gebeauty/hero-validation-regen')
+REGEN=Path('c:/claude/gebeauty/hero-validation-regen')
 TARGET=np.array([236,237,233],float); R=22
 JOBS={
  'kit-reconstrucao-leveza':('https://cdn.shopify.com/s/files/1/0807/8344/2240/files/kit_reconstrucao_leveza.png','https://pikaso.cdnpk.net/private/production/4757589302/render.png?token=exp=1783296000~hmac=5ec98d7a75a130f5d2f822c9e065763ac9505b163f2728b8559e69063384e025'),

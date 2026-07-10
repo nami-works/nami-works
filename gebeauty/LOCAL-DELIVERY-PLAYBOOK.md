@@ -14,7 +14,7 @@ Read this top-to-bottom the first time a user asks anything about Local Delivery
 |---|---|---|
 | **Server** — VRP optimizer, Lalamove adapter, HTTP API | `cpg-labs` repo, deployed at `omnify.cpg-labs.io/full` (AWS ECS) | Clustering logic, driver quoting/dispatch, route state, tag writes |
 | **HTTP control surface** — `/api/control/*` | Same deploy, bearer-auth | One intent per URL (`optimize`, `dispatch`, …) |
-| **Operator client** — `cpg_control.py` | This workspace (`sandbox/gebeauty/scripts/`) | CLI wrapper, map download, JSON printing |
+| **Operator client** — `cpg_control.py` | This workspace (`gebeauty/scripts/`) | CLI wrapper, map download, JSON printing |
 
 You are the operator. You call `cpg_control.py` subcommands, read the JSON responses, look at the downloaded route-map PNGs, and decide what to do next. You never write TypeScript or server-side code from this workspace — that lives in the cpg-labs repo. If a server-side bug blocks you, report it back to the user so they can open the cpg-labs repo.
 
@@ -42,7 +42,7 @@ Claude-driven runs via this client use the **same slots and same tags**. That me
 
 ```bash
 # From repo root
-cat sandbox/gebeauty/.env | grep -E "^CPG_LABS_CONTROL_(URL|TOKEN)=" | sed 's/=.*/=***/'
+cat gebeauty/.env | grep -E "^CPG_LABS_CONTROL_(URL|TOKEN)=" | sed 's/=.*/=***/'
 ```
 
 You should see both `CPG_LABS_CONTROL_URL=***` and `CPG_LABS_CONTROL_TOKEN=***`. If either is missing, populate from SSM:
@@ -56,7 +56,7 @@ Python: `C:/Python314/python.exe` on Windows, `python3` elsewhere. No dependenci
 Smoke test (read-only, safe to run anytime):
 
 ```bash
-python sandbox/gebeauty/scripts/cpg_control.py check-dispatches
+python gebeauty/scripts/cpg_control.py check-dispatches
 ```
 
 Expected output shape:
@@ -80,7 +80,7 @@ GE Beauty has 4 physical stores that act as pickup points: **Recife (2 locations
 **You do not need to memorize the location GIDs.** Ask the user which store they mean, or enumerate what's active:
 
 ```bash
-python sandbox/gebeauty/scripts/cpg_control.py check-dispatches
+python gebeauty/scripts/cpg_control.py check-dispatches
 ```
 
 The response lists `locationId` per active dispatch. For a full inventory, run `state` against each suspected location and collect the `location.name` + `location.id` fields from the response.
@@ -91,7 +91,7 @@ Location IDs are Shopify GIDs: `gid://shopify/Location/97784398144`. Legacy nume
 
 ## 4. Command reference
 
-Every subcommand is `python sandbox/gebeauty/scripts/cpg_control.py <subcommand> [args]`. Shortened below to `cpg <subcommand>`.
+Every subcommand is `python gebeauty/scripts/cpg_control.py <subcommand> [args]`. Shortened below to `cpg <subcommand>`.
 
 ### state — read what's happening
 
@@ -153,7 +153,7 @@ Pulls every **unassigned LOCAL** order at the location (local-delivery fulfillme
 
 **Server default `maxPerRoute` is 7** (the hard driver-capacity cap). The `--max-per-route` flag's help text says "default 10" — that's stale; the server enforces 7 when the flag is omitted. Pass `--max-per-route 5` or lower if a user wants smaller clusters for a test run. **Never pass anything >7.** See §6.
 
-**After optimize succeeds, the client auto-downloads Google Static Map PNGs** to `sandbox/gebeauty/route-maps/YYYY-MM-DD/<location>.png`. One PNG per location. You must Read each PNG before proposing dispatches. See §6.
+**After optimize succeeds, the client auto-downloads Google Static Map PNGs** to `gebeauty/route-maps/YYYY-MM-DD/<location>.png`. One PNG per location. You must Read each PNG before proposing dispatches. See §6.
 
 Response shape:
 ```json
@@ -169,7 +169,7 @@ Response shape:
     { "slot": 1, "tag": "ld_rota-02", "orders": [...] }
   ],
   "elapsedMs": 8421,
-  "routeMaps": ["C:/.../sandbox/gebeauty/route-maps/2026-04-23/são_paulo.png"]
+  "routeMaps": ["C:/.../gebeauty/route-maps/2026-04-23/são_paulo.png"]
 }
 ```
 
@@ -274,7 +274,7 @@ cpg render-routes   # all active-route locations
 - Something failed in the auto-download and `routeMaps` is empty in the optimize response.
 - You want to review the current assignment without re-optimizing.
 
-Output goes to `sandbox/gebeauty/route-maps/YYYY-MM-DD/<location>.png`. Folders older than 30 days are auto-pruned.
+Output goes to `gebeauty/route-maps/YYYY-MM-DD/<location>.png`. Folders older than 30 days are auto-pruned.
 
 **Marker legend:**
 - Pickup: black **P**
@@ -391,7 +391,7 @@ A single driver cannot carry or reliably drop off more than 7 packages — carry
 
 ### 6.2 Read the route-map PNGs before dispatching
 
-After every `optimize`, PNGs land in `sandbox/gebeauty/route-maps/YYYY-MM-DD/`. Read each one with your vision capability. Apply spatial reasoning the centroid math misses:
+After every `optimize`, PNGs land in `gebeauty/route-maps/YYYY-MM-DD/`. Read each one with your vision capability. Apply spatial reasoning the centroid math misses:
 
 - **Water barriers** — an order in Niterói should not be on the same route as Ipanema orders even if their centroids are close; the ferry/bridge adds 40+ min.
 - **Highway crossings** — Marginal Tietê, Rio-Niterói bridge, Rebouças tunnel during rush hour turn short distances into long drives.
@@ -435,10 +435,10 @@ Everything this workspace writes to disk:
 
 | Path | What | Lifetime |
 |---|---|---|
-| `sandbox/gebeauty/route-maps/YYYY-MM-DD/<location>.png` | Static map PNGs from each optimize run | Auto-pruned after 30 days |
-| `sandbox/gebeauty/shipping-journal/` | Dated markdown journal (see below) | Manual |
+| `gebeauty/route-maps/YYYY-MM-DD/<location>.png` | Static map PNGs from each optimize run | Auto-pruned after 30 days |
+| `gebeauty/shipping-journal/` | Dated markdown journal (see below) | Manual |
 
-**Shipping journal:** Historically there was a plan for a standalone Python `shipping_journal.py` script — it never shipped in this workspace. The journal capability now lives as an MCP tool at `src/tools/shopify/shipping-journal.ts` in the nami-works project root, callable from sessions using the tenant's MCP server. If the user asks you to write a journal entry from this workspace and the MCP tool isn't available, a plain `Write` of a markdown file to `sandbox/gebeauty/shipping-journal/YYYY-MM-DD.md` with the session's dispatch summary (locations, route counts, total spend, driver status per route, anomalies) is the acceptable fallback.
+**Shipping journal:** Historically there was a plan for a standalone Python `shipping_journal.py` script — it never shipped in this workspace. The journal capability now lives as an MCP tool at `src/tools/shopify/shipping-journal.ts` in the nami-works project root, callable from sessions using the tenant's MCP server. If the user asks you to write a journal entry from this workspace and the MCP tool isn't available, a plain `Write` of a markdown file to `gebeauty/shipping-journal/YYYY-MM-DD.md` with the session's dispatch summary (locations, route counts, total spend, driver status per route, anomalies) is the acceptable fallback.
 
 **Server-side logs:** Every control API call writes structured logs to CloudWatch:
 

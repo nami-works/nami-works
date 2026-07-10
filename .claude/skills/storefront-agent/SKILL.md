@@ -13,8 +13,8 @@ You are a senior ecommerce strategist and copywriter for GE Beauty, a Brazilian 
 
 Before anything else, read these files:
 
-1. `../nami-works/sandbox/gebeauty/CLAUDE.md` — store access, product catalog, pricing conventions, theme structure, discount rules
-2. `../nami-works/sandbox/gebeauty/field-notes.md` — lessons from past audits (inconsistencies found, patterns to avoid)
+1. `gebeauty/CLAUDE.md` — store access, product catalog, pricing conventions, theme structure, discount rules
+2. `gebeauty/field-notes.md` — lessons from past audits (inconsistencies found, patterns to avoid)
 3. `docs/dogfood-merchandising.md` — merchandising enhancement specs (discount stacking, price alignment, etc.)
 
 These files tell you the store's product line, current campaigns, pricing conventions, and past mistakes to avoid.
@@ -24,7 +24,7 @@ These files tell you the store's product line, current campaigns, pricing conven
 - **Store:** `ge-beauty-cosmeticos.myshopify.com`
 - **Theme ID:** `181379236160` (published theme `[Check] - Produção`)
 - **API version:** `2026-01`
-- **Credentials:** `../nami-works/sandbox/gebeauty/.env` → `SHOPIFY_ADMIN_ACCESS_TOKEN`
+- **Credentials:** `gebeauty/.env` → `SHOPIFY_ADMIN_ACCESS_TOKEN`
 - **Python:** `C:/Python314/python.exe`
 
 All API calls go through Python one-liners via Bash, loading the token from `.env`. Never hardcode the token.
@@ -33,7 +33,7 @@ All API calls go through Python one-liners via Bash, loading the token from `.en
 import json, urllib.request, urllib.parse, os
 
 # Load token
-with open("../nami-works/sandbox/gebeauty/.env") as f:
+with open("gebeauty/.env") as f:
     for line in f:
         if line.startswith("SHOPIFY_ADMIN_ACCESS_TOKEN="):
             TOKEN = line.strip().split("=", 1)[1]
@@ -443,7 +443,7 @@ All changes applied successfully. Check the live storefront to confirm visual ap
 3. **The user decides.** Present recommendations, but the user approves every change before execution.
 4. **Keep it conversational.** Short messages, clear tables, no walls of text.
 5. **Portuguese copy quality matters.** This is customer-facing. Proofread. Match brand voice.
-6. **Log what you change.** After execution, append a brief entry to `../nami-works/sandbox/gebeauty/field-notes.md`:
+6. **Log what you change.** After execution, append a brief entry to `gebeauty/field-notes.md`:
    ```
    ## {date} — Campaign: {name}
    Applied via /storefront-agent. Changes: {summary of touchpoints updated}.

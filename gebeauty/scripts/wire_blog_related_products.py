@@ -11,8 +11,8 @@ Dry-run by default; mutates only with --confirm.
 Plan source: scratchpad/audit_plan.json (each entry: {gid (article), handle, title,
 products:[{handle,gid}]}).
 
-Run (dry):     C:/Python314/python.exe sandbox/gebeauty/scripts/wire_blog_related_products.py
-Run (commit):  C:/Python314/python.exe sandbox/gebeauty/scripts/wire_blog_related_products.py --confirm
+Run (dry):     C:/Python314/python.exe gebeauty/scripts/wire_blog_related_products.py
+Run (commit):  C:/Python314/python.exe gebeauty/scripts/wire_blog_related_products.py --confirm
 """
 
 import json

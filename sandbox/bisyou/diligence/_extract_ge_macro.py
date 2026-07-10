@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import openpyxl, json
-F=r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\GE Beauty_BP_v2026__+Bisyou.xlsx"
+F=r"c:\claude\sandbox\bisyou\diligence\GE Beauty_BP_v2026__+Bisyou.xlsx"
 wv=openpyxl.load_workbook(F,data_only=True)["Macro"]
 
 # quarter column groups (1-based col indices)

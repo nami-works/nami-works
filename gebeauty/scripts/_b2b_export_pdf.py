@@ -3,7 +3,7 @@ Export B2B proposal HTML → PDF using Chrome headless.
 Picks up @page { size: A4 landscape; } from the HTML CSS.
 
 Run:
-  C:/Python314/python.exe sandbox/gebeauty/scripts/_b2b_export_pdf.py
+  C:/Python314/python.exe gebeauty/scripts/_b2b_export_pdf.py
 """
 import subprocess, sys, shutil
 from pathlib import Path

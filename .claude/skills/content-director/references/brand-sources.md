@@ -8,11 +8,11 @@ every run in the canonical sources below. For GE Beauty (tenant #1):
 | **Brand voice (canonical, GEO-ready)** | `references/voice.md` | **Primary.** Corpus-grounded tom de voz, 4 archetypes, lexicon, ingredient-as-proof rule, GEO-first post structure, claim canon. Read this FIRST. |
 | **GEO method** | `references/geo-playbook.md` | How to get cited by AI engines: answer-shape-first planning, atomic extraction units, format-by-citability, entity-attribution, schema-ship requirement + roadmap. |
 | **Multi-format voice + CTAs** | `references/formats.md` | The voice applied to non-blog formats (ad / email / SMS / IG / banner / packaging / quiz / chatbot) + CTA-by-intention library. Migrated from the retired voice-core. |
-| Workspace playbook | `sandbox/gebeauty/CLAUDE.md` | Product rules, hard rules, store domain, scopes, metaobject map |
+| Workspace playbook | `gebeauty/CLAUDE.md` | Product rules, hard rules, store domain, scopes, metaobject map |
 | Live catalog | `scripts/catalog_fetch.py` (runtime) | Exact product names, URLs, prices, SEO state — the anti-hallucination spine |
-| Curated catalog | `sandbox/gebeauty/products.json` | 17 SKUs, B2B source of truth (assinatura excluded) |
+| Curated catalog | `gebeauty/products.json` | 17 SKUs, B2B source of truth (assinatura excluded) |
 | Live style corpus | Admin GraphQL `articles` (author "Kelviane Lima") | 55 live posts = the real few-shot exemplars `references/voice.md` was distilled from |
-| Brand grammar | `sandbox/gebeauty/video-director/docs/ip.md` | Tagline lock, palette, banned nouns (sibling skill's constitution) |
+| Brand grammar | `gebeauty/video-director/docs/ip.md` | Tagline lock, palette, banned nouns (sibling skill's constitution) |
 | Memory | `~/.claude/projects/.../memory/` | `project_gebeauty_voice_registry`, `feedback_no_em_dash`, `feedback_pt_no_english_calques`, `project_gebeauty_*` |
 | Legacy docs (retired) | `.streamlit/apps/gebeauty/_archive/` | 5 pre-corpus docs (voice, voice-core, format_recommendations, editorials, products) archived 2026-06-29. Fully superseded by `references/`; kept locally for history only. |
 

@@ -11,7 +11,7 @@ from typing import Optional
 
 from dotenv import load_dotenv
 
-# GE Beauty workspace canonical creds location (per sandbox/gebeauty/CLAUDE.md).
+# GE Beauty workspace canonical creds location (per gebeauty/CLAUDE.md).
 # Load BEFORE importing fal_client so the SDK sees FAL_KEY at module init.
 _GEBEAUTY_ENV = Path(__file__).resolve().parents[2] / ".env"
 if _GEBEAUTY_ENV.exists():

@@ -117,7 +117,7 @@ After parsing, ALL of these must hold before an order enters the pool:
 | Per-item: `det/prod/vProd` | `valorTotal` |
 | Per-item: `det/prod/vDesc` | `valorDesconto` |
 
-Sample NFe lives at `sandbox/gebeauty/fulfillment/sample-nfe.xml` (chave `35260...124810`, 2026-05-20, R$142.80).
+Sample NFe lives at `gebeauty/fulfillment/sample-nfe.xml` (chave `35260...124810`, 2026-05-20, R$142.80).
 
 ## NFe ingestion mode
 

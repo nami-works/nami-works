@@ -3,7 +3,7 @@ B2B Dashboard Generator — GE Beauty
 Reads history.json + deals/*.json + COGS table -> outputs b2b_dashboard.html
 
 Usage (from any directory):
-  python sandbox/gebeauty/scripts/_b2b_dashboard.py
+  python gebeauty/scripts/_b2b_dashboard.py
 """
 
 import sys, json

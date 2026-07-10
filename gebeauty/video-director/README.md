@@ -65,8 +65,8 @@ Autonomous video-creative director skill for GE Beauty. Takes a Shopify product,
 Plus, elsewhere in nami-works:
 
 - **Skill:** `.claude/skills/video-director/SKILL.md` (the in-session protocol)
-- **Brand assets:** `sandbox/gebeauty/.brand-assets/Logo/` (Google Drive sync)
-- **Brandbook:** `sandbox/gebeauty/brandbook/_manualGEbeauty_final.pdf` (43 pages)
+- **Brand assets:** `gebeauty/.brand-assets/Logo/` (Google Drive sync)
+- **Brandbook:** `gebeauty/brandbook/_manualGEbeauty_final.pdf` (43 pages)
 
 ## Quick commands
 
@@ -76,14 +76,14 @@ python -c "from dotenv import load_dotenv; load_dotenv(); import os; assert os.e
 
 # Read the previous run's state
 python -c "
-import sys; sys.path.insert(0, 'sandbox/gebeauty/video-director/scripts')
+import sys; sys.path.insert(0, 'gebeauty/video-director/scripts')
 from state import read_state
 s = read_state('primer-cachos-definidos-v1')
 print(f'{s[\"concept_id\"]}: {s[\"state\"]}, {len(s[\"shots\"])} shots, spent ${s[\"budget\"][\"spent_usd\"]}')
 "
 
 # Smoke-test the state helpers
-python sandbox/gebeauty/video-director/scripts/state.py
+python gebeauty/video-director/scripts/state.py
 ```
 
 ## Invoke the skill

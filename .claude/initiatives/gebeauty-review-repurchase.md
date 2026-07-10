@@ -7,7 +7,7 @@ priority: high
 created: 2026-07-06
 target: null
 current_phase: 3-pilot-build
-next_blocker: Loox Merchant API now WIRED (Convert plan; key + publicStoreId in sandbox/gebeauty/.env; corpus pulled, exclusion refreshed by customerId). Two items still gate launch — (1) one-line check that link-submitted photo reviews fire the Loox reward (copy decider; fallback = attach a Shopify code); (2) approve the WhatsApp copy (4 variants). Base is pilot-ready (links + 10% holdout).
+next_blocker: Loox Merchant API now WIRED (Convert plan; key + publicStoreId in gebeauty/.env; corpus pulled, exclusion refreshed by customerId). Two items still gate launch — (1) one-line check that link-submitted photo reviews fire the Loox reward (copy decider; fallback = attach a Shopify code); (2) approve the WhatsApp copy (4 variants). Base is pilot-ready (links + 10% holdout).
 next_owner: lucas
 stakeholders:
   - GE Beauty
@@ -78,7 +78,7 @@ Primers (Cachos 9,960 / Liso 6,991) = pilot cohort.
 
 ## Pilot (primer base — ready)
 
-`sandbox/gebeauty/primer-campaign-base.xlsx` — 5,341 unique WhatsApp contacts, deduped by
+`gebeauty/primer-campaign-base.xlsx` — 5,341 unique WhatsApp contacts, deduped by
 customer then phone, Loox reviewers excluded, curated first name + E.164 phone + per-product
 review link + deterministic 10% holdout.
 
@@ -213,7 +213,7 @@ which becomes the targeting rule for the future automatic campaign.
   `inputs/growth-gebeauty-store-credit-push-2026-07-06.md`. NEXT: confirm-gated smoke test (3 issues)
   before bulk; WhatsApp copy approval; conscious call on uncapped R$668k exposure. This is revenue-first
   with a 10% holdout — the clean 3-arm (code-vs-credit, free-vs-earn) tests are the next wave.
-- 2026-07-06: **Engine v1 built + validated** at `sandbox/gebeauty/retention-machine/`
+- 2026-07-06: **Engine v1 built + validated** at `gebeauty/retention-machine/`
   (`README.md` spec, `config.json` rules, `engine.py`). Session-independent: live-pulls Shopify
   (bulk) + Loox each run (12h cache), config-driven, 10% holdout. Rules live: repeat-of-same-
   product beats thin-corpus; C-before-D priority; store-credit win-back. Validated run: Stream A
@@ -224,7 +224,7 @@ which becomes the targeting rule for the future automatic campaign.
   code pre-apply needs a per-customer Loox reward-code source (Loox reviews API doesn't expose
   the issued code — need a Loox export or Shopify discount-code map); targeting already works;
   (4) waves = scope products in config (pilot = primer IDs).
-- 2026-07-06: **Loox Merchant API live.** Convert plan; creds in `sandbox/gebeauty/.env`
+- 2026-07-06: **Loox Merchant API live.** Convert plan; creds in `gebeauty/.env`
   (`LOOX_API_KEY`, `LOOX_PUBLIC_STORE_ID` = `M3tBbH2WGj.<hash>`). Endpoint
   `api.loox.io/api/v1/store/<id>/product-reviews` (page-based, header `X-Api-Secret-Key`,
   browser UA required or Cloudflare 1010). Pulled full corpus = **2,327 reviews** (CSV had

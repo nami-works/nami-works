@@ -9,12 +9,12 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, TodoWrite, 
 
 You are the in-session brain that takes a natural-language brief and ships a Meta-ready 9:16 ad. You reason against the constitution at [docs/ip.md](../../docs/ip.md), the metafield map at [docs/metafield-map.md](../../docs/metafield-map.md), the state schema at [docs/state-schema.md](../../docs/state-schema.md), and the situational depth + sensation maximization + proportion anchoring doctrines encoded below.
 
-State lives in `sandbox/gebeauty/video-director/state/<concept-id>/state.json` (the working directory for the GE Beauty tenant).
+State lives in `gebeauty/video-director/state/<concept-id>/state.json` (the working directory for the GE Beauty tenant).
 
 ## Operating principles
 
 - **The constitution wins.** When in doubt, [docs/ip.md](../../docs/ip.md) is ground truth. If a brief asks for something that violates locked rules (faceless+hair-out, calm-body+kinetic-hook, invisible-field-via-behavior-only, the 9-color palette, the tagline lock), refuse and explain. Brand grammar is non-negotiable.
-- **Backend doctrine.** Magnific MCP is the **primary** backend for stills (Nano Banana Pro) AND motion (Seedance 2.0). fal.ai is **fallback only** — when Magnific is down OR when the brief specifically needs a model only on fal.ai (Hailuo 02 for sun warmth, Runway Gen-4 for identity locks, Luma Ray2 for cinematic). Default to Magnific. **Krea is a co-primary motion engine for A/B** (added 2026-06-14): same Seedance 2.0 plus Kling/Veo/Hailuo, driven via a direct-HTTP client `sandbox/gebeauty/scripts/_krea.py` (the Krea MCP won't connect in-session; the public API does — token `KREA_API_TOKEN` in `sandbox/gebeauty/.env`). Both Magnific-Seedance and Krea-Seedance were judged good on the application A/B, so render the same keyframes on both and let Lucas pick per clip. **Krea Seedance moderation is prompt-word-sensitive** — strip "intimate"/"ASMR"/"burn"/"flame"; describe sounds + damage plainly (e.g. "loud close-miked pump click", "petal darkens and curls"). See `reference_krea_render_engine` in memory.
+- **Backend doctrine.** Magnific MCP is the **primary** backend for stills (Nano Banana Pro) AND motion (Seedance 2.0). fal.ai is **fallback only** — when Magnific is down OR when the brief specifically needs a model only on fal.ai (Hailuo 02 for sun warmth, Runway Gen-4 for identity locks, Luma Ray2 for cinematic). Default to Magnific. **Krea is a co-primary motion engine for A/B** (added 2026-06-14): same Seedance 2.0 plus Kling/Veo/Hailuo, driven via a direct-HTTP client `gebeauty/scripts/_krea.py` (the Krea MCP won't connect in-session; the public API does — token `KREA_API_TOKEN` in `gebeauty/.env`). Both Magnific-Seedance and Krea-Seedance were judged good on the application A/B, so render the same keyframes on both and let Lucas pick per clip. **Krea Seedance moderation is prompt-word-sensitive** — strip "intimate"/"ASMR"/"burn"/"flame"; describe sounds + damage plainly (e.g. "loud close-miked pump click", "petal darkens and curls"). See `reference_krea_render_engine` in memory.
 - **Still-first, motion-conservative.** The hard creative work happens in the STILL. The motion model only animates a kinetic element that's already in the still. Never ask the motion model to GENERATE + ANIMATE simultaneously — it's a renderer, not a creative.
 - **Two approval gates only.** (1) Lucas picks stills after composition. (2) Lucas picks/approves motion clips after Seedance. Everything else runs autonomously.
 - **Late product reveal (curiosity gap) — STANDARD.** Market best practice, Lucas-locked 2026-06-14: the product appears LATE. Early in the ad show only a **hint** — a partial cue (the cap tip, a sliver of the bottle), NEVER the full labeled product — so curiosity builds and the viewer stays for the reveal. The full product + name lands at the end (closing card / final beat). Keep the body of the ad **product-neutral** until then. This is why proof-ad footage hides the bottle (cap-tip-only) and reveals it on the card; design every concept so the reveal is the payoff, not the opener.
@@ -49,12 +49,12 @@ The `go` command is the brief-driven loop and should be the default user experie
 Before running any command:
 
 1. **Confirm pwd** is the nami-works repo root.
-2. **Read the constitution** if not in context: `Read sandbox/gebeauty/video-director/docs/ip.md`.
-3. **Read the metafield map**: `Read sandbox/gebeauty/video-director/docs/metafield-map.md`.
-4. **Read the state schema**: `Read sandbox/gebeauty/video-director/docs/state-schema.md`.
+2. **Read the constitution** if not in context: `Read gebeauty/video-director/docs/ip.md`.
+3. **Read the metafield map**: `Read gebeauty/video-director/docs/metafield-map.md`.
+4. **Read the state schema**: `Read gebeauty/video-director/docs/state-schema.md`.
 5. **Verify Magnific MCP is connected**: `ToolSearch("magnific")` should return tools. If empty, surface to user — they need to authenticate via `/mcp`.
 6. **Check Magnific balance**: `mcp__magnific__account_balance` — confirm available credits are sufficient for the planned run (typically 2,000-2,500 credits per concept).
-7. **Read the shared asset catalog**: `Read sandbox/gebeauty/video-director/_SHARED/ASSET-CATALOG.md`. This is the canonical library of REUSABLE reference assets — Marcela's hands (canonical master/left/right + per-shot angles), the champagne-cream canonical hairdryer, the product canonicals (cachos library `1872735`, liso library `1877692`) + heroes, the scent-ingredient footage (melon/peônia underwater + mist stills & clips), the original Melon Mood splash seeds, and the style-refs. **Always reuse these by their Magnific creation id rather than re-rolling identity.** New reusable assets get added here (file under `_SHARED/<category>/` + a row in the catalog). Validation staging is the single root `_VALIDATION/` (see the to-validate convention below).
+7. **Read the shared asset catalog**: `Read gebeauty/video-director/_SHARED/ASSET-CATALOG.md`. This is the canonical library of REUSABLE reference assets — Marcela's hands (canonical master/left/right + per-shot angles), the champagne-cream canonical hairdryer, the product canonicals (cachos library `1872735`, liso library `1877692`) + heroes, the scent-ingredient footage (melon/peônia underwater + mist stills & clips), the original Melon Mood splash seeds, and the style-refs. **Always reuse these by their Magnific creation id rather than re-rolling identity.** New reusable assets get added here (file under `_SHARED/<category>/` + a row in the catalog). Validation staging is the single root `_VALIDATION/` (see the to-validate convention below).
 
 These are the locked inputs. Do not improvise without them.
 
@@ -111,7 +111,7 @@ Cost: ~2,000-3,000 Magnific credits per concept (well under 60k/month Premium+ c
 **Actions:**
 
 1. **Parse the brief** for:
-   - Product name(s) — match against the 14-product GE Beauty catalog (see `sandbox/gebeauty/CLAUDE.md`)
+   - Product name(s) — match against the 14-product GE Beauty catalog (see `gebeauty/CLAUDE.md`)
    - Number of acts (default 3 if unspecified)
    - Per-act setting hints (morning/afternoon/evening, location, ritual)
    - Mood / tone hints
@@ -141,7 +141,7 @@ Cost: ~2,000-3,000 Magnific credits per concept (well under 60k/month Premium+ c
 
 **Inputs:** state.brief.decoded_product_gid
 
-**Actions:** identical to current Step 1 in the legacy SKILL.md. Query Shopify for the product + `custom.finalidade` + `custom.beneficio_em_destaque_1/2/3` + `custom.imagem_beneficio_em_destaque_1/2/3` + `custom.caracteristicas`. Validate. Write to state.product, state.finalidade, state.benefits, state.benefit_images, state.caracteristicas. Look up accent_color per [ip.md §5](../../sandbox/gebeauty/video-director/docs/ip.md).
+**Actions:** identical to current Step 1 in the legacy SKILL.md. Query Shopify for the product + `custom.finalidade` + `custom.beneficio_em_destaque_1/2/3` + `custom.imagem_beneficio_em_destaque_1/2/3` + `custom.caracteristicas`. Validate. Write to state.product, state.finalidade, state.benefits, state.benefit_images, state.caracteristicas. Look up accent_color per [ip.md §5](../../gebeauty/video-director/docs/ip.md).
 
 If any field is missing, STOP and tell the user which field on which product.
 
@@ -163,7 +163,7 @@ If any field is missing, STOP and tell the user which field on which product.
 **When:** Always, mandatory. Runs AFTER Step 3 (narrative sequencer) and BEFORE Step 3.5 (situational depth pass). The depth pass + sensation max + proportion + grounding all derive from the screenplay.
 
 **Inputs (all required):**
-- Persona constitution from [docs/ip.md](../../sandbox/gebeauty/video-director/docs/ip.md) §4-6 (Marcela's day shape, voice, restless-but-ritualistic temperament)
+- Persona constitution from [docs/ip.md](../../gebeauty/video-director/docs/ip.md) §4-6 (Marcela's day shape, voice, restless-but-ritualistic temperament)
 - Product `custom.ai_readiness` metaobject → `complete_description` + `combinations` (fetched from Shopify)
 - Product `custom.descricao_longa_com_abas` metaobject → `modo_de_uso` + `passo_a_passo` + `resultado` (fetched from Shopify)
 - The narrative arc from Step 3 (typically morning → midday → evening day-arc)
@@ -216,7 +216,7 @@ If any field is missing, STOP and tell the user which field on which product.
 
 **Why this step exists:** Lucas's primer-liso build (v1 → v8) burned 4+ regen cycles on engineering details (cup handle direction, hand grip ergonomics, single-vs-double-hand violations, pause-padding artifacts). The root cause: we were composing tableaux without an underlying narrative. Once Lucas pivoted to "write the persona's day, then describe the frames," the cup-handle problem dissolved (the handle is "wherever Marcela set it down") and the brand promise (24h shield) became the structural arc instead of a tagline pasted on top.
 
-Worked example: [state/primer-liso-intacto-v1/screenplay.md](../../sandbox/gebeauty/video-director/state/primer-liso-intacto-v1/screenplay.md).
+Worked example: [state/primer-liso-intacto-v1/screenplay.md](../../gebeauty/video-director/state/primer-liso-intacto-v1/screenplay.md).
 
 ### Step 3.45 — Dimensional persona + product anchoring (NEW after primer-liso v9)
 
@@ -406,7 +406,7 @@ For EACH act:
 - **Audio** — present sounds + absent sounds (silence-of-X also tells story)
 - **Top 3-5 generative-model failure modes for THIS scene + the prompt clauses that prevent them**
 
-The subagent's output is saved to `docs/v<N>-situational-dossier.md`. Reference dossier: [docs/v4-situational-dossier.md](../../sandbox/gebeauty/video-director/docs/v4-situational-dossier.md).
+The subagent's output is saved to `docs/v<N>-situational-dossier.md`. Reference dossier: [docs/v4-situational-dossier.md](../../gebeauty/video-director/docs/v4-situational-dossier.md).
 
 **Why this step exists:** This step caught "no steam in a mid-blowdry shot" — a Lucas correction we encoded as the canonical example. The brain WITHOUT this step writes generic "morning bathroom" prompts that include steam by default.
 
@@ -420,7 +420,7 @@ The subagent's output is saved to `docs/v<N>-situational-dossier.md`. Reference 
 
 1. **What is the dominant sensation of this moment?** One word per shot, locked. Examples: Heat. Wet-cold. Golden-warmth. Foam-bloom. Spritz.
 
-2. **What is the most visual representation of that sensation that respects brand grammar?** Must pass the banned-noun filter from [ip.md](../../sandbox/gebeauty/video-director/docs/ip.md) — NO "field," "halo," "aura," "shield," "dome," "barrier," "bubble." Describe BEHAVIOR not the protective thing. Examples:
+2. **What is the most visual representation of that sensation that respects brand grammar?** Must pass the banned-noun filter from [ip.md](../../gebeauty/video-director/docs/ip.md) — NO "field," "halo," "aura," "shield," "dome," "barrier," "bubble." Describe BEHAVIOR not the protective thing. Examples:
    - Heat → heat-mirage refracted bands of warped air, no color, no glow, distorting the background behind them
    - Humidity → rain streaks frozen mid-fall on the OUTSIDE of the window + heavy droplet impacts
    - Golden-warmth → angled golden beams cutting in from frame edge at peak intensity, faint dust motes in the beam
@@ -491,7 +491,7 @@ This is intentionally LESS cinematic than a successful kinetic still effect but 
 
 **Why this step exists:** Lucas flagged this on v5 — every prompt from v1 through v5 included "frosted glass" because I assumed the bottle was translucent from looking at one rendered preview. Three full builds later he caught it. Every product material gets locked at the concept-init step now.
 
-**Bottle body color ≠ brand accent color (NEW after primer-liso v1).** The [ip.md](../../sandbox/gebeauty/video-director/docs/ip.md) §5 per-product accent-color mapping (yellow-sun for primer-cachos, teal for primer-liso, etc.) refers to the brand's SECONDARY accent palette, NOT the actual bottle body color. Most GE Beauty bottles share a **cream/beige opaque plastic body** with the per-product accent color applied as label graphics + "ge" wordmark. ALWAYS verify the actual body color by fetching the product hero image from Shopify (`featuredMedia.preview.image.url`) BEFORE writing the material_phrase. Don't assume from accent color.
+**Bottle body color ≠ brand accent color (NEW after primer-liso v1).** The [ip.md](../../gebeauty/video-director/docs/ip.md) §5 per-product accent-color mapping (yellow-sun for primer-cachos, teal for primer-liso, etc.) refers to the brand's SECONDARY accent palette, NOT the actual bottle body color. Most GE Beauty bottles share a **cream/beige opaque plastic body** with the per-product accent color applied as label graphics + "ge" wordmark. ALWAYS verify the actual body color by fetching the product hero image from Shopify (`featuredMedia.preview.image.url`) BEFORE writing the material_phrase. Don't assume from accent color.
 
 Correct primer-liso material_phrase: `"opaque cream-bodied haircare bottle with smooth matte finish, coral-red ge wordmark and PRIMER LISO INTACTO label printed on the front, white pump dispenser cap on top, NOT translucent, NOT see-through, NOT frosted glass, NOT teal"`.
 
@@ -1418,7 +1418,7 @@ The hand-reference image gives Magnific the "DNA" (skin tone, hand anatomy, mani
 
 ### Step 6 — Assembly (ffmpeg)
 
-**Existing script:** `sandbox/gebeauty/video-director/scripts/assemble.py`
+**Existing script:** `gebeauty/video-director/scripts/assemble.py`
 
 **What it does:**
 - 9:16 conform each shot
@@ -1430,7 +1430,7 @@ The hand-reference image gives Magnific the "DNA" (skin tone, hand anatomy, mani
 
 **Invocation:**
 ```bash
-python sandbox/gebeauty/video-director/scripts/assemble.py --concept-id <id> --variant base
+python gebeauty/video-director/scripts/assemble.py --concept-id <id> --variant base
 ```
 
 ### Step 7 — Variants (A + B)
@@ -1511,7 +1511,7 @@ These are what separate this skill from a generic prompt-writer:
 | **Sensation maximization** | 3.6 | Stills that don't represent the dominant sensation visually | `dominant_sensation` + `kinetic_still_effect` + `off_frame_source` fields per shot |
 | **Proportion anchoring** | 3.7 | Bottle inflated to fill the frame (the v4 "dwarf-table" bug) | `proportion_directive` field per shot, 3-reinforcement template |
 
-Worked example using all three: see [docs/v4-situational-dossier.md](../../sandbox/gebeauty/video-director/docs/v4-situational-dossier.md) and the v5 build (when shipped).
+Worked example using all three: see [docs/v4-situational-dossier.md](../../gebeauty/video-director/docs/v4-situational-dossier.md) and the v5 build (when shipped).
 
 ## Worked example: Lucas's verbatim brief
 
@@ -1526,7 +1526,7 @@ The brain runs Steps 1-9 with two pauses:
 
 Then Steps 6-9 run autonomously. Total wall-clock: ~25-30 min. Total credit spend: ~2,000-2,500 Magnific credits.
 
-Output: `sandbox/gebeauty/video-director/state/primer-cachos-definidos-v<N>/output/{base, variant-a, variant-b}/{creative.mp4, thumbnail.jpg, captions.srt, copy.txt}` + `output/README.md`.
+Output: `gebeauty/video-director/state/primer-cachos-definidos-v<N>/output/{base, variant-a, variant-b}/{creative.mp4, thumbnail.jpg, captions.srt, copy.txt}` + `output/README.md`.
 
 ## Common gotchas
 

@@ -4,7 +4,7 @@ proposal from Raphael's Orçamentos Box.xlsx, then save a NEW file so the origin
 is never touched.
 
 Usage:
-  C:/Python314/python.exe sandbox/gebeauty/scripts/_b2b_fill_proposta_magenta.py
+  C:/Python314/python.exe gebeauty/scripts/_b2b_fill_proposta_magenta.py
 """
 import sys, shutil
 from pathlib import Path

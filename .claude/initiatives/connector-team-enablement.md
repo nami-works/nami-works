@@ -17,7 +17,7 @@ working_agreement: ~/.claude/projects/c--Users-Lucas-Guimar-es-Desktop-nami-work
 ## Why
 
 Give the GE Beauty ops team shared access to the GE systems Lucas can reach, without
-distributing the `sandbox/gebeauty/.env` to anyone's machine. The custom MCP connector is the
+distributing the `gebeauty/.env` to anyone's machine. The custom MCP connector is the
 right vehicle: credentials never leave the server, operators only get a curated tool surface
 (no arbitrary script access against the live store), and access is revocable by flipping one
 tenant's `status` — no re-issuing creds to everyone. Operators work through claude.ai / Claude

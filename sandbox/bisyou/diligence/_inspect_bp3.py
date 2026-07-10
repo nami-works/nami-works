@@ -20,5 +20,5 @@ for r,lab in rows.items():
         v=wv.cell(row=r,column=c).value
         vv = round(v,3) if isinstance(v,float) else v
         out.append(f"   {cname}: {f!r}  -> {vv}")
-open(r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\_bp_2026_formulas.txt","w",encoding="utf-8").write("\n".join(out))
+open(r"c:\claude\sandbox\bisyou\diligence\_bp_2026_formulas.txt","w",encoding="utf-8").write("\n".join(out))
 print("done")

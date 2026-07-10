@@ -167,7 +167,7 @@ Confirm before taking risky actions — destructive git, external API writes, pr
 Manual scripts that talk to a tenant's Shopify store directly need that tenant's credentials available on disk. Convention:
 
 - **One `.env` per tenant, under `sandbox/<tenant>/.env`** — NOT at the repo root, NOT inside `apps/`. Each tenant's secrets stay scoped to that tenant's folder.
-- **Today there is one tenant on disk: `sandbox/gebeauty/.env`.** Contains GE Beauty's `SHOPIFY_SHOP_DOMAIN`, `SHOPIFY_ADMIN_ACCESS_TOKEN`, `SHOPIFY_API_VERSION`, and the various tool credentials (Lalamove, Omie, etc.) the operational scripts at `sandbox/gebeauty/scripts/` consume.
+- **Today there is one tenant on disk: `gebeauty/.env`.** Contains GE Beauty's `SHOPIFY_SHOP_DOMAIN`, `SHOPIFY_ADMIN_ACCESS_TOKEN`, `SHOPIFY_API_VERSION`, and the various tool credentials (Lalamove, Omie, etc.) the operational scripts at `gebeauty/scripts/` consume.
 - **The omnify-admin app has its own dev-store `.env` at `apps/omnify-admin/.env`** — that one targets the TEST store. Not GE Beauty prod.
 
 **How scripts must load it.** Always resolve `.env` from the script's own location, never from the invocation cwd:
@@ -179,7 +179,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 ```
 
-A session that runs `python sandbox/gebeauty/scripts/foo.py` from the repo root, from `sandbox/gebeauty/`, or from anywhere else — all three should work without a `cd`. If you find a script that calls bare `load_dotenv()` (cwd-relative), patch it to the `__file__`-relative form. The pre-existing `nami_control.py`, `render_routes_local.py`, `omie_fetch_transportadora.py`, `fix_stragglers.py` follow this convention.
+A session that runs `python gebeauty/scripts/foo.py` from the repo root, from `gebeauty/`, or from anywhere else — all three should work without a `cd`. If you find a script that calls bare `load_dotenv()` (cwd-relative), patch it to the `__file__`-relative form. The pre-existing `nami_control.py`, `render_routes_local.py`, `omie_fetch_transportadora.py`, `fix_stragglers.py` follow this convention.
 
 **Why we don't put `.env` at the repo root.** The connector is multi-tenant by design (`/nami-works/tenants/<slug>/*` SSM paths reflect this). A root `.env` would imply "this is THE project env"; the next tenant's secrets would then need to either co-mingle there or move to per-tenant folders anyway. Keep the tenant boundary visible in the filesystem from day one. The `.gitignore` covers `**/.env` so per-tenant files don't leak.
 

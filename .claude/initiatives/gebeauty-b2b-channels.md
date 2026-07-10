@@ -42,10 +42,10 @@ evaluated with the same model. Tooling and GE's fiscal facts below are **reusabl
 channels**; only the per-deal terms change. Built this way for Drogaria Iguatemi 2026-06-29.
 
 **Tooling**
-- `sandbox/gebeauty/scripts/build_b2b_breakeven_xlsx.py` — generates the live Excel model
+- `gebeauty/scripts/build_b2b_breakeven_xlsx.py` — generates the live Excel model
   (openpyxl): every driver an editable input cell; DRE + a sell-out × investment sensitivity
   grid recompute. Follow `docs/excel-conventions.md` when building/editing any `.xlsx`.
-- `sandbox/gebeauty/scripts/b2b_retail_pnl.py` — CLI version of the same P&L.
+- `gebeauty/scripts/b2b_retail_pnl.py` — CLI version of the same P&L.
 - Canonical Excel per channel: Drive `GEB_B2B/<categoria>/<varejista>/GE Beauty_Break-even B2B_<varejista>.xlsx`.
 
 **P&L logic (the rationale)**
@@ -86,8 +86,8 @@ channels**; only the per-deal terms change. Built this way for Drogaria Iguatemi
 
 ## Sephora registry tooling
 
-`sandbox/gebeauty/sephora/sephora_mapper.py` — reads products.json → Sephora CADASTROS CSV
-`sandbox/gebeauty/sephora/sephora_cadastro.csv` — 27 rows, gaps marked [PENDENTE]
+`gebeauty/sephora/sephora_mapper.py` — reads products.json → Sephora CADASTROS CSV
+`gebeauty/sephora/sephora_cadastro.csv` — 27 rows, gaps marked [PENDENTE]
 
 Template in Drive: CADASTROS NOVOS - SEPHORA - 2026.xlsx (`1m5UHVFLbWhToN0uZrw-ngxIZNWnh2Aq9`)
 Sephora folder (B2B Drive): `1vxTr2nm5bztebDz4qOOtizCwiLgDQcaM`

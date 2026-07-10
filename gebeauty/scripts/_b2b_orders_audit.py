@@ -5,7 +5,7 @@ B2B Orders Audit — cross-checks history.json against:
   3. Proposal JSON files in deals/ that are not yet in history.json
 
 Run:
-  C:/Python314/python.exe sandbox/gebeauty/scripts/_b2b_orders_audit.py
+  C:/Python314/python.exe gebeauty/scripts/_b2b_orders_audit.py
 """
 import json, urllib.request, sys
 from pathlib import Path

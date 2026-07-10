@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import openpyxl, unicodedata
 ORIG=r"G:\Drives compartilhados\GEB_Financeiro\Orçamento e Resultados\2026\GE Beauty_BP_v2026.xlsx"
-COPY=r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\GE Beauty_BP_v2026__+Bisyou.xlsx"
+COPY=r"c:\claude\sandbox\bisyou\diligence\GE Beauty_BP_v2026__+Bisyou.xlsx"
 
 def norm(s):
     if s is None: return ""

@@ -42,5 +42,5 @@ for r in range(1,5):
     cells=[f"{get_column_letter(c)}{r}={mac.cell(row=r,column=c).value!r}" for c in range(1,7) if mac.cell(row=r,column=c).value is not None]
     out.append("  ".join(cells))
 
-open(r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\_bp_build_spec.txt","w",encoding="utf-8").write("\n".join(out))
+open(r"c:\claude\sandbox\bisyou\diligence\_bp_build_spec.txt","w",encoding="utf-8").write("\n".join(out))
 print("done; consolidation rows:", len(seen))

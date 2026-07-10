@@ -2,7 +2,7 @@
 import openpyxl, unicodedata
 from openpyxl.styles import Font, PatternFill
 ORIG=r"G:\Drives compartilhados\GEB_Financeiro\Orçamento e Resultados\2026\GE Beauty_BP_v2026.xlsx"
-COPY=r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\GE Beauty_BP_v2026__+Bisyou.xlsx"
+COPY=r"c:\claude\sandbox\bisyou\diligence\GE Beauty_BP_v2026__+Bisyou.xlsx"
 def norm(s):
     return unicodedata.normalize("NFKD",str(s)).encode("ascii","ignore").decode().strip().lower() if s is not None else ""
 macv=openpyxl.load_workbook(ORIG,data_only=True)["Macro"]

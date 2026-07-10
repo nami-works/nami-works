@@ -4,7 +4,7 @@ Point-in-time record of the hand-built WhatsApp buy widget that lives **inline i
 
 - **Snapshot date:** 2026-07-04
 - **Live theme:** `[Check] - Produção`, id `181379236160` (always verify `role == main` before editing; CheckCommerce's badge-cache-bust can swap the live theme mid-session).
-- **Creds/API:** `SHOPIFY_ADMIN_ACCESS_TOKEN` in `sandbox/gebeauty/.env`, Admin Asset API `2026-01`, Python `C:/Python314/python.exe`.
+- **Creds/API:** `SHOPIFY_ADMIN_ACCESS_TOKEN` in `gebeauty/.env`, Admin Asset API `2026-01`, Python `C:/Python314/python.exe`.
 
 ## Files
 - `theme.liquid.widget.html` — the widget block as it appears in `layout/theme.liquid` (default layout; all normal pages + product pages).

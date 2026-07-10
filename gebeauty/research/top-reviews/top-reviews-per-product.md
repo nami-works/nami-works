@@ -1,6 +1,6 @@
 # GE Beauty — Top Reviews per Product (conversion-ranked)
 
-Source: `sandbox/gebeauty/data/reviews.csv` (1,882 reviews). Ranked for conversion value: photo > benefit/objection language > substance > 5-star > verified > recency. Handle variants (full-size / travel-size / rappi / migrated) are pooled into one product family.
+Source: `gebeauty/data/reviews.csv` (1,882 reviews). Ranked for conversion value: photo > benefit/objection language > substance > 5-star > verified > recency. Handle variants (full-size / travel-size / rappi / migrated) are pooled into one product family.
 
 ## Gap report — products short of 10 quality reviews
 

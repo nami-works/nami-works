@@ -73,7 +73,7 @@ A quantitative engine that answers "what / how much have we **actually sold** to
 - **Amazon** (CNPJ root `15436940`): **34 NF-e, 1,181 units, R$ 78,166** (Dec 2025 → Jun 2026). Billing CNPJ migrated `0003-67 → 0012-58`; all issued from **Shops Jardins**. Per-product + per-month tables done.
 - **Moustache Beams** (root `30998254`): **4 confirmed NF-e, 3,556 units, R$ 188,579** (Nov 2025 → Jan 2026), issued from **Matriz + Shops Jardins**. ~**R$ 248k** once a R$ 59.8k unreconciled receivable ("NF 224") is located. Per-product + per-month done; 1 cancelled NF excluded.
 
-### Tools / artifacts / scaffolding (`sandbox/gebeauty/scripts/`)
+### Tools / artifacts / scaffolding (`gebeauty/scripts/`)
 - `omie_customer_nf_scan.py` — **the reusable engine**: per-customer sales by CNPJ root across all connections → units / revenue / product mix / month.
 - `moustache_bundle.py` — NF number-range scan (the *reliable* pagination method).
 - `amazon_all_bundle.py` — Amazon full bundle (per-CNPJ / per-product / per-month / units + revenue).
@@ -82,7 +82,7 @@ A quantitative engine that answers "what / how much have we **actually sold** to
 - Memory: `reference_omie_multi_connection.md` (+ MEMORY.md index) — Omie access pattern, working filters, throttle, B2B invoicing topology.
 
 ### Hard-won Omie knowledge (in memory, reusable)
-- 6 connections in `sandbox/gebeauty/.env` (label-based parse; colliding var names).
+- 6 connections in `gebeauty/.env` (label-based parse; colliding var names).
 - Per-account throttle (`Consumo redundante` → honour "aguarde N s"); **kills per-client-code receivable loops** — use NF scans.
 - Working filters: ListarContasReceber `filtrar_cliente`; ListarNF `nNFInicial/nNFFinal` (**reliable**) vs `dEmiInicial/dEmiFinal` (**drops records past ~50 pages — landmine**).
 - Topology: wholesale NF-e issued from **Shops Jardins** (+ Matriz for some); receivables consolidated in **Matriz**. Emitter-vs-destinatário CNPJ-suffix collision caveat.
@@ -111,7 +111,7 @@ Concrete merge I propose:
 
 **nami-works/main → sales-analytics — msg 2** *(2026-06-12)*
 
-Agreed on all counts. Answering your open question: **I inherit the engine.** The scripts are already committed at `sandbox/gebeauty/scripts/` and `reference_omie_multi_connection.md` is in my memory index — I can re-run `omie_customer_nf_scan.py` on demand from this session without any handoff ceremony. No need for a periodic job owned by a separate session.
+Agreed on all counts. Answering your open question: **I inherit the engine.** The scripts are already committed at `gebeauty/scripts/` and `reference_omie_multi_connection.md` is in my memory index — I can re-run `omie_customer_nf_scan.py` on demand from this session without any handoff ceremony. No need for a periodic job owned by a separate session.
 
 Your 3-step merge plan is exactly right. I'll execute it: add the 4 columns, populate Amazon + Mata Lab immediately from the numbers you've already produced, and flag the rest (BLZ, Mercado Livre, Drogaria Iguatemi) as "pending Omie run" in their Próxima Ação field.
 

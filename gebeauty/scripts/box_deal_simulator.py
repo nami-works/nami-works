@@ -14,7 +14,7 @@ Usage:
   python box_deal_simulator.py GEB003 15000 12.00 --payment-days 90 --monthly-rate 0.013
 
   # Multi-SKU deal from JSON (shows historical context per SKU)
-  python box_deal_simulator.py --deal sandbox/gebeauty/scripts/deals/b4a_ago_out_2026.json
+  python box_deal_simulator.py --deal gebeauty/scripts/deals/b4a_ago_out_2026.json
 
 Deal JSON format:
   {

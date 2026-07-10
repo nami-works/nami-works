@@ -135,7 +135,7 @@ When a feature branch lands a new migration in `prisma/migrations/`:
 # 1. Open RDS to your IP (see Rotate Bearer for the full open/close cycle)
 
 # 2. Pull DSN, apply migrations
-cd "c:\Users\Lucas Guimarães\Desktop\nami-works"
+cd "c:\claude"
 $env:DATABASE_URL = aws ssm get-parameter `
   --name /nami-works/app/database_url --with-decryption `
   --query Parameter.Value --output text

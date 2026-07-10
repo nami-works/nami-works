@@ -1,7 +1,7 @@
 """Replicate product's antes_e_depois into discrete PAGE metafields on page 164358750528.
 Creates 4 PAGE metafield definitions (custom namespace) if missing, then sets values.
 Idempotent: definition create tolerates "already taken"; metafieldsSet is upsert.
-Run: C:/Python314/python.exe sandbox/gebeauty/scripts/_replicate_antes_depois_write.py
+Run: C:/Python314/python.exe gebeauty/scripts/_replicate_antes_depois_write.py
 """
 import json, urllib.request, sys
 from pathlib import Path

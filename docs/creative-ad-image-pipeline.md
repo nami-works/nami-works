@@ -4,7 +4,7 @@ How we produce paid-ad and web-banner imagery for GE Beauty (and any future CPG 
 
 This is the canonical playbook. It captures the working recipe **and** every non-obvious thing we had to discover — the tool quirks, the auth walls, the physics failures, and the fixes. Read it before doing Canva/Magnific creative work so you don't re-derive the same lessons.
 
-Related docs: [gebeauty-theme-customization.md](gebeauty-theme-customization.md) (storefront), [shopify-performance-leverage-matrix.md](shopify-performance-leverage-matrix.md). Ad-format clear zones: `sandbox/gebeauty/imagery/primers/primers-ad-format-spec.md`. Mist recipe: `sandbox/gebeauty/imagery/body-hair-mist/mist-magnific-prompts.md`.
+Related docs: [gebeauty-theme-customization.md](gebeauty-theme-customization.md) (storefront), [shopify-performance-leverage-matrix.md](shopify-performance-leverage-matrix.md). Ad-format clear zones: `gebeauty/imagery/primers/primers-ad-format-spec.md`. Mist recipe: `gebeauty/imagery/body-hair-mist/mist-magnific-prompts.md`.
 
 ---
 
@@ -125,7 +125,7 @@ upload-asset-from-url(cdn url)          → returns a Canva asset id
 update_fill / insert_fill with that asset id
 fileDelete(fileIds=[...])               → clean up
 ```
-Requires Shopify `write_files` + creds from `sandbox/gebeauty/.env`. Reusable scripts: `scratchpad/shopify_files_upload.py` / `shopify_files_delete.py` (lift into `sandbox/gebeauty/scripts/` if this becomes routine).
+Requires Shopify `write_files` + creds from `gebeauty/.env`. Reusable scripts: `scratchpad/shopify_files_upload.py` / `shopify_files_delete.py` (lift into `gebeauty/scripts/` if this becomes routine).
 
 **Confirmed:** hosting on Shopify Files does **not** affect storefront performance — files are inert unless referenced by the theme, and are deletable. Still, delete after ingestion (transient by policy).
 
@@ -197,7 +197,7 @@ Apply the color to headline + descriptor via `format_text` (`formatting.color`),
 ## 8. Asset filesystem conventions
 
 ```
-sandbox/gebeauty/imagery/
+gebeauty/imagery/
   <campaign>/                    # e.g. body-hair-mist, primers, amazon-brand-anchor, frizz-scalp
     source/                      # original Shopify/seed imagery
     expanded/                    # generated ad plates

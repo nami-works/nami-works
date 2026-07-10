@@ -1,9 +1,9 @@
 """
 Fetch Shopify product images + retail prices for Magenta proposal.
-Outputs: sandbox/gebeauty/scripts/_b2b_magenta_assets.json
+Outputs: gebeauty/scripts/_b2b_magenta_assets.json
 
 Run:
-  C:/Python314/python.exe sandbox/gebeauty/scripts/_b2b_fetch_magenta_assets.py
+  C:/Python314/python.exe gebeauty/scripts/_b2b_fetch_magenta_assets.py
 """
 import json, sys, base64, urllib.request, urllib.error
 from pathlib import Path

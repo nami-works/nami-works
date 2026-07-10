@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-25
 **From:** cpg-labs session (originating repo)
-**To:** nami-works/sandbox/gebeauty/ (this repo, going forward)
+**To:** gebeauty/ (this repo, going forward)
 **Status:** mid-build, validated through Phase 4. Resume from Phase D (assembler).
 
 ---
@@ -130,8 +130,8 @@ Every creative or technical decision Lucas made, with the reasoning. If you find
 ### Operational discipline
 
 19. **Mandatory budget gate**, after Step 5, before any render. User explicitly approves estimated spend.
-20. **Brand assets canonical location:** `nami-works/sandbox/gebeauty/.brand-assets/Logo/` (Google Drive-synced from `G:\Drives compartilhados\GEB_Marketing\Materiais da marca`). Use `ge_beauty_logo-01.png` (210KB, official vector-derived) or `1500x1500.png` for hi-res. **Vector .ai source is `.brand-assets/Logo/ge_beauty_logo.ai`** for any rebuild work.
-21. **Font for tagline:** Italian Plate No2 Expanded Extrabold (Klim Type Foundry, licensed). **Currently not in `.brand-assets/fonts/` — empty except __MACOSX cruft.** Substitute: Inter ExtraBold (downloaded but only in cpg-labs/nami-works/sandbox/gebeauty/brand-assets/, NOT this repo's .brand-assets). Decide before assembly: use Inter for v1 and re-export when Italian Plate arrives, or get the .ttf from Lucas.
+20. **Brand assets canonical location:** `gebeauty/.brand-assets/Logo/` (Google Drive-synced from `G:\Drives compartilhados\GEB_Marketing\Materiais da marca`). Use `ge_beauty_logo-01.png` (210KB, official vector-derived) or `1500x1500.png` for hi-res. **Vector .ai source is `.brand-assets/Logo/ge_beauty_logo.ai`** for any rebuild work.
+21. **Font for tagline:** Italian Plate No2 Expanded Extrabold (Klim Type Foundry, licensed). **Currently not in `.brand-assets/fonts/` — empty except __MACOSX cruft.** Substitute: Inter ExtraBold (downloaded but only in cpg-labs/gebeauty/brand-assets/, NOT this repo's .brand-assets). Decide before assembly: use Inter for v1 and re-export when Italian Plate arrives, or get the .ttf from Lucas.
 22. **External-tool handoff framework:** any chunk meant for an external tool (renderers, etc.) wraps each chunk in clear START/END boundaries + raw-markdown prompt block + explicit UI settings + expected output. See `memory/feedback_external_tool_handoff_framework.md` in the cpg-labs memory.
 23. **No em-dashes in customer-facing copy.** Use commas/periods. Locked feedback rule.
 
@@ -327,16 +327,16 @@ For now (v1) these are inlined. Build them out before scaling to 2nd product.
 Once the env is set up:
 
 ```bash
-cd "C:\Users\Lucas Guimarães\Desktop\nami-works"
+cd "c:\claude"
 
 # 1. Verify the state from the previous session is intact
-python sandbox/gebeauty/video-director/scripts/state.py 2>&1 | head -3
+python gebeauty/video-director/scripts/state.py 2>&1 | head -3
 # Should print: state.py smoke test PASSED (or similar)
 
 # 2. Read the snapshot
 python -c "
 import sys
-sys.path.insert(0, 'sandbox/gebeauty/video-director/scripts')
+sys.path.insert(0, 'gebeauty/video-director/scripts')
 from state import read_state
 s = read_state('primer-cachos-definidos-v1')
 print(f'state: {s[\"state\"]}')
@@ -345,7 +345,7 @@ print(f'spent: \${s[\"budget\"][\"spent_usd\"]}')
 "
 
 # 3. Confirm clips exist
-ls -la sandbox/gebeauty/video-director/state/primer-cachos-definidos-v1/clips/
+ls -la gebeauty/video-director/state/primer-cachos-definidos-v1/clips/
 
 # 4. Pick up at Phase 6 (assembler) per "Next steps" above
 ```
@@ -371,7 +371,7 @@ Or for a new product:
 5. **state.py file lock has 30s timeout.** If a script dies mid-write, the .lock file persists. Check `state.json.lock` exists; if older than 30s and no process holds it, safe to delete.
 6. **The smoke-test clip is at `state/primer-cachos-definidos-v1/clips/01-morning-styling.mp4`** in this repo, but originated as `seedance-pro_heat-deflection_smoke.mp4` in cpg-labs Phase 2 bake-off. Its prompt history (smoke-test version, not what's in the current state.json) is preserved in `state.events[]`.
 7. **The texture-mound clip (rejected v2) was deleted from cpg-labs but its existence is logged in `state.shots[0].history`.** If someone asks "what was the v2 that got rejected" — that's the answer.
-8. **Brand assets in nami-works are at `sandbox/gebeauty/.brand-assets/Logo/`** (hidden dotfile, Google-Drive-synced). The `fonts/` subfolder is currently empty (just __MACOSX cruft). Italian Plate .ttf needs to come from Lucas before final assembly OR use Inter as substitute and re-export later.
+8. **Brand assets in nami-works are at `gebeauty/.brand-assets/Logo/`** (hidden dotfile, Google-Drive-synced). The `fonts/` subfolder is currently empty (just __MACOSX cruft). Italian Plate .ttf needs to come from Lucas before final assembly OR use Inter as substitute and re-export later.
 9. **No Anthropic API key needed.** All reasoning is in-session. Don't add `ANTHROPIC_API_KEY` to .env "to be safe" — it's not used by any script in this skill, and could be confused for a different feature.
 10. **The brain reasons in Portuguese context but emits English structured data.** Captions, primary_text, etc. are PT-BR. Code (status enums, shot_ids) is English. Don't translate the enums.
 
@@ -390,7 +390,7 @@ Or for a new product:
 ## File inventory (what's in this directory)
 
 ```
-sandbox/gebeauty/video-director/
+gebeauty/video-director/
 ├── HANDOVER.md                    ← you are here
 ├── README.md                       ← quick orientation, one screen
 ├── docs/
@@ -415,8 +415,8 @@ sandbox/gebeauty/video-director/
 
 Plus:
 - **Skill:** `nami-works/.claude/skills/video-director/SKILL.md`
-- **Brand assets:** `nami-works/sandbox/gebeauty/.brand-assets/Logo/` (canonical, Google Drive-synced)
-- **Brandbook:** `nami-works/sandbox/gebeauty/brandbook/_manualGEbeauty_final.pdf` (43 pages)
+- **Brand assets:** `gebeauty/.brand-assets/Logo/` (canonical, Google Drive-synced)
+- **Brandbook:** `gebeauty/brandbook/_manualGEbeauty_final.pdf` (43 pages)
 
 ---
 

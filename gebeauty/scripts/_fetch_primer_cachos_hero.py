@@ -74,7 +74,7 @@ if not hero:
     print("No hero image available.", file=sys.stderr)
     sys.exit(1)
 
-out_path = Path(r"c:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\gebeauty\video-director\state\primer-liso-intacto-v1\_validation\primer-cachos-definidos-hero.png")
+out_path = Path(r"c:\claude\gebeauty\video-director\state\primer-liso-intacto-v1\_validation\primer-cachos-definidos-hero.png")
 out_path.parent.mkdir(parents=True, exist_ok=True)
 
 # Download

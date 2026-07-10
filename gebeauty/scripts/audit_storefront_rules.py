@@ -131,7 +131,7 @@ for p in prods:
 # ---- D1: discount combinability with free shipping ----
 # Every active non-free-shipping discount must have combinesWith.shippingDiscounts=true,
 # else it can't stack with the R$299 free-ship Function. Detection only (read-only);
-# remediation is sandbox/gebeauty/scripts/fix_discount_shipping_combine.py.
+# remediation is gebeauty/scripts/fix_discount_shipping_combine.py.
 QD = ('fragment cw on DiscountCombinesWith { shippingDiscounts }'
       'query($cur:String){discountNodes(first:100,after:$cur,query:"status:active",sortKey:CREATED_AT){'
       ' pageInfo{hasNextPage endCursor} edges{node{discount{__typename'

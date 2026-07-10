@@ -13,7 +13,7 @@ Sets, in this exact order:
 
 Overwrites any prior values; the order above is canonical.
 
-Run: C:/Python314/python.exe sandbox/gebeauty/scripts/wire_blog_related_collections.py
+Run: C:/Python314/python.exe gebeauty/scripts/wire_blog_related_collections.py
 """
 
 import io

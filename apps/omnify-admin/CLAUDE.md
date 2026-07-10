@@ -443,4 +443,4 @@ console.info(`[module-name] status updated ${prev} → ${next} shop=${shop}`);
 
 ## GE Beauty
 
-Operational tooling for GE Beauty lives in `sandbox/gebeauty/` (moved 2026-04-23). When designing features that intersect GE Beauty operations, read `sandbox/gebeauty/field-notes.md`.
+Operational tooling for GE Beauty lives in `gebeauty/` (moved 2026-04-23). When designing features that intersect GE Beauty operations, read `gebeauty/field-notes.md`.

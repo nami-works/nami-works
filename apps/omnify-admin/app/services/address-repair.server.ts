@@ -1,7 +1,7 @@
 /**
  * Address-repair patterns for Brazilian PT-BR Shopify shipping addresses.
  *
- * TypeScript port of `nami-works/sandbox/gebeauty/scripts/address_repair.py`.
+ * TypeScript port of `gebeauty/scripts/address_repair.py`.
  * Implements the four §6.7 patterns from LOCAL-DELIVERY-PLAYBOOK.md as pure
  * functions. Used by the local-delivery pipeline to autofix orders BEFORE
  * tagging them with `ld_confirm-address` for human review.

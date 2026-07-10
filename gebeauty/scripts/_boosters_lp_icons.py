@@ -7,7 +7,7 @@ to its transparent icon MediaImage.
 
 Idempotent: skips upload if a File with the same alt already exists; skips definition
 creation if it already exists; metafieldsSet is naturally idempotent.
-Run from anywhere; resolves .env from sandbox/gebeauty/.env.
+Run from anywhere; resolves .env from gebeauty/.env.
 """
 import os, io, json, time, requests
 from pathlib import Path

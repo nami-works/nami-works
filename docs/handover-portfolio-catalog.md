@@ -10,7 +10,7 @@ Evolve GE Beauty's B2B sell-in deck — `G:\Drives compartilhados\GEB_B2B\Portf�
 - **Seed uploaded + copied.** Lucas uploaded the pptx to Canva → design **`DAHNgXz0o2A`** ("seed.pptx"). I copied it to a working master **`DAHNgW4ypDw`** (edit: https://www.canva.com/d/hywh4DFFQNuN7KY). Both imported as fixed-layout (`is_responsive:false`), all elements editable.
 - **Polish edits drafted (NOT committed).** On master `DAHNgW4ypDw`, transaction `2179123755926140365`: (1) renamed → "GE Beauty — Portfólio B2B", (2) deleted the slide-19 placeholder text element (`PBHLbWy0Hrp1fbCL-LBMZKTC8dDGr9FTD`, the "Trocar por essa foto: drive.google.com/…" note). **Draft only — never committed; the transaction will expire and discard.**
 - **Font loss diagnosed + fully recovered.** Canva's import dropped the licensed fonts (deck theme was generic `Calibri`/`Arial`; real fonts were applied per-run). The deck uses: **Italian Plate No2 Expanded** (Regular/Demibold/Extrabold +italics, display), **Italian Plate No1 Expanded Bold** (subheads), **Italian Plate No1 Mono** (Light/Extrabold, accents).
-- **All 14 needed font files staged** at `sandbox/gebeauty/.brand-assets/fonts/_portfolio-canva-set/` (12 from machine `AppData/Local/Microsoft/Windows/Fonts`, 2 — No2 Expanded Regular + Extrabold — pulled from the Drive font folder, validated by magic bytes).
+- **All 14 needed font files staged** at `gebeauty/.brand-assets/fonts/_portfolio-canva-set/` (12 from machine `AppData/Local/Microsoft/Windows/Fonts`, 2 — No2 Expanded Regular + Extrabold — pulled from the Drive font folder, validated by magic bytes).
 - **Lucas loaded the fonts into the Canva Brand Kit** ("GE Beauty" / "fontes GEB"): Italian Plate No1 Mono, No1 Expanded, No2 Expanded (+ No2 Bold/Mono, Geometos Soft, Verlag Bold).
 - **Proved re-import is required.** Pixel-diff of the deck before vs after the Brand-Kit upload = **0.00 (identical)**. Uploading fonts does NOT retro-heal an already-imported deck.
 
@@ -28,9 +28,9 @@ Evolve GE Beauty's B2B sell-in deck — `G:\Drives compartilhados\GEB_B2B\Portf�
 
 ## Modified / created files
 - `.mcp.json` — **canva HTTP server added** (complete; uncommitted, bundled with Lucas's other pending server additions: magnific/krea/foreplay/fireflies).
-- `sandbox/gebeauty/.brand-assets/fonts/_portfolio-canva-set/` — **14 staged font files** (complete; keep — useful for any approach).
-- `sandbox/gebeauty/design-system/foundations.html` — design-system foundations token sheet (complete; **keep** — belongs to the broader initiative, NOT the portfolio job).
-- `sandbox/gebeauty/design-system/portfolio-mockup.html` — **rejected white redesign (cleanup — wrong direction).**
+- `gebeauty/.brand-assets/fonts/_portfolio-canva-set/` — **14 staged font files** (complete; keep — useful for any approach).
+- `gebeauty/design-system/foundations.html` — design-system foundations token sheet (complete; **keep** — belongs to the broader initiative, NOT the portfolio job).
+- `gebeauty/design-system/portfolio-mockup.html` — **rejected white redesign (cleanup — wrong direction).**
 - `.claude/initiatives/gebeauty-design-system.md` — initiative tracker (keep).
 - Memory: `project_gebeauty_design_system.md`, `reference_mcp_claudejson_drive_casing.md` (+ MEMORY.md index) — keep.
 - Scratchpad scripts (pptx_inventory, extract_fonts, extract_embedded_fonts, fetch_shopify_imgs, inject_*, extract_palette) — temp, auto-cleaned.

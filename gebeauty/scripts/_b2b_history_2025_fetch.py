@@ -4,7 +4,7 @@ Searches all configured Omie companies, de-duplicates against history.json,
 then appends new completed deals.
 
 Run:
-  C:/Python314/python.exe sandbox/gebeauty/scripts/_b2b_history_2025_fetch.py
+  C:/Python314/python.exe gebeauty/scripts/_b2b_history_2025_fetch.py
 """
 import json, time, sys, urllib.request, urllib.error
 from pathlib import Path

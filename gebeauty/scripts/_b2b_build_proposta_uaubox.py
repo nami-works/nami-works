@@ -4,7 +4,7 @@ Fetches product images live from Shopify, then writes a self-contained HTML.
 Open in browser → Ctrl+P → Save as PDF (landscape A4, margins: minimum).
 
 Run:
-  C:/Python314/python.exe sandbox/gebeauty/scripts/_b2b_build_proposta_uaubox.py
+  C:/Python314/python.exe gebeauty/scripts/_b2b_build_proposta_uaubox.py
 """
 import json, sys, io, base64, urllib.request
 from pathlib import Path

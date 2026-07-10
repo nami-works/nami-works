@@ -6,7 +6,7 @@ locked tagline + logo, and writes the ship-ready creative.mp4 + thumbnail +
 captions.srt to state/<concept>/output/<variant>/.
 
 CLI:
-    python sandbox/gebeauty/video-director/scripts/assemble.py \\
+    python gebeauty/video-director/scripts/assemble.py \\
         --concept-id primer-cachos-definidos-v1 \\
         [--variant base|variant-a|variant-b] \\
         [--no-audio]                     # build the silent pass
@@ -41,7 +41,7 @@ FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
 
 # Path index relative to this script
 SCRIPT_DIR = Path(__file__).resolve().parent
-GEBEAUTY_DIR = SCRIPT_DIR.parents[1]  # …/sandbox/gebeauty
+GEBEAUTY_DIR = SCRIPT_DIR.parents[1]  # …/gebeauty
 BRAND_ASSETS = GEBEAUTY_DIR / ".brand-assets"
 LOGO = BRAND_ASSETS / "Logo" / "ge_beauty_logo-01.png"
 FONT_DIR = BRAND_ASSETS / "fonts" / "fonts"  # zip nested an extra fonts/

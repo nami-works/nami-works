@@ -11,10 +11,10 @@ contracts instead of starting cold each time.
 3. **Ground in the live document** (read the actual contract, never assume clause text).
 4. **Run the review**, produce the memo (summary, key terms, red flags, recommendation).
 5. **Update state:**
-   - Add/refresh a per-deal record in `sandbox/gebeauty/legal/deals/` (one per contract — Lucas wants a record for every contract).
+   - Add/refresh a per-deal record in `gebeauty/legal/deals/` (one per contract — Lucas wants a record for every contract).
    - Add the deal to the playbook's "Deals seen" log.
    - Append any *new* reusable rule to the playbook's "Locked lessons."
-   - If the deal is in flight, add/refresh `sandbox/gebeauty/legal/pending.md`.
+   - If the deal is in flight, add/refresh `gebeauty/legal/pending.md`.
 
 Escalation to an outside lawyer is **Lucas's manual call** — no auto-tiering. Flag what a
 lawyer should see; he decides.
@@ -36,7 +36,7 @@ Unseeded playbooks are created the first time a contract of that type arrives �
 ## Where state lives
 
 - **Playbooks (the brain):** here, with the skill (version-controlled).
-- **Per-deal records:** `sandbox/gebeauty/legal/deals/<YYYY-MM>_<slug>.md`.
-- **In-flight items:** `sandbox/gebeauty/legal/pending.md`.
+- **Per-deal records:** `gebeauty/legal/deals/<YYYY-MM>_<slug>.md`.
+- **In-flight items:** `gebeauty/legal/pending.md`.
 - **Session memory pointer:** `project_gebeauty_legal_review.md` (auto-loads via MEMORY.md so a fresh session knows to come read these).
 - **Source contracts:** stay in Google Drive where the team keeps them.

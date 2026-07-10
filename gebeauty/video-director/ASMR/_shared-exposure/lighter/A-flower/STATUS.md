@@ -28,7 +28,7 @@ Local clips in `clips/REGEN-clip{1..5}*.mp4`; concat → `clips/flower-lighter_F
 
 ## Engines / budget
 - Magnific Seedance `bytedance-seedance-pro-2.0`, withSoundEffects, loud ASMR. ~4,264 cr / 6s clip. **Auto-top-up ON.**
-- Krea OUT (402) — Magnific-only for now. Krea client: `sandbox/gebeauty/scripts/_krea.py`.
+- Krea OUT (402) — Magnific-only for now. Krea client: `gebeauty/scripts/_krea.py`.
 
 ## After flower-lighter is approved
 Roll same end-to-end treatment to: **flower dryer**, **flower flat-iron**, then **ribbon** ×3 (lighter/dryer/flat-iron) + **ribbon application**. All exposure STARTs+ENDs already locked in each `_shared-exposure/<agg>/<ver>/seeds/` with `_MOTION-NOTE.txt` (equal-exposure + aggressor-physics). Flower application clips already rendered (both engines). Closing cards + copy = later (Lucas: application+exposure only for now).

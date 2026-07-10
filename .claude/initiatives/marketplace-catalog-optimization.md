@@ -46,7 +46,7 @@ The order matters: **ground → copy → media → discoverability → registry 
 - [ ] 4. Amazon: upload + ASP-watch live (fires on first post-launch Vendas export)
 - [~] 5. Apply framework to **Rappi Turbo** (marketplace #2)
   - [x] 5a. Channel rendering rules reverse-engineered from 14 competitor PDP screenshots (title formula, image spec, description, facets) — 2026-07-02
-  - [x] 5b. Copy drafted for all 21 `productType=product` SKUs (Amazon 1P as canonical, adapted to convenience-length; finalidade verbatim first sentence) — consolidated table + CSV + per-SKU at `sandbox/gebeauty/content-director/2026-07-02_rappi-turbo/` — 2026-07-02
+  - [x] 5b. Copy drafted for all 21 `productType=product` SKUs (Amazon 1P as canonical, adapted to convenience-length; finalidade verbatim first sentence) — consolidated table + CSV + per-SKU at `gebeauty/content-director/2026-07-02_rappi-turbo/` — 2026-07-02
   - [ ] 5c. Pure-white packshot production (adapt bg pipeline #ecede9 -> #FFFFFF, ref-lit)
   - [ ] 5d. Confirm attribute facets + GEB 029 volume; upload via Rappi seller portal (Lucas)
 

@@ -10,7 +10,7 @@ Modes:
   --cohort FILE  restrict to customer GIDs listed one-per-line in FILE (else: all owners).
   --write        actually write metafields (batched, idempotent via state file). GATED.
 
-Reads creds from sandbox/gebeauty/.env. Reads catalog + orders from _cache/.
+Reads creds from gebeauty/.env. Reads catalog + orders from _cache/.
 """
 import json, sys, time, argparse, urllib.request, urllib.error
 from pathlib import Path

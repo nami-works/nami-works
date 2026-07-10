@@ -52,7 +52,7 @@
   - PIS/COFINS credit eligibility on the commission.
 
 ## Modified files
-- **None from this session.** The working tree shows `.mcp.json`, `inputs/chat-room.md`, `sandbox/gebeauty/CLAUDE.md` modified, but those pre-date this session and are unrelated to the tax discussion — do not attribute them here.
+- **None from this session.** The working tree shows `.mcp.json`, `inputs/chat-room.md`, `gebeauty/CLAUDE.md` modified, but those pre-date this session and are unrelated to the tax discussion — do not attribute them here.
 
 ## Current state
 - No code, no deploy, nothing to test. The "state" is the decision itself, captured above.

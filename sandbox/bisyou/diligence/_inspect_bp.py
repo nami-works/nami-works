@@ -3,7 +3,7 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 
 PATH = r"G:\Drives compartilhados\GEB_Financeiro\Orçamento e Resultados\2026\GE Beauty_BP_v2026.xlsx"
-OUT = r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\_bp_ecomm_dump.txt"
+OUT = r"c:\claude\sandbox\bisyou\diligence\_bp_ecomm_dump.txt"
 
 wb_v = openpyxl.load_workbook(PATH, data_only=True)
 wb_f = openpyxl.load_workbook(PATH, data_only=False)

@@ -330,7 +330,7 @@ Use this as your mental model. Read the actual files for current implementation 
 **Current usage**
 | Area | File | Purpose |
 |------|------|---------|
-| Transportadora / fornecedor lookup by CNPJ | `../nami-works/sandbox/gebeauty/scripts/omie_fetch_transportadora.py` | Reference implementation: JSON-RPC envelope, `.env` credential loading, CNPJ → `codigo_cliente_omie` resolution, tag verification |
+| Transportadora / fornecedor lookup by CNPJ | `gebeauty/scripts/omie_fetch_transportadora.py` | Reference implementation: JSON-RPC envelope, `.env` credential loading, CNPJ → `codigo_cliente_omie` resolution, tag verification |
 
 **Endpoint family (JSON-RPC over HTTPS)**
 
@@ -577,12 +577,12 @@ Short reference of reusable patterns. Reach for these before re-deriving a solut
 
 **JSON-RPC envelope (Omie-style APIs)**
 - When: any call to the Omie API (`app.omie.com.br/api/v1/<module>/<entity>/`) — clientes, produtos, pedidos, financeiro, or any new module
-- Reference: `../nami-works/sandbox/gebeauty/scripts/omie_fetch_transportadora.py`
+- Reference: `gebeauty/scripts/omie_fetch_transportadora.py`
 - Shape: POST body is always `{ app_key, app_secret, call: "MethodName", param: [{...}] }` — one endpoint per module, method dispatched via `call`, `param` is always an array of exactly one object. Strip CNPJ/CPF masks to digits before filtering. Expect `&amp;` HTML-encoding on string responses. Credentials are per-Omie-account (`OMIE_APP_KEY_<accountId>` / `OMIE_APP_SECRET_<accountId>`), go in the body not headers.
 
 **Unified party record with tag-based type (Omie clientes)**
 - When: looking up or filtering anything in Omie's `/geral/clientes/` — clientes, fornecedores, transportadoras all share this table
-- Reference: section E of the architecture map; `../nami-works/sandbox/gebeauty/scripts/omie_fetch_transportadora.py`
+- Reference: section E of the architecture map; `gebeauty/scripts/omie_fetch_transportadora.py`
 - Shape: no native `cliente_tipo` / `fornecedor` flag exists. Entity type is expressed via `tags[]` (free-text, case-sensitive). Filter with `clientesFiltro.tags: [{ tag: "Fornecedor" }]` or `"Transportadora"`. Before trusting a tag filter, verify the exact spelling by consulting one known record. The universal ID `codigo_cliente_omie` is what downstream modules reference (e.g. `nCodTransp` on NF-e IS the carrier record's `codigo_cliente_omie`).
 
 ---
@@ -618,7 +618,7 @@ Short reference of reusable patterns. Reach for these before re-deriving a solut
 - Omie service list (all endpoints + methods): `https://developer.omie.com.br/service-list/`
 - Omie Clientes endpoint (clientes, fornecedores, transportadoras): `https://app.omie.com.br/api/v1/geral/clientes/`
 - Omie help portal: `https://ajuda.omie.com.br/pt-BR/collections/3045828-apis`
-- Reference implementation (JSON-RPC envelope, CNPJ lookup, `.env` creds): `../nami-works/sandbox/gebeauty/scripts/omie_fetch_transportadora.py`
+- Reference implementation (JSON-RPC envelope, CNPJ lookup, `.env` creds): `gebeauty/scripts/omie_fetch_transportadora.py`
 
 **Google**
 - Maps JS API: `https://developers.google.com/maps/documentation/javascript`

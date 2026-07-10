@@ -442,7 +442,7 @@ Variant cost ≈ 1.4× base cost for the triple package. Other variant types (au
 
 ## 11. Reference docs
 
-- Brandbook PDF: `c:/Users/Lucas Guimarães/Desktop/nami-works/sandbox/gebeauty/brandbook/_manualGEbeauty_final.pdf`
+- Brandbook PDF: `c:/claude/gebeauty/brandbook/_manualGEbeauty_final.pdf`
 - v2 concepts: [video-director-concepts.md](video-director-concepts.md) — 14 per-product hero concepts
 - Pluma prototype: [prototype-leave-in-pluma.md](prototype-leave-in-pluma.md)
 - Primers prototype: [prototype-primers-resistance.md](prototype-primers-resistance.md)

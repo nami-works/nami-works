@@ -4,7 +4,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
 SRC = r"G:\Drives compartilhados\GEB_Financeiro\Orçamento e Resultados\2026\GE Beauty_BP_v2026.xlsx"
-OUT = r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\Bisyou_Impact_Model.xlsx"
+OUT = r"c:\claude\sandbox\bisyou\diligence\Bisyou_Impact_Model.xlsx"
 
 # ---- 1) Read GE group 2026 totals (Macro col BV = 2026 annual) ----
 mv = openpyxl.load_workbook(SRC, data_only=True)["Macro"]

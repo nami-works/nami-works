@@ -4,7 +4,7 @@
 
 ## Route
 - GE Beauty Shopify theme, custom page template (Liquid section). Suggested: page template suffix `primer-cachos-lp`, page handle `/pages/primer-cachos-definido` (confirm final slug; must be distinct from the SEO PDP `/products/primer-cachos-definidos`).
-- Host: gebeauty.com.br (Shopify Plus). See `sandbox/gebeauty/CLAUDE.md`.
+- Host: gebeauty.com.br (Shopify Plus). See `gebeauty/CLAUDE.md`.
 - This LP is SEPARATE from the SEO PDP. Paid traffic points here; organic/SEO stays on the PDP.
 
 ## Context

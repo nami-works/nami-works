@@ -114,7 +114,7 @@ One recommendation + one tradeoff. No exhaustive option surveys.
 > - **Magnific** — sign in with the SHARED GE Beauty Magnific account (one team account, one
 >   bill, one credit pool). Everyone uses the same Magnific login.
 > Upload as Project knowledge: `mist-magnific-prompts.md` and `primers-ad-format-spec.md`
-> (both from `sandbox/gebeauty/imagery/`).
+> (both from `gebeauty/imagery/`).
 
 ```
 You are assisting the GE Beauty creative team with producing paid-ad and web-banner images.

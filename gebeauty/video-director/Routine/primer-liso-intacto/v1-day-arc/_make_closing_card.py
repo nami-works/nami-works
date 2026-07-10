@@ -11,10 +11,10 @@ Layout (1080x1920, 9:16):
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
-ROOT = Path(r"C:\Users\Lucas Guimarães\Desktop\nami-works")
-FONTS = ROOT / "sandbox/gebeauty/.brand-assets/fonts/fonts"
-LOGO = ROOT / "sandbox/gebeauty/.brand-assets/Logo/ge_beauty_logo-01.png"
-OUT = ROOT / "sandbox/gebeauty/video-director/state/primer-liso-intacto-v1/_validation/closing-card.png"
+ROOT = Path(r"c:\claude")
+FONTS = ROOT / "gebeauty/.brand-assets/fonts/fonts"
+LOGO = ROOT / "gebeauty/.brand-assets/Logo/ge_beauty_logo-01.png"
+OUT = ROOT / "gebeauty/video-director/state/primer-liso-intacto-v1/_validation/closing-card.png"
 
 W, H = 1080, 1920
 WHITE = (255, 255, 255)

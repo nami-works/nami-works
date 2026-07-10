@@ -5,8 +5,8 @@ from openpyxl.formatting.rule import CellIsRule
 from openpyxl.utils import get_column_letter
 
 SRC=r"G:\Drives compartilhados\GEB_Financeiro\Orçamento e Resultados\2026\GE Beauty_BP_v2026.xlsx"
-STD=r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\Bisyou_Impact_Model.xlsx"
-BPC=r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\GE Beauty_BP_v2026__+Bisyou.xlsx"
+STD=r"c:\claude\sandbox\bisyou\diligence\Bisyou_Impact_Model.xlsx"
+BPC=r"c:\claude\sandbox\bisyou\diligence\GE Beauty_BP_v2026__+Bisyou.xlsx"
 
 mv=openpyxl.load_workbook(SRC,data_only=True)["Macro"]; BV=74
 GE={"Receita líquida":mv.cell(row=51,column=BV).value,"Margem bruta":mv.cell(row=57,column=BV).value,

@@ -58,13 +58,13 @@ Run each review cycle (target: weekly, or whenever a fresh Amazon report lands).
 **5. Log + advance:** append findings to `## Notes`, check off / update phases, reset `next_blocker` + `next_owner`.
 
 ## Reference files
-- A+ content (copy + module specs): `sandbox/gebeauty/amazon/aplus-content.md`
+- A+ content (copy + module specs): `gebeauty/amazon/aplus-content.md`
 - Uploadable catalog files: `G:\Drives compartilhados\GEB_Comercial\Marketplaces\Amazon\` — `Perfumes_Fragrancias_NOVOS_PREENCHIDO_FIXED.xlsm` (5 new, submitted), `Perfumes_e_Fragrancias_2026-07-01_UPDATE_PREENCHIDAS_FIXED.xlsm` (16 existing, uploading)
 - Reports: `net-ppm/`, `sales/`, `inventory/` under the Amazon Drive folder
 - Eloá thread: Gmail subject "Amazon: Programas" (label Label_20)
 
 ## Notes
-- 2026-07-02 — Initiative created. Brand Registry confirmed **active** (re-submitted 06/20 via the law office with procuração). Eloá's "Amazon: Programas" email laid out the 4 programs + 3 next steps (cost review ✅, new-SKU cadastro ✅, catalog corrections ⏳) + EDI automation. A+ build kit drafted this session (6-module system: 3 shared — brand banner, "monte sua rotina" comparison chart, brand story; 3 per-product — hero+highlights, 3 benefits, modo de uso). Copy saved to `sandbox/gebeauty/amazon/aplus-content.md`.
+- 2026-07-02 — Initiative created. Brand Registry confirmed **active** (re-submitted 06/20 via the law office with procuração). Eloá's "Amazon: Programas" email laid out the 4 programs + 3 next steps (cost review ✅, new-SKU cadastro ✅, catalog corrections ⏳) + EDI automation. A+ build kit drafted this session (6-module system: 3 shared — brand banner, "monte sua rotina" comparison chart, brand story; 3 per-product — hero+highlights, 3 benefits, modo de uso). Copy saved to `gebeauty/amazon/aplus-content.md`.
 - 2026-07-02 — Manufacturer rule confirmed by Lucas: **GEB 0xx = Naturelle, GEB 1xx/2xx = Yuzi Cosméticos** (yuzi.ind.br); dry shampoo GEB 008 is the exception (ALIANZA COSMETICOS). Applied to the UPDATE file.
 - 2026-07-02 — Live-image swap found on Booster Fortificante (MAIN was a text graphic from the old image-zip; the correct packshot sat in PT01). Files carry the correct hero; uploading UPDATE fixes MAIN. If the imaging-manager copy wins over the feed, fix MAIN directly in imaging/manage.
 - 2026-07-02 — Primer Cachos ASIN B0G2CSBCLH given to Eloá for reactivation (was inactive in catalog).

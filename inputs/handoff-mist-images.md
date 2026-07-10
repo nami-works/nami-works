@@ -18,7 +18,7 @@ Format: 200ml bottle, 50×50×175mm. Label/copy naming is **"Body & Hair Mist"**
 ## Visual anchor (anti-hallucination — the critical one)
 These are **line extensions of Melon Mood**, so they must look like the same product line and the same bottle — only the scent / color story changes. The live **Melon Mood** product is the bottle + photographic-style reference:
 - Melon Mood product ID: `9946377617728` (7 media images). Pull its real images and feed them to Magnific as references so the new scents match bottle shape, lighting, background, and composition (cohesive PDP + collection grid).
-- Full Melon structure (media count, metafields, tags, category) already saved at `sandbox/gebeauty/scripts/_melon_template.json`.
+- Full Melon structure (media count, metafields, tags, category) already saved at `gebeauty/scripts/_melon_template.json`.
 
 **Resolve first:** confirm whether **real packshots / label art exist** for the 3 new scents. The primary PDP packshot must show the *actual* bottle and label. If AI-generating, base it on the Melon bottle with per-scent color treatment, and flag that the real label (text + colors) must be verified before publish. Do not ship an invented label as the canonical product image.
 
@@ -28,7 +28,7 @@ These are **line extensions of Melon Mood**, so they must look like the same pro
 - 3 benefit shots (style of Melon's `beneficio_em_destaque_*` images)
 
 ## Tools & access
-- Shopify creds: `sandbox/gebeauty/.env` (resolve `__file__`-relative). Store `ge-beauty-cosmeticos.myshopify.com`, API `2026-01`.
+- Shopify creds: `gebeauty/.env` (resolve `__file__`-relative). Store `ge-beauty-cosmeticos.myshopify.com`, API `2026-01`.
 - Scopes include `write_products` + `write_files` → can upload media directly to the Draft products.
 - Magnific connection is live (primary backend since 2026-06-08).
 - Price-source HARD RULE (if reading any prices): only `productType` in (`product`, `acessorio`); never `rappi`/`brinde`/kit.
@@ -42,6 +42,6 @@ These are **line extensions of Melon Mood**, so they must look like the same pro
 - Images are one piece of the enrichment pack (images + INCI + stock + copy) needed to flip Draft→Live. That in turn unblocks the launch and the pre-purchase checkout cross-sell engine spec'd in `inputs/growth-gebeauty-mist-checkout-aov-2026-06-22.md`.
 
 ## Reference files in repo
-- `sandbox/gebeauty/scripts/_melon_template.json` — full live Melon Mood product structure (the parity target)
-- `sandbox/gebeauty/products.json` — fiscal catalog (scent notes, dims, EAN, NCM for GEB 025/026/027)
+- `gebeauty/scripts/_melon_template.json` — full live Melon Mood product structure (the parity target)
+- `gebeauty/products.json` — fiscal catalog (scent notes, dims, EAN, NCM for GEB 025/026/027)
 - `inputs/growth-gebeauty-mist-checkout-aov-2026-06-22.md` — the launch monetization plan these images feed

@@ -5,13 +5,13 @@ cpg-labs `render-routes` server intent.
 Calls `nami_control.py state` for each location, builds a Google Static
 Maps URL per location with pickup + per-route colored markers (legend
 matches LOCAL-DELIVERY-PLAYBOOK.md §4), downloads to
-`sandbox/gebeauty/route-maps/YYYY-MM-DD/<location_slug>.png`, and prints
+`gebeauty/route-maps/YYYY-MM-DD/<location_slug>.png`, and prints
 the same `routeMaps[]` shape the playbook's optimize response promises.
 
 Usage:
-  python sandbox/gebeauty/scripts/render_routes_local.py
-  python sandbox/gebeauty/scripts/render_routes_local.py --location gid://shopify/Location/97784398144
-  python sandbox/gebeauty/scripts/render_routes_local.py --out /tmp/maps
+  python gebeauty/scripts/render_routes_local.py
+  python gebeauty/scripts/render_routes_local.py --location gid://shopify/Location/97784398144
+  python gebeauty/scripts/render_routes_local.py --out /tmp/maps
 
 Pickup coords are sourced in this priority order:
   1) `dispatch.stops[0].coordinates` from a `state --live` response (most
@@ -71,7 +71,7 @@ def get_google_key(env):
     """Return (key, source) — source describes where it came from for the report."""
     import os
     if env.get("GOOGLE_MAPS_API_KEY"):
-        return env["GOOGLE_MAPS_API_KEY"], "sandbox/gebeauty/.env"
+        return env["GOOGLE_MAPS_API_KEY"], "gebeauty/.env"
     if os.environ.get("GOOGLE_MAPS_API_KEY"):
         return os.environ["GOOGLE_MAPS_API_KEY"], "process env"
     return None, None
@@ -349,7 +349,7 @@ def main():
     parser.add_argument("--location", default=None,
                         help="Optional location gid (omit → render every location with active routes)")
     parser.add_argument("--out", default=None,
-                        help="Override output dir (default: sandbox/gebeauty/route-maps/YYYY-MM-DD/)")
+                        help="Override output dir (default: gebeauty/route-maps/YYYY-MM-DD/)")
     parser.add_argument("--prune-days", type=int, default=30,
                         help="Auto-prune older date-folders (default: 30)")
     parser.add_argument("--dry-run", action="store_true",
@@ -361,8 +361,8 @@ def main():
     if not api_key and not args.dry_run:
         print(json.dumps({
             "ok": False,
-            "error": "GOOGLE_MAPS_API_KEY missing — checked sandbox/gebeauty/.env and process env",
-            "fix": "Add GOOGLE_MAPS_API_KEY=... to sandbox/gebeauty/.env (Static Maps + Geocoding scope) and re-run",
+            "error": "GOOGLE_MAPS_API_KEY missing — checked gebeauty/.env and process env",
+            "fix": "Add GOOGLE_MAPS_API_KEY=... to gebeauty/.env (Static Maps + Geocoding scope) and re-run",
         }, indent=2))
         sys.exit(1)
     if not api_key:

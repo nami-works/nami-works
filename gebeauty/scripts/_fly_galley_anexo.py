@@ -2,7 +2,7 @@
 Download the NF attached to FLY GALLEY's most recent payment (Contas a Pagar
 anexo). Reads titles from _fly_galley_ap.out.json (MATRIZ), lists anexos per
 title via geral/anexo/ListarAnexo, then ObterAnexo -> cLinkDownload -> file.
-Saves to sandbox/gebeauty/danfe/fly-galley/. Read-only against Omie.
+Saves to gebeauty/danfe/fly-galley/. Read-only against Omie.
 """
 import json, time, urllib.request, urllib.error
 from pathlib import Path

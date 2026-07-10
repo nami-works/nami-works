@@ -3,7 +3,7 @@ Probe Omie stock API — find correct endpoint + field names for GEB SKUs.
 Tests against EXTREMA (CD) and one POS company.
 
 Run:
-  C:/Python314/python.exe sandbox/gebeauty/scripts/_b2b_stock_probe.py
+  C:/Python314/python.exe gebeauty/scripts/_b2b_stock_probe.py
 """
 import json, time, sys, urllib.request, urllib.error
 from pathlib import Path

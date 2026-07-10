@@ -22,7 +22,7 @@ API_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-01")
 HANDLE = "primer-liso-intacto"
 
 OUT_DIR = Path(
-    r"c:/Users/Lucas Guimarães/Desktop/nami-works/sandbox/gebeauty/video-director/"
+    r"c:/claude/gebeauty/video-director/"
     r"state/primer-liso-intacto-v1/_validation/primer-liso-shopify-refs"
 )
 

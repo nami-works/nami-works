@@ -36,12 +36,12 @@ and ongoing sellout support. Different economics, different rhythm, tracked sepa
 
 ## Tooling
 
-`sandbox/gebeauty/scripts/box_deal_simulator.py` — CLI margin simulator
+`gebeauty/scripts/box_deal_simulator.py` — CLI margin simulator
 - No args: COGS coverage table
 - Positional args: single-SKU spot check (`GEB022 2000 22.70`)
 - `--deal path/to/deal.json`: multi-SKU deal with payment-term discount
 
-Deal JSON files live in `sandbox/gebeauty/scripts/deals/`.
+Deal JSON files live in `gebeauty/scripts/deals/`.
 
 ## B4A — deals done
 
@@ -63,7 +63,7 @@ Magenta sent prices (what they want to pay GE):
 | GEB024 | 5,000 | R$28.50 | — | — | BLOCKED — COGS missing |
 | GEB102 | 4,000 | R$31.00 | — | — | BLOCKED — COGS missing |
 
-Deal file: `sandbox/gebeauty/scripts/deals/magenta_proposta.json`
+Deal file: `gebeauty/scripts/deals/magenta_proposta.json`
 (blocked lines stored in `_lines_blocked_no_cogs` key so they aren't silently dropped)
 
 Total simulatable: R$139,200 revenue; R$53,920 GM (38.7%).

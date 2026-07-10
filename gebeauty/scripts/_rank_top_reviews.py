@@ -1,12 +1,12 @@
 """Rank GE Beauty Loox reviews for conversion and emit top-10 per product family.
 
-Read-only analysis on sandbox/gebeauty/data/reviews.csv. Consolidates the
+Read-only analysis on gebeauty/data/reviews.csv. Consolidates the
 duplicate Shopify handles (full-size / travel-size / rappi / migrated) into one
 product family, scores each review for *conversion value* (photo-first,
 benefit/objection language, substance), de-dupes, and writes a markdown
 deliverable + a JSON companion.
 
-Run from anywhere:  python sandbox/gebeauty/scripts/_rank_top_reviews.py
+Run from anywhere:  python gebeauty/scripts/_rank_top_reviews.py
 """
 from pathlib import Path
 import csv
@@ -14,7 +14,7 @@ import json
 import re
 import unicodedata
 
-ROOT = Path(__file__).resolve().parent.parent          # sandbox/gebeauty
+ROOT = Path(__file__).resolve().parent.parent          # gebeauty
 CSV = ROOT / "data" / "reviews.csv"
 OUT_DIR = ROOT / "research" / "top-reviews"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -138,7 +138,7 @@ def main():
     # ---- markdown ----
     md = []
     md.append("# GE Beauty — Top Reviews per Product (conversion-ranked)\n")
-    md.append("Source: `sandbox/gebeauty/data/reviews.csv` (1,882 reviews). "
+    md.append("Source: `gebeauty/data/reviews.csv` (1,882 reviews). "
               "Ranked for conversion value: photo > benefit/objection language > substance > 5-star > verified > recency. "
               "Handle variants (full-size / travel-size / rappi / migrated) are pooled into one product family.\n")
 

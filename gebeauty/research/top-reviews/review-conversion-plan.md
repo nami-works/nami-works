@@ -10,7 +10,7 @@ measurable conversion lever. Companion data files in this folder:
 
 ## 1. What we have (data truths)
 
-- 1,882 reviews in `sandbox/gebeauty/data/reviews.csv`. 4–5★ only (negatives live as
+- 1,882 reviews in `gebeauty/data/reviews.csv`. 4–5★ only (negatives live as
   caveats inside positive reviews). ~5% have photos. `verified_purchase` is unreliable
   (migrated handles lost the flag) — treat as a soft signal, not a filter.
 - Reviews are **fragmented across duplicate handles** (full-size / travel-size / rappi /

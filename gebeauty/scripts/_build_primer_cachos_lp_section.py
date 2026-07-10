@@ -6,7 +6,7 @@ Artifacts:
   templates/page.primer-cachos-lp.json -> page template instance (approved copy + blocks + product)
 
 Modes:
-  local   (default) -> write both files under sandbox/gebeauty/theme/ + validate schema JSON. ZERO store writes.
+  local   (default) -> write both files under gebeauty/theme/ + validate schema JSON. ZERO store writes.
   deploy            -> PUT both files to a theme (default published 181379236160, or arg2 theme id),
                        then create/assign an UNLISTED draft-ish page (template_suffix) for preview.
 

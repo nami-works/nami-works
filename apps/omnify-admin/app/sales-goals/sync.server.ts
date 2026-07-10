@@ -217,7 +217,7 @@ export async function runSalesGoalsSync(
         // and sometimes doesn't (the refund is recorded separately). The
         // `max(0, current - refunded)` clamp handles both cases and matches
         // admin-reported totals to the cent (verified via
-        // nami-works/sandbox/gebeauty/scripts/audit_retail_goals_totals.py).
+        // gebeauty/scripts/audit_retail_goals_totals.py).
         const amount = Math.max(0, currentTotal - refunded);
         const discount = Number(
           node.currentTotalDiscountsSet?.shopMoney?.amount ?? 0,

@@ -3,7 +3,7 @@
  * coupons that are missing from BixGrow, and manage the reconciliation loop
  * via user-claimed + pedidos.csv imports.
  *
- * Port of the BixGrow attribution sync (v0 Python; reference lives in nami-works/sandbox/gebeauty/).
+ * Port of the BixGrow attribution sync (v0 Python; reference lives in gebeauty/).
  * Does NOT extend app/affiliates/sync.server.ts — lives entirely on-demand.
  */
 import prisma from "../db.server";

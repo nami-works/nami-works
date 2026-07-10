@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import openpyxl, copy
-STD = r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\Bisyou_Impact_Model.xlsx"
-BPC = r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\GE Beauty_BP_v2026__+Bisyou.xlsx"
+STD = r"c:\claude\sandbox\bisyou\diligence\Bisyou_Impact_Model.xlsx"
+BPC = r"c:\claude\sandbox\bisyou\diligence\GE Beauty_BP_v2026__+Bisyou.xlsx"
 
 std = openpyxl.load_workbook(STD)               # the 3 built Bisyou sheets (values)
 bp  = openpyxl.load_workbook(BPC)               # the filesystem copy of the BP

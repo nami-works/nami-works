@@ -2,7 +2,7 @@
 import openpyxl
 from openpyxl.utils import get_column_letter
 PATH = r"G:\Drives compartilhados\GEB_Financeiro\Orçamento e Resultados\2026\GE Beauty_BP_v2026.xlsx"
-OUT  = r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\bisyou\diligence\_bp_macro_dump.txt"
+OUT  = r"c:\claude\sandbox\bisyou\diligence\_bp_macro_dump.txt"
 wv = openpyxl.load_workbook(PATH, data_only=True)["Macro"]
 wf = openpyxl.load_workbook(PATH, data_only=False)["Macro"]
 L=[f"DIMS {wv.dimensions} max_row={wv.max_row} max_col={wv.max_column}={get_column_letter(wv.max_column)}"]

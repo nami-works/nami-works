@@ -12,10 +12,10 @@
 ### Source 1 — canonical sandbox playbook (nami-works)
 
 The reference Beautyback specification lives at
-`nami-works/sandbox/gebeauty/actions-unlocked/issue-beautyback-cashback.md`
+`gebeauty/actions-unlocked/issue-beautyback-cashback.md`
 (action card, status `sandbox-experimental`, owner `lucas@nami.works`) with the
-implementation at `nami-works/sandbox/gebeauty/scripts/cashback_generate.py` and
-helpers at `nami-works/sandbox/gebeauty/scripts/_cashback_lib.py`.
+implementation at `gebeauty/scripts/cashback_generate.py` and
+helpers at `gebeauty/scripts/_cashback_lib.py`.
 
 **Mental model (verbatim from the playbook):**
 > Every paying customer of GE Beauty earns a personalized winback code worth
@@ -50,12 +50,12 @@ their own outreach tool (not Klaviyo through the script). This is the canonical
 "notify customer" flow.
 
 **State + idempotency:** a per-customer `state.json` at
-`nami-works/sandbox/gebeauty/state.json` (atomic write, gitignored). Customer
+`gebeauty/state.json` (atomic write, gitignored). Customer
 is processed iff their `lastOrder.id` differs from the stored value;
 previously-issued codes are best-effort `discountCodeDeactivate`'d before the
 new code is created.
 
-### Source 2 — sandbox CLAUDE.md (`nami-works/sandbox/gebeauty/CLAUDE.md:74-86`)
+### Source 2 — sandbox CLAUDE.md (`gebeauty/CLAUDE.md:74-86`)
 
 > Personalized winback codes sent to past customers. Format:
 > `BEAUTYBACK-{batchId}-{code1}-{code2}`
@@ -82,7 +82,7 @@ note.)
   15% off, no min, combines true/true/true, `endsAt` 2026-05-28. Surfaced
   as an open question because it may conflict / overlap with the Beautyback
   campaign window.
-- `state.json` exists at `nami-works/sandbox/gebeauty/state.json` but is
+- `state.json` exists at `gebeauty/state.json` but is
   **empty** — no Beautyback run has ever been issued through the v0 script.
   The 11,698-code historical cohort updated on 2026-03-29 predates the script.
 
@@ -264,7 +264,7 @@ match outreach urgency.**
 Reuse the existing `cashback_generate.py` with two invocations:
 
 ```bash
-cd C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\gebeauty
+cd c:\claude\gebeauty
 
 # Dry-run both first
 python scripts/cashback_generate.py \

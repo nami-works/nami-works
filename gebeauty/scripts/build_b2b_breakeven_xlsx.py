@@ -10,7 +10,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.utils import get_column_letter
 
-OUT = r"C:\Users\Lucas Guimarães\Desktop\nami-works\sandbox\gebeauty\B2B_Breakeven_Iguatemi.xlsx"
+OUT = r"c:\claude\gebeauty\B2B_Breakeven_Iguatemi.xlsx"
 
 # ---- palette / fonts (from BP: Calibri, brand red DF3630, red-font inputs) ----
 RED   = "FFDF3630"; WHITE = "FFFFFFFF"; INPUTC= "FFFFF2CC"; GREY = "FFF2F2F2"

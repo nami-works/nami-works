@@ -5,11 +5,11 @@
 ### Consumer vocabulary research
 - Ran two parallel research agents:
   - **Web agent** — swept Beleza na Web, Amazon.com.br, r/cabelos, Cacheia!, Acorda Bonita, Reclame Aqui, independent BR beauty blogs. Collected broader market vocabulary.
-  - **Reviews agent** — mined GE Beauty's own 1,589 verified Loox reviews from `sandbox/gebeauty/data/reviews.csv`. Extracted vocabulary by category and frequency.
+  - **Reviews agent** — mined GE Beauty's own 1,589 verified Loox reviews from `gebeauty/data/reviews.csv`. Extracted vocabulary by category and frequency.
 - Combined outputs into a single structured dictionary covering: problems, desired effects, sensory descriptors, performance language, emotional/identity language, and community slang.
 
 ### Reviews CSV
-- File moved from Downloads → `sandbox/gebeauty/data/reviews.csv`
+- File moved from Downloads → `gebeauty/data/reviews.csv`
 - 2,144 rows total; 1,589 with meaningful text content
 - Columns: id, status, rating, email, img, nickname, full_name, **review**, date, productId, **handle**, variant, verified_purchase, orderId, reply, replied_at, metaobject_handle, incentivized
 - All 5-star dominated — negative signals appear as caveats inside positive reviews, not as standalone 1–3 star entries
@@ -38,7 +38,7 @@
 ## What's pending
 
 ### Immediate
-- **Local markdown file** — The dictionary exists only in the Google Doc. A local copy at `sandbox/gebeauty/data/vocabulary-dictionary.md` was proposed but not created. Worth doing for repo-native access.
+- **Local markdown file** — The dictionary exists only in the Google Doc. A local copy at `gebeauty/data/vocabulary-dictionary.md` was proposed but not created. Worth doing for repo-native access.
 - **Claude prompt template** — Lucas approved building a self-serve prompt template so any team member can paste a brand claim and get 3 consumer-voice variations. Not built yet. This is the highest-leverage next step.
 
 ### Future
@@ -51,9 +51,9 @@
 
 | File | Status | Notes |
 |---|---|---|
-| `sandbox/gebeauty/data/reviews.csv` | Complete | Moved from Downloads; source of truth for all review-based vocabulary |
+| `gebeauty/data/reviews.csv` | Complete | Moved from Downloads; source of truth for all review-based vocabulary |
 | Google Doc (Drive) | Complete | Shareable; Lucas needs to set link permissions |
-| `sandbox/gebeauty/data/vocabulary-dictionary.md` | Not created | Proposed, not built |
+| `gebeauty/data/vocabulary-dictionary.md` | Not created | Proposed, not built |
 
 ---
 
@@ -62,15 +62,15 @@
 - No code was changed. This session was pure research + content.
 - `git diff` shows only `.mcp.json` modified (pre-existing, unrelated to this session).
 - Google Doc is live and fully populated with all 3 parts (dictionary, translations, insights).
-- `reviews.csv` is in the repo at `sandbox/gebeauty/data/reviews.csv` — not committed yet.
+- `reviews.csv` is in the repo at `gebeauty/data/reviews.csv` — not committed yet.
 
 ---
 
 ## Recommended next steps
 
-1. **Build the Claude prompt template** — A system prompt that includes the full vocabulary dictionary and translates any brand claim into 3 consumer-voice variations. File: `sandbox/gebeauty/data/copy-translator-prompt.md`. This is the daily-use interface for the team.
-2. **Save local markdown of the dictionary** — `sandbox/gebeauty/data/vocabulary-dictionary.md` as a repo-native version of the Google Doc.
-3. **Commit reviews.csv + new data/ files** — `git add sandbox/gebeauty/data/ && git commit -m "feat(gebeauty): add customer reviews + vocabulary research"`
+1. **Build the Claude prompt template** — A system prompt that includes the full vocabulary dictionary and translates any brand claim into 3 consumer-voice variations. File: `gebeauty/data/copy-translator-prompt.md`. This is the daily-use interface for the team.
+2. **Save local markdown of the dictionary** — `gebeauty/data/vocabulary-dictionary.md` as a repo-native version of the Google Doc.
+3. **Commit reviews.csv + new data/ files** — `git add gebeauty/data/ && git commit -m "feat(gebeauty): add customer reviews + vocabulary research"`
 4. **(Optional) Expand negative vocabulary** — Run a focused agent pass on Reclame Aqui for GE Beauty competitors (Salon Line, Lola, L'Oréal) to get more 1–3 star problem language.
 
 ---
@@ -100,7 +100,7 @@
 - "fica duro" — gel rigidity; consumers explicitly escape this; "maleável" is the antonym
 
 ### Data files
-- Reviews source: `sandbox/gebeauty/data/reviews.csv` (2,144 rows, Loox export)
+- Reviews source: `gebeauty/data/reviews.csv` (2,144 rows, Loox export)
 - Product with most reviews: `leave-in-com-protecao-termica-ge-beauty-150ml` (223 reviews)
 - Google Doc: `https://docs.google.com/document/d/1e6uC2y41nJ9idapTcyomAXLlBWvP77eWWYwJsH39gK8/edit`
 

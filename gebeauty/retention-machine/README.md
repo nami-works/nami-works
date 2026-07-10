@@ -20,7 +20,7 @@ Any session (or a cron) can run it cold.
 | Source | Use | Status |
 |---|---|---|
 | Shopify Admin bulk (orders + line items + customer name/phone) | purchase history, eligibility, refill timing | ready |
-| Loox Merchant API (`/product-reviews`) | who reviewed what (by `customerId`) + corpus counts | ready (creds in `sandbox/gebeauty/.env`) |
+| Loox Merchant API (`/product-reviews`) | who reviewed what (by `customerId`) + corpus counts | ready (creds in `gebeauty/.env`) |
 | Zoko engagement (delivered/read/clicked per broadcast) | Stage 1 "interacted" reminder targeting | **dependency** |
 | Shopify discount usage OR store-credit balance | Stage 2 "earned reward but unused" detection | **dependency (reward model)** |
 
