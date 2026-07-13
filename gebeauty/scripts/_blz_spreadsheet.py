@@ -34,8 +34,12 @@ LEFT = Alignment(horizontal="left", vertical="center", wrap_text=False)
 
 
 def slugify(s):
-    s = (s or "").lower()
-    return re.sub(r"[^a-z0-9]+", "-", s).strip("-")[:40]
+    import unicodedata
+    s = unicodedata.normalize("NFKD", s or "").encode("ascii", "ignore").decode("ascii")
+    s = re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
+    if len(s) > 40:
+        s = s[:40].rsplit("-", 1)[0].strip("-")
+    return s
 
 
 def counts_for(sku):

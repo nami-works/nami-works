@@ -30,9 +30,13 @@ BG = (255, 255, 255)
 
 def slugify(s: str) -> str:
     import re
-    s = (s or "").lower()
-    s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
-    return s[:40]
+    import unicodedata
+    # transliterate accents to ASCII (á->a, ê->e, ç->c) BEFORE stripping
+    s = unicodedata.normalize("NFKD", s or "").encode("ascii", "ignore").decode("ascii")
+    s = re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
+    if len(s) > 40:
+        s = s[:40].rsplit("-", 1)[0].strip("-")  # trim to last whole word, no fragment
+    return s
 
 
 def square_pad(im: Image.Image) -> Image.Image:
