@@ -1,0 +1,888 @@
+{
+ "mapped": [
+  {
+   "sku": "GEB 001",
+   "ean": "7896768471137",
+   "name": "Shampoo sem sulfato GE Beauty 250ml",
+   "handle": "shampoo-sem-sulfato",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/shampoo-sem-sulfato.png?v=1782919190",
+     "w": 1024,
+     "h": 1024,
+     "alt": "shampoo-sem-sulfato"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELSHAMPOO2.png?v=1769451653",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que o Shampoo sem sulfato GE Beauty faz?\n## Limpa profundamente sem ressecar e sem agredir o couro cabeludo\n## Refresca e renova instantaneamente os fios\n## Deixa o cabelo leve e solto"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/Slide1.jpg?v=1769451653",
+     "w": 756,
+     "h": 756,
+     "alt": "Modelo de cabelos crespos limpos e volumosos após o uso do Shampoo sem Sulfato GE Beauty"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELSHAMPOO1_840480fb-2f55-4fb2-9725-09e2ceea7c91.png?v=1769451653",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que o Shampoo sem sulfato GE Beauty tem?\n## Manteiga de murumuru: nutre e repara os fios\n## Pantenol: hidrata e fortalece a fibra capilar\n## **NÂO TEM** sulfato: limpa profundamente sem ressecar"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/Slide2.jpg?v=1769451653",
+     "w": 756,
+     "h": 756,
+     "alt": "Shampoo sem sulfato GE Beauty em foto produzida com dois de seus principais ingredientes ao fundo: flor de peônia e melão"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/POSTSHAMPOO1_1.png?v=1769451653",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Shampoo sem Sulfato GE Beauty citado pela Marie Claire: limpa sem ressecar os fios nem agredir o couro cabeludo"
+    }
+   ]
+  },
+  {
+   "sku": "GEB 002",
+   "ean": "7896768471144",
+   "name": "Máscara Condicionadora GE Beauty 200ml",
+   "handle": "mascara-condicionadora",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/mascara-condicionadora.png?v=1782919061",
+     "w": 1024,
+     "h": 1024,
+     "alt": "mascara-condicionadora"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELMASCARA2.png?v=1762295672",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que a **MÁSCARA CONDICIONADORA** GE Beauty faz?\n## Hidrata profundamente e promove maciez imediata\n## Reduz o frizz sem pesar\n## Facilita o desembaraço e protege contra danos\n## Fortalece e repara os fios fragilizados"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELMASCARA1_30196274-4efe-4f36-ae9b-51a320f7f119.png?v=1756842497",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que a Máscara Condicionadora GE Beauty tem?\n## Óleo de abacate: rico em ácidos graxos e vitaminas A, C, D e E, promove hidratação intensa e nutrição profunda. Devolve maciez e brilho.\n## Crambe: garante reposição lipídica, suavidade ao toque e redução do frizz. \n## Óleo de girassol: com ação hidratante e condicionante, previne o enfraquecimento dos fios, mantendo o cabelo macio e brilhante."
+    }
+   ]
+  },
+  {
+   "sku": "GEB 003",
+   "ean": "7896768471151",
+   "name": "Leave-in com proteção térmica GE Beauty 150ml",
+   "handle": "leave-in-com-protecao-termica",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/leave-in-com-protecao-termica.png?v=1782919036",
+     "w": 1000,
+     "h": 1000,
+     "alt": "leave-in-com-protecao-termica"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELLEAVE2_e9c2af4f-e2ec-4244-804c-4e469a6a2da0.png?v=1754421548",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que o Leave-in com proteção térmica GE Beauty faz?\n## Protege contra o calor do secador, chapinha e babyliss\n## Reduz o frizz e melhora a finalização dos fios\n## Adiciona brilho e maciez sem pesar"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELLEAVE1_9a39498e-8725-4ca7-a4d6-412e322df136.png?v=1755787635",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que o Leave-in com proteção térmica GE Beauty tem?\n## Extrato de chia: forma um filme protetor que reduz o frizz e ajuda a manter a hidratação, protegendo os fios contra a umidade.\n## Trehalose: açúcar natural que protege contra danos térmicos, preserva a umidade dentro da fibra e mantém os cabelos macios mesmo em alta umidade.\n## Proteína da seda: promove maciez e brilho extra, ajudando a suavizar a textura dos fios e deixando o cabelo mais sedoso e luminoso."
+    }
+   ]
+  },
+  {
+   "sku": "GEB 008",
+   "ean": "0630941722534",
+   "name": "Shampoo a Seco GE Beauty 150ml",
+   "handle": "shampoo-a-seco",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/shampoo-a-seco.png?v=1782919182",
+     "w": 1024,
+     "h": 1024,
+     "alt": "shampoo-a-seco"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSELSITE_SHAMPOO2.png?v=1750106566",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Benefícios do Shampoo a Seco GE Beauty: renova a limpeza em 30 segundos, controla a oleosidade e dá volume"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSELSITE_SHAMPOO.png?v=1750106566",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Ativos do Shampoo a Seco GE Beauty: biotina, algas vermelhas, mentol e pantenol"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/GRqr.jpg?v=1750106566",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Demonstração de uso do Shampoo a seco GE Beauty para refrescar o cabelo entre lavagens"
+    }
+   ]
+  },
+  {
+   "sku": "GEB 010",
+   "ean": "7896768412321",
+   "name": "Mascara Condicionadora GE Beauty 50ml",
+   "handle": "mascara-condicionadora-travel-size",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/mascara-condicionadora-travel-size.png?v=1782919069",
+     "w": 1024,
+     "h": 1024,
+     "alt": "mascara-condicionadora-travel-size"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELMASCARA2.png?v=1762295672",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que a **MÁSCARA CONDICIONADORA** GE Beauty faz?\n## Hidrata profundamente e promove maciez imediata\n## Reduz o frizz sem pesar\n## Facilita o desembaraço e protege contra danos\n## Fortalece e repara os fios fragilizados"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELMASCARA1_30196274-4efe-4f36-ae9b-51a320f7f119.png?v=1756842497",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que a Máscara Condicionadora GE Beauty tem?\n## Óleo de abacate: rico em ácidos graxos e vitaminas A, C, D e E, promove hidratação intensa e nutrição profunda. Devolve maciez e brilho.\n## Crambe: garante reposição lipídica, suavidade ao toque e redução do frizz. \n## Óleo de girassol: com ação hidratante e condicionante, previne o enfraquecimento dos fios, mantendo o cabelo macio e brilhante."
+    }
+   ]
+  },
+  {
+   "sku": "GEB 011",
+   "ean": "7896768412314",
+   "name": "Leave-in GE Beauty 50ml",
+   "handle": "leave-in-com-protecao-termica-travel-size",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/leave-in-com-protecao-termica-travel-size_65b92d85-16ed-4e41-93aa-991d18b59b22.png?v=1782919045",
+     "w": 2048,
+     "h": 2048,
+     "alt": "leave-in-com-protecao-termica-travel-size"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELLEAVE2_e9c2af4f-e2ec-4244-804c-4e469a6a2da0.png?v=1754421548",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que o Leave-in com proteção térmica GE Beauty faz?\n## Protege contra o calor do secador, chapinha e babyliss\n## Reduz o frizz e melhora a finalização dos fios\n## Adiciona brilho e maciez sem pesar"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELLEAVE1_9a39498e-8725-4ca7-a4d6-412e322df136.png?v=1755787635",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que o Leave-in com proteção térmica GE Beauty tem?\n## Extrato de chia: forma um filme protetor que reduz o frizz e ajuda a manter a hidratação, protegendo os fios contra a umidade.\n## Trehalose: açúcar natural que protege contra danos térmicos, preserva a umidade dentro da fibra e mantém os cabelos macios mesmo em alta umidade.\n## Proteína da seda: promove maciez e brilho extra, ajudando a suavizar a textura dos fios e deixando o cabelo mais sedoso e luminoso."
+    }
+   ]
+  },
+  {
+   "sku": "GEB 013",
+   "ean": "7896768412338",
+   "name": "Shampoo GE Beauty 60 ml",
+   "handle": "shampoo-sem-sulfato-travel-size",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/shampoo-sem-sulfato-travel-size.png?v=1782926226",
+     "w": 1024,
+     "h": 1024,
+     "alt": "shampoo-sem-sulfato-travel-size"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELSHAMPOO2.png?v=1769451653",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que o Shampoo sem sulfato GE Beauty faz?\n## Limpa profundamente sem ressecar e sem agredir o couro cabeludo\n## Refresca e renova instantaneamente os fios\n## Deixa o cabelo leve e solto"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELSHAMPOO1_840480fb-2f55-4fb2-9725-09e2ceea7c91.png?v=1769451653",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que o Shampoo sem sulfato GE Beauty tem?\n## Manteiga de murumuru: nutre e repara os fios\n## Pantenol: hidrata e fortalece a fibra capilar\n## **NÂO TEM** sulfato: limpa profundamente sem ressecar"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/Slide1.jpg?v=1769451653",
+     "w": 756,
+     "h": 756,
+     "alt": "Modelo de cabelos crespos limpos e volumosos após o uso do Shampoo sem Sulfato GE Beauty"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/Slide2.jpg?v=1769451653",
+     "w": 756,
+     "h": 756,
+     "alt": "Shampoo sem sulfato GE Beauty em foto produzida com dois de seus principais ingredientes ao fundo: flor de peônia e melão"
+    }
+   ]
+  },
+  {
+   "sku": "GEB 019",
+   "ean": "7896768404715",
+   "name": "Booster Fortificante GE Beauty 15ml",
+   "handle": "booster-fortificante",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/flat_booster-fortificante.png?v=1783534206",
+     "w": 1000,
+     "h": 1000,
+     "alt": "booster-fortificante"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELFORT2.png?v=1775830122",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que o **BOOSTER FORTIFICANTE** GE Beauty faz?\n## Anti queda: controla a oleosidade dos fios\n## Cuida da saúde do couro cabeludo\n## Nutre os fios prevenindo a quebra\n## Fortalece os fios"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELFORT3.png?v=1775830122",
+     "w": 908,
+     "h": 908,
+     "alt": "# Como combinar o Booster Fortificante:\n## Para limpar controlando a oleosidade: de 3 a 7 gotas no shampoo sem sulfato GE Beauty; use no mínimo 3x por semana para resultados otimizados\n## Para tratamento de nutrição intensiva: de 3 a 6 gotas na máscara condicionadora GE Beauty\n## Para finalizar com mais brilho: de 2 a 3 gotas no leave-in protetor térmico GE Beauty"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELFORT1_001b90c7-55da-40e4-9d45-903a95bd2bed.png?v=1775830122",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que o booster fortificante tem:\n## Biotina: estimula o crescimento saudável e fortalece a fibra capilar.\n## Algas vermelhas: ricas em minerais, ajudam na remineralização dos fios e aumentam a resistência.\n## Alcaçuz: ação calmante e protetora, contribui para um couro cabeludo saudável."
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/camilacoutinhoboosterfortificanteqr.jpg?v=1775830122",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Foto da influenciadora Camila Coutinho com o booster fortificante aplicado aos seus cabelos fortes e com ação anti queda"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSEL_FORT1.png?v=1775830122",
+     "w": 1080,
+     "h": 1350,
+     "alt": "Booster Fortificante GE Beauty citado pela Marie Claire: dá força aos fios e ajuda quem tem oleosidade"
+    }
+   ]
+  },
+  {
+   "sku": "GEB 020",
+   "ean": "7896768471168",
+   "name": "Booster Hidratante GE Beauty 15ml",
+   "handle": "booster-hidratante",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/flat_booster-hidratante.png?v=1783534214",
+     "w": 1000,
+     "h": 1000,
+     "alt": "booster-hidratante"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELHIDRA2.png?v=1740069159",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que o **BOOSTER HIDRATANTE** GE Beauty faz?\n## Hidrata profundamente\n## Devolve a maciez\n## Adiciona brilho intenso\n## Melhora a penteabilidade"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/Designsemnome.jpg?v=1755788396",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Infográfico sobre os benefícios do Booster hidratante GE Beauty para diferentes tipos de cabelo"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELHIDRA3.png?v=1755897844",
+     "w": 932,
+     "h": 932,
+     "alt": "Resultados do Booster hidratante GE Beauty mostrando cabelos macios e com brilho intenso"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELHIDRA1_5a37abd9-c131-4c1d-a521-bc8ac342c9bd.png?v=1755788396",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que o booster hidratante tem:\n## ÓLEO DE MACADÂMIA: Rico em ômegas, nutre profundamente e devolve maciez e elasticidade aos fios.\n## ÓLEO DE GIRASSOL: Com vitamina E, ajuda a proteger os cabelos contra ressecamento e mantém a suavidade.\n## ÓLEO DE GERGELIM: Fortalece a fibra capilar e cria um filme nutritivo, garantindo sedosidade e luminosidade."
+    }
+   ]
+  },
+  {
+   "sku": "GEB 021",
+   "ean": "7896768471182",
+   "name": "Booster Definição GE Beauty 15ml",
+   "handle": "booster-definicao",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/flat_booster-definicao.png?v=1783534223",
+     "w": 1000,
+     "h": 1000,
+     "alt": "booster-definicao"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELDEFINICAO3.png?v=1755897892",
+     "w": 832,
+     "h": 832,
+     "alt": "Resultados do Booster definição GE Beauty mostrando cachos bem definidos e com movimento"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELDEFINICAO1_9835eb2c-80e3-4839-9c2e-97c02ffb6b79.png?v=1755788089",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que o booster definição tem:\n## CHIA: rica em polissacarídeos, ajuda a manter os cachos definidos por mais tempo e reduz o frizz.\n## LINHAÇA: Proporciona resistência e flexibilidade aos fios, formando um filme que mantém ondas e cachos naturais.\n## VITAMINAS E MINERAIS: fortalecem a fibra capilar, promovendo brilho, maciez e aparência saudável dos cabelos."
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELDEFINICAO2_1d7ab4a1-04eb-4f7e-ab4c-e93b0ccf97b7.png?v=1744126392",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Aplicação do Booster definição GE Beauty em cabelos cacheados para definição perfeita"
+    }
+   ]
+  },
+  {
+   "sku": "GEB 022",
+   "ean": "7896768412703",
+   "name": "Booster Antifrizz GE Beauty 15ml",
+   "handle": "booster-antifrizz",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/booster-antifrizz.png?v=1782918753",
+     "w": 1562,
+     "h": 1562,
+     "alt": "booster-antifrizz"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/antes-e-depois_booster-antifrizz_giovanna-marini.png?v=1765899872",
+     "w": 1080,
+     "h": 1350,
+     "alt": "Composição criativa do Booster antifrizz GE Beauty destacando benefícios e modo de uso"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELANTI3_9451ac0e-b392-42d3-8281-8788be0982f8.png?v=1755897801",
+     "w": 934,
+     "h": 934,
+     "alt": "Resultados do Booster antifrizz GE Beauty mostrando cabelos lisos e sem frizz"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELANTI2_a903d384-e25f-4784-bf94-1b43f8230616.png?v=1742578801",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Aplicação do Booster antifrizz GE Beauty em cabelos cacheados para controle de volume"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELANTI1_dc0bb218-98f7-4063-9c29-6f9a00710bba.png?v=1742578801",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Fórmula exclusiva do Booster antifrizz GE Beauty com ingredientes naturais brasileiros"
+    }
+   ]
+  },
+  {
+   "sku": "GEB 023",
+   "ean": "7896768471175",
+   "name": "Booster Antioxidante GE Beauty 15ml",
+   "handle": "booster-antioxidante",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/flat2_booster-antioxidante.png?v=1783534231",
+     "w": 1000,
+     "h": 1000,
+     "alt": "booster-antioxidante"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELANTI2.png?v=1740063561",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que o **BOOSTER ANTIOXIDANTE** GE Beauty faz?\n## Proteção solar: protege contra os danos dos raios UV\n## Previne o desbotamento e a oxidação da cor\n## Preserva a hidratação natural do cabelo\n## Acalma o couro cabeludo"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELANTI1_dc261080-fd3c-4065-9c32-bb1e414a3dd5.png?v=1755788467",
+     "w": 1000,
+     "h": 1000,
+     "alt": "# O que o booster antioxidante tem:\n## Chá verde: rico em antioxidantes, protege contra agressões externas e mantém os fios saudáveis.\n## Pantenol: hidrata profundamente, fortalece a fibra capilar e melhora a maleabilidade.\n## Xilitol: ajuda a reequilibrar o couro cabeludo, mantendo a saúde dos fios e prevenindo o ressecamento."
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELANTI3.png?v=1755897942",
+     "w": 852,
+     "h": 852,
+     "alt": "# Como combinar o Booster Antioxidante:\n## Para acalmar o couro cabeludo sensível: de 3 a 7 gotas no shampoo sem sulfato GE Beauty\n## Para nutrir e proteger a vitalidade do fio: de 2 a 6 gotas na máscara condicionadora GE Beauty\n## Para proteger dos raios UV e do desbotamento da cor: de 2 a 3 gotas no leave-in protetor térmico GE Beauty"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/fiorellacomantioxidante.jpg?v=1740064066",
+     "w": 701,
+     "h": 701,
+     "alt": "Foto da atriz Fiorella Matheis com o booster antioxidante aplicado aos seus cabelos loiros, com proteção solar e ação antioxidante ativadas"
+    }
+   ]
+  },
+  {
+   "sku": "GEB 024",
+   "ean": "0042882635451",
+   "name": "Body Hair Mist Melon Mood GE Beauty 200ml",
+   "handle": "melon-mood-body-hair-mist",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/melon-mood-body-hair-mist.png?v=1782919077",
+     "w": 1024,
+     "h": 1024,
+     "alt": "melon-mood-body-hair-mist"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/o-que-faz_melon-mood.png?v=1770401250",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Benefícios do Melon Mood Body & Hair Mist GE Beauty: perfuma cabelo e corpo, sela as cutículas e hidrata a pele por até 72h"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/ksp_melon-mood.png?v=1770401250",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Ativos vegetais do Melon Mood GE Beauty que selam as cutículas e promovem hidratação por até 72 horas"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/POSTBHS1_1.png?v=1769451555",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Melon Mood GE Beauty citado pela ELLE Brasil: cheirinho de melão inconfundível que ainda hidrata os fios"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/ge-49023.jpg?v=1770401250",
+     "w": 4085,
+     "h": 4085,
+     "alt": "Melon Mood Body & Hair Mist GE Beauty mergulhado em água com flor de peônia e fatias de melão"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/ge-48902.jpg?v=1770401250",
+     "w": 4000,
+     "h": 4000,
+     "alt": "Melon Mood GE Beauty em spray, demonstrando a bruma perfumada para cabelo e corpo"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/ge-48917.png?v=1782750045",
+     "w": 1600,
+     "h": 1600,
+     "alt": "melon mood 200ml"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/ge-48931.png?v=1782750045",
+     "w": 1600,
+     "h": 1600,
+     "alt": "melon mood 200ml"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/ge-48960.png?v=1782750045",
+     "w": 1600,
+     "h": 1600,
+     "alt": "melon mood 200ml"
+    }
+   ]
+  },
+  {
+   "sku": "GEB 032",
+   "ean": "0631911748226",
+   "name": "Body Hair Mist Rose Ritual GE Beauty 200ml",
+   "handle": "rose-ritual-body-hair-mist",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/rose-ritual-body-hair-mist_4770fc4d-0616-4906-a422-276b120cbdb9.png?v=1782931943",
+     "w": 2500,
+     "h": 2500,
+     "alt": "rose-ritual-body-hair-mist"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/sq_rose-ritual_1811.png?v=1783086165",
+     "w": 2048,
+     "h": 2048,
+     "alt": "Rose Ritual Body & Hair Mist GE Beauty, bruma perfumada de rosas para cabelo e corpo"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/sq_rose-ritual_1812.png?v=1782260717",
+     "w": 1856,
+     "h": 1856,
+     "alt": "Rose Ritual Body & Hair Mist GE Beauty, bruma perfumada de rosas para cabelo e corpo"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/sq_rose-ritual_1813.png?v=1782260717",
+     "w": 1696,
+     "h": 1696,
+     "alt": "Rose Ritual Body & Hair Mist GE Beauty, bruma perfumada de rosas para cabelo e corpo"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/sq_rose-ritual_1814.png?v=1782260720",
+     "w": 1856,
+     "h": 1856,
+     "alt": "Rose Ritual Body & Hair Mist GE Beauty, bruma perfumada de rosas para cabelo e corpo"
+    }
+   ]
+  },
+  {
+   "sku": "GEB 033",
+   "ean": "0631911748219",
+   "name": "Body Hair Mist Pear Fresh GE Beauty 200ml",
+   "handle": "pear-fresh-body-hair-mist",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/pear-fresh-body-hair-mist_7fac9240-0c4f-4f8a-9413-86b2263df9fe.png?v=1782931951",
+     "w": 2500,
+     "h": 2500,
+     "alt": "pear-fresh-body-hair-mist"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/sq_pear-fresh_1781.png?v=1782260727",
+     "w": 1792,
+     "h": 1792,
+     "alt": "Pear Fresh Body & Hair Mist GE Beauty, bruma perfumada de pera para cabelo e corpo"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/sq_pear-fresh_1782.png?v=1782260727",
+     "w": 1856,
+     "h": 1856,
+     "alt": "Pear Fresh Body & Hair Mist GE Beauty, bruma perfumada de pera para cabelo e corpo"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/sq_pear-fresh_1783.png?v=1782260726",
+     "w": 1696,
+     "h": 1696,
+     "alt": "Pear Fresh Body & Hair Mist GE Beauty, bruma perfumada de pera para cabelo e corpo"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/sq_pear-fresh_1784.png?v=1782260728",
+     "w": 1757,
+     "h": 1757,
+     "alt": "Pear Fresh Body & Hair Mist GE Beauty, bruma perfumada de pera para cabelo e corpo"
+    }
+   ]
+  },
+  {
+   "sku": "GEB 031",
+   "ean": "0631911748233",
+   "name": "Body Hair Mist Santal Skin GE Beauty 200ml",
+   "handle": "santal-skin-body-hair-mist",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/santal-skin-body-hair-mist_a778bf17-cb44-4f45-a5ac-bae98c34633a.png?v=1782931958",
+     "w": 2500,
+     "h": 2500,
+     "alt": "santal-skin-body-hair-mist"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/sq_santal-skin_1911.png?v=1782260936",
+     "w": 1792,
+     "h": 1792,
+     "alt": "Santal Skin Body & Hair Mist GE Beauty, bruma amadeirada para cabelo e corpo"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/sq_santal-skin_1912.png?v=1782260936",
+     "w": 1856,
+     "h": 1856,
+     "alt": "Santal Skin Body & Hair Mist GE Beauty, bruma amadeirada para cabelo e corpo"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/sq_santal-skin_1913.png?v=1782260936",
+     "w": 1856,
+     "h": 1856,
+     "alt": "Santal Skin Body & Hair Mist GE Beauty, bruma amadeirada para cabelo e corpo"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/sq_santal-skin_1914.png?v=1782260936",
+     "w": 1696,
+     "h": 1696,
+     "alt": "Santal Skin Body & Hair Mist GE Beauty, bruma amadeirada para cabelo e corpo"
+    }
+   ]
+  },
+  {
+   "sku": "GEB 029",
+   "ean": "0631911620805",
+   "name": "Melon Mood Mini Body & Hair Mist",
+   "handle": "melon-mood-body-hair-mist-travel-size",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/melon-mood-body-hair-mist-travel-size.png?v=1782919085",
+     "w": 1024,
+     "h": 1024,
+     "alt": "melon-mood-body-hair-mist-travel-size"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/melon-mood_travel-size_2.png?v=1782750058",
+     "w": 2048,
+     "h": 2048,
+     "alt": "melon mood travel size"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELSITE_BHSMINI1_1.png?v=1776708533",
+     "w": 1000,
+     "h": 1000,
+     "alt": ""
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELSITE_BHSMINI2.png?v=1776708533",
+     "w": 1000,
+     "h": 1000,
+     "alt": ""
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELSITE_BHSMINI3.png?v=1776708533",
+     "w": 1000,
+     "h": 1000,
+     "alt": ""
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/melon-mood_travel-size_1.png?v=1782750057",
+     "w": 2048,
+     "h": 2048,
+     "alt": "melon mood travel size"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/melon-mood_travel-size_3.png?v=1782750057",
+     "w": 2048,
+     "h": 2048,
+     "alt": "melon mood travel size"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/melon-mood_travel-size_1.jpg?v=1782750057",
+     "w": 2048,
+     "h": 2048,
+     "alt": "melon mood travel size"
+    }
+   ]
+  },
+  {
+   "sku": "GEB 101",
+   "ean": "0070341871478",
+   "name": "Primer Cachos Definidos GE Beauty 250ml",
+   "handle": "primer-cachos-definidos",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/primer-cachos-definidos.png?v=1782919142",
+     "w": 1024,
+     "h": 1024,
+     "alt": "primer-cachos-definidos"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/review_primer-cachos_giovanna-marini.png?v=1768940002",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Benefícios do Primer cachos definidos GE Beauty para diferentes tipos de cachos"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/antes-e-depois_primer-cachos_camila-coutinho.png?v=1768940002",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Resultados do Primer cachos definidos GE Beauty mostrando cachos bem definidos e sem frizz"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/o-que-faz_primer-cachos.png?v=1768940002",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Aplicação do Primer cachos definidos GE Beauty em cabelos cacheados para definição"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELSITE2.1_1.png?v=1768940002",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Fórmula do Primer cachos definidos GE Beauty com ativos que definem e modelam os cachos"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/POST_ELLE.png?v=1768940002",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Primer Cachos Definidos GE Beauty citado pela ELLE Brasil: mantém os cachos definidos no dia a dia"
+    }
+   ]
+  },
+  {
+   "sku": "GEB 102",
+   "ean": "0074468261297",
+   "name": "Primer Liso Intacto GE Beauty 150ml",
+   "handle": "primer-liso-intacto",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/primer-liso-intacto.png?v=1782919150",
+     "w": 1024,
+     "h": 1024,
+     "alt": "primer-liso-intacto"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/review_primer-liso_terena-patrick.png?v=1772137224",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Benefícios do Primer liso intacto GE Beauty para proteção contra umidade e frizz"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/review_primer-liso_isabela-quinet.png?v=1772137224",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Resultados do Primer liso intacto GE Beauty mostrando cabelos lisos e brilhantes"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELSITE2.png?v=1772137224",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Aplicação do Primer liso intacto GE Beauty antes da escova para proteção contra o calor"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSELSITE1_1.png?v=1772137224",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Fórmula do Primer liso intacto GE Beauty com tecnologia anti-frizz para cabelos lisos"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSEL_STL1.png?v=1772137224",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Primer Liso Intacto GE Beauty citado pela Steal The Look: controla o frizz mesmo em tempo úmido e nublado"
+    }
+   ]
+  },
+  {
+   "sku": "GEB 120",
+   "ean": "0631430152719",
+   "name": "Leave-in Pluma GE Beauty 200ml",
+   "handle": "leave-in-pluma",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/leave-in-pluma.png?v=1782919053",
+     "w": 1024,
+     "h": 1024,
+     "alt": "leave-in-pluma"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSELSITE_PLUMA2_a16593c6-16a2-4840-b824-f4340806ceb8.png?v=1754421829",
+     "w": 1000,
+     "h": 1000,
+     "alt": "O que o leave-in pluma GE Beauty faz?\nEle reconstrói os fios e fortalece a fibra capilar\nHidrata sem pesar, com toque leve e sedoso\nIntensifica o brilho e melhora a penteabilidade\nProtege contra danos térmicos de até 230ºC"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSELSITE_PLUMA.png?v=1756157500",
+     "w": 1000,
+     "h": 1000,
+     "alt": "O que o leave-in pluma GE Beauty contém?\nPantenol: fortalece a estrutura interna dos fios, melhorando a maleabilidade e deixando o cabelo mais resistente e saudável\nArginina: sela as cutículoas, promovendo brilho e maciez, além de ajudar na proteção contra agressões externas\nÓleo de girassol: oferece hidratação profunda e ação condicionante, prevenindo o enfraquecimento e contribuindo para fios mais nutridos e sedosos"
+    }
+   ]
+  },
+  {
+   "sku": "GEB 121",
+   "ean": "0042882635116",
+   "name": "MÁSCARA RECONSTRUTORA MAYDAY GE Beauty (200ml)",
+   "handle": "mascara-mayday",
+   "type": "product",
+   "status": "ACTIVE",
+   "imgs": [
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/hero_fixed_mascara-mayday.png?v=1782914707",
+     "w": 1000,
+     "h": 1000,
+     "alt": "mascara-mayday hero"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/o-que-faz_mayday.png?v=1765900982",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Benefícios da Máscara Mayday GE Beauty: reconstrói massa e lipídios, restaura danos e devolve força aos fios"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/CARROSSEL_MAYDAY2_2.png?v=1765309663",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Ativos da Máscara Mayday GE Beauty: arginina, D-pantenol, óleo de abacate e óleo de girassol"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/ge-52236.jpg?v=1765309663",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Textura da Máscara Mayday GE Beauty, creme reconstrutor branco no pote vermelho aberto"
+    },
+    {
+     "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/ge-52226.jpg?v=1765309663",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Máscara Mayday GE Beauty, pote fechado do tratamento de reconstrução profunda 200ml"
+    }
+   ]
+  }
+ ],
+ "unmapped": [
+  {
+   "sku": "GEB 122",
+   "ean": "0631430720338",
+   "name": "SHAMPOO RECONSTRUTOR MAYDAY GE Beauty",
+   "reason": "no Shopify barcode match"
+  },
+  {
+   "sku": "GEB 123",
+   "ean": "0631430720345",
+   "name": "CONDICIONADOR RECONSTRUTOR MAYDAY GE Beauty",
+   "reason": "no Shopify barcode match"
+  },
+  {
+   "sku": "GEB 124",
+   "ean": "0631430720352",
+   "name": "LEAVE-IN RECONSTRUTOR MAYDAY GE Beauty",
+   "reason": "no Shopify barcode match"
+  },
+  {
+   "sku": "GEB 125",
+   "ean": null,
+   "name": "KIT RECONSTRUÇÃO MAYDAY",
+   "reason": "no EAN"
+  },
+  {
+   "sku": "GEB 126",
+   "ean": null,
+   "name": "Sérum Reparador Noturno MayDay",
+   "reason": "no EAN"
+  },
+  {
+   "sku": "GEB 301",
+   "ean": null,
+   "name": "SACHÊ SHAMPOO GE BEAUTY 15ml",
+   "reason": "no EAN"
+  },
+  {
+   "sku": "GEB 302",
+   "ean": null,
+   "name": "SACHÊ MASCARA CONDICIONADORA GE BEAUTY 15ml",
+   "reason": "no EAN"
+  },
+  {
+   "sku": "GEB 303",
+   "ean": null,
+   "name": "SACHÊ LEAVE-IN GE BEAUTY 15ml",
+   "reason": "no EAN"
+  }
+ ]
+}
