@@ -7,7 +7,7 @@ priority: high
 created: 2026-06-23
 target: null
 current_phase: 1-sephora-registry-gaps
-next_blocker: "Sephora: registry gaps (Anvisa 20 SKUs/Raphael, ICMS-ST+Ponto Inflamação/fiscal, Canal+Vendor+Nro Lojas/buyer). Drogaria Iguatemi: counter-proposal pending (Lucas) — 40% margin + ~R$145-150k trade breaks even at ~R$7k sell-out/loja/mês."
+next_blocker: "Sephora: CSV refreshed 2026-07-14 — all internal fields filled; remaining gaps external-owner (Anvisa 19 SKUs/Raphael, ICMS%+IPI%/contador, B2B price 9 new SKUs + dates + ativação/Lucas, Canal+Vendor+SAP+Markup/buyer). 2 confirms: GEB 111 discontinued? GEB 122/123/124 in offer before go-live? Full list: gebeauty/sephora/sephora_gaps.md. Drogaria Iguatemi: counter-proposal pending (Lucas) — 40% margin + ~R$145-150k trade breaks even at ~R$7k sell-out/loja/mês."
 next_owner: lucas
 stakeholders:
   - GE Beauty
@@ -86,8 +86,19 @@ channels**; only the per-deal terms change. Built this way for Drogaria Iguatemi
 
 ## Sephora registry tooling
 
-`gebeauty/sephora/sephora_mapper.py` — reads products.json → Sephora CADASTROS CSV
-`gebeauty/sephora/sephora_cadastro.csv` — 27 rows, gaps marked [PENDENTE]
+`gebeauty/sephora/sephora_mapper.py` — reads products.json + sephora_enrich.json → CADASTROS CSV
+`gebeauty/sephora/fetch_enrich.py` — pulls featured image + grounded store description per SKU
+`gebeauty/sephora/sephora_cadastro.csv` — 26 rows (24 produtos + 2 acessórios), gaps [PENDENTE]
+`gebeauty/sephora/sephora_gaps.md` — owner-assigned punch list (regenerated 2026-07-14)
+
+### 2026-07-14 refresh (resumed after 3-week stall)
+- Reconciled CSV to live catalog: **Mist line renumbered** 025/026/027 → 032/033/031 (same EANs);
+  **GEB 111 (Charm Bag) dropped** from catalog — confirm discontinued vs JSON gap.
+- **GEB 122/123/124 (Mayday shampoo/cond/leave-in) not yet published on Shopify** — no image/desc;
+  confirm whether they enter the Sephora offer now or wait for go-live.
+- Auto-filled from live store / known facts: Descrição do Item (grounded), Link Imagem, Volumetria,
+  Nome SAP EN, Validade Anvisa (3 anos all), Ponto de Inflamação (N/A for non-flammable; only
+  GEB 008 aerosol pending FISPQ). Remaining gaps are all external-owner (see gaps.md).
 
 Template in Drive: CADASTROS NOVOS - SEPHORA - 2026.xlsx (`1m5UHVFLbWhToN0uZrw-ngxIZNWnh2Aq9`)
 Sephora folder (B2B Drive): `1vxTr2nm5bztebDz4qOOtizCwiLgDQcaM`
@@ -96,10 +107,13 @@ Sephora folder (B2B Drive): `1vxTr2nm5bztebDz4qOOtizCwiLgDQcaM`
 
 | Gap | Owner | Notes |
 |-----|-------|-------|
-| Anvisa process numbers — 20 SKUs | Raphael/ops | Known for GEB003/008/010/013/022 only |
-| ICMS-ST%, Ponto de Inflamação | Fiscal team (accountant) | Needed for all rows |
-| Canal, Nro Lojas, Vendor | Sephora buyer | Commercial setup — happens after initial contact |
-| Sell-in price — 10 SKUs | Lucas | Mist line + Mayday line: no B2B price established yet |
+| Anvisa process numbers — 19 SKUs | Raphael/ops | Known for GEB003/008/010/013/022 only |
+| Aliq ICMS %, IPI %, Ponto Inflamação (GEB008 aerosol) | Fiscal team (accountant) | ICMS interestadual; Custo C/IPI + Total derivam do IPI |
+| Canal, Nro Lojas, Vendor, SAP Code, Markup | Sephora buyer | Commercial setup — after initial contact |
+| Sell-in price — 9 SKUs | Lucas | Mist (024/029/031/032/033) + Mayday (121/122/123/124) |
+
+> **Note (2026-07-14):** map above updated after CSV refresh. Descrição, imagem, volumetria, SAP
+> EN, validade Anvisa, e Ponto de Inflamação (não-inflamáveis) já preenchidos automaticamente.
 
 Sell-in for the 15 original haircare SKUs: available from B2B cadastro (35% margin basis).
 Confirm with Lucas whether to use those as the Sephora opening offer or set different terms.

@@ -18,8 +18,27 @@ from pathlib import Path
 HERE   = Path(__file__).resolve().parent
 PRODUCTS_JSON = HERE.parent / "products.json"
 OUT_CSV       = HERE / "sephora_cadastro.csv"
+ENRICH_JSON   = HERE / "sephora_enrich.json"   # images + grounded store descriptions
 
 GAP = "[PENDENTE]"
+
+# Enrichment pulled from the LIVE Shopify store (fetch_sephora_enrich.py):
+#   img_by_sku/barcode  — featured image URL
+#   desc_by_sku/barcode — first-sentence store description (grounded, anti-hallucination)
+try:
+    _ENRICH = json.loads(ENRICH_JSON.read_text(encoding="utf-8"))
+except FileNotFoundError:
+    _ENRICH = {"img_by_sku": {}, "img_by_barcode": {}, "desc_by_sku": {}, "desc_by_barcode": {}}
+
+
+def _enrich_lookup(table_sku, table_bc, sku, ean):
+    """Resolve an enrichment value by SKU, then EAN (with/without leading zeros)."""
+    t_sku = _ENRICH.get(table_sku, {})
+    t_bc  = _ENRICH.get(table_bc, {})
+    if sku in t_sku:
+        return t_sku[sku]
+    ean = str(ean or "")
+    return t_bc.get(ean) or t_bc.get(ean.lstrip("0")) or None
 
 # ---------------------------------------------------------------------------
 # Sell-in prices — GE Beauty_Cadastro de produtos B2B.xlsx (Drive, Aug 2025)
@@ -74,9 +93,10 @@ SAP_NAMES_EN = {
     "GEB 022": "ANTI-FRIZZ BOOSTER 15ML",
     "GEB 023": "ANTIOXIDANT BOOSTER 15ML",
     "GEB 024": "MELON MOOD BODY HAIR MIST 200ML",
-    "GEB 025": "ROSE RITUAL BODY HAIR MIST 200ML",
-    "GEB 026": "PEAR FRESH BODY HAIR MIST 200ML",
-    "GEB 027": "SANTAL SKIN BODY HAIR MIST 200ML",
+    # Mist line renumbered 2026-07 (was 025/026/027, same EANs)
+    "GEB 031": "SANTAL SKIN BODY HAIR MIST 200ML",
+    "GEB 032": "ROSE RITUAL BODY HAIR MIST 200ML",
+    "GEB 033": "PEAR FRESH BODY HAIR MIST 200ML",
     "GEB 029": "MELON MOOD MINI BODY HAIR MIST",
     "GEB 101": "CURL DEFINING PRIMER 250ML",
     "GEB 102": "STRAIGHT HAIR PRIMER 150ML",
@@ -186,8 +206,9 @@ def brl(v):
 
 
 def vol_from_name(name_pt):
+    n = name_pt.lower().replace(" ml", "ml")   # catch "60 ml"
     for v in ["250ml", "200ml", "150ml", "100ml", "60ml", "50ml", "15ml"]:
-        if v in name_pt.lower():
+        if v in n:
             return v.upper()
     return GAP
 
@@ -205,6 +226,14 @@ def map_row(p, category="CABELO"):
     # Shampoo a Seco (GEB 008) is aerosol — ONU 1950; others 0
     is_aerosol = "seco" in p.get("name_pt", "").lower()
     onu = "1950" if is_aerosol else "0"
+    # Ponto de inflamação: só se aplica a aerossol/inflamável (ONU != 0).
+    # Não-inflamáveis (ONU 0) = N/A; aerossol fica pendente (FISPQ/fiscal).
+    ponto_inflamacao = GAP if is_aerosol else "N/A"
+
+    ean = p.get("ean")
+    img  = _enrich_lookup("img_by_sku", "img_by_barcode", sku, ean) or GAP
+    desc = (_enrich_lookup("desc_by_sku", "desc_by_barcode", sku, ean)
+            or p.get("description_short_pt") or GAP)
 
     return {
         "STATUS":                    "NOK",
@@ -217,7 +246,7 @@ def map_row(p, category="CABELO"):
         "Fornecedor":                "GE COSMETICOS LTDA",
         "Nome Produto (Site)":       p.get("name_pt", GAP),
         "Submarca":                  "",
-        "Descricao do Item":         p.get("description_short_pt") or GAP,
+        "Descricao do Item":         desc,
         "Nome SAP (ingles, max 40)": sap_en,
         "Qtd Chars SAP":             len(sap_en) if sap_en != GAP else GAP,
         "Volumetria (max 5)":        vol,
@@ -226,7 +255,7 @@ def map_row(p, category="CABELO"):
         "Largura MM":                dim.get("w", GAP),
         "Altura MM":                 dim.get("h", GAP),
         "Codigo ONU":                onu,
-        "Ponto Inflamacao":          GAP,         # fiscal team
+        "Ponto Inflamacao":          ponto_inflamacao,  # N/A p/ ONU 0; aerossol pendente (FISPQ)
         "Pais Origem":               "BRA",
         "Codigo HS / NCM":           p.get("ncm", GAP),
         "Faturado em Pack":          "NAO",
@@ -253,17 +282,20 @@ def map_row(p, category="CABELO"):
         "Status (ONE SHOT / ATIVO)": "ATIVO",
         "Data Lancamento Retail":    GAP,
         "Data Lancamento Dotcom":    GAP,
-        "Link Imagem":               GAP,
+        "Link Imagem":               img,
         "Item Exclusivo":            "NAO",
         "Foco Ativacao":             GAP,
         "Anvisa Processo":           anvisa,
-        "Anvisa Validade Produto":   "3 anos a partir da fabricação" if anvisa != GAP else GAP,
+        # Validade padrão GE Beauty = 3 anos (shelf_life_days 1095) para todo produto
+        "Anvisa Validade Produto":   "3 anos a partir da fabricação",
     }
 
 
 def map_accessory(a):
     sap = a["sap_en"]
     d   = a.get("dimensions_mm") or {}
+    img  = _enrich_lookup("img_by_sku", "img_by_barcode", a["sku"], a.get("ean")) or GAP
+    desc = _enrich_lookup("desc_by_sku", "desc_by_barcode", a["sku"], a.get("ean")) or GAP
     return {
         "STATUS":                    "NOK",
         "Tipo":                      "PRODUTO",
@@ -275,7 +307,7 @@ def map_accessory(a):
         "Fornecedor":                "GE COSMETICOS LTDA",
         "Nome Produto (Site)":       a["name_pt"],
         "Submarca":                  "",
-        "Descricao do Item":         GAP,
+        "Descricao do Item":         desc,
         "Nome SAP (ingles, max 40)": sap,
         "Qtd Chars SAP":             len(sap),
         "Volumetria (max 5)":        GAP,
@@ -311,7 +343,7 @@ def map_accessory(a):
         "Status (ONE SHOT / ATIVO)": "ATIVO",
         "Data Lancamento Retail":    GAP,
         "Data Lancamento Dotcom":    GAP,
-        "Link Imagem":               GAP,
+        "Link Imagem":               img,
         "Item Exclusivo":            "NAO",
         "Foco Ativacao":             GAP,
         "Anvisa Processo":           "N/A",
@@ -333,9 +365,9 @@ def gap_report(rows):
         gaps = [c for c in COLS if r.get(c) == GAP]
         crit = [c for c in gaps if c in critical]
         if not gaps:
-            print(f"  {sku:<10} ✓  completo (campos opcionais pendentes)")
+            print(f"  {sku:<10} OK  completo (campos opcionais pendentes)")
         else:
-            flag = "⚠ CRITICO" if crit else "  info"
+            flag = "!! CRITICO" if crit else "   info"
             print(f"  {sku:<10} {flag}  gaps={len(gaps)}  críticos: {crit or 'nenhum'}")
 
     print()
