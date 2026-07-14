@@ -17,6 +17,7 @@ export const TOOL_TITLES: Record<string, string> = {
 
   // --- Conteúdo (voz da marca) ---
   brand_tone_current: "Conteúdo · Tom de voz da marca",
+  brand_creative_producer: "Conteúdo · Produtor de criativos",
   loox_list_reviews: "Loox · Avaliações de clientes",
   instagram_voice_card_current: "Conteúdo · Cartão de voz (Instagram)", // disabled: merged into brand_tone_current
 
