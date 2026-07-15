@@ -31,7 +31,7 @@ NAV='<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fi
 ARROW='<svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 4l8 8-8 8V4z"/></svg>'
 
 STYLE='''<style>
-.gebpf{--ge-red:#DF372F;--ge-red-dark:#c12d26;--ink:#161616;--muted:#6b6b6b;--line:#ececec;color:var(--ink)}
+.gebpf{--ge-red:#DF3630;--ge-red-dark:#c12d26;--ink:#161616;--muted:#6b6b6b;--line:#ececec;color:var(--ink)}
 .gebpf *{box-sizing:border-box}
 .gebpf-h1{font-size:clamp(30px,5vw,46px);font-weight:800;letter-spacing:-.02em;line-height:1.05;margin:0 0 10px}
 .gebpf-h2{font-size:clamp(17px,2.4vw,22px);font-weight:500;color:var(--muted);margin:0 0 4px}

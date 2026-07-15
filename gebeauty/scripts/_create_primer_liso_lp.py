@@ -122,7 +122,7 @@ BENE_CHIPS = ''.join(f'<li>{b}</li>' for b in PROD['beneficios'] if b)
 SAIBA = ''.join(f'<p>{ln.strip()}</p>' for ln in PROD['tab_saiba_mais'].split('\n') if ln.strip())
 
 STYLE = '''<style>
-.gepl{--ge-red:#DF372F;--ge-red-dark:#c12d26;--ink:#161616;--muted:#6b6b6b;--line:#ececec;--soft:#fbe9e8;color:var(--ink);max-width:720px;margin:0 auto;font-family:'Helvetica Neue',Arial,sans-serif}
+.gepl{--ge-red:#DF3630;--ge-red-dark:#c12d26;--ink:#161616;--muted:#6b6b6b;--line:#ececec;--soft:#fbe9e8;color:var(--ink);max-width:720px;margin:0 auto;font-family:'Helvetica Neue',Arial,sans-serif}
 .gepl *{box-sizing:border-box}
 .gepl-sec{padding:34px 20px}
 .gepl-hero{padding:0 0 8px}
@@ -144,7 +144,7 @@ STYLE = '''<style>
 .gepl-micro{font-size:12.5px;color:var(--muted);margin:4px 0 0}
 .gepl-bene{list-style:none;padding:0;margin:16px 0 0;display:flex;flex-direction:column;gap:10px}
 .gepl-bene li{display:flex;gap:10px;align-items:flex-start;font-size:15px;font-weight:600}
-.gepl-bene li::before{content:"";flex:none;width:20px;height:20px;border-radius:50%;background:var(--soft);background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><path fill=%22%23DF372F%22 d=%22M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z%22/></svg>');background-repeat:no-repeat;background-position:center;background-size:14px;margin-top:1px}
+.gepl-bene li::before{content:"";flex:none;width:20px;height:20px;border-radius:50%;background:var(--soft);background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><path fill=%22%23DF3630%22 d=%22M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z%22/></svg>');background-repeat:no-repeat;background-position:center;background-size:14px;margin-top:1px}
 .gepl-soft{background:var(--soft)}
 .gepl-cols{display:flex;flex-direction:column;gap:14px;margin-top:16px}
 .gepl-col{border:1px solid var(--line);border-radius:14px;padding:16px}

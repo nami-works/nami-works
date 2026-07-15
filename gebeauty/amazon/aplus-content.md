@@ -1,6 +1,6 @@
 # GE Beauty — Amazon A+ Content (copy + module specs)
 
-Reusable A+ module system for Vendor Central A+ Content Manager. Brand voice: no em dashes, ingredient-as-proof (name the active bound to its benefit), idiomatic pt-BR, tagline `no seu tempo, do seu jeito.`, soft CTAs, benefit-only (no medical claims). Ground: off-white `#F4F1EC` (or GE `#ecede9`), accent GE Red `#DF372F`.
+Reusable A+ module system for Vendor Central A+ Content Manager. Brand voice: no em dashes, ingredient-as-proof (name the active bound to its benefit), idiomatic pt-BR, tagline `no seu tempo, do seu jeito.`, soft CTAs, benefit-only (no medical claims). Ground: off-white `#F4F1EC` (or GE `#ecede9`), accent GE Red `#DF3630`.
 
 Tracked by initiative `gebeauty-amazon-account` (phase 4). Approval-gated: Lucas approves copy → cto generates module images → publish.
 

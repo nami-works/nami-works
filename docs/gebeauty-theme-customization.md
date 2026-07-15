@@ -12,7 +12,7 @@ How to customize the GE Beauty Shopify theme fast and safely, without re-derivin
 ## 1. Theme facts / design tokens
 - Dawn-derived theme. **`1rem = 10px`**.
 - CSS custom properties (on `:root`): **`--buttons-radius: 40px`** (pill), product card corner radius **`20px`** (`2.0rem`), **`--inputs-radius: 0px`** (square).
-- Brand: GE Red `#DF372F`; beige card background `#ecede9`; font **Italian Plate No1** (+ Mono variant).
+- Brand: GE Red `#DF3630`; beige card background `#ecede9`; font **Italian Plate No1** (+ Mono variant).
 - The buy button is a pill whose **red fill is a separate layer from its 1px `::after` ring** — keep their `border-radius` equal or you get a "dent" (a transparent crescent) at the rounded corners.
 
 ## 2. Asset API workflow

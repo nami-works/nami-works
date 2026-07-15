@@ -377,7 +377,7 @@ def build_html(rows, args, logo_b64, logo_mime, thumbs, client_legal, client_dis
 
   /* ── Header ── */
   .doc-header {{
-    background: #DF372F;
+    background: #DF3630;
     padding: 18px 48px 16px;
     display: flex;
     justify-content: space-between;
@@ -468,7 +468,7 @@ def build_html(rows, args, logo_b64, logo_mime, thumbs, client_legal, client_dis
   col.c-sell   {{ width: 110px; }}
   col.c-total  {{ width: 130px; }}
 
-  thead tr {{ border-bottom: 2px solid #DF372F; }}
+  thead tr {{ border-bottom: 2px solid #DF3630; }}
 
   thead th {{
     padding: 0 6px 10px;
@@ -566,7 +566,7 @@ def build_html(rows, args, logo_b64, logo_mime, thumbs, client_legal, client_dis
 
   .total-val.accent {{
     font-size: 20px;
-    color: #DF372F;
+    color: #DF3630;
   }}
 
   /* ── Conditions ── */
@@ -574,7 +574,7 @@ def build_html(rows, args, logo_b64, logo_mime, thumbs, client_legal, client_dis
     margin: 12px 48px 0;
     padding: 10px 16px;
     background: #FAF8F7;
-    border-left: 3px solid #DF372F;
+    border-left: 3px solid #DF3630;
   }}
 
   .cond-eyebrow {{
@@ -801,7 +801,7 @@ def run_lite(rows, args):
         print("[!] reportlab not installed. Run: C:/Python314/python.exe -m pip install reportlab")
         sys.exit(1)
 
-    GEB_RED   = colors.HexColor("#DF372F")
+    GEB_RED   = colors.HexColor("#DF3630")
     GEB_DARK  = colors.HexColor("#1A1A1A")
     GEB_GREY  = colors.HexColor("#B0A5A3")
     GEB_STRIP = colors.HexColor("#F6F4F3")

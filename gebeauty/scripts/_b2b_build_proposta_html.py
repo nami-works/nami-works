@@ -189,7 +189,7 @@ html = f"""<title>Cotação — GE Beauty</title>
 
   /* ── Header ── */
   .doc-header {{
-    background: #DF372F;
+    background: #DF3630;
     padding: 18px 48px 16px;
     display: flex;
     justify-content: space-between;
@@ -279,7 +279,7 @@ html = f"""<title>Cotação — GE Beauty</title>
   col.c-unit   {{ width: 148px; }}
   col.c-sell   {{ width: 110px; }}
 
-  thead tr {{ border-bottom: 2px solid #DF372F; }}
+  thead tr {{ border-bottom: 2px solid #DF3630; }}
 
   thead th {{
     padding: 0 6px 10px;
@@ -350,7 +350,7 @@ html = f"""<title>Cotação — GE Beauty</title>
     margin: 12px 48px 0;
     padding: 10px 16px;
     background: #FAF8F7;
-    border-left: 3px solid #DF372F;
+    border-left: 3px solid #DF3630;
   }}
 
   .cond-eyebrow {{

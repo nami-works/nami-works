@@ -159,7 +159,7 @@ Generate in Magnific, then in Canva ingest it by public URL. If Canva rejects th
 URL, download the render from Magnific and upload it into Canva manually, then place it.
 
 ## Brand rules (apply to every layout)
-- Palette anchor GE Red #DF372F, but harmonize the headline + `ge` logo to the product's own
+- Palette anchor GE Red #DF3630, but harmonize the headline + `ge` logo to the product's own
   color per scent/line (see the Rose example above).
 - Tagline: "no seu tempo, do seu jeito."
 - No em dashes in customer-facing copy. Use commas or line breaks.

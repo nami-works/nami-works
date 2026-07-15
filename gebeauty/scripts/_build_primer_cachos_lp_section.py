@@ -41,7 +41,7 @@ def call(method, path, data=None):
 
 
 SECTION = r'''{%- style -%}
-.gepc{--ge-red:#DF372F;--ge-red-dark:#c12d26;--ink:#161616;--muted:#6b6b6b;--line:#ececec;--soft:#fbe9e8;color:var(--ink);max-width:720px;margin:0 auto;font-family:'Helvetica Neue',Arial,sans-serif}
+.gepc{--ge-red:#DF3630;--ge-red-dark:#c12d26;--ink:#161616;--muted:#6b6b6b;--line:#ececec;--soft:#fbe9e8;color:var(--ink);max-width:720px;margin:0 auto;font-family:'Helvetica Neue',Arial,sans-serif}
 .gepc *{box-sizing:border-box}
 .gepc-sec{padding:34px 20px}
 .gepc-hero-media{position:relative;width:100%;aspect-ratio:4/5;background:linear-gradient(135deg,#f4d9d7,#e9b6b2);display:flex;align-items:center;justify-content:center;text-align:center;color:var(--ge-red-dark);font-size:13px;font-weight:600;object-fit:cover}
@@ -61,7 +61,7 @@ SECTION = r'''{%- style -%}
 .gepc-micro{font-size:12.5px;color:var(--muted);margin:4px 0 0;text-align:center}
 .gepc-bene{list-style:none;padding:0;margin:16px 0 0;display:flex;flex-direction:column;gap:10px}
 .gepc-bene li{display:flex;gap:10px;align-items:flex-start;font-size:15px;font-weight:600}
-.gepc-bene li::before{content:"";flex:none;width:20px;height:20px;border-radius:50%;background:var(--soft);background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><path fill=%22%23DF372F%22 d=%22M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z%22/></svg>');background-repeat:no-repeat;background-position:center;background-size:14px;margin-top:1px}
+.gepc-bene li::before{content:"";flex:none;width:20px;height:20px;border-radius:50%;background:var(--soft);background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><path fill=%22%23DF3630%22 d=%22M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z%22/></svg>');background-repeat:no-repeat;background-position:center;background-size:14px;margin-top:1px}
 .gepc-soft{background:var(--soft)}
 .gepc-steps{counter-reset:s;list-style:none;padding:0;margin:16px 0 0;display:flex;flex-direction:column;gap:14px}
 .gepc-steps li{counter-increment:s;position:relative;padding-left:44px;font-size:15px;line-height:1.4}
