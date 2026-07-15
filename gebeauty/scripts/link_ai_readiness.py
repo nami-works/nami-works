@@ -59,6 +59,11 @@ PRODUCT_TO_METAOBJECT = {
     "booster-fortificante": "ai-readiness-booster-fortificante",
     "booster-antioxidante": "ai-readiness-booster-antioxidante",
     "melon-mood-body-hair-splash": "ai-readiness-melon-mood-body-e-hair-splash",
+    # Body & Hair Mist line (2026-07 mist-recommendation quiz)
+    "melon-mood-body-hair-mist": "ai-readiness-melon-mood-body-e-hair-mist",
+    "santal-skin-body-hair-mist": "ai-readiness-santal-skin-body-e-hair-mist",
+    "rose-ritual-body-hair-mist": "ai-readiness-rose-ritual-body-e-hair-mist",
+    "pear-fresh-body-hair-mist": "ai-readiness-pear-fresh-body-e-hair-mist",
 }
 
 
@@ -74,7 +79,7 @@ def get_products():
 
 def get_metaobjects():
     query = """
-    { metaobjects(type: "ai_readiness", first: 20) {
+    { metaobjects(type: "ai_readiness", first: 50) {
         edges { node { id handle } }
     } }
     """

@@ -7,6 +7,8 @@ It does NOT modify products, metafields, or any existing data.
 Usage:
   python scripts/inject_ai_readiness.py --dry-run    # Preview what will be created
   python scripts/inject_ai_readiness.py               # Execute injection
+  python scripts/inject_ai_readiness.py --file quiz/mist-quiz/ai-readiness-mists.json
+                                                      # Inject from a different content file
 """
 
 import json
@@ -109,8 +111,20 @@ def create_metaobject(product_title, complete_description, combinations):
     return result["metaobject"], None
 
 
+def resolve_content_file(argv):
+    """--file PATH overrides the default content file (relative to cwd or absolute)."""
+    if "--file" in argv:
+        idx = argv.index("--file")
+        if idx + 1 >= len(argv):
+            print("ERROR: --file requires a path argument")
+            sys.exit(1)
+        return argv[idx + 1]
+    return CONTENT_FILE
+
+
 def main():
     dry_run = "--dry-run" in sys.argv
+    content_file = resolve_content_file(sys.argv)
 
     # Validate env
     if not SHOP_DOMAIN or not ACCESS_TOKEN:
@@ -120,10 +134,11 @@ def main():
     print(f"Store: {SHOP_DOMAIN}")
     print(f"API version: {API_VERSION}")
     print(f"Mode: {'DRY RUN' if dry_run else 'LIVE INJECTION'}")
+    print(f"Content file: {content_file}")
     print()
 
     # Load content
-    with open(CONTENT_FILE, "r", encoding="utf-8") as f:
+    with open(content_file, "r", encoding="utf-8") as f:
         products = json.load(f)
 
     print(f"Products to process: {len(products)}")

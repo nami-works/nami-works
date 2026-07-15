@@ -1,0 +1,30 @@
+[
+  {
+    "product_title": "melon mood body & hair mist",
+    "product_id": "gid://shopify/Product/9946377617728",
+    "handle": "melon-mood-body-hair-mist",
+    "complete_description": "Body & Hair Mist Melon Mood: melão, peônia e white musk. Perfil olfativo frutal fresco, a fragrância assinatura da GE Beauty (fragrância hero da marca desde 2025). Hero words: cativante e extrovertida, com sensação de presença e conforto. Bruma para corpo e cabelo: perfuma, realça o brilho dos fios sem pesar o cabelo e deixa a pele hidratada e macia.",
+    "combinations": "Recomendar a Melon Mood como resultado do quiz quando as respostas de personalidade indicarem: estação verão, momento almoço ao ar livre, destino Grécia, situação praia/festa/rolê com amigos, palavra viva e curiosa, aroma frutado e fresco (melão suculento). Layering oficial: combina com Pear Fresh (frescor) ou Santal Skin (contraste quente). É a fragrância assinatura da casa, usada como fallback quando não houver respostas suficientes."
+  },
+  {
+    "product_title": "santal skin body & hair mist",
+    "product_id": "gid://shopify/Product/10163564249408",
+    "handle": "santal-skin-body-hair-mist",
+    "complete_description": "Body & Hair Mist Santal Skin: sândalo, patchouli e cardamomo. Perfil olfativo amadeirado contemporâneo, quente e sofisticado. Hero words: marcante e sofisticada, com sensação de poder e magnetismo. Bruma para corpo e cabelo: perfuma, realça o brilho dos fios sem pesar o cabelo e deixa a pele hidratada e macia.",
+    "combinations": "Recomendar a Santal Skin como resultado do quiz quando as respostas de personalidade indicarem: estação outono, momento jantar especial, destino Nova Iorque, situação networking/museu/drinks, palavra marcante e poderosa, aroma amadeirado e quente (sândalo). Layering oficial: combina com Pear Fresh (leveza) ou Melon Mood (frescor)."
+  },
+  {
+    "product_title": "rose ritual body & hair mist",
+    "product_id": "gid://shopify/Product/10163564183872",
+    "handle": "rose-ritual-body-hair-mist",
+    "complete_description": "Body & Hair Mist Rose Ritual: rosas, lichia e frutas vermelhas. Perfil olfativo floral, levemente cítrico. Hero words: feminina e delicada, com sensação de leveza e plenitude. Bruma para corpo e cabelo: perfuma, realça o brilho dos fios sem pesar o cabelo e deixa a pele hidratada e macia.",
+    "combinations": "Recomendar a Rose Ritual como resultado do quiz quando as respostas de personalidade indicarem: estação inverno, momento brunch de domingo, destino Paris, situação arte/décor/viagem, palavra delicada e inspiradora, aroma floral (buquê de rosas). Layering oficial: combina com Santal Skin (profundidade) ou Melon Mood (conforto)."
+  },
+  {
+    "product_title": "pear fresh body & hair mist",
+    "product_id": "gid://shopify/Product/10163564216640",
+    "handle": "pear-fresh-body-hair-mist",
+    "complete_description": "Body & Hair Mist Pear Fresh: pêra, lírio e musk. Perfil olfativo fresco e vegetal. Hero words: vibrante e autêntica, com sensação de energia e autenticidade. Bruma para corpo e cabelo: perfuma, realça o brilho dos fios sem pesar o cabelo e deixa a pele hidratada e macia.",
+    "combinations": "Recomendar a Pear Fresh como resultado do quiz quando as respostas de personalidade indicarem: estação primavera, momento café da manhã sem pressa, destino Indonésia, situação aniversário/picnic/música alta, palavra vibrante e ousada, aroma verde e leve (pêra com lírio). Layering oficial: combina com Melon Mood (suculência) ou Rose Ritual (floral)."
+  }
+]

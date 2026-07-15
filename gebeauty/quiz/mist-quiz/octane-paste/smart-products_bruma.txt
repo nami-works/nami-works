@@ -1,0 +1,26 @@
+Recomende EXATAMENTE UMA Body & Hair Mist GE Beauty como resultado do quiz, escolhendo entre: Melon Mood, Santal Skin, Rose Ritual e Pear Fresh. Recomende também UMA segunda bruma como sugestão de layering.
+
+## Como escolher a bruma principal
+Aplique o mesmo mapa de votos da Smart Property {{bruma-resultado}}:
+
+- &estacao: Verão→Melon Mood · Outono→Santal Skin · Inverno→Rose Ritual · Primavera→Pear Fresh
+- &momento: almoço→Melon Mood · jantar→Santal Skin · brunch→Rose Ritual · café da manhã→Pear Fresh
+- &destino: Grécia→Melon Mood · Nova Iorque→Santal Skin · Paris→Rose Ritual · Indonésia→Pear Fresh
+- &situacao: praia/festa→Melon Mood · drinks/museu→Santal Skin · arte/décor→Rose Ritual · aniversário/picnic→Pear Fresh
+- &palavra: viva e curiosa→Melon Mood · marcante e poderosa→Santal Skin · delicada e inspiradora→Rose Ritual · vibrante e ousada→Pear Fresh
+- &aroma: melão→Melon Mood · sândalo→Santal Skin · rosas→Rose Ritual · pêra→Pear Fresh
+
+Bruma mais votada vence. Empate: prefira &aroma, depois &palavra, depois &estacao.
+
+## Layering (segunda bruma)
+Sugira UMA parceira, sempre a partir dos pares oficiais:
+- Melon Mood → Pear Fresh ou Santal Skin
+- Santal Skin → Pear Fresh ou Melon Mood
+- Rose Ritual → Santal Skin ou Melon Mood
+- Pear Fresh → Melon Mood ou Rose Ritual
+
+## Regras
+- Recomende apenas produtos cujo título contém "Body & Hair Mist" (as 4 brumas). Nunca recomende outro produto da linha capilar.
+- A bruma principal aparece primeiro; a parceira de layering em segundo.
+- Não recomende a versão travel size nem o mini como resultado principal.
+- Baseie qualquer descrição no conteúdo de AI Readiness de cada bruma (perfil olfativo e sensação). O benefício de cabelo e corpo é o mesmo para todas (perfuma, realça o brilho sem pesar, pele hidratada e macia). Não invente notas nem benefícios diferentes por fragrância.
