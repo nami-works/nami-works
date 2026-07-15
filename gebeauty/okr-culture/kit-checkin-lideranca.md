@@ -19,6 +19,21 @@ Dois documentos em um: (A) roteiro da sessão de alinhamento da liderança, e (B
 
 **Regra de ouro para levar da sessão:** o objetivo do ciclo beta é o time **aprender o músculo**, não bater 100%. Isso tira o medo e dá permissão para ajustar.
 
+### Como conduzir a sala (o ponto mais importante)
+
+A diferença entre co-autoria de verdade e teatro está em separar **objetivos** de **key results**.
+
+- **Os 2 objetivos são a sua definição.** Direção de empresa é papel da liderança máxima, não se decide em comitê. Chegue com os dois e, principalmente, com o **porquê** (a alavancagem que estamos carregando, por que a hora da IA é agora). O time quer ver você liderar isso.
+- **KRs, metas e OKRs de time são co-construídos.** NÃO chegue com isso mapeado. É aqui que você entrega a caneta. Se você aparecer com os KRs prontos e as metas definidas, todo mundo lê "já está decidido, minha opinião é enfeite", e você perde exatamente o que veio construir.
+
+**O fluxo na sala:**
+1. Apresente os **2 objetivos** como a sua decisão estratégica, com o porquê.
+2. **Teste os objetivos de verdade:** "são estes os dois certos? o que estou deixando de fora?", e esteja pronto para mudar algo real. Se nada muda na sala, eles percebem que foi encenação.
+3. **Construam os KRs ao vivo**, no quadro, um objetivo por vez. Este é o momento de propriedade. Lento e um pouco bagunçado tudo bem, esse atrito é o ponto.
+4. Cada líder sai com a tarefa de rascunhar os **OKRs do próprio time** antes do próximo encontro.
+
+**O rascunho `okr-empresa-rascunho.md` é a sua rede de segurança, não o slide de abertura.** Rode os passos 1 a 3 e só depois puxe o rascunho como "foi isto que eu também considerei", para pegar o que faltou. Assim você se protege contra o quadro em branco sem atropelar a propriedade do time. O lugar para ser mais discreto é nas **metas e linhas de base**: é a caneta mais clara para entregar e, se você definir sozinho, o caminho mais rápido para as metas fáceis no próximo ciclo.
+
 ---
 
 ## B) Guia do Check-in Quinzenal
