@@ -1,0 +1,300 @@
+<title>Primeira Onda de OKRs + Cultura de Check-in · GE Beauty</title>
+<style>
+  :root {
+    --paper: #faf7f4;
+    --ink: #1a1413;
+    --ink-soft: #4a413f;
+    --muted: #8a7c7a;
+    --accent: #df3630;
+    --accent-soft: #f7e4e2;
+    --border: #ece3e1;
+    --card: #ffffff;
+    --shadow: 0 1px 2px rgba(26,20,19,.04), 0 8px 24px rgba(26,20,19,.05);
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --maxw: 760px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #17110f;
+      --ink: #f4ece9;
+      --ink-soft: #d3c5c1;
+      --muted: #9c8b87;
+      --accent: #f2645c;
+      --accent-soft: #3a1e1c;
+      --border: #2c2320;
+      --card: #211a18;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #faf7f4; --ink: #1a1413; --ink-soft: #4a413f; --muted: #8a7c7a;
+    --accent: #df3630; --accent-soft: #f7e4e2; --border: #ece3e1; --card: #ffffff;
+    --shadow: 0 1px 2px rgba(26,20,19,.04), 0 8px 24px rgba(26,20,19,.05);
+  }
+  :root[data-theme="dark"] {
+    --paper: #17110f; --ink: #f4ece9; --ink-soft: #d3c5c1; --muted: #9c8b87;
+    --accent: #f2645c; --accent-soft: #3a1e1c; --border: #2c2320; --card: #211a18;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--sans); line-height: 1.65;
+    -webkit-font-smoothing: antialiased; font-size: 17px;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px 96px; }
+
+  .eyebrow {
+    font-size: 12px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--serif); font-weight: 400; font-size: clamp(2.1rem, 6vw, 3.2rem);
+    line-height: 1.08; letter-spacing: -.01em; margin: 0 0 20px; text-wrap: balance;
+  }
+  h2 {
+    font-family: var(--serif); font-weight: 400; font-size: clamp(1.5rem, 4vw, 2rem);
+    line-height: 1.15; margin: 0 0 6px; text-wrap: balance;
+  }
+  h3 { font-family: var(--sans); font-size: 1.05rem; font-weight: 700; margin: 0 0 6px; letter-spacing: -.01em; }
+  p { margin: 0 0 16px; color: var(--ink-soft); }
+  strong { color: var(--ink); font-weight: 650; }
+  .lead { font-size: 1.2rem; line-height: 1.55; color: var(--ink); }
+  .lead .hl { color: var(--accent); font-style: italic; font-family: var(--serif); }
+
+  /* masthead */
+  header.mast { padding: 84px 0 40px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .kicker { display:flex; align-items:center; gap: 10px; margin: 0 0 22px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex:none; }
+  .kicker span { font-size: 12.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+  section { padding: 46px 0; border-bottom: 1px solid var(--border); }
+  section:last-of-type { border-bottom: 0; }
+  .sec-label { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin: 0 0 18px; }
+
+  /* model table */
+  .layers { display: grid; gap: 14px; margin-top: 22px; }
+  .layer {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px 22px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .layer::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background: var(--accent); }
+  .layer h3 { display:flex; align-items:baseline; gap:10px; }
+  .layer .cad { font-size: 12.5px; color: var(--muted); font-weight: 600; letter-spacing: .02em; }
+  .layer p { margin: 6px 0 0; font-size: .96rem; }
+
+  /* landmines */
+  .mines { display: grid; gap: 12px; margin-top: 20px; }
+  .mine { display:flex; gap: 16px; align-items:flex-start; background: var(--card); border:1px solid var(--border); border-radius: 12px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .mine .num { font-family: var(--serif); font-size: 1.5rem; color: var(--accent); line-height: 1; flex:none; width: 30px; }
+  .mine p { margin: 0; font-size: .95rem; }
+  .mine strong { color: var(--ink); }
+
+  /* timeline */
+  .steps { margin-top: 24px; position: relative; padding-left: 28px; }
+  .steps::before { content:""; position:absolute; left: 6px; top: 6px; bottom: 20px; width: 2px; background: var(--border); }
+  .step { position: relative; padding: 0 0 26px; }
+  .step:last-child { padding-bottom: 0; }
+  .step::before { content:""; position:absolute; left: -28px; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--paper); border: 2.5px solid var(--accent); }
+  .step .when { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  .step .what { color: var(--ink); font-weight: 600; margin: 3px 0 2px; }
+  .step .who { font-size: .88rem; color: var(--muted); }
+  .step.launch::before { background: var(--accent); }
+
+  /* org tree */
+  .tree { background: var(--card); border:1px solid var(--border); border-radius: 14px; padding: 26px 24px; margin-top: 22px; box-shadow: var(--shadow); }
+  .node-you { text-align:center; }
+  .chip { display:inline-block; padding: 7px 16px; border-radius: 999px; font-weight: 650; font-size: .92rem; }
+  .chip.lead-you { background: var(--accent); color: #fff; }
+  .chip.lead { background: var(--accent-soft); color: var(--accent); border:1px solid transparent; }
+  .chip.node { background: transparent; border:1px solid var(--border); color: var(--ink-soft); font-weight: 600; }
+  .row { display:flex; flex-wrap:wrap; gap: 10px; justify-content:center; }
+  .connector { height: 22px; width: 2px; background: var(--border); margin: 8px auto; }
+  .leads-row { margin: 4px 0 2px; }
+  .caption { text-align:center; font-size: .84rem; color: var(--muted); margin: 18px 0 0; }
+  .sub { text-align:center; margin-top: 8px; }
+  .sub .chip { margin: 3px; }
+
+  /* rituals */
+  .rituals { display:grid; gap: 12px; margin-top: 20px; }
+  .rit { background: var(--card); border:1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 10px; padding: 15px 18px; box-shadow: var(--shadow); }
+  .rit h3 { margin-bottom: 3px; font-size: .98rem; }
+  .rit p { margin:0; font-size: .92rem; }
+  .rit .freq { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+
+  .callout { background: var(--accent-soft); border-radius: 14px; padding: 24px 26px; margin-top: 8px; }
+  .callout p { color: var(--ink); margin: 0; }
+  .callout .big { font-family: var(--serif); font-size: 1.3rem; line-height: 1.4; }
+
+  /* okrs */
+  .okrs { display:grid; gap: 14px; margin-top: 22px; }
+  .okr { background: var(--card); border:1px solid var(--border); border-radius: 14px; padding: 20px 22px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+  .okr::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background: var(--accent); }
+  .okr-head { display:flex; flex-wrap:wrap; align-items:center; gap: 10px; margin-bottom: 10px; }
+  .okr-tag { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+  .okr-tag.asp { background: var(--accent-soft); color: var(--accent); }
+  .okr-tag.com { background: var(--ink); color: var(--paper); }
+  .okr-owner { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+  .okr h3 { font-family: var(--serif); font-weight: 400; font-size: 1.16rem; margin: 0 0 14px; line-height: 1.25; }
+  .krs { margin: 0; padding: 0; list-style: none; display: grid; gap: 9px; }
+  .krs li { position: relative; padding-left: 20px; font-size: .94rem; color: var(--ink-soft); }
+  .krs li::before { content:""; position:absolute; left: 2px; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .krs li b { color: var(--ink); font-weight: 650; font-variant-numeric: tabular-nums; padding: 0 2px; }
+  .okr-connect { font-size: .86rem; color: var(--muted); margin: 14px 0 0; padding-top: 13px; border-top: 1px dashed var(--border); }
+  .okr-connect b { color: var(--ink-soft); font-weight: 650; }
+  .okr-note { font-size: .9rem; color: var(--muted); margin-top: 20px; }
+
+  footer { padding-top: 40px; color: var(--muted); font-size: .86rem; }
+  footer .beta { display:inline-block; background: var(--accent); color:#fff; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; padding: 4px 12px; border-radius: 999px; margin-bottom: 14px; }
+  @media (max-width: 520px) { body { font-size: 16px; } .layer .cad { display:block; margin-top: 2px; } }
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div class="kicker"><span class="dot"></span><span>GE Beauty · Cultura + OKRs · Ciclo Beta 2026</span></div>
+    <p class="eyebrow">Playbook da Liderança</p>
+    <h1>Primeira onda de OKRs, construída sobre uma cultura de check-in.</h1>
+    <p class="lead">Não são dois projetos. São <span class="hl">um sistema só</span>: os OKRs dizem o que importa, e os check-ins mantêm o time conectado a isso. Este documento é para a liderança conduzir a primeira onda juntos.</p>
+  </header>
+
+  <section>
+    <p class="sec-label">A ideia central</p>
+    <h2>OKR é o esqueleto. Check-in é o sistema nervoso.</h2>
+    <p>O time quer feedback numa frequência que ciclos pesados de avaliação nunca vão entregar, ainda mais no nosso ritmo. A resposta não é um ciclo maior. É trocar a cerimônia grande e rara por muitas conversas pequenas e frequentes.</p>
+    <p>Objetivos claros (OKRs) sem conversas constantes viram planilha esquecida. Conversas sem objetivos viram papo sem direção. Por isso os dois andam juntos desde o primeiro dia.</p>
+    <div class="callout">
+      <p class="big">Ser ouvido já é a mudança de cultura. Por isso a semana de escuta vem antes de qualquer OKR, e não depois.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">O modelo · 3 camadas</p>
+    <h2>Três camadas, cada uma com um propósito</h2>
+    <div class="layers">
+      <div class="layer">
+        <h3>Objetivos (OKRs) <span class="cad">trimestral, revisto toda semana</span></h3>
+        <p>As poucas coisas que importam neste ciclo, e como vamos saber que acertamos. Donos: você e a liderança.</p>
+      </div>
+      <div class="layer">
+        <h3>Check-ins <span class="cad">a cada 2 semanas</span></h3>
+        <p>Conversa leve de 25 min: expectativas, feedback nos dois sentidos, crescimento. Sem formulário, sem nota. Cada líder com cada pessoa do time.</p>
+      </div>
+      <div class="layer">
+        <h3>Rituais <span class="cad">semanal, mensal, trimestral</span></h3>
+        <p>Os ritmos compartilhados que tornam o progresso e o reconhecimento visíveis para todo mundo. A liderança propõe, o time co-desenha.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">As armadilhas</p>
+    <h2>O que derruba um lançamento de OKR</h2>
+    <p>Em ordem de risco para a gente. Ler isto antes de escrever qualquer objetivo.</p>
+    <div class="mines">
+      <div class="mine"><div class="num">1</div><p><strong>Nada de vínculo com salário no ciclo 1.</strong> No instante em que OKR mexe no pagamento, todo mundo coloca meta fácil. OKR é para esticar e alinhar. Remuneração se conversa em separado.</p></div>
+      <div class="mine"><div class="num">2</div><p><strong>OKR demais.</strong> Uma empresa do nosso tamanho tem 2 ou 3 objetivos da empresa, no máximo. Se tudo é prioridade, nada é.</p></div>
+      <div class="mine"><div class="num">3</div><p><strong>Cascata rígida.</strong> Não somos uma corporação de cinco camadas. Define os OKRs da empresa e deixa cada líder escrever os seus para conectar de baixo pra cima. Metade nasce do time.</p></div>
+      <div class="mine"><div class="num">4</div><p><strong>Tratar o ciclo 1 como definitivo.</strong> É um beta. A meta é aprender o músculo, não bater 100%. Isso tira o medo e dá permissão para ajustar no meio do caminho.</p></div>
+      <div class="mine"><div class="num">5</div><p><strong>Confundir tarefa com resultado.</strong> "Lançar a campanha" é tarefa. "Subir a recompra de X para Y" é resultado. Todo KR mede um resultado.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">Os OKRs propostos · rascunho</p>
+    <h2>Dois objetivos que a empresa inteira puxa junto</h2>
+    <p>Para uma primeira onda focada em cultura, dois objetivos <strong>generalistas</strong> valem mais que vários por função: todo mundo rema para as mesmas duas coisas. Rascunho para <strong>ajustar</strong>, não para aprovar como está. Onde estiver <b>[base]→[meta]</b>, o primeiro passo do ciclo é medir.</p>
+    <div class="okrs">
+      <article class="okr">
+        <div class="okr-head"><span class="okr-tag asp">Aspiracional</span><span class="okr-owner">Dono sugerido: você + Giulia + Eleonora</span></div>
+        <h3>1 · Conquistar a nossa independência financeira, crescer com o próprio caixa</h3>
+        <ul class="krs">
+          <li>Crescer a receita de <b>R$ [base]</b> para <b>R$ [meta]</b> <span class="okr-owner">(Eleonora)</span></li>
+          <li>Elevar a margem de contribuição consolidada de <b>[base]</b> para <b>[meta]</b></li>
+          <li>Gerar fluxo de caixa livre de <b>R$ [base]</b> para <b>R$ [meta]</b></li>
+        </ul>
+        <p class="okr-connect">O fluxo de caixa livre já absorve dívida e estoque: menos capital de terceiros e menos capital parado = mais caixa livre. Toda área puxa: <b>receita e margem</b> (marketing), <b>custo por pedido e giro de estoque</b> (operação), <b>vendas com margem</b> (varejo), <b>caixa e disciplina de despesa</b> (finanças).</p>
+      </article>
+      <article class="okr">
+        <div class="okr-head"><span class="okr-tag asp">Aspiracional</span><span class="okr-owner">Dono sugerido: você + 1 champion por área</span></div>
+        <h3>2 · Dar os nossos primeiros passos como uma empresa que trabalha com IA</h3>
+        <ul class="krs">
+          <li>Cada uma das 4 áreas com pelo menos 1 fluxo de trabalho real rodando com apoio de IA (de <b>0</b> para <b>4</b>)</li>
+          <li><b>[meta]</b> do time treinado nas ferramentas de IA aprovadas</li>
+          <li>Biblioteca interna com <b>[meta]</b> casos de uso/prompts que economizaram tempo, documentados</li>
+          <li>Reduzir de <b>[base]</b> para <b>[meta]</b> horas/semana em tarefas repetitivas via IA</li>
+        </ul>
+        <p class="okr-connect">Cada área escolhe o seu primeiro fluxo: <b>conteúdo e atendimento</b> (marketing/SAC), <b>roteirização e previsão</b> (operação), <b>conciliação e relatórios</b> (finanças), <b>atendimento e UGC</b> (varejo).</p>
+      </article>
+    </div>
+    <p class="okr-note">São primeiros passos de propósito: no Objetivo 2 a meta é criar o músculo de usar IA no dia a dia, não provar ROI ainda. Cada líder escreve os OKRs do seu time conectando a estes dois, e metade deve nascer do time, não descer de cima.</p>
+  </section>
+
+  <section>
+    <p class="sec-label">O calendário · hoje é 15 de julho</p>
+    <h2>Do zero ao beta no ar em 4 de agosto</h2>
+    <div class="steps">
+      <div class="step"><div class="when">15–18 jul · esta semana</div><div class="what">Sessão de alinhamento da liderança (90 min)</div><div class="who">Você, Raphael, Eleonora, Giulia. Sair como co-donos.</div></div>
+      <div class="step"><div class="when">21–25 jul</div><div class="what">Pesquisa anônima para todo o time + escuta 1:1</div><div class="who">Cada líder ouve o seu pessoal. Já é o primeiro treino do check-in.</div></div>
+      <div class="step"><div class="when">28–31 jul</div><div class="what">All-hands de devolutiva + co-desenho dos rituais</div><div class="who">Todos. Em paralelo, você e a liderança rascunham os OKRs da empresa.</div></div>
+      <div class="step"><div class="when">1 ago</div><div class="what">Fechar os OKRs da empresa e dos times + travar o formato do check-in</div><div class="who">Liderança.</div></div>
+      <div class="step launch"><div class="when">4 ago · lançamento</div><div class="what">Ciclo beta no ar (roda até 30 de setembro)</div><div class="who">Todos. Apresentado como beta, explicitamente para aprender.</div></div>
+      <div class="step"><div class="when">1 out</div><div class="what">Retrospectiva do processo, depois o Q4 como primeiro trimestre completo</div><div class="who">Todos.</div></div>
+    </div>
+    <p style="margin-top:24px;"><strong>A única coisa que não dá para comprimir é a semana de escuta.</strong> Ela não é overhead. É o mecanismo de cultura que estava faltando. Pular equivale a lançar OKR dentro da mesma desconexão que a gente quer resolver.</p>
+  </section>
+
+  <section>
+    <p class="sec-label">A árvore de check-in</p>
+    <h2>Quem conversa com quem</h2>
+    <div class="tree">
+      <div class="node-you"><span class="chip lead-you">Você · COO</span></div>
+      <div class="connector"></div>
+      <div class="row leads-row">
+        <span class="chip lead">Raphael · Operação</span>
+        <span class="chip lead">Eleonora · Marketing</span>
+        <span class="chip lead">Giulia · Finanças</span>
+        <span class="chip lead">Coord. de Varejo</span>
+      </div>
+      <div class="connector"></div>
+      <div class="sub">
+        <span class="chip node">Time de operação</span>
+        <span class="chip node">Time de marketing</span>
+        <span class="chip node">3 gerentes de loja</span>
+      </div>
+      <div class="connector"></div>
+      <div class="sub"><span class="chip node">Equipes das lojas</span></div>
+      <p class="caption">Cada pessoa tem exatamente um líder que conduz o seu check-in. Ninguém fica de fora. O Coordenador de Varejo responde direto a você, o que faz do varejo uma função com peso próprio e dono do OKR de loja. Nas lojas, o ritmo é huddle semanal + check-in mensal.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">Os rituais</p>
+    <h2>O ritmo que torna tudo visível</h2>
+    <p>Levar como <strong>rascunho</strong> para o all-hands e co-desenhar ao vivo. Ritual imposto o time atura; ritual co-criado o time adota.</p>
+    <div class="rituals">
+      <div class="rit"><span class="freq">Semanal · 15 min · todos</span><h3>Início de semana</h3><p>Os 2 ou 3 OKRs da empresa na tela, uma frase de movimento em cada. Mantém todo mundo orientado ao que importa.</p></div>
+      <div class="rit"><span class="freq">Semanal · no início de semana</span><h3>Reconhecimento</h3><p>O "R" que todo mundo esquece. Um momento fixo onde qualquer um reconhece a conquista de um colega. Barato e de altíssimo retorno.</p></div>
+      <div class="rit"><span class="freq">Quinzenal · 25 min · 1:1</span><h3>Check-in</h3><p>A espinha dorsal. Expectativas, feedback dos dois lados, crescimento.</p></div>
+      <div class="rit"><span class="freq">Mensal · time</span><h3>OKR + história</h3><p>O progresso nos números, mais uma história de cliente ou de chão de loja. Liga o número abstrato ao porquê do trabalho.</p></div>
+      <div class="rit"><span class="freq">Trimestral · todos</span><h3>Retrospectiva + reset</h3><p>Pontuar os OKRs abertamente, celebrar, aprender, e recomeçar. E revisar o próprio processo, não só os resultados.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">O papel de vocês</p>
+    <h2>Isto não é RH. É liderança.</h2>
+    <p>A diferença entre um sistema que o time aguenta e um que o time abraça é se os líderes são co-autores dele. Cada líder tem três responsabilidades neste ciclo:</p>
+    <div class="rituals">
+      <div class="rit"><h3>Escrever os OKRs do seu time</h3><p>Conectados aos da empresa, mas nascidos com o seu pessoal, não ditados de cima.</p></div>
+      <div class="rit"><h3>Conduzir os check-ins</h3><p>A cada 2 semanas, com cada pessoa. Sem enrolar. É aqui que a confiança se constrói.</p></div>
+      <div class="rit"><h3>Proteger o beta do medo</h3><p>Repetir sempre: a meta é aprender, não bater 100%. Segurança psicológica é pré-requisito de honestidade.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <span class="beta">Ciclo Beta · Ago–Set 2026</span>
+    <p>Documentos de apoio nesta pasta: pesquisa de escuta do time, rascunho dos OKRs da empresa, e o kit de check-in da liderança. Este playbook é um documento vivo, revisto na retrospectiva de 1 de outubro.</p>
+  </footer>
+</div>
