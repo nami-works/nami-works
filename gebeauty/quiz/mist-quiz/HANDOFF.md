@@ -10,7 +10,20 @@
 > publicada no Shopify (metaobjetos `custom.ai_readiness`, ativos e ligados aos produtos). O
 > conteúdo já foi conferido contra as descrições oficiais das PDPs. Você só monta o quiz no Octane.
 
-Tudo o que você precisa colar está **neste documento**, nos blocos marcados como `COLE ISTO`.
+Tudo o que você precisa colar está **neste documento**, nos blocos marcados como `COLE ISTO`. Cada bloco também existe como **arquivo separado** dentro desta pasta (na subpasta `octane-paste/`) — se preferir, abra o arquivo e copie de lá, evita qualquer erro de formatação ao copiar do meio do texto.
+
+---
+
+## O que tem nesta pasta
+| Arquivo | Para que serve |
+|---|---|
+| **`HANDOFF.md`** | **Este guia. Comece por aqui e siga na ordem.** |
+| `octane-paste/questions.md` | As 6 perguntas + opções (fonte para a Parte 3) |
+| `octane-paste/smart-property_bruma-resultado.txt` | Texto do resultado, para colar no campo Instruction (Parte 4) |
+| `octane-paste/smart-products_bruma.txt` | Instrução de recomendação do produto (Parte 5) |
+| `octane-paste/results-copy.md` | Textos fixos da página de resultado (Parte 5) |
+| `mapping.md` | Tabela de referência: qual resposta leva a qual bruma (o "porquê") |
+| `BUILD-GUIDE.md`, `ai-readiness-mists.json` | Material técnico, **já aplicado no Shopify pela equipe. Você não precisa abrir.** |
 
 ---
 
@@ -38,6 +51,8 @@ O quiz capilar tem **7 perguntas**. O quiz de bruma tem **6**. Você vai **edita
 Para cada pergunta: abra a página no **Build**, troque o título e as opções pelos textos abaixo, e mantenha a **ordem exata das opções** (isso é o que faz a recomendação funcionar). Se a página tiver um campo de "variável" / "variable ref", ajuste conforme indicado.
 
 > **Regra de ouro:** em todas as perguntas, a **opção 1 = Melon, opção 2 = Santal, opção 3 = Rose, opção 4 = Pear**. Nunca troque a ordem.
+>
+> Arquivo com as 6 perguntas: **`octane-paste/questions.md`**.
 
 ### Pergunta 1 — Estação  (variável: `estacao`)
 `COLE ISTO`
@@ -102,7 +117,7 @@ A cópia tem uma Smart Property chamada **DIAGNOSTICO-CAPILAR**. Vamos reaprovei
 3. Apague o texto do campo **Instruction** e **cole no lugar** o bloco abaixo.
 4. No campo **Fallback**, cole a última linha do bloco (a que começa com "Sua Body & Hair Mist é a Melon Mood").
 
-`COLE ISTO` (campo Instruction):
+`COLE ISTO` (campo Instruction) — mesmo conteúdo do arquivo **`octane-paste/smart-property_bruma-resultado.txt`**:
 ```
 Você recomenda UMA Body & Hair Mist GE Beauty (entre Melon Mood, Santal Skin, Rose Ritual e Pear Fresh) com base nas respostas de personalidade do quiz. Gere um texto curto, caloroso e aspiracional que revela a bruma escolhida e explica por que ela combina com a pessoa.
 
@@ -155,7 +170,7 @@ Delete os grupos de **Smart Products** do capilar: **1. limpeza, 2. tratamento, 
 - **Título / bloco que mostra o resultado:** mantenha o bloco HTML que renderiza a Smart Property. Ele já mostra o texto que você configurou na Parte 4.
 - **Um bloco de Smart Products** (reaproveite um dos que sobraram, ou crie um novo): no campo **Instructions for AI**, cole o bloco abaixo. Se der, limite os produtos desse bloco à coleção/tag das brumas.
 
-`COLE ISTO` (Smart Products → Instructions for AI):
+`COLE ISTO` (Smart Products → Instructions for AI) — mesmo conteúdo do arquivo **`octane-paste/smart-products_bruma.txt`**:
 ```
 Recomende EXATAMENTE UMA Body & Hair Mist GE Beauty como resultado do quiz, escolhendo entre: Melon Mood, Santal Skin, Rose Ritual e Pear Fresh. Recomende também UMA segunda bruma como sugestão de layering.
 
@@ -185,7 +200,7 @@ Sugira UMA parceira, sempre a partir dos pares oficiais:
 ```
 
 ### 5.3 — Textos fixos (blocos de Texto/Botão)
-Ajuste os textos fixos que sobraram na página:
+Ajuste os textos fixos que sobraram na página (também em **`octane-paste/results-copy.md`**):
 - Título da página: **Descobrimos a sua Body & Hair Mist**
 - Cabeçalho antes do produto: **sua fragrância, do corpo aos fios**
 - Cabeçalho de layering: **combine e crie a sua assinatura**
