@@ -128,6 +128,27 @@
   .callout p { color: var(--ink); margin: 0; }
   .callout .big { font-family: var(--serif); font-size: 1.3rem; line-height: 1.4; }
 
+  /* origin / references */
+  .origin { display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 22px; }
+  .orig { background: var(--card); border:1px solid var(--border); border-radius: 12px; padding: 18px 16px; box-shadow: var(--shadow); text-align:center; }
+  .orig .wm { height: 40px; display:flex; align-items:center; justify-content:center; margin-bottom: 12px; }
+  .orig .yr { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  .orig p { font-size: .87rem; margin: 7px 0 0; }
+  .wm-hp { width: 40px; height: 40px; border-radius: 50%; border: 2.5px solid #0096d6; color: #0096d6; font-weight: 700; font-size: 18px; display:flex; align-items:center; justify-content:center; font-style: italic; letter-spacing: -1px; }
+  .wm-intel { color: #0071c5; font-weight: 700; font-size: 27px; letter-spacing: -1.5px; }
+  .wm-google { font-weight: 600; font-size: 27px; letter-spacing: -1px; }
+  .wm-google .b { color:#4285F4; } .wm-google .r { color:#EA4335; } .wm-google .y { color:#FBBC05; } .wm-google .g { color:#34A853; }
+  .book { display:flex; gap: 20px; align-items:center; background: var(--accent-soft); border-radius: 14px; padding: 20px 22px; margin-top: 14px; }
+  .book-cover { width: 92px; height: 128px; flex:none; border-radius: 3px 7px 7px 3px; border-left: 5px solid rgba(0,0,0,.22); background: linear-gradient(145deg, #f7b733, #e8590c); box-shadow: -5px 5px 16px rgba(0,0,0,.22); color:#fff; padding: 12px 11px; display:flex; flex-direction:column; justify-content:space-between; }
+  .book-cover .bt { font-family: var(--serif); font-weight: 700; font-size: .84rem; line-height: 1.12; }
+  .book-cover .ba { font-size: .58rem; text-transform: uppercase; letter-spacing: .07em; opacity:.92; }
+  .book .bmeta h3 { margin: 0 0 5px; }
+  .book .bmeta p { margin: 0; font-size: .92rem; }
+  .refs { margin: 18px 0 0; padding: 0; list-style: none; display:grid; gap: 6px; font-size: .88rem; color: var(--muted); }
+  .refs li { padding-left: 16px; position: relative; }
+  .refs li::before { content: "\2192"; position:absolute; left:0; color: var(--accent); }
+  @media (max-width: 560px){ .origin { grid-template-columns: 1fr; } .book { flex-direction: column; align-items:flex-start; } }
+
   /* okrs */
   .okrs { display:grid; gap: 14px; margin-top: 22px; }
   .okr { background: var(--card); border:1px solid var(--border); border-radius: 14px; padding: 20px 22px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
@@ -158,6 +179,41 @@
     <h1>Primeira onda de OKRs, construída sobre uma cultura de check-in.</h1>
     <p class="lead">Não são dois projetos. São <span class="hl">um sistema só</span>: os OKRs dizem o que importa, e os check-ins mantêm o time conectado a isso. Este documento é para a liderança conduzir a primeira onda juntos.</p>
   </header>
+
+  <section>
+    <p class="sec-label">Antes de tudo · OKR 101</p>
+    <h2>O que é um OKR, e de onde veio</h2>
+    <p><strong>OKR = Objective and Key Result.</strong> Um método simples para definir metas ambiciosas e medir o progresso com clareza: um <em>objetivo</em> (para onde vamos) e alguns <em>key results</em> (os números que provam que chegamos). Não é invenção nossa, é um método testado por décadas nas empresas que mais cresceram no mundo.</p>
+    <div class="origin">
+      <div class="orig">
+        <div class="wm"><span class="wm-hp">hp</span></div>
+        <div class="yr">Anos 1950-60</div>
+        <p>O "HP Way" popularizou a gestão por objetivos (MBO), a raiz da ideia: alinhar todo mundo em torno de poucas metas claras.</p>
+      </div>
+      <div class="orig">
+        <div class="wm"><span class="wm-intel">intel</span></div>
+        <div class="yr">Anos 1970</div>
+        <p>Andy Grove transformou o MBO em OKR na Intel: objetivo + resultados-chave mensuráveis. É o berço do método.</p>
+      </div>
+      <div class="orig">
+        <div class="wm"><span class="wm-google"><span class="b">G</span><span class="r">o</span><span class="y">o</span><span class="b">g</span><span class="g">l</span><span class="r">e</span></span></div>
+        <div class="yr">1999 até hoje</div>
+        <p>John Doerr levou os OKRs ao Google. A empresa cresceu de 40 para dezenas de milhares de pessoas usando o método.</p>
+      </div>
+    </div>
+    <div class="book">
+      <div class="book-cover"><div class="bt">Avalie o Que Importa</div><div class="ba">John Doerr · 2018</div></div>
+      <div class="bmeta">
+        <h3>A nossa referência principal</h3>
+        <p><em>Avalie o Que Importa</em> (Measure What Matters), de John Doerr, é o livro que documenta os OKRs e os CFRs, e a base desta iniciativa. O capítulo do Check-in da Adobe é o modelo da nossa cultura de feedback.</p>
+      </div>
+    </div>
+    <ul class="refs">
+      <li>John Doerr, <em>Avalie o Que Importa</em> (Measure What Matters), 2018 — OKRs + CFRs.</li>
+      <li>Adobe Check-in — o sistema de CFR que estamos adaptando.</li>
+      <li>Google re:Work — guia prático de OKRs.</li>
+    </ul>
+  </section>
 
   <section>
     <p class="sec-label">A ideia central</p>
