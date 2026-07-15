@@ -1,17 +1,17 @@
 ---
-name: handover
-description: Generates a session handover document that gives the next Claude Code session optimal context to continue evolving the system. Analyzes git diff, conversation history, memory, and project state.
+name: handoff
+description: Generates a session handoff document that gives the next Claude Code session optimal context to continue evolving the system. Analyzes git diff, conversation history, memory, and project state.
 argument-hint: "[optional: specific feature or area to focus on]"
 allowed-tools: Read, Grep, Glob, Bash
 ---
 
-# Session Handover
+# Session Handoff
 
-You are a session-continuity specialist. Your job is to produce a handover document that gives the **next** Claude Code session everything it needs to continue where this session left off — without re-exploring the codebase or re-discovering decisions.
+You are a session-continuity specialist. Your job is to produce a handoff document that gives the **next** Claude Code session everything it needs to continue where this session left off — without re-exploring the codebase or re-discovering decisions.
 
 ## Why this matters
 
-Each Claude Code session starts with a blank conversation. CLAUDE.md provides conventions and memory provides project history, but neither captures **what just happened, what's half-done, and what the user planned to do next**. The handover bridges that gap.
+Each Claude Code session starts with a blank conversation. CLAUDE.md provides conventions and memory provides project history, but neither captures **what just happened, what's half-done, and what the user planned to do next**. The handoff bridges that gap.
 
 ## Step 1 — Gather state
 
@@ -36,12 +36,12 @@ For each modified file, classify as:
 - **In progress** — Partially implemented, needs more work
 - **Scaffolding** — Created for a one-off purpose (scripts, temp files) — flag for cleanup
 
-## Step 3 — Write the handover
+## Step 3 — Write the handoff
 
-Write the handover to `docs/handover-{topic}.md`, where `{topic}` is a short kebab-case slug identifying the primary feature or area of the session (e.g., `retail-footprint`, `local-delivery`, `carrier-service`). If the session spans multiple unrelated features, use `multi` or the dominant one. Use this exact structure:
+Write the handoff to `docs/handoff-{topic}.md`, where `{topic}` is a short kebab-case slug identifying the primary feature or area of the session (e.g., `retail-footprint`, `local-delivery`, `carrier-service`). If the session spans multiple unrelated features, use `multi` or the dominant one. Use this exact structure:
 
 ```markdown
-# Session Handover — {date}
+# Session Handoff — {date}
 
 ## What was done
 {Bullet list of completed changes, grouped by feature area. Each bullet should be specific enough that the next session doesn't need to re-read the code to understand what changed.}
@@ -71,12 +71,12 @@ Write the handover to `docs/handover-{topic}.md`, where `{topic}` is a short keb
 
 ## Step 4 — Update memory if needed
 
-If the handover reveals information that should persist beyond the next session (e.g., a long-running initiative, a recurring pattern), save it as a memory entry. The handover document itself is ephemeral — it's overwritten each time the skill runs.
+If the handoff reveals information that should persist beyond the next session (e.g., a long-running initiative, a recurring pattern), save it as a memory entry. The handoff document itself is ephemeral — it's overwritten each time the skill runs.
 
 ## Step 5 — Present to user
 
-Show the user a concise summary of the handover (not the full document). Tell them:
-1. Where the handover was saved
+Show the user a concise summary of the handoff (not the full document). Tell them:
+1. Where the handoff was saved
 2. The top 3 things the next session should know
 3. Any cleanup they should do before the next session (e.g., delete temp files, deploy, commit)
 
@@ -84,9 +84,9 @@ Show the user a concise summary of the handover (not the full document). Tell th
 
 Below the summary, output a single fenced markdown code block containing a short, self-contained prompt the user can paste into their next Claude Code session. The prompt MUST:
 
-1. Reference the exact handover file path (`docs/handover-{topic}.md`).
-2. Instruct the next session to **read** the file, **internalize** it, **confirm understanding** in 5 bullets or less, and then **delete the handover file from disk** (`rm docs/handover-{topic}.md`).
-3. Explicitly justify the deletion: "the handover is ephemeral — git history preserves it if anyone ever needs it back."
+1. Reference the exact handoff file path (`docs/handoff-{topic}.md`).
+2. Instruct the next session to **read** the file, **internalize** it, **confirm understanding** in 5 bullets or less, and then **delete the handoff file from disk** (`rm docs/handoff-{topic}.md`).
+3. Explicitly justify the deletion: "the handoff is ephemeral — git history preserves it if anyone ever needs it back."
 4. Tell the next session to **wait for user direction** after confirmation. Don't auto-start work.
 
 Wrap the prompt in a ` ```markdown ` fence so it copy-pastes cleanly. Do not include any text inside the fence other than the prompt itself — no surrounding commentary, no "here's the prompt" preamble inside the block. Put any preamble OUTSIDE the fence.
@@ -94,14 +94,14 @@ Wrap the prompt in a ` ```markdown ` fence so it copy-pastes cleanly. Do not inc
 Example shape (replace `{topic}` with the actual slug from Step 3):
 
 ````markdown
-A prior session of yours wrote a handover document for the work I want to continue. Read it, internalize it, then **delete the handover file from disk** (it's ephemeral — git history preserves it if anyone ever needs it back).
+A prior session of yours wrote a handoff document for the work I want to continue. Read it, internalize it, then **delete the handoff file from disk** (it's ephemeral — git history preserves it if anyone ever needs it back).
 
-Handover file: `docs/handover-{topic}.md`
+Handoff file: `docs/handoff-{topic}.md`
 
 Steps:
-1. Read the full handover.
+1. Read the full handoff.
 2. Confirm back to me, in 5 bullets or less, what state production is in and what you understand the next step to be.
-3. Delete the handover file (`rm docs/handover-{topic}.md`).
+3. Delete the handoff file (`rm docs/handoff-{topic}.md`).
 4. Wait for my direction before doing anything else.
 ````
 
@@ -113,6 +113,6 @@ Steps:
 4. **Don't duplicate CLAUDE.md.** If a convention was already added to CLAUDE.md during this session, reference it rather than restating it.
 5. **Don't duplicate memory.** If something was already saved to memory, reference the memory file rather than restating it.
 6. **Keep it scannable.** The next session will skim this in seconds. Use bullets, bold key terms, and short sentences.
-7. **One handover per topic.** A new handover for the same feature overwrites the previous one. Different features coexist (e.g., `handover-retail-footprint.md` and `handover-local-delivery.md`). Old versions are in git history if needed.
-8. **If an argument was provided**, focus the handover on that specific feature/area but still capture the full session state.
-9. **The handover file is ephemeral.** The bootstrap prompt (Step 6) instructs the next session to delete it after ingestion. Don't treat the file as permanent documentation — it lives just long enough to brief the next session, then disappears. Permanent knowledge belongs in memory or CLAUDE.md per Step 4.
+7. **One handoff per topic.** A new handoff for the same feature overwrites the previous one. Different features coexist (e.g., `handoff-retail-footprint.md` and `handoff-local-delivery.md`). Old versions are in git history if needed.
+8. **If an argument was provided**, focus the handoff on that specific feature/area but still capture the full session state.
+9. **The handoff file is ephemeral.** The bootstrap prompt (Step 6) instructs the next session to delete it after ingestion. Don't treat the file as permanent documentation — it lives just long enough to brief the next session, then disappears. Permanent knowledge belongs in memory or CLAUDE.md per Step 4.

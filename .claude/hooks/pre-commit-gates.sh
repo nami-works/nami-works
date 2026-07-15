@@ -51,6 +51,32 @@ esac
 
 echo "[pre-commit-gates] gating git commit..." >&2
 
+# Detect commit target directory from the command string. Worktree-based
+# commits use `cd "path" && git commit ...` or `git -C "path" commit ...`.
+# Without this, `git rev-parse` runs from the harness's cwd (typically the
+# repo root main checkout on `main`), which produces a false-positive
+# branch block for legitimate commits to a chore/feat/fix branch in a
+# separate worktree. We extract the target and cd into it so every
+# downstream check (branch, staged files, lint config, typecheck) runs
+# from the ACTUAL commit target.
+target_dir=""
+if [[ "$command" =~ cd[[:space:]]+\"([^\"]+)\" ]]; then
+  target_dir="${BASH_REMATCH[1]}"
+elif [[ "$command" =~ cd[[:space:]]+\'([^\']+)\' ]]; then
+  target_dir="${BASH_REMATCH[1]}"
+elif [[ "$command" =~ git[[:space:]]+-C[[:space:]]+\"([^\"]+)\" ]]; then
+  target_dir="${BASH_REMATCH[1]}"
+elif [[ "$command" =~ git[[:space:]]+-C[[:space:]]+\'([^\']+)\' ]]; then
+  target_dir="${BASH_REMATCH[1]}"
+fi
+
+if [ -n "$target_dir" ] && [ -d "$target_dir" ]; then
+  cd "$target_dir" || {
+    echo "[pre-commit-gates] warning: could not cd to $target_dir — falling back to current dir" >&2
+    target_dir=""
+  }
+fi
+
 # Branch-per-task gate. The root CLAUDE.md says every non-trivial change
 # happens on a feature branch — feat/<slug>, fix/<slug>, chore/<slug>,
 # docs/<slug>. Direct commits to main are reserved for explicit hotfixes,
