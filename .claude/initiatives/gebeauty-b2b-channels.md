@@ -34,6 +34,7 @@ require sellout support.
 |---------|------|--------|
 | Sephora Brasil | Specialty retail | Onboarding — registry mapper built, gaps pending |
 | Drogaria Iguatemi (Grupo DI) | Farmácia / curated retail | Negotiating — break-even model built, counter-proposal pending |
+| TJX (TJ Maxx / Marshalls, US) | Off-price / excess-inventory export | **Parked** — blocked on FDA/MoCRA compliance; door kept open (see below) |
 
 ## B2B channel P&L / break-even — reusable methodology
 
@@ -72,6 +73,29 @@ channels**; only the per-deal terms change. Built this way for Drogaria Iguatemi
   Resultado pré-IR (correto); a contribuição do canal reduz o prejuízo 1:1. PIS/COFINS e ICMS
   são tributos sobre receita — não mudam com o prejuízo.
 
+## TJX (TJ Maxx / Marshalls) — PARKED 2026-07-16 (thread "Business Inquiry")
+
+Inbound from **Nancy McCafferty, Sourcing Manager, TJX South America Buying Office**
+(nancy_mccafferty@tjx.com), interested in GE's textured/curly-hair treatment line for US
+off-price shelves (TJ Maxx / Marshalls).
+
+- **Legitimacy: confirmed.** TJX = Fortune 100 off-price retailer, ~$60.4B rev FY2026,
+  ~5,085 stores, ~$5B beauty globally. Not a scam, not a broker. Buys outright (no consignment,
+  no returns, no slotting fees). Model: "Better Brands for Less," sells 20–70% below MSRP.
+- **My recommendation was Conditional GO** — but strictly as an **excess-inventory / closeout
+  valve**, never as GE's US market entry with current hero SKUs (off-price debut would anchor
+  the brand as discount in a virgin market with no full-price channel yet). One-pager brief:
+  https://claude.ai/code/artifact/0d7c901e-1c62-4162-89f8-40ec20829928
+- **Why parked (Lucas, 2026-07-16):** even the closeout path is blocked today — GE has **no
+  FDA/MoCRA-compliant packaging and no US registration**. Current stock is produced for the
+  Brazilian market, so nothing is legally shelf-ready in the US regardless of commercial terms.
+- **Door kept open.** Lucas replied to Nancy (2026-07-16) asking whether TJX requires products
+  to be fully FDA-compliant (labeling, facility registration, US Responsible Person) before
+  their buyers can purchase, or whether TJX has an import/relabel pathway for goods originating
+  outside the US. **Next: await Nancy's answer on who carries the compliance burden.**
+- **Unpark trigger:** either (a) GE has FDA/MoCRA-compliant packaging + registration in hand for
+  the relevant SKUs, or (b) Nancy confirms TJX handles compliance/relabeling on their side.
+
 ## Drogaria Iguatemi — deal state (2026-06-25, thread "GE Beauty | Next Steps")
 
 - Contatos: Linéia Barreto (Curadoria), Patrícia Sepúlvida (Trade Mkt).
@@ -88,7 +112,7 @@ channels**; only the per-deal terms change. Built this way for Drogaria Iguatemi
 
 `gebeauty/sephora/sephora_mapper.py` — reads products.json + sephora_enrich.json → CADASTROS CSV
 `gebeauty/sephora/fetch_enrich.py` — pulls featured image + grounded store description per SKU
-`gebeauty/sephora/sephora_cadastro.csv` — 26 rows (24 produtos + 2 acessórios), gaps [PENDENTE]
+`gebeauty/sephora/sephora_cadastro.csv` — 27 rows (25 produtos + 2 acessórios), gaps [PENDENTE]
 `gebeauty/sephora/sephora_gaps.md` — owner-assigned punch list (regenerated 2026-07-14)
 
 ### 2026-07-14 refresh (resumed after 3-week stall)
@@ -96,6 +120,9 @@ channels**; only the per-deal terms change. Built this way for Drogaria Iguatemi
   **GEB 111 (Charm Bag) dropped** from catalog — confirm discontinued vs JSON gap.
 - **GEB 122/123/124 (Mayday shampoo/cond/leave-in) not yet published on Shopify** — no image/desc;
   confirm whether they enter the Sephora offer now or wait for go-live.
+- **GEB 126 (Sérum Reparador Noturno Mayday) added 2026-07-16** — EAN backfilled into products.json
+  from the Shopify DRAFT (`0631430720369`); still DRAFT so no image/desc, and needs volume + price.
+  Kit GEB 125 stays out (bundle, no EAN).
 - Auto-filled from live store / known facts: Descrição do Item (grounded), Link Imagem, Volumetria,
   Nome SAP EN, Validade Anvisa (3 anos all), Ponto de Inflamação (N/A for non-flammable; only
   GEB 008 aerosol pending FISPQ). Remaining gaps are all external-owner (see gaps.md).
@@ -107,10 +134,10 @@ Sephora folder (B2B Drive): `1vxTr2nm5bztebDz4qOOtizCwiLgDQcaM`
 
 | Gap | Owner | Notes |
 |-----|-------|-------|
-| Anvisa process numbers — 19 SKUs | Raphael/ops | Known for GEB003/008/010/013/022 only |
+| Anvisa process numbers — 20 SKUs | Raphael/ops | Known for GEB003/008/010/013/022 only |
 | Aliq ICMS %, IPI %, Ponto Inflamação (GEB008 aerosol) | Fiscal team (accountant) | ICMS interestadual; Custo C/IPI + Total derivam do IPI |
 | Canal, Nro Lojas, Vendor, SAP Code, Markup | Sephora buyer | Commercial setup — after initial contact |
-| Sell-in price — 9 SKUs | Lucas | Mist (024/029/031/032/033) + Mayday (121/122/123/124) |
+| Sell-in price — 10 SKUs | Lucas | Mist (024/029/031/032/033) + Mayday (121/122/123/124/126) |
 
 > **Note (2026-07-14):** map above updated after CSV refresh. Descrição, imagem, volumetria, SAP
 > EN, validade Anvisa, e Ponto de Inflamação (não-inflamáveis) já preenchidos automaticamente.
