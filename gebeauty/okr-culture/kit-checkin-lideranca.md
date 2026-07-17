@@ -13,7 +13,7 @@ Dois documentos em um: (A) roteiro da sessão de alinhamento da liderança, e (B
 | 10 min | **Por que agora** | A tensão real: o time quer feedback numa frequência que ciclos pesados não entregam. Existe um jeito mais leve e melhor. |
 | 25 min | **O modelo, com profundidade** | Nivelar todo mundo em OKRs + CFRs. Ninguém sai daqui sem entender os dois. Conteúdo na seção abaixo. |
 | 10 min | **As armadilhas** | Sem vínculo com salário no ciclo 1. Poucos OKRs. Nada de cascata rígida. O primeiro ciclo é um beta para aprender. |
-| 10 min | **Vocês são co-donos + calendário** | Cada líder escreve os OKRs do seu time e conduz os check-ins do seu pessoal (não é RH, é liderança). Pesquisa, escuta, workshop, lançamento em 4 de agosto. |
+| 10 min | **Vocês são co-donos + calendário** | Cada líder escreve os OKRs do seu time e conduz os check-ins do seu pessoal (não é RH, é liderança). Definição dos OKRs (21-25/07), escuta do time, all-hands, lançamento em 11 de agosto. |
 | 30 min | **Mapear os OKRs juntos (fechamento)** | O único bloco em aberto fica para o fim, com todo mundo já nivelado. Apresentar objetivos, testar, construir KRs ao vivo. Como conduzir na seção abaixo. |
 | 5 min | **Fechamento** | Cada um sai com uma tarefa: rascunhar os OKRs do próprio time. |
 
