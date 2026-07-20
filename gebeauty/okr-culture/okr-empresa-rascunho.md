@@ -54,3 +54,14 @@ Por que este: são **primeiros passos**, não ROI ainda. A meta do ciclo é cria
 - Cada líder escreve os OKRs do seu time para **conectar de baixo pra cima** com estes dois. Metade dos OKRs deve nascer do time, não descer de cima.
 - Cuidado com o erro mais comum: **tarefa não é resultado.** "Treinar o time em IA" é tarefa. "4 áreas com um fluxo real rodando" é resultado. KR sempre mede um resultado, não uma entrega.
 - Fechar 3 a 5 KRs por objetivo. Mais que isso ninguém acompanha.
+
+---
+
+## Backlog de candidatos (para a discussão de KRs)
+
+Ideias que servem aos objetivos e podem virar KR de time. Não decididas; entram na conversa.
+
+- **Redução de devoluções e reclamações.** Candidato forte que serve aos dois objetivos ao mesmo tempo:
+  - *Independência financeira:* devolução e reclamação custam caro (logística reversa, reembolso, reposição, margem perdida, tempo de SAC). Menos = mais caixa livre e margem.
+  - *Excelência operacional:* menos devolução/reclamação = menos erro e melhor qualidade de operação.
+  - *Possíveis KRs a discutir:* taxa de devolução (%), reclamações por 100 pedidos, custo de logística reversa, CSAT/NPS pós-compra.
