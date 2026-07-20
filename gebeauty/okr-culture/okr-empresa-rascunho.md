@@ -59,9 +59,28 @@ Por que este: são **primeiros passos**, não ROI ainda. A meta do ciclo é cria
 
 ## Backlog de candidatos (para a discussão de KRs)
 
-Ideias que servem aos objetivos e podem virar KR de time. Não decididas; entram na conversa.
+Inventário de tudo que já mapeamos como KR possível. Nada decidido; é o menu de onde os times puxam na hora de construir os KRs.
 
-- **Redução de devoluções e reclamações.** Candidato forte que serve aos dois objetivos ao mesmo tempo:
-  - *Independência financeira:* devolução e reclamação custam caro (logística reversa, reembolso, reposição, margem perdida, tempo de SAC). Menos = mais caixa livre e margem.
+**Objetivo 1 · independência financeira**
+- Crescer a receita (R$)
+- Elevar a margem de contribuição consolidada (%)
+- Gerar fluxo de caixa livre (R$)
+- Reduzir o saldo de capital de terceiros (empréstimos + duplicatas)
+- Reduzir o capital parado em estoque (dias de cobertura)
+
+**Objetivo 2 · primeiros passos com IA**
+- Cada uma das 4 áreas com ao menos 1 fluxo real de IA (de 0 para 4)
+- % do time treinado nas ferramentas de IA aprovadas
+- Biblioteca interna de casos de uso/prompts que economizaram tempo
+- Reduzir horas/semana em tarefas repetitivas via IA
+
+**Operacionais · servem aos dois objetivos**
+- **Redução de devoluções e reclamações.** Serve aos dois ao mesmo tempo:
+  - *Independência financeira:* devolução e reclamação custam caro (logística reversa, reembolso, reposição, margem perdida, tempo de SAC).
   - *Excelência operacional:* menos devolução/reclamação = menos erro e melhor qualidade de operação.
-  - *Possíveis KRs a discutir:* taxa de devolução (%), reclamações por 100 pedidos, custo de logística reversa, CSAT/NPS pós-compra.
+  - *Possíveis KRs:* taxa de devolução (%), reclamações por 100 pedidos, custo de logística reversa, CSAT/NPS pós-compra.
+- Prazo médio de entrega (local delivery)
+- Taxa de pedidos sem erro
+- Tempo de primeira resposta no SAC
+
+> Ainda de fora (dormentes, também já tiveram KR no rascunho original): **recompra/retenção** (taxa de recompra, pedidos por cliente, BEAUTYBACK resgatado, receita de assinatura) e **varejo** (conversão média, ticket médio, UGC/cadastros por loja, NPS de loja). Digo se quer puxar essas para o backlog também.
