@@ -18,6 +18,9 @@ for sid in REMOVE_IDS:
     print(f"remove #{sid}: {'OK' if n == 1 else 'MISS ('+str(n)+')'}")
     html = new
 
+html, _nf = re.subn(r'<footer class="gbb-foot">[\s\S]*?</footer>\s*', "", html)
+print(f"remove footer: {'OK' if _nf == 1 else 'MISS(' + str(_nf) + ')'}")
+
 # 2) neutralize copy (old -> new). Report any miss.
 REPL = [
     (r'<title>[\s\S]*?</title>', '<title>GE Beauty · Portfólio de Produtos</title>'),
