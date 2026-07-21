@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GE Beauty · Portfólio de Produtos</title>
+<style>
+/* ============================================================
+   GE Beauty — B2B portfolio v3 (photographic + institutional grooming)
+   Institutional spine modeled on the Mascavo/Mariana Saad B2B deck:
+   O Diferencial → Posicionamento → Fundadora → Prova social →
+   Novidades → Linhas → Estratégia de varejo → Portfólio → Contato.
+   Product prices/images are LIVE from the admin registry
+   (_b2b_portfolio_fetch.py). Namespaced .gbb-*.
+   [PLACEHOLDER] marks copy/data Lucas still owns (Camila quote, GE numbers).
+   ============================================================ */
+/* DTC font setup, mirrored from the live theme (t/34). Most text = Italian Plate No2
+   Expanded (sans); buttons + small labels/nav = Italian Plate Mono. Files served from the
+   storefront CDN, so this also renders 1:1 once the page lives on the GE store. */
+@font-face{font-family:'Italian Plate No2 Expanded';font-weight:400;font-style:normal;font-display:swap;src:url('https://www.gebeauty.com.br/cdn/shop/t/34/assets/ItalianPlateNo2Expanded-Regular.woff2?v=171365115527056450341761072394') format('woff2')}
+@font-face{font-family:'Italian Plate No2 Expanded';font-weight:500;font-style:normal;font-display:swap;src:url('https://www.gebeauty.com.br/cdn/shop/t/34/assets/ItalianPlateNo2Expanded-Medium.woff2?v=6742387684623827111761072393') format('woff2')}
+@font-face{font-family:'Italian Plate No2 Expanded';font-weight:600;font-style:normal;font-display:swap;src:url('https://www.gebeauty.com.br/cdn/shop/t/34/assets/ItalianPlateNo2Expanded-Demibold.woff2?v=114664203308954651431761072395') format('woff2')}
+@font-face{font-family:'Italian Plate No2 Expanded';font-weight:700;font-style:normal;font-display:swap;src:url('https://www.gebeauty.com.br/cdn/shop/t/34/assets/ItalianPlateNo2Expanded-Bold.woff2?v=120886352148510607001761072395') format('woff2')}
+@font-face{font-family:'Italian Plate No1 Mono';font-weight:400;font-style:normal;font-display:swap;src:url('https://www.gebeauty.com.br/cdn/shop/t/34/assets/ItalianPlateNo1Mono-Regular.woff2?v=118527320043666963301761072394') format('woff2')}
+@font-face{font-family:'Italian Plate No1 Mono';font-weight:700;font-style:normal;font-display:swap;src:url('https://www.gebeauty.com.br/cdn/shop/t/34/assets/ItalianPlateNo1Mono-Bold.woff2?v=66673686109854365841761072394') format('woff2')}
+@font-face{font-family:'Italian Plate No2 Mono';font-weight:400;font-style:normal;font-display:swap;src:url('https://www.gebeauty.com.br/cdn/shop/t/34/assets/ItalianPlateNo2Mono.ttf?v=50371329732231824911761072394') format('truetype')}
+:root{
+  --ge-red:#DF3630; --ink:#161616; --muted:#6b6b6b; --paper:#fff;
+  --bone:#f5f2ee; --sand:#efe9e1; --line:#e7e2da; --maxw:1180px;
+  --font-display:'Italian Plate No2 Expanded','Assistant','Helvetica Neue',-apple-system,Segoe UI,Arial,sans-serif;
+  --font-mono:'Italian Plate No1 Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --font-label:'Italian Plate No2 Mono',ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-display);color:var(--ink);background:var(--paper);line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+img{max-width:100%;display:block}
+.gbb-wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+.ph{outline:1px dashed #c9a; outline-offset:2px}  /* visual hint for placeholder content (mockup only) */
+
+.gbb-progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--ge-red);z-index:60;transition:width .12s linear}
+.gbb-topbar{position:fixed;top:0;left:0;right:0;height:58px;z-index:55;display:flex;align-items:center;justify-content:space-between;padding:0 24px;transition:background .25s,box-shadow .25s}
+.gbb-topbar.solid{background:rgba(255,255,255,.93);box-shadow:0 1px 0 var(--line)}
+.gbb-logo{height:26px;width:auto;display:block}
+.gbb-dl{appearance:none;border:1px solid var(--ink);background:var(--ink);color:#fff;font:inherit;font-size:12.5px;font-weight:700;letter-spacing:.04em;padding:9px 15px;border-radius:999px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;transition:transform .15s,background .15s}
+.gbb-dl:hover{transform:translateY(-1px);background:var(--ge-red);border-color:var(--ge-red)}
+.gbb-dl svg{width:14px;height:14px}
+
+.gbb-index{position:fixed;right:12px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:11px;align-items:flex-end}
+.gbb-index a{text-decoration:none;color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.05em;display:flex;align-items:center;gap:9px;opacity:.5;transition:opacity .2s,color .2s}
+.gbb-index a .dot{width:7px;height:7px;border-radius:50%;background:currentColor;transition:transform .2s}
+.gbb-index a .lbl{opacity:0;transform:translateX(6px);transition:opacity .2s,transform .2s;white-space:nowrap}
+.gbb-index a:hover{opacity:1}.gbb-index a:hover .lbl{opacity:1;transform:none}
+.gbb-index a.active{color:var(--ge-red);opacity:1}
+.gbb-index a.active .dot{transform:scale(1.7)}
+.gbb-index.scrolling a .lbl{opacity:1;transform:none}
+.gbb-index:hover a{opacity:1!important;pointer-events:auto!important}
+.gbb-index:hover .lbl{opacity:1;transform:none}
+
+.gbb-rv{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.gbb-rv.in{opacity:1;transform:none}
+.gbb-sec-eyebrow{font-size:12px;font-weight:700;letter-spacing:.22em;color:var(--ge-red);text-transform:uppercase;margin-bottom:18px}
+
+/* COVER — single screen: text left / portfolio right, blended with a gradient */
+.gbb-cover{min-height:100vh;display:flex;align-items:center;padding:84px 0 52px;position:relative;overflow:hidden;background:radial-gradient(72% 90% at 93% 50%,rgba(223,55,47,.12),transparent 62%),linear-gradient(180deg,#fff 0%,var(--bone) 64%,#f4eae7 100%)}
+.gbb-cover-grid{max-width:none;margin:0;width:100%;padding:0 0 0 max(28px,calc((100vw - var(--maxw))/2 + 28px));display:grid;grid-template-columns:2fr 3fr;gap:18px;align-items:stretch}
+.gbb-eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.28em;color:var(--ge-red);text-transform:uppercase}
+.gbb-cover h1{font-weight:700;letter-spacing:-.02em;font-size:clamp(36px,4.6vw,66px);line-height:1;margin:20px 0 0}
+.gbb-cover h1 .thin{font-weight:300}
+.gbb-cover .sub{font-size:clamp(15px,1.4vw,19px);color:var(--muted);margin-top:24px;max-width:460px}
+.gbb-tag{margin-top:30px;font-style:italic;font-size:clamp(16px,1.4vw,20px)}
+.gbb-tag::before{content:"";display:inline-block;width:34px;height:1.5px;background:var(--ge-red);vertical-align:middle;margin-right:12px}
+.gbb-cover-art{position:relative;overflow:hidden}
+.gbb-cover-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 22%,#000 100%);mask-image:linear-gradient(to right,transparent 0%,#000 22%,#000 100%)}
+
+/* O DIFERENCIAL — 4 pillars */
+.gbb-diff{padding:104px 0 92px;border-top:1px solid var(--line)}
+.gbb-diff h2{font-weight:700;font-size:clamp(28px,4.4vw,52px);line-height:1.05;letter-spacing:-.015em;max-width:760px}
+.gbb-diff-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:50px}
+.gbb-pillar{padding:22px;border:1px solid var(--line);border-radius:16px;background:var(--paper);transition:transform .25s,box-shadow .25s}
+.gbb-pillar:hover{transform:translateY(-4px);box-shadow:0 18px 40px -24px rgba(22,22,22,.4)}
+.gbb-pillar .ico{width:38px;height:38px;color:var(--ge-red);margin-bottom:16px}
+.gbb-pillar h3{font-weight:700;font-size:17px}
+.gbb-pillar p{font-size:14px;color:var(--muted);margin-top:8px}
+
+/* POSICIONAMENTO / WHY */
+.gbb-why{padding:100px 0 88px;background:var(--bone);border-top:1px solid var(--line)}
+.gbb-why h2{font-weight:700;font-size:clamp(28px,4.4vw,52px);line-height:1.05;letter-spacing:-.015em;max-width:800px}
+.gbb-why .lead{font-size:clamp(16px,1.9vw,19px);color:var(--muted);max-width:660px;margin-top:22px}
+.gbb-points{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 34px;margin-top:50px}
+.gbb-point{display:flex;gap:14px;align-items:flex-start;padding:6px 0}
+.gbb-point .b{flex:0 0 auto;width:9px;height:9px;border-radius:50%;background:var(--ge-red);margin-top:8px}
+.gbb-point p{font-size:15.5px}.gbb-point p b{font-weight:700}
+
+/* FUNDADORA */
+.gbb-founder{padding:104px 0;border-top:1px solid var(--line)}
+.gbb-founder-grid{display:grid;grid-template-columns:0.85fr 1.15fr;gap:54px;align-items:center}
+.gbb-portrait{aspect-ratio:4/5;border-radius:18px;background:radial-gradient(120% 100% at 50% 20%,#fff,var(--sand));display:flex;align-items:center;justify-content:center;color:#b3a994;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.gbb-founder blockquote{font-weight:300;font-size:clamp(22px,3.2vw,34px);line-height:1.25;letter-spacing:-.01em}
+.gbb-founder blockquote::first-letter{color:var(--ge-red)}
+.gbb-founder cite{display:block;margin-top:24px;font-style:normal;font-size:14px;font-weight:700;letter-spacing:.04em}
+.gbb-founder cite span{display:block;color:var(--muted);font-weight:400;margin-top:3px}
+.gbb-founder .bio{font-size:15.5px;color:var(--muted);margin-top:26px;max-width:520px}
+
+/* PROVA SOCIAL */
+.gbb-proof{padding:100px 0;background:var(--ink);color:#fff}
+.gbb-proof .gbb-sec-eyebrow{color:#ff7a73}
+.gbb-proof h2{font-weight:700;font-size:clamp(26px,4vw,46px);letter-spacing:-.015em;max-width:760px}
+.gbb-proof .market{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
+.gbb-mkt{border-top:2px solid var(--ge-red);padding-top:16px}
+.gbb-mkt .n{font-weight:700;font-size:clamp(26px,3.6vw,40px);line-height:1}
+.gbb-mkt .t{font-size:13.5px;color:#c9c4bd;margin-top:9px}
+.gbb-brandnums{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:40px;padding-top:32px;border-top:1px solid #333}
+.gbb-bn{text-align:center;padding:14px;border:1px dashed #5a4a4a;border-radius:12px}
+.gbb-bn .n{font-weight:700;font-size:22px;color:#ff9a93}
+.gbb-bn .t{font-size:12px;color:#9a948c;margin-top:6px}
+.gbb-proof .src{font-size:11.5px;color:#7c766e;margin-top:30px}
+
+/* NOVIDADES */
+.gbb-novid{padding:96px 0;background:linear-gradient(180deg,#fff,var(--bone));border-top:1px solid var(--line)}
+.gbb-novid .head{display:flex;align-items:flex-end;justify-content:space-between;gap:26px;flex-wrap:wrap}
+.gbb-novid h2{font-weight:700;font-size:clamp(30px,5vw,58px);line-height:1;letter-spacing:-.02em}
+.gbb-novid .hook{max-width:540px;font-size:clamp(15px,1.8vw,18px)}
+.gbb-novid .hook b{color:var(--ge-red)}
+
+/* LINE CHAPTER */
+.gbb-line{padding:92px 0 88px;border-top:1px solid var(--line)}
+.gbb-line.alt{background:var(--bone)}
+.gbb-line-head{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;flex-wrap:wrap}
+.gbb-line-num{font-weight:700;font-size:clamp(54px,10vw,120px);line-height:.8;color:transparent;-webkit-text-stroke:1.5px var(--ink);opacity:.16}
+.gbb-line-titles{flex:1 1 360px}
+.gbb-line-titles .kicker{font-size:12px;font-weight:700;letter-spacing:.2em;color:var(--ge-red);text-transform:uppercase}
+.gbb-line-titles h3{font-weight:700;font-size:clamp(30px,5vw,58px);line-height:1;letter-spacing:-.02em;margin-top:10px}
+.gbb-line-sell{max-width:580px;font-size:clamp(15px,1.8vw,18px);margin-top:18px}
+.gbb-line-count{font-size:12.5px;color:var(--muted);white-space:nowrap}
+
+/* photographic cards */
+.gbb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:24px;margin-top:46px}
+.gbb-grid.feature{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.gbb-card{background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s,border-color .25s;cursor:pointer}
+.gbb-line.alt .gbb-card,.gbb-novid .gbb-card{background:#fff}
+.gbb-card:hover{transform:translateY(-5px);box-shadow:0 22px 46px -24px rgba(22,22,22,.45);border-color:#d9d2c8}
+.gbb-shot{position:relative;aspect-ratio:1/1.08;background:radial-gradient(125% 105% at 50% 22%,#fff,var(--sand));display:flex;align-items:center;justify-content:center;overflow:hidden}
+.gbb-shot img{width:100%;height:100%;object-fit:contain;padding:14px 14px 6px;mix-blend-mode:multiply;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.gbb-card:hover .gbb-shot img{transform:scale(1.045)}
+.gbb-shot.soon{background:repeating-linear-gradient(135deg,#f3efe9,#f3efe9 12px,#efe9e1 12px,#efe9e1 24px)}
+.gbb-soonmark{display:flex;flex-direction:column;align-items:center;gap:8px;color:#b3a994}
+.gbb-soonmark svg{width:44px;height:44px}.gbb-soonmark span{font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+.gbb-badge{position:absolute;top:12px;left:12px;background:var(--ge-red);color:#fff;font-size:10px;font-weight:700;letter-spacing:.08em;padding:5px 10px;border-radius:999px;text-transform:uppercase}
+.gbb-badge.soft{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.gbb-badge.ghost{background:rgba(22,22,22,.78);color:#fff}
+.gbb-cbody{padding:16px 17px 18px;display:flex;flex-direction:column;flex:1}
+.gbb-cbody .nm{font-weight:700;font-size:16px;line-height:1.25}
+.gbb-cbody .sz{font-size:12.5px;color:var(--muted);margin-top:4px}
+.gbb-meta{margin-top:auto;padding-top:15px;display:flex;align-items:center;justify-content:flex-end;gap:14px}
+.gbb-pvs{text-align:right}
+.gbb-pvs .lab{display:block;font-size:10px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.gbb-pvs .val{font-weight:700;font-size:20px;margin-top:1px}
+.gbb-pvs .val.tba{font-size:13px;font-weight:600;color:var(--muted)}
+.gbb-more{width:31px;height:31px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink);transition:background .2s,color .2s,transform .25s;flex:0 0 auto}
+.gbb-card:hover .gbb-more{background:var(--ink);color:#fff}
+.gbb-card.open .gbb-more{transform:rotate(180deg);background:var(--ge-red);color:#fff;border-color:var(--ge-red)}
+.gbb-detail{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.gbb-card.open .gbb-detail{max-height:260px;border-top:1px solid var(--line)}
+.gbb-detail-in{padding:14px 17px 16px}.gbb-detail p{font-size:13.5px}
+.gbb-spec{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.gbb-spec span{font-size:11px;color:var(--muted);background:var(--bone);border:1px solid var(--line);padding:3px 9px;border-radius:6px}
+
+/* ESTRATÉGIA DE VAREJO */
+.gbb-retail{padding:104px 0;border-top:1px solid var(--line)}
+.gbb-retail h2{font-weight:700;font-size:clamp(28px,4.4vw,50px);letter-spacing:-.015em;max-width:740px}
+.gbb-retail .lead{font-size:clamp(15px,1.8vw,18px);color:var(--muted);max-width:620px;margin-top:20px}
+.gbb-retail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:48px}
+.gbb-supp{display:flex;gap:18px;align-items:flex-start;padding:24px;border:1px solid var(--line);border-radius:16px;background:var(--bone)}
+.gbb-supp .ico{flex:0 0 auto;width:34px;height:34px;color:var(--ge-red)}
+.gbb-supp h3{font-weight:700;font-size:17px}
+.gbb-supp p{font-size:14px;color:var(--muted);margin-top:7px}
+
+/* LINE SHEET */
+.gbb-sheet{padding:96px 0;border-top:1px solid var(--line);background:var(--bone)}
+.gbb-sheet h2{font-weight:700;font-size:clamp(26px,4vw,44px);letter-spacing:-.015em}
+.gbb-sheet .note{font-size:13.5px;color:var(--muted);margin-top:12px;max-width:640px}
+.gbb-table-scroll{overflow-x:auto;margin-top:32px;padding:0 24px}
+table.gbb-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
+table.gbb-table th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:10px 12px;border-bottom:2px solid var(--ink)}
+table.gbb-table td{padding:11px 12px;border-bottom:1px solid var(--line)}
+table.gbb-table tr td:last-child,table.gbb-table tr th:last-child{text-align:right;font-weight:700;white-space:nowrap}
+table.gbb-table th.num{text-align:right}
+table.gbb-table td.num{text-align:right;font-weight:700;white-space:nowrap}
+table.gbb-table .lrow td{background:#fff;font-weight:700;letter-spacing:.02em;font-size:16px;color:var(--ge-red);text-align:left!important}
+table.gbb-table .sku{color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* CTA */
+.gbb-cta{padding:118px 0;background:var(--ge-red);color:#fff;text-align:center}
+.gbb-cta h2{font-weight:700;font-size:clamp(30px,5.5vw,64px);line-height:1.02;letter-spacing:-.02em}
+.gbb-cta p{color:rgba(255,255,255,.9);font-size:clamp(15px,2vw,18px);margin:22px auto 0;max-width:520px}
+.gbb-cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:42px}
+.gbb-btn{appearance:none;border:0;font:inherit;font-weight:700;letter-spacing:.03em;font-size:15px;padding:15px 28px;border-radius:999px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:9px;transition:transform .15s}
+.gbb-btn:hover{transform:translateY(-2px)}
+.gbb-btn.primary{background:#fff;color:var(--ge-red)}
+.gbb-btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.55)}
+.gbb-foot{padding:42px 0;text-align:center;color:var(--muted);font-size:12.5px;background:var(--ink)}
+.gbb-foot b{color:#fff}
+.gbb-fab{position:fixed;right:18px;bottom:18px;z-index:58;display:none}
+
+/* DTC font combination: Mono cut on buttons/CTAs + small uppercase labels & nav (rest is No2 Expanded sans) */
+.gbb-dl,.gbb-btn{font-family:var(--font-mono)}
+.gbb-eyebrow,.gbb-sec-eyebrow,.kicker,.gbb-index a,.gbb-line-count,.gbb-pvs .lab,.gbb-badge,.gbb-spec span,table.gbb-table th{font-family:var(--font-label)}
+
+@media (max-width:980px){
+  .gbb-diff-grid{grid-template-columns:repeat(2,1fr)}
+  .gbb-brandnums{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:860px){
+  .gbb-index{display:none}
+  .gbb-points,.gbb-retail-grid,.gbb-founder-grid,.gbb-proof .market{grid-template-columns:1fr}
+  .gbb-founder-grid{gap:30px}
+  .gbb-dl{display:none}.gbb-fab{display:block}
+  .gbb-cover{min-height:auto;padding:92px 0 44px}
+  .gbb-cover-grid{grid-template-columns:1fr;gap:20px;padding:0 24px}
+  .gbb-cover-art{position:static}
+  .gbb-cover-art img{position:static;width:100%;height:auto;object-fit:contain;-webkit-mask-image:none;mask-image:none;border-radius:14px}
+}
+
+@media print{
+  /* PDF = the exhibited design, one section per page (not a print of the scrolling page).
+     Production: the build script renders this same layout to a real PDF via headless Chrome
+     (printBackground) and the bottom button links to it with `download` for one-click save. */
+  @page{size:A4 landscape;margin:10mm}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  html,body{background:#fff}
+  .gbb-progress,.gbb-topbar,.gbb-index,.gbb-scroll,.gbb-fab,.gbb-more,.gbb-cta-row{display:none!important}
+  .gbb-rv{opacity:1!important;transform:none!important}
+  section{page-break-before:always;break-before:page}
+  #capa{page-break-before:auto;break-before:auto;min-height:auto}
+  .gbb-cover-art img{-webkit-mask-image:none;mask-image:none}
+  .gbb-card{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="gbb-progress" id="gbbProgress"></div>
+<header class="gbb-topbar" id="gbbTopbar">
+  <img class="gbb-logo" src="assets/ge-beauty-logo.webp" alt="GE Beauty">
+</header>
+<nav class="gbb-index" id="gbbIndex"></nav>
+
+<!-- COVER -->
+<section class="gbb-cover" id="capa">
+  <div class="gbb-cover-grid">
+    <div class="gbb-cover-text">
+      <div class="gbb-eyebrow gbb-rv">Portfólio de produtos · 2026</div>
+      <h1 class="gbb-rv">O portfólio<br><span class="thin">de beleza capilar</span><br>GE Beauty.</h1>
+      <p class="sub gbb-rv">Cinco linhas, um cuidado completo, do dia a dia ao tratamento intensivo. Conheça os produtos GE Beauty.</p>
+      <div class="gbb-tag gbb-rv">no seu tempo, do seu jeito.</div>
+    </div>
+    <div class="gbb-cover-art gbb-rv">
+      <img src="assets/portfolio_26-06-22_white-space-left.webp" alt="Portfólio completo GE Beauty" loading="eager">
+    </div>
+  </div>
+</section>
+
+<!-- O DIFERENCIAL -->
+<!-- POSICIONAMENTO -->
+<!-- FUNDADORA -->
+<!-- PROVA SOCIAL -->
+<!-- NOVIDADES -->
+<section class="gbb-novid" id="novidades">
+  <div class="gbb-wrap">
+    <div class="head gbb-rv">
+      <div><div class="gbb-sec-eyebrow">Novidades</div><h2>Acabou de chegar</h2></div>
+      <p class="hook">A linha Body &amp; Hair Mist ganhou <b>três novos perfumes</b> para o cabelo e o corpo.</p>
+    </div>
+    <div class="gbb-grid feature" id="gridNovidades"></div>
+  </div>
+</section>
+
+<main id="gbbMain"></main>
+
+<!-- ESTRATÉGIA DE VAREJO -->
+<!-- CTA -->
+<section class="gbb-cta" id="contato">
+  <div class="gbb-wrap">
+    <h2 class="gbb-rv">Fale com a GE Beauty.</h2>
+    <p class="gbb-rv">Para compras, campanhas ou parcerias de marketing, entre em contato com o nosso time.</p>
+    <div class="gbb-cta-row gbb-rv">
+      <a class="gbb-btn primary" href="#">Entrar em contato</a>
+      <button class="gbb-btn ghost" onclick="window.print()">Baixar este portfólio</button>
+    </div>
+  </div>
+</section>
+<footer class="gbb-foot"><b>GE BEAUTY</b> · Preços indicados = preço sugerido de venda ao consumidor (PVS).</footer>
+<script>
+const CDN="https://cdn.shopify.com/s/files/1/0807/8344/2240/files/";
+const PORTFOLIO=[
+  { kicker:"Cuidado essencial", name:"Essenciais", sell:"A base de toda rotina. Limpeza que respeita o fio, nutrição profunda e proteção para o dia a dia.",
+    products:[
+      {nm:"Shampoo sem Sulfato",sz:"250 ml",sku:"GEB 001",pvs:"95,00",upc:36,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63438.png?v=1776963350",badge:"Best-seller",note:"Limpeza suave, sem ressecar. Para uso frequente em todos os tipos de cabelo."},
+      {nm:"Máscara Condicionadora",sz:"200 ml",sku:"GEB 002",pvs:"95,00",upc:36,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63439.png?v=1776963396",badge:"Best-seller",note:"Nutrição profunda que desembaraça e devolve maciez da raiz às pontas."},
+      {nm:"Leave-in com Proteção Térmica",sz:"150 ml",sku:"GEB 003",pvs:"99,00",upc:36,img:CDN+"leave-in-com-protecao-termica-ge-beauty-150ml.jpg?v=1776716791",badge:"Best-seller",note:"Protege do calor do secador e da chapinha até 230°C, enquanto controla o frizz."},
+      {nm:"Shampoo a Seco",sz:"150 ml",sku:"GEB 008",pvs:"69,00",upc:20,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63443.png?v=1776966069",note:"Renova o cabelo entre lavagens. Praticidade que cabe na bolsa."}
+    ]},
+  { kicker:"Tratamento concentrado", name:"Boosters", sell:"Tratamento concentrado em 15 ml. Cada cliente personaliza o cuidado conforme a necessidade do dia, com a performance e a eficácia das fórmulas da marca.",
+    products:[
+      {nm:"Booster Fortificante",sz:"15 ml",sku:"GEB 019",pvs:"75,00",upc:260,img:CDN+"booster-fortificante-ge-beauty-15ml.jpg?v=1775830122",note:"Para fios fragilizados que pedem mais resistência."},
+      {nm:"Booster Hidratante",sz:"15 ml",sku:"GEB 020",pvs:"69,00",upc:260,img:CDN+"booster-hidratante-ge-beauty-15ml.jpg?v=1760031172",note:"Reposição intensa de hidratação para cabelos ressecados."},
+      {nm:"Booster Definição",sz:"15 ml",sku:"GEB 021",pvs:"69,00",upc:260,img:CDN+"booster-definicao-ge-beauty-15ml.jpg?v=1760031167",badge:"Best-seller",note:"Realça e separa os cachos com toque natural."},
+      {nm:"Booster Antifrizz",sz:"15 ml",sku:"GEB 022",pvs:"79,00",upc:260,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__8458.jpg?v=1777312269",note:"Sela a cutícula e prolonga o efeito liso e alinhado."},
+      {nm:"Booster Antioxidante",sz:"15 ml",sku:"GEB 023",pvs:"75,00",upc:260,img:CDN+"booster-antioxidante-ge-beauty-15ml.jpg?v=1760031165",note:"Defesa diária contra os agressores do ambiente."}
+    ]},
+  { kicker:"Preparação e finalização", name:"Styling", sell:"Acabamento profissional em casa. Liso que dura, cachos definidos sem pesar e finalização leve para todos os dias.",
+    products:[
+      {nm:"Primer Cachos Definidos",sz:"250 ml",sku:"GEB 101",pvs:"149,00",upc:12,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63444.png?v=1776966207",badge:"Best-seller",note:"Prepara e define os cachos com memória de forma o dia inteiro."},
+      {nm:"Primer Liso Intacto",sz:"150 ml",sku:"GEB 102",pvs:"139,00",upc:12,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__85501.png?v=1777296888",badge:"Best-seller",note:"Liso alinhado e protegido, com resistência à umidade."},
+      {nm:"Leave-in Pluma",sz:"200 ml",sku:"GEB 120",pvs:"149,00",upc:12,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__63442.png?v=1776963587",note:"Finalizador multifuncional. Leveza e potência em um só passo."}
+    ]},
+  { kicker:"Cabelo e corpo", name:"Body & Hair Mist", sell:"Bruma perfumada para cabelo e corpo. Fragrância que permanece e brilho sem peso.",
+    products:[
+      {nm:"Melon Mood",sz:"200 ml",sku:"GEB 024",pvs:"129,00",upc:36,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__85503.png?v=1777297009",badge:"Best-seller",note:"Fragrância marcante de melão. Hidrata e perfuma cabelo e corpo."},
+      {nm:"Santal Skin",sz:"200 ml",sku:"GEB 031",pvs:"129,00",upc:36,img:CDN+"santal-skin.png?v=1782175749",badge:"Novo",novo:true,note:"Sândalo, cardamomo e patchouli. Assinatura amadeirada e envolvente."},
+      {nm:"Rose Ritual",sz:"200 ml",sku:"GEB 032",pvs:"129,00",upc:36,img:CDN+"rose-ritual.png?v=1782175742",badge:"Novo",novo:true,note:"Rosas, musk e sândalo. Realça o brilho sem pesar e deixa a pele macia."},
+      {nm:"Pear Fresh",sz:"200 ml",sku:"GEB 033",pvs:"129,00",upc:36,img:CDN+"pear-fresh.png?v=1782175745",badge:"Novo",novo:true,note:"Pêra, frésia e lírio. Frescor leve para o dia."}
+    ]},
+  { kicker:"Reconstrução intensiva", name:"Linha Reconstrutora - Mayday", nav:"Linha Reconstrutora", sell:"Reconstrução para cabelos que pedem recuperação. A linha mais potente do portfólio, agora em expansão.",
+    products:[
+      {nm:"Máscara Reconstrutora",sz:"200 ml",sku:"GEB 121",pvs:"139,00",upc:9,img:CDN+"ge-52229.jpg?v=1764683961",note:"Recuperação intensa para cabelos muito danificados."},
+      {nm:"Shampoo Reconstrutor",sz:"em breve",sku:"GEB 122",pvs:null,soon:true,note:"Limpeza que prepara o fio para a reconstrução."},
+      {nm:"Condicionador Reconstrutor",sz:"em breve",sku:"GEB 123",pvs:null,soon:true,note:"Selagem e maciez no passo final do ritual."},
+      {nm:"Leave-in Reconstrutor",sz:"em breve",sku:"GEB 124",pvs:null,soon:true,note:"Proteção e reparo que continuam após o banho."},
+      {nm:"Sérum Reparador Noturno",sz:"em breve",sku:"GEB 126",pvs:null,soon:true,note:"Tratamento intensivo que age enquanto você dorme."},
+      {nm:"Kit Reconstrução",sz:"em breve",sku:"GEB 125",pvs:null,soon:true,badge:"Kit",note:"O ritual completo de reconstrução em um só kit."}
+    ]},
+  { kicker:"Tamanho viagem", name:"Travel Size", sell:"Os heróis da marca em formato de bolsa. Ideais para presentear e experimentar.",
+    products:[
+      {nm:"Shampoo sem Sulfato",sz:"60 ml",sku:"GEB 013",pvs:"40,00",upc:49,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__85504.png?v=1777297074",note:"O best-seller de limpeza em formato de viagem."},
+      {nm:"Máscara Condicionadora",sz:"50 ml",sku:"GEB 010",pvs:"40,00",upc:49,img:CDN+"freepik__reframe-the-image-to-br-maintain-the-whitelight-gr__85502.png?v=1777296959",note:"Nutrição essencial para levar a qualquer lugar."},
+      {nm:"Leave-in com Proteção Térmica",sz:"50 ml",sku:"GEB 011",pvs:"47,00",upc:49,img:CDN+"leave-in-com-protecao-termica-travel-size.png?v=1760031261",note:"Proteção térmica no tamanho que cabe na bolsa."},
+      {nm:"Melon Mood Mini",sz:"mini",sku:"GEB 029",pvs:"79,00",upc:36,img:CDN+"melon-mood_travel-size.png?v=1776708533",note:"A fragrância best-seller em versão mini."}
+    ]}
+];
+const soonSVG='<div class="gbb-soonmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>em breve</span></div>';
+const money=v=>v?'<span class="lab">Preço sugerido</span><span class="val">R$ '+v+'</span>':'<span class="lab">Preço sugerido</span><span class="val tba">a definir</span>';
+function card(p){
+  const shot=p.soon?`<div class="gbb-shot soon">${p.badge?`<span class="gbb-badge ghost">${p.badge}</span>`:''}${soonSVG}</div>`
+    :`<div class="gbb-shot">${p.badge?`<span class="gbb-badge${p.novo?'':' soft'}">${p.badge}</span>`:''}<img src="${p.img}" alt="${p.nm}" loading="lazy"></div>`;
+  return `<article class="gbb-card" onclick="this.classList.toggle('open')">${shot}
+    <div class="gbb-cbody"><div class="nm">${p.nm}</div><div class="sz">${p.sz}${p.soon?'':' · '+p.sku}</div>
+      <div class="gbb-meta"><div class="gbb-pvs">${money(p.pvs)}</div><span class="gbb-more"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></div></div>
+    <div class="gbb-detail"><div class="gbb-detail-in"><p>${p.note}</p><div class="gbb-spec"><span>SKU ${p.sku}</span><span>Validade 36 meses</span></div></div></div></article>`;
+}
+document.getElementById('gridNovidades').innerHTML=PORTFOLIO.flatMap(l=>l.products).filter(p=>p.novo).map(card).join('');
+const main=document.getElementById('gbbMain');
+main.innerHTML=PORTFOLIO.map((line,i)=>`<section class="gbb-line${i%2?' alt':''}" id="linha-${i}"><div class="gbb-wrap">
+  <div class="gbb-line-head gbb-rv"><div class="gbb-line-num">${String(i+1).padStart(2,'0')}</div>
+    <div class="gbb-line-titles"><div class="kicker">${line.kicker}</div><h3>${line.name}</h3><p class="gbb-line-sell">${line.sell}</p></div>
+    <div class="gbb-line-count">${line.products.length} produtos</div></div>
+  <div class="gbb-grid">${line.products.map(card).join('')}</div></div></section>`).join('');
+let rows='';
+PORTFOLIO.forEach(line=>{rows+=`<tr class="lrow"><td colspan="5">${line.name}</td></tr>`;line.products.forEach(p=>{rows+=`<tr><td>${p.nm}</td><td class="sku">${p.sku}</td><td>${p.sz}</td><td class="num">${p.pvs?'R$ '+p.pvs:'a definir'}</td><td class="num">${p.upc||'—'}</td></tr>`;});});
+main.innerHTML+=`<section class="gbb-sheet" id="tabela"><div class="gbb-wrap"><div class="gbb-sec-eyebrow gbb-rv">Resumo do portfólio</div>
+  <h2 class="gbb-rv">Linha completa e preço sugerido</h2>
+  <p class="note gbb-rv">PVS = preço sugerido de venda ao consumidor.</p>
+  <div class="gbb-table-scroll gbb-rv"><table class="gbb-table"><thead><tr><th>Produto</th><th>SKU</th><th>Volume</th><th class="num">Preço sugerido</th><th class="num">Un/Caixa</th></tr></thead><tbody>${rows}</tbody></table></div></div></section>`;
+
+const idx=document.getElementById('gbbIndex');
+const LABELS={diferencial:'Diferencial',marca:'Posicionamento',fundadora:'Fundadora',mercado:'Mercado',novidades:'Novidades',tabela:'Portfólio',parceria:'Parceria',contato:'Contato'};
+const nav=[...document.querySelectorAll('section[id]')].map(s=>{let label=LABELS[s.id];if(!label&&s.id.indexOf('linha-')===0){const L=PORTFOLIO[+s.id.split('-')[1]];label=L.nav||L.name;}return label?{id:s.id,label}:null;}).filter(Boolean);
+idx.innerHTML=nav.map(n=>`<a href="#${n.id}" data-t="${n.id}"><span class="lbl">${n.label}</span><span class="dot"></span></a>`).join('');
+
+const prog=document.getElementById('gbbProgress'),topbar=document.getElementById('gbbTopbar');
+function onScroll(){const h=document.documentElement.scrollHeight-window.innerHeight;prog.style.width=(window.scrollY/h*100)+'%';topbar.classList.toggle('solid',window.scrollY>40);}
+window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+let gbbScrollTimer;window.addEventListener('scroll',()=>{idx.classList.add('scrolling');clearTimeout(gbbScrollTimer);gbbScrollTimer=setTimeout(()=>idx.classList.remove('scrolling'),900);},{passive:true});
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12,rootMargin:'0px 0px -8% 0px'});
+document.querySelectorAll('.gbb-rv').forEach(el=>io.observe(el));
+const links=[...idx.querySelectorAll('a')];
+const OP=[1,.8,.52,.3];
+function setWindow(ai){links.forEach((a,i)=>{a.classList.toggle('active',i===ai);const d=Math.abs(i-ai);a.style.opacity=d>3?'0':OP[d];a.style.pointerEvents=d>3?'none':'';});}
+setWindow(0);
+const spy=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){const i=links.findIndex(a=>a.dataset.t===e.target.id);if(i>=0)setWindow(i);}});},{rootMargin:'-45% 0px -45% 0px',threshold:0});
+nav.forEach(n=>{const el=document.getElementById(n.id);if(el)spy.observe(el);});
+</script>
+</body>
+</html>

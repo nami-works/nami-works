@@ -38,6 +38,8 @@ These mockups were created before this index existed. They reflect the latest it
 
 | Feature | Latest mockup | Implements (route / component) | Notes |
 |---|---|---|---|
+| GE Beauty — B2B portfolio deck (prospect-facing, wholesale) | [gebeauty-b2b-portfolio-v3.html](gebeauty-b2b-portfolio-v3.html) | GE storefront content page (`body_html` via Admin-API build script); data from live registry, images localized to `assets/products/` | Interactive scroll-telling lookbook: cover (portfolio hero) → diferencial/posicionamento/mercado/fundadora → novidades (lancto trio) → 6 line chapters → line-sheet → parceria (sell-out) → CTA. Copy per-line validated + brand-voice audited (formal B2B). Print CSS = per-section PDF. Build scripts: `gebeauty/scripts/_b2b_portfolio_fetch.py` + `_b2b_localize_images.py`. |
+| GE Beauty — product portfolio (NEUTRAL, partner-safe) | [gebeauty-portfolio-neutral-v1.html](gebeauty-portfolio-neutral-v1.html) | derived from the B2B deck via `gebeauty/scripts/_b2b_make_neutral.py` | Sales-pitch stripped (no diferencial/posicionamento/mercado/parceria, no wholesale CTA) for sharing with partner brands that want to buy products or use them in campaigns/marketing. Keeps lines + launches + line-sheet + images; copy neutralized. |
 | CPG Labs landing page | [cpglabs-landing-v3.html](cpglabs-landing-v3.html) | `site/src/pages/index.astro` | v1, v2 are iteration history |
 | Footprint Expansion | [footprint-expansion-v1.html](footprint-expansion-v1.html) | `app/routes/app.footprint-expansion.tsx` | — |
 | Local Delivery — Manage Route modal layout | [ld-manage-route-modal-layout-v1.html](ld-manage-route-modal-layout-v1.html) | `app/routes/app.local-delivery.tsx` (Manage Route modal) | — |
