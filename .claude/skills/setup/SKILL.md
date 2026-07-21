@@ -1,6 +1,6 @@
 ---
 name: setup
-description: "One-command onboarding for the GE Beauty toolset. Run /setup on a fresh Claude account and it audits what you already have connected, then walks you through only the gaps, verifying each: the GE Beauty MCP connector (Shopify/Omie/Instagram data + the creative-producer and other skill tools, all baked in), plus the shared Canva and Magnific accounts for creative work. Idempotent — re-run anytime to fill new gaps or catch up as the stack grows. Includes a power-user branch (clone the repo + a role-scoped .env) for those who need the raw operational scripts or to author skills. After setup, the GE tools arrive automatically through the connector — you use them by describing what you want in plain language, not by typing slash commands."
+description: "One-command onboarding for the GE Beauty toolset. Run /setup on a fresh Claude account and it audits what you already have connected, then walks you through only the gaps, verifying each: the GE Beauty MCP connector (Shopify/Omie/Instagram data + the creative-producer and other skill tools, all baked in), plus the shared Canva and Magnific accounts for creative work. Idempotent — re-run anytime to fill new gaps or catch up as the stack grows. After setup, the GE tools arrive automatically through the connector — you use them by describing what you want in plain language, not by typing slash commands."
 ---
 
 # /setup — get this Claude account onto the GE Beauty toolset
@@ -90,22 +90,10 @@ out already knowing your context. It usually offers this the first time you laun
 the app; if you skipped it, you can still do it: open Claude's **Settings → Data /
 Import** and run the import there. Optional, but a nice head start.
 
-## Power-user branch (ONLY if they need raw scripts or to author skills)
-
-Most teammates do NOT need this — the connector path above covers day-to-day work.
-Offer it only if they'll run the 200+ operational scripts or edit skills themselves:
-- Install **Claude Code**, `git clone` the repo, open it locally.
-- Get a **role-scoped `gebeauty/.env`** from Lucas — handed securely, **never** pasted
-  into chat and never committed to git.
-- Connect Canva + Magnific in the local session too.
-
-This unlocks the full local pipeline (scripts, skill authoring, the repo-side creative
-steps); everything else is already covered by the connector.
-
 ## Rules
 
 - **Idempotent** — only prompt for what's missing; always safe to re-run.
 - **One step at a time**, and verify a connection before advancing to the next.
 - **Never ask them to paste credentials into the chat.** Connections happen in the
-  Connectors UI; the `.env` (power users only) is handed over out-of-band.
+  Connectors UI.
 - Respond in the user's language.
