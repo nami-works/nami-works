@@ -52,10 +52,20 @@ close to this but not exact; the 1.1x-subtitle rule above is the reusable, preci
 
 ## Calibration (from Lucas's hand-tuned proofs)
 - I5 1:1 (square): ONE line "MANTÉM A PELE HIDRATADA POR ATÉ 72H" (35 ch), box width
-  **1013**, font **~48**. → char width factor ≈ **0.52 × font × chars = text_px**.
-- **1-line font ≈ 1.63 × usable_width / chars** (fills ~85% width). Cap by band height.
-- Line-height ≈ 1.33 × font (Meta), ≈1.30 (PMAX). Band-height cap: font ≤ band_h/(1.33×rows).
+  **1013**, font **~48**.
+- Line-height ≈ 1.34 × font (Meta), ≈1.30 (PMAX). Band-height cap: font ≤ band_h/(1.34×rows).
 - Readable 1-line only if resulting font ≥ ~40 (wide) / ≥ ~30 (landscape col); else split.
+
+### Corrected char-width factor (2026-07-21 — replaces the original 0.52/1.63 estimate)
+The original formula (font ≈ 1.63 × usable_width / chars) was calibrated to only target ~85%
+box-fill and was never re-verified against real renders — it under-filled most claims (see
+"2026-07-21 whitespace correction" below). **Measured directly from rendered PNG pixels**
+(cropped the red descriptor text, thresholded, measured x-extent) on two independent samples,
+two platforms: **k ≈ 0.505-0.512 px per (font-unit × char)**, consistently. Corrected formula,
+targeting ~93% box-fill (safety margin against overflow/kerning variance):
+**font = round(1.85 × usable_width / longest_line_chars)**, then clamp to the type-scale
+ceiling (below) as always. Re-derive `k` per template/font-family via the same pixel-measurement
+method before trusting any formula on a future campaign — don't assume 1.85 transfers.
 
 ## Per-format geometry
 Element-id suffix stable across clones; page-id prefix stable within a platform.
@@ -114,9 +124,11 @@ fails, fall back to `search-designs("ROSE RITUAL Claims")` and match by title
 - Seeds: Meta I4 = DAHPpQXFnQ0 · Google PMAX I4 = DAHPk8KFG0A.
 - Canonical masters (do NOT edit): Meta DAHOV54G2g4 · Google PMAX DAHPZmyFS9k.
 
-## Status — DONE (2026-07-21)
-- All 152 PNGs re-tuned to whitespace-first AND corrected to the precise type-scale ceiling.
-  Full detail + QA in `creatives/MANIFEST.md`.
+## Status — DONE (2026-07-21, incl. whitespace correction)
+- All 152 PNGs re-tuned to whitespace-first, corrected to the type-scale ceiling, AND
+  corrected to the real (pixel-measured) char-width factor so fonts actually fill the box
+  instead of stopping at a conservative ~85% estimate. Full detail + QA in
+  `creatives/MANIFEST.md`.
 - Grandfathered/untouched (do not redo): Meta I4 (all 4 pages, 3-line) · Meta I5 page-3 1:1.
 - Reference look: proof/ folder + the two Canva canonical masters.
 - Next: hand to /growth-hacker for ad-set load.
