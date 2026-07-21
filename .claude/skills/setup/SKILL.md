@@ -83,6 +83,13 @@ Recap what they can now do, with concrete example asks in their language:
 Remind them: **describe what you want; Claude picks the tool.** If a creative run
 reports a Canva/Magnific tool missing, just re-run `/setup`.
 
+### Optional — import your history from another AI
+
+Claude can import your history/memory from another AI (like ChatGPT) so it starts
+out already knowing your context. It usually offers this the first time you launch
+the app; if you skipped it, you can still do it: open Claude's **Settings → Data /
+Import** and run the import there. Optional, but a nice head start.
+
 ## Power-user branch (ONLY if they need raw scripts or to author skills)
 
 Most teammates do NOT need this — the connector path above covers day-to-day work.
