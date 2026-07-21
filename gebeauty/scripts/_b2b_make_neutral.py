@@ -12,7 +12,7 @@ src = (MOCK / "gebeauty-b2b-portfolio-v3.html").read_text(encoding="utf-8")
 html = src
 
 # 1) remove the sales-pitch + placeholder sections (flat, non-nested)
-REMOVE_IDS = ["diferencial", "marca", "fundadora", "mercado", "parceria"]
+REMOVE_IDS = ["diferencial", "marca", "fundadora", "mercado", "parceria", "contato"]
 for sid in REMOVE_IDS:
     new, n = re.subn(r'<section[^>]*id="' + sid + r'"[\s\S]*?</section>\s*', "", html)
     print(f"remove #{sid}: {'OK' if n == 1 else 'MISS ('+str(n)+')'}")
