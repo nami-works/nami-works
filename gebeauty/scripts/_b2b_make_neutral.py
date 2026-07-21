@@ -38,6 +38,13 @@ REPL = [
      'Bruma perfumada para cabelo e corpo. Fragrância que permanece e brilho sem peso.'),
     ('Os heróis da marca em formato de bolsa. Ideais para presentear, experimentar e girar no PDV com baixo investimento por unidade.',
      'Os heróis da marca em formato de bolsa. Ideais para presentear e experimentar.'),
+    # partner version: move price off the card face, into the expandable detail
+    ('<div class="gbb-meta"><div class="gbb-pvs">${money(p.pvs)}</div><span class="gbb-more">',
+     '<div class="gbb-meta"><span class="gbb-more">'),
+    ('<div class="gbb-detail-in"><p>${p.note}</p>',
+     '<div class="gbb-detail-in"><div class="gbb-pvs det">${money(p.pvs)}</div><p>${p.note}</p>'),
+    ('.gbb-detail-in{padding:14px 17px 16px}',
+     '.gbb-detail-in{padding:14px 17px 16px}.gbb-pvs.det{text-align:left;margin:0 0 10px}'),
 ]
 for old, new in REPL:
     if old.startswith('<title'):

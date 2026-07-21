@@ -135,12 +135,13 @@ img{max-width:100%;display:block}
 .gbb-line-count{font-size:12.5px;color:var(--muted);white-space:nowrap}
 
 /* photographic cards */
-.gbb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:24px;margin-top:46px}
-.gbb-grid.feature{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
-.gbb-card{background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s,border-color .25s;cursor:pointer}
-.gbb-line.alt .gbb-card,.gbb-novid .gbb-card{background:#fff}
-.gbb-card:hover{transform:translateY(-5px);box-shadow:0 22px 46px -24px rgba(22,22,22,.45);border-color:#d9d2c8}
-.gbb-shot{position:relative;aspect-ratio:1/1.08;background:radial-gradient(125% 105% at 50% 22%,#fff,var(--sand));display:flex;align-items:center;justify-content:center;overflow:hidden}
+.gbb-grid{display:flex;gap:18px;margin-top:46px;overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;padding-bottom:10px}
+.gbb-grid>.gbb-card{flex:0 0 clamp(220px,44vw,268px);scroll-snap-align:start}
+.gbb-grid.feature>.gbb-card{flex-basis:clamp(240px,46vw,300px)}
+.gbb-card{background:#f1ede6;border:0;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s;cursor:pointer}
+.gbb-line.alt .gbb-card,.gbb-novid .gbb-card{background:#ece6dd}
+.gbb-card:hover{transform:translateY(-5px);box-shadow:0 22px 46px -24px rgba(22,22,22,.4)}
+.gbb-shot{position:relative;aspect-ratio:1/1;background:transparent;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .gbb-shot img{width:100%;height:100%;object-fit:contain;padding:14px 14px 6px;mix-blend-mode:multiply;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
 .gbb-card:hover .gbb-shot img{transform:scale(1.045)}
 .gbb-shot.soon{background:repeating-linear-gradient(135deg,#f3efe9,#f3efe9 12px,#efe9e1 12px,#efe9e1 24px)}
@@ -162,7 +163,7 @@ img{max-width:100%;display:block}
 .gbb-card.open .gbb-more{transform:rotate(180deg);background:var(--ge-red);color:#fff;border-color:var(--ge-red)}
 .gbb-detail{max-height:0;overflow:hidden;transition:max-height .35s ease}
 .gbb-card.open .gbb-detail{max-height:260px;border-top:1px solid var(--line)}
-.gbb-detail-in{padding:14px 17px 16px}.gbb-detail p{font-size:13.5px}
+.gbb-detail-in{padding:14px 17px 16px}.gbb-pvs.det{text-align:left;margin:0 0 10px}.gbb-detail p{font-size:13.5px}
 .gbb-spec{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .gbb-spec span{font-size:11px;color:var(--muted);background:var(--bone);border:1px solid var(--line);padding:3px 9px;border-radius:6px}
 
@@ -234,6 +235,7 @@ table.gbb-table .sku{color:var(--muted);font-variant-numeric:tabular-nums}
   section{page-break-before:always;break-before:page}
   #capa{page-break-before:auto;break-before:auto;min-height:auto}
   .gbb-cover-art img{-webkit-mask-image:none;mask-image:none}
+  .gbb-grid{display:flex;flex-wrap:wrap;overflow:visible}
   .gbb-card{break-inside:avoid}
 }
 </style>
@@ -345,8 +347,8 @@ function card(p){
     :`<div class="gbb-shot">${p.badge?`<span class="gbb-badge${p.novo?'':' soft'}">${p.badge}</span>`:''}<img src="assets/products/${p.sku.toLowerCase().replace(/\s+/g,'')}.webp" alt="${p.nm}" loading="lazy"></div>`;
   return `<article class="gbb-card" onclick="this.classList.toggle('open')">${shot}
     <div class="gbb-cbody"><div class="nm">${p.nm}</div><div class="sz">${p.sz}${p.soon?'':' · '+p.sku}</div>
-      <div class="gbb-meta"><div class="gbb-pvs">${money(p.pvs)}</div><span class="gbb-more"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></div></div>
-    <div class="gbb-detail"><div class="gbb-detail-in"><p>${p.note}</p><div class="gbb-spec"><span>SKU ${p.sku}</span><span>Validade 36 meses</span></div></div></div></article>`;
+      <div class="gbb-meta"><span class="gbb-more"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></div></div>
+    <div class="gbb-detail"><div class="gbb-detail-in"><div class="gbb-pvs det">${money(p.pvs)}</div><p>${p.note}</p><div class="gbb-spec"><span>SKU ${p.sku}</span><span>Validade 36 meses</span></div></div></div></article>`;
 }
 document.getElementById('gridNovidades').innerHTML=PORTFOLIO.flatMap(l=>l.products).filter(p=>p.novo).map(card).join('');
 const main=document.getElementById('gbbMain');
