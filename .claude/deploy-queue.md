@@ -61,6 +61,21 @@ _(empty — the i18n online-tokens fix shipped in the 2026-05-22 deploy below.)_
 
 ## Deployed
 
+### 2026-07-21 · connector — creative-producer adaptive guided intake
+- **Image tag:** `nami-works:connector-20260721-intake` (supersedes -serveskills). Live on `mcp.gebeauty.com.br`; `/health` 200 on attempt 1.
+- **PR #68** — `creative-producer` opens every job with an ADAPTIVE guided intake (ask only the gaps, infer/skip/branch on prior answers) for non-technical operators (e.g. Alicia); re-bundled into `served-skills.ts`. Includes the no-repo/connector path (Magnific + operator-supplied images + Canva share link).
+- **Deploy mechanic:** buildx `linux/amd64` → ECR, then on `54.221.23.142` sed the tag in `/srv/cpg-labs/docker-compose.yml` (service `connector`) + `docker compose pull/up -d --force-recreate connector`; box ECR re-auth via piped `aws ecr get-login-password` over ssh stdin. 168 connector tests green pre-deploy.
+
+### 2026-07-21 · connector — serve /creative-producer at full fidelity
+- **Image tag:** `nami-works:connector-20260721-serveskills` (supersedes -creative).
+- **PR #64** — `brand_creative_producer` now returns the COMPLETE skill (SKILL.md body + the ~21KB creative-ad-image-pipeline playbook, ~58KB) instead of a summary. Content is bundled at build time from the canonical `.claude/skills` + `docs` via `apps/connector/scripts/bundle-skills.mjs` → committed `apps/connector/src/generated/served-skills.ts` (those sources sit outside the Docker build context). Reusable "serve-the-series" pattern: add a skill to the manifest, regenerate, redeploy.
+- **Verified:** `/health` 200; 168 tests green pre-deploy.
+
+### 2026-07-14 · connector — surface /creative-producer as an MCP tool
+- **Image tag:** `nami-works:connector-20260714-creative` (supersedes -feedback).
+- **PR #61** — added the `brand_creative_producer` tool ("Conteúdo · Produtor de criativos", brand system) so Desktop/connector users reach the creative-producer brief without a repo. (Its summary payload was superseded by the full-fidelity 0721 serve-skills roll.)
+- **Verified:** `/health` 200; 168 tests green pre-deploy.
+
 ### 2026-07-08 · connector — feedback attribution + proactive struggle-detection nudge
 - **Image tag:** `nami-works:connector-20260708-feedback` (supersedes -pagar2). Live on `mcp.gebeauty.com.br`; `/health` 200 on attempt 1; container up clean, no startup errors.
 - **Deploy mechanic:** buildx `linux/amd64` push to ECR (`477780048372.dkr.ecr.us-east-1.amazonaws.com/nami-works`), then on `54.221.23.142`: sed tag in `/srv/cpg-labs/docker-compose.yml` (service `connector`) + `docker compose pull connector && up -d --force-recreate connector`. Box ECR token had expired → re-authed by piping a locally-minted `aws ecr get-login-password` into the box's `docker login` over ssh stdin.
