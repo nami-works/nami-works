@@ -450,9 +450,8 @@ function card(p){
 document.getElementById('gridNovidades').innerHTML=PORTFOLIO.flatMap(l=>l.products).filter(p=>p.novo).map(card).join('');
 const main=document.getElementById('gbbMain');
 main.innerHTML=PORTFOLIO.map((line,i)=>`<section class="gbb-line${i%2?' alt':''}" id="linha-${i}"><div class="gbb-wrap">
-  <div class="gbb-line-head gbb-rv"><div class="gbb-line-num">${String(i+1).padStart(2,'0')}</div>
-    <div class="gbb-line-titles"><div class="kicker">${line.kicker}</div><h3>${line.name}</h3><p class="gbb-line-sell">${line.sell}</p></div>
-    <div class="gbb-line-count">${line.products.length} produtos</div></div>
+  <div class="gbb-line-head gbb-rv">
+    <div class="gbb-line-titles"><div class="kicker">${line.kicker}</div><h3>${line.name}</h3><p class="gbb-line-sell">${line.sell}</p></div></div>
   <div class="gbb-grid">${line.products.map(card).join('')}</div></div></section>`).join('');
 let rows='';
 PORTFOLIO.forEach(line=>{rows+=`<tr class="lrow"><td colspan="5">${line.name}</td></tr>`;line.products.forEach(p=>{rows+=`<tr><td>${p.nm}</td><td class="sku">${p.sku}</td><td>${p.sz}</td><td class="num">${p.pvs?'R$ '+p.pvs:'a definir'}</td><td class="num">${p.upc||'—'}</td></tr>`;});});
