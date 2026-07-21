@@ -21,8 +21,7 @@ for sid in REMOVE_IDS:
 # 2) neutralize copy (old -> new). Report any miss.
 REPL = [
     (r'<title>[\s\S]*?</title>', '<title>GE Beauty · Portfólio de Produtos</title>'),
-    ('<h1 class="gbb-rv">Beleza capilar<br><span class="thin">que a sua cliente</span><br>já procura.</h1>',
-     '<h1 class="gbb-rv">O portfólio<br><span class="thin">de beleza capilar</span><br>GE Beauty.</h1>'),
+    ('<h1 class="gbb-rv">Beleza capilar<br><span class="thin">que a sua cliente</span><br>já procura.</h1>', ''),
     ('Apresentação de portfólio para parceiros de varejo. Cinco linhas, um cuidado completo, do dia a dia ao tratamento intensivo.',
      'Cinco linhas, um cuidado completo, do dia a dia ao tratamento intensivo. Conheça os produtos GE Beauty.'),
     ('para ampliar a prateleira de maior recompra.', 'para o cabelo e o corpo.'),
@@ -45,6 +44,14 @@ REPL = [
      '<div class="gbb-detail-in"><div class="gbb-pvs det">${money(p.pvs)}</div><p>${p.note}</p>'),
     ('.gbb-detail-in{padding:14px 17px 16px}',
      '.gbb-detail-in{padding:14px 17px 16px}.gbb-pvs.det{text-align:left;margin:0 0 10px}'),
+    # partner cover: no H1, portfolio image stretches full width below the text
+    ('</style>',
+     '#capa{display:block;min-height:auto;padding:88px 0 0}'
+     '#capa .gbb-cover-grid{display:block;max-width:none;padding:0}'
+     '#capa .gbb-cover-text{max-width:var(--maxw);margin:0 auto;padding:0 28px 34px}'
+     '#capa .gbb-cover-art{width:100%}'
+     '#capa .gbb-cover-art img{position:static;width:100%;height:auto;object-fit:contain;'
+     '-webkit-mask-image:none;mask-image:none;border-radius:0}</style>'),
 ]
 for old, new in REPL:
     if old.startswith('<title'):
