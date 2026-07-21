@@ -22,6 +22,34 @@ approved treatment. Survives session reset — a fresh session executes from thi
 5. **Hug** the name block (descriptor top unchanged — see per-format tops below).
 6. Uppercase, accent-safe. Font-size varies per asset to fill; set uniformity irrelevant.
 
+## Type-scale CEILING — canonical rules (Lucas, approved 2026-07-20/21, supersedes the C12-only heuristic below)
+1. **Max 2 rows of text.** Never 3+, even if a claim's natural regressive split wants more.
+2. **Row 1 length >= row 2 length**, always (no short-then-long).
+3. **Copy font size <= 1.1 x subtitle ("body & hair splash") font size**, per page. This is
+   the precise, general form of the info-hierarchy rule — copy must stay clearly subordinate
+   to the subtitle line, not just to the title.
+4. **Respect the existing text box width/height** — reduce font to fit, never let the box
+   grow past its original footprint.
+**Set this ceiling BEFORE any future rollout to avoid re-tuning** — it's cheap to state up
+front, expensive to redo after 37 designs are built.
+
+### How the ceiling was derived (method to reuse on future campaigns)
+Subtitle font size isn't directly readable from the Canva API (no font_size in snapshots).
+Measure it by: (1) open a transaction on a committed design, (2) widen the subtitle box
+temporarily so its text renders on ONE line, (3) set font_size to a known test value (e.g.
+100) and read the resulting box height, (4) `factor = height / test_font`, (5)
+`original_subtitle_font = original_height / factor`, (6) `ceiling = round(1.1 * original_subtitle_font)`,
+(7) `cancel-editing-transaction` — zero side effects, nothing saved. Repeat once per platform
+template (fonts can differ across templates even in the same brand).
+
+Measured factor ≈ 1.19-1.20 for both templates (same brand font family). Resulting per-page
+ceilings (Rose Ritual campaign, ROSE_RITUAL/META and /PMAX templates only):
+- META: 4:5 = 58 · 1.91:1 = 44 · 1:1 = 56 · 9:16 = 66
+- GOOGLE PMAX: 4:5 = 51 · 1.91:1 = 44 · 1:1 = 62 · 9:16 = 66
+
+(The original C12-based heuristic — matching the "MOOD DO DIA" proof's rendered size — landed
+close to this but not exact; the 1.1x-subtitle rule above is the reusable, precise version.)
+
 ## Calibration (from Lucas's hand-tuned proofs)
 - I5 1:1 (square): ONE line "MANTÉM A PELE HIDRATADA POR ATÉ 72H" (35 ch), box width
   **1013**, font **~48**. → char width factor ≈ **0.52 × font × chars = text_px**.
@@ -55,9 +83,9 @@ Regressive multi-line splits given for the long claims; short claims are single-
 | I1 | CONFERE BRILHO AOS FIOS E HIDRATA A PELE | CONFERE BRILHO AOS FIOS E / HIDRATA A PELE |
 | I2 | HIDRATA A PELE E CONFERE BRILHO AOS FIOS | HIDRATA A PELE E CONFERE / BRILHO AOS FIOS |
 | I3 | COM ATIVOS QUE SELAM A CUTÍCULA / E AUMENTAM O BRILHO DOS FIOS | COM ATIVOS QUE SELAM A CUTÍCULA / E AUMENTAM O BRILHO DOS FIOS |
-| I4 | COM ATIVOS QUE ESTIMULAM / A HIDRATAÇÃO DA PELE / DE DENTRO PARA FORA | COM ATIVOS QUE ESTIMULAM / A HIDRATAÇÃO DA PELE / DE DENTRO PARA FORA |
-| I5 | MANTÉM A PELE HIDRATADA POR ATÉ 72H | MANTÉM A PELE / HIDRATADA POR ATÉ 72H |
-| I6 | BRUMA PERFUMADA PARA CABELO E CORPO | BRUMA PERFUMADA / PARA CABELO E CORPO |
+| I4 | COM ATIVOS QUE ESTIMULAM A HIDRATAÇÃO / DA PELE DE DENTRO PARA FORA (**revised to 2 lines 2026-07-21 — max-2-rows rule; Meta I4 stays 3-line, grandfathered/approved, do NOT touch**) | same as wide |
+| I5 | MANTÉM A PELE HIDRATADA POR ATÉ 72H | MANTÉM A PELE HIDRATADA / POR ATÉ 72H (**revised 2026-07-21 — row1>=row2**) |
+| I6 | BRUMA PERFUMADA PARA CABELO E CORPO | BRUMA PERFUMADA PARA / CABELO E CORPO (**revised 2026-07-21 — row1>=row2**) |
 | I7 | FRAGRÂNCIA DE ROSAS COM LICHIA / E FRUTAS VERMELHAS | FRAGRÂNCIA DE ROSAS COM LICHIA / E FRUTAS VERMELHAS |
 | C1 | DÁ BRILHO PARA O CABELO E HIDRATA A PELE | DÁ BRILHO PARA O CABELO E / HIDRATA A PELE |
 | C2 | HIDRATA A PELE E DÁ BRILHO PARA O CABELO | HIDRATA A PELE E DÁ BRILHO / PARA O CABELO |
@@ -70,7 +98,7 @@ Regressive multi-line splits given for the long claims; short claims are single-
 | C9 | VIBES DE BRUNCH COM AS AMIGAS! | VIBES DE BRUNCH / COM AS AMIGAS! |
 | C10 | FRAGRÂNCIA FEMININA E DELICADA | FRAGRÂNCIA FEMININA / E DELICADA |
 | C11 | VIBES VIAGEM PARA PARIS | VIBES VIAGEM PARA PARIS |
-| C12 | MOOD DO DIA: VIAGEM PARA PARIS | MOOD DO DIA: / VIAGEM PARA PARIS |
+| C12 | MOOD DO DIA: VIAGEM PARA PARIS | MOOD DO DIA: VIAGEM / PARA PARIS (**revised 2026-07-21 — row1>=row2**) |
 
 ## Per-asset op recipe (Canva MCP)
 Per design: start-editing-transaction → for each page: replace_text (break string),
@@ -86,11 +114,9 @@ fails, fall back to `search-designs("ROSE RITUAL Claims")` and match by title
 - Seeds: Meta I4 = DAHPpQXFnQ0 · Google PMAX I4 = DAHPk8KFG0A.
 - Canonical masters (do NOT edit): Meta DAHOV54G2g4 · Google PMAX DAHPZmyFS9k.
 
-## Status (verified on disk 2026-07-19)
-- All 152 PNGs already exist in `creatives/{google,meta}/` (76 each) in the OLD narrow-box
-  treatment. This rollout RE-TUNES them in place, then re-exports + re-downloads (overwrite).
-- ALREADY at the approved treatment (do not redo): Meta I4 (all 4 pages, whitespace-first) ·
-  Meta I5 page-3 1:1 (Lucas's one-row edit). Note Meta I5 pages 1/2/4 are NOT yet conformed.
-- TODO: apply the treatment to every other claim/page on BOTH platforms; QA every asset
-  (readability-vs-contrast + regressive + width-fill + hug); refresh MANIFEST + open folders.
-- Reference look: proof/ folder + the two Canva designs above.
+## Status — DONE (2026-07-21)
+- All 152 PNGs re-tuned to whitespace-first AND corrected to the precise type-scale ceiling.
+  Full detail + QA in `creatives/MANIFEST.md`.
+- Grandfathered/untouched (do not redo): Meta I4 (all 4 pages, 3-line) · Meta I5 page-3 1:1.
+- Reference look: proof/ folder + the two Canva canonical masters.
+- Next: hand to /growth-hacker for ad-set load.
