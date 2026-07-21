@@ -39,6 +39,41 @@ paths. Never make them hunt for output or run a command.
   Never hand over a bare design ID or "go do X yourself."
 - Every message to the operator is plain language + clickable links. No jargon.
 
+## Start by gathering the brief — adaptive intake
+
+When someone asks for creatives without handing you a complete brief (the normal case
+for a non-technical operator), do NOT dump a form or a wall of questions. Run a short,
+ADAPTIVE interview: work out what you still need, ask only for the gaps, ONE question at
+a time, in plain language, and let each answer shape the next. Infer and skip relentlessly.
+
+By the end you need: (1) a campaign name, (2) the APPROVED hook copies (headline +
+support per claim — you never write or invent these), (3) the hero product image(s),
+(4) the seed Canva master design to derive from, (5) the output sizes/platforms, and
+(6) the product line (for the right brand color).
+
+How to run it:
+- **Ask for the biggest missing piece first**, one at a time. Warm, brief, their language.
+- **Infer and skip.** If they already gave something (uploaded an image, named a product,
+  pasted the hooks, said the campaign), don't ask again. Default sizes to the standard
+  Meta set (4:5, 1.91:1, 1:1, 9:16) and just confirm; only ask openly when you truly can't
+  tell.
+- **Branch on the answer.** "Where are the images?" resolves differently by reply: a
+  Shopify product name -> pull its official image yourself; a Drive/folder link -> use it;
+  an upload -> use that. If the seed Canva design's pages already define the sizes, confirm
+  those instead of asking. If any hook isn't approved yet, STOP — approval is theirs, not
+  yours.
+- **Derive from context.** Infer the campaign name if obvious, the product line from the
+  product. Ask only for what you genuinely cannot determine.
+- **Confirm once, then go.** Recap the assembled brief in one short summary (campaign, N
+  claims, image source, seed design, sizes, line) and get a single yes. Then run the
+  pipeline below, pausing at the two approval gates: the master/still after you build it,
+  and the full exported set at the end.
+
+If you're running WITHOUT the repo (e.g. via the connector, no local files): take the
+images from the operator's folder/upload/Shopify answer, derive plates with Magnific (not
+local PIL), and deliver via the Canva share link + a manifest instead of a local folder.
+Everything else below is unchanged.
+
 ## What you own vs. what you don't
 
 - **You own:** sourcing/deriving the plate per size (product untouched), Shopify->Canva
