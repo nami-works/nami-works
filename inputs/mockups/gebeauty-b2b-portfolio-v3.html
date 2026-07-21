@@ -440,7 +440,7 @@ const soonSVG='<div class="gbb-soonmark"><svg viewBox="0 0 24 24" fill="none" st
 const money=v=>v?'<span class="lab">Preço sugerido</span><span class="val">R$ '+v+'</span>':'<span class="lab">Preço sugerido</span><span class="val tba">a definir</span>';
 function card(p){
   const shot=p.soon?`<div class="gbb-shot soon">${p.badge?`<span class="gbb-badge ghost">${p.badge}</span>`:''}${soonSVG}</div>`
-    :`<div class="gbb-shot">${p.badge?`<span class="gbb-badge${p.novo?'':' soft'}">${p.badge}</span>`:''}<img src="${p.img}" alt="${p.nm}" loading="lazy"></div>`;
+    :`<div class="gbb-shot">${p.badge?`<span class="gbb-badge${p.novo?'':' soft'}">${p.badge}</span>`:''}<img src="assets/products/${p.sku.toLowerCase().replace(/\s+/g,'')}.webp" alt="${p.nm}" loading="lazy"></div>`;
   return `<article class="gbb-card" onclick="this.classList.toggle('open')">${shot}
     <div class="gbb-cbody"><div class="nm">${p.nm}</div><div class="sz">${p.sz}${p.soon?'':' · '+p.sku}</div>
       <div class="gbb-meta"><div class="gbb-pvs">${money(p.pvs)}</div><span class="gbb-more"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></div></div>
