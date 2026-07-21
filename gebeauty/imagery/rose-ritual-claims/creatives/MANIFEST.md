@@ -1,6 +1,18 @@
 # Rose Ritual — Claims Test creative manifest
 
-> ✅ **Whitespace-first re-tune COMPLETE (2026-07-20), font-hierarchy correction COMPLETE (2026-07-21).**
+> ✅ **Whitespace-first re-tune COMPLETE (2026-07-20), font-hierarchy correction COMPLETE (2026-07-21), export-quality correction COMPLETE (2026-07-21).**
+>
+> **2026-07-21 correction — export quality (photo layer softness).** Lucas noticed the background
+> product photo looked visibly softer than the text/logo in an exported PNG, even though both
+> looked sharp inside Canva. Root cause: `export-design` for PNG defaults to `export_quality:
+> "regular"` when that field is omitted — this downsamples/recompresses the raster photo fill
+> layer only (vector text and the logo aren't resampled, so they're unaffected and stay sharp
+> regardless of tier). Confirmed by re-exporting one page with `export_quality: "pro"` explicitly:
+> file size rose from 1,276,760 to 1,731,014 bytes (+36%) and the photo (lychee texture, leaf
+> veins, water droplets) is visibly sharper, text/logo identical either way. **Fix: always pass
+> `export_quality: "pro"` explicitly on every `export-design` call** — don't rely on the default.
+> All 152 PNGs re-exported with this flag; every file grew 16-43% in size (larger pages benefit
+> more, since they carry proportionally more photo pixels), all verified as valid, non-corrupt PNGs.
 > All 152 PNGs (19 claims × 4 sizes × Meta + Google PMAX) at the approved whitespace-first
 > treatment per `../ROLLOUT-SPEC.md`, committed to git (`creatives/meta` + `creatives/google`,
 > 76 each). The "Treatment (locked)" section below describes the ORIGINAL narrow-box build and

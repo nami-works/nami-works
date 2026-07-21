@@ -115,6 +115,14 @@ Per design: start-editing-transaction → for each page: replace_text (break str
 resize_element (fillW), format_text (font_size = computed, verify render, nudge if wraps/orphans
 or bleeds band) → commit → export → download to creatives/<platform>/<size>_<slug>.png.
 
+**Export quality — always pass `export_quality: "pro"` explicitly.** `export-design` defaults to
+`export_quality: "regular"` for PNG when the field is omitted, which downsamples/recompresses the
+raster photo fill layer only (vector text/logo are untouched, so they look sharp either way —
+this makes the bug easy to miss until you check the photo at 100%+ zoom). Discovered 2026-07-21
+after all 152 assets had already been exported once without the flag; fixed by re-exporting
+everyone with `export_quality: "pro"` (files grew 16-43%, confirmed sharper). Set this on every
+`export-design` call from the start on future campaigns.
+
 ## Design ID registry — EDIT existing designs in place, do NOT re-clone
 All 38 designs already exist (19 claims × Meta + Google PMAX), one per claim per platform,
 4 sizes as pages. **The complete, verified claim → design-ID table is in
