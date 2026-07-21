@@ -1,19 +1,33 @@
 # Rose Ritual — Claims Test creative manifest
 
-> ✅ **Whitespace-first re-tune COMPLETE (2026-07-20).** All 152 PNGs (19 claims × 4 sizes ×
-> Meta + Google PMAX) re-exported at the approved **whitespace-first** treatment per
-> `../ROLLOUT-SPEC.md` and committed to git (`creatives/meta` + `creatives/google`, 76 each).
-> The "Treatment (locked)" section below describes the ORIGINAL narrow-box build and is retained
-> for history only. The claim → design-ID table is current. Reference look: `proof/`.
+> ✅ **Whitespace-first re-tune COMPLETE (2026-07-20), font-hierarchy correction COMPLETE (2026-07-21).**
+> All 152 PNGs (19 claims × 4 sizes × Meta + Google PMAX) at the approved whitespace-first
+> treatment per `../ROLLOUT-SPEC.md`, committed to git (`creatives/meta` + `creatives/google`,
+> 76 each). The "Treatment (locked)" section below describes the ORIGINAL narrow-box build and
+> is retained for history only. The claim → design-ID table is current. Reference look: `proof/`.
 >
 > **Re-tune mechanics (as executed):** descriptor tops unchanged (hug preserved); copy re-fit to
-> fill the clean band width, fewest rows. Font = `round(1.63 × fillW / longest-line-chars)`,
+> fill the clean band width, fewest rows. Font = `min(round(1.63 × fillW / longest-line-chars), ceiling)`,
 > calibrated against Lucas's approved Meta I5 1:1. Line-height 1.34 (Meta) / 1.30 (PMAX).
 > Per-claim break map + fillW/element-id geometry in `../ROLLOUT-SPEC.md`.
 > **40-char claims (I1/I2/C1/C2):** rendered 2-line regressive on ALL formats (Lucas's call,
-> to stay above the readable-1-line floor). Short claims (e.g. C4 "HIDRATA A PELE") fill width
-> at large fonts, kept subordinate to the "Rose Ritual" title.
-> Meta I4 (all pages) + Meta I5 1:1 were already at the approved treatment and left as-is.
+> to stay above the readable-1-line floor).
+> Meta I4 (all pages) is the ONE grandfathered exception — 3-line, already approved, deliberately
+> left untouched even though it doesn't satisfy the max-2-rows rule below. Meta I5 1:1 (page 3)
+> is also grandfathered (Lucas's original hand-tuned proof, untouched).
+>
+> **2026-07-21 correction — type-scale ceiling.** Lucas flagged that several claims (worst: C4
+> "HIDRATA A PELE", then C11, then C12) rendered with copy way oversized relative to the
+> "body & hair splash" subtitle line, breaking the info hierarchy. Fixed with a precise,
+> reusable rule (see `../ROLLOUT-SPEC.md` "Type-scale CEILING"): **max 2 rows · row1 length >=
+> row2 · copy font <= 1.1x subtitle font · respect existing box width/height**. Subtitle font
+> size was measured via a non-destructive calibration transaction (widen box to 1 line, set a
+> known test font, read height, derive the ratio, cancel — zero side effects). Resulting
+> ceilings: Meta 4:5=58 / 1.91:1=44 / 1:1=56 / 9:16=66 · Google 4:5=51 / 1.91:1=44 / 1:1=62 /
+> 9:16=66. Google I4 was also re-broken from 3 lines to 2 (max-2-rows) since it wasn't
+> grandfathered like Meta I4. Three landscape-column breaks (I5, I6, C12) were re-split to fix
+> row1<row2 violations. All 19×2=38 designs re-verified against this ceiling; some were already
+> compliant (no change), 27 needed a font/text correction.
 
 Campaign: **Rose Ritual (body & hair splash)** claims test.
 Built 2026-07-17 via /creative-producer. Source copy: `Claims Test_Body Hair Splash.xlsx`.
@@ -62,7 +76,16 @@ Naming: `<size>_<claim-slug>.png`. Sizes: `4x5`, `1x91` (1.91:1 landscape), `1x1
 | C11 | Vibes viagem para Paris | DAHPpdtbXfs | DAHPpi7TmwI |
 | C12 | Mood do dia: viagem para Paris | DAHPpaDGNWQ | DAHPpnEF8tE |
 
-## QA (2026-07-20 — whitespace-first re-tune)
+## QA (2026-07-21 — font-hierarchy correction, current)
+- Counts: google 76 (19×4), meta 76 (19×4) = 152 total. PASS. No 0-byte/corrupt files.
+- All 38 designs (19 claims × 2 platforms) checked against the 1.1x-subtitle ceiling; 27
+  needed a correction (font shrink and/or row-length rebreak), applied and re-verified.
+- Spot-checked renders (Google C6, Meta C11, Google C12 — the three Lucas flagged) confirm
+  copy now reads clearly subordinate to "Rose Ritual" / roughly subtitle-scale, matching the
+  approved C12 proportions. No overflow, no product/logo overlap.
+- Google I4 re-broken 3→2 lines, row1(38)>=row2(27), clears the 9:16 waterline/leaf cleanly.
+
+## QA (2026-07-20 — whitespace-first re-tune, superseded by above for font sizing)
 - Counts: google 76 (19×4), meta 76 (19×4). PASS.
 - Dimensions per size verified programmatically across all 152. PASS.
 - Width-fill + hug + accents + regressive line-breaks + logo/product clearance verified on renders.
