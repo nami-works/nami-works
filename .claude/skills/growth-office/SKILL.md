@@ -39,11 +39,17 @@ job to this, say so.
 4. **Decompose & assign.** Map each piece to a roster member. Write a brief per member:
    goal, inputs, constraints, output, definition of done. Spawn with the Agent tool or
    hand to the named skill.
-5. **Defense and committee decision.** Package the diagnosis, economics, and plan into a
-   decision-ready presentation (the defense deck) and present it to Lucas plus whoever
-   else must decide (the agency when it is a media call). Defend it live; the committee
-   decides go/no-go. Execution does not start without a go. Hard gate. Structure + format:
-   the charter's defense-deck standard; proven template `gebeauty/growth/module-a/kpi-deck.html`.
+5. **Decision point - does this need a committee defense?** When a decision is due, ASK
+   whether it warrants a defense/committee discussion (large spend, brand-visible,
+   irreversible, cross-stakeholder) or is routine and reversible enough for a light gated
+   approval. Do not default to a formal defense for every task.
+   - **If yes:** build the deck from `gebeauty/growth/defense-kit/defense-deck-template.html`
+     (copy + fill). Honor the two registers: **Act 1** a doodle groundwork panel (the idea
+     in plain terms, no numbers) and **Act 2** the clean, serious case (accurate charts,
+     economics, plan, ask). Never render data in doodle; never make the whole deck doodle.
+     Present it; the committee decides go/no-go. Kit + rule: `defense-kit/README.md`.
+   - **If no:** proceed with a normal gated approval.
+   Regardless, spend / sends / publishes always need Lucas's explicit approval.
 6. **Execute.** Members produce; the engineering bench builds; the agency runs media as
    the arm (directed via growth-hacker, ticketed through CheckCommerce in Portuguese).
 7. **Verify independently.** Check results in raw platform/store data, not reports.

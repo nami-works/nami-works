@@ -100,11 +100,13 @@ This is how the office tackles anything (a campaign, a handoff, a rescue):
    discount)? Flag any positioning risk before creative is drafted.
 4. **Decompose & assign.** Map each piece to a roster member; write a brief per member
    (goal, inputs, constraints, output, definition of done).
-5. **Defense and committee decision.** Package the diagnosis, economics, and plan into a
-   decision-ready presentation (the defense deck, below) and present it to the deciding
-   committee (Lucas plus whoever that call needs; the agency when it is a media call).
-   Defend it live; the committee decides go / no-go / redirect. **Execution does not
-   start without a go. This is a hard gate**, the same way spend and sends are gated.
+5. **Decision point - does this need a committee defense?** When a decision is due, judge
+   whether the call warrants a formal committee defense (large spend, brand-visible or
+   irreversible, cross-stakeholder) or is routine and reversible enough for a light
+   approval. **Ask when it is not obvious** ("does this need a defense/committee
+   discussion?"). If yes, build and present the defense deck (below); the committee
+   decides go / no-go / redirect. If no, proceed with a normal approval. Either way,
+   spend, sends, and publishes always need Lucas's explicit approval - that gate never lifts.
 6. **Execute.** Members produce; engineering builds; the agency runs media as the arm.
 7. **Verify independently.** Check results in raw platform/store data, not reports.
    For the agency, this is the challenge loop.
@@ -118,13 +120,31 @@ execution it packages the diagnose -> economics -> plan into an intuitive,
 decision-ready presentation and **defends it live** to the deciding committee. It is a
 go / no-go gate, and the office is on the hook for the call it is defending.
 
-Standard structure (proven template: `gebeauty/growth/module-a/kpi-deck.html`):
-1. **The decision on the table** - what we are deciding, and by when.
-2. **The read** - the diagnosis, with the few charts/numbers that actually matter.
-3. **The economics** - floor status, CAC ceiling, margin impact (the analyst's numbers).
-4. **The plan** - the moves, sequenced, with the first move called out.
-5. **Risks and what could kill it** - honest caveats, not a sales pitch.
-6. **The ask** - the explicit decisions to approve, each with options.
+**Not canonical for every task.** The defense deck is the tool for decisions that warrant
+a committee discussion, decided at step 5 (ask when unsure). Routine, reversible calls
+skip it and take a normal gated approval. Do not force the doodle/defense ritual onto
+small work.
+
+**Start from the template: `gebeauty/growth/defense-kit/defense-deck-template.html`.**
+It is the required starting point (copy + fill), not optional. Kit + fill guide:
+`gebeauty/growth/defense-kit/README.md`.
+
+**Two registers - fidelity matches the claim (do not mix them):**
+- **Act 1, Groundwork (doodle).** One panel. The big-picture idea in plain terms (the
+  mental model, the core cause -> lever -> outcome). Hand-drawn, paper ground, marker
+  font. **No precise numbers.** Job = shared understanding before the discussion gets
+  dense. Doodle NEVER bleeds into the data; using it everywhere cheapens the rigor.
+- **Act 2, The case (clean, serious).** The evidence and the decision, in the credible
+  KPI-deck style. This is the structure to fill:
+  1. **The decision on the table** - what we are deciding, and by when.
+  2. **The read** - the diagnosis, with the few charts/numbers that actually matter (accurate).
+  3. **The economics** - floor status, CAC ceiling, margin impact (the analyst's numbers).
+  4. **The plan** - the moves, sequenced, with the first move called out.
+  5. **Risks and what could kill it** - honest caveats, not a sales pitch.
+  6. **The ask** - the explicit decisions to approve, each with options.
+
+The visual step-up from Act 1 to Act 2 is intentional: doodle earns comprehension, clean
+earns trust. Accurate data lives only in Act 2.
 
 Format: a self-contained, theme-aware HTML deck in the brand look (GE red, the KPI deck
 is the reference build), private by default, shareable to the committee. The office

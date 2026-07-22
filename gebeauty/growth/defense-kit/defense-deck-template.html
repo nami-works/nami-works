@@ -1,0 +1,192 @@
+<!--
+  GE BEAUTY CGO — DEFENSE DECK TEMPLATE (two-register)
+  =====================================================
+  This is the REQUIRED starting point for any committee/defense deck (see
+  gebeauty/growth/CGO-TEAM.md "Defense deck"). Copy this file, fill the FILL: slots,
+  publish as an Artifact. Do NOT restyle it into an all-doodle deck.
+
+  THE RULE — fidelity matches the claim:
+    - ACT 1 (doodle / groundwork): the big-picture IDEA in plain terms. Hand-drawn,
+      paper ground, NO precise numbers. Job = shared understanding before density.
+    - ACT 2 (clean / serious): the evidence and the decision. Accurate charts, real
+      numbers, the ask. Credible, not playful. This is where the discussion gets dense.
+  The visual step-up between them is deliberate: it tells the room "now we go deep."
+
+  Act-1 doodle look is 100% code (rough SVG filter + hatch patterns + marker font
+  stack) so the deck is self-contained. Optional: drop GE doodle icons from
+  gebeauty/growth/defense-kit/icons/ in as data-URIs where marked.
+  Marker-font enrichment: inline an OFL hand font (Kalam/Caveat) as a @font-face
+  data-URI to finish the Act-1 look; the fallback stack below is the interim.
+-->
+<style>
+  :root {
+    /* serious (Act 2) — the credible register */
+    --paper: #f7f3f0; --surface: #ffffff; --surface-2: #fbf8f6; --ink: #1d1815;
+    --ink-soft: #4a413c; --muted: #8b7d76; --line: #e9e0da; --line-strong: #d8ccc4;
+    --accent: #df3630; --accent-deep: #a11f1b; --accent-wash: #fbe9e7;
+    --good: #2f8f5b; --good-wash: #e4f1ea; --warn: #b9791b; --warn-wash: #f6ecd9;
+    --shadow: 0 1px 2px rgba(29,24,21,.04), 0 8px 30px rgba(29,24,21,.06);
+    /* doodle (Act 1) — the groundwork register */
+    --doodle-paper: #f3f1e9; --doodle-ink: #2b2723;
+    --doodle-blue: #9cc6e0; --doodle-green: #a7cfa0; --doodle-yellow: #f2d774;
+    --doodle-pink: #eab5bd; --doodle-red: #df3630;
+    --marker: "Bradley Hand", "Segoe Print", "Comic Sans MS", "Chalkboard SE", cursive;
+    --maxw: 940px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper:#14100d; --surface:#1e1815; --surface-2:#241d19; --ink:#f4ece7;
+      --ink-soft:#d2c6bf; --muted:#a2938b; --line:#322922; --line-strong:#43372f;
+      --accent:#ff5b4e; --accent-deep:#ff8478; --accent-wash:#35201d;
+      --good:#4dbd82; --good-wash:#17281f; --warn:#e0a648; --warn-wash:#2c2416;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 34px rgba(0,0,0,.4);
+      --doodle-paper:#20242a; --doodle-ink:#eae4dc; }
+  }
+  :root[data-theme="light"] { --paper:#f7f3f0; --ink:#1d1815; --doodle-paper:#f3f1e9; --doodle-ink:#2b2723; }
+  :root[data-theme="dark"]  { --paper:#14100d; --ink:#f4ece7; --surface:#1e1815; --surface-2:#241d19;
+      --ink-soft:#d2c6bf; --muted:#a2938b; --line:#322922; --line-strong:#43372f; --accent:#ff5b4e;
+      --doodle-paper:#20242a; --doodle-ink:#eae4dc; }
+
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink);
+    font-family: system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:var(--maxw); margin:0 auto; padding:0 24px; }
+  .num { font-variant-numeric:tabular-nums; }
+  .eyebrow { font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:650; }
+
+  /* ---------- ACT 1: doodle groundwork ---------- */
+  .act1 { background:var(--doodle-paper); color:var(--doodle-ink); border-bottom:2px dashed var(--line-strong); }
+  .act1 .wrap { padding:70px 24px 60px; }
+  .act1 .eyebrow { color:var(--doodle-red); }
+  .act1 h1 { font-family:var(--marker); font-weight:400; font-size:clamp(30px,5.5vw,50px);
+    line-height:1.12; margin:16px 0 8px; letter-spacing:.01em; }
+  .act1 .plain { font-family:var(--marker); font-size:clamp(17px,2.4vw,22px); max-width:32ch; opacity:.85; }
+  .doodle-diagram { margin-top:34px; }
+  .d-node text, .d-cap { font-family:var(--marker); }
+  .rough { filter:url(#roughen); }
+  .act1 .foot { font-family:var(--marker); font-size:15px; margin-top:26px; opacity:.8; }
+
+  /* step-up divider between registers */
+  .stepup { text-align:center; padding:26px 0 4px; }
+  .stepup span { font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted);
+    font-weight:700; border-top:1px solid var(--line); padding-top:22px; display:inline-block; }
+
+  /* ---------- ACT 2: clean, serious ---------- */
+  section.serious { border-top:1px solid var(--line); }
+  section.serious .wrap { padding:56px 24px; }
+  h2 { font-size:clamp(23px,3.4vw,33px); line-height:1.1; letter-spacing:-.015em; margin:0 0 6px;
+    font-weight:750; text-wrap:balance; }
+  .lead { font-size:clamp(15px,2vw,18px); color:var(--ink-soft); max-width:62ch; }
+  .tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:22px; }
+  .tile { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:20px; box-shadow:var(--shadow); }
+  .tile .v { font-size:clamp(26px,4vw,38px); font-weight:800; color:var(--accent); line-height:1; font-variant-numeric:tabular-nums; }
+  .tile .k { font-size:12.5px; color:var(--muted); margin-top:8px; text-transform:uppercase; letter-spacing:.04em; font-weight:600; }
+  .decision { display:grid; grid-template-columns:26px 1fr; gap:14px; align-items:start; background:var(--surface);
+    border:1px solid var(--line-strong); border-radius:12px; padding:16px 18px; box-shadow:var(--shadow); margin-top:12px; }
+  .checkbox { width:20px; height:20px; border:2px solid var(--accent); border-radius:6px; margin-top:2px; }
+  .note { font-size:13px; color:var(--ink-soft); background:var(--surface-2); border-left:3px solid var(--accent);
+    border-radius:0 8px 8px 0; padding:12px 16px; margin-top:18px; max-width:66ch; }
+  .chart-slot { margin-top:18px; border:1px dashed var(--line-strong); border-radius:12px; padding:18px; color:var(--muted); font-size:13px; }
+  @media (max-width:720px){ .tiles{grid-template-columns:1fr;} .act1 .wrap{padding:52px 24px;} }
+  @media (prefers-reduced-motion:no-preference){ .rise{animation:rise .6s ease both} @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}} }
+</style>
+
+<!-- shared SVG defs: hand-drawn roughen filter + hatch patterns (CSP-safe, no libs) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="roughen"><feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/></filter>
+  <pattern id="hatchBlue" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--doodle-blue)" stroke-width="3"/></pattern>
+  <pattern id="hatchRed" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--doodle-red)" stroke-width="2.5"/></pattern>
+</defs></svg>
+
+<!-- ============ ACT 1 — GROUNDWORK (doodle, plain terms, NO numbers) ============ -->
+<section class="act1">
+  <div class="wrap rise">
+    <div class="eyebrow">Groundwork &middot; the big picture in plain terms</div>
+    <h1><!-- FILL: the ONE idea, in plain language. e.g. "We are profitable per sale. The limit is how much we pay to get each new customer." --></h1>
+    <p class="plain"><!-- FILL: one plain-terms sentence of context. No jargon, no numbers. --></p>
+
+    <!-- FILL: the mental model as a hand-drawn diagram. Default = cause -> lever -> outcome.
+         Swap node labels; keep it to 3-4 nodes. Rough filter + marker font carry the doodle look.
+         Optional: replace a node with a doodle icon from defense-kit/icons/ as a data-URI <image>. -->
+    <svg class="doodle-diagram" viewBox="0 0 900 190" width="100%" role="img"
+         aria-label="Plain-terms model: cause leads to lever leads to outcome">
+      <g class="rough" fill="none" stroke="var(--doodle-ink)" stroke-width="2.5" stroke-linecap="round">
+        <rect x="20" y="55" width="220" height="80" rx="10" fill="var(--doodle-blue)" fill-opacity=".5"/>
+        <rect x="340" y="55" width="220" height="80" rx="10" fill="var(--doodle-yellow)" fill-opacity=".5"/>
+        <rect x="660" y="55" width="220" height="80" rx="10" fill="var(--doodle-green)" fill-opacity=".5"/>
+        <path d="M245,95 L335,95" marker-end="url(#dot)"/>
+        <path d="M240,95 C285,60 300,60 335,95"/>
+        <path d="M565,95 L655,95"/>
+        <path d="M560,95 C605,130 620,130 655,95"/>
+      </g>
+      <g class="d-node" fill="var(--doodle-ink)" font-size="19" text-anchor="middle">
+        <text x="130" y="100"><!-- FILL: node 1 (the situation) --></text>
+        <text x="450" y="100"><!-- FILL: node 2 (the lever) --></text>
+        <text x="770" y="100"><!-- FILL: node 3 (the outcome) --></text>
+      </g>
+    </svg>
+
+    <p class="foot"><!-- FILL: the takeaway of the groundwork, one marker-style line. --></p>
+  </div>
+</section>
+
+<div class="stepup"><span>now, the numbers</span></div>
+
+<!-- ============ ACT 2 — THE CASE (clean, serious, accurate) ============ -->
+<section class="serious">
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--accent)">01 &middot; The decision on the table</div>
+    <h2><!-- FILL: what are we deciding, and by when --></h2>
+    <p class="lead"><!-- FILL: one line framing the decision + the metric it moves --></p>
+  </div>
+</section>
+
+<section class="serious">
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--accent)">02 &middot; The read</div>
+    <h2><!-- FILL: the headline finding --></h2>
+    <div class="tiles">
+      <div class="tile"><div class="v"><!--FILL--></div><div class="k"><!--FILL--></div></div>
+      <div class="tile"><div class="v"><!--FILL--></div><div class="k"><!--FILL--></div></div>
+      <div class="tile"><div class="v"><!--FILL--></div><div class="k"><!--FILL--></div></div>
+    </div>
+    <div class="chart-slot">FILL: accurate chart(s) here — clean inline SVG, real data, tabular-nums.
+      Reference build: gebeauty/growth/module-a/kpi-deck.html. Charts in Act 2 are precise, not sketchy.</div>
+  </div>
+</section>
+
+<section class="serious">
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--accent)">03 &middot; The economics</div>
+    <h2><!-- FILL: floor status + margin impact --></h2>
+    <div class="note"><b>Floor check:</b> <!-- FILL: net margin vs the 10% floor / CAC ceiling from Module A --></div>
+  </div>
+</section>
+
+<section class="serious">
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--accent)">04 &middot; The plan</div>
+    <h2><!-- FILL: the moves, sequenced --></h2>
+    <div class="note"><b>First move:</b> <!-- FILL: the single first move --></div>
+  </div>
+</section>
+
+<section class="serious">
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--accent)">05 &middot; Risks and what could kill it</div>
+    <h2>Honest caveats</h2>
+    <ul class="lead"><li><!-- FILL --></li><li><!-- FILL --></li></ul>
+  </div>
+</section>
+
+<section class="serious">
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--accent)">06 &middot; The ask</div>
+    <h2><!-- FILL: decisions to approve --></h2>
+    <div class="decision"><div class="checkbox"></div><div><b><!--FILL: decision A--></b><br><span class="lead"><!--FILL: what it means / options--></span></div></div>
+    <div class="decision"><div class="checkbox"></div><div><b><!--FILL: decision B--></b><br><span class="lead"><!--FILL--></span></div></div>
+  </div>
+</section>
