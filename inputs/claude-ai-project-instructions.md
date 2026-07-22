@@ -204,7 +204,6 @@ store. 4 physical stores. Runs local deliveries in São Paulo daily.
 - **Retail Dashboard:** per-store goals scorecard with YoY and MTD-vs-goal comparisons.
 - **Quiz integration:** Octane AI product recommendation quiz linked into Shopify AI
   Readiness metaobjects.
-- **Rota Local (fulfillment):** 3PL service in early build. NFe ingestion scaffolded.
 
 ## GE Beauty Shopify conventions
 - compareAtPrice = "de" (list price). price = "por" (active selling price).

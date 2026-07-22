@@ -58,7 +58,7 @@ Multiple Claude Code sessions can run against this repo at the same time. The co
 
 ### Cross-app sessions — unlimited, no worktree required
 
-Sessions touching only one app's files (`apps/connector/`, `apps/omnify-admin/`, `apps/omnify-site/`, `apps/fulfillment/`, `apps/content-gen-api/`, `apps/content-scraper-api/`) don't collide with each other. Each app's tree is disjoint — different paths, different builds, different deploys. Just open the main checkout (`c:\claude\`) in both sessions and go.
+Sessions touching only one app's files (`apps/connector/`, `apps/omnify-admin/`, `apps/omnify-site/`, `apps/content-gen-api/`, `apps/content-scraper-api/`) don't collide with each other. Each app's tree is disjoint — different paths, different builds, different deploys. Just open the main checkout (`c:\claude\`) in both sessions and go.
 
 ### Same-app sessions — 2 max, separate worktrees
 
