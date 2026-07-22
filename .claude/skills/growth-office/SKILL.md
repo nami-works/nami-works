@@ -39,11 +39,16 @@ job to this, say so.
 4. **Decompose & assign.** Map each piece to a roster member. Write a brief per member:
    goal, inputs, constraints, output, definition of done. Spawn with the Agent tool or
    hand to the named skill.
-5. **Execute.** Members produce; the engineering bench builds; the agency runs media as
+5. **Defense and committee decision.** Package the diagnosis, economics, and plan into a
+   decision-ready presentation (the defense deck) and present it to Lucas plus whoever
+   else must decide (the agency when it is a media call). Defend it live; the committee
+   decides go/no-go. Execution does not start without a go. Hard gate. Structure + format:
+   the charter's defense-deck standard; proven template `gebeauty/growth/module-a/kpi-deck.html`.
+6. **Execute.** Members produce; the engineering bench builds; the agency runs media as
    the arm (directed via growth-hacker, ticketed through CheckCommerce in Portuguese).
-6. **Verify independently.** Check results in raw platform/store data, not reports.
+7. **Verify independently.** Check results in raw platform/store data, not reports.
    For the agency, run the challenge loop (growth-analyst pulls Meta directly).
-7. **Report.** Give Lucas the scorecard: number vs floor, what was directed, what was
+8. **Report.** Give Lucas the scorecard: number vs floor, what was directed, what was
    executed, gaps, result mapped. Gated actions (spend, sends, publishes, discount
    depth) wait for his explicit approval.
 

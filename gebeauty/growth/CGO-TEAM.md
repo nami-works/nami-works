@@ -100,11 +100,36 @@ This is how the office tackles anything (a campaign, a handoff, a rescue):
    discount)? Flag any positioning risk before creative is drafted.
 4. **Decompose & assign.** Map each piece to a roster member; write a brief per member
    (goal, inputs, constraints, output, definition of done).
-5. **Execute.** Members produce; engineering builds; the agency runs media as the arm.
-6. **Verify independently.** Check results in raw platform/store data, not reports.
+5. **Defense and committee decision.** Package the diagnosis, economics, and plan into a
+   decision-ready presentation (the defense deck, below) and present it to the deciding
+   committee (Lucas plus whoever that call needs; the agency when it is a media call).
+   Defend it live; the committee decides go / no-go / redirect. **Execution does not
+   start without a go. This is a hard gate**, the same way spend and sends are gated.
+6. **Execute.** Members produce; engineering builds; the agency runs media as the arm.
+7. **Verify independently.** Check results in raw platform/store data, not reports.
    For the agency, this is the challenge loop.
-7. **Report to Lucas.** Scorecard: the number vs the floor, what was directed, what was
+8. **Report to Lucas.** Scorecard: the number vs the floor, what was directed, what was
    executed, where it fell short, the result mapped. Gated actions await approval.
+
+## Defense deck (the committee-review artifact)
+
+The office does not present a plan as a wall of text or a status update. Before
+execution it packages the diagnose -> economics -> plan into an intuitive,
+decision-ready presentation and **defends it live** to the deciding committee. It is a
+go / no-go gate, and the office is on the hook for the call it is defending.
+
+Standard structure (proven template: `gebeauty/growth/module-a/kpi-deck.html`):
+1. **The decision on the table** - what we are deciding, and by when.
+2. **The read** - the diagnosis, with the few charts/numbers that actually matter.
+3. **The economics** - floor status, CAC ceiling, margin impact (the analyst's numbers).
+4. **The plan** - the moves, sequenced, with the first move called out.
+5. **Risks and what could kill it** - honest caveats, not a sales pitch.
+6. **The ask** - the explicit decisions to approve, each with options.
+
+Format: a self-contained, theme-aware HTML deck in the brand look (GE red, the KPI deck
+is the reference build), private by default, shareable to the committee. The office
+assembles it and pulls the analyst's numbers; it does not delegate the defense. Keep one
+deck per decision; redeploy the same file to the same link on revisions.
 
 ## Cadence
 
@@ -139,7 +164,9 @@ This is how the office tackles anything (a campaign, a handoff, a rescue):
 - **Active work**: `.claude/initiatives/` (chief-growth-office = office of record;
   paid-media-scale = B; review-repurchase = E; landing-page-replication = D).
 - **Data access**: Shopify via `gebeauty/.env` (direct, reliable) + Meta via meta-ads
-  MCP. Blocked: Google Ads, Klaviyo (no tooling yet). Auth-gated MCPs need an
+  MCP. Klaviyo: `KLAVIYO_API_KEY` in `gebeauty/.env` (used by retention-machine sends;
+  Module A can consume it for email-performance reads). Blocked: Google Ads (no tooling
+  yet). Auth-gated MCPs (Magnific, Foreplay, Slack, claude.ai GE Beauty) need an
   interactive session.
 
 ## Audit verdicts (finalized 2026-07-21)
