@@ -99,6 +99,12 @@ newsletters; for long evolving threads, re-digest deliberately.
 - **Approve before canon.** Never write to the knowledge base before the user okays the batch.
 - **Provenance is mandatory.** Every entry says what kind of claim it is and where it came from.
 - **PII/secrets never land in a committed file.**
+- **Knowledge stays brand/business-agnostic.** File the general principle/method + external
+  examples. Do NOT bake the org's *own current state* into an entry or reference — its
+  policies, thresholds, coupon/discount schemes, config, or point-in-time metric values.
+  Those go stale and conflict with the live source of truth; they live in the operational
+  layer (the store, CLAUDE.md, initiatives, the scorecard) and are *referenced*, not copied.
+  A generic "how to apply this" is fine; a hardcoded "we currently run X" is not.
 - **Depth goes in linked references, never inline** — keep `knowledge.md` scannable.
 - **Triage large sources.** Don't read 50 threads in full; pick the decision-relevant ones,
   consolidate clusters (e.g. "email-flow tactics"), and say what you deferred.

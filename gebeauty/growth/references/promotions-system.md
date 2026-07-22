@@ -21,7 +21,7 @@ roughly premium-safe → discount-y:
 - **Bundle pricing** — "Starter Kit / Complete System" priced 15-20% under à-la-carte.
   Discount built into the *structure*, not slapped on as a code. Raises AOV, not "sale"-y.
 - **Free-shipping threshold** — a promo disguised as policy ("free over R$X") + a cart
-  progress bar ("R$18 away from free shipping") to lift AOV. *(GE already runs R$299.)*
+  progress bar ("R$18 away from free shipping") to lift AOV.
 - **VIP / loyalty-only access** — price stays; *access* is the reward ("members get first
   access to the drop"). Urgency without discounting.
 - **Early access / pre-sale** — email/SMS buys 24-48h before public. The access is the value.
@@ -34,7 +34,7 @@ roughly premium-safe → discount-y:
   number; moves volume + introduces variants.
 - **% off** — the default; scales with AOV but trains full-price avoidance if overused.
   Safer as an *always-on creator code* (e.g. Ridge's 10% influencer codes) — a soft
-  discount tied to a *relationship*, not a promotional event. *(GE already runs `{NAME}10`.)*
+  discount tied to a *relationship*, not a promotional event.
 - **Flash sale** — only 2-3×/year, scarcity must be real; monthly "flash sales" are just
   your price with extra steps.
 - **Mystery / spin-to-win** — converts but can read cheap; **skip for premium positioning.**
@@ -57,8 +57,9 @@ non-price tool for a premium brand.
 - **Right before a product launch** — discounting cannibalizes the launch.
 - **Reactively, to plug a soft week** — that's the death-spiral that trains wait-behavior.
 
-## GE application
-This is our brand guardrail with teeth: default to the non-price tools (GWP, bundles,
-free-ship threshold, VIP/early access, subscribe & save); keep % off as an always-on
-creator-code relationship, not an event; run offers off a calendar with the agency; never
-a panic sale. Skip spin-to-win (premium positioning).
+## Applying it (premium DTC brand)
+Default to the non-price tools (GWP, bundles, free-ship threshold, VIP/early access,
+subscribe & save); keep % off as an always-on creator-code relationship, not an event; run
+offers off a calendar; never a panic sale; skip spin-to-win for premium positioning.
+(Brand-agnostic. A given brand's current thresholds, codes, and calendar live in that
+brand's operational config, not here.)

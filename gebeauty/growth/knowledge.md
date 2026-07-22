@@ -10,6 +10,12 @@ charter; analysis outputs → `module-a/`; agency accountability → the challen
 skill-specific (voice, segments) → that skill's `references/`. In a live session you can
 just tell `/growth-office` "add this to the growth knowledge" and it files + commits it.
 
+**Entries stay brand/business-agnostic** — the general insight + external examples, never
+our own current policies, config, thresholds, coupon/discount schemes, or point-in-time
+metric values (those age and conflict with the live source of truth; they live in the
+operational layer — the store, CLAUDE.md, initiatives, the scorecard — and are referenced,
+not copied).
+
 Confidence tags: **[confirmed]** (verified in data + agreed), **[measured]** (in data,
 not yet agreed), **[estimate]** (platform-attributed or modeled), **[hypothesis]** (untested).
 
@@ -63,8 +69,7 @@ Digested from the `growth` email label via `/digest`. Source ref = the dedup key
 - **Acquisition Treadmill Ratio (ATR) = current-month new-customer revenue ÷ total revenue.**
   [best-practice · DTC Newsletter 2026-07-02] Above ~50% the base erodes as fast as you
   acquire (a treadmill, not a flywheel); healthy brands sit ~20% new / ~80% repeat+cohorts.
-  Our returning-rev share ~22% implies ATR ≈ 0.78 — treadmill territory. **Action: compute
-  a clean monthly ATR on the scorecard; repeat is the floor.**
+  **Action: compute a clean monthly ATR on the scorecard (treadmill if >50%); repeat is the floor.**
 - **Promotions are a system, not a panic button — and most offer tools aren't discounts.**
   [best-practice · Nik Sharma 2026-02-22] 12-tool spectrum (GWP, bundles, free-ship
   thresholds, VIP/early access, subscribe&save all beat % off) + a promo calendar (4-6

@@ -85,11 +85,11 @@ point · 3 hook examples · CTA · Restrictions.
 ### Ops Jobs 3–5 — tracking, payouts, retention
 Named but detailed in Part 2 (not yet received). Update this file when it arrives.
 
-## GE application
-Stand up a small crowdsourced-UGC engine feeding the agency (Module C: creative volume +
-the winner library). Concrete build order: name a creator program → build the auto seeding
-funnel (form → Airtable → email/Shopify/Discord via Zapier/Make) → pay-per-video + sales
-commission + volume bonus → the Day-0→14 onboarding automation → the 5-line brief pinned in
-Discord, refreshed Mondays. Assign a creator-ops owner. Judge results with view-through /
-measured attribution, not platform ROAS (ties to the Module A media layer). Volume >
-pedigree; tight message, free execution.
+## Applying it
+Build order for a creator program: name it → build the auto seeding funnel (application
+form → CRM → email/Shopify/Discord via Zapier/Make) → pay-per-video + sales commission +
+volume bonus → the Day-0→14 onboarding automation → the 5-line brief pinned in Discord,
+refreshed weekly → assign a creator-ops owner. Judge results with view-through / measured
+attribution, not platform ROAS. Volume > pedigree; tight message, free execution.
+(Brand-agnostic. Whose creative pipeline it feeds and which attribution stack judges it
+are that brand's operational choices, tracked in its own layer.)
