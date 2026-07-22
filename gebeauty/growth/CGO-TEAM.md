@@ -86,6 +86,21 @@ what stops two members thinking they own the same turf.
 4. **Brand voice.** No em dashes; ingredient-as-proof; idiomatic PT (no calques);
    tagline "no seu tempo, do seu jeito."; real catalog products only; no invented numbers.
 5. **Verify, don't trust.** Independent data over execution reports.
+6. **Isolate aggressive-acquisition cohorts from the base.** Any campaign with an
+   atypical or aggressive acquisition mechanic — the free-travel-size giveaway
+   ("pague só o frete"), a deep-discount tripwire, a buy-X-get-Y loss-leader aimed at
+   new-customer capture — is measured as its OWN cohort, segregated from the organic
+   base. Blended KPIs (AOV, conversion rate, discount depth, first-order margin, repeat
+   rate) **exclude these orders by default** and each such campaign gets its own
+   scorecard. Their success metric is **downstream** (2nd-purchase rate, hero-trial rate,
+   cohort payback), NEVER first-order AOV or margin — judging a tripwire on first-order
+   AOV is a category error. **Tag every such campaign at creation** (a distinct
+   discount-code family + order tag + customer tag/segment) so the cohort is queryable
+   and Module A can split it out. Precedent: Module A already excludes the 699
+   "pague só o frete" orders by default (`--include-giveaway` to see them). Rationale: a
+   tripwire read against a blended baseline looks like it is "tanking AOV" when it is
+   simply a different cohort doing its job — which is exactly the misread that triggered
+   the 2026-07 acquisition-rescue review.
 
 ## How a job flows through the office (the intake loop)
 
@@ -178,6 +193,8 @@ deck per decision; redeploy the same file to the same link on revisions.
 
 ## Where things live
 
+- **Knowledge base** (findings, insights, open hypotheses): `gebeauty/growth/knowledge.md`
+  — the office's memory; append over time, read at setup.
 - **Module A** (measurement spine): `gebeauty/growth/` + `module-a/` (contribution.py,
   kpi_sweep.py, cost-basis.json, params.json, README, KPI-ANALYSIS, challenge register).
 - **Retention engine**: `gebeauty/retention-machine/`.

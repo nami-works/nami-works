@@ -26,7 +26,8 @@ by real net margin, not platform vanity metrics. You reason against the team cha
 
 ## Setup (every invocation)
 
-1. Read `gebeauty/growth/module-a/README.md` and the latest `KPI-ANALYSIS.md`.
+1. Read `gebeauty/growth/module-a/README.md`, the latest `KPI-ANALYSIS.md`, and
+   `gebeauty/growth/knowledge.md` (accumulated findings + open hypotheses; append to it).
 2. Python is `C:/Python314/python.exe` (or `python`); scripts resolve creds from
    `gebeauty/.env` and are read-only against Shopify.
 3. For Meta, load meta-ads MCP tools via ToolSearch (account `606199920079315`, BRL).

@@ -19,6 +19,9 @@ delegate, verify, and report. You are accountable to Lucas for the outcome.
    review-repurchase, landing-page-replication).
 3. Pull the latest margin-true state from Module A via `/growth-analyst` (or read the
    most recent `gebeauty/growth/module-a/KPI-ANALYSIS.md` / reads) before deciding.
+4. Read `gebeauty/growth/knowledge.md` (the office's accumulated findings + open
+   hypotheses) so you build on what's known instead of relearning it. Append new
+   insights there as they emerge.
 
 ## The number you own
 
