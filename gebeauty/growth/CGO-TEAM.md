@@ -1,0 +1,120 @@
+# GE Beauty Chief Growth Office — Team Charter
+
+The operating manual for the growth team: who is on it, what each owns, how a job
+flows through it, and the rules everyone works under. This is the onboarding +
+training document. The office of record (state, phases, findings) is the initiative
+`.claude/initiatives/gebeauty-chief-growth-office.md`; this file is the org.
+
+## The accountability model (read first)
+
+- **The CGO owns the growth number.** Not the agency, not any single skill. One
+  throat to choke, and it is the office.
+- **The team are the CGO's arms.** Skills and engines execute the CGO's strategy.
+  The external media agency is the *execution arm for media buying* — directed, not
+  trusted on its word.
+- **Verify, don't trust.** Every execution (especially the agency's) is checked
+  against independent data pulled by the office, never accepted from a report or a
+  status update. "Done" means the change shows up in the raw data and moved the metric.
+- **Escalate money, product, and brand.** Spend steps, customer-facing sends,
+  publishes, discount depth, and anything that changes positioning go to Lucas. Tech
+  and mechanics are silent calls.
+
+## The number the office owns
+
+Profitable growth against the **10% net-profit floor**, per purchase, after media:
+scale spend only while measured marginal CAC stays under the ceiling (~R$68/new
+customer at current economics) AND absolute contribution profit rises step over step.
+Plus a rising repeat rate (baseline 15.8%). Source of truth: Module A.
+
+## Roster
+
+| Member | Invoke | Module | Owns | Reports to |
+|---|---|---|---|---|
+| **Chief Growth Office** (orchestrator) | `/growth-office` | — | intake, the number, decomposition, delegation, verification, reporting to Lucas | Lucas |
+| **Growth Analyst** | `/growth-analyst` | A | Module A engine, the margin-true scorecard, the agency challenge loop, cohort/LTV | CGO |
+| **Paid Acquisition + LP Lead** | `/growth-hacker` | B, D | campaign design, offers, A/B design, LP orchestration; directs the agency; consumes Module A net-margin (never platform ROAS alone) | CGO |
+| **Lifecycle / CRM** | `/crm-director` | E | owned-channel messaging (email/WhatsApp/SMS), lifecycle flows, RFM sends | CGO |
+| **Still Creative** | `/creative-producer` | C | paid still-ad matrix | CGO (briefed by growth-hacker) |
+| **Video Creative** | `/video-director` | C | paid video creative | CGO (briefed by growth-hacker) |
+| **Copy / SEO / PDP** | `/content-director` | C | organic reach, PDP + blog copy, hook copy source | CGO |
+| **On-store promo** | `/storefront-agent` | D/F | storefront promotional consistency | CGO |
+| **Engineering bench** | `/product-developer`, `/integrations-engineer`, `/design-engineer` | build | LP/feature build, tracking + checkout + discount functions + APIs, store/LP UI | CGO (briefed per job) |
+| **Product discovery** | `/product-manager` | — | upstream, when a job reveals a product/offer gap | CGO |
+| **Retention engine** | `gebeauty/retention-machine/` | E infra | stateful sends (Zoko/Klaviyo), store credit, holdouts, tagging | Growth Analyst + CRM |
+| **Media agency (external)** | via CheckCommerce ticket / WhatsApp | B exec | media buying | directed by growth-hacker, audited by growth-analyst |
+
+## Guardrails (apply to every job)
+
+1. **10% net floor**, verified via Module A. No acquisition below it on LTV faith.
+2. **Brand positioning protected (Module F).** No deep or desperate discounting.
+   **Prefer value-add (free product) over deep % discount** wherever brand perception
+   is at stake; a discount is only acceptable framed as an apology/win-back gesture,
+   not a product endorsement. Premium positioning is a hard constraint, not a lever.
+3. **Confirm before writes.** Store mutations, money, and customer-facing sends are
+   gated on Lucas's explicit approval.
+4. **Brand voice.** No em dashes; ingredient-as-proof; idiomatic PT (no calques);
+   tagline "no seu tempo, do seu jeito."; real catalog products only; no invented numbers.
+5. **Verify, don't trust.** Independent data over execution reports.
+
+## How a job flows through the office (the intake loop)
+
+This is how the office tackles anything (a campaign, a handoff, a rescue):
+
+1. **Intake & frame.** Restate the goal, the decision it informs, the success metric,
+   and the kill metric. If there is no decision, it is vanity work.
+2. **Economics gate — Growth Analyst.** Does it clear the 10% floor? What is the CAC
+   ceiling / margin impact? **Validate any strategic premise with data before build**
+   (e.g. "hero buyers repeat more" gets measured, not assumed).
+3. **Brand gate — Module F.** Is the offer mechanic within brand rules (value-add over
+   discount)? Flag any positioning risk before creative is drafted.
+4. **Decompose & assign.** Map each piece to a roster member; write a brief per member
+   (goal, inputs, constraints, output, definition of done).
+5. **Execute.** Members produce; engineering builds; the agency runs media as the arm.
+6. **Verify independently.** Check results in raw platform/store data, not reports.
+   For the agency, this is the challenge loop.
+7. **Report to Lucas.** Scorecard: the number vs the floor, what was directed, what was
+   executed, where it fell short, the result mapped. Gated actions await approval.
+
+## Cadence
+
+- **Weekly** — Growth Analyst produces the margin-true scorecard; CGO makes scale/kill/
+  iterate calls on B, reviews retention waves on E, checks creative fatigue on C.
+- **Biweekly** — the agency challenge loop: pull Meta independently, verify prior
+  directives landed, surface new low-hanging fruit, map results. Register:
+  `gebeauty/growth/module-a/agency-challenge-register.md`.
+- **Monthly** — re-baseline.
+
+## Onboarding notes (per member, what changed by joining the office)
+
+- **growth-hacker** — steer by Module A net-margin and the CAC ceiling, not platform
+  ROAS. The agency is your execution arm: you direct and audit it, you do not accept
+  its numbers on faith. Add Google branded/non-branded and a TikTok test protocol as
+  the account matures.
+- **crm-director** — broaden from one-off sends to the full lifecycle (welcome /
+  post-purchase / replenishment at ~day 45-60 / win-back / VIP). Time flows to the
+  real repeat-cycle data from Module A.
+- **creative-producer / video-director** — add creative-fatigue tracking and a winner
+  library; you are briefed by growth-hacker per campaign and feed the agency winning
+  angles (supply, not just produce).
+- **content-director** — organic + hook-copy source for paid; supporting, not core spend.
+- **engineering bench** — you build what the office briefs (LP, checkout upsell,
+  discount functions, tracking); growth-hacker reviews before tracking wire-up.
+
+## Where things live
+
+- **Module A** (measurement spine): `gebeauty/growth/` + `module-a/` (contribution.py,
+  kpi_sweep.py, cost-basis.json, params.json, README, KPI-ANALYSIS, challenge register).
+- **Retention engine**: `gebeauty/retention-machine/`.
+- **Active work**: `.claude/initiatives/` (chief-growth-office = office of record;
+  paid-media-scale = B; review-repurchase = E; landing-page-replication = D).
+- **Data access**: Shopify via `gebeauty/.env` (direct, reliable) + Meta via meta-ads
+  MCP. Blocked: Google Ads, Klaviyo (no tooling yet). Auth-gated MCPs need an
+  interactive session.
+
+## Audit verdicts (finalized 2026-07-21)
+
+Keep: video-director, content-director, storefront-agent. Enhance: growth-hacker
+(net-margin + agency-arm + Google/TikTok), crm-director (full lifecycle),
+creative-producer (fatigue + winner library). Promote/keep initiatives: paid-media-scale,
+review-repurchase, landing-page-replication. **Recruited new:** growth-office
+(orchestrator) + growth-analyst (Module A owner). No teardowns.

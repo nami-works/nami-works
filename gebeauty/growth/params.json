@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "purpose": "Unit-economics structure for Module A, confirmed with Lucas 2026-07-21. Model is % of TOTAL REVENUE, where total revenue = product net sales (after discounts) + freight revenue.",
+    "status": "CONFIRMED (Lucas 2026-07-21)",
+    "basis": "total_revenue = product_net + freight_revenue; freight_revenue = freight_revenue_pct * product_net. All cost rates are % of total_revenue. COGS comes per-SKU from cost-basis.json scaled by cogs_calibration_factor so the aggregate matches cogs_target_pct.",
+    "updated": "2026-07-21"
+  },
+  "profit_floor_pct": 0.10,
+  "_profit_floor_note": "Hard guardrail: minimum 10% NET profit on every sale, per-purchase, AFTER paid media (% of total revenue).",
+
+  "freight_revenue_pct": 0.05,
+  "_freight_revenue_note": "Freight billed to customer, averaged across subsidized + non-subsidized deliveries, as % of PRODUCT revenue. Free-ship threshold R$299. Added on top of product to form total revenue; not double-counted (product AOV excludes freight).",
+  "free_shipping_threshold_brl": 299,
+
+  "cogs_target_pct": 0.22,
+  "cogs_calibration_factor": 1.48,
+  "_cogs_note": "Real COGS ~22% of total revenue (Lucas). Bottom-up per-SKU cost-basis.json totals only ~16% (the B2B 'preco minimo' study excludes inbound freight/duty/breakage), so the engine scales each per-SKU cost by cogs_calibration_factor (=0.22 x total_rev / raw per-SKU COGS, computed on the 2026-06-21..07-21 window). Preserves relative product differences, fixes the absolute level. Replace with real per-SKU costs when available.",
+
+  "tax_effective_pct": 0.12,
+  "_tax_note": "Effective tax on total revenue. Confirmed ~12%.",
+
+  "payment_fee_pct": 0.0395,
+  "_payment_fee_note": "3.5% acquiring + 0.45% Shopify = 3.95% of total revenue.",
+
+  "freight_cost_pct": 0.17,
+  "_freight_cost_note": "GE-borne freight cost as % of total revenue. Confirmed ~17% (net freight drag ~12pts after the 5% freight revenue).",
+
+  "fulfillment_pct": 0.03,
+  "_fulfillment_note": "DTC pick/pack/handling as % of total revenue. Confirmed ~3%.",
+
+  "media_allocation_mode": "channel_blended",
+  "_media_note": "Paid media allocated per order at the channel level in the Module A v1 media layer. The 10% floor is checked AFTER media allocation."
+}

@@ -1,0 +1,545 @@
+<style>
+  :root {
+    --paper: #f7f3f0;
+    --surface: #ffffff;
+    --surface-2: #fbf8f6;
+    --ink: #1d1815;
+    --ink-soft: #4a413c;
+    --muted: #8b7d76;
+    --line: #e9e0da;
+    --line-strong: #d8ccc4;
+    --accent: #df3630;
+    --accent-deep: #a11f1b;
+    --accent-wash: #fbe9e7;
+    --good: #2f8f5b;
+    --good-wash: #e4f1ea;
+    --warn: #b9791b;
+    --warn-wash: #f6ecd9;
+    --shadow: 0 1px 2px rgba(29,24,21,.04), 0 8px 30px rgba(29,24,21,.06);
+    --maxw: 940px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14100d; --surface: #1e1815; --surface-2: #241d19; --ink: #f4ece7;
+      --ink-soft: #d2c6bf; --muted: #a2938b; --line: #322922; --line-strong: #43372f;
+      --accent: #ff5b4e; --accent-deep: #ff8478; --accent-wash: #35201d;
+      --good: #4dbd82; --good-wash: #17281f; --warn: #e0a648; --warn-wash: #2c2416;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 34px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #f7f3f0; --surface: #ffffff; --surface-2: #fbf8f6; --ink: #1d1815;
+    --ink-soft: #4a413c; --muted: #8b7d76; --line: #e9e0da; --line-strong: #d8ccc4;
+    --accent: #df3630; --accent-deep: #a11f1b; --accent-wash: #fbe9e7;
+    --good: #2f8f5b; --good-wash: #e4f1ea; --warn: #b9791b; --warn-wash: #f6ecd9;
+    --shadow: 0 1px 2px rgba(29,24,21,.04), 0 8px 30px rgba(29,24,21,.06);
+  }
+  :root[data-theme="dark"] {
+    --paper: #14100d; --surface: #1e1815; --surface-2: #241d19; --ink: #f4ece7;
+    --ink-soft: #d2c6bf; --muted: #a2938b; --line: #322922; --line-strong: #43372f;
+    --accent: #ff5b4e; --accent-deep: #ff8478; --accent-wash: #35201d;
+    --good: #4dbd82; --good-wash: #17281f; --warn: #e0a648; --warn-wash: #2c2416;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 34px rgba(0,0,0,.4);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55; -webkit-font-smoothing: antialiased; font-feature-settings: "kern" 1;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+  .num { font-variant-numeric: tabular-nums; }
+  .mono { font-family: ui-monospace, "SF Mono", "Cascadia Code", "Consolas", monospace; }
+
+  .eyebrow { font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent); font-weight: 650; display: flex; gap: 10px; align-items: baseline; }
+  .eyebrow .n { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .eyebrow.plan { color: var(--ink); }
+  .eyebrow.plan .n { color: var(--accent); }
+
+  h1 { font-size: clamp(34px, 6vw, 58px); line-height: 1.02; letter-spacing: -.02em;
+       margin: 0; font-weight: 800; text-wrap: balance; }
+  h2 { font-size: clamp(24px, 3.6vw, 36px); line-height: 1.08; letter-spacing: -.015em;
+       margin: 0 0 6px; font-weight: 750; text-wrap: balance; }
+  .lead { font-size: clamp(16px, 2vw, 19px); color: var(--ink-soft); max-width: 62ch; }
+  p { max-width: 64ch; }
+
+  section { border-top: 1px solid var(--line); }
+  section .wrap { padding-top: 64px; padding-bottom: 64px; }
+  section.plan-open { background: var(--surface-2); }
+
+  .cover .wrap { padding-top: 88px; padding-bottom: 72px; }
+  .kicker { font-size: 12px; letter-spacing: .18em; text-transform: uppercase;
+            color: var(--muted); font-weight: 600; margin-bottom: 20px; }
+  .kicker b { color: var(--accent); }
+  .decision-chip { display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:700;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--accent); background:var(--accent-wash);
+    padding:6px 12px; border-radius:999px; margin-bottom:22px; }
+  .decision-chip .dot { width:7px; height:7px; border-radius:50%; background:currentColor; }
+  .thesis { margin: 24px 0 38px; font-size: clamp(17px, 2.3vw, 22px);
+            color: var(--ink-soft); max-width: 46ch; line-height: 1.4; }
+  .thesis b { color: var(--ink); font-weight: 700; }
+
+  .herostats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+          padding: 20px; box-shadow: var(--shadow); }
+  .stat .v { font-size: clamp(28px, 4.5vw, 42px); font-weight: 800; letter-spacing: -.02em;
+             line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .stat .k { font-size: 13px; color: var(--muted); margin-top: 8px; font-weight: 600;
+             text-transform: uppercase; letter-spacing: .04em; }
+  .stat .s { font-size: 13.5px; color: var(--ink-soft); margin-top: 6px; }
+
+  .cardgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 28px; }
+  .trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 26px; }
+  .trio .card .role { font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+                      color: var(--accent); margin-bottom: 8px; }
+  .trio .card p { font-size: 13.5px; color: var(--ink-soft); margin: 0; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+          padding: 22px; box-shadow: var(--shadow); }
+  .card h3 { margin: 0 0 4px; font-size: 15px; letter-spacing: .01em; }
+  .card .cap { font-size: 13px; color: var(--muted); margin: 0 0 16px; }
+
+  .stack { display: flex; width: 100%; gap: 2px; height: 58px; border-radius: 8px;
+           overflow: hidden; margin: 10px 0 14px; }
+  .seg { display: flex; align-items: center; justify-content: center; min-width: 0;
+         font-size: 12px; font-weight: 650; color: #fff; padding: 0 4px; white-space: nowrap; }
+  .seg small { display:block; font-weight:500; opacity:.85; font-size:10.5px; }
+  .stack-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--ink-soft); }
+  .stack-legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+
+  .bullet { position: relative; height: 46px; background: var(--surface-2);
+            border: 1px solid var(--line); border-radius: 9px; overflow: hidden; margin: 30px 0 8px; }
+  .bullet .net { position: absolute; top: 0; bottom: 0; background: var(--accent);
+                 display:flex; align-items:center; padding-left:12px; font-size:12.5px; font-weight:650; color:#fff; }
+  .bullet .cac { position: absolute; left: 0; top: 0; bottom: 0; background: var(--line-strong);
+                 display:flex; align-items:center; padding-left:12px; font-size:12.5px; font-weight:650; color: var(--ink-soft); }
+  .bullet .ceil { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--ink); z-index: 3; }
+  .bullet .ceil::after { content: "ceiling R$68"; position: absolute; top: -20px; left: 50%;
+                  transform: translateX(-50%); font-size: 11px; font-weight: 650; color: var(--ink); white-space: nowrap; }
+  .scalerow { display:flex; justify-content:space-between; font-size:12px; color:var(--muted);
+              font-variant-numeric: tabular-nums; margin-top: 10px; }
+
+  .bars { display: flex; flex-direction: column; gap: 12px; margin-top: 6px; }
+  .bar { display: grid; grid-template-columns: 200px 1fr auto; gap: 14px; align-items: center; }
+  .bar .lbl { font-size: 13.5px; font-weight: 600; }
+  .bar .lbl small { display:block; color: var(--muted); font-weight: 500; font-size: 12px; }
+  .track { height: 26px; background: var(--surface-2); border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
+  .fill { height: 100%; border-radius: 6px 0 0 6px; }
+  .fill.good { background: var(--accent); }
+  .fill.warn { background: var(--warn); }
+  .bar .meta { font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; text-align:right; }
+  .bar .meta b { font-size: 14px; }
+  .tag { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+         padding: 2px 7px; border-radius: 5px; margin-left: 6px; }
+  .tag.starved { background: var(--warn-wash); color: var(--warn); }
+  .tag.leak { background: var(--accent-wash); color: var(--accent-deep); }
+
+  .chart { width: 100%; height: auto; display: block; }
+  .grid-l { stroke: var(--line); stroke-width: 1; }
+  .axis-t { fill: var(--muted); font-size: 11px; font-family: ui-monospace, monospace; }
+  .ser { fill: none; stroke-width: 2.5; }
+  .dot { stroke: var(--surface); stroke-width: 2; }
+  .lab { fill: var(--ink); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* Plan moves */
+  .moves { display: grid; gap: 14px; margin-top: 8px; counter-reset: m; }
+  .move { display: grid; grid-template-columns: 44px 1fr; gap: 16px; align-items: start;
+          background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+          padding: 20px 22px; box-shadow: var(--shadow); }
+  .move .mn { counter-increment: m; font-size: 26px; font-weight: 800; color: var(--accent);
+              font-variant-numeric: tabular-nums; line-height: 1; }
+  .move .mn::before { content: counter(m); }
+  .move h3 { margin: 2px 0 5px; font-size: 17px; }
+  .move p { margin: 0 0 10px; font-size: 14.5px; color: var(--ink-soft); }
+  .impact { font-size: 13px; font-weight: 600; color: var(--good); display:inline-flex; gap:7px; align-items:center; }
+  .impact::before { content: "→ expected"; font-weight:700; color: var(--muted); font-size:11px;
+                    text-transform:uppercase; letter-spacing:.05em; }
+  .when { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing:.06em;
+          color: var(--muted); float: right; }
+
+  /* Decisions / approval */
+  .decisions { display: grid; gap: 12px; margin-top: 10px; }
+  .decision { display: grid; grid-template-columns: 30px 1fr; gap: 15px; align-items: start;
+              background: var(--surface); border: 1px solid var(--line-strong); border-radius: 12px;
+              padding: 18px 20px; box-shadow: var(--shadow); }
+  .checkbox { width: 22px; height: 22px; border: 2px solid var(--accent); border-radius: 6px; margin-top: 2px; }
+  .decision h3 { margin: 0 0 4px; font-size: 15.5px; }
+  .decision p { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+  .decision .own { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .decision .own b { color: var(--ink-soft); }
+
+  .split { display:grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 24px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; }
+  .panel h4 { margin: 0 0 12px; font-size: 12px; letter-spacing:.1em; text-transform:uppercase; color: var(--muted); }
+  .panel ul { margin: 0; padding-left: 18px; font-size: 14px; color: var(--ink-soft); }
+  .panel li { margin-bottom: 8px; }
+
+  .note { font-size: 13px; color: var(--ink-soft); background: var(--surface-2);
+          border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px;
+          margin-top: 20px; max-width: 66ch; }
+  .note b { color: var(--ink); }
+
+  footer { border-top: 1px solid var(--line); }
+  footer .wrap { padding: 40px 24px 60px; }
+  .caveats { font-size: 12.5px; color: var(--muted); max-width: 74ch; }
+  .caveats h4 { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 10px; }
+  .caveats li { margin-bottom: 7px; }
+  .foot-meta { margin-top: 26px; font-size: 12px; color: var(--muted); display:flex; gap: 8px 18px;
+               flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 18px; }
+
+  @media (max-width: 720px) {
+    .herostats, .cardgrid, .split, .trio { grid-template-columns: 1fr; }
+    .bar { grid-template-columns: 1fr; gap: 5px; }
+    .bar .meta { text-align: left; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal { animation: rise .6s cubic-bezier(.2,.7,.3,1) both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+
+<section class="cover">
+  <div class="wrap reveal">
+    <div class="kicker">GE Beauty &middot; Chief Growth Office &middot; <b>Module A &mdash; unit economics</b></div>
+    <div class="decision-chip"><span class="dot"></span> Decision document &middot; your approval requested</div>
+    <h1>Growth is profitable.<br>The cushion is thin and eroding.</h1>
+    <p class="thesis">Acquisition pays for itself on the first order. The real limiter is <b>marginal CAC</b>, and the biggest untapped lever is <b>repeat purchase</b>. Below: the read, then a 4-part plan I need you to approve.</p>
+    <div class="herostats">
+      <div class="stat"><div class="v">~R$49</div><div class="k">paid CAC</div><div class="s">against an R$68 ceiling at the 10% floor</div></div>
+      <div class="stat"><div class="v">R$90</div><div class="k">contribution / 1st order</div><div class="s">immediate payback: profit on order one</div></div>
+      <div class="stat"><div class="v">15.8%</div><div class="k">repeat rate</div><div class="s">84% buy only once</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="plan-open">
+  <div class="wrap">
+    <div class="eyebrow plan"><span class="n">&#9656;</span> What I'd do first</div>
+    <h2>Stop the R$10k/month bleed. Redeploy it into the winners.</h2>
+    <p class="lead">This week, no new budget, nothing to wait on. My first directive to the agency, and the fastest profit we can recover. Everything else in the plan sequences behind it.</p>
+    <div class="trio">
+      <div class="card">
+        <div class="role">The directive</div>
+        <p>Pause the four Primer tests running below breakeven (~R$10k/30d) and move that budget into the starved 6&ndash;7.7 ROAS creatives (Novos Vídeos Validados, the review videos) and engaged retargeting. I supply more of those winning angles from our in-house pipeline.</p>
+      </div>
+      <div class="card">
+        <div class="role">Why it's first</div>
+        <p>No new spend, no external dependency, and it recovers the eroding cushion immediately. It is also the cleanest opening act of running the agency as my arm: a specific, dated, defensible ask I can hold them to.</p>
+      </div>
+      <div class="card">
+        <div class="role">How I verify</div>
+        <p>Next-cycle Meta pull, on our own access: those ad sets at ~0 spend, budget share moved to the winners, blended ROAS delta logged. Their word does not count. The data does.</p>
+      </div>
+    </div>
+    <div class="note"><b>Expected:</b> blended ROAS toward ~5 on flat total spend; ~R$10k/month stops losing. If the numbers below hold after this, that is the green light to run the incrementality test and step spend up.</div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow"><span class="n">01</span> Unit economics</div>
+    <h2>Of every R$100 in revenue, R$42 is left before media</h2>
+    <p class="lead">Structure confirmed on total revenue (product + 5% freight). Real per-SKU product cost, not the old 35% assumption.</p>
+
+    <div class="stack" role="img" aria-label="Cost breakdown: COGS 22%, taxes 12%, freight 17%, fees 3.95%, fulfillment 3%, contribution 42%">
+      <div class="seg" style="width:22%;background:#5b4f49">COGS<small>22%</small></div>
+      <div class="seg" style="width:12%;background:#75665e">Taxes<small>12%</small></div>
+      <div class="seg" style="width:17%;background:#8a7a70">Freight<small>17%</small></div>
+      <div class="seg" style="width:3.95%;background:#a08e83"><small>3.95%</small></div>
+      <div class="seg" style="width:3%;background:#b5a396"><small>3%</small></div>
+      <div class="seg" style="width:42.05%;background:var(--accent)">Contribution<small>42%</small></div>
+    </div>
+    <div class="stack-legend">
+      <span><i class="swatch" style="background:#5b4f49"></i> COGS 22%</span>
+      <span><i class="swatch" style="background:#75665e"></i> Taxes 12%</span>
+      <span><i class="swatch" style="background:#8a7a70"></i> Freight 17%</span>
+      <span><i class="swatch" style="background:#a08e83"></i> Fees 3.95%</span>
+      <span><i class="swatch" style="background:#b5a396"></i> Fulfillment 3%</span>
+      <span><i class="swatch" style="background:var(--accent)"></i> Contribution 42.05%</span>
+    </div>
+    <div class="note">New-customer order: total revenue <b>R$214</b> &rarr; contribution <b>~R$90</b>. To hold the 10% net-profit floor, the <b>maximum CAC is ~R$68</b> per customer.</div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow"><span class="n">02</span> Acquisition vs. the floor</div>
+    <h2>Clears the floor, but the cushion is ~R$20 and shrinking</h2>
+    <p class="lead">Of the R$90 contribution on a first order, R$49 goes to paid CAC and R$41 (19%) is net profit. The ceiling for the 10% floor is R$68.</p>
+
+    <div class="bullet" role="img" aria-label="CAC R$49 out of R$90 contribution; net profit R$41; ceiling R$68">
+      <div class="net" style="left:0;width:100%">contribution R$90</div>
+      <div class="cac" style="width:54.4%">CAC R$49</div>
+      <div class="ceil" style="left:75.5%"></div>
+    </div>
+    <div class="scalerow"><span>R$0</span><span>net profit R$41 &middot; 19%</span><span>R$90</span></div>
+
+    <div class="cardgrid">
+      <div class="card">
+        <h3>ROAS compressing</h3>
+        <p class="cap">Meta purchase ROAS by month (spend rising)</p>
+        <svg class="chart" viewBox="0 0 300 150" role="img" aria-label="ROAS fell from 5.84 in April to 4.46 now">
+          <line class="grid-l" x1="40" y1="20" x2="40" y2="120"/>
+          <line class="grid-l" x1="40" y1="120" x2="280" y2="120"/>
+          <polyline class="ser" style="stroke:var(--accent)" points="52,28 128,45 204,76 268,97"/>
+          <circle class="dot" style="fill:var(--accent)" cx="52" cy="28" r="4"/>
+          <circle class="dot" style="fill:var(--accent)" cx="128" cy="45" r="4"/>
+          <circle class="dot" style="fill:var(--accent)" cx="204" cy="76" r="4"/>
+          <circle class="dot" style="fill:var(--accent)" cx="268" cy="97" r="4.5"/>
+          <text class="lab" x="52" y="20" text-anchor="middle">5.84</text>
+          <text class="lab" x="268" y="112" text-anchor="middle" style="fill:var(--accent)">4.46</text>
+          <text class="axis-t" x="52" y="135" text-anchor="middle">Apr</text>
+          <text class="axis-t" x="128" y="135" text-anchor="middle">May</text>
+          <text class="axis-t" x="204" y="135" text-anchor="middle">Jun</text>
+          <text class="axis-t" x="268" y="135" text-anchor="middle">Jul</text>
+        </svg>
+      </div>
+      <div class="card">
+        <h3>Spend accelerated</h3>
+        <p class="cap">Meta spend last 30d vs. prior month</p>
+        <div style="display:flex;align-items:flex-end;gap:26px;height:110px;padding:8px 6px 0">
+          <div style="text-align:center;flex:1">
+            <div style="height:60px;display:flex;align-items:flex-end;justify-content:center">
+              <div style="width:56px;height:60px;background:var(--line-strong);border-radius:6px 6px 0 0"></div>
+            </div>
+            <div class="num" style="font-weight:700;margin-top:8px">R$59k</div>
+            <div class="axis-t">prior month</div>
+          </div>
+          <div style="text-align:center;flex:1">
+            <div style="height:90px;display:flex;align-items:flex-end;justify-content:center">
+              <div style="width:56px;height:83px;background:var(--accent);border-radius:6px 6px 0 0"></div>
+            </div>
+            <div class="num" style="font-weight:700;margin-top:8px;color:var(--accent)">R$82k</div>
+            <div class="axis-t">last 30d</div>
+          </div>
+        </div>
+        <p class="cap" style="margin-top:12px">+38% spend, ROAS &minus;16%. The diminishing-returns curve, in real time.</p>
+      </div>
+    </div>
+    <div class="note"><b>Payback is immediate</b> (contribution R$90 &gt; CAC R$49): the first order is already profitable, LTV is upside. But <b>marginal</b> CAC rises as spend scales, so the incrementality test must come <b>before</b> the big ramp, not after.</div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow"><span class="n">03</span> Where the money goes</div>
+    <h2>30% of spend sits below breakeven; the winners are starved</h2>
+    <p class="lead">Meta spend by bucket, last 30 days. Bar = spend; color = efficiency (breakeven ROAS 2.86).</p>
+
+    <div class="bars">
+      <div class="bar">
+        <div class="lbl">Workhorse <small>[REGULAR][CONVERSION][MISTO]</small></div>
+        <div class="track"><div class="fill good" style="width:100%"></div></div>
+        <div class="meta"><b>R$39.1k</b> &middot; ROAS 4.70</div>
+      </div>
+      <div class="bar">
+        <div class="lbl">Video creative tests <small>Novos Vídeos</small></div>
+        <div class="track"><div class="fill good" style="width:39.6%"></div></div>
+        <div class="meta"><b>R$15.5k</b> &middot; ROAS 5.60</div>
+      </div>
+      <div class="bar">
+        <div class="lbl">Primer creative tests <small>Cachos + Liso, ABO</small></div>
+        <div class="track"><div class="fill warn" style="width:62.7%"></div></div>
+        <div class="meta"><b>R$24.5k</b> &middot; ROAS ~2.9 <span class="tag leak">leak</span></div>
+      </div>
+      <div class="bar">
+        <div class="lbl">Proven winners <small>Validados + review</small></div>
+        <div class="track"><div class="fill good" style="width:9.7%"></div></div>
+        <div class="meta"><b>R$3.8k</b> &middot; ROAS ~6.9 <span class="tag starved">starved</span></div>
+      </div>
+      <div class="bar">
+        <div class="lbl">Retargeting <small>engaged audience</small></div>
+        <div class="track"><div class="fill good" style="width:7.9%"></div></div>
+        <div class="meta"><b>R$3.1k</b> &middot; ROAS 7.60 <span class="tag starved">starved</span></div>
+      </div>
+    </div>
+    <div class="note">Several Primer tests run <b>below breakeven</b> (Liso Coloquial 1.18 &middot; Liso Institucional 1.74 &middot; Cachos Coloquial 2.13 &middot; Cachos Institucional 2.54) &mdash; real loss, not just test cost. Meanwhile the 7+ ROAS creatives get under 2% of spend each.</div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow"><span class="n">04</span> Retention &mdash; the biggest lever</div>
+    <h2>84% buy once. The 2nd purchase lands at a 63-day median</h2>
+    <p class="lead">13 months, 35,142 customers, all channels. A replenishment flow at day ~45 to 60 is the highest-ROI move on the board, with zero discount.</p>
+
+    <div class="cardgrid">
+      <div class="card">
+        <h3>Repeat &amp; timing</h3>
+        <p class="cap">customer base, 13 months</p>
+        <div style="display:flex;gap:26px;flex-wrap:wrap">
+          <div><div class="num" style="font-size:34px;font-weight:800;color:var(--accent)">15.8%</div><div class="axis-t">repeat rate</div></div>
+          <div><div class="num" style="font-size:34px;font-weight:800">63d</div><div class="axis-t">median 1st&rarr;2nd (p25 19 &middot; p75 125)</div></div>
+          <div><div class="num" style="font-size:34px;font-weight:800">22%</div><div class="axis-t">revenue from returning</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Healthy LTV : CAC</h3>
+        <p class="cap">12-month contribution / CAC</p>
+        <div style="display:flex;gap:26px;flex-wrap:wrap">
+          <div><div class="num" style="font-size:34px;font-weight:800;color:var(--accent)">R$169</div><div class="axis-t">12-mo contribution LTV</div></div>
+          <div><div class="num" style="font-size:34px;font-weight:800">3.4&times;</div><div class="axis-t">LTV:CAC (paid CAC)</div></div>
+        </div>
+        <p class="cap" style="margin-top:14px">Above 3&times; is healthy. Room to pay more for acquisition if payback comes from repeat, but the 10% floor is per first order, so CAC stays the limiter.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h3>LTV curve by cohort</h3>
+      <p class="cap">cumulative contribution per customer (R$), days since first purchase</p>
+      <svg class="chart" viewBox="0 0 620 300" role="img" aria-label="2025 cohorts reach ~R$170 by 365 days; 2026 cohorts start lower">
+        <line class="grid-l" x1="60" y1="30" x2="60" y2="270"/>
+        <line class="grid-l" x1="60" y1="270" x2="590" y2="270"/>
+        <line class="grid-l" x1="60" y1="200" x2="590" y2="200" style="stroke-dasharray:3 4"/>
+        <line class="grid-l" x1="60" y1="130" x2="590" y2="130" style="stroke-dasharray:3 4"/>
+        <line class="grid-l" x1="60" y1="60"  x2="590" y2="60"  style="stroke-dasharray:3 4"/>
+        <text class="axis-t" x="54" y="273" text-anchor="end">0</text>
+        <text class="axis-t" x="54" y="203" text-anchor="end">100</text>
+        <text class="axis-t" x="54" y="133" text-anchor="end">150</text>
+        <text class="axis-t" x="54" y="63"  text-anchor="end">180</text>
+        <text class="axis-t" x="60"  y="286" text-anchor="middle">0</text>
+        <text class="axis-t" x="104" y="286" text-anchor="middle">30</text>
+        <text class="axis-t" x="191" y="286" text-anchor="middle">90</text>
+        <text class="axis-t" x="322" y="286" text-anchor="middle">180</text>
+        <text class="axis-t" x="590" y="286" text-anchor="middle">365 days</text>
+        <polyline class="ser" style="stroke:var(--accent)" points="60,270 104,131 191,113 322,73 590,33"/>
+        <circle class="dot" style="fill:var(--accent)" cx="590" cy="33" r="4.5"/>
+        <text class="lab" x="584" y="26" text-anchor="end" style="fill:var(--accent)">R$173</text>
+        <polyline class="ser" style="stroke:var(--accent-deep);stroke-width:2" points="60,270 104,130 191,113 322,80 590,42"/>
+        <circle class="dot" style="fill:var(--accent-deep)" cx="590" cy="42" r="4"/>
+        <polyline class="ser" style="stroke:var(--muted);stroke-width:2;stroke-dasharray:5 4" points="60,270 104,150 191,145 322,140"/>
+        <circle class="dot" style="fill:var(--muted)" cx="322" cy="140" r="3.5"/>
+        <text class="lab" x="330" y="138" style="fill:var(--muted);font-size:11px">Jan/26 cohort</text>
+        <text class="lab" x="150" y="120" style="fill:var(--accent);font-size:11px">2025 cohorts</text>
+      </svg>
+      <p class="cap" style="margin-top:10px">2025 cohorts reach R$165 to 173 at 12 months. 2026 cohorts start lower (d30 R$101 &rarr; R$74), partly diluted by the travel-size gift cohort &mdash; to be separated in a gift-excluded re-run.</p>
+    </div>
+  </div>
+</section>
+
+<section class="plan-open">
+  <div class="wrap">
+    <div class="eyebrow plan"><span class="n">05</span> The plan</div>
+    <h2>Four moves, in leverage order</h2>
+    <p class="lead">Sequenced so the free-efficiency gains and the measurement come before any new budget. The ramp is last, and governed.</p>
+
+    <div class="moves">
+      <div class="move">
+        <div class="mn"></div>
+        <div>
+          <span class="when">Week 1 &middot; no new spend</span>
+          <h3>Reallocate off the losers, feed the winners</h3>
+          <p>Pause the four sub-breakeven Primer static tests (~R$10k/30d: Liso Coloquial, Liso Institucional, Cachos Coloquial, Cachos Institucional) and redirect that budget to the starved 6&ndash;7.7 ROAS creatives (Novos Vídeos Validados, the review videos) and the engaged retargeting.</p>
+          <span class="impact">blended ROAS toward ~5 and cushion recovered, on the same total spend</span>
+        </div>
+      </div>
+      <div class="move">
+        <div class="mn"></div>
+        <div>
+          <span class="when">Weeks 1&ndash;3</span>
+          <h3>Run an incrementality test before ramping</h3>
+          <p>A geo-lift or conversion-lift test on the prospecting engine (Meta lift tooling), on a capped budget with holdout regions. Platform ROAS overstates the true effect; this gives the real marginal CAC that the scale decision depends on.</p>
+          <span class="impact">a measured marginal-CAC number to scale against, not platform attribution</span>
+        </div>
+      </div>
+      <div class="move">
+        <div class="mn"></div>
+        <div>
+          <span class="when">Weeks 1&ndash;4</span>
+          <h3>Ship the day-45&ndash;60 replenishment flow</h3>
+          <p>A WhatsApp + email replenishment nudge timed to the 63-day median second purchase, zero discount, running through the retention engine that is already built. Copy authored by /crm-director, sends gated for your approval.</p>
+          <span class="impact">lift on the 15.8% repeat rate &mdash; each point is material across 35k customers</span>
+        </div>
+      </div>
+      <div class="move">
+        <div class="mn"></div>
+        <div>
+          <span class="when">Week 4+</span>
+          <h3>Then the governed ramp</h3>
+          <p>Scale prospecting only while the measured marginal CAC stays under R$68 <em>and</em> absolute contribution profit keeps rising at each spend step. Blended ROAS compressing is fine; absolute profit falling is the stop signal.</p>
+          <span class="impact">spend materially above baseline with every step still clearing the 10% floor</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow plan"><span class="n">06</span> What I need from you</div>
+    <h2>Four approvals</h2>
+    <p class="lead">Tick these and I execute. Each names what you are approving and what I own once you do.</p>
+
+    <div class="decisions">
+      <div class="decision">
+        <div class="checkbox"></div>
+        <div>
+          <h3>A &middot; Reallocation (no new budget)</h3>
+          <p>Pause the four named sub-breakeven Primer test ad sets and move ~R$10k/30d to the proven winners + retargeting.</p>
+          <div class="own"><b>I own:</b> the ad-set changes, then a 7-day read to confirm the ROAS lift.</div>
+        </div>
+      </div>
+      <div class="decision">
+        <div class="checkbox"></div>
+        <div>
+          <h3>B &middot; Incrementality test + test budget</h3>
+          <p>Approve a capped lift test on prospecting before any ramp. I need a number from you: the test budget ceiling you are comfortable with.</p>
+          <div class="own"><b>I own:</b> test design, holdout, readout. <b>You decide:</b> the budget cap.</div>
+        </div>
+      </div>
+      <div class="decision">
+        <div class="checkbox"></div>
+        <div>
+          <h3>C &middot; Turn on the replenishment flow</h3>
+          <p>Approve a zero-discount day-45&ndash;60 replenishment sequence via the retention engine, with copy shown to you before any send.</p>
+          <div class="own"><b>I own:</b> flow + copy draft. <b>Gated:</b> you approve the copy before it sends.</div>
+        </div>
+      </div>
+      <div class="decision">
+        <div class="checkbox"></div>
+        <div>
+          <h3>D &middot; The ramp governor rule</h3>
+          <p>Approve the rule that governs scaling: raise budget only while marginal CAC &lt; R$68 and absolute contribution profit rises at each step.</p>
+          <div class="own"><b>I own:</b> weekly scale/kill/iterate calls against the rule. <b>You:</b> spend-step sign-off.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="panel">
+        <h4>I start now, no approval needed</h4>
+        <ul>
+          <li>Module A v1 media layer: measured per-channel CAC, so the R$68 ceiling becomes a live pass/fail gate per campaign.</li>
+          <li>Gift-excluded cohort re-run to settle the LTV-drift question.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h4>Still blocked on access</h4>
+        <ul>
+          <li>Google Ads: the branded vs non-branded split, the single biggest budget-allocation question.</li>
+          <li>Klaviyo: retention performance data to tune the replenishment flow.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="caveats">
+      <h4>How to read these numbers</h4>
+      <ul>
+        <li><b>LTV and repeat are all-channel</b> (online + retail POS + Rappi), so they blend DTC with walk-ins; a DTC-only figure would differ.</li>
+        <li><b>Paid CAC ~R$49 is Meta-attributed</b> (prospecting spend &divide; implied purchases), not yet a per-customer join. The v1 media layer replaces the estimate with a measured number.</li>
+        <li><b>The LTV curve includes gift acquisitions</b> (travel-size, 2026) that pull recent cohorts down. A gift-excluded re-run is the next follow-up.</li>
+        <li>ROAS is Meta platform attribution and likely overstates the true incremental effect &mdash; the reason move 2 (incrementality) gates the ramp.</li>
+      </ul>
+      <div class="foot-meta mono">
+        <span>Source: Shopify (13 months, 44,023 orders) + Meta Ads (account 606199920079315) + Module A model</span>
+        <span>2026-07-21</span>
+      </div>
+    </div>
+  </div>
+</footer>
