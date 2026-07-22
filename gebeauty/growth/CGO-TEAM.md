@@ -43,6 +43,37 @@ Plus a rising repeat rate (baseline 15.8%). Source of truth: Module A.
 | **Retention engine** | `gebeauty/retention-machine/` | E infra | stateful sends (Zoko/Klaviyo), store credit, holdouts, tagging | Growth Analyst + CRM |
 | **Media agency (external)** | via CheckCommerce ticket / WhatsApp | B exec | media buying | directed by growth-hacker, audited by growth-analyst |
 
+## Naming principle (no personograma)
+
+Skill names are stable **identities** (handles), not ranks. Roles are defined here by
+**function**. Suffixes like "director", "producer", "agent", and "hacker" are legacy
+tool handles, not seniority claims. Hierarchy is set ONLY by the "reports to" column in
+the job descriptions below, never inferred from a name. A skill can be swapped or
+renamed without changing its role, because the role lives in this charter, not in the
+handle. (Assessed 2026-07-21 under CGO scrutiny: no rename needed. `growth-hacker` was
+the one flagged as slightly persona-flavored, but kept: it is an established function
+and is shared with CPG Labs platform work, so its altitude is fixed here, not by its
+name. The `growth-` prefix on office / analyst / hacker is a domain marker, not a peer
+ranking.)
+
+## Job descriptions (function / owns / does NOT own / reports to)
+
+The authoritative role map. The "does NOT own" column is the anti-overlap guard: it is
+what stops two members thinking they own the same turf.
+
+| Handle | Title (function) | Owns | Does NOT own | Reports to |
+|---|---|---|---|---|
+| `/growth-office` | Chief Growth Office (lead) | the number; guardrail enforcement; intake, decomposition, verification; Lucas-facing reporting | specialist craft; media buying; writing or building | Lucas |
+| `/growth-analyst` | Growth Analyst | Module A, the margin-true scorecard, cohort/LTV/CAC, the agency challenge loop + register | spend, sends, changing money assumptions, strategy calls | `/growth-office` |
+| `/growth-hacker` | Paid Acquisition + LP Lead | campaign design, offers, A/B design, LP orchestration, directing the agency | the number (office); the margin truth (analyst); the media buy (agency executes it); LP build (product-developer); tracking (integrations-engineer) | `/growth-office` |
+| `/crm-director` | Lifecycle / CRM Lead | owned-channel message sets, lifecycle flows, RFM sends (authoring) | sending (gated via retention-machine); paid or organic reach; offer/discount mechanics (Lucas); the number | `/growth-office` |
+| `/content-director` | Content / SEO Lead | organic reach (blog/PDP/SEO), hook-copy source for paid | ad assembly, sending, media buying, the number | `/growth-office` |
+| `/creative-producer` | Still-Ad Producer | still-ad matrix assembly, creative-fatigue tracking, winner library | hook copy (content-director/Lucas), video, launching ads, the number | `/growth-office` (briefed by growth-hacker) |
+| `/video-director` | Video Creative | paid video creative; winners into the shared library | stills, copy, media buying, the number | `/growth-office` (briefed by growth-hacker) |
+| `/storefront-agent` | Storefront Promo | on-store promotional consistency, aligned to the live paid campaign | paid, sends, the number | `/growth-office` |
+| `/product-developer`, `/integrations-engineer`, `/design-engineer` | Engineering bench (shared) | for a briefed CGO job: LP/feature build; tracking, checkout, discount functions; store/LP UI | strategy, the number; they build only what is briefed | `/growth-office` for the job's duration; otherwise general repo use |
+| media agency (external) | Media-buying execution arm | executing the buy per directive | strategy, the number, being trusted on its word (analyst audits it) | directed by `/growth-hacker`, audited by `/growth-analyst` |
+
 ## Guardrails (apply to every job)
 
 1. **10% net floor**, verified via Module A. No acquisition below it on LTV faith.
