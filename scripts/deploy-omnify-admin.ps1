@@ -210,9 +210,9 @@ if (-not (Test-Path $LightsailKey)) {
 
 # Assert-CleanWorkingTree filters out:
 #   1. .dockerignored paths (docs/, inputs/, sandbox/, etc. -- never ship).
-#   2. Paths outside this Dockerfile's COPY scope (e.g. dirty
-#      apps/fulfillment/ files during an apps/omnify-admin/ deploy -- a
-#      different app, owned by a different deploy, never lands here).
+#   2. Paths outside this Dockerfile's COPY scope (dirty files in a
+#      different workspace never land in this image, so they're not a
+#      deploy risk here).
 # Only paths that would actually land in the omnify-admin image trigger
 # the throw.
 Assert-CleanWorkingTree -ShippablePathPrefixes @(
