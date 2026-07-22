@@ -37,6 +37,15 @@ LTV from the existing base. GE Beauty only (Bossa is out of scope).
 2. **Brand-positioning protection.** No aggressive discounting, no desperate promo
    phrasing. Volume bought by cheapening the premium position is a net loss. Needs a
    written "too aggressive" definition (Module F, Lucas's call — see backlog).
+3. **Isolate aggressive-acquisition cohorts from the base** (added 2026-07-22, Lucas).
+   Tripwire / aggressive new-customer mechanics — the free-travel-size giveaway, deep
+   discount tripwires, buy-X-get-Y loss-leaders — are measured as their own segregated
+   cohort. Blended KPIs (AOV, conversion rate, discount depth, first-order margin,
+   repeat rate) exclude them by default; each campaign carries its own scorecard judged
+   on downstream payback (2nd purchase / hero trial), never first-order AOV or margin.
+   Tag every such campaign at creation (discount-code family + order tag + customer tag)
+   so Module A can split it out. Precedent: the 699 "pague só o frete" orders already
+   excluded by default. Full rule in `gebeauty/growth/CGO-TEAM.md` guardrail 6.
 
 ## The module map (what maps to what)
 
@@ -158,12 +167,16 @@ F6 ramping into diminishing ROAS · F7 Liso conversion leak).
 ## Backlog (not scheduled)
 
 - Module F brand rulebook (one page, Lucas).
-- **Connect Google Ads to the stack (API-first, MCP fallback).** Build `google_ads_fetch.py`
-  (GAQL: campaign + search_term_view -> spend/ROAS + branded-vs-non-branded split, H1),
-  creds in `gebeauty/.env`; owner /integrations-engineer, consumed by /growth-analyst.
-  Official read-only Google Ads MCP exists as the fallback/ad-hoc option (API preferred for
-  the recurring pipeline). Needs: dev token + OAuth (reuse existing GCP client) + agency-granted
-  account access. Bridge until wired: agency 90-day search-term CSV answers H1 now.
+- **Connect Google Ads to the stack (API-first) — SCRIPTS BUILT 2026-07-22, pending creds.**
+  `gebeauty/growth/module-a/google_ads_auth.py` (one-time refresh-token minter, reuses the
+  Desktop OAuth client `gebeauty/scripts/google_oauth_credentials.json`, project
+  `ge-beauty-copilot`) + `google_ads_fetch.py` (REST+urllib, GAQL campaign + search_term_view
+  -> spend/ROAS + branded-vs-non-branded split, H1; creds in `gebeauty/.env`). Read-only.
+  STILL NEEDS (external): (1) developer token from the Ads API Center on an MCC with access;
+  (2) agency grants our Google user read access + the 10-digit customer id; (3) run
+  google_ads_auth.py to mint the refresh token; (4) confirm GOOGLE_ADS_API_VERSION before
+  first run. Official read-only Google Ads MCP is the fallback/ad-hoc option. Bridge:
+  agency 90-day search-term CSV answers H1 now. Owner /integrations-engineer, consumed by /growth-analyst.
 - **Connect TikTok Ads to the stack (API-first, MCP fallback).** TikTok Marketing API pull
   (spend/ROAS/conversions); MCP only if no API path. Low priority until TikTok spend justifies
   it (early-stage per the mandate). Same owner split.
