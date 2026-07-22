@@ -6,9 +6,9 @@ status: in-progress
 priority: high
 created: 2026-07-21
 target: null
-current_phase: A-measurement-spine
-next_blocker: Module A unit-economics structure CONFIRMED + validated with Lucas (2026-07-21): 42.1% contribution before media, max allowable CAC ~R$68/new order at the 10% floor. Next = Module A v1 media-allocation layer — join Meta spend (meta-ads MCP, live) to per-channel/per-order CAC so the 10% floor becomes a live post-media gate; Google Ads still needs data access for the branded/non-branded split (H1).
-next_owner: cto
+current_phase: B-paid-acquisition (Meta measurement)
+next_blocker: NEXT SESSION picks this up (this initiative was set up in the canonical CGO-build session 2026-07-21/22; execution handed off fresh). First job = measure Meta: build Module A v1 (media-allocation layer) — join Meta spend (meta-ads MCP, live, account 606199920079315 BRL) to per-channel/per-order new-customer CAC, replacing the stated ~R$50 estimate. CAC + gross-contribution layer is unblocked NOW; the NET-floor overlay is GATED on Lucas confirming the delivery-cost params (freight/fulfillment UNDER REVISION, new fulfiller — see params.json + /growth-analyst hard rule). Google Ads pull is pending Basic-access approval (scripts built, creds staged in gebeauty/.env). Kick off via /growth-office (or /growth-analyst for the pure build).
+next_owner: next-session (/growth-office)
 stakeholders:
   - GE Beauty (brand / end-consumer acquisition + retention)
   - Lucas (owns the 10% net floor, the brand rulebook, budget ceiling, money assumptions)
