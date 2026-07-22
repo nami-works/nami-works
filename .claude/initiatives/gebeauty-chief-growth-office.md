@@ -168,9 +168,9 @@ F6 ramping into diminishing ROAS · F7 Liso conversion leak).
 
 - Module F brand rulebook (one page, Lucas).
 - **Connect Google Ads to the stack (API-first) — SCRIPTS BUILT 2026-07-22, pending creds.**
-  `gebeauty/growth/module-a/google_ads_auth.py` (one-time refresh-token minter, reuses the
-  Desktop OAuth client `gebeauty/scripts/google_oauth_credentials.json`, project
-  `ge-beauty-copilot`) + `google_ads_fetch.py` (REST+urllib, GAQL campaign + search_term_view
+  `gebeauty/growth/module-a/google_ads_auth.py` (one-time refresh-token minter, reuses a
+  dedicated Desktop OAuth client `gebeauty/scripts/google_ads_oauth.json`, project
+  `ge-beauty-mcp-oauth`, kept separate from face_sorter's Drive creds) + `google_ads_fetch.py` (REST+urllib, GAQL campaign + search_term_view
   -> spend/ROAS + branded-vs-non-branded split, H1; creds in `gebeauty/.env`). Read-only.
   STILL NEEDS (external): (1) developer token from the Ads API Center on an MCC with access;
   (2) agency grants our Google user read access + the 10-digit customer id; (3) run

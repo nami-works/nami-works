@@ -42,6 +42,7 @@ tmp-*.json
 # Sensitive / local-only credentials
 *.csv
 **/google_oauth_credentials.json
+**/google_ads_oauth.json
 **/client_secret*.json
 **/token.json
 

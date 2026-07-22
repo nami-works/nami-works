@@ -22,7 +22,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[2]  # c:/claude
-CLIENT_FILE = REPO / "gebeauty" / "scripts" / "google_oauth_credentials.json"
+CLIENT_FILE = REPO / "gebeauty" / "scripts" / "google_ads_oauth.json"  # dedicated Ads client (project ge-beauty-mcp-oauth); NOT the face_sorter/Drive creds
 SCOPE = "https://www.googleapis.com/auth/adwords"  # Google Ads API scope
 AUTH_URI = "https://accounts.google.com/o/oauth2/v2/auth"
 TOKEN_URI = "https://oauth2.googleapis.com/token"
