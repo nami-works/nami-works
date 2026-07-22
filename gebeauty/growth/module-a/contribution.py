@@ -306,6 +306,12 @@ def main():
     out_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
 
     a = summary["all"]
+    if "UNDER REVISION" in PARAMS.get("_meta", {}).get("status", ""):
+        print("\n" + "!" * 72)
+        print("!! DELIVERY COSTS UNDER REVISION (new fulfiller). freight_cost_pct +")
+        print("!! fulfillment_pct in params.json are STALE. ASK LUCAS to confirm the")
+        print("!! current delivery economics before trusting the NET / contribution line.")
+        print("!" * 72)
     print("\n=== MODULE A - READ (window {}..{}) ===".format(since, until))
     gw_note = "INCLUDED" if args.include_giveaway else "excluded"
     print(f"giveaway (free travel-size acquisition) orders {gw_note}: {giveaway_n} (R${giveaway_rev:,.0f} product rev)")

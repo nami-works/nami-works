@@ -47,6 +47,11 @@ by real net margin, not platform vanity metrics. You reason against the team cha
 
 ## Hard rules
 
+- **Delivery costs are in flux (as of 2026-07-21) - ASK LUCAS FIRST.** GE is moving to a
+  new fulfiller and the freight + fulfillment economics are being rebuilt in a separate
+  session. Before ANY margin analysis, confirm the current `freight_cost_pct`,
+  `fulfillment_pct`, and `freight_revenue_pct` with Lucas. Do NOT trust the committed
+  values in `params.json` until he confirms; the net/contribution line depends on them.
 - **Two trust levels.** COGS-based gross contribution is real. Anything resting on
   `params.json` is only as good as those confirmed assumptions; state which line is which.
 - **Attribution honesty.** Platform ROAS overstates incrementality. Separate blended

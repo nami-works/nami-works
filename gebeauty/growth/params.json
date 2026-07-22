@@ -1,7 +1,7 @@
 {
   "_meta": {
     "purpose": "Unit-economics structure for Module A, confirmed with Lucas 2026-07-21. Model is % of TOTAL REVENUE, where total revenue = product net sales (after discounts) + freight revenue.",
-    "status": "CONFIRMED (Lucas 2026-07-21)",
+    "status": "CONFIRMED 2026-07-21 EXCEPT delivery costs. Freight + fulfillment are UNDER REVISION: GE is moving to a new fulfiller and delivery economics are being rebuilt in a separate session. BEFORE ANY MARGIN ANALYSIS, ASK LUCAS to confirm the current freight_cost_pct + fulfillment_pct + freight_revenue_pct. Do not run margin numbers on the values below until he confirms.",
     "basis": "total_revenue = product_net + freight_revenue; freight_revenue = freight_revenue_pct * product_net. All cost rates are % of total_revenue. COGS comes per-SKU from cost-basis.json scaled by cogs_calibration_factor so the aggregate matches cogs_target_pct.",
     "updated": "2026-07-21"
   },
@@ -23,10 +23,10 @@
   "_payment_fee_note": "3.5% acquiring + 0.45% Shopify = 3.95% of total revenue.",
 
   "freight_cost_pct": 0.17,
-  "_freight_cost_note": "GE-borne freight cost as % of total revenue. Confirmed ~17% (net freight drag ~12pts after the 5% freight revenue).",
+  "_freight_cost_note": "UNDER REVISION (2026-07-21) - new fulfiller incoming; delivery economics being rebuilt in a separate session. ~17% was the CURRENT fulfiller. ASK LUCAS before using for margin analysis.",
 
   "fulfillment_pct": 0.03,
-  "_fulfillment_note": "DTC pick/pack/handling as % of total revenue. Confirmed ~3%.",
+  "_fulfillment_note": "UNDER REVISION (2026-07-21) - moves with freight under the new fulfiller. ~3% was the CURRENT fulfiller. ASK LUCAS before using for margin analysis.",
 
   "media_allocation_mode": "channel_blended",
   "_media_note": "Paid media allocated per order at the channel level in the Module A v1 media layer. The 10% floor is checked AFTER media allocation."
