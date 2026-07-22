@@ -28,8 +28,8 @@ biases spend to lower-funnel and starves the awareness creative that feeds it. I
 Northbeam's top cohort: ~17% of truly high-performing fresh ads are mislabeled
 underperformers in-platform; ~29% of truly underperforming ones are mislabeled
 over-performers. Fix = **view-through attribution** layered on clicks (attributes up to
-**+56% conversions**, mostly top-funnel). → For GE this is the same argument as measured/
-incremental CAC over platform ROAS (Module A media layer).
+**+56% conversions**, mostly top-funnel). → Same argument as measured/incremental CAC
+over platform ROAS: judge creative on causal lift, not last-click platform numbers.
 
 ## Step 1 — Seeding (recruit hundreds of small creators, perpetually)
 - **Who:** 500–50k followers — "hungry, available, relatable," good engagement, recently
