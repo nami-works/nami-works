@@ -24,7 +24,7 @@ interpretation, and interpretations can be wrong.
 
 1. Resolve the source and the target. **Read the target `knowledge.md` first** — for the
    house format, the existing entries (dedup), and any section structure.
-2. For a Gmail label: `search_threads` with `label:<id> -label:claude/digested` (this
+2. For a Gmail label: `search_threads` with `label:<id> -label:digested` (this
    EXCLUDES already-digested threads — dedup layer 1); `get_thread` for bodies.
    Newsletters are big HTML and often overflow into a saved file — extract clean plaintext
    with `python .claude/skills/digest/scripts/extract_email.py <saved-file>` instead of
@@ -60,7 +60,7 @@ interpretation, and interpretations can be wrong.
    the base uses them (e.g. "Best practices & playbooks (external)"). Every entry carries a
    **source ref** (Gmail thread id, or source name + date, or content hash) — this is the
    dedup key.
-7. **Mark processed.** Gmail: add a `claude/digested` label to each processed thread
+7. **Mark processed.** Gmail: add a `digested` label to each processed thread
    (`create_label` once if missing, then `label_thread`), keeping the topic label. Non-Gmail
    sources: append the id/hash to a committed processed-log beside the knowledge base
    (e.g. `<dir>/.digested.jsonl`).
@@ -70,7 +70,7 @@ interpretation, and interpretations can be wrong.
 A single marker is not enough (labels get removed, logs get wiped, runs happen on other
 machines). Use all three:
 
-1. **Exclude at the source.** Gmail query always includes `-label:claude/digested`; for
+1. **Exclude at the source.** Gmail query always includes `-label:digested`; for
    files/text, skip ids/hashes already in the processed-log. Already-processed items never
    get pulled.
 2. **The knowledge base is self-deduping (durable backstop).** Before filing any entry,
