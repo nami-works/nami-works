@@ -55,3 +55,33 @@ not yet agreed), **[estimate]** (platform-attributed or modeled), **[hypothesis]
 - **Cohort LTV drift** [measured, needs isolation] — recent cohorts show lower early LTV,
   partly giveaway-cohort dilution; needs a giveaway-excluded cohort re-run to confirm.
 - **Delivery economics** [in flux] — being rebuilt under a new fulfiller; gates all net-margin work.
+
+## Best practices & playbooks (external — ideas to apply, NOT our measured data)
+
+Digested from the `growth` email label via `/digest`. Source ref = the dedup key.
+
+- **Acquisition Treadmill Ratio (ATR) = current-month new-customer revenue ÷ total revenue.**
+  [best-practice · DTC Newsletter 2026-07-02] Above ~50% the base erodes as fast as you
+  acquire (a treadmill, not a flywheel); healthy brands sit ~20% new / ~80% repeat+cohorts.
+  Our returning-rev share ~22% implies ATR ≈ 0.78 — treadmill territory. **Action: compute
+  a clean monthly ATR on the scorecard; repeat is the floor.**
+- **Promotions are a system, not a panic button — and most offer tools aren't discounts.**
+  [best-practice · Nik Sharma 2026-02-22] 12-tool spectrum (GWP, bundles, free-ship
+  thresholds, VIP/early access, subscribe&save all beat % off) + a promo calendar (4-6
+  major moments/yr + monthly non-discount soft promos + quarterly loyalty), never reactive
+  sales. Reinforces our value-add-over-discount guardrail. Method → `references/promotions-system.md`.
+- **Creative velocity is the #1 paid-scaling constraint → crowdsource a UGC engine.**
+  [best-practice · Northbeam UGC Flywheel Pt.1 2026-07-16] Top accounts ship ~90 creatives/
+  cycle; the bottleneck is scalable UGC, not media ops. In-platform data mistracks ~50% and
+  biases to last-click → needs view-through attribution. Matches our creative-fatigue read +
+  Lucas's priority flag (2026-07-21). Method → `references/ugc-flywheel.md`. **Action: stand
+  up a UGC pipeline feeding the agency (Module C).**
+- **Pop-ups: ask a question before the email (Zeigarnik micro-commitment).**
+  [best-practice · The Inbox Newsletter 2026-02-18] Quiz/question-first pop-ups beat "enter
+  your email" — higher opt-in AND segmentation captured at entry for a tailored welcome
+  flow. GE already runs an Octane quiz. **Action: apply to the on-site pop-up; wire the
+  segmentation into the welcome flow.**
+
+### In-flight experiments (surfaced via digest)
+- **Cart-abandon: hide the discount, make them click to reveal** [The Inbox 2026-04-29] —
+  GE is A/B testing this with the team (not a new idea; logged so it isn't re-digested).
