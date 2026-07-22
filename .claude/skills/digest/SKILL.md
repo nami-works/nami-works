@@ -28,7 +28,9 @@ interpretation, and interpretations can be wrong.
    EXCLUDES already-digested threads — dedup layer 1); `get_thread` for bodies.
    Newsletters are big HTML and often overflow into a saved file — extract clean plaintext
    with `python .claude/skills/digest/scripts/extract_email.py <saved-file>` instead of
-   reading the raw dump. Read only what you need to judge each item.
+   reading the raw dump. To TRIAGE, read enough to judge; but for any chunk you'll file as
+   a deep playbook, read the ENTIRE source (a truncated window silently drops steps — that
+   is exactly how a playbook reference ends up thin).
 
 ## The loop
 
@@ -46,13 +48,19 @@ interpretation, and interpretations can be wrong.
    insight — no names, contract terms, confidential notes, or credentials. Internal intent
    is fine ("Lucas flagged X as priority, DATE"); confidentiality boilerplate and personal
    data are not.
-4. **Route by depth (two-tier):**
-   - **Atomic insight** (a metric, a single tactic) → a compact entry in `knowledge.md` only.
-   - **Playbook / how-to** (a multi-step method) → a compact entry in `knowledge.md` that
-     POINTS to a deep file `references/<slug>.md` holding the full method. Deep files are
-     **tight-but-complete**: every step, no filler, no re-created newsletter.
-   A `knowledge.md` entry is one scannable block (claim · tag · source · so-what/action ·
-   optional `method → references/<slug>.md`), not an essay.
+4. **Route by depth — proportional to the chunk, NOT one uniform bar:**
+   - **Principle / metric / insight** (the idea IS the value; the "how" is short) → a
+     compact entry in `knowledge.md` only. Tight.
+   - **Executable playbook** (tools, configs, step-by-step, hires, templates) → a compact
+     entry that POINTS to a deep file `references/<slug>.md`, written **full and
+     buildable**: someone should be able to *build the thing from it without the original*.
+     Strip fluff, vendor ads, and jokes; keep 100% of the actionable substance — every
+     step, tool, number, threshold, and template. Longer is fine here; **losing the "how"
+     is the failure mode, not length.** (A playbook compressed to its thesis is a thin
+     reference — the thesis was already memorable; the steps were the point.)
+   A `knowledge.md` entry itself is always one scannable block (claim · tag · source ·
+   so-what/action · optional `method → references/<slug>.md`), never an essay — the depth
+   lives in the linked file.
 5. **Stage for approval.** Present the proposed entries (+ a short triage of what you
    skipped and why). **Commit nothing yet.** Let the user cut/edit/confirm.
 6. **File + commit.** On approval: append compact entries to `knowledge.md`, write any deep
