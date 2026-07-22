@@ -24,7 +24,8 @@ interpretation, and interpretations can be wrong.
 
 1. Resolve the source and the target. **Read the target `knowledge.md` first** — for the
    house format, the existing entries (dedup), and any section structure.
-2. For a Gmail label: `search_threads` with `label:<id>` to list; `get_thread` for bodies.
+2. For a Gmail label: `search_threads` with `label:<id> -label:claude/digested` (this
+   EXCLUDES already-digested threads — dedup layer 1); `get_thread` for bodies.
    Newsletters are big HTML and often overflow into a saved file — extract clean plaintext
    with `python .claude/skills/digest/scripts/extract_email.py <saved-file>` instead of
    reading the raw dump. Read only what you need to judge each item.
@@ -56,12 +57,33 @@ interpretation, and interpretations can be wrong.
    skipped and why). **Commit nothing yet.** Let the user cut/edit/confirm.
 6. **File + commit.** On approval: append compact entries to `knowledge.md`, write any deep
    reference files, and commit to `main` (loose-ops zone). Group into a labeled section if
-   the base uses them (e.g. "Best practices & playbooks (external)").
-7. **Mark processed (dedup).** So a re-run doesn't re-digest: relabel the source. For Gmail,
-   add a `claude/digested` label to each processed thread (`create_label` once if missing,
-   then `label_thread`), keeping the topic label. If the user prefers, log processed
-   message ids in a small file next to the knowledge base instead. Confirm the choice on
-   first run.
+   the base uses them (e.g. "Best practices & playbooks (external)"). Every entry carries a
+   **source ref** (Gmail thread id, or source name + date, or content hash) — this is the
+   dedup key.
+7. **Mark processed.** Gmail: add a `claude/digested` label to each processed thread
+   (`create_label` once if missing, then `label_thread`), keeping the topic label. Non-Gmail
+   sources: append the id/hash to a committed processed-log beside the knowledge base
+   (e.g. `<dir>/.digested.jsonl`).
+
+## Preventing double-digestion (three layers)
+
+A single marker is not enough (labels get removed, logs get wiped, runs happen on other
+machines). Use all three:
+
+1. **Exclude at the source.** Gmail query always includes `-label:claude/digested`; for
+   files/text, skip ids/hashes already in the processed-log. Already-processed items never
+   get pulled.
+2. **The knowledge base is self-deduping (durable backstop).** Before filing any entry,
+   check the target `knowledge.md` (+ `references/`) for its **source ref**; if present,
+   skip it. This lives in git, so it survives a lost label / wiped log / different machine.
+   This is the layer of truth.
+3. **The approval gate.** The staged batch is shown before commit — an obvious repeat is
+   caught by eye.
+
+Dedup key by source type: **Gmail** = thread id (+ the label); **newsletter** = source
+name + date; **pasted text / file** = content hash. Caveat: a Gmail thread that gets a new
+reply after being digested stays excluded (it keeps the label) — fine for one-shot
+newsletters; for long evolving threads, re-digest deliberately.
 
 ## Hard rules
 
