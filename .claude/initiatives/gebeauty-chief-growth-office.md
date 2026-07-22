@@ -158,7 +158,16 @@ F6 ramping into diminishing ROAS · F7 Liso conversion leak).
 ## Backlog (not scheduled)
 
 - Module F brand rulebook (one page, Lucas).
-- Google Ads + Klaviyo local tooling (data access first).
+- **Connect Google Ads to the stack (API-first, MCP fallback).** Build `google_ads_fetch.py`
+  (GAQL: campaign + search_term_view -> spend/ROAS + branded-vs-non-branded split, H1),
+  creds in `gebeauty/.env`; owner /integrations-engineer, consumed by /growth-analyst.
+  Official read-only Google Ads MCP exists as the fallback/ad-hoc option (API preferred for
+  the recurring pipeline). Needs: dev token + OAuth (reuse existing GCP client) + agency-granted
+  account access. Bridge until wired: agency 90-day search-term CSV answers H1 now.
+- **Connect TikTok Ads to the stack (API-first, MCP fallback).** TikTok Marketing API pull
+  (spend/ROAS/conversions); MCP only if no API path. Low priority until TikTok spend justifies
+  it (early-stage per the mandate). Same owner split.
+- Klaviyo: DONE (`KLAVIYO_API_KEY` in `gebeauty/.env`; Module A can read email performance).
 - Kit/bundle COGS expansion (component-level, closes the ~5.5% uncosted gap).
 - Post-purchase "how did you hear about us" survey (near-zero-cost brand-awareness baseline).
 
