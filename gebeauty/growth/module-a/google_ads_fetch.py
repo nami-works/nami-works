@@ -20,13 +20,14 @@ import argparse
 import datetime as dt
 import json
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ENV = HERE.parents[1] / ".env"  # gebeauty/.env
-API_VERSION = "v18"  # confirm current stable version before first run
+API_VERSION = "v21"  # v18/v19 = 404 retired; v20 deprecated/blocked (probed 2026-07-22)
 TOKEN_URI = "https://oauth2.googleapis.com/token"
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
@@ -76,8 +77,11 @@ def gaql(creds, token, query):
         headers["login-customer-id"] = login
     req = urllib.request.Request(url, data=json.dumps({"query": query}).encode(),
                                  headers=headers, method="POST")
-    with urllib.request.urlopen(req) as resp:
-        batches = json.loads(resp.read().decode())
+    try:
+        with urllib.request.urlopen(req) as resp:
+            batches = json.loads(resp.read().decode())
+    except urllib.error.HTTPError as e:
+        raise SystemExit(f"Google Ads API {e.code} on {API_VERSION}:\n{e.read().decode()[:900]}")
     rows = []
     for b in batches:
         rows.extend(b.get("results", []))

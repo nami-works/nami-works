@@ -48,11 +48,24 @@ not yet agreed), **[estimate]** (platform-attributed or modeled), **[hypothesis]
 - **Creative-testing tax:** ~30% of spend in below-breakeven Primer tests while proven
   7+ ROAS creatives (Validados, review) are starved. See challenge register F1/F2.
 
+## Google Ads (paid), 30d ending ~2026-07-23 [measured — first live pull, v21 API]
+
+- **H1 ANSWERED — Google is overwhelmingly a HARVESTER, not an acquirer.** [measured]
+  R$32.6k spend / ~R$215k value (blended 6.6x ROAS), but the headline ROAS is manufactured:
+  - `[SEARCH] MARCA` (branded) = **R$13.3k, 41% of spend, 10.1x ROAS** — pure brand harvesting.
+  - `[PMAX] FUN VEND` = R$17.5k (54%), 3.9x — shopping + retargeting, mostly warm.
+  - `[PMAX] PROMOCIONAL TOPO` = R$1.9k (6%), 7.4x.
+  - Inside `search_term_view` (privacy-truncated, understates totals): non-branded = only
+    **R$4.0k at 2.8x ROAS** — the sole clearly-incremental acquisition spend, ~12% of budget
+    at a quarter of the headline efficiency.
+  - **Caveats:** PMax won't split brand vs non-brand (R$19.4k opaque); term-split is
+    directional, campaign table is solid. Tool: `module-a/google_ads_fetch.py --days 30`.
+  - **Next test:** brand-search **holdout / geo-experiment** — pause `MARCA` in a matched
+    region 2-3wk, measure sales that survive via organic. Branded-search incrementality is
+    typically low; that R$13.3k/mo may be subsidizing near-free sales.
+
 ## Open hypotheses / questions
 
-- **H1 — Google is a harvester?** [hypothesis] Branded vs non-branded split unknown until
-  the Google Ads pull lands (scripts built, pending Basic access). This is the biggest
-  budget-allocation question.
 - **Marginal CAC / incrementality unproven** [hypothesis] — platform ROAS overstates true
   effect; run a Meta Conversion Lift before any big ramp.
 - **PDP vs LP on COLD traffic** [hypothesis] — the agency's "PDP wins" read is confounded
