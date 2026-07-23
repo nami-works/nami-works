@@ -141,6 +141,13 @@ export const TOOL_CATALOG: Record<string, ToolCatalogEntry> = {
 //   - order/customer/product tag-writes, bulk-price preview, BEAUTYBACK-specific,
 //     PDP internals, transfers, gift cards, drive-file replace, order compare.
 export const DISABLED_TOOLS: ReadonlySet<string> = new Set([
+  // Superseded by the org-managed `/creative-producer` SKILL (2026-07-21). The
+  // skill is the efficient native form (progressive disclosure, no per-call
+  // payload dump) and reaches every surface the team uses (Code + Cowork). This
+  // connector tool dumped the full ~58KB brief on every call — kept in code (+
+  // the bundle-skills/served-skills infra) but unregistered, re-expose only if a
+  // chat-only surface (no skills) ever needs it.
+  "brand_creative_producer",
   "instagram_link_account",
   "instagram_refresh_ingest",
   "instagram_voice_card_current",
