@@ -1,21 +1,26 @@
 """Rank GE Beauty Loox reviews for conversion and emit top-10 per product family.
 
-Read-only analysis on gebeauty/data/reviews.csv. Consolidates the
-duplicate Shopify handles (full-size / travel-size / rappi / migrated) into one
-product family, scores each review for *conversion value* (photo-first,
-benefit/objection language, substance), de-dupes, and writes a markdown
-deliverable + a JSON companion.
+Pulls the review corpus LIVE from the Loox API (via loox_reviews.py) — the old
+CSV export was retired 2026-07-23. This is a conversion-featuring tool, so it
+keeps only 4-5star reviews (you feature positive social proof); for concern
+mining or honest sentiment you want the full 1-5star corpus straight from
+loox_reviews.fetch_all(). Consolidates the duplicate Shopify handles (full-size
+/ travel-size / rappi / migrated) into one product family, scores each review
+for *conversion value* (photo-first, benefit/objection language, substance),
+de-dupes, and writes a markdown deliverable + a JSON companion.
 
 Run from anywhere:  python gebeauty/scripts/_rank_top_reviews.py
 """
 from pathlib import Path
-import csv
 import json
 import re
+import sys
 import unicodedata
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from loox_reviews import fetch_all, normalize
+
 ROOT = Path(__file__).resolve().parent.parent          # gebeauty
-CSV = ROOT / "data" / "reviews.csv"
 OUT_DIR = ROOT / "research" / "top-reviews"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -107,7 +112,8 @@ def norm_key(r: dict) -> str:
     return deaccent(r["full_name"].strip())[:30] + "|" + deaccent(r["review"].strip())[:50]
 
 def main():
-    rows = list(csv.DictReader(open(CSV, encoding="utf-8-sig")))
+    rows = [normalize(r) for r in fetch_all()]
+    rows = [r for r in rows if r["rating"] in ("4", "5")]   # featuring tool: positive social proof only
     families = {}        # key -> {display, tier, reviews:[]}
     for r in rows:
         h = r["handle"].strip()
@@ -138,7 +144,7 @@ def main():
     # ---- markdown ----
     md = []
     md.append("# GE Beauty — Top Reviews per Product (conversion-ranked)\n")
-    md.append("Source: `gebeauty/data/reviews.csv` (1,882 reviews). "
+    md.append(f"Source: Loox API (live pull, 4-5star reviews only; {len(rows)} pooled). "
               "Ranked for conversion value: photo > benefit/objection language > substance > 5-star > verified > recency. "
               "Handle variants (full-size / travel-size / rappi / migrated) are pooled into one product family.\n")
 

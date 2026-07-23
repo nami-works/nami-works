@@ -10,9 +10,12 @@ measurable conversion lever. Companion data files in this folder:
 
 ## 1. What we have (data truths)
 
-- 1,882 reviews in `gebeauty/data/reviews.csv`. 4–5★ only (negatives live as
-  caveats inside positive reviews). ~5% have photos. `verified_purchase` is unreliable
-  (migrated handles lost the flag) — treat as a soft signal, not a filter.
+- Reviews are pulled LIVE from the **Loox API** (`gebeauty/scripts/loox_reviews.py`; creds in
+  `gebeauty/.env`). ~2,368 published reviews store-wide, all ratings 1–5★. The old
+  `gebeauty/data/reviews.csv` export was 4–5★ only (it hid every negative review) and was
+  deleted 2026-07-23 — never resurrect it. This featuring tool self-filters to 4–5★ on purpose
+  (you pin positive social proof); concern mining uses the full corpus. ~5% have photos.
+  `verified` is a soft signal, not a filter (migrated handles lost the flag).
 - Reviews are **fragmented across duplicate handles** (full-size / travel-size / rappi /
   migrated). ~30% of reviews are stranded off the canonical PDP. Pooling by product family
   is required before any per-product view is meaningful.

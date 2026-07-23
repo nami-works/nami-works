@@ -235,8 +235,9 @@ which becomes the targeting rule for the future automatic campaign.
   Hidratante 89, Pluma 58, Definição 154. Thinnest heroes now: Mayday 26, Antioxidante 33,
   Pluma 58, Shampoo a Seco 59, Liso 70. Retune wave thin-corpus allocation to these.
 - 2026-07-06: Base made pilot-ready — added per-product `?ref=review` links + deterministic
-  (md5-by-phone) 10% holdout. Exclusion currently from `data/reviews.csv`; swap to Merchant
-  API once key provided for exact corpus + live suppression.
+  (md5-by-phone) 10% holdout. Exclusion source is the Loox Merchant API (via
+  `gebeauty/scripts/loox_reviews.py`) for exact corpus + live suppression — the old
+  `data/reviews.csv` was deleted 2026-07-23; API is the sole review source now.
 - 2026-07-06: Strategy + Loox capability research complete. Twist vs primers-first instinct:
   staples repurchase 5x better (20% vs 4%) — repurchase ROI concentrated there, but primers
   are the low-risk pilot to validate the Zoko->Loox-link->reward->repurchase loop end to end.

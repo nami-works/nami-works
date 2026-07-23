@@ -1,5 +1,12 @@
 # Session Handover — 2026-06-10
 
+> **⚠️ Outdated data source (updated 2026-07-23).** This handover references
+> `gebeauty/data/reviews.csv` as the review source. That CSV was a 4–5★-only export
+> (it hid every negative review) and has been **deleted**. Reviews now come LIVE from the
+> Loox API — use `gebeauty/scripts/loox_reviews.py` (full 1–5★ corpus). See the
+> `gebeauty-loox-reviews` memory. The vocabulary findings below still stand; only the
+> source path changed. To re-run the mining, pull from the API instead of the CSV.
+
 ## What was done
 
 ### Consumer vocabulary research
