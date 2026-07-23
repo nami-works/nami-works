@@ -29,6 +29,8 @@ Schema, conventions, and examples are in `.claude/initiatives/README.md`. Treat 
 
 **Never `git reset --hard`** to "clean up" someone else's dirty tree. That destroys their WIP with no reflog trail. Options in decreasing order of safety: (a) stash their work with a note (`git stash push -u -m "other session's WIP, DATE"`), (b) leave the tree dirty and route around it with `git add <specific paths>`, (c) if you MUST reset, confirm with Lucas first — it's a destructive-git operation the CTO contract explicitly gates.
 
+**Verify HEAD before every first commit.** Immediately before your first `git commit` of the session, run `git branch --show-current` and confirm the target branch is what you expect. This catches the same trap the pre-commit hook catches (inherited feature branch), but as a habit — the hook is the mechanical net; the habit is the primary check. Staged-set verification (`git diff --cached --name-only`) protects against sweeping wrong files; branch verification protects against landing on the wrong branch. They are orthogonal — run both.
+
 ## What this repo is
 
 **Primary purpose: the operations control center for GE Beauty** — NAMI Works' first and primary customer (a Brazilian beauty brand, run under the CPG Labs brand). The bulk of day-to-day session work lives at **`gebeauty/`** at the repo root: catalog, orders, local delivery, B2B channels, content, imagery, financial modeling, vendor and contract management. When in doubt about what this repo is *for*, it's running GE Beauty.
