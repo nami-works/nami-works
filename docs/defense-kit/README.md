@@ -45,10 +45,13 @@ hand-drawn line, whereas a rough-filtered container reads as fake.
 
 1. Copy `defense-deck-template.html` to a working file (e.g. `<workspace>/<topic>-defense.html`).
 2. **Act 1** — write the ONE plain-terms idea (marker-font heading) + the 3-node model +
-   the takeaway. NO numbers. For each node:
-   - Pick an icon from `docs/defense-kit/icons/` that matches the concept, OR generate a
-     new one with Magnific using the style prompt below.
-   - Embed it as a data URI in the template's icon slot (Artifacts block external assets).
+   the takeaway. NO numbers. For the imagery, brief **`/illustrator`** — the house doodle
+   artist. Give them the concept (in business terms, not visual terms) + the role
+   (defense-kit Act-1 node set or hero scene) + any anchors (numbers from Module A, brand
+   context, etc.). They ask clarifying questions and deliver icons as file paths + data
+   URIs, plus a suggested placement. Do not draw doodles by hand or by prompting Magnific
+   directly — the illustrator maintains style coherence across decks and grows the
+   `icons/` library.
 3. **Act 2** — fill decision → read (tiles + accurate inline-SVG charts) → economics →
    plan → risks → ask. Real numbers, tabular figures, credible tone.
 4. Publish via the Artifact tool. Private by default; share to whoever the committee is.
