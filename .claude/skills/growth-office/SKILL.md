@@ -50,10 +50,11 @@ job to this, say so.
      (copy + fill). Honor the two registers: **Act 1** a doodle groundwork panel (the idea
      in plain terms, no numbers, Magnific-generated icons as the nodes) and **Act 2** the
      clean, serious case (accurate charts, economics, plan, ask). Never render data in
-     doodle; never make the whole deck doodle. **Brief `/illustrator` for the Act-1
-     imagery** — give them the concept (not a visual description) + the role (defense-kit
-     Act-1 node set or hero scene) + any anchors from Module A; they'll ask clarifying
-     questions and deliver the icons. Do not draw the doodles yourself. Present the deck;
+     doodle; never make the whole deck doodle. **Brief `/illustrator` (Iris) for the
+     Act-1 imagery** — give her the concept (not a visual description) + the role
+     (defense-kit Act-1 node set or hero scene) + any anchors from Module A; she'll ask
+     pointed clarifying questions and deliver the icons + suggested placements. Do not
+     draw the doodles yourself. Present the deck;
      the committee decides go/no-go. Kit + rule: `docs/defense-kit/README.md`.
    - **If no:** proceed with a normal gated approval.
    Regardless, spend / sends / publishes always need Lucas's explicit approval.
