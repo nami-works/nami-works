@@ -1,22 +1,31 @@
 <!--
-  GE BEAUTY CGO — DEFENSE DECK TEMPLATE (two-register)
-  =====================================================
-  This is the REQUIRED starting point for any committee/defense deck (see
-  gebeauty/growth/CGO-TEAM.md "Defense deck"). Copy this file, fill the FILL: slots,
-  publish as an Artifact. Do NOT restyle it into an all-doodle deck.
+  DEFENSE DECK TEMPLATE (two-register)
+  ====================================
+  Repo-wide scaffold for any committee/partner/stakeholder defense deck.
+  Copy this file, fill the FILL: slots, embed doodle icons as data URIs,
+  publish as a private Artifact. Do NOT restyle it into an all-doodle deck.
 
   THE RULE — fidelity matches the claim:
-    - ACT 1 (doodle / groundwork): the big-picture IDEA in plain terms. Hand-drawn,
-      paper ground, NO precise numbers. Job = shared understanding before density.
-    - ACT 2 (clean / serious): the evidence and the decision. Accurate charts, real
-      numbers, the ask. Credible, not playful. This is where the discussion gets dense.
-  The visual step-up between them is deliberate: it tells the room "now we go deep."
+    - ACT 1 (doodle / groundwork): the big-picture IDEA in plain terms.
+      Hand-drawn feel, paper ground, NO precise numbers. Its job = shared
+      understanding before the discussion gets dense.
+    - ACT 2 (clean / serious): the evidence and the decision. Accurate
+      charts, real numbers, the ask. Credible, not playful. This is where
+      the discussion goes deep.
+  The visual step-up between them is deliberate: it signals "now we go deep."
 
-  Act-1 doodle look is 100% code (rough SVG filter + hatch patterns + marker font
-  stack) so the deck is self-contained. Optional: drop GE doodle icons from
-  gebeauty/growth/defense-kit/icons/ in as data-URIs where marked.
-  Marker-font enrichment: inline an OFL hand font (Kalam/Caveat) as a @font-face
-  data-URI to finish the Act-1 look; the fallback stack below is the interim.
+  ACT 1 CONVENTION: doodle imagery, not code-drawn shapes.
+    - Each of the 3 nodes = a Magnific-generated doodle icon, embedded as a
+      data URI. Reuse from docs/defense-kit/icons/ or generate new ones with
+      the style prompt in the kit README.
+    - Only the ARROWS between nodes are code-drawn (rough-filtered SVG lines).
+      A rough-filtered line reads as hand-drawn; a rough-filtered box reads
+      as fake — see README § "Why generated doodles beat code-drawn shapes."
+    - Marker-font stack carries all Act-1 text.
+
+  ACCENT COLOR: override --accent + --accent-deep + --accent-wash in :root
+  below to skin the deck for the tenant/brand at hand (e.g. GE Beauty red
+  #df3630). Icons stay repo-neutral; only the clean-register accent brands.
 -->
 <style>
   :root {
@@ -28,8 +37,6 @@
     --shadow: 0 1px 2px rgba(29,24,21,.04), 0 8px 30px rgba(29,24,21,.06);
     /* doodle (Act 1) — the groundwork register */
     --doodle-paper: #f3f1e9; --doodle-ink: #2b2723;
-    --doodle-blue: #9cc6e0; --doodle-green: #a7cfa0; --doodle-yellow: #f2d774;
-    --doodle-pink: #eab5bd; --doodle-red: #df3630;
     --marker: "Bradley Hand", "Segoe Print", "Comic Sans MS", "Chalkboard SE", cursive;
     --maxw: 940px;
   }
@@ -57,14 +64,32 @@
   /* ---------- ACT 1: doodle groundwork ---------- */
   .act1 { background:var(--doodle-paper); color:var(--doodle-ink); border-bottom:2px dashed var(--line-strong); }
   .act1 .wrap { padding:70px 24px 60px; }
-  .act1 .eyebrow { color:var(--doodle-red); }
+  .act1 .eyebrow { color:var(--accent); }
   .act1 h1 { font-family:var(--marker); font-weight:400; font-size:clamp(30px,5.5vw,50px);
     line-height:1.12; margin:16px 0 8px; letter-spacing:.01em; }
   .act1 .plain { font-family:var(--marker); font-size:clamp(17px,2.4vw,22px); max-width:32ch; opacity:.85; }
-  .doodle-diagram { margin-top:34px; }
-  .d-node text, .d-cap { font-family:var(--marker); }
+
+  /* the model — 3 doodle icons + hand-drawn arrows between them */
+  .model { margin-top:38px; display:grid; grid-template-columns:1fr 60px 1fr 60px 1fr; gap:0; align-items:center; }
+  .model .node { display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .model .node img { width:clamp(90px, 14vw, 130px); height:auto; object-fit:contain;
+    image-rendering:auto; user-select:none; -webkit-user-drag:none; }
+  .model .cap { font-family:var(--marker); font-size:clamp(15px,2vw,18px); text-align:center; max-width:16ch; line-height:1.25; }
+  .model .arrow { color:var(--doodle-ink); }
+  .model .arrow svg { width:100%; height:auto; display:block; }
   .rough { filter:url(#roughen); }
-  .act1 .foot { font-family:var(--marker); font-size:15px; margin-top:26px; opacity:.8; }
+  .act1 .foot { font-family:var(--marker); font-size:15px; margin-top:34px; opacity:.85; }
+
+  /* single-hero alt pattern: one full-scene doodle. Use when the model isn't 3-node.
+     Replace <div class="model">…</div> with <div class="hero"><img src="data:..."/></div>. */
+  .hero { margin-top:38px; text-align:center; }
+  .hero img { max-width:min(680px, 100%); height:auto; }
+
+  @media (max-width:720px) {
+    .model { grid-template-columns:1fr; gap:14px; }
+    .model .arrow { transform:rotate(90deg); height:36px; width:36px; margin:0 auto; }
+    .act1 .wrap { padding:52px 24px; }
+  }
 
   /* step-up divider between registers */
   .stepup { text-align:center; padding:26px 0 4px; }
@@ -87,47 +112,60 @@
   .note { font-size:13px; color:var(--ink-soft); background:var(--surface-2); border-left:3px solid var(--accent);
     border-radius:0 8px 8px 0; padding:12px 16px; margin-top:18px; max-width:66ch; }
   .chart-slot { margin-top:18px; border:1px dashed var(--line-strong); border-radius:12px; padding:18px; color:var(--muted); font-size:13px; }
-  @media (max-width:720px){ .tiles{grid-template-columns:1fr;} .act1 .wrap{padding:52px 24px;} }
+  @media (max-width:720px){ .tiles{grid-template-columns:1fr;} }
   @media (prefers-reduced-motion:no-preference){ .rise{animation:rise .6s ease both} @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}} }
 </style>
 
-<!-- shared SVG defs: hand-drawn roughen filter + hatch patterns (CSP-safe, no libs) -->
+<!-- Shared SVG defs: rough filter for hand-drawn arrows only (never for containers). -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-  <filter id="roughen"><feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" seed="7" result="n"/>
-    <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/></filter>
-  <pattern id="hatchBlue" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--doodle-blue)" stroke-width="3"/></pattern>
-  <pattern id="hatchRed" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--doodle-red)" stroke-width="2.5"/></pattern>
+  <filter id="roughen">
+    <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="3"/>
+  </filter>
+  <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+  </marker>
 </defs></svg>
 
-<!-- ============ ACT 1 — GROUNDWORK (doodle, plain terms, NO numbers) ============ -->
+<!-- ============ ACT 1 — GROUNDWORK (doodle imagery, plain terms, NO numbers) ============ -->
 <section class="act1">
   <div class="wrap rise">
     <div class="eyebrow">Groundwork &middot; the big picture in plain terms</div>
     <h1><!-- FILL: the ONE idea, in plain language. e.g. "We are profitable per sale. The limit is how much we pay to get each new customer." --></h1>
     <p class="plain"><!-- FILL: one plain-terms sentence of context. No jargon, no numbers. --></p>
 
-    <!-- FILL: the mental model as a hand-drawn diagram. Default = cause -> lever -> outcome.
-         Swap node labels; keep it to 3-4 nodes. Rough filter + marker font carry the doodle look.
-         Optional: replace a node with a doodle icon from defense-kit/icons/ as a data-URI <image>. -->
-    <svg class="doodle-diagram" viewBox="0 0 900 190" width="100%" role="img"
-         aria-label="Plain-terms model: cause leads to lever leads to outcome">
-      <g class="rough" fill="none" stroke="var(--doodle-ink)" stroke-width="2.5" stroke-linecap="round">
-        <rect x="20" y="55" width="220" height="80" rx="10" fill="var(--doodle-blue)" fill-opacity=".5"/>
-        <rect x="340" y="55" width="220" height="80" rx="10" fill="var(--doodle-yellow)" fill-opacity=".5"/>
-        <rect x="660" y="55" width="220" height="80" rx="10" fill="var(--doodle-green)" fill-opacity=".5"/>
-        <path d="M245,95 L335,95" marker-end="url(#dot)"/>
-        <path d="M240,95 C285,60 300,60 335,95"/>
-        <path d="M565,95 L655,95"/>
-        <path d="M560,95 C605,130 620,130 655,95"/>
-      </g>
-      <g class="d-node" fill="var(--doodle-ink)" font-size="19" text-anchor="middle">
-        <text x="130" y="100"><!-- FILL: node 1 (the situation) --></text>
-        <text x="450" y="100"><!-- FILL: node 2 (the lever) --></text>
-        <text x="770" y="100"><!-- FILL: node 3 (the outcome) --></text>
-      </g>
-    </svg>
+    <!-- 3-node model: each node = a Magnific doodle icon as data URI + a marker-font caption.
+         Arrows are code-drawn (rough SVG lines), which is FINE for lines. Never draw the
+         node containers in code — use actual doodle imagery. Extend/replace icons via
+         docs/defense-kit/icons/ or a fresh Magnific generation (style prompt in README).
+
+         Alt pattern: for models that aren't 3-node, replace this whole <div class="model">
+         with <div class="hero"><img src="data:..." alt="..."/></div> and drop in a single
+         full-scene Magnific illustration. -->
+    <div class="model" role="img" aria-label="Plain-terms model: situation, lever, outcome">
+      <div class="node">
+        <img src="<!-- FILL: data:image/png;base64,... — situation icon -->" alt=""/>
+        <div class="cap"><!-- FILL: node 1 (the situation) --></div>
+      </div>
+      <div class="arrow" aria-hidden="true">
+        <svg viewBox="0 0 60 40"><g class="rough" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M4,20 Q30,8 54,20" marker-end="url(#arrowhead)"/>
+        </g></svg>
+      </div>
+      <div class="node">
+        <img src="<!-- FILL: data:image/png;base64,... — lever icon -->" alt=""/>
+        <div class="cap"><!-- FILL: node 2 (the lever) --></div>
+      </div>
+      <div class="arrow" aria-hidden="true">
+        <svg viewBox="0 0 60 40"><g class="rough" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M4,20 Q30,32 54,20" marker-end="url(#arrowhead)"/>
+        </g></svg>
+      </div>
+      <div class="node">
+        <img src="<!-- FILL: data:image/png;base64,... — outcome icon -->" alt=""/>
+        <div class="cap"><!-- FILL: node 3 (the outcome) --></div>
+      </div>
+    </div>
 
     <p class="foot"><!-- FILL: the takeaway of the groundwork, one marker-style line. --></p>
   </div>
@@ -154,15 +192,15 @@
       <div class="tile"><div class="v"><!--FILL--></div><div class="k"><!--FILL--></div></div>
     </div>
     <div class="chart-slot">FILL: accurate chart(s) here — clean inline SVG, real data, tabular-nums.
-      Reference build: gebeauty/growth/module-a/kpi-deck.html. Charts in Act 2 are precise, not sketchy.</div>
+      Charts in Act 2 are precise, not sketchy.</div>
   </div>
 </section>
 
 <section class="serious">
   <div class="wrap">
     <div class="eyebrow" style="color:var(--accent)">03 &middot; The economics</div>
-    <h2><!-- FILL: floor status + margin impact --></h2>
-    <div class="note"><b>Floor check:</b> <!-- FILL: net margin vs the 10% floor / CAC ceiling from Module A --></div>
+    <h2><!-- FILL: margin / cost / floor status --></h2>
+    <div class="note"><b>Floor check:</b> <!-- FILL: what the numbers say vs the guardrail --></div>
   </div>
 </section>
 

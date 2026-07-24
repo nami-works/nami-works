@@ -140,9 +140,10 @@ a committee discussion, decided at step 5 (ask when unsure). Routine, reversible
 skip it and take a normal gated approval. Do not force the doodle/defense ritual onto
 small work.
 
-**Start from the template: `gebeauty/growth/defense-kit/defense-deck-template.html`.**
+**Start from the template: `docs/defense-kit/defense-deck-template.html`.**
 It is the required starting point (copy + fill), not optional. Kit + fill guide:
-`gebeauty/growth/defense-kit/README.md`.
+`docs/defense-kit/README.md`. (The kit is now a shared repo-wide tool, not CGO-owned;
+CGO uses it, but so can any surface that needs a committee/partner defense deck.)
 
 **Two registers - fidelity matches the claim (do not mix them):**
 - **Act 1, Groundwork (doodle).** One panel. The big-picture idea in plain terms (the

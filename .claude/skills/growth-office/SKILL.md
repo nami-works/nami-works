@@ -46,11 +46,12 @@ job to this, say so.
    whether it warrants a defense/committee discussion (large spend, brand-visible,
    irreversible, cross-stakeholder) or is routine and reversible enough for a light gated
    approval. Do not default to a formal defense for every task.
-   - **If yes:** build the deck from `gebeauty/growth/defense-kit/defense-deck-template.html`
+   - **If yes:** build the deck from `docs/defense-kit/defense-deck-template.html`
      (copy + fill). Honor the two registers: **Act 1** a doodle groundwork panel (the idea
-     in plain terms, no numbers) and **Act 2** the clean, serious case (accurate charts,
-     economics, plan, ask). Never render data in doodle; never make the whole deck doodle.
-     Present it; the committee decides go/no-go. Kit + rule: `defense-kit/README.md`.
+     in plain terms, no numbers, Magnific-generated icons as the nodes) and **Act 2** the
+     clean, serious case (accurate charts, economics, plan, ask). Never render data in
+     doodle; never make the whole deck doodle. Present it; the committee decides go/no-go.
+     Kit + rule: `docs/defense-kit/README.md`.
    - **If no:** proceed with a normal gated approval.
    Regardless, spend / sends / publishes always need Lucas's explicit approval.
 6. **Execute.** Members produce; the engineering bench builds; the agency runs media as
