@@ -1,0 +1,41 @@
+{
+  "GEB 031": {
+    "product_id": "gid://shopify/Product/10163564249408",
+    "title": "santal skin | body & hair mist",
+    "media": [
+      {
+        "pos": 0,
+        "id": "gid://shopify/MediaImage/43769486180672",
+        "type": "IMAGE",
+        "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/santal-skin-body-hair-mist_a778bf17-cb44-4f45-a5ac-bae98c34633a.png?v=1782931958",
+        "alt": "santal-skin-body-hair-mist"
+      }
+    ]
+  },
+  "GEB 032": {
+    "product_id": "gid://shopify/Product/10163564183872",
+    "title": "rose ritual | body & hair mist",
+    "media": [
+      {
+        "pos": 0,
+        "id": "gid://shopify/MediaImage/43769485885760",
+        "type": "IMAGE",
+        "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/rose-ritual-body-hair-mist_4770fc4d-0616-4906-a422-276b120cbdb9.png?v=1782931943",
+        "alt": "rose-ritual-body-hair-mist"
+      }
+    ]
+  },
+  "GEB 033": {
+    "product_id": "gid://shopify/Product/10163564216640",
+    "title": "pear fresh | body & hair mist",
+    "media": [
+      {
+        "pos": 0,
+        "id": "gid://shopify/MediaImage/43769486016832",
+        "type": "IMAGE",
+        "url": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/pear-fresh-body-hair-mist_7fac9240-0c4f-4f8a-9413-86b2263df9fe.png?v=1782931951",
+        "alt": "pear-fresh-body-hair-mist"
+      }
+    ]
+  }
+}

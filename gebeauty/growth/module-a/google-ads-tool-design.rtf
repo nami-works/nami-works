@@ -1,0 +1,18 @@
+{\rtf1\ansi\ansicpg1252\deff0{\fonttbl{\f0 Calibri;}}\fs22
+{\b\fs30 GE Beauty - Google Ads API Reporting Connector}\par
+{\i Design document | NAMI Works / GE Beauty | internal read-only reporting tool}\par\par
+\par{\b 1. Purpose}\par
+An internal reporting connector that pulls read-only performance data from GE Beauty's own Google Ads account into an internal profitability model. It lets the growth team steer paid-media budget against a minimum net-profit floor, and separates branded from non-branded search performance.\par
+\par{\b 2. Business model}\par
+GE Beauty is a Brazilian direct-to-consumer haircare brand selling on Shopify. It advertises its own products on Google Ads and Meta. This tool supports internal analytics only; nothing is resold or exposed to third parties.\par
+\par{\b 3. What the tool does}\par
+Authenticates to our own Google Ads account via OAuth2 (user consent) and a developer token. Runs GAQL reporting queries against two resources: campaign (cost, conversions, conversion value, impressions, clicks) and search_term_view (search term, cost, conversions, conversion value). Aggregates the results and classifies each search term as branded or non-branded. Writes a local JSON summary consumed by our internal margin model.\par
+\par{\b 4. What the tool does NOT do}\par
+It is strictly read-only. It does not create, edit, pause, or manage campaigns, ad groups, bids, budgets, or assets. It does not access any account other than our own. It performs no mutations of any kind.\par
+\par{\b 5. Architecture and data flow}\par
+Standalone Python script (REST + urllib) -> Google Ads API searchStream (read) -> local JSON -> internal contribution-margin model. Credentials (developer token, OAuth client, refresh token, customer id) are stored in a local, git-ignored environment file. Runs on demand or on a schedule; no server exposes the data externally.\par
+\par{\b 6. Access and users}\par
+Internal only: the GE Beauty growth team and our contracted media agency operating on our behalf. No public or client-facing access.\par
+\par{\b 7. API usage scale}\par
+Low volume: a handful of reporting queries per run, a few runs per week, against a single Google Ads account. Read-only reporting; no bulk mutation traffic.\par
+}

@@ -1,0 +1,112 @@
+<!--
+  GE BEAUTY CGO — DEFENSE Q&A COMPANION  ·  Acquisition + Rescue
+  Live-discussion appendix to acquisition-rescue-defense.html. Same design system
+  (defense-kit tokens). Each committee doubt gets its own section, answered in the
+  same visual register (tiles / clean charts / doodle where it helps).
+  HELD UNPUBLISHED until Lucas says launch. Sections appended as doubts arrive.
+-->
+<style>
+  :root {
+    --paper:#f7f3f0; --surface:#ffffff; --surface-2:#fbf8f6; --ink:#1d1815;
+    --ink-soft:#4a413c; --muted:#8b7d76; --line:#e9e0da; --line-strong:#d8ccc4;
+    --accent:#df3630; --accent-deep:#a11f1b; --accent-wash:#fbe9e7;
+    --good:#2f8f5b; --good-wash:#e4f1ea; --warn:#b9791b; --warn-wash:#f6ecd9;
+    --shadow:0 1px 2px rgba(29,24,21,.04), 0 8px 30px rgba(29,24,21,.06);
+    --doodle-paper:#f3f1e9; --doodle-ink:#2b2723;
+    --doodle-blue:#9cc6e0; --doodle-green:#a7cfa0; --doodle-yellow:#f2d774;
+    --doodle-pink:#eab5bd; --doodle-red:#df3630;
+    --marker:"Bradley Hand","Segoe Print","Comic Sans MS","Chalkboard SE",cursive;
+    --maxw:960px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper:#14100d; --surface:#1e1815; --surface-2:#241d19; --ink:#f4ece7;
+      --ink-soft:#d2c6bf; --muted:#a2938b; --line:#322922; --line-strong:#43372f;
+      --accent:#ff5b4e; --accent-deep:#ff8478; --accent-wash:#35201d;
+      --good:#4dbd82; --good-wash:#17281f; --warn:#e0a648; --warn-wash:#2c2416;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 34px rgba(0,0,0,.4);
+      --doodle-paper:#20242a; --doodle-ink:#eae4dc; }
+  }
+  :root[data-theme="light"]{ --paper:#f7f3f0; --ink:#1d1815; --surface:#fff; --surface-2:#fbf8f6;
+    --ink-soft:#4a413c; --muted:#8b7d76; --line:#e9e0da; --line-strong:#d8ccc4; --accent:#df3630;
+    --good:#2f8f5b; --good-wash:#e4f1ea; --warn:#b9791b; --warn-wash:#f6ecd9; --doodle-paper:#f3f1e9; --doodle-ink:#2b2723; }
+  :root[data-theme="dark"]{ --paper:#14100d; --ink:#f4ece7; --surface:#1e1815; --surface-2:#241d19;
+    --ink-soft:#d2c6bf; --muted:#a2938b; --line:#322922; --line-strong:#43372f; --accent:#ff5b4e;
+    --accent-deep:#ff8478; --accent-wash:#35201d; --good:#4dbd82; --good-wash:#17281f; --warn:#e0a648;
+    --warn-wash:#2c2416; --doodle-paper:#20242a; --doodle-ink:#eae4dc; }
+
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:var(--maxw); margin:0 auto; padding:0 24px; }
+  .num { font-variant-numeric:tabular-nums; }
+  .eyebrow { font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:650; }
+  .d-node text, .d-cap { font-family:var(--marker); }
+  .rough { filter:url(#roughen); }
+
+  /* cover */
+  .cover { border-bottom:1px solid var(--line); }
+  .cover .wrap { padding:56px 24px 40px; }
+  .cover h1 { font-size:clamp(26px,4vw,38px); font-weight:800; letter-spacing:-.02em; margin:10px 0 8px; text-wrap:balance; }
+  .cover p { color:var(--ink-soft); max-width:64ch; font-size:15.5px; }
+
+  section.serious { border-top:1px solid var(--line); }
+  section.serious .wrap { padding:48px 24px; }
+  h2 { font-size:clamp(22px,3.2vw,30px); line-height:1.12; letter-spacing:-.015em; margin:0 0 6px; font-weight:750; text-wrap:balance; }
+  .lead { font-size:clamp(15px,1.9vw,17.5px); color:var(--ink-soft); max-width:66ch; }
+  .tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:22px; }
+  .tile { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 20px; box-shadow:var(--shadow); }
+  .tile .v { font-size:clamp(22px,3.3vw,31px); font-weight:800; color:var(--accent); line-height:1.05; font-variant-numeric:tabular-nums; }
+  .tile .v.g { color:var(--good); }
+  .tile .k { font-size:12.5px; color:var(--muted); margin-top:8px; text-transform:uppercase; letter-spacing:.04em; font-weight:600; }
+  .note { font-size:13.5px; color:var(--ink-soft); background:var(--surface-2); border-left:3px solid var(--accent);
+    border-radius:0 8px 8px 0; padding:12px 16px; margin-top:18px; max-width:72ch; }
+  .note.good { border-left-color:var(--good); }
+  .note.warn { border-left-color:var(--warn); }
+  .note-cols { display:flex; gap:14px; align-items:stretch; }
+  .note-cols .note { flex:1; margin-top:18px; }
+  @media (max-width:720px){ .note-cols { flex-direction:column; } }
+  .chart { margin-top:20px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:20px; box-shadow:var(--shadow); }
+  .chart h3 { font-size:14.5px; margin:0 0 4px; font-weight:750; }
+  .chart .sub { font-size:12.5px; color:var(--muted); margin:0 0 16px; max-width:74ch; }
+  .bars { display:flex; flex-direction:column; gap:9px; }
+  .bar-row { display:grid; grid-template-columns:168px 1fr 118px; gap:12px; align-items:center; font-size:13px; }
+  .bar-row .lbl { color:var(--ink-soft); } .bar-row .lbl b { color:var(--ink); font-weight:650; }
+  .bar-track { background:var(--surface-2); border-radius:6px; height:24px; }
+  .bar-fill { height:100%; border-radius:6px; display:flex; align-items:center; justify-content:flex-end;
+    padding-right:8px; color:#fff; font-size:12px; font-weight:800; font-variant-numeric:tabular-nums; min-width:34px; }
+  .bar-fill.hero { background:var(--good); } .bar-fill.neutral { background:var(--muted); } .bar-fill.anti { background:var(--accent); }
+  .res { text-align:right; font-variant-numeric:tabular-nums; font-size:12.5px; font-weight:700; }
+  .res.pos { color:var(--good); } .res.neg { color:var(--accent-deep); } .res.zero { color:var(--muted); }
+  .res small { color:var(--muted); font-weight:500; }
+  .baseline-note { font-size:12px; color:var(--muted); margin-top:12px; }
+  @media (max-width:640px){ .bar-row{ grid-template-columns:120px 1fr 70px; } }
+  table.econ { width:100%; border-collapse:collapse; margin-top:18px; font-size:13.5px; }
+  table.econ th, table.econ td { text-align:right; padding:9px 10px; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums; }
+  table.econ th:first-child, table.econ td:first-child { text-align:left; }
+  table.econ thead th { color:var(--muted); font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; }
+  table.econ tbody tr:last-child td { border-bottom:none; }
+  .pill { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; }
+  .pill.ok { color:var(--good); background:var(--good-wash); } .pill.hot { color:var(--accent-deep); background:var(--accent-wash); } .pill.mid { color:var(--warn); background:var(--warn-wash); }
+  .qtag { display:inline-block; font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
+    color:#fff; background:var(--accent); border-radius:6px; padding:3px 9px; }
+  ul.lead li { margin-bottom:9px; }
+  .foothdr { color:var(--muted); font-size:12px; margin-top:40px; text-align:center; }
+  @media (max-width:720px){ .tiles{grid-template-columns:1fr;} }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="roughen"><feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/></filter>
+  <marker id="dot" markerWidth="8" markerHeight="8" refX="4" refY="4"><circle cx="4" cy="4" r="3" fill="var(--doodle-ink)"/></marker>
+</defs></svg>
+
+<section class="cover">
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--accent)">CGO defense &middot; discussion companion</div>
+    <h1>Acquisition + Rescue &mdash; answers to the committee's questions</h1>
+    <p>Follow-on to the defense deck. Each question raised in the discussion is answered here in the same register, grounded in Module A data. Added live as questions come in.</p>
+  </div>
+</section>
+
+<!-- ANSWERS APPENDED BELOW AS DOUBTS ARRIVE -->

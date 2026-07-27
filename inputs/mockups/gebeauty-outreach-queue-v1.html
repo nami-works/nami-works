@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Outreach — fila de vendas (mockup v1)</title>
+<style>
+  :root{
+    --bg:#f1f1f1; --card:#fff; --ink:#303030; --sub:#616161; --line:#e3e3e3;
+    --green:#008060; --greenbg:#e7f4ef; --amber:#ffd79d; --amberink:#5c3d00;
+    --red:#e0301e; --redbg:#fbeae5; --blue:#eef2ff; --blueink:#2b3a8f; --chip:#f2f2f2;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.45}
+  .wrap{max-width:920px;margin:0 auto;padding:20px 16px 60px}
+  h1{font-size:20px;font-weight:650;margin:0}
+  .muted{color:var(--sub)}
+  .topbar{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:14px}
+  /* hub tabs */
+  .tabs{display:flex;gap:4px;background:#e8e8e8;padding:3px;border-radius:10px;width:fit-content;margin-bottom:14px}
+  .tab{padding:7px 14px;border-radius:8px;font-weight:550;color:var(--sub);cursor:pointer;white-space:nowrap}
+  .tab.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  /* stat tiles */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .stat .n{font-size:22px;font-weight:680;line-height:1.1}
+  .stat .l{font-size:12px;color:var(--sub);margin-top:2px}
+  /* protocol banner */
+  .banner{background:#eef2ff;border:1px solid #d7ddfa;border-radius:12px;padding:10px 14px;font-size:13px;color:#2b3a8f;margin-bottom:16px;display:flex;gap:8px;align-items:flex-start}
+  /* card */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:grid;grid-template-columns:34px 1fr auto;gap:14px;align-items:start}
+  .card.done{opacity:.5}
+  .card.win{border-color:var(--green);background:var(--greenbg)}
+  .rank{font-weight:680;color:var(--sub);font-size:15px;padding-top:2px}
+  .who{font-weight:620;font-size:15px}
+  .line2{color:var(--sub);font-size:13px;margin-top:1px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip{font-size:12px;padding:3px 9px;border-radius:20px;background:var(--chip);color:#444;white-space:nowrap}
+  .chip.now{background:var(--redbg);color:#a3271a;font-weight:600}
+  .chip.credit{background:#fff4e2;color:var(--amberink);font-weight:600}
+  .chip.near{background:var(--greenbg);color:#0a5c46}
+  .chip.rec{background:var(--blue);color:var(--blueink)}
+  .msg{margin-top:10px;background:#fafafa;border:1px dashed var(--line);border-radius:10px;padding:9px 11px;font-size:13px;color:#444;white-space:pre-line}
+  .right{display:flex;flex-direction:column;gap:7px;align-items:stretch;min-width:150px}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:560;cursor:pointer;text-align:center;text-decoration:none;color:var(--ink)}
+  .btn.wa{background:var(--green);border-color:var(--green);color:#fff}
+  .btn.win{background:#fff;border-color:var(--green);color:var(--green)}
+  .outrow{display:flex;gap:6px}
+  .outrow .btn{flex:1;padding:7px 6px;font-size:12px}
+  .score{font-size:11px;color:var(--sub);text-align:center;margin-top:2px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;margin-left:6px;vertical-align:middle}
+  .tag.contacted{background:#eee;color:#555}
+  .tag.won{background:var(--green);color:#fff}
+  @media(max-width:720px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .card{grid-template-columns:26px 1fr}
+    .right{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;margin-top:6px}
+    .right .btn{flex:1}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div>
+      <h1>Outreach <span class="muted" style="font-weight:400">· fila de vendas</span></h1>
+      <div class="muted" style="font-size:13px">Ligue de cima para baixo. A ordem já está definida pelo sistema.</div>
+    </div>
+    <div class="muted" style="font-size:13px">quinta, 10/07</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab on">Shops Jardins · SP+CO</div>
+    <div class="tab">RioSul · Sul+SE</div>
+    <div class="tab">Shopping Recife · N+NE</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="n">60</div><div class="l">Na fila hoje</div></div>
+    <div class="stat"><div class="n">12</div><div class="l">Contatados</div></div>
+    <div class="stat"><div class="n">4</div><div class="l">Converteram</div></div>
+    <div class="stat"><div class="n">R$ 1.284</div><div class="l">Recuperado hoje</div></div>
+  </div>
+
+  <div class="banner">
+    <span>🎯</span>
+    <span><strong>Protocolo:</strong> trabalhe a fila na ordem. Registre <em>todo</em> retorno (mesmo "sem resposta") — é isso que ensina o sistema a acertar o próximo disparo.</span>
+  </div>
+
+  <!-- 1: near + running low + credit expiring -->
+  <div class="card">
+    <div class="rank">1</div>
+    <div>
+      <div class="who">Mariana S.</div>
+      <div class="line2">São Paulo, SP · 3,2 km da loja · 📞 (11) 9•••2-4471</div>
+      <div class="chips">
+        <span class="chip now">acabando: shampoo (~58 dias)</span>
+        <span class="chip credit">R$ 85,90 · expira sexta 17/07</span>
+        <span class="chip near">entrega amanhã</span>
+        <span class="chip rec">sugerir: máscara condicionadora</span>
+        <span class="chip">3 pedidos · cliente fiel</span>
+      </div>
+      <div class="msg">Oii, Mariana! 💛 Vi que seu shampoo GE já deve estar acabando. Você tem R$ 85,90 de crédito válido até sexta (17/07) — dá pra repor e ainda levar a máscara condicionadora. Entrego amanhã aí em SP. Quer que eu já monte seu pedido?</div>
+    </div>
+    <div class="right">
+      <a class="btn wa" href="#">abrir WhatsApp</a>
+      <div class="outrow">
+        <button class="btn">Contatado</button>
+        <button class="btn win">Vendeu</button>
+      </div>
+      <button class="btn">Sem resposta</button>
+      <div class="score">prioridade 0,94 · intent 0,9 · dist 0,98</div>
+    </div>
+  </div>
+
+  <!-- 2: far but high intent + big credit (carrier) -->
+  <div class="card">
+    <div class="rank">2</div>
+    <div>
+      <div class="who">Patrícia L.</div>
+      <div class="line2">Goiânia, GO · 890 km · 📞 (62) 9•••7-1180</div>
+      <div class="chips">
+        <span class="chip now">acabando: leave-in (~61 dias)</span>
+        <span class="chip credit">R$ 118,15 · expira sexta 17/07</span>
+        <span class="chip">chega em ~3 dias</span>
+        <span class="chip rec">sugerir: booster definição</span>
+        <span class="chip">5+ pedidos · fiel</span>
+      </div>
+      <div class="msg">Oii, Patrícia! 💛 Seu leave-in GE deve estar no fim. Você tem R$ 118,15 de crédito até sexta (17/07). Mando pra Goiânia, chega em ~3 dias — dá tempo. Aproveita e leva o booster definição? Monto seu pedido agora.</div>
+    </div>
+    <div class="right">
+      <a class="btn wa" href="#">abrir WhatsApp</a>
+      <div class="outrow">
+        <button class="btn">Contatado</button>
+        <button class="btn win">Vendeu</button>
+      </div>
+      <button class="btn">Sem resposta</button>
+      <div class="score">prioridade 0,88 · intent 0,95 · dist 0,42</div>
+    </div>
+  </div>
+
+  <!-- 3: contacted state -->
+  <div class="card done">
+    <div class="rank">3</div>
+    <div>
+      <div class="who">Juliana M. <span class="tag contacted">contatado 09:40</span></div>
+      <div class="line2">Campinas, SP · 92 km · 📞 (19) 9•••5-3320</div>
+      <div class="chips">
+        <span class="chip now">acabando: primer cachos (~54 dias)</span>
+        <span class="chip credit">R$ 44,18 · expira 17/07</span>
+        <span class="chip">chega em ~2 dias</span>
+      </div>
+    </div>
+    <div class="right">
+      <button class="btn">Reabrir</button>
+      <div class="score">aguardando retorno</div>
+    </div>
+  </div>
+
+  <!-- 4: won state -->
+  <div class="card win">
+    <div class="rank">4</div>
+    <div>
+      <div class="who">Ana Carolina F. <span class="tag won">vendeu · R$ 312</span></div>
+      <div class="line2">São Paulo, SP · 6,8 km · 📞 (11) 9•••8-0092</div>
+      <div class="chips">
+        <span class="chip">crédito R$ 63,75 aplicado</span>
+        <span class="chip near">entrega amanhã</span>
+        <span class="chip rec">levou: máscara mayday + leave-in</span>
+      </div>
+    </div>
+    <div class="right">
+      <div class="score" style="color:#0a5c46;font-weight:600">✓ convertido às 10:12</div>
+    </div>
+  </div>
+
+  <!-- 5: near, smaller credit -->
+  <div class="card">
+    <div class="rank">5</div>
+    <div>
+      <div class="who">Renata P.</div>
+      <div class="line2">São Paulo, SP · 4,1 km · 📞 (11) 9•••1-7745</div>
+      <div class="chips">
+        <span class="chip now">acabando: booster antifrizz (~60 dias)</span>
+        <span class="chip credit">R$ 33,28 · expira 17/07</span>
+        <span class="chip near">entrega amanhã</span>
+        <span class="chip rec">sugerir: shampoo sem sulfato</span>
+      </div>
+      <div class="msg">Oii, Renata! 💛 Seu booster antifrizz já deve estar acabando. Tem R$ 33,28 de crédito até sexta — entrego amanhã aí em SP. Bora repor + o shampoo sem sulfato pra completar a rotina?</div>
+    </div>
+    <div class="right">
+      <a class="btn wa" href="#">abrir WhatsApp</a>
+      <div class="outrow">
+        <button class="btn">Contatado</button>
+        <button class="btn win">Vendeu</button>
+      </div>
+      <button class="btn">Sem resposta</button>
+      <div class="score">prioridade 0,79 · intent 0,72 · dist 0,97</div>
+    </div>
+  </div>
+
+  <div class="muted" style="text-align:center;font-size:13px;margin-top:16px">… mais 55 clientes na fila de hoje</div>
+
+</div>
+</body>
+</html>

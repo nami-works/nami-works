@@ -1,0 +1,17 @@
+{
+  "_doc": "Boniteca qualifying-revenue history for the tier projector. QUALIFYING = cosmetic formula gross (Omie NF-e mod-55 e-comm+LD+Amazon+B2B, ex intra-branch transfers; + Shopify POS mod-65), NCM 3303-3307, ex accessories/brindes/returns. Pull via scripts/boniteca_faturamento_mtd.py MM/YYYY [DD] (SLOW, Omie throttle). qualifying_monthly_brl[YYYY-MM] = FULL-month qualifying gross (future-mode seasonal YoY). reference_fraction = CURRENT-mode in-month velocity: avg over CLEAN reference months of (MTD at 'day' / full); projected_this_full = this_MTD(day) / avg_fraction. Reference months EXCLUDE anomalies. overrides_brl[YYYY-MM] = manual projected qualifying gross for campaign-concentration months.",
+  "qualifying_monthly_brl": {
+    "2026-06": 496266
+  },
+  "reference_fraction": {
+    "day": 22,
+    "_note": "In-month accrual fraction at day 22, from clean pre-launch months. JUNE EXCLUDED: end-June body&hair mist launch back-loaded the month (Jun d22 R$365k -> full R$496k, +26% in the last week is launch volume) - a bad velocity reference. Using Apr+May 2026.",
+    "months": {
+      "2026-04": {"mtd": 525424.19, "full": 704545.61},
+      "2026-05": {"mtd": 423346.44, "full": 796708.41}
+    }
+  },
+  "qualifying_monthly_full_brl_extra": {"2026-04": 704545.61, "2026-05": 796708.41},
+  "overrides_brl": {},
+  "_status": "reference_fraction from Apr+May 2026 d22 (frac 0.746 / 0.531, avg 0.639). NOTE the two months disagree on shape (front- vs back-loaded) so the avg is noisy - widen the reference set as more clean months accrue. Gross-of-returns/provisional. Apr/May full (705k/797k) >> June (496k): Maes peak then June trough."
+}

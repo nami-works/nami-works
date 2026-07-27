@@ -4,7 +4,7 @@ This workspace handles ad-hoc operational tasks for GE Beauty's Shopify store. E
 
 ## Persistent references
 
-- **Canonical product catalog:** `gebeauty/products.json` — 17 SKUs, source of truth for all B2B registrations. Assinatura variants excluded (e-commerce only).
+- **Canonical product catalog:** `gebeauty/products.json` — 29 SKUs (as of 2026-07-16; 27 registrable with EAN), source of truth for all B2B registrations. Assinatura variants excluded (e-commerce only).
 - **Pending fixes:** `gebeauty/pending-fixes.md` — non-urgent issues to fix when convenient. Add new findings here instead of leaving them as inline comments.
 - **Hi Platform CS archive (pre-Gorgias migration):** `gebeauty/research/cs-knowledge-base/` — the complete customer-service history mined out of Hi Platform before the contract lapses. `cs_archive.sqlite` (~206 MB, 28,080 tickets + 53,694 messages, 15,745 real-customer) is the lossless master; `deliverables/export/*.jsonl` are the Gorgias-handover exports (full + reduced-PII). Local-only, gitignored (holds PII). Check state: `python cs_kb_fetch.py status`; analyze/export: `python analyze.py {index,digest,export}`. Full detail in Claude memory `project_gebeauty_hiplatform_kb.md`.
 
@@ -43,7 +43,7 @@ def graphql(query, variables=None):
 
 ## Product Catalog
 
-### Active Product Line (14 products)
+### Active Product Line (quick reference — not exhaustive; see `products.json` for the full 29-SKU set)
 | Product | SKU | Type | Price (current) |
 |---------|-----|------|-----------------|
 | Shampoo Sem Sulfato | GEB 001 | formula/full-size | R$80.75 |

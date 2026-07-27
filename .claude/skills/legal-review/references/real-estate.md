@@ -30,11 +30,31 @@ early-exit penalty.
   double-paying or triggering the early-exit penalty.
 - Watch for name collisions: a Regus office "at Rio Sul" (Torre Rio Sul, Botafogo) is a different
   contract from a kiosk lease inside RioSul Shopping (Iguatemi). Don't conflate them.
+- **JHSF mall-kiosk deals come as a TWIN pair** — a sublocação + a "fornecimento de serviço de vendas"
+  (take-rate) contract, declared *indissociable* (rescind one → they can rescind the other). Review both
+  together; the biggest combined risk is **cross-default** (forn. 9.6.x / sub. 11.7.x, extended to JHSF-defined
+  "Related Parties"). Push to sever indissociability + limit cross-default to each contract's own obligations.
+- **JHSF amends by adding lettered overrides to the Quadro Resumo** (e.g. "letra c) as cláusulas X, Y passam a
+  vigorar com a redação abaixo"), not by editing body clauses — and the Quadro Resumo prevails. So to see what
+  they conceded, read the Quadro Resumo amendment block, not the (often unchanged) body. Verify a deleted body
+  clause is actually gone, not just overridden.
+- **"Conditioned rent" trap:** a headline rent cut can be tied to a marketing counterpart (here: R$9k→R$5k
+  conditioned on 2 Camila Coutinho visits + 2 posts/mo for the whole term + free image-rights license; breach
+  reverts to R$9k). Price the counterpart's real cost before celebrating the discount — it's a CEO/brand call.
+- **LGPD default is JHSF-favorable:** the lojista is cast as mere *operadora* (processor). Co-controladoria
+  asks get rejected; note the residual liability exposure.
+- Standing terms they leave untouched and rarely negotiate: **aluguel em dobro em dezembro**, holdover multa
+  (R$/day amount), unilateral relocation right, unified-payment-platform mandatory adhesion.
 
 ## BR-law anchors
 Lei 8.245/1991 (Lei do Inquilinato — locação não residencial) · Código Civil (subsidiary).
 
 ## Deals seen
+- **2026-07 — CJ Fashion / Shopping Cidade Jardim (JHSF)** · quiosque Q07E.1 ~6 m², 18-mo sublocação + an
+  indissociable "fornecimento de serviço de vendas" (take-rate 10%). V2 negotiation: JHSF accepts commercial +
+  a few protections, rejects most legal asks. Pattern lessons locked below (mall-kiosk take-rate combo, JHSF
+  amends via lettered Quadro Resumo overrides not body edits, cross-default + indissociability, conditioned rent).
+  See `deals/2026-07_cj-fashion-cidade-jardim.md`.
 - **2026-06 — Regus / IWG (Torre Rio Sul, Botafogo)** · `sublocação` coworking/storage, started
   01/12/2025, ~R$3,159→4,179/mo. Exiting in favor of Iguatemi depósito G4D10 (R$1,500/mo). Notice
   tiered + portal-only + runs to month-end; **exact term needs confirmation** before counting notice.

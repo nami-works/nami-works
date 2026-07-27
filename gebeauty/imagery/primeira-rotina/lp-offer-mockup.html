@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GE Beauty · LP oferta rotina de lavagem (mockup)</title>
+<style>
+  /* ============================================================
+     GE Beauty design tokens (foundations.html)
+     ============================================================ */
+  :root{
+    --ge-red:#DF3630;
+    --ink:#000000;
+    --paper:#FFFFFF;
+    --n-50:#F6F5F3; --n-100:#E9E7E3; --n-300:#C4C0BA; --n-500:#857D74; --n-700:#3A332C;
+    --beige:#ECEDE9;          /* the LP surface tint used across GE landing pages */
+    --sage:#769C8E;
+    --r-sm:6px; --r-md:12px; --r-lg:20px; --r-pill:999px;
+    --font:"Italian Plate No1","Helvetica Neue",Arial,sans-serif;
+    /* mockup chrome (adapts to viewer theme; the LP canvas itself stays brand-light on purpose) */
+    --frame-bg:#d9d7d2; --frame-ink:#3A332C; --frame-panel:#fff; --frame-border:#C4C0BA;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --frame-bg:#1b1a18; --frame-ink:#E9E7E3; --frame-panel:#232220; --frame-border:#3A332C; }
+  }
+  :root[data-theme="light"]{ --frame-bg:#d9d7d2; --frame-ink:#3A332C; --frame-panel:#fff; --frame-border:#C4C0BA; }
+  :root[data-theme="dark"]{ --frame-bg:#1b1a18; --frame-ink:#E9E7E3; --frame-panel:#232220; --frame-border:#3A332C; }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--frame-bg);color:var(--frame-ink);font-family:var(--font);-webkit-font-smoothing:antialiased;line-height:1.45}
+
+  /* ---- mockup chrome ---- */
+  .chrome{max-width:1180px;margin:0 auto;padding:28px 20px 8px}
+  .chrome h1{font-size:20px;margin:0 0 4px;font-weight:800}
+  .chrome p{font-size:13px;margin:2px 0;opacity:.8}
+  .device-row{display:flex;gap:36px;justify-content:center;align-items:flex-start;flex-wrap:wrap;padding:24px 12px 40px}
+  .device-label{text-align:center;font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.65;margin-bottom:10px;font-weight:700}
+
+  /* device frames */
+  .phone{width:390px;max-width:100%}
+  .phone .screen{border:10px solid #111;border-radius:34px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.28)}
+  .desktop{width:720px;max-width:100%}
+  .desktop .screen{border:1px solid var(--frame-border);border-radius:12px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.18)}
+
+  /* ============================================================
+     LP CANVAS (brand-light, this is the actual page design)
+     ============================================================ */
+  .lp{background:var(--paper);color:var(--ink);font-size:16px}
+  .lp .wrap{padding:20px}
+  .desktop .lp .wrap{padding:34px 40px}
+
+  /* --- token pill: shows exactly where the final numbers drop in --- */
+  .tok{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:.82em;
+       background:#fff4f4;color:var(--ge-red);border:1px dashed var(--ge-red);
+       border-radius:5px;padding:0 5px;white-space:nowrap;font-weight:600}
+
+  /* ---------------- HERO ---------------- */
+  .hero{background:var(--beige)}
+  .hero .grid{display:grid;gap:18px}
+  .desktop .hero .grid{grid-template-columns:1.05fr .95fr;align-items:center;gap:30px}
+  .hero .eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--sage);margin:0 0 8px}
+  .hero h1{font-size:30px;line-height:1.08;margin:0 0 12px;font-weight:800;letter-spacing:-.01em}
+  .desktop .hero h1{font-size:38px}
+  .hero h1 .em{color:var(--ge-red)}
+  .hero .sub{font-size:15.5px;margin:0 0 18px;color:var(--n-700)}
+  .hero .heroart{background:linear-gradient(160deg,#f4f2ee,#e6e4de);border-radius:var(--r-lg);
+                 aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+                 color:var(--n-500);font-size:13px;text-align:center;padding:16px;border:1px solid var(--n-100)}
+  .desktop .hero .heroart{aspect-ratio:4/5}
+
+  /* price / value block — GIVING first, not %off */
+  .priceblock{background:var(--paper);border:1px solid var(--n-100);border-radius:var(--r-md);padding:14px 16px;margin:0 0 16px}
+  .priceblock .gift{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--sage);margin:0 0 6px}
+  .priceblock .gift svg{flex:0 0 auto}
+  .priceblock .pay{font-size:14px;color:var(--n-700)}
+  .priceblock .pay .por{font-size:26px;font-weight:800;color:var(--ink);vertical-align:-2px;margin-left:4px}
+  .priceblock .pay .de{text-decoration:line-through;color:var(--n-500);font-weight:600;margin-left:8px;font-size:15px}
+  .priceblock .fine{font-size:12px;color:var(--n-500);margin:6px 0 0}
+
+  .cta{display:block;width:100%;background:var(--ge-red);color:#fff;border:none;border-radius:var(--r-pill);
+       font-family:var(--font);font-size:17px;font-weight:800;padding:16px;cursor:pointer;text-align:center;
+       min-height:52px;letter-spacing:.01em;box-shadow:0 6px 16px rgba(223,54,48,.28)}
+  .cta:active{transform:translateY(1px)}
+  .cta .sm{display:block;font-size:12px;font-weight:600;opacity:.9;margin-top:2px}
+  .cta[disabled]{background:var(--n-300);color:#fff;box-shadow:none;cursor:not-allowed}
+
+  /* trust chips */
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0}
+  .chip{font-size:11.5px;font-weight:700;letter-spacing:.02em;background:var(--paper);
+        border:1px solid var(--n-100);border-radius:var(--r-pill);padding:5px 11px;color:var(--n-700)}
+  .stars{display:flex;align-items:center;gap:7px;margin:12px 0 0;font-size:13px;color:var(--n-700)}
+  .stars b{color:var(--ink)}
+
+  /* ---------------- section shell ---------------- */
+  .sec{padding:30px 20px}
+  .desktop .sec{padding:40px}
+  .sec h2{font-size:22px;font-weight:800;letter-spacing:-.01em;margin:0 0 4px;text-align:center}
+  .desktop .sec h2{font-size:26px}
+  .sec .lead{text-align:center;color:var(--n-500);font-size:14.5px;max-width:560px;margin:0 auto 22px}
+
+  /* ---------------- how it works (mechanic) ---------------- */
+  .steps{display:grid;gap:14px}
+  .desktop .steps{grid-template-columns:repeat(3,1fr);gap:18px}
+  .step{background:var(--n-50);border-radius:var(--r-md);padding:18px 16px;text-align:center}
+  .step .num{width:30px;height:30px;border-radius:var(--r-pill);background:var(--ge-red);color:#fff;
+             font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
+  .step h3{font-size:15.5px;margin:0 0 5px;font-weight:800}
+  .step p{font-size:13.5px;color:var(--n-700);margin:0}
+
+  /* ---------------- gift chooser (interactive core) ---------------- */
+  .chooser{background:var(--beige)}
+  .giftgrid{display:grid;gap:12px;max-width:620px;margin:0 auto}
+  .desktop .giftgrid{grid-template-columns:1fr 1fr}
+  .giftopt{position:relative;background:var(--paper);border:2px solid var(--n-100);border-radius:var(--r-md);
+           padding:16px 16px 16px 46px;cursor:pointer;transition:border-color .12s,box-shadow .12s;display:block}
+  .giftopt:hover{border-color:var(--n-300)}
+  .giftopt.on{border-color:var(--ge-red);box-shadow:0 4px 14px rgba(223,54,48,.14)}
+  .giftopt .radio{position:absolute;left:16px;top:18px;width:20px;height:20px;border-radius:50%;
+                  border:2px solid var(--n-300);background:#fff}
+  .giftopt.on .radio{border-color:var(--ge-red);background:radial-gradient(circle at center,var(--ge-red) 0 6px,#fff 7px 20px)}
+  .giftopt .tag{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--sage);margin:0 0 4px}
+  .giftopt h3{font-size:16px;margin:0 0 4px;font-weight:800}
+  .giftopt p{font-size:13.5px;color:var(--n-700);margin:0}
+  .giftopt .val{font-size:12.5px;color:var(--n-500);margin:7px 0 0;font-weight:600}
+  .picked{max-width:620px;margin:16px auto 0;text-align:center;font-size:14px;color:var(--n-500)}
+  .picked b{color:var(--ink)}
+  .chooser .cta{max-width:620px;margin:14px auto 0}
+
+  /* ---------------- why the routine ---------------- */
+  .why{display:grid;gap:14px;max-width:720px;margin:0 auto}
+  .desktop .why{grid-template-columns:repeat(3,1fr)}
+  .why .card{background:var(--paper);border:1px solid var(--n-100);border-radius:var(--r-md);padding:18px}
+  .why .card .k{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ge-red);margin:0 0 6px}
+  .why .card h3{font-size:16px;margin:0 0 6px;font-weight:800}
+  .why .card p{font-size:13.5px;color:var(--n-700);margin:0}
+
+  /* ---------------- closing ---------------- */
+  .close{background:var(--ink);color:#fff;text-align:center}
+  .close h2{color:#fff}
+  .close .lead{color:rgba(255,255,255,.72)}
+  .close .priceblock{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);max-width:420px;margin:0 auto 16px}
+  .close .priceblock .pay{color:rgba(255,255,255,.8)}
+  .close .priceblock .pay .por{color:#fff}
+  .close .priceblock .fine{color:rgba(255,255,255,.55)}
+  .close .cta{max-width:420px;margin:0 auto}
+  .close .sig{font-size:14px;font-style:italic;color:rgba(255,255,255,.6);margin:18px 0 0}
+
+  /* ============================================================
+     Notes + state matrix (mockup documentation — NOT the LP)
+     ============================================================ */
+  .notes{max-width:1180px;margin:8px auto 40px;padding:0 20px}
+  .notes .panel{background:var(--frame-panel);border:1px solid var(--frame-border);border-radius:10px;padding:18px 20px;margin-top:16px}
+  .notes h2{font-size:15px;margin:0 0 10px;font-weight:800}
+  .notes ul{margin:0;padding-left:18px;font-size:13px}
+  .notes li{margin:4px 0}
+  .notes table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+  .notes .tablewrap{overflow-x:auto}
+  .notes th,.notes td{border:1px solid var(--frame-border);padding:6px 9px;text-align:left;vertical-align:top}
+  .notes th{background:rgba(128,128,128,.08);font-weight:700}
+  .notes code{font-family:ui-monospace,Menlo,Consolas,monospace;background:rgba(128,128,128,.12);padding:1px 5px;border-radius:4px;font-size:.92em}
+</style>
+</head>
+<body>
+
+<div class="chrome">
+  <h1>LP · oferta rotina de lavagem (leve 2, ganhe o terceiro à escolha)</h1>
+  <p>Ad set dedicado: o anúncio declara a oferta, a LP entrega a oferta (message match limpo, sem bridge).</p>
+  <p>Valores em <span class="tok">{{TOKEN}}</span> entram depois sem redesenho. Escolha do presente é interativa (clique nas opções).</p>
+</div>
+
+<div class="device-row">
+
+  <!-- ============ MOBILE ============ -->
+  <div class="phone">
+    <div class="device-label">mobile · 390px (tráfego pago)</div>
+    <div class="screen">
+      <div class="lp">
+
+        <!-- HERO -->
+        <section class="hero">
+          <div class="wrap">
+            <div class="grid">
+              <div class="col">
+                <p class="eyebrow">leve a dupla, ganhe o terceiro</p>
+                <h1>shampoo e máscara juntos, e o terceiro item é <span class="em">por nossa conta</span>.</h1>
+                <p class="sub">monte a base da sua rotina de lavagem e escolha seu presente: leave-in travel ou shampoo a seco.</p>
+
+                <div class="priceblock">
+                  <div class="gift">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7S8 7 8 4.5 12 7 12 7zM12 7s4 0 4-2.5S12 7 12 7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                    seu presente vale <span class="tok">{{GIFT_VALUE}}</span> e sai de graça
+                  </div>
+                  <div class="pay">você leva os três por <span class="por"><span class="tok">{{PRICE}}</span></span> <span class="de"><span class="tok">{{DE_PRICE}}</span></span></div>
+                  <p class="fine">shampoo + máscara em tamanho cheio, presente à sua escolha</p>
+                </div>
+
+                <button class="cta">quero minha rotina<span class="sm">e escolher meu presente</span></button>
+
+                <div class="stars">
+                  <span style="color:var(--ge-red);letter-spacing:2px">★★★★★</span>
+                  <span><b><span class="tok">{{RATING}}</span></b> · <span class="tok">{{N_REVIEWS}}</span> avaliações</span>
+                </div>
+                <div class="chips">
+                  <span class="chip">vegano</span>
+                  <span class="chip">sem sulfato</span>
+                  <span class="chip">cruelty-free</span>
+                </div>
+              </div>
+              <div class="col">
+                <div class="heroart">[ hero: shampoo + máscara + presente<br>plate expandido travel-size-promo ]</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- MECHANIC -->
+        <section class="sec">
+          <h2>como funciona</h2>
+          <p class="lead">três passos, sem cupom para lembrar.</p>
+          <div class="steps">
+            <div class="step"><div class="num">1</div><h3>leve a dupla</h3><p>shampoo + máscara condicionadora, tamanho cheio, a base da sua lavagem.</p></div>
+            <div class="step"><div class="num">2</div><h3>escolha o presente</h3><p>leave-in travel ou shampoo a seco, o que combina com o seu momento.</p></div>
+            <div class="step"><div class="num">3</div><h3>receba em casa</h3><p>o presente entra grátis na sacola, sem precisar de código.</p></div>
+          </div>
+        </section>
+
+        <!-- GIFT CHOOSER -->
+        <section class="sec chooser">
+          <h2>escolha seu presente</h2>
+          <p class="lead">os dois entram grátis. escolha o que faz mais sentido pra você.</p>
+          <div class="giftgrid" data-chooser>
+            <label class="giftopt" data-opt="leavein">
+              <span class="radio"></span>
+              <p class="tag">travel size</p>
+              <h3>Leave-in Proteção Térmica</h3>
+              <p>proteção térmica até 230°C antes do secador ou chapinha, no tamanho que vai na bolsa.</p>
+              <p class="val">valor <span class="tok">{{GIFT_VALUE_LEAVEIN}}</span> · grátis</p>
+            </label>
+            <label class="giftopt" data-opt="seco">
+              <span class="radio"></span>
+              <p class="tag">tamanho cheio</p>
+              <h3>Shampoo a Seco</h3>
+              <p>biotina, pantenol e algas vermelhas controlam a oleosidade e dão grip entre as lavagens.</p>
+              <p class="val">valor <span class="tok">{{GIFT_VALUE_SECO}}</span> · grátis</p>
+            </label>
+          </div>
+          <p class="picked" data-pickedline>escolha um presente acima para continuar</p>
+          <button class="cta" data-addbtn disabled>escolha seu presente<span class="sm">os três, por <span class="tok" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.5);color:#fff">{{PRICE}}</span></span></button>
+        </section>
+
+        <!-- WHY THE ROUTINE -->
+        <section class="sec">
+          <h2>por que essa rotina</h2>
+          <p class="lead">limpar, nutrir e finalizar. o trio que a gente mais vê virar hábito.</p>
+          <div class="why">
+            <div class="card"><p class="k">passo 1</p><h3>shampoo sem sulfato</h3><p>limpa de verdade sem ressecar, respeitando a fibra e a cor.</p></div>
+            <div class="card"><p class="k">passo 2</p><h3>máscara condicionadora</h3><p>repõe maciez e alinha os fios, o cabelo desembaraça e fica leve.</p></div>
+            <div class="card"><p class="k">seu presente</p><h3>finalização à sua escolha</h3><p>leave-in que blinda do calor, ou shampoo a seco que estica a lavagem. você decide o ritmo.</p></div>
+          </div>
+        </section>
+
+        <!-- CLOSE -->
+        <section class="sec close">
+          <h2>comece no seu tempo</h2>
+          <p class="lead">a dupla da lavagem, o presente por nossa conta.</p>
+          <div class="priceblock">
+            <div class="gift" style="color:#fff;justify-content:center">presente incluso, valor <span class="tok" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.5);color:#fff">{{GIFT_VALUE}}</span></div>
+            <div class="pay" style="text-align:center">os três por <span class="por"><span class="tok" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.5);color:#fff">{{PRICE}}</span></span></div>
+          </div>
+          <button class="cta">quero minha rotina</button>
+          <p class="sig">no seu tempo, do seu jeito.</p>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ DESKTOP ============ -->
+  <div class="desktop">
+    <div class="device-label">desktop · check secundário</div>
+    <div class="screen">
+      <div class="lp desktop-lp">
+
+        <section class="hero">
+          <div class="wrap">
+            <div class="grid">
+              <div class="col">
+                <p class="eyebrow">leve a dupla, ganhe o terceiro</p>
+                <h1>shampoo e máscara juntos, e o terceiro item é <span class="em">por nossa conta</span>.</h1>
+                <p class="sub">monte a base da sua rotina de lavagem e escolha seu presente: leave-in travel ou shampoo a seco entra grátis na sacola.</p>
+                <div class="priceblock">
+                  <div class="gift">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7S8 7 8 4.5 12 7 12 7zM12 7s4 0 4-2.5S12 7 12 7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                    seu presente vale <span class="tok">{{GIFT_VALUE}}</span> e sai de graça
+                  </div>
+                  <div class="pay">você leva os três por <span class="por"><span class="tok">{{PRICE}}</span></span> <span class="de"><span class="tok">{{DE_PRICE}}</span></span></div>
+                  <p class="fine">shampoo + máscara em tamanho cheio, presente à sua escolha</p>
+                </div>
+                <button class="cta">quero minha rotina<span class="sm">e escolher meu presente</span></button>
+                <div class="stars">
+                  <span style="color:var(--ge-red);letter-spacing:2px">★★★★★</span>
+                  <span><b><span class="tok">{{RATING}}</span></b> · <span class="tok">{{N_REVIEWS}}</span> avaliações</span>
+                </div>
+                <div class="chips">
+                  <span class="chip">vegano</span><span class="chip">sem sulfato</span><span class="chip">cruelty-free</span>
+                </div>
+              </div>
+              <div class="col">
+                <div class="heroart">[ hero: shampoo + máscara + presente<br>plate expandido travel-size-promo ]</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="sec">
+          <h2>como funciona</h2>
+          <p class="lead">três passos, sem cupom para lembrar.</p>
+          <div class="steps">
+            <div class="step"><div class="num">1</div><h3>leve a dupla</h3><p>shampoo + máscara condicionadora, tamanho cheio, a base da sua lavagem.</p></div>
+            <div class="step"><div class="num">2</div><h3>escolha o presente</h3><p>leave-in travel ou shampoo a seco, o que combina com o seu momento.</p></div>
+            <div class="step"><div class="num">3</div><h3>receba em casa</h3><p>o presente entra grátis na sacola, sem precisar de código.</p></div>
+          </div>
+        </section>
+
+        <section class="sec chooser">
+          <h2>escolha seu presente</h2>
+          <p class="lead">os dois entram grátis. escolha o que faz mais sentido pra você.</p>
+          <div class="giftgrid" data-chooser>
+            <label class="giftopt" data-opt="leavein">
+              <span class="radio"></span>
+              <p class="tag">travel size</p>
+              <h3>Leave-in Proteção Térmica</h3>
+              <p>proteção térmica até 230°C antes do secador ou chapinha, no tamanho que vai na bolsa.</p>
+              <p class="val">valor <span class="tok">{{GIFT_VALUE_LEAVEIN}}</span> · grátis</p>
+            </label>
+            <label class="giftopt" data-opt="seco">
+              <span class="radio"></span>
+              <p class="tag">tamanho cheio</p>
+              <h3>Shampoo a Seco</h3>
+              <p>biotina, pantenol e algas vermelhas controlam a oleosidade e dão grip entre as lavagens.</p>
+              <p class="val">valor <span class="tok">{{GIFT_VALUE_SECO}}</span> · grátis</p>
+            </label>
+          </div>
+          <p class="picked" data-pickedline>escolha um presente acima para continuar</p>
+          <button class="cta" data-addbtn disabled>escolha seu presente<span class="sm">os três, por <span class="tok" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.5);color:#fff">{{PRICE}}</span></span></button>
+        </section>
+
+        <section class="sec">
+          <h2>por que essa rotina</h2>
+          <p class="lead">limpar, nutrir e finalizar. o trio que a gente mais vê virar hábito.</p>
+          <div class="why">
+            <div class="card"><p class="k">passo 1</p><h3>shampoo sem sulfato</h3><p>limpa de verdade sem ressecar, respeitando a fibra e a cor.</p></div>
+            <div class="card"><p class="k">passo 2</p><h3>máscara condicionadora</h3><p>repõe maciez e alinha os fios, o cabelo desembaraça e fica leve.</p></div>
+            <div class="card"><p class="k">seu presente</p><h3>finalização à sua escolha</h3><p>leave-in que blinda do calor, ou shampoo a seco que estica a lavagem. você decide o ritmo.</p></div>
+          </div>
+        </section>
+
+        <section class="sec close">
+          <h2>comece no seu tempo</h2>
+          <p class="lead">a dupla da lavagem, o presente por nossa conta.</p>
+          <div class="priceblock">
+            <div class="gift" style="color:#fff;justify-content:center">presente incluso, valor <span class="tok" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.5);color:#fff">{{GIFT_VALUE}}</span></div>
+            <div class="pay" style="text-align:center">os três por <span class="por"><span class="tok" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.5);color:#fff">{{PRICE}}</span></span></div>
+          </div>
+          <button class="cta">quero minha rotina</button>
+          <p class="sig">no seu tempo, do seu jeito.</p>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== NOTES + STATE MATRIX (documentation, not part of the LP) ===== -->
+<div class="notes">
+  <div class="panel">
+    <h2>Placeholder tokens (o número entra depois, sem redesenho)</h2>
+    <ul>
+      <li><code>{{PRICE}}</code> — preço final / cobrança mínima da oferta (decisão do Lucas). É o "por".</li>
+      <li><code>{{DE_PRICE}}</code> — valor de referência riscado (ex.: soma dos três itens a preço cheio).</li>
+      <li><code>{{GIFT_VALUE}}</code> — valor do presente, âncora do enquadramento "você ganha" (não "% OFF").</li>
+      <li><code>{{GIFT_VALUE_LEAVEIN}}</code> / <code>{{GIFT_VALUE_SECO}}</code> — valor de cada presente no card de escolha.</li>
+      <li><code>{{RATING}}</code> / <code>{{N_REVIEWS}}</code> — nota e nº de avaliações (Loox, dado real do produto; não inventar).</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h2>Decisões de design embutidas</h2>
+    <ul>
+      <li><b>Message match direto.</b> Ad set dedicado declara a oferta, a LP a entrega. Sem bridge, sem reasseguro de miniatura. O hero afirma a oferta ("leve a dupla, ganhe o terceiro").</li>
+      <li><b>Value-add, não %off.</b> O hero lidera com o presente e o valor em R$, nunca com um selo de desconto. Premium mantido.</li>
+      <li><b>Presente sem pré-seleção (neutro).</b> Os dois presentes são de primeira classe. Sem default = leitura limpa do mix escolhido + micro-engajamento (efeito de posse). CTA do seletor fica desabilitado com texto de ajuda até a escolha (exceção sancionada à regra hide-don't-disable: o CTA É o propósito da seção e a pré-condição está explícita). O CTA do hero continua acionável e leva ao seletor.</li>
+      <li><b>Ingrediente-como-prova</b> só onde verificável: leave-in 230°C, shampoo a seco (biotina/pantenol/algas vermelhas). Shampoo e máscara ficam em nível de benefício (sem inventar ativo).</li>
+      <li><b>Sem travessões</b>, PT-BR idiomático, tagline "no seu tempo, do seu jeito." usada uma vez como assinatura.</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h2>State matrix — seletor de presente (superfície interativa)</h2>
+    <div class="tablewrap">
+    <table>
+      <tr><th>Estado</th><th>Opção A · leave-in travel</th><th>Opção B · shampoo a seco</th><th>Linha "seu presente"</th><th>CTA adicionar</th></tr>
+      <tr><td>Load padrão (nada escolhido)</td><td>não selecionada</td><td>não selecionada</td><td>"escolha um presente acima para continuar"</td><td><b>desabilitado</b>, texto "escolha seu presente"</td></tr>
+      <tr><td>Escolhe A</td><td><b>selecionada</b></td><td>não selecionada</td><td>"seu presente: Leave-in Proteção Térmica (travel)"</td><td>habilitado, "adicionar à sacola"</td></tr>
+      <tr><td>Escolhe B</td><td>não selecionada</td><td><b>selecionada</b></td><td>"seu presente: Shampoo a Seco"</td><td>habilitado, "adicionar à sacola"</td></tr>
+      <tr><td>Troca A↔B</td><td colspan="4">Seleção mutuamente exclusiva; trocar é um toque, sem passo de confirmação.</td></tr>
+    </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('[data-chooser]').forEach(function(grid){
+    var sec = grid.closest('.chooser');
+    var pickedline = sec.querySelector('[data-pickedline]');
+    var addbtn = sec.querySelector('[data-addbtn]');
+    var priceSm = addbtn.querySelector('.sm').innerHTML;
+    var labels = {leavein:'Leave-in Proteção Térmica (travel)', seco:'Shampoo a Seco'};
+    grid.querySelectorAll('.giftopt').forEach(function(opt){
+      opt.addEventListener('click', function(e){
+        e.preventDefault();
+        grid.querySelectorAll('.giftopt').forEach(function(o){o.classList.remove('on')});
+        opt.classList.add('on');
+        var key = opt.getAttribute('data-opt');
+        pickedline.innerHTML = 'seu presente: <b>' + labels[key] + '</b>';
+        addbtn.removeAttribute('disabled');
+        addbtn.innerHTML = 'adicionar à sacola<span class="sm">' + priceSm + '</span>';
+      });
+    });
+  });
+</script>
+
+</body>
+</html>

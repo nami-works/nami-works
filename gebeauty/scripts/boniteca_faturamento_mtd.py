@@ -241,7 +241,13 @@ def main():
         mm, yyyy = sys.argv[1].split("/"); mm, yyyy = int(mm), int(yyyy)
     else:
         mm, yyyy = today.month, today.year
-    d_hi_date = today if (mm == today.month and yyyy == today.year) else date(yyyy, mm, 28)
+    # optional 2nd arg = as-of day (MTD window 01..DD) for same-window MoM comparisons
+    if len(sys.argv) > 2:
+        d_hi_date = date(yyyy, mm, int(sys.argv[2]))
+    elif mm == today.month and yyyy == today.year:
+        d_hi_date = today
+    else:
+        d_hi_date = date(yyyy, mm, 28)
     d_lo, d_hi = f"01/{mm:02d}/{yyyy}", d_hi_date.strftime("%d/%m/%Y")
     lo_iso, hi_iso = f"{yyyy}-{mm:02d}-01", d_hi_date.isoformat()
 

@@ -1,0 +1,163 @@
+{
+  "_meta": {
+    "purpose": "Per-SKU DTC product cost (COGS) + full retail price. Consumed by Module A (attribution & unit-economics) to compute contribution margin per order.",
+    "cost_source": "Raphael's canonical COGS = gebeauty/boxes/'Estudo estoque 2026 apresentacao (1).xlsx' -> Planilha1 'Preco minimo'. That study adds +R$2,00/unit of B2B/wholesale handling ('Considerei R$ 2,00'); for DTC we STRIP that R$2. So unit_cost_brl = study 'Preco minimo' MINUS 2.00. Verified 2026-07-22: every SKU below reconciles exactly to study-minus-2.",
+    "retail_source": "Shopify list price (productType=product), full-size retail. Campaign prices differ.",
+    "currency": "BRL",
+    "cost_confirmed": "Lucas 2026-07-22 (CORRECTS the 2026-07-21 note): unit_cost_brl is the LANDED product cost - it ALREADY INCLUDES inbound freight, import/duty and breakage/loss (not formula+packaging only). Therefore the Module A 1.48x COGS plug is RETIRED (params.cogs_calibration_factor=1.0) and COGS is now pure bottom-up. Still modeled SEPARATELY (not in this number): outbound delivery/freight-to-customer, fulfillment/pick-pack, payment fees, tax. This is STEP 1 of a bottom-up build; shrinkage, seeding/gifting and expiry write-offs beyond per-unit breakage will be added later as explicit lines, not a plug.",
+    "b2b_handling_stripped_brl": 2.0,
+    "caveats": [
+      "GEB 008 (Shampoo a seco) is NOT in this study sheet; its R$11.21 is from an earlier source and is UNVERIFIED against the current study basis (Lucas 2026-07-22: keep as-is for now).",
+      "Landed cost per unit; excludes only the downstream cost-to-serve (delivery, fulfillment, payment, tax) which live in params.json.",
+      "Retail = full list; realized price per order comes from Shopify lineItem discountedTotal at run time."
+    ],
+    "updated": "2026-07-22"
+  },
+  "skus": {
+    "GEB 001": {
+      "name": "Shampoo sem sulfato",
+      "unit_cost_brl": 19.61,
+      "retail_brl": 95.0,
+      "line": "formula",
+      "size": "full",
+      "weight_g": 281
+    },
+    "GEB 002": {
+      "name": "Mascara condicionadora",
+      "unit_cost_brl": 15.43,
+      "retail_brl": 95.0,
+      "line": "formula",
+      "size": "full",
+      "weight_g": 250
+    },
+    "GEB 003": {
+      "name": "Leave-in com protecao termica",
+      "unit_cost_brl": 13.48,
+      "retail_brl": 99.0,
+      "line": "formula",
+      "size": "full",
+      "weight_g": 170
+    },
+    "GEB 008": {
+      "name": "Shampoo a seco",
+      "unit_cost_brl": 11.21,
+      "retail_brl": 69.0,
+      "line": "formula",
+      "size": "full",
+      "weight_g": 110
+    },
+    "GEB 019": {
+      "name": "Booster fortificante",
+      "unit_cost_brl": 15.8,
+      "retail_brl": 75.0,
+      "line": "booster",
+      "size": "full",
+      "weight_g": 50
+    },
+    "GEB 020": {
+      "name": "Booster hidratante",
+      "unit_cost_brl": 15.61,
+      "retail_brl": 69.0,
+      "line": "booster",
+      "size": "full",
+      "weight_g": 50
+    },
+    "GEB 021": {
+      "name": "Booster definicao",
+      "unit_cost_brl": 15.29,
+      "retail_brl": 69.0,
+      "line": "booster",
+      "size": "full",
+      "weight_g": 50
+    },
+    "GEB 022": {
+      "name": "Booster antifrizz",
+      "unit_cost_brl": 14.09,
+      "retail_brl": 79.0,
+      "line": "booster",
+      "size": "full",
+      "weight_g": 50
+    },
+    "GEB 023": {
+      "name": "Booster antioxidante",
+      "unit_cost_brl": 18.49,
+      "retail_brl": 75.0,
+      "line": "booster",
+      "size": "full",
+      "weight_g": 50
+    },
+    "GEB 101": {
+      "name": "Primer cachos definidos",
+      "unit_cost_brl": 18.83,
+      "retail_brl": 149.0,
+      "line": "formula",
+      "size": "full",
+      "weight_g": 283
+    },
+    "GEB 102": {
+      "name": "Primer liso intacto",
+      "unit_cost_brl": 22.93,
+      "retail_brl": 139.0,
+      "line": "formula",
+      "size": "full",
+      "weight_g": 178
+    },
+    "GEB 120": {
+      "name": "Leave-in pluma",
+      "unit_cost_brl": 28.29,
+      "retail_brl": 149.0,
+      "line": "formula",
+      "size": "full",
+      "weight_g": 283
+    },
+    "GEB 121": {
+      "name": "Mascara mayday",
+      "unit_cost_brl": 29.88,
+      "retail_brl": 139.0,
+      "line": "formula",
+      "size": "full",
+      "tag": "lancto"
+    },
+    "GEB 024": {
+      "name": "Melon mood body & hair splash",
+      "unit_cost_brl": 22.75,
+      "retail_brl": 129.0,
+      "line": "mist",
+      "size": "full",
+      "tag": "lancto",
+      "weight_g": 200
+    },
+    "GEB 010": {
+      "name": "Travel size | mascara condicionadora",
+      "unit_cost_brl": 8.01,
+      "retail_brl": 40.0,
+      "line": "formula",
+      "size": "travel",
+      "weight_g": 58
+    },
+    "GEB 011": {
+      "name": "Travel size | leave-in protecao termica",
+      "unit_cost_brl": 6.21,
+      "retail_brl": 47.0,
+      "line": "formula",
+      "size": "travel",
+      "weight_g": 61
+    },
+    "GEB 013": {
+      "name": "Travel size | shampoo sem sulfato",
+      "unit_cost_brl": 6.87,
+      "retail_brl": 40.0,
+      "line": "formula",
+      "size": "travel",
+      "weight_g": 72
+    },
+    "GEB 029": {
+      "name": "Travel size | melon mood body & hair splash",
+      "unit_cost_brl": 18.733,
+      "retail_brl": 79.0,
+      "line": "mist",
+      "size": "travel",
+      "weight_g": 100
+    }
+  }
+}
