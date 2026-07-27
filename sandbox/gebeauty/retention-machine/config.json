@@ -1,0 +1,67 @@
+{
+  "_comment": "Rules for the GE Beauty review+repurchase machine. Edit here, not in code.",
+
+  "storefront_base": "https://www.gebeauty.com.br",
+  "review_link_suffix": "?ref=review",
+
+  "products": {
+    "mode": "all_retail",
+    "_comment_mode": "all_retail = every ACTIVE productType='product'; or list explicit Shopify product IDs",
+    "include_ids": [],
+    "exclude_types": ["rappi", "brinde", "acessorio"],
+    "exclude_title_contains": ["[rappi]", "[brinde]", "travel size", "kit", "dupla", "necessaire", "clutch", "escova", "vela", "bone", "cubeta", "espatula", "adesivos"]
+  },
+
+  "eligibility": {
+    "min_days_since_purchase": 21,
+    "exclude_refunded": true,
+    "exclude_cancelled": true,
+    "exclude_active_subscription": true,
+    "require_valid_mobile": true,
+    "exclude_prior_reviewers_of_product": true
+  },
+
+  "refill_window": {
+    "mode": "empirical",
+    "lower_multiplier": 0.75,
+    "upper_multiplier": 2.0,
+    "min_repeat_sample": 30,
+    "fallback_days": [90, 300]
+  },
+
+  "review_allocation": {
+    "rule_order": ["repeat_of_same_product", "thinnest_corpus"],
+    "review_floor": 150
+  },
+
+  "state_machine": {
+    "remind_interacted_days": 7,
+    "remind_unused_days": 10,
+    "lapsed_multiplier_of_window": 2.0,
+    "min_days_between_messages": 14,
+    "max_touches_per_customer": 3
+  },
+
+  "reward": {
+    "managed_by": "loox",
+    "tiers": {"text": null, "photo": "loox_photo_reward", "video": "loox_video_reward"},
+    "_comment": "Loox-side reward (photo/video). Reward code model TBD (unique vs shared vs store credit) -> see README dependency 2."
+  },
+
+  "winback": {
+    "mechanism": "store_credit",
+    "_comment": "Reuses BEAUTYBACK: cashback_generate.py / apply_store_credit.py for lapsed buyers past lapsed_multiplier_of_window."
+  },
+
+  "holdout": {
+    "pct": 10,
+    "method": "md5_by_gid",
+    "_comment_method": "md5(customer numeric id) % 100 < pct. SEAM: waves <= 2026-07-07 used md5_by_phone; GID-hash from the next cohort build on (one-time arm reshuffle)."
+  },
+
+  "output": {
+    "dir": "out",
+    "channel": "zoko_whatsapp_only",
+    "columns": ["First Name", "Phone", "Product", "Segment", "Review Link", "Reorder Link", "Holdout", "Reason"]
+  }
+}
