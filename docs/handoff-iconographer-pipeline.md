@@ -59,25 +59,30 @@ headless Chrome screenshot of HTML.
 
 ---
 
-## State / what is NOT done
+## State — COMMITTED (updated 2026-07-27)
 
-- **NOTHING is committed.** The skill (`.claude/skills/iconographer/`), the engine, the
-  reference SVGs, and the memory are all **untracked**. Commit on a **fresh branch**
-  (`chore/iconographer-pipeline`) off `main` — do NOT land on whatever branch you inherit,
-  and stage only these paths (never `git add .`; other sessions' WIP is in the tree).
-- **Nothing deployed to the store** except the one slide reorder (already live).
-- **Sample icons live only in scratchpad** (session-temp). If any are keepers, re-emit them
-  into `gebeauty/imagery/website-icons/` via the engine and commit.
+Branch **`chore/iconographer-pipeline`** (off `main`), **pushed to origin**. Pick up on
+Desktop with `git fetch && git checkout chore/iconographer-pipeline`.
 
-## Open decisions (for Lucas / next session)
+- **Skill + engine** (`.claude/skills/iconographer/**`, incl. `scripts/iconkit.py`) + the 4
+  `_reference/` SVGs: already in base `2ea4a93` (another session's "growth(measurement)"
+  commit swept in my then-untracked files). Content verified current — my pipeline rewrite is
+  in HEAD. **Heads-up: accidental cross-session bundle; content right, provenance messy.**
+- **This branch's commit** adds the **18 ingested canonical icons**
+  (`gebeauty/imagery/website-icons/icon-<name>.svg` + currentColor pairs, auto-QA 98-100),
+  the **4 kit drafts** in `drafts/`, and the registry `README.md`.
+- **Memory** (`skill_iconographer.md`) is per-machine, **not committed** (by design).
+- **Nothing deployed to the store** except the slide reorder (already live).
+- Scratchpad experiment outputs are session-temp, not needed.
 
-1. **Commit the skill + engine** on a fresh branch? (recommended)
-2. **Ingest all 18** `ICONS FINAIS.ai` icons as normalized `icon-<name>.svg` pairs into
-   `gebeauty/imagery/website-icons/` as the canonical library?
-3. **The 3 travel-size LP benefits:** extract `Sem sulfatos` from the library + author the
-   two genuinely-missing ones (`limpa sem ressecar`, `use todos os dias`), in filled-outline.
-4. Whether the "more suggestions" set (cachos definidos / efeito duradouro / proteção
-   térmica / frete grátis) gets finalized + deployed.
+## Open decisions (resolved + remaining)
+
+- ✅ **Commit skill + engine** — done (branch pushed).
+- ✅ **Ingest all 18** — done (canonical library committed).
+- ✅ **"More" suggestions** — saved as `drafts/` (stroke proxy; convert to filled-outline if finalized).
+- ⏸️ **HELD — the 3 travel-size LP benefits:** extract `Sem sulfatos` for "livre de sulfatos"
+  + author the two missing (`limpa sem ressecar`, `use todos os dias`) in filled-outline.
+- ⏳ **Not started:** merge `chore/iconographer-pipeline` → `main` (squash) once reviewed; deploy (gated).
 
 ---
 
