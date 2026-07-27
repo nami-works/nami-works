@@ -67,6 +67,33 @@ Key changes: (1) **COGS is bottom-up ~14.9%** (Raphael landed cost, study−R$2 
     region 2-3wk, measure sales that survive via organic. Branded-search incrementality is
     typically low; that R$13.3k/mo may be subsidizing near-free sales.
 
+## Measurement stack — the office's instrumentation (2026-07-27)
+
+Doctrine: **no single tool is truth — triangulate.** Three layers, each with a home:
+
+- **Cockpit + Brazil/PIX signal + MTA → Nemu** (`claude.ai Nemu` MCP, dashboard "Atribuição geral",
+  id 4967, ~12mo history). Brazil-native attribution (Tray/Nuvemshop/Yampi + PIX/boleto aware),
+  9 attribution models (first/last/assisted/markov/linear/u-shaped/…), **reconciles ad-platform
+  claims to actual store revenue** (docs flag platform revenue "~20% high"). 30d read cross-validated
+  our own pulls exactly (spend R$115.9k = Meta R$82.9k + Google R$33.0k; blended ROAS 4.14 net —
+  *below* the platforms' self-reported blend = de-dup working). **This replaces the need to buy
+  Triple Whale** (US tools are PIX-blind). Default model on the dashboard = first-click.
+- **PIX FACT [measured, 30d, 2026-07-27]:** PIX = **31.6% of revenue / 36.8% of orders** (R$151.7k,
+  1,309 orders); credit card only 58.7% rev / 42.6% orders; "other" 9.7%/20.6% (low ticket); boleto 0.
+  → ~37% of orders are async-payment (PIX) that ad pixels structurally under-see in-session. This is
+  the signal gap Nemu closes, and the *opposite* error to the Google harvester (deflation vs inflation).
+- **Margin-true profit + the 10% net floor → Module A, NOT Nemu.** Nemu's "profit R$306k / 63.8% margin"
+  = revenue − ad spend − tax only; it EXCLUDES COGS/freight/fulfillment/Boniteca. Module A's rigorous
+  ~42-51% contribution is the real number. Never judge the 10% floor by Nemu's rosy margin.
+- **Causal calibration → still to build.** Nemu is NOT causal: `experiments-list` empty, feature is
+  A/B-shaped not geo-lift, default first-click would still crown branded Google. The harvester +
+  marginal-CAC questions still need **geo holdout (GeoLift by Recast ~$100/mo, 6mo free) + self-hosted
+  Google Meridian (free, geo-hierarchical Bayesian, ~build-toward with our data depth) + Meta Conversion
+  Lift**. Enterprise MMM/attribution SaaS (Northbeam $1.5k/mo, Recast-full $50k+/yr, Haus, Measured) =
+  overkill at ~R$115k/mo spend.
+- **OPEN Q for Nemu team:** does it forward recovered PIX conversions back to Meta/Google server-side
+  (CAPI) to fix delivery, or only report? If report-only, an Elevar-style CAPI layer still adds value.
+
 ## Open hypotheses / questions
 
 - **Marginal CAC / incrementality unproven** [hypothesis] — platform ROAS overstates true
