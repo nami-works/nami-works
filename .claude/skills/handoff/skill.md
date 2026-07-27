@@ -73,12 +73,20 @@ Write the handoff to `docs/handoff-{topic}.md`, where `{topic}` is a short kebab
 
 If the handoff reveals information that should persist beyond the next session (e.g., a long-running initiative, a recurring pattern), save it as a memory entry. The handoff document itself is ephemeral — it's overwritten each time the skill runs.
 
-## Step 5 — Present to user
+## Step 5 — Commit the handoff, push, then present to user
 
-Show the user a concise summary of the handoff (not the full document). Tell them:
-1. Where the handoff was saved
+Before presenting anything, land the handoff on `origin/main` so the bootstrap prompt's "git history preserves it" claim is actually true and so a target session on another machine can pull it:
+
+1. Stage ONLY the handoff file (`git add docs/handoff-{topic}.md`). **Never `git add .`** — the working tree may hold other sessions' WIP that must not ride your commit.
+2. Commit direct to `main` (semi-strict tier permits single-file doc additions direct-to-main).
+3. Push to `origin/main`.
+
+If the pre-commit hook blocks (e.g., you're on an inherited feature branch), stop and reconcile per `CLAUDE.md § Session start` — don't work around the block.
+
+Then show the user a concise summary of the handoff (not the full document). Tell them:
+1. Where the handoff was committed (file path + short commit SHA)
 2. The top 3 things the next session should know
-3. Any cleanup they should do before the next session (e.g., delete temp files, deploy, commit)
+3. Any other cleanup they should do before the next session (e.g., delete temp files, deploy pending work)
 
 ## Step 6 — Emit a copy-pasteable bootstrap prompt for the next session
 
@@ -99,10 +107,11 @@ A prior session of yours wrote a handoff document for the work I want to continu
 Handoff file: `docs/handoff-{topic}.md`
 
 Steps:
-1. Read the full handoff.
-2. Confirm back to me, in 5 bullets or less, what state production is in and what you understand the next step to be.
-3. Delete the handoff file (`rm docs/handoff-{topic}.md`).
-4. Wait for my direction before doing anything else.
+1. `git fetch && git pull` on main to make sure the handoff file is present locally.
+2. Read the full handoff.
+3. Confirm back to me, in 5 bullets or less, what state production is in and what you understand the next step to be.
+4. Delete the handoff file (`rm docs/handoff-{topic}.md`).
+5. Wait for my direction before doing anything else.
 ````
 
 ## Rules
