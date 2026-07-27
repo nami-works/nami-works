@@ -93,6 +93,20 @@ Doctrine: **no single tool is truth — triangulate.** Three layers, each with a
   overkill at ~R$115k/mo spend.
 - **OPEN Q for Nemu team:** does it forward recovered PIX conversions back to Meta/Google server-side
   (CAPI) to fix delivery, or only report? If report-only, an Elevar-style CAPI layer still adds value.
+- **UTM / link-tagging convention → `references/utm-conventions.md`** [confirmed 2026-07-27]. The
+  Nemu-aligned playbook for building every tracked link (paid/organic/influencer/affiliate). Nemu reads
+  `nemu_*` params first, falls back to `utm_*`. **`utm_medium` is the paid(`cpc`)/organic(`organic`)
+  switch** and the #1 misattribution lever. Nemu's paid Meta template *deliberately* encodes
+  `{{name}}|{{id}}` (the `|` is its name↔id separator) — so paid Meta orders legitimately carry
+  `utm_term=<adset>|<adset_id>` + a campaign id; that signature is correct **only on a paid click**.
+- **UTM contamination [confirmed 2026-07-27, growth_watchdog, now persisted+corrected]:** the
+  `linklist_26092025` Instagram bio-link was built from a pasted *paid* Meta destination URL, so
+  **organic bio-link clicks were stamped as paid Meta ad clicks** (order #89360 et al.). Not junk params
+  — Nemu's paid signature on the wrong (organic) surface. Fix = rebuild the bio link as
+  `?utm_source=instagram&utm_medium=organic&utm_campaign=linklist_26092025` (drop `utm_id`/`utm_term`/all
+  `nemu_*`); manual fix in the bio-link tool. **Live leak still serving as of 2026-07-26.** True
+  contaminated-order count still PENDING a co-occurrence scan — the old 68/1,183/3,544/4,795 figures are
+  inflated OR'd counts, not final. Full case + reconciliation checklist in `references/utm-conventions.md`.
 
 ## Open hypotheses / questions
 
