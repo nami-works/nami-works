@@ -99,14 +99,21 @@ Doctrine: **no single tool is truth — triangulate.** Three layers, each with a
   switch** and the #1 misattribution lever. Nemu's paid Meta template *deliberately* encodes
   `{{name}}|{{id}}` (the `|` is its name↔id separator) — so paid Meta orders legitimately carry
   `utm_term=<adset>|<adset_id>` + a campaign id; that signature is correct **only on a paid click**.
-- **UTM contamination [confirmed 2026-07-27, growth_watchdog, now persisted+corrected]:** the
-  `linklist_26092025` Instagram bio-link was built from a pasted *paid* Meta destination URL, so
-  **organic bio-link clicks were stamped as paid Meta ad clicks** (order #89360 et al.). Not junk params
-  — Nemu's paid signature on the wrong (organic) surface. Fix = rebuild the bio link as
-  `?utm_source=instagram&utm_medium=organic&utm_campaign=linklist_26092025` (drop `utm_id`/`utm_term`/all
-  `nemu_*`); manual fix in the bio-link tool. **FIXED by Lucas 2026-07-27 — leak stopped.** True
-  *historical* contaminated-order count still PENDING a co-occurrence scan — the old 68/1,183/3,544/4,795
-  figures are inflated OR'd counts, not final. Full case + reconciliation checklist in `references/utm-conventions.md`.
+- **UTM "contamination" [FALSE POSITIVE — resolved 2026-07-27]:** the growth_watchdog finding that the
+  `linklist_26092025` bio-link leaked paid Meta markers **did not hold up**. A full 12-mo per-visit scan
+  (`scratchpad/utm_scan.py`, 46,915 orders / 19,888 with journeys) found **0 orders** where an organic
+  bio-link visit carried a paid `utm_term`/ad-id/campaign-id — before OR after Lucas's fix. Order #89360
+  is a normal **multi-touch** journey (3 clean paid Meta visits + 1 clean organic bio visit; markers on
+  different visits, not one URL). The watchdog counted the **1,349 multi-touch orders** (bio touch + paid
+  touch, R$289k) as contamination — they're just multi-touch. **Lesson:** never read order-level UTM
+  co-occurrence as a single leaked URL; check per visit (Shopify `customerJourneySummary`). The old
+  68/1,183/3,544/4,795 figures were inflated OR'd counts — discard.
+- **REAL finding from that scan → Instagram `utm_medium` sprawl [open hygiene debt, 2026-07-27]:**
+  Instagram-source visits use a chaotic mix of mediums — influencer names as mediums (`Beta W`,
+  `Myra Ruiz`, `fiorella mattheis`…), inconsistent casing (`STORIES`/`reels`/`reels-de-teste`), and
+  paid-ish labels (`paid`,`paid_social`,`cco`,`geb`) alongside the dominant clean `link-na-bio` (6,237).
+  This is the actual thing muddying organic/influencer/paid attribution in Nemu. Fix = enforce the
+  per-channel templates at the link-builder source. Full write-up in `references/utm-conventions.md`.
 
 ## Open hypotheses / questions
 

@@ -103,48 +103,50 @@ Add `utm_content=<slug>` when one channel has several destinations (e.g. multipl
 
 ---
 
-## Case study — order #89360 UTM contamination (2026-07-27, growth_watchdog)
+## Case study — order #89360 "UTM contamination" (2026-07-27) → FALSE POSITIVE
 
-**What was seen:** an order carrying `utm_source=instagram` + `utm_medium=link-na-bio` (organic)
-**together with** `utm_id=120232457907840228` (a real ACTIVE Meta campaign — "[CS] [REGULAR]
-[CONVERSAO] [ABO] [MISTO]") and `utm_term=[TOPO] [LOOKALIKE 3% - PURCHASE 180D] [M] [20-55]|120232457908390228`
-(a real ACTIVE ad set). Duplicated `utm_utm_*` fields on the same order.
+**VERDICT (2026-07-27, after a full 12-month per-visit scan): FALSE POSITIVE. There was no bio-link
+contamination.** The watchdog misread a normal multi-touch journey as a single leaked URL.
 
-**Root cause (corrected with Nemu's docs):** the Instagram bio-link entry for `linklist_26092025`
-was built by pasting a **paid Meta destination URL** — one that correctly carried Nemu's paid Meta
-template (`{{adset.name}}|{{adset.id}}`, campaign id) with the macros already rendered — and using
-it as the **organic** bio link. So every organic bio-link click got stamped as a paid Meta ad
-click. The `|` and the ids are not garbage; they are Nemu's prescribed *paid* signature, sitting on
-the wrong (organic) surface. Violates golden rules #1 and #4.
+**What the watchdog saw:** order #89360 had paid Meta UTMs *and* organic bio-link UTMs associated with
+it, and read that as one doubled/leaked URL with `utm_id`/`utm_term` bleeding onto the bio link.
 
-**The fix (replace the `linklist_26092025` bio-link destination with):**
-```
-https://ge-beauty.com.br/?utm_source=instagram&utm_medium=organic&utm_campaign=linklist_26092025
-```
-- `utm_medium` → `organic` (was `link-na-bio` — a non-standard medium Nemu doesn't recognize as
-  organic; standardize to `organic`).
-- **Drop `utm_id`, `utm_term`, and every `nemu_*`/adset/ad macro.** Organic links carry none.
-- Optional `utm_content=<button_slug>` if the bio tool has multiple buttons.
+**What the data actually shows (Shopify customer-journey, parsed per visit):** #89360 is a 4-visit
+journey where *each visit is correctly tagged on its own* — three paid Meta clicks
+(`medium=cpc`, `campaign=…|<id>`, `term=…|<adsetid>`) plus one **clean** organic bio-link click
+(`source=instagram, medium=link-na-bio, campaign=linklist_26092025, content=null, term=null`). The
+paid markers and the organic markers live on *different visits*, not the same URL. That is ordinary
+multi-touch attribution, not contamination.
 
-This was a **manual fix in the bio-link tool** (Linktree-equivalent) — no connected tool reaches it.
-**Done by Lucas 2026-07-27**; new organic bio-link clicks from that entry should no longer carry paid
-Meta markers. (Verify later: post-fix orders tagged `utm_medium=link-na-bio`/`organic` should stop
-co-occurring with `utm_id`/`utm_term`.)
+**The scan (2025-07-28 → 2026-07-27, `scratchpad/utm_scan.py`, per-visit logic):**
+- 46,915 orders scanned; 19,888 with journey data.
+- **2,634** orders had an organic bio-link touch (R$568k); **1,349** of those *also* had a paid Meta
+  touch (R$289k) — i.e. multi-touch. This overlap is what the watchdog inflated into "contamination".
+- **0** orders — before *or* after the fix — where a single organic bio-link visit carried a paid
+  `utm_term`, a Meta ad-id in `utm_content`, or a Meta campaign-id in `utm_campaign`. The bio-link URL
+  was clean the whole time.
 
-**Still pending (measurement):** the true contaminated-order count is unknown. The raw scan produced
-inflated OR'd figures; the real signature is **co-occurrence** on one order of organic bio-link
-markers (`utm_source=instagram` + bio medium) **and** paid Meta markers (`utm_id`/`utm_term` present).
-Re-scan Shopify orders (2025-07-28 → now) for that co-occurrence to size revenue exposure. Do not
-quote the old 68 / 1,183 / 3,544 / 4,795-order numbers as final.
+**On the "fix":** Lucas standardized the `linklist_26092025` bio link on 2026-07-27. Nothing was
+leaking, so it corrected no misattribution — but moving `link-na-bio` → `organic` still aligns with
+Nemu's organic convention, so it is a harmless (mildly positive) hygiene change, not a wasted one.
+
+**The REAL finding the scan surfaced — medium sprawl on Instagram traffic (open hygiene debt).**
+Instagram-source visits use a chaotic mix of `utm_medium` values: influencer names as mediums
+(`Beta W`, `Myra Ruiz`, `fiorella mattheis`, `Jordanna`…), inconsistent casing (`STORIES`, `reels`,
+`reels-de-teste`), and paid-ish labels (`paid`, `paid_social`, `cco`, `geb`) alongside the dominant
+clean `link-na-bio` (6,237). *This* is what actually muddies organic-vs-influencer-vs-paid attribution
+in Nemu — not a leak, but a taxonomy problem. Fixing it means enforcing the per-channel templates above
+at the source (bio-link tool, influencer link builder, Stories/Reels swipe-ups).
 
 ---
 
-## GE reconciliation checklist (open)
+## GE reconciliation checklist
 
-- [x] Fix the live `linklist_26092025` bio-link (above). **Fixed by Lucas 2026-07-27** — leak stopped.
-- [ ] Audit every other bio-link / Linktree button for pasted-paid-URL contamination; standardize all
-      to `utm_medium=organic`.
-- [ ] Run the co-occurrence scan to size the misattribution.
-- [ ] Confirm GE's paid Meta + Google accounts actually carry the Nemu templates above (so paid
-      attribution is complete, not just organic hygiene).
-- [ ] Decide whether `link-na-bio` should be retired as a medium in favor of Nemu's `organic`.
+- [x] ~~Fix the live `linklist_26092025` bio-link~~ — **no leak existed** (12-mo scan = 0 contaminated).
+      Lucas standardized it to `utm_medium=organic` anyway on 2026-07-27; fine to keep.
+- [x] Run the co-occurrence scan — **DONE 2026-07-27, 0 contaminated orders across 46,915.** Case closed.
+- [ ] **Real work → fix Instagram `utm_medium` sprawl.** Standardize organic = `organic` (or a single
+      agreed `link-na-bio`), influencer = `influencer` + creator handle in the template. Enforce at the
+      link-builder source, not per-post.
+- [ ] Confirm GE's paid Meta + Google accounts actually carry the Nemu templates above (paid-side
+      completeness — separate from the organic-hygiene item).
