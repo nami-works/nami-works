@@ -59,16 +59,17 @@ headless Chrome screenshot of HTML.
 
 ---
 
-## State — COMMITTED (updated 2026-07-27)
+## State — COMMITTED to `main` + pushed (updated 2026-07-27)
 
-Branch **`chore/iconographer-pipeline`** (off `main`), **pushed to origin**. Pick up on
-Desktop with `git fetch && git checkout chore/iconographer-pipeline`.
+Everything is on **`origin/main`** (shared multi-session repo; loose-ops lands on main
+directly). Pick up on Desktop with a plain **`git pull`** — no branch to check out. (A stray
+`chore/iconographer-pipeline` branch was created then deleted; it never held the work.)
 
 - **Skill + engine** (`.claude/skills/iconographer/**`, incl. `scripts/iconkit.py`) + the 4
-  `_reference/` SVGs: already in base `2ea4a93` (another session's "growth(measurement)"
-  commit swept in my then-untracked files). Content verified current — my pipeline rewrite is
-  in HEAD. **Heads-up: accidental cross-session bundle; content right, provenance messy.**
-- **This branch's commit** adds the **18 ingested canonical icons**
+  `_reference/` SVGs: in commit `2ea4a93` (another session's "growth(measurement)" commit
+  swept in my then-untracked files). Content verified current — my pipeline rewrite is in
+  HEAD. **Heads-up: accidental cross-session bundle; content right, provenance messy.**
+- **Icons commit `61dac5d`** adds the **18 ingested canonical icons**
   (`gebeauty/imagery/website-icons/icon-<name>.svg` + currentColor pairs, auto-QA 98-100),
   the **4 kit drafts** in `drafts/`, and the registry `README.md`.
 - **Memory** (`skill_iconographer.md`) is per-machine, **not committed** (by design).
@@ -77,12 +78,12 @@ Desktop with `git fetch && git checkout chore/iconographer-pipeline`.
 
 ## Open decisions (resolved + remaining)
 
-- ✅ **Commit skill + engine** — done (branch pushed).
-- ✅ **Ingest all 18** — done (canonical library committed).
+- ✅ **Commit skill + engine** — done (on `main`, pushed).
+- ✅ **Ingest all 18** — done (canonical library on `main`).
 - ✅ **"More" suggestions** — saved as `drafts/` (stroke proxy; convert to filled-outline if finalized).
 - ⏸️ **HELD — the 3 travel-size LP benefits:** extract `Sem sulfatos` for "livre de sulfatos"
   + author the two missing (`limpa sem ressecar`, `use todos os dias`) in filled-outline.
-- ⏳ **Not started:** merge `chore/iconographer-pipeline` → `main` (squash) once reviewed; deploy (gated).
+- ⏳ **Not started:** deploy icons to the store (gated) + wire them into ACTIVE `icones` metaobjects.
 
 ---
 
