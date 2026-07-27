@@ -56,9 +56,14 @@ GQL = f"https://{SHOP}/admin/api/{API_VERSION}/graphql.json"
 
 PARAMS = json.loads((GROWTH / "params.json").read_text(encoding="utf-8"))
 FREIGHT_REV = PARAMS["freight_revenue_pct"]
-CONTRIB_MARGIN = 1 - (PARAMS["cogs_target_pct"] + PARAMS["tax_effective_pct"]
-                      + PARAMS["payment_fee_pct"] + PARAMS["freight_cost_pct"]
-                      + PARAMS["fulfillment_pct"])  # ~0.4205 of total revenue
+# BLENDED book-average contribution margin (% of total revenue) for CAC/LTV.
+# Uses _blended_reference_pct (absolute per-order costs expressed as % of the avg
+# order) + ad-valorem rates. NOT valid for per-order/campaign margin - use the
+# absolute model in contribution.py there.
+_BR = PARAMS["_blended_reference_pct"]
+_ADV = PARAMS["ad_valorem_pct"]
+CONTRIB_MARGIN = 1 - (_BR["cogs"] + _BR["freight"] + _BR["fulfillment"] + _BR["boniteca"]
+                      + _ADV["tax"] + _ADV["payment_fee"])  # blended, % of total revenue
 FLOOR = PARAMS["profit_floor_pct"]
 
 

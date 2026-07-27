@@ -6,7 +6,14 @@ meaningless until we can compute true net contribution per order per channel.
 
 See the office of record: [`.claude/initiatives/gebeauty-chief-growth-office.md`](../../../.claude/initiatives/gebeauty-chief-growth-office.md).
 
-## What it computes (confirmed structure, % of TOTAL revenue)
+> **⚠️ REBUILT 2026-07-22 — the block below is the OLD %-of-revenue structure, kept for history.**
+> The live model (`params.json`) now splits costs into **absolute R$/order** (COGS, freight,
+> fulfillment, packaging — fixed under discount/GWP) and **ad-valorem %** (tax, payment, Boniteca
+> on qualifying revenue). COGS is bottom-up ~14.9% (1.48× plug retired); Boniteca is its own line.
+> **Campaign/offer gate: [`offer_breakeven.py`](offer_breakeven.py)** — `python offer_breakeven.py --example`
+> or `from offer_breakeven import evaluate_offer`. See the "Cost-model rebuild" entry in `../knowledge.md`.
+
+## What it computes (OLD structure — superseded 2026-07-22, see banner above)
 
 Model is on TOTAL revenue = product net sales + freight revenue. Structure confirmed
 with Lucas 2026-07-21.
@@ -49,13 +56,29 @@ python contribution.py --since 2026-06-01 --until 2026-07-01 --out read-jun.json
 python contribution.py --days 7 --max-orders 40  # quick smoke
 ```
 
+## Cohort-isolation rule (standing — CGO guardrail 6, generalized 2026-07-22)
+
+**Every aggressive-acquisition cohort is segregated from the organic base, not just the
+one below.** Any campaign with an atypical/aggressive new-customer mechanic — the
+free-travel-size giveaway, a deep-discount tripwire, a buy-X-get-Y loss-leader — is
+measured as its own cohort. Blended KPIs (AOV, CVR, discount depth, first-order margin,
+repeat rate) **exclude these orders by default**; each campaign gets its own scorecard
+judged on downstream payback (2nd-purchase / hero-trial rate), never first-order AOV or
+margin. The engine must be able to split each cohort out, so **every such campaign is
+tagged at creation** (a distinct discount-code family + order tag + customer tag). When a
+new tripwire launches, add its detection predicate here alongside the giveaway one below.
+Rationale: a tripwire read against a blended baseline looks like it is "tanking AOV" when
+it is simply a different cohort doing its job.
+
 ## First read (2026-06-21 → 2026-07-21, 3,773 paid orders, giveaway-excluded)
 
 The free travel-size acquisition campaign ("pague só o frete") is **excluded by
 default** — 699 near-R$0 orders (15.6% of paid orders) that distort AOV. They are a
 deliberate tripwire whose payback is the 2nd purchase, so they must be measured as
 their own cohort. Detection: a travel-size SKU line billed at ~R$0 (code-independent)
-or the gift code. Add `--include-giveaway` to see them.
+or the gift code. Add `--include-giveaway` to see them. The new acquisition offer under
+design in 2026-07 (50%-off hero + travel-size second hero) is a second such cohort — it
+must get its own tag + detection predicate and stay out of the blended baseline.
 
 | Metric | Blended | New customer |
 |---|---|---|

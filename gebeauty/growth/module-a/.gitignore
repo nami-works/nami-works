@@ -1,3 +1,6 @@
 read-*.json
 gads-*.json
 kpis.json
+*.jsonl
+rescue-cohort.csv
+*.out.json

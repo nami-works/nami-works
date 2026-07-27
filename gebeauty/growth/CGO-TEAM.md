@@ -142,8 +142,7 @@ small work.
 
 **Start from the template: `docs/defense-kit/defense-deck-template.html`.**
 It is the required starting point (copy + fill), not optional. Kit + fill guide:
-`docs/defense-kit/README.md`. (The kit is now a shared repo-wide tool, not CGO-owned;
-CGO uses it, but so can any surface that needs a committee/partner defense deck.)
+`docs/defense-kit/README.md`.
 
 **Two registers - fidelity matches the claim (do not mix them):**
 - **Act 1, Groundwork (doodle).** One panel. The big-picture idea in plain terms (the
@@ -167,6 +166,25 @@ is the reference build), private by default, shareable to the committee. The off
 assembles it and pulls the analyst's numbers; it does not delegate the defense. Keep one
 deck per decision; redeploy the same file to the same link on revisions.
 
+## Operating doctrine — campaigns are hook-validation engines
+
+Every multi-hook paid campaign is built to **validate which hooks win and feed the winners into
+new content** (video/UGC), not only to sell in-flight. Standing method for growth-hacker (full
+rationale + failure modes in `knowledge.md`):
+
+- **Test → scale, split by FUNCTION not product.** A fair-exposure **TEST layer** (ABO — not CBO,
+  which starves laggards — optimized to a cheap mid-funnel event, ranked on **leading indicators**:
+  thumbstop / CTR / CPC / cost-per-ATC) → promote winners → a **SCALE layer** (CBO + ROAS floor).
+  Never per-product campaigns (fragments the auction + learning phase).
+- **Per-hook measurement in our own data** (per-hook UTM → Module A), not just the platform's
+  black box (view-through caveat).
+- **Promote/kill** past a per-hook read threshold; **wave-size** the test to the budget (leading
+  indicators make wide waves affordable); log what's dropped — no silent truncation.
+- **Winners → new content** (`/video-director` + UGC). A consolidated "let the algorithm pick the
+  winner" build ALONE is insufficient — it yields a black-box winner you can't reproduce.
+- **At intake, proactively ask whether creative/asset production is in scope** (don't assume assets
+  exist or that we produce them).
+
 ## Cadence
 
 - **Weekly** — Growth Analyst produces the margin-true scorecard; CGO makes scale/kill/
@@ -181,7 +199,8 @@ deck per decision; redeploy the same file to the same link on revisions.
 - **growth-hacker** — steer by Module A net-margin and the CAC ceiling, not platform
   ROAS. The agency is your execution arm: you direct and audit it, you do not accept
   its numbers on faith. Add Google branded/non-branded and a TikTok test protocol as
-  the account matures.
+  the account matures. **Build every multi-hook campaign as a hook-validation engine**
+  (test→scale; see "Operating doctrine" above).
 - **crm-director** — broaden from one-off sends to the full lifecycle (welcome /
   post-purchase / replenishment at ~day 45-60 / win-back / VIP). Time flows to the
   real repeat-cycle data from Module A.

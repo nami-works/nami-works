@@ -1,33 +1,89 @@
 {
   "_meta": {
-    "purpose": "Unit-economics structure for Module A, confirmed with Lucas 2026-07-21. Model is % of TOTAL REVENUE, where total revenue = product net sales (after discounts) + freight revenue.",
-    "status": "CONFIRMED 2026-07-21 EXCEPT delivery costs. Freight + fulfillment are UNDER REVISION: GE is moving to a new fulfiller and delivery economics are being rebuilt in a separate session. BEFORE ANY MARGIN ANALYSIS, ASK LUCAS to confirm the current freight_cost_pct + fulfillment_pct + freight_revenue_pct. Do not run margin numbers on the values below until he confirms.",
-    "basis": "total_revenue = product_net + freight_revenue; freight_revenue = freight_revenue_pct * product_net. All cost rates are % of total_revenue. COGS comes per-SKU from cost-basis.json scaled by cogs_calibration_factor so the aggregate matches cogs_target_pct.",
-    "updated": "2026-07-21"
+    "purpose": "Unit-economics structure for Module A. Cost model (Lucas 2026-07-22): costs split into ABSOLUTE per-order reais (per_order_brl + COGS from cost-basis per unit) and AD-VALOREM % of revenue (ad_valorem_pct + boniteca). Absolute costs are FIXED regardless of discount/GWP; ad-valorem costs scale with the price charged. This is why a 50%-off sale correctly compresses margin (COGS/freight/fulfillment don't shrink; their %-of-price doubles).",
+    "basis": "total_revenue = product_net (post line-discount) + freight_revenue (freight_revenue_pct x product_net). contribution = total_revenue - COGS(units) - sum(per_order_brl) - total_revenue x (ad_valorem tax+payment) - qualifying_revenue x boniteca. COGS is bottom-up per-SKU (cost-basis.json), NO calibration.",
+    "status": "2026-07-22: COGS bottom-up (factor=1.0); Boniteca broken out (ad-valorem on qualifying rev); freight + fulfillment converted to ABSOLUTE per-order R$ (were flawed %-of-rev). Freight = current Selia actual. Boniteca tier now AUTO-PROJECTED (boniteca_projector.py; July 2026 = 8%). PLACEHOLDERS to firm up: fulfillment storage (Selia Logistica invoice), packaging BOM, Boniteca history backfill (--build-history) for future-month projections. Flip freight to Unilog at cutover via per_order_brl._scenarios.",
+    "updated": "2026-07-22"
   },
-  "profit_floor_pct": 0.10,
+  "profit_floor_pct": 0.1,
   "_profit_floor_note": "Hard guardrail: minimum 10% NET profit on every sale, per-purchase, AFTER paid media (% of total revenue).",
-
-  "freight_revenue_pct": 0.05,
-  "_freight_revenue_note": "Freight billed to customer, averaged across subsidized + non-subsidized deliveries, as % of PRODUCT revenue. Free-ship threshold R$299. Added on top of product to form total revenue; not double-counted (product AOV excludes freight).",
+  "freight_revenue_pct": 0.064,
+  "_freight_revenue_note": "REVENUE side: freight billed to customer, % of PRODUCT revenue. Actual from 12mo Shopify orders (currentShippingPriceSet / net merch = 6.36%), flat R$299 free-ship live. For a campaign/offer: set to 0 if free-ship, or = freight if pass-through. Added on top of product to form total revenue.",
   "free_shipping_threshold_brl": 299,
-
-  "cogs_target_pct": 0.22,
-  "cogs_calibration_factor": 1.48,
-  "_cogs_note": "Real COGS ~22% of total revenue (Lucas). Bottom-up per-SKU cost-basis.json totals only ~16% (the B2B 'preco minimo' study excludes inbound freight/duty/breakage), so the engine scales each per-SKU cost by cogs_calibration_factor (=0.22 x total_rev / raw per-SKU COGS, computed on the 2026-06-21..07-21 window). Preserves relative product differences, fixes the absolute level. Replace with real per-SKU costs when available.",
-
-  "tax_effective_pct": 0.12,
-  "_tax_note": "Effective tax on total revenue. Confirmed ~12%.",
-
-  "payment_fee_pct": 0.0395,
-  "_payment_fee_note": "3.5% acquiring + 0.45% Shopify = 3.95% of total revenue.",
-
-  "freight_cost_pct": 0.17,
-  "_freight_cost_note": "UNDER REVISION (2026-07-21) - new fulfiller incoming; delivery economics being rebuilt in a separate session. ~17% was the CURRENT fulfiller. ASK LUCAS before using for margin analysis.",
-
-  "fulfillment_pct": 0.03,
-  "_fulfillment_note": "UNDER REVISION (2026-07-21) - moves with freight under the new fulfiller. ~3% was the CURRENT fulfiller. ASK LUCAS before using for margin analysis.",
-
+  "cogs_calibration_factor": 1.0,
+  "_cogs_note": "COGS is ABSOLUTE per-unit from cost-basis.json (unit_cost_brl x qty), NO calibration (factor=1.0). Raphael canonical (study 'Preco minimo' MINUS R$2 handling) already includes inbound freight/duty/breakage; the old 1.48x plug is retired. Bottom-up aggregate ~14.9% at full price - correctly RISES as a share when discounted (a 50%-off sale reads ~29.8%). Step-2 additions (shrinkage/seeding/expiry) to come as explicit lines, never a plug.",
+  "per_order_brl": {
+    "freight": 20.43,
+    "fulfillment": 6.0,
+    "packaging_tiers_brl": {
+      "by": "units",
+      "small_max": 2,
+      "medium_max": 5,
+      "small": 3.0,
+      "medium": 5.0,
+      "large": 6.5
+    },
+    "_note": "ABSOLUTE reais per order - FIXED regardless of discount/GWP (the flaw Lucas flagged 2026-07-22: %-of-rev wiring lets a discount silently shrink a fixed cost). freight = flat AVG gross carrier cost/order (ACTIVE = Selia R$20.43; campaign/offer tools MUST override with exact weight x zone via _unilog_freight.py). fulfillment = Unilog picking R$3.90/NF + ~R$2.10 storage (rough, from armazenagem R$68/pallet-mo allocated over monthly orders; consistent with the prior 3% blended); refine with the Selia Logistica invoice. packaging = shipping box+fill+tape+label, TIERED by units as a placeholder (Lucas 2026-07-22: R$3 small <=2un / R$5 medium 3-5un / R$6.50 large 6+un); rewrite when the real per-size BOM lands.",
+    "_scenarios": {
+      "selia_current": {
+        "freight": 20.43,
+        "note": "ACTIVE - Selia avg/parcel, Mar-Jun 2026 actuals."
+      },
+      "unilog_cutover": {
+        "freight": 27.19,
+        "note": "Unilog avg/parcel (national, real weights) - flip at cutover ~Aug 2026."
+      }
+    }
+  },
+  "ad_valorem_pct": {
+    "tax": 0.12,
+    "payment_fee": 0.0395,
+    "_note": "% of TOTAL revenue - these correctly scale down with a discount. tax = effective ICMS+PIS/COFINS ~12%. payment_fee = 3.5% acquiring + 0.45% Shopify. (Boniteca is also ad-valorem but on QUALIFYING revenue - see boniteca block.)"
+  },
+  "boniteca": {
+    "resolved_pct": 0.08,
+    "resolved_mode": "projected_current",
+    "resolved_asof": "2026-07",
+    "tier_table_brl": [
+      [
+        500000,
+        0.1
+      ],
+      [
+        750000,
+        0.09
+      ],
+      [
+        1000000,
+        0.08
+      ],
+      [
+        1250000,
+        0.075
+      ],
+      [
+        1500000,
+        0.065
+      ],
+      [
+        2000000,
+        0.06
+      ],
+      [
+        null,
+        0.05
+      ]
+    ],
+    "_note": "Boniteca (Chemyunion) monthly FLAT-CLIFF consulting fee, AD-VALOREM on QUALIFYING (cosmetic) product revenue - excludes Anexo-4.2 accessories, brindes, returns; freight excluded. Was baked into the old top-down 22% COGS; now its own line (no double-count: bottom-up COGS is product-only). resolved_pct = the tier the MONTH's qualifying gross lands in, AUTO-SET by module-a/boniteca_projector.py (current = in-month velocity: this-MTD(day D) / avg over CLEAN reference months of MTD-at-D/full; future = seasonal YoY). Reference months EXCLUDE anomalies - JUNE EXCLUDED (end-June mist launch back-loaded it); using Apr+May 2026 (boniteca_history.json). Refresh: pull this-month MTD via boniteca_faturamento_mtd.py MM/YYYY [DD], then boniteca_projector.py --mode current --month YYYY-MM --mtd <this> --day <D> --write. July 2026: MTD R$624.8k(d22) / ref fraction 0.639 (Apr 0.746 / May 0.531) -> projected ~R$978k -> 8% tier, only R$21.5k under the R$1M->7.5% cliff (gross-of-returns; ref shape noisy; re-run near close). Blended qualifying base (Omie NF-e mod55 + Shopify POS, cosmetic NCM 3303-3307). Exit tail: 12mo @ 50% on stock-at-termination.",
+    "resolved_basis": "in-month velocity: this MTD R$624,835 / ref fraction 0.639 from 2026-04,2026-05"
+  },
+  "_blended_reference_pct": {
+    "_doc": "Book-AVERAGE effective rates (absolute per-order costs expressed as % of the average order) for BLENDED metrics only - kpi_sweep CAC/LTV/contribution-margin. Do NOT use for per-order or campaign/offer margin - use the ABSOLUTE model (per_order_brl + COGS units) there, or discounts will be mis-costed. Recompute from contribution.py output periodically.",
+    "cogs": 0.149,
+    "freight": 0.088,
+    "fulfillment": 0.02,
+    "boniteca": 0.071
+  },
   "media_allocation_mode": "channel_blended",
   "_media_note": "Paid media allocated per order at the channel level in the Module A v1 media layer. The 10% floor is checked AFTER media allocation."
 }

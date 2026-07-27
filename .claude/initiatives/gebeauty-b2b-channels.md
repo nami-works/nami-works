@@ -7,7 +7,7 @@ priority: high
 created: 2026-06-23
 target: null
 current_phase: 1-sephora-registry-gaps
-next_blocker: "Sephora: CSV refreshed 2026-07-14 — all internal fields filled; remaining gaps external-owner (Anvisa 19 SKUs/Raphael, ICMS%+IPI%/contador, B2B price 9 new SKUs + dates + ativação/Lucas, Canal+Vendor+SAP+Markup/buyer). 2 confirms: GEB 111 discontinued? GEB 122/123/124 in offer before go-live? Full list: gebeauty/sephora/sephora_gaps.md. Drogaria Iguatemi: counter-proposal pending (Lucas) — 40% margin + ~R$145-150k trade breaks even at ~R$7k sell-out/loja/mês."
+next_blocker: "Sephora: CSV refreshed 2026-07-14 — all internal fields filled; remaining gaps external-owner (Anvisa 19 SKUs/Raphael, ICMS%+IPI%/contador, B2B price 10 new SKUs + dates + ativação/Lucas, Canal+Vendor+SAP+Markup/buyer). Confirms resolved 2026-07-16: GEB 111 discontinued (out), GEB 122/123/124 in now with gaps, serum GEB 126 added. Full list: gebeauty/sephora/sephora_gaps.md. Drogaria Iguatemi: counter-proposal pending (Lucas) — 40% margin + ~R$145-150k trade breaks even at ~R$7k sell-out/loja/mês."
 next_owner: lucas
 stakeholders:
   - GE Beauty
@@ -117,9 +117,9 @@ off-price shelves (TJ Maxx / Marshalls).
 
 ### 2026-07-14 refresh (resumed after 3-week stall)
 - Reconciled CSV to live catalog: **Mist line renumbered** 025/026/027 → 032/033/031 (same EANs);
-  **GEB 111 (Charm Bag) dropped** from catalog — confirm discontinued vs JSON gap.
-- **GEB 122/123/124 (Mayday shampoo/cond/leave-in) not yet published on Shopify** — no image/desc;
-  confirm whether they enter the Sephora offer now or wait for go-live.
+  **GEB 111 (Charm Bag) discontinued** (Lucas 2026-07-16) — stays out of the set for good.
+- **GEB 122/123/124 (Mayday shampoo/cond/leave-in): included now with gaps** (Lucas 2026-07-16).
+  Not yet published on Shopify (no image/desc) — go in as [PENDENTE] rows, fill on go-live.
 - **GEB 126 (Sérum Reparador Noturno Mayday) added 2026-07-16** — EAN backfilled into products.json
   from the Shopify DRAFT (`0631430720369`); still DRAFT so no image/desc, and needs volume + price.
   Kit GEB 125 stays out (bundle, no EAN).

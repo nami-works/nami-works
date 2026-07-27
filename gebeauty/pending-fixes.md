@@ -14,6 +14,16 @@ Low-urgency issues discovered during operations. Fix when convenient; not blocki
 
 ---
 
+## Growth / tracking
+
+### primeira-rotina R$95 cohort — measurement wiring (backlogged by Lucas 2026-07-25)
+- **What:** Clean cohort tagging + per-hook downstream-margin join aren't wired. Needed: (a) tag the customer at order creation `cohort:primeira-rotina-r95` + order tags `pr-bundle-a`/`pr-bundle-b`; (b) persist `utm_content` (hook slug) into an order note attribute at checkout (session UTMs don't reach the order); (c) align the LP acq-arm UTM to `utm_campaign=primeira-rotina-r95`.
+- **Impact:** NOT a launch blocker (Lucas's call). Cohort payback is still computable via the two bundle product GIDs (`10212940448064`/`10212940120384`) → customer → subsequent orders, and the hook test ranks on Meta leading indicators (CTR/CPC/cost-per-ATC) which don't need this. What's deferred: joining per-hook spend to DOWNSTREAM margin in Module A (precision upgrade).
+- **Fix:** /integrations-engineer — order/customer tagging automation + cart-attribute capture of `utm_content`. Spec context: `gebeauty/growth/campaigns/primeira-rotina-r95/manifest.md` + the acquisition-rescue initiative.
+- **Found:** 2026-07-25
+
+---
+
 ## B2B registrations
 
 ### GEB 121 (Máscara Mayday) — missing physical specs

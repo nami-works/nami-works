@@ -112,6 +112,23 @@ For other brands or non-growth contexts, your general operation still applies; t
 - **Local mirror, sorted by platform so the folder is drag-ready:**
   `gebeauty/imagery/<campaign>/creatives/<platform>/<size>_<claim-slug>.png`
   (e.g. `.../creatives/meta/4x5_descubra-o-cheiro.png`). Launch the per-platform folder.
+- **Name every artifact for traceability — NEVER ship the template's inherited name.**
+  `copy-design` clones inherit the master's title (`META_CACHOS2`), and any asset
+  uploaded to a store inherits whatever filename it was given. Both must be renamed to a
+  campaign-descriptive name at creation, or finished campaign assets become impossible to
+  trace later. (Cost: on the 2026-07 travel-size teardown a LIVE GE Beauty hero banner
+  traced back to a folder of identically-named `META_CACHOS2` designs — a 20-minute hunt
+  to find the source, and the raw images had to be rebuilt instead.) Rules:
+  1. **Canva design title** — rename every clone at clone time to
+     `<campaign>_<platform>_<claim-slug>` (e.g. `travel-size-cortesia_meta_ganhe-miniatura`),
+     never leave it as the template name. If the Canva MCP can't set/rename a title in
+     session, log the mapping in the manifest AND ask the operator to rename in Canva.
+  2. **Shopify Files / store asset name** — every ingested plate or delivered banner
+     uploaded to the store MUST be named `<campaign>_<descriptor>_<size>.png`
+     (e.g. `travel-size-cortesia_hero_desktop.png`), never a hash or the template name, so
+     it is traceable back from the storefront.
+  3. **Manifest** — record the human title + design ID + store-asset name for every piece,
+     so the next teardown or edit is a lookup, not a hunt.
 
 ## Operating principles
 

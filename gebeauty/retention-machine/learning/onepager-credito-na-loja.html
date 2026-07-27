@@ -1,0 +1,168 @@
+<style>
+  :root{
+    --paper:#faf7f4; --card:#ffffff; --ink:#1a1512; --muted:#6f6259; --faint:#8b7d73;
+    --hair:#e7ddd4; --hair-2:#efe7de;
+    --ge:#df3630; --ge-soft:#fbeeed; --ge-deep:#a5211b;
+    --good:#2f7d5b; --good-soft:#e8f3ec;
+    --eyebrow:#a4938a;
+    --shadow:0 1px 2px rgba(26,21,18,.05), 0 12px 30px -20px rgba(26,21,18,.28);
+    --mono:ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#161210; --card:#211b17; --ink:#f3ece5; --muted:#a8988c; --faint:#8a7b6f;
+      --hair:#332a23; --hair-2:#2a221c;
+      --ge:#f2685f; --ge-soft:#2c1a18; --ge-deep:#f2685f;
+      --good:#5fc192; --good-soft:#16281f;
+      --eyebrow:#7d6d62;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 16px 40px -22px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="light"]{
+    --paper:#faf7f4;--card:#fff;--ink:#1a1512;--muted:#6f6259;--faint:#8b7d73;--hair:#e7ddd4;--hair-2:#efe7de;
+    --ge:#df3630;--ge-soft:#fbeeed;--ge-deep:#a5211b;--good:#2f7d5b;--good-soft:#e8f3ec;--eyebrow:#a4938a;
+    --shadow:0 1px 2px rgba(26,21,18,.05),0 12px 30px -20px rgba(26,21,18,.28);
+  }
+  :root[data-theme="dark"]{
+    --paper:#161210;--card:#211b17;--ink:#f3ece5;--muted:#a8988c;--faint:#8a7b6f;--hair:#332a23;--hair-2:#2a221c;
+    --ge:#f2685f;--ge-soft:#2c1a18;--ge-deep:#f2685f;--good:#5fc192;--good-soft:#16281f;--eyebrow:#7d6d62;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 16px 40px -22px rgba(0,0,0,.7);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;
+    -webkit-font-smoothing:antialiased}
+  .page{max-width:860px;margin:0 auto;padding:clamp(22px,4vw,44px)}
+
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--eyebrow);display:flex;align-items:center;gap:10px;margin:0 0 14px;font-weight:600}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--ge);display:inline-block}
+  h1{font-size:clamp(28px,5vw,44px);line-height:1.02;letter-spacing:-.025em;margin:0;font-weight:800;text-wrap:balance}
+  h1 .accent{color:var(--ge)}
+  .lede{font-size:clamp(15px,1.8vw,17px);color:var(--muted);max-width:64ch;margin:14px 0 0}
+
+  .sec-lab{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--eyebrow);font-weight:600;margin:34px 0 12px}
+
+  /* antes vs agora */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .col{border-radius:14px;padding:20px;border:1px solid var(--hair);background:var(--card);box-shadow:var(--shadow)}
+  .col.now{border-color:var(--ge);background:var(--ge-soft)}
+  .col .h{display:flex;align-items:baseline;gap:8px;margin-bottom:14px}
+  .col .h .t{font-size:17px;font-weight:800;letter-spacing:-.01em}
+  .col .h .s{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--eyebrow)}
+  .col.now .h .t{color:var(--ge)}
+  ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  li{display:grid;grid-template-columns:20px 1fr;gap:10px;font-size:14px;line-height:1.4}
+  li .mk{font-weight:800;line-height:1.3}
+  .col.was li .mk{color:var(--faint)}
+  .col.now li .mk{color:var(--good)}
+  .col.was li{color:var(--muted)}
+
+  /* steps */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .step{background:var(--card);border:1px solid var(--hair);border-radius:13px;padding:18px 16px;box-shadow:var(--shadow)}
+  .step .n{width:30px;height:30px;border-radius:9px;background:var(--ge-soft);color:var(--ge);font-family:var(--mono);
+    font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;margin-bottom:11px}
+  .step .st{font-size:14px;line-height:1.45}
+  .step .st b{color:var(--ge)}
+  .loginnote{margin-top:12px;background:var(--ge);color:#fff;border-radius:11px;padding:13px 17px;
+    font-size:14.5px;font-weight:600;display:flex;gap:10px;align-items:center}
+  .loginnote .ic{font-size:17px}
+
+  /* say / avoid */
+  .say{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .say .b{border-radius:13px;padding:18px;border:1px solid var(--hair);background:var(--card);box-shadow:var(--shadow)}
+  .say .b.ok{border-left:3px solid var(--good)}
+  .say .b.no{border-left:3px solid var(--ge)}
+  .say .b .lab{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-bottom:9px}
+  .say .b.ok .lab{color:var(--good)} .say .b.no .lab{color:var(--ge)}
+  .say .quote{font-size:14px;line-height:1.5;color:var(--ink)}
+  .say .quote.mut{color:var(--muted)}
+  .say .quote b{color:var(--ge)}
+
+  /* faq */
+  .faq{display:flex;flex-direction:column;margin-top:4px}
+  .qa{display:grid;grid-template-columns:240px 1fr;gap:18px;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--hair-2)}
+  .qa:last-child{border-bottom:0}
+  .qa .q{font-size:14px;color:var(--muted)}
+  .qa .a{font-size:14px;color:var(--ink);line-height:1.45}
+  .qa .a b{color:var(--ge);font-weight:800}
+  .faq-note{font-size:12px;color:var(--muted);font-style:italic;margin:12px 0 0;line-height:1.5;max-width:70ch}
+
+  .foot{margin-top:30px;padding-top:16px;border-top:1px solid var(--hair);font-size:12.5px;color:var(--muted)}
+  .foot b{color:var(--ink)}
+
+  @media (max-width:640px){
+    .compare,.steps,.say{grid-template-columns:1fr}
+    .qa{grid-template-columns:1fr;gap:2px}
+  }
+  @media print{
+    body{background:#fff}
+    .col,.step,.say .b{box-shadow:none}
+    .page{padding:0}
+  }
+</style>
+
+<div class="page">
+  <p class="eyebrow">GE Beauty · Time de varejo · Como funciona agora</p>
+  <h1>Do cashback para o <span class="accent">crédito na loja</span>.</h1>
+  <p class="lede">Estamos trocando o cashback (que era um cupom) pelo crédito na loja (um saldo na conta do
+    cliente). Muda como o cliente resgata e o que a gente fala. Tudo em uma página.</p>
+
+  <div class="sec-lab">O que muda</div>
+  <div class="compare">
+    <div class="col was">
+      <div class="h"><span class="t">Antes</span><span class="s">Cashback / BEAUTYBACK</span></div>
+      <ul>
+        <li><span class="mk">✕</span><span>Era um <b>cupom/código</b> que o cliente precisava digitar</span></li>
+        <li><span class="mk">✕</span><span>Tinha <b>valor mínimo</b> de compra</span></li>
+        <li><span class="mk">✕</span><span>Podia ser esquecido, perdido ou digitado errado</span></li>
+        <li><span class="mk">✕</span><span>Regras de combinação e validade por lote</span></li>
+      </ul>
+    </div>
+    <div class="col now">
+      <div class="h"><span class="t">Agora</span><span class="s">Crédito na loja</span></div>
+      <ul>
+        <li><span class="mk">✓</span><span>É um <b>saldo já na conta</b> do cliente</span></li>
+        <li><span class="mk">✓</span><span><b>Sem valor mínimo</b>, vale em qualquer produto</span></li>
+        <li><span class="mk">✓</span><span><b>Sem código</b>: aplica sozinho no checkout</span></li>
+        <li><span class="mk">✓</span><span>Um só saldo, com data de validade clara</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sec-lab">Como o cliente usa</div>
+  <div class="steps">
+    <div class="step"><div class="n">1</div><div class="st">O crédito <b>já está na conta</b> do cliente, não precisa fazer nada para receber.</div></div>
+    <div class="step"><div class="n">2</div><div class="st">No checkout, ele clica em <b>Fazer login</b> e informa o e-mail da conta.</div></div>
+    <div class="step"><div class="n">3</div><div class="st">O crédito <b>aparece e é aplicado automaticamente</b>. Sem digitar código.</div></div>
+  </div>
+  <div class="loginnote"><span class="ic">🔑</span><span>Ponto-chave: o crédito só aparece depois do <u>login com o e-mail da conta</u>. Sempre lembre o cliente disso.</span></div>
+
+  <div class="sec-lab">O que falar no atendimento</div>
+  <div class="say">
+    <div class="b ok">
+      <div class="lab">✓ Fale assim</div>
+      <p class="quote">"Você tem <b>R$ X de crédito</b> na sua conta, válido até [data]. É só fazer login com seu e-mail no checkout que ele aplica sozinho, sem mínimo e no que você quiser."</p>
+    </div>
+    <div class="b no">
+      <div class="lab">✕ Evite</div>
+      <p class="quote mut">"Use este cupom" ou "digite o código". Não é mais cupom, é saldo na conta. Falar em código gera confusão e o cliente procura um campo que não existe.</p>
+    </div>
+  </div>
+
+  <div class="sec-lab">Perguntas rápidas</div>
+  <div class="faq">
+    <div class="qa"><span class="q">Precisa de código?</span><span class="a"><b>Não.</b> O crédito aplica sozinho no checkout, depois do login.</span></div>
+    <div class="qa"><span class="q">Tem valor mínimo?</span><span class="a"><b>Não.</b> Vale para qualquer valor de compra.</span></div>
+    <div class="qa"><span class="q">Vale em qualquer produto?</span><span class="a"><b>Sim.</b> Pode ser usado em qualquer item da loja.</span></div>
+    <div class="qa"><span class="q">Combina com desconto?</span><span class="a"><b>Sim.</b> O crédito soma ao preço que já está com desconto.</span></div>
+    <div class="qa"><span class="q">Quando expira?</span><span class="a"><b>60 dias após a última compra.</b>*</span></div>
+    <div class="qa"><span class="q">Como o cliente vê o saldo?</span><span class="a">Consultando a conta da cliente <b>no site</b> ou <b>pelo aplicativo Shopify POS</b>.</span></div>
+  </div>
+  <p class="faq-note">*Em eventuais campanhas, podemos estender a validade dos créditos. Nestas situações, iremos comunicar ao time.</p>
+
+  <p class="foot">Dúvidas? <b>Acione seu gerente.</b></p>
+</div>

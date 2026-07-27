@@ -145,10 +145,24 @@ def fetch_orders(since_iso, until_iso):
         cursor = conn["pageInfo"]["endCursor"]
 
 
+def _packaging_brl(units, per_order):
+    """Tiered shipping-box cost by unit count (placeholder until real BOM)."""
+    t = per_order.get("packaging_tiers_brl")
+    if not t:
+        return float(per_order.get("packaging") or 0.0)
+    if units <= t["small_max"]:
+        return float(t["small"])
+    if units <= t["medium_max"]:
+        return float(t["medium"])
+    return float(t["large"])
+
+
 def order_economics(o):
     """Return per-order economics dict, or None if it carries no costed product line."""
     revenue = 0.0   # product net sales (post line-discount), excl. shipping/tax
     raw_cogs = 0.0  # bottom-up per-SKU, pre-calibration
+    qualifying_rev = 0.0  # Boniteca base: cosmetic product revenue (realized; free/brinde lines = 0)
+    units = 0            # total physical units in the parcel (for packaging tier)
     costed_lines = 0
     first_product = None
     is_giveaway = False
@@ -157,12 +171,15 @@ def order_economics(o):
         qty = li.get("quantity", 0)
         line_rev = money(li, "discountedTotalSet", "shopMoney", "amount")
         revenue += line_rev
+        units += qty
         if sku in TRAVEL_SKUS and line_rev <= GIVEAWAY_LINE_EPS * max(qty, 1):
             is_giveaway = True  # a travel-size unit billed at ~R$0 = the free cortesia
         cb = COST.get(sku)
         if cb:
             raw_cogs += cb["unit_cost_brl"] * qty
             costed_lines += 1
+            if cb.get("boniteca_qualifying", True):
+                qualifying_rev += line_rev   # cosmetic lines only; accessories flagged False
             if first_product is None:
                 first_product = sku
     if set(o.get("discountCodes") or []) & GIFT_CODES:
@@ -175,13 +192,19 @@ def order_economics(o):
     freight_rev = product_net * PARAMS["freight_revenue_pct"]
     total_rev = product_net + freight_rev
 
-    cogs = raw_cogs * PARAMS["cogs_calibration_factor"]     # per-SKU, calibrated to ~22% aggregate
-    tax = total_rev * PARAMS["tax_effective_pct"]
-    fees = total_rev * PARAMS["payment_fee_pct"]
-    freight_cost = total_rev * PARAMS["freight_cost_pct"]
-    fulfil = total_rev * PARAMS["fulfillment_pct"]
+    # ABSOLUTE per-order costs (R$, fixed regardless of discount/GWP)
+    cogs = raw_cogs * PARAMS["cogs_calibration_factor"]     # bottom-up per-SKU (factor=1.0)
+    per_order = PARAMS["per_order_brl"]
+    freight_cost = per_order["freight"]                    # flat avg R$/order (aggregate; campaign tools override exact)
+    fulfil = per_order["fulfillment"]
+    packaging = _packaging_brl(units, per_order)
+    # AD-VALOREM costs (% of the revenue base shown)
+    adv = PARAMS["ad_valorem_pct"]
+    tax = total_rev * adv["tax"]
+    fees = total_rev * adv["payment_fee"]
+    boniteca = qualifying_rev * PARAMS["boniteca"]["resolved_pct"]  # % of QUALIFYING (cosmetic) rev, not total
 
-    variable_cost = cogs + tax + fees + freight_cost + fulfil
+    variable_cost = cogs + freight_cost + fulfil + packaging + tax + fees + boniteca
     contrib = total_rev - variable_cost                    # contribution BEFORE paid media
 
     cust = o.get("customer") or {}
@@ -198,6 +221,7 @@ def order_economics(o):
         "product_net": round(product_net, 2),
         "total_rev": round(total_rev, 2),
         "cogs": round(cogs, 2),
+        "boniteca": round(boniteca, 2),
         "costed_lines": costed_lines,
         "contrib_before_media": round(contrib, 2),
         "contrib_margin_pct": round(contrib / total_rev, 4),
@@ -306,11 +330,11 @@ def main():
     out_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
 
     a = summary["all"]
-    if "UNDER REVISION" in PARAMS.get("_meta", {}).get("status", ""):
+    if "PENDING" in PARAMS.get("_meta", {}).get("status", ""):
         print("\n" + "!" * 72)
-        print("!! DELIVERY COSTS UNDER REVISION (new fulfiller). freight_cost_pct +")
-        print("!! fulfillment_pct in params.json are STALE. ASK LUCAS to confirm the")
-        print("!! current delivery economics before trusting the NET / contribution line.")
+        print("!! COST MODEL PARTIAL (params.json): fulfillment is picking-only (storage")
+        print("!! pending Selia Logistica), packaging/box not yet costed, Boniteca tier is")
+        print("!! manual. Contribution is a LOWER-BOUND on cost until these land.")
         print("!" * 72)
     print("\n=== MODULE A - READ (window {}..{}) ===".format(since, until))
     gw_note = "INCLUDED" if args.include_giveaway else "excluded"

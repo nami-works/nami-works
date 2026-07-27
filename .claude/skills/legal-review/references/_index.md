@@ -27,7 +27,7 @@ lawyer should see; he decides.
 | Lending / mútuo | `lending.md` | loans GE takes/gives — mútuo, CCB, intercompany (BLOG↔GE), bank lines | ✅ BLOG R$450k |
 | Real estate | `real-estate.md` | locação / sublocação comercial, coworking (Regus/IWG), mall kiosks, storage/depósitos | ✅ Regus |
 | Vendor / SaaS | `vendor-saas.md` | tool subscriptions, order forms, ToS/MSA, DPA | ✅ Gorgias |
-| B2B / channel | `b2b-channel.md` | distribution, retail-channel, marketplace, consignação | ⬜ on first contract |
+| B2B / channel | `b2b-channel.md` | distribution, retail-channel, marketplace, consignação | ✅ B4A + UauBox + GE standard |
 | Employment / contractor | `employment-contractor.md` | CLT, PJ, NDA, image rights, distrato | ⬜ on first contract |
 | IP / trademark / fiscal | `ip-trademark-fiscal.md` | brand/trademark (INPI), IP assignment, tax-sensitive clauses | ⬜ on first contract |
 

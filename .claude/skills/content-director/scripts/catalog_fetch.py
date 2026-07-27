@@ -37,10 +37,17 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 
 
 def load_env(tenant: str) -> dict:
-    """Parse sandbox/<tenant>/.env into a dict. No python-dotenv dependency."""
-    env_path = REPO_ROOT / "sandbox" / tenant / ".env"
+    """Parse the tenant .env into a dict. No python-dotenv dependency.
+
+    The primary tenant (gebeauty) lives at the repo root (gebeauty/.env) after the
+    repo relocation; secondary tenants stay under sandbox/<tenant>/.env. Try the
+    root-level layout first, fall back to the legacy sandbox path.
+    """
+    env_path = REPO_ROOT / tenant / ".env"
     if not env_path.exists():
-        sys.exit(f"ERROR: tenant env not found at {env_path}")
+        env_path = REPO_ROOT / "sandbox" / tenant / ".env"
+    if not env_path.exists():
+        sys.exit(f"ERROR: tenant env not found at {REPO_ROOT / tenant / '.env'} or {env_path}")
     env = {}
     for line in env_path.read_text(encoding="utf-8").splitlines():
         line = line.strip()

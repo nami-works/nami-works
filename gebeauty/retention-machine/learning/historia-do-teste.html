@@ -1,0 +1,591 @@
+<style>
+  :root{
+    --paper:#faf7f4; --card:#ffffff; --ink:#1a1512; --muted:#6f6259; --faint:#8b7d73;
+    --hair:#e7ddd4; --hair-2:#efe7de;
+    --ge:#df3630; --ge-soft:#fbeeed; --ge-deep:#a5211b;
+    --good:#2f7d5b; --good-soft:#e8f3ec; --warn:#a9791b;
+    --fast:#f0a24a; --med:#e0655c; --slow:#b02219;
+    --eyebrow:#a4938a;
+    --shadow:0 1px 2px rgba(26,21,18,.05), 0 14px 34px -20px rgba(26,21,18,.30);
+    --mono:ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#161210; --card:#211b17; --ink:#f3ece5; --muted:#a8988c; --faint:#8a7b6f;
+      --hair:#332a23; --hair-2:#2a221c;
+      --ge:#f2685f; --ge-soft:#2c1a18; --ge-deep:#f2685f;
+      --good:#5fc192; --good-soft:#16281f; --warn:#e0b155;
+      --fast:#f2ad5e; --med:#ec7c73; --slow:#e0574c;
+      --eyebrow:#7d6d62;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 18px 42px -22px rgba(0,0,0,.75);
+    }
+  }
+  :root[data-theme="light"]{
+    --paper:#faf7f4;--card:#fff;--ink:#1a1512;--muted:#6f6259;--faint:#8b7d73;--hair:#e7ddd4;--hair-2:#efe7de;
+    --ge:#df3630;--ge-soft:#fbeeed;--ge-deep:#a5211b;--good:#2f7d5b;--good-soft:#e8f3ec;--warn:#a9791b;
+    --fast:#f0a24a;--med:#e0655c;--slow:#b02219;--eyebrow:#a4938a;
+    --shadow:0 1px 2px rgba(26,21,18,.05),0 14px 34px -20px rgba(26,21,18,.30);
+  }
+  :root[data-theme="dark"]{
+    --paper:#161210;--card:#211b17;--ink:#f3ece5;--muted:#a8988c;--faint:#8a7b6f;--hair:#332a23;--hair-2:#2a221c;
+    --ge:#f2685f;--ge-soft:#2c1a18;--ge-deep:#f2685f;--good:#5fc192;--good-soft:#16281f;--warn:#e0b155;
+    --fast:#f2ad5e;--med:#ec7c73;--slow:#e0574c;--eyebrow:#7d6d62;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 18px 42px -22px rgba(0,0,0,.75);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;line-height:1.5}
+  .page{max-width:1000px;margin:0 auto;padding:clamp(20px,4vw,40px)}
+  section{padding:clamp(40px,7vh,86px) 0;border-top:1px solid var(--hair)}
+  section:first-of-type{border-top:0}
+
+  .eyebrow,.chap{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--eyebrow);display:flex;align-items:center;gap:11px;margin:0 0 18px;font-weight:600}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--ge);display:inline-block}
+  .chap .cnum{color:var(--ge);font-weight:800;letter-spacing:.1em}
+  .chap::before{content:"";width:22px;height:1px;background:var(--ge);display:inline-block}
+  h1{font-size:clamp(34px,6vw,66px);line-height:1.02;letter-spacing:-.03em;margin:0;font-weight:800;text-wrap:balance}
+  h2{font-size:clamp(24px,3.6vw,38px);line-height:1.06;letter-spacing:-.022em;margin:0 0 6px;font-weight:800;text-wrap:balance}
+  .accent{color:var(--ge)}
+  .sub{font-size:clamp(15px,1.8vw,18px);color:var(--muted);max-width:64ch;margin:16px 0 0}
+  .takeaway{display:block;margin-top:26px;background:var(--ge-soft);border:1px solid var(--hair);
+    border-left:3px solid var(--ge);border-radius:10px;padding:14px 18px;font-size:15px;font-weight:600;
+    max-width:68ch;color:var(--ink);line-height:1.55}
+  .takeaway b{color:var(--ge)}
+
+  .hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:40px}
+  .hstat{background:var(--card);border:1px solid var(--hair);border-radius:13px;padding:18px 16px;box-shadow:var(--shadow)}
+  .hstat .n{font-size:clamp(24px,3.2vw,34px);font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+  .hstat .n.pos{color:var(--good)} .hstat .n.ge{color:var(--ge)}
+  .hstat .l{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--eyebrow);margin-top:10px}
+
+  .funnel{display:flex;flex-direction:column;gap:10px;margin-top:30px}
+  .frow{display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:center}
+  .frow .flab{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+  .fbar-track{position:relative;height:44px;background:var(--hair-2);border-radius:9px;overflow:hidden}
+  .fbar{height:100%;border-radius:9px;background:linear-gradient(90deg,var(--ge-deep),var(--ge));display:flex;
+    align-items:center;padding-left:16px;color:#fff;font-weight:800;font-size:16px;font-variant-numeric:tabular-nums;
+    width:0;transition:width 1.1s cubic-bezier(.2,.7,.2,1)}
+
+  /* setup diagram */
+  .setup{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:28px}
+  .arm{border-radius:14px;padding:22px;border:1px solid var(--hair);background:var(--card);box-shadow:var(--shadow)}
+  .arm.send{border-color:var(--ge);background:var(--ge-soft)}
+  .arm .tag{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--eyebrow)}
+  .arm.send .tag{color:var(--ge)}
+  .arm .big{font-size:clamp(26px,4vw,38px);font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1;margin-top:10px}
+  .arm.send .big{color:var(--ge)}
+  .arm .sub2{font-size:13px;color:var(--muted);margin-top:8px}
+
+  /* line chart */
+  .chart-wrap{background:var(--card);border:1px solid var(--hair);border-radius:14px;padding:18px 18px 14px;box-shadow:var(--shadow);margin-top:24px}
+  .chart-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px 18px;margin-bottom:6px}
+  .chart-title{font-size:15px;font-weight:700}
+  .legend{display:flex;gap:16px;font-family:var(--mono);font-size:11.5px;color:var(--muted);flex-wrap:wrap}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend .sw{width:15px;height:3px;border-radius:2px;display:inline-block}
+  .legend .sw.s{background:var(--ge)} .legend .sw.h{background:var(--muted)}
+  .lc{width:100%;height:auto;display:block;font-family:var(--mono);font-variant-numeric:tabular-nums;overflow:visible}
+  .lc .grid{stroke:var(--hair);stroke-width:1}
+  .lc .axis{fill:var(--eyebrow);font-size:11px}
+  .lc .gap{fill:var(--ge);opacity:.09}
+  .lc .send{fill:none;stroke:var(--ge);stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+  .lc .hold{fill:none;stroke:var(--muted);stroke-width:2;stroke-dasharray:5 4;stroke-linecap:round}
+  .lc .gapline{stroke:var(--good);stroke-width:1;stroke-dasharray:3 3;opacity:.6}
+  .lc .d-send{fill:var(--ge)} .lc .d-hold{fill:var(--muted)}
+  .lc .lbl-send{fill:var(--ge);font-size:13px;font-weight:700}
+  .lc .lbl-hold{fill:var(--muted);font-size:13px;font-weight:700}
+  .lc .lbl-gap{fill:var(--good);font-size:12px;font-weight:700}
+  .lc .evline{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 3;opacity:.30}
+  .lc .evbadge{fill:var(--ink)}
+  .lc .evnum{fill:var(--paper);font-size:10px;font-weight:700;text-anchor:middle}
+  .chart-note{font-size:11.5px;color:var(--eyebrow);font-family:var(--mono);margin-top:8px;line-height:1.5}
+
+  .liftline{margin-top:20px;display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 16px;padding:16px 18px;background:var(--card);border:1px solid var(--hair);border-radius:12px}
+  .liftline .lift{font-size:22px;font-weight:800;color:var(--good);font-variant-numeric:tabular-nums}
+  .liftline .txt{font-size:13.5px;color:var(--muted)} .liftline .txt b{color:var(--ink)}
+
+  /* cadence */
+  .controls{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 18px}
+  .chip{font-family:var(--mono);font-size:12px;letter-spacing:.03em;padding:7px 13px;border-radius:999px;border:1px solid var(--hair);background:var(--card);color:var(--muted);cursor:pointer;transition:.15s}
+  .chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .chip .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  .cad-row{display:grid;grid-template-columns:200px 1fr 54px;gap:12px;align-items:center;margin-bottom:7px}
+  .cad-row.hide{display:none}
+  .cad-lab{font-size:12.5px;color:var(--ink);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cad-track{height:22px;background:var(--hair-2);border-radius:6px;overflow:hidden;position:relative}
+  .cad-fill{height:100%;border-radius:6px;width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+  .cad-val{font-family:var(--mono);font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums}
+  .cad-scale{display:grid;grid-template-columns:200px 1fr 54px;gap:12px;margin-top:6px}
+  .cad-scale .ticks{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--eyebrow)}
+
+  /* discovered products (entry vs expansion) */
+  .drow{display:grid;grid-template-columns:190px 1fr 120px;gap:12px;align-items:center;margin-bottom:7px}
+  .drow.star .dlab{color:var(--ge);font-weight:800}
+  .dlab{font-size:12.5px;color:var(--ink);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dbar{height:22px;border-radius:6px;overflow:hidden;display:flex;background:var(--hair-2)}
+  .dbar i{height:100%;display:block}
+  .dbar .e{background:var(--faint);width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+  .dbar .d{background:var(--ge);width:0;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+  .dmeta{font-family:var(--mono);font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+  .dmeta b{color:var(--ge)}
+  .dlegend{display:flex;gap:18px;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin:2px 0 16px;flex-wrap:wrap}
+  .dlegend .sw{width:14px;height:10px;border-radius:3px;display:inline-block;margin-right:6px;vertical-align:-1px}
+  .dlegend .sw.e{background:var(--faint)} .dlegend .sw.d{background:var(--ge)}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:28px}
+  .card{background:var(--card);border:1px solid var(--hair);border-radius:14px;padding:22px;box-shadow:var(--shadow)}
+  .card h3{margin:0 0 14px;font-size:15px;font-weight:700}
+
+  .split{display:flex;height:58px;border-radius:11px;overflow:hidden;margin-top:6px;border:1px solid var(--hair)}
+  .split div{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;flex-direction:column;gap:2px;font-variant-numeric:tabular-nums}
+  .split .disc{background:var(--ge);flex-grow:71.4}
+  .split .repl{background:var(--faint);flex-grow:25.7}
+  .split .oth{background:var(--hair);color:var(--muted);flex-grow:2.9}
+  .split small{font-size:9.5px;font-weight:600;letter-spacing:.03em;opacity:.92;text-align:center;padding:0 4px}
+
+  .pair{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--hair-2)}
+  .pair:last-child{border-bottom:0}
+  .pair .p{font-size:13px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .pair .from{color:var(--muted)} .pair .arrow{color:var(--ge);font-weight:800}
+  .pair .to{color:var(--ink);font-weight:600}
+  .pair .cnt{font-family:var(--mono);font-size:12px;color:var(--eyebrow);font-variant-numeric:tabular-nums}
+
+  .stick{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px}
+  .stk{text-align:center;background:var(--card);border:1px solid var(--hair);border-radius:12px;padding:20px 10px;box-shadow:var(--shadow)}
+  .stk .b{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--eyebrow)}
+  .stk .o{font-size:clamp(24px,4vw,38px);font-weight:800;color:var(--ge);letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:8px 0 2px}
+  .stk .c{font-size:11.5px;color:var(--muted)}
+
+  .nudge-wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:26px}
+  .bigpct{font-size:clamp(52px,9vw,92px);font-weight:800;color:var(--ge);letter-spacing:-.03em;line-height:.9;font-variant-numeric:tabular-nums}
+  .barcmp{display:flex;flex-direction:column;gap:14px;justify-content:center}
+  .bc-row .bl{font-size:13px;color:var(--muted);margin-bottom:5px;display:flex;justify-content:space-between;gap:10px}
+  .bc-row .bl b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .bc-track{height:16px;background:var(--hair-2);border-radius:8px;overflow:hidden}
+  .bc-fill{height:100%;border-radius:8px;width:0;transition:width 1s cubic-bezier(.2,.7,.2,1)}
+
+  .vchart{width:100%;height:auto;display:block;margin-top:24px;font-family:var(--mono);font-variant-numeric:tabular-nums;overflow:visible}
+  .vchart .grid{stroke:var(--hair);stroke-width:1}
+  .vchart .axis{fill:var(--eyebrow);font-size:10px}
+  .vchart .natbar{fill:var(--faint);opacity:.55}
+  .vchart .zone{fill:var(--ge);opacity:.07}
+  .vchart .zlab{fill:var(--ge);font-size:10.5px;font-weight:700;letter-spacing:.03em}
+  .vchart .lift{fill:none;stroke:var(--ge);stroke-width:2.4;stroke-linejoin:round}
+  .vchart .ld{fill:var(--ge)}
+  .vlegend{display:flex;gap:18px;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+  .vlegend span{display:inline-flex;align-items:center;gap:7px}
+  .vlegend .sw{width:14px;height:10px;border-radius:3px;display:inline-block}
+  .vlegend .sw.n{background:var(--faint);opacity:.6} .vlegend .sw.l{background:var(--ge);height:3px;border-radius:2px}
+
+  .method{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:26px}
+  .m{background:var(--card);border:1px solid var(--hair);border-radius:14px;padding:22px;box-shadow:var(--shadow);border-top:3px solid var(--ge)}
+  .m .role{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ge);font-weight:700}
+  .m .t{font-size:17px;font-weight:800;margin:8px 0 8px;letter-spacing:-.01em}
+  .m .d{font-size:13.5px;color:var(--muted);line-height:1.55}
+  .decide{margin-top:30px;background:var(--ink);color:var(--paper);border-radius:16px;padding:28px 30px;box-shadow:var(--shadow)}
+  .decide .q{font-size:clamp(18px,2.4vw,24px);font-weight:800;letter-spacing:-.02em;text-wrap:balance;margin-bottom:16px}
+  .decide ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px}
+  .decide li{display:flex;gap:12px;font-size:15px;line-height:1.45;align-items:flex-start}
+  .decide li::before{content:"?";font-family:var(--mono);font-weight:800;color:var(--ge);flex:none;font-size:15px;margin-top:1px}
+
+  #tt{position:fixed;pointer-events:none;background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:11.5px;padding:7px 10px;border-radius:7px;opacity:0;transition:opacity .12s;z-index:50;white-space:nowrap;box-shadow:0 8px 20px rgba(0,0,0,.3)}
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s,transform .6s}
+  .reveal.in{opacity:1;transform:none}
+  .foot{font-family:var(--mono);font-size:11px;color:var(--eyebrow);margin-top:12px;line-height:1.5}
+
+  @media (max-width:720px){
+    .hero-stats{grid-template-columns:1fr 1fr}
+    .cols,.nudge-wrap,.method,.setup{grid-template-columns:1fr}
+    .stick{grid-template-columns:1fr}
+    .frow{grid-template-columns:82px 1fr}
+    .cad-row,.cad-scale{grid-template-columns:130px 1fr 44px}
+    .drow{grid-template-columns:120px 1fr 92px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}.reveal{opacity:1;transform:none}}
+</style>
+
+<div id="tt"></div>
+<div class="page">
+
+  <!-- ABERTURA -->
+  <section class="reveal">
+    <p class="eyebrow">GE Beauty · Estratégia de retenção · Julho 2026</p>
+    <h1>Como fazer o cliente <span class="accent">voltar</span> — e crescer.</h1>
+    <p class="sub">A meta é retenção: hoje 8 em cada 10 clientes não fazem uma segunda compra. Estamos montando um
+      sistema com várias alavancas para mudar isso. O crédito na loja é a primeira que colocamos à prova, com
+      grupo de controle. Abaixo: o problema, as alavancas, a evidência e o plano.</p>
+    <div class="hero-stats">
+      <div class="hstat"><div class="n pos">+1,01pp</div><div class="l">Ganho causal na recompra</div></div>
+      <div class="hstat"><div class="n ge">~R$ 60 mil</div><div class="l">Receita do grupo testado</div></div>
+      <div class="hstat"><div class="n">2,3×</div><div class="l">Recompra vs. controle</div></div>
+      <div class="hstat"><div class="n">90–270</div><div class="l">Dias: a janela ideal</div></div>
+    </div>
+  </section>
+
+  <!-- 1. O PROBLEMA -->
+  <section class="reveal">
+    <p class="chap"><span class="cnum">Etapa 01</span> · O problema</p>
+    <h2>A cada cinco clientes, quatro nunca voltam.</h2>
+    <div class="funnel">
+      <div class="frow"><div class="flab">1ª compra</div><div class="fbar-track"><div class="fbar" data-w="100">100%</div></div></div>
+      <div class="frow"><div class="flab">2ª compra</div><div class="fbar-track"><div class="fbar" data-w="20.5">20,5%</div></div></div>
+      <div class="frow"><div class="flab">3ª compra</div><div class="fbar-track"><div class="fbar" data-w="8.1">8,1%</div></div></div>
+      <div class="frow"><div class="flab">4ª+ compra</div><div class="fbar-track"><div class="fbar" data-w="4.1">4,1%</div></div></div>
+    </div>
+    <div class="takeaway">Dos 49.758 clientes, 20,5% fizeram uma segunda compra e <b>79,5%</b> pararam na primeira.</div>
+  </section>
+
+  <!-- 2. A APOSTA -->
+  <section class="reveal">
+    <p class="chap"><span class="cnum">Etapa 02</span> · Alavanca 1 — reativar quem sumiu</p>
+    <h2>A primeira ferramenta em teste: crédito na loja.</h2>
+    <p class="sub">Para trazer de volta quem parou de comprar, o primeiro instrumento que testamos foi o crédito
+      na loja. Selecionamos quem não comprava há 60 dias ou mais e enviamos crédito por e-mail. Sorteamos um grupo
+      de controle que não recebeu nada, para medir o efeito por comparação.</p>
+    <div class="setup">
+      <div class="arm send"><div class="tag">Receberam crédito</div><div class="big">13.935</div>
+        <div class="sub2">clientes reativados por e-mail</div></div>
+      <div class="arm"><div class="tag">Grupo de controle</div><div class="big">1.621</div>
+        <div class="sub2">sorteados para não receber nada</div></div>
+    </div>
+    <div class="takeaway">O grupo de controle (1.621 clientes) não recebeu crédito. A diferença de recompra
+      entre os dois grupos é o efeito atribuível ao crédito, separado do que aconteceria de qualquer forma.</div>
+  </section>
+
+  <!-- 3. O RESULTADO -->
+  <section class="reveal">
+    <p class="chap"><span class="cnum">Etapa 03</span> · O resultado</p>
+    <h2>Quem recebeu o crédito voltou <span class="accent">2,3× mais</span>.</h2>
+    <p class="sub">Taxa de recompra acumulada <b>por cliente</b>, para os dois grupos terem o mesmo tamanho na
+      comparação. O espaço entre as linhas é o ganho puro do crédito.</p>
+    <div class="chart-wrap">
+      <div class="chart-head">
+        <div class="chart-title">Taxa de recompra acumulada — com crédito vs. controle</div>
+        <div class="legend">
+          <span><i class="sw s"></i>Receberam crédito · n=13.935</span>
+          <span><i class="sw h"></i>Controle · n=1.621</span>
+        </div>
+      </div>
+      <svg class="lc" viewBox="0 0 620 300" role="img"
+        aria-label="A linha de quem recebeu crédito sobe até 1,81%; o grupo de controle chega a 0,80%. A diferença é um ganho de 1,01 ponto percentual.">
+        <line class="grid" x1="44" y1="266" x2="548" y2="266"/>
+        <line class="grid" x1="44" y1="204.5" x2="548" y2="204.5"/>
+        <line class="grid" x1="44" y1="143" x2="548" y2="143"/>
+        <line class="grid" x1="44" y1="81.5" x2="548" y2="81.5"/>
+        <line class="grid" x1="44" y1="20" x2="548" y2="20"/>
+        <text class="axis" x="38" y="269" text-anchor="end">0</text>
+        <text class="axis" x="38" y="207.5" text-anchor="end">0,5</text>
+        <text class="axis" x="38" y="146" text-anchor="end">1,0</text>
+        <text class="axis" x="38" y="84.5" text-anchor="end">1,5</text>
+        <text class="axis" x="38" y="23" text-anchor="end">2,0%</text>
+        <polygon class="gap" points="44,257.1 107,185.7 170,154.8 233,138.9 296,124.8 359,109.8 422,98.4 485,67.4 548,43.6 548,167.4 485,167.4 422,182.5 359,197.7 296,228.1 233,228.1 170,235.6 107,258.4 44,266"/>
+        <polyline class="hold" points="44,266 107,258.4 170,235.6 233,228.1 296,228.1 359,197.7 422,182.5 485,167.4 548,167.4"/>
+        <polyline class="send" points="44,257.1 107,185.7 170,154.8 233,138.9 296,124.8 359,109.8 422,98.4 485,67.4 548,43.6"/>
+        <line class="evline" x1="44" y1="18" x2="44" y2="266"/>
+        <line class="evline" x1="107" y1="18" x2="107" y2="266"/>
+        <line class="evline" x1="485" y1="18" x2="485" y2="266"/>
+        <circle class="evbadge" cx="44" cy="9" r="8"/><text class="evnum" x="44" y="12.6">1</text>
+        <circle class="evbadge" cx="107" cy="9" r="8"/><text class="evnum" x="107" y="12.6">2</text>
+        <circle class="evbadge" cx="485" cy="9" r="8"/><text class="evnum" x="485" y="12.6">3</text>
+        <line class="gapline" x1="548" y1="43.6" x2="548" y2="167.4"/>
+        <circle class="d-hold" cx="548" cy="167.4" r="4"/>
+        <circle class="d-send" cx="548" cy="43.6" r="4.5"/>
+        <text class="axis" x="44" y="284" text-anchor="middle">6</text>
+        <text class="axis" x="107" y="284" text-anchor="middle">7</text>
+        <text class="axis" x="170" y="284" text-anchor="middle">8</text>
+        <text class="axis" x="233" y="284" text-anchor="middle">9</text>
+        <text class="axis" x="296" y="284" text-anchor="middle">10</text>
+        <text class="axis" x="359" y="284" text-anchor="middle">11</text>
+        <text class="axis" x="422" y="284" text-anchor="middle">12</text>
+        <text class="axis" x="485" y="284" text-anchor="middle">13</text>
+        <text class="axis" x="548" y="284" text-anchor="middle">14</text>
+        <text class="lbl-send" x="556" y="47">1,81%</text>
+        <text class="lbl-gap" x="556" y="109">+1,01pp</text>
+        <text class="lbl-hold" x="556" y="171">0,80%</text>
+      </svg>
+      <p class="chart-note"><b style="color:var(--ink)">O que fizemos com o grupo que recebeu crédito:</b>
+        ① 6/jul, e-mail com o crédito · ② 7/jul, lembrete por WhatsApp (parte do grupo) ·
+        ③ 13/jul, prazo original do crédito, estendido para 17/jul.</p>
+      <p class="chart-note">Onda de reativação (60+ dias) · taxa = % dos clientes de cada grupo que fizeram ao
+        menos um pedido desde o envio.</p>
+    </div>
+    <div class="liftline">
+      <span class="lift">+1,01pp</span>
+      <span class="txt">de diferença na recompra · receita bruta do grupo <b>~R$ 60 mil</b> (relatório nativo da
+        Shopify) · incremental vs. controle <b>~R$ 33 mil</b> · crédito efetivamente usado <b>R$ 10,8 mil</b>.</span>
+    </div>
+    <div class="takeaway">Receita bruta do grupo: ~R$ 60 mil. Incremental (a diferença em relação ao controle):
+      ~R$ 33 mil. Crédito usado: R$ 10,8 mil.</div>
+  </section>
+
+  <!-- 4. ONDE RENDE MAIS -->
+  <section class="reveal">
+    <p class="chap"><span class="cnum">Etapa 04</span> · Onde o crédito rende mais</p>
+    <h2>O ganho se concentra entre <span class="accent">90 e 270 dias</span>.</h2>
+    <p class="sub">Barras cinza: quando as recompras acontecem naturalmente (histórico). Linha vermelha: a
+      diferença que o crédito somou em cada faixa de tempo, no teste com controle.</p>
+    <svg class="vchart" viewBox="0 0 640 300" role="img"
+      aria-label="A recompra natural se concentra no início e na faixa de 90 a 270 dias; o ganho do crédito é maior justamente entre 90 e 270 dias.">
+      <rect class="zone" x="256.25" y="30" width="206.25" height="232"></rect>
+      <text class="zlab" x="359" y="24" text-anchor="middle">onde o crédito rende mais</text>
+      <line class="grid" x1="50" y1="262" x2="600" y2="262"></line>
+      <text class="axis" x="44" y="44" text-anchor="end">18%</text>
+      <text class="axis" x="44" y="265" text-anchor="end">0</text>
+      <text class="axis" x="612" y="58" text-anchor="start">2pp</text>
+      <text class="axis" x="612" y="265" text-anchor="start">0</text>
+      <g id="natbars"></g>
+      <polyline class="lift" points="221.9,195.4 290.6,55.5 359.4,182.1 428.1,119.9 496.9,177.6 565.6,210.9"></polyline>
+      <g id="liftdots"></g>
+      <g id="xlabels"></g>
+    </svg>
+    <div class="vlegend">
+      <span><i class="sw n"></i>Parte das recompras naturais</span>
+      <span><i class="sw l"></i>Ganho causal do crédito (teste)</span>
+    </div>
+    <div class="takeaway">Até 60 dias, o grupo de controle já recompra sozinho; acima de 366 dias, a diferença
+      é mínima. O maior ganho está entre <b>90 e 270 dias</b>, faixa em que histórico e experimento coincidem.</div>
+  </section>
+
+  <!-- 5a. HISTORICO - CADENCIA -->
+  <section class="reveal">
+    <p class="chap"><span class="cnum">Etapa 05</span> · O que 2,4 anos de histórico revelam</p>
+    <h2>Cada produto tem seu próprio relógio: de <span class="accent">58 a 177 dias</span>.</h2>
+    <p class="sub">Mediana de dias entre recompras do mesmo produto (tamanho travel e full unidos, já que sair do
+      travel para o full é o mesmo produto voltando). Um único prazo de expiração não serve para uma bruma que
+      acaba em ~2 meses e um shampoo a seco que dura ~6.</p>
+    <div class="controls" id="cadCtrl">
+      <button class="chip" data-f="all" aria-pressed="true">Todos</button>
+      <button class="chip" data-f="fast" aria-pressed="false"><span class="dot" style="background:var(--fast)"></span>Rápido &lt;75d</button>
+      <button class="chip" data-f="medium" aria-pressed="false"><span class="dot" style="background:var(--med)"></span>Médio 75–130d</button>
+      <button class="chip" data-f="slow" aria-pressed="false"><span class="dot" style="background:var(--slow)"></span>Lento &gt;130d</button>
+    </div>
+    <div id="cadChart"></div>
+    <div class="cad-scale"><div></div><div class="ticks"><span>0</span><span>50</span><span>100</span><span>150</span><span>200d</span></div><div></div></div>
+    <div class="takeaway">Os produtos se separam em três faixas de cadência (rápida, média, lenta). A mediana
+      geral entre recompras é de <b>101 dias</b>.</div>
+  </section>
+
+  <!-- 5b. HISTORICO - DESCOBERTA -->
+  <section class="reveal">
+    <p class="chap"><span class="cnum">Etapa 05</span> · Alavanca 2 — expandir o que o cliente compra</p>
+    <h2>Alguns produtos o cliente só <span class="accent">descobre depois</span>.</h2>
+    <p class="sub">Reter não é só recomprar o mesmo item: é o cliente adotar mais da linha. 7 em cada 10 retornos
+      já trazem um produto novo, e alguns produtos quase nunca entram na primeira compra.</p>
+    <div class="split" aria-label="71% dos pedidos de retorno incluem um produto novo, 26% pura reposição, 3% outros">
+      <div class="disc">71%<small>LEVAM PRODUTO NOVO</small></div>
+      <div class="repl">26%<small>PURA REPOSIÇÃO</small></div>
+      <div class="oth">3%<small></small></div>
+    </div>
+    <div style="margin-top:30px">
+      <div class="chart-title" style="margin-bottom:6px">Cada produto: comprado na 1ª compra vs. descoberto depois</div>
+      <div class="dlegend">
+        <span><i class="sw e"></i>Comprado na 1ª compra</span>
+        <span><i class="sw d"></i>Descoberto depois</span>
+      </div>
+      <div id="discChart"></div>
+      <p class="foot" style="margin-top:10px">Ordenado pela proporção descoberta. Cada barra = 100% dos compradores
+        do produto; à direita, % descoberto e nº de clientes que o adicionaram depois da 1ª compra.</p>
+    </div>
+    <div class="cols">
+      <div class="card">
+        <h3>Principais caminhos de descoberta — tem → adiciona</h3>
+        <div id="pairs"></div>
+        <p class="foot">Coocorrência em 20.115 pedidos de retorno. É a matéria-prima do recomendador.</p>
+      </div>
+      <div class="card">
+        <h3>Mais produtos → mais recorrência</h3>
+        <div class="stick">
+          <div class="stk"><div class="b">1 produto</div><div class="o">1,04</div><div class="c">pedidos em média · 17.030</div></div>
+          <div class="stk"><div class="b">2 produtos</div><div class="o">1,16</div><div class="c">pedidos em média · 11.507</div></div>
+          <div class="stk"><div class="b">3+ produtos</div><div class="o">1,86</div><div class="c">pedidos em média · 20.363</div></div>
+        </div>
+        <p class="foot">Correlação (ainda não causa): amplitude e frequência andam juntas; o próximo teste confirma.</p>
+      </div>
+    </div>
+    <div class="takeaway">Melon mood é o produto mais adicionado por descoberta: <b>2.517</b> clientes o incluíram
+      depois da 1ª compra. Leave-in pluma e máscara mayday têm a maior proporção de descoberta (34% e 42%).
+      Leave-in proteção térmica e booster definição são, sobretudo, produtos de entrada.</div>
+    <p class="foot">Nota: melon mood e máscara mayday são lançamento e ficam fora de campanhas de desconto, mas o
+      crédito pode ser gasto neles. O crédito alcança justamente os produtos que o desconto não alcança.</p>
+  </section>
+
+  <!-- 5c. HISTORICO E' SINAL -->
+  <section class="reveal">
+    <p class="chap"><span class="cnum">Etapa 05</span> · Por que o histórico vale ouro</p>
+    <h2>Metade do histórico <span class="accent">já foi incentivada</span>.</h2>
+    <div class="nudge-wrap">
+      <div>
+        <div class="bigpct">45,7%</div>
+        <p class="sub" style="margin-top:8px">de todos os pedidos históricos tiveram cupom (BEAUTYBACK, afiliado,
+          campanha). Parte relevante do retorno histórico já foi incentivada, não espontânea.</p>
+      </div>
+      <div class="barcmp">
+        <div class="bc-row">
+          <div class="bl"><span>Descoberta — <b>com</b> cupom</span><b>78,0%</b></div>
+          <div class="bc-track"><div class="bc-fill" data-w="78" style="background:var(--ge)"></div></div>
+        </div>
+        <div class="bc-row">
+          <div class="bl"><span>Descoberta — <b>sem</b> cupom</span><b>68,0%</b></div>
+          <div class="bc-track"><div class="bc-fill" data-w="68" style="background:var(--faint)"></div></div>
+        </div>
+        <p class="foot">O desconto não só antecipa o retorno: deixa o cliente <b>+10pp</b> mais propenso a
+          experimentar algo novo.</p>
+      </div>
+    </div>
+    <div class="takeaway">45,7% dos pedidos históricos tiveram cupom. Nesses pedidos, a taxa de descoberta é
+      <b>10 pontos maior</b> (78% vs. 68%).</div>
+  </section>
+
+  <!-- 6. O QUE VEM AGORA -->
+  <section class="reveal">
+    <p class="chap"><span class="cnum">Etapa 06</span> · Próximos passos da retenção</p>
+    <h2>Como seguimos aumentando a retenção.</h2>
+    <div class="method">
+      <div class="m"><div class="role">Lente 1 · Histórico</div><div class="t">Palpites + validação</div>
+        <div class="d">De graça, com muito volume, responde para todos os produtos hoje, até os lentos. Define o
+          ponto de partida e valida achados. Nunca serve para provar causa (não tem controle).</div></div>
+      <div class="m"><div class="role">Lente 2 · Experimento</div><div class="t">Prova de causa</div>
+        <div class="d">O grupo de controle é a única coisa que prova causa. Uma variável por onda, com amostra
+          protegida para nenhuma célula ficar pequena demais. Confirma o que o histórico só sugere.</div></div>
+      <div class="m"><div class="role">Lente 3 · Aprendizado contínuo</div><div class="t">A máquina se instrumenta</div>
+        <div class="d">Cada conversão registra o que foi comprado, o que o cliente já tinha, há quanto tempo, e se
+          foi reposição ou descoberta. Assim os mapas de cadência e afinidade afinam sozinhos, onda a onda.</div></div>
+    </div>
+    <div class="decide">
+      <div class="q">Para decidir juntos:</div>
+      <ul>
+        <li>A próxima onda mira 90–270 dias e abandona a cauda de 366+ dias?</li>
+        <li>A expiração do crédito vira variável de teste (7 vs. 14 vs. 21 dias)?</li>
+        <li>O crédito também empurra descoberta (produto novo), não só reposição?</li>
+        <li>Mantemos ~10% de controle em toda onda, para seguir medindo o ganho real?</li>
+      </ul>
+    </div>
+    <p class="foot">Fontes: teste de reativação de 6/jul/2026 (com controle) · relatório nativo da Shopify ·
+      exportação de pedidos fev/2024–jul/2026. Sem dados pessoais de clientes neste documento.</p>
+  </section>
+</div>
+
+<script>
+  var CAD = [
+    {t:"melon mood mist",d:58,n:777,a:"fast"},
+    {t:"máscara mayday",d:59,n:77,a:"fast"},
+    {t:"booster antifrizz",d:94,n:546,a:"medium"},
+    {t:"leave-in pluma",d:98,n:279,a:"medium"},
+    {t:"shampoo sem sulfato",d:101,n:5335,a:"medium"},
+    {t:"máscara condicionadora",d:106,n:4781,a:"medium"},
+    {t:"primer cachos definidos",d:130,n:492,a:"medium"},
+    {t:"leave-in proteção térmica",d:143,n:3957,a:"slow"},
+    {t:"booster hidratante",d:146,n:1241,a:"slow"},
+    {t:"booster fortificante",d:150,n:772,a:"slow"},
+    {t:"primer liso intacto",d:155,n:365,a:"slow"},
+    {t:"booster antioxidante",d:161,n:233,a:"slow"},
+    {t:"booster definição",d:169,n:1947,a:"slow"},
+    {t:"shampoo a seco",d:177,n:805,a:"slow"}
+  ];
+  var COL={fast:"var(--fast)",medium:"var(--med)",slow:"var(--slow)"};
+  var cad=document.getElementById("cadChart");
+  CAD.forEach(function(p){
+    var r=document.createElement("div"); r.className="cad-row"; r.dataset.a=p.a;
+    r.innerHTML='<div class="cad-lab" title="'+p.t+'">'+p.t+'</div>'+
+      '<div class="cad-track"><div class="cad-fill" data-w="'+(p.d/200*100)+'" style="background:'+COL[p.a]+'"></div></div>'+
+      '<div class="cad-val">'+p.d+'d</div>';
+    cad.appendChild(r);
+    var fill=r.querySelector(".cad-fill");
+    fill.addEventListener("mousemove",function(e){tt(e,p.t+" · mediana "+p.d+"d · n="+p.n.toLocaleString("pt-BR"))});
+    fill.addEventListener("mouseleave",hideTt);
+  });
+  document.querySelectorAll("#cadCtrl .chip").forEach(function(b){
+    b.addEventListener("click",function(){
+      document.querySelectorAll("#cadCtrl .chip").forEach(function(x){x.setAttribute("aria-pressed","false")});
+      b.setAttribute("aria-pressed","true");
+      var f=b.dataset.f;
+      document.querySelectorAll(".cad-row").forEach(function(r){ r.classList.toggle("hide", f!=="all" && r.dataset.a!==f); });
+    });
+  });
+
+  var DISC = [
+    {t:"máscara mayday",share:42.0,d:1133},
+    {t:"leave-in pluma",share:34.3,d:1851},
+    {t:"booster antioxidante",share:26.3,d:686},
+    {t:"booster antifrizz",share:25.7,d:1898},
+    {t:"melon mood mist",share:22.7,d:2517,star:true},
+    {t:"primer liso intacto",share:22.6,d:1605},
+    {t:"shampoo a seco",share:20.6,d:1278},
+    {t:"máscara condicionadora",share:19.6,d:2464},
+    {t:"shampoo sem sulfato",share:18.8,d:2469},
+    {t:"booster fortificante",share:18.4,d:1066},
+    {t:"primer cachos definidos",share:17.7,d:1850},
+    {t:"booster hidratante",share:14.8,d:1554},
+    {t:"leave-in proteção térmica",share:13.3,d:2320},
+    {t:"booster definição",share:10.0,d:1665}
+  ];
+  var dc=document.getElementById("discChart");
+  DISC.forEach(function(p){
+    var r=document.createElement("div"); r.className="drow"+(p.star?" star":"");
+    r.innerHTML='<div class="dlab" title="'+p.t+'">'+p.t+'</div>'+
+      '<div class="dbar"><i class="e" data-w="'+(100-p.share).toFixed(1)+'"></i><i class="d" data-w="'+p.share+'"></i></div>'+
+      '<div class="dmeta"><b>'+String(p.share).replace(".",",")+'%</b> · '+p.d.toLocaleString("pt-BR")+'</div>';
+    dc.appendChild(r);
+    r.querySelector(".d").addEventListener("mousemove",function(e){tt(e,p.t+" · "+String(p.share).replace(".",",")+"% descoberto depois · "+p.d.toLocaleString("pt-BR")+" clientes")});
+    r.querySelector(".d").addEventListener("mouseleave",hideTt);
+  });
+
+  var PAIRS = [
+    ["leave-in proteção térmica","melon mood mist",1250],
+    ["shampoo sem sulfato","melon mood mist",1123],
+    ["máscara condicionadora","melon mood mist",1080],
+    ["leave-in proteção térmica","leave-in pluma",981],
+    ["leave-in proteção térmica","primer cachos definidos",977],
+    ["booster definição","melon mood mist",943],
+    ["leave-in proteção térmica","booster antifrizz",937],
+    ["booster definição","primer cachos definidos",889]
+  ];
+  var pc=document.getElementById("pairs");
+  PAIRS.forEach(function(p){
+    var row=document.createElement("div"); row.className="pair";
+    row.innerHTML='<div class="p"><span class="from">'+p[0]+'</span> <span class="arrow">→</span> '+
+      '<span class="to">'+p[1]+'</span></div><div class="cnt">'+p[2].toLocaleString("pt-BR")+'</div>';
+    pc.appendChild(row);
+  });
+
+  var BANDS=[["0-30",16.2],["30-60",15.4],["60-90",13.7],["90-120",11.0],["120-180",14.4],["180-270",13.1],["270-365",7.4],["365+",8.8]];
+  var LIFT={"60-90":0.60,"90-120":1.86,"120-180":0.72,"180-270":1.28,"270-365":0.76,"365+":0.46};
+  var slot=550/8, x0=50;
+  function cx(i){return x0+slot*i+slot/2;}
+  function yNat(v){return 262-(v/18)*222;}
+  var nb=document.getElementById("natbars"), xl=document.getElementById("xlabels"), ld=document.getElementById("liftdots");
+  BANDS.forEach(function(b,i){
+    var y=yNat(b[1]), bx=cx(i)-20;
+    var rc=document.createElementNS("http://www.w3.org/2000/svg","rect");
+    rc.setAttribute("class","natbar");rc.setAttribute("x",bx);rc.setAttribute("y",y);
+    rc.setAttribute("width",40);rc.setAttribute("height",262-y);rc.setAttribute("rx",3);
+    rc.addEventListener("mousemove",function(e){tt(e,b[0]+"d · "+String(b[1]).replace(".",",")+"% das recompras"+(LIFT[b[0]]!==undefined?" · crédito +"+String(LIFT[b[0]]).replace(".",",")+"pp":""))});
+    rc.addEventListener("mouseleave",hideTt);
+    nb.appendChild(rc);
+    var tx=document.createElementNS("http://www.w3.org/2000/svg","text");
+    tx.setAttribute("class","axis");tx.setAttribute("x",cx(i));tx.setAttribute("y",276);tx.setAttribute("text-anchor","middle");
+    tx.textContent=b[0]; xl.appendChild(tx);
+  });
+  [["60-90",195.4],["90-120",55.5],["120-180",182.1],["180-270",119.9],["270-365",177.6],["365+",210.9]].forEach(function(p){
+    var idx=["60-90","90-120","120-180","180-270","270-365","365+"].indexOf(p[0])+2;
+    var c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("class","ld");c.setAttribute("cx",cx(idx));c.setAttribute("cy",p[1]);c.setAttribute("r",4);
+    ld.appendChild(c);
+  });
+
+  var TT=document.getElementById("tt");
+  function tt(e,txt){TT.textContent=txt;TT.style.opacity=1;TT.style.left=(e.clientX+14)+"px";TT.style.top=(e.clientY+14)+"px";}
+  function hideTt(){TT.style.opacity=0;}
+
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(!e.isIntersecting) return;
+      e.target.classList.add("in");
+      e.target.querySelectorAll("[data-w]").forEach(function(el){ el.style.width=el.dataset.w+"%"; });
+      io.unobserve(e.target);
+    });
+  },{threshold:.15});
+  document.querySelectorAll(".reveal").forEach(function(s){io.observe(s)});
+</script>
