@@ -126,8 +126,10 @@ https://ge-beauty.com.br/?utm_source=instagram&utm_medium=organic&utm_campaign=l
 - **Drop `utm_id`, `utm_term`, and every `nemu_*`/adset/ad macro.** Organic links carry none.
 - Optional `utm_content=<button_slug>` if the bio tool has multiple buttons.
 
-This is a **manual fix in the bio-link tool** (Linktree-equivalent) — no connected tool reaches it.
-Owner: whoever manages the Instagram account / Lucas.
+This was a **manual fix in the bio-link tool** (Linktree-equivalent) — no connected tool reaches it.
+**Done by Lucas 2026-07-27**; new organic bio-link clicks from that entry should no longer carry paid
+Meta markers. (Verify later: post-fix orders tagged `utm_medium=link-na-bio`/`organic` should stop
+co-occurring with `utm_id`/`utm_term`.)
 
 **Still pending (measurement):** the true contaminated-order count is unknown. The raw scan produced
 inflated OR'd figures; the real signature is **co-occurrence** on one order of organic bio-link
@@ -139,7 +141,7 @@ quote the old 68 / 1,183 / 3,544 / 4,795-order numbers as final.
 
 ## GE reconciliation checklist (open)
 
-- [ ] Fix the live `linklist_26092025` bio-link (above). **Live leak, still serving as of 2026-07-26.**
+- [x] Fix the live `linklist_26092025` bio-link (above). **Fixed by Lucas 2026-07-27** — leak stopped.
 - [ ] Audit every other bio-link / Linktree button for pasted-paid-URL contamination; standardize all
       to `utm_medium=organic`.
 - [ ] Run the co-occurrence scan to size the misattribution.

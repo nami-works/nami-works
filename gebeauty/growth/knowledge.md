@@ -104,9 +104,9 @@ Doctrine: **no single tool is truth — triangulate.** Three layers, each with a
   **organic bio-link clicks were stamped as paid Meta ad clicks** (order #89360 et al.). Not junk params
   — Nemu's paid signature on the wrong (organic) surface. Fix = rebuild the bio link as
   `?utm_source=instagram&utm_medium=organic&utm_campaign=linklist_26092025` (drop `utm_id`/`utm_term`/all
-  `nemu_*`); manual fix in the bio-link tool. **Live leak still serving as of 2026-07-26.** True
-  contaminated-order count still PENDING a co-occurrence scan — the old 68/1,183/3,544/4,795 figures are
-  inflated OR'd counts, not final. Full case + reconciliation checklist in `references/utm-conventions.md`.
+  `nemu_*`); manual fix in the bio-link tool. **FIXED by Lucas 2026-07-27 — leak stopped.** True
+  *historical* contaminated-order count still PENDING a co-occurrence scan — the old 68/1,183/3,544/4,795
+  figures are inflated OR'd counts, not final. Full case + reconciliation checklist in `references/utm-conventions.md`.
 
 ## Open hypotheses / questions
 
