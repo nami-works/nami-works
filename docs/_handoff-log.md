@@ -17,22 +17,6 @@ That way an item disappears from this log the moment a session takes it on, and 
 
 ---
 
-# growth_watchdog
-
-A prior session of yours wrote a handoff document for the work I want to continue. Read it, internalize it, then **delete the handoff file from disk** (it's ephemeral — git history preserves it if anyone ever needs it back).
-
-Handoff file: `docs/handoff-utm-bio-link-contamination.md`
-
-Steps:
-1. Read the full handoff.
-2. Confirm back to me, in 5 bullets or less, what state production is in and what you understand the next step to be.
-3. Delete the handoff file (`rm docs/handoff-utm-bio-link-contamination.md`).
-4. Wait for my direction before doing anything else.
-
-↳ **Log upkeep (do this at pickup, same step as deleting the handoff file):** delete this entire `growth_watchdog` block from `docs/_handoff-log.md` and save, so the log lists only pending items.
-
----
-
 # growth_team
 
 A prior session of yours wrote a handoff document for the work I want to continue. Read it, internalize it, then **delete the handoff file from disk** (it's ephemeral — git history preserves it if anyone ever needs it back).
