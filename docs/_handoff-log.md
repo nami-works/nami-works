@@ -17,23 +17,6 @@ That way an item disappears from this log the moment a session takes it on, and 
 
 ---
 
-# claude_setup
-
-A prior session of yours wrote a handoff document for the work I want to continue. Read it, internalize it, then **delete the handoff file from disk** (it's ephemeral — git history preserves it if anyone ever needs it back).
-
-Handoff file: `docs/handoff-main-slate-sweep.md`
-
-Steps:
-1. `git fetch && git pull` on main to make sure the handoff file is present locally.
-2. Read the full handoff.
-3. Confirm back to me, in 5 bullets or less, what state production is in and what you understand the next step to be.
-4. Delete the handoff file (`rm docs/handoff-main-slate-sweep.md`).
-5. Wait for my direction before doing anything else.
-
-↳ **Log upkeep (do this at pickup, same step as deleting the handoff file):** delete this entire `claude_setup` block from `docs/_handoff-log.md` and save, so the log lists only pending items.
-
----
-
 # legal_retail-contracts
 
 A prior session of yours wrote a handoff document for the legal-review work I want to continue. Read it, internalize it, then **delete the handoff file from disk** (it's ephemeral — git history preserves it if anyone ever needs it back).
