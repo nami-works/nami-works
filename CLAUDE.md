@@ -162,6 +162,16 @@ Lucas's terminal and Claude's `PowerShell` tool both run in Windows PowerShell 5
 
 The `Bash` tool (POSIX) still accepts `&&` — only PowerShell breaks. Watch for this when copying example commands from documentation.
 
+## Delivering generated files
+
+When you generate a file that Claude Desktop can't open or render properly inline (`.docx`, `.xlsx`, `.pptx`, `.pdf`, and similar binary/native formats), also print the terminal command to open it locally, in its own `bash`-tagged code block, e.g.:
+
+```bash
+Start-Process "C:\claude\path\to\file.docx"
+```
+
+Send the file with `SendUserFile` as usual, but never leave the user with only an inline preview they can't actually open — the launch command is the reliable path to the real artifact. HTML mockups follow the same rule (see memory `feedback_start_process_html`).
+
 ## Excel / spreadsheets
 
 When building or editing any `.xlsx` for Lucas, read **`docs/excel-conventions.md`** first. It captures his house style (derived from the GE Beauty BP), the canonical DRE line order, sensitivity-grid patterns, file/Drive naming, and the hard rule that formulas are authored in **English tokens** (`SUMIF`, comma args) because Excel renders them in pt-BR (`SOMASE`, `;`) automatically — writing literal Portuguese into the file breaks it. Append to that doc's running log whenever Lucas corrects a spreadsheet.
