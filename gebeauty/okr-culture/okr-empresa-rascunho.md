@@ -43,7 +43,7 @@ Por que este: operação mais eficiente sobra caixa (conecta direto com o Objeti
 
 **Definido (28/07):** cada área propôs o seu próprio fluxo de IA (marketing: conteúdo de CRM via Claude; financeiro: conciliação/DRE/classificação de despesa; operações: entradas de compra), o KR de IA nasceu de baixo pra cima. O trio abaixo é a proposta; números a fechar com o time.
 
-- **KR2.1 · IA no dia a dia** — **cada área** com pelo menos 1 fluxo real de IA rodando (de `0` para todas). ‹marketing + financeiro + operação + varejo›
+- **KR2.1 · IA no dia a dia** — **cada área** com pelo menos 1 fluxo real e eficiente de IA rodando (de `0` para todas). ‹marketing + financeiro + operação + varejo›
 - **KR2.2 · Atrito pós-venda** — reduzir de `x%` para `y%` o **% de pedidos que geram devolução e/ou chamado de SAC de reclamação**. Um só denominador (pedidos), dedupa quem tem os dois. ‹integra os antigos KR de devoluções + SAC; medida via Shopify (devoluções) + Gorgias (tickets na categoria reclamação, o "gráfico de justificativas" do Raphael)›
   - *Upgrade futuro:* `custo de pós-venda por pedido` (R$ de logística reversa + reembolso + tempo de SAC), quando tivermos o custeio.
 - **KR2.3 · Custo operacional** — reduzir de `x%` para `y%` da receita, **incluindo a logística gerada por marketing** (brindes, amostras, MPDV, envios de PR/influencer, subsídio de frete grátis). Co-dono: **operação + marketing**. ‹operação Op2 + as demandas operacionais do marketing›
