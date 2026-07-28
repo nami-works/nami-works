@@ -13,7 +13,7 @@
 
 ---
 
-## Objetivo 1 — Conquistar a nossa independência financeira, crescer com o próprio caixa
+## Objetivo 1 — Acelerar o nosso crescimento com o nosso próprio caixa
 
 *Dono sugerido: você + Giulia + Eleonora · Aspiracional*
 
@@ -57,6 +57,27 @@ Por que este: operação mais eficiente sobra caixa (conecta direto com o Objeti
 
 ---
 
+## O que o time levantou e não virou KR (rastreabilidade)
+
+Ninguém perde a sua ideia. Cada proposta ou virou KR, ou foi **absorvida** como driver/submétrica de um (ver a linha "agrega:" em cada KR acima e no deck), ou ficou **de fora de vez**. As absorvidas, por KR:
+
+- **KR1.1 Receita** ← performance de retail media, performance de CRM (marketing).
+- **KR1.2 Despesa financeira** ← uso de conta garantida/cheque especial (driver), renegociação de prazo com transportadoras (ops), alongamento de prazo com fornecedor, troca de dívida cara por barata (fin).
+- **KR1.3 Tempo médio de estoque** ← destravar estoque parado (fin), estudo de estoque parado, nível de estoque e pedido mínimo (ops).
+- **KR2.1 IA** ← conteúdo de CRM via Claude (mkt), conciliação automática, DRE automatizada, classificação de despesa com IA (fin), IA nas entradas de compra (ops).
+- **KR2.2 Atrito pós-venda** ← nível de devolução, indicadores de SAC / gráfico de justificativas (ops).
+- **KR2.3 Custo operacional** ← frete (~15% da receita) e embalagem, 20% menos movimentação/frete/armazenagem (ops), logística de campanhas / brindes / MPDV (mkt).
+
+**Ficaram de fora de vez (nenhum KR os cobre):**
+
+1. **Recuperar margem** (financeiro). A própria Giulia chamou de "a única saída permanente da esteira", mas de trabalho de fundo, não KR. É a omissão mais estratégica: vale manter como pano de fundo **de propósito**, não por acidente.
+2. **Cortar custo fixo** (financeiro). O KR de custo operacional cobre a logística + a demanda de marketing (variável), não o overhead fixo.
+3. **Produção própria / insourcing (fabricar o shampoo a seco)** (operações). É um projeto de make-vs-buy que alimentaria margem e estoque, não um resultado mensurável de ciclo.
+4. **Aporte de sócio / capital externo** (financeiro). Fora de propósito: a Giulia mesma disse que é "o oposto de independência", ponte, nunca solução.
+5. **Ciclo de caixa / % antecipado** (fin + ops, era a reserva). Cortado por complexidade para o beta; volta como candidato num ciclo futuro.
+
+---
+
 ## Depois de definir
 
 - Cada líder escreve os OKRs do seu time para **conectar de baixo pra cima** com estes dois. Metade dos OKRs deve nascer do time, não descer de cima.
@@ -69,7 +90,7 @@ Por que este: operação mais eficiente sobra caixa (conecta direto com o Objeti
 
 Inventário de tudo que já mapeamos como KR possível. Nada decidido; é o menu de onde os times puxam na hora de construir os KRs. O conjunto consolidado (os 5 por objetivo, com fonte marcada) está lá em cima, em cada objetivo. Este backlog é o resto do menu, incluindo as alavancas e submétricas que ficaram fora do trio.
 
-**Objetivo 1 · independência financeira**
+**Objetivo 1 · crescer com caixa próprio**
 - Crescer a receita (R$)
 - Elevar a margem de contribuição consolidada (%)
 - Gerar fluxo de caixa livre (R$)

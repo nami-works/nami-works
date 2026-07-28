@@ -26,7 +26,7 @@ Perguntas e objeções acontecem ao longo da sessão, não num bloco separado. M
 Reserve tempo de verdade aqui. Se a liderança não entende o modelo, o resto da sessão não gruda. Ensine os dois blocos, com exemplos nossos.
 
 **OKRs — Objectives and Key Results. O "o quê" e o "como sabemos que chegamos".**
-- **Objetivo:** uma frase curta e qualitativa que diz PARA ONDE vamos. Não tem número, tem direção e ambição. Ex.: "Conquistar a nossa independência financeira."
+- **Objetivo:** uma frase curta e qualitativa que diz PARA ONDE vamos. Não tem número, tem direção e ambição. Ex.: "Acelerar o nosso crescimento com o nosso próprio caixa."
 - **Key Result:** o resultado mensurável que prova que chegamos lá. Sempre tem número, e sempre é um **resultado, não uma tarefa**. "Fluxo de caixa livre de X para Y" é KR. "Lançar a campanha" é tarefa, não entra.
 - **Quantidade:** 2 a 3 objetivos por ciclo, 3 a 5 KRs cada. Menos é mais; se tudo é prioridade, nada é.
 - **Aspiracional vs comprometido:** aspiracional é meta esticada (acertar 70% já é vitória); comprometido é o que tem que entregar. Rotule cada objetivo, para o time saber a régua.

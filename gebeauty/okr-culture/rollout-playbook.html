@@ -102,6 +102,11 @@
   .step .what { color: var(--ink); font-weight: 600; margin: 3px 0 2px; }
   .step .who { font-size: .88rem; color: var(--muted); }
   .step.launch::before { background: var(--accent); }
+  /* progress states */
+  .step.done::before { content:"\2713"; background: var(--accent); border-color: var(--accent); color: #fff; font-size: 10px; font-weight: 800; line-height: 1; display:flex; align-items:center; justify-content:center; }
+  .step.next::before { background: repeating-linear-gradient(45deg, var(--accent) 0 2px, var(--paper) 2px 4px); }
+  .step.done .when::after { content:" · concluído"; color: var(--muted); font-weight: 600; letter-spacing: .02em; text-transform: none; }
+  .step.next .when::after { content:" · agora"; color: var(--accent); font-weight: 700; letter-spacing: .02em; text-transform: none; }
 
   /* org tree */
   .tree { background: var(--card); border:1px solid var(--border); border-radius: 14px; padding: 26px 24px; margin-top: 22px; box-shadow: var(--shadow); }
@@ -316,7 +321,7 @@
         <div class="okr-head"><span class="okr-tag asp">OKR</span><span class="okr-owner">Objectives and Key Results</span></div>
         <h3>O que importa, e como sabemos que chegamos</h3>
         <ul class="krs">
-          <li><b>Objetivo:</b> frase curta que diz para onde vamos, sem número. Ex.: "Conquistar a nossa independência financeira".</li>
+          <li><b>Objetivo:</b> frase curta que diz para onde vamos, sem número. Ex.: "Acelerar o nosso crescimento com o nosso próprio caixa".</li>
           <li><b>Key Result:</b> o resultado com número que prova que chegamos. Sempre um resultado, nunca uma tarefa. "Caixa livre de X para Y" é KR; "lançar a campanha" é tarefa.</li>
           <li>2 a 3 objetivos, 3 a 5 KRs cada. Cada objetivo é aspiracional (esticado) ou comprometido (tem que entregar).</li>
           <li>Tocados toda semana, pontuados de 0 a 1 no fim. No ciclo 1 não valem bônus nem salário.</li>
@@ -381,14 +386,14 @@
             <span class="okr-card-label">Objetivo 1</span>
             <span class="okr-tag asp">Aspiracional</span>
           </div>
-          <p class="okr-card-statement">Conquistar a nossa independência financeira, crescer com o próprio caixa.</p>
+          <p class="okr-card-statement">Acelerar o nosso crescimento com o nosso próprio caixa.</p>
         </div>
         <div class="okr-card-kr">
           <h4 class="okr-card-kr-title">Key Results</h4>
           <ol class="okr-card-list">
-            <li><b>Receita:</b> crescer a receita, medida ano a ano (mesma janela vs. o ano anterior, para tirar a sazonalidade).<span class="kr-src">marketing · dona: Eleonora</span></li>
-            <li><b>Despesa financeira:</b> reduzir de x% para y% da receita (juros de conta garantida, cheque especial e antecipação).<span class="kr-src">financeiro · driver: uso médio de conta garantida + cheque especial</span></li>
-            <li><b>Tempo médio de estoque:</b> reduzir os dias de estoque e destravar o caixa parado.<span class="kr-src">operação + financeiro · ponte com o Objetivo 2</span></li>
+            <li><b>Receita:</b> crescer a receita, medida ano a ano (mesma janela vs. o ano anterior, para tirar a sazonalidade).<span class="kr-src">marketing · dona: Eleonora · agrega: performance de retail media, performance de CRM</span></li>
+            <li><b>Despesa financeira:</b> reduzir de x% para y% da receita (juros de conta garantida, cheque especial e antecipação).<span class="kr-src">financeiro · driver: conta garantida/cheque especial · agrega: renegociação de prazo com transportadoras, alongamento de prazo com fornecedor, troca de dívida cara por barata</span></li>
+            <li><b>Tempo médio de estoque:</b> reduzir os dias de estoque e destravar o caixa parado.<span class="kr-src">operação + financeiro · ponte com o Objetivo 2 · agrega: destravar estoque parado, estudo de estoque parado, nível de estoque e pedido mínimo</span></li>
           </ol>
           <p class="okr-connect">Toda área puxa: <b>receita e margem</b> (marketing), <b>custo e giro de estoque</b> (operação), <b>vendas com margem</b> (varejo), <b>caixa e despesa</b> (finanças).</p>
         </div>
@@ -404,9 +409,9 @@
         <div class="okr-card-kr">
           <h4 class="okr-card-kr-title">Key Results</h4>
           <ol class="okr-card-list">
-            <li><b>IA no dia a dia:</b> cada área com pelo menos 1 fluxo real de IA rodando.<span class="kr-src">marketing + financeiro + operação + varejo</span></li>
-            <li><b>Atrito pós-venda:</b> reduzir de x% para y% o % de pedidos que geram devolução e/ou chamado de SAC de reclamação.<span class="kr-src">operação + SAC</span></li>
-            <li><b>Custo operacional:</b> reduzir de x% para y% da receita, incluindo a logística gerada por marketing (brindes, amostras, MPDV, envios de PR, subsídio de frete grátis).<span class="kr-src">operação + marketing</span></li>
+            <li><b>IA no dia a dia:</b> cada área com pelo menos 1 fluxo real de IA rodando.<span class="kr-src">marketing + financeiro + operação + varejo · agrega: conteúdo de CRM via Claude, conciliação automática, DRE automatizada, classificação de despesa com IA, IA nas entradas de compra</span></li>
+            <li><b>Atrito pós-venda:</b> reduzir de x% para y% o % de pedidos que geram devolução e/ou chamado de SAC de reclamação.<span class="kr-src">operação + SAC · agrega: nível de devolução, indicadores de SAC (gráfico de justificativas)</span></li>
+            <li><b>Custo operacional:</b> reduzir de x% para y% da receita, incluindo a logística gerada por marketing (brindes, amostras, MPDV, envios de PR, subsídio de frete grátis).<span class="kr-src">operação + marketing · agrega: frete (~15% da receita) e embalagem, 20% menos movimentação/frete/armazenagem, logística de campanhas (brindes, MPDV)</span></li>
           </ol>
           <p class="okr-connect">As alavancas: <b>IA no dia a dia</b> de cada área, <b>menos casos de SAC e devoluções</b>, e processos mais rápidos e sem erro. Cada time escolhe onde a eficiência pesa mais.</p>
         </div>
@@ -419,9 +424,9 @@
     <p class="sec-label">O cronograma</p>
     <h2>Do alinhamento ao lançamento</h2>
     <div class="steps">
-      <div class="step"><div class="when">Alinhamento</div><div class="what">Sessão de alinhamento da liderança (90 min)</div><div class="who">Você, Raphael, Eleonora, Giulia. Sair como co-donos.</div></div>
-      <div class="step"><div class="when">Definição</div><div class="what">Definição e validação dos OKRs</div><div class="who">A liderança rascunha e valida os 2 objetivos da empresa.</div></div>
-      <div class="step"><div class="when">Escuta</div><div class="what">Pesquisa anônima para todo o time + escuta 1:1</div><div class="who">Cada líder ouve o seu pessoal. Já é o primeiro treino do check-in.</div></div>
+      <div class="step done"><div class="when">Alinhamento</div><div class="what">Sessão de alinhamento da liderança (90 min)</div><div class="who">Você, Raphael, Eleonora, Giulia. Sair como co-donos.</div></div>
+      <div class="step done"><div class="when">Definição</div><div class="what">Definição e validação dos OKRs</div><div class="who">A liderança rascunha e valida os 2 objetivos da empresa.</div></div>
+      <div class="step next"><div class="when">Escuta</div><div class="what">Pesquisa anônima para todo o time + escuta 1:1</div><div class="who">Cada líder ouve o seu pessoal. Já é o primeiro treino do check-in.</div></div>
       <div class="step"><div class="when">Devolutiva</div><div class="what">All-hands de devolutiva + co-desenho dos rituais</div><div class="who">Todos. Cada time escreve os seus OKRs conectados aos da empresa.</div></div>
       <div class="step launch"><div class="when">Lançamento</div><div class="what">Ciclo beta no ar</div><div class="who">Todos. Apresentado como beta, explicitamente para aprender.</div></div>
       <div class="step"><div class="when">Retrospectiva</div><div class="what">Retro do processo, depois o Q4 como primeiro trimestre completo</div><div class="who">Todos.</div></div>
