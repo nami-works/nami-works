@@ -173,6 +173,20 @@
   .krs li { position: relative; padding-left: 20px; font-size: .94rem; color: var(--ink-soft); }
   .krs li::before { content:""; position:absolute; left: 2px; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
   .krs li b { color: var(--ink); font-weight: 650; font-variant-numeric: tabular-nums; padding: 0 2px; }
+  .kr-src { display:block; font-size: .76rem; color: var(--muted); font-weight: 600; margin-top: 2px; }
+  /* OKR card — Objective header + numbered Key Results (Measure What Matters layout) */
+  .okr-card { border:1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--card); box-shadow: var(--shadow); }
+  .okr-card-obj { background: var(--accent-soft); border-bottom: 1px solid var(--border); padding: 18px 24px; position: relative; }
+  .okr-card-obj::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background: var(--accent); }
+  .okr-card-eyebrow { display:flex; align-items:center; justify-content:space-between; gap: 10px; margin-bottom: 9px; }
+  .okr-card-label { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 800; color: var(--accent); }
+  .okr-card-statement { font-family: var(--serif); font-weight: 500; font-size: 1.18rem; line-height: 1.3; color: var(--ink); margin: 0; }
+  .okr-card-kr { padding: 18px 24px 22px; }
+  .okr-card-kr-title { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 800; color: var(--muted); margin: 0 0 15px; }
+  .okr-card-list { margin: 0; padding: 0; list-style: none; counter-reset: kr; display: grid; gap: 13px; }
+  .okr-card-list li { position: relative; padding-left: 36px; color: var(--ink-soft); font-size: .95rem; line-height: 1.45; counter-increment: kr; }
+  .okr-card-list li::before { content: counter(kr); position:absolute; left:0; top:1px; width: 23px; height: 23px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; display:flex; align-items:center; justify-content:center; font-variant-numeric: tabular-nums; }
+  .okr-card-list li b { color: var(--ink); font-weight: 700; }
   .okr-connect { font-size: .86rem; color: var(--muted); margin: 14px 0 0; padding-top: 13px; border-top: 1px dashed var(--border); }
   .okr-connect b { color: var(--ink-soft); font-weight: 650; }
   .okr-note { font-size: .9rem; color: var(--muted); margin-top: 20px; }
@@ -358,18 +372,48 @@
     <h2>Dois objetivos que a empresa inteira puxa junto</h2>
     <ul class="krs">
       <li>Dois objetivos <strong>generalistas</strong>, não vários por função: todo mundo rema para as mesmas duas coisas.</li>
-      <li>Os objetivos são a nossa definição; os <strong>key results a gente constrói junto</strong>, com os times.</li>
+      <li>Os objetivos são a nossa definição; os <strong>key results abaixo são candidatos</strong> que a gente fecha, corta e coloca número junto, com os times.</li>
     </ul>
     <div class="okrs">
-      <article class="okr">
-        <div class="okr-head"><span class="okr-tag asp">Aspiracional</span></div>
-        <h3>1 · Conquistar a nossa independência financeira, crescer com o próprio caixa</h3>
-        <p class="okr-connect">Toda área puxa: <b>receita e margem</b> (marketing), <b>custo e giro de estoque</b> (operação), <b>vendas com margem</b> (varejo), <b>caixa e despesa</b> (finanças). O caixa livre já absorve dívida e estoque.</p>
+      <article class="okr-card">
+        <div class="okr-card-obj">
+          <div class="okr-card-eyebrow">
+            <span class="okr-card-label">Objetivo 1</span>
+            <span class="okr-tag asp">Aspiracional</span>
+          </div>
+          <p class="okr-card-statement">Conquistar a nossa independência financeira, crescer com o próprio caixa.</p>
+        </div>
+        <div class="okr-card-kr">
+          <h4 class="okr-card-kr-title">Key Results</h4>
+          <ol class="okr-card-list">
+            <li><b>Receita:</b> crescer a receita da empresa.<span class="kr-src">marketing · dona: Eleonora</span></li>
+            <li><b>Dinheiro caro:</b> reduzir o uso médio de conta garantida + cheque especial.<span class="kr-src">financeiro + operação</span></li>
+            <li><b>Despesa financeira:</b> reduzir juros + antecipação como % da receita.<span class="kr-src">financeiro</span></li>
+            <li><b>Tempo médio de estoque:</b> reduzir os dias de estoque e destravar o caixa parado.<span class="kr-src">operação + financeiro · ponte entre os dois objetivos</span></li>
+            <li><b>Ciclo de caixa:</b> reduzir o % de vendas e compras que precisam ser antecipadas.<span class="kr-src">financeiro + operação</span></li>
+          </ol>
+          <p class="okr-connect">Toda área puxa: <b>receita e margem</b> (marketing), <b>custo e giro de estoque</b> (operação), <b>vendas com margem</b> (varejo), <b>caixa e despesa</b> (finanças).</p>
+        </div>
       </article>
-      <article class="okr">
-        <div class="okr-head"><span class="okr-tag asp">Aspiracional</span></div>
-        <h3>2 · Ganhar eficiência: fazer mais e melhor, com menos atrito</h3>
-        <p class="okr-connect">As alavancas: <b>IA no dia a dia</b> de cada área (menos tarefa repetitiva), <b>menos casos de SAC e devoluções</b> (menos retrabalho e custo), e processos mais rápidos e sem erro. Cada time escolhe onde a eficiência pesa mais.</p>
+      <article class="okr-card">
+        <div class="okr-card-obj">
+          <div class="okr-card-eyebrow">
+            <span class="okr-card-label">Objetivo 2</span>
+            <span class="okr-tag asp">Aspiracional</span>
+          </div>
+          <p class="okr-card-statement">Ganhar eficiência: fazer mais e melhor, com menos atrito.</p>
+        </div>
+        <div class="okr-card-kr">
+          <h4 class="okr-card-kr-title">Key Results</h4>
+          <ol class="okr-card-list">
+            <li><b>IA no dia a dia:</b> cada uma das 4 áreas com ao menos 1 fluxo real rodando <b>(de 0 para 4)</b>.<span class="kr-src">marketing + financeiro + operação</span></li>
+            <li><b>Devoluções:</b> reduzir a taxa de devolução.<span class="kr-src">operação</span></li>
+            <li><b>SAC:</b> reduzir os casos de SAC por 100 pedidos.<span class="kr-src">operação</span></li>
+            <li><b>Custo operacional:</b> reduzir movimentação, frete e armazenagem.<span class="kr-src">operação</span></li>
+            <li><b>Tempo médio de estoque:</b> os mesmos dias de estoque, agora pelo lado da eficiência.<span class="kr-src">operação + financeiro · ponte entre os dois objetivos</span></li>
+          </ol>
+          <p class="okr-connect">As alavancas: <b>IA no dia a dia</b> de cada área, <b>menos casos de SAC e devoluções</b>, e processos mais rápidos e sem erro. Cada time escolhe onde a eficiência pesa mais.</p>
+        </div>
       </article>
     </div>
     <p class="okr-note">Objetivo 2 é criar o músculo de usar IA, não provar ROI ainda. Cada líder escreve os OKRs do seu time ligados a estes dois; metade nasce do time.</p>
