@@ -13,7 +13,7 @@
 
 ---
 
-## Objetivo 1 — Acelerar o nosso crescimento com o nosso próprio caixa
+## Objetivo 1 — Acelerar o nosso crescimento com ganhos de eficiência financeira
 
 *Dono sugerido: você + Giulia + Eleonora · Aspiracional*
 
@@ -90,7 +90,7 @@ Ninguém perde a sua ideia. Cada proposta ou virou KR, ou foi **absorvida** como
 
 Inventário de tudo que já mapeamos como KR possível. Nada decidido; é o menu de onde os times puxam na hora de construir os KRs. O conjunto consolidado (os 5 por objetivo, com fonte marcada) está lá em cima, em cada objetivo. Este backlog é o resto do menu, incluindo as alavancas e submétricas que ficaram fora do trio.
 
-**Objetivo 1 · crescer com caixa próprio**
+**Objetivo 1 · crescer com eficiência financeira**
 - Crescer a receita (R$)
 - Elevar a margem de contribuição consolidada (%)
 - Gerar fluxo de caixa livre (R$)
