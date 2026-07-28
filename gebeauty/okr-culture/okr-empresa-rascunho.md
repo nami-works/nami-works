@@ -2,6 +2,8 @@
 
 **Status:** rascunho para a liderança reagir e cortar. Não é para aprovar como está.
 
+**Atualização 2026-07-28:** consolidadas as propostas de KR das três áreas (marketing, operações, financeiro). Cada objetivo abaixo traz os 5 candidatos com a fonte marcada e uma recomendação de corte para 3 (o número de referência do livro: 3 a 5, com 3 como alvo).
+
 **Como usar este documento:**
 1. Ponto de partida, não decisão. O trabalho da liderança é **ajustar e preencher as linhas de base reais.**
 2. São **2 objetivos de empresa, propositalmente generalistas.** As duas coisas que toda área puxa junto neste ciclo. Cada líder escreve os OKRs do seu time conectando a estes dois.
@@ -17,11 +19,17 @@
 
 Por que este: reduz a dependência de capital de terceiros (duplicatas Itaú, empréstimo BLOG/Camila) e nos coloca no caminho de operar e crescer com caixa próprio. É o objetivo que mais **encompassa todas as áreas**: cada real de receita, cada ponto de margem, cada dia de estoque e cada custo por pedido conta.
 
-- **KR1.1** — Crescer a receita de `R$ [base]` para `R$ [meta]` (dona: Eleonora).
-- **KR1.2** — Elevar a margem de contribuição consolidada de `[base] %` para `[meta] %`.
-- **KR1.3** — Gerar fluxo de caixa livre de `R$ [base]` para `R$ [meta]` (ou: caixa operacional positivo em `[X]` dos 2 meses do beta).
+**Estado atual (pós-leitura das propostas do time):** Financeiro (Giulia) e Operações (Raphael) chegaram, sem combinar, à mesma espinha de KRs, a "esteira da antecipação". Marketing é a única área que fala do topo de linha (receita). Abaixo, os 5 candidatos consolidados; a recomendação de corte para 3 vem logo em seguida.
 
-> Três KRs limpos de propósito: o fluxo de caixa livre já **absorve** a redução de capital de terceiros e a eficiência de estoque (menos capital parado = mais caixa livre). A dívida e os dias de estoque viram alavancas que os times de operação e finanças puxam para mover o KR1.3, não KRs separados.
+Os 5 candidatos consolidados:
+- **KR1.1 · Receita** — crescer de `R$ [base]` para `R$ [meta]`. (dona: Eleonora) ‹marketing: retail media + CRM performance› — **núcleo**
+- **KR1.2 · Dinheiro caro** — reduzir o uso médio de conta garantida + cheque especial de `R$ [base]` para `R$ [meta]`. (Giulia = métrica; Raphael = alavancas de prazo com transportadora e embalagem) ‹financeiro KR1 + operações Op1› — **núcleo**
+- **KR1.3 · Despesa financeira** — reduzir juros + taxas de antecipação de `[base] %` para `[meta] %` da receita. (Giulia) ‹financeiro KR2 + operações Op2, lado financeiro› — bolha
+- **KR1.4 · Tempo médio de estoque (ponte O1↔O2)** — reduzir de `[base]` para `[meta]` dias, destravando `R$ [X]` de caixa parado. (Raphael reduz os dias; Giulia contabiliza o caixa liberado) ‹financeiro: estoque parado→caixa + operações: nível de estoque/pedido mínimo + backlog original› — **núcleo**
+- **KR1.5 · (reserva) Ciclo de caixa** — reduzir o % de vendas/compras que precisam ser antecipadas de `[base]` para `[meta]`. ‹financeiro KR3 + operações Op3› — reserva
+
+> **Recomendação de corte para 3:** KR1.1 (receita, a única saída permanente da esteira), KR1.2 (o degrau imediato, o dinheiro mais caro) e KR1.4 (o maior destrave de caixa e a ponte com o Objetivo 2). KR1.3 e a reserva de ciclo de caixa viram alavancas monitoradas, não KRs de cabeçalho.
+> **Tensão a resolver:** a Giulia sugeriu levar KR1.2 + KR1.3 como par (o degrau imediato + a história inteira da dependência). Manter os dois no trio empurra a receita ou o estoque para fora. Decisão sua na reunião.
 
 **Como cada área conecta:**
 - **Marketing / e-commerce (Eleonora):** receita, margem por canal, CAC, menos desconto que corrói margem.
@@ -35,11 +43,18 @@ Por que este: reduz a dependência de capital de terceiros (duplicatas Itaú, em
 
 Por que este: operação mais eficiente sobra caixa (conecta direto com o Objetivo 1) e melhora a experiência da cliente. Duas alavancas grandes cabem aqui: a **IA no dia a dia** (primeiros passos, criar o músculo, não provar ROI ainda) e a **redução de casos de SAC e devoluções** (menos retrabalho, menos custo, menos atrito).
 
-- **KR2.1 · IA** — Cada uma das 4 áreas com pelo menos 1 fluxo real rodando com apoio de IA (de `0` para `4`).
-- **KR2.2 · IA** — `[meta] %` do time treinado nas ferramentas de IA aprovadas.
-- **KR2.3 · IA** — Reduzir de `[base]` para `[meta]` horas/semana em tarefas repetitivas via IA ou automação.
-- **KR2.4 · atrito** — Reduzir os casos de SAC por 100 pedidos de `[base]` para `[meta]`.
-- **KR2.5 · atrito** — Reduzir a taxa de devolução de `[base] %` para `[meta] %`.
+**Estado atual (pós-leitura):** cada uma das três áreas propôs o seu próprio fluxo de IA (marketing: conteúdo de CRM via Claude; financeiro: conciliação/DRE/classificação de despesa; operações: entradas de compra). É o KR de IA nascendo de baixo pra cima.
+
+Os 5 candidatos consolidados:
+- **KR2.1 · IA** — cada uma das 4 áreas com ao menos 1 fluxo real rodando com apoio de IA (de `0` para `4`). ‹marketing + financeiro + operações, todas propuseram o seu fluxo› — **núcleo**
+- **KR2.2 · Devoluções** — reduzir a taxa de devolução de `[base] %` para `[meta] %`. ‹operações: nível de devolução (retorno + movimentação)› — **núcleo**
+- **KR2.3 · SAC** — reduzir os casos de SAC por 100 pedidos de `[base]` para `[meta]`. ‹operações: indicadores de SAC, "gráfico de justificativas" é o instrumento de medida› — bolha (candidato a virar submétrica do KR2.2)
+- **KR2.4 · Custo operacional** — reduzir movimentação + frete + armazenagem de `[base]` para `[meta]` (meta do Raphael: ~20% menos; frete hoje ~15% da receita). ‹operações Op2, lado operacional + "20% menos"› — bolha
+- **KR2.5 · Tempo médio de estoque (ponte)** — mesma métrica do KR1.4, contada uma vez e citada nos dois objetivos. ‹ver KR1.4› — **núcleo (compartilhado)**
+
+> **Recomendação de corte para 3:** KR2.1 (IA, o motivo cultural do ciclo), KR2.2 (atrito, o segundo pilar nomeado do objetivo, com o SAC dobrado dentro como submétrica) e KR2.5 (tempo de estoque, a ponte). O KR2.3 vira submétrica do KR2.2; o KR2.4 vira alavanca, boa parte dele já se move quando o estoque gira mais rápido.
+> **Nota sobre a ponte:** se o tempo médio de estoque contar no trio dos dois objetivos, ele aparece 1 vez e é citado 2. Se você preferir que ele "pertença" só ao Objetivo 1, o Objetivo 2 abre a vaga para o custo operacional (KR2.4) entrar no trio.
+> **Fora do trio, mas no backlog:** `% do time treinado nas ferramentas de IA` e `horas/semana economizadas` (eram KRs de IA no rascunho anterior; viram submétricas ou alavancas do KR2.1).
 
 **Como cada área conecta:**
 - **IA por área:** marketing (conteúdo, atendimento), operação (roteirização, previsão), finanças (conciliação, relatórios), varejo (atendimento, UGC), SAC (primeira resposta, triagem).
@@ -57,7 +72,7 @@ Por que este: operação mais eficiente sobra caixa (conecta direto com o Objeti
 
 ## Backlog de candidatos (para a discussão de KRs)
 
-Inventário de tudo que já mapeamos como KR possível. Nada decidido; é o menu de onde os times puxam na hora de construir os KRs.
+Inventário de tudo que já mapeamos como KR possível. Nada decidido; é o menu de onde os times puxam na hora de construir os KRs. O conjunto consolidado (os 5 por objetivo, com fonte marcada) está lá em cima, em cada objetivo. Este backlog é o resto do menu, incluindo as alavancas e submétricas que ficaram fora do trio.
 
 **Objetivo 1 · independência financeira**
 - Crescer a receita (R$)
