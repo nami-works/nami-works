@@ -88,3 +88,47 @@ Next up (held for this session): the 3 travel-size LP benefit icons — extract 
 Environment gotchas (in the doc): .ai files are PDF-compatible → use PyMuPDF (no poppler/Ghostscript); convert on Windows is the disk tool, not ImageMagick; .env from C:\claude\gebeauty\.env; live theme 181379236160.
 
 ↳ **Log upkeep (do this at pickup, same step as deleting the handoff file):** delete this entire `theme-fixes` block from `docs/_handoff-log.md` and save, so the log lists only pending items.
+
+---
+
+# landing-pages
+
+## lp_single-product
+
+A prior session of yours wrote a handoff document for the work I want to continue. Read it, internalize it, then **delete the handoff file from disk** (it's ephemeral — git history preserves it if anyone ever needs it back).
+
+Handoff file: `docs/handoff-primer-liso-lp.md`
+
+Steps:
+1. `git fetch && git pull` on main to make sure the handoff file is present locally.
+2. Read the full handoff.
+3. Confirm back to me, in 5 bullets or less, what state production is in and what you understand the next step to be.
+4. Delete the handoff file (`rm docs/handoff-primer-liso-lp.md`).
+5. Wait for my direction before doing anything else.
+
+## lp-builder_101
+
+A prior session of yours wrote a handoff document for the GE Beauty landing-page / paid-conversion work I want to continue. Read it, internalize it, then delete the handoff file from disk — it's ephemeral, git history preserves it if anyone ever needs it back.
+
+Handoff file: `docs/handoff-landing-page-conversion.md`
+
+Steps:
+1. `git fetch && git pull` on main so the handoff file is present locally (it was committed at bf5b6fe).
+2. Read the full handoff.
+3. Confirm back to me, in 5 bullets or less: what state the LPs + the PDP-vs-LP A/B are in, and what you understand the next step to be.
+4. Delete the handoff file (`rm docs/handoff-landing-page-conversion.md`).
+5. Wait for my direction before doing anything else — do not auto-start work.
+
+## lp_multi-products
+
+A prior session of yours wrote a handoff document for the GE Beauty landing-page work I want to continue. Read it, internalize it, then delete the working-copy file (it's ephemeral — it's committed on origin/main, so git history preserves it).
+
+Handoff file: `docs/handoff-multi-product-lp.md` (committed on origin/main).
+
+Steps:
+1. `git fetch origin` then `git checkout origin/main -- docs/handoff-multi-product-lp.md` (brings the file to disk without switching branches — the shared checkout may be on another branch).
+2. Read the full handoff.
+3. Confirm back to me, in 5 bullets or less, what state the boosters + travel-size LPs are in and what the next step is.
+4. Delete the working-copy file: `rm docs/handoff-multi-product-lp.md`.
+5. Wait for my direction before doing anything else.
+
