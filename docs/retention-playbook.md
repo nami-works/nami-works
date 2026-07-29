@@ -153,11 +153,16 @@ different % and expiry than the retention policy. Rules, agreed 2026-07-29:
   shows up — do not invent values before that.
 - **Precedent (pre-dates this framework):** the "hexagon" delayed-order batch, issued
   2026-05-22 via `gebeauty/scripts/_issue_delayed_hexagon_credits.py` — 11 customers,
-  **30% of order, expiry = paid_at + 60d**, R$632.80 total. Outcome: **0/10 verifiable
-  customers redeemed — 100% expired unused.** The script set no notify and no goodwill message
-  went out, which is the prime suspect: the customers likely never knew. Evidence FOR the
-  notify-default above, and a caution against ratifying 30%/60d on this sample — the values
-  were never actually *experienced* by anyone. Backfilled to the ledger as `ops-goodwill`.
+  **30% of order, expiry = paid_at + 60d**, R$632.80 total. The goodwill message WAS sent, via
+  an **external flow** (outside our tooling — which is why no send record exists on our side;
+  Lucas confirmed 2026-07-29). Outcome: **0/10 verifiable customers redeemed — 100% expired
+  unused DESPITE being told.** That's worse news than a missed notification would have been:
+  either the message didn't land/read, or 30% wasn't compelling after a delay, or the
+  credit-redemption UX lost them. Treat the next case as a chance to instrument this (delivery/
+  read confirmation + redemption tracking). Two standing lessons: (1) small n — don't ratify or
+  reject 30%/60d off 10 customers; (2) **external-flow comms MUST be recorded** — at minimum a
+  note in the ledger row (`notes: "comms via <flow> on <date>"`), else the next audit
+  reconstructs history wrong, exactly as happened here.
 
 ## 8. File map
 

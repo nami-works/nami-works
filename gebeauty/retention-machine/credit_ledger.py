@@ -84,7 +84,8 @@ MANUAL_EVENTS = [
 
 # Ops-goodwill precedent: 11 delayed orders ("hexagon" batch), 30% credit, expiry = paid_at+60d.
 # Issued 2026-05-22 via gebeauty/scripts/_issue_delayed_hexagon_credits.py; verified against
-# Shopify tx history 2026-07-29 (10/10 queryable customers: issued, then expired 100% unused).
+# Shopify tx history 2026-07-29 (10/10 queryable customers: issued, then expired 100% unused —
+# despite the goodwill message having been sent via an external flow; Lucas 2026-07-29).
 _HEX = [("80204", "10739634209088", 49.37, "2026-07-11"), ("80219", "10740398326080", 84.09, "2026-07-11"),
         ("80247", "10742686417216", 60.27, "2026-07-11"), ("80250", "10200903909696", 49.87, "2026-07-11"),
         ("80288", "9484989628736", 47.07, "2026-07-12"), ("80296", "10747133985088", 47.32, "2026-07-12"),
@@ -95,7 +96,8 @@ OPS_GOODWILL_EVENTS = [
     dict(ts="2026-05-22", event="issue", source="ops-goodwill",
          customer_gid=f"gid://shopify/Customer/{cid}", amount=amt,
          expires_at=f"{exp}T23:59:59-03:00",
-         notes=f"order #{order} delayed (hexagon batch) — 30% credit, expiry paid_at+60d; expired unused"
+         notes=f"order #{order} delayed (hexagon batch) — 30% credit, expiry paid_at+60d; "
+               "expired unused despite goodwill message sent via external flow (Lucas 2026-07-29)"
                + ("; customer null via API at 2026-07-29 verification, assumed issued in batch"
                   if order == "80296" else ""))
     for order, cid, amt, exp in _HEX
