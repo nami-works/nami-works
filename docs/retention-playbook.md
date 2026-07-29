@@ -151,6 +151,13 @@ different % and expiry than the retention policy. Rules, agreed 2026-07-29:
   and lean toward **longer expiry than 60d** (urgency framing on compensation reads as a second
   insult). Actual %/expiry/tiers: draft a table for Lucas's approval when the first real case
   shows up — do not invent values before that.
+- **Precedent (pre-dates this framework):** the "hexagon" delayed-order batch, issued
+  2026-05-22 via `gebeauty/scripts/_issue_delayed_hexagon_credits.py` — 11 customers,
+  **30% of order, expiry = paid_at + 60d**, R$632.80 total. Outcome: **0/10 verifiable
+  customers redeemed — 100% expired unused.** The script set no notify and no goodwill message
+  went out, which is the prime suspect: the customers likely never knew. Evidence FOR the
+  notify-default above, and a caution against ratifying 30%/60d on this sample — the values
+  were never actually *experienced* by anyone. Backfilled to the ledger as `ops-goodwill`.
 
 ## 8. File map
 
