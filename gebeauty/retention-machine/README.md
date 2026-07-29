@@ -89,3 +89,24 @@ Cooldown (`min_days_between_messages`) prevents cross-stream fatigue.
 
 ## Config
 See `config.json`. Change rules there, never in code.
+
+## Credit ledger — the record of what was actually credited
+`learning/credit-ledger.jsonl` (PII, gitignored) is the canonical append-only ledger of every
+store-credit event: wave issues, expiry extensions, keeper-rule corrections, manual credits.
+It consolidates what used to live only in the per-script idempotency state files — those files
+remain the re-run guards, but the ledger is what you read to answer "what have we issued, to
+whom, and what's still live."
+
+**Hard convention: any script or session that credits or debits a customer's store-credit
+account appends one row** — including one-off manual credits issued straight through the API:
+
+```python
+from credit_ledger import append_event
+append_event(event="issue", source="manual", customer_gid=gid, amount=138.64,
+             ts="2026-07-16T17:30:33Z", expires_at="2026-09-05T02:59:59Z", notes="why")
+```
+
+`python credit_ledger.py` prints the summary (counts + BRL totals per source/event, unexpired
+issues). `--backfill` idempotently re-imports the four state files + known manual credits —
+safe to re-run anytime. The ledger tracks the issuance side only; redemptions and expiry burn
+live in Shopify.
