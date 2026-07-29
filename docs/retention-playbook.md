@@ -125,7 +125,34 @@ For sends run by the retail team through Lucas's per-store WhatsApp disparador s
 - `learning/credit-ledger.jsonl` = issuance record; redemptions and expiry burn live in
   Shopify. `python credit_ledger.py` for the summary.
 
-## 7. File map
+## 7. Edge-case / ops credits (service recovery)
+
+Operational issues (delayed orders, damaged products, CS apologies) will demand credits with
+different % and expiry than the retention policy. Rules, agreed 2026-07-29:
+
+- **Credit programs, not exceptions.** §1's 20%/R$10/60d is the *retention* program's policy.
+  Service recovery is a separate program (**`ops-goodwill`**) with its own policy space — repair
+  trust, not generate lift. An edge case gets **classified into a program**; it never gets a
+  bespoke one-off policy. New recurring credit reasons = new named program with its own block
+  here.
+- **One ledger, discriminated by `source`.** Ops credits go in the same
+  `learning/credit-ledger.jsonl` with `source="ops-goodwill"`, and `notes` MUST carry the order
+  gid + reason (e.g. `order #86012 delayed 9d — ops-goodwill`). Never a second file: the wallet
+  is single, the record must be too.
+- **Measurement exclusion.** Ops credits will land on customers inside retention cohorts —
+  including HOLD-arm customers, because service recovery is never withheld to protect an
+  experiment (service first, always). Therefore readouts must **exclude or flag customers who
+  received a non-wave credit inside the measurement window** (read the ledger, filter
+  `source not in wave-*`). Implement in `measure_reactivation.py` when the first ops credit
+  exists; until then the ledger convention keeps the data clean. Ops credits stay OUT of
+  retention KPIs by default (same segregation instinct as the CGO acquisition-cohort guardrail).
+- **Policy knobs (Lucas's call, values still open):** ops credits default **`notify=true`** or
+  CS-announced — a silent apology repairs nothing (inverse of retention's strategic silence) —
+  and lean toward **longer expiry than 60d** (urgency framing on compensation reads as a second
+  insult). Actual %/expiry/tiers: draft a table for Lucas's approval when the first real case
+  shows up — do not invent values before that.
+
+## 8. File map
 
 | Path (under `gebeauty/retention-machine/`) | What |
 |---|---|
@@ -142,7 +169,7 @@ For sends run by the retail team through Lucas's per-store WhatsApp disparador s
 | `learning/hypotheses.md` | test backlog (H-TIMING-01, H-SALEDAY-PUSH-01, …) |
 | `engine.py` + `config.json` | review-for-reward engine (see its README) |
 
-## 8. Open threads (as of 2026-07-29)
+## 9. Open threads (as of 2026-07-29)
 
 1. **Ana Beatriz notification** — R$138.64 manual credit (16/07, expires 04/09) is silent;
    decide whether to email her. Her Shopify history also shows an unexplained R$129
