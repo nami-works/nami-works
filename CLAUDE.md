@@ -64,18 +64,11 @@ Sessions touching only one app's files (`apps/connector/`, `apps/omnify-admin/`,
 
 ### Same-app sessions — 2 max, separate worktrees
 
-Two sessions editing the same app *will* collide: file overwrites, lint cache thrash, branch-switch eating staged files (this happened during the rota-local + LD-watchdog cross-stream on 2026-05-21). Use `git worktree` to give each session its own physical checkout.
+Two sessions editing the same app *will* collide: file overwrites, lint cache thrash, branch-switch eating staged files (this happened during the rota-local + LD-watchdog cross-stream on 2026-05-21). Give each session its own worktree so the checkouts stay disjoint.
 
-**Worktree location convention: `~/dev/worktrees/nami-works-<branch-slug>/`.**
+Let Claude Code create the worktree — it manages an isolated checkout on its own branch and cleans it up when the branch lands. If you cut one by hand, `git worktree add <path> <branch>` anywhere outside the main checkout works; the path is not load-bearing. Inspect with `git worktree list`; remove with `git worktree remove <path>` once the branch merges.
 
-```bash
-mkdir -p "C:/Users/Lucas Guimarães/dev/worktrees"      # one-time
-git worktree add "C:/Users/Lucas Guimarães/dev/worktrees/nami-works-ld-ui" feat/ld-ui
-```
-
-Open the new folder in Cursor / Claude Code as a fresh project. Desktop stays clean (only the main checkout sits there). Inspect with `git worktree list`; remove with `git worktree remove "C:/Users/Lucas Guimarães/dev/worktrees/nami-works-ld-ui"` when the branch lands.
-
-A session that suspects another active session is on the same app should check: `git worktree list` shows active worktrees, `git branch --no-merged main` shows in-flight branches. If you see another session's branch on the same app, cut a worktree before editing.
+A session that suspects another active session is on the same app should check: `git worktree list` shows active worktrees, `git branch --no-merged main` shows in-flight branches. If you see another session's branch on the same app, spin up a worktree before editing.
 
 ### Shared root state — serialize, or coordinate via work order
 
@@ -155,16 +148,16 @@ Anything deployed must also be committed to `main`. If a session deploys via `sc
 
 ## Shell compatibility — Windows PowerShell 5.1
 
-Lucas's terminal and Claude's `PowerShell` tool both run in Windows PowerShell 5.1, which does not support `&&` / `||` pipeline-chain operators. When writing multi-step terminal commands:
+Lucas's terminal and Claude Code's `PowerShell` tool both run in Windows PowerShell 5.1, which does not support `&&` / `||` pipeline-chain operators. When writing multi-step terminal commands:
 - Use `;` for unconditional sequencing
 - Use `command1; if ($?) { command2 }` for fail-fast chaining
 - One command per line is always safe
 
-The `Bash` tool (POSIX) still accepts `&&` — only PowerShell breaks. Watch for this when copying example commands from documentation.
+The `Bash` tool (POSIX) still accepts `&&` — only PowerShell breaks. Watch for this when copying example commands from documentation that assume POSIX shells.
 
 ## Delivering generated files
 
-When you generate a file that Claude Desktop can't open or render properly inline (`.docx`, `.xlsx`, `.pptx`, `.pdf`, and similar binary/native formats), also print the terminal command to open it locally, in its own `bash`-tagged code block, e.g.:
+When you generate a file that can't be opened or rendered properly inline (`.docx`, `.xlsx`, `.pptx`, `.pdf`, and similar binary/native formats), also print the terminal command to open it locally, in its own `bash`-tagged code block, e.g.:
 
 ```bash
 Start-Process "C:\claude\path\to\file.docx"
