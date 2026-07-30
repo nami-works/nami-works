@@ -1,0 +1,415 @@
+<style>
+  :root{
+    --ground:#F6F3F0; --surface:#FFFFFF; --surface-2:#FBF9F7;
+    --ink:#211A17; --muted:#6E635F; --faint:#978B85;
+    --line:#E7DFD9; --line-strong:#D6CBC4;
+    --red:#DF3630; --red-deep:#B02A25; --red-soft:#FBE7E5;
+    --keep:#1E6F52; --keep-soft:#E4F0EA; --keep-line:#BEDBCD;
+    --prune:#9A8F8A; --prune-soft:#F0ECE9;
+    /* pilares */
+    --pa:#C1892B; --pa-soft:#F7EDD9;   /* A identidade */
+    --pb:#2E7D8A; --pb-soft:#DDEEF0;   /* B cheiro */
+    --pc:#3B6FB0; --pc-soft:#E1EAF5;   /* C viagem */
+    --pd:#7A6E86; --pd-soft:#EBE7EF;   /* D funcional */
+    --serif:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Consolas,monospace;
+    --shadow:0 1px 2px rgba(33,26,23,.04),0 10px 30px rgba(33,26,23,.06);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#151010; --surface:#1F1815; --surface-2:#241C18;
+      --ink:#F2EAE6; --muted:#AC9F99; --faint:#87796F;
+      --line:#33272200; --line:#342A25; --line-strong:#463831;
+      --red:#FF5F53; --red-deep:#FF7D73; --red-soft:#3A211E;
+      --keep:#5FC195; --keep-soft:#16302A; --keep-line:#2C5346;
+      --prune:#8A7F79; --prune-soft:#26201C;
+      --pa:#E0B25E; --pa-soft:#3A2E14; --pb:#5FB6C4; --pb-soft:#123037;
+      --pc:#7EA9E0; --pc-soft:#16233A; --pd:#B3A3C4; --pd-soft:#2A2333;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 34px rgba(0,0,0,.34);
+    }
+  }
+  :root[data-theme="light"]{ --ground:#F6F3F0; --surface:#FFFFFF; --surface-2:#FBF9F7; --ink:#211A17; --muted:#6E635F; --faint:#978B85; --line:#E7DFD9; --line-strong:#D6CBC4; --red:#DF3630; --red-deep:#B02A25; --red-soft:#FBE7E5; --keep:#1E6F52; --keep-soft:#E4F0EA; --keep-line:#BEDBCD; --prune:#9A8F8A; --prune-soft:#F0ECE9; --pa:#C1892B; --pa-soft:#F7EDD9; --pb:#2E7D8A; --pb-soft:#DDEEF0; --pc:#3B6FB0; --pc-soft:#E1EAF5; --pd:#7A6E86; --pd-soft:#EBE7EF; }
+  :root[data-theme="dark"]{ --ground:#151010; --surface:#1F1815; --surface-2:#241C18; --ink:#F2EAE6; --muted:#AC9F99; --faint:#87796F; --line:#342A25; --line-strong:#463831; --red:#FF5F53; --red-deep:#FF7D73; --red-soft:#3A211E; --keep:#5FC195; --keep-soft:#16302A; --keep-line:#2C5346; --prune:#8A7F79; --prune-soft:#26201C; --pa:#E0B25E; --pa-soft:#3A2E14; --pb:#5FB6C4; --pb-soft:#123037; --pc:#7EA9E0; --pc-soft:#16233A; --pd:#B3A3C4; --pd-soft:#2A2333; }
+
+  *{box-sizing:border-box}
+  body{margin:0}
+  .page{background:var(--ground);color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased;padding:clamp(18px,4vw,52px) clamp(14px,4vw,40px)}
+  .sheet{max-width:920px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:7px;box-shadow:var(--shadow);overflow:hidden}
+  .pad{padding:clamp(20px,4vw,42px)}
+
+  .mast{border-bottom:1px solid var(--line)}
+  .eyebrow{font:600 12px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--red);display:flex;align-items:center;gap:10px;margin:0 0 16px}
+  .eyebrow::before{content:"";width:26px;height:2px;background:var(--red);display:inline-block}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(27px,4.6vw,42px);line-height:1.05;letter-spacing:-.015em;margin:0 0 12px;text-wrap:balance}
+  .dek{font-size:clamp(14.5px,1.8vw,17px);color:var(--muted);max-width:62ch;margin:0}
+  .meta-row{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:20px;align-items:center}
+  .chip{font:600 11.5px/1 var(--mono);letter-spacing:.02em;padding:6px 10px;border-radius:20px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
+  .chip.ok{background:var(--keep-soft);border-color:var(--keep-line);color:var(--keep)}
+  .dl{margin-left:auto}
+  button.dl-btn{font:600 13px/1 var(--sans);color:#fff;background:var(--red);border:0;border-radius:6px;padding:11px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:background .15s}
+  button.dl-btn:hover{background:var(--red-deep)}
+  button.dl-btn:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+
+  section{border-top:1px solid var(--line)}
+  .kicker{font:600 11.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:0 0 6px}
+  .kicker .n{color:var(--red);margin-right:9px}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(19px,2.6vw,25px);letter-spacing:-.01em;margin:0 0 14px;text-wrap:balance}
+  p{margin:0 0 12px}p:last-child{margin-bottom:0}
+  .lead{font-size:16px}
+  strong{font-weight:640}
+
+  /* framework */
+  .pillars{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:6px 0 18px}
+  .pill{border:1px solid var(--line);border-radius:6px;padding:14px 15px;background:var(--surface-2);display:flex;gap:12px;align-items:flex-start}
+  .pcode{flex:0 0 auto;width:30px;height:30px;border-radius:7px;display:grid;place-items:center;font:700 15px/1 var(--mono);color:#fff}
+  .pA .pcode{background:var(--pa)} .pB .pcode{background:var(--pb)} .pC .pcode{background:var(--pc)} .pD .pcode{background:var(--pd)}
+  .pill .pt{font-weight:640;font-size:14.5px}
+  .pill .pm{font-size:12.5px;color:var(--muted);margin-top:1px}
+  .rule{background:var(--red-soft);border:1px solid var(--line-strong);border-radius:6px;padding:13px 16px;font-size:13.5px;color:var(--ink)}
+  .rule b{color:var(--red-deep)}
+
+  /* scent cards */
+  .scent{border:1px solid var(--line);border-radius:7px;overflow:hidden;margin-bottom:16px}
+  .scent>.hd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:13px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+  .scent>.hd .nm{font-family:var(--serif);font-weight:600;font-size:18px}
+  .scent>.hd .sub{font-size:12.5px;color:var(--faint)}
+  .scent>.hd .tot{margin-left:auto;font:600 12px/1 var(--mono);color:var(--muted)}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .col{padding:14px 16px}
+  .col+.col{border-left:1px solid var(--line)}
+  .col h4{font:600 11px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;margin:0 0 11px;display:flex;align-items:center;gap:7px}
+  .col.keep h4{color:var(--keep)} .col.prune h4{color:var(--prune)}
+  .col h4 .cnt{font-family:var(--mono);font-weight:700}
+  ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+  .keep li{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;line-height:1.4}
+  .tag{flex:0 0 auto;width:19px;height:19px;border-radius:5px;display:grid;place-items:center;font:700 10.5px/1 var(--mono);color:#fff;margin-top:1px}
+  .tA{background:var(--pa)}.tB{background:var(--pb)}.tC{background:var(--pc)}.tD{background:var(--pd)}
+  .keep li .cd{font:600 10px/1 var(--mono);color:var(--faint);margin-left:4px}
+  .prune li{font-size:12.5px;color:var(--prune);line-height:1.4;padding-left:2px}
+  .prune li::before{content:"— ";color:var(--prune)}
+  .note{font-size:11.5px;color:var(--faint);margin-top:10px;font-style:italic}
+
+  /* tables */
+  .tbl-wrap{overflow-x:auto;margin:6px 0 4px}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:420px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+  th{font:600 11px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+  td{font-variant-numeric:tabular-nums}
+  td.num,th.num{text-align:center;font-family:var(--mono)}
+  tr.tot td{border-top:2px solid var(--line-strong);border-bottom:0;font-weight:700}
+  .miss{color:var(--red);font-weight:640}
+
+  /* fill */
+  .fill{display:grid;grid-template-columns:1fr;gap:9px}
+  .fitem{display:grid;grid-template-columns:auto auto 1fr;gap:11px;align-items:center;padding:12px 15px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px}
+  .fitem .sc{font-family:var(--serif);font-weight:600;font-size:13.5px;min-width:58px}
+  .fitem .cl{font-size:14px}
+  .challenger{opacity:.9}
+  .challenger .badge{font:600 9.5px/1 var(--sans);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--prune-soft);padding:4px 7px;border-radius:20px;margin-left:8px}
+
+  footer{border-top:1px solid var(--line);padding:18px clamp(20px,4vw,42px);background:var(--surface-2);font:500 11.5px/1.5 var(--mono);color:var(--faint);display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+  footer b{color:var(--muted);font-weight:600}
+
+  @media (max-width:640px){
+    .pillars{grid-template-columns:1fr}
+    .cols{grid-template-columns:1fr}
+    .col+.col{border-left:0;border-top:1px solid var(--line)}
+    .dl{margin-left:0;width:100%}
+    button.dl-btn{width:100%;justify-content:center}
+  }
+</style>
+
+<div class="page">
+  <article class="sheet">
+
+    <div class="pad mast">
+      <p class="eyebrow">GE Beauty · Body &amp; Hair Mist · Mídia paga</p>
+      <h1>Ajuste de hooks: o que mantivemos, o que cortamos e por quê</h1>
+      <p class="dek">Curadoria dos criativos do lançamento dos três aromas. Saímos de uma base pesada em claims funcionais repetidos para um conjunto enxuto e equilibrado — mantendo os ângulos que vendem e cortando o que só encarece o teste.</p>
+      <div class="meta-row">
+        <span class="chip ok">✓ Executado</span>
+        <span class="chip">25/07/2026</span>
+        <span class="chip">27 anúncios · 9 / 9 / 9</span>
+        <span class="dl"><button class="dl-btn" id="dl">⬇ Baixar documento completo</button></span>
+      </div>
+    </div>
+
+    <section class="pad" style="background:var(--surface-2)">
+      <p class="kicker"><span class="n">›</span>Resumo — assets a adicionar</p>
+      <h2>Hoje: 27 no ar (9 / 9 / 9). Faltam 5 criativos.</h2>
+      <p class="lead">O ajuste de hooks já está executado e no ar. Para fechar o conjunto ideal de <strong>30 hooks equilibrados</strong> (A2 / B3 / C3 / D2 por aroma)*, faltam produzir <strong>5 criativos</strong> — ainda não criados (Canva → QA → subir ativo):</p>
+      <p style="font:600 12px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin:18px 0 10px">3 hooks a incluir para fechar o gap de cada aroma</p>
+      <div class="fill">
+        <div class="fitem"><span class="sc">Pear</span><span class="tag tA">A</span><span class="cl">Perfeito para começar o dia</span></div>
+        <div class="fitem"><span class="sc">Santal</span><span class="tag tC">C</span><span class="cl">Vibes de jantar a dois</span></div>
+        <div class="fitem"><span class="sc">Rose</span><span class="tag tA">A</span><span class="cl">Sensação de romance e confiança!</span></div>
+      </div>
+      <p style="font:600 12px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin:18px 0 10px">2 desafiantes — testes extras</p>
+      <div class="fill">
+        <div class="fitem challenger"><span class="sc">Pear</span><span class="tag tB">B</span><span class="cl">Cheiro de dia de verão<span class="badge">desafiante</span></span></div>
+        <div class="fitem challenger"><span class="sc">Rose</span><span class="tag tA">A</span><span class="cl">Perfeito para se sentir irresistível<span class="badge">desafiante</span></span></div>
+      </div>
+      <p class="note" style="margin-top:14px">Os 6 vencedores do Rose já foram construídos e estão no ar (parte dos 27). O detalhe completo da curadoria (manter / ajustar por aroma) e a distribuição atual vs. ideal seguem abaixo.</p>
+      <p style="margin-top:10px;font:600 12.5px/1.4 var(--sans);color:var(--red-deep)">* Veja o framework abaixo (o que significam A · B · C · D).</p>
+    </section>
+
+    <section class="pad">
+      <p class="kicker"><span class="n">01</span>O framework</p>
+      <h2>Quatro ângulos, uma regra de corte</h2>
+      <p class="lead">Cada hook se encaixa em um de quatro ângulos (validados no Foreplay). A regra é simples: preservar tudo que fala de <strong>desejo</strong> (identidade, cheiro, viagem) e enxugar o <strong>funcional</strong> — que raramente lidera um criativo vencedor.</p>
+      <div class="pillars">
+        <div class="pill pA"><span class="pcode">A</span><div><div class="pt">Identidade / emoção</div><div class="pm">vibes, mood, sensação, ocasião</div></div></div>
+        <div class="pill pB"><span class="pcode">B</span><div><div class="pt">Cheiro / fragrância</div><div class="pm">"cheiro de X", "fragrância X"</div></div></div>
+        <div class="pill pC"><span class="pcode">C</span><div><div class="pt">Viagem / lifestyle</div><div class="pm">viagem, brunch, café, ocasião</div></div></div>
+        <div class="pill pD"><span class="pcode">D</span><div><div class="pt">Funcional</div><div class="pm">hidrata, brilho, sela a cutícula, 72h</div></div></div>
+      </div>
+      <div class="rule"><b>Regra:</b> manter todos os hooks A, B e C. Do funcional (D), manter apenas <b>2 âncoras de prova por aroma</b> — o mecanismo (ativos que selam a cutícula) e a longevidade (72h) — e ajustar as versões reescritas do mesmo claim. Não é limite de cap; é eficiência de verba: testar "hidrata a pele" de dez formas prova a mesma coisa dez vezes e sufoca os ângulos vencedores.</p></div>
+    </section>
+
+    <section class="pad">
+      <p class="kicker"><span class="n">02</span>Por aroma</p>
+      <h2>Manter / ajustar</h2>
+
+      <div class="scent">
+        <div class="hd"><span class="nm">Pear Fresh</span><span class="sub">pêra, lírio e musk · viagem: Bali</span><span class="tot">19 → mantém 9 · ajusta 10</span></div>
+        <div class="cols">
+          <div class="col keep">
+            <h4>Manter <span class="cnt">9</span></h4>
+            <ul>
+              <li><span class="tag tB">B</span><span>Cheiro de pêra com lírio e musk<span class="cd">c14</span></span></li>
+              <li><span class="tag tA">A</span><span>Sensação de energia e autenticidade<span class="cd">c15</span></span></li>
+              <li><span class="tag tC">C</span><span>Vibes de café da manhã em família<span class="cd">c16</span></span></li>
+              <li><span class="tag tB">B</span><span>Fragrância vibrante e autêntica<span class="cd">c17</span></span></li>
+              <li><span class="tag tC">C</span><span>Vibes viagem para Bali<span class="cd">c18</span></span></li>
+              <li><span class="tag tC">C</span><span>Mood do dia: viagem para Bali<span class="cd">c19</span></span></li>
+              <li><span class="tag tB">B</span><span>Fragrância de pêra com lírio e musk<span class="cd">inst-c07</span></span></li>
+              <li><span class="tag tD">D</span><span>Ativos que selam a cutícula <span class="cd">inst-c03 · âncora mecanismo</span></span></li>
+              <li><span class="tag tD">D</span><span>Pele hidratada por até 72h<span class="cd">c12 · âncora longevidade</span></span></li>
+            </ul>
+          </div>
+          <div class="col prune">
+            <h4>Ajustar <span class="cnt">10</span></h4>
+            <ul>
+              <li>dá brilho + hidrata (c08)</li>
+              <li>hidrata + brilho — dup (c09)</li>
+              <li>realça brilho (c10)</li>
+              <li>hidrata a pele (c11)</li>
+              <li>perfuma cabelo + pele (c13)</li>
+              <li>confere brilho + hidrata (inst-c01)</li>
+              <li>hidrata + brilho — dup (inst-c02)</li>
+              <li>ativos estimulam hidratação (inst-c04)</li>
+              <li>mantém 72h — dup de c12 (inst-c05)</li>
+              <li>bruma perfumada — genérico (inst-c06)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="scent">
+        <div class="hd"><span class="nm">Santal Skin</span><span class="sub">sândalo, patchouli e cardamomo · viagem: Nova Iorque</span><span class="tot">19 → mantém 9 · ajusta 10</span></div>
+        <div class="cols">
+          <div class="col keep">
+            <h4>Manter <span class="cnt">9</span></h4>
+            <ul>
+              <li><span class="tag tB">B</span><span>Cheiro de sândalo, patchouli e cardamomo<span class="cd">c01</span></span></li>
+              <li><span class="tag tB">B</span><span>Fragrância marcante e sofisticada<span class="cd">c03</span></span></li>
+              <li><span class="tag tC">C</span><span>Mood do dia: viagem para Nova Iorque<span class="cd">c06</span></span></li>
+              <li><span class="tag tA">A</span><span>Perfeito para dates<span class="cd">c08</span></span></li>
+              <li><span class="tag tA">A</span><span>Sensação de poder e magnetismo<span class="cd">c11</span></span></li>
+              <li><span class="tag tC">C</span><span>Vibes viagem para Nova Iorque<span class="cd">c12</span></span></li>
+              <li><span class="tag tB">B</span><span>Fragrância de sândalo, patchouli e cardamomo<span class="cd">inst-c05</span></span></li>
+              <li><span class="tag tD">D</span><span>Ativos que selam a cutícula <span class="cd">inst-c02 · âncora mecanismo</span></span></li>
+              <li><span class="tag tD">D</span><span>Pele hidratada por até 72h<span class="cd">c07 · âncora longevidade</span></span></li>
+            </ul>
+          </div>
+          <div class="col prune">
+            <h4>Ajustar <span class="cnt">10</span></h4>
+            <ul>
+              <li>dá brilho + hidrata (c02)</li>
+              <li>hidrata a pele (c04)</li>
+              <li>hidrata + brilho — dup (c05)</li>
+              <li>perfuma cabelo + pele (c09)</li>
+              <li>realça brilho (c10)</li>
+              <li>ativos estimulam hidratação (inst-c01)</li>
+              <li>bruma perfumada (inst-c03)</li>
+              <li>confere brilho + hidrata (inst-c04)</li>
+              <li>hidrata + brilho (inst-c06)</li>
+              <li>mantém 72h — dup de c07 (inst-c07)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="scent">
+        <div class="hd"><span class="nm">Rose</span><span class="sub">rosas, lichia e frutas vermelhas · viagem: Paris</span><span class="tot">11 → mantém 3 + adiciona 6 · ajusta 8</span></div>
+        <div class="cols">
+          <div class="col keep">
+            <h4>Manter 3 + adicionar 6 <span class="cnt">9</span></h4>
+            <ul>
+              <li><span class="tag tB">B</span><span>Fragrância de rosas com lichia e frutas vermelhas<span class="cd">inst-c07 · já no ar</span></span></li>
+              <li><span class="tag tD">D</span><span>Ativos que selam a cutícula<span class="cd">âncora mecanismo</span></span></li>
+              <li><span class="tag tD">D</span><span>Mantém a pele hidratada por até 72h<span class="cd">âncora longevidade</span></span></li>
+              <li><span class="tag tB">B</span><span>Cheiro de rosas com lichia e frutas vermelhas<span class="cd">+ export Canva</span></span></li>
+              <li><span class="tag tA">A</span><span>Sensação de leveza e plenitude!<span class="cd">+ export Canva</span></span></li>
+              <li><span class="tag tC">C</span><span>Vibes de brunch com as amigas!<span class="cd">+ export Canva</span></span></li>
+              <li><span class="tag tB">B</span><span>Fragrância feminina e delicada<span class="cd">+ export Canva</span></span></li>
+              <li><span class="tag tC">C</span><span>Vibes viagem para Paris<span class="cd">+ export Canva</span></span></li>
+              <li><span class="tag tC">C</span><span>Mood do dia: viagem para Paris<span class="cd">+ export Canva</span></span></li>
+            </ul>
+          </div>
+          <div class="col prune">
+            <h4>Ajustar <span class="cnt">8</span></h4>
+            <ul>
+              <li>confere brilho</li>
+              <li>hidrata + confere</li>
+              <li>ativos estimulam hidratação</li>
+              <li>bruma perfumada</li>
+              <li>dá brilho + hidrata</li>
+              <li>hidrata a pele</li>
+              <li>realça brilho</li>
+              <li>perfuma cabelo + pele</li>
+            </ul>
+          </div>
+        </div>
+        <p class="note" style="padding:0 16px 14px">Rose subiu funcional-pesado; os claims vencedores (cheiro, identidade, viagem) foram criados no Canva mas nunca exportados. Correção: exportar os 6 vencedores e ajustar os funcionais redundantes.</p>
+      </div>
+    </section>
+
+    <section class="pad">
+      <p class="kicker"><span class="n">03</span>Matemática do cap</p>
+      <h2>De 55 construídos para 27 no ar</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Aroma</th><th class="num">Mantém</th><th class="num">Adiciona</th><th class="num">Ajuste</th></tr></thead>
+          <tbody>
+            <tr><td>Pear</td><td class="num">9</td><td class="num">—</td><td class="num">10</td></tr>
+            <tr><td>Santal</td><td class="num">9</td><td class="num">—</td><td class="num">10</td></tr>
+            <tr><td>Rose</td><td class="num">3</td><td class="num">6</td><td class="num">8</td></tr>
+            <tr class="tot"><td>Total</td><td class="num">21</td><td class="num">6</td><td class="num">28</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-top:10px"><strong>→ 27 anúncios no ar</strong> (de um cap de 50) — 23 slots de folga para escalar vencedores e iterar. Ajustados ficam pausados, fora da entrega.</p>
+    </section>
+
+    <section class="pad">
+      <p class="kicker"><span class="n">04</span>Correções ideais (pendente)</p>
+      <h2>O que falta para chegar aos 30 equilibrados</h2>
+      <p class="lead">O alvo por aroma é <strong>A2 / B3 / C3 / D2</strong> (10 cada). Hoje cada aroma está a um hook de distância — falta preencher exatamente uma lacuna:</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Aroma</th><th class="num">A</th><th class="num">B</th><th class="num">C</th><th class="num">D</th><th>Lacuna</th></tr></thead>
+          <tbody>
+            <tr><td>Pear</td><td class="num miss">1</td><td class="num">3</td><td class="num">3</td><td class="num">2</td><td>falta 1 <strong>A</strong></td></tr>
+            <tr><td>Santal</td><td class="num">2</td><td class="num">3</td><td class="num miss">2</td><td class="num">2</td><td>falta 1 <strong>C</strong></td></tr>
+            <tr><td>Rose</td><td class="num miss">1</td><td class="num">3</td><td class="num">3</td><td class="num">2</td><td>falta 1 <strong>A</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font:600 12px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin:20px 0 10px">3 hooks de preenchimento</p>
+      <div class="fill">
+        <div class="fitem"><span class="sc">Pear</span><span class="tag tA">A</span><span class="cl">Perfeito para começar o dia</span></div>
+        <div class="fitem"><span class="sc">Santal</span><span class="tag tC">C</span><span class="cl">Vibes de jantar a dois</span></div>
+        <div class="fitem"><span class="sc">Rose</span><span class="tag tA">A</span><span class="cl">Sensação de romance e confiança!</span></div>
+      </div>
+      <p style="font:600 12px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin:20px 0 10px">2 desafiantes</p>
+      <div class="fill">
+        <div class="fitem challenger"><span class="sc">Pear</span><span class="tag tB">B</span><span class="cl">Cheiro de dia de verão<span class="badge">desafiante</span></span></div>
+        <div class="fitem challenger"><span class="sc">Rose</span><span class="tag tA">A</span><span class="cl">Perfeito para se sentir irresistível<span class="badge">desafiante</span></span></div>
+      </div>
+      <p class="note" style="margin-top:16px">Status: ajuste executado e no ar; preenchimento ainda não produzido (briefado, aguardando criação Canva → QA → subir ativo). Recomendação: deixar a leitura de D+7 (qual pilar converte por aroma) orientar o preenchimento antes de bater mecanicamente o A2/B3/C3/D2.</p>
+    </section>
+
+    <footer>
+      <span><b>Campanha:</b> MIST · TESTE (Meta) · 3 aromas · pilares A/B/C/D</span>
+      <span><b>Status:</b> ajuste ✓ executado · preenchimento pendente</span>
+    </footer>
+
+  </article>
+</div>
+
+<script>
+  var md = [
+    "# Ajuste de Hooks - Lancamento Body & Hair Mist (GE Beauty)",
+    "",
+    "Status: EXECUTADO (25/07/2026). Base final: 27 anuncios no ar (9 Pear / 9 Santal / 9 Rose).",
+    "",
+    "## Framework (angulos validados no Foreplay)",
+    "- A = Identidade / emocao (vibes, mood, sensacao, ocasiao) -> MANTER todos",
+    "- B = Cheiro / fragrancia ('cheiro de X', 'fragrancia X') -> MANTER todos",
+    "- C = Viagem / lifestyle (viagem, brunch, cafe) -> MANTER todos",
+    "- D = Funcional (hidrata, brilho, sela a cuticula, 72h) -> MANTER 2 ancoras de prova por aroma (mecanismo + 72h); AJUSTAR reescritas redundantes",
+    "",
+    "Regra: nao e limite de cap, e eficiencia de verba. Testar 'hidrata a pele' de dez formas prova a mesma coisa dez vezes e sufoca os angulos vencedores.",
+    "",
+    "## PEAR FRESH (peras, lirio e musk | viagem: Bali) - 19 -> mantem 9 / ajusta 10",
+    "MANTER:",
+    "- [B] Cheiro de pera com lirio e musk (c14)",
+    "- [A] Sensacao de energia e autenticidade (c15)",
+    "- [C] Vibes de cafe da manha em familia (c16)",
+    "- [B] Fragrancia vibrante e autentica (c17)",
+    "- [C] Vibes viagem para Bali (c18)",
+    "- [C] Mood do dia: viagem para Bali (c19)",
+    "- [B] Fragrancia de pera com lirio e musk (inst-c07)",
+    "- [D] Ativos que selam a cuticula (inst-c03, ancora mecanismo)",
+    "- [D] Pele hidratada por ate 72h (c12, ancora longevidade)",
+    "AJUSTAR (funcional redundante): c08 da-brilho+hidrata; c09 hidrata+brilho (dup); c10 realca brilho; c11 hidrata a pele; c13 perfuma cabelo+pele; inst-c01 confere-brilho+hidrata; inst-c02 hidrata+brilho (dup); inst-c04 ativos estimulam hidratacao; inst-c05 mantem 72h (dup de c12); inst-c06 bruma perfumada (generico)",
+    "",
+    "## SANTAL SKIN (sandalo, patchouli e cardamomo | viagem: Nova Iorque) - 19 -> mantem 9 / ajusta 10",
+    "MANTER:",
+    "- [B] Cheiro de sandalo, patchouli e cardamomo (c01)",
+    "- [B] Fragrancia marcante e sofisticada (c03)",
+    "- [C] Mood do dia: viagem para Nova Iorque (c06)",
+    "- [A] Perfeito para dates (c08)",
+    "- [A] Sensacao de poder e magnetismo (c11)",
+    "- [C] Vibes viagem para Nova Iorque (c12)",
+    "- [B] Fragrancia de sandalo, patchouli e cardamomo (inst-c05)",
+    "- [D] Ativos que selam a cuticula (inst-c02, ancora mecanismo)",
+    "- [D] Pele hidratada por ate 72h (c07, ancora longevidade)",
+    "AJUSTAR: c02 da-brilho+hidrata; c04 hidrata a pele; c05 hidrata+brilho (dup); c09 perfuma cabelo+pele; c10 realca brilho; inst-c01 ativos estimulam hidratacao; inst-c03 bruma perfumada; inst-c04 confere-brilho+hidrata; inst-c06 hidrata+brilho; inst-c07 mantem 72h (dup de c07)",
+    "",
+    "## ROSE (rosas, lichia e frutas vermelhas | viagem: Paris) - 11 -> mantem 3 + adiciona 6 / ajusta 8",
+    "Rose subiu funcional-pesado; os claims vencedores foram criados no Canva mas nunca exportados.",
+    "MANTER (3 existentes):",
+    "- [B] Fragrancia de rosas com lichia e frutas vermelhas (inst-c07, ja no ar)",
+    "- [D] Ativos que selam a cuticula (ancora mecanismo)",
+    "- [D] Mantem a pele hidratada por ate 72h (ancora longevidade)",
+    "ADICIONAR (export Canva - 6 vencedores):",
+    "- [B] Cheiro de rosas com lichia e frutas vermelhas",
+    "- [A] Sensacao de leveza e plenitude!",
+    "- [C] Vibes de brunch com as amigas!",
+    "- [B] Fragrancia feminina e delicada",
+    "- [C] Vibes viagem para Paris",
+    "- [C] Mood do dia: viagem para Paris",
+    "AJUSTAR (8): confere brilho; hidrata+confere; ativos estimulam hidratacao; bruma perfumada; da brilho+hidrata; hidrata a pele; realca brilho; perfuma cabelo+pele",
+    "",
+    "## Matematica do cap",
+    "Pear: mantem 9, adiciona 0, ajusta 10",
+    "Santal: mantem 9, adiciona 0, ajusta 10",
+    "Rose: mantem 3, adiciona 6, ajusta 8",
+    "TOTAL: mantem 21, adiciona 6, ajusta 28 -> 27 anuncios no ar (de 50 cap), 23 slots de folga.",
+    "",
+    "## Correcoes ideais (PENDENTE - preenchimento nao produzido)",
+    "Alvo por aroma: A2 / B3 / C3 / D2 (10 cada = 30 no total).",
+    "Distribuicao atual: Pear A1/B3/C3/D2 (falta 1 A); Santal A2/B3/C2/D2 (falta 1 C); Rose A1/B3/C3/D2 (falta 1 A).",
+    "",
+    "3 hooks de preenchimento:",
+    "- Pear [A]: Perfeito para comecar o dia",
+    "- Santal [C]: Vibes de jantar a dois",
+    "- Rose [A]: Sensacao de romance e confianca!",
+    "2 desafiantes:",
+    "- Pear [B]: Cheiro de dia de verao",
+    "- Rose [A]: Perfeito para se sentir irresistivel",
+    "",
+    "Recomendacao: deixar a leitura de D+7 (qual pilar converte por aroma) orientar o preenchimento antes de bater mecanicamente o A2/B3/C3/D2."
+  ].join("\n");
+  document.getElementById("dl").addEventListener("click", function(){
+    var blob = new Blob([md], {type:"text/markdown;charset=utf-8"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "ajuste-hooks-mist.md";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  });
+</script>
