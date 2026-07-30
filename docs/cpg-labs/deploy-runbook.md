@@ -8,7 +8,6 @@ Operator runbook for every deploy scenario. If you are about to touch AWS or shi
 - **Terraform owns the task-def shape.** Env vars, secrets, CPU, memory, `extra_env` — all live in `infra/terraform/apps.tf` per-app module. The deploy script only swaps the image tag and registers a new revision.
 - **One canonical cluster:** `cpg-labs`. Never run another.
 - **`plan` before `apply`**, always. Never approve an `apply` whose plan wants to destroy something you did not explicitly ask for.
-- **Deploy queue protocol** — coordinate across parallel sessions via `.claude/deploy-queue.md`. See CLAUDE.md for the full protocol.
 
 ## Scenario 1 — Normal deploy
 

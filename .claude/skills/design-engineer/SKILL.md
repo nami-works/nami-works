@@ -163,7 +163,7 @@ Example for a Local Delivery selection bar:
 
 ### Phase 6 — Ship
 
-1. Follow the project's deploy-queue protocol (CLAUDE.md hard rules): append a Pending entry to `.claude/deploy-queue.md` describing the change, then ask the user whether to deploy now or hold. Use `scripts/deploy.ps1 -App full` (or `-App omnify`) — never the retired per-app deploy scripts.
+1. Ship the change: ask the user whether to deploy now or hold, then use `scripts/deploy.ps1 -App full` (or `-App omnify`) — never the retired per-app deploy scripts.
 2. Commit the mockup alongside the production change. The mockup becomes the canonical design record for the decision.
 3. If anything visual changed on a dashboard or recurring chart, update `docs/project-brief.md` so planning conversations stay in sync.
 

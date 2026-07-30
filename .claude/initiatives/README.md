@@ -91,7 +91,6 @@ working_agreement: ~/.claude/projects/c--claude/memory/feedback_cto_contract.md
 |---|---|---|
 | **Initiatives** (this folder) | Multi-session goals (days–weeks) | When the through-line matters |
 | **Work orders** (`~/.claude/work-orders/`) | Single asks between sessions | "Session X, please do Y for me" |
-| **Deploy queue** (`.claude/deploy-queue.md`) | Single deploys awaiting release | Anything that needs to ship |
 | **PRs** | Single code change under review | The standard atomic unit |
 | **Memory** (`~/.claude/projects/.../memory/`) | Durable facts and rules | Things true across all initiatives |
 

@@ -146,7 +146,7 @@ If the mockup has no row in INDEX.md (untracked legacy file), add one. Pick the 
 
 ## Phase 6 — Commit
 
-Per `CLAUDE.md` branch-per-task rule, mockup + INDEX edits qualify as docs and may go directly to `main`. But: confirm with the user before pushing. Some authors prefer a chore branch even for docs.
+Per Claude Code norms, mockup + INDEX edits are small docs and may go directly to `main`. But: confirm with the user before pushing. Some authors prefer a chore branch even for docs.
 
 Default flow (single confirm):
 

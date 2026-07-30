@@ -64,7 +64,7 @@ interpretation, and interpretations can be wrong.
 5. **Stage for approval.** Present the proposed entries (+ a short triage of what you
    skipped and why). **Commit nothing yet.** Let the user cut/edit/confirm.
 6. **File + commit.** On approval: append compact entries to `knowledge.md`, write any deep
-   reference files, and commit to `main` (loose-ops zone). Group into a labeled section if
+   reference files, and commit to `main` (operational work → direct to main). Group into a labeled section if
    the base uses them (e.g. "Best practices & playbooks (external)"). Every entry carries a
    **source ref** (Gmail thread id, or source name + date, or content hash) — this is the
    dedup key.

@@ -1,18 +1,13 @@
-# Deploy Queue
+# Deploy Queue — RETIRED (2026-07-30)
 
-Shared across all Claude Code sessions working on this repo. Every session
-that makes a change needing a deploy (anything under `app/`, `prisma/`,
-`infra/`, `scripts/`, `shopify.app.*.toml`) appends a Pending entry here
-before telling the user the change is done.
+**The deploy-queue coordination protocol is retired.** Work now runs
+single-session on Claude Code (see memory `feedback_git_workflow_simplified`),
+so the cross-session Pending/Deployed ledger is no longer maintained — do not
+append Pending entries or gate deploys on this file.
 
-Before proposing a deploy, read the full Pending section — not just your
-own entry — summarize everything to the user, and only fire the deploy
-after explicit confirmation. After a successful deploy, move the items
-that went out in that deploy from Pending → Deployed with the timestamp
-and the deployed image SHA.
-
-If two Pending entries touch the same file path, flag a conflict and ask
-the user which wins before deploying.
+**Kept for reference:** the deploy mechanics below (how a deploy actually
+runs) and the historical Deployed log. To deploy today, follow
+`docs/cpg-labs/deploy-runbook.md` and confirm with the user before shipping.
 
 ## Deploy mechanics (post-Lightsail-cutover, 2026-05-11)
 
