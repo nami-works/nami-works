@@ -151,6 +151,7 @@ When running a campaign (e.g., Consumer Month), the discount is baked directly i
 - **Pagination:** Always use `sortKey` (ID or CREATED_AT) for stable pagination. Default Shopify pagination without a sort key returns inconsistent subsets.
 - **Bulk operations:** For 1000+ updates, use a loop script pattern with progress logging every 100 items, throttle awareness, and idempotent updates (skip already-done items).
 - **Rate limits:** Shopify GraphQL uses a cost-based throttle (4000 points, 200/s restore). Check `extensions.cost.throttleStatus.currentlyAvailable` and sleep when below 200.
+- **Portuguese = idiomatic Brazilian Portuguese, never a literal translation.** Any document, copy, or artifact produced or converted to PT (customer-facing OR internal) must read the way a Brazilian actually writes it — translate the *meaning and register*, not the English sentence structure. E.g. NOT "3 hooks de preenchimento — fecham a lacuna de cada aroma" (a calque of the English), but "3 hooks a incluir para fechar o gap de cada aroma". Established BR marketing/finance loanwords Lucas himself uses stay (hook, claim, asset, cap, run-rate, break-even, CPA…); the rule targets English *idioms and structures* forced into PT. **If you're not sure how to phrase something idiomatically, ask Lucas before shipping it — do not guess.** Canonical mappings + rationale live in memory `feedback_pt_no_english_calques`; brand voice in `.claude/skills/content-director/references/voice.md`.
 
 ---
 
