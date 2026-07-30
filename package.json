@@ -8,6 +8,7 @@
     "apps/connector",
     "apps/omnify-admin",
     "apps/omnify-site",
+    "nami/site",
     "packages/letterbox",
     "packages/shared-auth",
     "packages/shared-db",

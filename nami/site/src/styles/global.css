@@ -1,0 +1,73 @@
+/* NAMI Works design tokens. Deliberately quiet: deep ink/graphite text on a
+   warm off-white surface, one restrained accent. No purple gradients, no
+   "AI startup" holo treatment; this reads as an operator, not a demo. */
+
+/* Self-hosted variable font (weights 400-700 in one file) -- avoids a
+   third-party request to Google Fonts at runtime. -apple-system stays first
+   in the stack below so Mac/iOS visitors still get real SF Pro; Geist is the
+   closest free match to that feel for everyone else. */
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/geist-variable.woff2") format("woff2");
+}
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --site-bg: #faf8f4;
+  --site-surface: #f1ede4;
+  --site-text: #1c1b19;
+  --site-text-secondary: #6b6860;
+  --site-border: #ddd7c9;
+  --site-nav-bg: rgba(250, 248, 244, 0.86);
+  --site-accent: #1f5c4e;
+  --site-accent-text: #ffffff;
+  --site-font: -apple-system, BlinkMacSystemFont, "Geist", "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  --site-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --site-bg: #161512;
+  --site-surface: #1f1e1a;
+  --site-text: #f1efe8;
+  --site-text-secondary: #a6a299;
+  --site-border: #33322c;
+  --site-nav-bg: rgba(22, 21, 18, 0.86);
+  --site-accent: #4fa88f;
+  --site-accent-text: #0d1310;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--site-bg);
+  color: var(--site-text);
+  min-height: 100vh;
+  font-family: var(--site-font);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+:focus-visible {
+  outline: 2px solid var(--site-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}

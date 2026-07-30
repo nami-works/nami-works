@@ -44,9 +44,12 @@ Schema, conventions, and examples are in `.claude/initiatives/README.md`. Treat 
 | Omnify Shopify Admin (Omnify focused) | `omnify.cpg-labs.io` | `apps/omnify-admin` (same code, different `APP_IDENTITY`) | same |
 | Flywheel (Affiliates + Loyalty) | `flywheel.cpg-labs.io` | `apps/omnify-admin` (same code, different config) | same |
 | Public marketing site | `cpg-labs.io` | `apps/omnify-site` | Astro 5 (static) + AWS S3 + CloudFront |
+| NAMI Works marketing site | `nami.works` | `nami/site` | Astro 5 (static) + AWS S3 + CloudFront + SES/Lambda lead intake |
 | Two satellite APIs | TBD | `apps/content-gen-api` + `apps/content-scraper-api` | Python (FastAPI / etc.) |
 
 Production targets, DNS, secrets backends, and deploy domains are unchanged by the repo relocation to `c:\claude` and the `sandbox/gebeauty` → `gebeauty` move. Only the source tree layout changed.
+
+**Why `nami/site` (with its own `infra/` nested inside) and not `apps/` + `infra/<product>`:** a deliberate exception to the app/infra split every other product uses. NAMI Works' own public presence is a NAMI-Works-level asset, not a per-customer product — keeping the app AND its infra together under one `nami/site` folder (rather than split across `apps/` and a top-level `infra/<product>/`) keeps everything about this single asset in one place.
 
 ## Excel / spreadsheets
 

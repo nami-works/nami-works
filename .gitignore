@@ -107,6 +107,15 @@ infra/omnify/terraform/terraform.tfstate.*.backup
 infra/omnify/terraform/terraform.tfvars
 infra/omnify/terraform/drift-check-lambda.zip
 
+# Terraform — nami-site
+nami/site/infra/terraform/.terraform/
+nami/site/infra/terraform/*.tfplan
+nami/site/infra/terraform/terraform.tfstate
+nami/site/infra/terraform/terraform.tfstate.backup
+nami/site/infra/terraform/terraform.tfstate.*.backup
+nami/site/infra/terraform/terraform.tfvars
+nami/site/infra/terraform/lambda/lead-intake.zip
+
 # Large files (GitHub 100MB limit)
 apps/omnify-admin/public/screencast.mp4
 .knowledge/*.pdf
