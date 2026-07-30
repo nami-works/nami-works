@@ -1,4 +1,4 @@
-# NAMI Works Monorepo — Cross-Cutting Rules
+# Claude Monorepo — Cross-Cutting Rules
 
 This file governs every app in this repo. Per-app conventions live in each app's own `CLAUDE.md`. When the two disagree, the per-app file wins for code under its directory.
 
@@ -33,13 +33,13 @@ Schema, conventions, and examples are in `.claude/initiatives/README.md`. Treat 
 
 ## What this repo is
 
-**Primary purpose: the operations control center for GE Beauty** — NAMI Works' first and primary customer (a Brazilian beauty brand, run under the CPG Labs brand). The bulk of day-to-day session work lives at **`gebeauty/`** at the repo root: catalog, orders, local delivery, B2B channels, content, imagery, financial modeling, vendor and contract management. When in doubt about what this repo is *for*, it's running GE Beauty.
+**Primary purpose: the operations control center for GE Beauty**, a Brazilian beauty brand. The bulk of day-to-day session work lives at **`gebeauty/`** at the repo root: catalog, orders, local delivery, B2B channels, content, imagery, financial modeling, vendor and contract management. When in doubt about what this repo is *for*, it's running GE Beauty.
 
 **Secondary: deployable software surfaces.** The same codebase also ships the products below. These are real and in production, but they are secondary initiatives — worked on when a product push calls for it, not the daily driver.
 
 | Surface | Domain | App | Stack |
 |---|---|---|---|
-| MCP gateway | `mcp.nami.works` | `apps/connector` | Fastify 5 + Prisma + @modelcontextprotocol/sdk + AWS ECS |
+| MCP gateway | `mcp.gebeauty.com.br` | `apps/connector` | Fastify 5 + Prisma + @modelcontextprotocol/sdk + AWS ECS |
 | Omnify Shopify Admin (CPG Labs full) | `app.cpg-labs.io` | `apps/omnify-admin` | React Router 7 + Polaris web components + Prisma + AWS Lightsail |
 | Omnify Shopify Admin (Omnify focused) | `omnify.cpg-labs.io` | `apps/omnify-admin` (same code, different `APP_IDENTITY`) | same |
 | Flywheel (Affiliates + Loyalty) | `flywheel.cpg-labs.io` | `apps/omnify-admin` (same code, different config) | same |
@@ -47,130 +47,6 @@ Schema, conventions, and examples are in `.claude/initiatives/README.md`. Treat 
 | Two satellite APIs | TBD | `apps/content-gen-api` + `apps/content-scraper-api` | Python (FastAPI / etc.) |
 
 Production targets, DNS, secrets backends, and deploy domains are unchanged by the repo relocation to `c:\claude` and the `sandbox/gebeauty` → `gebeauty` move. Only the source tree layout changed.
-
-## Brand + tenant model
-
-- **NAMI Works** = parent company, `lucas@nami.works`. Owns the GitHub org, the infra, the `nami.works` domain, and all commercial contracts.
-- **CPG Labs** = customer-facing brand for the CPG vertical. First customer: **GE Beauty** (Brazilian beauty brand). Owns the `cpg-labs.io` domain family and the Shopify apps deployed under it.
-- **Principle:** ONE codebase, MANY brand skins. Internal identity (repo name, SSM paths, CloudWatch group, domain) is NAMI Works forever. Customer-facing strings (docs, system prompts, tool messages, MSAs) render the right brand per tenant.
-
-## Parallel-session protocol
-
-Multiple Claude Code sessions can run against this repo at the same time. The conflict model depends on **which files the session is touching**, not on a flat session count.
-
-### Cross-app sessions — unlimited, no worktree required
-
-Sessions touching only one app's files (`apps/connector/`, `apps/omnify-admin/`, `apps/omnify-site/`, `apps/content-gen-api/`, `apps/content-scraper-api/`) don't collide with each other. Each app's tree is disjoint — different paths, different builds, different deploys. Just open the main checkout (`c:\claude\`) in both sessions and go.
-
-### Same-app sessions — 2 max, separate worktrees
-
-Two sessions editing the same app *will* collide: file overwrites, lint cache thrash, branch-switch eating staged files (this happened during the rota-local + LD-watchdog cross-stream on 2026-05-21). Use `git worktree` to give each session its own physical checkout.
-
-**Worktree location convention: `~/dev/worktrees/nami-works-<branch-slug>/`.**
-
-```bash
-mkdir -p "C:/Users/Lucas Guimarães/dev/worktrees"      # one-time
-git worktree add "C:/Users/Lucas Guimarães/dev/worktrees/nami-works-ld-ui" feat/ld-ui
-```
-
-Open the new folder in Cursor / Claude Code as a fresh project. Desktop stays clean (only the main checkout sits there). Inspect with `git worktree list`; remove with `git worktree remove "C:/Users/Lucas Guimarães/dev/worktrees/nami-works-ld-ui"` when the branch lands.
-
-A session that suspects another active session is on the same app should check: `git worktree list` shows active worktrees, `git branch --no-merged main` shows in-flight branches. If you see another session's branch on the same app, cut a worktree before editing.
-
-### Shared root state — serialize, or coordinate via work order
-
-A small set of files affects every workspace; concurrent edits cause merge churn or break other sessions' builds. Treat any change to these as a critical section across all live sessions:
-
-- root `package.json` (workspaces list, deps, overrides)
-- `package-lock.json`
-- root `.gitignore`, root `.npmrc`, root `tsconfig.base.json`, root `eslint.config.js`
-- root `CLAUDE.md` (and the per-app CLAUDE.md any other session is reading mid-task)
-- `.claude/settings.json`, `.claude/deploy-queue.md`
-- `packages/*` content (consumed by multiple apps)
-- any `prisma/*/schema.prisma` (whose generated client multiple workspaces import)
-
-If you need to touch any of the above and other sessions are active, either: (a) wait until they pause / land their PR, or (b) post a work order announcing the file list and proposed timing so the other sessions hold their related edits until your change merges.
-
-### Hoisted-state operations — serialize
-
-These mutate hoisted `node_modules` that every workspace shares; two sessions running them concurrently can race and produce a half-written client:
-
-- `npm install` / `npm ci`
-- `prisma generate` (any schema)
-
-Quick ops; just don't overlap them across sessions.
-
-### Mockup sessions — unlimited
-
-Mockups touch only `inputs/mockups/`. Cut a `mockup/<feature>` branch, commit early, no worktree needed. Uncommitted files on `main` trip deploy guards for any other session that tries to deploy.
-
-### Read-only / planning / research sessions — unlimited
-
-No file writes, no risk.
-
-### Deploy gating — independent of session count
-
-`.claude/deploy-queue.md` serializes deploys per-app: one Pending entry per app at a time, regardless of which session created it. Read the queue and check for other sessions' entries before proposing a deploy. See deploy-queue.md for the full schema.
-
-## Discipline by zone
-
-The repo runs a **two-tier discipline** because the unit of value differs across zones. What deserves a branch + PR + deploy queue in `apps/` is overkill for one-shot operational scripts in `sandbox/`. Match discipline to the zone.
-
-| Zone | Discipline |
-|---|---|
-| **`apps/**`** (deployable app code) | **Full app-building.** Branch-per-task, PR, squash-merge, deploy queue, pre-commit gates, tests. Every commit is a candidate for prod. |
-| **`gebeauty/**`** (primary tenant ops) and **`sandbox/<tenant>/**`** (secondary tenant ops, e.g. bisyou) | **Loose ops.** Direct `main` commits OK. No branch requirement, no PR, no deploy queue. Pre-commit gates still run but skip Python one-shots. **Commit only when the artifact has enduring value** — reusable scripts, docs, specs, initiative files, saved outputs worth reproducing. One-shot investigation scripts that printed their results and rest? Leave them untracked. |
-| **Root state** (`CLAUDE.md`, `.mcp.json`, `.claude/**`, `docs/**`, root config) | **Semi-strict.** Branch for non-trivial changes. Direct `main` OK for typos, single-line configs, memory index tweaks, hook config, small doc appends. |
-| **Memory** (`~/.claude/projects/.../memory/`) | Per-machine, never committed. Unchanged. |
-
-**Why two tiers:** the repo started as an app-building monorepo but shifted toward being an operations control center for GE Beauty — which is why GE ops now sits at the repo root (`gebeauty/**`) rather than buried under `sandbox/`. Roughly 80% of session work is in `gebeauty/**` — investigations, spreadsheets, mockups, content, vendor management, contract reviews — where the unit of value is the outcome (an order fixed, a spreadsheet delivered, a vendor unblocked), not persistent code. Treating operational work like app-building added ceremony without protection. This tier system sanctions what was already happening implicitly.
-
-**Signals you picked the wrong tier:**
-- Committing a one-shot investigation script that will never run again → too heavy for the zone
-- Skipping a PR on an `apps/**` change that touches user-visible logic → too loose for the zone
-
-## Branch-per-task
-
-Applies to **`apps/**` and non-trivial root state**. `sandbox/**` follows the "loose ops" tier — see "Discipline by zone" above.
-
-- Every non-trivial change to `apps/**` or root state happens on a feature branch, not directly on `main`. Naming: `feat/<slug>`, `fix/<slug>`, `chore/<slug>`, `docs/<slug>`.
-- Cut from latest `main`: `git checkout main && git pull && git checkout -b feat/<slug>`.
-- **Skip the branch** for: typo edits, single-line config tweaks, memory/`MEMORY.md` updates, explicit user-approved hotfixes, **or any change confined to `gebeauty/**` or `sandbox/<tenant>/**`** (per the loose-ops tier).
-- **Stale `main` / dirty tree at session start:** see `## Session start` above — dirty-tree reconciliation is a universal rule, not a branch-only one.
-- **Merge to `main` via squash-merge** when the branch is complete and gates pass. One commit per branch on `main`. Delete the branch after merge.
-
-## Deploy queue protocol
-
-Multiple sessions running deploys against the same app would stomp each other. Use `.claude/deploy-queue.md` as the shared pending/deployed log.
-
-- **After landing a change** that needs a deploy, append a Pending entry with: date, **app** (connector / omnify-admin / omnify-site / etc.), short title, files touched, type (code / migration / env / Terraform), summary, affects, dependencies, risk.
-- **Before proposing a deploy**, read the full Pending section. Summarize everything pending for the target app to the user. Call out dependencies and conflicts.
-- **Ask the user** whether to deploy now or hold. Never auto-deploy when other Pending entries from a different session exist for the same app.
-- **After a successful deploy**, move the items from Pending → Deployed with the deploy timestamp and (if available) the task-def revision or image tag. Keep the last ~20 Deployed entries, prune older.
-- **Single-session fast path:** if Pending contains only your own entry for the target app, confirm once with the user and ship.
-
-## Production and `main` must stay in sync
-
-Anything deployed must also be committed to `main`. If a session deploys via `scripts/deploy-*.ps1`, `shopify app deploy`, or any infra push, the corresponding code changes must be committed in the same session — no "I'll commit it later."
-
-## Shell compatibility — Windows PowerShell 5.1
-
-Lucas's terminal and Claude's `PowerShell` tool both run in Windows PowerShell 5.1, which does not support `&&` / `||` pipeline-chain operators. When writing multi-step terminal commands:
-- Use `;` for unconditional sequencing
-- Use `command1; if ($?) { command2 }` for fail-fast chaining
-- One command per line is always safe
-
-The `Bash` tool (POSIX) still accepts `&&` — only PowerShell breaks. Watch for this when copying example commands from documentation.
-
-## Delivering generated files
-
-When you generate a file that Claude Desktop can't open or render properly inline (`.docx`, `.xlsx`, `.pptx`, `.pdf`, and similar binary/native formats), also print the terminal command to open it locally, in its own `bash`-tagged code block, e.g.:
-
-```bash
-Start-Process "C:\claude\path\to\file.docx"
-```
-
-Send the file with `SendUserFile` as usual, but never leave the user with only an inline preview they can't actually open — the launch command is the reliable path to the real artifact. HTML mockups follow the same rule (see memory `feedback_start_process_html`).
 
 ## Excel / spreadsheets
 
