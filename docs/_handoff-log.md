@@ -24,20 +24,20 @@ That way an item disappears from this log the moment a session takes it on, and 
 
 # email
 
-**Surface: Claude Code.** The email-copilot workflow is memory-resident — label snapshots, per-recipient reply styles, decision rules, and the orgs registry all live under `~/.claude/.../memory/`, which Cowork can't reach. Run this on Code.
+**Surface: Claude Cowork.** The machinery that used to pin this to Code (label snapshots, SENT-diff learning, lifecycle promotion, per-recipient style files, org registry) is retired — the workflow is now just classify-inbox + draft-via-Gmail-MCP, no local memory needed. (Skill trim to match is pending — see note in the handoff.)
 
-A prior session of yours wrote a handoff document for the work I want to continue. Read it, internalize it, then **delete the handoff file from disk** (it's ephemeral — git history preserves it if anyone ever needs it back).
+A prior session wrote a handoff document for the work I want to continue. It's written to stand alone — you will NOT have this repo's Claude memory auto-loaded, so treat the file as your complete context; don't go looking for memory files.
 
-Handoff file: `docs/handoff-email-copilot.md`
+Handoff file: `docs/handoff-email-copilot.md`, in the connected folder. If it isn't there yet, run `git pull` first (it's on origin/main).
 
 Steps:
-1. `git fetch; git pull` on main so the handoff file is present locally.
-2. Read the full handoff.
-3. Confirm back to me, in 5 bullets or less, what state production is in and what you understand the next step to be.
-4. Delete the handoff file (`rm docs/handoff-email-copilot.md`).
-5. Wait for my direction before doing anything else.
+1. Read the full handoff.
+2. Confirm back to me, in 5 bullets or less, what state production is in and what you understand the next step to be.
+3. Wait for my direction before doing anything else.
 
-↳ **Log upkeep (do this at pickup, same step as deleting the handoff file):** delete this entire `email` block from `docs/_handoff-log.md` and commit, so the log lists only pending items.
+When we're done with it, remove the file with `git rm docs/handoff-email-copilot.md` and commit the removal — it's ephemeral, git history preserves it. If you don't have git push access in this Cowork session, leave it and tell me; a Claude Code session will clean it up.
+
+↳ **Log upkeep (at pickup):** delete this entire `email` block from `docs/_handoff-log.md` (land the removal per the deletion note above).
 
 ---
 
