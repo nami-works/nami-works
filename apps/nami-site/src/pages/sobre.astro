@@ -1,0 +1,76 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/marketing.css";
+---
+
+<BaseLayout
+  title="Sobre | NAMI Works"
+  description="A NAMI Works é uma empresa brasileira que implementa agentes de IA na gestão de outras empresas e que roda, na prática, a operação real de uma marca de e-commerce com o mesmo sistema."
+>
+  <section class="section pageHero">
+    <div class="container">
+      <p class="eyebrow">Sobre</p>
+      <h1 class="sectionTitle">Rodamos operações antes de vendê-las como produto.</h1>
+      <p class="lede">
+        A NAMI Works é uma empresa brasileira. Trabalhamos em duas frentes: a
+        Implementação de IA para gestão empresarial, que instala agentes de IA
+        na operação de qualquer empresa, e a Operação de e-commerce com IA,
+        onde nós mesmos rodamos, com agentes de IA construídos sobre o Claude
+        Code, a operação real de uma marca. O que oferecemos a outras
+        empresas é o mesmo sistema operacional que usamos para rodar as
+        nossas próprias operações, não um produto pensado só para revenda.
+      </p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="filosofia">
+    <div class="container">
+      <p class="eyebrow">Como pensamos o trabalho</p>
+      <h2 class="sectionTitle">Um sistema operacional, não uma consultoria pontual.</h2>
+      <p class="body">
+        Consultoria tradicional entrega um relatório e sai da sala. Nós
+        preferimos instalar o sistema que gera o relatório de novo, toda
+        semana, sem depender de alguém lembrar de rodar a planilha. É por isso
+        que operamos com agentes supervisionados em vez de recomendar e ir
+        embora: a disciplina só funciona se estiver rodando todos os dias,
+        seja na gestão interna de uma empresa, seja em e-commerce.
+      </p>
+      <p class="body">
+        Hoje, esse sistema roda o catálogo, a medição de crescimento e o CRM
+        de uma marca de e-commerce de 8 dígitos de faturamento: é a nossa
+        própria Operação de e-commerce com IA. É essa experiência de operação
+        real, com os erros e ajustes que vêm junto, que levamos para as
+        empresas com quem trabalhamos na Implementação de IA para gestão
+        empresarial.
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="onde">
+    <div class="container">
+      <p class="eyebrow">Onde estamos</p>
+      <h2 class="sectionTitle">Time brasileiro, operação remota.</h2>
+      <p class="body">
+        Somos um time brasileiro, e trabalhamos com marcas que vendem no
+        Brasil e fora dele. A operação é remota por padrão: o Diagnóstico, a
+        Implantação e a Operação acontecem sem exigir presença física.
+      </p>
+      <div class="ctaRow">
+        <a href="/diagnostico" class="ctaPrimary">Ver o Diagnóstico</a>
+        <a href="/metodo" class="ctaSecondary">Entender o método</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .pageHero {
+    padding-top: 96px;
+  }
+
+  @media (min-width: 769px) {
+    .pageHero {
+      padding-top: 130px;
+    }
+  }
+</style>
