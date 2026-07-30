@@ -32,7 +32,8 @@ For cross-cutting monorepo rules, see the root [/CLAUDE.md](../../CLAUDE.md).
 - **Theme:** light/dark via `data-theme` on `<html>`. Inline boot script in `BaseLayout.astro` reads `localStorage.theme` or `prefers-color-scheme` before paint. Reference `var(--site-text)`, `var(--site-bg)`, `var(--site-text-secondary)`, `var(--site-border)`, `var(--site-surface)`, `var(--site-accent)` for theme-aware colors.
 - **Voice:** plural ("nós"/"a gente"), never a named individual. Plain, idiomatic Portuguese; no calques from English. No em dashes. No superlatives, no "AI consultant" hype language. Precise and specific reads as more credible than impressive-sounding.
 - **Pricing:** no committed R$ figures in copy. Use "orçamento fechado, definido após o intake" framing until Lucas sets real pricing.
-- **Assets:** `public/` only, if any get added. Favicon is an inline SVG data URI in `BaseLayout.astro`, not a binary file.
+- **Assets:** `public/` only. Brand assets (mark, favicon glyph, self-hosted Geist woff2) live in `public/brand/` and `public/fonts/`. Favicon is `public/favicon.png`, referenced in `BaseLayout.astro`.
+- **Brand:** mark is the goggles-monkey mascot (primate = natural intelligence, goggles = artificial augmentation — literalizes "Natural + Artificial Merged Intelligence"). Full detailed mark for nav-size+ contexts (`mark-black.png` / `mark-teal.png` / `mark-teal-dark.png`); the detailed version is illegible below ~24px, so a separate bolder, simplified glyph (`favicon-glyph.png` / `favicon-glyph-teal.png`) exists specifically for favicon/tiny-icon use. Don't reuse the detailed mark at favicon size.
 - **No tracking pixels / analytics scripts** without explicit approval.
 
 ## Adding a new page

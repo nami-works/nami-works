@@ -24,11 +24,6 @@ const {
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://nami.works");
-
-// Inline SVG favicon: a monogram "N" inside a circle, using the accent color.
-// Avoids a binary asset while keeping the tab icon on-brand.
-const faviconSvg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='32' fill='%231f5c4e'/><path d='M20 44V20h4.8l14.4 18.2V20H44v24h-4.8L24.8 25.8V44Z' fill='%23faf8f4'/></svg>`;
-const faviconHref = `data:image/svg+xml,${faviconSvg}`;
 ---
 
 <!doctype html>
@@ -36,7 +31,7 @@ const faviconHref = `data:image/svg+xml,${faviconSvg}`;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="icon" href={faviconHref} type="image/svg+xml" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
     <link rel="canonical" href={canonical.toString()} />
 
     <title>{title}</title>

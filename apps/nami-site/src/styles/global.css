@@ -2,6 +2,18 @@
    warm off-white surface, one restrained accent. No purple gradients, no
    "AI startup" holo treatment; this reads as an operator, not a demo. */
 
+/* Self-hosted variable font (weights 400-700 in one file) -- avoids a
+   third-party request to Google Fonts at runtime. -apple-system stays first
+   in the stack below so Mac/iOS visitors still get real SF Pro; Geist is the
+   closest free match to that feel for everyone else. */
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/geist-variable.woff2") format("woff2");
+}
+
 :root,
 [data-theme="light"] {
   color-scheme: light;
@@ -13,7 +25,7 @@
   --site-nav-bg: rgba(250, 248, 244, 0.86);
   --site-accent: #1f5c4e;
   --site-accent-text: #ffffff;
-  --site-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+  --site-font: -apple-system, BlinkMacSystemFont, "Geist", "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif;
   --site-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }

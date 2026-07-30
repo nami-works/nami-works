@@ -13,13 +13,20 @@ const NAV_LINKS = [
 
 <nav class="nav" id="site-nav">
   <a href="/" class="navLogo">
-    <svg width="24" height="24" viewBox="0 0 64 64" aria-hidden="true">
-      <circle cx="32" cy="32" r="32" fill="var(--site-accent)"></circle>
-      <path
-        d="M20 44V20h4.8l14.4 18.2V20H44v24h-4.8L24.8 25.8V44Z"
-        fill="var(--site-bg)"
-      ></path>
-    </svg>
+    <img
+      src="/brand/mark-teal.png"
+      alt=""
+      class="navMark navMarkLight"
+      width="28"
+      height="28"
+    />
+    <img
+      src="/brand/mark-teal-dark.png"
+      alt=""
+      class="navMark navMarkDark"
+      width="28"
+      height="28"
+    />
     NAMI Works
   </a>
 
@@ -148,6 +155,24 @@ const NAV_LINKS = [
     font-family: var(--site-font);
     font-weight: 600;
     font-size: 16px;
+  }
+
+  .navMark {
+    width: 28px;
+    height: 28px;
+    max-width: none;
+  }
+
+  .navMarkDark {
+    display: none;
+  }
+
+  :global([data-theme="dark"]) .navMarkLight {
+    display: none;
+  }
+
+  :global([data-theme="dark"]) .navMarkDark {
+    display: block;
   }
 
   .navLinks {
