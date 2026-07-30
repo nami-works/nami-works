@@ -17,7 +17,7 @@
     {
       "name": "nami-site Dev",
       "runtimeExecutable": "cmd",
-      "runtimeArgs": ["/c", "npm", "--prefix", "apps/nami-site", "run", "dev"],
+      "runtimeArgs": ["/c", "npm", "--prefix", "nami/site", "run", "dev"],
       "port": 4321
     }
   ]

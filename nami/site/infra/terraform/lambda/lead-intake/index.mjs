@@ -1,4 +1,4 @@
-// Lead-intake handler for the Diagnostico form on apps/nami-site.
+// Lead-intake handler for the Diagnostico form on nami/site.
 //
 // Receives a plain HTML form POST (application/x-www-form-urlencoded) via a
 // public Lambda Function URL, emails the submission through SES, and

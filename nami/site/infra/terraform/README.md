@@ -1,6 +1,6 @@
 # nami.works — public site infra (S3 + CloudFront)
 
-Provisions the hosting for `apps/nami-site` (static Astro build). Deliberately
+Provisions the hosting for `nami/site` (static Astro build). Deliberately
 its own Terraform root module — separate from `infra/connector` (the MCP
 gateway's ECS/RDS/ALB stack) and `infra/omnify/terraform` (the CPG Labs/Omnify
 family's stack) — because this is a NAMI-Works-level asset with its own
@@ -35,7 +35,7 @@ lifecycle, not part of either product's infrastructure.
 ## Setup
 
 ```bash
-cd infra/nami-site/terraform
+cd nami/site/infra/terraform
 terraform init
 terraform plan
 terraform apply
@@ -52,7 +52,7 @@ domain changes.
   already wired by this same apply, but the edge hostname is useful for
   isolating CloudFront-vs-DNS issues).
 - Deploy the actual site content with `scripts/deploy-nami-site.ps1` from the
-  repo root — it builds `apps/nami-site`, syncs `dist/` to the bucket, and
+  repo root — it builds `nami/site`, syncs `dist/` to the bucket, and
   invalidates the CloudFront cache, resolving the bucket name and
   distribution ID from this module's outputs automatically.
 

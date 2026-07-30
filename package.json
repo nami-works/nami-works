@@ -6,9 +6,9 @@
   "type": "module",
   "workspaces": [
     "apps/connector",
-    "apps/nami-site",
     "apps/omnify-admin",
     "apps/omnify-site",
+    "nami/site",
     "packages/letterbox",
     "packages/shared-auth",
     "packages/shared-db",

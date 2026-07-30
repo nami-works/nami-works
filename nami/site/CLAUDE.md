@@ -1,6 +1,6 @@
 # NAMI Site — Per-App Rules
 
-Public marketing site at `https://nami.works` (not yet deployed). Pure-static, no backend, no shared runtime with any other app in this monorepo.
+Public marketing site at `https://nami.works` (live). Pure-static, no backend, no shared runtime with any other app in this monorepo.
 
 For cross-cutting monorepo rules, see the root [/CLAUDE.md](../../CLAUDE.md).
 
@@ -13,14 +13,14 @@ For cross-cutting monorepo rules, see the root [/CLAUDE.md](../../CLAUDE.md).
 ## Stack & hosting
 
 - **Framework:** Astro 5, static output (`output: "static"` in `astro.config.mjs`).
-- **Hosting:** none provisioned yet. Target is AWS S3 + CloudFront, same pattern as `apps/omnify-site`, once `nami.works` DNS + ACM cert exist.
-- **Deploy:** `scripts/deploy-nami-site.ps1` from the repo root. Ready but unused until the bucket and distribution exist — running it today fails at the S3 sync step.
+- **Hosting:** AWS S3 + CloudFront, same pattern as `apps/omnify-site`. Infra lives at `nami/site/infra/terraform/` (S3 bucket, CloudFront distribution, Route53 alias records reusing the existing zone + wildcard ACM cert, SES domain identity + DKIM, and a Lambda Function URL for lead intake) — already applied for real, not a plan.
+- **Deploy:** `scripts/deploy-nami-site.ps1` from the repo root.
 - **Local dev:** from this workspace: `npm install && npm run dev` (port 4321).
 
 ## Wall rules (do not work around)
 
 - **No imports from any other app in this monorepo.** Especially not `gebeauty/**` (tenant operations data) or `apps/omnify-admin` (a different product, different customer, different framework). This site is NAMI Works' own public presence, not a GE Beauty or Omnify surface.
-- **No backend logic.** The only server-side interaction is the Diagnóstico lead-capture form, which posts to a third-party form service (Formspree placeholder today) via a plain HTML `<form>`. No API routes, no database, no session handling.
+- **No backend logic in this app.** The only server-side interaction is the Diagnóstico lead-capture form, which posts to a self-hosted AWS Lambda Function URL (`nami/site/infra/terraform/lambda.tf`) via a plain HTML `<form>` — chosen over a third-party form service (e.g. Formspree) so submissions stay inside NAMI's own AWS account. The Lambda emails the submission via SES and redirects server-side to `/obrigado`. No API routes, no database, no session handling in this app itself.
 - **Confidentiality on the reference client.** NAMI's real production deployment is a beauty DTC brand that must stay anonymous in all copy: never name it, never describe it precisely enough to identify it, never use a real number that could be reverse-engineered to it. Use only vague magnitude language ("uma marca de e-commerce de 8 dígitos"). No logos, no screenshots of anyone's real store.
 - **No shared global CSS with any other app.** `src/styles/global.css` is loaded by `BaseLayout.astro` only.
 

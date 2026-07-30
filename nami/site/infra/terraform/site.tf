@@ -175,7 +175,7 @@ resource "aws_cloudfront_response_headers_policy" "site" {
 }
 
 # ── CloudFront Function: clean-URL rewriting (viewer-request) ────────────────
-# Astro builds with `build.format: "file"` (see apps/nami-site/astro.config.mjs)
+# Astro builds with `build.format: "file"` (see nami/site/astro.config.mjs)
 # produce flat `.html` files but the site uses extension-less links. Without
 # this, every clean URL 404s from S3. Identical logic to the omnify site's
 # function — see cloudfront-functions/site-url-rewrite.js for the full comment.
