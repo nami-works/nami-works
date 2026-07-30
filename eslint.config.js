@@ -43,7 +43,7 @@ export default [
   {
     // Node.js Lambda function source (AWS Lambda runtime, not a browser/bundler
     // context) -- needs Node globals the base config above doesn't provide.
-    files: ["infra/**/lambda/**/*.mjs", "infra/**/lambda/**/*.js"],
+    files: ["**/lambda/**/*.mjs", "**/lambda/**/*.js"],
     languageOptions: {
       globals: {
         process: "readonly",
