@@ -6,6 +6,7 @@
   "type": "module",
   "workspaces": [
     "apps/connector",
+    "apps/nami-site",
     "apps/omnify-admin",
     "apps/omnify-site",
     "packages/letterbox",

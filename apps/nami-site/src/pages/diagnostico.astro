@@ -1,0 +1,205 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/marketing.css";
+
+const steps = [
+  {
+    number: "01",
+    title: "Você preenche o formulário",
+    body: "Nome, empresa, site (se houver) e um parágrafo livre sobre onde você acha que a operação está perdendo eficiência ou margem.",
+  },
+  {
+    number: "02",
+    title: "Analisamos sua operação",
+    body: "Olhamos processos de gestão, canais de venda (quando houver), estrutura de dados e o que você já tem hoje, sem precisar de acesso a sistemas internos para essa etapa.",
+  },
+  {
+    number: "03",
+    title: "Você recebe o relatório",
+    body: "Um documento escrito, em alguns dias úteis, com onde a operação está perdendo eficiência e um mapa priorizado do que automatizar primeiro.",
+  },
+];
+---
+
+<BaseLayout
+  title="Diagnóstico | NAMI Works"
+  description="O Diagnóstico da NAMI Works é um relatório escrito que mostra onde a operação está perdendo eficiência e o que automatizar primeiro, na gestão interna ou no e-commerce."
+>
+  <section class="section pageHero">
+    <div class="container">
+      <p class="eyebrow">Diagnóstico</p>
+      <h1 class="sectionTitle">Um relatório, não uma reunião.</h1>
+      <p class="lede">
+        O Diagnóstico é o ponto de entrada para trabalhar com a NAMI Works,
+        seja para implantar IA na gestão interna da sua empresa, seja para
+        rodar a operação de um e-commerce. Não é uma call de vendas: é um
+        relatório escrito que mostra onde a operação está perdendo eficiência
+        e o que faz sentido automatizar primeiro, com prioridade explícita.
+      </p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="o-que-voce-recebe">
+    <div class="container">
+      <p class="eyebrow">O que você recebe</p>
+      <h2 class="sectionTitle">Um mapa de onde a operação está perdendo eficiência.</h2>
+      <p class="body">
+        O relatório cobre onde a operação perde margem ou tempo hoje, seja em
+        processos de gestão interna (dados, decisões, planilha), seja em
+        e-commerce (mídia, catálogo, CRM), e traduz isso em um mapa de
+        automação priorizado: o que vale a pena resolver primeiro com agentes
+        de IA, o que pode esperar, e o que provavelmente não vale o esforço no
+        seu estágio atual.
+      </p>
+      <p class="body">
+        Não fazemos ligação para apresentar o relatório. Você recebe o
+        documento e decide o próximo passo no seu tempo.
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="como-funciona">
+    <div class="container">
+      <p class="eyebrow">Como funciona</p>
+      <h2 class="sectionTitle">Três passos, sem call ao vivo.</h2>
+
+      <div class="cardGrid cols3">
+        {
+          steps.map((step) => (
+            <div class="card">
+              <p class="cardNumber">{step.number}</p>
+              <h3 class="cardTitle">{step.title}</h3>
+              <p class="cardBody">{step.body}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="calloutBox">
+        <p class="calloutLabel">Sobre o valor</p>
+        <p>
+          O Diagnóstico tem orçamento fechado, definido depois do intake, com
+          base no tamanho e na complexidade da operação. Não publicamos um
+          valor fixo aqui porque o escopo varia caso a caso.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="formulario">
+    <div class="container narrow">
+      <p class="eyebrow">Pedir o Diagnóstico</p>
+      <h2 class="sectionTitle">Conte um pouco sobre a operação.</h2>
+      <p class="lede">
+        Preencha o formulário abaixo. Respondemos por e-mail para combinar os
+        próximos passos.
+      </p>
+
+      <!-- Self-hosted lead intake: a Lambda Function URL (infra/nami-site/terraform/lambda.tf)
+           emails the submission via SES and redirects to /obrigado itself -- no
+           third-party form service, no account to create. -->
+      <form
+        class="leadForm"
+        method="POST"
+        action="https://wt3ihd5kteuu3y6hed75xpsmqe0zhkai.lambda-url.us-east-1.on.aws/"
+      >
+        <div class="field">
+          <label for="nome">Nome</label>
+          <input type="text" id="nome" name="nome" required />
+        </div>
+
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+
+        <div class="field">
+          <label for="empresa">Empresa</label>
+          <input type="text" id="empresa" name="empresa" required />
+        </div>
+
+        <div class="field">
+          <label for="site">Site (da empresa ou da loja)</label>
+          <input type="url" id="site" name="site" placeholder="https://" />
+        </div>
+
+        <div class="field">
+          <label for="area_interesse">Área de interesse</label>
+          <select id="area_interesse" name="area_interesse">
+            <option value="Gestão interna">Gestão interna</option>
+            <option value="Operação de e-commerce">Operação de e-commerce</option>
+            <option value="Não sei ainda" selected>Não sei ainda</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="observacoes">
+            Conte brevemente onde você acha que a operação está perdendo
+            eficiência ou margem
+          </label>
+          <textarea id="observacoes" name="observacoes" rows="5"></textarea>
+        </div>
+
+        <button type="submit" class="ctaPrimary submitBtn">Enviar</button>
+      </form>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .pageHero {
+    padding-top: 96px;
+  }
+
+  .container.narrow {
+    max-width: 640px;
+  }
+
+  .leadForm {
+    display: grid;
+    gap: 20px;
+    margin-top: 32px;
+  }
+
+  .field {
+    display: grid;
+    gap: 8px;
+  }
+
+  .field label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--site-text);
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    font-family: var(--site-font);
+    font-size: 15px;
+    color: var(--site-text);
+    background: var(--site-bg);
+    border: 1px solid var(--site-border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    resize: vertical;
+  }
+
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 1px;
+  }
+
+  .submitBtn {
+    justify-self: start;
+    margin-top: 8px;
+  }
+
+  @media (min-width: 769px) {
+    .pageHero {
+      padding-top: 130px;
+    }
+  }
+</style>

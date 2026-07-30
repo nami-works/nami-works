@@ -1,0 +1,75 @@
+---
+import "../styles/global.css";
+
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  /** When true, the page paints its own header/footer, so we skip the
+   *  shared Nav + Footer. Not used for v1 but kept for parity with the
+   *  omnify-site pattern in case a future page needs its own chrome. */
+  bareLayout?: boolean;
+}
+
+const {
+  title,
+  description,
+  ogTitle = title,
+  ogDescription = description,
+  bareLayout = false,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://nami.works");
+
+// Inline SVG favicon: a monogram "N" inside a circle, using the accent color.
+// Avoids a binary asset while keeping the tab icon on-brand.
+const faviconSvg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='32' fill='%231f5c4e'/><path d='M20 44V20h4.8l14.4 18.2V20H44v24h-4.8L24.8 25.8V44Z' fill='%23faf8f4'/></svg>`;
+const faviconHref = `data:image/svg+xml,${faviconSvg}`;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" href={faviconHref} type="image/svg+xml" />
+    <link rel="canonical" href={canonical.toString()} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={ogDescription} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical.toString()} />
+
+    <script is:inline>
+      // Apply theme before paint to avoid flash. Reads stored preference,
+      // otherwise honors prefers-color-scheme on first visit.
+      (function () {
+        try {
+          var t = localStorage.getItem("theme");
+          if (!t) {
+            t = window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+          }
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (_) {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    {!bareLayout && <Nav />}
+    <main style={!bareLayout ? "padding-top: 60px;" : ""}>
+      <slot />
+    </main>
+    {!bareLayout && <Footer />}
+  </body>
+</html>

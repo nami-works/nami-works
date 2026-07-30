@@ -1,0 +1,85 @@
+<footer class="footer">
+  <div class="footerBrand">
+    <span class="footerBrandText">NAMI Works</span>
+  </div>
+
+  <ul class="footerLinks">
+    <li><a href="/metodo" class="footerLink">Método</a></li>
+    <li><a href="/diagnostico" class="footerLink">Diagnóstico</a></li>
+    <li><a href="/contato" class="footerLink">Contato</a></li>
+    <li><a href="/privacidade" class="footerLink">Privacidade</a></li>
+    <li><a href="/termos" class="footerLink">Termos</a></li>
+  </ul>
+
+  <div class="footerEmail">
+    <a href="mailto:contato@nami.works">contato@nami.works</a>
+  </div>
+
+  <div class="footerCopy">
+    &copy; {new Date().getFullYear()} NAMI Works. Todos os direitos reservados.
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--site-border);
+    padding: 40px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    background-color: var(--site-bg);
+    color: var(--site-text-secondary);
+    font-family: var(--site-font);
+    font-size: 13px;
+  }
+
+  .footerBrand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .footerBrandText {
+    color: var(--site-text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .footerLinks {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .footerLink,
+  .footerEmail a {
+    text-decoration: none;
+    color: var(--site-text-secondary);
+    font-size: 13px;
+    transition: color 0.15s ease;
+  }
+
+  .footerLink:hover,
+  .footerEmail a:hover {
+    color: var(--site-text);
+  }
+
+  .footerCopy {
+    color: var(--site-text-secondary);
+    font-size: 12px;
+  }
+
+  @media (min-width: 769px) {
+    .footer {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 60px 48px;
+    }
+  }
+</style>

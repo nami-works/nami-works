@@ -1,0 +1,212 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/marketing.css";
+
+const processSteps = [
+  {
+    number: "01",
+    title: "Diagnóstico",
+    body: "Auditamos a operação e mapeamos onde a IA agrega valor. Sem calls: um relatório assíncrono, com preço fechado.",
+    href: "/diagnostico",
+  },
+  {
+    number: "02",
+    title: "Implantação",
+    body: "Instalamos o console de operação (Claude Code e as integrações necessárias) na estrutura da sua própria empresa.",
+    href: "/implantacao",
+  },
+  {
+    number: "03",
+    title: "Operação",
+    body: "Depois de implantado, seguimos rodando com o seu time, de forma contínua.",
+    href: "/operacao",
+  },
+];
+
+const serviceLines = [
+  {
+    tag: "A",
+    title: "Implementação de IA para gestão empresarial",
+    body: "Auditamos a operação de uma empresa, em qualquer setor, e implantamos Claude e agentes de IA na gestão interna: processos, dados e decisões do dia a dia que hoje dependem de planilha e memória de time.",
+    href: "/diagnostico",
+  },
+  {
+    tag: "B",
+    title: "Operação de e-commerce com IA",
+    body: "A nossa prova em produção: rodamos, na prática e hoje, a operação inteira de uma marca de e-commerce (catálogo, medição de crescimento e CRM) com esse mesmo método.",
+    href: "/metodo",
+  },
+];
+---
+
+<BaseLayout
+  title="NAMI Works | Implementamos e operamos sistemas de IA para empresas"
+  description="NAMI Works audita operações, implanta agentes de IA na gestão empresarial e opera, na prática, toda a operação de uma marca de e-commerce com esse mesmo método."
+>
+  <section class="hero">
+    <div class="container">
+      <p class="eyebrow">NAMI Works</p>
+      <h1 class="heroTitle">Implementamos e operamos sistemas de IA para empresas.</h1>
+      <p class="heroSub">Da auditoria à operação contínua, com agentes de IA supervisionados.</p>
+      <p class="heroLede">
+        Ajudamos empresas de qualquer setor a auditar a própria operação e a
+        instalar Claude e agentes de IA na gestão interna. E, na prática,
+        rodamos nós mesmos a operação inteira de uma marca de e-commerce de 8
+        dígitos com esse mesmo método, todos os dias. Não é uma demonstração:
+        é a nossa prova de que o método funciona.
+      </p>
+      <div class="ctaRow">
+        <a href="/diagnostico" class="ctaPrimary">Ver o Diagnóstico</a>
+        <a href="#como-trabalhamos" class="ctaSecondary">Como trabalhamos</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="como-trabalhamos">
+    <div class="container">
+      <p class="eyebrow">Como trabalhamos</p>
+      <h2 class="sectionTitle">Um processo, aplicado às duas frentes.</h2>
+      <p class="lede">
+        O mesmo caminho de três etapas vale tanto para auditar a gestão
+        interna de uma empresa quanto para rodar a operação de um e-commerce.
+        O que muda é onde a IA age, não o processo pelo qual chegamos lá.
+      </p>
+
+      <div class="cardGrid cols3">
+        {
+          processSteps.map((step) => (
+            <a href={step.href} class="card offerCard">
+              <p class="cardNumber">{step.number}</p>
+              <h3 class="cardTitle">{step.title}</h3>
+              <p class="cardBody">{step.body}</p>
+              <span class="cardLink">
+                Saiba mais
+                <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M7 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="onde-atuamos">
+    <div class="container">
+      <p class="eyebrow">Onde atuamos</p>
+      <h2 class="sectionTitle">Duas frentes, o mesmo método.</h2>
+      <p class="lede">
+        A Implementação de IA para gestão empresarial é a frente mais ampla:
+        se aplica a qualquer empresa disposta a rodar a própria operação com
+        agentes de IA. A Operação de e-commerce com IA é a nossa prova
+        concreta de que isso funciona, porque é assim que rodamos o nosso
+        próprio caso hoje.
+      </p>
+
+      <div class="cardGrid cols2">
+        {
+          serviceLines.map((line) => (
+            <a href={line.href} class="card offerCard">
+              <p class="cardNumber">{line.tag}</p>
+              <h3 class="cardTitle">{line.title}</h3>
+              <p class="cardBody">{line.body}</p>
+              <span class="cardLink">
+                Saiba mais
+                <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M7 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+            </a>
+          ))
+        }
+      </div>
+
+      <div class="calloutBox">
+        <p class="calloutLabel">Prova em produção</p>
+        <p>
+          A Operação de e-commerce com IA não é um estudo de caso hipotético:
+          é assim que rodamos, hoje, uma marca de e-commerce de 8 dígitos de
+          faturamento, com o mesmo método que aplicamos na Implementação de IA
+          para outras empresas.
+        </p>
+      </div>
+
+      <a href="/metodo" class="ctaSecondary">Entender o método</a>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="comecar">
+    <div class="container">
+      <p class="eyebrow">Como começar</p>
+      <h2 class="sectionTitle">O ponto de entrada é sempre o Diagnóstico.</h2>
+      <p class="lede">
+        Não existe um pacote sem o Diagnóstico: é ele que define, para
+        qualquer uma das duas frentes, o que faz sentido automatizar
+        primeiro na sua operação.
+      </p>
+      <div class="ctaRow">
+        <a href="/diagnostico" class="ctaPrimary">Ver o Diagnóstico</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding: 96px 0 56px;
+  }
+
+  .heroTitle {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    color: var(--site-text);
+    margin: 0 0 10px;
+    max-width: 720px;
+  }
+
+  .heroSub {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--site-text-secondary);
+    margin: 0 0 24px;
+  }
+
+  .heroLede {
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--site-text-secondary);
+    max-width: 620px;
+    margin: 0 0 32px;
+  }
+
+  .offerCard {
+    text-decoration: none;
+    display: block;
+    transition: border-color 0.15s ease;
+  }
+
+  .offerCard:hover {
+    border-color: var(--site-accent);
+  }
+
+  @media (min-width: 769px) {
+    .hero {
+      padding: 140px 0 88px;
+    }
+    .heroTitle {
+      font-size: 52px;
+    }
+    .heroSub {
+      font-size: 24px;
+    }
+    .heroLede {
+      font-size: 18px;
+    }
+    .cardGrid.cols2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
