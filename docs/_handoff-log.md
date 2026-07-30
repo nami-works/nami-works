@@ -24,7 +24,7 @@ That way an item disappears from this log the moment a session takes it on, and 
 
 # email
 
-**Surface: Claude Cowork.** The machinery that used to pin this to Code (label snapshots, SENT-diff learning, lifecycle promotion, per-recipient style files, org registry) is retired — the workflow is now just classify-inbox + draft-via-Gmail-MCP, no local memory needed. (Skill trim to match is pending — see note in the handoff.)
+**Surface: Claude Cowork.** The machinery that used to pin this to Code (label snapshots, SENT-diff learning, lifecycle promotion, per-recipient style files, org registry) is retired, and the `/email-copilot` skill has been trimmed to a self-contained operating core — classify-inbox + intent-label + draft-via-Gmail-MCP + triage/execute gate, no local memory needed. Runs the same on Cowork or Code.
 
 A prior session wrote a handoff document for the work I want to continue. It's written to stand alone — you will NOT have this repo's Claude memory auto-loaded, so treat the file as your complete context; don't go looking for memory files.
 
