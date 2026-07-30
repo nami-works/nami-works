@@ -1,10 +1,49 @@
 # Session Handoff — 2026-07-30
 
-**Scope:** CD Extrema fulfillment stall — diagnosis, affected-customer scoping, and Shopify
-segment setup for outreach. This work is moving from Claude Code to **Cowork** (Lucas's
-direction, end of this session).
+**Scope:** GE Beauty's store-credit **retention program** — its policy, targeting evidence, and
+the `ops-goodwill` service-recovery framework it recently spun off. The CD Extrema fulfillment
+delay is the current, still-open **task** inside that program, not a separate topic. This work
+is moving from Claude Code to **Cowork** (Lucas's direction, end of this session).
 
-## What was done
+## The retention program (read this even if you skip everything else)
+
+GE Beauty runs a store-credit retention program on native Shopify store credit (replaced
+BEAUTYBACK cashback codes). Canonical doc: `docs/retention-playbook.md`. This section is the
+self-contained fallback in case Cowork can't fluently pull this repo's docs/memory the way a
+Claude Code session does.
+
+**Locked retention policy:** 20% of last paid order, R$10 floor, 60-day expiry. Two platform
+facts that apply to *any* credit issued, not just retention: **no per-order redemption cap
+exists** (store credit is a wallet tender, applies up to order total) and **customers cannot
+partial-apply** — the only real levers are issued amount and expiry.
+
+**Targeting evidence** (first wave, holdout-controlled): SEND 1.81% vs HOLD 0.80% repurchase =
++1.01pp causal lift. Sweet spot 91–120d and 181–270d recency; 366d+ nearly dead.
+
+**Hard rule:** every credit/debit event — waves *and* one-off manual credits — gets appended to
+`gebeauty/retention-machine/learning/credit-ledger.jsonl` via `credit_ledger.append_event()`.
+This is the one ledger; it's the only place that answers "what have we issued, to whom, what's
+still live."
+
+**The `ops-goodwill` program (agreed 2026-07-29, playbook §7):** service-recovery credits
+(delayed orders, damage, CS apologies) are explicitly a **separate program from retention** —
+never a one-off exception to the retention policy. Own %/expiry per case, defaults leaning
+`notify=true` (a silent apology repairs nothing) and longer-than-60d expiry. Ledger
+`source="ops-goodwill"`, order gid + reason in notes. Readouts exclude customers who got a
+non-wave credit in the measurement window.
+
+**The one prior ops-goodwill case is a warning, not a template:** the "hexagon" delayed-order
+batch (unrelated orders, 2026-05-22, 30% credit, 60d expiry) had its goodwill message actually
+sent (via an external flow) and still **0% of those credits were redeemed**. Don't inherit
+30%/60d for any new case just because it's the only precedent — design each case on its own
+terms and watch redemption, not just delivery.
+
+**Skill architecture:** messaging stays in `crm-director`; the retention *program* gets its own
+`retention-director` skill once the wave loop stabilizes (not yet minted). Everything above also
+lives in memory (`project_gebeauty_retention_machine.md`) for any session that can read
+`~/.claude/projects/c--claude/memory/`.
+
+## Current task: CD Extrema delay (the second ops-goodwill case)
 
 **Diagnosis**
 - Confirmed **CD Extrema** (Shopify Location `gid://shopify/Location/105538257216`) fulfilled
@@ -67,13 +106,9 @@ direction, end of this session).
 
 ## What's pending
 
-1. **Comms + credit treatment for the 546 batch-1 customers** — not designed yet. This is a
-   live application of the **ops-goodwill framework** already documented in
-   `docs/retention-playbook.md` §7 (program classification, ledger `source="ops-goodwill"`,
-   `notify=true`/CS-announced default, longer-than-60d expiry lean). No %/dates have been
-   proposed for *this* incident — don't reuse the unrelated "hexagon" precedent's 30%/60d
-   values without designing for this case on its own terms (that precedent's own lesson: 0%
-   redemption despite the goodwill message being sent).
+1. **Comms + credit treatment for the 546 batch-1 customers** — not designed yet. Apply the
+   `ops-goodwill` framework above; don't reuse the hexagon precedent's 30%/60d values uncritically
+   (its own lesson: 0% redemption despite the goodwill message being sent).
 2. **Verify before treating batch 1 as final.** A same-day re-check (Jul 30) found the live
    CD-Extrema-bound backlog had grown to 593 orders / 587 unique customers. 35 of those are
    today's new orders (expected, correctly excluded). But that still leaves **~6 orders
@@ -85,7 +120,9 @@ direction, end of this session).
 4. **Root cause at CD Extrema/Total Express MG is still unknown.** This session only diagnosed
    and scoped the customer-facing fallout — it did not investigate *why* the location/carrier
    stopped fulfilling. That's a logistics-ops question, possibly its own workstream.
-5. **This whole thread is moving to Cowork.** The next session picking this up may not be
+5. **Retention-director skill** — still deferred until the wave loop stabilizes; two ops-goodwill
+   cases now exist (hexagon, CD Extrema) — worth reconsidering once this one closes.
+6. **This whole thread is moving to Cowork.** The next session picking this up may not be
    Claude Code at all.
 
 ## Modified files
@@ -100,10 +137,9 @@ direction, end of this session).
   `cd_extrema_customer_ids.json`, `cd_extrema_final_552.json`, `cd_extrema_orders.json`,
   `unfulfilled_tags.json` — the tag + segment in Shopify is now the source of truth. Don't
   recreate these as long-lived files; re-run the scoping query fresh if needed.
-- **Not mine — do not touch:** `.claude/initiatives/gebeauty-acquisition-rescue.md`,
-  `gebeauty/CLAUDE.md`, `gebeauty/legal/pending.md` show modified in the working tree; ~58
-  untracked files also present. All belong to other concurrent sessions (inherited dirty tree,
-  confirmed at session start).
+- **Not mine — do not touch:** other sessions' modified/untracked files were present in the
+  working tree throughout (inherited dirty tree, confirmed at session start) — none related to
+  this topic.
 
 ## Current state / how to verify
 
@@ -120,8 +156,8 @@ direction, end of this session).
 
 ## Recommended next steps (priority order)
 
-1. Design the comms + credit treatment for the 546 batch-1 customers (ops-goodwill framework,
-   `docs/retention-playbook.md` §7) — the actual deliverable Lucas is waiting on.
+1. Design the comms + credit treatment for the 546 batch-1 customers (`ops-goodwill` framework
+   above) — the actual deliverable Lucas is waiting on.
 2. Verify the ~6-order gap (587 current-pool customers vs 546 tagged) by diffing order names.
 3. Check Jul 31: is CD Extrema fulfilling again? If not, build batch 2 (Jul 30+ orders, new
    dated tag).
@@ -138,8 +174,8 @@ direction, end of this session).
   the scope ever gets added, the scoping method could be simplified.
 - **Repo git convention changed today**: feature branches, not direct-to-main. Session-wide
   change, not topic-specific — confirm it lands in `gebeauty/CLAUDE.md` if it hasn't already.
-- **Working-tree collision this session:** a shared checkout (no git worktrees) meant another
-  concurrent session's staged files got twice accidentally swept into a commit attempt here.
+- **Working-tree collision this session:** a shared checkout (no git worktrees) meant other
+  concurrent sessions' staged files got twice accidentally swept into a commit attempt here.
   Both were caught and undone non-destructively (`git reset --soft`, never `--hard`; their file
   content was never touched, only staged→unstaged). Flagged as a reason to consider isolating
   concurrent sessions (worktrees, or the Cowork move itself may resolve it structurally).
