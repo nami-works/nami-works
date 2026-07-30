@@ -83,7 +83,7 @@ fi
 # mechanically.
 #
 # Logic:
-#   - target == main                                    → OK (loose-ops direct-to-main is allowed)
+#   - target == main                                    → OK (direct-to-main is allowed)
 #   - target != session_start_branch                    → OK (branch was created/switched this session,
 #                                                              i.e. intentional per the CTO contract)
 #   - target == session_start_branch && target != main  → BLOCK (inherited feature branch — the trap)
@@ -113,7 +113,7 @@ are a trap: another session likely owns the branch and its in-flight PR, and
 adding your commits will sweep your work into their PR.
 
 Pick one:
-  a) Commit to main (loose-ops zones: gebeauty/**, sandbox/**, root state) —
+  a) Commit to main (fine for small / operational changes) —
        git checkout main
        git commit ...
   b) Cut a fresh branch off main for your own work —

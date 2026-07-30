@@ -97,8 +97,8 @@ the shell (canvas 51, ring, weight, color pair, centering) is added deterministi
    both variants at 48px and 24px beside the four family refs and confirm it reads as the
    same set. The score is the floor, not the ceiling.
 8. **Save the masters.** `gebeauty/imagery/website-icons/icon-<name>.svg` +
-   `icon-<name>.currentcolor.svg`. These are enduring assets → commit them (loose-ops tier,
-   direct `gebeauty/**`). Keep a short `website-icons/README.md` registry: name → concept →
+   `icon-<name>.currentcolor.svg`. These are enduring assets → commit them directly to `main`
+   (`gebeauty/**` operational work). Keep a short `website-icons/README.md` registry: name → concept →
    date → whether it's live in a metaobject.
 9. **Deploy (only on explicit go — store write, gated).** Uploading to the live store is a
    customer-visible mutation (memory `feedback_confirm_store_writes`). On approval:

@@ -78,7 +78,7 @@ Per-app scripts live in each workspace's `package.json`.
 - Omnify Admin: [apps/omnify-admin/CLAUDE.md](apps/omnify-admin/CLAUDE.md) — Polaris web components only, no custom CSS for primitives
 - Public site: [apps/omnify-site/CLAUDE.md](apps/omnify-site/CLAUDE.md) — no admin imports, no banned deps
 
-Cross-cutting rules (parallel sessions, deploy queue, branch-per-task, shell compatibility) live in [CLAUDE.md](CLAUDE.md) at the root.
+Cross-cutting rules (git workflow, shell compatibility, secrets, session-start discipline) live in [CLAUDE.md](CLAUDE.md) at the root.
 
 ## Status
 

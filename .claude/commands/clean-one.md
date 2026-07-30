@@ -2,7 +2,7 @@
 description: Pick one file from the ESLint backlog and clear all its issues on a chore branch
 ---
 
-Pick one file (or batch the trivial tail) from the lint backlog and clear all its issues. Repo conventions (branch-per-task, pre-commit gate, etc.) are in `CLAUDE.md` — follow them.
+Pick one file (or batch the trivial tail) from the lint backlog and clear all its issues. Repo conventions (git workflow, pre-commit gate, etc.) are in `CLAUDE.md` — follow them.
 
 ## Modes
 
