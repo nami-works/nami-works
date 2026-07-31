@@ -110,24 +110,6 @@ Context in one line: we settled the capability-placement model (org skills = set
 
 ---
 
-# theme-fixes
-
-**Surface: Claude Code.** This pipeline is Windows/local-bound — `convert` (the Windows disk tool) + PyMuPDF, `gebeauty/.env` creds, live-theme writes (theme 181379236160), and the `skill_iconographer.md` memory that auto-loads only on Code. Cowork can't run it. Keep on Code.
-
-`git fetch; git pull` on main first, then read `docs/handoff-iconographer-pipeline.md` — it's the full, self-contained handoff.
-
-Context in one paragraph: We built /iconographer ("Otto"), a production website-icon generator for GE Beauty, spun off from /illustrator. It has a deterministic engine (.claude/skills/iconographer/scripts/iconkit.py: family shell + rounded primitive kit + motif normalizer + a 7-check auto-QA scorer calibrated on the real family). We ran a 4-process experiment and locked the pipeline: library-extract → kit → stock, with AI-autotrace dropped (it solidifies line art). All 18 ICONS FINAIS.ai brand icons are ingested into gebeauty/imagery/website-icons/ as icon-<name>.svg + currentColor pairs (scored 98–100), plus 4 kit drafts in drafts/. Standard = filled-outline, viewBox 0 0 51 51, GE red #DF3630. Two artifacts published (inventory + methodology, linked in the doc). One live change already shipped: Máscara Mayday slide moved to hero position 1.
-
-Everything is committed to origin/main (no branch to check out). Memory skill_iconographer.md loads at session start.
-
-Next up (held for this session): the 3 travel-size LP benefit icons — extract Sem sulfatos from the library for "livre de sulfatos", and author the two missing ones ("limpa sem ressecar", "use todos os dias") in filled-outline. Store deploy is gated (needs Lucas's go). Confirm with me before any live-store write.
-
-Environment gotchas (in the doc): .ai files are PDF-compatible → use PyMuPDF (no poppler/Ghostscript); convert on Windows is the disk tool, not ImageMagick; .env from C:\claude\gebeauty\.env; live theme 181379236160.
-
-↳ **Log upkeep (at pickup):** delete this entire `theme-fixes` block from `docs/_handoff-log.md` and commit the removal.
-
----
-
 # landing-pages
 
 **Surface: Claude Cowork.** Caveat: building and iterating the LPs is Cowork-fine, but applying to the live GE theme/store (Asset API, metafield binding) runs through local `gebeauty/.env` — do the apply where the creds resolve (or confirm the `.env` is synced into the connected folder), otherwise hand the live-store step to a Code session.
