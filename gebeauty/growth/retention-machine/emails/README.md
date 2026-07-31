@@ -8,7 +8,8 @@ Naming: `<notification-type>__<variant>.liquid`
 ## Built — the wired template
 | File | Type | Notes |
 |---|---|---|
-| **`store-credit__notification.liquid`** | "Store credit issued" notification | **THE canonical template — wire this once and never swap.** Branches framing on native customer **tags** into three contexts (`goodwill` / `reactivation` / `refill`, default `refill`). Renders a fixed 3-mist recs block. Two-axis personalization: situation (goodwill vs reactivation vs refill) + offer. |
+| **`store-credit__notification.liquid`** | "Store credit issued" notification body | **THE canonical template — wire this once and never swap.** Branches framing on native customer **tags** into three contexts (`goodwill` / `reactivation` / `refill`, default `refill`). Renders a fixed 3-mist recs block. Two-axis personalization: situation (goodwill vs reactivation vs refill) + offer. |
+| **`store-credit__notification.subject.liquid`** | "Store credit issued" notification subject | Paste into the **Email subject** field (separate from the body in Shopify's editor). Same 3-way tag branch as the body, same priority order (goodwill → reactivation → refill). |
 
 Superseded source variants (kept for reference/diff, NOT wired):
 `store-credit__reactivation.liquid`, `store-credit__still-active.liquid` — merged into the unified file above.

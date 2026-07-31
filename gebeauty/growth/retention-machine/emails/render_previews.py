@@ -9,6 +9,7 @@ from pathlib import Path
 from liquid import Environment
 
 TEMPLATE_PATH = Path(__file__).parent / "store-credit__notification.liquid"
+SUBJECT_PATH = Path(__file__).parent / "store-credit__notification.subject.liquid"
 OUT_DIR = TEMPLATE_PATH.parent
 
 REAL_SHOP_EMAIL = "sac@gebeauty.com.br"  # confirmed via GraphQL `shop { email }`, 2026-07-31
@@ -19,6 +20,11 @@ env = Environment()
 
 def money_filter(val):
     return f"R$ {val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def money_without_trailing_zeros_filter(val):
+    s = money_filter(val)
+    return s[:-3] if s.endswith(",00") else s
 
 
 def date_filter(val, **kwargs):
@@ -33,10 +39,12 @@ def shopify_asset_url_filter(val):
 
 
 env.filters["money"] = money_filter
+env.filters["money_without_trailing_zeros"] = money_without_trailing_zeros_filter
 env.filters["date"] = date_filter
 env.filters["shopify_asset_url"] = shopify_asset_url_filter
 
 template = env.from_string(TEMPLATE_PATH.read_text(encoding="utf-8"))
+subject_template = env.from_string(SUBJECT_PATH.read_text(encoding="utf-8").strip())
 
 BASE_SHOP = {
     "url": "https://www.gebeauty.com.br",
@@ -74,7 +82,13 @@ for scenario in SCENARIOS:
         "routes": {"account_profile_url": "https://www.gebeauty.com.br/account"},
         "company_location": None,
     }
+    subject = subject_template.render(**ctx)
     rendered = template.render(**ctx)
+    banner = (
+        '<div style="background:#111;color:#fff;font:13px monospace;padding:8px 16px;">'
+        f'SUBJECT: {subject}</div>'
+    )
+    rendered = rendered.replace("<body>", f"<body>{banner}", 1)
     out_path = OUT_DIR / scenario["file"]
     out_path.write_text(rendered, encoding="utf-8")
-    print(f"wrote {out_path.name}")
+    print(f"wrote {out_path.name}  subject: {subject}")
