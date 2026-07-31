@@ -24,6 +24,16 @@ Low-urgency issues discovered during operations. Fix when convenient; not blocki
 
 ---
 
+## Retention / recs personalization
+
+### `core-target` tag removal via Flow not working yet
+- **What:** `core-target` marks customers who haven't received BOTH fidelity-driver products (Shampoo Sem Sulfato + Máscara Condicionadora), for recs targeting. Backfilled 2026-07-31 via `growth/retention-machine/tag_core_target.py` (42,995 of 51,166 customers tagged; bundle purchases correctly attributed via component line items, no bundle-definition lookup needed). Removal — untagging once a customer buys both — was meant to run as a Shopify Flow, but Lucas confirmed it isn't working yet.
+- **Impact:** the tag will drift stale (customers who complete the duo after the backfill stay tagged) until the Flow is fixed. Not urgent — no downstream automation reads this tag yet.
+- **Fix:** debug/rebuild the Flow (trigger: order paid containing both product ids across the order's cumulative history, not just the single order — a customer often buys the two products in separate orders). Until then, a periodic re-run of the equivalent logic as a removal script is the fallback.
+- **Found:** 2026-07-31
+
+---
+
 ## B2B registrations
 
 ### GEB 121 (Máscara Mayday) — missing physical specs
@@ -39,3 +49,38 @@ Low-urgency issues discovered during operations. Fix when convenient; not blocki
 - **Found:** 2026-06-12
 
 ---
+
+---
+
+## Paid media / audiences
+
+### r95 audience change — narrow to engaged non-converters (DEFERRED to a CheckCommerce ticket)
+- **What:** repoint `[GE] primeira-rotina-r95` (63%-off first-purchase offer) from broad prospecting to engaged-but-never-purchased. Spec measured + written: `growth/campaigns/lp-educacional-2026-08/LP-STRUCTURE-REVIEW.md` › Part 2.
+  - floor **45 days** since first interaction (measured: 81.6% of deliberators already converted by then; a 14-day floor leaves half still converting at full price)
+  - ceiling 180 days last activity (Meta website-audience cap; use engagement audiences for 365)
+  - variant A `2+` touchpoints / variant B `3+` — **decide on the Ads Manager audience estimate**, not preference. If B is thin, keep 45 days and fall back to 2+, never the reverse.
+  - exclude all-time purchasers + anyone in an active full-price prospecting cell
+- **Why deferred:** Lucas (2026-07-31) — do it as ONE thorough CheckCommerce ticket AFTER the ads + LP strategy rebuild lands, not piecemeal now.
+- **Also carry into that ticket:** the campaign is a deliberate loss-leader (first order nets 2.3%, below the 10% floor by design; payback needs only a 7.7% repeat rate vs 15.8% baseline — `r95_cohort_isolation.py`). It MUST be tagged at creation, excluded from blended Module A, and read on 2nd-purchase rate, never first-order ROAS. Narrowing to a warmer audience will flatter CPA; the two versions are separate cohorts and not comparable to each other.
+- **Found:** 2026-07-31
+
+### Campaign names contain `|` — breaks Nemu attribution
+- **What:** 13 of 17 campaigns in ad account 606199920079315 have a pipe in the name. `growth/references/utm-conventions.md` golden rule 3: Nemu encodes `{{campaign.name}}|{{campaign.id}}`, so a pipe inside the name breaks the `name|id` split.
+- **Fix:** rename to the bracket convention already used by `[CS] [REGULAR] [CONVERSAO] [ABO] [MISTO]`. Free, and it protects every number the LP test will be judged on. Fold into the same CheckCommerce ticket.
+- **Found:** 2026-07-31
+
+### `economics.cac_ceiling` R$68 is marked SUPERSEDED in knowledge.md but still live in brand-context.md
+- **What:** `growth/knowledge.md` › Confirmed findings strikes through "Max CAC ~R$68/new order" as **SUPERSEDED 2026-07-22 — recompute via `module-a/kpi_sweep.py` on the rebuilt cost model**. `brand-context.md` still publishes it as `economics.cac_ceiling: 68, as_of 2026-07`.
+- **Impact:** every margin verdict in `ACCOUNT-AUDIT.md` and the LP offer model steers by R$68. Directionally fine, but not a blessed number.
+- **Fix:** re-derive via `kpi_sweep.py`, then reconcile the manifest to the engine output (Lucas's call — money assumption).
+- **Found:** 2026-07-31
+
+### `multicolumn-ingredients` never renders on a PAGE — ingredient copy invisible on both live LPs
+- **What:** `/pages/primer-cachos-definidos` and `/pages/primer-liso-intacto` have their ingredient copy written, set, and correctly bound (`ingredientes_titulo`, `ingrediente_{1,2,3}_titulo/_texto` all populated) yet the section renders nothing. Diagnosed 2026-07-31 against the live main theme.
+- **Root cause:** three nested gates in `sections/multicolumn-ingredients.liquid` all fail in a page context. (1) line ~30 wraps the WHOLE section in `{% if product.metafields.custom.descricao_longa_com_abas.value.ingredientes != blank or product.metafields.custom.ingredientes_com_foto != blank %}` — the global `product` object does not exist on a page, so it is always false. (2) line ~81 gates the card body on `block.settings.image != blank`; the template sets no image. (3) line ~107 nests title and text inside `block.settings.button_text != blank`; the template sets `button_text: ""`.
+- **Verdict:** not a patch. It is a PDP component (image + expand-button accordion driven by the product's ingredient metaobject) being used for page-driven text columns. Reworking it for both contexts risks the PDPs.
+- **Fix:** bind the existing `ingrediente_*` page metafields to stock `sections/multicolumn.liquid` instead (renders title+text with no image/button requirement). Zero new Liquid, zero PDP risk, and it makes the existing Cachos/Liso copy visible.
+- **Impact:** live customer-facing content that nobody is seeing on two published LPs.
+- **Found:** 2026-07-31
+- **RESOLVED 2026-07-31.** Lucas's steer was right: pull the PDP path. The section was replaced with a `custom-liquid` section (same position, 6/11) that renders `snippets/multicolumn-ingredients.liquid` — the snippet the PDP already uses, which reads the product's own `ingredientes_com_foto` + `descricao_longa_com_abas.ingredientes`. The product is resolved from `page.metafields.custom.produto_em_destaque_1` and **passed as a render parameter**, because `{% render %}` is scope-isolated and an `assign` would not reach inside the snippet. Verified live: both pages render **4 photo ingredient cards**, 0 Liquid errors (Cachos "chia", Liso "trehalose"/"girassol"). Note the rendered copy now comes from the PRODUCT, so the manually-written page-level `ingrediente_*` values are superseded and could be retired. Script + byte-exact backup + `--restore`: `growth/campaigns/lp-educacional-2026-08/fix_lp_ingredients.py`.
+- **Theme churn observed mid-session:** `page.landing-page.json` -> `page.lp-single-product.json` and `page.multi-product.json` -> `page.lp-multi-product.json` were renamed by another hand at 18:24 on 2026-07-31 while this work was in flight. Section orders identical, all four live LPs repointed correctly (HTTP 200, 0 Liquid errors). Lesson for scripts: resolve the template key at runtime, never hardcode or cache it.
