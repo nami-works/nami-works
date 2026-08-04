@@ -1,0 +1,508 @@
+{
+  "sections": {
+    "hero": {
+      "type": "slideshow",
+      "blocks": {
+        "s1": {
+          "type": "slide",
+          "settings": {
+            "image": "{{ page.metafields.custom.banner_desktop.value }}",
+            "image_mb": "{{ page.metafields.custom.banner_mobile.value }}",
+            "heading": "",
+            "heading_size": "h1",
+            "subheading": "",
+            "button_label": "comprar agora",
+            "link": "{{ page.metafields.custom.cta_cart_link.value }}",
+            "link_title": "",
+            "button_style_secondary": false,
+            "box_align": "bottom-right",
+            "show_text_box": false,
+            "text_alignment": "right",
+            "image_overlay_opacity": 0,
+            "color_scheme": "",
+            "text_alignment_mobile": "right"
+          }
+        }
+      },
+      "block_order": [
+        "s1"
+      ],
+      "settings": {
+        "layout": "full_bleed",
+        "full_width": true,
+        "slide_height": "adapt_image",
+        "slider_visual": "counter",
+        "auto_rotate": false,
+        "show_pause": true,
+        "change_slides_speed": 5,
+        "image_behavior": "none",
+        "show_text_below": true,
+        "accessibility_info": "Slideshow about our brand",
+        "border_radius_top_left": 20,
+        "border_radius_top_right": 20,
+        "border_radius_bottom_right": 20,
+        "border_radius_bottom_left": 20
+      }
+    },
+    "buy": {
+      "type": "featured-product",
+      "blocks": {
+        "lpstyle": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "<style>#shopify-section-{{ section.id }} .product{background:#ecede9 !important;border-radius:20px;overflow:hidden;padding:24px;align-items:center;}#shopify-section-{{ section.id }} .product-media-container,#shopify-section-{{ section.id }} .product__media-wrapper,#shopify-section-{{ section.id }} .product__info-container{background:transparent !important;}#shopify-section-{{ section.id }} .product__info-wrapper{align-self:center;}#shopify-section-{{ section.id }} .product__title{font-weight:700 !important;}#shopify-section-{{ section.id }} .product__view-details{display:none !important;}#shopify-section-{{ section.id }} .button{border-radius:40px !important;}#shopify-section-{{ section.id }} .icon-with-text__item img{width:60px !important;height:auto !important;}#shopify-section-{{ section.id }} #price-{{ section.id }},#shopify-section-{{ section.id }} .product__info-container > .no-js-hidden{display:none !important;}}\";display:flex;align-items:center;justify-content:center;gap:0.6em;}@media(min-width:750px){#shopify-section-{{ section.id }} .product__media-wrapper{max-width:80%;margin-inline:auto;}#shopify-section-{{ section.id }} .product__title{font-size:calc(var(--font-heading-scale) * 2.6rem + 4pt) !important;}#shopify-section-{{ section.id }} .icon-with-text__item img{width:80px !important;}}<\/style><style>\/* iwt-card *\/.image-with-text__grid{background:#ecede9 !important;border-radius:20px;overflow:hidden;padding:24px;align-items:center;}.image-with-text__media,.image-with-text__content{background:transparent !important;}<\/style><style>\/* iwt-card-mobile *\/@media(max-width:749px){.image-with-text__grid{padding:0 !important;}.image-with-text__media{border-radius:0 !important;}.image-with-text__content{padding-left:16px !important;padding-right:16px !important;}}<\/style><style>\/* iwt-card-desktop *\/@media(min-width:750px){.image-with-text__grid{padding:0 !important;align-items:stretch !important;}.image-with-text__media{height:100% !important;}.image-with-text__media img{height:100% !important;width:100% !important;object-fit:cover !important;}.image-with-text__content{padding:32px !important;}}<\/style>"
+          }
+        },
+        "title": {
+          "type": "title",
+          "settings": {
+            "heading_size": "h2"
+          }
+        },
+        "benefits": {
+          "type": "icon-with-text",
+          "settings": {
+            "layout": "horizontal",
+            "icon_1": "none",
+            "image_1": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_1.value }}",
+            "heading_1": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_1.value }}",
+            "icon_2": "none",
+            "image_2": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_2.value }}",
+            "heading_2": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_2.value }}",
+            "icon_3": "none",
+            "image_3": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_3.value }}",
+            "heading_3": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_3.value }}"
+          }
+        },
+        "variant": {
+          "type": "variant_picker",
+          "settings": {
+            "picker_type": "button"
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "buy": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "loox_rating": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "<div class=\"loox-rating\" data-id=\"{{ section.settings.product.id }}\" data-rating=\"{{ section.settings.product.metafields.loox.avg_rating }}\" data-raters=\"{{ section.settings.product.metafields.loox.num_reviews }}\"><\/div>"
+          }
+        }
+      },
+      "block_order": [
+        "lpstyle",
+        "title",
+        "benefits",
+        "variant",
+        "price",
+        "loox_rating",
+        "buy"
+      ],
+      "settings": {
+        "product": "{{ page.metafields.custom.produto_em_destaque_1.value }}",
+        "color_scheme": "",
+        "secondary_background": false,
+        "media_size": "small",
+        "constrain_to_viewport": true,
+        "media_fit": "contain",
+        "media_position": "left",
+        "image_zoom": "none",
+        "hide_variants": false,
+        "enable_video_looping": false,
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "loox_carousel": {
+      "type": "apps",
+      "blocks": {
+        "car": {
+          "type": "shopify:\/\/apps\/loox-reviews\/blocks\/loox-card-carousel-section\/5c3b337f-fd14-4df5-b1d6-80ec13e6e28e",
+          "settings": {
+            "maxWidth": 1100,
+            "borderRadius": 8,
+            "itemsPerView": 4,
+            "mobileItemsPerView": 1,
+            "maxNumberOfCharacters": 100,
+            "imageRatio": "0.72",
+            "reviewerNameColor": "#000000",
+            "textColor": "#000000",
+            "itemBackgroundColor": "#ffffff",
+            "starsColor": "",
+            "starsBackgroundColor": "#ffffff",
+            "arrows_backgroundColor": "#ffffff",
+            "arrows_iconColor": "#9a9a9a",
+            "shadow": "offset-dark",
+            "border_active": false,
+            "border_width": 2,
+            "border_color": "#000000",
+            "productIds": "{{ page.metafields.custom.produto_em_destaque_1.value }}"
+          }
+        }
+      },
+      "block_order": [
+        "car"
+      ],
+      "settings": {
+        "include_margins": true,
+        "border_radius_top_left": 0,
+        "border_radius_top_right": 0,
+        "border_radius_bottom_right": 0,
+        "border_radius_bottom_left": 0
+      }
+    },
+    "problem": {
+      "type": "image-with-text",
+      "blocks": {
+        "h": {
+          "type": "heading",
+          "settings": {
+            "heading": "{{ page.metafields.custom.problema_titulo.value }}",
+            "heading_size": "h2"
+          }
+        },
+        "t": {
+          "type": "text",
+          "settings": {
+            "text": "{{ page.metafields.custom.problema_texto | metafield_tag }}",
+            "text_style": "body"
+          }
+        }
+      },
+      "block_order": [
+        "h",
+        "t"
+      ],
+      "settings": {
+        "image": "{{ page.metafields.custom.imagem_problema.value }}",
+        "height": "adapt",
+        "desktop_image_width": "medium",
+        "layout": "image_first",
+        "desktop_content_position": "top",
+        "desktop_content_alignment": "left",
+        "content_layout": "no-overlap",
+        "color_scheme": "",
+        "image_behavior": "none",
+        "mobile_content_alignment": "left",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "solution": {
+      "type": "image-with-text",
+      "blocks": {
+        "h": {
+          "type": "heading",
+          "settings": {
+            "heading": "{{ page.metafields.custom.solucao_titulo.value }}",
+            "heading_size": "h2"
+          }
+        },
+        "t": {
+          "type": "text",
+          "settings": {
+            "text": "{{ page.metafields.custom.solucao_texto | metafield_tag }}",
+            "text_style": "body"
+          }
+        }
+      },
+      "block_order": [
+        "h",
+        "t"
+      ],
+      "settings": {
+        "image": "{{ page.metafields.custom.midia.value }}",
+        "height": "adapt",
+        "desktop_image_width": "medium",
+        "layout": "text_first",
+        "desktop_content_position": "middle",
+        "desktop_content_alignment": "left",
+        "content_layout": "no-overlap",
+        "color_scheme": "",
+        "image_behavior": "none",
+        "mobile_content_alignment": "left",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "ingredients": {
+      "type": "multicolumn-ingredients",
+      "blocks": {
+        "c1": {
+          "type": "column",
+          "settings": {
+            "title": "{{ page.metafields.custom.ingrediente_1_titulo.value }}",
+            "text": "{{ page.metafields.custom.ingrediente_1_texto | metafield_tag }}",
+            "color_scheme": "",
+            "button_text": ""
+          }
+        },
+        "c2": {
+          "type": "column",
+          "settings": {
+            "title": "{{ page.metafields.custom.ingrediente_2_titulo.value }}",
+            "text": "{{ page.metafields.custom.ingrediente_2_texto | metafield_tag }}",
+            "color_scheme": "",
+            "button_text": ""
+          }
+        },
+        "c3": {
+          "type": "column",
+          "settings": {
+            "title": "{{ page.metafields.custom.ingrediente_3_titulo.value }}",
+            "text": "{{ page.metafields.custom.ingrediente_3_texto | metafield_tag }}",
+            "color_scheme": "",
+            "button_text": ""
+          }
+        }
+      },
+      "block_order": [
+        "c1",
+        "c2",
+        "c3"
+      ],
+      "settings": {
+        "title": "{{ page.metafields.custom.ingredientes_titulo.value }}",
+        "heading_size": "h1",
+        "subtitle": "Multicolumn",
+        "columns_desktop": 3,
+        "column_alignment": "left",
+        "show_button_label": "Rótulo do botão mostrar",
+        "hide_button_label": "Rótulo do botão esconder",
+        "view_all_style": "outline",
+        "color_scheme": "",
+        "columns_mobile": "1",
+        "swipe_on_mobile": false,
+        "enable_desktop_slider": false,
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "before_after": {
+      "type": "section-before-after",
+      "blocks": {
+        "r": {
+          "type": "result",
+          "settings": {
+            "before_image": "{{ page.metafields.custom.antes_foto.value }}",
+            "after_image": "{{ page.metafields.custom.depois_foto.value }}",
+            "title": "{{ page.metafields.custom.antes_depois_titulo.value }}",
+            "description": "{{ page.metafields.custom.antes_depois_resultado | metafield_tag }}"
+          }
+        }
+      },
+      "block_order": [
+        "r"
+      ],
+      "settings": {
+        "title": "<strong>{{ page.metafields.custom.antes_depois_titulo.value }}<\/strong>",
+        "heading_size": "h1",
+        "subtitle": "",
+        "button_text": "",
+        "button_url": "",
+        "desktop_content_position": "middle",
+        "color_scheme": "",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "formula_icons": {
+      "type": "icons-with-title",
+      "blocks": {
+        "221b47b7-3573-422c-a9fd-8f7d94450375": {
+          "type": "icon",
+          "settings": {
+            "icon": "{{ metaobjects.icones[\"formulas-limpas\"].imagem.value }}",
+            "title": "{{ metaobjects.icones[\"formulas-limpas\"].texto.value }}",
+            "underline": false,
+            "link_url": "{{ metaobjects.icones[\"formulas-limpas\"].link.value }}"
+          }
+        },
+        "9a47ac29-d805-4b44-9083-032dd35f7295": {
+          "type": "icon",
+          "settings": {
+            "icon": "{{ metaobjects.icones[\"nao-testado-em-animais\"].imagem.value }}",
+            "title": "{{ metaobjects.icones[\"nao-testado-em-animais\"].texto.value }}",
+            "underline": false,
+            "link_url": "{{ metaobjects.icones[\"nao-testado-em-animais\"].link.value }}"
+          }
+        },
+        "53752189-8dcf-4baa-aef6-dce54a68162d": {
+          "type": "icon",
+          "settings": {
+            "icon": "{{ metaobjects.icones[\"produtos-veganos\"].imagem.value }}",
+            "title": "{{ metaobjects.icones[\"produtos-veganos\"].texto.value }}",
+            "underline": false,
+            "link_url": "{{ metaobjects.icones[\"produtos-veganos\"].link.value }}"
+          }
+        },
+        "1e35b9e0-37e7-4459-bec1-461a83c4f09c": {
+          "type": "icon",
+          "settings": {
+            "icon": "{{ metaobjects.icones[\"embalagens-reciclaveis\"].imagem.value }}",
+            "title": "{{ metaobjects.icones[\"embalagens-reciclaveis\"].texto.value }}",
+            "underline": false,
+            "link_url": "{{ metaobjects.icones[\"embalagens-reciclaveis\"].link.value }}"
+          }
+        }
+      },
+      "block_order": [
+        "221b47b7-3573-422c-a9fd-8f7d94450375",
+        "9a47ac29-d805-4b44-9083-032dd35f7295",
+        "53752189-8dcf-4baa-aef6-dce54a68162d",
+        "1e35b9e0-37e7-4459-bec1-461a83c4f09c"
+      ],
+      "settings": {
+        "color_scheme": "scheme-fddb92b1-9d1a-470a-b808-c0aa38c48415",
+        "padding_top": 24,
+        "padding_bottom": 0
+      }
+    },
+    "howto": {
+      "type": "tabs",
+      "blocks": {
+        "tab_como_usar": {
+          "type": "tab",
+          "settings": {
+            "tab_title": "como usar",
+            "tab_content": "{{ page.metafields.custom.tab_como_usar | metafield_tag }}"
+          }
+        },
+        "tab_resultados": {
+          "type": "tab",
+          "settings": {
+            "tab_title": "resultados",
+            "tab_content": "{{ page.metafields.custom.tab_resultados | metafield_tag }}"
+          }
+        },
+        "tab_saiba_mais": {
+          "type": "tab",
+          "settings": {
+            "tab_title": "saiba mais",
+            "tab_content": "<p>{{ page.metafields.custom.tab_saiba_mais | metafield_tag }}<\/p>"
+          }
+        }
+      },
+      "block_order": [
+        "tab_como_usar",
+        "tab_resultados",
+        "tab_saiba_mais"
+      ],
+      "settings": {
+        "color_scheme": "background-1",
+        "padding_top": 12,
+        "padding_bottom": 0
+      }
+    },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "q1": {
+          "type": "question",
+          "settings": {
+            "question": "{{ page.metafields.custom.faq_1_pergunta.value }}",
+            "answer": "{{ page.metafields.custom.faq_1_resposta | metafield_tag }}"
+          }
+        },
+        "q2": {
+          "type": "question",
+          "settings": {
+            "question": "{{ page.metafields.custom.faq_2_pergunta.value }}",
+            "answer": "{{ page.metafields.custom.faq_2_resposta | metafield_tag }}"
+          }
+        },
+        "q3": {
+          "type": "question",
+          "settings": {
+            "question": "{{ page.metafields.custom.faq_3_pergunta.value }}",
+            "answer": "{{ page.metafields.custom.faq_3_resposta | metafield_tag }}"
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3"
+      ],
+      "settings": {
+        "title": "{{ page.metafields.custom.faq_titulo.value }}",
+        "title_bold": true,
+        "heading_size": "h2",
+        "heading_alignment": "left",
+        "show_search_filter": false,
+        "search_filter_placeholder": "Como podemos te ajudar?",
+        "color_scheme": "",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "close": {
+      "type": "rich-text",
+      "blocks": {
+        "h": {
+          "type": "heading",
+          "settings": {
+            "heading": "{{ page.metafields.custom.fechamento_titulo.value }}",
+            "heading_size": "h2"
+          }
+        },
+        "t": {
+          "type": "text",
+          "settings": {
+            "text": "{{ page.metafields.custom.fechamento_texto | metafield_tag }}"
+          }
+        },
+        "btn": {
+          "type": "button",
+          "settings": {
+            "button_label": "{{ page.metafields.custom.fechamento_botao.value }}",
+            "button_link": "{{ page.metafields.custom.cta_cart_link.value }}",
+            "button_style_secondary": false,
+            "button_label_2": "",
+            "button_link_2": "",
+            "button_style_secondary_2": false
+          }
+        }
+      },
+      "block_order": [
+        "h",
+        "t",
+        "btn"
+      ],
+      "settings": {
+        "desktop_content_position": "center",
+        "content_alignment": "center",
+        "border_radius_top_left": 20,
+        "border_radius_top_right": 20,
+        "border_radius_bottom_right": 20,
+        "border_radius_bottom_left": 20,
+        "color_scheme": "",
+        "full_width": true,
+        "padding_top": 40,
+        "padding_bottom": 52
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "buy",
+    "loox_carousel",
+    "problem",
+    "solution",
+    "ingredients",
+    "before_after",
+    "formula_icons",
+    "howto",
+    "faq",
+    "close"
+  ]
+}

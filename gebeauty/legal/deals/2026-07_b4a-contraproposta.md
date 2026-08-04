@@ -1,5 +1,14 @@
 # Contraproposta GE Beauty à minuta B4A v2 (2026-07-28)
 
+> **SUPERSEDED (2026-08-03).** B4A sent a further-revised v2 (`Novo contrato B4A_v2.pdf`) whose only
+> substantive change vs. the version analyzed below is the payment schedule — now 4x per lote, first
+> installment D+30, matching what was actually agreed with the client. Every other item below (liability
+> cap, reserva de domínio/título executivo, e-commerce cota, uncapped postergação) is still present,
+> unaddressed, in that v2. **Lucas chose to sign as-is rather than send these counterpoints** — the risks
+> below were reviewed and knowingly accepted, not resolved. The fiscal gate (item 6) is resolved
+> operationally: GE will issue NFs at R$840.000,00 (the cash amount), not the R$1.280.000,00 valor
+> convencional the contract's compensação clause (5.2) uses. Kept here as the record of what was flagged.
+
 Retorno da GE sobre o **"Novo contrato B4A.pdf"** (Instrumento de Parceria Comercial, Prestação de Serviços e Fornecimento, 28/07/2026), disponível em `G:\Drives compartilhados\GEB_Comercial\Boxes\B4A\Novo contrato B4A.pdf`.
 
 Contexto: a B4A voltou com uma minuta **muito melhor e coerente** que o anti-modelo de julho (assume o barter/compensação abertamente, define termos, confidencialidade recíproca, LGPD). Lucas está **inclinado a assinar a minuta DELES** desde que a GE não fique muito exposta. Veredito da análise: **assinável com esta lista curta de ajustes; não assinar como está.** Referências de cláusula são da minuta B4A v2.

@@ -1,0 +1,350 @@
+<style>
+  :root{
+    --ground:#F7F4F2; --surface:#FFFFFF; --surface-2:#FBF9F8;
+    --ink:#211A17; --muted:#6E635F; --faint:#928681;
+    --line:#E7DFDA; --line-strong:#D8CEC8;
+    --accent:#DF3630; --accent-deep:#B02A25; --accent-soft:#FBE7E5;
+    --keep:#1F6F52; --keep-soft:#E4F0EA;
+    --leak:#9A8F8A; --leak-soft:#EFEAE7;
+    --shadow:0 1px 2px rgba(33,26,23,.05),0 8px 30px rgba(33,26,23,.06);
+    --serif:"Iowan Old Style","Palatino Linotype",Georgia,"Times New Roman",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Consolas,"Liberation Mono",monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161010; --surface:#201815; --surface-2:#241B18;
+      --ink:#F2EAE6; --muted:#AC9F99; --faint:#87796F;
+      --line:#352A25; --line-strong:#463831;
+      --accent:#FF5F53; --accent-deep:#FF7D73; --accent-soft:#3A211E;
+      --keep:#5FC195; --keep-soft:#17322A;
+      --leak:#7F756F; --leak-soft:#2A211D;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 34px rgba(0,0,0,.34);
+    }
+  }
+  :root[data-theme="light"]{
+    --ground:#F7F4F2; --surface:#FFFFFF; --surface-2:#FBF9F8;
+    --ink:#211A17; --muted:#6E635F; --faint:#928681;
+    --line:#E7DFDA; --line-strong:#D8CEC8;
+    --accent:#DF3630; --accent-deep:#B02A25; --accent-soft:#FBE7E5;
+    --keep:#1F6F52; --keep-soft:#E4F0EA; --leak:#9A8F8A; --leak-soft:#EFEAE7;
+    --shadow:0 1px 2px rgba(33,26,23,.05),0 8px 30px rgba(33,26,23,.06);
+  }
+  :root[data-theme="dark"]{
+    --ground:#161010; --surface:#201815; --surface-2:#241B18;
+    --ink:#F2EAE6; --muted:#AC9F99; --faint:#87796F;
+    --line:#352A25; --line-strong:#463831;
+    --accent:#FF5F53; --accent-deep:#FF7D73; --accent-soft:#3A211E;
+    --keep:#5FC195; --keep-soft:#17322A; --leak:#7F756F; --leak-soft:#2A211D;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 34px rgba(0,0,0,.34);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0}
+  .page{
+    background:var(--ground); color:var(--ink);
+    font-family:var(--sans); line-height:1.55;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    padding:clamp(20px,5vw,64px) clamp(16px,4vw,40px);
+  }
+  .sheet{
+    max-width:940px; margin:0 auto; background:var(--surface);
+    border:1px solid var(--line); border-radius:6px; box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .pad{padding:clamp(22px,4vw,44px)}
+
+  /* ---- masthead ---- */
+  .mast{border-bottom:1px solid var(--line); padding-bottom:26px}
+  .eyebrow{
+    font:600 12px/1 var(--sans); letter-spacing:.16em; text-transform:uppercase;
+    color:var(--accent); display:flex; align-items:center; gap:10px; margin:0 0 18px;
+  }
+  .eyebrow::before{content:""; width:26px; height:2px; background:var(--accent); display:inline-block}
+  h1{
+    font-family:var(--serif); font-weight:600; font-size:clamp(30px,5.4vw,52px);
+    line-height:1.02; letter-spacing:-.015em; margin:0 0 14px; text-wrap:balance;
+  }
+  h1 .thin{color:var(--muted); font-style:italic; font-weight:400}
+  .dek{font-size:clamp(15px,1.9vw,18px); color:var(--muted); max-width:64ch; margin:0}
+  .meta-row{
+    display:flex; flex-wrap:wrap; gap:8px 22px; margin-top:22px;
+    font:500 12.5px/1.4 var(--mono); color:var(--faint); letter-spacing:.01em;
+  }
+  .meta-row b{color:var(--ink); font-weight:600}
+
+  /* ---- section frame ---- */
+  section{border-top:1px solid var(--line)}
+  .kicker{
+    font:600 11.5px/1 var(--sans); letter-spacing:.15em; text-transform:uppercase;
+    color:var(--faint); margin:0 0 4px;
+  }
+  .kicker .n{color:var(--accent); margin-right:9px}
+  h2{
+    font-family:var(--serif); font-weight:600; font-size:clamp(20px,2.7vw,26px);
+    letter-spacing:-.01em; margin:0 0 16px; text-wrap:balance;
+  }
+  p{margin:0 0 12px} p:last-child{margin-bottom:0}
+  .lead{font-size:16.5px}
+  strong{font-weight:640}
+  .hot{color:var(--accent); font-weight:640}
+  .good{color:var(--keep); font-weight:640}
+
+  /* ---- decision banner ---- */
+  .decision{background:var(--surface-2)}
+  .decision .body{display:grid; grid-template-columns:1fr; gap:14px}
+  .verdict{
+    display:flex; gap:14px; align-items:flex-start; padding:16px 18px;
+    border:1px solid var(--line-strong); border-radius:5px; background:var(--surface);
+  }
+  .verdict .tag{
+    flex:0 0 auto; font:600 11px/1 var(--sans); letter-spacing:.08em; text-transform:uppercase;
+    padding:6px 9px; border-radius:4px; margin-top:2px;
+  }
+  .tag.done{background:var(--keep-soft); color:var(--keep)}
+  .tag.ask{background:var(--accent-soft); color:var(--accent-deep)}
+  .verdict p{font-size:15px}
+
+  /* ---- stat row ---- */
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:4px 0 20px}
+  .stat{
+    background:var(--surface-2); border:1px solid var(--line); border-radius:5px;
+    padding:15px 16px; display:flex; flex-direction:column; gap:3px;
+  }
+  .stat .fig{font:600 clamp(22px,3.2vw,29px)/1 var(--mono); letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+  .stat .fig.bad{color:var(--accent)}
+  .stat .lab{font-size:12px; color:var(--muted); line-height:1.35}
+
+  /* ---- bar charts ---- */
+  .chart{margin:18px 0 6px}
+  .chart .ctitle{font:600 12px/1 var(--sans); letter-spacing:.04em; color:var(--muted); text-transform:uppercase; margin-bottom:12px}
+  .bar{display:grid; grid-template-columns:150px 1fr; align-items:center; gap:14px; margin:9px 0}
+  .bar .blab{font-size:13px; color:var(--ink); text-align:right}
+  .bar .blab small{display:block; color:var(--faint); font-size:11px}
+  .track{position:relative; height:26px; background:var(--leak-soft); border-radius:4px; overflow:hidden}
+  .fill{height:100%; border-radius:4px; display:flex; align-items:center; padding:0 10px;
+    font:600 12.5px/1 var(--mono); color:#fff; white-space:nowrap; transform-origin:left;
+    font-variant-numeric:tabular-nums;}
+  .fill.leak{background:var(--leak)}
+  .fill.win{background:var(--keep)}
+  .fill.hot{background:var(--accent)}
+  .fill.amber{background:#C6892B}
+  .fill.ink{background:#5B4D47}
+  .fill .out{color:var(--ink); padding-left:8px}
+  .thresh{position:absolute; top:-6px; bottom:-6px; width:2px; background:var(--ink); z-index:3}
+  .thresh span{
+    position:absolute; top:-20px; left:50%; transform:translateX(-50%);
+    font:600 10.5px/1 var(--mono); color:var(--ink); white-space:nowrap;
+    background:var(--surface); padding:2px 5px; border:1px solid var(--line-strong); border-radius:3px;
+  }
+  .cap{font-size:12.5px; color:var(--faint); margin-top:12px}
+
+  /* ---- before / after ---- */
+  .ba{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+  .col{border:1px solid var(--line); border-radius:5px; overflow:hidden}
+  .col .head{padding:12px 16px; font:600 13px/1.3 var(--sans); display:flex; align-items:center; gap:9px}
+  .col.old .head{background:var(--leak-soft); color:var(--ink)}
+  .col.new .head{background:var(--accent-soft); color:var(--accent-deep)}
+  .col .head .dot{width:9px; height:9px; border-radius:50%}
+  .col.old .dot{background:var(--leak)} .col.new .dot{background:var(--accent)}
+  .row{display:grid; grid-template-columns:1fr; gap:2px; padding:11px 16px; border-top:1px solid var(--line); font-size:13.5px}
+  .row .rk{font:600 10.5px/1.3 var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--faint)}
+  .col.old .row .rv{color:var(--muted)}
+  .col.new .row .rv{color:var(--ink)}
+  .col.new .row .rv b{color:var(--keep)}
+
+  /* ---- risks ---- */
+  .risks{display:grid; grid-template-columns:1fr; gap:10px}
+  .risk{display:grid; grid-template-columns:auto 1fr; gap:14px; padding:14px 16px; background:var(--surface-2); border:1px solid var(--line); border-radius:5px}
+  .risk .rn{font:600 13px/1 var(--mono); color:var(--accent); padding-top:2px}
+  .risk .rt{font-weight:640; font-size:14px}
+  .risk .rm{font-size:13.5px; color:var(--muted)}
+  .risk .rm b{color:var(--keep); font-weight:640}
+
+  /* ---- ask ---- */
+  .ask-sec{background:var(--surface-2)}
+  .asks{display:grid; grid-template-columns:1fr; gap:0; border:1px solid var(--line-strong); border-radius:5px; overflow:hidden; background:var(--surface)}
+  .asks .item{display:grid; grid-template-columns:34px 1fr auto; gap:14px; align-items:center; padding:15px 18px; border-bottom:1px solid var(--line)}
+  .asks .item:last-child{border-bottom:0}
+  .asks .num{font-family:var(--serif); font-size:22px; color:var(--accent); font-weight:600}
+  .asks .txt{font-size:14.5px}
+  .asks .txt small{display:block; color:var(--muted); font-size:12.5px; margin-top:2px}
+  .pill{font:600 10.5px/1 var(--sans); letter-spacing:.06em; text-transform:uppercase; padding:6px 10px; border-radius:20px; white-space:nowrap}
+  .pill.wait{background:var(--accent-soft); color:var(--accent-deep)}
+  .pill.set{background:var(--keep-soft); color:var(--keep)}
+
+  footer{border-top:1px solid var(--line); padding:20px clamp(22px,4vw,44px); background:var(--surface-2); display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px 20px; font:500 11.5px/1.5 var(--mono); color:var(--faint)}
+  footer b{color:var(--muted); font-weight:600}
+  .sig{color:var(--accent); font-weight:600}
+
+  @media (max-width:680px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .ba{grid-template-columns:1fr}
+    .bar{grid-template-columns:120px 1fr; gap:10px}
+    .asks .item{grid-template-columns:26px 1fr; }
+    .asks .item .pill{grid-column:2; justify-self:start; margin-top:2px}
+  }
+  @media (prefers-reduced-motion:no-preference){
+    .fill{animation:grow .9s cubic-bezier(.22,.61,.36,1) both}
+    @keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  }
+</style>
+
+<div class="page">
+  <article class="sheet">
+
+    <div class="pad mast">
+      <p class="eyebrow">GE Beauty · Chief Growth Office · Defense</p>
+      <h1>Kill the leaking hose.<br><span class="thin">Ship the metered one.</span></h1>
+      <p class="dek">The MIST test was a scale-budget campaign wearing a test's clothes: it fished the lowest-intent audience on the account, with the engine off and no shut-off valve. This is the case for the rebuild we've already built (paused) and what we need to turn it on.</p>
+      <div class="meta-row">
+        <span><b>Subject</b> Melon Mood Body &amp; Hair Mist · paid Meta</span>
+        <span><b>Owner</b> CGO</span>
+        <span><b>Date</b> 2026-07-27</span>
+        <span><b>Status</b> bleed stopped · rebuild built, paused</span>
+      </div>
+    </div>
+
+    <section class="decision pad">
+      <p class="kicker"><span class="n">01</span>The decision on the table</p>
+      <div class="body">
+        <div class="verdict">
+          <span class="tag done">Done</span>
+          <p>The old campaign is <strong>paused</strong> and the rebuilt <strong>test&nbsp;&rarr;&nbsp;scale</strong> structure is <strong>built and paused</strong> in the account. No further spend since the pause.</p>
+        </div>
+        <div class="verdict">
+          <span class="tag ask">Decide</span>
+          <p>Approve <strong>activation</strong> of the rebuild after a one-time pre-flight check, and endorse <strong>paid-cohort contribution</strong> (not platform ROAS) as the metric that scales or kills it.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pad">
+      <p class="kicker"><span class="n">02</span>The read</p>
+      <h2>Same pixel, same checkout, one-fifteenth the result.</h2>
+      <p class="lead">The store isn't broken and the pixel isn't undercounting. The mist line did 793 orders in 60 days. The test failed on its own terms: it turned interest into orders at <span class="hot">1.1%</span> while every other campaign on the account runs <span class="good">14&ndash;19%</span>. That gap is targeting and structure, not the funnel.</p>
+      <div class="stats">
+        <div class="stat"><span class="fig bad">0.28</span><span class="lab">Platform ROAS over the run</span></div>
+        <div class="stat"><span class="fig bad">R$947</span><span class="lab">Cost per purchase (6 in total)</span></div>
+        <div class="stat"><span class="fig bad">R$2.5k</span><span class="lab">Daily budget, on one broad adset</span></div>
+        <div class="stat"><span class="fig">554&rarr;6</span><span class="lab">Add-to-carts to purchases</span></div>
+      </div>
+      <div class="chart">
+        <p class="ctitle">Add-to-cart &rarr; purchase conversion</p>
+        <div class="bar">
+          <span class="blab">The leaking hose<small>MIST test</small></span>
+          <div class="track"><div class="fill hot" style="width:6%"><span class="out">1.1%</span></div></div>
+        </div>
+        <div class="bar">
+          <span class="blab">Account winners<small>same pixel &amp; store</small></span>
+          <div class="track"><div class="fill win" style="width:87%">14&ndash;19%</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pad">
+      <p class="kicker"><span class="n">03</span>The economics</p>
+      <h2>Solo mist can't clear the floor. The basket already does.</h2>
+      <p class="lead">Sold alone at R$129, the mist has no room against a realistic <strong>~R$49</strong> acquisition cost &mdash; the 10% net floor caps CAC below what a cold buyer costs. But the mist <em>already</em> sells as a basket: <span class="good">56%</span> of its orders are multi-item (AOV R$352), its #1 partner is Primer Cachos, and 60% are new customers. The floor is cleared by units per order, in-site &mdash; not by a cleverer ad.</p>
+      <div class="chart">
+        <p class="ctitle">Max CAC each order shape can afford at the 10% net floor</p>
+        <div class="bar">
+          <span class="blab">Solo, free ship<small>underwater</small></span>
+          <div class="track"><div class="fill leak" style="width:22%">R$33</div><div class="thresh" style="left:32.7%"><span>need R$49</span></div></div>
+        </div>
+        <div class="bar">
+          <span class="blab">Solo, paid ship<small>on the line</small></span>
+          <div class="track"><div class="fill amber" style="width:32%">R$48</div><div class="thresh" style="left:32.7%"></div></div>
+        </div>
+        <div class="bar">
+          <span class="blab">Duo + Primer<small>clears it</small></span>
+          <div class="track"><div class="fill win" style="width:82%">R$113&ndash;128</div><div class="thresh" style="left:32.7%"></div></div>
+        </div>
+        <div class="bar">
+          <span class="blab">Trio &ge; R$299<small>free-ship earned</small></span>
+          <div class="track"><div class="fill win" style="width:94%">R$141</div><div class="thresh" style="left:32.7%"></div></div>
+        </div>
+        <p class="cap">Value-add, not discount: the basket is built by in-page cross-sell and checkout upsells the store already runs. Zero % off the mist.</p>
+      </div>
+    </section>
+
+    <section class="pad">
+      <p class="kicker"><span class="n">04</span>The plan &mdash; what changes</p>
+      <h2>Copy what the account's winners actually do.</h2>
+      <div class="ba">
+        <div class="col old">
+          <div class="head"><span class="dot"></span>Leaking hose (paused)</div>
+          <div class="row"><span class="rk">Shape</span><span class="rv">One campaign, one adset, no next step</span></div>
+          <div class="row"><span class="rk">Daily burn</span><span class="rv">R$2,500 on a single broad adset</span></div>
+          <div class="row"><span class="rk">Optimizes for</span><span class="rv">Add-to-cart, at full scale</span></div>
+          <div class="row"><span class="rk">Audience</span><span class="rv">Broad, unseeded, no exclusions</span></div>
+          <div class="row"><span class="rk">Advantage+</span><span class="rv">Off</span></div>
+          <div class="row"><span class="rk">Shut-off</span><span class="rv">None &mdash; ran until noticed</span></div>
+          <div class="row"><span class="rk">Judged by</span><span class="rv">Platform ROAS</span></div>
+        </div>
+        <div class="col new">
+          <div class="head"><span class="dot"></span>Rebuild (built, paused)</div>
+          <div class="row"><span class="rk">Shape</span><span class="rv"><b>Test (ABO) &rarr; Scale (CBO)</b>, winners promote</span></div>
+          <div class="row"><span class="rk">Daily burn</span><span class="rv"><b>R$300</b> test, across 2 adsets</span></div>
+          <div class="row"><span class="rk">Optimizes for</span><span class="rv">ATC to test, <b>Purchase / ROAS</b> to scale</span></div>
+          <div class="row"><span class="rk">Audience</span><span class="rv"><b>Seeded</b> 3% lookalike + interests; buyers <b>excluded</b></span></div>
+          <div class="row"><span class="rk">Advantage+</span><span class="rv"><b>On</b></span></div>
+          <div class="row"><span class="rk">Shut-off</span><span class="rv"><b>Day-3 &amp; day-7 gates</b>, promote or kill</span></div>
+          <div class="row"><span class="rk">Judged by</span><span class="rv"><b>Paid-cohort contribution</b> vs the floor</span></div>
+        </div>
+      </div>
+      <p class="cap">Same 27 hooks, reused as-is. The bait doesn't change &mdash; the fishing does.</p>
+    </section>
+
+    <section class="pad">
+      <p class="kicker"><span class="n">05</span>Risks &amp; what could kill it</p>
+      <div class="risks">
+        <div class="risk">
+          <span class="rn">R1</span>
+          <div><span class="rt">Cold traffic may basket less than the blended mist buyer.</span>
+          <p class="rm">The 56% basket rate includes warm and returning shoppers. <b>Mitigation:</b> the R$300/day test measures the paid cohort's own AOV directly &mdash; if cold buyers don't basket up, the day-7 gate kills it cheaply.</p></div>
+        </div>
+        <div class="risk">
+          <span class="rn">R2</span>
+          <div><span class="rt">Incrementality is unproven; platform numbers overstate lift.</span>
+          <p class="rm">Attribution is Meta-side. <b>Mitigation:</b> a Conversion Lift is owed before any real ramp; the floor here is judged on pre-media contribution, which is sound.</p></div>
+        </div>
+        <div class="risk">
+          <span class="rn">R3</span>
+          <div><span class="rt">Freight economics are mid-revision (Sélia &rarr; Unilog).</span>
+          <p class="rm">The cutover shaves ~R$7/order. <b>Mitigation:</b> every bundle absorbs it comfortably; only solo mist is sensitive &mdash; and solo is already off the table.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="ask-sec pad">
+      <p class="kicker"><span class="n">06</span>The ask</p>
+      <div class="asks">
+        <div class="item">
+          <span class="num">1</span>
+          <span class="txt">Run the pre-flight check
+            <small>Confirm the add-to-cart event fires and the AOV modules render on all three scent PDPs.</small></span>
+          <span class="pill wait">On your word</span>
+        </div>
+        <div class="item">
+          <span class="num">2</span>
+          <span class="txt">Approve activation of the rebuild
+            <small>Test layer only, R$300/day. Scale layer stays empty until winners earn it.</small></span>
+          <span class="pill wait">Gated on you</span>
+        </div>
+        <div class="item">
+          <span class="num">3</span>
+          <span class="txt">Endorse the kill metric
+            <small>Paid-cohort order contribution vs CAC + 10% net &mdash; not platform ROAS, not blended-store AOV.</small></span>
+          <span class="pill set">CGO recommends</span>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span><b>Built, paused:</b> MIST | TESTE <span class="sig">120250838391560228</span> · MIST | ESCALA <span class="sig">120250838393170228</span></span>
+      <span><b>Bleed stopped:</b> old campaign 120250777492750228 · 0 spend since pause</span>
+    </footer>
+
+  </article>
+</div>

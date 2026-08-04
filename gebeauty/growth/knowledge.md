@@ -42,6 +42,44 @@ Key changes: (1) **COGS is bottom-up ~14.9%** (Raphael landed cost, study−R$2 
   13mo, all-channel]. → replenishment flow at day ~45-60 is the top zero-discount lever.
 - **12-mo contribution LTV ~R$169; LTV:CAC 3.4 (paid) / 6.0 (blended)** [estimate].
 
+## Time-to-first-purchase — the deliberation window [measured 2026-07-31]
+
+Measured to set the audience floor on the `primeira-rotina-r95` 63%-off offer (a discount
+should only reach people who have demonstrated they will NOT convert at full price).
+
+- **Deliberator p75 = 36 days; p50 = 14; p90 = 58** [measured, Klaviyo]. Cohort = profiles
+  created Feb 2026, observed 61-89 days, n=2,406 purchasers of which **523 deliberators**.
+  Script: `campaigns/lp-educacional-2026-08/klaviyo_signup_to_first_order.py`.
+- **Two populations hide in the naive number.** 78.3% of "signups" are the checkout itself
+  creating the Klaviyo profile, so they never deliberated and sit at 0 days. Only the 21.7%
+  whose profile predates their first order are a real consideration window. Always split.
+- **Conversion grinds, it does not cliff.** Cumulative share of deliberators converted:
+  34% by day 7, **51% by day 14**, 70% by day 30, 91% by day 60. Marginal conversion stays
+  17-21% in every window from day 7 to day 60. There is no natural cutoff before ~45 days.
+- **Consequence:** a 14-day floor is too early — half the pool still converts at full price
+  unaided. Floor set to **45 days** (81.6% converted by then), see the r95 audience spec.
+
+### ⚠️ Shopify `daysToConversion` is right-censored — do NOT quote its p75
+`Order.customerJourneySummary.daysToConversion` caps its lookback at **30 days**, and values
+under a day collapse to 1.0. A naive read gives **p75 = 1.0 day**, which is a measurement
+artifact, not behaviour. It hides **30% of deliberator first purchases** (those at 30+ days,
+including 9% landing between days 60 and 89). Shopify is fine for "did they convert fast";
+it cannot measure a deliberation window. Script + censoring test:
+`campaigns/lp-educacional-2026-08/time_to_first_purchase.py`.
+
+Also note: a naive percentile over a recent window is **right-truncated** (a profile created
+3 days before the window ends cannot show a 90-day delay). Use a fixed signup cohort with a
+uniform observation horizon, as the Klaviyo script does.
+
+### Nemu cannot answer this (checked 2026-07-31)
+Nemu has the right primitives (`first`-click model, `Infinite` attribution window, dashboard
+4967 defaults to `eventClick: first`) but its API surface exposes **value and count metrics
+only, no timing field**. `customers-get-insights.average_purchase_retrieval` (7.86 days) is
+repeat cadence, time BETWEEN purchases, not time TO first purchase. Timing would need the
+Nemu UI or a CSV export. Nemu is also click-based, so it still cannot see an ad impression
+that was never clicked; true impression-to-purchase belongs to the (still unproven) Meta
+incrementality work.
+
 ## Meta (paid acquisition), 30d ending ~2026-07-20 [estimate — platform-attributed]
 
 - Spend ~R$82k @ 4.46 ROAS, **down from 5.29 as spend ramped +38%** — real diminishing
@@ -151,6 +189,40 @@ Digested from the `growth` email label via `/digest`. Source ref = the dedup key
   your email" — higher opt-in AND segmentation captured at entry for a tailored welcome
   flow. GE already runs an Octane quiz. **Action: apply to the on-site pop-up; wire the
   segmentation into the welcome flow.**
+
+- **A landing page now serves two readers: the customer and the agent layer.**
+  [best-practice · Limited Supply / Nik Sharma, transcript 2026-07-31] Discovery is moving into
+  LLM shopping agents (in-chat checkout, merchant partnerships, catalog ads arriving in LLMs), so
+  a page must convert a human AND expose clear product truth to a machine: details, comparisons,
+  use cases, reviews, explicit claims. The instruction is to put MORE explicit information on the
+  page than felt necessary before, not less. **Action: on any indexable LP treat machine
+  extractability as a first-class goal, not a byproduct of SEO.**
+- **Ad-angle-to-page matching is becoming table stakes; the cost barrier is gone.**
+  [best-practice · Limited Supply / Nik Sharma, transcript 2026-07-31] Pattern: angle → a page
+  carrying that angle's proof, offer, objection handling and relevant bundle → checkout.
+  Historically blocked by dev-ticket cost, now routine. **The named pitfall matters more than the
+  tactic: when a matched page underperforms, the fault is usually the core angle or messaging, not
+  the page. Action: treat a page as a test of its ANGLE, and kill the angle rather than iterating
+  the page indefinitely.**
+- **Build pages by objection, not only by product or by pain.**
+  [best-practice · Limited Supply / Nik Sharma, transcript 2026-07-31] A distinct taxonomy: one
+  page per objection rather than per SKU. The enumerated set: is it worth the price · will it work
+  for me · is this actually different · can I trust the claims · how fast will I see results · is
+  it easy to use · what if I don't like it. **Action: the objection axis is ADDITIVE to a pain
+  axis over the same catalogue; objection pages tend to serve mid-funnel and retargeting rather
+  than cold prospecting.**
+- **Brand constraints are the precondition for one-shot page generation, not a polish step.**
+  [best-practice · Limited Supply / Nik Sharma, transcript 2026-07-31] Without a design system and
+  brand book in context, generation reliably produces generic headlines, manufactured urgency,
+  non-specific reviews and no hierarchy: plausible-looking and off-brand. The target is "one-shot"
+  (one prompt to final page), reachable only once the agent knows voice, allowed AND disallowed
+  claims, and page conventions. **Action: over-specify the brand layer, especially what may not be
+  said; make an automated brand/voice gate part of the build step, not the review step.**
+- **Aggregated customer language is the highest-leverage input to page copy.**
+  [best-practice · Limited Supply / Nik Sharma, transcript 2026-07-31] Wire every channel where
+  customers use their own words into one context, so copy is grounded in real phrasing and in what
+  already performs on-site, instead of invented framing. **Action: build the corpus once and let it
+  feed briefs, angles and page copy. Method → `references/customer-language-corpus.md`.**
 
 ### In-flight experiments (surfaced via digest)
 - **Cart-abandon: hide the discount, make them click to reveal** [The Inbox 2026-04-29] —

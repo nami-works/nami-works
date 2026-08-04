@@ -1,0 +1,22 @@
+{
+  "A": {
+    "gid": "gid://shopify/Product/10212923310400",
+    "handle": "kit-rotina-de-lavagem-leave-in-travel",
+    "status": "DRAFT",
+    "compCount": 3,
+    "published": 0,
+    "collections": [],
+    "price": "95.00",
+    "compareAt": "237.00"
+  },
+  "B": {
+    "gid": "gid://shopify/Product/10212923343168",
+    "handle": "kit-rotina-de-lavagem-shampoo-a-seco",
+    "status": "DRAFT",
+    "compCount": 3,
+    "published": 0,
+    "collections": [],
+    "price": "95.00",
+    "compareAt": "259.00"
+  }
+}

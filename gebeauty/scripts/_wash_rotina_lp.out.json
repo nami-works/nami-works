@@ -1,0 +1,20 @@
+{
+  "page": {
+    "id": "gid://shopify/Page/164913086784",
+    "title": "Oferta Rotina de Lavagem",
+    "handle": "oferta-rotina-de-lavagem",
+    "isPublished": false,
+    "templateSuffix": "lp-wash-rotina"
+  },
+  "preview_url_logged_in_staff": "https://ge-beauty-cosmeticos.myshopify.com/pages/oferta-rotina-de-lavagem",
+  "theme_id": 181379236160,
+  "images": {
+    "__HERO_IMG__": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/16x9_hero-landscape.png?v=1784927017",
+    "__GIFT_A_IMG__": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/hero_001-002-011.png?v=1784927022",
+    "__GIFT_B_IMG__": "https://cdn.shopify.com/s/files/1/0807/8344/2240/files/hero_001-002-008.png?v=1784927027"
+  },
+  "variants": {
+    "A": "52863869157696",
+    "B": "52863869190464"
+  }
+}

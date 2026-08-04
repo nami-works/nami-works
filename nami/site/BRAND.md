@@ -25,17 +25,19 @@ The wired favicon (`public/favicon.png`) is a copy of the simplified black glyph
 
 ### Colorways
 
+> **Naming:** accent files are named `*-accent*`, never after the colour itself. The accent moved from teal to pinheiro on 2026-08-02; colour-named files (`mark-teal.png`) would have become lies. Keep filenames semantic so a future palette change touches pixels, not paths.
+
 All marks are transparent PNGs (RGBA), 1536×1536 master canvas, produced by color substitution on one master so they stay pixel-consistent.
 
 | File | Color | Put it on |
 |---|---|---|
 | `mark-black.png` | Ink `#1c1b19`-black | Light / off-white backgrounds |
-| `mark-teal.png` | Forest teal `#1f5c4e` | Light theme (this is the light-mode nav mark) |
-| `mark-teal-dark.png` | Light teal `#4fa88f` | Dark backgrounds (dark-mode nav mark) |
+| `mark-accent.png` | Pinheiro green `#1b4d2e` | Light theme (this is the light-mode nav mark) |
+| `mark-accent-dark.png` | Light pinheiro `#5fb87f` | Dark backgrounds (dark-mode nav mark) |
 | `favicon-glyph.png` | Black | Favicon / tiny, light contexts |
-| `favicon-glyph-teal.png` | Teal | Favicon / tiny, when a teal tab icon is wanted |
+| `favicon-glyph-accent.png` | Pinheiro `#1b4d2e` | Favicon / tiny, when a green tab icon is wanted |
 
-Rule of thumb: **match the mark's accent tone to the theme** — `mark-teal` on light, `mark-teal-dark` on dark — because `#1f5c4e` is too dark to read on the dark surface and `#4fa88f` is too light to read on off-white. The nav does exactly this swap via CSS (`Nav.astro`, `:global([data-theme="dark"])`).
+Rule of thumb: **match the mark's accent tone to the theme** — `mark-accent` on light, `mark-accent-dark` on dark — because `#1b4d2e` is too dark to read on the dark surface and `#5fb87f` is too light to read on off-white. The nav does exactly this swap via CSS (`Nav.astro`, `:global([data-theme="dark"])`).
 
 ### Lockup
 
@@ -66,7 +68,7 @@ Tokens are defined once in `src/styles/global.css` as CSS custom properties and 
 | `--site-text` | `#1c1b19` | Primary text (ink) |
 | `--site-text-secondary` | `#6b6860` | Secondary / muted text |
 | `--site-border` | `#ddd7c9` | Hairlines, dividers |
-| `--site-accent` | `#1f5c4e` | Forest teal — CTAs, links, focus |
+| `--site-accent` | `#1b4d2e` | Pinheiro green — CTAs, links, focus |
 | `--site-accent-text` | `#ffffff` | Text on accent |
 | `--site-nav-bg` | `rgba(250,248,244,0.86)` | Scrolled nav (blurred) |
 
@@ -79,7 +81,7 @@ Tokens are defined once in `src/styles/global.css` as CSS custom properties and 
 | `--site-text` | `#f1efe8` | Primary text |
 | `--site-text-secondary` | `#a6a299` | Secondary / muted text |
 | `--site-border` | `#33322c` | Hairlines, dividers |
-| `--site-accent` | `#4fa88f` | Light teal — CTAs, links, focus |
+| `--site-accent` | `#5fb87f` | Light pinheiro — CTAs, links, focus |
 | `--site-accent-text` | `#0d1310` | Text on accent |
 | `--site-nav-bg` | `rgba(22,21,18,0.86)` | Scrolled nav (blurred) |
 
@@ -115,16 +117,16 @@ public/
   favicon.png                    # = simplified black glyph
   brand/
     mark-black.png               # detailed, ink-black
-    mark-teal.png                # detailed, forest teal  (light-theme nav)
-    mark-teal-dark.png           # detailed, light teal   (dark-theme nav)
+    mark-accent.png              # detailed, pinheiro green (light-theme nav)
+    mark-accent-dark.png         # detailed, light pinheiro (dark-theme nav)
     favicon-glyph.png            # simplified, black
-    favicon-glyph-teal.png       # simplified, teal
+    favicon-glyph-accent.png     # simplified, pinheiro
   fonts/
     geist-variable.woff2         # Geist 400–700, one file
 ```
 
 ### Optimized variants
 
-The master marks ship at 1536×1536 and are heavy (`mark-teal*` ~1.5MB, `mark-black` ~1MB), so downscaled variants live in `public/brand/optimized/` — a `-128.png` (nav/@2x, ~13–28KB) and a `-512.png` (social/cards, ~95–260KB) for each of the five marks. The masters remain the high-res source for print/large social.
+The master marks ship at 1536×1536 (~130–372KB each), so downscaled variants live in `public/brand/optimized/`: a `-128.png` (nav/@2x) and a `-512.png` (social/cards) for each of the five marks. The masters remain the high-res source for print/large social.
 
-The nav (`Nav.astro`) references the `-128` teal variants, not the masters — this cut ~3MB off every page load. When adding the mark elsewhere, reach for the smallest variant that covers the render size at ~2x; only use a master where you truly need 1536px.
+The nav (`Nav.astro`) references the `-128` accent variants, not the masters. When adding the mark elsewhere, reach for the smallest variant that covers the render size at ~2x; only use a master where you truly need 1536px.

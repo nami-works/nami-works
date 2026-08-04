@@ -1,0 +1,1086 @@
+{
+  "sections": {
+    "hero": {
+      "type": "slideshow",
+      "blocks": {
+        "s1": {
+          "type": "slide",
+          "settings": {
+            "image": "{{ page.metafields.custom.banner_desktop.value }}",
+            "image_mb": "{{ page.metafields.custom.banner_mobile.value }}",
+            "heading": "{{ page.metafields.custom.hero_heading.value }}",
+            "heading_size": "h1",
+            "subheading": "{{ page.metafields.custom.hero_subheading.value }}",
+            "button_label": "",
+            "link": "",
+            "link_title": "",
+            "button_style_secondary": false,
+            "box_align": "top-right",
+            "show_text_box": false,
+            "text_alignment": "start",
+            "image_overlay_opacity": 0,
+            "color_scheme": "",
+            "text_alignment_mobile": "center"
+          }
+        }
+      },
+      "block_order": [
+        "s1"
+      ],
+      "settings": {
+        "layout": "full_bleed",
+        "full_width": true,
+        "slide_height": "adapt_image",
+        "slider_visual": "counter",
+        "auto_rotate": false,
+        "show_pause": true,
+        "change_slides_speed": 5,
+        "image_behavior": "none",
+        "show_text_below": false,
+        "accessibility_info": "Boosters GE Beauty",
+        "border_radius_top_left": 20,
+        "border_radius_top_right": 20,
+        "border_radius_bottom_right": 20,
+        "border_radius_bottom_left": 20
+      }
+    },
+    "oquesao": {
+      "type": "lp-destaques",
+      "blocks": {
+        "p1": {
+          "type": "ponto",
+          "settings": {
+            "texto": "{{ page.metafields.custom.intro_ponto_1.value }}"
+          }
+        },
+        "p2": {
+          "type": "ponto",
+          "settings": {
+            "texto": "{{ page.metafields.custom.intro_ponto_2.value }}"
+          }
+        },
+        "p3": {
+          "type": "ponto",
+          "settings": {
+            "texto": "{{ page.metafields.custom.intro_ponto_3.value }}"
+          }
+        },
+        "p4": {
+          "type": "ponto",
+          "settings": {
+            "texto": "{{ page.metafields.custom.intro_ponto_4.value }}"
+          }
+        }
+      },
+      "block_order": [
+        "p1",
+        "p2",
+        "p3",
+        "p4"
+      ],
+      "settings": {
+        "heading": "{{ page.metafields.custom.intro_titulo.value }}",
+        "padding_top": 0,
+        "padding_bottom": 20
+      }
+    },
+    "promo": {
+      "type": "lp-promo-icones",
+      "settings": {
+        "color_scheme": "background-1",
+        "padding_top": 12,
+        "padding_bottom": 12
+      }
+    },
+    "punchline": {
+      "type": "lp-titulo",
+      "settings": {
+        "heading": "{{ page.metafields.custom.cards_titulo.value }}",
+        "padding_top": 24,
+        "padding_bottom": 8
+      }
+    },
+    "trust": {
+      "type": "icons-with-title",
+      "blocks": {
+        "i1": {
+          "type": "icon",
+          "settings": {
+            "icon": "{{ metaobjects.icones[\"formulas-limpas\"].imagem.value }}",
+            "title": "{{ metaobjects.icones[\"formulas-limpas\"].texto.value }}",
+            "underline": false,
+            "link_url": "{{ metaobjects.icones[\"formulas-limpas\"].link.value }}"
+          }
+        },
+        "i2": {
+          "type": "icon",
+          "settings": {
+            "icon": "{{ metaobjects.icones[\"nao-testado-em-animais\"].imagem.value }}",
+            "title": "{{ metaobjects.icones[\"nao-testado-em-animais\"].texto.value }}",
+            "underline": false,
+            "link_url": "{{ metaobjects.icones[\"nao-testado-em-animais\"].link.value }}"
+          }
+        },
+        "i3": {
+          "type": "icon",
+          "settings": {
+            "icon": "{{ metaobjects.icones[\"produtos-veganos\"].imagem.value }}",
+            "title": "{{ metaobjects.icones[\"produtos-veganos\"].texto.value }}",
+            "underline": false,
+            "link_url": "{{ metaobjects.icones[\"produtos-veganos\"].link.value }}"
+          }
+        },
+        "i4": {
+          "type": "icon",
+          "settings": {
+            "icon": "{{ metaobjects.icones[\"embalagens-reciclaveis\"].imagem.value }}",
+            "title": "{{ metaobjects.icones[\"embalagens-reciclaveis\"].texto.value }}",
+            "underline": false,
+            "link_url": "{{ metaobjects.icones[\"embalagens-reciclaveis\"].link.value }}"
+          }
+        }
+      },
+      "block_order": [
+        "i1",
+        "i2",
+        "i3",
+        "i4"
+      ],
+      "settings": {
+        "color_scheme": "",
+        "padding_top": 20,
+        "padding_bottom": 8
+      }
+    },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "q1": {
+          "type": "question",
+          "settings": {
+            "question": "{{ page.metafields.custom.faq_1_pergunta.value }}",
+            "answer": "{{ page.metafields.custom.faq_1_resposta | metafield_tag }}"
+          }
+        },
+        "q2": {
+          "type": "question",
+          "settings": {
+            "question": "{{ page.metafields.custom.faq_2_pergunta.value }}",
+            "answer": "{{ page.metafields.custom.faq_2_resposta | metafield_tag }}"
+          }
+        },
+        "q3": {
+          "type": "question",
+          "settings": {
+            "question": "{{ page.metafields.custom.faq_3_pergunta.value }}",
+            "answer": "{{ page.metafields.custom.faq_3_resposta | metafield_tag }}"
+          }
+        },
+        "q4": {
+          "type": "question",
+          "settings": {
+            "question": "{{ page.metafields.custom.faq_4_pergunta.value }}",
+            "answer": "{{ page.metafields.custom.faq_4_resposta | metafield_tag }}"
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "q4"
+      ],
+      "settings": {
+        "title": "{{ page.metafields.custom.faq_titulo.value }}",
+        "title_bold": true,
+        "heading_size": "h2",
+        "heading_alignment": "center",
+        "show_search_filter": false,
+        "color_scheme": "",
+        "padding_top": 24,
+        "padding_bottom": 8
+      }
+    },
+    "kits_boosters": {
+      "type": "featured-collection",
+      "settings": {
+        "title": "{{ page.metafields.custom.colecao_titulo.value }}",
+        "heading_size": "h2",
+        "description": "{{ page.metafields.custom.colecao_descricao | metafield_tag }}",
+        "show_description": false,
+        "description_style": "body",
+        "collection": "{{ page.metafields.custom.colecao_em_destaque_1.value }}",
+        "products_to_show": 8,
+        "columns_desktop": 4,
+        "full_width": true,
+        "show_view_all": true,
+        "view_all_style": "solid",
+        "enable_desktop_slider": true,
+        "border_radius_top_left": 20,
+        "border_radius_top_right": 20,
+        "border_radius_bottom_right": 20,
+        "border_radius_bottom_left": 20,
+        "color_scheme": "",
+        "image_ratio": "square",
+        "image_shape": "default",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "show_rating": true,
+        "enable_quick_add": true,
+        "columns_mobile": "1",
+        "swipe_on_mobile": true,
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "card_1": {
+      "type": "featured-product",
+      "blocks": {
+        "lpstyle": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- unless section.settings.product -%}<style>#shopify-section-{{ section.id }}{display:none !important}<\/style>{%- endunless -%}<style>#shopify-section-{{ section.id }} .product{background:#ecede9 !important;border-radius:20px;overflow:hidden;padding:24px;align-items:flex-start;}#shopify-section-{{ section.id }} .product-media-container,#shopify-section-{{ section.id }} .product__media-wrapper,#shopify-section-{{ section.id }} .product__media,#shopify-section-{{ section.id }} .product__info-container,#shopify-section-{{ section.id }} .media{background:transparent !important;}#shopify-section-{{ section.id }} .product__info-wrapper{align-self:flex-start;}#shopify-section-{{ section.id }} .product__title{font-weight:700 !important;}#shopify-section-{{ section.id }} .button{border-radius:40px !important;}#shopify-section-{{ section.id }} .icon-with-text__item img{width:60px !important;height:auto !important;}#shopify-section-{{ section.id }} #price-{{ section.id }},#shopify-section-{{ section.id }} .product__info-container > .no-js-hidden{display:none !important;}@media(min-width:750px){#shopify-section-{{ section.id }} .icon-with-text__item img{width:80px !important;}}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){document.querySelectorAll(\"#shopify-section-{{ section.id }} .product__view-details\").forEach(function(a){a.setAttribute(\"target\",\"_blank\");a.setAttribute(\"rel\",\"noopener\");});});<\/script>"
+          }
+        },
+        "title": {
+          "type": "title",
+          "settings": {
+            "heading_size": "h2"
+          }
+        },
+        "benefits": {
+          "type": "icon-with-text",
+          "settings": {
+            "layout": "horizontal",
+            "icon_1": "none",
+            "image_1": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_1.value }}",
+            "heading_1": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_1.value }}",
+            "icon_2": "none",
+            "image_2": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_2.value }}",
+            "heading_2": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_2.value }}",
+            "icon_3": "none",
+            "image_3": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_3.value }}",
+            "heading_3": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_3.value }}"
+          }
+        },
+        "stars": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "<div class=\"loox-rating\" data-id=\"{{ section.settings.product.id }}\" data-rating=\"{{ section.settings.product.metafields.loox.avg_rating }}\" data-raters=\"{{ section.settings.product.metafields.loox.num_reviews }}\"><\/div><style>#shopify-section-{{ section.id }} .loox-rating{margin:4px 0 10px;}<\/style>"
+          }
+        },
+        "variant": {
+          "type": "variant_picker",
+          "settings": {
+            "picker_type": "button"
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "buy": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "acc": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{{ 'section-tabs.css' | asset_url | stylesheet_tag }}{%- assign gbkit = section.settings.product.metafields.custom.descricao_longa_com_abas.value.itens_do_kit -%}<div class=\"gbtabs\"><tabs-component class=\"tabs-component\"><div class=\"tabs-component__tabs\"><div class=\"tabs-component__tabs-wrapper\">{%- if gbkit != blank -%}<div class=\"tabs-component__tab tab active\" data-tab=\"tabkit\">itens do kit<\/div>{%- endif -%}<div class=\"tabs-component__tab tab{% if gbkit == blank %} active{% endif %}\" data-tab=\"tab1\">{{ page.metafields.custom.tab_1_label.value | default: 'como usar' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab2\">{{ page.metafields.custom.tab_2_label.value | default: 'resultados' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab3\">{{ page.metafields.custom.tab_3_label.value | default: 'saiba mais' }}<\/div><\/div><\/div><div class=\"tabs-component__contents\">{%- if gbkit != blank -%}<div class=\"tabs-component__content content rte gbkit\" data-content=\"tabkit\">{%- for gbki in gbkit.value -%}<a class=\"gbkit__row\" href=\"{{ gbki.url }}\">{%- if gbki.featured_image -%}<img class=\"gbkit__thumb\" src=\"{{ gbki.featured_image | image_url: width: 120 }}\" alt=\"{{ gbki.title | escape }}\" loading=\"lazy\" width=\"60\" height=\"60\">{%- endif -%}<span class=\"gbkit__title\">{{ gbki.title }}<\/span><\/a>{%- endfor -%}<\/div>{%- endif -%}<div class=\"tabs-component__content content rte\" data-content=\"tab1\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.passo_a_passo | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab2\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.resultado | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab3\"><p>{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.o_que_e | metafield_tag }}<\/p><\/div><\/div><\/tabs-component><\/div><style>#shopify-section-{{ section.id }} .gbtabs{margin-top:18px;}#shopify-section-{{ section.id }} .tabs-component__content ul li{background:url('{{ \"icon-star.svg\" | asset_url }}') no-repeat center left;background-size:2rem;padding:1rem 0 1rem 2.8rem;}#shopify-section-{{ section.id }} .gbkit{display:flex;flex-direction:column;gap:10px;}#shopify-section-{{ section.id }} .gbkit__row{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;background:#fff;border-radius:14px;padding:10px 14px;transition:background .2s;}#shopify-section-{{ section.id }} .gbkit__row:hover{background:#f3f4f1;}#shopify-section-{{ section.id }} .gbkit__thumb{width:52px;height:52px;object-fit:contain;flex:0 0 52px;border-radius:10px;background:#ecede9;}#shopify-section-{{ section.id }} .gbkit__title{font-weight:600;font-size:1.4rem;line-height:1.2;}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){if(customElements.get('tabs-component'))return;class T extends HTMLElement{connectedCallback(){this.tabs=this.querySelectorAll('.tab');this.contents=this.querySelectorAll('.content');this.tabs.forEach(function(t){t.addEventListener('click',function(){this.h(t)}.bind(this))}.bind(this));if(this.tabs[0])this.tabs[0].click();}h(c){this.tabs.forEach(function(t){t.classList.remove('active')});c.classList.add('active');var id=c.getAttribute('data-tab');this.contents.forEach(function(x){x.style.display='none'});var el=this.querySelector('[data-content=\"'+id+'\"]');if(el)el.style.display='block';}}customElements.define('tabs-component',T);});<\/script>"
+          }
+        },
+        "giftprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.gift_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .product-form__submit,#shopify-section-{{ section.id }} .product-form__buttons .shopify-payment-button{display:none !important;}#shopify-section-{{ section.id }} .lpgift{margin:2px 0 6px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lpgift__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lpgift__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lpgift__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}#shopify-section-{{ section.id }} .lpcart{display:flex;flex-direction:column;gap:8px;margin-top:4px;}#shopify-section-{{ section.id }} .lpcart__btn{border:0;border-radius:40px;padding:12px;font-weight:700;font-size:13px;letter-spacing:.02em;cursor:pointer;text-align:center;font-family:'Italian Plate No1 Mono',monospace;line-height:1.15;}#shopify-section-{{ section.id }} .lpcart__btn--primary{background:#df372f;color:#fff;}#shopify-section-{{ section.id }} .lpcart__btn--outline{background:transparent;color:#df372f;border:1.5px solid #df372f;}#shopify-section-{{ section.id }} .lpcart__incart{display:flex;align-items:center;justify-content:center;gap:7px;padding:12px;border-radius:40px;background:#e3ece7;color:#2e7d5b;font-weight:700;font-size:13px;letter-spacing:.02em;font-family:'Italian Plate No1 Mono',monospace;}#shopify-section-{{ section.id }} .lpcart__incart svg{width:16px;height:16px;}<\/style><div class=\"lpgift\"><span class=\"lpgift__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lpgift__now\">R$0,00<\/span><\/div><div class=\"lpgift__note\">1 unidade gr&aacute;tis na primeira compra &middot; voc&ecirc; paga s&oacute; o frete<\/div><div class=\"lpcart\" data-pid=\"{{ section.settings.product.id }}\" data-name=\"{{ section.settings.product.title | remove: 'travel size | ' | split: ' ' | first | escape }}\" data-price=\"{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}\"><\/div>{%- endif -%}"
+          }
+        },
+        "promoprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.promo_price_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .lppromo{margin:2px 0 4px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lppromo__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lppromo__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lppromo__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}<\/style><div class=\"lppromo\"><span class=\"lppromo__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lppromo__now\">{{ section.settings.product.metafields.custom.lp_promo_price.value | times: 100 | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><\/div><div class=\"lppromo__note\">desconto aplicado no carrinho<\/div>{%- endif -%}"
+          }
+        }
+      },
+      "block_order": [
+        "lpstyle",
+        "title",
+        "benefits",
+        "variant",
+        "price",
+        "stars",
+        "giftprice",
+        "promoprice",
+        "buy",
+        "acc"
+      ],
+      "settings": {
+        "product": "{{ page.metafields.custom.produto_em_destaque_1.value }}",
+        "color_scheme": "",
+        "secondary_background": false,
+        "media_size": "small",
+        "constrain_to_viewport": true,
+        "media_fit": "contain",
+        "media_position": "left",
+        "image_zoom": "none",
+        "hide_variants": false,
+        "enable_video_looping": false,
+        "padding_top": 8,
+        "padding_bottom": 8
+      }
+    },
+    "card_2": {
+      "type": "featured-product",
+      "blocks": {
+        "lpstyle": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- unless section.settings.product -%}<style>#shopify-section-{{ section.id }}{display:none !important}<\/style>{%- endunless -%}<style>#shopify-section-{{ section.id }} .product{background:#ecede9 !important;border-radius:20px;overflow:hidden;padding:24px;align-items:flex-start;}#shopify-section-{{ section.id }} .product-media-container,#shopify-section-{{ section.id }} .product__media-wrapper,#shopify-section-{{ section.id }} .product__media,#shopify-section-{{ section.id }} .product__info-container,#shopify-section-{{ section.id }} .media{background:transparent !important;}#shopify-section-{{ section.id }} .product__info-wrapper{align-self:flex-start;}#shopify-section-{{ section.id }} .product__title{font-weight:700 !important;}#shopify-section-{{ section.id }} .button{border-radius:40px !important;}#shopify-section-{{ section.id }} .icon-with-text__item img{width:60px !important;height:auto !important;}#shopify-section-{{ section.id }} #price-{{ section.id }},#shopify-section-{{ section.id }} .product__info-container > .no-js-hidden{display:none !important;}@media(min-width:750px){#shopify-section-{{ section.id }} .icon-with-text__item img{width:80px !important;}}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){document.querySelectorAll(\"#shopify-section-{{ section.id }} .product__view-details\").forEach(function(a){a.setAttribute(\"target\",\"_blank\");a.setAttribute(\"rel\",\"noopener\");});});<\/script>"
+          }
+        },
+        "title": {
+          "type": "title",
+          "settings": {
+            "heading_size": "h2"
+          }
+        },
+        "benefits": {
+          "type": "icon-with-text",
+          "settings": {
+            "layout": "horizontal",
+            "icon_1": "none",
+            "image_1": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_1.value }}",
+            "heading_1": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_1.value }}",
+            "icon_2": "none",
+            "image_2": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_2.value }}",
+            "heading_2": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_2.value }}",
+            "icon_3": "none",
+            "image_3": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_3.value }}",
+            "heading_3": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_3.value }}"
+          }
+        },
+        "stars": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "<div class=\"loox-rating\" data-id=\"{{ section.settings.product.id }}\" data-rating=\"{{ section.settings.product.metafields.loox.avg_rating }}\" data-raters=\"{{ section.settings.product.metafields.loox.num_reviews }}\"><\/div><style>#shopify-section-{{ section.id }} .loox-rating{margin:4px 0 10px;}<\/style>"
+          }
+        },
+        "variant": {
+          "type": "variant_picker",
+          "settings": {
+            "picker_type": "button"
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "buy": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "acc": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{{ 'section-tabs.css' | asset_url | stylesheet_tag }}{%- assign gbkit = section.settings.product.metafields.custom.descricao_longa_com_abas.value.itens_do_kit -%}<div class=\"gbtabs\"><tabs-component class=\"tabs-component\"><div class=\"tabs-component__tabs\"><div class=\"tabs-component__tabs-wrapper\">{%- if gbkit != blank -%}<div class=\"tabs-component__tab tab active\" data-tab=\"tabkit\">itens do kit<\/div>{%- endif -%}<div class=\"tabs-component__tab tab{% if gbkit == blank %} active{% endif %}\" data-tab=\"tab1\">{{ page.metafields.custom.tab_1_label.value | default: 'como usar' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab2\">{{ page.metafields.custom.tab_2_label.value | default: 'resultados' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab3\">{{ page.metafields.custom.tab_3_label.value | default: 'saiba mais' }}<\/div><\/div><\/div><div class=\"tabs-component__contents\">{%- if gbkit != blank -%}<div class=\"tabs-component__content content rte gbkit\" data-content=\"tabkit\">{%- for gbki in gbkit.value -%}<a class=\"gbkit__row\" href=\"{{ gbki.url }}\">{%- if gbki.featured_image -%}<img class=\"gbkit__thumb\" src=\"{{ gbki.featured_image | image_url: width: 120 }}\" alt=\"{{ gbki.title | escape }}\" loading=\"lazy\" width=\"60\" height=\"60\">{%- endif -%}<span class=\"gbkit__title\">{{ gbki.title }}<\/span><\/a>{%- endfor -%}<\/div>{%- endif -%}<div class=\"tabs-component__content content rte\" data-content=\"tab1\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.passo_a_passo | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab2\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.resultado | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab3\"><p>{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.o_que_e | metafield_tag }}<\/p><\/div><\/div><\/tabs-component><\/div><style>#shopify-section-{{ section.id }} .gbtabs{margin-top:18px;}#shopify-section-{{ section.id }} .tabs-component__content ul li{background:url('{{ \"icon-star.svg\" | asset_url }}') no-repeat center left;background-size:2rem;padding:1rem 0 1rem 2.8rem;}#shopify-section-{{ section.id }} .gbkit{display:flex;flex-direction:column;gap:10px;}#shopify-section-{{ section.id }} .gbkit__row{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;background:#fff;border-radius:14px;padding:10px 14px;transition:background .2s;}#shopify-section-{{ section.id }} .gbkit__row:hover{background:#f3f4f1;}#shopify-section-{{ section.id }} .gbkit__thumb{width:52px;height:52px;object-fit:contain;flex:0 0 52px;border-radius:10px;background:#ecede9;}#shopify-section-{{ section.id }} .gbkit__title{font-weight:600;font-size:1.4rem;line-height:1.2;}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){if(customElements.get('tabs-component'))return;class T extends HTMLElement{connectedCallback(){this.tabs=this.querySelectorAll('.tab');this.contents=this.querySelectorAll('.content');this.tabs.forEach(function(t){t.addEventListener('click',function(){this.h(t)}.bind(this))}.bind(this));if(this.tabs[0])this.tabs[0].click();}h(c){this.tabs.forEach(function(t){t.classList.remove('active')});c.classList.add('active');var id=c.getAttribute('data-tab');this.contents.forEach(function(x){x.style.display='none'});var el=this.querySelector('[data-content=\"'+id+'\"]');if(el)el.style.display='block';}}customElements.define('tabs-component',T);});<\/script>"
+          }
+        },
+        "giftprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.gift_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .product-form__submit,#shopify-section-{{ section.id }} .product-form__buttons .shopify-payment-button{display:none !important;}#shopify-section-{{ section.id }} .lpgift{margin:2px 0 6px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lpgift__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lpgift__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lpgift__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}#shopify-section-{{ section.id }} .lpcart{display:flex;flex-direction:column;gap:8px;margin-top:4px;}#shopify-section-{{ section.id }} .lpcart__btn{border:0;border-radius:40px;padding:12px;font-weight:700;font-size:13px;letter-spacing:.02em;cursor:pointer;text-align:center;font-family:'Italian Plate No1 Mono',monospace;line-height:1.15;}#shopify-section-{{ section.id }} .lpcart__btn--primary{background:#df372f;color:#fff;}#shopify-section-{{ section.id }} .lpcart__btn--outline{background:transparent;color:#df372f;border:1.5px solid #df372f;}#shopify-section-{{ section.id }} .lpcart__incart{display:flex;align-items:center;justify-content:center;gap:7px;padding:12px;border-radius:40px;background:#e3ece7;color:#2e7d5b;font-weight:700;font-size:13px;letter-spacing:.02em;font-family:'Italian Plate No1 Mono',monospace;}#shopify-section-{{ section.id }} .lpcart__incart svg{width:16px;height:16px;}<\/style><div class=\"lpgift\"><span class=\"lpgift__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lpgift__now\">R$0,00<\/span><\/div><div class=\"lpgift__note\">1 unidade gr&aacute;tis na primeira compra &middot; voc&ecirc; paga s&oacute; o frete<\/div><div class=\"lpcart\" data-pid=\"{{ section.settings.product.id }}\" data-name=\"{{ section.settings.product.title | remove: 'travel size | ' | split: ' ' | first | escape }}\" data-price=\"{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}\"><\/div>{%- endif -%}"
+          }
+        },
+        "promoprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.promo_price_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .lppromo{margin:2px 0 4px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lppromo__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lppromo__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lppromo__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}<\/style><div class=\"lppromo\"><span class=\"lppromo__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lppromo__now\">{{ section.settings.product.metafields.custom.lp_promo_price.value | times: 100 | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><\/div><div class=\"lppromo__note\">desconto aplicado no carrinho<\/div>{%- endif -%}"
+          }
+        }
+      },
+      "block_order": [
+        "lpstyle",
+        "title",
+        "benefits",
+        "variant",
+        "price",
+        "stars",
+        "giftprice",
+        "promoprice",
+        "buy",
+        "acc"
+      ],
+      "settings": {
+        "product": "{{ page.metafields.custom.produto_em_destaque_2.value }}",
+        "color_scheme": "",
+        "secondary_background": false,
+        "media_size": "small",
+        "constrain_to_viewport": true,
+        "media_fit": "contain",
+        "media_position": "left",
+        "image_zoom": "none",
+        "hide_variants": false,
+        "enable_video_looping": false,
+        "padding_top": 8,
+        "padding_bottom": 8
+      }
+    },
+    "card_3": {
+      "type": "featured-product",
+      "blocks": {
+        "lpstyle": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- unless section.settings.product -%}<style>#shopify-section-{{ section.id }}{display:none !important}<\/style>{%- endunless -%}<style>#shopify-section-{{ section.id }} .product{background:#ecede9 !important;border-radius:20px;overflow:hidden;padding:24px;align-items:flex-start;}#shopify-section-{{ section.id }} .product-media-container,#shopify-section-{{ section.id }} .product__media-wrapper,#shopify-section-{{ section.id }} .product__media,#shopify-section-{{ section.id }} .product__info-container,#shopify-section-{{ section.id }} .media{background:transparent !important;}#shopify-section-{{ section.id }} .product__info-wrapper{align-self:flex-start;}#shopify-section-{{ section.id }} .product__title{font-weight:700 !important;}#shopify-section-{{ section.id }} .button{border-radius:40px !important;}#shopify-section-{{ section.id }} .icon-with-text__item img{width:60px !important;height:auto !important;}#shopify-section-{{ section.id }} #price-{{ section.id }},#shopify-section-{{ section.id }} .product__info-container > .no-js-hidden{display:none !important;}@media(min-width:750px){#shopify-section-{{ section.id }} .icon-with-text__item img{width:80px !important;}}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){document.querySelectorAll(\"#shopify-section-{{ section.id }} .product__view-details\").forEach(function(a){a.setAttribute(\"target\",\"_blank\");a.setAttribute(\"rel\",\"noopener\");});});<\/script>"
+          }
+        },
+        "title": {
+          "type": "title",
+          "settings": {
+            "heading_size": "h2"
+          }
+        },
+        "benefits": {
+          "type": "icon-with-text",
+          "settings": {
+            "layout": "horizontal",
+            "icon_1": "none",
+            "image_1": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_1.value }}",
+            "heading_1": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_1.value }}",
+            "icon_2": "none",
+            "image_2": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_2.value }}",
+            "heading_2": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_2.value }}",
+            "icon_3": "none",
+            "image_3": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_3.value }}",
+            "heading_3": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_3.value }}"
+          }
+        },
+        "stars": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "<div class=\"loox-rating\" data-id=\"{{ section.settings.product.id }}\" data-rating=\"{{ section.settings.product.metafields.loox.avg_rating }}\" data-raters=\"{{ section.settings.product.metafields.loox.num_reviews }}\"><\/div><style>#shopify-section-{{ section.id }} .loox-rating{margin:4px 0 10px;}<\/style>"
+          }
+        },
+        "variant": {
+          "type": "variant_picker",
+          "settings": {
+            "picker_type": "button"
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "buy": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "acc": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{{ 'section-tabs.css' | asset_url | stylesheet_tag }}{%- assign gbkit = section.settings.product.metafields.custom.descricao_longa_com_abas.value.itens_do_kit -%}<div class=\"gbtabs\"><tabs-component class=\"tabs-component\"><div class=\"tabs-component__tabs\"><div class=\"tabs-component__tabs-wrapper\">{%- if gbkit != blank -%}<div class=\"tabs-component__tab tab active\" data-tab=\"tabkit\">itens do kit<\/div>{%- endif -%}<div class=\"tabs-component__tab tab{% if gbkit == blank %} active{% endif %}\" data-tab=\"tab1\">{{ page.metafields.custom.tab_1_label.value | default: 'como usar' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab2\">{{ page.metafields.custom.tab_2_label.value | default: 'resultados' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab3\">{{ page.metafields.custom.tab_3_label.value | default: 'saiba mais' }}<\/div><\/div><\/div><div class=\"tabs-component__contents\">{%- if gbkit != blank -%}<div class=\"tabs-component__content content rte gbkit\" data-content=\"tabkit\">{%- for gbki in gbkit.value -%}<a class=\"gbkit__row\" href=\"{{ gbki.url }}\">{%- if gbki.featured_image -%}<img class=\"gbkit__thumb\" src=\"{{ gbki.featured_image | image_url: width: 120 }}\" alt=\"{{ gbki.title | escape }}\" loading=\"lazy\" width=\"60\" height=\"60\">{%- endif -%}<span class=\"gbkit__title\">{{ gbki.title }}<\/span><\/a>{%- endfor -%}<\/div>{%- endif -%}<div class=\"tabs-component__content content rte\" data-content=\"tab1\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.passo_a_passo | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab2\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.resultado | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab3\"><p>{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.o_que_e | metafield_tag }}<\/p><\/div><\/div><\/tabs-component><\/div><style>#shopify-section-{{ section.id }} .gbtabs{margin-top:18px;}#shopify-section-{{ section.id }} .tabs-component__content ul li{background:url('{{ \"icon-star.svg\" | asset_url }}') no-repeat center left;background-size:2rem;padding:1rem 0 1rem 2.8rem;}#shopify-section-{{ section.id }} .gbkit{display:flex;flex-direction:column;gap:10px;}#shopify-section-{{ section.id }} .gbkit__row{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;background:#fff;border-radius:14px;padding:10px 14px;transition:background .2s;}#shopify-section-{{ section.id }} .gbkit__row:hover{background:#f3f4f1;}#shopify-section-{{ section.id }} .gbkit__thumb{width:52px;height:52px;object-fit:contain;flex:0 0 52px;border-radius:10px;background:#ecede9;}#shopify-section-{{ section.id }} .gbkit__title{font-weight:600;font-size:1.4rem;line-height:1.2;}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){if(customElements.get('tabs-component'))return;class T extends HTMLElement{connectedCallback(){this.tabs=this.querySelectorAll('.tab');this.contents=this.querySelectorAll('.content');this.tabs.forEach(function(t){t.addEventListener('click',function(){this.h(t)}.bind(this))}.bind(this));if(this.tabs[0])this.tabs[0].click();}h(c){this.tabs.forEach(function(t){t.classList.remove('active')});c.classList.add('active');var id=c.getAttribute('data-tab');this.contents.forEach(function(x){x.style.display='none'});var el=this.querySelector('[data-content=\"'+id+'\"]');if(el)el.style.display='block';}}customElements.define('tabs-component',T);});<\/script>"
+          }
+        },
+        "giftprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.gift_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .product-form__submit,#shopify-section-{{ section.id }} .product-form__buttons .shopify-payment-button{display:none !important;}#shopify-section-{{ section.id }} .lpgift{margin:2px 0 6px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lpgift__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lpgift__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lpgift__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}#shopify-section-{{ section.id }} .lpcart{display:flex;flex-direction:column;gap:8px;margin-top:4px;}#shopify-section-{{ section.id }} .lpcart__btn{border:0;border-radius:40px;padding:12px;font-weight:700;font-size:13px;letter-spacing:.02em;cursor:pointer;text-align:center;font-family:'Italian Plate No1 Mono',monospace;line-height:1.15;}#shopify-section-{{ section.id }} .lpcart__btn--primary{background:#df372f;color:#fff;}#shopify-section-{{ section.id }} .lpcart__btn--outline{background:transparent;color:#df372f;border:1.5px solid #df372f;}#shopify-section-{{ section.id }} .lpcart__incart{display:flex;align-items:center;justify-content:center;gap:7px;padding:12px;border-radius:40px;background:#e3ece7;color:#2e7d5b;font-weight:700;font-size:13px;letter-spacing:.02em;font-family:'Italian Plate No1 Mono',monospace;}#shopify-section-{{ section.id }} .lpcart__incart svg{width:16px;height:16px;}<\/style><div class=\"lpgift\"><span class=\"lpgift__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lpgift__now\">R$0,00<\/span><\/div><div class=\"lpgift__note\">1 unidade gr&aacute;tis na primeira compra &middot; voc&ecirc; paga s&oacute; o frete<\/div><div class=\"lpcart\" data-pid=\"{{ section.settings.product.id }}\" data-name=\"{{ section.settings.product.title | remove: 'travel size | ' | split: ' ' | first | escape }}\" data-price=\"{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}\"><\/div>{%- endif -%}"
+          }
+        },
+        "promoprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.promo_price_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .lppromo{margin:2px 0 4px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lppromo__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lppromo__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lppromo__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}<\/style><div class=\"lppromo\"><span class=\"lppromo__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lppromo__now\">{{ section.settings.product.metafields.custom.lp_promo_price.value | times: 100 | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><\/div><div class=\"lppromo__note\">desconto aplicado no carrinho<\/div>{%- endif -%}"
+          }
+        }
+      },
+      "block_order": [
+        "lpstyle",
+        "title",
+        "benefits",
+        "variant",
+        "price",
+        "stars",
+        "giftprice",
+        "promoprice",
+        "buy",
+        "acc"
+      ],
+      "settings": {
+        "product": "{{ page.metafields.custom.produto_em_destaque_3.value }}",
+        "color_scheme": "",
+        "secondary_background": false,
+        "media_size": "small",
+        "constrain_to_viewport": true,
+        "media_fit": "contain",
+        "media_position": "left",
+        "image_zoom": "none",
+        "hide_variants": false,
+        "enable_video_looping": false,
+        "padding_top": 8,
+        "padding_bottom": 8
+      }
+    },
+    "card_4": {
+      "type": "featured-product",
+      "blocks": {
+        "lpstyle": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- unless section.settings.product -%}<style>#shopify-section-{{ section.id }}{display:none !important}<\/style>{%- endunless -%}<style>#shopify-section-{{ section.id }} .product{background:#ecede9 !important;border-radius:20px;overflow:hidden;padding:24px;align-items:flex-start;}#shopify-section-{{ section.id }} .product-media-container,#shopify-section-{{ section.id }} .product__media-wrapper,#shopify-section-{{ section.id }} .product__media,#shopify-section-{{ section.id }} .product__info-container,#shopify-section-{{ section.id }} .media{background:transparent !important;}#shopify-section-{{ section.id }} .product__info-wrapper{align-self:flex-start;}#shopify-section-{{ section.id }} .product__title{font-weight:700 !important;}#shopify-section-{{ section.id }} .button{border-radius:40px !important;}#shopify-section-{{ section.id }} .icon-with-text__item img{width:60px !important;height:auto !important;}#shopify-section-{{ section.id }} #price-{{ section.id }},#shopify-section-{{ section.id }} .product__info-container > .no-js-hidden{display:none !important;}@media(min-width:750px){#shopify-section-{{ section.id }} .icon-with-text__item img{width:80px !important;}}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){document.querySelectorAll(\"#shopify-section-{{ section.id }} .product__view-details\").forEach(function(a){a.setAttribute(\"target\",\"_blank\");a.setAttribute(\"rel\",\"noopener\");});});<\/script>"
+          }
+        },
+        "title": {
+          "type": "title",
+          "settings": {
+            "heading_size": "h2"
+          }
+        },
+        "benefits": {
+          "type": "icon-with-text",
+          "settings": {
+            "layout": "horizontal",
+            "icon_1": "none",
+            "image_1": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_1.value }}",
+            "heading_1": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_1.value }}",
+            "icon_2": "none",
+            "image_2": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_2.value }}",
+            "heading_2": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_2.value }}",
+            "icon_3": "none",
+            "image_3": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_3.value }}",
+            "heading_3": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_3.value }}"
+          }
+        },
+        "stars": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "<div class=\"loox-rating\" data-id=\"{{ section.settings.product.id }}\" data-rating=\"{{ section.settings.product.metafields.loox.avg_rating }}\" data-raters=\"{{ section.settings.product.metafields.loox.num_reviews }}\"><\/div><style>#shopify-section-{{ section.id }} .loox-rating{margin:4px 0 10px;}<\/style>"
+          }
+        },
+        "variant": {
+          "type": "variant_picker",
+          "settings": {
+            "picker_type": "button"
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "buy": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "acc": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{{ 'section-tabs.css' | asset_url | stylesheet_tag }}{%- assign gbkit = section.settings.product.metafields.custom.descricao_longa_com_abas.value.itens_do_kit -%}<div class=\"gbtabs\"><tabs-component class=\"tabs-component\"><div class=\"tabs-component__tabs\"><div class=\"tabs-component__tabs-wrapper\">{%- if gbkit != blank -%}<div class=\"tabs-component__tab tab active\" data-tab=\"tabkit\">itens do kit<\/div>{%- endif -%}<div class=\"tabs-component__tab tab{% if gbkit == blank %} active{% endif %}\" data-tab=\"tab1\">{{ page.metafields.custom.tab_1_label.value | default: 'como usar' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab2\">{{ page.metafields.custom.tab_2_label.value | default: 'resultados' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab3\">{{ page.metafields.custom.tab_3_label.value | default: 'saiba mais' }}<\/div><\/div><\/div><div class=\"tabs-component__contents\">{%- if gbkit != blank -%}<div class=\"tabs-component__content content rte gbkit\" data-content=\"tabkit\">{%- for gbki in gbkit.value -%}<a class=\"gbkit__row\" href=\"{{ gbki.url }}\">{%- if gbki.featured_image -%}<img class=\"gbkit__thumb\" src=\"{{ gbki.featured_image | image_url: width: 120 }}\" alt=\"{{ gbki.title | escape }}\" loading=\"lazy\" width=\"60\" height=\"60\">{%- endif -%}<span class=\"gbkit__title\">{{ gbki.title }}<\/span><\/a>{%- endfor -%}<\/div>{%- endif -%}<div class=\"tabs-component__content content rte\" data-content=\"tab1\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.passo_a_passo | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab2\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.resultado | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab3\"><p>{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.o_que_e | metafield_tag }}<\/p><\/div><\/div><\/tabs-component><\/div><style>#shopify-section-{{ section.id }} .gbtabs{margin-top:18px;}#shopify-section-{{ section.id }} .tabs-component__content ul li{background:url('{{ \"icon-star.svg\" | asset_url }}') no-repeat center left;background-size:2rem;padding:1rem 0 1rem 2.8rem;}#shopify-section-{{ section.id }} .gbkit{display:flex;flex-direction:column;gap:10px;}#shopify-section-{{ section.id }} .gbkit__row{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;background:#fff;border-radius:14px;padding:10px 14px;transition:background .2s;}#shopify-section-{{ section.id }} .gbkit__row:hover{background:#f3f4f1;}#shopify-section-{{ section.id }} .gbkit__thumb{width:52px;height:52px;object-fit:contain;flex:0 0 52px;border-radius:10px;background:#ecede9;}#shopify-section-{{ section.id }} .gbkit__title{font-weight:600;font-size:1.4rem;line-height:1.2;}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){if(customElements.get('tabs-component'))return;class T extends HTMLElement{connectedCallback(){this.tabs=this.querySelectorAll('.tab');this.contents=this.querySelectorAll('.content');this.tabs.forEach(function(t){t.addEventListener('click',function(){this.h(t)}.bind(this))}.bind(this));if(this.tabs[0])this.tabs[0].click();}h(c){this.tabs.forEach(function(t){t.classList.remove('active')});c.classList.add('active');var id=c.getAttribute('data-tab');this.contents.forEach(function(x){x.style.display='none'});var el=this.querySelector('[data-content=\"'+id+'\"]');if(el)el.style.display='block';}}customElements.define('tabs-component',T);});<\/script>"
+          }
+        },
+        "giftprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.gift_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .product-form__submit,#shopify-section-{{ section.id }} .product-form__buttons .shopify-payment-button{display:none !important;}#shopify-section-{{ section.id }} .lpgift{margin:2px 0 6px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lpgift__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lpgift__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lpgift__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}#shopify-section-{{ section.id }} .lpcart{display:flex;flex-direction:column;gap:8px;margin-top:4px;}#shopify-section-{{ section.id }} .lpcart__btn{border:0;border-radius:40px;padding:12px;font-weight:700;font-size:13px;letter-spacing:.02em;cursor:pointer;text-align:center;font-family:'Italian Plate No1 Mono',monospace;line-height:1.15;}#shopify-section-{{ section.id }} .lpcart__btn--primary{background:#df372f;color:#fff;}#shopify-section-{{ section.id }} .lpcart__btn--outline{background:transparent;color:#df372f;border:1.5px solid #df372f;}#shopify-section-{{ section.id }} .lpcart__incart{display:flex;align-items:center;justify-content:center;gap:7px;padding:12px;border-radius:40px;background:#e3ece7;color:#2e7d5b;font-weight:700;font-size:13px;letter-spacing:.02em;font-family:'Italian Plate No1 Mono',monospace;}#shopify-section-{{ section.id }} .lpcart__incart svg{width:16px;height:16px;}<\/style><div class=\"lpgift\"><span class=\"lpgift__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lpgift__now\">R$0,00<\/span><\/div><div class=\"lpgift__note\">1 unidade gr&aacute;tis na primeira compra &middot; voc&ecirc; paga s&oacute; o frete<\/div><div class=\"lpcart\" data-pid=\"{{ section.settings.product.id }}\" data-name=\"{{ section.settings.product.title | remove: 'travel size | ' | split: ' ' | first | escape }}\" data-price=\"{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}\"><\/div>{%- endif -%}"
+          }
+        },
+        "promoprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.promo_price_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .lppromo{margin:2px 0 4px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lppromo__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lppromo__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lppromo__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}<\/style><div class=\"lppromo\"><span class=\"lppromo__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lppromo__now\">{{ section.settings.product.metafields.custom.lp_promo_price.value | times: 100 | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><\/div><div class=\"lppromo__note\">desconto aplicado no carrinho<\/div>{%- endif -%}"
+          }
+        }
+      },
+      "block_order": [
+        "lpstyle",
+        "title",
+        "benefits",
+        "variant",
+        "price",
+        "stars",
+        "giftprice",
+        "promoprice",
+        "buy",
+        "acc"
+      ],
+      "settings": {
+        "product": "{{ page.metafields.custom.produto_em_destaque_4.value }}",
+        "color_scheme": "",
+        "secondary_background": false,
+        "media_size": "small",
+        "constrain_to_viewport": true,
+        "media_fit": "contain",
+        "media_position": "left",
+        "image_zoom": "none",
+        "hide_variants": false,
+        "enable_video_looping": false,
+        "padding_top": 8,
+        "padding_bottom": 8
+      }
+    },
+    "card_5": {
+      "type": "featured-product",
+      "blocks": {
+        "lpstyle": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- unless section.settings.product -%}<style>#shopify-section-{{ section.id }}{display:none !important}<\/style>{%- endunless -%}<style>#shopify-section-{{ section.id }} .product{background:#ecede9 !important;border-radius:20px;overflow:hidden;padding:24px;align-items:flex-start;}#shopify-section-{{ section.id }} .product-media-container,#shopify-section-{{ section.id }} .product__media-wrapper,#shopify-section-{{ section.id }} .product__media,#shopify-section-{{ section.id }} .product__info-container,#shopify-section-{{ section.id }} .media{background:transparent !important;}#shopify-section-{{ section.id }} .product__info-wrapper{align-self:flex-start;}#shopify-section-{{ section.id }} .product__title{font-weight:700 !important;}#shopify-section-{{ section.id }} .button{border-radius:40px !important;}#shopify-section-{{ section.id }} .icon-with-text__item img{width:60px !important;height:auto !important;}#shopify-section-{{ section.id }} #price-{{ section.id }},#shopify-section-{{ section.id }} .product__info-container > .no-js-hidden{display:none !important;}@media(min-width:750px){#shopify-section-{{ section.id }} .icon-with-text__item img{width:80px !important;}}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){document.querySelectorAll(\"#shopify-section-{{ section.id }} .product__view-details\").forEach(function(a){a.setAttribute(\"target\",\"_blank\");a.setAttribute(\"rel\",\"noopener\");});});<\/script>"
+          }
+        },
+        "title": {
+          "type": "title",
+          "settings": {
+            "heading_size": "h2"
+          }
+        },
+        "benefits": {
+          "type": "icon-with-text",
+          "settings": {
+            "layout": "horizontal",
+            "icon_1": "none",
+            "image_1": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_1.value }}",
+            "heading_1": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_1.value }}",
+            "icon_2": "none",
+            "image_2": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_2.value }}",
+            "heading_2": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_2.value }}",
+            "icon_3": "none",
+            "image_3": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_3.value }}",
+            "heading_3": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_3.value }}"
+          }
+        },
+        "stars": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "<div class=\"loox-rating\" data-id=\"{{ section.settings.product.id }}\" data-rating=\"{{ section.settings.product.metafields.loox.avg_rating }}\" data-raters=\"{{ section.settings.product.metafields.loox.num_reviews }}\"><\/div><style>#shopify-section-{{ section.id }} .loox-rating{margin:4px 0 10px;}<\/style>"
+          }
+        },
+        "variant": {
+          "type": "variant_picker",
+          "settings": {
+            "picker_type": "button"
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "buy": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "acc": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{{ 'section-tabs.css' | asset_url | stylesheet_tag }}{%- assign gbkit = section.settings.product.metafields.custom.descricao_longa_com_abas.value.itens_do_kit -%}<div class=\"gbtabs\"><tabs-component class=\"tabs-component\"><div class=\"tabs-component__tabs\"><div class=\"tabs-component__tabs-wrapper\">{%- if gbkit != blank -%}<div class=\"tabs-component__tab tab active\" data-tab=\"tabkit\">itens do kit<\/div>{%- endif -%}<div class=\"tabs-component__tab tab{% if gbkit == blank %} active{% endif %}\" data-tab=\"tab1\">{{ page.metafields.custom.tab_1_label.value | default: 'como usar' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab2\">{{ page.metafields.custom.tab_2_label.value | default: 'resultados' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab3\">{{ page.metafields.custom.tab_3_label.value | default: 'saiba mais' }}<\/div><\/div><\/div><div class=\"tabs-component__contents\">{%- if gbkit != blank -%}<div class=\"tabs-component__content content rte gbkit\" data-content=\"tabkit\">{%- for gbki in gbkit.value -%}<a class=\"gbkit__row\" href=\"{{ gbki.url }}\">{%- if gbki.featured_image -%}<img class=\"gbkit__thumb\" src=\"{{ gbki.featured_image | image_url: width: 120 }}\" alt=\"{{ gbki.title | escape }}\" loading=\"lazy\" width=\"60\" height=\"60\">{%- endif -%}<span class=\"gbkit__title\">{{ gbki.title }}<\/span><\/a>{%- endfor -%}<\/div>{%- endif -%}<div class=\"tabs-component__content content rte\" data-content=\"tab1\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.passo_a_passo | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab2\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.resultado | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab3\"><p>{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.o_que_e | metafield_tag }}<\/p><\/div><\/div><\/tabs-component><\/div><style>#shopify-section-{{ section.id }} .gbtabs{margin-top:18px;}#shopify-section-{{ section.id }} .tabs-component__content ul li{background:url('{{ \"icon-star.svg\" | asset_url }}') no-repeat center left;background-size:2rem;padding:1rem 0 1rem 2.8rem;}#shopify-section-{{ section.id }} .gbkit{display:flex;flex-direction:column;gap:10px;}#shopify-section-{{ section.id }} .gbkit__row{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;background:#fff;border-radius:14px;padding:10px 14px;transition:background .2s;}#shopify-section-{{ section.id }} .gbkit__row:hover{background:#f3f4f1;}#shopify-section-{{ section.id }} .gbkit__thumb{width:52px;height:52px;object-fit:contain;flex:0 0 52px;border-radius:10px;background:#ecede9;}#shopify-section-{{ section.id }} .gbkit__title{font-weight:600;font-size:1.4rem;line-height:1.2;}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){if(customElements.get('tabs-component'))return;class T extends HTMLElement{connectedCallback(){this.tabs=this.querySelectorAll('.tab');this.contents=this.querySelectorAll('.content');this.tabs.forEach(function(t){t.addEventListener('click',function(){this.h(t)}.bind(this))}.bind(this));if(this.tabs[0])this.tabs[0].click();}h(c){this.tabs.forEach(function(t){t.classList.remove('active')});c.classList.add('active');var id=c.getAttribute('data-tab');this.contents.forEach(function(x){x.style.display='none'});var el=this.querySelector('[data-content=\"'+id+'\"]');if(el)el.style.display='block';}}customElements.define('tabs-component',T);});<\/script>"
+          }
+        },
+        "giftprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.gift_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .product-form__submit,#shopify-section-{{ section.id }} .product-form__buttons .shopify-payment-button{display:none !important;}#shopify-section-{{ section.id }} .lpgift{margin:2px 0 6px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lpgift__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lpgift__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lpgift__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}#shopify-section-{{ section.id }} .lpcart{display:flex;flex-direction:column;gap:8px;margin-top:4px;}#shopify-section-{{ section.id }} .lpcart__btn{border:0;border-radius:40px;padding:12px;font-weight:700;font-size:13px;letter-spacing:.02em;cursor:pointer;text-align:center;font-family:'Italian Plate No1 Mono',monospace;line-height:1.15;}#shopify-section-{{ section.id }} .lpcart__btn--primary{background:#df372f;color:#fff;}#shopify-section-{{ section.id }} .lpcart__btn--outline{background:transparent;color:#df372f;border:1.5px solid #df372f;}#shopify-section-{{ section.id }} .lpcart__incart{display:flex;align-items:center;justify-content:center;gap:7px;padding:12px;border-radius:40px;background:#e3ece7;color:#2e7d5b;font-weight:700;font-size:13px;letter-spacing:.02em;font-family:'Italian Plate No1 Mono',monospace;}#shopify-section-{{ section.id }} .lpcart__incart svg{width:16px;height:16px;}<\/style><div class=\"lpgift\"><span class=\"lpgift__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lpgift__now\">R$0,00<\/span><\/div><div class=\"lpgift__note\">1 unidade gr&aacute;tis na primeira compra &middot; voc&ecirc; paga s&oacute; o frete<\/div><div class=\"lpcart\" data-pid=\"{{ section.settings.product.id }}\" data-name=\"{{ section.settings.product.title | remove: 'travel size | ' | split: ' ' | first | escape }}\" data-price=\"{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}\"><\/div>{%- endif -%}"
+          }
+        },
+        "promoprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.promo_price_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .lppromo{margin:2px 0 4px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lppromo__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lppromo__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lppromo__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}<\/style><div class=\"lppromo\"><span class=\"lppromo__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lppromo__now\">{{ section.settings.product.metafields.custom.lp_promo_price.value | times: 100 | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><\/div><div class=\"lppromo__note\">desconto aplicado no carrinho<\/div>{%- endif -%}"
+          }
+        }
+      },
+      "block_order": [
+        "lpstyle",
+        "title",
+        "benefits",
+        "variant",
+        "price",
+        "stars",
+        "giftprice",
+        "promoprice",
+        "buy",
+        "acc"
+      ],
+      "settings": {
+        "product": "{{ page.metafields.custom.produto_em_destaque_5.value }}",
+        "color_scheme": "",
+        "secondary_background": false,
+        "media_size": "small",
+        "constrain_to_viewport": true,
+        "media_fit": "contain",
+        "media_position": "left",
+        "image_zoom": "none",
+        "hide_variants": false,
+        "enable_video_looping": false,
+        "padding_top": 8,
+        "padding_bottom": 8
+      }
+    },
+    "card_6": {
+      "type": "featured-product",
+      "blocks": {
+        "lpstyle": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- unless section.settings.product -%}<style>#shopify-section-{{ section.id }}{display:none !important}<\/style>{%- endunless -%}<style>#shopify-section-{{ section.id }} .product{background:#ecede9 !important;border-radius:20px;overflow:hidden;padding:24px;align-items:flex-start;}#shopify-section-{{ section.id }} .product-media-container,#shopify-section-{{ section.id }} .product__media-wrapper,#shopify-section-{{ section.id }} .product__media,#shopify-section-{{ section.id }} .product__info-container,#shopify-section-{{ section.id }} .media{background:transparent !important;}#shopify-section-{{ section.id }} .product__info-wrapper{align-self:flex-start;}#shopify-section-{{ section.id }} .product__title{font-weight:700 !important;}#shopify-section-{{ section.id }} .button{border-radius:40px !important;}#shopify-section-{{ section.id }} .icon-with-text__item img{width:60px !important;height:auto !important;}#shopify-section-{{ section.id }} #price-{{ section.id }},#shopify-section-{{ section.id }} .product__info-container > .no-js-hidden{display:none !important;}@media(min-width:750px){#shopify-section-{{ section.id }} .icon-with-text__item img{width:80px !important;}}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){document.querySelectorAll(\"#shopify-section-{{ section.id }} .product__view-details\").forEach(function(a){a.setAttribute(\"target\",\"_blank\");a.setAttribute(\"rel\",\"noopener\");});});<\/script>"
+          }
+        },
+        "title": {
+          "type": "title",
+          "settings": {
+            "heading_size": "h2"
+          }
+        },
+        "benefits": {
+          "type": "icon-with-text",
+          "settings": {
+            "layout": "horizontal",
+            "icon_1": "none",
+            "image_1": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_1.value }}",
+            "heading_1": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_1.value }}",
+            "icon_2": "none",
+            "image_2": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_2.value }}",
+            "heading_2": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_2.value }}",
+            "icon_3": "none",
+            "image_3": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_3.value }}",
+            "heading_3": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_3.value }}"
+          }
+        },
+        "stars": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "<div class=\"loox-rating\" data-id=\"{{ section.settings.product.id }}\" data-rating=\"{{ section.settings.product.metafields.loox.avg_rating }}\" data-raters=\"{{ section.settings.product.metafields.loox.num_reviews }}\"><\/div><style>#shopify-section-{{ section.id }} .loox-rating{margin:4px 0 10px;}<\/style>"
+          }
+        },
+        "variant": {
+          "type": "variant_picker",
+          "settings": {
+            "picker_type": "button"
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "buy": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "acc": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{{ 'section-tabs.css' | asset_url | stylesheet_tag }}{%- assign gbkit = section.settings.product.metafields.custom.descricao_longa_com_abas.value.itens_do_kit -%}<div class=\"gbtabs\"><tabs-component class=\"tabs-component\"><div class=\"tabs-component__tabs\"><div class=\"tabs-component__tabs-wrapper\">{%- if gbkit != blank -%}<div class=\"tabs-component__tab tab active\" data-tab=\"tabkit\">itens do kit<\/div>{%- endif -%}<div class=\"tabs-component__tab tab{% if gbkit == blank %} active{% endif %}\" data-tab=\"tab1\">{{ page.metafields.custom.tab_1_label.value | default: 'como usar' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab2\">{{ page.metafields.custom.tab_2_label.value | default: 'resultados' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab3\">{{ page.metafields.custom.tab_3_label.value | default: 'saiba mais' }}<\/div><\/div><\/div><div class=\"tabs-component__contents\">{%- if gbkit != blank -%}<div class=\"tabs-component__content content rte gbkit\" data-content=\"tabkit\">{%- for gbki in gbkit.value -%}<a class=\"gbkit__row\" href=\"{{ gbki.url }}\">{%- if gbki.featured_image -%}<img class=\"gbkit__thumb\" src=\"{{ gbki.featured_image | image_url: width: 120 }}\" alt=\"{{ gbki.title | escape }}\" loading=\"lazy\" width=\"60\" height=\"60\">{%- endif -%}<span class=\"gbkit__title\">{{ gbki.title }}<\/span><\/a>{%- endfor -%}<\/div>{%- endif -%}<div class=\"tabs-component__content content rte\" data-content=\"tab1\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.passo_a_passo | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab2\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.resultado | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab3\"><p>{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.o_que_e | metafield_tag }}<\/p><\/div><\/div><\/tabs-component><\/div><style>#shopify-section-{{ section.id }} .gbtabs{margin-top:18px;}#shopify-section-{{ section.id }} .tabs-component__content ul li{background:url('{{ \"icon-star.svg\" | asset_url }}') no-repeat center left;background-size:2rem;padding:1rem 0 1rem 2.8rem;}#shopify-section-{{ section.id }} .gbkit{display:flex;flex-direction:column;gap:10px;}#shopify-section-{{ section.id }} .gbkit__row{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;background:#fff;border-radius:14px;padding:10px 14px;transition:background .2s;}#shopify-section-{{ section.id }} .gbkit__row:hover{background:#f3f4f1;}#shopify-section-{{ section.id }} .gbkit__thumb{width:52px;height:52px;object-fit:contain;flex:0 0 52px;border-radius:10px;background:#ecede9;}#shopify-section-{{ section.id }} .gbkit__title{font-weight:600;font-size:1.4rem;line-height:1.2;}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){if(customElements.get('tabs-component'))return;class T extends HTMLElement{connectedCallback(){this.tabs=this.querySelectorAll('.tab');this.contents=this.querySelectorAll('.content');this.tabs.forEach(function(t){t.addEventListener('click',function(){this.h(t)}.bind(this))}.bind(this));if(this.tabs[0])this.tabs[0].click();}h(c){this.tabs.forEach(function(t){t.classList.remove('active')});c.classList.add('active');var id=c.getAttribute('data-tab');this.contents.forEach(function(x){x.style.display='none'});var el=this.querySelector('[data-content=\"'+id+'\"]');if(el)el.style.display='block';}}customElements.define('tabs-component',T);});<\/script>"
+          }
+        },
+        "giftprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.gift_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .product-form__submit,#shopify-section-{{ section.id }} .product-form__buttons .shopify-payment-button{display:none !important;}#shopify-section-{{ section.id }} .lpgift{margin:2px 0 6px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lpgift__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lpgift__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lpgift__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}#shopify-section-{{ section.id }} .lpcart{display:flex;flex-direction:column;gap:8px;margin-top:4px;}#shopify-section-{{ section.id }} .lpcart__btn{border:0;border-radius:40px;padding:12px;font-weight:700;font-size:13px;letter-spacing:.02em;cursor:pointer;text-align:center;font-family:'Italian Plate No1 Mono',monospace;line-height:1.15;}#shopify-section-{{ section.id }} .lpcart__btn--primary{background:#df372f;color:#fff;}#shopify-section-{{ section.id }} .lpcart__btn--outline{background:transparent;color:#df372f;border:1.5px solid #df372f;}#shopify-section-{{ section.id }} .lpcart__incart{display:flex;align-items:center;justify-content:center;gap:7px;padding:12px;border-radius:40px;background:#e3ece7;color:#2e7d5b;font-weight:700;font-size:13px;letter-spacing:.02em;font-family:'Italian Plate No1 Mono',monospace;}#shopify-section-{{ section.id }} .lpcart__incart svg{width:16px;height:16px;}<\/style><div class=\"lpgift\"><span class=\"lpgift__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lpgift__now\">R$0,00<\/span><\/div><div class=\"lpgift__note\">1 unidade gr&aacute;tis na primeira compra &middot; voc&ecirc; paga s&oacute; o frete<\/div><div class=\"lpcart\" data-pid=\"{{ section.settings.product.id }}\" data-name=\"{{ section.settings.product.title | remove: 'travel size | ' | split: ' ' | first | escape }}\" data-price=\"{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}\"><\/div>{%- endif -%}"
+          }
+        },
+        "promoprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.promo_price_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .lppromo{margin:2px 0 4px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lppromo__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lppromo__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lppromo__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}<\/style><div class=\"lppromo\"><span class=\"lppromo__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lppromo__now\">{{ section.settings.product.metafields.custom.lp_promo_price.value | times: 100 | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><\/div><div class=\"lppromo__note\">desconto aplicado no carrinho<\/div>{%- endif -%}"
+          }
+        }
+      },
+      "block_order": [
+        "lpstyle",
+        "title",
+        "benefits",
+        "variant",
+        "price",
+        "stars",
+        "giftprice",
+        "promoprice",
+        "buy",
+        "acc"
+      ],
+      "settings": {
+        "product": "{{ page.metafields.custom.produto_em_destaque_6.value }}",
+        "color_scheme": "",
+        "secondary_background": false,
+        "media_size": "small",
+        "constrain_to_viewport": true,
+        "media_fit": "contain",
+        "media_position": "left",
+        "image_zoom": "none",
+        "hide_variants": false,
+        "enable_video_looping": false,
+        "padding_top": 8,
+        "padding_bottom": 8
+      }
+    },
+    "card_7": {
+      "type": "featured-product",
+      "blocks": {
+        "lpstyle": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- unless section.settings.product -%}<style>#shopify-section-{{ section.id }}{display:none !important}<\/style>{%- endunless -%}<style>#shopify-section-{{ section.id }} .product{background:#ecede9 !important;border-radius:20px;overflow:hidden;padding:24px;align-items:flex-start;}#shopify-section-{{ section.id }} .product-media-container,#shopify-section-{{ section.id }} .product__media-wrapper,#shopify-section-{{ section.id }} .product__media,#shopify-section-{{ section.id }} .product__info-container,#shopify-section-{{ section.id }} .media{background:transparent !important;}#shopify-section-{{ section.id }} .product__info-wrapper{align-self:flex-start;}#shopify-section-{{ section.id }} .product__title{font-weight:700 !important;}#shopify-section-{{ section.id }} .button{border-radius:40px !important;}#shopify-section-{{ section.id }} .icon-with-text__item img{width:60px !important;height:auto !important;}#shopify-section-{{ section.id }} #price-{{ section.id }},#shopify-section-{{ section.id }} .product__info-container > .no-js-hidden{display:none !important;}@media(min-width:750px){#shopify-section-{{ section.id }} .icon-with-text__item img{width:80px !important;}}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){document.querySelectorAll(\"#shopify-section-{{ section.id }} .product__view-details\").forEach(function(a){a.setAttribute(\"target\",\"_blank\");a.setAttribute(\"rel\",\"noopener\");});});<\/script>"
+          }
+        },
+        "title": {
+          "type": "title",
+          "settings": {
+            "heading_size": "h2"
+          }
+        },
+        "benefits": {
+          "type": "icon-with-text",
+          "settings": {
+            "layout": "horizontal",
+            "icon_1": "none",
+            "image_1": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_1.value }}",
+            "heading_1": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_1.value }}",
+            "icon_2": "none",
+            "image_2": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_2.value }}",
+            "heading_2": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_2.value }}",
+            "icon_3": "none",
+            "image_3": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_3.value }}",
+            "heading_3": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_3.value }}"
+          }
+        },
+        "stars": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "<div class=\"loox-rating\" data-id=\"{{ section.settings.product.id }}\" data-rating=\"{{ section.settings.product.metafields.loox.avg_rating }}\" data-raters=\"{{ section.settings.product.metafields.loox.num_reviews }}\"><\/div><style>#shopify-section-{{ section.id }} .loox-rating{margin:4px 0 10px;}<\/style>"
+          }
+        },
+        "variant": {
+          "type": "variant_picker",
+          "settings": {
+            "picker_type": "button"
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "buy": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "acc": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{{ 'section-tabs.css' | asset_url | stylesheet_tag }}{%- assign gbkit = section.settings.product.metafields.custom.descricao_longa_com_abas.value.itens_do_kit -%}<div class=\"gbtabs\"><tabs-component class=\"tabs-component\"><div class=\"tabs-component__tabs\"><div class=\"tabs-component__tabs-wrapper\">{%- if gbkit != blank -%}<div class=\"tabs-component__tab tab active\" data-tab=\"tabkit\">itens do kit<\/div>{%- endif -%}<div class=\"tabs-component__tab tab{% if gbkit == blank %} active{% endif %}\" data-tab=\"tab1\">{{ page.metafields.custom.tab_1_label.value | default: 'como usar' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab2\">{{ page.metafields.custom.tab_2_label.value | default: 'resultados' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab3\">{{ page.metafields.custom.tab_3_label.value | default: 'saiba mais' }}<\/div><\/div><\/div><div class=\"tabs-component__contents\">{%- if gbkit != blank -%}<div class=\"tabs-component__content content rte gbkit\" data-content=\"tabkit\">{%- for gbki in gbkit.value -%}<a class=\"gbkit__row\" href=\"{{ gbki.url }}\">{%- if gbki.featured_image -%}<img class=\"gbkit__thumb\" src=\"{{ gbki.featured_image | image_url: width: 120 }}\" alt=\"{{ gbki.title | escape }}\" loading=\"lazy\" width=\"60\" height=\"60\">{%- endif -%}<span class=\"gbkit__title\">{{ gbki.title }}<\/span><\/a>{%- endfor -%}<\/div>{%- endif -%}<div class=\"tabs-component__content content rte\" data-content=\"tab1\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.passo_a_passo | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab2\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.resultado | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab3\"><p>{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.o_que_e | metafield_tag }}<\/p><\/div><\/div><\/tabs-component><\/div><style>#shopify-section-{{ section.id }} .gbtabs{margin-top:18px;}#shopify-section-{{ section.id }} .tabs-component__content ul li{background:url('{{ \"icon-star.svg\" | asset_url }}') no-repeat center left;background-size:2rem;padding:1rem 0 1rem 2.8rem;}#shopify-section-{{ section.id }} .gbkit{display:flex;flex-direction:column;gap:10px;}#shopify-section-{{ section.id }} .gbkit__row{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;background:#fff;border-radius:14px;padding:10px 14px;transition:background .2s;}#shopify-section-{{ section.id }} .gbkit__row:hover{background:#f3f4f1;}#shopify-section-{{ section.id }} .gbkit__thumb{width:52px;height:52px;object-fit:contain;flex:0 0 52px;border-radius:10px;background:#ecede9;}#shopify-section-{{ section.id }} .gbkit__title{font-weight:600;font-size:1.4rem;line-height:1.2;}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){if(customElements.get('tabs-component'))return;class T extends HTMLElement{connectedCallback(){this.tabs=this.querySelectorAll('.tab');this.contents=this.querySelectorAll('.content');this.tabs.forEach(function(t){t.addEventListener('click',function(){this.h(t)}.bind(this))}.bind(this));if(this.tabs[0])this.tabs[0].click();}h(c){this.tabs.forEach(function(t){t.classList.remove('active')});c.classList.add('active');var id=c.getAttribute('data-tab');this.contents.forEach(function(x){x.style.display='none'});var el=this.querySelector('[data-content=\"'+id+'\"]');if(el)el.style.display='block';}}customElements.define('tabs-component',T);});<\/script>"
+          }
+        },
+        "giftprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.gift_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .product-form__submit,#shopify-section-{{ section.id }} .product-form__buttons .shopify-payment-button{display:none !important;}#shopify-section-{{ section.id }} .lpgift{margin:2px 0 6px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lpgift__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lpgift__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lpgift__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}#shopify-section-{{ section.id }} .lpcart{display:flex;flex-direction:column;gap:8px;margin-top:4px;}#shopify-section-{{ section.id }} .lpcart__btn{border:0;border-radius:40px;padding:12px;font-weight:700;font-size:13px;letter-spacing:.02em;cursor:pointer;text-align:center;font-family:'Italian Plate No1 Mono',monospace;line-height:1.15;}#shopify-section-{{ section.id }} .lpcart__btn--primary{background:#df372f;color:#fff;}#shopify-section-{{ section.id }} .lpcart__btn--outline{background:transparent;color:#df372f;border:1.5px solid #df372f;}#shopify-section-{{ section.id }} .lpcart__incart{display:flex;align-items:center;justify-content:center;gap:7px;padding:12px;border-radius:40px;background:#e3ece7;color:#2e7d5b;font-weight:700;font-size:13px;letter-spacing:.02em;font-family:'Italian Plate No1 Mono',monospace;}#shopify-section-{{ section.id }} .lpcart__incart svg{width:16px;height:16px;}<\/style><div class=\"lpgift\"><span class=\"lpgift__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lpgift__now\">R$0,00<\/span><\/div><div class=\"lpgift__note\">1 unidade gr&aacute;tis na primeira compra &middot; voc&ecirc; paga s&oacute; o frete<\/div><div class=\"lpcart\" data-pid=\"{{ section.settings.product.id }}\" data-name=\"{{ section.settings.product.title | remove: 'travel size | ' | split: ' ' | first | escape }}\" data-price=\"{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}\"><\/div>{%- endif -%}"
+          }
+        },
+        "promoprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.promo_price_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .lppromo{margin:2px 0 4px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lppromo__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lppromo__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lppromo__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}<\/style><div class=\"lppromo\"><span class=\"lppromo__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lppromo__now\">{{ section.settings.product.metafields.custom.lp_promo_price.value | times: 100 | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><\/div><div class=\"lppromo__note\">desconto aplicado no carrinho<\/div>{%- endif -%}"
+          }
+        }
+      },
+      "block_order": [
+        "lpstyle",
+        "title",
+        "benefits",
+        "variant",
+        "price",
+        "stars",
+        "giftprice",
+        "promoprice",
+        "buy",
+        "acc"
+      ],
+      "settings": {
+        "product": "{{ page.metafields.custom.produto_em_destaque_7.value }}",
+        "color_scheme": "",
+        "secondary_background": false,
+        "media_size": "small",
+        "constrain_to_viewport": true,
+        "media_fit": "contain",
+        "media_position": "left",
+        "image_zoom": "none",
+        "hide_variants": false,
+        "enable_video_looping": false,
+        "padding_top": 8,
+        "padding_bottom": 8
+      }
+    },
+    "card_8": {
+      "type": "featured-product",
+      "blocks": {
+        "lpstyle": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- unless section.settings.product -%}<style>#shopify-section-{{ section.id }}{display:none !important}<\/style>{%- endunless -%}<style>#shopify-section-{{ section.id }} .product{background:#ecede9 !important;border-radius:20px;overflow:hidden;padding:24px;align-items:flex-start;}#shopify-section-{{ section.id }} .product-media-container,#shopify-section-{{ section.id }} .product__media-wrapper,#shopify-section-{{ section.id }} .product__media,#shopify-section-{{ section.id }} .product__info-container,#shopify-section-{{ section.id }} .media{background:transparent !important;}#shopify-section-{{ section.id }} .product__info-wrapper{align-self:flex-start;}#shopify-section-{{ section.id }} .product__title{font-weight:700 !important;}#shopify-section-{{ section.id }} .button{border-radius:40px !important;}#shopify-section-{{ section.id }} .icon-with-text__item img{width:60px !important;height:auto !important;}#shopify-section-{{ section.id }} #price-{{ section.id }},#shopify-section-{{ section.id }} .product__info-container > .no-js-hidden{display:none !important;}@media(min-width:750px){#shopify-section-{{ section.id }} .icon-with-text__item img{width:80px !important;}}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){document.querySelectorAll(\"#shopify-section-{{ section.id }} .product__view-details\").forEach(function(a){a.setAttribute(\"target\",\"_blank\");a.setAttribute(\"rel\",\"noopener\");});});<\/script>"
+          }
+        },
+        "title": {
+          "type": "title",
+          "settings": {
+            "heading_size": "h2"
+          }
+        },
+        "benefits": {
+          "type": "icon-with-text",
+          "settings": {
+            "layout": "horizontal",
+            "icon_1": "none",
+            "image_1": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_1.value }}",
+            "heading_1": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_1.value }}",
+            "icon_2": "none",
+            "image_2": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_2.value }}",
+            "heading_2": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_2.value }}",
+            "icon_3": "none",
+            "image_3": "{{ section.settings.product.metafields.custom.imagem_beneficio_em_destaque_3.value }}",
+            "heading_3": "{{ section.settings.product.metafields.custom.beneficio_em_destaque_3.value }}"
+          }
+        },
+        "stars": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "<div class=\"loox-rating\" data-id=\"{{ section.settings.product.id }}\" data-rating=\"{{ section.settings.product.metafields.loox.avg_rating }}\" data-raters=\"{{ section.settings.product.metafields.loox.num_reviews }}\"><\/div><style>#shopify-section-{{ section.id }} .loox-rating{margin:4px 0 10px;}<\/style>"
+          }
+        },
+        "variant": {
+          "type": "variant_picker",
+          "settings": {
+            "picker_type": "button"
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "buy": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "acc": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{{ 'section-tabs.css' | asset_url | stylesheet_tag }}{%- assign gbkit = section.settings.product.metafields.custom.descricao_longa_com_abas.value.itens_do_kit -%}<div class=\"gbtabs\"><tabs-component class=\"tabs-component\"><div class=\"tabs-component__tabs\"><div class=\"tabs-component__tabs-wrapper\">{%- if gbkit != blank -%}<div class=\"tabs-component__tab tab active\" data-tab=\"tabkit\">itens do kit<\/div>{%- endif -%}<div class=\"tabs-component__tab tab{% if gbkit == blank %} active{% endif %}\" data-tab=\"tab1\">{{ page.metafields.custom.tab_1_label.value | default: 'como usar' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab2\">{{ page.metafields.custom.tab_2_label.value | default: 'resultados' }}<\/div><div class=\"tabs-component__tab tab\" data-tab=\"tab3\">{{ page.metafields.custom.tab_3_label.value | default: 'saiba mais' }}<\/div><\/div><\/div><div class=\"tabs-component__contents\">{%- if gbkit != blank -%}<div class=\"tabs-component__content content rte gbkit\" data-content=\"tabkit\">{%- for gbki in gbkit.value -%}<a class=\"gbkit__row\" href=\"{{ gbki.url }}\">{%- if gbki.featured_image -%}<img class=\"gbkit__thumb\" src=\"{{ gbki.featured_image | image_url: width: 120 }}\" alt=\"{{ gbki.title | escape }}\" loading=\"lazy\" width=\"60\" height=\"60\">{%- endif -%}<span class=\"gbkit__title\">{{ gbki.title }}<\/span><\/a>{%- endfor -%}<\/div>{%- endif -%}<div class=\"tabs-component__content content rte\" data-content=\"tab1\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.passo_a_passo | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab2\">{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.resultado | metafield_tag }}<\/div><div class=\"tabs-component__content content rte\" data-content=\"tab3\"><p>{{ section.settings.product.metafields.custom.descricao_longa_com_abas.value.o_que_e | metafield_tag }}<\/p><\/div><\/div><\/tabs-component><\/div><style>#shopify-section-{{ section.id }} .gbtabs{margin-top:18px;}#shopify-section-{{ section.id }} .tabs-component__content ul li{background:url('{{ \"icon-star.svg\" | asset_url }}') no-repeat center left;background-size:2rem;padding:1rem 0 1rem 2.8rem;}#shopify-section-{{ section.id }} .gbkit{display:flex;flex-direction:column;gap:10px;}#shopify-section-{{ section.id }} .gbkit__row{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;background:#fff;border-radius:14px;padding:10px 14px;transition:background .2s;}#shopify-section-{{ section.id }} .gbkit__row:hover{background:#f3f4f1;}#shopify-section-{{ section.id }} .gbkit__thumb{width:52px;height:52px;object-fit:contain;flex:0 0 52px;border-radius:10px;background:#ecede9;}#shopify-section-{{ section.id }} .gbkit__title{font-weight:600;font-size:1.4rem;line-height:1.2;}<\/style><script>document.addEventListener(\"DOMContentLoaded\",function(){if(customElements.get('tabs-component'))return;class T extends HTMLElement{connectedCallback(){this.tabs=this.querySelectorAll('.tab');this.contents=this.querySelectorAll('.content');this.tabs.forEach(function(t){t.addEventListener('click',function(){this.h(t)}.bind(this))}.bind(this));if(this.tabs[0])this.tabs[0].click();}h(c){this.tabs.forEach(function(t){t.classList.remove('active')});c.classList.add('active');var id=c.getAttribute('data-tab');this.contents.forEach(function(x){x.style.display='none'});var el=this.querySelector('[data-content=\"'+id+'\"]');if(el)el.style.display='block';}}customElements.define('tabs-component',T);});<\/script>"
+          }
+        },
+        "giftprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.gift_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .product-form__submit,#shopify-section-{{ section.id }} .product-form__buttons .shopify-payment-button{display:none !important;}#shopify-section-{{ section.id }} .lpgift{margin:2px 0 6px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lpgift__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lpgift__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lpgift__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}#shopify-section-{{ section.id }} .lpcart{display:flex;flex-direction:column;gap:8px;margin-top:4px;}#shopify-section-{{ section.id }} .lpcart__btn{border:0;border-radius:40px;padding:12px;font-weight:700;font-size:13px;letter-spacing:.02em;cursor:pointer;text-align:center;font-family:'Italian Plate No1 Mono',monospace;line-height:1.15;}#shopify-section-{{ section.id }} .lpcart__btn--primary{background:#df372f;color:#fff;}#shopify-section-{{ section.id }} .lpcart__btn--outline{background:transparent;color:#df372f;border:1.5px solid #df372f;}#shopify-section-{{ section.id }} .lpcart__incart{display:flex;align-items:center;justify-content:center;gap:7px;padding:12px;border-radius:40px;background:#e3ece7;color:#2e7d5b;font-weight:700;font-size:13px;letter-spacing:.02em;font-family:'Italian Plate No1 Mono',monospace;}#shopify-section-{{ section.id }} .lpcart__incart svg{width:16px;height:16px;}<\/style><div class=\"lpgift\"><span class=\"lpgift__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lpgift__now\">R$0,00<\/span><\/div><div class=\"lpgift__note\">1 unidade gr&aacute;tis na primeira compra &middot; voc&ecirc; paga s&oacute; o frete<\/div><div class=\"lpcart\" data-pid=\"{{ section.settings.product.id }}\" data-name=\"{{ section.settings.product.title | remove: 'travel size | ' | split: ' ' | first | escape }}\" data-price=\"{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}\"><\/div>{%- endif -%}"
+          }
+        },
+        "promoprice": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- if page.metafields.custom.promo_price_mode.value -%}<style>#shopify-section-{{ section.id }} .gb-btn-price{display:none !important;}#shopify-section-{{ section.id }} .lppromo{margin:2px 0 4px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#shopify-section-{{ section.id }} .lppromo__was{color:#8a8a8a;text-decoration:line-through;font-size:16px;}#shopify-section-{{ section.id }} .lppromo__now{color:#df372f;font-weight:800;font-size:24px;letter-spacing:-.01em;}#shopify-section-{{ section.id }} .lppromo__note{font-size:12px;color:#6b6b6b;margin:0 0 12px;}<\/style><div class=\"lppromo\"><span class=\"lppromo__was\">{{ section.settings.product.price | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><span class=\"lppromo__now\">{{ section.settings.product.metafields.custom.lp_promo_price.value | times: 100 | money_without_trailing_zeros | replace: 'R$ ', 'R$' }}<\/span><\/div><div class=\"lppromo__note\">desconto aplicado no carrinho<\/div>{%- endif -%}"
+          }
+        }
+      },
+      "block_order": [
+        "lpstyle",
+        "title",
+        "benefits",
+        "variant",
+        "price",
+        "stars",
+        "giftprice",
+        "promoprice",
+        "buy",
+        "acc"
+      ],
+      "settings": {
+        "product": "{{ page.metafields.custom.produto_em_destaque_8.value }}",
+        "color_scheme": "",
+        "secondary_background": false,
+        "media_size": "small",
+        "constrain_to_viewport": true,
+        "media_fit": "contain",
+        "media_position": "left",
+        "image_zoom": "none",
+        "hide_variants": false,
+        "enable_video_looping": false,
+        "padding_top": 8,
+        "padding_bottom": 8
+      }
+    },
+    "giftapply": {
+      "type": "custom-liquid",
+      "settings": {
+        "custom_liquid": "{%- if page.metafields.custom.gift_mode.value -%}<style>#hxWaRoot,#hxWaWidget,#hxWaBtn,#hxWaBadge,.hx-wa-widget,.hx-wa-btn{display:none !important;}<\/style><script>(function(){\ntry{ {%- if page.metafields.custom.gift_code != blank -%}var c={{ page.metafields.custom.gift_code.value | json }};var k='giftapplied_'+c;if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');fetch('\/discount\/'+encodeURIComponent(c),{mode:'no-cors',credentials:'same-origin'});}{%- endif -%} }catch(e){}\nfunction killWa(){['hxWaRoot','hxWaWidget','hxWaBtn','hxWaBadge'].forEach(function(id){var el=document.getElementById(id);if(el)el.remove();});[].slice.call(document.querySelectorAll('.hx-wa-widget,.hx-wa-btn')).forEach(function(el){el.remove();});}\nkillWa();[300,800,1500,3000].forEach(function(ms){setTimeout(killWa,ms);});\nif(window.MutationObserver){var _mo=new MutationObserver(function(){killWa();});_mo.observe(document.documentElement,{childList:true,subtree:true});setTimeout(function(){_mo.disconnect();},6000);}\nvar CHECK='<svg viewBox=\"0 0 20 20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\"><path d=\"M4 10.5l4 4 8-9\"\/><\/svg>';\nfunction slots(){return [].slice.call(document.querySelectorAll('.lpcart'));}\nfunction sec(el){return el.closest('[id^=\"shopify-section-\"]');}\nfunction nativeBtn(slot){var s=sec(slot);return s?s.querySelector('[id^=\"ProductSubmitButton-\"]'):null;}\nfunction pidOf(el){return String(el.getAttribute('data-pid')).replace(\/[^0-9]\/g,'');}\nfunction render(cart){var S=slots();if(!S.length)return;var ids=S.map(pidOf);var nameByPid={};S.forEach(function(x){nameByPid[pidOf(x)]=x.getAttribute('data-name');});var inCart={};(cart.items||[]).forEach(function(l){var p=String(l.product_id);if(ids.indexOf(p)>-1)inCart[p]=(inCart[p]||0)+l.quantity;});var any=false;for(var kk in inCart){any=true;break;}\nvar freePid=null;(cart.items||[]).some(function(l){var p=String(l.product_id);if(ids.indexOf(p)>-1){freePid=p;return true;}return false;});var freeName=freePid?nameByPid[freePid]:'';\nS.forEach(function(slot){var pid=pidOf(slot),name=slot.getAttribute('data-name'),price=slot.getAttribute('data-price');var html;\nif(inCart[pid]){html='<div class=\"lpcart__incart\">'+CHECK+' no carrinho<\/div>';}\nelse if(any){html='<button type=\"button\" class=\"lpcart__btn lpcart__btn--outline\" data-act=\"swap\">trocar brinde por '+name+'<\/button>'+'<button type=\"button\" class=\"lpcart__btn lpcart__btn--primary\" data-act=\"add\">adicionar por '+price+'<\/button>';}\nelse{html='<button type=\"button\" class=\"lpcart__btn lpcart__btn--primary\" data-act=\"add\">experimentar<\/button>';}\nslot.innerHTML=html;wire(slot);});}\nfunction wire(slot){[].slice.call(slot.querySelectorAll('[data-act]')).forEach(function(b){b.addEventListener('click',function(){if(b.getAttribute('data-act')==='add'){var nb=nativeBtn(slot);if(nb)nb.click();sched();}else{swap(slot);}});});}\nfunction swap(slot){fetch('\/cart.js',{headers:{Accept:'application\/json'}}).then(function(r){return r.json();}).then(function(cart){var S=slots();var ids=S.map(pidOf);var free=(cart.items||[]).filter(function(l){return ids.indexOf(String(l.product_id))>-1;})[0];function addThis(){var nb=nativeBtn(slot);if(nb)nb.click();sched();}if(free){fetch('\/cart\/change.js',{method:'POST',headers:{'Content-Type':'application\/json',Accept:'application\/json'},body:JSON.stringify({id:free.key,quantity:0})}).then(addThis);}else addThis();});}\nfunction refresh(){fetch('\/cart.js',{headers:{Accept:'application\/json'}}).then(function(r){return r.json();}).then(render).catch(function(){});}\nvar t1,t2;function sched(){clearTimeout(t1);clearTimeout(t2);t1=setTimeout(refresh,700);t2=setTimeout(refresh,1800);}\nfunction boot(){refresh();var d=document.querySelector('cart-drawer');if(d&&window.MutationObserver){new MutationObserver(refresh).observe(d,{attributes:true,attributeFilter:['class','open','style']});}}\nif(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();\n})();<\/script>{%- endif -%}",
+        "color_scheme": "",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "carrossel": {
+      "type": "custom-liquid",
+      "settings": {
+        "custom_liquid": "{%- liquid\n  assign has_car = false\n  for i in (1..6)\n    assign ck = 'carrossel_' | append: i\n    if page.metafields.custom[ck] != blank\n      assign has_car = true\n    endif\n  endfor\n-%}\n{%- if has_car -%}\n<div class=\"lpcar\">\n  <ul class=\"lpcar__track\" role=\"list\">\n    {%- for i in (1..6) -%}\n      {%- assign ck = 'carrossel_' | append: i -%}\n      {%- assign mf = page.metafields.custom[ck] -%}\n      {%- if mf != blank -%}\n        {%- assign img = mf.value -%}\n        <li class=\"lpcar__slide\">\n          <img\n            src=\"{{ img | image_url: width: 720 }}\"\n            srcset=\"{{ img | image_url: width: 480 }} 480w,\n                    {{ img | image_url: width: 720 }} 720w,\n                    {{ img | image_url: width: 1080 }} 1080w\"\n            sizes=\"(min-width: 990px) 32vw, (min-width: 750px) 46vw, 84vw\"\n            alt=\"{{ img.alt | escape }}\"\n            width=\"1080\" height=\"1350\"\n            loading=\"lazy\" decoding=\"async\">\n        <\/li>\n      {%- endif -%}\n    {%- endfor -%}\n  <\/ul>\n  <p class=\"lpcar__hint\">arraste para o lado<\/p>\n<\/div>\n<style>\n  .lpcar{padding:8px 0 28px}\n  .lpcar__track{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;\n    -webkit-overflow-scrolling:touch;list-style:none;margin:0;\n    padding:0 5vw 6px;scrollbar-width:none}\n  .lpcar__track::-webkit-scrollbar{display:none}\n  .lpcar__slide{flex:0 0 84vw;scroll-snap-align:center;margin:0}\n  .lpcar__slide img{width:100%;height:auto;display:block;border-radius:12px}\n  .lpcar__hint{text-align:center;font-size:12.5px;letter-spacing:.08em;\n    text-transform:uppercase;opacity:.5;margin:14px 0 0}\n  @media(min-width:750px){\n    .lpcar__track{padding-left:max(5vw,24px);padding-right:max(5vw,24px)}\n    .lpcar__slide{flex:0 0 46vw}\n  }\n  @media(min-width:990px){\n    .lpcar__slide{flex:0 0 32%}\n    .lpcar__hint{display:none}\n  }\n<\/style>\n{%- endif -%}",
+        "color_scheme": "background-1",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "passos": {
+      "type": "custom-liquid",
+      "settings": {
+        "custom_liquid": "{%- liquid\n  assign kit = page.metafields.custom.produto_em_destaque_1.value\n  assign has_steps = false\n  for i in (1..3)\n    assign tk = 'passo_' | append: i | append: '_titulo'\n    if page.metafields.custom[tk] != blank\n      assign has_steps = true\n    endif\n  endfor\n-%}\n{%- if has_steps -%}\n<div class=\"lpsteps page-width\">\n  <ol class=\"lpsteps__list\" role=\"list\">\n    {%- for i in (1..3) -%}\n      {%- assign tk = 'passo_' | append: i | append: '_titulo' -%}\n      {%- assign xk = 'passo_' | append: i | append: '_texto' -%}\n      {%- assign t = page.metafields.custom[tk] -%}\n      {%- if t != blank -%}\n        {%- assign pk = 'passo_' | append: i | append: '_produto' -%}\n        {%- assign prod = page.metafields.custom[pk].value -%}\n        <li class=\"lpsteps__item\">\n          {%- if prod.featured_image != blank -%}\n            <img class=\"lpsteps__img\"\n              src=\"{{ prod.featured_image | image_url: width: 420 }}\"\n              srcset=\"{{ prod.featured_image | image_url: width: 300 }} 300w,\n                      {{ prod.featured_image | image_url: width: 560 }} 560w\"\n              sizes=\"(min-width: 750px) 26vw, 40vw\"\n              alt=\"{{ prod.title | escape }}\" width=\"420\" height=\"420\"\n              loading=\"lazy\" decoding=\"async\">\n          {%- endif -%}\n          <span class=\"lpsteps__n\">{{ i }}<\/span>\n          <h3 class=\"lpsteps__t\">{{ t.value }}<\/h3>\n          {%- if prod != blank -%}\n            <p class=\"lpsteps__p\">{{ prod.title }}<\/p>\n          {%- endif -%}\n          <div class=\"lpsteps__d rte\">\n            {{ page.metafields.custom[xk] | metafield_tag }}\n          <\/div>\n        <\/li>\n      {%- endif -%}\n    {%- endfor -%}\n  <\/ol>\n<\/div>\n<style>\n  .lpsteps{padding:8px 0 32px}\n  .lpsteps__list{list-style:none;margin:0;padding:0;display:grid;gap:26px}\n  .lpsteps__item{margin:0;text-align:center}\n  .lpsteps__img{width:58%;max-width:200px;height:auto;margin:0 auto 10px;display:block}\n  .lpsteps__n{display:inline-grid;place-items:center;width:28px;height:28px;\n    border-radius:50%;background:#DF3630;color:#fff;font-weight:700;font-size:14px}\n  .lpsteps__t{font-size:19px;margin:8px 0 2px;text-transform:lowercase}\n  .lpsteps__p{font-size:13.5px;letter-spacing:.06em;text-transform:uppercase;\n    opacity:.55;margin:0 0 8px}\n  .lpsteps__d{font-size:15.5px;max-width:34ch;margin:0 auto}\n  @media(min-width:750px){\n    .lpsteps__list{grid-template-columns:repeat(3,1fr);gap:22px}\n  }\n<\/style>\n{%- endif -%}",
+        "color_scheme": "background-1",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "fechamento": {
+      "type": "custom-liquid",
+      "settings": {
+        "custom_liquid": "{%- assign ft = page.metafields.custom.fechamento_titulo -%}\n{%- if ft != blank -%}\n{%- assign kit = page.metafields.custom.produto_em_destaque_1.value -%}\n<div class=\"lpclose\">\n  <div class=\"page-width lpclose__in\">\n    <h2 class=\"lpclose__t\">{{ ft.value }}<\/h2>\n    {%- if page.metafields.custom.fechamento_texto != blank -%}\n      <div class=\"lpclose__x rte\">{{ page.metafields.custom.fechamento_texto | metafield_tag }}<\/div>\n    {%- endif -%}\n    {%- if page.metafields.custom.fechamento_botao != blank and kit != blank -%}\n      <a class=\"lpclose__b button\" href=\"{{ kit.url }}\">\n        {{ page.metafields.custom.fechamento_botao.value }}\n      <\/a>\n    {%- endif -%}\n  <\/div>\n<\/div>\n<style>\n  .lpclose{background:#769C8E;color:#fff;padding:46px 0}\n  .lpclose__in{text-align:center}\n  .lpclose__t{font-size:clamp(24px,5.4vw,34px);line-height:1.14;margin:0 auto;\n    max-width:22ch;color:#fff;text-transform:lowercase}\n  .lpclose__x{margin-top:12px;opacity:.9;font-size:16px}\n  .lpclose__b{margin-top:22px;background:#000;color:#fff;border:0}\n<\/style>\n{%- endif -%}",
+        "color_scheme": "background-1",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    }
+  },
+  "order": [
+    "giftapply",
+    "hero",
+    "carrossel",
+    "oquesao",
+    "trust",
+    "punchline",
+    "passos",
+    "card_1",
+    "card_2",
+    "card_3",
+    "card_4",
+    "card_5",
+    "card_6",
+    "card_7",
+    "card_8",
+    "promo",
+    "kits_boosters",
+    "faq",
+    "fechamento"
+  ]
+}

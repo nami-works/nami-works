@@ -1,0 +1,1 @@
+https://a.klaviyo.com/api/events/?filter=and%28equals%28metric_id%2C%22ViiTym%22%29%2Cgreater-or-equal%28datetime%2C2026-02-01T00%3A00%3A00Z%29%2Cless-than%28datetime%2C2026-08-01T00%3A00%3A00Z%29%29&include=profile&fields%5Bevent%5D=datetime&fields%5Bprofile%5D=created&sort=datetime&page%5Bsize%5D=200&page%5Bcursor%5D=WzE3Nzg5MzgyMDAsICI3OEhKTHlja1lNVSIsIHRydWVd

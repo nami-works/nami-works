@@ -1,0 +1,5522 @@
+[
+ {
+  "order_gid": "gid://shopify/Order/7407322956096",
+  "order_legacy_id": "7407322956096",
+  "name": "89157",
+  "created_at": "2026-07-24T08:03:46Z",
+  "customer_gid": "gid://shopify/Customer/7759140815168",
+  "customer_name": "Carla Pastrello",
+  "subtotal": "133.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414733668672",
+  "order_legacy_id": "7414733668672",
+  "name": "89640",
+  "created_at": "2026-07-28T14:02:34Z",
+  "customer_gid": "gid://shopify/Customer/7759151038784",
+  "customer_name": "Dascale Muller",
+  "subtotal": "116.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404646236480",
+  "order_legacy_id": "7404646236480",
+  "name": "88688",
+  "created_at": "2026-07-22T20:16:29Z",
+  "customer_gid": "gid://shopify/Customer/7759246197056",
+  "customer_name": "Ana Beatriz Nunes Correa",
+  "subtotal": "159.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408308748608",
+  "order_legacy_id": "7408308748608",
+  "name": "89212",
+  "created_at": "2026-07-24T20:05:37Z",
+  "customer_gid": "gid://shopify/Customer/7760941580608",
+  "customer_name": "Andréia Pfeiffer",
+  "subtotal": "184.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7409309385024",
+  "order_legacy_id": "7409309385024",
+  "name": "89251",
+  "created_at": "2026-07-25T10:48:35Z",
+  "customer_gid": "gid://shopify/Customer/7759523676480",
+  "customer_name": "SUED SHEILA SARMENTO",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415308550464",
+  "order_legacy_id": "7415308550464",
+  "name": "89681",
+  "created_at": "2026-07-28T20:20:27Z",
+  "customer_gid": "gid://shopify/Customer/7759675326784",
+  "customer_name": "Thais Faria",
+  "subtotal": "180.5",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414554394944",
+  "order_legacy_id": "7414554394944",
+  "name": "89631",
+  "created_at": "2026-07-28T11:29:44Z",
+  "customer_gid": "gid://shopify/Customer/7760401105216",
+  "customer_name": "Marina Ricardo",
+  "subtotal": "384.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415374905664",
+  "order_legacy_id": "7415374905664",
+  "name": "89688",
+  "created_at": "2026-07-28T21:06:44Z",
+  "customer_gid": "gid://shopify/Customer/7761802527040",
+  "customer_name": "Vanessa Chaves Barreto Ferreira de Lima",
+  "subtotal": "385.05",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405142344000",
+  "order_legacy_id": "7405142344000",
+  "name": "88881",
+  "created_at": "2026-07-23T02:55:50Z",
+  "customer_gid": "gid://shopify/Customer/7759674933568",
+  "customer_name": "Clarissa De Lorenzi Fondevila",
+  "subtotal": "216.75",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410055872832",
+  "order_legacy_id": "7410055872832",
+  "name": "89302",
+  "created_at": "2026-07-25T19:03:57Z",
+  "customer_gid": "gid://shopify/Customer/7761873338688",
+  "customer_name": "Beatriz Mello",
+  "subtotal": "365.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405679378752",
+  "order_legacy_id": "7405679378752",
+  "name": "88917",
+  "created_at": "2026-07-23T11:27:09Z",
+  "customer_gid": "gid://shopify/Customer/7761898275136",
+  "customer_name": "Geórgia Melo",
+  "subtotal": "281.16",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405828145472",
+  "order_legacy_id": "7405828145472",
+  "name": "88945",
+  "created_at": "2026-07-23T13:24:11Z",
+  "customer_gid": "gid://shopify/Customer/7761910071616",
+  "customer_name": "Milena Vaciloto",
+  "subtotal": "363.25",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413055881536",
+  "order_legacy_id": "7413055881536",
+  "name": "89541",
+  "created_at": "2026-07-27T14:43:15Z",
+  "customer_gid": "gid://shopify/Customer/7761912430912",
+  "customer_name": "Camila Souza Julio",
+  "subtotal": "504.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415444275520",
+  "order_legacy_id": "7415444275520",
+  "name": "89695",
+  "created_at": "2026-07-28T22:00:30Z",
+  "customer_gid": "gid://shopify/Customer/7761909023040",
+  "customer_name": "Marcela  Bussadori",
+  "subtotal": "341.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406834549056",
+  "order_legacy_id": "7406834549056",
+  "name": "89145",
+  "created_at": "2026-07-24T00:42:22Z",
+  "customer_gid": "gid://shopify/Customer/7762014699840",
+  "customer_name": "Bruna Turco",
+  "subtotal": "428.8",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7417004360000",
+  "order_legacy_id": "7417004360000",
+  "name": "89799",
+  "created_at": "2026-07-29T20:17:26Z",
+  "customer_gid": "gid://shopify/Customer/7759417508160",
+  "customer_name": "Sibeli Negrelli Negrelli",
+  "subtotal": "188.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404300075328",
+  "order_legacy_id": "7404300075328",
+  "name": "88528",
+  "created_at": "2026-07-22T16:52:56Z",
+  "customer_gid": "gid://shopify/Customer/7761500111168",
+  "customer_name": "Pietra Barreto",
+  "subtotal": "339.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406951399744",
+  "order_legacy_id": "7406951399744",
+  "name": "89150",
+  "created_at": "2026-07-24T02:27:22Z",
+  "customer_gid": "gid://shopify/Customer/7760591159616",
+  "customer_name": "Alice Feiten",
+  "subtotal": "166.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407946727744",
+  "order_legacy_id": "7407946727744",
+  "name": "89181",
+  "created_at": "2026-07-24T16:33:09Z",
+  "customer_gid": "gid://shopify/Customer/7761167876416",
+  "customer_name": "Arthur Gonçalves",
+  "subtotal": "407.15",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408276242752",
+  "order_legacy_id": "7408276242752",
+  "name": "89209",
+  "created_at": "2026-07-24T19:44:50Z",
+  "customer_gid": "gid://shopify/Customer/7760926540096",
+  "customer_name": "Juliana Mouta",
+  "subtotal": "140.22",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413316419904",
+  "order_legacy_id": "7413316419904",
+  "name": "89566",
+  "created_at": "2026-07-27T17:25:32Z",
+  "customer_gid": "gid://shopify/Customer/7761536876864",
+  "customer_name": "Camila Loureiro",
+  "subtotal": "639.9",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411575030080",
+  "order_legacy_id": "7411575030080",
+  "name": "89405",
+  "created_at": "2026-07-26T17:13:00Z",
+  "customer_gid": "gid://shopify/Customer/8292694884672",
+  "customer_name": "Luciana Simoes",
+  "subtotal": "368.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411373375808",
+  "order_legacy_id": "7411373375808",
+  "name": "89397",
+  "created_at": "2026-07-26T14:58:42Z",
+  "customer_gid": "gid://shopify/Customer/8294249038144",
+  "customer_name": "Priscila c Morgan",
+  "subtotal": "502.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416476500288",
+  "order_legacy_id": "7416476500288",
+  "name": "89764",
+  "created_at": "2026-07-29T14:55:30Z",
+  "customer_gid": "gid://shopify/Customer/8313667191104",
+  "customer_name": "Viviane Farias de Araújo",
+  "subtotal": "398.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411600261440",
+  "order_legacy_id": "7411600261440",
+  "name": "89409",
+  "created_at": "2026-07-26T17:29:22Z",
+  "customer_gid": "gid://shopify/Customer/8410572947776",
+  "customer_name": "Thiago Braida",
+  "subtotal": "290.7",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405638189376",
+  "order_legacy_id": "7405638189376",
+  "name": "88904",
+  "created_at": "2026-07-23T10:44:37Z",
+  "customer_gid": "gid://shopify/Customer/8430031110464",
+  "customer_name": "Luana Villar",
+  "subtotal": "207.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416315445568",
+  "order_legacy_id": "7416315445568",
+  "name": "89750",
+  "created_at": "2026-07-29T12:52:12Z",
+  "customer_gid": "gid://shopify/Customer/8108513984832",
+  "customer_name": "Beatriz Rocha",
+  "subtotal": "164.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414764732736",
+  "order_legacy_id": "7414764732736",
+  "name": "89644",
+  "created_at": "2026-07-28T14:24:03Z",
+  "customer_gid": "gid://shopify/Customer/7762342740288",
+  "customer_name": "Bianca Ogliari",
+  "subtotal": "180.5",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402968678720",
+  "order_legacy_id": "7402968678720",
+  "name": "88417",
+  "created_at": "2026-07-21T22:11:47Z",
+  "customer_gid": "gid://shopify/Customer/7761978491200",
+  "customer_name": "Renata Angeiras",
+  "subtotal": "103.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410440634688",
+  "order_legacy_id": "7410440634688",
+  "name": "89351",
+  "created_at": "2026-07-25T23:34:38Z",
+  "customer_gid": "gid://shopify/Customer/7761941168448",
+  "customer_name": "Marina Guedes",
+  "subtotal": "173.55",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410885624128",
+  "order_legacy_id": "7410885624128",
+  "name": "89373",
+  "created_at": "2026-07-26T06:16:20Z",
+  "customer_gid": "gid://shopify/Customer/8460499878208",
+  "customer_name": "Geórgia Alhadeff",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7409859920192",
+  "order_legacy_id": "7409859920192",
+  "name": "89282",
+  "created_at": "2026-07-25T17:15:54Z",
+  "customer_gid": "gid://shopify/Customer/8500010418496",
+  "customer_name": "Maria Luisa Dias",
+  "subtotal": "131.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413748629824",
+  "order_legacy_id": "7413748629824",
+  "name": "89601",
+  "created_at": "2026-07-27T22:36:19Z",
+  "customer_gid": "gid://shopify/Customer/8744616722752",
+  "customer_name": "Juliana Garcia",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406109753664",
+  "order_legacy_id": "7406109753664",
+  "name": "88994",
+  "created_at": "2026-07-23T16:13:54Z",
+  "customer_gid": "gid://shopify/Customer/8968032813376",
+  "customer_name": "Cristiane Benício",
+  "subtotal": "609.66",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406426030400",
+  "order_legacy_id": "7406426030400",
+  "name": "89088",
+  "created_at": "2026-07-23T19:25:20Z",
+  "customer_gid": "gid://shopify/Customer/8928292012352",
+  "customer_name": "isabella",
+  "subtotal": "55.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416360468800",
+  "order_legacy_id": "7416360468800",
+  "name": "89752",
+  "created_at": "2026-07-29T13:33:15Z",
+  "customer_gid": "gid://shopify/Customer/8133697765696",
+  "customer_name": "LUANA VIEIRA SILVEIRA",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413843132736",
+  "order_legacy_id": "7413843132736",
+  "name": "89611",
+  "created_at": "2026-07-28T00:03:24Z",
+  "customer_gid": "gid://shopify/Customer/8211647004992",
+  "customer_name": "Milena Andrade",
+  "subtotal": "314.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411968606528",
+  "order_legacy_id": "7411968606528",
+  "name": "89470",
+  "created_at": "2026-07-26T21:39:34Z",
+  "customer_gid": "gid://shopify/Customer/8239432073536",
+  "customer_name": "Beatriz Paula Appolari",
+  "subtotal": "446.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406162641216",
+  "order_legacy_id": "7406162641216",
+  "name": "89005",
+  "created_at": "2026-07-23T16:45:21Z",
+  "customer_gid": "gid://shopify/Customer/8747345576256",
+  "customer_name": "BRUNA CAMARGO",
+  "subtotal": "134.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411777372480",
+  "order_legacy_id": "7411777372480",
+  "name": "89433",
+  "created_at": "2026-07-26T19:17:45Z",
+  "customer_gid": "gid://shopify/Customer/9039409676608",
+  "customer_name": "Helen Morais",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411841139008",
+  "order_legacy_id": "7411841139008",
+  "name": "89444",
+  "created_at": "2026-07-26T20:00:30Z",
+  "customer_gid": "gid://shopify/Customer/9091739124032",
+  "customer_name": "Verônica Botelho Teixeira",
+  "subtotal": "658.75",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407014510912",
+  "order_legacy_id": "7407014510912",
+  "name": "89155",
+  "created_at": "2026-07-24T03:28:08Z",
+  "customer_gid": "gid://shopify/Customer/9190249627968",
+  "customer_name": "Maria Laura Moritz",
+  "subtotal": "139.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402892296512",
+  "order_legacy_id": "7402892296512",
+  "name": "88408",
+  "created_at": "2026-07-21T21:14:10Z",
+  "customer_gid": "gid://shopify/Customer/9202503352640",
+  "customer_name": "Anna Scarioli",
+  "subtotal": "191.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410337841472",
+  "order_legacy_id": "7410337841472",
+  "name": "89338",
+  "created_at": "2026-07-25T22:12:15Z",
+  "customer_gid": "gid://shopify/Customer/9159187169600",
+  "customer_name": "Elisa Lage",
+  "subtotal": "507.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412047610176",
+  "order_legacy_id": "7412047610176",
+  "name": "89482",
+  "created_at": "2026-07-26T22:46:16Z",
+  "customer_gid": "gid://shopify/Customer/9159187169600",
+  "customer_name": "Elisa Lage",
+  "subtotal": "39.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405080805696",
+  "order_legacy_id": "7405080805696",
+  "name": "88871",
+  "created_at": "2026-07-23T02:04:22Z",
+  "customer_gid": "gid://shopify/Customer/8379706573120",
+  "customer_name": "nickbroetto@gmail.com broetto",
+  "subtotal": "317.25",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411315278144",
+  "order_legacy_id": "7411315278144",
+  "name": "89395",
+  "created_at": "2026-07-26T14:13:12Z",
+  "customer_gid": "gid://shopify/Customer/8128138510656",
+  "customer_name": "Larissa Barbosa",
+  "subtotal": "129.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405720764736",
+  "order_legacy_id": "7405720764736",
+  "name": "88925",
+  "created_at": "2026-07-23T12:02:52Z",
+  "customer_gid": "gid://shopify/Customer/9484383060288",
+  "customer_name": "Luciana Ribeiro",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412011598144",
+  "order_legacy_id": "7412011598144",
+  "name": "89477",
+  "created_at": "2026-07-26T22:14:09Z",
+  "customer_gid": "gid://shopify/Customer/8559342780736",
+  "customer_name": "Uli Falcão",
+  "subtotal": "434.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403772510528",
+  "order_legacy_id": "7403772510528",
+  "name": "88472",
+  "created_at": "2026-07-22T10:36:10Z",
+  "customer_gid": "gid://shopify/Customer/8656956621120",
+  "customer_name": "Evelise Fard",
+  "subtotal": "254.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411773538624",
+  "order_legacy_id": "7411773538624",
+  "name": "89431",
+  "created_at": "2026-07-26T19:15:20Z",
+  "customer_gid": "gid://shopify/Customer/9484520358208",
+  "customer_name": "Rayssa Guilarducci",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403070095680",
+  "order_legacy_id": "7403070095680",
+  "name": "88432",
+  "created_at": "2026-07-21T23:41:03Z",
+  "customer_gid": "gid://shopify/Customer/8233529016640",
+  "customer_name": "Ariadne Farias",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413960114496",
+  "order_legacy_id": "7413960114496",
+  "name": "89624",
+  "created_at": "2026-07-28T01:51:42Z",
+  "customer_gid": "gid://shopify/Customer/9484571083072",
+  "customer_name": "Carolina Agra Rocha",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416895308096",
+  "order_legacy_id": "7416895308096",
+  "name": "89792",
+  "created_at": "2026-07-29T19:06:58Z",
+  "customer_gid": "gid://shopify/Customer/8935630307648",
+  "customer_name": "Mary carmen couselo santos Santos",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416388321600",
+  "order_legacy_id": "7416388321600",
+  "name": "89755",
+  "created_at": "2026-07-29T13:52:18Z",
+  "customer_gid": "gid://shopify/Customer/9023136366912",
+  "customer_name": "Luiza Mendes",
+  "subtotal": "383.22",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404687425856",
+  "order_legacy_id": "7404687425856",
+  "name": "88709",
+  "created_at": "2026-07-22T20:41:54Z",
+  "customer_gid": "gid://shopify/Customer/8665224446272",
+  "customer_name": "Mariana Pazzini",
+  "subtotal": "380.21",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406255341888",
+  "order_legacy_id": "7406255341888",
+  "name": "89054",
+  "created_at": "2026-07-23T17:38:14Z",
+  "customer_gid": "gid://shopify/Customer/9484698026304",
+  "customer_name": "Eliane Goulart",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413670314304",
+  "order_legacy_id": "7413670314304",
+  "name": "89594",
+  "created_at": "2026-07-27T21:28:15Z",
+  "customer_gid": "gid://shopify/Customer/9484896141632",
+  "customer_name": "SANDRA VILASTRE",
+  "subtotal": "412.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406752694592",
+  "order_legacy_id": "7406752694592",
+  "name": "89131",
+  "created_at": "2026-07-23T23:36:18Z",
+  "customer_gid": "gid://shopify/Customer/9073813619008",
+  "customer_name": "Eliane Comin Otowicz",
+  "subtotal": "62.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412127334720",
+  "order_legacy_id": "7412127334720",
+  "name": "89494",
+  "created_at": "2026-07-27T00:02:43Z",
+  "customer_gid": "gid://shopify/Customer/9198466105664",
+  "customer_name": "Maira Lordello",
+  "subtotal": "116.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408621781312",
+  "order_legacy_id": "7408621781312",
+  "name": "89241",
+  "created_at": "2026-07-24T23:53:51Z",
+  "customer_gid": "gid://shopify/Customer/9237187461440",
+  "customer_name": "Amanda Nunes",
+  "subtotal": "307.7",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402606330176",
+  "order_legacy_id": "7402606330176",
+  "name": "88373",
+  "created_at": "2026-07-21T18:02:59Z",
+  "customer_gid": "gid://shopify/Customer/9485196624192",
+  "customer_name": "Taua Pires",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410985599296",
+  "order_legacy_id": "7410985599296",
+  "name": "89374",
+  "created_at": "2026-07-26T08:23:01Z",
+  "customer_gid": "gid://shopify/Customer/9485336641856",
+  "customer_name": "Flavia Lopes",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413063123264",
+  "order_legacy_id": "7413063123264",
+  "name": "89542",
+  "created_at": "2026-07-27T14:48:29Z",
+  "customer_gid": "gid://shopify/Customer/9309166633280",
+  "customer_name": "Daniela Urtado",
+  "subtotal": "152.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413026947392",
+  "order_legacy_id": "7413026947392",
+  "name": "89537",
+  "created_at": "2026-07-27T14:24:32Z",
+  "customer_gid": "gid://shopify/Customer/9485461356864",
+  "customer_name": "ALINE BRUNA MOURA",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410507907392",
+  "order_legacy_id": "7410507907392",
+  "name": "89364",
+  "created_at": "2026-07-26T00:36:26Z",
+  "customer_gid": "gid://shopify/Customer/9485561168192",
+  "customer_name": "Maria",
+  "subtotal": "358.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413546975552",
+  "order_legacy_id": "7413546975552",
+  "name": "89583",
+  "created_at": "2026-07-27T19:58:45Z",
+  "customer_gid": "gid://shopify/Customer/9369354502464",
+  "customer_name": "Beatriz Goes Lira",
+  "subtotal": "561.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404292669760",
+  "order_legacy_id": "7404292669760",
+  "name": "88523",
+  "created_at": "2026-07-22T16:48:25Z",
+  "customer_gid": "gid://shopify/Customer/9475847061824",
+  "customer_name": "Mariana Cardoso Silvério",
+  "subtotal": "419.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416294834496",
+  "order_legacy_id": "7416294834496",
+  "name": "89747",
+  "created_at": "2026-07-29T12:33:56Z",
+  "customer_gid": "gid://shopify/Customer/9485818691904",
+  "customer_name": "Joana Meduna",
+  "subtotal": "129.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406247379264",
+  "order_legacy_id": "7406247379264",
+  "name": "89052",
+  "created_at": "2026-07-23T17:34:16Z",
+  "customer_gid": "gid://shopify/Customer/9484437094720",
+  "customer_name": "RICARDO CANIATO",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416167563584",
+  "order_legacy_id": "7416167563584",
+  "name": "89737",
+  "created_at": "2026-07-29T10:28:44Z",
+  "customer_gid": "gid://shopify/Customer/9485835010368",
+  "customer_name": "Shirley",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412749959488",
+  "order_legacy_id": "7412749959488",
+  "name": "89515",
+  "created_at": "2026-07-27T10:32:56Z",
+  "customer_gid": "gid://shopify/Customer/9485859422528",
+  "customer_name": "Lizianne",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413698232640",
+  "order_legacy_id": "7413698232640",
+  "name": "89598",
+  "created_at": "2026-07-27T21:51:55Z",
+  "customer_gid": "gid://shopify/Customer/9484695634240",
+  "customer_name": "MORGANNY CABRAL DOS SANTOS",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412797571392",
+  "order_legacy_id": "7412797571392",
+  "name": "89518",
+  "created_at": "2026-07-27T11:23:53Z",
+  "customer_gid": "gid://shopify/Customer/9485919420736",
+  "customer_name": "Juliana Azevedo",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406308196672",
+  "order_legacy_id": "7406308196672",
+  "name": "89064",
+  "created_at": "2026-07-23T18:10:33Z",
+  "customer_gid": "gid://shopify/Customer/9485918208320",
+  "customer_name": "Monique de Cassia Silva Aguina",
+  "subtotal": "118.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410543231296",
+  "order_legacy_id": "7410543231296",
+  "name": "89366",
+  "created_at": "2026-07-26T01:09:30Z",
+  "customer_gid": "gid://shopify/Customer/9486154596672",
+  "customer_name": "Patrícia Castanha",
+  "subtotal": "387.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413241184576",
+  "order_legacy_id": "7413241184576",
+  "name": "89558",
+  "created_at": "2026-07-27T16:43:13Z",
+  "customer_gid": "gid://shopify/Customer/9484742525248",
+  "customer_name": "ARIANE CARNEIRO SÁ",
+  "subtotal": "275.22",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406759149888",
+  "order_legacy_id": "7406759149888",
+  "name": "89134",
+  "created_at": "2026-07-23T23:42:25Z",
+  "customer_gid": "gid://shopify/Customer/9484713165120",
+  "customer_name": "Suyane Abreu Tavares Batista",
+  "subtotal": "116.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412874281280",
+  "order_legacy_id": "7412874281280",
+  "name": "89520",
+  "created_at": "2026-07-27T12:21:10Z",
+  "customer_gid": "gid://shopify/Customer/9486285799744",
+  "customer_name": "Juliana Olmedo",
+  "subtotal": "139.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406605828416",
+  "order_legacy_id": "7406605828416",
+  "name": "89109",
+  "created_at": "2026-07-23T21:33:10Z",
+  "customer_gid": "gid://shopify/Customer/9484947947840",
+  "customer_name": "Catia Nicolini",
+  "subtotal": "111.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411904840000",
+  "order_legacy_id": "7411904840000",
+  "name": "89454",
+  "created_at": "2026-07-26T20:47:41Z",
+  "customer_gid": "gid://shopify/Customer/9485095895360",
+  "customer_name": "Mariana Medina Cardoso",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407712371008",
+  "order_legacy_id": "7407712371008",
+  "name": "89169",
+  "created_at": "2026-07-24T14:10:48Z",
+  "customer_gid": "gid://shopify/Customer/9486559215936",
+  "customer_name": "Thalita Sampaio",
+  "subtotal": "375.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410409505088",
+  "order_legacy_id": "7410409505088",
+  "name": "89345",
+  "created_at": "2026-07-25T23:03:10Z",
+  "customer_gid": "gid://shopify/Customer/9486542340416",
+  "customer_name": "Carla Paz",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407772074304",
+  "order_legacy_id": "7407772074304",
+  "name": "89175",
+  "created_at": "2026-07-24T14:52:35Z",
+  "customer_gid": "gid://shopify/Customer/9504056312128",
+  "customer_name": "Aline Hanazumi",
+  "subtotal": "116.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406255767872",
+  "order_legacy_id": "7406255767872",
+  "name": "89055",
+  "created_at": "2026-07-23T17:38:34Z",
+  "customer_gid": "gid://shopify/Customer/9485462896960",
+  "customer_name": "MARIA DA CONCEIÇÃO ALVES DOS SANTOS",
+  "subtotal": "232.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404836946240",
+  "order_legacy_id": "7404836946240",
+  "name": "88787",
+  "created_at": "2026-07-22T22:32:46Z",
+  "customer_gid": "gid://shopify/Customer/9485766328640",
+  "customer_name": "Bruna Giacomeli",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412177404224",
+  "order_legacy_id": "7412177404224",
+  "name": "89498",
+  "created_at": "2026-07-27T00:51:33Z",
+  "customer_gid": "gid://shopify/Customer/9485793788224",
+  "customer_name": "suelen saturnino",
+  "subtotal": "164.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408291545408",
+  "order_legacy_id": "7408291545408",
+  "name": "89210",
+  "created_at": "2026-07-24T19:54:54Z",
+  "customer_gid": "gid://shopify/Customer/9565500244288",
+  "customer_name": "Betina",
+  "subtotal": "358.5",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406885208384",
+  "order_legacy_id": "7406885208384",
+  "name": "89147",
+  "created_at": "2026-07-24T01:27:47Z",
+  "customer_gid": "gid://shopify/Customer/9590972744000",
+  "customer_name": "Zuleide Boing Patricia Brasil Brasil",
+  "subtotal": "318.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416246141248",
+  "order_legacy_id": "7416246141248",
+  "name": "89743",
+  "created_at": "2026-07-29T11:48:44Z",
+  "customer_gid": "gid://shopify/Customer/9485946913088",
+  "customer_name": "Paula Assad",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408736207168",
+  "order_legacy_id": "7408736207168",
+  "name": "89244",
+  "created_at": "2026-07-25T01:27:05Z",
+  "customer_gid": "gid://shopify/Customer/9486168523072",
+  "customer_name": "Julia Swerts",
+  "subtotal": "196.5",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415821566272",
+  "order_legacy_id": "7415821566272",
+  "name": "89730",
+  "created_at": "2026-07-29T04:06:42Z",
+  "customer_gid": "gid://shopify/Customer/9486171111744",
+  "customer_name": "Gabriela Budel",
+  "subtotal": "214.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406859616576",
+  "order_legacy_id": "7406859616576",
+  "name": "89146",
+  "created_at": "2026-07-24T01:04:35Z",
+  "customer_gid": "gid://shopify/Customer/9633061699904",
+  "customer_name": "Kelly Lima",
+  "subtotal": "328.95",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410482250048",
+  "order_legacy_id": "7410482250048",
+  "name": "89358",
+  "created_at": "2026-07-26T00:12:38Z",
+  "customer_gid": "gid://shopify/Customer/9647976317248",
+  "customer_name": "Livia Topan",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413327692096",
+  "order_legacy_id": "7413327692096",
+  "name": "89568",
+  "created_at": "2026-07-27T17:33:17Z",
+  "customer_gid": "gid://shopify/Customer/9486538539328",
+  "customer_name": "Carlos Bianchi",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405078905152",
+  "order_legacy_id": "7405078905152",
+  "name": "88870",
+  "created_at": "2026-07-23T02:02:39Z",
+  "customer_gid": "gid://shopify/Customer/9486561771840",
+  "customer_name": "Edilaine Pereira de Oliveira",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407740027200",
+  "order_legacy_id": "7407740027200",
+  "name": "89173",
+  "created_at": "2026-07-24T14:31:39Z",
+  "customer_gid": "gid://shopify/Customer/9658227982656",
+  "customer_name": "Melina Teixeira",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405930512704",
+  "order_legacy_id": "7405930512704",
+  "name": "88960",
+  "created_at": "2026-07-23T14:25:50Z",
+  "customer_gid": "gid://shopify/Customer/9664177537344",
+  "customer_name": "Simone ferreira Ferreira",
+  "subtotal": "63.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403891196224",
+  "order_legacy_id": "7403891196224",
+  "name": "88482",
+  "created_at": "2026-07-22T12:19:16Z",
+  "customer_gid": "gid://shopify/Customer/9667703865664",
+  "customer_name": "LAIS PEDROZA",
+  "subtotal": "258.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410052137280",
+  "order_legacy_id": "7410052137280",
+  "name": "89301",
+  "created_at": "2026-07-25T19:01:32Z",
+  "customer_gid": "gid://shopify/Customer/9555038044480",
+  "customer_name": "Renata Fagundes",
+  "subtotal": "374.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7409870700864",
+  "order_legacy_id": "7409870700864",
+  "name": "89284",
+  "created_at": "2026-07-25T17:22:14Z",
+  "customer_gid": "gid://shopify/Customer/9486696055104",
+  "customer_name": "Clarice Araujo Costa",
+  "subtotal": "187.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405736886592",
+  "order_legacy_id": "7405736886592",
+  "name": "88929",
+  "created_at": "2026-07-23T12:17:25Z",
+  "customer_gid": "gid://shopify/Customer/9670313378112",
+  "customer_name": "Thais Paiva",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411672187200",
+  "order_legacy_id": "7411672187200",
+  "name": "89419",
+  "created_at": "2026-07-26T18:11:48Z",
+  "customer_gid": "gid://shopify/Customer/9586492375360",
+  "customer_name": "Livia Pasqual",
+  "subtotal": "273.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404459917632",
+  "order_legacy_id": "7404459917632",
+  "name": "88622",
+  "created_at": "2026-07-22T18:25:27Z",
+  "customer_gid": "gid://shopify/Customer/9589879079232",
+  "customer_name": "Cristiane",
+  "subtotal": "191.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414967566656",
+  "order_legacy_id": "7414967566656",
+  "name": "89651",
+  "created_at": "2026-07-28T16:40:23Z",
+  "customer_gid": "gid://shopify/Customer/9827992338752",
+  "customer_name": "Manu Dubeux",
+  "subtotal": "253.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404293783872",
+  "order_legacy_id": "7404293783872",
+  "name": "88524",
+  "created_at": "2026-07-22T16:49:10Z",
+  "customer_gid": "gid://shopify/Customer/9486282752320",
+  "customer_name": "Ana Paula Soares Sbragia",
+  "subtotal": "174.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408121315648",
+  "order_legacy_id": "7408121315648",
+  "name": "89193",
+  "created_at": "2026-07-24T18:11:31Z",
+  "customer_gid": "gid://shopify/Customer/9865095545152",
+  "customer_name": "Ana Laura Silva Amaral",
+  "subtotal": "79.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411800801600",
+  "order_legacy_id": "7411800801600",
+  "name": "89440",
+  "created_at": "2026-07-26T19:33:12Z",
+  "customer_gid": "gid://shopify/Customer/9650863079744",
+  "customer_name": "Ana Luiza Trivellato Laender",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410496831808",
+  "order_legacy_id": "7410496831808",
+  "name": "89361",
+  "created_at": "2026-07-26T00:25:18Z",
+  "customer_gid": "gid://shopify/Customer/9875227967808",
+  "customer_name": "Beatriz",
+  "subtotal": "148.65",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414983852352",
+  "order_legacy_id": "7414983852352",
+  "name": "89653",
+  "created_at": "2026-07-28T16:49:46Z",
+  "customer_gid": "gid://shopify/Customer/9593406849344",
+  "customer_name": "Manoela Conte Marchioni",
+  "subtotal": "327.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415797449024",
+  "order_legacy_id": "7415797449024",
+  "name": "89728",
+  "created_at": "2026-07-29T03:40:15Z",
+  "customer_gid": "gid://shopify/Customer/9514392092992",
+  "customer_name": "Natália Braga e Silva",
+  "subtotal": "246.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413473116480",
+  "order_legacy_id": "7413473116480",
+  "name": "89576",
+  "created_at": "2026-07-27T19:08:08Z",
+  "customer_gid": "gid://shopify/Customer/9672319205696",
+  "customer_name": "Amanda silva Martins",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411306955072",
+  "order_legacy_id": "7411306955072",
+  "name": "89393",
+  "created_at": "2026-07-26T14:07:21Z",
+  "customer_gid": "gid://shopify/Customer/9678032601408",
+  "customer_name": "Carolina Hansen de Oliveira",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415756063040",
+  "order_legacy_id": "7415756063040",
+  "name": "89720",
+  "created_at": "2026-07-29T02:56:06Z",
+  "customer_gid": "gid://shopify/Customer/9883292401984",
+  "customer_name": "Diana Moreira",
+  "subtotal": "314.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416412078400",
+  "order_legacy_id": "7416412078400",
+  "name": "89759",
+  "created_at": "2026-07-29T14:10:21Z",
+  "customer_gid": "gid://shopify/Customer/9883292401984",
+  "customer_name": "Diana Moreira",
+  "subtotal": "257.7",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415675748672",
+  "order_legacy_id": "7415675748672",
+  "name": "89717",
+  "created_at": "2026-07-29T01:39:06Z",
+  "customer_gid": "gid://shopify/Customer/9910635790656",
+  "customer_name": "Elida Rodrigues",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412186775872",
+  "order_legacy_id": "7412186775872",
+  "name": "89500",
+  "created_at": "2026-07-27T01:00:30Z",
+  "customer_gid": "gid://shopify/Customer/9702947979584",
+  "customer_name": "Matheus Simas",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411915030848",
+  "order_legacy_id": "7411915030848",
+  "name": "89457",
+  "created_at": "2026-07-26T20:56:19Z",
+  "customer_gid": "gid://shopify/Customer/9689991250240",
+  "customer_name": "Micheline Santana",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407720563008",
+  "order_legacy_id": "7407720563008",
+  "name": "89171",
+  "created_at": "2026-07-24T14:16:50Z",
+  "customer_gid": "gid://shopify/Customer/9805822624064",
+  "customer_name": "Melina Ferreira",
+  "subtotal": "314.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412285407552",
+  "order_legacy_id": "7412285407552",
+  "name": "89510",
+  "created_at": "2026-07-27T02:34:38Z",
+  "customer_gid": "gid://shopify/Customer/9911035232576",
+  "customer_name": "Maria Margarida",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404184142144",
+  "order_legacy_id": "7404184142144",
+  "name": "88514",
+  "created_at": "2026-07-22T15:41:28Z",
+  "customer_gid": "gid://shopify/Customer/9837372014912",
+  "customer_name": "Emília Janeri",
+  "subtotal": "125.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407923724608",
+  "order_legacy_id": "7407923724608",
+  "name": "89180",
+  "created_at": "2026-07-24T16:20:03Z",
+  "customer_gid": "gid://shopify/Customer/9632176636224",
+  "customer_name": "franciele cordoni",
+  "subtotal": "134.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404212486464",
+  "order_legacy_id": "7404212486464",
+  "name": "88515",
+  "created_at": "2026-07-22T15:59:09Z",
+  "customer_gid": "gid://shopify/Customer/9990080627008",
+  "customer_name": "Rebeca",
+  "subtotal": "129.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403035787584",
+  "order_legacy_id": "7403035787584",
+  "name": "88429",
+  "created_at": "2026-07-21T23:09:35Z",
+  "customer_gid": "gid://shopify/Customer/9875184845120",
+  "customer_name": "Ana Raissa Da Silva",
+  "subtotal": "174.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405264929088",
+  "order_legacy_id": "7405264929088",
+  "name": "88891",
+  "created_at": "2026-07-23T04:24:07Z",
+  "customer_gid": "gid://shopify/Customer/9878081601856",
+  "customer_name": "camila boschilia",
+  "subtotal": "116.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408556474688",
+  "order_legacy_id": "7408556474688",
+  "name": "89234",
+  "created_at": "2026-07-24T22:57:54Z",
+  "customer_gid": "gid://shopify/Customer/10040765808960",
+  "customer_name": "Renata Davila",
+  "subtotal": "232.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414364209472",
+  "order_legacy_id": "7414364209472",
+  "name": "89628",
+  "created_at": "2026-07-28T07:49:05Z",
+  "customer_gid": "gid://shopify/Customer/9881729958208",
+  "customer_name": "Mariana Dias",
+  "subtotal": "724.77",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410315592000",
+  "order_legacy_id": "7410315592000",
+  "name": "89334",
+  "created_at": "2026-07-25T21:54:24Z",
+  "customer_gid": "gid://shopify/Customer/9906199691584",
+  "customer_name": "Camila Lima",
+  "subtotal": "222.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414511403328",
+  "order_legacy_id": "7414511403328",
+  "name": "89629",
+  "created_at": "2026-07-28T10:43:27Z",
+  "customer_gid": "gid://shopify/Customer/9703325303104",
+  "customer_name": "Carolina Barros",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413926920512",
+  "order_legacy_id": "7413926920512",
+  "name": "89620",
+  "created_at": "2026-07-28T01:19:59Z",
+  "customer_gid": "gid://shopify/Customer/9863118160192",
+  "customer_name": "Paula Tonon",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410453217600",
+  "order_legacy_id": "7410453217600",
+  "name": "89352",
+  "created_at": "2026-07-25T23:45:08Z",
+  "customer_gid": "gid://shopify/Customer/10048585630016",
+  "customer_name": "Flavia Murakami",
+  "subtotal": "55.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416240046400",
+  "order_legacy_id": "7416240046400",
+  "name": "89740",
+  "created_at": "2026-07-29T11:43:34Z",
+  "customer_gid": "gid://shopify/Customer/10040838914368",
+  "customer_name": "Talita Mutton",
+  "subtotal": "147.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402799333696",
+  "order_legacy_id": "7402799333696",
+  "name": "88399",
+  "created_at": "2026-07-21T20:11:42Z",
+  "customer_gid": "gid://shopify/Customer/9975760322880",
+  "customer_name": "Alyne Andriola Medeiros",
+  "subtotal": "339.8",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413161263424",
+  "order_legacy_id": "7413161263424",
+  "name": "89551",
+  "created_at": "2026-07-27T15:53:53Z",
+  "customer_gid": "gid://shopify/Customer/9980665659712",
+  "customer_name": "Víviam De Sousa Ferreira",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402987979072",
+  "order_legacy_id": "7402987979072",
+  "name": "88420",
+  "created_at": "2026-07-21T22:28:28Z",
+  "customer_gid": "gid://shopify/Customer/9994381656384",
+  "customer_name": "Ana Beatriz Beltrao",
+  "subtotal": "260.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406496907584",
+  "order_legacy_id": "7406496907584",
+  "name": "89102",
+  "created_at": "2026-07-23T20:11:59Z",
+  "customer_gid": "gid://shopify/Customer/10051251011904",
+  "customer_name": "Karina",
+  "subtotal": "115.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408398074176",
+  "order_legacy_id": "7408398074176",
+  "name": "89218",
+  "created_at": "2026-07-24T20:59:37Z",
+  "customer_gid": "gid://shopify/Customer/10001441063232",
+  "customer_name": "Ádria Barros",
+  "subtotal": "228.69",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411066995008",
+  "order_legacy_id": "7411066995008",
+  "name": "89376",
+  "created_at": "2026-07-26T10:03:44Z",
+  "customer_gid": "gid://shopify/Customer/10029443350848",
+  "customer_name": "Marília Baeninger",
+  "subtotal": "258.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416405557568",
+  "order_legacy_id": "7416405557568",
+  "name": "89757",
+  "created_at": "2026-07-29T14:04:47Z",
+  "customer_gid": "gid://shopify/Customer/10011776090432",
+  "customer_name": "Vitória Santos",
+  "subtotal": "129.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407902687552",
+  "order_legacy_id": "7407902687552",
+  "name": "89178",
+  "created_at": "2026-07-24T16:08:02Z",
+  "customer_gid": "gid://shopify/Customer/10065683611968",
+  "customer_name": "Maria Luiza Daia de Melo",
+  "subtotal": "63.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404918374720",
+  "order_legacy_id": "7404918374720",
+  "name": "88818",
+  "created_at": "2026-07-22T23:42:08Z",
+  "customer_gid": "gid://shopify/Customer/10075205992768",
+  "customer_name": "Giovanna Taddei",
+  "subtotal": "115.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407589753152",
+  "order_legacy_id": "7407589753152",
+  "name": "89162",
+  "created_at": "2026-07-24T12:39:14Z",
+  "customer_gid": "gid://shopify/Customer/10030732575040",
+  "customer_name": "Nancy",
+  "subtotal": "693.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408588226880",
+  "order_legacy_id": "7408588226880",
+  "name": "89238",
+  "created_at": "2026-07-24T23:26:36Z",
+  "customer_gid": "gid://shopify/Customer/10065259659584",
+  "customer_name": "Simone Carvalho",
+  "subtotal": "116.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405851115840",
+  "order_legacy_id": "7405851115840",
+  "name": "88949",
+  "created_at": "2026-07-23T13:40:16Z",
+  "customer_gid": "gid://shopify/Customer/10075217985856",
+  "customer_name": "Marina Lins von Wangenheim",
+  "subtotal": "307.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412256604480",
+  "order_legacy_id": "7412256604480",
+  "name": "89507",
+  "created_at": "2026-07-27T02:08:21Z",
+  "customer_gid": "gid://shopify/Customer/10035542327616",
+  "customer_name": "Marinela Pilnik",
+  "subtotal": "129.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416408867136",
+  "order_legacy_id": "7416408867136",
+  "name": "89758",
+  "created_at": "2026-07-29T14:07:47Z",
+  "customer_gid": "gid://shopify/Customer/10085055430976",
+  "customer_name": "Luciana Matos",
+  "subtotal": "158.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414742188352",
+  "order_legacy_id": "7414742188352",
+  "name": "89641",
+  "created_at": "2026-07-28T14:08:43Z",
+  "customer_gid": "gid://shopify/Customer/10091555946816",
+  "customer_name": "Maria Eduarda Palmeira",
+  "subtotal": "184.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411118145856",
+  "order_legacy_id": "7411118145856",
+  "name": "89380",
+  "created_at": "2026-07-26T11:07:03Z",
+  "customer_gid": "gid://shopify/Customer/10090682646848",
+  "customer_name": "Gisele Soares",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405949026624",
+  "order_legacy_id": "7405949026624",
+  "name": "88966",
+  "created_at": "2026-07-23T14:35:58Z",
+  "customer_gid": "gid://shopify/Customer/10099213238592",
+  "customer_name": "Thais pescarolo belchior",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412765458752",
+  "order_legacy_id": "7412765458752",
+  "name": "89517",
+  "created_at": "2026-07-27T10:49:52Z",
+  "customer_gid": "gid://shopify/Customer/10050389180736",
+  "customer_name": "Helen",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7417044828480",
+  "order_legacy_id": "7417044828480",
+  "name": "89805",
+  "created_at": "2026-07-29T20:45:34Z",
+  "customer_gid": "gid://shopify/Customer/10217090253120",
+  "customer_name": "Patricia Eicke",
+  "subtotal": "103.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416117625152",
+  "order_legacy_id": "7416117625152",
+  "name": "89733",
+  "created_at": "2026-07-29T09:25:06Z",
+  "customer_gid": "gid://shopify/Customer/10004806336832",
+  "customer_name": "Bruna",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412154073408",
+  "order_legacy_id": "7412154073408",
+  "name": "89496",
+  "created_at": "2026-07-27T00:28:42Z",
+  "customer_gid": "gid://shopify/Customer/10218167992640",
+  "customer_name": "Natali Scremin",
+  "subtotal": "108.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413887795520",
+  "order_legacy_id": "7413887795520",
+  "name": "89617",
+  "created_at": "2026-07-28T00:45:44Z",
+  "customer_gid": "gid://shopify/Customer/10062374797632",
+  "customer_name": "Ana Caciano",
+  "subtotal": "206.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403098276160",
+  "order_legacy_id": "7403098276160",
+  "name": "88436",
+  "created_at": "2026-07-22T00:03:48Z",
+  "customer_gid": "gid://shopify/Customer/10250045522240",
+  "customer_name": "Gabriella Passos",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404511035712",
+  "order_legacy_id": "7404511035712",
+  "name": "88640",
+  "created_at": "2026-07-22T18:56:00Z",
+  "customer_gid": "gid://shopify/Customer/10075912438080",
+  "customer_name": "Natália",
+  "subtotal": "158.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411949404480",
+  "order_legacy_id": "7411949404480",
+  "name": "89466",
+  "created_at": "2026-07-26T21:23:05Z",
+  "customer_gid": "gid://shopify/Customer/10038395044160",
+  "customer_name": "Manuela",
+  "subtotal": "246.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415537500480",
+  "order_legacy_id": "7415537500480",
+  "name": "89702",
+  "created_at": "2026-07-28T23:28:40Z",
+  "customer_gid": "gid://shopify/Customer/10082126299456",
+  "customer_name": "Marta Campanha",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413368193344",
+  "order_legacy_id": "7413368193344",
+  "name": "89571",
+  "created_at": "2026-07-27T17:59:25Z",
+  "customer_gid": "gid://shopify/Customer/10088350089536",
+  "customer_name": "Priscilla Farnco de Camargos",
+  "subtotal": "250.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416167530816",
+  "order_legacy_id": "7416167530816",
+  "name": "89736",
+  "created_at": "2026-07-29T10:28:43Z",
+  "customer_gid": "gid://shopify/Customer/10264143855936",
+  "customer_name": "Lana Moraes",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416264229184",
+  "order_legacy_id": "7416264229184",
+  "name": "89744",
+  "created_at": "2026-07-29T12:03:36Z",
+  "customer_gid": "gid://shopify/Customer/10097855168832",
+  "customer_name": "Janaína Costa",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406806696256",
+  "order_legacy_id": "7406806696256",
+  "name": "89139",
+  "created_at": "2026-07-24T00:20:47Z",
+  "customer_gid": "gid://shopify/Customer/10100266598720",
+  "customer_name": "Damille sandes",
+  "subtotal": "174.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412232126784",
+  "order_legacy_id": "7412232126784",
+  "name": "89505",
+  "created_at": "2026-07-27T01:44:59Z",
+  "customer_gid": "gid://shopify/Customer/10150956040512",
+  "customer_name": "Karla Brandão",
+  "subtotal": "129.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407720464704",
+  "order_legacy_id": "7407720464704",
+  "name": "89170",
+  "created_at": "2026-07-24T14:16:46Z",
+  "customer_gid": "gid://shopify/Customer/10143238324544",
+  "customer_name": "Ana Beatriz Neri de Sousa",
+  "subtotal": "134.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7409380917568",
+  "order_legacy_id": "7409380917568",
+  "name": "89252",
+  "created_at": "2026-07-25T12:00:12Z",
+  "customer_gid": "gid://shopify/Customer/10292599095616",
+  "customer_name": "Ciça Domingues",
+  "subtotal": "111.75",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404899107136",
+  "order_legacy_id": "7404899107136",
+  "name": "88807",
+  "created_at": "2026-07-22T23:24:45Z",
+  "customer_gid": "gid://shopify/Customer/10368989266240",
+  "customer_name": "Beatriz Ribeiro da Silva",
+  "subtotal": "105.18",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413701935424",
+  "order_legacy_id": "7413701935424",
+  "name": "89599",
+  "created_at": "2026-07-27T21:55:37Z",
+  "customer_gid": "gid://shopify/Customer/10391039770944",
+  "customer_name": "Carmen M z da silva",
+  "subtotal": "129.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411918930240",
+  "order_legacy_id": "7411918930240",
+  "name": "89458",
+  "created_at": "2026-07-26T20:59:04Z",
+  "customer_gid": "gid://shopify/Customer/10419152781632",
+  "customer_name": "Monique Vittorazzi Zuqui dos Reis",
+  "subtotal": "333.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7409927651648",
+  "order_legacy_id": "7409927651648",
+  "name": "89291",
+  "created_at": "2026-07-25T17:54:34Z",
+  "customer_gid": "gid://shopify/Customer/10446774796608",
+  "customer_name": "Flavia Costal",
+  "subtotal": "615.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7409897046336",
+  "order_legacy_id": "7409897046336",
+  "name": "89287",
+  "created_at": "2026-07-25T17:37:31Z",
+  "customer_gid": "gid://shopify/Customer/10458762772800",
+  "customer_name": "Raquel Beldi",
+  "subtotal": "129.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403103748416",
+  "order_legacy_id": "7403103748416",
+  "name": "88438",
+  "created_at": "2026-07-22T00:09:25Z",
+  "customer_gid": "gid://shopify/Customer/10202803011904",
+  "customer_name": "Elisangela Lima dos Santos",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404251349312",
+  "order_legacy_id": "7404251349312",
+  "name": "88519",
+  "created_at": "2026-07-22T16:23:34Z",
+  "customer_gid": "gid://shopify/Customer/10511806890304",
+  "customer_name": "Manuella Teixeira",
+  "subtotal": "384.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415591174464",
+  "order_legacy_id": "7415591174464",
+  "name": "89707",
+  "created_at": "2026-07-29T00:15:03Z",
+  "customer_gid": "gid://shopify/Customer/10596433330496",
+  "customer_name": "Valéria Mendes",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410338365760",
+  "order_legacy_id": "7410338365760",
+  "name": "89339",
+  "created_at": "2026-07-25T22:12:47Z",
+  "customer_gid": "gid://shopify/Customer/10625696989504",
+  "customer_name": "Luísa de",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402632282432",
+  "order_legacy_id": "7402632282432",
+  "name": "88375",
+  "created_at": "2026-07-21T18:20:14Z",
+  "customer_gid": "gid://shopify/Customer/10762084319552",
+  "customer_name": "Alessandra Nunes",
+  "subtotal": "314.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7409436950848",
+  "order_legacy_id": "7409436950848",
+  "name": "89255",
+  "created_at": "2026-07-25T12:47:06Z",
+  "customer_gid": "gid://shopify/Customer/10234389102912",
+  "customer_name": "Fernanda Quirino",
+  "subtotal": "62.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411904086336",
+  "order_legacy_id": "7411904086336",
+  "name": "89453",
+  "created_at": "2026-07-26T20:47:02Z",
+  "customer_gid": "gid://shopify/Customer/10268156363072",
+  "customer_name": "Ariane Santos",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403090149696",
+  "order_legacy_id": "7403090149696",
+  "name": "88435",
+  "created_at": "2026-07-21T23:58:38Z",
+  "customer_gid": "gid://shopify/Customer/10268366537024",
+  "customer_name": "Marina Herculano",
+  "subtotal": "276.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405689635136",
+  "order_legacy_id": "7405689635136",
+  "name": "88919",
+  "created_at": "2026-07-23T11:34:41Z",
+  "customer_gid": "gid://shopify/Customer/10919127974208",
+  "customer_name": "Alessandra Bernardo",
+  "subtotal": "261.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412254540096",
+  "order_legacy_id": "7412254540096",
+  "name": "89506",
+  "created_at": "2026-07-27T02:06:34Z",
+  "customer_gid": "gid://shopify/Customer/10938534265152",
+  "customer_name": "Paola Andrea Irribarra Waschburger",
+  "subtotal": "186.39",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415766384960",
+  "order_legacy_id": "7415766384960",
+  "name": "89721",
+  "created_at": "2026-07-29T03:04:57Z",
+  "customer_gid": "gid://shopify/Customer/10163953533248",
+  "customer_name": "ANGELA REIS",
+  "subtotal": "282.87",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403878908224",
+  "order_legacy_id": "7403878908224",
+  "name": "88480",
+  "created_at": "2026-07-22T12:10:30Z",
+  "customer_gid": "gid://shopify/Customer/10949819826496",
+  "customer_name": "Maira Silva de Moraes",
+  "subtotal": "328.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412680294720",
+  "order_legacy_id": "7412680294720",
+  "name": "89513",
+  "created_at": "2026-07-27T09:09:43Z",
+  "customer_gid": "gid://shopify/Customer/10207858262336",
+  "customer_name": "Mariana Guimarães",
+  "subtotal": "63.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403051057472",
+  "order_legacy_id": "7403051057472",
+  "name": "88430",
+  "created_at": "2026-07-21T23:23:35Z",
+  "customer_gid": "gid://shopify/Customer/10961281089856",
+  "customer_name": "Edineia Crivellari",
+  "subtotal": "282.87",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416910086464",
+  "order_legacy_id": "7416910086464",
+  "name": "89793",
+  "created_at": "2026-07-29T19:17:42Z",
+  "customer_gid": "gid://shopify/Customer/10963468845376",
+  "customer_name": "Daniela Pertel",
+  "subtotal": "335.7",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415771726144",
+  "order_legacy_id": "7415771726144",
+  "name": "89722",
+  "created_at": "2026-07-29T03:10:47Z",
+  "customer_gid": "gid://shopify/Customer/10506978296128",
+  "customer_name": "Marlus Menezes",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407822995776",
+  "order_legacy_id": "7407822995776",
+  "name": "89176",
+  "created_at": "2026-07-24T15:27:33Z",
+  "customer_gid": "gid://shopify/Customer/10517638775104",
+  "customer_name": "Rafaella Anselmo Joanitti",
+  "subtotal": "422.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406660419904",
+  "order_legacy_id": "7406660419904",
+  "name": "89119",
+  "created_at": "2026-07-23T22:17:01Z",
+  "customer_gid": "gid://shopify/Customer/10574172422464",
+  "customer_name": "Débora Batista Melo",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404976013632",
+  "order_legacy_id": "7404976013632",
+  "name": "88836",
+  "created_at": "2026-07-23T00:34:12Z",
+  "customer_gid": "gid://shopify/Customer/10968307335488",
+  "customer_name": "JAQUELINE BARBOSA",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404153110848",
+  "order_legacy_id": "7404153110848",
+  "name": "88505",
+  "created_at": "2026-07-22T15:23:17Z",
+  "customer_gid": "gid://shopify/Customer/10698033955136",
+  "customer_name": "Rafaela Caldeira",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414599483712",
+  "order_legacy_id": "7414599483712",
+  "name": "89635",
+  "created_at": "2026-07-28T12:12:41Z",
+  "customer_gid": "gid://shopify/Customer/10808278155584",
+  "customer_name": "Bruna Mariussi",
+  "subtotal": "303.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415645929792",
+  "order_legacy_id": "7415645929792",
+  "name": "89712",
+  "created_at": "2026-07-29T01:07:56Z",
+  "customer_gid": "gid://shopify/Customer/10973097263424",
+  "customer_name": "Michelle Lirangi",
+  "subtotal": "319.5",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404826263872",
+  "order_legacy_id": "7404826263872",
+  "name": "88779",
+  "created_at": "2026-07-22T22:24:07Z",
+  "customer_gid": "gid://shopify/Customer/10853138104640",
+  "customer_name": "Renata Boldrin",
+  "subtotal": "103.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415317823808",
+  "order_legacy_id": "7415317823808",
+  "name": "89683",
+  "created_at": "2026-07-28T20:26:23Z",
+  "customer_gid": "gid://shopify/Customer/10968740987200",
+  "customer_name": "Isabella Calafate",
+  "subtotal": "381.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404354634048",
+  "order_legacy_id": "7404354634048",
+  "name": "88554",
+  "created_at": "2026-07-22T17:22:59Z",
+  "customer_gid": "gid://shopify/Customer/10873125404992",
+  "customer_name": "Elyoney costa",
+  "subtotal": "388.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412029522240",
+  "order_legacy_id": "7412029522240",
+  "name": "89480",
+  "created_at": "2026-07-26T22:31:14Z",
+  "customer_gid": "gid://shopify/Customer/10856348909888",
+  "customer_name": "michele campos",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403104534848",
+  "order_legacy_id": "7403104534848",
+  "name": "88439",
+  "created_at": "2026-07-22T00:10:11Z",
+  "customer_gid": "gid://shopify/Customer/10986515693888",
+  "customer_name": "Maria Madalena Carniello delgado",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7409895047488",
+  "order_legacy_id": "7409895047488",
+  "name": "89285",
+  "created_at": "2026-07-25T17:36:13Z",
+  "customer_gid": "gid://shopify/Customer/10911231443264",
+  "customer_name": "Ana Claudia Santana do Monte",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406229291328",
+  "order_legacy_id": "7406229291328",
+  "name": "89040",
+  "created_at": "2026-07-23T17:23:09Z",
+  "customer_gid": "gid://shopify/Customer/10985466822976",
+  "customer_name": "FLAVIA Medeiros",
+  "subtotal": "103.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405788102976",
+  "order_legacy_id": "7405788102976",
+  "name": "88938",
+  "created_at": "2026-07-23T12:59:04Z",
+  "customer_gid": "gid://shopify/Customer/10985397584192",
+  "customer_name": "Alcione Lopes",
+  "subtotal": "103.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412899578176",
+  "order_legacy_id": "7412899578176",
+  "name": "89522",
+  "created_at": "2026-07-27T12:43:19Z",
+  "customer_gid": "gid://shopify/Customer/10987455545664",
+  "customer_name": "Nayara Paim",
+  "subtotal": "207.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413475017024",
+  "order_legacy_id": "7413475017024",
+  "name": "89577",
+  "created_at": "2026-07-27T19:09:24Z",
+  "customer_gid": "gid://shopify/Customer/10952020754752",
+  "customer_name": "Fabio Medeiros Costa",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402669048128",
+  "order_legacy_id": "7402669048128",
+  "name": "88384",
+  "created_at": "2026-07-21T18:45:37Z",
+  "customer_gid": "gid://shopify/Customer/10990687682880",
+  "customer_name": "NILDA Mara DA SILVA",
+  "subtotal": "134.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413114831168",
+  "order_legacy_id": "7413114831168",
+  "name": "89548",
+  "created_at": "2026-07-27T15:24:41Z",
+  "customer_gid": "gid://shopify/Customer/10963922583872",
+  "customer_name": "Isabela Menezes",
+  "subtotal": "237.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410189402432",
+  "order_legacy_id": "7410189402432",
+  "name": "89318",
+  "created_at": "2026-07-25T20:30:07Z",
+  "customer_gid": "gid://shopify/Customer/10964757545280",
+  "customer_name": "Clarissa Felippe",
+  "subtotal": "342.75",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402903339328",
+  "order_legacy_id": "7402903339328",
+  "name": "88409",
+  "created_at": "2026-07-21T21:21:14Z",
+  "customer_gid": "gid://shopify/Customer/10990939734336",
+  "customer_name": "Carolina Prandi da Silva",
+  "subtotal": "40.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404037439808",
+  "order_legacy_id": "7404037439808",
+  "name": "88492",
+  "created_at": "2026-07-22T14:05:49Z",
+  "customer_gid": "gid://shopify/Customer/10984443543872",
+  "customer_name": "Erika Almeida",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406802436416",
+  "order_legacy_id": "7406802436416",
+  "name": "89138",
+  "created_at": "2026-07-24T00:17:18Z",
+  "customer_gid": "gid://shopify/Customer/10985355739456",
+  "customer_name": "CAROLINA QUINTILIANO",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406070137152",
+  "order_legacy_id": "7406070137152",
+  "name": "88988",
+  "created_at": "2026-07-23T15:49:01Z",
+  "customer_gid": "gid://shopify/Customer/10985244655936",
+  "customer_name": "Taiza dos Reis Magalhães Alvarenga",
+  "subtotal": "116.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402954228032",
+  "order_legacy_id": "7402954228032",
+  "name": "88414",
+  "created_at": "2026-07-21T22:00:49Z",
+  "customer_gid": "gid://shopify/Customer/10990984921408",
+  "customer_name": "Cristina Yuk",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402957668672",
+  "order_legacy_id": "7402957668672",
+  "name": "88416",
+  "created_at": "2026-07-21T22:02:53Z",
+  "customer_gid": "gid://shopify/Customer/10990999568704",
+  "customer_name": "Gabriela Prospero Falcão",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404800672064",
+  "order_legacy_id": "7404800672064",
+  "name": "88767",
+  "created_at": "2026-07-22T22:04:05Z",
+  "customer_gid": "gid://shopify/Customer/10986600595776",
+  "customer_name": "Tamiris Cirino",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7409228546368",
+  "order_legacy_id": "7409228546368",
+  "name": "89249",
+  "created_at": "2026-07-25T09:22:36Z",
+  "customer_gid": "gid://shopify/Customer/10990620410176",
+  "customer_name": "Ana Carvalho da Rocha",
+  "subtotal": "284.8",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413413609792",
+  "order_legacy_id": "7413413609792",
+  "name": "89573",
+  "created_at": "2026-07-27T18:28:03Z",
+  "customer_gid": "gid://shopify/Customer/10990443626816",
+  "customer_name": "Mariliz Constancio",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404068045120",
+  "order_legacy_id": "7404068045120",
+  "name": "88495",
+  "created_at": "2026-07-22T14:26:35Z",
+  "customer_gid": "gid://shopify/Customer/10991039185216",
+  "customer_name": "Aline Candido",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402997809472",
+  "order_legacy_id": "7402997809472",
+  "name": "88421",
+  "created_at": "2026-07-21T22:37:44Z",
+  "customer_gid": "gid://shopify/Customer/10991044690240",
+  "customer_name": "Helen Costa",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402810573120",
+  "order_legacy_id": "7402810573120",
+  "name": "88401",
+  "created_at": "2026-07-21T20:19:37Z",
+  "customer_gid": "gid://shopify/Customer/10990856601920",
+  "customer_name": "Silvia Dos Reis",
+  "subtotal": "207.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402731635008",
+  "order_legacy_id": "7402731635008",
+  "name": "88396",
+  "created_at": "2026-07-21T19:26:15Z",
+  "customer_gid": "gid://shopify/Customer/10990766948672",
+  "customer_name": "Izabella Oliveira",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403117478208",
+  "order_legacy_id": "7403117478208",
+  "name": "88441",
+  "created_at": "2026-07-22T00:22:19Z",
+  "customer_gid": "gid://shopify/Customer/10991191818560",
+  "customer_name": "Ana Livia Lima Alonso Alonso",
+  "subtotal": "158.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402879025472",
+  "order_legacy_id": "7402879025472",
+  "name": "88406",
+  "created_at": "2026-07-21T21:04:02Z",
+  "customer_gid": "gid://shopify/Customer/10990918566208",
+  "customer_name": "Elisa Boas",
+  "subtotal": "469.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403150180672",
+  "order_legacy_id": "7403150180672",
+  "name": "88446",
+  "created_at": "2026-07-22T00:53:13Z",
+  "customer_gid": "gid://shopify/Customer/10991234187584",
+  "customer_name": "Lucas Diniz",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403158438208",
+  "order_legacy_id": "7403158438208",
+  "name": "88447",
+  "created_at": "2026-07-22T00:58:30Z",
+  "customer_gid": "gid://shopify/Customer/10991240872256",
+  "customer_name": "KARLA ALVES",
+  "subtotal": "430.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402944069952",
+  "order_legacy_id": "7402944069952",
+  "name": "88413",
+  "created_at": "2026-07-21T21:54:14Z",
+  "customer_gid": "gid://shopify/Customer/10990964212032",
+  "customer_name": "barbara gremasco",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403170464064",
+  "order_legacy_id": "7403170464064",
+  "name": "88450",
+  "created_at": "2026-07-22T01:07:14Z",
+  "customer_gid": "gid://shopify/Customer/10991253127488",
+  "customer_name": "Carol teixeira",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403187962176",
+  "order_legacy_id": "7403187962176",
+  "name": "88453",
+  "created_at": "2026-07-22T01:24:18Z",
+  "customer_gid": "gid://shopify/Customer/10991272689984",
+  "customer_name": "Fátima Amaral",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406555464000",
+  "order_legacy_id": "7406555464000",
+  "name": "89106",
+  "created_at": "2026-07-23T20:53:26Z",
+  "customer_gid": "gid://shopify/Customer/10991292285248",
+  "customer_name": "Daniela Principe Principe",
+  "subtotal": "353.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403227578688",
+  "order_legacy_id": "7403227578688",
+  "name": "88456",
+  "created_at": "2026-07-22T02:01:38Z",
+  "customer_gid": "gid://shopify/Customer/10991320793408",
+  "customer_name": "Javan Pereira Motta",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402710040896",
+  "order_legacy_id": "7402710040896",
+  "name": "88392",
+  "created_at": "2026-07-21T19:10:59Z",
+  "customer_gid": "gid://shopify/Customer/10990745518400",
+  "customer_name": "Maria Luiza Usero Silva",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413759410496",
+  "order_legacy_id": "7413759410496",
+  "name": "89603",
+  "created_at": "2026-07-27T22:44:27Z",
+  "customer_gid": "gid://shopify/Customer/10991100232000",
+  "customer_name": "Amanda Gaspar",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403035427136",
+  "order_legacy_id": "7403035427136",
+  "name": "88428",
+  "created_at": "2026-07-21T23:09:16Z",
+  "customer_gid": "gid://shopify/Customer/10991100920128",
+  "customer_name": "Silvana Pereira Mariz Maia",
+  "subtotal": "111.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402753229120",
+  "order_legacy_id": "7402753229120",
+  "name": "88397",
+  "created_at": "2026-07-21T19:41:28Z",
+  "customer_gid": "gid://shopify/Customer/10990789624128",
+  "customer_name": "fernanda nogueira marques",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403269849408",
+  "order_legacy_id": "7403269849408",
+  "name": "88461",
+  "created_at": "2026-07-22T02:36:07Z",
+  "customer_gid": "gid://shopify/Customer/10991363195200",
+  "customer_name": "Maria Eduarda Dantas Arruda Silva",
+  "subtotal": "191.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7402871095616",
+  "order_legacy_id": "7402871095616",
+  "name": "88404",
+  "created_at": "2026-07-21T20:59:53Z",
+  "customer_gid": "gid://shopify/Customer/10990911979840",
+  "customer_name": "Bianca Lima",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403099914560",
+  "order_legacy_id": "7403099914560",
+  "name": "88437",
+  "created_at": "2026-07-22T00:05:35Z",
+  "customer_gid": "gid://shopify/Customer/10991161803072",
+  "customer_name": "JANAINA T LANARO",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403110203712",
+  "order_legacy_id": "7403110203712",
+  "name": "88440",
+  "created_at": "2026-07-22T00:15:13Z",
+  "customer_gid": "gid://shopify/Customer/10991183561024",
+  "customer_name": "Patricia Magalhães",
+  "subtotal": "63.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403187503424",
+  "order_legacy_id": "7403187503424",
+  "name": "88452",
+  "created_at": "2026-07-22T01:23:45Z",
+  "customer_gid": "gid://shopify/Customer/10990955266368",
+  "customer_name": "Mariana Machado",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403171873088",
+  "order_legacy_id": "7403171873088",
+  "name": "88451",
+  "created_at": "2026-07-22T01:08:42Z",
+  "customer_gid": "gid://shopify/Customer/10991246213440",
+  "customer_name": "Roberta Almeida",
+  "subtotal": "317.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403768381760",
+  "order_legacy_id": "7403768381760",
+  "name": "88471",
+  "created_at": "2026-07-22T10:30:34Z",
+  "customer_gid": "gid://shopify/Customer/10991846654272",
+  "customer_name": "Natália Cunha",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403215651136",
+  "order_legacy_id": "7403215651136",
+  "name": "88455",
+  "created_at": "2026-07-22T01:52:39Z",
+  "customer_gid": "gid://shopify/Customer/10991308210496",
+  "customer_name": "Raira Calamari",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403817632064",
+  "order_legacy_id": "7403817632064",
+  "name": "88475",
+  "created_at": "2026-07-22T11:14:10Z",
+  "customer_gid": "gid://shopify/Customer/10991896461632",
+  "customer_name": "Mariana Petrole",
+  "subtotal": "63.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403858362688",
+  "order_legacy_id": "7403858362688",
+  "name": "88479",
+  "created_at": "2026-07-22T11:53:32Z",
+  "customer_gid": "gid://shopify/Customer/10991951937856",
+  "customer_name": "Giovana Ferrari",
+  "subtotal": "207.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403230626112",
+  "order_legacy_id": "7403230626112",
+  "name": "88457",
+  "created_at": "2026-07-22T02:04:42Z",
+  "customer_gid": "gid://shopify/Customer/10991325315392",
+  "customer_name": "Marcia Savastano Rodrigues",
+  "subtotal": "134.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403653169472",
+  "order_legacy_id": "7403653169472",
+  "name": "88465",
+  "created_at": "2026-07-22T08:29:19Z",
+  "customer_gid": "gid://shopify/Customer/10991737602368",
+  "customer_name": "Isadora Leite Ribeiro Alves",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413004140864",
+  "order_legacy_id": "7413004140864",
+  "name": "89533",
+  "created_at": "2026-07-27T14:07:35Z",
+  "customer_gid": "gid://shopify/Customer/10991214035264",
+  "customer_name": "Luciana Rodrigues",
+  "subtotal": "398.25",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403662213440",
+  "order_legacy_id": "7403662213440",
+  "name": "88466",
+  "created_at": "2026-07-22T08:40:28Z",
+  "customer_gid": "gid://shopify/Customer/10991749890368",
+  "customer_name": "Bruna Antonelli",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403706745152",
+  "order_legacy_id": "7403706745152",
+  "name": "88467",
+  "created_at": "2026-07-22T09:33:12Z",
+  "customer_gid": "gid://shopify/Customer/10991799763264",
+  "customer_name": "Jenyffer Freire",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403744231744",
+  "order_legacy_id": "7403744231744",
+  "name": "88468",
+  "created_at": "2026-07-22T10:07:17Z",
+  "customer_gid": "gid://shopify/Customer/10991833514304",
+  "customer_name": "Adriana Vilanova",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406039236928",
+  "order_legacy_id": "7406039236928",
+  "name": "88981",
+  "created_at": "2026-07-23T15:33:26Z",
+  "customer_gid": "gid://shopify/Customer/10991834169664",
+  "customer_name": "Francisca Rosa DOS SANTOS",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403763761472",
+  "order_legacy_id": "7403763761472",
+  "name": "88469",
+  "created_at": "2026-07-22T10:25:31Z",
+  "customer_gid": "gid://shopify/Customer/10991851897152",
+  "customer_name": "Marcella de La Rocque Fernandes",
+  "subtotal": "285.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403810849088",
+  "order_legacy_id": "7403810849088",
+  "name": "88473",
+  "created_at": "2026-07-22T11:07:37Z",
+  "customer_gid": "gid://shopify/Customer/10991897608512",
+  "customer_name": "Anna Andrade",
+  "subtotal": "134.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404071125312",
+  "order_legacy_id": "7404071125312",
+  "name": "88496",
+  "created_at": "2026-07-22T14:28:24Z",
+  "customer_gid": "gid://shopify/Customer/10993519362368",
+  "customer_name": "Flavia Oliveira",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404073025856",
+  "order_legacy_id": "7404073025856",
+  "name": "88498",
+  "created_at": "2026-07-22T14:29:49Z",
+  "customer_gid": "gid://shopify/Customer/10993604493632",
+  "customer_name": "Thais Priscila Ventura",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404097569088",
+  "order_legacy_id": "7404097569088",
+  "name": "88501",
+  "created_at": "2026-07-22T14:46:33Z",
+  "customer_gid": "gid://shopify/Customer/10993796055360",
+  "customer_name": "Juliana de Freitas",
+  "subtotal": "126.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404084756800",
+  "order_legacy_id": "7404084756800",
+  "name": "88500",
+  "created_at": "2026-07-22T14:38:02Z",
+  "customer_gid": "gid://shopify/Customer/10993737007424",
+  "customer_name": "Andreia Sousa",
+  "subtotal": "63.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403994906944",
+  "order_legacy_id": "7403994906944",
+  "name": "88490",
+  "created_at": "2026-07-22T13:35:35Z",
+  "customer_gid": "gid://shopify/Customer/10992488546624",
+  "customer_name": "Eliza Lombardi",
+  "subtotal": "40.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404116050240",
+  "order_legacy_id": "7404116050240",
+  "name": "88502",
+  "created_at": "2026-07-22T14:59:25Z",
+  "customer_gid": "gid://shopify/Customer/10993811226944",
+  "customer_name": "Francieli Grillo",
+  "subtotal": "333.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403916525888",
+  "order_legacy_id": "7403916525888",
+  "name": "88483",
+  "created_at": "2026-07-22T12:36:41Z",
+  "customer_gid": "gid://shopify/Customer/10992004727104",
+  "customer_name": "Mariana Nunes",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404169462080",
+  "order_legacy_id": "7404169462080",
+  "name": "88509",
+  "created_at": "2026-07-22T15:32:40Z",
+  "customer_gid": "gid://shopify/Customer/10993855922496",
+  "customer_name": "Mariana Braz",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403880022336",
+  "order_legacy_id": "7403880022336",
+  "name": "88481",
+  "created_at": "2026-07-22T12:11:11Z",
+  "customer_gid": "gid://shopify/Customer/10991966847296",
+  "customer_name": "Daniela Simionato",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414757818688",
+  "order_legacy_id": "7414757818688",
+  "name": "89642",
+  "created_at": "2026-07-28T14:19:14Z",
+  "customer_gid": "gid://shopify/Customer/10992393126208",
+  "customer_name": "Leonella Lavagnoli",
+  "subtotal": "158.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404165235008",
+  "order_legacy_id": "7404165235008",
+  "name": "88507",
+  "created_at": "2026-07-22T15:31:17Z",
+  "customer_gid": "gid://shopify/Customer/10993862574400",
+  "customer_name": "Gabriela Cruz",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404271960384",
+  "order_legacy_id": "7404271960384",
+  "name": "88521",
+  "created_at": "2026-07-22T16:35:53Z",
+  "customer_gid": "gid://shopify/Customer/10993963598144",
+  "customer_name": "Andressa Cordeiro",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404297290048",
+  "order_legacy_id": "7404297290048",
+  "name": "88527",
+  "created_at": "2026-07-22T16:51:11Z",
+  "customer_gid": "gid://shopify/Customer/10993991942464",
+  "customer_name": "Isabela Bolotti",
+  "subtotal": "174.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404345229632",
+  "order_legacy_id": "7404345229632",
+  "name": "88549",
+  "created_at": "2026-07-22T17:16:50Z",
+  "customer_gid": "gid://shopify/Customer/10994031984960",
+  "customer_name": "Adriane Campos",
+  "subtotal": "362.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404396511552",
+  "order_legacy_id": "7404396511552",
+  "name": "88580",
+  "created_at": "2026-07-22T17:47:33Z",
+  "customer_gid": "gid://shopify/Customer/10994085495104",
+  "customer_name": "Daniela Amadei",
+  "subtotal": "129.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403992023360",
+  "order_legacy_id": "7403992023360",
+  "name": "88489",
+  "created_at": "2026-07-22T13:33:30Z",
+  "customer_gid": "gid://shopify/Customer/10992567189824",
+  "customer_name": "Estela Schunck",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404153438528",
+  "order_legacy_id": "7404153438528",
+  "name": "88506",
+  "created_at": "2026-07-22T15:23:30Z",
+  "customer_gid": "gid://shopify/Customer/10993296965952",
+  "customer_name": "Gislena Martins Leal",
+  "subtotal": "158.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405660537152",
+  "order_legacy_id": "7405660537152",
+  "name": "88908",
+  "created_at": "2026-07-23T11:07:31Z",
+  "customer_gid": "gid://shopify/Customer/10993296965952",
+  "customer_name": "Gislena Martins Leal",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404071190848",
+  "order_legacy_id": "7404071190848",
+  "name": "88497",
+  "created_at": "2026-07-22T14:28:29Z",
+  "customer_gid": "gid://shopify/Customer/10993469718848",
+  "customer_name": "Patrícia Godoy Fock",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404456313152",
+  "order_legacy_id": "7404456313152",
+  "name": "88621",
+  "created_at": "2026-07-22T18:22:49Z",
+  "customer_gid": "gid://shopify/Customer/10994133893440",
+  "customer_name": "Carina Christina",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403232297280",
+  "order_legacy_id": "7403232297280",
+  "name": "88458",
+  "created_at": "2026-07-22T02:06:36Z",
+  "customer_gid": "gid://shopify/Customer/10991326626112",
+  "customer_name": "Joao de Andrade Motta",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403921670464",
+  "order_legacy_id": "7403921670464",
+  "name": "88484",
+  "created_at": "2026-07-22T12:40:58Z",
+  "customer_gid": "gid://shopify/Customer/10992010133824",
+  "customer_name": "Renata Ferreira",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7403256906048",
+  "order_legacy_id": "7403256906048",
+  "name": "88460",
+  "created_at": "2026-07-22T02:25:07Z",
+  "customer_gid": "gid://shopify/Customer/10991349301568",
+  "customer_name": "Eliane Soares",
+  "subtotal": "396.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404524175680",
+  "order_legacy_id": "7404524175680",
+  "name": "88650",
+  "created_at": "2026-07-22T19:01:46Z",
+  "customer_gid": "gid://shopify/Customer/10994194809152",
+  "customer_name": "Vitor Nobrega",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404217303360",
+  "order_legacy_id": "7404217303360",
+  "name": "88517",
+  "created_at": "2026-07-22T16:01:08Z",
+  "customer_gid": "gid://shopify/Customer/10993911300416",
+  "customer_name": "Camila Fabbri",
+  "subtotal": "292.5",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404297257280",
+  "order_legacy_id": "7404297257280",
+  "name": "88526",
+  "created_at": "2026-07-22T16:51:10Z",
+  "customer_gid": "gid://shopify/Customer/10993990631744",
+  "customer_name": "Marjorie Dutra",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404307906880",
+  "order_legacy_id": "7404307906880",
+  "name": "88529",
+  "created_at": "2026-07-22T16:57:29Z",
+  "customer_gid": "gid://shopify/Customer/10994001051968",
+  "customer_name": "Amanda Priscila Diniz de Sena Santos",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404412928320",
+  "order_legacy_id": "7404412928320",
+  "name": "88594",
+  "created_at": "2026-07-22T17:57:55Z",
+  "customer_gid": "gid://shopify/Customer/10994094735680",
+  "customer_name": "Bruna Matsumura",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404416205120",
+  "order_legacy_id": "7404416205120",
+  "name": "88595",
+  "created_at": "2026-07-22T17:58:50Z",
+  "customer_gid": "gid://shopify/Customer/10994096013632",
+  "customer_name": "Maciel Alizon",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404555960640",
+  "order_legacy_id": "7404555960640",
+  "name": "88657",
+  "created_at": "2026-07-22T19:18:24Z",
+  "customer_gid": "gid://shopify/Customer/10994222825792",
+  "customer_name": "Jessica Santos Correa",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404575588672",
+  "order_legacy_id": "7404575588672",
+  "name": "88666",
+  "created_at": "2026-07-22T19:30:04Z",
+  "customer_gid": "gid://shopify/Customer/10994236981568",
+  "customer_name": "Giullia Buch",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404572246336",
+  "order_legacy_id": "7404572246336",
+  "name": "88662",
+  "created_at": "2026-07-22T19:28:33Z",
+  "customer_gid": "gid://shopify/Customer/10994234949952",
+  "customer_name": "ROSIANI Domingues",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404410503488",
+  "order_legacy_id": "7404410503488",
+  "name": "88591",
+  "created_at": "2026-07-22T17:56:29Z",
+  "customer_gid": "gid://shopify/Customer/10994098798912",
+  "customer_name": "Heloá Izabelle Pereira",
+  "subtotal": "299.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404643942720",
+  "order_legacy_id": "7404643942720",
+  "name": "88687",
+  "created_at": "2026-07-22T20:14:59Z",
+  "customer_gid": "gid://shopify/Customer/10994298552640",
+  "customer_name": "Gislene Madrid",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404429967680",
+  "order_legacy_id": "7404429967680",
+  "name": "88604",
+  "created_at": "2026-07-22T18:05:43Z",
+  "customer_gid": "gid://shopify/Customer/10994105352512",
+  "customer_name": "Kamila Gomes",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404496748864",
+  "order_legacy_id": "7404496748864",
+  "name": "88635",
+  "created_at": "2026-07-22T18:48:53Z",
+  "customer_gid": "gid://shopify/Customer/10994167677248",
+  "customer_name": "Ana Clara Zotto",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404656787776",
+  "order_legacy_id": "7404656787776",
+  "name": "88694",
+  "created_at": "2026-07-22T20:23:24Z",
+  "customer_gid": "gid://shopify/Customer/10994311954752",
+  "customer_name": "Jessica Felix",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404507791680",
+  "order_legacy_id": "7404507791680",
+  "name": "88639",
+  "created_at": "2026-07-22T18:54:07Z",
+  "customer_gid": "gid://shopify/Customer/10994181308736",
+  "customer_name": "Clea Brambilla",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404676448576",
+  "order_legacy_id": "7404676448576",
+  "name": "88703",
+  "created_at": "2026-07-22T20:34:04Z",
+  "customer_gid": "gid://shopify/Customer/10994329256256",
+  "customer_name": "Carolina Souza",
+  "subtotal": "212.8",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404703908160",
+  "order_legacy_id": "7404703908160",
+  "name": "88716",
+  "created_at": "2026-07-22T20:51:05Z",
+  "customer_gid": "gid://shopify/Customer/10994356060480",
+  "customer_name": "Laura Bianchini",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404683133248",
+  "order_legacy_id": "7404683133248",
+  "name": "88707",
+  "created_at": "2026-07-22T20:38:45Z",
+  "customer_gid": "gid://shopify/Customer/10994334794048",
+  "customer_name": "Daniela Miranda",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404768624960",
+  "order_legacy_id": "7404768624960",
+  "name": "88745",
+  "created_at": "2026-07-22T21:38:26Z",
+  "customer_gid": "gid://shopify/Customer/10994411340096",
+  "customer_name": "Vanessa Dos Santos Campagnoli",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404772589888",
+  "order_legacy_id": "7404772589888",
+  "name": "88748",
+  "created_at": "2026-07-22T21:41:42Z",
+  "customer_gid": "gid://shopify/Customer/10994413338944",
+  "customer_name": "Marli Oliveira",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404517622080",
+  "order_legacy_id": "7404517622080",
+  "name": "88645",
+  "created_at": "2026-07-22T18:58:51Z",
+  "customer_gid": "gid://shopify/Customer/10994186256704",
+  "customer_name": "Jeanine Jean Renaud",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404559434048",
+  "order_legacy_id": "7404559434048",
+  "name": "88658",
+  "created_at": "2026-07-22T19:21:05Z",
+  "customer_gid": "gid://shopify/Customer/10994192154944",
+  "customer_name": "Denise Duarte",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404772819264",
+  "order_legacy_id": "7404772819264",
+  "name": "88749",
+  "created_at": "2026-07-22T21:42:02Z",
+  "customer_gid": "gid://shopify/Customer/10994420482368",
+  "customer_name": "Priscila Trois Feijó",
+  "subtotal": "207.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404778619200",
+  "order_legacy_id": "7404778619200",
+  "name": "88752",
+  "created_at": "2026-07-22T21:46:27Z",
+  "customer_gid": "gid://shopify/Customer/10994421727552",
+  "customer_name": "Carola Bortoluzzi",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404860637504",
+  "order_legacy_id": "7404860637504",
+  "name": "88796",
+  "created_at": "2026-07-22T22:51:36Z",
+  "customer_gid": "gid://shopify/Customer/10994421727552",
+  "customer_name": "Carola Bortoluzzi",
+  "subtotal": "69.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404828787008",
+  "order_legacy_id": "7404828787008",
+  "name": "88780",
+  "created_at": "2026-07-22T22:26:05Z",
+  "customer_gid": "gid://shopify/Customer/10994476450112",
+  "customer_name": "Maria Caetana",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404830064960",
+  "order_legacy_id": "7404830064960",
+  "name": "88782",
+  "created_at": "2026-07-22T22:26:54Z",
+  "customer_gid": "gid://shopify/Customer/10994477957440",
+  "customer_name": "Carolina Choueri",
+  "subtotal": "125.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404850315584",
+  "order_legacy_id": "7404850315584",
+  "name": "88793",
+  "created_at": "2026-07-22T22:43:37Z",
+  "customer_gid": "gid://shopify/Customer/10994494734656",
+  "customer_name": "Lamiz Bechara",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404913983808",
+  "order_legacy_id": "7404913983808",
+  "name": "88815",
+  "created_at": "2026-07-22T23:37:29Z",
+  "customer_gid": "gid://shopify/Customer/10994555552064",
+  "customer_name": "Luiza Mendes",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404925583680",
+  "order_legacy_id": "7404925583680",
+  "name": "88822",
+  "created_at": "2026-07-22T23:49:33Z",
+  "customer_gid": "gid://shopify/Customer/10994571149632",
+  "customer_name": "Jenifer Peres",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404572475712",
+  "order_legacy_id": "7404572475712",
+  "name": "88663",
+  "created_at": "2026-07-22T19:28:45Z",
+  "customer_gid": "gid://shopify/Customer/10994235375936",
+  "customer_name": "Ana Paula Deodato",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405067305280",
+  "order_legacy_id": "7405067305280",
+  "name": "88867",
+  "created_at": "2026-07-23T01:52:59Z",
+  "customer_gid": "gid://shopify/Customer/10994721685824",
+  "customer_name": "Graziela Elena Rivello",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404654854464",
+  "order_legacy_id": "7404654854464",
+  "name": "88693",
+  "created_at": "2026-07-22T20:22:33Z",
+  "customer_gid": "gid://shopify/Customer/10994310086976",
+  "customer_name": "Fernanda Carvalho Fontes",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405090144576",
+  "order_legacy_id": "7405090144576",
+  "name": "88872",
+  "created_at": "2026-07-23T02:12:14Z",
+  "customer_gid": "gid://shopify/Customer/10994744951104",
+  "customer_name": "Leni Lourenço Cordeiro",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404863062336",
+  "order_legacy_id": "7404863062336",
+  "name": "88798",
+  "created_at": "2026-07-22T22:54:20Z",
+  "customer_gid": "gid://shopify/Customer/10994510856512",
+  "customer_name": "Maria Soares",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405103972672",
+  "order_legacy_id": "7405103972672",
+  "name": "88875",
+  "created_at": "2026-07-23T02:23:37Z",
+  "customer_gid": "gid://shopify/Customer/10994759958848",
+  "customer_name": "Alissa dru",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404490162496",
+  "order_legacy_id": "7404490162496",
+  "name": "88632",
+  "created_at": "2026-07-22T18:44:39Z",
+  "customer_gid": "gid://shopify/Customer/10994172789056",
+  "customer_name": "Mariana Zotto",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404669698368",
+  "order_legacy_id": "7404669698368",
+  "name": "88700",
+  "created_at": "2026-07-22T20:31:03Z",
+  "customer_gid": "gid://shopify/Customer/10994323784000",
+  "customer_name": "Cleriston Luis",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404675891520",
+  "order_legacy_id": "7404675891520",
+  "name": "88702",
+  "created_at": "2026-07-22T20:33:36Z",
+  "customer_gid": "gid://shopify/Customer/10994328469824",
+  "customer_name": "Fernanda Villela",
+  "subtotal": "79.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405146341696",
+  "order_legacy_id": "7405146341696",
+  "name": "88882",
+  "created_at": "2026-07-23T02:58:06Z",
+  "customer_gid": "gid://shopify/Customer/10994808488256",
+  "customer_name": "Janaina K Rodrigues",
+  "subtotal": "129.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406234960192",
+  "order_legacy_id": "7406234960192",
+  "name": "89045",
+  "created_at": "2026-07-23T17:26:57Z",
+  "customer_gid": "gid://shopify/Customer/10994817958208",
+  "customer_name": "Izabele Amaral da Silva",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7404795134272",
+  "order_legacy_id": "7404795134272",
+  "name": "88762",
+  "created_at": "2026-07-22T22:00:20Z",
+  "customer_gid": "gid://shopify/Customer/10994446401856",
+  "customer_name": "Julia Teixeira Neves Binda",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405028507968",
+  "order_legacy_id": "7405028507968",
+  "name": "88852",
+  "created_at": "2026-07-23T01:18:00Z",
+  "customer_gid": "gid://shopify/Customer/10994678006080",
+  "customer_name": "Letícia Oliveira",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405051904320",
+  "order_legacy_id": "7405051904320",
+  "name": "88861",
+  "created_at": "2026-07-23T01:38:48Z",
+  "customer_gid": "gid://shopify/Customer/10994700878144",
+  "customer_name": "Ethel Samek",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405046792512",
+  "order_legacy_id": "7405046792512",
+  "name": "88858",
+  "created_at": "2026-07-23T01:34:20Z",
+  "customer_gid": "gid://shopify/Customer/10994695471424",
+  "customer_name": "FLAVIA NESPECA",
+  "subtotal": "79.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405732593984",
+  "order_legacy_id": "7405732593984",
+  "name": "88927",
+  "created_at": "2026-07-23T12:13:54Z",
+  "customer_gid": "gid://shopify/Customer/10995448054080",
+  "customer_name": "Marco Antonio Soares dos Santos",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405063405888",
+  "order_legacy_id": "7405063405888",
+  "name": "88865",
+  "created_at": "2026-07-23T01:49:26Z",
+  "customer_gid": "gid://shopify/Customer/10994717163840",
+  "customer_name": "Mileide Lima ferreia",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405094961472",
+  "order_legacy_id": "7405094961472",
+  "name": "88874",
+  "created_at": "2026-07-23T02:16:11Z",
+  "customer_gid": "gid://shopify/Customer/10994750030144",
+  "customer_name": "Fernanda Zahr",
+  "subtotal": "277.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405132185920",
+  "order_legacy_id": "7405132185920",
+  "name": "88878",
+  "created_at": "2026-07-23T02:46:34Z",
+  "customer_gid": "gid://shopify/Customer/10994786140480",
+  "customer_name": "Jéssica Cordeiro",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405156467008",
+  "order_legacy_id": "7405156467008",
+  "name": "88883",
+  "created_at": "2026-07-23T03:06:15Z",
+  "customer_gid": "gid://shopify/Customer/10994816385344",
+  "customer_name": "Gabriela Bozza",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405931200832",
+  "order_legacy_id": "7405931200832",
+  "name": "88962",
+  "created_at": "2026-07-23T14:26:07Z",
+  "customer_gid": "gid://shopify/Customer/10995709903168",
+  "customer_name": "Laís Belo",
+  "subtotal": "316.8",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406058242368",
+  "order_legacy_id": "7406058242368",
+  "name": "88984",
+  "created_at": "2026-07-23T15:42:32Z",
+  "customer_gid": "gid://shopify/Customer/10995735036224",
+  "customer_name": "Mariana ribeiro",
+  "subtotal": "214.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405199065408",
+  "order_legacy_id": "7405199065408",
+  "name": "88887",
+  "created_at": "2026-07-23T03:45:20Z",
+  "customer_gid": "gid://shopify/Customer/10994862522688",
+  "customer_name": "Manuela Tojal Duarte",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405247594816",
+  "order_legacy_id": "7405247594816",
+  "name": "88890",
+  "created_at": "2026-07-23T04:17:51Z",
+  "customer_gid": "gid://shopify/Customer/10994882380096",
+  "customer_name": "Alisson Legório",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405626294592",
+  "order_legacy_id": "7405626294592",
+  "name": "88900",
+  "created_at": "2026-07-23T10:33:18Z",
+  "customer_gid": "gid://shopify/Customer/10995323732288",
+  "customer_name": "Daniela Valiati Bridi",
+  "subtotal": "158.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405663813952",
+  "order_legacy_id": "7405663813952",
+  "name": "88910",
+  "created_at": "2026-07-23T11:10:43Z",
+  "customer_gid": "gid://shopify/Customer/10995371082048",
+  "customer_name": "karen luks proenca",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405690552640",
+  "order_legacy_id": "7405690552640",
+  "name": "88920",
+  "created_at": "2026-07-23T11:35:38Z",
+  "customer_gid": "gid://shopify/Customer/10995401883968",
+  "customer_name": "Circe Junqueira",
+  "subtotal": "129.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405764772160",
+  "order_legacy_id": "7405764772160",
+  "name": "88933",
+  "created_at": "2026-07-23T12:39:09Z",
+  "customer_gid": "gid://shopify/Customer/10995456573760",
+  "customer_name": "Maria Rosa Matos Thomaz Ferreira",
+  "subtotal": "134.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405914784064",
+  "order_legacy_id": "7405914784064",
+  "name": "88955",
+  "created_at": "2026-07-23T14:16:30Z",
+  "customer_gid": "gid://shopify/Customer/10995709608256",
+  "customer_name": "Shirley Borges Santos",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405765624128",
+  "order_legacy_id": "7405765624128",
+  "name": "88934",
+  "created_at": "2026-07-23T12:39:55Z",
+  "customer_gid": "gid://shopify/Customer/10995478593856",
+  "customer_name": "Patrícia Nogueira",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405955711296",
+  "order_legacy_id": "7405955711296",
+  "name": "88968",
+  "created_at": "2026-07-23T14:40:01Z",
+  "customer_gid": "gid://shopify/Customer/10995735986496",
+  "customer_name": "Claudia Pinheiro",
+  "subtotal": "273.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405599031616",
+  "order_legacy_id": "7405599031616",
+  "name": "88897",
+  "created_at": "2026-07-23T10:05:20Z",
+  "customer_gid": "gid://shopify/Customer/10995294273856",
+  "customer_name": "Raquel Carvalho",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405956170048",
+  "order_legacy_id": "7405956170048",
+  "name": "88969",
+  "created_at": "2026-07-23T14:40:16Z",
+  "customer_gid": "gid://shopify/Customer/10995746799936",
+  "customer_name": "Franciny Rigolon",
+  "subtotal": "293.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405636616512",
+  "order_legacy_id": "7405636616512",
+  "name": "88902",
+  "created_at": "2026-07-23T10:42:55Z",
+  "customer_gid": "gid://shopify/Customer/10995340116288",
+  "customer_name": "Jayne Abdala",
+  "subtotal": "134.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406002405696",
+  "order_legacy_id": "7406002405696",
+  "name": "88975",
+  "created_at": "2026-07-23T15:10:51Z",
+  "customer_gid": "gid://shopify/Customer/10995790217536",
+  "customer_name": "Maria Vanderleia Pereira Dos Santos",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406008107328",
+  "order_legacy_id": "7406008107328",
+  "name": "88976",
+  "created_at": "2026-07-23T15:14:27Z",
+  "customer_gid": "gid://shopify/Customer/10995801948480",
+  "customer_name": "Maria Bragio",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406262976832",
+  "order_legacy_id": "7406262976832",
+  "name": "89056",
+  "created_at": "2026-07-23T17:43:00Z",
+  "customer_gid": "gid://shopify/Customer/10996070121792",
+  "customer_name": "Keidy Aniele garcia",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7405727318336",
+  "order_legacy_id": "7405727318336",
+  "name": "88926",
+  "created_at": "2026-07-23T12:09:13Z",
+  "customer_gid": "gid://shopify/Customer/10995442614592",
+  "customer_name": "Carolina Lima Ferreira Soares",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406068367680",
+  "order_legacy_id": "7406068367680",
+  "name": "88987",
+  "created_at": "2026-07-23T15:48:02Z",
+  "customer_gid": "gid://shopify/Customer/10995854639424",
+  "customer_name": "Camila Cerqueira",
+  "subtotal": "129.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406288142656",
+  "order_legacy_id": "7406288142656",
+  "name": "89062",
+  "created_at": "2026-07-23T17:59:04Z",
+  "customer_gid": "gid://shopify/Customer/10995916243264",
+  "customer_name": "PRISCILA FEITOSA",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406308327744",
+  "order_legacy_id": "7406308327744",
+  "name": "89065",
+  "created_at": "2026-07-23T18:10:37Z",
+  "customer_gid": "gid://shopify/Customer/10996114260288",
+  "customer_name": "Cecilia Santana de Souza",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406372520256",
+  "order_legacy_id": "7406372520256",
+  "name": "89077",
+  "created_at": "2026-07-23T18:49:38Z",
+  "customer_gid": "gid://shopify/Customer/10996152992064",
+  "customer_name": "Natasha de Lucena",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406363967808",
+  "order_legacy_id": "7406363967808",
+  "name": "89075",
+  "created_at": "2026-07-23T18:43:05Z",
+  "customer_gid": "gid://shopify/Customer/10996154696000",
+  "customer_name": "Danielle Vieira",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406231716160",
+  "order_legacy_id": "7406231716160",
+  "name": "89043",
+  "created_at": "2026-07-23T17:24:50Z",
+  "customer_gid": "gid://shopify/Customer/10996043710784",
+  "customer_name": "Marina Ribeiro",
+  "subtotal": "63.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406366687552",
+  "order_legacy_id": "7406366687552",
+  "name": "89076",
+  "created_at": "2026-07-23T18:45:09Z",
+  "customer_gid": "gid://shopify/Customer/10996166230336",
+  "customer_name": "Djane Lopes",
+  "subtotal": "600.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406649049408",
+  "order_legacy_id": "7406649049408",
+  "name": "89116",
+  "created_at": "2026-07-23T22:06:27Z",
+  "customer_gid": "gid://shopify/Customer/10996356940096",
+  "customer_name": "Sonia Cunha",
+  "subtotal": "346.5",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406236074304",
+  "order_legacy_id": "7406236074304",
+  "name": "89046",
+  "created_at": "2026-07-23T17:27:31Z",
+  "customer_gid": "gid://shopify/Customer/10996045840704",
+  "customer_name": "Leticia Cardoso",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406412136768",
+  "order_legacy_id": "7406412136768",
+  "name": "89085",
+  "created_at": "2026-07-23T19:15:41Z",
+  "customer_gid": "gid://shopify/Customer/10996207583552",
+  "customer_name": "Manuela Prota",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406688043328",
+  "order_legacy_id": "7406688043328",
+  "name": "89123",
+  "created_at": "2026-07-23T22:38:22Z",
+  "customer_gid": "gid://shopify/Customer/10996467138880",
+  "customer_name": "Carolina Manzato",
+  "subtotal": "236.79",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406797488448",
+  "order_legacy_id": "7406797488448",
+  "name": "89136",
+  "created_at": "2026-07-24T00:12:20Z",
+  "customer_gid": "gid://shopify/Customer/10996583006528",
+  "customer_name": "jaise G P COLLA",
+  "subtotal": "139.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406241743168",
+  "order_legacy_id": "7406241743168",
+  "name": "89051",
+  "created_at": "2026-07-23T17:30:42Z",
+  "customer_gid": "gid://shopify/Customer/10996052492608",
+  "customer_name": "Nathalia Camacho Alves",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406267859264",
+  "order_legacy_id": "7406267859264",
+  "name": "89060",
+  "created_at": "2026-07-23T17:46:06Z",
+  "customer_gid": "gid://shopify/Customer/10996071399744",
+  "customer_name": "Aline Helfstein",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406313636160",
+  "order_legacy_id": "7406313636160",
+  "name": "89066",
+  "created_at": "2026-07-23T18:14:02Z",
+  "customer_gid": "gid://shopify/Customer/10996111704384",
+  "customer_name": "Camila Macedo",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407521366336",
+  "order_legacy_id": "7407521366336",
+  "name": "89159",
+  "created_at": "2026-07-24T11:41:42Z",
+  "customer_gid": "gid://shopify/Customer/10997310914880",
+  "customer_name": "Luiza Etchepare Johannpeter",
+  "subtotal": "279.25",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406080229696",
+  "order_legacy_id": "7406080229696",
+  "name": "88991",
+  "created_at": "2026-07-23T15:55:42Z",
+  "customer_gid": "gid://shopify/Customer/10995865977152",
+  "customer_name": "Ana Carolina Macedo Gutierres",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406208090432",
+  "order_legacy_id": "7406208090432",
+  "name": "89024",
+  "created_at": "2026-07-23T17:10:39Z",
+  "customer_gid": "gid://shopify/Customer/10995972669760",
+  "customer_name": "Viviane Gilbert",
+  "subtotal": "116.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407596077376",
+  "order_legacy_id": "7407596077376",
+  "name": "89163",
+  "created_at": "2026-07-24T12:44:15Z",
+  "customer_gid": "gid://shopify/Customer/10997393424704",
+  "customer_name": "Letícia Arenal e Silva",
+  "subtotal": "134.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406625325376",
+  "order_legacy_id": "7406625325376",
+  "name": "89112",
+  "created_at": "2026-07-23T21:47:43Z",
+  "customer_gid": "gid://shopify/Customer/10996412809536",
+  "customer_name": "Tatiana Aparecida lemes Lemes",
+  "subtotal": "230.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408586260800",
+  "order_legacy_id": "7408586260800",
+  "name": "89236",
+  "created_at": "2026-07-24T23:24:54Z",
+  "customer_gid": "gid://shopify/Customer/10996412809536",
+  "customer_name": "Tatiana Aparecida lemes Lemes",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406453358912",
+  "order_legacy_id": "7406453358912",
+  "name": "89091",
+  "created_at": "2026-07-23T19:43:07Z",
+  "customer_gid": "gid://shopify/Customer/10996221280576",
+  "customer_name": "Karine Frances Araujo sabino",
+  "subtotal": "0.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406683324736",
+  "order_legacy_id": "7406683324736",
+  "name": "89122",
+  "created_at": "2026-07-23T22:35:22Z",
+  "customer_gid": "gid://shopify/Customer/10996441973056",
+  "customer_name": "Marina Gonçalves Gonçalves",
+  "subtotal": "174.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410489753920",
+  "order_legacy_id": "7410489753920",
+  "name": "89360",
+  "created_at": "2026-07-26T00:18:38Z",
+  "customer_gid": "gid://shopify/Customer/10997646885184",
+  "customer_name": "Sheyla Vilela Borges Peixoto",
+  "subtotal": "197.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408097132864",
+  "order_legacy_id": "7408097132864",
+  "name": "89188",
+  "created_at": "2026-07-24T17:57:14Z",
+  "customer_gid": "gid://shopify/Customer/10997711864128",
+  "customer_name": "Júlia Queiroz",
+  "subtotal": "160.38",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406752989504",
+  "order_legacy_id": "7406752989504",
+  "name": "89132",
+  "created_at": "2026-07-23T23:36:39Z",
+  "customer_gid": "gid://shopify/Customer/10996539326784",
+  "customer_name": "Cecília Silva",
+  "subtotal": "116.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406743224640",
+  "order_legacy_id": "7406743224640",
+  "name": "89129",
+  "created_at": "2026-07-23T23:29:06Z",
+  "customer_gid": "gid://shopify/Customer/10996530807104",
+  "customer_name": "STEFANIA COSTA AMORIM REQUENA",
+  "subtotal": "307.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407267512640",
+  "order_legacy_id": "7407267512640",
+  "name": "89156",
+  "created_at": "2026-07-24T07:00:14Z",
+  "customer_gid": "gid://shopify/Customer/10997009514816",
+  "customer_name": "Ana Cláudia Pereira Rodriguez",
+  "subtotal": "314.5",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408296591680",
+  "order_legacy_id": "7408296591680",
+  "name": "89211",
+  "created_at": "2026-07-24T19:58:17Z",
+  "customer_gid": "gid://shopify/Customer/10998063792448",
+  "customer_name": "Yasmin Bramabati",
+  "subtotal": "258.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406799257920",
+  "order_legacy_id": "7406799257920",
+  "name": "89137",
+  "created_at": "2026-07-24T00:14:06Z",
+  "customer_gid": "gid://shopify/Customer/10996585627968",
+  "customer_name": "Eliza G M Cunha",
+  "subtotal": "321.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406969848128",
+  "order_legacy_id": "7406969848128",
+  "name": "89152",
+  "created_at": "2026-07-24T02:44:14Z",
+  "customer_gid": "gid://shopify/Customer/10996773028160",
+  "customer_name": "Karina Paula Silva",
+  "subtotal": "55.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408444637504",
+  "order_legacy_id": "7408444637504",
+  "name": "89224",
+  "created_at": "2026-07-24T21:30:29Z",
+  "customer_gid": "gid://shopify/Customer/10998271574336",
+  "customer_name": "Priscilla Hack",
+  "subtotal": "325.89",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408521052480",
+  "order_legacy_id": "7408521052480",
+  "name": "89230",
+  "created_at": "2026-07-24T22:29:05Z",
+  "customer_gid": "gid://shopify/Customer/10998341992768",
+  "customer_name": "roxelle marianne soares barbosa de souza",
+  "subtotal": "103.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407481717056",
+  "order_legacy_id": "7407481717056",
+  "name": "89158",
+  "created_at": "2026-07-24T11:04:29Z",
+  "customer_gid": "gid://shopify/Customer/10997222441280",
+  "customer_name": "Frances Aragao",
+  "subtotal": "269.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407535948096",
+  "order_legacy_id": "7407535948096",
+  "name": "89160",
+  "created_at": "2026-07-24T11:55:37Z",
+  "customer_gid": "gid://shopify/Customer/10997327954240",
+  "customer_name": "Paula Raeder de oliveira",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407613083968",
+  "order_legacy_id": "7407613083968",
+  "name": "89164",
+  "created_at": "2026-07-24T12:57:57Z",
+  "customer_gid": "gid://shopify/Customer/10997412593984",
+  "customer_name": "Marilia Cazotti",
+  "subtotal": "111.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7407640248640",
+  "order_legacy_id": "7407640248640",
+  "name": "89165",
+  "created_at": "2026-07-24T13:18:58Z",
+  "customer_gid": "gid://shopify/Customer/10997441298752",
+  "customer_name": "Dilma Marin",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7409621795136",
+  "order_legacy_id": "7409621795136",
+  "name": "89265",
+  "created_at": "2026-07-25T15:07:59Z",
+  "customer_gid": "gid://shopify/Customer/10999477469504",
+  "customer_name": "Danielle Mortago",
+  "subtotal": "349.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7409653186880",
+  "order_legacy_id": "7409653186880",
+  "name": "89266",
+  "created_at": "2026-07-25T15:28:22Z",
+  "customer_gid": "gid://shopify/Customer/10999505092928",
+  "customer_name": "Ana Carolina Capella dos Santos",
+  "subtotal": "99.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7406704394560",
+  "order_legacy_id": "7406704394560",
+  "name": "89127",
+  "created_at": "2026-07-23T22:52:11Z",
+  "customer_gid": "gid://shopify/Customer/10996489027904",
+  "customer_name": "Joseane Calixto Gomes Calixto",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408152707392",
+  "order_legacy_id": "7408152707392",
+  "name": "89195",
+  "created_at": "2026-07-24T18:30:23Z",
+  "customer_gid": "gid://shopify/Customer/10997936324928",
+  "customer_name": "maria eduarda Duarte Trucharte",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408264544576",
+  "order_legacy_id": "7408264544576",
+  "name": "89206",
+  "created_at": "2026-07-24T19:37:16Z",
+  "customer_gid": "gid://shopify/Customer/10998032204096",
+  "customer_name": "Alessandra Mari",
+  "subtotal": "126.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7409895932224",
+  "order_legacy_id": "7409895932224",
+  "name": "89286",
+  "created_at": "2026-07-25T17:36:52Z",
+  "customer_gid": "gid://shopify/Customer/10999690920256",
+  "customer_name": "Milena Scopel",
+  "subtotal": "126.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408388440384",
+  "order_legacy_id": "7408388440384",
+  "name": "89217",
+  "created_at": "2026-07-24T20:52:15Z",
+  "customer_gid": "gid://shopify/Customer/10998220718400",
+  "customer_name": "Helena Neiva",
+  "subtotal": "199.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411831734592",
+  "order_legacy_id": "7411831734592",
+  "name": "89443",
+  "created_at": "2026-07-26T19:54:09Z",
+  "customer_gid": "gid://shopify/Customer/10999739449664",
+  "customer_name": "Manuella Coelho",
+  "subtotal": "317.25",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410117607744",
+  "order_legacy_id": "7410117607744",
+  "name": "89307",
+  "created_at": "2026-07-25T19:43:22Z",
+  "customer_gid": "gid://shopify/Customer/10999924031808",
+  "customer_name": "Silvania Mendes",
+  "subtotal": "179.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410131370304",
+  "order_legacy_id": "7410131370304",
+  "name": "89310",
+  "created_at": "2026-07-25T19:51:25Z",
+  "customer_gid": "gid://shopify/Customer/10999936975168",
+  "customer_name": "Priscila Rios",
+  "subtotal": "290.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415132881216",
+  "order_legacy_id": "7415132881216",
+  "name": "89666",
+  "created_at": "2026-07-28T18:17:53Z",
+  "customer_gid": "gid://shopify/Customer/10998522609984",
+  "customer_name": "Suzana Sperancetta",
+  "subtotal": "571.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410124423488",
+  "order_legacy_id": "7410124423488",
+  "name": "89308",
+  "created_at": "2026-07-25T19:47:02Z",
+  "customer_gid": "gid://shopify/Customer/10999931470144",
+  "customer_name": "Vivian Meline",
+  "subtotal": "347.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408760914240",
+  "order_legacy_id": "7408760914240",
+  "name": "89245",
+  "created_at": "2026-07-25T01:47:51Z",
+  "customer_gid": "gid://shopify/Customer/10998594404672",
+  "customer_name": "Renata Silva de Almeida",
+  "subtotal": "134.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410187338048",
+  "order_legacy_id": "7410187338048",
+  "name": "89317",
+  "created_at": "2026-07-25T20:28:28Z",
+  "customer_gid": "gid://shopify/Customer/10999985635648",
+  "customer_name": "Maria Hammel",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408788144448",
+  "order_legacy_id": "7408788144448",
+  "name": "89246",
+  "created_at": "2026-07-25T02:13:55Z",
+  "customer_gid": "gid://shopify/Customer/10998621831488",
+  "customer_name": "sofia scovine barcelos de souza",
+  "subtotal": "387.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7409290379584",
+  "order_legacy_id": "7409290379584",
+  "name": "89250",
+  "created_at": "2026-07-25T10:27:41Z",
+  "customer_gid": "gid://shopify/Customer/10999107682624",
+  "customer_name": "Isabela feres",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410214338880",
+  "order_legacy_id": "7410214338880",
+  "name": "89320",
+  "created_at": "2026-07-25T20:46:28Z",
+  "customer_gid": "gid://shopify/Customer/11000009097536",
+  "customer_name": "Maria Mendes",
+  "subtotal": "134.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411628966208",
+  "order_legacy_id": "7411628966208",
+  "name": "89414",
+  "created_at": "2026-07-26T17:47:23Z",
+  "customer_gid": "gid://shopify/Customer/10999208182080",
+  "customer_name": "Williamary Portugal",
+  "subtotal": "111.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410219942208",
+  "order_legacy_id": "7410219942208",
+  "name": "89321",
+  "created_at": "2026-07-25T20:48:44Z",
+  "customer_gid": "gid://shopify/Customer/11000012079424",
+  "customer_name": "Gabriela dos Santos Baleeiro",
+  "subtotal": "286.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7409607180608",
+  "order_legacy_id": "7409607180608",
+  "name": "89264",
+  "created_at": "2026-07-25T14:57:50Z",
+  "customer_gid": "gid://shopify/Customer/10999463870784",
+  "customer_name": "ELISA HETTI",
+  "subtotal": "258.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410336825664",
+  "order_legacy_id": "7410336825664",
+  "name": "89336",
+  "created_at": "2026-07-25T22:11:15Z",
+  "customer_gid": "gid://shopify/Customer/11000115790144",
+  "customer_name": "Isabela Bianchi",
+  "subtotal": "276.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410339512640",
+  "order_legacy_id": "7410339512640",
+  "name": "89340",
+  "created_at": "2026-07-25T22:13:42Z",
+  "customer_gid": "gid://shopify/Customer/11000119296320",
+  "customer_name": "Rosimar de britto brun Britto brun",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410324996416",
+  "order_legacy_id": "7410324996416",
+  "name": "89335",
+  "created_at": "2026-07-25T22:01:17Z",
+  "customer_gid": "gid://shopify/Customer/11000103993664",
+  "customer_name": "Juliana C Figueiroa",
+  "subtotal": "216.71",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410440339776",
+  "order_legacy_id": "7410440339776",
+  "name": "89350",
+  "created_at": "2026-07-25T23:34:25Z",
+  "customer_gid": "gid://shopify/Customer/11000209310016",
+  "customer_name": "Amanda Vieira",
+  "subtotal": "184.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410481692992",
+  "order_legacy_id": "7410481692992",
+  "name": "89357",
+  "created_at": "2026-07-26T00:12:11Z",
+  "customer_gid": "gid://shopify/Customer/11000250892608",
+  "customer_name": "Mariana Fernandes",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410457379136",
+  "order_legacy_id": "7410457379136",
+  "name": "89354",
+  "created_at": "2026-07-25T23:49:21Z",
+  "customer_gid": "gid://shopify/Customer/11000230084928",
+  "customer_name": "Beatriz Miranda",
+  "subtotal": "163.95",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410478219584",
+  "order_legacy_id": "7410478219584",
+  "name": "89356",
+  "created_at": "2026-07-26T00:09:10Z",
+  "customer_gid": "gid://shopify/Customer/11000230084928",
+  "customer_name": "Beatriz Miranda",
+  "subtotal": "224.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410099093824",
+  "order_legacy_id": "7410099093824",
+  "name": "89305",
+  "created_at": "2026-07-25T19:31:50Z",
+  "customer_gid": "gid://shopify/Customer/10999898472768",
+  "customer_name": "Daniela Falavigna",
+  "subtotal": "315.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410643140928",
+  "order_legacy_id": "7410643140928",
+  "name": "89370",
+  "created_at": "2026-07-26T02:38:03Z",
+  "customer_gid": "gid://shopify/Customer/11000423940416",
+  "customer_name": "Pamela Mello",
+  "subtotal": "62.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411855130944",
+  "order_legacy_id": "7411855130944",
+  "name": "89447",
+  "created_at": "2026-07-26T20:10:21Z",
+  "customer_gid": "gid://shopify/Customer/11000464310592",
+  "customer_name": "Fabíola Araújo Rosa",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410774901056",
+  "order_legacy_id": "7410774901056",
+  "name": "89371",
+  "created_at": "2026-07-26T04:28:42Z",
+  "customer_gid": "gid://shopify/Customer/11000522473792",
+  "customer_name": "Alessandra Lima",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7408812196160",
+  "order_legacy_id": "7408812196160",
+  "name": "89247",
+  "created_at": "2026-07-25T02:36:44Z",
+  "customer_gid": "gid://shopify/Customer/10998636446016",
+  "customer_name": "Camila Lima",
+  "subtotal": "277.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7409429119296",
+  "order_legacy_id": "7409429119296",
+  "name": "89254",
+  "created_at": "2026-07-25T12:39:59Z",
+  "customer_gid": "gid://shopify/Customer/10999250682176",
+  "customer_name": "SIMONE ANGELO DE LIMA",
+  "subtotal": "474.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411088228672",
+  "order_legacy_id": "7411088228672",
+  "name": "89377",
+  "created_at": "2026-07-26T10:29:59Z",
+  "customer_gid": "gid://shopify/Customer/11000888525120",
+  "customer_name": "Maria das Graças Vasconcelos França Pedroza Vasconcelos França Pedroza",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411117719872",
+  "order_legacy_id": "7411117719872",
+  "name": "89379",
+  "created_at": "2026-07-26T11:06:30Z",
+  "customer_gid": "gid://shopify/Customer/11000926863680",
+  "customer_name": "Maria Slapelis",
+  "subtotal": "290.5",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410268307776",
+  "order_legacy_id": "7410268307776",
+  "name": "89326",
+  "created_at": "2026-07-25T21:19:10Z",
+  "customer_gid": "gid://shopify/Customer/11000048550208",
+  "customer_name": "Bruna Leandro Pereira",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410297733440",
+  "order_legacy_id": "7410297733440",
+  "name": "89332",
+  "created_at": "2026-07-25T21:40:10Z",
+  "customer_gid": "gid://shopify/Customer/11000077058368",
+  "customer_name": "Lidiane Costa",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411133743424",
+  "order_legacy_id": "7411133743424",
+  "name": "89381",
+  "created_at": "2026-07-26T11:25:50Z",
+  "customer_gid": "gid://shopify/Customer/11000949145920",
+  "customer_name": "Marineide Souza",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410431000896",
+  "order_legacy_id": "7410431000896",
+  "name": "89349",
+  "created_at": "2026-07-25T23:24:36Z",
+  "customer_gid": "gid://shopify/Customer/11000200888640",
+  "customer_name": "Thiago Pinto",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410269356352",
+  "order_legacy_id": "7410269356352",
+  "name": "89327",
+  "created_at": "2026-07-25T21:20:04Z",
+  "customer_gid": "gid://shopify/Customer/11000050843968",
+  "customer_name": "Luiz Felipe De Paula Ferreira",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411195969856",
+  "order_legacy_id": "7411195969856",
+  "name": "89384",
+  "created_at": "2026-07-26T12:28:58Z",
+  "customer_gid": "gid://shopify/Customer/11001209717056",
+  "customer_name": "Gabriela Pereira",
+  "subtotal": "234.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411194298688",
+  "order_legacy_id": "7411194298688",
+  "name": "89383",
+  "created_at": "2026-07-26T12:27:14Z",
+  "customer_gid": "gid://shopify/Customer/11001254576448",
+  "customer_name": "ELENICE MARIA CASARTELLI",
+  "subtotal": "71.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410463572288",
+  "order_legacy_id": "7410463572288",
+  "name": "89355",
+  "created_at": "2026-07-25T23:56:17Z",
+  "customer_gid": "gid://shopify/Customer/11000237752640",
+  "customer_name": "Dagmar Kruger",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410507252032",
+  "order_legacy_id": "7410507252032",
+  "name": "89363",
+  "created_at": "2026-07-26T00:35:49Z",
+  "customer_gid": "gid://shopify/Customer/11000284217664",
+  "customer_name": "Vinícius Petribu",
+  "subtotal": "92.15",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411628736832",
+  "order_legacy_id": "7411628736832",
+  "name": "89413",
+  "created_at": "2026-07-26T17:47:14Z",
+  "customer_gid": "gid://shopify/Customer/11000017256768",
+  "customer_name": "Jucilene Pires",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411488162112",
+  "order_legacy_id": "7411488162112",
+  "name": "89400",
+  "created_at": "2026-07-26T16:19:24Z",
+  "customer_gid": "gid://shopify/Customer/11001703104832",
+  "customer_name": "Gabrielle Fonseca",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410546409792",
+  "order_legacy_id": "7410546409792",
+  "name": "89367",
+  "created_at": "2026-07-26T01:12:47Z",
+  "customer_gid": "gid://shopify/Customer/11000317477184",
+  "customer_name": "Elma Pereira",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411595608384",
+  "order_legacy_id": "7411595608384",
+  "name": "89407",
+  "created_at": "2026-07-26T17:26:23Z",
+  "customer_gid": "gid://shopify/Customer/11001816023360",
+  "customer_name": "Laís Maia",
+  "subtotal": "374.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413001421120",
+  "order_legacy_id": "7413001421120",
+  "name": "89532",
+  "created_at": "2026-07-27T14:05:38Z",
+  "customer_gid": "gid://shopify/Customer/11001824248128",
+  "customer_name": "Caroline Nogueira",
+  "subtotal": "345.95",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411609370944",
+  "order_legacy_id": "7411609370944",
+  "name": "89411",
+  "created_at": "2026-07-26T17:35:42Z",
+  "customer_gid": "gid://shopify/Customer/11001830244672",
+  "customer_name": "Stephanie Lima",
+  "subtotal": "174.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411625918784",
+  "order_legacy_id": "7411625918784",
+  "name": "89412",
+  "created_at": "2026-07-26T17:45:27Z",
+  "customer_gid": "gid://shopify/Customer/11001848463680",
+  "customer_name": "Rosangela de Oliveira Silva Conceição",
+  "subtotal": "134.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411219562816",
+  "order_legacy_id": "7411219562816",
+  "name": "89386",
+  "created_at": "2026-07-26T12:50:23Z",
+  "customer_gid": "gid://shopify/Customer/11001385615680",
+  "customer_name": "Maria Orieta Porto",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411250200896",
+  "order_legacy_id": "7411250200896",
+  "name": "89389",
+  "created_at": "2026-07-26T13:19:28Z",
+  "customer_gid": "gid://shopify/Customer/11001426772288",
+  "customer_name": "Giovana Schmitz",
+  "subtotal": "297.27",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411269861696",
+  "order_legacy_id": "7411269861696",
+  "name": "89390",
+  "created_at": "2026-07-26T13:37:18Z",
+  "customer_gid": "gid://shopify/Customer/11001449185600",
+  "customer_name": "Mariana Lopes de Albuquerque",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411369083200",
+  "order_legacy_id": "7411369083200",
+  "name": "89396",
+  "created_at": "2026-07-26T14:55:19Z",
+  "customer_gid": "gid://shopify/Customer/11001567248704",
+  "customer_name": "Thais Roque",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411384287552",
+  "order_legacy_id": "7411384287552",
+  "name": "89399",
+  "created_at": "2026-07-26T15:05:55Z",
+  "customer_gid": "gid://shopify/Customer/11001531334976",
+  "customer_name": "Ingrid Fernandes",
+  "subtotal": "291.5",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410523996480",
+  "order_legacy_id": "7410523996480",
+  "name": "89365",
+  "created_at": "2026-07-26T00:50:22Z",
+  "customer_gid": "gid://shopify/Customer/11000301715776",
+  "customer_name": "Evilaine Gleicy",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411586990400",
+  "order_legacy_id": "7411586990400",
+  "name": "89406",
+  "created_at": "2026-07-26T17:20:15Z",
+  "customer_gid": "gid://shopify/Customer/11001793446208",
+  "customer_name": "Laís Hammes",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7410576818496",
+  "order_legacy_id": "7410576818496",
+  "name": "89368",
+  "created_at": "2026-07-26T01:37:36Z",
+  "customer_gid": "gid://shopify/Customer/11000354767168",
+  "customer_name": "Wilma Pereira Neves Neves",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411842122048",
+  "order_legacy_id": "7411842122048",
+  "name": "89445",
+  "created_at": "2026-07-26T20:01:12Z",
+  "customer_gid": "gid://shopify/Customer/11002070761792",
+  "customer_name": "Ariadine Wirbiski",
+  "subtotal": "158.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411637322048",
+  "order_legacy_id": "7411637322048",
+  "name": "89415",
+  "created_at": "2026-07-26T17:52:54Z",
+  "customer_gid": "gid://shopify/Customer/11001859834176",
+  "customer_name": "Helena De Jesus de Souza",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411890684224",
+  "order_legacy_id": "7411890684224",
+  "name": "89451",
+  "created_at": "2026-07-26T20:38:32Z",
+  "customer_gid": "gid://shopify/Customer/11002115883328",
+  "customer_name": "Janete Carvalho Primo",
+  "subtotal": "115.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411857654080",
+  "order_legacy_id": "7411857654080",
+  "name": "89448",
+  "created_at": "2026-07-26T20:12:30Z",
+  "customer_gid": "gid://shopify/Customer/11002087014720",
+  "customer_name": "TÂNIA ÁVILA",
+  "subtotal": "134.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411661668672",
+  "order_legacy_id": "7411661668672",
+  "name": "89417",
+  "created_at": "2026-07-26T18:05:18Z",
+  "customer_gid": "gid://shopify/Customer/11001882870080",
+  "customer_name": "Talita Stelling",
+  "subtotal": "55.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411896811840",
+  "order_legacy_id": "7411896811840",
+  "name": "89452",
+  "created_at": "2026-07-26T20:41:37Z",
+  "customer_gid": "gid://shopify/Customer/11002128171328",
+  "customer_name": "Carol Picinini",
+  "subtotal": "330.75",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413310488896",
+  "order_legacy_id": "7413310488896",
+  "name": "89565",
+  "created_at": "2026-07-27T17:21:26Z",
+  "customer_gid": "gid://shopify/Customer/11002128433472",
+  "customer_name": "Maiara Penna",
+  "subtotal": "103.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411741000000",
+  "order_legacy_id": "7411741000000",
+  "name": "89426",
+  "created_at": "2026-07-26T18:54:42Z",
+  "customer_gid": "gid://shopify/Customer/11001967378752",
+  "customer_name": "Luanne Mendes",
+  "subtotal": "238.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411797066048",
+  "order_legacy_id": "7411797066048",
+  "name": "89438",
+  "created_at": "2026-07-26T19:30:28Z",
+  "customer_gid": "gid://shopify/Customer/11001997295936",
+  "customer_name": "Marcela Fragoso",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411773866304",
+  "order_legacy_id": "7411773866304",
+  "name": "89432",
+  "created_at": "2026-07-26T19:15:32Z",
+  "customer_gid": "gid://shopify/Customer/11001998344512",
+  "customer_name": "Victor Neves",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411920437568",
+  "order_legacy_id": "7411920437568",
+  "name": "89459",
+  "created_at": "2026-07-26T21:00:05Z",
+  "customer_gid": "gid://shopify/Customer/11002145898816",
+  "customer_name": "Santiago Sousa",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411966640448",
+  "order_legacy_id": "7411966640448",
+  "name": "89469",
+  "created_at": "2026-07-26T21:37:30Z",
+  "customer_gid": "gid://shopify/Customer/11002206585152",
+  "customer_name": "Laura Re Luvisotto",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411938656576",
+  "order_legacy_id": "7411938656576",
+  "name": "89464",
+  "created_at": "2026-07-26T21:13:39Z",
+  "customer_gid": "gid://shopify/Customer/11002169327936",
+  "customer_name": "Jamille Muliterno",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412021166400",
+  "order_legacy_id": "7412021166400",
+  "name": "89479",
+  "created_at": "2026-07-26T22:23:20Z",
+  "customer_gid": "gid://shopify/Customer/11002218250560",
+  "customer_name": "Daniela Carvalho",
+  "subtotal": "314.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411905200448",
+  "order_legacy_id": "7411905200448",
+  "name": "89455",
+  "created_at": "2026-07-26T20:47:59Z",
+  "customer_gid": "gid://shopify/Customer/11002127974720",
+  "customer_name": "Marcielen Pagnoncelli",
+  "subtotal": "126.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411921944896",
+  "order_legacy_id": "7411921944896",
+  "name": "89460",
+  "created_at": "2026-07-26T21:00:46Z",
+  "customer_gid": "gid://shopify/Customer/11002135740736",
+  "customer_name": "Manuella Martins do Nascimento",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411780714816",
+  "order_legacy_id": "7411780714816",
+  "name": "89434",
+  "created_at": "2026-07-26T19:20:05Z",
+  "customer_gid": "gid://shopify/Customer/11001997459776",
+  "customer_name": "Rebeca Oliva",
+  "subtotal": "234.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412111311168",
+  "order_legacy_id": "7412111311168",
+  "name": "89493",
+  "created_at": "2026-07-26T23:48:11Z",
+  "customer_gid": "gid://shopify/Customer/11002142654784",
+  "customer_name": "Victoria Jucá",
+  "subtotal": "164.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411789005120",
+  "order_legacy_id": "7411789005120",
+  "name": "89435",
+  "created_at": "2026-07-26T19:25:28Z",
+  "customer_gid": "gid://shopify/Customer/11002015449408",
+  "customer_name": "Margarete Lopes",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411830489408",
+  "order_legacy_id": "7411830489408",
+  "name": "89442",
+  "created_at": "2026-07-26T19:53:20Z",
+  "customer_gid": "gid://shopify/Customer/11002059096384",
+  "customer_name": "Rebeca Oliva",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7411931251008",
+  "order_legacy_id": "7411931251008",
+  "name": "89463",
+  "created_at": "2026-07-26T21:07:36Z",
+  "customer_gid": "gid://shopify/Customer/11002167132480",
+  "customer_name": "Catarina Zecchin",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412978745664",
+  "order_legacy_id": "7412978745664",
+  "name": "89530",
+  "created_at": "2026-07-27T13:48:23Z",
+  "customer_gid": "gid://shopify/Customer/11002219397440",
+  "customer_name": "Debora torres Albuquerque",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412032864576",
+  "order_legacy_id": "7412032864576",
+  "name": "89481",
+  "created_at": "2026-07-26T22:34:33Z",
+  "customer_gid": "gid://shopify/Customer/11002251280704",
+  "customer_name": "Renata de Oliveira Silva",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413045952832",
+  "order_legacy_id": "7413045952832",
+  "name": "89539",
+  "created_at": "2026-07-27T14:37:38Z",
+  "customer_gid": "gid://shopify/Customer/11002251575616",
+  "customer_name": "Renata Brandao",
+  "subtotal": "191.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412682359104",
+  "order_legacy_id": "7412682359104",
+  "name": "89514",
+  "created_at": "2026-07-27T09:12:42Z",
+  "customer_gid": "gid://shopify/Customer/11002961625408",
+  "customer_name": "Evelyne Emilia Caristo Gomes",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412209156416",
+  "order_legacy_id": "7412209156416",
+  "name": "89502",
+  "created_at": "2026-07-27T01:23:03Z",
+  "customer_gid": "gid://shopify/Customer/11002467942720",
+  "customer_name": "Cristina Harumi Matsushita",
+  "subtotal": "372.8",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412753695040",
+  "order_legacy_id": "7412753695040",
+  "name": "89516",
+  "created_at": "2026-07-27T10:37:00Z",
+  "customer_gid": "gid://shopify/Customer/11003047313728",
+  "customer_name": "JULIETA GOES",
+  "subtotal": "207.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412089356608",
+  "order_legacy_id": "7412089356608",
+  "name": "89491",
+  "created_at": "2026-07-26T23:27:22Z",
+  "customer_gid": "gid://shopify/Customer/11002353484096",
+  "customer_name": "Milena Danda",
+  "subtotal": "276.3",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412095877440",
+  "order_legacy_id": "7412095877440",
+  "name": "89492",
+  "created_at": "2026-07-26T23:34:12Z",
+  "customer_gid": "gid://shopify/Customer/11002347127104",
+  "customer_name": "Daniele Bini",
+  "subtotal": "561.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412145652032",
+  "order_legacy_id": "7412145652032",
+  "name": "89495",
+  "created_at": "2026-07-27T00:21:15Z",
+  "customer_gid": "gid://shopify/Customer/11002420068672",
+  "customer_name": "Giulia Finatti",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412082114880",
+  "order_legacy_id": "7412082114880",
+  "name": "89490",
+  "created_at": "2026-07-26T23:20:17Z",
+  "customer_gid": "gid://shopify/Customer/11002343457088",
+  "customer_name": "Marco Aurelio Mazotto",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412939751744",
+  "order_legacy_id": "7412939751744",
+  "name": "89526",
+  "created_at": "2026-07-27T13:18:19Z",
+  "customer_gid": "gid://shopify/Customer/11003242676544",
+  "customer_name": "ALINE DE CORDOVA",
+  "subtotal": "325.89",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413068693824",
+  "order_legacy_id": "7413068693824",
+  "name": "89543",
+  "created_at": "2026-07-27T14:52:58Z",
+  "customer_gid": "gid://shopify/Customer/11003447116096",
+  "customer_name": "Monque Rezende da silva",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412179108160",
+  "order_legacy_id": "7412179108160",
+  "name": "89499",
+  "created_at": "2026-07-27T00:53:25Z",
+  "customer_gid": "gid://shopify/Customer/11002461159744",
+  "customer_name": "Vanessa Souza",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412660371776",
+  "order_legacy_id": "7412660371776",
+  "name": "89512",
+  "created_at": "2026-07-27T08:49:29Z",
+  "customer_gid": "gid://shopify/Customer/11002940391744",
+  "customer_name": "MARILUCE OLIVEIRA",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412053541184",
+  "order_legacy_id": "7412053541184",
+  "name": "89485",
+  "created_at": "2026-07-26T22:51:44Z",
+  "customer_gid": "gid://shopify/Customer/11002309247296",
+  "customer_name": "Juliana Martins Schmidt",
+  "subtotal": "129.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412941259072",
+  "order_legacy_id": "7412941259072",
+  "name": "89528",
+  "created_at": "2026-07-27T13:19:45Z",
+  "customer_gid": "gid://shopify/Customer/11003198931264",
+  "customer_name": "Neidjane Tenório",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412904689984",
+  "order_legacy_id": "7412904689984",
+  "name": "89523",
+  "created_at": "2026-07-27T12:47:19Z",
+  "customer_gid": "gid://shopify/Customer/11003204567360",
+  "customer_name": "Kayra Pareto",
+  "subtotal": "230.25",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413740306752",
+  "order_legacy_id": "7413740306752",
+  "name": "89600",
+  "created_at": "2026-07-27T22:28:51Z",
+  "customer_gid": "gid://shopify/Customer/11004553429312",
+  "customer_name": "Thalita Bueno",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412907508032",
+  "order_legacy_id": "7412907508032",
+  "name": "89524",
+  "created_at": "2026-07-27T12:49:44Z",
+  "customer_gid": "gid://shopify/Customer/11003207418176",
+  "customer_name": "Mayara Rinaldi Bianchi",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412917535040",
+  "order_legacy_id": "7412917535040",
+  "name": "89525",
+  "created_at": "2026-07-27T12:59:11Z",
+  "customer_gid": "gid://shopify/Customer/11003218297152",
+  "customer_name": "Livia Muniz",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413196652864",
+  "order_legacy_id": "7413196652864",
+  "name": "89556",
+  "created_at": "2026-07-27T16:17:11Z",
+  "customer_gid": "gid://shopify/Customer/11003212038464",
+  "customer_name": "Beatriz Tavares",
+  "subtotal": "179.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7412262175040",
+  "order_legacy_id": "7412262175040",
+  "name": "89508",
+  "created_at": "2026-07-27T02:14:35Z",
+  "customer_gid": "gid://shopify/Customer/11002454671680",
+  "customer_name": "Paula Braga",
+  "subtotal": "164.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413094220096",
+  "order_legacy_id": "7413094220096",
+  "name": "89546",
+  "created_at": "2026-07-27T15:09:52Z",
+  "customer_gid": "gid://shopify/Customer/11003476115776",
+  "customer_name": "Nara Bonadies",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413842215232",
+  "order_legacy_id": "7413842215232",
+  "name": "89610",
+  "created_at": "2026-07-28T00:02:48Z",
+  "customer_gid": "gid://shopify/Customer/11005425320256",
+  "customer_name": "Emilia Guimaraes",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413352169792",
+  "order_legacy_id": "7413352169792",
+  "name": "89570",
+  "created_at": "2026-07-27T17:48:21Z",
+  "customer_gid": "gid://shopify/Customer/11003840332096",
+  "customer_name": "Cátia Faisca",
+  "subtotal": "158.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413877047616",
+  "order_legacy_id": "7413877047616",
+  "name": "89613",
+  "created_at": "2026-07-28T00:37:14Z",
+  "customer_gid": "gid://shopify/Customer/11005580640576",
+  "customer_name": "Sheila Moura",
+  "subtotal": "116.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413921546560",
+  "order_legacy_id": "7413921546560",
+  "name": "89619",
+  "created_at": "2026-07-28T01:15:02Z",
+  "customer_gid": "gid://shopify/Customer/11005758374208",
+  "customer_name": "Nedia Pinna",
+  "subtotal": "75.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413886189888",
+  "order_legacy_id": "7413886189888",
+  "name": "89615",
+  "created_at": "2026-07-28T00:44:23Z",
+  "customer_gid": "gid://shopify/Customer/11005610688832",
+  "customer_name": "Renata Grigolon",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414032957760",
+  "order_legacy_id": "7414032957760",
+  "name": "89626",
+  "created_at": "2026-07-28T02:50:19Z",
+  "customer_gid": "gid://shopify/Customer/11006252089664",
+  "customer_name": "Maianna Souza",
+  "subtotal": "324.8",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413435892032",
+  "order_legacy_id": "7413435892032",
+  "name": "89574",
+  "created_at": "2026-07-27T18:42:33Z",
+  "customer_gid": "gid://shopify/Customer/11004088058176",
+  "customer_name": "Lucia Carla Ribeiro Alves",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413538718016",
+  "order_legacy_id": "7413538718016",
+  "name": "89581",
+  "created_at": "2026-07-27T19:52:51Z",
+  "customer_gid": "gid://shopify/Customer/11004280242496",
+  "customer_name": "Francielly Morais",
+  "subtotal": "206.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414561702208",
+  "order_legacy_id": "7414561702208",
+  "name": "89632",
+  "created_at": "2026-07-28T11:37:32Z",
+  "customer_gid": "gid://shopify/Customer/11008089063744",
+  "customer_name": "FERNANDA DA SILVA",
+  "subtotal": "197.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413668413760",
+  "order_legacy_id": "7413668413760",
+  "name": "89593",
+  "created_at": "2026-07-27T21:26:30Z",
+  "customer_gid": "gid://shopify/Customer/11004774842688",
+  "customer_name": "Jacqueline Abecassis",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413813412160",
+  "order_legacy_id": "7413813412160",
+  "name": "89609",
+  "created_at": "2026-07-27T23:38:17Z",
+  "customer_gid": "gid://shopify/Customer/11005331145024",
+  "customer_name": "Tania Beatriz Oliveira de Leão",
+  "subtotal": "75.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413163262272",
+  "order_legacy_id": "7413163262272",
+  "name": "89552",
+  "created_at": "2026-07-27T15:55:22Z",
+  "customer_gid": "gid://shopify/Customer/11003545092416",
+  "customer_name": "Michele Ruela",
+  "subtotal": "167.67",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416221434176",
+  "order_legacy_id": "7416221434176",
+  "name": "89739",
+  "created_at": "2026-07-29T11:24:37Z",
+  "customer_gid": "gid://shopify/Customer/11005456613696",
+  "customer_name": "Sandra Ferreira",
+  "subtotal": "126.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413251703104",
+  "order_legacy_id": "7413251703104",
+  "name": "89560",
+  "created_at": "2026-07-27T16:49:52Z",
+  "customer_gid": "gid://shopify/Customer/11003638972736",
+  "customer_name": "Ireni Ferreira",
+  "subtotal": "283.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413929443648",
+  "order_legacy_id": "7413929443648",
+  "name": "89621",
+  "created_at": "2026-07-28T01:22:30Z",
+  "customer_gid": "gid://shopify/Customer/11005783998784",
+  "customer_name": "Ozana carvalho de Freitas",
+  "subtotal": "55.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7413323825472",
+  "order_legacy_id": "7413323825472",
+  "name": "89567",
+  "created_at": "2026-07-27T17:30:45Z",
+  "customer_gid": "gid://shopify/Customer/11003738358080",
+  "customer_name": "Camila Menin",
+  "subtotal": "258.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415124984128",
+  "order_legacy_id": "7415124984128",
+  "name": "89665",
+  "created_at": "2026-07-28T18:12:00Z",
+  "customer_gid": "gid://shopify/Customer/11008655950144",
+  "customer_name": "Alessandra Serapião",
+  "subtotal": "134.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415268507968",
+  "order_legacy_id": "7415268507968",
+  "name": "89677",
+  "created_at": "2026-07-28T19:52:09Z",
+  "customer_gid": "gid://shopify/Customer/11009038909760",
+  "customer_name": "Glória Vinhote Vinhote",
+  "subtotal": "55.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414634053952",
+  "order_legacy_id": "7414634053952",
+  "name": "89636",
+  "created_at": "2026-07-28T12:44:22Z",
+  "customer_gid": "gid://shopify/Customer/11008168952128",
+  "customer_name": "Cássia Brosque",
+  "subtotal": "195.08",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415247667520",
+  "order_legacy_id": "7415247667520",
+  "name": "89675",
+  "created_at": "2026-07-28T19:38:41Z",
+  "customer_gid": "gid://shopify/Customer/11008983793984",
+  "customer_name": "Maria Vitória Nakata",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414636511552",
+  "order_legacy_id": "7414636511552",
+  "name": "89637",
+  "created_at": "2026-07-28T12:46:22Z",
+  "customer_gid": "gid://shopify/Customer/11008172458304",
+  "customer_name": "Helena Lanza",
+  "subtotal": "158.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414850912576",
+  "order_legacy_id": "7414850912576",
+  "name": "89646",
+  "created_at": "2026-07-28T15:25:09Z",
+  "customer_gid": "gid://shopify/Customer/11008322896192",
+  "customer_name": "Ana Lopes",
+  "subtotal": "358.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414720168256",
+  "order_legacy_id": "7414720168256",
+  "name": "89639",
+  "created_at": "2026-07-28T13:53:32Z",
+  "customer_gid": "gid://shopify/Customer/11008261620032",
+  "customer_name": "Flaviane Lemos Ribeiro",
+  "subtotal": "231.8",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415472128320",
+  "order_legacy_id": "7415472128320",
+  "name": "89697",
+  "created_at": "2026-07-28T22:26:22Z",
+  "customer_gid": "gid://shopify/Customer/11009613267264",
+  "customer_name": "Adriana Souza",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415457382720",
+  "order_legacy_id": "7415457382720",
+  "name": "89696",
+  "created_at": "2026-07-28T22:13:01Z",
+  "customer_gid": "gid://shopify/Customer/11009572438336",
+  "customer_name": "nathalia meireles",
+  "subtotal": "143.64",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414982574400",
+  "order_legacy_id": "7414982574400",
+  "name": "89652",
+  "created_at": "2026-07-28T16:48:50Z",
+  "customer_gid": "gid://shopify/Customer/11008525926720",
+  "customer_name": "JULIANA BRITTO",
+  "subtotal": "239.7",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415473930560",
+  "order_legacy_id": "7415473930560",
+  "name": "89698",
+  "created_at": "2026-07-28T22:27:52Z",
+  "customer_gid": "gid://shopify/Customer/11009620967744",
+  "customer_name": "Viviane Tagarro",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415118332224",
+  "order_legacy_id": "7415118332224",
+  "name": "89661",
+  "created_at": "2026-07-28T18:07:55Z",
+  "customer_gid": "gid://shopify/Customer/11008650248512",
+  "customer_name": "Aline Braga",
+  "subtotal": "134.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415533568320",
+  "order_legacy_id": "7415533568320",
+  "name": "89701",
+  "created_at": "2026-07-28T23:24:50Z",
+  "customer_gid": "gid://shopify/Customer/11009839530304",
+  "customer_name": "Silvana Perozzo",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415541104960",
+  "order_legacy_id": "7415541104960",
+  "name": "89703",
+  "created_at": "2026-07-28T23:32:14Z",
+  "customer_gid": "gid://shopify/Customer/11009867022656",
+  "customer_name": "Lais Rodrigues",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415524360512",
+  "order_legacy_id": "7415524360512",
+  "name": "89699",
+  "created_at": "2026-07-28T23:14:55Z",
+  "customer_gid": "gid://shopify/Customer/11009799422272",
+  "customer_name": "Eliana Souza",
+  "subtotal": "69.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415572496704",
+  "order_legacy_id": "7415572496704",
+  "name": "89705",
+  "created_at": "2026-07-28T23:59:30Z",
+  "customer_gid": "gid://shopify/Customer/11009982890304",
+  "customer_name": "Larissa Pereira Santos",
+  "subtotal": "528.8",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415598383424",
+  "order_legacy_id": "7415598383424",
+  "name": "89708",
+  "created_at": "2026-07-29T00:23:05Z",
+  "customer_gid": "gid://shopify/Customer/11010081653056",
+  "customer_name": "Taissa R",
+  "subtotal": "206.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415677976896",
+  "order_legacy_id": "7415677976896",
+  "name": "89719",
+  "created_at": "2026-07-29T01:41:10Z",
+  "customer_gid": "gid://shopify/Customer/11010417754432",
+  "customer_name": "Maria Márcia",
+  "subtotal": "75.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415120757056",
+  "order_legacy_id": "7415120757056",
+  "name": "89663",
+  "created_at": "2026-07-28T18:09:13Z",
+  "customer_gid": "gid://shopify/Customer/11008651821376",
+  "customer_name": "Camila Serrat",
+  "subtotal": "134.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415795712320",
+  "order_legacy_id": "7415795712320",
+  "name": "89727",
+  "created_at": "2026-07-29T03:38:40Z",
+  "customer_gid": "gid://shopify/Customer/11010929197376",
+  "customer_name": "Roberta Souza",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416085020992",
+  "order_legacy_id": "7416085020992",
+  "name": "89731",
+  "created_at": "2026-07-29T08:41:47Z",
+  "customer_gid": "gid://shopify/Customer/11012292870464",
+  "customer_name": "Juliana Assis",
+  "subtotal": "245.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415304651072",
+  "order_legacy_id": "7415304651072",
+  "name": "89680",
+  "created_at": "2026-07-28T20:17:27Z",
+  "customer_gid": "gid://shopify/Customer/11009140588864",
+  "customer_name": "Graziela Yamamoto",
+  "subtotal": "364.8",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7414929064256",
+  "order_legacy_id": "7414929064256",
+  "name": "89650",
+  "created_at": "2026-07-28T16:14:33Z",
+  "customer_gid": "gid://shopify/Customer/11008459374912",
+  "customer_name": "Keiko Sakimoto",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415343612224",
+  "order_legacy_id": "7415343612224",
+  "name": "89685",
+  "created_at": "2026-07-28T20:46:19Z",
+  "customer_gid": "gid://shopify/Customer/11009260290368",
+  "customer_name": "Mayza Mendonça",
+  "subtotal": "234.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416244601152",
+  "order_legacy_id": "7416244601152",
+  "name": "89742",
+  "created_at": "2026-07-29T11:47:27Z",
+  "customer_gid": "gid://shopify/Customer/11013738168640",
+  "customer_name": "Adriana Borges",
+  "subtotal": "207.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415113417024",
+  "order_legacy_id": "7415113417024",
+  "name": "89660",
+  "created_at": "2026-07-28T18:04:20Z",
+  "customer_gid": "gid://shopify/Customer/11008642842944",
+  "customer_name": "Flávia Maia Correia",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415005937984",
+  "order_legacy_id": "7415005937984",
+  "name": "89654",
+  "created_at": "2026-07-28T17:02:01Z",
+  "customer_gid": "gid://shopify/Customer/11008546308416",
+  "customer_name": "Estevão Neis",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416309711168",
+  "order_legacy_id": "7416309711168",
+  "name": "89748",
+  "created_at": "2026-07-29T12:47:27Z",
+  "customer_gid": "gid://shopify/Customer/11014121881920",
+  "customer_name": "ILNARA GOMES",
+  "subtotal": "256.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415560503616",
+  "order_legacy_id": "7415560503616",
+  "name": "89704",
+  "created_at": "2026-07-28T23:50:14Z",
+  "customer_gid": "gid://shopify/Customer/11009938325824",
+  "customer_name": "Alessandra Pierre rosas",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416317509952",
+  "order_legacy_id": "7416317509952",
+  "name": "89751",
+  "created_at": "2026-07-29T12:54:15Z",
+  "customer_gid": "gid://shopify/Customer/11014259016000",
+  "customer_name": "Mariana Figueiredo",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415658905920",
+  "order_legacy_id": "7415658905920",
+  "name": "89714",
+  "created_at": "2026-07-29T01:21:53Z",
+  "customer_gid": "gid://shopify/Customer/11010338193728",
+  "customer_name": "ANA ROCHA",
+  "subtotal": "414.8",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415773757760",
+  "order_legacy_id": "7415773757760",
+  "name": "89723",
+  "created_at": "2026-07-29T03:13:17Z",
+  "customer_gid": "gid://shopify/Customer/11010816049472",
+  "customer_name": "Juliana Padiar",
+  "subtotal": "75.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416681169216",
+  "order_legacy_id": "7416681169216",
+  "name": "89780",
+  "created_at": "2026-07-29T16:59:42Z",
+  "customer_gid": "gid://shopify/Customer/11010829680960",
+  "customer_name": "Roberta Lopes",
+  "subtotal": "372.8",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416098685248",
+  "order_legacy_id": "7416098685248",
+  "name": "89732",
+  "created_at": "2026-07-29T08:58:14Z",
+  "customer_gid": "gid://shopify/Customer/11012341268800",
+  "customer_name": "Yasmin Cavalcanti",
+  "subtotal": "224.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416141775168",
+  "order_legacy_id": "7416141775168",
+  "name": "89735",
+  "created_at": "2026-07-29T09:56:16Z",
+  "customer_gid": "gid://shopify/Customer/11012803821888",
+  "customer_name": "Barbara Botelho",
+  "subtotal": "91.38",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416799330624",
+  "order_legacy_id": "7416799330624",
+  "name": "89787",
+  "created_at": "2026-07-29T18:06:51Z",
+  "customer_gid": "gid://shopify/Customer/11015667450176",
+  "customer_name": "Juliane Martins",
+  "subtotal": "62.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416310366528",
+  "order_legacy_id": "7416310366528",
+  "name": "89749",
+  "created_at": "2026-07-29T12:48:07Z",
+  "customer_gid": "gid://shopify/Customer/11014116606272",
+  "customer_name": "Aline Molleda Bochi FAgundes",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416416731456",
+  "order_legacy_id": "7416416731456",
+  "name": "89761",
+  "created_at": "2026-07-29T14:13:45Z",
+  "customer_gid": "gid://shopify/Customer/11014551437632",
+  "customer_name": "Aline Silva",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416426987840",
+  "order_legacy_id": "7416426987840",
+  "name": "89762",
+  "created_at": "2026-07-29T14:21:02Z",
+  "customer_gid": "gid://shopify/Customer/11014643122496",
+  "customer_name": "JOICY KLEN",
+  "subtotal": "126.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416482267456",
+  "order_legacy_id": "7416482267456",
+  "name": "89766",
+  "created_at": "2026-07-29T14:59:09Z",
+  "customer_gid": "gid://shopify/Customer/11014802112832",
+  "customer_name": "Julia Braga",
+  "subtotal": "129.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416650727744",
+  "order_legacy_id": "7416650727744",
+  "name": "89778",
+  "created_at": "2026-07-29T16:43:12Z",
+  "customer_gid": "gid://shopify/Customer/11015262798144",
+  "customer_name": "Joyce Cristina Cardoso Joffre",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7415814881600",
+  "order_legacy_id": "7415814881600",
+  "name": "89729",
+  "created_at": "2026-07-29T03:59:24Z",
+  "customer_gid": "gid://shopify/Customer/11011030712640",
+  "customer_name": "Carolina De oliveira silva",
+  "subtotal": "207.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416666554688",
+  "order_legacy_id": "7416666554688",
+  "name": "89779",
+  "created_at": "2026-07-29T16:51:16Z",
+  "customer_gid": "gid://shopify/Customer/11015326925120",
+  "customer_name": "Rejane Corrêa Menezes",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416681464128",
+  "order_legacy_id": "7416681464128",
+  "name": "89781",
+  "created_at": "2026-07-29T16:59:50Z",
+  "customer_gid": "gid://shopify/Customer/11015360315712",
+  "customer_name": "Keila Cristiane de Matos",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416933876032",
+  "order_legacy_id": "7416933876032",
+  "name": "89794",
+  "created_at": "2026-07-29T19:30:06Z",
+  "customer_gid": "gid://shopify/Customer/11015454359872",
+  "customer_name": "Elisangela Piva de Melo",
+  "subtotal": "250.4",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7417030803776",
+  "order_legacy_id": "7417030803776",
+  "name": "89804",
+  "created_at": "2026-07-29T20:36:47Z",
+  "customer_gid": "gid://shopify/Customer/11016324546880",
+  "customer_name": "Natalie Mas",
+  "subtotal": "549.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7417107611968",
+  "order_legacy_id": "7417107611968",
+  "name": "89810",
+  "created_at": "2026-07-29T21:34:11Z",
+  "customer_gid": "gid://shopify/Customer/11016565358912",
+  "customer_name": "PATRICIA LIMA",
+  "subtotal": "149.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416243814720",
+  "order_legacy_id": "7416243814720",
+  "name": "89741",
+  "created_at": "2026-07-29T11:46:45Z",
+  "customer_gid": "gid://shopify/Customer/11013732041024",
+  "customer_name": "Steffani Goncalves",
+  "subtotal": "229.6",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416833737024",
+  "order_legacy_id": "7416833737024",
+  "name": "89788",
+  "created_at": "2026-07-29T18:28:30Z",
+  "customer_gid": "gid://shopify/Customer/11015758577984",
+  "customer_name": "Marcela Braga",
+  "subtotal": "75.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416855658816",
+  "order_legacy_id": "7416855658816",
+  "name": "89789",
+  "created_at": "2026-07-29T18:43:01Z",
+  "customer_gid": "gid://shopify/Customer/11015809204544",
+  "customer_name": "Kelly Kirsch",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416893342016",
+  "order_legacy_id": "7416893342016",
+  "name": "89791",
+  "created_at": "2026-07-29T19:05:28Z",
+  "customer_gid": "gid://shopify/Customer/11015935656256",
+  "customer_name": "Isabel Rocha",
+  "subtotal": "119.2",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7417015337280",
+  "order_legacy_id": "7417015337280",
+  "name": "89801",
+  "created_at": "2026-07-29T20:25:14Z",
+  "customer_gid": "gid://shopify/Customer/11016278344000",
+  "customer_name": "Rodrigo Lopes",
+  "subtotal": "71.1",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416125915456",
+  "order_legacy_id": "7416125915456",
+  "name": "89734",
+  "created_at": "2026-07-29T09:36:52Z",
+  "customer_gid": "gid://shopify/Customer/11012595155264",
+  "customer_name": "Isabela Raisa De Paula Oliveira",
+  "subtotal": "284.8",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416772591936",
+  "order_legacy_id": "7416772591936",
+  "name": "89786",
+  "created_at": "2026-07-29T17:52:11Z",
+  "customer_gid": "gid://shopify/Customer/11015593394496",
+  "customer_name": "Cristine Bosch",
+  "subtotal": "158.0",
+  "fulfillment_status": "UNFULFILLED"
+ },
+ {
+  "order_gid": "gid://shopify/Order/7416973099328",
+  "order_legacy_id": "7416973099328",
+  "name": "89797",
+  "created_at": "2026-07-29T19:55:18Z",
+  "customer_gid": "gid://shopify/Customer/11015872479552",
+  "customer_name": "Marcelo Júnior",
+  "subtotal": "95.0",
+  "fulfillment_status": "UNFULFILLED"
+ }
+]

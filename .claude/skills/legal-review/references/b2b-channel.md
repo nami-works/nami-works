@@ -58,6 +58,17 @@ Código Civil arts. 481+ (compra e venda), 521-528 (reserva de domínio), 296 (c
 CPC art. 784 (título executivo extrajudicial) · CDC · Lei 13.709/2018 (LGPD) · Lei 12.846/2013.
 
 ## Deals seen
+- **2026-08 — B4A v2 (current deal, signing as-is)**. 5 SKUs, 80k un, R$840k. GE reviewed B4A's
+  *parceria comercial* v2, drafted a counterproposta (`gebeauty/legal/deals/2026-07_b4a-contraproposta.md`)
+  flagging 5 essenciais + a fiscal gate, but **Lucas chose to sign as-is** rather than send it — redlines
+  not sent, risks accepted knowingly. Open (accepted) exposure: no reserva de domínio/título executivo
+  (2.6 — B4A owns Produtos on receipt, GE unsecured); GE liability uncapped ex-dolo (10.1/10.4/10.5,
+  B4A capped at R$440k); 5% e-commerce cota retained (1.5, vs GE's 100%-experimentação ask); postergação
+  uncapped (5.5). **Payment terms** (resolved, matches what was agreed with B4A): each lote paid in 4x,
+  first installment D+30 from that lote's delivery, staggered Sep/2026–Apr/2027. **Fiscal**: contract's
+  compensação clause (5.2) still frames the barter at R$1.280.000,00 valor convencional netting to
+  R$840.000,00, but **GE will issue NFs at R$840k** (Lucas's operational call) — resolves the inflated-tax-base
+  risk in practice even though the contract text still describes the larger barter figure.
 - **2025-10 — B4A** (signed, client draft). *Parceria comercial*, products-as-currency, all risk+penalty
   on GE, título executivo vs GE, uncapped. Anti-model; catalog of tactics to mirror-flip.
 - **2025-11 — UauBox / Scarlet** (signed, client draft). Clean *fornecimento de mercadorias* skeleton but
