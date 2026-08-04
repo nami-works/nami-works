@@ -98,18 +98,6 @@ When we're done with it, remove the file with `git rm docs/handoff-antifrizz-rd.
 
 ---
 
-# gebeauty-stack
-
-**Surface: Claude Cowork.** The open threads (Canva per-user team seats + `/setup` update, finishing Alicia's onboarding) are coordination/docs — Cowork-fine. Note: a connector redeploy would be a Code task (local git + deploy).
-
-Read `docs/handoff-team-toolset-enablement.md` first — the full handoff from the prior session on GE Beauty team toolset enablement. It's in the connected folder (run `git pull` if it isn't there yet), and it's self-contained; don't rely on Claude memory. Absorb it, then confirm back to me in a few bullets: current production state, what's live vs pending, and the immediate next step. Don't start any work until I direct you.
-
-Context in one line: we settled the capability-placement model (org skills = setup + creative-producer for the team; connector = GE data/actions only; repo = dev/repo-integrated skills), the connector is live at connector-20260721-noskilltool, and Alicia is provisioned but blocked on installing Git. The two open threads are the Canva shared-account instability (move to per-user team seats + update /setup) and finishing Alicia's onboarding.
-
-↳ **Log upkeep (at pickup):** delete this entire `gebeauty-stack` block from `docs/_handoff-log.md` and land the removal.
-
----
-
 # landing-pages
 
 **Surface: Claude Cowork.** Caveat: building and iterating the LPs is Cowork-fine, but applying to the live GE theme/store (Asset API, metafield binding) runs through local `gebeauty/.env` — do the apply where the creds resolve (or confirm the `.env` is synced into the connected folder), otherwise hand the live-store step to a Code session.
