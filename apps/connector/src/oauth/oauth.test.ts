@@ -1,11 +1,14 @@
 import { createHash, randomBytes } from "node:crypto";
 import { describe, expect, it, beforeEach, afterEach } from "vitest";
+import { SignJWT } from "jose";
 import {
   __resetSigningKeyForTesting,
   signAccessToken,
   signClientId,
+  signRefreshToken,
   verifyAccessToken,
   verifyClientId,
+  verifyRefreshToken,
 } from "./jwt.js";
 import {
   __clearCodesForTesting,
@@ -50,6 +53,39 @@ describe("oauth/jwt access token", () => {
       ttlSeconds: -10, // already expired
     });
     expect(await verifyAccessToken(token)).toBeNull();
+  });
+});
+
+describe("oauth/jwt refresh token", () => {
+  it("signs and verifies a refresh token round-trip", async () => {
+    const token = await signRefreshToken({ tenantSlug: "gebeauty" });
+    const claims = await verifyRefreshToken(token);
+    expect(claims).not.toBeNull();
+    expect(claims?.tenant).toBe("gebeauty");
+  });
+
+  it("rejects an access token presented as a refresh token", async () => {
+    const accessToken = await signAccessToken({ tenantSlug: "gebeauty" });
+    expect(await verifyRefreshToken(accessToken)).toBeNull();
+  });
+
+  it("rejects a refresh token presented as an access token", async () => {
+    const refreshToken = await signRefreshToken({ tenantSlug: "gebeauty" });
+    expect(await verifyAccessToken(refreshToken)).toBeNull();
+  });
+
+  it("accepts a pre-rollout access token that has no `use` claim", async () => {
+    // Simulates a token issued before this claim existed, using the same
+    // signing key/issuer setup() applies for this suite.
+    const legacyToken = await new SignJWT({ tenant: "gebeauty" })
+      .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+      .setIssuer("https://mcp.nami.works")
+      .setSubject("tenant:gebeauty")
+      .setIssuedAt()
+      .setExpirationTime("24h")
+      .sign(new TextEncoder().encode("test-signing-key-for-vitest-only-12345678"));
+    const claims = await verifyAccessToken(legacyToken);
+    expect(claims?.tenant).toBe("gebeauty");
   });
 });
 
