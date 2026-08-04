@@ -20,7 +20,7 @@ after the fact). One credit per ORDER, not per customer — a customer with 2 ba
 gets 2 credit events.
 
 Every real credit/debit gets appended to the canonical ledger
-(gebeauty/retention-machine/learning/credit-ledger.jsonl) via credit_ledger.append_event(),
+(gebeauty/growth/retention-machine/learning/credit-ledger.jsonl) via credit_ledger.append_event(),
 source="ops-goodwill", per repo convention.
 
 Scope note: the clawback pass only reacts to `order.cancelledAt` (an explicit cancellation).
@@ -54,7 +54,7 @@ ROOT = HERE.parent
 MANIFEST = HERE / "cd-extrema-batch1-manifest.json"
 STATE = HERE / "issue-cd-extrema-goodwill-state.json"
 
-sys.path.insert(0, str(ROOT / "retention-machine"))
+sys.path.insert(0, str(ROOT / "growth" / "retention-machine"))
 from credit_ledger import append_event  # noqa: E402
 
 PERCENT = 0.30

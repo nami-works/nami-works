@@ -22,25 +22,6 @@ That way an item disappears from this log the moment a session takes it on, and 
 
 ---
 
-# legal_retail-contracts
-
-**Surface: Claude Cowork.** The continuation is contract review + negotiation reasoning — Cowork-fine. Two caveats: (1) the source contract PDFs live on Lucas's local `G:\Drives compartilhados\GEB_Varejo\...` share, not the connected folder — when the revised Studio Plural minuta arrives, either drop the PDF into the connected folder or hand the diff step to a Code session; (2) the diff-tooling notes in the handoff (`pdfplumber`, `python` not `python3`, PowerShell-only git) are Windows/Code specifics — ignore them on Cowork and diff however your sandbox allows.
-
-A prior session wrote a handoff document for the work I want to continue. It's written to stand alone — you will NOT have this repo's Claude memory auto-loaded, so treat the file as your complete context; don't go looking for memory files.
-
-Handoff file: `docs/handoff-legal-retail-contracts.md`, in the connected folder. If it isn't there yet, run `git pull` first (it's on origin/main).
-
-Steps:
-1. Read the full handoff.
-2. Confirm back to me, in 5 bullets or less, the state of the two contracts (CJ Fashion and Studio Plural) and what you understand the next step to be.
-3. Wait for my direction before doing anything else.
-
-When we're done with it, remove the file with `git rm docs/handoff-legal-retail-contracts.md` and commit the removal — it's ephemeral, git history preserves it. If you don't have git push access in this Cowork session, leave it and tell me; a Claude Code session will clean it up.
-
-↳ **Log upkeep (at pickup):** delete this entire `legal_retail-contracts` block from `docs/_handoff-log.md` (land the removal per the deletion note above).
-
----
-
 # email
 
 **Surface: Claude Cowork.** The machinery that used to pin this to Code (label snapshots, SENT-diff learning, lifecycle promotion, per-recipient style files, org registry) is retired, and the `/email-copilot` skill has been trimmed to a self-contained operating core — classify-inbox + intent-label + draft-via-Gmail-MCP + triage/execute gate, no local memory needed. Runs the same on Cowork or Code.
@@ -95,48 +76,3 @@ Steps:
 When we're done with it, remove the file with `git rm docs/handoff-antifrizz-rd.md` and commit the removal. If you don't have git push access in this Cowork session, leave it and tell me; a Claude Code session will clean it up.
 
 ↳ **Log upkeep (at pickup):** delete this entire `r&d_reviews` block from `docs/_handoff-log.md` (land the removal per the deletion note above).
-
----
-
-# landing-pages
-
-**Surface: Claude Cowork.** Caveat: building and iterating the LPs is Cowork-fine, but applying to the live GE theme/store (Asset API, metafield binding) runs through local `gebeauty/.env` — do the apply where the creds resolve (or confirm the `.env` is synced into the connected folder), otherwise hand the live-store step to a Code session.
-
-## lp_single-product
-
-A prior session wrote a handoff document for the work I want to continue. It stands alone — you will NOT have Claude memory auto-loaded; treat the file as your complete context.
-
-Handoff file: `docs/handoff-primer-liso-lp.md`, in the connected folder. If it isn't there yet, run `git pull` first (it's on origin/main).
-
-Steps:
-1. Read the full handoff.
-2. Confirm back to me, in 5 bullets or less, what state production is in and what you understand the next step to be.
-3. Wait for my direction before doing anything else.
-
-When done, `git rm docs/handoff-primer-liso-lp.md` and commit the removal; no push access on Cowork → leave it and tell me.
-
-## lp-builder_101
-
-A prior session wrote a handoff document for the GE Beauty landing-page / paid-conversion work I want to continue. It stands alone — you will NOT have Claude memory auto-loaded; treat the file as your complete context.
-
-Handoff file: `docs/handoff-landing-page-conversion.md`, in the connected folder. If it isn't there yet, run `git pull` first (it was pushed to origin/main at bf5b6fe).
-
-Steps:
-1. Read the full handoff.
-2. Confirm back to me, in 5 bullets or less: what state the LPs + the PDP-vs-LP A/B are in, and what you understand the next step to be.
-3. Wait for my direction before doing anything else — do not auto-start work.
-
-When done, `git rm docs/handoff-landing-page-conversion.md` and commit the removal; no push access on Cowork → leave it and tell me.
-
-## lp_multi-products
-
-A prior session wrote a handoff document for the GE Beauty landing-page work I want to continue. It stands alone — you will NOT have Claude memory auto-loaded; treat the file as your complete context.
-
-Handoff file: `docs/handoff-multi-product-lp.md`, in the connected folder. If it isn't there yet, run `git pull` (or `git checkout origin/main -- docs/handoff-multi-product-lp.md` to bring just that file without switching branches).
-
-Steps:
-1. Read the full handoff.
-2. Confirm back to me, in 5 bullets or less, what state the boosters + travel-size LPs are in and what the next step is.
-3. Wait for my direction before doing anything else.
-
-When done, `git rm docs/handoff-multi-product-lp.md` and commit the removal; no push access on Cowork → leave it and tell me.
