@@ -46,9 +46,25 @@ export type AccessTokenClaims = {
   role?: PrincipalRole;
   pid?: string; // principal id — re-resolved live on each request
   label?: string;
+  use?: "access"; // absent on tokens issued before the refresh-token rollout
   iat: number;
   exp: number;
 };
+
+// Shared by signAccessToken and signRefreshToken — same claim shape, only
+// `use` and the TTL differ, so callers can't cross-present one as the other.
+function accessClaimsPayload(args: {
+  tenantSlug: string;
+  role?: PrincipalRole;
+  principalId?: string;
+  actorLabel?: string | null;
+}): Record<string, unknown> {
+  const payload: Record<string, unknown> = { tenant: args.tenantSlug };
+  if (args.role) payload.role = args.role;
+  if (args.principalId) payload.pid = args.principalId;
+  if (args.actorLabel) payload.label = args.actorLabel;
+  return payload;
+}
 
 export async function signAccessToken(args: {
   tenantSlug: string;
@@ -58,11 +74,7 @@ export async function signAccessToken(args: {
   ttlSeconds?: number;
 }): Promise<string> {
   const ttl = args.ttlSeconds ?? 60 * 60 * 24; // 24h
-  const payload: Record<string, unknown> = { tenant: args.tenantSlug };
-  if (args.role) payload.role = args.role;
-  if (args.principalId) payload.pid = args.principalId;
-  if (args.actorLabel) payload.label = args.actorLabel;
-  return await new SignJWT(payload)
+  return await new SignJWT({ ...accessClaimsPayload(args), use: "access" })
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
     .setIssuer(ISSUER)
     .setSubject(
@@ -73,6 +85,59 @@ export async function signAccessToken(args: {
     .setIssuedAt()
     .setExpirationTime(`${ttl}s`)
     .sign(getSigningKey());
+}
+
+// ---- Refresh token: long-lived, exchanged at /oauth/token for a fresh
+// access token once the 24h access token expires. Same tenant/principal
+// claims as the access token plus `use: "refresh"` so one can never be
+// presented as the other. ----
+
+export type RefreshTokenClaims = {
+  tenant: string;
+  role?: PrincipalRole;
+  pid?: string;
+  label?: string;
+};
+
+export async function signRefreshToken(args: {
+  tenantSlug: string;
+  role?: PrincipalRole;
+  principalId?: string;
+  actorLabel?: string | null;
+  ttlSeconds?: number;
+}): Promise<string> {
+  const ttl = args.ttlSeconds ?? 60 * 60 * 24 * 30; // 30d
+  return await new SignJWT({ ...accessClaimsPayload(args), use: "refresh" })
+    .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+    .setIssuer(ISSUER)
+    .setSubject(
+      args.principalId
+        ? `principal:${args.principalId}`
+        : `tenant:${args.tenantSlug}`,
+    )
+    .setIssuedAt()
+    .setExpirationTime(`${ttl}s`)
+    .sign(getSigningKey());
+}
+
+export async function verifyRefreshToken(
+  token: string,
+): Promise<RefreshTokenClaims | null> {
+  try {
+    const { payload } = await jwtVerify(token, getSigningKey(), {
+      issuer: ISSUER,
+    });
+    if (
+      payload.use !== "refresh" ||
+      typeof payload.tenant !== "string" ||
+      payload.tenant.length === 0
+    ) {
+      return null;
+    }
+    return payload as unknown as RefreshTokenClaims;
+  } catch {
+    return null;
+  }
 }
 
 // ---- Google-login state: a short-lived signed blob that carries the MCP OAuth
@@ -137,7 +202,11 @@ export async function verifyAccessToken(
     const { payload } = await jwtVerify(token, getSigningKey(), {
       issuer: ISSUER,
     });
-    if (typeof payload.tenant !== "string" || payload.tenant.length === 0) {
+    if (
+      payload.use === "refresh" ||
+      typeof payload.tenant !== "string" ||
+      payload.tenant.length === 0
+    ) {
       return null;
     }
     return payload as unknown as AccessTokenClaims;

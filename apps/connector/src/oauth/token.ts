@@ -1,11 +1,17 @@
 import { createHash } from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { consumeCode } from "./codes.js";
-import { signAccessToken, verifyClientId } from "./jwt.js";
+import {
+  signAccessToken,
+  signRefreshToken,
+  verifyClientId,
+  verifyRefreshToken,
+} from "./jwt.js";
 
 /**
- * POST /oauth/token — exchange an authorization code (and PKCE verifier)
- * for a JWT access token.
+ * POST /oauth/token — exchange an authorization code (and PKCE verifier) for
+ * a JWT access token + refresh token, or exchange a refresh token for a new
+ * access token once the old one expires.
  *
  * Request body (application/x-www-form-urlencoded per RFC 6749):
  *   grant_type=authorization_code
@@ -14,9 +20,15 @@ import { signAccessToken, verifyClientId } from "./jwt.js";
  *   client_id=<the registered client_id JWT>
  *   code_verifier=<PKCE verifier>
  *
+ *   -- or --
+ *   grant_type=refresh_token
+ *   refresh_token=<from a prior /oauth/token response>
+ *   client_id=<the registered client_id JWT>
+ *
  * Response:
  *   {
  *     "access_token": "<JWT>",
+ *     "refresh_token": "<JWT>",
  *     "token_type": "Bearer",
  *     "expires_in": 86400,
  *     "scope": ""
@@ -33,6 +45,7 @@ function pkceMatches(verifier: string, challenge: string): boolean {
 }
 
 const TOKEN_TTL_SECONDS = 60 * 60 * 24; // 24h
+const REFRESH_TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30; // 30d
 
 function tokenError(reply: import("fastify").FastifyReply, status: number, error: string, description: string) {
   return reply.code(status).send({ error, error_description: description });
@@ -43,12 +56,57 @@ export function mountOAuthToken(app: FastifyInstance): void {
     const body = request.body as Record<string, string | undefined>;
 
     const grantType = body.grant_type;
+
+    if (grantType === "refresh_token") {
+      const refreshToken = body.refresh_token;
+      if (!refreshToken) {
+        return tokenError(
+          reply,
+          400,
+          "invalid_request",
+          "Missing required field: refresh_token.",
+        );
+      }
+      const claims = await verifyRefreshToken(refreshToken);
+      if (!claims) {
+        return tokenError(
+          reply,
+          400,
+          "invalid_grant",
+          "Refresh token is invalid, expired, or not a refresh token.",
+        );
+      }
+      const accessToken = await signAccessToken({
+        tenantSlug: claims.tenant,
+        ...(claims.role ? { role: claims.role } : {}),
+        ...(claims.pid ? { principalId: claims.pid } : {}),
+        ...(claims.label ? { actorLabel: claims.label } : {}),
+        ttlSeconds: TOKEN_TTL_SECONDS,
+      });
+      // Rotate the refresh token on every use — narrows the window a leaked
+      // one stays valid, at no extra cost since nothing server-side tracks it.
+      const newRefreshToken = await signRefreshToken({
+        tenantSlug: claims.tenant,
+        ...(claims.role ? { role: claims.role } : {}),
+        ...(claims.pid ? { principalId: claims.pid } : {}),
+        ...(claims.label ? { actorLabel: claims.label } : {}),
+        ttlSeconds: REFRESH_TOKEN_TTL_SECONDS,
+      });
+      return reply.send({
+        access_token: accessToken,
+        refresh_token: newRefreshToken,
+        token_type: "Bearer",
+        expires_in: TOKEN_TTL_SECONDS,
+        scope: "",
+      });
+    }
+
     if (grantType !== "authorization_code") {
       return tokenError(
         reply,
         400,
         "unsupported_grant_type",
-        `grant_type "${grantType ?? ""}" not supported. Only authorization_code.`,
+        `grant_type "${grantType ?? ""}" not supported. Only authorization_code and refresh_token.`,
       );
     }
 
@@ -120,9 +178,17 @@ export function mountOAuthToken(app: FastifyInstance): void {
       ...(record.actorLabel ? { actorLabel: record.actorLabel } : {}),
       ttlSeconds: TOKEN_TTL_SECONDS,
     });
+    const refreshToken = await signRefreshToken({
+      tenantSlug: record.tenantSlug,
+      ...(record.role ? { role: record.role } : {}),
+      ...(record.principalId ? { principalId: record.principalId } : {}),
+      ...(record.actorLabel ? { actorLabel: record.actorLabel } : {}),
+      ttlSeconds: REFRESH_TOKEN_TTL_SECONDS,
+    });
 
     return reply.send({
       access_token: accessToken,
+      refresh_token: refreshToken,
       token_type: "Bearer",
       expires_in: TOKEN_TTL_SECONDS,
       scope: "",
