@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "../db/prisma.js";
 import { allocate, funderUtilization, type AllocFunder, type AllocInstallment } from "../domain/allocation.js";
 
-async function loadAllocFunders(): Promise<AllocFunder[]> {
+export async function loadAllocFunders(): Promise<AllocFunder[]> {
   const funders = await prisma.funder.findMany();
   const committed = await prisma.installment.groupBy({
     by: ["funderId"],

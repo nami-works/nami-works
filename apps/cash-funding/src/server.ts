@@ -13,6 +13,7 @@ import { registerDeliveryRoutes } from "./routes/deliveries.js";
 import { registerInstallmentRoutes } from "./routes/installments.js";
 import { registerAllocationRoutes } from "./routes/allocation.js";
 import { registerOperationRoutes } from "./routes/operations.js";
+import { registerTimelineRoutes } from "./routes/timeline.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -50,6 +51,7 @@ registerDeliveryRoutes(app);
 registerInstallmentRoutes(app);
 registerAllocationRoutes(app);
 registerOperationRoutes(app);
+registerTimelineRoutes(app);
 
 const port = Number(process.env.PORT ?? 3010);
 const host = process.env.HOST ?? "0.0.0.0";

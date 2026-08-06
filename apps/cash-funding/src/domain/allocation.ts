@@ -20,12 +20,19 @@ export type AllocInstallment = {
   dataVencimento: Date;
 };
 
+export type Verdict = "green" | "yellow" | "grey";
+
 export type AllocResult = {
   installmentId: string;
   funderId: string | null; // null = no feasible funder found
   discountDate: Date;
   cost?: ReturnType<typeof computeCost>;
   reason?: string; // set when funderId is null
+  /** green = fully feasible (fundable now, matches the chosen allocation);
+   * yellow = at least one funder's tenor fits but teto/per-sacado cap is
+   * exhausted there (at this point in the cumulative processing order);
+   * grey = no funder's tenor fits at all (or already past due). */
+  verdict: Verdict;
 };
 
 export function allocate(
@@ -52,10 +59,12 @@ export function allocate(
 
   for (const inst of sorted) {
     let best: { funder: AllocFunder; cost: ReturnType<typeof computeCost> } | null = null;
+    let anyTenorOk = false;
 
     for (const funder of funders) {
       const cost = computeCost(inst.valorFace, inst.dataVencimento, discountDate, funder);
       if (cost.descontoAposVencimento || cost.excedeTenor) continue;
+      anyTenorOk = true;
 
       const usedFunder = usedPerFunder.get(funder.id) ?? 0;
       if (usedFunder + inst.valorFace > funder.tetoLinha) continue;
@@ -76,7 +85,10 @@ export function allocate(
         installmentId: inst.id,
         funderId: null,
         discountDate,
-        reason: "Nenhum funder viável (tenor, teto ou cap por sacado excedido)",
+        verdict: anyTenorOk ? "yellow" : "grey",
+        reason: anyTenorOk
+          ? "Dentro do tenor de ao menos um funder, mas teto/cap por sacado esgotado"
+          : "Fora do tenor de todos os funders (ou desconto após vencimento)",
       });
       continue;
     }
@@ -92,6 +104,7 @@ export function allocate(
       funderId: best.funder.id,
       discountDate,
       cost: best.cost,
+      verdict: "green",
     });
   }
 
@@ -100,6 +113,7 @@ export function allocate(
       installmentId: inst.id,
       funderId: null,
       discountDate,
+      verdict: "grey",
       reason: "Fora do corte (vencimento após a data de corte)",
     });
   }
