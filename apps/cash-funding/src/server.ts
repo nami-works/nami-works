@@ -6,6 +6,7 @@ import fastifyCookie from "@fastify/cookie";
 import fastifySensible from "@fastify/sensible";
 import fastifyStatic from "@fastify/static";
 import { mountGoogleAuth } from "./auth/google.js";
+import { mountDevAuth } from "./auth/dev.js";
 import { requireAuth, currentUser } from "./auth/session.js";
 import { registerFunderRoutes } from "./routes/funders.js";
 import { registerDeliveryRoutes } from "./routes/deliveries.js";
@@ -31,6 +32,7 @@ await app.register(fastifyStatic, {
 app.get("/health", async () => ({ ok: true }));
 
 mountGoogleAuth(app);
+if (process.env.NODE_ENV !== "production") mountDevAuth(app);
 
 app.get("/api/me", async (request) => {
   const user = await currentUser(request);

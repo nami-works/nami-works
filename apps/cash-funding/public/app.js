@@ -16,6 +16,7 @@ async function api(path, opts) {
 }
 
 let fundersCache = [];
+let installmentsCache = [];
 let lastSuggestion = null;
 
 async function loadMe() {
@@ -122,6 +123,7 @@ function statusBadge(status) {
 
 async function loadInstallments() {
   const installments = await api("/api/installments");
+  installmentsCache = installments;
   const body = document.getElementById("installments-body");
   body.innerHTML = installments
     .filter((i) => i.status !== "operated")
@@ -206,8 +208,10 @@ async function suggestAllocation() {
   const rows = result.results
     .map((r) => {
       const funder = r.funderId ? fundersCache.find((f) => f.id === r.funderId)?.name : null;
+      const inst = installmentsCache.find((i) => i.id === r.installmentId);
+      const label = inst ? `${inst.delivery.cliente} — ${inst.delivery.produto} #${inst.numero}` : r.installmentId;
       return `<tr>
-        <td>${r.installmentId.slice(0, 8)}</td>
+        <td>${label}</td>
         <td>${funder ?? "—"}</td>
         <td>${r.cost ? r.cost.dias : "—"}</td>
         <td class="right">${r.cost ? fmtBRL(r.cost.liquido) : "—"}</td>
