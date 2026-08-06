@@ -42,9 +42,9 @@ async function loadFunders() {
       ["iofFixoPct", "IOF fixo (%)"],
       ["tarifaOperacao", "Tarifa/operação (R$)"],
       ["tarifaTitulo", "Tarifa/título (R$)"],
-      ["tenorMaxDias", "Tenor máx (dias)"],
+      ["tenorMaxDias", "Prazo máx. (dias)"],
       ["tetoLinha", "Teto (R$)"],
-      ["perSacadoCap", "Cap por sacado (R$)"],
+      ["perSacadoCap", "Limite por sacado (R$)"],
     ];
     card.innerHTML = `
       <h3 style="margin:0 0 8px;font-size:14px;">
@@ -219,7 +219,7 @@ async function suggestAllocation() {
       </tr>`;
     })
     .join("");
-  resultsEl.innerHTML = `<table><thead><tr><th>Parcela</th><th>Funder sugerido</th><th>Dias</th><th class="right">Líquido</th><th>Obs.</th></tr></thead><tbody>${rows}</tbody></table>`;
+  resultsEl.innerHTML = `<table><thead><tr><th>Parcela</th><th>Financiador sugerido</th><th>Dias</th><th class="right">Líquido</th><th>Obs.</th></tr></thead><tbody>${rows}</tbody></table>`;
 
   document.getElementById("alloc-apply").disabled = result.results.every((r) => !r.funderId);
 }

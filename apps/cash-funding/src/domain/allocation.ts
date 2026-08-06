@@ -87,8 +87,8 @@ export function allocate(
         discountDate,
         verdict: anyTenorOk ? "yellow" : "grey",
         reason: anyTenorOk
-          ? "Dentro do tenor de ao menos um funder, mas teto/cap por sacado esgotado"
-          : "Fora do tenor de todos os funders (ou desconto após vencimento)",
+          ? "Dentro do prazo de ao menos um financiador, mas o limite (teto ou por sacado) já está esgotado"
+          : "Fora do prazo de todos os financiadores (ou desconto após o vencimento)",
       });
       continue;
     }
