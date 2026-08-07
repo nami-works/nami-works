@@ -1,0 +1,104 @@
+{
+  "_readme": "Canonical GE Beauty category taxonomy + per-marketplace crosswalk. See gebeauty/b2b/marketplace-registry-field-mapping.md decision #1: build ONE canonical tree + a thin crosswalk per marketplace, so a new marketplace only needs a new crosswalk column, not a rebuild. `null` values are genuinely unresolved — confirmed against the live registry spreadsheets read 2026-08, not guessed. Owner for filling `null`s: Lucas/growth per marketplace onboarding.",
+
+  "canonical_categories": [
+    "shampoo",
+    "mascara_condicionadora",
+    "leave_in",
+    "booster",
+    "shampoo_seco",
+    "primer",
+    "body_hair_mist",
+    "serum",
+    "kit_bundle",
+    "acessorio"
+  ],
+
+  "sku_category": {
+    "GEB 001": "shampoo",
+    "GEB 002": "mascara_condicionadora",
+    "GEB 003": "leave_in",
+    "GEB 008": "shampoo_seco",
+    "GEB 010": "mascara_condicionadora",
+    "GEB 011": "leave_in",
+    "GEB 013": "shampoo",
+    "GEB 019": "booster",
+    "GEB 020": "booster",
+    "GEB 021": "booster",
+    "GEB 022": "booster",
+    "GEB 023": "booster",
+    "GEB 024": "body_hair_mist",
+    "GEB 032": "body_hair_mist",
+    "GEB 033": "body_hair_mist",
+    "GEB 031": "body_hair_mist",
+    "GEB 029": "body_hair_mist",
+    "GEB 101": "primer",
+    "GEB 102": "primer",
+    "GEB 120": "leave_in",
+    "GEB 121": "mascara_condicionadora",
+    "GEB 122": "shampoo",
+    "GEB 123": "mascara_condicionadora",
+    "GEB 124": "leave_in",
+    "GEB 125": "kit_bundle",
+    "GEB 126": "serum",
+    "GEB 301": "shampoo",
+    "GEB 302": "mascara_condicionadora",
+    "GEB 303": "leave_in"
+  },
+
+  "marketplace_crosswalk": {
+    "amazon": {
+      "_note": "product_type = the Amazon Seller Central flat-file sheet/category (confirmed by reading the live templates, apps.md: Amazon field mapping). browse_node numeric IDs are NOT resolved — Amazon's browse taxonomy is opaque numeric IDs with no existing mapping table; flagged in the field-mapping doc as needing Lucas/comprador ownership. Do not guess these.",
+      "shampoo": { "product_type": "SHAMPOO", "browse_node": null },
+      "mascara_condicionadora": { "product_type": "CONDITIONER", "browse_node": null },
+      "leave_in": { "product_type": "HAIR_CARE_AGENT", "browse_node": null },
+      "booster": { "product_type": "HAIR_CARE_AGENT", "browse_node": null },
+      "shampoo_seco": { "product_type": "DRY_SHAMPOO", "browse_node": null },
+      "primer": { "product_type": "HAIR_STYLING_AGENT", "browse_node": null },
+      "body_hair_mist": { "product_type": "PERSONAL_FRAGRANCE", "browse_node": null },
+      "serum": { "product_type": "HAIR_CARE_AGENT", "browse_node": null },
+      "kit_bundle": { "product_type": null, "browse_node": null },
+      "acessorio": { "product_type": null, "browse_node": null }
+    },
+    "blz": {
+      "_note": "Categoria enum confirmed from the live template's 'Aux - Listas Suspensas' sheet: BZ1-Maquiagem, BZ2-Cabelos, BZ3-Skin Care, BZ4-Corpo e Banho, BZ5-Perfumes.",
+      "shampoo": "BZ2-Cabelos",
+      "mascara_condicionadora": "BZ2-Cabelos",
+      "leave_in": "BZ2-Cabelos",
+      "booster": "BZ2-Cabelos",
+      "shampoo_seco": "BZ2-Cabelos",
+      "primer": "BZ2-Cabelos",
+      "body_hair_mist": null,
+      "_body_hair_mist_note": "Ambiguous between BZ2-Cabelos (haircare positioning) and BZ5-Perfumes (fragrance-forward product) — needs Lucas's call, not guessed.",
+      "serum": "BZ2-Cabelos",
+      "kit_bundle": null,
+      "acessorio": null
+    },
+    "sephora": {
+      "_note": "Sephora's 'Categoria' field is free text, not a closed enum. gebeauty/b2b/sephora/sephora_mapper.py already defaults every haircare SKU (including body & hair mist, per its own comment 'ainda haircare at Sephora') to CABELO.",
+      "shampoo": "CABELO",
+      "mascara_condicionadora": "CABELO",
+      "leave_in": "CABELO",
+      "booster": "CABELO",
+      "shampoo_seco": "CABELO",
+      "primer": "CABELO",
+      "body_hair_mist": "CABELO",
+      "serum": "CABELO",
+      "kit_bundle": null,
+      "acessorio": null
+    },
+    "rappi": {
+      "_note": "Neither Turbo's 'Categoria' nor E-commerce's category1-3 have a confirmed finer taxonomy — only the generic 'Cosméticos' value was observed in the filled samples, and category1-3 was never populated in the one E-commerce sample available. Genuinely unresolved; needs Lucas/growth to confirm with Rappi's actual requirement docs before filling.",
+      "shampoo": null,
+      "mascara_condicionadora": null,
+      "leave_in": null,
+      "booster": null,
+      "shampoo_seco": null,
+      "primer": null,
+      "body_hair_mist": null,
+      "serum": null,
+      "kit_bundle": null,
+      "acessorio": null
+    }
+  }
+}
