@@ -32,6 +32,35 @@ Low-urgency issues discovered during operations. Fix when convenient; not blocki
 - **Fix:** debug/rebuild the Flow (trigger: order paid containing both product ids across the order's cumulative history, not just the single order — a customer often buys the two products in separate orders). Until then, a periodic re-run of the equivalent logic as a removal script is the fallback.
 - **Found:** 2026-07-31
 
+### Move store-credit issuance to real-time (purchase-triggered); demote the wave to a reminder/nudge
+- **What:** Today's store-credit issuance runs as a batch/wave well after the fact — a
+  "post-mortem" issuance built from a cohort snapshot pulled that morning, not triggered
+  at the moment each qualifying purchase/lapse event actually happens (this session's
+  August wave issued to 14,545 customers this way). Proposal: build a process so credit
+  lands on the account immediately after the triggering purchase (real-time, not batch),
+  and repurpose the existing wave/batch mechanism from *issuing* credit into a secondary
+  *reminder/nudge* — e.g. "you still have R$X, don't forget to use it" — rather than the
+  issuance event itself.
+- **Impact:** Not blocking anything active — flagged by Lucas right after the August
+  wave shipped, explicitly deferred to backlog. Needs scoping before it's buildable: the
+  reactivation program's whole premise is *lapsed* customers who haven't purchased
+  recently, so "issue immediately after purchase" doesn't map cleanly onto that mechanic
+  as-is — whoever picks this up needs to clarify with Lucas which purchase event should
+  trigger real-time issuance (a *repurchase* that ends the lapse? a *different*,
+  non-reactivation credit mechanic entirely?) before design/build starts.
+- **Fix:** Real-time trigger (order-paid webhook or a tight poll) + credit issuance
+  reusing the existing `storeCreditAccountCredit` mutation pattern already proven in
+  `gebeauty/growth/retention-machine/dual_arm_issue.py` / `issue_reactivation.py`. The
+  wave/cohort builder (`store_credit_push.py`) would shift role from primary issuance to
+  a reminder-only send referencing already-issued, unredeemed credit.
+- **Found:** 2026-08-07
+
+### Store-credit email intro text needs to adapt to the new recs layout (Lucas, 2026-08-04)
+- **What:** the general intro line above the recs block ("Reabasteça seu essencial ou dê o próximo passo na jornada do cabelo saudável.") was written for the old 3-mist block and now sits directly above the recs section's own punchline ("Dê o próximo passo na jornada do cabelo saudável ou se reabasteça!") — near-duplicate messaging back to back.
+- **Impact:** redundant copy once the missing-mascara/missing-shampoo/core-target recs redesign ships; not blocking mockup iteration.
+- **Fix:** rework the intro line once the recs-block copy is finalized across all three segments, so the two lines complement rather than repeat each other.
+- **Found:** 2026-08-04
+
 ---
 
 ## B2B registrations
