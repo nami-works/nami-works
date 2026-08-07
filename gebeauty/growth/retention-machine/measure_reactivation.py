@@ -29,7 +29,8 @@ WAVES = ["2026-07-06-ge60d", "2026-07-07-ge45-59d-refill"]
 sys.stdout.reconfigure(encoding="utf-8")   # readout uses − / R$ etc.; avoid cp1252 console crash
 def log(*a): print(*a); sys.stdout.flush()
 env = {}
-for line in (TEN / ".env").read_text(encoding="utf-8").splitlines():
+ENV_FILE = TEN / ".env" if (TEN / ".env").exists() else TEN.parent / ".env"
+for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
     line = line.strip()
     if line and not line.startswith("#") and "=" in line:
         k, v = line.split("=", 1); env[k.strip()] = v.strip()
