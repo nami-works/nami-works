@@ -16,7 +16,10 @@ HERE = Path(__file__).resolve().parent
 TEN = HERE.parent
 CACHE = HERE / "_cache"; CACHE.mkdir(exist_ok=True)
 CFG = json.loads((HERE / "config.json").read_text(encoding="utf-8"))
+# retention-machine moved gebeauty/retention-machine -> gebeauty/growth/retention-machine;
+# scripts/ lives at the repo-tenant root (gebeauty/), which is TEN.parent now, not TEN.
 sys.path.insert(0, str(TEN / "scripts"))
+sys.path.insert(0, str(TEN.parent / "scripts"))
 import openpyxl
 from build_zoko_list import curate_name, build_firstname_freq, SENTINEL
 
@@ -26,7 +29,8 @@ CEIL = 120.0; FLOOR = 10.0; PCT = 0.20
 def log(*a): print(*a); sys.stdout.flush()
 
 env = {}
-for line in (TEN / ".env").read_text(encoding="utf-8").splitlines():
+ENV_FILE = TEN / ".env" if (TEN / ".env").exists() else TEN.parent / ".env"
+for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
     line = line.strip()
     if line and not line.startswith("#") and "=" in line:
         k, v = line.split("=", 1); env[k.strip()] = v.strip()
