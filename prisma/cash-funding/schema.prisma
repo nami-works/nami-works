@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+  // Custom output so this schema's client can coexist with the connector's
+  // and omnify's — same trick used across the monorepo (see prisma/connector).
+  output   = "../../node_modules/@prisma/client-cash-funding"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum FunderType {
+  bank
+  fidc
+}
+
+enum PaymentCalendar {
+  corrido
+  terca_3_25
+}
+
+enum DeliveryStatus {
+  planned
+  invoiced
+  received
+}
+
+enum InstallmentStatus {
+  open // no discount date / funder assigned yet
+  planned // discount date + funder assigned (simulation), not yet executed
+  operated // linked to an executed Operation
+}
+
+// Invited team member. Google OAuth login is gated against this table by
+// verified email — see src/auth/google.ts. No password: sign-in is Google-only.
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  googleSub String? // bound on first successful login; prevents email reuse under a different Google account
+  status    String   @default("active") // active | disabled
+  createdAt DateTime @default(now())
+}
+
+// A funder's commercial params. Editable in-app (rates aren't stable yet,
+// esp. Ghia — see handoff open items).
+model Funder {
+  id              String     @id @default(cuid())
+  name            String     @unique
+  type            FunderType
+  taxaAmPct       Decimal    @db.Decimal(8, 5) // taxa a.m., e.g. 1.72 = 1.72%
+  iofDiarioPct    Decimal    @db.Decimal(8, 6) // % per day
+  iofFixoPct      Decimal    @db.Decimal(8, 5) // % flat
+  tarifaOperacao  Decimal    @db.Decimal(12, 2) // flat fee per operation (e.g. Itaú TAC)
+  tarifaTitulo    Decimal    @db.Decimal(12, 2) // flat fee per installment/título
+  tenorMaxDias    Int
+  tetoLinha       Decimal    @db.Decimal(14, 2)
+  perSacadoCap    Decimal?   @db.Decimal(14, 2) // e.g. Ghia's R$250k per sacado
+  recourse        Boolean    @default(true)
+  costsConfirmed  Boolean    @default(true) // false = Ghia-style estimate, flag in UI
+  notes           String?
+  installments    Installment[]
+  operations      Operation[]
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+// A negotiated delivery (entrega) to a customer. Installments are generated
+// from this row and regenerated whenever it's edited.
+model Delivery {
+  id             String          @id @default(cuid())
+  cliente        String
+  cnpjSacado     String // groups deliveries under one sacado for cap checks (e.g. Ghia per-sacado)
+  produto        String
+  qtd            Int
+  precoUnit      Decimal         @db.Decimal(12, 4)
+  total          Decimal         @db.Decimal(14, 2)
+  numParcelas    Int
+  firstOffsetDias Int
+  intervalDias   Int
+  calendar       PaymentCalendar
+  dataEntrega    DateTime        @db.Date
+  status         DeliveryStatus  @default(planned)
+  notes          String?
+  installments   Installment[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+// One payment of a delivery. dataVencimento is computed server-side from the
+// delivery's calendar rule and never hand-edited; dataDesconto + funderId are
+// the interactive simulation fields.
+model Installment {
+  id             String            @id @default(cuid())
+  delivery       Delivery          @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  deliveryId     String
+  numero         Int // 1..N within the delivery
+  valorFace      Decimal           @db.Decimal(14, 2)
+  dataVencimento DateTime          @db.Date
+  dataDesconto   DateTime?         @db.Date
+  funder         Funder?           @relation(fields: [funderId], references: [id])
+  funderId       String?
+  status         InstallmentStatus @default(open)
+  operation      Operation?        @relation(fields: [operationId], references: [id])
+  operationId    String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@unique([deliveryId, numero])
+}
+
+// An executed drawdown (one or more installments actually sold to a funder).
+// Kept separate from the planning fields above so historical bookings (like
+// op 1359525753, booked before a delivery revision) don't have to reconcile
+// 1:1 with today's installment rows — see handoff's "R$70k gap" open item.
+model Operation {
+  id                  String        @id @default(cuid())
+  funder              Funder        @relation(fields: [funderId], references: [id])
+  funderId            String
+  opNumero             String?       @unique // external reference, e.g. bank's operation number
+  dataOperacao        DateTime      @db.Date
+  faceTotal           Decimal       @db.Decimal(14, 2)
+  juros               Decimal       @db.Decimal(14, 2)
+  iof                 Decimal       @db.Decimal(14, 2)
+  tarifas             Decimal       @db.Decimal(14, 2)
+  custoTotal          Decimal       @db.Decimal(14, 2)
+  liquido             Decimal       @db.Decimal(14, 2)
+  dataVencimentoFinal DateTime      @db.Date
+  notes               String?
+  installments        Installment[]
+  createdAt           DateTime      @default(now())
+}

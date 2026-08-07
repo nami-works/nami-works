@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Antecipação de Recebíveis — GE Beauty</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Antecipação de Recebíveis</h1>
+      <div class="muted">GE Cosméticos LTDA</div>
+    </div>
+    <div>
+      <span id="me" class="muted"></span>
+      <button class="btn btn-sm" id="logout">Sair</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="utilization-section">
+      <h2>Utilização por financiador</h2>
+      <div id="utilization"></div>
+    </section>
+
+    <section id="funders-section">
+      <h2>Parâmetros dos financiadores</h2>
+      <div id="funders"></div>
+    </section>
+
+    <section id="allocation-section">
+      <h2>Motor de alocação</h2>
+      <div class="toolbar">
+        <label>Data de desconto
+          <input type="date" id="alloc-discount-date" />
+        </label>
+        <label>Corte (opcional)
+          <input type="date" id="alloc-cutoff-date" />
+        </label>
+        <button class="btn btn-primary" id="alloc-suggest">Sugerir alocação</button>
+        <button class="btn" id="alloc-apply" disabled>Aplicar sugestão</button>
+      </div>
+      <div id="alloc-totals" class="totals"></div>
+      <div id="alloc-results"></div>
+    </section>
+
+    <section id="installments-section">
+      <h2>Parcelas abertas / planejadas</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Sacado</th><th>Produto</th><th>Nº</th><th>Vencimento</th>
+            <th class="right">Valor</th><th>Financiador</th><th>Data desconto</th>
+            <th class="right">Líquido</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="installments-body"></tbody>
+      </table>
+    </section>
+
+    <section id="deliveries-section">
+      <h2>Entregas</h2>
+      <table>
+        <thead>
+          <tr><th>Sacado</th><th>Produto</th><th class="right">Total</th><th>Parcelas</th><th>Calendário</th><th>Entrega</th><th>Status</th></tr>
+        </thead>
+        <tbody id="deliveries-body"></tbody>
+      </table>
+    </section>
+
+    <section id="operations-section">
+      <h2>Operações executadas</h2>
+      <table>
+        <thead>
+          <tr><th>Nº op</th><th>Financiador</th><th>Data</th><th class="right">Face</th><th class="right">Custo</th><th class="right">Líquido</th><th>Venc. final</th></tr>
+        </thead>
+        <tbody id="operations-body"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
