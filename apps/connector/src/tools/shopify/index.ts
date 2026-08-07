@@ -5,6 +5,8 @@ import "./list-todays-orders.js";
 import "./update-product-price.js";
 import "./apply-price-tag.js";
 import "./generate-marketplace-registry.js";
+import "./assign-product-badges.js";
+import "./list-dead-collections.js";
 import "./update-theme-banner.js";
 import "./create-discount-code.js";
 import "./issue-store-credit.js";
