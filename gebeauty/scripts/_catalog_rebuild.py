@@ -4,10 +4,11 @@ Model: Shopify is canonical for store-facing fields (title, EAN, price,
 status, productType, NCM, tagline). Omie (fiscal: cest) and Unilog (logistics:
 dimensions_mm, units_per_carton, shelf_life_*, net/gross weight) remain the
 system of record for their fields, so those are preserved from the current
-products.json rather than overwritten.
+products.json rather than overwritten. Raphael/regulatory owns the inci/
+free_of/vegan/anvisa_* fields the same way — nothing on Shopify sources them.
 
-Output: canonical row = live Shopify store-fields  +  preserved Omie/Unilog
-fields  +  a `core` flag (product=core, acessorio=non-core) + provenance.
+Output: canonical row = live Shopify store-fields  +  preserved Omie/Unilog/
+regulatory fields  +  a `core` flag (product=core, acessorio=non-core) + provenance.
 
 SKUs that exist in the current products.json but NOT on Shopify (B2B-only:
 sachês, not-yet-created SKUs) are carried forward with on_shopify=false so the
@@ -23,9 +24,10 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 
-# Fields Omie/Unilog own — preserved from existing products.json, not from Shopify.
+# Fields Omie/Unilog/Raphael own — preserved from existing products.json, not from Shopify.
 PRESERVE = ["cest", "dimensions_mm", "units_per_carton", "shelf_life_days",
-            "shelf_life_expedicao_days", "net_weight_g", "gross_weight_g"]
+            "shelf_life_expedicao_days", "net_weight_g", "gross_weight_g",
+            "inci", "free_of", "vegan", "anvisa_process", "anvisa_expiry"]
 
 
 def norm_ean_join(v):

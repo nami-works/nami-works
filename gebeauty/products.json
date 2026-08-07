@@ -16,7 +16,12 @@
     "units_per_carton": 36,
     "description_short_pt": null,
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 002",
@@ -35,7 +40,12 @@
     "units_per_carton": 36,
     "description_short_pt": null,
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 003",
@@ -54,7 +64,12 @@
     "units_per_carton": 36,
     "description_short_pt": null,
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": "25351.083951/2020-17",
+    "anvisa_expiry": "3 anos a partir da fabricação"
   },
   {
     "sku": "GEB 008",
@@ -73,7 +88,12 @@
     "units_per_carton": 20,
     "description_short_pt": null,
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": "25351.460673/2023-61",
+    "anvisa_expiry": "3 anos a partir da fabricação"
   },
   {
     "sku": "GEB 010",
@@ -92,7 +112,12 @@
     },
     "units_per_carton": 49,
     "description_short_pt": null,
-    "description_long_pt": null
+    "description_long_pt": null,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": "25351.083949/2020-30",
+    "anvisa_expiry": "3 anos a partir da fabricação"
   },
   {
     "sku": "GEB 011",
@@ -111,7 +136,12 @@
     },
     "units_per_carton": 49,
     "description_short_pt": null,
-    "description_long_pt": null
+    "description_long_pt": null,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 013",
@@ -130,7 +160,12 @@
     },
     "units_per_carton": 49,
     "description_short_pt": null,
-    "description_long_pt": null
+    "description_long_pt": null,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": "25351.083906/2020-54",
+    "anvisa_expiry": "3 anos a partir da fabricação"
   },
   {
     "sku": "GEB 019",
@@ -149,7 +184,12 @@
     "units_per_carton": 260,
     "description_short_pt": null,
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 020",
@@ -168,7 +208,12 @@
     "units_per_carton": 260,
     "description_short_pt": null,
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 021",
@@ -187,7 +232,12 @@
     "units_per_carton": 260,
     "description_short_pt": null,
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 022",
@@ -206,7 +256,12 @@
     "units_per_carton": 260,
     "description_short_pt": null,
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": "25351.441312/2024-04",
+    "anvisa_expiry": "3 anos a partir da fabricação"
   },
   {
     "sku": "GEB 023",
@@ -225,7 +280,12 @@
     "units_per_carton": 260,
     "description_short_pt": null,
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 024",
@@ -244,7 +304,12 @@
     "units_per_carton": 36,
     "description_short_pt": null,
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 032",
@@ -263,7 +328,12 @@
     "units_per_carton": 36,
     "description_short_pt": "Rose Ritual = bruma perfumada p/ cabelo e corpo c/ fragrância de rosas, musk e sândalo. Realça brilho sem pesar. Pele hidratada e macia.",
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 033",
@@ -282,7 +352,12 @@
     "units_per_carton": 36,
     "description_short_pt": "Pear Fresh = bruma perfumada p/ cabelo e corpo c/ fragrância de pêra, frésia e lírio.",
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 031",
@@ -301,7 +376,12 @@
     "units_per_carton": 36,
     "description_short_pt": "Santal Skin = bruma perfumada p/ cabelo e corpo c/ fragrância de sândalo, cardamomo e patchouli.",
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 029",
@@ -320,7 +400,12 @@
     "units_per_carton": 36,
     "description_short_pt": null,
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 101",
@@ -339,7 +424,12 @@
     "units_per_carton": 12,
     "description_short_pt": null,
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 102",
@@ -358,7 +448,12 @@
     "units_per_carton": 12,
     "description_short_pt": null,
     "description_long_pt": null,
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 120",
@@ -377,7 +472,12 @@
     "units_per_carton": 12,
     "description_short_pt": "Fluido multifuncional em spray. Leveza potente para todos os momentos.",
     "description_long_pt": "O Leave-in Pluma foi criado para ser tudo o que você espera de um finalizador — e mais um pouco. Com uma fórmula leve como uma pluma, mas cheia de potência, ele hidrata, repara, protege e dá brilho sem pesar nos fios, nem na sua rotina. Ideal para quem busca praticidade, multifuncionalidade e liberdade no cuidado com o cabelo.",
-    "shelf_life_expedicao_days": 180
+    "shelf_life_expedicao_days": 180,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 121",
@@ -396,7 +496,12 @@
     },
     "units_per_carton": 9,
     "description_short_pt": null,
-    "description_long_pt": null
+    "description_long_pt": null,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 122",
@@ -415,7 +520,12 @@
     },
     "units_per_carton": 36,
     "description_short_pt": null,
-    "description_long_pt": null
+    "description_long_pt": null,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 123",
@@ -434,7 +544,12 @@
     },
     "units_per_carton": 36,
     "description_short_pt": null,
-    "description_long_pt": null
+    "description_long_pt": null,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 124",
@@ -453,7 +568,12 @@
     },
     "units_per_carton": 36,
     "description_short_pt": null,
-    "description_long_pt": null
+    "description_long_pt": null,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 125",
@@ -468,7 +588,12 @@
     "dimensions_mm": null,
     "units_per_carton": null,
     "description_short_pt": null,
-    "description_long_pt": null
+    "description_long_pt": null,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 126",
@@ -487,7 +612,12 @@
     },
     "units_per_carton": null,
     "description_short_pt": null,
-    "description_long_pt": null
+    "description_long_pt": null,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 301",
@@ -506,7 +636,12 @@
     },
     "units_per_carton": null,
     "description_short_pt": null,
-    "description_long_pt": null
+    "description_long_pt": null,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 302",
@@ -525,7 +660,12 @@
     },
     "units_per_carton": null,
     "description_short_pt": null,
-    "description_long_pt": null
+    "description_long_pt": null,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   },
   {
     "sku": "GEB 303",
@@ -544,6 +684,11 @@
     },
     "units_per_carton": null,
     "description_short_pt": null,
-    "description_long_pt": null
+    "description_long_pt": null,
+    "inci": null,
+    "free_of": [],
+    "vegan": null,
+    "anvisa_process": null,
+    "anvisa_expiry": null
   }
 ]
