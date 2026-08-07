@@ -4,6 +4,7 @@ import "./find-customer.js";
 import "./list-todays-orders.js";
 import "./update-product-price.js";
 import "./apply-price-tag.js";
+import "./generate-marketplace-registry.js";
 import "./update-theme-banner.js";
 import "./create-discount-code.js";
 import "./issue-store-credit.js";
