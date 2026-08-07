@@ -55,6 +55,27 @@ Low-urgency issues discovered during operations. Fix when convenient; not blocki
   a reminder-only send referencing already-issued, unredeemed credit.
 - **Found:** 2026-08-07
 
+### Snapshot segment tags at issuance time, not reconstruct them after the fact
+- **What:** `core-target`/`missing-mascara`/`missing-shampoo` tags are removed by a
+  Shopify Flow once a customer's underlying condition resolves (they buy the missing
+  product) — so a live tag query can never reconstruct which segment a customer was
+  actually in AT SEND TIME for a wave that already fired. The August wave
+  (`2026-08-07-ge60d`) didn't capture this at issuance; patched same-day with a one-off
+  bulk-tag export filtered to the 16,143 wave members
+  (`learning/segment-tags-snapshot-2026-08-07-ge60d.jsonl`), which is only a same-day
+  proxy (taken hours after send — any customer who already converted and had their tag
+  flipped in that window is invisible to it too).
+- **Impact:** Every future wave has the same blind spot unless fixed at the source.
+  Doesn't block the August wave's readout (day-0 numbers don't depend on segment
+  breakdown yet), but segment-cut lift analysis on THIS wave rests on an imperfect
+  proxy, and every subsequent wave will repeat the gap unless the issuance script itself
+  changes.
+- **Fix:** Inside `dual_arm_issue.py` / `issue_reactivation.py` (or their successors),
+  read and stamp each customer's seg/ctx-relevant tags into the per-row record written to
+  `sends.jsonl` at the moment of issuance — no separate snapshot step, no reconstruction
+  needed later.
+- **Found:** 2026-08-07
+
 ### Store-credit email intro text needs to adapt to the new recs layout (Lucas, 2026-08-04)
 - **What:** the general intro line above the recs block ("Reabasteça seu essencial ou dê o próximo passo na jornada do cabelo saudável.") was written for the old 3-mist block and now sits directly above the recs section's own punchline ("Dê o próximo passo na jornada do cabelo saudável ou se reabasteça!") — near-duplicate messaging back to back.
 - **Impact:** redundant copy once the missing-mascara/missing-shampoo/core-target recs redesign ships; not blocking mockup iteration.

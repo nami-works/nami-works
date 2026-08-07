@@ -100,6 +100,28 @@ Sub-programs tracked under this one file:
   "loyal"); if tier-specific QA is ever needed, it requires picking/creating a customer
   whose real order history matches the target tier. Logged as `source=manual` rows in
   `credit-ledger.jsonl`, tagged `dual-arm-2026-08`.
+- 2026-08-07 — **Segment-tag drift gap caught and partially patched.** Lucas flagged that
+  `core-target`/`missing-mascara`/`missing-shampoo` tags are auto-removed by a Shopify
+  Flow once the underlying condition resolves (customer buys the missing product), so a
+  live tag query can never reconstruct point-in-time segment membership at send time --
+  nothing built this session captured that at the moment of issuance. Patched same-day
+  with a one-time snapshot: bulk-exported tags for all 150,147 customers
+  (`BulkOperation/7687364346176`), filtered to the 16,143 wave members (14,545 SEND +
+  1,598 HOLD), wrote `learning/segment-tags-snapshot-2026-08-07-ge60d.jsonl` (gid, wave,
+  snapshot_at, seg_tags, ctx_tags, all_tags). Distribution: core-target 12,869,
+  missing-mascara 959, missing-shampoo 579, no seg tag 3,273 (out of 16,143). No
+  ctx-relevant tags (`credit-goodwill`/`credit-reactivation`/`credit-refill`) found on
+  any customer -- ctx in the email template is resolved from order/credit metadata at
+  render time, not stamped as a standing customer tag, so there's nothing to snapshot on
+  that axis.
+  **Caveat, not a fix:** this is a same-day proxy, not a true point-in-time capture --
+  taken ~hours after the wave fired, so any customer who already bought within that
+  window and had their tag flipped by the Flow is invisible to this snapshot too (drift
+  had already started). Good enough for THIS wave given the short elapsed time; NOT a
+  durable solution. For every future wave, the real fix is to snapshot each customer's
+  seg/ctx tags into `sends.jsonl` (or a sibling file) AT THE MOMENT OF ISSUANCE, inside
+  `dual_arm_issue.py` / `issue_reactivation.py` itself, not reconstructed after the fact.
+  Logged as a build item for whoever picks up the next wave's issuance script.
 - 2026-08-07 — Both layered experiments died before producing any data: H-CALENDAR-02
   (successor to H-CALENDAR-01, wave-launch-date effect) was killed first ("we won't test
   the send tomorrow... only test will be PAW timing test"), then H-TIMING-01 itself was
