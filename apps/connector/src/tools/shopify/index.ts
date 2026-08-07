@@ -7,6 +7,8 @@ import "./apply-price-tag.js";
 import "./generate-marketplace-registry.js";
 import "./assign-product-badges.js";
 import "./list-dead-collections.js";
+import "./audit-promotional-consistency.js";
+import "./verify-campaign-price-alignment.js";
 import "./update-theme-banner.js";
 import "./create-discount-code.js";
 import "./issue-store-credit.js";
