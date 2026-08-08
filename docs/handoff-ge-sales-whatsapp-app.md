@@ -64,19 +64,27 @@
    `orders/create` webhook, Polaris UI, install + smoke test on GE Beauty's store,
    cutover from the manual Excel process. Needs Partner-dashboard/dev-store access this
    Cowork sandbox doesn't have — that's why this is a Code handoff.
-2. **Real-time store-credit issuance** (started same session, right after this handoff
-   — check `gebeauty/growth/retention-machine/` for a new script, most likely named
-   `issue_just_bought.py`, and check whether a scheduled task named around
-   `issue-just-bought`/`store-credit-just-bought` was created). Trigger: an existing
-   Shopify Flow ("Tag customer just-bought on order paid") already tags a customer
-   `just-bought` when their order is paid — see screenshot context in conversation, not
-   re-attachable here, but the Flow is real and live in Shopify today. The new script's
-   job every 15 min: pull customers tagged `just-bought`, issue credit per the
-   established 20% rule (`PCT=0.20, CEIL=120.0, FLOOR=10.0` — see
-   `store_credit_push.py` line ~28, reused as-is for consistency), remove the tag.
-   **Verify this actually got built and scheduled** — if it didn't, that's the very
-   next thing to do, and the design notes above (idempotency via an append-only ledger
-   keyed on order id, not just the tag) are the load-bearing part to get right.
+2. **DONE, same session, right after this handoff was first written:**
+   `gebeauty/growth/retention-machine/issue_just_bought.py` — real-time store-credit
+   issuance, triggered off an existing Shopify Flow ("Tag customer just-bought on order
+   paid") that tags a customer `just-bought` the instant their order is paid. The
+   script: pulls customers tagged `just-bought`, issues credit per the established 20%
+   rule (`PCT=0.20, CEIL=120.0, FLOOR=10.0` — same constants as `store_credit_push.py`
+   line ~28), assigns each customer to a 30/45/60-day expiry arm (independent GID hash,
+   own salt) tagged for recurrency tracking (`just-bought-credit-{30,45,60}d`), notifies
+   via the existing template reusing `credit-goodwill` as a ctx stopgap, and removes the
+   `just-bought` tag once handled. Idempotency is ledger-based (order id, append-only —
+   see Context section below), NOT tag-based, because Shopify's customer-search index
+   (what `tag:'just-bought'` queries against) is eventually consistent — confirmed live
+   during testing, a customer can still show up in that query for a short window after
+   the tag was actually removed. Ran live against 19 real customers this session, zero
+   errors, idempotency re-verified on a second run. Scheduled as
+   `issue-just-bought-credit`, cron `*/15 * * * *`, `notifyOnCompletion: false` (15-min
+   cadence would be too noisy otherwise) — task file at
+   `C:\Users\Lucas Guimarães\Claude\Scheduled\issue-just-bought-credit\SKILL.md`.
+   **Next session should just watch this**, not rebuild it — check the ledger
+   (`learning/just-bought-issued.jsonl`, gitignored/PII) for real production behavior
+   over the following days before considering it fully proven.
 3. **Git status oddity, unresolved.** After this session's plumbing-commit work,
    `git status --porcelain=v2` reports a handful of paths in
    `gebeauty/growth/retention-machine/` (`dual_arm_issue.py`, `dual_arm_split.py`,
