@@ -55,9 +55,16 @@ designed as standing infrastructure for every future wave, not a one-off.
   `build_retail_wa_list.py` rather than re-deriving it), wa.me link, Status
   (Contatado/Vendeu/Sem resposta — auto-flips to done once the webhook marks
   `converted_at`, rep doesn't have to self-report a sale that already shows in Shopify).
-- **Cohort source**: any wave's SEND list with live balance > 0 (same eligibility check
-  `build_retail_wa_list.py` already does) — parameterized by wave id so this wired once,
-  reused every future wave without a rebuild.
+- **Cohort source**: query Shopify directly for customers carrying the active wave tag
+  (`retention-reactivation_<date>`, already stamped by `retag_arms.py`) with live
+  store-credit balance > 0 — no shared DB or API between the app and the Python
+  issuance pipeline, the Shopify tag + balance IS the interface.
+- **Active wave tag: hardcoded first, editable later** (Lucas, 2026-08-07). v1 ships
+  with the current wave's tag as a literal constant in the app; don't build an admin
+  settings UI for it until there's a second wave to prove the pattern needs to change
+  without a redeploy. Sequencing, not a design compromise — the tag-based interface
+  above is the real decision; whether that tag lives in code or a settings field is a
+  cheap thing to change later.
 
 ## Phases
 
@@ -66,9 +73,10 @@ designed as standing infrastructure for every future wave, not a one-off.
 - [ ] 2. Scaffold the custom Shopify app: App Bridge + session-token auth, its own small
       Postgres/Prisma schema, deploy target (reuse the Lightsail pattern already proven
       by `apps/omnify-admin` unless there's a reason not to).
-- [ ] 3. Cohort ingestion: read a wave's SEND list + live Shopify balance/address/last-
-      orders, port the region-bucketing + repor/descobrir recommendation logic from
-      `build_retail_wa_list.py` into the app's backend.
+- [ ] 3. Cohort ingestion: hardcode the active wave tag as a constant, query Shopify
+      for tagged customers + live balance/address/last-orders, port the region-bucketing
+      + repor/descobrir recommendation logic from `build_retail_wa_list.py` into the
+      app's backend.
 - [ ] 4. `orders/create` webhook wired: HMAC-verified, matches against the active
       contact list, flips `status` the instant a match orders.
 - [ ] 5. Polaris UI: filterable/sortable table, wa.me links with the pre-filled message,
@@ -79,6 +87,8 @@ designed as standing infrastructure for every future wave, not a one-off.
 - [ ] 7. Cutover: retire the manual Excel-export process (`build_retail_wa_list.py`) for
       future waves once this is proven — keep the script itself as a fallback/reference,
       don't delete it.
+- [ ] 8. Make the active wave tag admin-editable (settings field, no redeploy) once a
+      second wave needs to swap it in — not before; premature to build until proven.
 
 ## Notes
 
