@@ -32,28 +32,31 @@ Low-urgency issues discovered during operations. Fix when convenient; not blocki
 - **Fix:** debug/rebuild the Flow (trigger: order paid containing both product ids across the order's cumulative history, not just the single order — a customer often buys the two products in separate orders). Until then, a periodic re-run of the equivalent logic as a removal script is the fallback.
 - **Found:** 2026-07-31
 
-### Move store-credit issuance to real-time (purchase-triggered); demote the wave to a reminder/nudge
+### Move store-credit issuance to real-time (purchase-triggered) — IN PROGRESS
 - **What:** Today's store-credit issuance runs as a batch/wave well after the fact — a
   "post-mortem" issuance built from a cohort snapshot pulled that morning, not triggered
-  at the moment each qualifying purchase/lapse event actually happens (this session's
-  August wave issued to 14,545 customers this way). Proposal: build a process so credit
-  lands on the account immediately after the triggering purchase (real-time, not batch),
-  and repurpose the existing wave/batch mechanism from *issuing* credit into a secondary
-  *reminder/nudge* — e.g. "you still have R$X, don't forget to use it" — rather than the
-  issuance event itself.
-- **Impact:** Not blocking anything active — flagged by Lucas right after the August
-  wave shipped, explicitly deferred to backlog. Needs scoping before it's buildable: the
-  reactivation program's whole premise is *lapsed* customers who haven't purchased
-  recently, so "issue immediately after purchase" doesn't map cleanly onto that mechanic
-  as-is — whoever picks this up needs to clarify with Lucas which purchase event should
-  trigger real-time issuance (a *repurchase* that ends the lapse? a *different*,
-  non-reactivation credit mechanic entirely?) before design/build starts.
-- **Fix:** Real-time trigger (order-paid webhook or a tight poll) + credit issuance
-  reusing the existing `storeCreditAccountCredit` mutation pattern already proven in
-  `gebeauty/growth/retention-machine/dual_arm_issue.py` / `issue_reactivation.py`. The
-  wave/cohort builder (`store_credit_push.py`) would shift role from primary issuance to
-  a reminder-only send referencing already-issued, unredeemed credit.
-- **Found:** 2026-08-07
+  at the moment each qualifying purchase happens (this session's August wave issued to
+  14,545 customers this way). RESOLVED DIRECTION (Lucas, 2026-08-08): not a repurchase-
+  ends-lapse mechanic — a straight purchase-triggered cashback. A Shopify Flow ("Tag
+  customer just-bought on order paid") already tags a customer `just-bought` the moment
+  their order is paid; a poller reads that tag, issues 20%-rule credit, removes the tag.
+  Wave/batch issuance is NOT being retired yet — this runs alongside it for now.
+- **Impact:** Actively being built 2026-08-08, not just backlogged. See
+  `gebeauty/growth/retention-machine/issue_just_bought.py` (poller) and the scheduled
+  task wired to run it every 15 minutes.
+- **Fix:** Real-time poll (every 15 min, not a webhook — the Flow already does the
+  event-detection via the tag, so no new webhook infra needed for this half) + credit
+  issuance reusing the existing `storeCreditAccountCredit` mutation pattern proven in
+  `dual_arm_issue.py`. Idempotency via an append-only ledger keyed on order id (NOT the
+  tag alone) — this session's duplicate-issuance bug (see Notes in
+  `.claude/initiatives/retention-experiments.md`) is the reason for that design.
+- **Known follow-on, not yet designed:** the store-credit notification email's `ctx`
+  logic (goodwill/reactivation/refill) doesn't have a variant for "just bought, here's
+  cashback" — needs new copy before `notify=true` on this flow says something sensible.
+  Also: once credit arrives continuously rather than in an announced batch, customers
+  need a *reminder* mechanism (as credit nears expiry) that doesn't exist yet — flagged
+  by Lucas as a real, separate follow-on.
+- **Found:** 2026-08-07. **Started:** 2026-08-08.
 
 ### Snapshot segment tags at issuance time, not reconstruct them after the fact
 - **What:** `core-target`/`missing-mascara`/`missing-shampoo` tags are removed by a
