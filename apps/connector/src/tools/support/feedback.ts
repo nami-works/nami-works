@@ -5,8 +5,8 @@ import { registerToolDefinition } from "../../mcp/registry.js";
 import type { ToolContext, ToolResult } from "../../mcp/types.js";
 
 /**
- * Operator feedback capture. Writes a row to the Feedback table; NAMI Works
- * admins review via `npm run feedback-review`.
+ * Operator feedback capture. Writes a row to the Feedback table; the admin
+ * team reviews via `npm run feedback-review`.
  *
  * Designed for use FROM WITHIN claude.ai conversations. The connector's
  * serverInfo instructions advertise the tool so operators learn the magic
@@ -29,7 +29,7 @@ const FEEDBACK_CATEGORIES = [
   "other",
 ] as const;
 
-export async function namiFeedbackHandler(
+export async function mcpFeedbackHandler(
   args: {
     message: string;
     category?: (typeof FEEDBACK_CATEGORIES)[number] | undefined;
@@ -45,7 +45,7 @@ export async function namiFeedbackHandler(
       content: [
         {
           type: "text",
-          text: "Feedback message is too short (minimum 5 chars). Give NAMI Works enough context to act on it.",
+          text: "Feedback message is too short (minimum 5 chars). Give the team enough context to act on it.",
         },
       ],
       isError: true,
@@ -82,8 +82,8 @@ export async function namiFeedbackHandler(
           type: "text",
           text:
             `✓ Feedback registered for ${ctx.tenant.slug} (id: ${row.id}, category: ${category}). ` +
-            `NAMI Works reviews the queue weekly. ` +
-            `If this is urgent, also ping lucas@nami.works directly.`,
+            `The team reviews the queue weekly. ` +
+            `If this is urgent, also ping lucas@gebeauty.com.br directly.`,
         },
       ],
     };
@@ -98,7 +98,7 @@ export async function namiFeedbackHandler(
             type: "text",
             text:
               "Feedback system is registered in the gateway but the underlying table doesn't exist on this environment yet. " +
-              "Your message wasn't lost — it's been logged. Please ping lucas@nami.works directly with the same message until the migration lands.",
+              "Your message wasn't lost — it's been logged. Please ping lucas@gebeauty.com.br directly with the same message until the migration lands.",
           },
         ],
         isError: true,
@@ -109,9 +109,9 @@ export async function namiFeedbackHandler(
 }
 
 registerToolDefinition({
-  name: "nami_feedback",
+  name: "mcp_feedback",
   description:
-    "Submit feedback to NAMI Works about anything that feels off — drifting brand voice, a tool returning the wrong thing, a missing capability, a draft that came out poorly, or general product friction. Routes to the NAMI Works review queue. Use this whenever you notice something the system should learn from.",
+    "Submit feedback about anything that feels off — drifting brand voice, a tool returning the wrong thing, a missing capability, a draft that came out poorly, or general product friction. Routes to the admin review queue. Use this whenever you notice something the system should learn from.",
   inputSchema: {
     message: z
       .string()
@@ -129,8 +129,8 @@ registerToolDefinition({
       .string()
       .optional()
       .describe(
-        "Optional name of the tool the feedback is about (e.g. 'brand_tone_current'). Helps NAMI Works triage by surface.",
+        "Optional name of the tool the feedback is about (e.g. 'brand_tone_current'). Helps the team triage by surface.",
       ),
   },
-  handler: namiFeedbackHandler,
+  handler: mcpFeedbackHandler,
 });

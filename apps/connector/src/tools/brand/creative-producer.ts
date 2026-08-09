@@ -37,7 +37,7 @@ export async function creativeProducerHandler(
           type: "text",
           text:
             "The creative-producer skill content isn't bundled in this connector build. " +
-            "Ask NAMI Works to run `node apps/connector/scripts/bundle-skills.mjs` and redeploy.",
+            "Ask an admin to run `node apps/connector/scripts/bundle-skills.mjs` and redeploy.",
         },
       ],
       isError: true,

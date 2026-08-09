@@ -30,7 +30,7 @@ export const TOOL_TITLES: Record<string, string> = {
   instagram_link_account: "Instagram · Vincular conta (admin)", // disabled
 
   // --- Suporte ---
-  nami_feedback: "Suporte · Enviar feedback",
+  mcp_feedback: "Suporte · Enviar feedback",
 
   // --- Omie ---
   omie_consultar_cliente: "Omie · Consultar cliente",
@@ -134,7 +134,7 @@ const FALLBACK_VENDOR_LABELS: Record<string, string> = {
   instagram: "Instagram",
   brand: "Conteúdo",
   affiliates: "Afiliadas",
-  nami: "Suporte",
+  support: "Suporte",
   loox: "Loox",
 };
 

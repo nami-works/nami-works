@@ -275,7 +275,7 @@ export async function brandToneCurrentHandler(
           type: "text",
           text:
             `No brand voice card exists for tenant ${ctx.tenant.slug} (source=${source}). ` +
-            `Run instagram_refresh_ingest to populate posts, then ask NAMI Works to ` +
+            `Run instagram_refresh_ingest to populate posts, then ask the team to ` +
             `generate the voice card. Until then, fall back to instagram_top_posts ` +
             `and instagram_search_captions to assemble voice context manually.`,
         },
