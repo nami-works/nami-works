@@ -7,6 +7,7 @@ import {
   resolveClienteName,
   resolveOmieCompanies,
   type OmieClient,
+  type OmieCompany,
 } from "../../clients/omie.js";
 import { registerToolDefinition } from "../../mcp/registry.js";
 import type { ToolContext, ToolResult } from "../../mcp/types.js";
@@ -217,14 +218,16 @@ export async function contasAPagarHandler(
       : "todos os fornecedores";
   const windowLabel = hasWindow ? ` · ${args.desde} a ${args.ate}` : "";
 
-  const blocks: string[] = [];
-  let grandP = 0;
-  let grandV = 0;
-  let grandPago = 0;
-  let anyItems = false;
-  let anyCapped = false;
+  type CompanyResult = {
+    block: string | null;
+    p: number;
+    v: number;
+    pago: number;
+    hasItems: boolean;
+    capped: boolean;
+  };
 
-  for (const co of selected) {
+  async function processCompany(co: OmieCompany): Promise<CompanyResult> {
     const name = co.label ?? co.code;
     const filters = {
       ...(args.codigoFornecedor !== undefined ? { codigo: args.codigoFornecedor } : {}),
@@ -233,14 +236,18 @@ export async function contasAPagarHandler(
     const { items, totalRegistros, capped } = hasWindow
       ? { ...(await fetchApWindow(co.client, filters, args.desde!, args.ate!)), totalRegistros: undefined }
       : await fetchApForSupplier(co.client, filters);
-    if (capped) anyCapped = true;
 
     const tag = multi ? `— ${name} —` : null;
     if (items.length === 0) {
-      if (tag) blocks.push(`${tag}\nSem lançamentos${windowLabel ? " no período" : ""}.`);
-      continue;
+      return {
+        block: tag ? `${tag}\nSem lançamentos${windowLabel ? " no período" : ""}.` : null,
+        p: 0,
+        v: 0,
+        pago: 0,
+        hasItems: false,
+        capped,
+      };
     }
-    anyItems = true;
 
     // Category + supplier names — one categoria fetch per company, cached;
     // supplier names resolved on demand and cached per unique code.
@@ -258,9 +265,6 @@ export async function contasAPagarHandler(
         vencido += item.valor_documento;
       else aPagar += item.valor_documento; // A_PAGAR, "A VENCER", etc.
     }
-    grandP += aPagar;
-    grandV += vencido;
-    grandPago += pago;
 
     const lineCount = multi ? 10 : 25;
     const sorted = items
@@ -298,7 +302,24 @@ export async function contasAPagarHandler(
     ]
       .filter((s): s is string => s !== null)
       .join("\n");
-    blocks.push(`${head}\n${lines.join("\n")}`);
+    return { block: `${head}\n${lines.join("\n")}`, p: aPagar, v: vencido, pago, hasItems: true, capped };
+  }
+
+  const perCompany = await Promise.all(selected.map(processCompany));
+
+  const blocks: string[] = [];
+  let grandP = 0;
+  let grandV = 0;
+  let grandPago = 0;
+  let anyItems = false;
+  let anyCapped = false;
+  for (const result of perCompany) {
+    if (result.block) blocks.push(result.block);
+    grandP += result.p;
+    grandV += result.v;
+    grandPago += result.pago;
+    if (result.hasItems) anyItems = true;
+    if (result.capped) anyCapped = true;
   }
 
   if (!anyItems) {
