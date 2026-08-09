@@ -251,33 +251,51 @@ export async function consultarFinanceiroHandler(
       : "todos os clientes";
   const windowLabel = hasWindow ? ` · ${args.desde} a ${args.ate}` : "";
 
-  const blocks: string[] = [];
-  let grandA = 0;
-  let grandV = 0;
-  let grandR = 0;
-  let anyItems = false;
-  let anyCapped = false;
+  // Each company is a SEPARATE Omie account (own app_key/app_secret, own rate
+  // limit) — nothing requires processing them one after another. The original
+  // handoff doc's own root-cause hypothesis for the consolidated timeout was
+  // exactly this: unbounded, SEQUENTIAL per-company fan-out. Running them
+  // concurrently means total latency ≈ the slowest single company, not the
+  // sum of all six.
+  type CompanyResult = {
+    block: string | null;
+    a: number;
+    v: number;
+    r: number;
+    hasItems: boolean;
+    capped: boolean;
+  };
 
-  for (const co of selected) {
+  async function processCompany(co: OmieCompany): Promise<CompanyResult> {
     const name = co.label ?? co.code;
     const codigo = registryEntry
       ? registryCodigoFor(registryEntry, co)
       : args.codigoCliente;
     if (registryEntry && typeof codigo !== "number") {
-      if (multi) blocks.push(`— ${name} —\nSem cadastro nesta empresa.`);
-      continue;
+      return {
+        block: multi ? `— ${name} —\nSem cadastro nesta empresa.` : null,
+        a: 0,
+        v: 0,
+        r: 0,
+        hasItems: false,
+        capped: false,
+      };
     }
     const { items, totalRegistros, capped } = hasWindow
       ? { ...(await fetchArWindow(co.client, codigo, args.desde!, args.ate!)), totalRegistros: undefined }
       : await fetchArForClient(co.client, codigo);
-    if (capped) anyCapped = true;
 
     const tag = multi ? `— ${name} —` : null;
     if (items.length === 0) {
-      if (tag) blocks.push(`${tag}\nSem lançamentos${windowLabel ? " no período" : ""}.`);
-      continue;
+      return {
+        block: tag ? `${tag}\nSem lançamentos${windowLabel ? " no período" : ""}.` : null,
+        a: 0,
+        v: 0,
+        r: 0,
+        hasItems: false,
+        capped,
+      };
     }
-    anyItems = true;
 
     const categoriaMap = await fetchCategoriaMap(co.client);
     const nomeCache = new Map<number, string>();
@@ -290,9 +308,6 @@ export async function consultarFinanceiroHandler(
       else if (item.status_titulo === "VENCIDO") v += item.valor_documento;
       else a += item.valor_documento;
     }
-    grandA += a;
-    grandV += v;
-    grandR += r;
 
     const lineCount = multi ? 10 : 25;
     const sorted = items
@@ -331,7 +346,24 @@ export async function consultarFinanceiroHandler(
     ]
       .filter((s): s is string => s !== null)
       .join("\n");
-    blocks.push(`${head}\n${lines.join("\n")}`);
+    return { block: `${head}\n${lines.join("\n")}`, a, v, r, hasItems: true, capped };
+  }
+
+  const perCompany = await Promise.all(selected.map(processCompany));
+
+  const blocks: string[] = [];
+  let grandA = 0;
+  let grandV = 0;
+  let grandR = 0;
+  let anyItems = false;
+  let anyCapped = false;
+  for (const result of perCompany) {
+    if (result.block) blocks.push(result.block);
+    grandA += result.a;
+    grandV += result.v;
+    grandR += result.r;
+    if (result.hasItems) anyItems = true;
+    if (result.capped) anyCapped = true;
   }
 
   if (!anyItems) {
