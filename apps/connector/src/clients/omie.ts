@@ -49,33 +49,40 @@ function defaultBackoff(attempt: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Omie throttles per account across all app_keys (one request per method at a
-// time; bursts trip "consumo redundante" / "API bloqueada"). We proactively
-// SERIALIZE every Omie call through one module-level gate with a minimum gap
-// between calls, so the connector stays under Omie's limits by construction
-// rather than reacting to blocks. Gap defaults to 600ms (0 in tests).
+// Omie throttles one request per method at a time PER ACCOUNT (bursts trip
+// "consumo redundante" / "API bloqueada"). We proactively SERIALIZE calls
+// with a minimum gap between them so the connector stays under Omie's limits
+// by construction rather than reacting to blocks. Gap defaults to 600ms (0
+// in tests). The gate is created per-client (see buildOmieClient below), NOT
+// module-level: each company is a distinct app_key/app_secret account with
+// its own independent throttle, so a shared global gate would serialize all
+// companies' calls together for no reason — exactly the bug that caused the
+// multi-company Omie tools to time out even after fanning out with
+// Promise.all at the tool layer.
 const OMIE_MIN_GAP_MS = Number(
   process.env.OMIE_MIN_GAP_MS ?? (process.env.NODE_ENV === "test" ? 0 : 600),
 );
-let omieTail: Promise<unknown> = Promise.resolve();
-let omieLastEnd = 0;
 
-function serializeOmieCall<T>(fn: () => Promise<T>, gapMs: number): Promise<T> {
-  const run = omieTail.then(async () => {
-    const wait = Math.max(0, omieLastEnd + gapMs - Date.now());
-    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
-    try {
-      return await fn();
-    } finally {
-      omieLastEnd = Date.now();
-    }
-  });
-  // Keep the chain alive regardless of this call's outcome.
-  omieTail = run.then(
-    () => undefined,
-    () => undefined,
-  );
-  return run;
+function makeOmieCallSerializer() {
+  let tail: Promise<unknown> = Promise.resolve();
+  let lastEnd = 0;
+  return function serializeOmieCall<T>(fn: () => Promise<T>, gapMs: number): Promise<T> {
+    const run = tail.then(async () => {
+      const wait = Math.max(0, lastEnd + gapMs - Date.now());
+      if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+      try {
+        return await fn();
+      } finally {
+        lastEnd = Date.now();
+      }
+    });
+    // Keep the chain alive regardless of this call's outcome.
+    tail = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run;
+  };
 }
 
 export type BuildClientOptions = {
@@ -99,6 +106,7 @@ export function buildOmieClient(
   const throttleWait =
     opts.throttleWait ?? ((ms: number) => new Promise((r) => setTimeout(r, ms)));
   const minGap = opts.minGapMs ?? OMIE_MIN_GAP_MS;
+  const serializeOmieCall = makeOmieCallSerializer();
 
   return {
     call<TParam, TResponse>(
