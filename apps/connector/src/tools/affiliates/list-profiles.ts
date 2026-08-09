@@ -36,7 +36,7 @@ export async function listProfilesHandler(
         {
           type: "text",
           text:
-            "Nenhum afiliado cadastrado ainda. Cadastre o primeiro via a ferramenta (a chegar) ou direto no banco pela equipe NAMI Works.",
+            "Nenhum afiliado cadastrado ainda. Cadastre o primeiro via a ferramenta (a chegar) ou direto no banco pela equipe de suporte.",
         },
       ],
     };
@@ -70,7 +70,7 @@ export async function listProfilesHandler(
     ``,
     ...rows.map((r) => r.line),
     ``,
-    `Para adicionar um afiliado, consulte a equipe NAMI Works (CLI \`provision-affiliate\` a chegar).`,
+    `Para adicionar um afiliado, consulte a equipe de suporte (CLI \`provision-affiliate\` a chegar).`,
   ].join("\n");
 
   return { content: [{ type: "text", text: body }] };

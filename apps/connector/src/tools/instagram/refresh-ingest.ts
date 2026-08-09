@@ -23,7 +23,7 @@ export async function refreshIngestHandler(
       content: [
         {
           type: "text",
-          text: `Tenant ${ctx.tenant.slug} has no linked Instagram account. NAMI Works needs to insert an InstagramAccount row before refresh is possible.`,
+          text: `Tenant ${ctx.tenant.slug} has no linked Instagram account. An admin needs to insert an InstagramAccount row before refresh is possible.`,
         },
       ],
       isError: true,
@@ -68,7 +68,7 @@ export async function refreshIngestHandler(
         content: [
           {
             type: "text",
-            text: `Instagram token for ${ctx.tenant.slug} is not yet configured in SSM. NAMI Works needs to put the long-lived token at \`${ctx.tenant.ssmPrefix}/instagram/long_lived_token\` before refresh works in production. (Dev-mode env-var ingest still works via \`npm run instagram-dump\`.)`,
+            text: `Instagram token for ${ctx.tenant.slug} is not yet configured in SSM. An admin needs to put the long-lived token at \`${ctx.tenant.ssmPrefix}/instagram/long_lived_token\` before refresh works in production. (Dev-mode env-var ingest still works via \`npm run instagram-dump\`.)`,
           },
         ],
         isError: true,

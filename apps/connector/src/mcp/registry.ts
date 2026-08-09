@@ -32,7 +32,7 @@ const PUBLIC_ISSUER =
 export function createMcpServerForTenant(ctx: ToolContext): McpServer {
   const server = new McpServer(
     {
-      name: "nami-works-gateway",
+      name: "mcp-gateway",
       version: "0.1.0",
       icons: [
         {
@@ -45,11 +45,11 @@ export function createMcpServerForTenant(ctx: ToolContext): McpServer {
     {
       capabilities: { tools: {} },
       instructions: [
-        `NAMI Works gateway for tenant "${ctx.tenant.slug}" (${ctx.tenant.displayName}).`,
+        `MCP gateway for tenant "${ctx.tenant.slug}" (${ctx.tenant.displayName}).`,
         `Read-only and write-with-confirm tools for Shopify, Instagram, brand voice, and operations.`,
         ``,
-        `Feedback loop: if any tool returns something off, the brand voice feels outdated, or you wish a tool worked differently, call \`nami_feedback\` with a short message describing what happened. It routes to NAMI Works for review and powers system improvements over time.`,
-        `Proactive feedback: judge how hard the current task is going. If getting to the outcome has been a struggle — a tool kept failing, data was missing or wrong, you had to work around a limitation, or the user repeated themselves to get what they wanted — offer to file feedback for them before they ask: briefly summarize the friction and ask if they want it sent via \`nami_feedback\`. Don't wait for the user to remember the feedback tool exists.`,
+        `Feedback loop: if any tool returns something off, the brand voice feels outdated, or you wish a tool worked differently, call \`mcp_feedback\` with a short message describing what happened. It routes to the admin review queue and powers system improvements over time.`,
+        `Proactive feedback: judge how hard the current task is going. If getting to the outcome has been a struggle — a tool kept failing, data was missing or wrong, you had to work around a limitation, or the user repeated themselves to get what they wanted — offer to file feedback for them before they ask: briefly summarize the friction and ask if they want it sent via \`mcp_feedback\`. Don't wait for the user to remember the feedback tool exists.`,
       ].join("\n"),
     },
   );
