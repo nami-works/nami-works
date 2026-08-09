@@ -435,3 +435,75 @@ export function __clearOmieClientCacheForTesting(): void {
   companiesCache.clear();
   b2bRegistryCache.clear();
 }
+
+// ---------------------------------------------------------------------------
+// Category + supplier/customer name resolution — shared by the payables and
+// receivables tools so every row can show a name instead of a bare code.
+// Both codigo_categoria and codigo_cliente_fornecedor are scoped to ONE Omie
+// company (a different Omie tenant/account) — callers must build a fresh
+// cache per company, never share one across companies.
+// ---------------------------------------------------------------------------
+
+type ListarCategoriasResponse = {
+  categoria_cadastro?: Array<{ codigo: string; descricao: string }>;
+  total_de_paginas?: number;
+};
+
+// Fetches the FULL category list for one company (typically a few hundred
+// rows at most — small enough to load once and cache for the call).
+export async function fetchCategoriaMap(
+  client: OmieClient,
+): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  let pagina = 1;
+  for (;;) {
+    const res = await client.call<
+      Record<string, unknown>,
+      ListarCategoriasResponse
+    >({
+      resource: "geral/categorias",
+      method: "ListarCategorias",
+      param: { pagina, registros_por_pagina: 200 },
+    });
+    if (!res.ok) {
+      if (/n[ãa]o existem registros/i.test(res.faultstring)) break;
+      throw new Error(`Omie ListarCategorias failed: ${res.faultstring}`);
+    }
+    const rows = res.data.categoria_cadastro ?? [];
+    for (const r of rows) map.set(r.codigo, r.descricao);
+    const totalPaginas = res.data.total_de_paginas ?? 1;
+    if (rows.length === 0 || pagina >= totalPaginas) break;
+    pagina += 1;
+  }
+  return map;
+}
+
+type ConsultarClienteNameResponse = {
+  razao_social: string | null;
+  nome_fantasia: string | null;
+};
+
+// Resolves one codigo_cliente_fornecedor to a display name, via the same
+// ConsultarCliente call omie_consultar_cliente uses. Caches per-call (caller
+// owns the Map) so repeat suppliers in a window don't re-hit Omie.
+export async function resolveClienteName(
+  client: OmieClient,
+  codigo: number,
+  cache: Map<number, string>,
+): Promise<string> {
+  const hit = cache.get(codigo);
+  if (hit) return hit;
+  const res = await client.call<
+    { codigo_cliente_omie: number },
+    ConsultarClienteNameResponse
+  >({
+    resource: "geral/clientes",
+    method: "ConsultarCliente",
+    param: { codigo_cliente_omie: codigo },
+  });
+  const name = res.ok
+    ? (res.data.razao_social ?? res.data.nome_fantasia ?? `#${codigo}`)
+    : `#${codigo}`;
+  cache.set(codigo, name);
+  return name;
+}
