@@ -1,5 +1,10 @@
 # GE Beauty — Do booster combos break the "boosters are anti-heroes" belief?
 
+**Migrated 2026-08-09:** now part of the live, interactive Cowork artifact
+`ge-beauty-retention-study` (sortable/searchable table of all 65 combos, filterable by
+booster) alongside the sole-SKU study it extends. This doc stays as the durable,
+git-tracked record and full write-up; open the artifact for exploration.
+
 **Source:** repo-native analysis, 2026-08-08 (Lucas's question: is there any scenario
 where the belief is wrong). Extends `docs/retention-hero-products-study.md` — read that
 first for the sole-SKU premise this study tests against. Script:
