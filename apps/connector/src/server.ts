@@ -7,6 +7,7 @@ import { rootLogger } from "./lib/logger.js";
 import { mountLocalDeliveryRoutes } from "./local-delivery/index.js";
 import { mountTenantRoute } from "./mcp/transport.js";
 import { mountOAuthRoutes } from "./oauth/index.js";
+import { mountWebhookRoutes } from "./webhooks/index.js";
 // Side-effect import: registers every tool in the catalog at boot.
 import "./tools/index.js";
 
@@ -23,6 +24,7 @@ const app = Fastify({
 await app.register(sensible);
 await mountOAuthRoutes(app);
 mountIconRoutes(app);
+await mountWebhookRoutes(app);
 
 app.get("/health", async () => ({ ok: true }));
 

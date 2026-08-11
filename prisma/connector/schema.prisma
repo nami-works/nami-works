@@ -67,8 +67,12 @@ model IntegrationTenant {
   feedback             Feedback[]
   principals           TenantPrincipal[]
   accessRoles          AccessRole[]
+  justBoughtCreditIssuances JustBoughtCreditIssuance[]
 
   @@index([status])
+  // Looked up by incoming Shopify webhooks via the X-Shopify-Shop-Domain
+  // header, alongside the :tenant slug already in the callback URL path.
+  @@index([shopifyShop])
 }
 
 // A human operator authorized to act on a tenant. Each carries their own
@@ -333,6 +337,31 @@ model Feedback {
 // (locationId + ordered orderIds). Polylines for fixed stops never change, so
 // once cached we never re-call the Routes API for that stop sequence.
 // Cache enforces idempotency across batch reloads and multi-user sessions.
+// Idempotency ledger for the orders/paid real-time store-credit webhook
+// (.claude/initiatives/realtime-credit-webhook.md). Shopify webhook delivery
+// is at-least-once — the unique constraint on (tenantId, shopifyOrderId) is
+// the durable "already handled" check. Insert BEFORE calling
+// storeCreditAccountCredit; a unique-constraint violation means a duplicate
+// delivery, treated as a no-op, not an error. Supersedes the append-only
+// .jsonl ledger in gebeauty/growth/retention-machine/issue_just_bought.py.
+model JustBoughtCreditIssuance {
+  id             String            @id @default(cuid())
+  tenantId       String
+  shopifyOrderId String // gid://shopify/Order/<id>
+  customerGid    String
+  orderTotal     Float
+  creditAmount   Float // 0 when status = skipped_floor
+  armDays        Int // 30 | 45 | 60 — 3-arm expiry test
+  armTag         String
+  status         String // issued | skipped_floor
+  issuedAt       DateTime          @default(now())
+  expiresAt      DateTime?
+  tenant         IntegrationTenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, shopifyOrderId])
+  @@index([tenantId, issuedAt])
+}
+
 model LdSimPolylineCache {
   id        Int      @id @default(autoincrement())
   routeKey  String   @unique // sha256 of "${locationId}|${orderIdsJoined}"
