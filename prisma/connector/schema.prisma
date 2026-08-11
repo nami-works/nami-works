@@ -356,6 +356,12 @@ model JustBoughtCreditIssuance {
   status         String // issued | skipped_floor
   issuedAt       DateTime          @default(now())
   expiresAt      DateTime?
+  // Set once by the refunds/create clawback handler when the underlying order
+  // is refunded after credit was issued. Doubles as the idempotency guard for
+  // that handler (same at-least-once delivery problem as orders/paid) — the
+  // reversal update is conditioned on reversedAt IS NULL, so a duplicate
+  // refunds/create delivery is a safe no-op instead of a double-debit.
+  reversedAt     DateTime?
   tenant         IntegrationTenant @relation(fields: [tenantId], references: [id])
 
   @@unique([tenantId, shopifyOrderId])
