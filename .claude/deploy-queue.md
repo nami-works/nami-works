@@ -50,7 +50,7 @@ the config files cleaned up.
 
 ## Pending
 
-_(empty — the i18n online-tokens fix shipped in the 2026-05-22 deploy below.)_
+- **connector — Loox proactive ad-copy nudge (PR #103, merged to main, image built: `connector-20260811-loox-nudge-f4845ba`, NOT deployed).** Held back on purpose: the box is currently running `nami-works:5f030fc`, an unmerged commit from PR #98 (`realtime-credit-webhook` — real-time store-credit webhook, still open). Deploying my built image now would silently roll back their live feature since it doesn't include their unmerged work. **Once #98 merges to main:** rebuild from main (will contain both changes), push, redeploy once — no need to separately chase the nudge fix, it'll ride along.
 
 ---
 
