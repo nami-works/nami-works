@@ -35,7 +35,7 @@ export function __resetSigningKeyForTesting(value?: string): void {
   cachedKey = new TextEncoder().encode(value);
 }
 
-const ISSUER = process.env.OAUTH_ISSUER ?? "https://mcp.nami.works";
+const ISSUER = process.env.OAUTH_ISSUER ?? "https://mcp.gebeauty.com.br";
 
 // ---- Access token: bound to a tenant slug, used for MCP requests ----
 

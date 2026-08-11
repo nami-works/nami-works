@@ -7,11 +7,11 @@ import type { FastifyInstance } from "fastify";
  * `/.well-known/oauth-authorization-server`. The response advertises the
  * issuer, the auth/token/registration endpoints, supported flows, etc.
  *
- * The issuer is the origin of the gateway. By default `https://mcp.nami.works`,
+ * The issuer is the origin of the gateway. By default `https://mcp.gebeauty.com.br`,
  * overridable via OAUTH_ISSUER for local testing.
  */
 
-const ISSUER = process.env.OAUTH_ISSUER ?? "https://mcp.nami.works";
+const ISSUER = process.env.OAUTH_ISSUER ?? "https://mcp.gebeauty.com.br";
 
 export function mountOAuthDiscovery(app: FastifyInstance): void {
   app.get("/.well-known/oauth-authorization-server", async () => {

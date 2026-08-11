@@ -79,7 +79,7 @@ describe("oauth/jwt refresh token", () => {
     // signing key/issuer setup() applies for this suite.
     const legacyToken = await new SignJWT({ tenant: "gebeauty" })
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
-      .setIssuer("https://mcp.nami.works")
+      .setIssuer("https://mcp.gebeauty.com.br")
       .setSubject("tenant:gebeauty")
       .setIssuedAt()
       .setExpirationTime("24h")
