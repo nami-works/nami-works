@@ -50,7 +50,15 @@ const ALL_MAX_PAGES = 15;
 // — there's no safe early-stop heuristic here. SAFETY_MAX_PAGES is a pure
 // runaway guard, not a real limit: if it's ever hit the response says so
 // loudly rather than silently truncating.
-const WINDOW_PAGE_SIZE = 200;
+// registros_por_pagina=100 (paired with the ordenar_por/ordem_descrescente
+// params below) is the configuration already verified live against real Omie
+// data earlier this session — do not change either without re-verifying live;
+// a prior attempt at 200-per-page with no sort params silently returned zero
+// rows for a large company (Matriz), most likely because Omie honored a
+// smaller real page size than requested while still reporting total_de_paginas
+// against the requested size, tripping the "partial page = last page" check
+// after page 1.
+const WINDOW_PAGE_SIZE = 100;
 const SAFETY_MAX_PAGES = 2000;
 
 function brToYmd(br: string): string {
@@ -128,6 +136,12 @@ async function fetchApWindow(
         pagina,
         registros_por_pagina: WINDOW_PAGE_SIZE,
         apenas_importado_api: "N",
+        // No longer relied on for early-stopping (see module comment — CODIGO
+        // order isn't reliably tied to due date), but kept because it's the
+        // proven-working query shape; dropping it was bundled into the
+        // regression described on WINDOW_PAGE_SIZE above.
+        ordenar_por: "CODIGO",
+        ordem_descrescente: "S",
         ...(filters.codigo !== undefined
           ? { filtrar_cliente: filters.codigo }
           : {}),
