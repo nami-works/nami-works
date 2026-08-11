@@ -44,12 +44,15 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const ALL_MAX_PAGES = 15;
 // Windowed fetch: ListarContasPagar has NO due-date sort (only CODIGO /
 // CODIGO_INTEGRACAO — verified against Omie's live docs, unlike
-// ListarContasReceber which does support DATA_VENCIMENTO). Since CODIGO order
-// isn't reliably correlated with due date, a windowed pull walks the FULL
-// ledger (bounded only by Omie's own total_de_paginas) and filters client-side
-// — there's no safe early-stop heuristic here. SAFETY_MAX_PAGES is a pure
-// runaway guard, not a real limit: if it's ever hit the response says so
-// loudly rather than silently truncating.
+// ListarContasReceber which does support DATA_VENCIMENTO). A genuine
+// full-ledger walk (no early stop) was tried and live-tested: for a large
+// company it took long enough to exceed the tool call's own timeout, which
+// is worse than a disclosed partial result. So this sorts descending by
+// CODIGO (Omie's internal entry-order id — bills are normally entered near
+// their due date, a reasonable if imperfect proxy) and stops once a
+// generous run of consecutive pages contributes nothing to the window.
+// SAFETY_MAX_PAGES is a separate, much higher runaway guard.
+const STOP_AFTER_EMPTY_PAGES = 40;
 // registros_por_pagina=100 (paired with the ordenar_por/ordem_descrescente
 // params below) is the configuration already verified live against real Omie
 // data earlier this session — do not change either without re-verifying live;
@@ -113,9 +116,17 @@ async function fetchApForSupplier(
   return { items, totalRegistros: totalRegistros || items.length, capped: false };
 }
 
-// Windowed fetch: walks the FULL ledger (no due-date sort available for
-// contapagar — see module comment) and keeps rows whose baseData field falls
-// in [desde, ate]. Stops only at true ledger exhaustion or the safety valve.
+// Windowed fetch: descending by CODIGO (Omie's internal entry-order id —
+// bills are normally entered near their due date, so this is a reasonable
+// though imperfect proxy for recency). A genuine full-ledger walk (no
+// early stop at all) was tried and tested live: for a large company
+// (Matriz, ~12.6k total registros) it took long enough to blow the tool
+// call's own timeout — worse than the truncation it was meant to fix, since
+// a timeout returns NOTHING instead of a disclosed partial result. Stops
+// once a generous run of consecutive pages contributes nothing to the
+// window (having already seen at least one hit) — high enough that a real
+// 90-day window practically never triggers it, but bounded so a large
+// ledger can't time out the call.
 async function fetchApWindow(
   client: OmieClient,
   filters: { codigo?: number; cnpj?: string },
@@ -124,6 +135,9 @@ async function fetchApWindow(
   baseData: "vencimento" | "pagamento",
 ): Promise<{ items: ContaPagar[]; capped: boolean }> {
   const items: ContaPagar[] = [];
+  let seenAnyInWindow = false;
+  let consecutiveEmpty = 0;
+  let stoppedEarly = false;
   let pagina = 1;
   for (; pagina <= SAFETY_MAX_PAGES; pagina += 1) {
     const res = await client.call<
@@ -136,10 +150,6 @@ async function fetchApWindow(
         pagina,
         registros_por_pagina: WINDOW_PAGE_SIZE,
         apenas_importado_api: "N",
-        // No longer relied on for early-stopping (see module comment — CODIGO
-        // order isn't reliably tied to due date), but kept because it's the
-        // proven-working query shape; dropping it was bundled into the
-        // regression described on WINDOW_PAGE_SIZE above.
         ordenar_por: "CODIGO",
         ordem_descrescente: "S",
         ...(filters.codigo !== undefined
@@ -157,11 +167,26 @@ async function fetchApWindow(
     const page = res.data.conta_pagar_cadastro ?? [];
     if (page.length === 0) break;
 
+    let hitsThisPage = 0;
     for (const row of page) {
       const dateField = baseData === "pagamento" ? row.data_pagamento : row.data_vencimento;
       if (!dateField) continue;
       const ymd = brToYmd(dateField);
-      if (ymd >= desde && ymd <= ate) items.push(row);
+      if (ymd >= desde && ymd <= ate) {
+        items.push(row);
+        hitsThisPage += 1;
+      }
+    }
+    if (hitsThisPage > 0) {
+      seenAnyInWindow = true;
+      consecutiveEmpty = 0;
+    } else if (seenAnyInWindow) {
+      consecutiveEmpty += 1;
+      if (consecutiveEmpty >= STOP_AFTER_EMPTY_PAGES) {
+        stoppedEarly = true;
+        pagina += 1; // count this page as fetched before breaking
+        break;
+      }
     }
 
     const totalPaginas = res.data.total_de_paginas;
@@ -170,7 +195,7 @@ async function fetchApWindow(
       break;
     }
   }
-  return { items, capped: pagina > SAFETY_MAX_PAGES };
+  return { items, capped: stoppedEarly || pagina > SAFETY_MAX_PAGES };
 }
 
 export async function contasAPagarHandler(
