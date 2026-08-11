@@ -109,7 +109,7 @@ describe("contasAPagarHandler", () => {
   });
 
   describe("windowed (desde/ate)", () => {
-    it("keeps only rows inside the window, no sort param (contapagar has none)", async () => {
+    it("keeps only rows inside the window (CODIGO sort kept for query-shape parity, not relied on for stopping)", async () => {
       let captured: Record<string, unknown> = {};
       const page1 = {
         ok: true as const,
@@ -125,7 +125,9 @@ describe("contasAPagarHandler", () => {
       };
       const client: OmieClient = {
         call: vi.fn(async (a: { param: Record<string, unknown> }) => {
-          captured = a.param;
+          // First call only — the later ListarCategorias enrichment call
+          // shares this mock and would otherwise overwrite `captured`.
+          if (!captured.ordenar_por) captured = a.param;
           return page1;
         }) as unknown as OmieClient["call"],
       };
@@ -137,8 +139,10 @@ describe("contasAPagarHandler", () => {
       );
       expect(res.isError).toBeUndefined();
       const text = res.content[0]?.text ?? "";
-      // contapagar has no due-date sort — walk the ledger unsorted, filter client-side.
-      expect(captured.ordenar_por).toBeUndefined();
+      // contapagar has no due-date sort; CODIGO sort is kept (proven-working
+      // query shape) but not relied on for stopping — filter is client-side.
+      expect(captured.ordenar_por).toBe("CODIGO");
+      expect(captured.ordem_descrescente).toBe("S");
       expect(text).toContain("AP-100");
       expect(text).toContain("AP-99");
       expect(text).not.toContain("AP-98");
@@ -152,9 +156,9 @@ describe("contasAPagarHandler", () => {
         ok: true as const,
         data: {
           total_de_paginas: 3,
-          // full page (200 rows, matching WINDOW_PAGE_SIZE) — all dated well
+          // full page (100 rows, matching WINDOW_PAGE_SIZE) — all dated well
           // before the window except one hit on page 1.
-          conta_pagar_cadastro: Array.from({ length: 200 }, (_, i) => {
+          conta_pagar_cadastro: Array.from({ length: 100 }, (_, i) => {
             if (pageNum === 1 && i === 0) {
               return { codigo_lancamento_omie: 1, numero_documento: "AP-HIT", data_vencimento: "01/06/2026", valor_documento: 100, status_titulo: "A_PAGAR", observacao: null };
             }
@@ -166,7 +170,7 @@ describe("contasAPagarHandler", () => {
         ok: true as const,
         data: {
           total_de_paginas: 3,
-          // partial page (< 200) — signals true ledger exhaustion.
+          // partial page (< 100) — signals true ledger exhaustion.
           conta_pagar_cadastro: Array.from({ length: 5 }, (_, i) => ({
             codigo_lancamento_omie: 5000 + i,
             numero_documento: `TAIL-${i}`,
