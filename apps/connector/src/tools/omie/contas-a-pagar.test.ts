@@ -151,7 +151,7 @@ describe("contasAPagarHandler", () => {
       expect(text).toContain("Pago: R$ 300.00");
     });
 
-    it("walks the full ledger (no early-stop heuristic) until total_de_paginas is exhausted", async () => {
+    it("walks through empty pages to true exhaustion when under the empty-page threshold", async () => {
       const fullPage = (pageNum: number) => ({
         ok: true as const,
         data: {
@@ -200,10 +200,54 @@ describe("contasAPagarHandler", () => {
         makeCtx(),
       );
       expect(res.isError).toBeUndefined();
-      // 3 ListarContasPagar pages (no early stop — walks to true exhaustion) + 1 ListarCategorias = 4
+      // 3 ListarContasPagar pages (walks past 2 empty pages, well under the
+      // empty-page threshold, to the true partial-page exhaustion) + 1 ListarCategorias = 4
       expect(calls).toHaveBeenCalledTimes(4);
       expect(res.content[0]?.text ?? "").toContain("AP-HIT");
       expect(res.content[0]?.text ?? "").not.toContain("limite de segurança");
+    });
+
+    it("stops after a long run of empty pages (bounds a large ledger's wall-clock, discloses via capped)", async () => {
+      const hitPage = {
+        ok: true as const,
+        data: {
+          total_de_paginas: 1000,
+          conta_pagar_cadastro: [
+            { codigo_lancamento_omie: 1, numero_documento: "AP-HIT", data_vencimento: "01/06/2026", valor_documento: 100, status_titulo: "A_PAGAR", observacao: null },
+            ...Array.from({ length: 99 }, (_, i) => ({ codigo_lancamento_omie: 100 - i, numero_documento: `PAD-${i}`, data_vencimento: "01/01/2020", valor_documento: 1, status_titulo: "PAGO", observacao: null })),
+          ],
+        },
+      };
+      const emptyPage = {
+        ok: true as const,
+        data: {
+          total_de_paginas: 1000,
+          conta_pagar_cadastro: Array.from({ length: 100 }, (_, i) => ({ codigo_lancamento_omie: 1000 - i, numero_documento: `OLD-${i}`, data_vencimento: "01/01/2020", valor_documento: 1, status_titulo: "PAGO", observacao: null })),
+        },
+      };
+      const categoriaRes = { ok: true as const, data: { categoria_cadastro: [] } };
+      const calls = vi.fn();
+      const client: OmieClient = {
+        call: vi.fn(async (a: unknown) => {
+          calls(a);
+          const n = calls.mock.calls.length;
+          if (n === 1) return hitPage; // page 1: 1 hit
+          if (n >= 2 && n <= 41) return emptyPage; // pages 2-41: 40 consecutive empty -> stop
+          return categoriaRes;
+        }) as unknown as OmieClient["call"],
+      };
+      vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
+
+      const res = await contasAPagarHandler(
+        { desde: "2026-05-11", ate: "2026-08-09" },
+        makeCtx(),
+      );
+      expect(res.isError).toBeUndefined();
+      // 41 ListarContasPagar pages (1 hit + 40 empty) + 1 ListarCategorias = 42
+      expect(calls).toHaveBeenCalledTimes(42);
+      const text = res.content[0]?.text ?? "";
+      expect(text).toContain("AP-HIT");
+      expect(text).toMatch(/janela pode estar incompleta/);
     });
   });
 
