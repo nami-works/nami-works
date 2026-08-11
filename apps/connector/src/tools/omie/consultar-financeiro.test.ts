@@ -246,4 +246,45 @@ describe("consultarFinanceiroHandler", () => {
       expect(client.call).toHaveBeenCalledTimes(2);
     });
   });
+
+  describe("groupBy", () => {
+    it("requires desde/ate", async () => {
+      const res = await consultarFinanceiroHandler({ groupBy: ["categoria"] }, makeCtx());
+      expect(res.isError).toBe(true);
+    });
+
+    it("returns a structured JSON aggregate ranked by categoria", async () => {
+      const page = {
+        ok: true as const,
+        data: {
+          total_de_paginas: 1,
+          conta_receber_cadastro: [
+            { codigo_lancamento_omie: 1, numero_documento: "DOC-1", codigo_categoria: "3.1.01.01.002", data_vencimento: "01/06/2026", valor_documento: 400, status_titulo: "RECEBIDO", observacao: null },
+            { codigo_lancamento_omie: 2, numero_documento: "DOC-2", codigo_categoria: "3.1.01.01.002", data_vencimento: "02/06/2026", valor_documento: 600, status_titulo: "RECEBIDO", observacao: null },
+          ],
+        },
+      };
+      const categoriaRes = {
+        ok: true as const,
+        data: { categoria_cadastro: [{ codigo: "3.1.01.01.002", descricao: "Revenda de Mercadoria" }] },
+      };
+      const client: OmieClient = {
+        call: vi.fn(async (a: unknown) => {
+          const isCategoria = (a as { resource: string }).resource === "geral/categorias";
+          return isCategoria ? categoriaRes : page;
+        }) as unknown as OmieClient["call"],
+      };
+      vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
+
+      const res = await consultarFinanceiroHandler(
+        { desde: "2026-05-11", ate: "2026-08-09", groupBy: ["categoria"] },
+        makeCtx(),
+      );
+      expect(res.isError).toBeUndefined();
+      const payload = JSON.parse(res.content[0]?.text ?? "{}");
+      expect(payload.consolidado).toHaveLength(1);
+      expect(payload.consolidado[0].nome).toBe("Revenda de Mercadoria");
+      expect(payload.consolidado[0].valor_pago).toBe(1000);
+    });
+  });
 });

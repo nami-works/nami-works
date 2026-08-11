@@ -109,14 +109,13 @@ describe("contasAPagarHandler", () => {
   });
 
   describe("windowed (desde/ate)", () => {
-    it("sorts descending by CODIGO and keeps only rows inside the window", async () => {
+    it("keeps only rows inside the window, no sort param (contapagar has none)", async () => {
       let captured: Record<string, unknown> = {};
       const page1 = {
         ok: true as const,
         data: {
           total_de_paginas: 1,
           conta_pagar_cadastro: [
-            // most-recently-entered first (descending CODIGO) — mixed due dates
             { codigo_lancamento_omie: 100, numero_documento: "AP-100", data_vencimento: "01/08/2026", valor_documento: 500, status_titulo: "A_PAGAR", observacao: null },
             { codigo_lancamento_omie: 99, numero_documento: "AP-99", data_vencimento: "01/06/2026", valor_documento: 300, status_titulo: "PAGO", observacao: null },
             // outside the window (too old) — must be excluded from totals
@@ -126,7 +125,7 @@ describe("contasAPagarHandler", () => {
       };
       const client: OmieClient = {
         call: vi.fn(async (a: { param: Record<string, unknown> }) => {
-          if (!captured.ordenar_por) captured = a.param;
+          captured = a.param;
           return page1;
         }) as unknown as OmieClient["call"],
       };
@@ -138,8 +137,8 @@ describe("contasAPagarHandler", () => {
       );
       expect(res.isError).toBeUndefined();
       const text = res.content[0]?.text ?? "";
-      expect(captured.ordenar_por).toBe("CODIGO");
-      expect(captured.ordem_descrescente).toBe("S");
+      // contapagar has no due-date sort — walk the ledger unsorted, filter client-side.
+      expect(captured.ordenar_por).toBeUndefined();
       expect(text).toContain("AP-100");
       expect(text).toContain("AP-99");
       expect(text).not.toContain("AP-98");
@@ -148,34 +147,29 @@ describe("contasAPagarHandler", () => {
       expect(text).toContain("Pago: R$ 300.00");
     });
 
-    it("stops after 3 consecutive pages with nothing in the window", async () => {
-      const inWindowPage = {
+    it("walks the full ledger (no early-stop heuristic) until total_de_paginas is exhausted", async () => {
+      const fullPage = (pageNum: number) => ({
         ok: true as const,
         data: {
-          total_de_paginas: 10,
-          // full page (100 rows, matching real Omie behavior where only the
-          // LAST page is short) — one row in-window, the rest padding before it
-          conta_pagar_cadastro: [
-            { codigo_lancamento_omie: 200, numero_documento: "AP-200", data_vencimento: "01/06/2026", valor_documento: 100, status_titulo: "A_PAGAR", observacao: null },
-            ...Array.from({ length: 99 }, (_, i) => ({
-              codigo_lancamento_omie: 199 - i,
-              numero_documento: `PAD-${i}`,
-              data_vencimento: "01/01/2020",
-              valor_documento: 1,
-              status_titulo: "PAGO",
-              observacao: null,
-            })),
-          ],
+          total_de_paginas: 3,
+          // full page (200 rows, matching WINDOW_PAGE_SIZE) — all dated well
+          // before the window except one hit on page 1.
+          conta_pagar_cadastro: Array.from({ length: 200 }, (_, i) => {
+            if (pageNum === 1 && i === 0) {
+              return { codigo_lancamento_omie: 1, numero_documento: "AP-HIT", data_vencimento: "01/06/2026", valor_documento: 100, status_titulo: "A_PAGAR", observacao: null };
+            }
+            return { codigo_lancamento_omie: 1000 + pageNum * 1000 + i, numero_documento: `OLD-${pageNum}-${i}`, data_vencimento: "01/01/2020", valor_documento: 1, status_titulo: "PAGO", observacao: null };
+          }),
         },
-      };
-      const emptyPage = {
+      });
+      const lastPage = {
         ok: true as const,
         data: {
-          total_de_paginas: 10,
-          // full page (100 rows) but all dated before the window
-          conta_pagar_cadastro: Array.from({ length: 100 }, (_, i) => ({
-            codigo_lancamento_omie: 100 - i,
-            numero_documento: `OLD-${i}`,
+          total_de_paginas: 3,
+          // partial page (< 200) — signals true ledger exhaustion.
+          conta_pagar_cadastro: Array.from({ length: 5 }, (_, i) => ({
+            codigo_lancamento_omie: 5000 + i,
+            numero_documento: `TAIL-${i}`,
             data_vencimento: "01/01/2020",
             valor_documento: 1,
             status_titulo: "PAGO",
@@ -189,8 +183,9 @@ describe("contasAPagarHandler", () => {
         call: vi.fn(async (a: unknown) => {
           calls(a);
           const n = calls.mock.calls.length;
-          if (n === 1) return inWindowPage; // page 1: 1 hit
-          if (n >= 2 && n <= 4) return emptyPage; // pages 2-4: 3 consecutive empty -> stop
+          if (n === 1) return fullPage(1);
+          if (n === 2) return fullPage(2);
+          if (n === 3) return lastPage;
           return categoriaRes;
         }) as unknown as OmieClient["call"],
       };
@@ -201,9 +196,58 @@ describe("contasAPagarHandler", () => {
         makeCtx(),
       );
       expect(res.isError).toBeUndefined();
-      // 4 ListarContasPagar pages (1 hit + 3 empty) + 1 ListarCategorias = 5
-      expect(calls).toHaveBeenCalledTimes(5);
-      expect(res.content[0]?.text ?? "").toContain("AP-200");
+      // 3 ListarContasPagar pages (no early stop — walks to true exhaustion) + 1 ListarCategorias = 4
+      expect(calls).toHaveBeenCalledTimes(4);
+      expect(res.content[0]?.text ?? "").toContain("AP-HIT");
+      expect(res.content[0]?.text ?? "").not.toContain("limite de segurança");
+    });
+  });
+
+  describe("groupBy", () => {
+    it("requires desde/ate", async () => {
+      const res = await contasAPagarHandler({ groupBy: ["categoria"] }, makeCtx());
+      expect(res.isError).toBe(true);
+    });
+
+    it("returns a structured JSON aggregate ranked by categoria, excluding requested tipos", async () => {
+      const page = {
+        ok: true as const,
+        data: {
+          total_de_paginas: 1,
+          conta_pagar_cadastro: [
+            { codigo_lancamento_omie: 1, numero_documento: "AP-1", codigo_categoria: "4.1.03.01.006", data_vencimento: "01/06/2026", valor_documento: 500, status_titulo: "PAGO", observacao: null },
+            { codigo_lancamento_omie: 2, numero_documento: "AP-2", codigo_categoria: "4.1.03.01.006", data_vencimento: "02/06/2026", valor_documento: 300, status_titulo: "PAGO", observacao: null },
+            { codigo_lancamento_omie: 3, numero_documento: "AP-3", codigo_categoria: "1.1.03.02.999", data_vencimento: "03/06/2026", valor_documento: 1000, status_titulo: "PAGO", observacao: null },
+          ],
+        },
+      };
+      const categoriaRes = {
+        ok: true as const,
+        data: {
+          categoria_cadastro: [
+            { codigo: "4.1.03.01.006", descricao: "Fretes sobre Vendas" },
+            { codigo: "1.1.03.02.999", descricao: "Transferências entre Empresas" },
+          ],
+        },
+      };
+      const client: OmieClient = {
+        call: vi.fn(async (a: unknown) => {
+          const isCategoria = (a as { resource: string }).resource === "geral/categorias";
+          return isCategoria ? categoriaRes : page;
+        }) as unknown as OmieClient["call"],
+      };
+      vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
+
+      const res = await contasAPagarHandler(
+        { desde: "2026-05-11", ate: "2026-08-09", groupBy: ["categoria"], excluir: ["intercompany"] },
+        makeCtx(),
+      );
+      expect(res.isError).toBeUndefined();
+      const payload = JSON.parse(res.content[0]?.text ?? "{}");
+      expect(payload.consolidado).toHaveLength(1);
+      expect(payload.consolidado[0].nome).toBe("Fretes sobre Vendas");
+      expect(payload.consolidado[0].valor_pago).toBe(800);
+      expect(payload.consolidado[0].tipo).toBe("externo");
     });
   });
 });

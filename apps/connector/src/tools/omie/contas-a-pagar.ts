@@ -11,6 +11,15 @@ import {
 } from "../../clients/omie.js";
 import { registerToolDefinition } from "../../mcp/registry.js";
 import type { ToolContext, ToolResult } from "../../mcp/types.js";
+import {
+  aggregateItems,
+  filterByTipo,
+  GROUP_BY_VALUES,
+  TIPO_VALUES,
+  type AggregatableItem,
+  type GroupByKey,
+  type TipoFlag,
+} from "./aggregation.js";
 
 type ContaPagar = {
   codigo_lancamento_omie: number;
@@ -18,6 +27,7 @@ type ContaPagar = {
   codigo_categoria?: string | null;
   numero_documento: string | null;
   data_vencimento: string; // dd/mm/yyyy
+  data_pagamento?: string | null; // dd/mm/yyyy, only set once PAGO
   valor_documento: number;
   status_titulo: "PAGO" | "A_PAGAR" | "VENCIDO" | string;
   observacao: string | null;
@@ -34,13 +44,14 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const ALL_MAX_PAGES = 15;
 // Windowed fetch: ListarContasPagar has NO due-date sort (only CODIGO /
 // CODIGO_INTEGRACAO — verified against Omie's live docs, unlike
-// ListarContasReceber which does support DATA_VENCIMENTO). Sorting
-// descending by CODIGO is the best available proxy for "most recent" since
-// it's Omie's internal entry-order id and bills are normally entered near
-// their due date. We stop once a run of pages in a row contributes nothing
-// to the window, on the assumption we've paged past it into older history.
-const WINDOW_MAX_PAGES = 30;
-const STOP_AFTER_EMPTY_PAGES = 3;
+// ListarContasReceber which does support DATA_VENCIMENTO). Since CODIGO order
+// isn't reliably correlated with due date, a windowed pull walks the FULL
+// ledger (bounded only by Omie's own total_de_paginas) and filters client-side
+// — there's no safe early-stop heuristic here. SAFETY_MAX_PAGES is a pure
+// runaway guard, not a real limit: if it's ever hit the response says so
+// loudly rather than silently truncating.
+const WINDOW_PAGE_SIZE = 200;
+const SAFETY_MAX_PAGES = 2000;
 
 function brToYmd(br: string): string {
   const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(br);
@@ -94,20 +105,19 @@ async function fetchApForSupplier(
   return { items, totalRegistros: totalRegistros || items.length, capped: false };
 }
 
-// Windowed fetch: descending by CODIGO (most-recently-entered first), keep
-// rows whose data_vencimento falls in [desde, ate], stop once several pages
-// in a row add nothing to the window (having already seen at least one hit).
+// Windowed fetch: walks the FULL ledger (no due-date sort available for
+// contapagar — see module comment) and keeps rows whose baseData field falls
+// in [desde, ate]. Stops only at true ledger exhaustion or the safety valve.
 async function fetchApWindow(
   client: OmieClient,
   filters: { codigo?: number; cnpj?: string },
   desde: string,
   ate: string,
+  baseData: "vencimento" | "pagamento",
 ): Promise<{ items: ContaPagar[]; capped: boolean }> {
   const items: ContaPagar[] = [];
-  let seenAnyInWindow = false;
-  let consecutiveEmpty = 0;
   let pagina = 1;
-  for (; pagina <= WINDOW_MAX_PAGES; pagina += 1) {
+  for (; pagina <= SAFETY_MAX_PAGES; pagina += 1) {
     const res = await client.call<
       Record<string, unknown>,
       ListarContasPagarResponse
@@ -116,10 +126,8 @@ async function fetchApWindow(
       method: "ListarContasPagar",
       param: {
         pagina,
-        registros_por_pagina: 100,
+        registros_por_pagina: WINDOW_PAGE_SIZE,
         apenas_importado_api: "N",
-        ordenar_por: "CODIGO",
-        ordem_descrescente: "S",
         ...(filters.codigo !== undefined
           ? { filtrar_cliente: filters.codigo }
           : {}),
@@ -135,32 +143,20 @@ async function fetchApWindow(
     const page = res.data.conta_pagar_cadastro ?? [];
     if (page.length === 0) break;
 
-    let hitsThisPage = 0;
     for (const row of page) {
-      const ymd = brToYmd(row.data_vencimento);
-      if (ymd >= desde && ymd <= ate) {
-        items.push(row);
-        hitsThisPage += 1;
-      }
-    }
-    if (hitsThisPage > 0) {
-      seenAnyInWindow = true;
-      consecutiveEmpty = 0;
-    } else if (seenAnyInWindow) {
-      consecutiveEmpty += 1;
-      if (consecutiveEmpty >= STOP_AFTER_EMPTY_PAGES) {
-        pagina += 1; // count this page as fetched before breaking
-        break;
-      }
+      const dateField = baseData === "pagamento" ? row.data_pagamento : row.data_vencimento;
+      if (!dateField) continue;
+      const ymd = brToYmd(dateField);
+      if (ymd >= desde && ymd <= ate) items.push(row);
     }
 
     const totalPaginas = res.data.total_de_paginas;
-    if (page.length < 100 || (totalPaginas !== undefined && pagina >= totalPaginas)) {
+    if (page.length < WINDOW_PAGE_SIZE || (totalPaginas !== undefined && pagina >= totalPaginas)) {
       pagina += 1;
       break;
     }
   }
-  return { items, capped: pagina > WINDOW_MAX_PAGES };
+  return { items, capped: pagina > SAFETY_MAX_PAGES };
 }
 
 export async function contasAPagarHandler(
@@ -170,6 +166,9 @@ export async function contasAPagarHandler(
     cnpjFornecedor?: string | undefined;
     desde?: string | undefined;
     ate?: string | undefined;
+    baseData?: "vencimento" | "pagamento" | undefined;
+    groupBy?: GroupByKey[] | undefined;
+    excluir?: TipoFlag[] | undefined;
   },
   ctx: ToolContext,
 ): Promise<ToolResult> {
@@ -188,6 +187,14 @@ export async function contasAPagarHandler(
       };
     }
   }
+  const groupBy = args.groupBy;
+  if (groupBy && !hasWindow) {
+    return {
+      content: [{ type: "text", text: "groupBy requer desde/ate (o agregado é sempre sobre uma janela)." }],
+      isError: true,
+    };
+  }
+  const baseData = args.baseData ?? "vencimento";
 
   const companies = await getOmieCompanies({ ssmPrefix: ctx.tenant.ssmPrefix });
   const resolution = resolveOmieCompanies(companies, args.empresa);
@@ -225,6 +232,7 @@ export async function contasAPagarHandler(
     pago: number;
     hasItems: boolean;
     capped: boolean;
+    aggItems: AggregatableItem[];
   };
 
   async function processCompany(co: OmieCompany): Promise<CompanyResult> {
@@ -234,7 +242,7 @@ export async function contasAPagarHandler(
       ...(cnpj !== undefined ? { cnpj } : {}),
     };
     const { items, totalRegistros, capped } = hasWindow
-      ? { ...(await fetchApWindow(co.client, filters, args.desde!, args.ate!)), totalRegistros: undefined }
+      ? { ...(await fetchApWindow(co.client, filters, args.desde!, args.ate!, baseData)), totalRegistros: undefined }
       : await fetchApForSupplier(co.client, filters);
 
     const tag = multi ? `— ${name} —` : null;
@@ -246,6 +254,7 @@ export async function contasAPagarHandler(
         pago: 0,
         hasItems: false,
         capped,
+        aggItems: [],
       };
     }
 
@@ -257,13 +266,34 @@ export async function contasAPagarHandler(
     let aPagar = 0;
     let vencido = 0;
     let pago = 0;
+    const aggItems: AggregatableItem[] = [];
     for (const item of items) {
       // Omie uses "A VENCER" for not-yet-due — do NOT match on bare "venc"
       // (that would miscount future titles as overdue). Only VENCIDO/ATRASADO.
-      if (item.status_titulo === "PAGO") pago += item.valor_documento;
-      else if (/vencid|atrasad/i.test(item.status_titulo))
-        vencido += item.valor_documento;
-      else aPagar += item.valor_documento; // A_PAGAR, "A VENCER", etc.
+      const status = item.status_titulo === "PAGO"
+        ? "pago"
+        : /vencid|atrasad/i.test(item.status_titulo)
+          ? "vencido"
+          : "aberto"; // A_PAGAR, "A VENCER", etc.
+      if (status === "pago") pago += item.valor_documento;
+      else if (status === "vencido") vencido += item.valor_documento;
+      else aPagar += item.valor_documento;
+
+      if (groupBy) {
+        aggItems.push({
+          empresaCodigo: co.code,
+          empresaLabel: name,
+          empresaClient: co.client,
+          categoriaDescricao: item.codigo_categoria
+            ? (categoriaMap.get(item.codigo_categoria) ?? item.codigo_categoria)
+            : "(sem categoria)",
+          categoriaCodigoRaw: item.codigo_categoria ?? null,
+          fornecedorCodigo: item.codigo_cliente_fornecedor ?? null,
+          dataVencimento: brToYmd(item.data_vencimento),
+          valor: item.valor_documento,
+          status,
+        });
+      }
     }
 
     const lineCount = multi ? 10 : 25;
@@ -286,7 +316,7 @@ export async function contasAPagarHandler(
     }
 
     const cappedNote = capped
-      ? ` (janela pode estar incompleta — ${WINDOW_MAX_PAGES} páginas percorridas sem esgotar o período; refine o filtro)`
+      ? ` (janela pode estar incompleta — limite de segurança de ${SAFETY_MAX_PAGES} páginas atingido; isso não deveria acontecer em uso normal)`
       : "";
     const loadedNote =
       !hasWindow && totalRegistros !== undefined && totalRegistros > items.length
@@ -302,7 +332,7 @@ export async function contasAPagarHandler(
     ]
       .filter((s): s is string => s !== null)
       .join("\n");
-    return { block: `${head}\n${lines.join("\n")}`, p: aPagar, v: vencido, pago, hasItems: true, capped };
+    return { block: `${head}\n${lines.join("\n")}`, p: aPagar, v: vencido, pago, hasItems: true, capped, aggItems };
   }
 
   const perCompany = await Promise.all(selected.map(processCompany));
@@ -313,6 +343,7 @@ export async function contasAPagarHandler(
   let grandPago = 0;
   let anyItems = false;
   let anyCapped = false;
+  const allAggItems: AggregatableItem[] = [];
   for (const result of perCompany) {
     if (result.block) blocks.push(result.block);
     grandP += result.p;
@@ -320,6 +351,7 @@ export async function contasAPagarHandler(
     grandPago += result.pago;
     if (result.hasItems) anyItems = true;
     if (result.capped) anyCapped = true;
+    allAggItems.push(...result.aggItems);
   }
 
   if (!anyItems) {
@@ -333,13 +365,54 @@ export async function contasAPagarHandler(
     };
   }
 
+  if (groupBy) {
+    const filtered = filterByTipo(allAggItems, args.excluir);
+    const { rows: consolidated, fornecedorTruncated } = await aggregateItems(filtered, groupBy);
+
+    let porEmpresa: Record<string, ReturnType<typeof Array.prototype.slice>> | undefined;
+    if (multi && !groupBy.includes("empresa")) {
+      const byEmpresa: Record<string, AggregatableItem[]> = {};
+      for (const item of filtered) {
+        (byEmpresa[item.empresaLabel] ??= []).push(item);
+      }
+      porEmpresa = {};
+      for (const [label, itemsForEmpresa] of Object.entries(byEmpresa)) {
+        const { rows } = await aggregateItems(itemsForEmpresa, groupBy);
+        porEmpresa[label] = rows;
+      }
+    }
+
+    const payload = {
+      window: { desde: args.desde, ate: args.ate, baseData },
+      escopo: { empresas: selected.map((c) => c.label ?? c.code), excluir: args.excluir ?? [] },
+      groupBy,
+      consolidado: consolidated,
+      ...(porEmpresa ? { porEmpresa } : {}),
+      warnings: [
+        ...(anyCapped ? ["Uma ou mais empresas atingiram o limite de segurança de páginas — ver campo capped por empresa."] : []),
+        ...(fornecedorTruncated
+          ? [`groupBy inclui fornecedor com mais de ${allAggItems.length > 0 ? "40" : "0"} fornecedores no período — cauda longa agregada em "Outros" (valor preservado, nomes não).`]
+          : []),
+      ],
+    };
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(payload, null, 2),
+        },
+      ],
+    };
+  }
+
   const single = !multi ? ` · ${selected[0]!.label ?? selected[0]!.code}` : "";
   const grandLabel = hasWindow ? " no período" : "";
   const grand = multi
     ? `\n\nTotal consolidado${grandLabel} — A pagar: R$ ${grandP.toFixed(2)} · Vencido: R$ ${grandV.toFixed(2)} · Pago: R$ ${grandPago.toFixed(2)}`
     : "";
   const cappedWarning = anyCapped
-    ? "\n\n⚠ Uma ou mais empresas atingiram o limite de páginas antes de esgotar o período — total pode estar incompleto."
+    ? "\n\n⚠ Uma ou mais empresas atingiram o limite de segurança de páginas — total pode estar incompleto (isso não deveria acontecer em uso normal; avise o time)."
     : "";
 
   return {
@@ -355,7 +428,7 @@ export async function contasAPagarHandler(
 registerToolDefinition({
   name: "omie_contas_a_pagar",
   description:
-    "Contas a pagar no Omie por empresa (fornecedores). Informe `cnpjFornecedor` (exato) ou `codigoFornecedor` para focar num fornecedor; sem filtro, resume a carteira de pagáveis. Informe `desde`/`ate` (ISO YYYY-MM-DD) para escopar por DATA DE VENCIMENTO — sem eles, mantém o comportamento antigo (carteira inteira, sem janela). `empresa` aceita um nome ou vários. Cada lançamento retorna nome do fornecedor e categoria (não só códigos). Retorna a pagar/vencido/pago por empresa + total consolidado. Obs: NFS-e de serviço não têm DANFE/XML dentro do Omie.",
+    "Contas a pagar no Omie por empresa (fornecedores). Informe `cnpjFornecedor` (exato) ou `codigoFornecedor` para focar num fornecedor; sem filtro, resume a carteira de pagáveis. Informe `desde`/`ate` (ISO YYYY-MM-DD) para escopar por data — sem eles, mantém o comportamento antigo (carteira inteira, sem janela). Janela sempre percorre o ledger inteiro (sem sort nativo por vencimento no Omie para contapagar), então empresas grandes podem levar dezenas de segundos. `groupBy` (categoria|fornecedor|empresa|mes, aceita lista para cross-tab) retorna um agregado estruturado (JSON) em vez do resumo em texto — use para rankear custos por categoria/fornecedor. `excluir` filtra tipos (intercompany|imposto|estorno|externo) do agregado, ex. excluir=['intercompany','imposto'] para gasto externo puro. `empresa` aceita um nome ou vários. Obs: NFS-e de serviço não têm DANFE/XML dentro do Omie.",
   inputSchema: {
     cnpjFornecedor: z
       .string()
@@ -378,12 +451,30 @@ registerToolDefinition({
       .string()
       .regex(ISO_DATE, "use formato ISO YYYY-MM-DD")
       .optional()
-      .describe('Data de vencimento inicial (ISO YYYY-MM-DD). Requer `ate` junto.'),
+      .describe('Data inicial (ISO YYYY-MM-DD). Requer `ate` junto.'),
     ate: z
       .string()
       .regex(ISO_DATE, "use formato ISO YYYY-MM-DD")
       .optional()
-      .describe('Data de vencimento final (ISO YYYY-MM-DD). Requer `desde` junto.'),
+      .describe('Data final (ISO YYYY-MM-DD). Requer `desde` junto.'),
+    baseData: z
+      .enum(["vencimento", "pagamento"])
+      .optional()
+      .describe(
+        "Campo de data usado para a janela: 'vencimento' (padrão) ou 'pagamento' (data em que foi efetivamente pago).",
+      ),
+    groupBy: z
+      .array(z.enum(GROUP_BY_VALUES as [GroupByKey, ...GroupByKey[]]))
+      .optional()
+      .describe(
+        "Agrega o período por uma ou mais dimensões (categoria, fornecedor, empresa, mes) e retorna JSON estruturado em vez de texto. Requer desde/ate.",
+      ),
+    excluir: z
+      .array(z.enum(TIPO_VALUES as [TipoFlag, ...TipoFlag[]]))
+      .optional()
+      .describe(
+        "Só com groupBy: exclui lançamentos classificados como esses tipos (intercompany, imposto, estorno, externo) do agregado retornado.",
+      ),
   },
   handler: contasAPagarHandler,
 });
