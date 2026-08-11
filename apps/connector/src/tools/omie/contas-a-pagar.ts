@@ -53,15 +53,19 @@ const ALL_MAX_PAGES = 15;
 // generous run of consecutive pages contributes nothing to the window.
 // SAFETY_MAX_PAGES is a separate, much higher runaway guard.
 const STOP_AFTER_EMPTY_PAGES = 40;
-// registros_por_pagina=100 (paired with the ordenar_por/ordem_descrescente
-// params below) is the configuration already verified live against real Omie
-// data earlier this session — do not change either without re-verifying live;
-// a prior attempt at 200-per-page with no sort params silently returned zero
-// rows for a large company (Matriz), most likely because Omie honored a
-// smaller real page size than requested while still reporting total_de_paginas
-// against the requested size, tripping the "partial page = last page" check
-// after page 1.
-const WINDOW_PAGE_SIZE = 100;
+// registros_por_pagina — a prior attempt at 200-per-page WITHOUT the
+// ordenar_por/ordem_descrescente params silently returned zero rows for a
+// large company (Matriz), most likely because Omie honored a smaller real
+// page size than requested while still reporting total_de_paginas against
+// the requested size, tripping the "partial page = last page" check after
+// page 1. 100-per-page WITH the sort params is confirmed correct but, for a
+// large ledger (Matriz, ~12.6k total registros) with hits scattered
+// non-contiguously across the walk, can still take long enough to exceed
+// the tool call's timeout — the consecutive-empty-page stop only bounds
+// *runs* of misses, not total pages walked when hits keep resetting it.
+// 200-per-page (kept WITH the sort params this time, unlike the earlier
+// broken attempt) halves the round-trip count for the same coverage.
+const WINDOW_PAGE_SIZE = 200;
 const SAFETY_MAX_PAGES = 2000;
 
 function brToYmd(br: string): string {

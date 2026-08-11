@@ -156,9 +156,9 @@ describe("contasAPagarHandler", () => {
         ok: true as const,
         data: {
           total_de_paginas: 3,
-          // full page (100 rows, matching WINDOW_PAGE_SIZE) — all dated well
+          // full page (200 rows, matching WINDOW_PAGE_SIZE) — all dated well
           // before the window except one hit on page 1.
-          conta_pagar_cadastro: Array.from({ length: 100 }, (_, i) => {
+          conta_pagar_cadastro: Array.from({ length: 200 }, (_, i) => {
             if (pageNum === 1 && i === 0) {
               return { codigo_lancamento_omie: 1, numero_documento: "AP-HIT", data_vencimento: "01/06/2026", valor_documento: 100, status_titulo: "A_PAGAR", observacao: null };
             }
@@ -170,7 +170,7 @@ describe("contasAPagarHandler", () => {
         ok: true as const,
         data: {
           total_de_paginas: 3,
-          // partial page (< 100) — signals true ledger exhaustion.
+          // partial page (< 200) — signals true ledger exhaustion.
           conta_pagar_cadastro: Array.from({ length: 5 }, (_, i) => ({
             codigo_lancamento_omie: 5000 + i,
             numero_documento: `TAIL-${i}`,
@@ -214,7 +214,7 @@ describe("contasAPagarHandler", () => {
           total_de_paginas: 1000,
           conta_pagar_cadastro: [
             { codigo_lancamento_omie: 1, numero_documento: "AP-HIT", data_vencimento: "01/06/2026", valor_documento: 100, status_titulo: "A_PAGAR", observacao: null },
-            ...Array.from({ length: 99 }, (_, i) => ({ codigo_lancamento_omie: 100 - i, numero_documento: `PAD-${i}`, data_vencimento: "01/01/2020", valor_documento: 1, status_titulo: "PAGO", observacao: null })),
+            ...Array.from({ length: 199 }, (_, i) => ({ codigo_lancamento_omie: 200 - i, numero_documento: `PAD-${i}`, data_vencimento: "01/01/2020", valor_documento: 1, status_titulo: "PAGO", observacao: null })),
           ],
         },
       };
@@ -222,7 +222,7 @@ describe("contasAPagarHandler", () => {
         ok: true as const,
         data: {
           total_de_paginas: 1000,
-          conta_pagar_cadastro: Array.from({ length: 100 }, (_, i) => ({ codigo_lancamento_omie: 1000 - i, numero_documento: `OLD-${i}`, data_vencimento: "01/01/2020", valor_documento: 1, status_titulo: "PAGO", observacao: null })),
+          conta_pagar_cadastro: Array.from({ length: 200 }, (_, i) => ({ codigo_lancamento_omie: 1000 - i, numero_documento: `OLD-${i}`, data_vencimento: "01/01/2020", valor_documento: 1, status_titulo: "PAGO", observacao: null })),
         },
       };
       const categoriaRes = { ok: true as const, data: { categoria_cadastro: [] } };
