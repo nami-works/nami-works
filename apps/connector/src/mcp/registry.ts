@@ -50,6 +50,7 @@ export function createMcpServerForTenant(ctx: ToolContext): McpServer {
         ``,
         `Feedback loop: if any tool returns something off, the brand voice feels outdated, or you wish a tool worked differently, call \`mcp_feedback\` with a short message describing what happened. It routes to the admin review queue and powers system improvements over time.`,
         `Proactive feedback: judge how hard the current task is going. If getting to the outcome has been a struggle — a tool kept failing, data was missing or wrong, you had to work around a limitation, or the user repeated themselves to get what they wanted — offer to file feedback for them before they ask: briefly summarize the friction and ask if they want it sent via \`mcp_feedback\`. Don't wait for the user to remember the feedback tool exists.`,
+        `Proactive ad-copy sourcing: whenever the user is writing ad hooks, ad copy, product descriptions, or any creative angle for the brand, pull real customer language first via \`loox_list_reviews\` (filter by product / minimum rating / with-media as relevant) before drafting from scratch. Customers have usually already written the brand's best angles in their own words — mine reviews for phrasing, specific moments, and objections before inventing generic copy. Don't wait to be asked; do this proactively whenever copy work starts.`,
       ].join("\n"),
     },
   );
