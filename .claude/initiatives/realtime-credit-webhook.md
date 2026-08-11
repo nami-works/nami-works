@@ -6,15 +6,14 @@ status: in-progress
 priority: normal
 created: 2026-08-10
 target: null
-current_phase: 4-webhook-route-built
-next_blocker: another session is concurrently mid-migration on the connector's infra
-  (ECS/RDS → Lightsail Docker Compose + self-hosted Postgres, on branch
-  chore/connector-prune-nami-agent-surface) — confirmed real by Lucas 2026-08-10, not
-  yet landed. Wait for that to land before touching prod: the deploy/migration plan in
-  phase 5 below assumed the now-decommissioned ECS+RDS setup and needs re-planning
-  against Lightsail (SSH + docker compose, no more temporary-SG-allowlist migration
-  runbook, no more scripts/deploy-connector.ps1).
-next_owner: lucas (confirm the other session has landed, then re-open phase 5 planning)
+current_phase: 6-live-in-production
+next_blocker: watch a real (non-test) order flow through the live webhook before
+  deciding on phase 7 cutover — the Cowork poller is currently PAUSED (not disabled).
+  Resuming it risks double-crediting if a real order lands before it's re-paused;
+  leaving it paused risks a gap if the live webhook has a problem the contained test
+  didn't surface. Lucas's call which way to lean while watching.
+next_owner: lucas (decide poller pause/resume while watching the first live order,
+  then close out phases 7-8)
 pr: https://github.com/nami-works/nami-works/pull/98
 stakeholders:
   - GE Beauty customers receiving real-time cashback credit
@@ -90,35 +89,45 @@ Lucas reopens it.
       verbatim from `issue_just_bought.py`. Insert-then-issue ordering + P2002 no-op per
       the idempotency model. Unit tests for HMAC verify pass (`verify.test.ts`); full
       `tsc` build passes clean.
-- [ ] 5. **Re-planned 2026-08-10 for Lightsail** (superseded ECS/RDS plan below was never
-      run). Sequence, once the other session's infra migration has landed:
-      1. Confirm the migration story on Lightsail's self-hosted Postgres (no more
-         temporary-SG-allowlist runbook — that was RDS-specific; likely `docker compose
-         exec` into the connector container, or SSH + run `prisma migrate deploy`
-         directly against the box's Postgres. Check whatever the other session's landed
-         `apps/connector/CLAUDE.md` / deploy docs say once merged).
-      2. Create the secret for the custom app's API secret key (NOT the Admin API access
-         token — used only for HMAC verification) wherever Lightsail secrets now live
-         (SSM `/omnify/` prefix per root CLAUDE.md, or the box's env files at
-         `/etc/cpg-labs/*.env` — confirm which).
-      3. Deploy `apps/connector` (build → push to ECR → SSH to box → bump tag in
-         `/srv/cpg-labs/docker-compose.yml` → `docker compose pull && up -d`, per the
-         landed `apps/connector/CLAUDE.md`).
-      4. For the agreed contained test: do NOT register the real
-         `webhookSubscriptionCreate` yet — hand-craft one HMAC-signed request against a
-         real recent order's data and POST it directly to the deployed endpoint. Confirms
-         the full pipeline without going live for every future order. (Register the real
-         subscription only at actual cutover, phase 7.)
-      5. Pause the Cowork scheduled task `issue-just-bought-credit` for the duration of
-         the test (confirmed with Lucas) to eliminate double-credit risk on the test
-         order; re-enable after.
-      Old ECS/RDS-based plan (temporary SG allowlist, `scripts/deploy-connector.ps1`) is
-      VOID — that infra was torn down 2026-06-29.
-- [ ] 6. Smoke test against a real order (same pattern as the poller's smoke test:
-      verify credit amount, arm tag, expiry, notification copy).
-- [ ] 7. Cutover: disable the Cowork scheduled task `issue-just-bought-credit` ONLY
-      after the webhook is confirmed working end-to-end — don't disable it first and
-      leave a gap where no issuance happens at all.
+- [x] 5. **Deployed to Lightsail 2026-08-11.** Old ECS/RDS-based plan (temporary SG
+      allowlist, `scripts/deploy-connector.ps1`) was void — that infra was torn down
+      2026-06-29. Actual sequence run: built + pushed image (`nami-works:5f030fc`) to
+      ECR, refreshed the box's stale ECR login (root's docker auth token had expired —
+      not on any cadence, just went stale; refresh by piping a fresh
+      `aws ecr get-login-password` over SSH into `docker login` on the box), bumped the
+      tag in `/srv/cpg-labs/docker-compose.yml`, `docker compose pull && up -d
+      connector`. Migration applied via `docker compose exec connector npx prisma
+      migrate deploy` — hit `P3005` first (the box's Postgres had **never** had a
+      tracked Prisma migration run against it before this — schema existed but
+      `_prisma_migrations` didn't; pre-existing hygiene gap, unrelated to this feature,
+      just the first deploy to trip over it). Fixed by baselining all 10 pre-existing
+      migrations (`prisma migrate resolve --applied <name>` for each) before deploying
+      the 11th (this feature's) for real. Webhook secret set in SSM at
+      `/nami-works/tenants/gebeauty/shopify/webhook_secret` (same value as
+      `SHOPIFY_API_SECRET` in `gebeauty/.env`).
+- [x] 6. **Smoke test passed 2026-08-11**, contained (no live subscription yet at test
+      time): hand-crafted one real HMAC-signed `orders/paid` payload for a real order
+      (#91570, Amanda Cruz Bezerra, R$95.00, direct storefront/PagBrasil — deliberately
+      NOT a marketplace-channel order, and confirmed not already credited by the old
+      poller) and POSTed it directly to
+      `https://mcp.gebeauty.com.br/gebeauty/webhooks/shopify/orders-paid`. Verified
+      end-to-end against LIVE Shopify data, not just our own DB: R$19.00 (20% of R$95,
+      correct arm/floor/ceiling math) landed on her real `storeCreditAccounts` balance,
+      tags `credit-goodwill` + `just-bought-credit-60d` applied, `expiresAt` correct
+      (60d), and the `JustBoughtCreditIssuance` row matches. Cowork poller was paused
+      for the duration per Lucas's confirmation, to rule out double-crediting the same
+      order.
+- [x] 5b. **Real subscription registered 2026-08-11**, per Lucas's explicit go-ahead
+      (a deliberately separate call from the contained test above — this is the actual
+      go-live, not a test, since it now fires on every future real order automatically):
+      `webhookSubscriptionCreate` → `gid://shopify/WebhookSubscription/1963781816640`,
+      topic `ORDERS_PAID`, callback `https://mcp.gebeauty.com.br/gebeauty/webhooks/shopify/orders-paid`.
+- [ ] 7. Cutover: **don't disable the Cowork scheduled task yet.** It's currently
+      PAUSED (from the smoke test), not disabled — resume it or leave paused is an open
+      call. Before permanently disabling per the original phase-7 intent, watch at least
+      one REAL (non-test) order flow through the live webhook end-to-end, to confirm the
+      registered subscription actually fires in production, not just the hand-crafted
+      test request.
 - [ ] 8. Decommission the "Tag customer just-bought on order paid" Shopify Flow (or
       explicitly decide to keep it dormant) once the webhook has run clean for a few
       days.
