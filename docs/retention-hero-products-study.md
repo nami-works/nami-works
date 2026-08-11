@@ -1,5 +1,14 @@
 # GE Beauty — Hero Products & Repeat-Behavior Study
 
+**Migrated 2026-08-09:** the canonical, interactive, editable version of this whole study
+(this doc's content + the booster-combo extension) now lives as a live Cowork artifact,
+`ge-beauty-retention-study` — open it from the Cowork sidebar for a sortable/searchable
+explorer instead of these static tables. This markdown file stays as the durable,
+git-tracked record; the artifact is the thing to actually dig back into. The original
+claude.ai artifact below is now superseded — confirmed a second time (2026-08-09) that it
+has no reachable edit/export path and resists scroll automation entirely (page freezes),
+which is exactly why the migration happened.
+
 **Source:** claude.ai artifact "GE Beauty — Acquisition + Rescue Defense"
 (`https://claude.ai/code/artifact/0a012efc-e6ee-43d4-ae9f-6fbf895a4cba`), captured into this repo
 2026-07-31. Renders inside a sandboxed iframe with no direct export path found this session —

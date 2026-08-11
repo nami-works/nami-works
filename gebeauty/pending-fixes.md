@@ -32,6 +32,59 @@ Low-urgency issues discovered during operations. Fix when convenient; not blocki
 - **Fix:** debug/rebuild the Flow (trigger: order paid containing both product ids across the order's cumulative history, not just the single order — a customer often buys the two products in separate orders). Until then, a periodic re-run of the equivalent logic as a removal script is the fallback.
 - **Found:** 2026-07-31
 
+### Move store-credit issuance to real-time (purchase-triggered) — IN PROGRESS
+- **What:** Today's store-credit issuance runs as a batch/wave well after the fact — a
+  "post-mortem" issuance built from a cohort snapshot pulled that morning, not triggered
+  at the moment each qualifying purchase happens (this session's August wave issued to
+  14,545 customers this way). RESOLVED DIRECTION (Lucas, 2026-08-08): not a repurchase-
+  ends-lapse mechanic — a straight purchase-triggered cashback. A Shopify Flow ("Tag
+  customer just-bought on order paid") already tags a customer `just-bought` the moment
+  their order is paid; a poller reads that tag, issues 20%-rule credit, removes the tag.
+  Wave/batch issuance is NOT being retired yet — this runs alongside it for now.
+- **Impact:** Actively being built 2026-08-08, not just backlogged. See
+  `gebeauty/growth/retention-machine/issue_just_bought.py` (poller) and the scheduled
+  task wired to run it every 15 minutes.
+- **Fix:** Real-time poll (every 15 min, not a webhook — the Flow already does the
+  event-detection via the tag, so no new webhook infra needed for this half) + credit
+  issuance reusing the existing `storeCreditAccountCredit` mutation pattern proven in
+  `dual_arm_issue.py`. Idempotency via an append-only ledger keyed on order id (NOT the
+  tag alone) — this session's duplicate-issuance bug (see Notes in
+  `.claude/initiatives/retention-experiments.md`) is the reason for that design.
+- **Known follow-on, not yet designed:** the store-credit notification email's `ctx`
+  logic (goodwill/reactivation/refill) doesn't have a variant for "just bought, here's
+  cashback" — needs new copy before `notify=true` on this flow says something sensible.
+  Also: once credit arrives continuously rather than in an announced batch, customers
+  need a *reminder* mechanism (as credit nears expiry) that doesn't exist yet — flagged
+  by Lucas as a real, separate follow-on.
+- **Found:** 2026-08-07. **Started:** 2026-08-08.
+
+### Snapshot segment tags at issuance time, not reconstruct them after the fact
+- **What:** `core-target`/`missing-mascara`/`missing-shampoo` tags are removed by a
+  Shopify Flow once a customer's underlying condition resolves (they buy the missing
+  product) — so a live tag query can never reconstruct which segment a customer was
+  actually in AT SEND TIME for a wave that already fired. The August wave
+  (`2026-08-07-ge60d`) didn't capture this at issuance; patched same-day with a one-off
+  bulk-tag export filtered to the 16,143 wave members
+  (`learning/segment-tags-snapshot-2026-08-07-ge60d.jsonl`), which is only a same-day
+  proxy (taken hours after send — any customer who already converted and had their tag
+  flipped in that window is invisible to it too).
+- **Impact:** Every future wave has the same blind spot unless fixed at the source.
+  Doesn't block the August wave's readout (day-0 numbers don't depend on segment
+  breakdown yet), but segment-cut lift analysis on THIS wave rests on an imperfect
+  proxy, and every subsequent wave will repeat the gap unless the issuance script itself
+  changes.
+- **Fix:** Inside `dual_arm_issue.py` / `issue_reactivation.py` (or their successors),
+  read and stamp each customer's seg/ctx-relevant tags into the per-row record written to
+  `sends.jsonl` at the moment of issuance — no separate snapshot step, no reconstruction
+  needed later.
+- **Found:** 2026-08-07
+
+### Store-credit email intro text needs to adapt to the new recs layout (Lucas, 2026-08-04)
+- **What:** the general intro line above the recs block ("Reabasteça seu essencial ou dê o próximo passo na jornada do cabelo saudável.") was written for the old 3-mist block and now sits directly above the recs section's own punchline ("Dê o próximo passo na jornada do cabelo saudável ou se reabasteça!") — near-duplicate messaging back to back.
+- **Impact:** redundant copy once the missing-mascara/missing-shampoo/core-target recs redesign ships; not blocking mockup iteration.
+- **Fix:** rework the intro line once the recs-block copy is finalized across all three segments, so the two lines complement rather than repeat each other.
+- **Found:** 2026-08-04
+
 ---
 
 ## B2B registrations

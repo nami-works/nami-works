@@ -15,9 +15,10 @@ Idempotent + resumable (tagsRemove of an absent tag / tagsAdd of an existing tag
   python retag_arms.py           # dry run: counts
   python retag_arms.py --apply   # reconcile (both phases)
 """
-import json, sys, time, argparse, urllib.request
+import json, sys, time, argparse, urllib.request, threading
 from pathlib import Path
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 HERE = Path(__file__).resolve().parent
 TEN = HERE.parent
@@ -32,12 +33,18 @@ COHORT = {
     ("2026-07-06-ge60d", "HOLD"): ("retention-reactivation_control", "retention-reactivation_control_26-07-06", "wave-reactivation-hold-2026-07-06"),
     ("2026-07-07-ge45-59d-refill", "SEND"): ("retention-refill", "retention-refill_26-07-07", "wave-refill-send-2026-07-07"),
     ("2026-07-07-ge45-59d-refill", "HOLD"): ("retention-refill_control", "retention-refill_control_26-07-07", "wave-refill-hold-2026-07-07"),
+    # August wave (Lucas, 2026-08-07) -- same broad umbrella as the July reactivation wave,
+    # new dated tag. old_dated_to_remove is inert here (no prior wave-* tags exist for this
+    # cohort, Phase A only ever touches gids in tag-arms-state.json's July migration set).
+    ("2026-08-07-ge60d", "SEND"): ("retention-reactivation", "retention-reactivation_26-08-07", "wave-reactivation-send-2026-08-07"),
+    ("2026-08-07-ge60d", "HOLD"): ("retention-reactivation_control", "retention-reactivation_control_26-08-07", "wave-reactivation-hold-2026-08-07"),
 }
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 
 def log(*a): print(*a); sys.stdout.flush()
 env = {}
-for line in (TEN / ".env").read_text(encoding="utf-8").splitlines():
+ENV_FILE = TEN / ".env" if (TEN / ".env").exists() else TEN.parent / ".env"
+for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
     line = line.strip()
     if line and not line.startswith("#") and "=" in line:
         k, v = line.split("=", 1); env[k.strip()] = v.strip()
@@ -60,23 +67,47 @@ def plan():
     return p
 
 def run_phase(name, items, mut, state_path):
-    done = set(json.loads(state_path.read_text()) if state_path.exists() else [])
+    # state_path is an append-only .jsonl of {"gid":...} rows, not a rewritten JSON list --
+    # a whole-file rewrite corrupted under a mid-write kill earlier this session (dual_arm_issue.py
+    # incident, see retention-experiments.md notes) and caused 55 duplicate credit issuances.
+    # Never repeat that pattern: derive "done" live from the append-only log instead.
+    done = set()
+    if state_path.exists():
+        for line in state_path.open(encoding="utf-8"):
+            line = line.strip()
+            if not line: continue
+            try: done.add(json.loads(line)["gid"])
+            except Exception: continue
     todo = [x for x in items if x[0] not in done]
     log(f"[{name}] {len(todo)} to do, {len(done)} already done")
     ok = err = 0
-    for i, (gid, tags) in enumerate(todo, 1):
+    lock = threading.Lock()
+    lf = state_path.open("a", encoding="utf-8")
+    key = "tagsRemove" if "tagsRemove" in mut else "tagsAdd"
+
+    def do_one(item):
+        gid, tags = item
         try:
             res = gql(mut, {"id": gid, "tags": tags})
-            key = "tagsRemove" if "tagsRemove" in mut else "tagsAdd"
             ue = res.get("data", {}).get(key, {}).get("userErrors") or res.get("errors")
-            if ue: err += 1; log(f"  [err] {gid}: {ue}"); continue
-            ok += 1; done.add(gid)
+            if ue: return ("err", gid, str(ue))
+            return ("ok", gid, None)
         except Exception as e:
-            err += 1; log(f"  [err] {gid}: {repr(e)[:100]}")
-        if i % 250 == 0:
-            state_path.write_text(json.dumps(sorted(done)))
-            log(f"  {name} progress: {i}/{len(todo)} ok={ok} err={err}"); time.sleep(0.5)
-    state_path.write_text(json.dumps(sorted(done)))
+            return ("err", gid, repr(e)[:100])
+
+    with ThreadPoolExecutor(max_workers=16) as ex:
+        futs = [ex.submit(do_one, item) for item in todo]
+        for i, fut in enumerate(as_completed(futs), 1):
+            status, gid, err_msg = fut.result()
+            with lock:
+                if status == "err":
+                    err += 1; log(f"  [err] {gid}: {err_msg}")
+                else:
+                    ok += 1
+                    lf.write(json.dumps({"gid": gid}) + "\n"); lf.flush()
+                if i % 250 == 0:
+                    log(f"  {name} progress: {i}/{len(todo)} ok={ok} err={err}")
+    lf.close()
     log(f"[{name}] done ok={ok} err={err}")
 
 def main():

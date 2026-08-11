@@ -1,0 +1,2210 @@
+{
+  "generated": "2026-08-08",
+  "data_as_of": "2026-07-22 (orders_raw.jsonl dump date)",
+  "mature_cut": "2026-05-10",
+  "min_cohort_n": 25,
+  "full_history_customers": 30904,
+  "catalogue_baseline": {
+    "n": 25844,
+    "repeat_rate": 0.1405,
+    "repeaters": 3630,
+    "median_time_to_2nd_days": 57.0,
+    "avg_orders_per_customer": 1.202,
+    "avg_12mo_product_rev_brl": 258.72
+  },
+  "booster_alone_baselines": {
+    "GEB 019": {
+      "name": "Booster fortificante",
+      "n": 356,
+      "repeat_rate": 0.0955,
+      "repeaters": 34,
+      "median_time_to_2nd_days": 12.0,
+      "avg_orders_per_customer": 1.146,
+      "avg_12mo_product_rev_brl": 142.01
+    },
+    "GEB 020": {
+      "name": "Booster hidratante",
+      "n": 1565,
+      "repeat_rate": 0.0607,
+      "repeaters": 95,
+      "median_time_to_2nd_days": 37,
+      "avg_orders_per_customer": 1.077,
+      "avg_12mo_product_rev_brl": 103.62
+    },
+    "GEB 021": {
+      "name": "Booster definicao",
+      "n": 1305,
+      "repeat_rate": 0.1134,
+      "repeaters": 148,
+      "median_time_to_2nd_days": 53.5,
+      "avg_orders_per_customer": 1.172,
+      "avg_12mo_product_rev_brl": 121.67
+    },
+    "GEB 022": {
+      "name": "Booster antifrizz",
+      "n": 592,
+      "repeat_rate": 0.1267,
+      "repeaters": 75,
+      "median_time_to_2nd_days": 17,
+      "avg_orders_per_customer": 1.233,
+      "avg_12mo_product_rev_brl": 165.62
+    },
+    "GEB 023": {
+      "name": "Booster antioxidante",
+      "n": 102,
+      "repeat_rate": 0.2255,
+      "repeaters": 23,
+      "median_time_to_2nd_days": 0,
+      "avg_orders_per_customer": 1.451,
+      "avg_12mo_product_rev_brl": 204.74
+    }
+  },
+  "hero_trio_discrepancy_note": "doc (retention-hero-products-study.md) says 001/002/008; code (market_basket.py, hero_repeat_premise.py) says 001/002/003 -- unresolved, both 008 and 003 are included as partner candidates below rather than picking one.",
+  "combo_results_ranked": [
+    {
+      "booster": "GEB 023",
+      "booster_name": "Booster antioxidante",
+      "partner": "GEB 002",
+      "partner_name": "Mascara condicionadora",
+      "both_first": {
+        "n": 348,
+        "repeat_rate": 0.2529,
+        "repeaters": 88,
+        "median_time_to_2nd_days": 84.5,
+        "avg_orders_per_customer": 1.356,
+        "avg_12mo_product_rev_brl": 652.98
+      },
+      "booster_only_first": {
+        "n": 635,
+        "repeat_rate": 0.1591,
+        "repeaters": 101,
+        "median_time_to_2nd_days": 50,
+        "avg_orders_per_customer": 1.235,
+        "avg_12mo_product_rev_brl": 363.54
+      },
+      "partner_only_first": {
+        "n": 3193,
+        "repeat_rate": 0.2017,
+        "repeaters": 644,
+        "median_time_to_2nd_days": 71.0,
+        "avg_orders_per_customer": 1.305,
+        "avg_12mo_product_rev_brl": 440.17
+      },
+      "lift_vs_booster_alone_pp": 9.4,
+      "lift_vs_catalogue_baseline_pp": 11.2,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 019",
+      "booster_name": "Booster fortificante",
+      "partner": "GEB 010",
+      "partner_name": "Travel size | mascara condicionadora",
+      "both_first": {
+        "n": 292,
+        "repeat_rate": 0.2363,
+        "repeaters": 69,
+        "median_time_to_2nd_days": 69,
+        "avg_orders_per_customer": 1.356,
+        "avg_12mo_product_rev_brl": 514.4
+      },
+      "booster_only_first": {
+        "n": 1788,
+        "repeat_rate": 0.1689,
+        "repeaters": 302,
+        "median_time_to_2nd_days": 61.5,
+        "avg_orders_per_customer": 1.241,
+        "avg_12mo_product_rev_brl": 378.87
+      },
+      "partner_only_first": {
+        "n": 2184,
+        "repeat_rate": 0.168,
+        "repeaters": 367,
+        "median_time_to_2nd_days": 66,
+        "avg_orders_per_customer": 1.236,
+        "avg_12mo_product_rev_brl": 371.43
+      },
+      "lift_vs_booster_alone_pp": 6.7,
+      "lift_vs_catalogue_baseline_pp": 9.6,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 019",
+      "booster_name": "Booster fortificante",
+      "partner": "GEB 013",
+      "partner_name": "Travel size | shampoo sem sulfato",
+      "both_first": {
+        "n": 285,
+        "repeat_rate": 0.2316,
+        "repeaters": 66,
+        "median_time_to_2nd_days": 66.0,
+        "avg_orders_per_customer": 1.33,
+        "avg_12mo_product_rev_brl": 515.63
+      },
+      "booster_only_first": {
+        "n": 1795,
+        "repeat_rate": 0.1699,
+        "repeaters": 305,
+        "median_time_to_2nd_days": 62,
+        "avg_orders_per_customer": 1.246,
+        "avg_12mo_product_rev_brl": 379.21
+      },
+      "partner_only_first": {
+        "n": 2036,
+        "repeat_rate": 0.165,
+        "repeaters": 336,
+        "median_time_to_2nd_days": 64.0,
+        "avg_orders_per_customer": 1.232,
+        "avg_12mo_product_rev_brl": 373.99
+      },
+      "lift_vs_booster_alone_pp": 6.2,
+      "lift_vs_catalogue_baseline_pp": 9.1,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 019",
+      "booster_name": "Booster fortificante",
+      "partner": "GEB 011",
+      "partner_name": "Travel size | leave-in protecao termica",
+      "both_first": {
+        "n": 303,
+        "repeat_rate": 0.231,
+        "repeaters": 70,
+        "median_time_to_2nd_days": 68.0,
+        "avg_orders_per_customer": 1.323,
+        "avg_12mo_product_rev_brl": 498.42
+      },
+      "booster_only_first": {
+        "n": 1777,
+        "repeat_rate": 0.1694,
+        "repeaters": 301,
+        "median_time_to_2nd_days": 62,
+        "avg_orders_per_customer": 1.246,
+        "avg_12mo_product_rev_brl": 380.76
+      },
+      "partner_only_first": {
+        "n": 2864,
+        "repeat_rate": 0.1526,
+        "repeaters": 437,
+        "median_time_to_2nd_days": 61,
+        "avg_orders_per_customer": 1.207,
+        "avg_12mo_product_rev_brl": 328.19
+      },
+      "lift_vs_booster_alone_pp": 6.2,
+      "lift_vs_catalogue_baseline_pp": 9.0,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 023",
+      "booster_name": "Booster antioxidante",
+      "partner": "GEB 001",
+      "partner_name": "Shampoo sem sulfato",
+      "both_first": {
+        "n": 366,
+        "repeat_rate": 0.2295,
+        "repeaters": 84,
+        "median_time_to_2nd_days": 75.0,
+        "avg_orders_per_customer": 1.322,
+        "avg_12mo_product_rev_brl": 632.11
+      },
+      "booster_only_first": {
+        "n": 617,
+        "repeat_rate": 0.1702,
+        "repeaters": 105,
+        "median_time_to_2nd_days": 56,
+        "avg_orders_per_customer": 1.251,
+        "avg_12mo_product_rev_brl": 367.47
+      },
+      "partner_only_first": {
+        "n": 3657,
+        "repeat_rate": 0.2018,
+        "repeaters": 738,
+        "median_time_to_2nd_days": 73.5,
+        "avg_orders_per_customer": 1.305,
+        "avg_12mo_product_rev_brl": 431.83
+      },
+      "lift_vs_booster_alone_pp": 5.9,
+      "lift_vs_catalogue_baseline_pp": 8.9,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 019",
+      "booster_name": "Booster fortificante",
+      "partner": "GEB 008",
+      "partner_name": "Shampoo a seco",
+      "both_first": {
+        "n": 415,
+        "repeat_rate": 0.2265,
+        "repeaters": 94,
+        "median_time_to_2nd_days": 79.5,
+        "avg_orders_per_customer": 1.359,
+        "avg_12mo_product_rev_brl": 543.02
+      },
+      "booster_only_first": {
+        "n": 1665,
+        "repeat_rate": 0.1664,
+        "repeaters": 277,
+        "median_time_to_2nd_days": 57,
+        "avg_orders_per_customer": 1.232,
+        "avg_12mo_product_rev_brl": 361.73
+      },
+      "partner_only_first": {
+        "n": 2694,
+        "repeat_rate": 0.1841,
+        "repeaters": 496,
+        "median_time_to_2nd_days": 71.0,
+        "avg_orders_per_customer": 1.277,
+        "avg_12mo_product_rev_brl": 333.89
+      },
+      "lift_vs_booster_alone_pp": 6.0,
+      "lift_vs_catalogue_baseline_pp": 8.6,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 019",
+      "booster_name": "Booster fortificante",
+      "partner": "GEB 002",
+      "partner_name": "Mascara condicionadora",
+      "both_first": {
+        "n": 737,
+        "repeat_rate": 0.2252,
+        "repeaters": 166,
+        "median_time_to_2nd_days": 63.5,
+        "avg_orders_per_customer": 1.327,
+        "avg_12mo_product_rev_brl": 561.42
+      },
+      "booster_only_first": {
+        "n": 1343,
+        "repeat_rate": 0.1526,
+        "repeaters": 205,
+        "median_time_to_2nd_days": 62,
+        "avg_orders_per_customer": 1.219,
+        "avg_12mo_product_rev_brl": 308.17
+      },
+      "partner_only_first": {
+        "n": 2804,
+        "repeat_rate": 0.2019,
+        "repeaters": 566,
+        "median_time_to_2nd_days": 78.5,
+        "avg_orders_per_customer": 1.306,
+        "avg_12mo_product_rev_brl": 434.71
+      },
+      "lift_vs_booster_alone_pp": 7.3,
+      "lift_vs_catalogue_baseline_pp": 8.5,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 023",
+      "booster_name": "Booster antioxidante",
+      "partner": "GEB 008",
+      "partner_name": "Shampoo a seco",
+      "both_first": {
+        "n": 205,
+        "repeat_rate": 0.2244,
+        "repeaters": 46,
+        "median_time_to_2nd_days": 86.5,
+        "avg_orders_per_customer": 1.307,
+        "avg_12mo_product_rev_brl": 566.54
+      },
+      "booster_only_first": {
+        "n": 778,
+        "repeat_rate": 0.1838,
+        "repeaters": 143,
+        "median_time_to_2nd_days": 59,
+        "avg_orders_per_customer": 1.27,
+        "avg_12mo_product_rev_brl": 439.51
+      },
+      "partner_only_first": {
+        "n": 2904,
+        "repeat_rate": 0.1873,
+        "repeaters": 544,
+        "median_time_to_2nd_days": 71.5,
+        "avg_orders_per_customer": 1.286,
+        "avg_12mo_product_rev_brl": 347.35
+      },
+      "lift_vs_booster_alone_pp": 4.1,
+      "lift_vs_catalogue_baseline_pp": 8.4,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 023",
+      "booster_name": "Booster antioxidante",
+      "partner": "GEB 013",
+      "partner_name": "Travel size | shampoo sem sulfato",
+      "both_first": {
+        "n": 136,
+        "repeat_rate": 0.2206,
+        "repeaters": 30,
+        "median_time_to_2nd_days": 78.5,
+        "avg_orders_per_customer": 1.294,
+        "avg_12mo_product_rev_brl": 583.29
+      },
+      "booster_only_first": {
+        "n": 847,
+        "repeat_rate": 0.1877,
+        "repeaters": 159,
+        "median_time_to_2nd_days": 64,
+        "avg_orders_per_customer": 1.275,
+        "avg_12mo_product_rev_brl": 447.17
+      },
+      "partner_only_first": {
+        "n": 2185,
+        "repeat_rate": 0.1703,
+        "repeaters": 372,
+        "median_time_to_2nd_days": 64.0,
+        "avg_orders_per_customer": 1.241,
+        "avg_12mo_product_rev_brl": 379.44
+      },
+      "lift_vs_booster_alone_pp": 3.3,
+      "lift_vs_catalogue_baseline_pp": 8.0,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 023",
+      "booster_name": "Booster antioxidante",
+      "partner": "GEB 024",
+      "partner_name": "Melon mood body & hair splash",
+      "both_first": {
+        "n": 131,
+        "repeat_rate": 0.2137,
+        "repeaters": 28,
+        "median_time_to_2nd_days": 57.5,
+        "avg_orders_per_customer": 1.237,
+        "avg_12mo_product_rev_brl": 605.24
+      },
+      "booster_only_first": {
+        "n": 852,
+        "repeat_rate": 0.189,
+        "repeaters": 161,
+        "median_time_to_2nd_days": 71,
+        "avg_orders_per_customer": 1.284,
+        "avg_12mo_product_rev_brl": 444.6
+      },
+      "partner_only_first": {
+        "n": 6119,
+        "repeat_rate": 0.1327,
+        "repeaters": 812,
+        "median_time_to_2nd_days": 56.5,
+        "avg_orders_per_customer": 1.178,
+        "avg_12mo_product_rev_brl": 271.03
+      },
+      "lift_vs_booster_alone_pp": 2.5,
+      "lift_vs_catalogue_baseline_pp": 7.3,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 022",
+      "booster_name": "Booster antifrizz",
+      "partner": "GEB 002",
+      "partner_name": "Mascara condicionadora",
+      "both_first": {
+        "n": 991,
+        "repeat_rate": 0.2129,
+        "repeaters": 211,
+        "median_time_to_2nd_days": 62,
+        "avg_orders_per_customer": 1.316,
+        "avg_12mo_product_rev_brl": 556.79
+      },
+      "booster_only_first": {
+        "n": 3589,
+        "repeat_rate": 0.1454,
+        "repeaters": 522,
+        "median_time_to_2nd_days": 57.0,
+        "avg_orders_per_customer": 1.203,
+        "avg_12mo_product_rev_brl": 334.7
+      },
+      "partner_only_first": {
+        "n": 2550,
+        "repeat_rate": 0.2043,
+        "repeaters": 521,
+        "median_time_to_2nd_days": 77,
+        "avg_orders_per_customer": 1.308,
+        "avg_12mo_product_rev_brl": 423.88
+      },
+      "lift_vs_booster_alone_pp": 6.8,
+      "lift_vs_catalogue_baseline_pp": 7.2,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 020",
+      "booster_name": "Booster hidratante",
+      "partner": "GEB 001",
+      "partner_name": "Shampoo sem sulfato",
+      "both_first": {
+        "n": 758,
+        "repeat_rate": 0.2111,
+        "repeaters": 160,
+        "median_time_to_2nd_days": 70.5,
+        "avg_orders_per_customer": 1.29,
+        "avg_12mo_product_rev_brl": 559.44
+      },
+      "booster_only_first": {
+        "n": 3240,
+        "repeat_rate": 0.1028,
+        "repeaters": 333,
+        "median_time_to_2nd_days": 54,
+        "avg_orders_per_customer": 1.136,
+        "avg_12mo_product_rev_brl": 228.73
+      },
+      "partner_only_first": {
+        "n": 3265,
+        "repeat_rate": 0.2028,
+        "repeaters": 662,
+        "median_time_to_2nd_days": 74.5,
+        "avg_orders_per_customer": 1.311,
+        "avg_12mo_product_rev_brl": 424.65
+      },
+      "lift_vs_booster_alone_pp": 10.8,
+      "lift_vs_catalogue_baseline_pp": 7.1,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 019",
+      "booster_name": "Booster fortificante",
+      "partner": "GEB 001",
+      "partner_name": "Shampoo sem sulfato",
+      "both_first": {
+        "n": 872,
+        "repeat_rate": 0.211,
+        "repeaters": 184,
+        "median_time_to_2nd_days": 69.0,
+        "avg_orders_per_customer": 1.319,
+        "avg_12mo_product_rev_brl": 533.57
+      },
+      "booster_only_first": {
+        "n": 1208,
+        "repeat_rate": 0.1548,
+        "repeaters": 187,
+        "median_time_to_2nd_days": 59,
+        "avg_orders_per_customer": 1.213,
+        "avg_12mo_product_rev_brl": 299.97
+      },
+      "partner_only_first": {
+        "n": 3151,
+        "repeat_rate": 0.2025,
+        "repeaters": 638,
+        "median_time_to_2nd_days": 76.5,
+        "avg_orders_per_customer": 1.304,
+        "avg_12mo_product_rev_brl": 426.94
+      },
+      "lift_vs_booster_alone_pp": 5.6,
+      "lift_vs_catalogue_baseline_pp": 7.0,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 020",
+      "booster_name": "Booster hidratante",
+      "partner": "GEB 002",
+      "partner_name": "Mascara condicionadora",
+      "both_first": {
+        "n": 754,
+        "repeat_rate": 0.2109,
+        "repeaters": 159,
+        "median_time_to_2nd_days": 78,
+        "avg_orders_per_customer": 1.29,
+        "avg_12mo_product_rev_brl": 561.45
+      },
+      "booster_only_first": {
+        "n": 3244,
+        "repeat_rate": 0.103,
+        "repeaters": 334,
+        "median_time_to_2nd_days": 50.0,
+        "avg_orders_per_customer": 1.136,
+        "avg_12mo_product_rev_brl": 228.67
+      },
+      "partner_only_first": {
+        "n": 2787,
+        "repeat_rate": 0.2056,
+        "repeaters": 573,
+        "median_time_to_2nd_days": 70,
+        "avg_orders_per_customer": 1.316,
+        "avg_12mo_product_rev_brl": 433.93
+      },
+      "lift_vs_booster_alone_pp": 10.8,
+      "lift_vs_catalogue_baseline_pp": 7.0,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 022",
+      "booster_name": "Booster antifrizz",
+      "partner": "GEB 001",
+      "partner_name": "Shampoo sem sulfato",
+      "both_first": {
+        "n": 1073,
+        "repeat_rate": 0.2106,
+        "repeaters": 226,
+        "median_time_to_2nd_days": 58.5,
+        "avg_orders_per_customer": 1.305,
+        "avg_12mo_product_rev_brl": 552.27
+      },
+      "booster_only_first": {
+        "n": 3507,
+        "repeat_rate": 0.1446,
+        "repeaters": 507,
+        "median_time_to_2nd_days": 58,
+        "avg_orders_per_customer": 1.204,
+        "avg_12mo_product_rev_brl": 330.9
+      },
+      "partner_only_first": {
+        "n": 2950,
+        "repeat_rate": 0.202,
+        "repeaters": 596,
+        "median_time_to_2nd_days": 77.5,
+        "avg_orders_per_customer": 1.308,
+        "avg_12mo_product_rev_brl": 412.87
+      },
+      "lift_vs_booster_alone_pp": 6.6,
+      "lift_vs_catalogue_baseline_pp": 7.0,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 019",
+      "booster_name": "Booster fortificante",
+      "partner": "GEB 120",
+      "partner_name": "Leave-in pluma",
+      "both_first": {
+        "n": 344,
+        "repeat_rate": 0.2093,
+        "repeaters": 72,
+        "median_time_to_2nd_days": 78.5,
+        "avg_orders_per_customer": 1.282,
+        "avg_12mo_product_rev_brl": 562.04
+      },
+      "booster_only_first": {
+        "n": 1736,
+        "repeat_rate": 0.1722,
+        "repeaters": 299,
+        "median_time_to_2nd_days": 59,
+        "avg_orders_per_customer": 1.252,
+        "avg_12mo_product_rev_brl": 365.37
+      },
+      "partner_only_first": {
+        "n": 3003,
+        "repeat_rate": 0.1685,
+        "repeaters": 506,
+        "median_time_to_2nd_days": 70.0,
+        "avg_orders_per_customer": 1.227,
+        "avg_12mo_product_rev_brl": 382.66
+      },
+      "lift_vs_booster_alone_pp": 3.7,
+      "lift_vs_catalogue_baseline_pp": 6.9,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 021",
+      "booster_name": "Booster definicao",
+      "partner": "GEB 002",
+      "partner_name": "Mascara condicionadora",
+      "both_first": {
+        "n": 849,
+        "repeat_rate": 0.2073,
+        "repeaters": 176,
+        "median_time_to_2nd_days": 82.5,
+        "avg_orders_per_customer": 1.304,
+        "avg_12mo_product_rev_brl": 566.76
+      },
+      "booster_only_first": {
+        "n": 5692,
+        "repeat_rate": 0.1239,
+        "repeaters": 705,
+        "median_time_to_2nd_days": 60,
+        "avg_orders_per_customer": 1.165,
+        "avg_12mo_product_rev_brl": 268.82
+      },
+      "partner_only_first": {
+        "n": 2692,
+        "repeat_rate": 0.2065,
+        "repeaters": 556,
+        "median_time_to_2nd_days": 69.5,
+        "avg_orders_per_customer": 1.312,
+        "avg_12mo_product_rev_brl": 427.75
+      },
+      "lift_vs_booster_alone_pp": 8.3,
+      "lift_vs_catalogue_baseline_pp": 6.7,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 022",
+      "booster_name": "Booster antifrizz",
+      "partner": "GEB 008",
+      "partner_name": "Shampoo a seco",
+      "both_first": {
+        "n": 717,
+        "repeat_rate": 0.2078,
+        "repeaters": 149,
+        "median_time_to_2nd_days": 70,
+        "avg_orders_per_customer": 1.3,
+        "avg_12mo_product_rev_brl": 496.69
+      },
+      "booster_only_first": {
+        "n": 3863,
+        "repeat_rate": 0.1512,
+        "repeaters": 584,
+        "median_time_to_2nd_days": 57.0,
+        "avg_orders_per_customer": 1.214,
+        "avg_12mo_product_rev_brl": 361.61
+      },
+      "partner_only_first": {
+        "n": 2392,
+        "repeat_rate": 0.1844,
+        "repeaters": 441,
+        "median_time_to_2nd_days": 73,
+        "avg_orders_per_customer": 1.284,
+        "avg_12mo_product_rev_brl": 321.37
+      },
+      "lift_vs_booster_alone_pp": 5.7,
+      "lift_vs_catalogue_baseline_pp": 6.7,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 020",
+      "booster_name": "Booster hidratante",
+      "partner": "GEB 013",
+      "partner_name": "Travel size | shampoo sem sulfato",
+      "both_first": {
+        "n": 383,
+        "repeat_rate": 0.201,
+        "repeaters": 77,
+        "median_time_to_2nd_days": 55,
+        "avg_orders_per_customer": 1.303,
+        "avg_12mo_product_rev_brl": 494.18
+      },
+      "booster_only_first": {
+        "n": 3615,
+        "repeat_rate": 0.1151,
+        "repeaters": 416,
+        "median_time_to_2nd_days": 58.5,
+        "avg_orders_per_customer": 1.151,
+        "avg_12mo_product_rev_brl": 269.95
+      },
+      "partner_only_first": {
+        "n": 1938,
+        "repeat_rate": 0.1677,
+        "repeaters": 325,
+        "median_time_to_2nd_days": 66,
+        "avg_orders_per_customer": 1.233,
+        "avg_12mo_product_rev_brl": 371.06
+      },
+      "lift_vs_booster_alone_pp": 8.6,
+      "lift_vs_catalogue_baseline_pp": 6.0,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 022",
+      "booster_name": "Booster antifrizz",
+      "partner": "GEB 011",
+      "partner_name": "Travel size | leave-in protecao termica",
+      "both_first": {
+        "n": 642,
+        "repeat_rate": 0.2009,
+        "repeaters": 129,
+        "median_time_to_2nd_days": 59,
+        "avg_orders_per_customer": 1.277,
+        "avg_12mo_product_rev_brl": 482.62
+      },
+      "booster_only_first": {
+        "n": 3938,
+        "repeat_rate": 0.1534,
+        "repeaters": 604,
+        "median_time_to_2nd_days": 57.5,
+        "avg_orders_per_customer": 1.219,
+        "avg_12mo_product_rev_brl": 366.48
+      },
+      "partner_only_first": {
+        "n": 2525,
+        "repeat_rate": 0.1497,
+        "repeaters": 378,
+        "median_time_to_2nd_days": 64.5,
+        "avg_orders_per_customer": 1.203,
+        "avg_12mo_product_rev_brl": 309.36
+      },
+      "lift_vs_booster_alone_pp": 4.7,
+      "lift_vs_catalogue_baseline_pp": 6.0,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 021",
+      "booster_name": "Booster definicao",
+      "partner": "GEB 001",
+      "partner_name": "Shampoo sem sulfato",
+      "both_first": {
+        "n": 942,
+        "repeat_rate": 0.1985,
+        "repeaters": 187,
+        "median_time_to_2nd_days": 82,
+        "avg_orders_per_customer": 1.274,
+        "avg_12mo_product_rev_brl": 552.47
+      },
+      "booster_only_first": {
+        "n": 5599,
+        "repeat_rate": 0.124,
+        "repeaters": 694,
+        "median_time_to_2nd_days": 60.0,
+        "avg_orders_per_customer": 1.168,
+        "avg_12mo_product_rev_brl": 266.28
+      },
+      "partner_only_first": {
+        "n": 3081,
+        "repeat_rate": 0.2061,
+        "repeaters": 635,
+        "median_time_to_2nd_days": 70,
+        "avg_orders_per_customer": 1.317,
+        "avg_12mo_product_rev_brl": 418.73
+      },
+      "lift_vs_booster_alone_pp": 7.5,
+      "lift_vs_catalogue_baseline_pp": 5.8,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 023",
+      "booster_name": "Booster antioxidante",
+      "partner": "GEB 010",
+      "partner_name": "Travel size | mascara condicionadora",
+      "both_first": {
+        "n": 132,
+        "repeat_rate": 0.197,
+        "repeaters": 26,
+        "median_time_to_2nd_days": 63.5,
+        "avg_orders_per_customer": 1.273,
+        "avg_12mo_product_rev_brl": 569.7
+      },
+      "booster_only_first": {
+        "n": 851,
+        "repeat_rate": 0.1915,
+        "repeaters": 163,
+        "median_time_to_2nd_days": 70,
+        "avg_orders_per_customer": 1.278,
+        "avg_12mo_product_rev_brl": 449.92
+      },
+      "partner_only_first": {
+        "n": 2344,
+        "repeat_rate": 0.1749,
+        "repeaters": 410,
+        "median_time_to_2nd_days": 66.5,
+        "avg_orders_per_customer": 1.249,
+        "avg_12mo_product_rev_brl": 378.07
+      },
+      "lift_vs_booster_alone_pp": 0.6,
+      "lift_vs_catalogue_baseline_pp": 5.6,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 019",
+      "booster_name": "Booster fortificante",
+      "partner": "GEB 102",
+      "partner_name": "Primer liso intacto",
+      "both_first": {
+        "n": 302,
+        "repeat_rate": 0.1954,
+        "repeaters": 59,
+        "median_time_to_2nd_days": 75,
+        "avg_orders_per_customer": 1.291,
+        "avg_12mo_product_rev_brl": 558.77
+      },
+      "booster_only_first": {
+        "n": 1778,
+        "repeat_rate": 0.1755,
+        "repeaters": 312,
+        "median_time_to_2nd_days": 61.0,
+        "avg_orders_per_customer": 1.251,
+        "avg_12mo_product_rev_brl": 370.58
+      },
+      "partner_only_first": {
+        "n": 2759,
+        "repeat_rate": 0.1606,
+        "repeaters": 443,
+        "median_time_to_2nd_days": 71,
+        "avg_orders_per_customer": 1.229,
+        "avg_12mo_product_rev_brl": 352.9
+      },
+      "lift_vs_booster_alone_pp": 2.0,
+      "lift_vs_catalogue_baseline_pp": 5.5,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 020",
+      "booster_name": "Booster hidratante",
+      "partner": "GEB 003",
+      "partner_name": "Leave-in com protecao termica",
+      "both_first": {
+        "n": 797,
+        "repeat_rate": 0.1932,
+        "repeaters": 154,
+        "median_time_to_2nd_days": 80.0,
+        "avg_orders_per_customer": 1.267,
+        "avg_12mo_product_rev_brl": 494.15
+      },
+      "booster_only_first": {
+        "n": 3201,
+        "repeat_rate": 0.1059,
+        "repeaters": 339,
+        "median_time_to_2nd_days": 48,
+        "avg_orders_per_customer": 1.14,
+        "avg_12mo_product_rev_brl": 240.96
+      },
+      "partner_only_first": {
+        "n": 3844,
+        "repeat_rate": 0.1556,
+        "repeaters": 598,
+        "median_time_to_2nd_days": 67.0,
+        "avg_orders_per_customer": 1.223,
+        "avg_12mo_product_rev_brl": 327.12
+      },
+      "lift_vs_booster_alone_pp": 8.7,
+      "lift_vs_catalogue_baseline_pp": 5.3,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 021",
+      "booster_name": "Booster definicao",
+      "partner": "GEB 102",
+      "partner_name": "Primer liso intacto",
+      "both_first": {
+        "n": 492,
+        "repeat_rate": 0.1931,
+        "repeaters": 95,
+        "median_time_to_2nd_days": 82,
+        "avg_orders_per_customer": 1.236,
+        "avg_12mo_product_rev_brl": 519.28
+      },
+      "booster_only_first": {
+        "n": 6049,
+        "repeat_rate": 0.1299,
+        "repeaters": 786,
+        "median_time_to_2nd_days": 64.0,
+        "avg_orders_per_customer": 1.179,
+        "avg_12mo_product_rev_brl": 290.27
+      },
+      "partner_only_first": {
+        "n": 2569,
+        "repeat_rate": 0.1584,
+        "repeaters": 407,
+        "median_time_to_2nd_days": 69,
+        "avg_orders_per_customer": 1.235,
+        "avg_12mo_product_rev_brl": 345.24
+      },
+      "lift_vs_booster_alone_pp": 6.3,
+      "lift_vs_catalogue_baseline_pp": 5.3,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 023",
+      "booster_name": "Booster antioxidante",
+      "partner": "GEB 011",
+      "partner_name": "Travel size | leave-in protecao termica",
+      "both_first": {
+        "n": 160,
+        "repeat_rate": 0.1938,
+        "repeaters": 31,
+        "median_time_to_2nd_days": 57,
+        "avg_orders_per_customer": 1.275,
+        "avg_12mo_product_rev_brl": 532.36
+      },
+      "booster_only_first": {
+        "n": 823,
+        "repeat_rate": 0.192,
+        "repeaters": 158,
+        "median_time_to_2nd_days": 72.0,
+        "avg_orders_per_customer": 1.278,
+        "avg_12mo_product_rev_brl": 453.1
+      },
+      "partner_only_first": {
+        "n": 3007,
+        "repeat_rate": 0.1583,
+        "repeaters": 476,
+        "median_time_to_2nd_days": 63.0,
+        "avg_orders_per_customer": 1.215,
+        "avg_12mo_product_rev_brl": 334.48
+      },
+      "lift_vs_booster_alone_pp": 0.2,
+      "lift_vs_catalogue_baseline_pp": 5.3,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 023",
+      "booster_name": "Booster antioxidante",
+      "partner": "GEB 102",
+      "partner_name": "Primer liso intacto",
+      "both_first": {
+        "n": 181,
+        "repeat_rate": 0.1934,
+        "repeaters": 35,
+        "median_time_to_2nd_days": 74,
+        "avg_orders_per_customer": 1.293,
+        "avg_12mo_product_rev_brl": 643.54
+      },
+      "booster_only_first": {
+        "n": 802,
+        "repeat_rate": 0.192,
+        "repeaters": 154,
+        "median_time_to_2nd_days": 61.0,
+        "avg_orders_per_customer": 1.274,
+        "avg_12mo_product_rev_brl": 425.94
+      },
+      "partner_only_first": {
+        "n": 2880,
+        "repeat_rate": 0.1622,
+        "repeaters": 467,
+        "median_time_to_2nd_days": 71,
+        "avg_orders_per_customer": 1.231,
+        "avg_12mo_product_rev_brl": 356.22
+      },
+      "lift_vs_booster_alone_pp": 0.1,
+      "lift_vs_catalogue_baseline_pp": 5.3,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 020",
+      "booster_name": "Booster hidratante",
+      "partner": "GEB 010",
+      "partner_name": "Travel size | mascara condicionadora",
+      "both_first": {
+        "n": 399,
+        "repeat_rate": 0.193,
+        "repeaters": 77,
+        "median_time_to_2nd_days": 55,
+        "avg_orders_per_customer": 1.286,
+        "avg_12mo_product_rev_brl": 488.54
+      },
+      "booster_only_first": {
+        "n": 3599,
+        "repeat_rate": 0.1156,
+        "repeaters": 416,
+        "median_time_to_2nd_days": 59.0,
+        "avg_orders_per_customer": 1.152,
+        "avg_12mo_product_rev_brl": 269.58
+      },
+      "partner_only_first": {
+        "n": 2077,
+        "repeat_rate": 0.1728,
+        "repeaters": 359,
+        "median_time_to_2nd_days": 69,
+        "avg_orders_per_customer": 1.244,
+        "avg_12mo_product_rev_brl": 369.03
+      },
+      "lift_vs_booster_alone_pp": 7.7,
+      "lift_vs_catalogue_baseline_pp": 5.2,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 019",
+      "booster_name": "Booster fortificante",
+      "partner": "GEB 101",
+      "partner_name": "Primer cachos definidos",
+      "both_first": {
+        "n": 225,
+        "repeat_rate": 0.1911,
+        "repeaters": 43,
+        "median_time_to_2nd_days": 75,
+        "avg_orders_per_customer": 1.204,
+        "avg_12mo_product_rev_brl": 563.92
+      },
+      "booster_only_first": {
+        "n": 1855,
+        "repeat_rate": 0.1768,
+        "repeaters": 328,
+        "median_time_to_2nd_days": 61.5,
+        "avg_orders_per_customer": 1.264,
+        "avg_12mo_product_rev_brl": 377.76
+      },
+      "partner_only_first": {
+        "n": 5046,
+        "repeat_rate": 0.112,
+        "repeaters": 565,
+        "median_time_to_2nd_days": 55,
+        "avg_orders_per_customer": 1.152,
+        "avg_12mo_product_rev_brl": 296.71
+      },
+      "lift_vs_booster_alone_pp": 1.4,
+      "lift_vs_catalogue_baseline_pp": 5.1,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 019",
+      "booster_name": "Booster fortificante",
+      "partner": "GEB 003",
+      "partner_name": "Leave-in com protecao termica",
+      "both_first": {
+        "n": 496,
+        "repeat_rate": 0.1875,
+        "repeaters": 93,
+        "median_time_to_2nd_days": 91,
+        "avg_orders_per_customer": 1.296,
+        "avg_12mo_product_rev_brl": 557.2
+      },
+      "booster_only_first": {
+        "n": 1584,
+        "repeat_rate": 0.1755,
+        "repeaters": 278,
+        "median_time_to_2nd_days": 50.5,
+        "avg_orders_per_customer": 1.245,
+        "avg_12mo_product_rev_brl": 348.02
+      },
+      "partner_only_first": {
+        "n": 4145,
+        "repeat_rate": 0.159,
+        "repeaters": 659,
+        "median_time_to_2nd_days": 66,
+        "avg_orders_per_customer": 1.222,
+        "avg_12mo_product_rev_brl": 331.71
+      },
+      "lift_vs_booster_alone_pp": 1.2,
+      "lift_vs_catalogue_baseline_pp": 4.7,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 021",
+      "booster_name": "Booster definicao",
+      "partner": "GEB 008",
+      "partner_name": "Shampoo a seco",
+      "both_first": {
+        "n": 725,
+        "repeat_rate": 0.1862,
+        "repeaters": 135,
+        "median_time_to_2nd_days": 86,
+        "avg_orders_per_customer": 1.257,
+        "avg_12mo_product_rev_brl": 463.47
+      },
+      "booster_only_first": {
+        "n": 5816,
+        "repeat_rate": 0.1283,
+        "repeaters": 746,
+        "median_time_to_2nd_days": 60.0,
+        "avg_orders_per_customer": 1.174,
+        "avg_12mo_product_rev_brl": 288.05
+      },
+      "partner_only_first": {
+        "n": 2384,
+        "repeat_rate": 0.1909,
+        "repeaters": 455,
+        "median_time_to_2nd_days": 67,
+        "avg_orders_per_customer": 1.297,
+        "avg_12mo_product_rev_brl": 330.89
+      },
+      "lift_vs_booster_alone_pp": 5.8,
+      "lift_vs_catalogue_baseline_pp": 4.6,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 022",
+      "booster_name": "Booster antifrizz",
+      "partner": "GEB 010",
+      "partner_name": "Travel size | mascara condicionadora",
+      "both_first": {
+        "n": 594,
+        "repeat_rate": 0.1852,
+        "repeaters": 110,
+        "median_time_to_2nd_days": 57.0,
+        "avg_orders_per_customer": 1.259,
+        "avg_12mo_product_rev_brl": 489.14
+      },
+      "booster_only_first": {
+        "n": 3986,
+        "repeat_rate": 0.1563,
+        "repeaters": 623,
+        "median_time_to_2nd_days": 58,
+        "avg_orders_per_customer": 1.223,
+        "avg_12mo_product_rev_brl": 366.91
+      },
+      "partner_only_first": {
+        "n": 1882,
+        "repeat_rate": 0.1732,
+        "repeaters": 326,
+        "median_time_to_2nd_days": 73.0,
+        "avg_orders_per_customer": 1.248,
+        "avg_12mo_product_rev_brl": 356.46
+      },
+      "lift_vs_booster_alone_pp": 2.9,
+      "lift_vs_catalogue_baseline_pp": 4.5,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 020",
+      "booster_name": "Booster hidratante",
+      "partner": "GEB 008",
+      "partner_name": "Shampoo a seco",
+      "both_first": {
+        "n": 440,
+        "repeat_rate": 0.1841,
+        "repeaters": 81,
+        "median_time_to_2nd_days": 78,
+        "avg_orders_per_customer": 1.282,
+        "avg_12mo_product_rev_brl": 523.55
+      },
+      "booster_only_first": {
+        "n": 3558,
+        "repeat_rate": 0.1158,
+        "repeaters": 412,
+        "median_time_to_2nd_days": 55.0,
+        "avg_orders_per_customer": 1.151,
+        "avg_12mo_product_rev_brl": 262.73
+      },
+      "partner_only_first": {
+        "n": 2669,
+        "repeat_rate": 0.1907,
+        "repeaters": 509,
+        "median_time_to_2nd_days": 71,
+        "avg_orders_per_customer": 1.288,
+        "avg_12mo_product_rev_brl": 335.14
+      },
+      "lift_vs_booster_alone_pp": 6.8,
+      "lift_vs_catalogue_baseline_pp": 4.4,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 022",
+      "booster_name": "Booster antifrizz",
+      "partner": "GEB 003",
+      "partner_name": "Leave-in com protecao termica",
+      "both_first": {
+        "n": 1196,
+        "repeat_rate": 0.1848,
+        "repeaters": 221,
+        "median_time_to_2nd_days": 72,
+        "avg_orders_per_customer": 1.258,
+        "avg_12mo_product_rev_brl": 480.54
+      },
+      "booster_only_first": {
+        "n": 3384,
+        "repeat_rate": 0.1513,
+        "repeaters": 512,
+        "median_time_to_2nd_days": 55.0,
+        "avg_orders_per_customer": 1.217,
+        "avg_12mo_product_rev_brl": 348.2
+      },
+      "partner_only_first": {
+        "n": 3445,
+        "repeat_rate": 0.1541,
+        "repeaters": 531,
+        "median_time_to_2nd_days": 69,
+        "avg_orders_per_customer": 1.221,
+        "avg_12mo_product_rev_brl": 312.5
+      },
+      "lift_vs_booster_alone_pp": 3.4,
+      "lift_vs_catalogue_baseline_pp": 4.4,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 022",
+      "booster_name": "Booster antifrizz",
+      "partner": "GEB 120",
+      "partner_name": "Leave-in pluma",
+      "both_first": {
+        "n": 775,
+        "repeat_rate": 0.1832,
+        "repeaters": 142,
+        "median_time_to_2nd_days": 57.0,
+        "avg_orders_per_customer": 1.241,
+        "avg_12mo_product_rev_brl": 522.08
+      },
+      "booster_only_first": {
+        "n": 3805,
+        "repeat_rate": 0.1553,
+        "repeaters": 591,
+        "median_time_to_2nd_days": 58,
+        "avg_orders_per_customer": 1.224,
+        "avg_12mo_product_rev_brl": 354.38
+      },
+      "partner_only_first": {
+        "n": 2572,
+        "repeat_rate": 0.1695,
+        "repeaters": 436,
+        "median_time_to_2nd_days": 72.0,
+        "avg_orders_per_customer": 1.231,
+        "avg_12mo_product_rev_brl": 364.64
+      },
+      "lift_vs_booster_alone_pp": 2.8,
+      "lift_vs_catalogue_baseline_pp": 4.3,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 022",
+      "booster_name": "Booster antifrizz",
+      "partner": "GEB 013",
+      "partner_name": "Travel size | shampoo sem sulfato",
+      "both_first": {
+        "n": 569,
+        "repeat_rate": 0.1828,
+        "repeaters": 104,
+        "median_time_to_2nd_days": 57.5,
+        "avg_orders_per_customer": 1.25,
+        "avg_12mo_product_rev_brl": 494.06
+      },
+      "booster_only_first": {
+        "n": 4011,
+        "repeat_rate": 0.1568,
+        "repeaters": 629,
+        "median_time_to_2nd_days": 58,
+        "avg_orders_per_customer": 1.224,
+        "avg_12mo_product_rev_brl": 366.97
+      },
+      "partner_only_first": {
+        "n": 1752,
+        "repeat_rate": 0.1701,
+        "repeaters": 298,
+        "median_time_to_2nd_days": 68.5,
+        "avg_orders_per_customer": 1.243,
+        "avg_12mo_product_rev_brl": 358.03
+      },
+      "lift_vs_booster_alone_pp": 2.6,
+      "lift_vs_catalogue_baseline_pp": 4.2,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 023",
+      "booster_name": "Booster antioxidante",
+      "partner": "GEB 003",
+      "partner_name": "Leave-in com protecao termica",
+      "both_first": {
+        "n": 394,
+        "repeat_rate": 0.1827,
+        "repeaters": 72,
+        "median_time_to_2nd_days": 88.5,
+        "avg_orders_per_customer": 1.249,
+        "avg_12mo_product_rev_brl": 573.43
+      },
+      "booster_only_first": {
+        "n": 589,
+        "repeat_rate": 0.1986,
+        "repeaters": 117,
+        "median_time_to_2nd_days": 56,
+        "avg_orders_per_customer": 1.297,
+        "avg_12mo_product_rev_brl": 394.14
+      },
+      "partner_only_first": {
+        "n": 4247,
+        "repeat_rate": 0.1601,
+        "repeaters": 680,
+        "median_time_to_2nd_days": 67.5,
+        "avg_orders_per_customer": 1.229,
+        "avg_12mo_product_rev_brl": 335.62
+      },
+      "lift_vs_booster_alone_pp": -1.6,
+      "lift_vs_catalogue_baseline_pp": 4.2,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 020",
+      "booster_name": "Booster hidratante",
+      "partner": "GEB 011",
+      "partner_name": "Travel size | leave-in protecao termica",
+      "both_first": {
+        "n": 431,
+        "repeat_rate": 0.181,
+        "repeaters": 78,
+        "median_time_to_2nd_days": 59.0,
+        "avg_orders_per_customer": 1.258,
+        "avg_12mo_product_rev_brl": 467.73
+      },
+      "booster_only_first": {
+        "n": 3567,
+        "repeat_rate": 0.1163,
+        "repeaters": 415,
+        "median_time_to_2nd_days": 57,
+        "avg_orders_per_customer": 1.154,
+        "avg_12mo_product_rev_brl": 270.13
+      },
+      "partner_only_first": {
+        "n": 2736,
+        "repeat_rate": 0.1568,
+        "repeaters": 429,
+        "median_time_to_2nd_days": 62,
+        "avg_orders_per_customer": 1.212,
+        "avg_12mo_product_rev_brl": 325.06
+      },
+      "lift_vs_booster_alone_pp": 6.5,
+      "lift_vs_catalogue_baseline_pp": 4.0,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 020",
+      "booster_name": "Booster hidratante",
+      "partner": "GEB 120",
+      "partner_name": "Leave-in pluma",
+      "both_first": {
+        "n": 494,
+        "repeat_rate": 0.1802,
+        "repeaters": 89,
+        "median_time_to_2nd_days": 55,
+        "avg_orders_per_customer": 1.235,
+        "avg_12mo_product_rev_brl": 520.3
+      },
+      "booster_only_first": {
+        "n": 3504,
+        "repeat_rate": 0.1153,
+        "repeaters": 404,
+        "median_time_to_2nd_days": 58.5,
+        "avg_orders_per_customer": 1.156,
+        "avg_12mo_product_rev_brl": 259.17
+      },
+      "partner_only_first": {
+        "n": 2853,
+        "repeat_rate": 0.1714,
+        "repeaters": 489,
+        "median_time_to_2nd_days": 73,
+        "avg_orders_per_customer": 1.233,
+        "avg_12mo_product_rev_brl": 380.45
+      },
+      "lift_vs_booster_alone_pp": 6.5,
+      "lift_vs_catalogue_baseline_pp": 4.0,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 023",
+      "booster_name": "Booster antioxidante",
+      "partner": "GEB 120",
+      "partner_name": "Leave-in pluma",
+      "both_first": {
+        "n": 208,
+        "repeat_rate": 0.1779,
+        "repeaters": 37,
+        "median_time_to_2nd_days": 84,
+        "avg_orders_per_customer": 1.25,
+        "avg_12mo_product_rev_brl": 598.82
+      },
+      "booster_only_first": {
+        "n": 775,
+        "repeat_rate": 0.1961,
+        "repeaters": 152,
+        "median_time_to_2nd_days": 60.5,
+        "avg_orders_per_customer": 1.285,
+        "avg_12mo_product_rev_brl": 430.36
+      },
+      "partner_only_first": {
+        "n": 3139,
+        "repeat_rate": 0.1723,
+        "repeaters": 541,
+        "median_time_to_2nd_days": 70,
+        "avg_orders_per_customer": 1.232,
+        "avg_12mo_product_rev_brl": 387.99
+      },
+      "lift_vs_booster_alone_pp": -1.8,
+      "lift_vs_catalogue_baseline_pp": 3.7,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 019",
+      "booster_name": "Booster fortificante",
+      "partner": "GEB 024",
+      "partner_name": "Melon mood body & hair splash",
+      "both_first": {
+        "n": 287,
+        "repeat_rate": 0.1742,
+        "repeaters": 50,
+        "median_time_to_2nd_days": 46.0,
+        "avg_orders_per_customer": 1.23,
+        "avg_12mo_product_rev_brl": 495.26
+      },
+      "booster_only_first": {
+        "n": 1793,
+        "repeat_rate": 0.179,
+        "repeaters": 321,
+        "median_time_to_2nd_days": 65,
+        "avg_orders_per_customer": 1.262,
+        "avg_12mo_product_rev_brl": 382.32
+      },
+      "partner_only_first": {
+        "n": 5963,
+        "repeat_rate": 0.1325,
+        "repeaters": 790,
+        "median_time_to_2nd_days": 57.0,
+        "avg_orders_per_customer": 1.177,
+        "avg_12mo_product_rev_brl": 267.58
+      },
+      "lift_vs_booster_alone_pp": -0.5,
+      "lift_vs_catalogue_baseline_pp": 3.4,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 020",
+      "booster_name": "Booster hidratante",
+      "partner": "GEB 102",
+      "partner_name": "Primer liso intacto",
+      "both_first": {
+        "n": 459,
+        "repeat_rate": 0.1743,
+        "repeaters": 80,
+        "median_time_to_2nd_days": 75.0,
+        "avg_orders_per_customer": 1.237,
+        "avg_12mo_product_rev_brl": 499.54
+      },
+      "booster_only_first": {
+        "n": 3539,
+        "repeat_rate": 0.1167,
+        "repeaters": 413,
+        "median_time_to_2nd_days": 55,
+        "avg_orders_per_customer": 1.156,
+        "avg_12mo_product_rev_brl": 264.44
+      },
+      "partner_only_first": {
+        "n": 2602,
+        "repeat_rate": 0.1622,
+        "repeaters": 422,
+        "median_time_to_2nd_days": 71.0,
+        "avg_orders_per_customer": 1.234,
+        "avg_12mo_product_rev_brl": 350.93
+      },
+      "lift_vs_booster_alone_pp": 5.8,
+      "lift_vs_catalogue_baseline_pp": 3.4,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 023",
+      "booster_name": "Booster antioxidante",
+      "partner": "GEB 101",
+      "partner_name": "Primer cachos definidos",
+      "both_first": {
+        "n": 172,
+        "repeat_rate": 0.1744,
+        "repeaters": 30,
+        "median_time_to_2nd_days": 97.0,
+        "avg_orders_per_customer": 1.233,
+        "avg_12mo_product_rev_brl": 585.96
+      },
+      "booster_only_first": {
+        "n": 811,
+        "repeat_rate": 0.1961,
+        "repeaters": 159,
+        "median_time_to_2nd_days": 60,
+        "avg_orders_per_customer": 1.287,
+        "avg_12mo_product_rev_brl": 440.56
+      },
+      "partner_only_first": {
+        "n": 5099,
+        "repeat_rate": 0.1134,
+        "repeaters": 578,
+        "median_time_to_2nd_days": 55.0,
+        "avg_orders_per_customer": 1.152,
+        "avg_12mo_product_rev_brl": 298.74
+      },
+      "lift_vs_booster_alone_pp": -2.2,
+      "lift_vs_catalogue_baseline_pp": 3.4,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 022",
+      "booster_name": "Booster antifrizz",
+      "partner": "GEB 024",
+      "partner_name": "Melon mood body & hair splash",
+      "both_first": {
+        "n": 468,
+        "repeat_rate": 0.1709,
+        "repeaters": 80,
+        "median_time_to_2nd_days": 58.5,
+        "avg_orders_per_customer": 1.235,
+        "avg_12mo_product_rev_brl": 503.39
+      },
+      "booster_only_first": {
+        "n": 4112,
+        "repeat_rate": 0.1588,
+        "repeaters": 653,
+        "median_time_to_2nd_days": 57,
+        "avg_orders_per_customer": 1.226,
+        "avg_12mo_product_rev_brl": 369.03
+      },
+      "partner_only_first": {
+        "n": 5782,
+        "repeat_rate": 0.1314,
+        "repeaters": 760,
+        "median_time_to_2nd_days": 56.0,
+        "avg_orders_per_customer": 1.175,
+        "avg_12mo_product_rev_brl": 259.79
+      },
+      "lift_vs_booster_alone_pp": 1.2,
+      "lift_vs_catalogue_baseline_pp": 3.0,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 022",
+      "booster_name": "Booster antifrizz",
+      "partner": "GEB 101",
+      "partner_name": "Primer cachos definidos",
+      "both_first": {
+        "n": 1066,
+        "repeat_rate": 0.1689,
+        "repeaters": 180,
+        "median_time_to_2nd_days": 62.0,
+        "avg_orders_per_customer": 1.218,
+        "avg_12mo_product_rev_brl": 457.32
+      },
+      "booster_only_first": {
+        "n": 3514,
+        "repeat_rate": 0.1574,
+        "repeaters": 553,
+        "median_time_to_2nd_days": 57,
+        "avg_orders_per_customer": 1.23,
+        "avg_12mo_product_rev_brl": 360.14
+      },
+      "partner_only_first": {
+        "n": 4205,
+        "repeat_rate": 0.1018,
+        "repeaters": 428,
+        "median_time_to_2nd_days": 54.5,
+        "avg_orders_per_customer": 1.138,
+        "avg_12mo_product_rev_brl": 270.28
+      },
+      "lift_vs_booster_alone_pp": 1.1,
+      "lift_vs_catalogue_baseline_pp": 2.8,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 020",
+      "booster_name": "Booster hidratante",
+      "partner": "GEB 101",
+      "partner_name": "Primer cachos definidos",
+      "both_first": {
+        "n": 377,
+        "repeat_rate": 0.1671,
+        "repeaters": 63,
+        "median_time_to_2nd_days": 52,
+        "avg_orders_per_customer": 1.225,
+        "avg_12mo_product_rev_brl": 485.73
+      },
+      "booster_only_first": {
+        "n": 3621,
+        "repeat_rate": 0.1188,
+        "repeaters": 430,
+        "median_time_to_2nd_days": 59.0,
+        "avg_orders_per_customer": 1.159,
+        "avg_12mo_product_rev_brl": 271.2
+      },
+      "partner_only_first": {
+        "n": 4894,
+        "repeat_rate": 0.1114,
+        "repeaters": 545,
+        "median_time_to_2nd_days": 57,
+        "avg_orders_per_customer": 1.149,
+        "avg_12mo_product_rev_brl": 294.43
+      },
+      "lift_vs_booster_alone_pp": 4.8,
+      "lift_vs_catalogue_baseline_pp": 2.7,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 022",
+      "booster_name": "Booster antifrizz",
+      "partner": "GEB 102",
+      "partner_name": "Primer liso intacto",
+      "both_first": {
+        "n": 1100,
+        "repeat_rate": 0.1609,
+        "repeaters": 177,
+        "median_time_to_2nd_days": 70,
+        "avg_orders_per_customer": 1.247,
+        "avg_12mo_product_rev_brl": 467.45
+      },
+      "booster_only_first": {
+        "n": 3480,
+        "repeat_rate": 0.1598,
+        "repeaters": 556,
+        "median_time_to_2nd_days": 56.5,
+        "avg_orders_per_customer": 1.221,
+        "avg_12mo_product_rev_brl": 355.99
+      },
+      "partner_only_first": {
+        "n": 1961,
+        "repeat_rate": 0.1657,
+        "repeaters": 325,
+        "median_time_to_2nd_days": 73,
+        "avg_orders_per_customer": 1.228,
+        "avg_12mo_product_rev_brl": 320.35
+      },
+      "lift_vs_booster_alone_pp": 0.1,
+      "lift_vs_catalogue_baseline_pp": 2.0,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 021",
+      "booster_name": "Booster definicao",
+      "partner": "GEB 013",
+      "partner_name": "Travel size | shampoo sem sulfato",
+      "both_first": {
+        "n": 669,
+        "repeat_rate": 0.1599,
+        "repeaters": 107,
+        "median_time_to_2nd_days": 66,
+        "avg_orders_per_customer": 1.236,
+        "avg_12mo_product_rev_brl": 445.23
+      },
+      "booster_only_first": {
+        "n": 5872,
+        "repeat_rate": 0.1318,
+        "repeaters": 774,
+        "median_time_to_2nd_days": 65.0,
+        "avg_orders_per_customer": 1.177,
+        "avg_12mo_product_rev_brl": 291.8
+      },
+      "partner_only_first": {
+        "n": 1652,
+        "repeat_rate": 0.1786,
+        "repeaters": 295,
+        "median_time_to_2nd_days": 63,
+        "avg_orders_per_customer": 1.248,
+        "avg_12mo_product_rev_brl": 369.57
+      },
+      "lift_vs_booster_alone_pp": 2.8,
+      "lift_vs_catalogue_baseline_pp": 1.9,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 020",
+      "booster_name": "Booster hidratante",
+      "partner": "GEB 024",
+      "partner_name": "Melon mood body & hair splash",
+      "both_first": {
+        "n": 390,
+        "repeat_rate": 0.159,
+        "repeaters": 62,
+        "median_time_to_2nd_days": 54.5,
+        "avg_orders_per_customer": 1.197,
+        "avg_12mo_product_rev_brl": 461.95
+      },
+      "booster_only_first": {
+        "n": 3608,
+        "repeat_rate": 0.1195,
+        "repeaters": 431,
+        "median_time_to_2nd_days": 59,
+        "avg_orders_per_customer": 1.162,
+        "avg_12mo_product_rev_brl": 273.0
+      },
+      "partner_only_first": {
+        "n": 5860,
+        "repeat_rate": 0.1328,
+        "repeaters": 778,
+        "median_time_to_2nd_days": 57.0,
+        "avg_orders_per_customer": 1.178,
+        "avg_12mo_product_rev_brl": 265.79
+      },
+      "lift_vs_booster_alone_pp": 4.0,
+      "lift_vs_catalogue_baseline_pp": 1.8,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 021",
+      "booster_name": "Booster definicao",
+      "partner": "GEB 010",
+      "partner_name": "Travel size | mascara condicionadora",
+      "both_first": {
+        "n": 705,
+        "repeat_rate": 0.156,
+        "repeaters": 110,
+        "median_time_to_2nd_days": 67.5,
+        "avg_orders_per_customer": 1.226,
+        "avg_12mo_product_rev_brl": 435.03
+      },
+      "booster_only_first": {
+        "n": 5836,
+        "repeat_rate": 0.1321,
+        "repeaters": 771,
+        "median_time_to_2nd_days": 65,
+        "avg_orders_per_customer": 1.178,
+        "avg_12mo_product_rev_brl": 292.09
+      },
+      "partner_only_first": {
+        "n": 1771,
+        "repeat_rate": 0.1841,
+        "repeaters": 326,
+        "median_time_to_2nd_days": 65.5,
+        "avg_orders_per_customer": 1.26,
+        "avg_12mo_product_rev_brl": 369.68
+      },
+      "lift_vs_booster_alone_pp": 2.4,
+      "lift_vs_catalogue_baseline_pp": 1.5,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 021",
+      "booster_name": "Booster definicao",
+      "partner": "GEB 120",
+      "partner_name": "Leave-in pluma",
+      "both_first": {
+        "n": 1021,
+        "repeat_rate": 0.1528,
+        "repeaters": 156,
+        "median_time_to_2nd_days": 77.0,
+        "avg_orders_per_customer": 1.21,
+        "avg_12mo_product_rev_brl": 462.78
+      },
+      "booster_only_first": {
+        "n": 5520,
+        "repeat_rate": 0.1313,
+        "repeaters": 725,
+        "median_time_to_2nd_days": 63,
+        "avg_orders_per_customer": 1.179,
+        "avg_12mo_product_rev_brl": 278.77
+      },
+      "partner_only_first": {
+        "n": 2326,
+        "repeat_rate": 0.1814,
+        "repeaters": 422,
+        "median_time_to_2nd_days": 67.5,
+        "avg_orders_per_customer": 1.243,
+        "avg_12mo_product_rev_brl": 374.02
+      },
+      "lift_vs_booster_alone_pp": 2.1,
+      "lift_vs_catalogue_baseline_pp": 1.2,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 021",
+      "booster_name": "Booster definicao",
+      "partner": "GEB 011",
+      "partner_name": "Travel size | leave-in protecao termica",
+      "both_first": {
+        "n": 932,
+        "repeat_rate": 0.1491,
+        "repeaters": 139,
+        "median_time_to_2nd_days": 66,
+        "avg_orders_per_customer": 1.195,
+        "avg_12mo_product_rev_brl": 380.77
+      },
+      "booster_only_first": {
+        "n": 5609,
+        "repeat_rate": 0.1323,
+        "repeaters": 742,
+        "median_time_to_2nd_days": 65.0,
+        "avg_orders_per_customer": 1.181,
+        "avg_12mo_product_rev_brl": 295.32
+      },
+      "partner_only_first": {
+        "n": 2235,
+        "repeat_rate": 0.1647,
+        "repeaters": 368,
+        "median_time_to_2nd_days": 59.0,
+        "avg_orders_per_customer": 1.228,
+        "avg_12mo_product_rev_brl": 329.35
+      },
+      "lift_vs_booster_alone_pp": 1.7,
+      "lift_vs_catalogue_baseline_pp": 0.9,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 019",
+      "booster_name": "Booster fortificante",
+      "partner": "GEB 029",
+      "partner_name": "Travel size | melon mood body & hair splash",
+      "both_first": {
+        "n": 103,
+        "repeat_rate": 0.1456,
+        "repeaters": 15,
+        "median_time_to_2nd_days": 50,
+        "avg_orders_per_customer": 1.165,
+        "avg_12mo_product_rev_brl": 445.02
+      },
+      "booster_only_first": {
+        "n": 1977,
+        "repeat_rate": 0.1801,
+        "repeaters": 356,
+        "median_time_to_2nd_days": 63.0,
+        "avg_orders_per_customer": 1.262,
+        "avg_12mo_product_rev_brl": 395.45
+      },
+      "partner_only_first": {
+        "n": 1448,
+        "repeat_rate": 0.0946,
+        "repeaters": 137,
+        "median_time_to_2nd_days": 41,
+        "avg_orders_per_customer": 1.113,
+        "avg_12mo_product_rev_brl": 229.64
+      },
+      "lift_vs_booster_alone_pp": -3.5,
+      "lift_vs_catalogue_baseline_pp": 0.5,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 020",
+      "booster_name": "Booster hidratante",
+      "partner": "GEB 121",
+      "partner_name": "Mascara mayday",
+      "both_first": {
+        "n": 261,
+        "repeat_rate": 0.1456,
+        "repeaters": 38,
+        "median_time_to_2nd_days": 38.5,
+        "avg_orders_per_customer": 1.165,
+        "avg_12mo_product_rev_brl": 518.17
+      },
+      "booster_only_first": {
+        "n": 3737,
+        "repeat_rate": 0.1218,
+        "repeaters": 455,
+        "median_time_to_2nd_days": 61,
+        "avg_orders_per_customer": 1.165,
+        "avg_12mo_product_rev_brl": 275.6
+      },
+      "partner_only_first": {
+        "n": 1144,
+        "repeat_rate": 0.1198,
+        "repeaters": 137,
+        "median_time_to_2nd_days": 43,
+        "avg_orders_per_customer": 1.158,
+        "avg_12mo_product_rev_brl": 382.86
+      },
+      "lift_vs_booster_alone_pp": 2.4,
+      "lift_vs_catalogue_baseline_pp": 0.5,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 019",
+      "booster_name": "Booster fortificante",
+      "partner": "GEB 121",
+      "partner_name": "Mascara mayday",
+      "both_first": {
+        "n": 166,
+        "repeat_rate": 0.1446,
+        "repeaters": 24,
+        "median_time_to_2nd_days": 68.5,
+        "avg_orders_per_customer": 1.157,
+        "avg_12mo_product_rev_brl": 555.56
+      },
+      "booster_only_first": {
+        "n": 1914,
+        "repeat_rate": 0.1813,
+        "repeaters": 347,
+        "median_time_to_2nd_days": 62,
+        "avg_orders_per_customer": 1.266,
+        "avg_12mo_product_rev_brl": 384.23
+      },
+      "partner_only_first": {
+        "n": 1239,
+        "repeat_rate": 0.1219,
+        "repeaters": 151,
+        "median_time_to_2nd_days": 36,
+        "avg_orders_per_customer": 1.16,
+        "avg_12mo_product_rev_brl": 388.23
+      },
+      "lift_vs_booster_alone_pp": -3.7,
+      "lift_vs_catalogue_baseline_pp": 0.4,
+      "beats_baseline": true
+    },
+    {
+      "booster": "GEB 021",
+      "booster_name": "Booster definicao",
+      "partner": "GEB 101",
+      "partner_name": "Primer cachos definidos",
+      "both_first": {
+        "n": 1320,
+        "repeat_rate": 0.1379,
+        "repeaters": 182,
+        "median_time_to_2nd_days": 61.5,
+        "avg_orders_per_customer": 1.185,
+        "avg_12mo_product_rev_brl": 423.78
+      },
+      "booster_only_first": {
+        "n": 5221,
+        "repeat_rate": 0.1339,
+        "repeaters": 699,
+        "median_time_to_2nd_days": 66,
+        "avg_orders_per_customer": 1.183,
+        "avg_12mo_product_rev_brl": 278.09
+      },
+      "partner_only_first": {
+        "n": 3951,
+        "repeat_rate": 0.1078,
+        "repeaters": 426,
+        "median_time_to_2nd_days": 55.0,
+        "avg_orders_per_customer": 1.144,
+        "avg_12mo_product_rev_brl": 269.47
+      },
+      "lift_vs_booster_alone_pp": 0.4,
+      "lift_vs_catalogue_baseline_pp": -0.3,
+      "beats_baseline": false
+    },
+    {
+      "booster": "GEB 021",
+      "booster_name": "Booster definicao",
+      "partner": "GEB 003",
+      "partner_name": "Leave-in com protecao termica",
+      "both_first": {
+        "n": 2440,
+        "repeat_rate": 0.1357,
+        "repeaters": 331,
+        "median_time_to_2nd_days": 73,
+        "avg_orders_per_customer": 1.183,
+        "avg_12mo_product_rev_brl": 359.9
+      },
+      "booster_only_first": {
+        "n": 4101,
+        "repeat_rate": 0.1341,
+        "repeaters": 550,
+        "median_time_to_2nd_days": 60.0,
+        "avg_orders_per_customer": 1.184,
+        "avg_12mo_product_rev_brl": 276.31
+      },
+      "partner_only_first": {
+        "n": 2201,
+        "repeat_rate": 0.1913,
+        "repeaters": 421,
+        "median_time_to_2nd_days": 67,
+        "avg_orders_per_customer": 1.283,
+        "avg_12mo_product_rev_brl": 351.26
+      },
+      "lift_vs_booster_alone_pp": 0.2,
+      "lift_vs_catalogue_baseline_pp": -0.5,
+      "beats_baseline": false
+    },
+    {
+      "booster": "GEB 021",
+      "booster_name": "Booster definicao",
+      "partner": "GEB 024",
+      "partner_name": "Melon mood body & hair splash",
+      "both_first": {
+        "n": 893,
+        "repeat_rate": 0.1355,
+        "repeaters": 121,
+        "median_time_to_2nd_days": 60,
+        "avg_orders_per_customer": 1.176,
+        "avg_12mo_product_rev_brl": 443.17
+      },
+      "booster_only_first": {
+        "n": 5648,
+        "repeat_rate": 0.1346,
+        "repeaters": 760,
+        "median_time_to_2nd_days": 66.5,
+        "avg_orders_per_customer": 1.185,
+        "avg_12mo_product_rev_brl": 286.04
+      },
+      "partner_only_first": {
+        "n": 5357,
+        "repeat_rate": 0.1342,
+        "repeaters": 719,
+        "median_time_to_2nd_days": 56,
+        "avg_orders_per_customer": 1.18,
+        "avg_12mo_product_rev_brl": 250.51
+      },
+      "lift_vs_booster_alone_pp": 0.1,
+      "lift_vs_catalogue_baseline_pp": -0.5,
+      "beats_baseline": false
+    },
+    {
+      "booster": "GEB 022",
+      "booster_name": "Booster antifrizz",
+      "partner": "GEB 029",
+      "partner_name": "Travel size | melon mood body & hair splash",
+      "both_first": {
+        "n": 379,
+        "repeat_rate": 0.1346,
+        "repeaters": 51,
+        "median_time_to_2nd_days": 36,
+        "avg_orders_per_customer": 1.164,
+        "avg_12mo_product_rev_brl": 419.61
+      },
+      "booster_only_first": {
+        "n": 4201,
+        "repeat_rate": 0.1623,
+        "repeaters": 682,
+        "median_time_to_2nd_days": 59.5,
+        "avg_orders_per_customer": 1.233,
+        "avg_12mo_product_rev_brl": 379.43
+      },
+      "partner_only_first": {
+        "n": 1172,
+        "repeat_rate": 0.0862,
+        "repeaters": 101,
+        "median_time_to_2nd_days": 49,
+        "avg_orders_per_customer": 1.101,
+        "avg_12mo_product_rev_brl": 187.13
+      },
+      "lift_vs_booster_alone_pp": -2.8,
+      "lift_vs_catalogue_baseline_pp": -0.6,
+      "beats_baseline": false
+    },
+    {
+      "booster": "GEB 021",
+      "booster_name": "Booster definicao",
+      "partner": "GEB 121",
+      "partner_name": "Mascara mayday",
+      "both_first": {
+        "n": 432,
+        "repeat_rate": 0.1319,
+        "repeaters": 57,
+        "median_time_to_2nd_days": 33,
+        "avg_orders_per_customer": 1.167,
+        "avg_12mo_product_rev_brl": 514.73
+      },
+      "booster_only_first": {
+        "n": 6109,
+        "repeat_rate": 0.1349,
+        "repeaters": 824,
+        "median_time_to_2nd_days": 68.0,
+        "avg_orders_per_customer": 1.185,
+        "avg_12mo_product_rev_brl": 292.84
+      },
+      "partner_only_first": {
+        "n": 973,
+        "repeat_rate": 0.1213,
+        "repeaters": 118,
+        "median_time_to_2nd_days": 44.5,
+        "avg_orders_per_customer": 1.156,
+        "avg_12mo_product_rev_brl": 360.61
+      },
+      "lift_vs_booster_alone_pp": -0.3,
+      "lift_vs_catalogue_baseline_pp": -0.9,
+      "beats_baseline": false
+    },
+    {
+      "booster": "GEB 022",
+      "booster_name": "Booster antifrizz",
+      "partner": "GEB 121",
+      "partner_name": "Mascara mayday",
+      "both_first": {
+        "n": 451,
+        "repeat_rate": 0.1175,
+        "repeaters": 53,
+        "median_time_to_2nd_days": 32,
+        "avg_orders_per_customer": 1.14,
+        "avg_12mo_product_rev_brl": 502.69
+      },
+      "booster_only_first": {
+        "n": 4129,
+        "repeat_rate": 0.1647,
+        "repeaters": 680,
+        "median_time_to_2nd_days": 60.0,
+        "avg_orders_per_customer": 1.237,
+        "avg_12mo_product_rev_brl": 369.66
+      },
+      "partner_only_first": {
+        "n": 954,
+        "repeat_rate": 0.1279,
+        "repeaters": 122,
+        "median_time_to_2nd_days": 45.5,
+        "avg_orders_per_customer": 1.169,
+        "avg_12mo_product_rev_brl": 363.23
+      },
+      "lift_vs_booster_alone_pp": -4.7,
+      "lift_vs_catalogue_baseline_pp": -2.3,
+      "beats_baseline": false
+    },
+    {
+      "booster": "GEB 020",
+      "booster_name": "Booster hidratante",
+      "partner": "GEB 029",
+      "partner_name": "Travel size | melon mood body & hair splash",
+      "both_first": {
+        "n": 233,
+        "repeat_rate": 0.1159,
+        "repeaters": 27,
+        "median_time_to_2nd_days": 50,
+        "avg_orders_per_customer": 1.124,
+        "avg_12mo_product_rev_brl": 382.77
+      },
+      "booster_only_first": {
+        "n": 3765,
+        "repeat_rate": 0.1238,
+        "repeaters": 466,
+        "median_time_to_2nd_days": 57.5,
+        "avg_orders_per_customer": 1.168,
+        "avg_12mo_product_rev_brl": 285.78
+      },
+      "partner_only_first": {
+        "n": 1318,
+        "repeat_rate": 0.0948,
+        "repeaters": 125,
+        "median_time_to_2nd_days": 41,
+        "avg_orders_per_customer": 1.115,
+        "avg_12mo_product_rev_brl": 219.4
+      },
+      "lift_vs_booster_alone_pp": -0.8,
+      "lift_vs_catalogue_baseline_pp": -2.5,
+      "beats_baseline": false
+    },
+    {
+      "booster": "GEB 023",
+      "booster_name": "Booster antioxidante",
+      "partner": "GEB 029",
+      "partner_name": "Travel size | melon mood body & hair splash",
+      "both_first": {
+        "n": 44,
+        "repeat_rate": 0.1136,
+        "repeaters": 5,
+        "median_time_to_2nd_days": 57,
+        "avg_orders_per_customer": 1.136,
+        "avg_12mo_product_rev_brl": 482.54
+      },
+      "booster_only_first": {
+        "n": 939,
+        "repeat_rate": 0.196,
+        "repeaters": 184,
+        "median_time_to_2nd_days": 69.5,
+        "avg_orders_per_customer": 1.284,
+        "avg_12mo_product_rev_brl": 465.23
+      },
+      "partner_only_first": {
+        "n": 1507,
+        "repeat_rate": 0.0975,
+        "repeaters": 147,
+        "median_time_to_2nd_days": 41,
+        "avg_orders_per_customer": 1.115,
+        "avg_12mo_product_rev_brl": 236.97
+      },
+      "lift_vs_booster_alone_pp": -8.2,
+      "lift_vs_catalogue_baseline_pp": -2.7,
+      "beats_baseline": false
+    },
+    {
+      "booster": "GEB 021",
+      "booster_name": "Booster definicao",
+      "partner": "GEB 029",
+      "partner_name": "Travel size | melon mood body & hair splash",
+      "both_first": {
+        "n": 305,
+        "repeat_rate": 0.1049,
+        "repeaters": 32,
+        "median_time_to_2nd_days": 25.5,
+        "avg_orders_per_customer": 1.118,
+        "avg_12mo_product_rev_brl": 360.37
+      },
+      "booster_only_first": {
+        "n": 6236,
+        "repeat_rate": 0.1361,
+        "repeaters": 849,
+        "median_time_to_2nd_days": 66,
+        "avg_orders_per_customer": 1.187,
+        "avg_12mo_product_rev_brl": 304.91
+      },
+      "partner_only_first": {
+        "n": 1246,
+        "repeat_rate": 0.0963,
+        "repeaters": 120,
+        "median_time_to_2nd_days": 49.0,
+        "avg_orders_per_customer": 1.116,
+        "avg_12mo_product_rev_brl": 215.44
+      },
+      "lift_vs_booster_alone_pp": -3.1,
+      "lift_vs_catalogue_baseline_pp": -3.6,
+      "beats_baseline": false
+    },
+    {
+      "booster": "GEB 023",
+      "booster_name": "Booster antioxidante",
+      "partner": "GEB 121",
+      "partner_name": "Mascara mayday",
+      "both_first": {
+        "n": 117,
+        "repeat_rate": 0.1026,
+        "repeaters": 12,
+        "median_time_to_2nd_days": 32.5,
+        "avg_orders_per_customer": 1.145,
+        "avg_12mo_product_rev_brl": 596.68
+      },
+      "booster_only_first": {
+        "n": 866,
+        "repeat_rate": 0.2044,
+        "repeaters": 177,
+        "median_time_to_2nd_days": 73,
+        "avg_orders_per_customer": 1.296,
+        "avg_12mo_product_rev_brl": 448.35
+      },
+      "partner_only_first": {
+        "n": 1288,
+        "repeat_rate": 0.1266,
+        "repeaters": 163,
+        "median_time_to_2nd_days": 43,
+        "avg_orders_per_customer": 1.161,
+        "avg_12mo_product_rev_brl": 390.86
+      },
+      "lift_vs_booster_alone_pp": -10.2,
+      "lift_vs_catalogue_baseline_pp": -3.8,
+      "beats_baseline": false
+    }
+  ]
+}

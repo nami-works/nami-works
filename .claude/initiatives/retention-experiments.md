@@ -63,9 +63,77 @@ Sub-programs tracked under this one file:
       arm + path_reason per row) spanning all sub-programs above.
 - [ ] 7. Launch Prevention Nudge + Bundle Offer as scheduled jobs on Lucas's machine,
       full-catch-up-on-miss guarantee verified end to end.
+- [x] 8. **August recurring reactivation wave (H-CALENDAR-02 / H-TIMING-01 attempt)** —
+      done 2026-08-07. Both experiments layered onto the wave were cancelled mid-build by
+      Lucas before firing (date-test: 8/7-vs-8/8; timing-test: PAW-vs-1PM issuance
+      timing) — the wave shipped as a plain, un-split issuance to all 14,545 eligible
+      SEND customers, 20%/floor R$10/7-day expiry, notify=true, one general slot
+      (12:45 BRT). No lift/timing data was banked this cycle since neither test ran to
+      completion. See Notes below for the real bug caught mid-fire and template-matrix
+      QA done via 8 manual smoke credits on Lucas's own account.
 
 ## Notes
 
+- 2026-08-07 — **August wave fired clean, but caught and fixed a real duplicate-issuance
+  bug mid-flight.** Script: `gebeauty/growth/retention-machine/dual_arm_issue.py` (new
+  this session). Root cause: idempotency was tracked via a whole-file JSON rewrite
+  (`dual-arm-issue-state.json`) checkpointed periodically; the sandbox's per-call runtime
+  cap repeatedly killed the process mid-run, and one kill landed mid-rewrite, corrupting/
+  staling the state file. The next invocation re-considered already-issued customers as
+  pending and re-issued to 55 of them (R$2,616.57 excess). Caught by cross-checking the
+  append-only `learning/dual-arm-sends.jsonl` log (which survived every kill intact,
+  flushed per-line) against the state file. Fixed by debiting the excess back on all 55
+  accounts and by **eliminating the state file entirely** — idempotency is now derived
+  live from `sends.jsonl` (dedup by customer_gid) every run, with a defensive
+  try/except per line so a torn trailing line from a future kill can never crash the
+  script or reintroduce the bug. Lesson for any future one-off script in this program:
+  never use a rewritten-whole-file for idempotency state under a runtime that can hard-
+  kill mid-write; derive state from an append-only log instead.
+- 2026-08-07 — Template QA: before firing, ran 8 manual store-credit smoke tests
+  (notify=true) on Lucas's own account (`lucas@gebeauty.com.br`,
+  `gid://shopify/Customer/7761768710464`) covering the notification email's full
+  conditional matrix — `ctx` (goodwill via both trigger tags / reactivation / refill-
+  default) x `seg` (missing-mascara / missing-shampoo / core-target / non-core-default),
+  plus a deliberate tag-collision test (`credit-goodwill` + `credit-reactivation` both
+  present at once). All approved clean. Tier (new/returning/loyal) reads live
+  `orders_count`, not a tag -- untestable on Lucas's own account (41 real orders, always
+  "loyal"); if tier-specific QA is ever needed, it requires picking/creating a customer
+  whose real order history matches the target tier. Logged as `source=manual` rows in
+  `credit-ledger.jsonl`, tagged `dual-arm-2026-08`.
+- 2026-08-07 — **Segment-tag drift gap caught and partially patched.** Lucas flagged that
+  `core-target`/`missing-mascara`/`missing-shampoo` tags are auto-removed by a Shopify
+  Flow once the underlying condition resolves (customer buys the missing product), so a
+  live tag query can never reconstruct point-in-time segment membership at send time --
+  nothing built this session captured that at the moment of issuance. Patched same-day
+  with a one-time snapshot: bulk-exported tags for all 150,147 customers
+  (`BulkOperation/7687364346176`), filtered to the 16,143 wave members (14,545 SEND +
+  1,598 HOLD), wrote `learning/segment-tags-snapshot-2026-08-07-ge60d.jsonl` (gid, wave,
+  snapshot_at, seg_tags, ctx_tags, all_tags). Distribution: core-target 12,869,
+  missing-mascara 959, missing-shampoo 579, no seg tag 3,273 (out of 16,143). No
+  ctx-relevant tags (`credit-goodwill`/`credit-reactivation`/`credit-refill`) found on
+  any customer -- ctx in the email template is resolved from order/credit metadata at
+  render time, not stamped as a standing customer tag, so there's nothing to snapshot on
+  that axis.
+  **Caveat, not a fix:** this is a same-day proxy, not a true point-in-time capture --
+  taken ~hours after the wave fired, so any customer who already bought within that
+  window and had their tag flipped by the Flow is invisible to this snapshot too (drift
+  had already started). Good enough for THIS wave given the short elapsed time; NOT a
+  durable solution. For every future wave, the real fix is to snapshot each customer's
+  seg/ctx tags into `sends.jsonl` (or a sibling file) AT THE MOMENT OF ISSUANCE, inside
+  `dual_arm_issue.py` / `issue_reactivation.py` itself, not reconstructed after the fact.
+  Logged as a build item for whoever picks up the next wave's issuance script.
+- 2026-08-07 — Both layered experiments died before producing any data: H-CALENDAR-02
+  (successor to H-CALENDAR-01, wave-launch-date effect) was killed first ("we won't test
+  the send tomorrow... only test will be PAW timing test"), then H-TIMING-01 itself was
+  also killed mid-build ("new issues are surfacing... fire the whole thing on the general
+  slot"). Net: zero incremental learning banked this cycle on either hypothesis -- both
+  remain open in `hypotheses.md`, unresolved, available to re-attempt on a future wave
+  with more runway. The PAW-eligibility investigation is still useful going forward: a
+  rigorous 3+-orders/genuine-mode bar found only ~2% of any given wave has a real,
+  detectable personal-timing signal (vs. a misleadingly large ~20-56% at looser 1-2 order
+  thresholds, which turned out to mostly reflect the population's universal daytime
+  curve, not personal habit) -- any future timing test needs multi-cycle accumulation to
+  reach a readable sample, not a single-wave attempt.
 - 2026-07-31 — Initiative file created this session, consolidating what had been pure
   chat-and-code work. Confirmed with Lucas: one file covers all of the above rather than
   splitting CD Extrema / Prevention Nudge / Bundle Offer into separate initiatives, since
