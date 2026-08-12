@@ -19,7 +19,7 @@ import { verifyClientId } from "./jwt.js";
  *   4. On success, we mint a one-time auth code and redirect back to claude.ai.
  *
  * Tenant scope comes from a `tenant` query param. The MCP host (claude.ai)
- * derives this from the resource URL it's connecting to (e.g. mcp.nami.works/gebeauty
+ * derives this from the resource URL it's connecting to (e.g. mcp.gebeauty.com.br/gebeauty
  * → tenant=gebeauty). For now, the operator enters it on the form alongside
  * the bearer.
  */
@@ -179,7 +179,7 @@ export function mountOAuthAuthorize(
         .type("text/html")
         .send(
           renderError(
-            "Missing or invalid tenant. Append ?tenant=<slug> to the authorize URL, or include resource=https://mcp.nami.works/<slug>.",
+            "Missing or invalid tenant. Append ?tenant=<slug> to the authorize URL, or include resource=https://mcp.gebeauty.com.br/<slug>.",
           ),
         );
     }

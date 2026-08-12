@@ -53,4 +53,18 @@ export default [
       },
     },
   },
+  {
+    // Static browser-served JS (no bundler, served as-is by fastify-static)
+    // -- needs DOM globals the base config above doesn't provide.
+    files: ["**/public/**/*.js"],
+    languageOptions: {
+      globals: {
+        document: "readonly",
+        location: "readonly",
+        fetch: "readonly",
+        alert: "readonly",
+        console: "readonly",
+      },
+    },
+  },
 ];

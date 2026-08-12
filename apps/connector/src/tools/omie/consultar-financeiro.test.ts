@@ -76,6 +76,7 @@ describe("consultarFinanceiroHandler", () => {
     ];
     const client = fakeOmie([
       { ok: true, data: { conta_receber_cadastro: items } },
+      { ok: true, data: { categoria_cadastro: [] } }, // ListarCategorias (enrichment)
     ]);
     vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
 
@@ -142,7 +143,19 @@ describe("consultarFinanceiroHandler", () => {
         ],
       },
     };
-    const client = fakeOmie([page1, page2]);
+    const categoriaRes = { ok: true as const, data: { categoria_cadastro: [] } };
+    const nameFor = (razao: string) => ({
+      ok: true as const,
+      data: { razao_social: razao, nome_fantasia: null },
+    });
+    const client = fakeOmie([
+      page1,
+      page2,
+      categoriaRes,
+      nameFor("Cliente 501 LTDA"), // resolved in vencimento order: 501, 502, 503
+      nameFor("Cliente 502 LTDA"),
+      nameFor("Cliente 503 LTDA"),
+    ]);
     vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
 
     const res = await consultarFinanceiroHandler({}, makeCtx());
@@ -151,9 +164,10 @@ describe("consultarFinanceiroHandler", () => {
     expect(text).toContain("A receber: R$ 100.00");
     expect(text).toContain("Vencido: R$ 200.00");
     expect(text).toContain("Recebido: R$ 300.00");
-    // all-clients lines carry the client code
-    expect(text).toContain("cliente 501");
-    expect(client.call).toHaveBeenCalledTimes(2);
+    // all-clients lines now resolve the supplier/customer name, not just the code
+    expect(text).toContain("Cliente 501 LTDA");
+    // 2 page fetches + 1 categoria fetch + 3 name resolutions (501/502/503)
+    expect(client.call).toHaveBeenCalledTimes(6);
   });
 
   it("handles 'não existem registros' fault gracefully", async () => {
@@ -186,5 +200,91 @@ describe("consultarFinanceiroHandler", () => {
     );
     expect(res.isError).toBeUndefined();
     expect(res.content[0]?.text).toContain("Nenhum lançamento");
+  });
+
+  it("rejects desde without ate (and vice versa)", async () => {
+    const res = await consultarFinanceiroHandler({ ate: "2026-08-09" }, makeCtx());
+    expect(res.isError).toBe(true);
+  });
+
+  describe("windowed (desde/ate)", () => {
+    it("sorts descending by DATA_VENCIMENTO and stops the instant a row falls before desde", async () => {
+      let captured: Record<string, unknown> = {};
+      const page1 = {
+        ok: true as const,
+        data: {
+          total_de_paginas: 5, // would keep paging if not for the early stop
+          conta_receber_cadastro: [
+            // descending due date: future (skip, ahead of window), in-window, then before desde (stop)
+            { codigo_lancamento_omie: 1, numero_documento: "DOC-FUTURE", data_vencimento: "01/12/2026", valor_documento: 999, status_titulo: "A_RECEBER", observacao: null },
+            { codigo_lancamento_omie: 2, numero_documento: "DOC-IN", data_vencimento: "01/06/2026", valor_documento: 100, status_titulo: "RECEBIDO", observacao: null },
+            { codigo_lancamento_omie: 3, numero_documento: "DOC-OLD", data_vencimento: "01/01/2020", valor_documento: 9999, status_titulo: "RECEBIDO", observacao: null },
+          ],
+        },
+      };
+      const client: OmieClient = {
+        call: vi.fn(async (a: { param: Record<string, unknown> }) => {
+          if (!captured.ordenar_por) captured = a.param; // capture the first (ListarContasReceber) call only
+          return page1;
+        }) as unknown as OmieClient["call"],
+      };
+      vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
+
+      const res = await consultarFinanceiroHandler(
+        { codigoCliente: 999, desde: "2026-05-11", ate: "2026-08-09" },
+        makeCtx(),
+      );
+      expect(res.isError).toBeUndefined();
+      const text = res.content[0]?.text ?? "";
+      expect(captured.ordenar_por).toBe("DATA_VENCIMENTO");
+      expect(captured.ordem_descrescente).toBe("S");
+      expect(text).toContain("DOC-IN");
+      expect(text).not.toContain("DOC-FUTURE");
+      expect(text).not.toContain("DOC-OLD");
+      // only 1 ListarContasReceber page fetched (DOC-OLD triggers an immediate
+      // stop, no second page requested) + 1 ListarCategorias enrichment call
+      expect(client.call).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe("groupBy", () => {
+    it("requires desde/ate", async () => {
+      const res = await consultarFinanceiroHandler({ groupBy: ["categoria"] }, makeCtx());
+      expect(res.isError).toBe(true);
+    });
+
+    it("returns a structured JSON aggregate ranked by categoria", async () => {
+      const page = {
+        ok: true as const,
+        data: {
+          total_de_paginas: 1,
+          conta_receber_cadastro: [
+            { codigo_lancamento_omie: 1, numero_documento: "DOC-1", codigo_categoria: "3.1.01.01.002", data_vencimento: "01/06/2026", valor_documento: 400, status_titulo: "RECEBIDO", observacao: null },
+            { codigo_lancamento_omie: 2, numero_documento: "DOC-2", codigo_categoria: "3.1.01.01.002", data_vencimento: "02/06/2026", valor_documento: 600, status_titulo: "RECEBIDO", observacao: null },
+          ],
+        },
+      };
+      const categoriaRes = {
+        ok: true as const,
+        data: { categoria_cadastro: [{ codigo: "3.1.01.01.002", descricao: "Revenda de Mercadoria" }] },
+      };
+      const client: OmieClient = {
+        call: vi.fn(async (a: unknown) => {
+          const isCategoria = (a as { resource: string }).resource === "geral/categorias";
+          return isCategoria ? categoriaRes : page;
+        }) as unknown as OmieClient["call"],
+      };
+      vi.mocked(getOmieCompanies).mockResolvedValue(asCompany(client));
+
+      const res = await consultarFinanceiroHandler(
+        { desde: "2026-05-11", ate: "2026-08-09", groupBy: ["categoria"] },
+        makeCtx(),
+      );
+      expect(res.isError).toBeUndefined();
+      const payload = JSON.parse(res.content[0]?.text ?? "{}");
+      expect(payload.consolidado).toHaveLength(1);
+      expect(payload.consolidado[0].nome).toBe("Revenda de Mercadoria");
+      expect(payload.consolidado[0].valor_pago).toBe(1000);
+    });
   });
 });

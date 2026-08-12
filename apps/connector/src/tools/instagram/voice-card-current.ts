@@ -83,7 +83,7 @@ export async function voiceCardCurrentHandler(
       content: [
         {
           type: "text",
-          text: `No Instagram voice card exists for tenant ${ctx.tenant.slug}. Run instagram_refresh_ingest first to populate posts, then ask NAMI Works to generate the voice card.`,
+          text: `No Instagram voice card exists for tenant ${ctx.tenant.slug}. Run instagram_refresh_ingest first to populate posts, then ask the team to generate the voice card.`,
         },
       ],
     };

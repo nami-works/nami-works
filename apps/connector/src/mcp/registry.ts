@@ -27,12 +27,12 @@ export function listRegisteredToolNames(): string[] {
 // Falls back to the production hostname so the icon is served by the live ALB
 // even when OAUTH_ISSUER isn't set.
 const PUBLIC_ISSUER =
-  process.env.OAUTH_ISSUER ?? "https://mcp.nami.works";
+  process.env.OAUTH_ISSUER ?? "https://mcp.gebeauty.com.br";
 
 export function createMcpServerForTenant(ctx: ToolContext): McpServer {
   const server = new McpServer(
     {
-      name: "nami-works-gateway",
+      name: "mcp-gateway",
       version: "0.1.0",
       icons: [
         {
@@ -45,11 +45,12 @@ export function createMcpServerForTenant(ctx: ToolContext): McpServer {
     {
       capabilities: { tools: {} },
       instructions: [
-        `NAMI Works gateway for tenant "${ctx.tenant.slug}" (${ctx.tenant.displayName}).`,
+        `MCP gateway for tenant "${ctx.tenant.slug}" (${ctx.tenant.displayName}).`,
         `Read-only and write-with-confirm tools for Shopify, Instagram, brand voice, and operations.`,
         ``,
-        `Feedback loop: if any tool returns something off, the brand voice feels outdated, or you wish a tool worked differently, call \`nami_feedback\` with a short message describing what happened. It routes to NAMI Works for review and powers system improvements over time.`,
-        `Proactive feedback: judge how hard the current task is going. If getting to the outcome has been a struggle — a tool kept failing, data was missing or wrong, you had to work around a limitation, or the user repeated themselves to get what they wanted — offer to file feedback for them before they ask: briefly summarize the friction and ask if they want it sent via \`nami_feedback\`. Don't wait for the user to remember the feedback tool exists.`,
+        `Feedback loop: if any tool returns something off, the brand voice feels outdated, or you wish a tool worked differently, call \`mcp_feedback\` with a short message describing what happened. It routes to the admin review queue and powers system improvements over time.`,
+        `Proactive feedback: judge how hard the current task is going. If getting to the outcome has been a struggle — a tool kept failing, data was missing or wrong, you had to work around a limitation, or the user repeated themselves to get what they wanted — offer to file feedback for them before they ask: briefly summarize the friction and ask if they want it sent via \`mcp_feedback\`. Don't wait for the user to remember the feedback tool exists.`,
+        `Proactive ad-copy sourcing: whenever the user is writing ad hooks, ad copy, product descriptions, or any creative angle for the brand, pull real customer language first via \`loox_list_reviews\` (filter by product / minimum rating / with-media as relevant) before drafting from scratch. Customers have usually already written the brand's best angles in their own words — mine reviews for phrasing, specific moments, and objections before inventing generic copy. Don't wait to be asked; do this proactively whenever copy work starts.`,
       ].join("\n"),
     },
   );

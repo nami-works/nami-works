@@ -1,12 +1,12 @@
-# NAMI Works Connector — Per-App Rules
+# Connector — Per-App Rules
 
-The **MCP gateway** at `mcp.nami.works`. Exposes curated Shopify + Omie business actions to non-technical ops teams at customer brands, via Claude Desktop / claude.ai and org-level custom connectors.
+The **MCP gateway** at `mcp.gebeauty.com.br`. Exposes curated Shopify + Omie business actions to the GE Beauty ops team, via Claude Desktop / claude.ai and org-level custom connectors. Single-tenant (gebeauty) — the earlier multi-tenant "customer brands" model is paused (see `[[project_connector_single_tenant_pivot]]`).
 
 For cross-cutting monorepo rules (parallel sessions, deploy queue, brand model), see the root `/CLAUDE.md`.
 
 ## Stack
 
-Node 20+ · TypeScript strict · Fastify 5 · Prisma (custom output `@prisma/client-connector`) · `@modelcontextprotocol/sdk` · Pino · Zod · AWS ECS Fargate + SSM + RDS Postgres.
+Node 20+ · TypeScript strict · Fastify 5 · Prisma (custom output `@prisma/client-connector`) · `@modelcontextprotocol/sdk` · Pino · Zod. Runs as a Docker Compose service on the shared `cpg-labs-lean` Lightsail box, against the box's self-hosted Postgres (`connector` database) — the earlier AWS ECS Fargate + RDS deployment was torn down for cost on 2026-06-29 and never rebuilt on ECS.
 
 ES modules (`"type": "module"`), `NodeNext` module resolution. Schema at `prisma/connector/schema.prisma`, client emitted to `node_modules/@prisma/client-connector` (NOT the default `@prisma/client` — that one is the omnify client).
 
@@ -29,9 +29,9 @@ ES modules (`"type": "module"`), `NodeNext` module resolution. Schema at `prisma
 
 ## Git + deploy
 
-- Deploy via `scripts/deploy-connector.ps1` from the repo root.
-- Build context = repo root; Dockerfile = `apps/connector/Dockerfile`; build uses workspace `npm ci` and `prisma generate -w @nami/connector`.
-- Smoke: `curl https://mcp.nami.works/health` → `{"ok":true}`.
+- `scripts/deploy-connector.ps1` is STALE — it still targets the decommissioned ECS Fargate setup and hasn't been rewritten for the Lightsail move. Don't trust it as-is.
+- Current deploy is manual: build the image (workspace `npm ci` + `prisma generate -w @nami/connector`, Dockerfile at `apps/connector/Dockerfile`) → push to ECR → SSH to the box → bump the tag in `/srv/cpg-labs/docker-compose.yml` → `docker compose pull && up -d`.
+- Smoke: `curl https://mcp.gebeauty.com.br/health` → `{"ok":true}`.
 
 ## Scope discipline
 

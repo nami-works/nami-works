@@ -4,7 +4,7 @@ import { registerToolDefinition } from "../../mcp/registry.js";
 import type { ToolContext, ToolResult } from "../../mcp/types.js";
 
 /**
- * Links an Instagram Business Account to a NAMI Works tenant.
+ * Links an Instagram Business Account to a tenant.
  *
  * One-time setup action per tenant. Once linked, instagram_refresh_ingest
  * can pull the tenant's media, and the rest of the Instagram tool surface
@@ -58,7 +58,7 @@ export async function instagramLinkAccountHandler(
             `Tenant ${ctx.tenant.slug} already has an InstagramAccount linked to a different igUserId.\n\n` +
             `  current: ${existing.igUserId}${existing.username ? ` (@${existing.username})` : ""}\n` +
             `  proposed: ${igUserId}${username ? ` (@${username})` : ""}\n\n` +
-            `Refusing to overwrite. If you genuinely need to swap accounts, ask NAMI Works to handle this manually — historical InstagramPosts attached to the current account would otherwise be orphaned.`,
+            `Refusing to overwrite. If you genuinely need to swap accounts, ask an admin to handle this manually — historical InstagramPosts attached to the current account would otherwise be orphaned.`,
         },
       ],
       isError: true,
@@ -146,7 +146,7 @@ export async function instagramLinkAccountHandler(
 registerToolDefinition({
   name: "instagram_link_account",
   description:
-    "[ADMIN BACKSTOP — not for normal operator use] Links an Instagram Business Account to the tenant. The primary path for tenant onboarding is `scripts/provision-tenant.ts --ig-user-id ...` run by the NAMI Works team; this tool exists only as a recovery path when an already-provisioned tenant needs to be linked after the fact. Two-step confirm. Refuses to overwrite an existing link to a different igUserId.",
+    "[ADMIN BACKSTOP — not for normal operator use] Links an Instagram Business Account to the tenant. The primary path for tenant onboarding is `scripts/provision-tenant.ts --ig-user-id ...` run by the admin team; this tool exists only as a recovery path when an already-provisioned tenant needs to be linked after the fact. Two-step confirm. Refuses to overwrite an existing link to a different igUserId.",
   inputSchema: {
     igUserId: z
       .string()

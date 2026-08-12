@@ -102,7 +102,7 @@ export async function draftCaptionHandler(
       content: [
         {
           type: "text",
-          text: `Anthropic API key for ${ctx.tenant.slug} is a placeholder. NAMI Works needs to put a real key at \`${ctx.tenant.ssmPrefix}/anthropic/api_key\` before drafting.`,
+          text: `Anthropic API key for ${ctx.tenant.slug} is a placeholder. An admin needs to put a real key at \`${ctx.tenant.ssmPrefix}/anthropic/api_key\` before drafting.`,
         },
       ],
       isError: true,

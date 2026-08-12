@@ -31,6 +31,26 @@ Schema, conventions, and examples are in `.claude/initiatives/README.md`. Treat 
 
 **Verify HEAD before every first commit.** Immediately before your first `git commit` of the session, run `git branch --show-current` and confirm the target branch is what you expect. This catches the same trap the pre-commit hook catches (inherited feature branch), but as a habit — the hook is the mechanical net; the habit is the primary check. Staged-set verification (`git diff --cached --name-only`) protects against sweeping wrong files; branch verification protects against landing on the wrong branch. They are orthogonal — run both.
 
+### Parallel sessions: worktree-per-session, mandatory
+
+Lucas runs multiple Claude Code sessions in parallel against this repo (confirmed 2026-08-10, superseding the 2026-07-30 solo-session decision — see `[[feedback_single_session]]`). The shared root checkout at `c:\claude` is a live collision surface: any session that runs `git checkout <branch>` there changes the working directory out from under every other session pointed at that same path — mid-task, with no warning.
+
+**Before making ANY edit (not just non-trivial ones), get into your own worktree first:**
+
+```bash
+git fetch origin
+git worktree add ../claude-wt-<short-task-slug> origin/main
+cd ../claude-wt-<short-task-slug>
+git checkout -b <your-branch-name>
+```
+
+- Branch from **freshly-fetched `origin/main`**, never local `main` — local `main` in the shared checkout can be sitting on another session's unpushed commits (this bit a session on 2026-08-10: a branch inherited 15 commits of unrelated unpushed WIP and turned a 2-file fix into an 18-commit rebase mess).
+- Work, commit, push, open the PR — all from inside the worktree.
+- Remove the worktree when done: `git worktree remove ../claude-wt-<slug>` (from the root checkout, not from inside the worktree being removed).
+- This is deliberately lightweight — no ledger, no chat-room file, no handover doc, no session-A/B/C naming ceremony. Those were retired on 2026-07-30 and stay retired. The only thing being reinstated is per-session filesystem isolation.
+- Before starting non-trivial work, check for overlapping in-flight or recently-merged work first: `gh pr list --state all -L 20` and a grep of `.claude/initiatives/*.md` for the topic. Two sessions independently doing the same NAMI-branding cleanup and landing near-duplicate PRs (2026-08-10, #94 and #97) was avoidable with a 30-second check.
+- Read-only work (answering questions, investigation, `git log`/`grep` reconnaissance) doesn't need a worktree — only checking out a different branch or editing files does.
+
 ## What this repo is
 
 **Primary purpose: the operations control center for GE Beauty**, a Brazilian beauty brand. The bulk of day-to-day session work lives at **`gebeauty/`** at the repo root: catalog, orders, local delivery, B2B channels, content, imagery, financial modeling, vendor and contract management. When in doubt about what this repo is *for*, it's running GE Beauty.

@@ -134,7 +134,7 @@ describe("tool registry", () => {
     expect(toolDisplayTitle("omie_consultar_financeiro")).toBe(
       "Omie · Contas a receber",
     );
-    expect(toolDisplayTitle("nami_feedback")).toBe("Suporte · Enviar feedback");
+    expect(toolDisplayTitle("mcp_feedback")).toBe("Suporte · Enviar feedback");
   });
 
   it("falls back to a derived Fornecedor · Nome title for unmapped tools", () => {

@@ -2,13 +2,19 @@
 id: realtime-credit-webhook
 name: Move just-bought store-credit issuance from Cowork poller to a Shopify webhook
 owner: cto
-status: backlog
+status: in-progress
 priority: normal
 created: 2026-08-10
 target: null
-current_phase: 1-architecture-locked
-next_blocker: hosting decision (apps/connector now vs. fold into the not-yet-built sales-WhatsApp app's webhook) — Lucas's call, deliberately left open, make it when you sit down to build
-next_owner: lucas (via claude code) / integrations-engineer
+current_phase: 6-live-in-production
+next_blocker: watch a real (non-test) order flow through the live webhook before
+  deciding on phase 7 cutover — the Cowork poller is currently PAUSED (not disabled).
+  Resuming it risks double-crediting if a real order lands before it's re-paused;
+  leaving it paused risks a gap if the live webhook has a problem the contained test
+  didn't surface. Lucas's call which way to lean while watching.
+next_owner: lucas (decide poller pause/resume while watching the first live order,
+  then close out phases 7-8)
+pr: https://github.com/nami-works/nami-works/pull/98
 stakeholders:
   - GE Beauty customers receiving real-time cashback credit
   - Lucas (owns the hosting decision + deploy)
@@ -57,43 +63,71 @@ doesn't have.
   `X-Shopify-Hmac-SHA256` header against the app's client secret before trusting the
   payload. Non-negotiable, not a nice-to-have.
 
-## Open decision — make this when you sit down to build (not decided here on purpose)
+## Hosting decision (locked 2026-08-10)
 
-Where does the handler live?
-- **`apps/connector`, now** — the existing Fastify + Prisma + AWS ECS backend already
-  live at `mcp.gebeauty.com.br`. Add one new webhook route + one new Prisma model
-  (`prisma/connector/schema.prisma`). Fastest to ship, reuses proven deployed infra.
-- **Fold into the sales-WhatsApp app's backend, once built** — that app
-  (`.claude/initiatives/ge-sales-whatsapp-app.md`) already needs an `orders/create`
-  webhook to detect conversions for its contact list. One receiver could serve both
-  concerns. Architecturally tidier (one Shopify-event listener, not two), but blocked on
-  that app existing, which it doesn't yet.
-
-Lucas's instinct going into this session favored `apps/connector` for speed; this was
-never confirmed (AskUserQuestion failed twice mid-session) — treat it as a real open
-call, not a done deal.
+**`apps/connector`, now.** Confirmed directly with Lucas via AskUserQuestion. Add the
+webhook route + Prisma model to the existing Fastify + Prisma + AWS ECS backend already
+live at `mcp.gebeauty.com.br`. Not revisiting the sales-WhatsApp-app-fold option unless
+Lucas reopens it.
 
 ## Phases
 
 - [x] 1. Architecture locked (webhook > Flow > polling, tag retirement, idempotency
       model) — 2026-08-10.
-- [ ] 2. Decide hosting (see Open decision above).
-- [ ] 3. Add Prisma model for issuance idempotency (`order_id` unique) + migration, in
-      whichever backend was chosen.
-- [ ] 4. Build the webhook route: HMAC verification, port the 20%-rule constants
-      (`PCT=0.20, CEIL=120.0, FLOOR=10.0`) and the 3-arm expiry-hash logic (independent
-      GID hash, own salt `"|realtime-expiry-arm-2026-08"`, 30/45/60 days,
-      `just-bought-credit-{30,45,60}d` tags) straight out of
-      `gebeauty/growth/retention-machine/issue_just_bought.py` — don't redesign the
-      business logic, just re-host it.
-- [ ] 5. Register the `orders/paid` webhook subscription against the GE Beauty store
-      (Admin API `webhookSubscriptionCreate`, or via the app's config if using a
-      Shopify CLI-managed app).
-- [ ] 6. Smoke test against a real order (same pattern as the poller's smoke test:
-      verify credit amount, arm tag, expiry, notification copy).
-- [ ] 7. Cutover: disable the Cowork scheduled task `issue-just-bought-credit` ONLY
-      after the webhook is confirmed working end-to-end — don't disable it first and
-      leave a gap where no issuance happens at all.
+- [x] 2. Decide hosting — `apps/connector` confirmed 2026-08-10.
+- [x] 3. Prisma model `JustBoughtCreditIssuance` (unique on `(tenantId,
+      shopifyOrderId)`) + migration `20260810230000_add_just_bought_credit_issuance`
+      (hand-authored, no local DB reachable to run `migrate dev`; follows the exact SQL
+      shape of the existing migrations — verify shape once more against a real DB before
+      `prisma:deploy`). Also added `@@index([shopifyShop])` on `IntegrationTenant` for
+      the shop-domain lookup.
+- [x] 4. Webhook route built: `apps/connector/src/webhooks/{index,verify,just-bought-credit}.ts`,
+      mounted from `server.ts` at `POST /:tenant/webhooks/shopify/orders-paid`. HMAC
+      verification against the raw body (scoped Fastify plugin so the raw-buffer parser
+      doesn't leak to sibling routes) + shop-domain header check, both before touching
+      the payload. Business logic (PCT/CEIL/FLOOR, 3-arm GID hash, arm tags) ported
+      verbatim from `issue_just_bought.py`. Insert-then-issue ordering + P2002 no-op per
+      the idempotency model. Unit tests for HMAC verify pass (`verify.test.ts`); full
+      `tsc` build passes clean.
+- [x] 5. **Deployed to Lightsail 2026-08-11.** Old ECS/RDS-based plan (temporary SG
+      allowlist, `scripts/deploy-connector.ps1`) was void — that infra was torn down
+      2026-06-29. Actual sequence run: built + pushed image (`nami-works:5f030fc`) to
+      ECR, refreshed the box's stale ECR login (root's docker auth token had expired —
+      not on any cadence, just went stale; refresh by piping a fresh
+      `aws ecr get-login-password` over SSH into `docker login` on the box), bumped the
+      tag in `/srv/cpg-labs/docker-compose.yml`, `docker compose pull && up -d
+      connector`. Migration applied via `docker compose exec connector npx prisma
+      migrate deploy` — hit `P3005` first (the box's Postgres had **never** had a
+      tracked Prisma migration run against it before this — schema existed but
+      `_prisma_migrations` didn't; pre-existing hygiene gap, unrelated to this feature,
+      just the first deploy to trip over it). Fixed by baselining all 10 pre-existing
+      migrations (`prisma migrate resolve --applied <name>` for each) before deploying
+      the 11th (this feature's) for real. Webhook secret set in SSM at
+      `/nami-works/tenants/gebeauty/shopify/webhook_secret` (same value as
+      `SHOPIFY_API_SECRET` in `gebeauty/.env`).
+- [x] 6. **Smoke test passed 2026-08-11**, contained (no live subscription yet at test
+      time): hand-crafted one real HMAC-signed `orders/paid` payload for a real order
+      (#91570, Amanda Cruz Bezerra, R$95.00, direct storefront/PagBrasil — deliberately
+      NOT a marketplace-channel order, and confirmed not already credited by the old
+      poller) and POSTed it directly to
+      `https://mcp.gebeauty.com.br/gebeauty/webhooks/shopify/orders-paid`. Verified
+      end-to-end against LIVE Shopify data, not just our own DB: R$19.00 (20% of R$95,
+      correct arm/floor/ceiling math) landed on her real `storeCreditAccounts` balance,
+      tags `credit-goodwill` + `just-bought-credit-60d` applied, `expiresAt` correct
+      (60d), and the `JustBoughtCreditIssuance` row matches. Cowork poller was paused
+      for the duration per Lucas's confirmation, to rule out double-crediting the same
+      order.
+- [x] 5b. **Real subscription registered 2026-08-11**, per Lucas's explicit go-ahead
+      (a deliberately separate call from the contained test above — this is the actual
+      go-live, not a test, since it now fires on every future real order automatically):
+      `webhookSubscriptionCreate` → `gid://shopify/WebhookSubscription/1963781816640`,
+      topic `ORDERS_PAID`, callback `https://mcp.gebeauty.com.br/gebeauty/webhooks/shopify/orders-paid`.
+- [ ] 7. Cutover: **don't disable the Cowork scheduled task yet.** It's currently
+      PAUSED (from the smoke test), not disabled — resume it or leave paused is an open
+      call. Before permanently disabling per the original phase-7 intent, watch at least
+      one REAL (non-test) order flow through the live webhook end-to-end, to confirm the
+      registered subscription actually fires in production, not just the hand-crafted
+      test request.
 - [ ] 8. Decommission the "Tag customer just-bought on order paid" Shopify Flow (or
       explicitly decide to keep it dormant) once the webhook has run clean for a few
       days.
