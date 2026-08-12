@@ -50,11 +50,17 @@ the config files cleaned up.
 
 ## Pending
 
-- **connector — Loox proactive ad-copy nudge (PR #103, merged to main, image built: `connector-20260811-loox-nudge-f4845ba`, NOT deployed).** Held back on purpose: the box is currently running `nami-works:5f030fc`, an unmerged commit from PR #98 (`realtime-credit-webhook` — real-time store-credit webhook, still open). Deploying my built image now would silently roll back their live feature since it doesn't include their unmerged work. **Once #98 merges to main:** rebuild from main (will contain both changes), push, redeploy once — no need to separately chase the nudge fix, it'll ride along.
+_(empty)_
 
 ---
 
 ## Deployed
+
+### 2026-08-11 (later) · connector — Loox proactive ad-copy nudge, live (PR #103)
+- **Image tag:** `nami-works:connector-20260811-merged-49be6fb`. `/health` 200 post-roll, clean startup logs.
+- **PR #103** — `serverInfo` instruction telling the connecting agent to pull real customer language via `loox_list_reviews` before drafting ad hooks/copy/creative angles, rather than waiting to be asked. Same mechanism as the existing proactive-feedback nudge.
+- **Deploy held back, then landed via a cross-session handoff.** Built + merged same-day as PR #98 (`realtime-credit-webhook`, real-time store-credit issuance + refund clawback), which was mid-flight on the box under an unmerged commit (`5f030fc`). Deploying my image over that would have silently rolled back their live feature, so held off and coordinated directly with that session (`mcp__ccd_session_mgmt__send_message`) instead of guessing. **Caught a real gap in their status update**: they reported deploying "from the merge commit's tip," but the actually-deployed tag (`2d9776f`) was their branch tip taken *before* the merge to main — it had their work but NOT my PR #103 fix. Verified via `git show <tag>:path | grep` against the real file content rather than trusting the message at face value; rebuilt + redeployed from the true `origin/main` merge commit (`49be6fb`) to close the gap.
+- **Same box, no new migrations needed** — diffed `prisma/connector/migrations/` between their deployed commit and the merge commit before deploying; empty diff confirmed no new schema to apply.
 
 ### 2026-08-11 · connector — Omie groupBy aggregation (handoff v2) + 4-round live-debug cycle to make it actually work
 - **Image tags (5, same overnight window):** `connector-20260810-omie-groupby-d807e1b` (PR #96) → `connector-20260811-omie-fix2-6aa0a42` (PR #99) → `connector-20260811-omie-fix3-849fae2` (PR #101) → `connector-20260811-omie-fix4-6136170` (PR #102, final/live). Deploy mechanic unchanged. Docker Desktop had to be restarted once mid-cycle (daemon offline); ECR auth token expired once mid-cycle (re-authed both locally and on the box each time).
