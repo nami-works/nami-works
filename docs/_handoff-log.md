@@ -76,3 +76,22 @@ Steps:
 When we're done with it, remove the file with `git rm docs/handoff-antifrizz-rd.md` and commit the removal. If you don't have git push access in this Cowork session, leave it and tell me; a Claude Code session will clean it up.
 
 ↳ **Log upkeep (at pickup):** delete this entire `r&d_reviews` block from `docs/_handoff-log.md` (land the removal per the deletion note above).
+
+---
+
+# b2b-portfolio
+
+**Surface: Claude Code.** Needs local git + `gebeauty/.env` + `C:/Python314/python.exe` + Shopify Admin API (the publisher writes to the live store) and the auto-loaded memory/CLAUDE.md.
+
+A prior session built and shipped two live B2B portfolio pages and wrote a full handoff. Read it as your complete context.
+
+Handoff file: `docs/handoff-b2b-portfolio-pages.md` (on origin/main; `git pull` if missing). Initiative: `.claude/initiatives/gebeauty-b2b-portfolio-pages.md`.
+
+Steps:
+1. Read the full handoff.
+2. Confirm back to me, in 5 bullets or less: what's live (the two pages + how they're built), what the next move is (migrate off the Shopify page to `b2b.gebeauty.com.br`), and the open items.
+3. Wait for my direction — the migration has hosting/asset decisions that are mine to make first.
+
+When the migration lands and the Shopify pages are retired, remove `docs/handoff-b2b-portfolio-pages.md` (`git rm` + commit); git history preserves it.
+
+↳ **Log upkeep (at pickup):** delete this entire `b2b-portfolio` block from `docs/_handoff-log.md` (land the removal per the deletion note above).
