@@ -10,6 +10,7 @@ import "./list-dead-collections.js";
 import "./audit-promotional-consistency.js";
 import "./verify-campaign-price-alignment.js";
 import "./update-theme-banner.js";
+import "./write-page.js";
 import "./create-discount-code.js";
 import "./issue-store-credit.js";
 import "./list-discount-codes.js";

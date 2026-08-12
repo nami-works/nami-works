@@ -125,6 +125,7 @@ export const TOOL_TITLES: Record<string, string> = {
   shopify_list_delivery_profiles: "Shopify · Perfis de entrega",
   shopify_list_webhooks: "Shopify · Webhooks da loja",
   shopify_list_metaobject_definitions: "Shopify · Definições de metaobjects",
+  shopify_write_page: "Shopify · Criar/editar página",
 };
 
 // Group labels for the derived fallback (unmapped/future tools only).
