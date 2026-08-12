@@ -12,10 +12,14 @@ embedded = true
 [access_scopes]
 # read-only for week 1 — this app never writes to Shopify directly. WhatsApp
 # send is client-side (wa.me), and store-credit mutations stay owned by
-# apps/connector. read_users is new (2026-08-12) — needed to resolve the
-# real logged-in rep's email from the session for per-location access
-# control; flag for Lucas's scope approval alongside the rest of this list.
-scopes = "read_customers,read_orders,read_users"
+# apps/connector. read_users (2026-08-12) resolves the real logged-in rep's
+# email from the session for per-location access control.
+# read_store_credit_accounts + read_store_credit_account_transactions
+# (2026-08-13) are new too — confirmed required by validate_graphql_codeblocks
+# against the real Admin API schema, needed to read each customer's real
+# credit expiry (app/lib/credit-expiry.ts) instead of a placeholder. All new
+# scopes flagged for Lucas's approval alongside the rest of this list.
+scopes = "read_customers,read_orders,read_users,read_store_credit_accounts,read_store_credit_account_transactions"
 
 [build]
 automatically_update_urls_on_dev = true

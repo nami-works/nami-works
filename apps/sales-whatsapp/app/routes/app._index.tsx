@@ -4,12 +4,13 @@ import { authenticate } from "../shopify.server.js";
 import prisma from "../db.server.js";
 import { grantedLocationsForSession, repEmailFromSession, UnauthorizedLocationError } from "../lib/auth.js";
 import { isHoldout } from "../lib/holdout.js";
-import { isEntregaLocalEligible } from "../lib/geo-eligibility.js";
+import { expansionBand, selectByProgressiveExpansion } from "../lib/geo-eligibility.js";
 import { openContactsLookbackCutoff, openCustomerGids } from "../lib/open-contacts.js";
 import { rankByExpiryAndValue, daysUntil, type Candidate } from "../lib/ranking.js";
 import { recommendFor } from "../lib/recommendations.js";
 import { buildMessage, buildWaMeLink } from "../lib/whatsapp-message.js";
 import { fetchLiveCreditHolders } from "../lib/live-credit-holders.js";
+import { resolveJustBoughtExpiry } from "../lib/credit-expiry.js";
 
 // Daily capacity cap per location — reps can't work an unbounded list.
 // Not yet confirmed with Lucas as a specific number; 40 is a placeholder
@@ -51,20 +52,38 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const rawCustomers = await fetchLiveCreditHolders(admin);
 
-  const rows = rawCustomers
+  const geocoded = rawCustomers
     .filter((c) => !isHoldout(c.id)) // structurally absent — never reaches the rest of the pipeline
     .filter((c) => !openGids.has(c.id)) // already contacted, still in cooldown, or already converted
-    .filter((c) => {
-      const addr = c.defaultAddress;
-      if (!addr?.latitude || !addr?.longitude) return false;
-      // NOT YET IMPLEMENTED — real expansion-band sequencing beyond the
-      // Entrega-local radius (nearby cities -> state -> nationwide overflow,
-      // only once the narrower band is confirmed dry across all 4 reps, not
-      // per-request). Week 1 only serves each location's own 20km radius.
-      return isEntregaLocalEligible(addr.latitude, addr.longitude, location);
-    })
+    .filter((c) => c.defaultAddress?.latitude != null && c.defaultAddress?.longitude != null);
+
+  // Progressive expansion (Lucas, 2026-08-12): starts at this location's own
+  // Entrega-local pool; widens to nearby cities, then the whole state, then
+  // nationwide, only as far as needed to get a non-empty pool for THIS
+  // request. Per-request, not per-day-across-all-reps — see the real
+  // future-refinement note in geo-eligibility.ts.
+  const { selected: candidates, band } = selectByProgressiveExpansion(geocoded, (c) =>
+    expansionBand(c.defaultAddress!.latitude!, c.defaultAddress!.longitude!, location),
+  );
+  console.info(`[worklist] geo expansion shop=${session.shop} location=${location.key} band=${band} candidates=${candidates.length}`);
+
+  const rows = candidates
     .map((c) => {
       const balance = c.storeCreditAccounts.edges.reduce((sum, e) => sum + Number(e.node.balance.amount), 0);
+      // Real per-tranche expiry — identifies which credit transaction is the
+      // just-bought arm one purely from its expiry interval (30/45/60 days),
+      // per the bump-feature spike (2026-08-12). Flattens across every
+      // store-credit account the customer has, same as balance above.
+      const transactions = c.storeCreditAccounts.edges.flatMap((e) =>
+        e.node.transactions.edges
+          .filter((t) => t.node.__typename === "StoreCreditAccountCreditTransaction")
+          .map((t) => ({
+            createdAt: t.node.createdAt,
+            expiresAt: t.node.expiresAt ?? null,
+            remainingAmount: Number(t.node.remainingAmount?.amount ?? 0),
+          })),
+      );
+      const creditExpiresAt = resolveJustBoughtExpiry(transactions);
       const orders = c.orders.edges.map((e) => ({
         createdAt: e.node.createdAt,
         lineItemTitles: e.node.lineItems.edges.map((li) => li.node.title),
@@ -75,22 +94,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
         name: [c.firstName, c.lastName].filter(Boolean).join(" ") || "(sem nome)",
         city: c.defaultAddress?.city ?? "",
         creditBalance: balance,
-        phone: c.phone,
+        creditExpiresAt,
+        phone: c.defaultPhoneNumber?.phoneNumber ?? null,
         repor,
         descobrir,
       };
     })
-    .filter((r) => r.creditBalance > 0);
-
-  // NOT YET IMPLEMENTED — creditExpiresAt should come from the customer's
-  // real store-credit transaction data (matching the 30/45/60-day-interval
-  // identification from the bump-feature spike), not a placeholder. Ranking
-  // by expiry is meaningless until this is real. FLAG: real launch blocker,
-  // not just a nice-to-have — without it every row ranks as "0 days left".
-  const placeholderExpiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    .filter((r) => r.creditBalance > 0)
+    // A customer with no identifiable just-bought-arm transaction has
+    // nothing to rank by — shouldn't happen given the tag-based candidate
+    // search, but handled explicitly rather than assumed (see
+    // credit-expiry.ts).
+    .filter((r): r is typeof r & { creditExpiresAt: string } => r.creditExpiresAt !== null);
 
   const ranked = rankByExpiryAndValue(
-    rows.map((r): Candidate => ({ customerGid: r.customerGid, creditBalance: r.creditBalance, creditExpiresAt: placeholderExpiresAt })),
+    rows.map((r): Candidate => ({ customerGid: r.customerGid, creditBalance: r.creditBalance, creditExpiresAt: r.creditExpiresAt })),
     now,
   ).slice(0, DAILY_CAPACITY);
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { distanceKm, expansionBand, isEntregaLocalEligible } from "../geo-eligibility.js";
+import { distanceKm, expansionBand, isEntregaLocalEligible, selectByProgressiveExpansion } from "../geo-eligibility.js";
 import { LOCATIONS } from "../locations.js";
 
 describe("distanceKm", () => {
@@ -54,5 +54,35 @@ describe("expansionBand", () => {
     const manausLat = -3.119;
     const manausLng = -60.0217;
     expect(expansionBand(manausLat, manausLng, location)).toBe("nacional");
+  });
+});
+
+describe("selectByProgressiveExpansion", () => {
+  it("returns only entrega_local items when that band is non-empty", () => {
+    const items = ["a", "b", "c"];
+    const bands: Record<string, ReturnType<typeof expansionBand>> = { a: "entrega_local", b: "vizinhas", c: "nacional" };
+    const { selected, band } = selectByProgressiveExpansion(items, (i) => bands[i]!);
+    expect(selected).toEqual(["a"]);
+    expect(band).toBe("entrega_local");
+  });
+
+  it("widens to vizinhas when entrega_local is empty", () => {
+    const items = ["a", "b", "c"];
+    const bands: Record<string, ReturnType<typeof expansionBand>> = { a: "vizinhas", b: "vizinhas", c: "nacional" };
+    const { selected, band } = selectByProgressiveExpansion(items, (i) => bands[i]!);
+    expect(selected.sort()).toEqual(["a", "b"]);
+    expect(band).toBe("vizinhas");
+  });
+
+  it("widens all the way to nacional when nothing closer is eligible", () => {
+    const items = ["a"];
+    const { selected, band } = selectByProgressiveExpansion(items, () => "nacional");
+    expect(selected).toEqual(["a"]);
+    expect(band).toBe("nacional");
+  });
+
+  it("returns an empty selection if there are no items at all", () => {
+    const { selected } = selectByProgressiveExpansion([] as string[], () => "entrega_local");
+    expect(selected).toEqual([]);
   });
 });

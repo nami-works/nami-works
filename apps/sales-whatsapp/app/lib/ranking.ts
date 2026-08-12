@@ -19,9 +19,10 @@ export type RankFn = (candidates: Candidate[], now: Date) => RankedCandidate[];
 // Interim MVP signal: soonest-expiring first, then highest balance as the
 // tiebreak. Same priority the Excel process already used — not a new
 // invention, just re-hosted.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- `now` is part
-// of the RankFn contract (a future SRBP-based implementation needs "as of
-// when" for its timing math); this interim implementation doesn't need it.
+// `now` is part of the RankFn contract (a future SRBP-based implementation
+// needs "as of when" for its timing math); this interim implementation
+// doesn't need it.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const rankByExpiryAndValue: RankFn = (candidates, now) => {
   const sorted = [...candidates].sort((a, b) => {
     const expiryDiff = new Date(a.creditExpiresAt).getTime() - new Date(b.creditExpiresAt).getTime();

@@ -38,3 +38,29 @@ export function expansionBand(customerLat: number, customerLng: number, location
 export function isEntregaLocalEligible(customerLat: number, customerLng: number, location: Location): boolean {
   return distanceKm(customerLat, customerLng, location.lat, location.lng) <= ENTREGA_LOCAL_RADIUS_KM;
 }
+
+const BAND_ORDER: ExpansionBand[] = ["entrega_local", "vizinhas", "estado", "nacional"];
+
+// Progressive expansion per Lucas's design (2026-08-12): a location's
+// worklist starts as its Entrega-local pool; once that's empty, it widens
+// to nearby cities, then the whole state, then nationwide (Prateleira
+// infinita, no distance constraint) — absorbing everyone else rather than
+// leaving an unowned "Sem região" bucket.
+//
+// Per-request, not per-day: this widens within a SINGLE loader call if the
+// narrowest band is empty for THIS rep right now. A more advanced version
+// would only widen once the narrower band is confirmed dry across all 4
+// reps over time (avoiding one location "stealing" candidates a
+// temporarily-slow-but-not-actually-exhausted narrower band would have
+// gotten) — flagged as a real future refinement, not implemented here.
+export function selectByProgressiveExpansion<T>(
+  items: T[],
+  bandOf: (item: T) => ExpansionBand,
+): { selected: T[]; band: ExpansionBand } {
+  for (const band of BAND_ORDER) {
+    const maxIndex = BAND_ORDER.indexOf(band);
+    const selected = items.filter((item) => BAND_ORDER.indexOf(bandOf(item)) <= maxIndex);
+    if (selected.length > 0) return { selected, band };
+  }
+  return { selected: [], band: "nacional" };
+}

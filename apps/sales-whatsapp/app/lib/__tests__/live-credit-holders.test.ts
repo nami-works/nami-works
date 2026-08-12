@@ -6,7 +6,7 @@ function mockCustomer(id: string): RawCustomer {
     id,
     firstName: "Test",
     lastName: null,
-    phone: null,
+    defaultPhoneNumber: null,
     defaultAddress: null,
     storeCreditAccounts: { edges: [] },
     orders: { edges: [] },
