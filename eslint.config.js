@@ -54,6 +54,21 @@ export default [
     },
   },
   {
+    // Each app's own production server entrypoint (apps/*/server.mjs) --
+    // plain Node.js, run directly by `node server.mjs`, not bundled. Same
+    // gap as the lambda pattern above; added 2026-08-13 when sales-whatsapp's
+    // server.mjs hit this at the changed-lines pre-commit gate. Every
+    // existing apps/*/server.mjs (e.g. omnify-admin's) would hit the same
+    // gate the next time it's touched -- this isn't new-app-specific.
+    files: ["apps/*/server.mjs"],
+    languageOptions: {
+      globals: {
+        process: "readonly",
+        console: "readonly",
+      },
+    },
+  },
+  {
     // Static browser-served JS (no bundler, served as-is by fastify-static)
     // -- needs DOM globals the base config above doesn't provide.
     files: ["**/public/**/*.js"],

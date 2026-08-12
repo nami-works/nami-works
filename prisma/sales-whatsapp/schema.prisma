@@ -1,0 +1,64 @@
+// Sales WhatsApp App — own schema, deliberately isolated from apps/connector
+// and apps/omnify-admin's databases. Per .claude/initiatives/ge-sales-whatsapp-app.md:
+// this app never reads the other apps' tables; Shopify is the only shared surface.
+generator client {
+  provider = "prisma-client-js"
+  // Custom output, same pattern as connector/cash-funding — avoids colliding
+  // with the default @prisma/client (that one is omnify's).
+  output   = "../../node_modules/@prisma/client-sales-whatsapp"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Standard shape expected by @shopify/shopify-app-session-storage-prisma —
+// same fields as every other app in this monorepo using that library.
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+}
+
+// One row per WhatsApp contact attempt. A customer can have several rows over
+// time (contacted, cooldown-recycled, contacted again). "Open" = not yet
+// resolved by conversion or a manual skip — that's what the daily worklist
+// query and the orders webhook both look for.
+//
+// convertedAt/convertedOrderGid + unconvertedAt is deliberately a pair, not a
+// single boolean: the orders webhook sets convertedAt when a matching order
+// pays, and a SEPARATE refunds/cancellations watch un-sets it (unconvertedAt)
+// without deleting the row — mirrors the exact fix apps/connector already
+// shipped once (refund-clawback.ts) for the identical bug class. A converted
+// row that gets un-flipped re-enters the eligible pool on its own timeline,
+// not via the cooldown path (see worklist query, ranking.ts).
+model WorklistContactEvent {
+  id                String    @id @default(cuid())
+  shop              String
+  customerGid       String
+  locationKey       String // e.g. "shopping-recife" — matches RepLocationGrant
+  repEmail          String // resolved from the App Bridge session token, not self-reported
+  contactedAt       DateTime  @default(now())
+  convertedAt       DateTime?
+  convertedOrderGid String?
+  unconvertedAt     DateTime? // set if convertedOrderGid is later cancelled/refunded
+  skippedAt         DateTime?
+  skipReason        String? // e.g. "wrong_number" | "not_interested"
+
+  @@index([shop, customerGid, contactedAt])
+  @@index([shop, locationKey, contactedAt])
+  @@index([shop, convertedOrderGid])
+}
