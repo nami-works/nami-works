@@ -133,3 +133,8 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Cowork scratch + machine-local caches (never commit — regenerable / session-local)
+.cowork-files/
+**/_cache/
+**/_to_delete/
