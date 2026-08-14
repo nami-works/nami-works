@@ -8,15 +8,17 @@ apply`, no function redeploy, no propagation wait. Changes are live within
 seconds.
 
 Each KVS entry: key = username (auto-derived from the company name, see
-slugify() -- e.g. "BIM Distribuidora" -> "bimdistribuidora"), value = JSON
-{"password": "...", "company": "<as typed>", "name": "<contact, TitleCase, optional>"}.
+slugify() -- e.g. "BIM Distribuidora" -> "bim-distribuidora", hyphenated so
+it stays readable), value = JSON {"password": "...", "company": "<as typed>"}.
 
-`company` and `name` are what the access-notify Lambda puts in its emails
-(see infra/terraform/lambda/access-notify/index.py) via the ?_co=/&_n=
-tracking redirect the CloudFront Function adds on first successful login.
+There's no `name` field here anymore -- the visitor's name is a free-text
+field they fill in themselves on first access (viewer-request.js serves a
+small "quem esta acessando?" page before the deck), not something set when
+the credential is created. See the access-notify/access-digest Lambdas for
+how that shows up in emails.
 
 Usage:
-  C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py add "<Company Name>" [--name "<Contact Name>"] [--password PASS]
+  C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py add "<Company Name>" [--password PASS]
   C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py remove <username-or-company>
   C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py list
 
@@ -34,8 +36,9 @@ KVS_NAME = "b2b_gebeauty_site_clients"
 
 
 def slugify(company: str) -> str:
-    """'BIM Distribuidora' -> 'bimdistribuidora' -- the username IS the company name, squashed."""
-    return re.sub(r"[^a-z0-9]", "", company.lower())
+    """'BIM Distribuidora' -> 'bim-distribuidora' -- hyphen-joined words, not squashed together."""
+    words = re.findall(r"[a-z0-9]+", company.lower())
+    return "-".join(words)
 
 
 def run(*args):
@@ -71,15 +74,12 @@ def gen_password(length=20):
 
 def cmd_add(args):
     if len(args) < 1:
-        sys.exit('usage: add "<Company Name>" [--name "<Contact Name>"] [--password PASS]')
+        sys.exit('usage: add "<Company Name>" [--password PASS]')
     company = args[0]
     username = slugify(company)
     if not username:
         sys.exit(f"'{company}' has no usable characters after slugifying -- pick a company name with letters/digits.")
 
-    contact_name = ""
-    if "--name" in args:
-        contact_name = args[args.index("--name") + 1].strip().title()
     password = None
     if "--password" in args:
         password = args[args.index("--password") + 1]
@@ -87,15 +87,13 @@ def cmd_add(args):
         password = gen_password()
 
     arn = kvs_arn()
-    value = json.dumps({"password": password, "company": company, "name": contact_name})
+    value = json.dumps({"password": password, "company": company})
     run("put-key", "--kvs-arn", arn, "--key", username, "--value", value, "--if-match", etag(arn))
 
     print(f"Added client '{company}' (username: {username})")
     print("  URL:      https://b2b.gebeauty.com.br/comercial  (or /parceiros)")
     print(f"  Username: {username}")
     print(f"  Password: {password}")
-    if contact_name:
-        print(f"  Contact:  {contact_name}")
     print("Copy the password now -- it is not stored or shown anywhere else.")
 
 
@@ -116,13 +114,10 @@ def cmd_list(args):
         return
     for k in keys:
         try:
-            record = json.loads(k["Value"])
-            company = record.get("company", "?")
-            name = record.get("name", "")
+            company = json.loads(k["Value"]).get("company", "?")
         except (KeyError, ValueError):
-            company, name = "?", ""
-        label = f"{company} (contato: {name})" if name else company
-        print(f"{k['Key']:20}  {label}")
+            company = "?"
+        print(f"{k['Key']:24}  {company}")
 
 
 def main():

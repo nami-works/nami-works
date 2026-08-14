@@ -11,30 +11,35 @@ import cf from 'cloudfront';
 // gebeauty/scripts/_b2b_manage_client_access.py, no `terraform apply`, no
 // function redeploy, no propagation wait.
 //
-// KVS value shape per key (key = username, e.g. "bimdistribuidora" -- always
-// derived from the company name by the management script, see its slugify()):
-//   {"password": "...", "company": "<Company Name, as typed>", "name": "<Contact Name, TitleCase, optional>"}
+// KVS value shape per key (key = username, hyphen-slugified from the company
+// name by the management script's slugify() -- e.g. "BIM Distribuidora" ->
+// "bim-distribuidora"):
+//   {"password": "...", "company": "<Company Name, as typed>"}
 //
-// Three jobs, in order:
+// Four jobs, in order:
 //   1. HTTP Basic Auth gate against the KVS. Still "light" per the original
 //      migration decision -- these are unlisted sell-in decks, not secrets --
 //      just per-client instead of shared.
-//   2. Tracking redirect: on FIRST successful auth for one of the two deck
-//      ROOTS (/comercial, /parceiros -- NOT arbitrary paths like /favicon.ico,
-//      which browsers request automatically and would otherwise show up as
-//      false "accesses"), 302-redirect to the same URL + `?_co=<company>` (+
-//      `&_n=<name>` if set). This is a REAL second viewer request, so it
-//      lands in CloudFront's standard S3 access logs (cs-uri-query) with a
-//      timestamp + IP -- that's how the access-notify Lambda (and Lucas,
-//      reading the raw logs) sees which client opened which deck and when,
-//      without extra infra (Lambda@Edge, a webhook, etc). An internal URI
-//      rewrite would NOT do this: standard logs reflect the viewer-facing
-//      request, not whatever a function rewrites en route to the origin.
-//   3. Clean-URL rewrite + root redirect (unchanged from the single-credential
-//      version): "/comercial" -> "/comercial/index.html", "/" -> "/comercial/".
+//   2. Name-capture interstitial: for the two deck ROOTS (/comercial,
+//      /parceiros -- NOT arbitrary paths like /favicon.ico, which browsers
+//      request automatically and would otherwise trigger this), if the
+//      request has no `_n` query param yet, serve a small self-contained
+//      HTML page asking "quem está acessando?" instead of the deck itself.
+//      Its form submits (or Skip link) to the SAME url + `?_co=<company>
+//      &_n=<name-or-empty>`. That follow-up IS a real second viewer request,
+//      so it lands in CloudFront's standard S3 access logs (cs-uri-query)
+//      with a timestamp + IP -- that's how the access-notify Lambda (and
+//      Lucas, reading the raw logs) knows who opened which deck and when,
+//      without extra infra (Lambda@Edge, a webhook, etc). The name is a
+//      free-text field filled by the visitor themselves at access time --
+//      NOT something Lucas pre-sets when creating the credential (Basic
+//      Auth is shared per company, not per person, so there's no other way
+//      to learn who specifically is looking).
+//   3. Clean-URL rewrite + root redirect (unchanged from earlier versions):
+//      "/comercial" -> "/comercial/index.html", "/" -> "/comercial/".
 //
-// A cache behavior only accepts one function per event type, so all three
-// jobs live here.
+// A cache behavior only accepts one function per event type, so all jobs
+// live here.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- entry point invoked by the CloudFront runtime, not local code
 async function handler(event) {
   var request = event.request;
@@ -80,31 +85,30 @@ async function handler(event) {
     return challenge;
   }
   var company = record.company || user;
-  var personName = record.name || '';
   var uri = request.uri;
   var qs = request.querystring || {};
 
-  // ── 2a. Root redirect, tracked in one hop ───────────────────────────────
-  if (uri === '/') {
-    return {
-      statusCode: 302,
-      statusDescription: 'Found',
-      headers: { location: { value: '/comercial/' + trackingQuery(company, personName) } },
-    };
-  }
-
-  // ── 2b. Tracking redirect (once per deck root, per auth) ────────────────
+  // ── 2. Name-capture interstitial (once per deck root, per auth) ─────────
   var isDeckRoot = uri === '/comercial' || uri === '/comercial/' || uri === '/parceiros' || uri === '/parceiros/';
-  if (isDeckRoot && !qs._co) {
+  if (isDeckRoot && !qs._n) {
     var base = uri.endsWith('/') ? uri : uri + '/';
     return {
-      statusCode: 302,
-      statusDescription: 'Found',
-      headers: { location: { value: base + trackingQuery(company, personName) } },
+      statusCode: 200,
+      statusDescription: 'OK',
+      headers: { 'content-type': { value: 'text/html; charset=utf-8' } },
+      body: { encoding: 'text', data: nameGateHTML(company, base) },
     };
   }
 
   // ── 3. Clean-URL rewrite ─────────────────────────────────────────────────
+  if (uri === '/') {
+    return {
+      statusCode: 302,
+      statusDescription: 'Found',
+      headers: { location: { value: '/comercial/' } },
+    };
+  }
+
   if (uri.endsWith('/')) {
     request.uri = uri + 'index.html';
     return request;
@@ -118,8 +122,36 @@ async function handler(event) {
   return request;
 }
 
-function trackingQuery(company, personName) {
-  var q = '?_co=' + encodeURIComponent(company);
-  if (personName) q += '&_n=' + encodeURIComponent(personName);
-  return q;
+function escapeHTML(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function nameGateHTML(company, targetPath) {
+  var safeCompany = escapeHTML(company);
+  return (
+    '<!doctype html><html lang="pt-br"><head><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<title>GE Beauty · Portfólio B2B</title>' +
+    '<style>body{font-family:-apple-system,Segoe UI,Arial,sans-serif;background:#f5f2ee;display:flex;' +
+    'min-height:100vh;align-items:center;justify-content:center;margin:0}' +
+    '.card{background:#fff;padding:36px 32px;border-radius:14px;max-width:360px;width:90%;' +
+    'box-shadow:0 8px 30px rgba(0,0,0,.08);text-align:center}' +
+    'h1{font-size:19px;margin:0 0 6px;color:#161616}p{color:#6b6b6b;font-size:14px;margin:0 0 22px}' +
+    'input{width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid #e7e2da;border-radius:8px;' +
+    'font-size:15px;margin-bottom:14px}' +
+    'button{width:100%;padding:12px;border:none;border-radius:8px;background:#DF3630;color:#fff;' +
+    'font-size:15px;font-weight:600;cursor:pointer}' +
+    'a.skip{display:block;margin-top:14px;color:#6b6b6b;font-size:13px;text-decoration:underline;cursor:pointer}' +
+    '</style></head><body><div class="card">' +
+    '<h1>Bem-vindo(a), ' + safeCompany + '</h1>' +
+    '<p>Como podemos te chamar?</p>' +
+    '<input id="nm" maxlength="60" placeholder="Seu nome" autofocus>' +
+    '<button onclick="go()">Continuar</button>' +
+    '<a class="skip" onclick="go()">Pular</a>' +
+    '</div><script>function go(){' +
+    'var n=document.getElementById("nm").value.trim();' +
+    'location.href="' + targetPath + '?_co=' + encodeURIComponent(company) + '&_n="+encodeURIComponent(n);' +
+    '}document.getElementById("nm").addEventListener("keydown",function(e){if(e.key==="Enter")go();});' +
+    '</script></body></html>'
+  );
 }

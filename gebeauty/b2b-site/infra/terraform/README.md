@@ -59,24 +59,33 @@ manage them with the script, which is live within seconds (no apply, no
 function redeploy):
 
 ```bash
-# Add a client (omit --password to auto-generate one)
-C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py add acme "Acme Distribuidora"
+# Add a client -- username is auto-derived from the company name
+# (slugify: "BIM Distribuidora" -> "bim-distribuidora"). Omit --password
+# to auto-generate one.
+C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py add "Acme Distribuidora"
 
 # Remove a client (revokes just their access)
-C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py remove acme
+C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py remove "Acme Distribuidora"
 
 # List configured clients
 C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py list
 ```
 
-**Tracking who's viewing:** on a client's first successful login per route,
-`viewer-request.js` 302-redirects to the same URL with `?_c=<client name>`
-appended. That's a real second browser request, so it lands in the
-CloudFront standard access logs (`terraform output access_logs_bucket`,
-`cloudfront/` prefix) with the client's name, a timestamp, and the visitor's
-IP — no extra infra (Lambda@Edge, a webhook) needed. An internal-only URI
-rewrite would NOT show up this way; the visible redirect is what makes it
-land in the viewer-facing log line.
+**Who's viewing, and who specifically:** on a client's first successful
+login per deck root (`/comercial`, `/parceiros`), `viewer-request.js` serves
+a small self-contained "quem está acessando?" page instead of the deck --
+a free-text name field the VISITOR fills in themselves (Basic Auth is
+shared per company, not per person, so there's no other way to learn who
+specifically is looking). Submitting (or the "Pular"/skip link) redirects to
+the same URL with `?_co=<company>&_n=<name-or-empty>` appended. That's a
+real second browser request, so it lands in the CloudFront standard access
+logs (`terraform output access_logs_bucket`, `cloudfront/` prefix) with the
+company, name, a timestamp, and the visitor's IP — no extra infra
+(Lambda@Edge, a webhook) needed. An internal-only URI rewrite would NOT show
+up this way; the visible redirect is what makes it land in the
+viewer-facing log line. `access-notify.tf`'s Lambda reads that same log
+line to send Lucas an immediate email; `access-digest.tf`'s Lambda rolls up
+a whole day's worth into one morning summary.
 
 ## What this module creates
 
