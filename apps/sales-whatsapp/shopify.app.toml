@@ -2,7 +2,7 @@
 #
 client_id = "acaf38a95f367ffe27eddf9eb9fd89a0"
 name = "BeautyBack"
-application_url = "https://beautyback.gebeauty.com.br"
+application_url = "https://apps.gebeauty.com.br"
 embedded = true
 
 [access_scopes]
