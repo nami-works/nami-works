@@ -15,15 +15,3 @@ variable "bucket_name" {
   type        = string
   default     = "b2b-gebeauty-site"
 }
-
-variable "basic_auth_username" {
-  description = "Shared Basic Auth username for the CloudFront access gate. Not a real authz boundary -- these are unlisted sell-in decks, per the migration handoff's 'light access gate' decision."
-  type        = string
-  sensitive   = true
-}
-
-variable "basic_auth_password" {
-  description = "Shared Basic Auth password for the CloudFront access gate. Pass via TF_VAR_basic_auth_password or a gitignored *.auto.tfvars -- never commit plaintext."
-  type        = string
-  sensitive   = true
-}

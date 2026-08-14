@@ -23,3 +23,13 @@ output "site_cloudfront_domain_name" {
   value       = aws_cloudfront_distribution.site.domain_name
   description = "CloudFront edge hostname (e.g. dXXXX.cloudfront.net) -- add this as a CNAME at registro.br (b2b -> this value) once the distribution is deployed. Also usable for smoke-testing directly before DNS propagates."
 }
+
+output "client_credentials_store_name" {
+  value       = aws_cloudfront_key_value_store.b2b_clients.name
+  description = "CloudFront KeyValueStore holding per-client Basic Auth credentials. Manage entries with gebeauty/scripts/_b2b_manage_client_access.py, not Terraform."
+}
+
+output "access_logs_bucket" {
+  value       = aws_s3_bucket.logs.id
+  description = "S3 bucket receiving CloudFront standard access logs (cloudfront/ prefix) -- each client hit is tagged with ?_c=<client name> via the tracking redirect in viewer-request.js."
+}
