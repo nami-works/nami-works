@@ -13,6 +13,17 @@ import cf from 'cloudfront';
 // - _co=<company>/_n=<name> tracking redirects for the two deck roots land
 //   in the real CloudFront access logs (used by access-notify/-digest).
 // - Clean-URL rewrite: "/comercial" -> "/comercial/index.html".
+//
+// OG_HEAD: an unauthenticated hit (including WhatsApp/Facebook/etc.'s link-
+// preview crawlers, which never have credentials) always lands on the login
+// page below, NOT the real deck HTML in S3 -- so the link-preview tags have
+// to live here, not just in the deck's own <head>.
+var OG_HEAD =
+  '<title>GE Beauty: no seu tempo do seu jeito | Catálogo B2B</title>' +
+  '<meta property="og:title" content="GE Beauty: no seu tempo do seu jeito | Catálogo B2B">' +
+  '<meta property="og:type" content="website">' +
+  '<meta property="og:site_name" content="GE Beauty">' +
+  '<meta property="og:description" content=" ">';
 // One function per event type per cache behavior, so all jobs live here.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- entry point invoked by the CloudFront runtime, not local code
 async function handler(event) {
@@ -119,7 +130,7 @@ function loginHTML(targetPath, showError) {
   return (
     '<!doctype html><html lang="pt-br"><head><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1">' +
-    '<title>GE Beauty · Portfólio B2B</title>' +
+    OG_HEAD +
     '<style>body{font-family:-apple-system,Segoe UI,Arial,sans-serif;background:#f5f2ee;display:flex;' +
     'min-height:100vh;align-items:center;justify-content:center;margin:0}' +
     '.card{background:#fff;padding:36px 32px;border-radius:14px;max-width:360px;width:90%;' +
@@ -156,7 +167,7 @@ function nameGateHTML(company, targetPath) {
   return (
     '<!doctype html><html lang="pt-br"><head><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1">' +
-    '<title>GE Beauty · Portfólio B2B</title>' +
+    OG_HEAD +
     '<style>body{font-family:-apple-system,Segoe UI,Arial,sans-serif;background:#f5f2ee;display:flex;' +
     'min-height:100vh;align-items:center;justify-content:center;margin:0}' +
     '.card{background:#fff;padding:36px 32px;border-radius:14px;max-width:360px;width:90%;' +
