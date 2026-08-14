@@ -14,16 +14,19 @@ import cf from 'cloudfront';
 //   in the real CloudFront access logs (used by access-notify/-digest).
 // - Clean-URL rewrite: "/comercial" -> "/comercial/index.html".
 //
-// OG_HEAD: an unauthenticated hit (including WhatsApp/Facebook/etc.'s link-
-// preview crawlers, which never have credentials) always lands on the login
-// page below, NOT the real deck HTML in S3 -- so the link-preview tags have
-// to live here, not just in the deck's own <head>.
+// OG_HEAD: link-preview crawlers (WhatsApp etc.) have no credentials, so
+// they land on the login page below, not the real deck HTML in S3 -- the
+// tags have to live here too.
 var OG_HEAD =
   '<title>GE Beauty: no seu tempo do seu jeito | Catálogo B2B</title>' +
   '<meta property="og:title" content="GE Beauty: no seu tempo do seu jeito | Catálogo B2B">' +
   '<meta property="og:type" content="website">' +
   '<meta property="og:site_name" content="GE Beauty">' +
-  '<meta property="og:description" content=" ">';
+  '<meta property="og:description" content=" ">' +
+  '<meta property="og:image" content="https://b2b.gebeauty.com.br/og-image.jpg">' +
+  '<meta property="og:image:width" content="1200">' +
+  '<meta property="og:image:height" content="615">' +
+  '<meta property="og:image:type" content="image/jpeg">';
 // One function per event type per cache behavior, so all jobs live here.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- entry point invoked by the CloudFront runtime, not local code
 async function handler(event) {
@@ -31,6 +34,12 @@ async function handler(event) {
   var headers = request.headers;
   var uri = request.uri;
   var qs = request.querystring || {};
+
+  // /og-image.jpg: the one public, unauthenticated path -- crawlers fetch
+  // og:image separately with no credentials, so it must bypass auth.
+  if (uri === '/og-image.jpg') {
+    return request;
+  }
 
   // ── 1. Auth gate against the KeyValueStore ──────────────────────────────
   var authHeader = headers.authorization && headers.authorization.value;
