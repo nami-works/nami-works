@@ -27,7 +27,7 @@ print(f"remove footer: {'OK' if _nf == 1 else 'MISS(' + str(_nf) + ')'}")
 # 2) neutralize copy (old -> new). Report any miss.
 REPL = [
     (r'<title>[\s\S]*?</title>', '<title>GE Beauty · Portfólio de Produtos</title>'),
-    ('<h1 class="gbb-rv">Beleza capilar<br><span class="thin">que a sua cliente</span><br>já procura.</h1>', ''),
+    ('<h1 class="gbb-rv">Beleza<br><span class="thin">que a cliente</span><br>já procura.</h1>', ''),
     ('Apresentação de portfólio para parceiros de varejo. Cinco linhas, um cuidado completo, do dia a dia ao tratamento intensivo.',
      'Cinco linhas, um cuidado completo, do dia a dia ao tratamento intensivo. Conheça os produtos GE Beauty.'),
     # NOTE: v3-era CTA/#contato copy swaps ("para ampliar a prateleira...",

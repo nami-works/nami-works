@@ -218,12 +218,12 @@ resource "aws_cloudfront_key_value_store" "b2b_clients" {
 
 # ── CloudFront Function: per-client Basic Auth gate + clean-URL rewrite ─────
 resource "aws_cloudfront_function" "viewer_request" {
-  name                          = "${replace(var.bucket_name, "-", "_")}_viewer_request"
-  runtime                       = "cloudfront-js-2.0"
-  comment                       = "Per-client Basic Auth gate + clean-URL rewrite for ${var.domain}"
-  publish                       = true
-  code                          = file("${path.module}/cloudfront-functions/viewer-request.js")
-  key_value_store_associations  = [aws_cloudfront_key_value_store.b2b_clients.arn]
+  name                         = "${replace(var.bucket_name, "-", "_")}_viewer_request"
+  runtime                      = "cloudfront-js-2.0"
+  comment                      = "Per-client Basic Auth gate + clean-URL rewrite for ${var.domain}"
+  publish                      = true
+  code                         = file("${path.module}/cloudfront-functions/viewer-request.js")
+  key_value_store_associations = [aws_cloudfront_key_value_store.b2b_clients.arn]
 }
 
 # ── S3 bucket for CloudFront standard access logs ───────────────────────────

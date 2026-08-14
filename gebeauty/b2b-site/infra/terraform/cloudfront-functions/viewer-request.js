@@ -54,7 +54,8 @@ async function handler(event) {
   try {
     // eslint-disable-next-line no-undef -- atob is a CloudFront Functions runtime global, not a browser/Node API
     decoded = atob(authHeader.slice(6));
-  } catch {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- CloudFront's JS engine doesn't support the ES2019 optional-catch-binding syntax (`catch {}`), so the binding is required even though it's unused
+  } catch (e) {
     return challenge;
   }
   var sep = decoded.indexOf(':');
@@ -67,7 +68,8 @@ async function handler(event) {
   try {
     var raw = await kvsHandle.get(user);
     record = JSON.parse(raw);
-  } catch {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- CloudFront's JS engine doesn't support the ES2019 optional-catch-binding syntax (`catch {}`), so the binding is required even though it's unused
+  } catch (e) {
     return challenge; // unknown username, or a malformed KVS entry
   }
   if (!record || record.password !== pass) {
