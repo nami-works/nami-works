@@ -11,21 +11,25 @@ import cf from 'cloudfront';
 // gebeauty/scripts/_b2b_manage_client_access.py, no `terraform apply`, no
 // function redeploy, no propagation wait.
 //
-// KVS value shape per key (key = username): JSON string
-//   {"password": "...", "client": "<display name for tracking>"}
+// KVS value shape per key (key = username, e.g. "bimdistribuidora" -- always
+// derived from the company name by the management script, see its slugify()):
+//   {"password": "...", "company": "<Company Name, as typed>", "name": "<Contact Name, TitleCase, optional>"}
 //
 // Three jobs, in order:
 //   1. HTTP Basic Auth gate against the KVS. Still "light" per the original
 //      migration decision -- these are unlisted sell-in decks, not secrets --
 //      just per-client instead of shared.
-//   2. Tracking redirect: on FIRST successful auth for a route (no `_c` query
-//      param yet), 302-redirect to the same URL + `?_c=<client>`. This is a
-//      REAL second viewer request, so it lands in CloudFront's standard S3
-//      access logs (cs-uri-query) with a timestamp + IP -- that's how Lucas
-//      sees which client opened which deck and when, without extra infra
-//      (Lambda@Edge, a webhook, etc). An internal URI rewrite would NOT do
-//      this: standard logs reflect the viewer-facing request, not whatever a
-//      function rewrites en route to the origin.
+//   2. Tracking redirect: on FIRST successful auth for one of the two deck
+//      ROOTS (/comercial, /parceiros -- NOT arbitrary paths like /favicon.ico,
+//      which browsers request automatically and would otherwise show up as
+//      false "accesses"), 302-redirect to the same URL + `?_co=<company>` (+
+//      `&_n=<name>` if set). This is a REAL second viewer request, so it
+//      lands in CloudFront's standard S3 access logs (cs-uri-query) with a
+//      timestamp + IP -- that's how the access-notify Lambda (and Lucas,
+//      reading the raw logs) sees which client opened which deck and when,
+//      without extra infra (Lambda@Edge, a webhook, etc). An internal URI
+//      rewrite would NOT do this: standard logs reflect the viewer-facing
+//      request, not whatever a function rewrites en route to the origin.
 //   3. Clean-URL rewrite + root redirect (unchanged from the single-credential
 //      version): "/comercial" -> "/comercial/index.html", "/" -> "/comercial/".
 //
@@ -75,7 +79,8 @@ async function handler(event) {
   if (!record || record.password !== pass) {
     return challenge;
   }
-  var clientLabel = record.client || user;
+  var company = record.company || user;
+  var personName = record.name || '';
   var uri = request.uri;
   var qs = request.querystring || {};
 
@@ -84,20 +89,18 @@ async function handler(event) {
     return {
       statusCode: 302,
       statusDescription: 'Found',
-      headers: { location: { value: '/comercial/?_c=' + encodeURIComponent(clientLabel) } },
+      headers: { location: { value: '/comercial/' + trackingQuery(company, personName) } },
     };
   }
 
-  // ── 2b. Tracking redirect (once per route, per auth) ────────────────────
-  if (!qs._c) {
-    var params = Object.keys(qs).map(function (k) {
-      return k + '=' + qs[k].value;
-    });
-    params.push('_c=' + encodeURIComponent(clientLabel));
+  // ── 2b. Tracking redirect (once per deck root, per auth) ────────────────
+  var isDeckRoot = uri === '/comercial' || uri === '/comercial/' || uri === '/parceiros' || uri === '/parceiros/';
+  if (isDeckRoot && !qs._co) {
+    var base = uri.endsWith('/') ? uri : uri + '/';
     return {
       statusCode: 302,
       statusDescription: 'Found',
-      headers: { location: { value: uri + '?' + params.join('&') } },
+      headers: { location: { value: base + trackingQuery(company, personName) } },
     };
   }
 
@@ -113,4 +116,10 @@ async function handler(event) {
   }
 
   return request;
+}
+
+function trackingQuery(company, personName) {
+  var q = '?_co=' + encodeURIComponent(company);
+  if (personName) q += '&_n=' + encodeURIComponent(personName);
+  return q;
 }

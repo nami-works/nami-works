@@ -1,12 +1,12 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Access-notify Lambda: emails Lucas when a client opens a deck.
+# Access-notify Lambda: emails Lucas IMMEDIATELY when a client opens a deck.
+# (Its once-daily sibling, access-digest.tf, sends the end-of-day rollup.)
 #
 # Triggered by S3 ObjectCreated on the CloudFront access-logs bucket
 # (aws_s3_bucket.logs, defined in site.tf). Parses each new log object for
-# the tracking hits viewer-request.js creates (?_c=<client name>), emails a
-# summary via SES, and best-effort bumps an `accessCount` field on that
-# client's KeyValueStore record. See lambda/access-notify/index.py for the
-# parsing/email logic.
+# real deck views (the ?_co=<company>[&_n=<name>] tracking hits
+# viewer-request.js creates) and emails a summary via SES. See
+# lambda/access-notify/index.py for the parsing/email logic.
 #
 # SES is in sandbox mode on this account (both sender and recipient must be
 # verified identities) -- lucas@gebeauty.com.br is already verified, so this
@@ -65,18 +65,6 @@ data "aws_iam_policy_document" "access_notify_permissions" {
   }
 
   statement {
-    sid    = "BumpClientAccessCount"
-    effect = "Allow"
-    actions = [
-      "cloudfront-keyvaluestore:DescribeKeyValueStore",
-      "cloudfront-keyvaluestore:ListKeys",
-      "cloudfront-keyvaluestore:GetKey",
-      "cloudfront-keyvaluestore:PutKey",
-    ]
-    resources = [aws_cloudfront_key_value_store.b2b_clients.arn]
-  }
-
-  statement {
     sid    = "WriteOwnLogs"
     effect = "Allow"
     actions = [
@@ -113,7 +101,6 @@ resource "aws_lambda_function" "access_notify" {
   environment {
     variables = {
       NOTIFY_EMAIL = var.notify_email
-      KVS_ARN      = aws_cloudfront_key_value_store.b2b_clients.arn
     }
   }
 

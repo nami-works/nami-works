@@ -125,6 +125,7 @@ gebeauty/b2b-site/infra/terraform/terraform.tfstate.*.backup
 gebeauty/b2b-site/infra/terraform/terraform.tfvars
 gebeauty/b2b-site/infra/terraform/*.auto.tfvars
 gebeauty/b2b-site/infra/terraform/lambda/access-notify.zip
+gebeauty/b2b-site/infra/terraform/lambda/access-digest.zip
 
 # Large files (GitHub 100MB limit)
 apps/omnify-admin/public/screencast.mp4

@@ -7,26 +7,35 @@ NOT in Terraform state. Add/remove/rotate a client here; no `terraform
 apply`, no function redeploy, no propagation wait. Changes are live within
 seconds.
 
-Each KVS entry: key = username, value = JSON {"password": "...", "client": "<display name>"}.
-The "client" name is what shows up in the CloudFront access logs (via the
-?_c= tracking redirect the function adds) so Lucas can see who opened which
-deck and when.
+Each KVS entry: key = username (auto-derived from the company name, see
+slugify() -- e.g. "BIM Distribuidora" -> "bimdistribuidora"), value = JSON
+{"password": "...", "company": "<as typed>", "name": "<contact, TitleCase, optional>"}.
+
+`company` and `name` are what the access-notify Lambda puts in its emails
+(see infra/terraform/lambda/access-notify/index.py) via the ?_co=/&_n=
+tracking redirect the CloudFront Function adds on first successful login.
 
 Usage:
-  C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py add <username> "<Client Display Name>" [--password PASS]
-  C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py remove <username>
+  C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py add "<Company Name>" [--name "<Contact Name>"] [--password PASS]
+  C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py remove <username-or-company>
   C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py list
 
 If --password is omitted on `add`, a random password is generated and
 printed -- copy it immediately, it is not stored anywhere else.
 """
 import json
+import re
 import secrets
 import string
 import subprocess
 import sys
 
 KVS_NAME = "b2b_gebeauty_site_clients"
+
+
+def slugify(company: str) -> str:
+    """'BIM Distribuidora' -> 'bimdistribuidora' -- the username IS the company name, squashed."""
+    return re.sub(r"[^a-z0-9]", "", company.lower())
 
 
 def run(*args):
@@ -61,9 +70,16 @@ def gen_password(length=20):
 
 
 def cmd_add(args):
-    if len(args) < 2:
-        sys.exit("usage: add <username> \"<Client Display Name>\" [--password PASS]")
-    username, client_name = args[0], args[1]
+    if len(args) < 1:
+        sys.exit('usage: add "<Company Name>" [--name "<Contact Name>"] [--password PASS]')
+    company = args[0]
+    username = slugify(company)
+    if not username:
+        sys.exit(f"'{company}' has no usable characters after slugifying -- pick a company name with letters/digits.")
+
+    contact_name = ""
+    if "--name" in args:
+        contact_name = args[args.index("--name") + 1].strip().title()
     password = None
     if "--password" in args:
         password = args[args.index("--password") + 1]
@@ -71,20 +87,22 @@ def cmd_add(args):
         password = gen_password()
 
     arn = kvs_arn()
-    value = json.dumps({"password": password, "client": client_name})
+    value = json.dumps({"password": password, "company": company, "name": contact_name})
     run("put-key", "--kvs-arn", arn, "--key", username, "--value", value, "--if-match", etag(arn))
 
-    print(f"Added client '{client_name}' (username: {username})")
-    print(f"  URL:      https://b2b.gebeauty.com.br/comercial  (or /parceiros)")
+    print(f"Added client '{company}' (username: {username})")
+    print("  URL:      https://b2b.gebeauty.com.br/comercial  (or /parceiros)")
     print(f"  Username: {username}")
     print(f"  Password: {password}")
+    if contact_name:
+        print(f"  Contact:  {contact_name}")
     print("Copy the password now -- it is not stored or shown anywhere else.")
 
 
 def cmd_remove(args):
     if len(args) < 1:
-        sys.exit("usage: remove <username>")
-    username = args[0]
+        sys.exit("usage: remove <username-or-company>")
+    username = slugify(args[0])
     arn = kvs_arn()
     run("delete-key", "--kvs-arn", arn, "--key", username, "--if-match", etag(arn))
     print(f"Removed username '{username}'.")
@@ -99,10 +117,12 @@ def cmd_list(args):
     for k in keys:
         try:
             record = json.loads(k["Value"])
-            client_name = record.get("client", "?")
+            company = record.get("company", "?")
+            name = record.get("name", "")
         except (KeyError, ValueError):
-            client_name = "?"
-        print(f"{k['Key']:20}  {client_name}")
+            company, name = "?", ""
+        label = f"{company} (contato: {name})" if name else company
+        print(f"{k['Key']:20}  {label}")
 
 
 def main():
