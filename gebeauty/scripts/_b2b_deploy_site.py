@@ -82,9 +82,17 @@ def main():
             f"sync {route}/",
         )
 
+    og_image = SITE / "og-image.jpg"
+    if og_image.exists():
+        run(
+            ["aws", "s3", "cp", str(og_image), f"s3://{bucket}/og-image.jpg",
+             "--content-type", "image/jpeg", "--cache-control", "max-age=86400"],
+            "sync og-image.jpg (public, unauthenticated -- see viewer-request.js)",
+        )
+
     run(
         ["aws", "cloudfront", "create-invalidation",
-         "--distribution-id", dist_id, "--paths", "/comercial/*", "/parceiros/*", "/"],
+         "--distribution-id", dist_id, "--paths", "/*"],
         "invalidate CloudFront cache",
     )
 

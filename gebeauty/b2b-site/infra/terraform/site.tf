@@ -10,11 +10,18 @@
 #     ACM cert and stops short of creating any DNS record: the validation
 #     CNAME and the final alias CNAME both have to be pasted into the
 #     registro.br panel by hand. See the README for the exact two-step apply.
-#   - Access is gated by a CloudFront Function doing HTTP Basic Auth (these
-#     are unlisted sell-in decks, not secrets -- Basic Auth is enough
-#     friction, not a real authz boundary) -- combined in the same function
-#     with the clean-URL rewrite, since a cache behavior only accepts one
-#     function per event type. See cloudfront-functions/viewer-request.js.tftpl.
+#   - Access is gated by a CloudFront Function doing PER-CLIENT HTTP Basic
+#     Auth (these are unlisted sell-in decks, not secrets -- Basic Auth is
+#     enough friction, not a real authz boundary). Credentials live in a
+#     CloudFront KeyValueStore, not baked into the function -- add/remove/
+#     rotate a client via gebeauty/scripts/_b2b_manage_client_access.py, no
+#     `terraform apply` needed. On first successful auth per route, the
+#     function 302-redirects to the same URL + `?_c=<client>` so the hit
+#     lands in the standard access logs below with the client's name
+#     attached -- that's how Lucas sees who opened which deck, and when.
+#     Combined with the clean-URL rewrite in the same function, since a cache
+#     behavior only accepts one function per event type. See
+#     cloudfront-functions/viewer-request.js.
 #
 # Architecture:
 #                    ┌────────────────────────────────────────┐
@@ -22,13 +29,16 @@
 #                    │  CNAME  b2b  ->  <dist>.cloudfront.net  │
 #                    └────────────┬─────────────────────────────┘
 #                                 ▼
-#                ┌────────────────────────────────────┐
-#                │ aws_cloudfront_distribution.site   │
-#                │   alias: b2b.gebeauty.com.br       │
-#                │   cert: aws_acm_certificate.site   │
-#                │   Function: Basic Auth + URL rewrite│
-#                │   OAC -> S3 (no public bucket)     │
-#                └────────────┬───────────────────────┘
+#                ┌──────────────────────────────────────┐
+#                │ aws_cloudfront_distribution.site     │
+#                │   alias: b2b.gebeauty.com.br         │
+#                │   cert: aws_acm_certificate.site     │
+#                │   Function: per-client Basic Auth    │
+#                │     (reads aws_cloudfront_key_value_  │
+#                │      store.b2b_clients) + URL rewrite │
+#                │   OAC -> S3 (no public bucket)       │
+#                │   standard access logs -> log bucket │
+#                └────────────┬─────────────────────────┘
 #                             ▼
 #                 ┌────────────────────────────┐
 #                 │ aws_s3_bucket.site         │
@@ -193,17 +203,81 @@ resource "aws_cloudfront_response_headers_policy" "site" {
   }
 }
 
-# ── CloudFront Function: Basic Auth gate + clean-URL rewrite ────────────────
-# Credential is injected at apply time via templatefile() -- the committed
-# .tftpl has no plaintext, only a `${basic_auth_b64}` placeholder.
+# ── CloudFront KeyValueStore: per-client credentials ─────────────────────────
+# Empty at apply time -- populated/managed entirely via
+# gebeauty/scripts/_b2b_manage_client_access.py (wraps `aws
+# cloudfront-keyvaluestore put-key/delete-key/list-keys`), NOT Terraform.
+# There's no first-class Terraform resource for individual KVS keys (the data
+# plane uses an ETag-based API shape most providers don't model as CRUD), and
+# Lucas explicitly wants frequent add/remove without a redeploy -- a script
+# against the data-plane API is the right fit, not IaC.
+resource "aws_cloudfront_key_value_store" "b2b_clients" {
+  name    = "${replace(var.bucket_name, "-", "_")}_clients"
+  comment = "Per-client Basic Auth credentials for ${var.domain}. Managed via _b2b_manage_client_access.py, not Terraform."
+}
+
+# ── CloudFront Function: per-client Basic Auth gate + clean-URL rewrite ─────
 resource "aws_cloudfront_function" "viewer_request" {
-  name    = "${replace(var.bucket_name, "-", "_")}_viewer_request"
-  runtime = "cloudfront-js-2.0"
-  comment = "Basic Auth gate + clean-URL rewrite for ${var.domain}"
-  publish = true
-  code = templatefile("${path.module}/cloudfront-functions/viewer-request.js.tftpl", {
-    basic_auth_b64 = base64encode("${var.basic_auth_username}:${var.basic_auth_password}")
-  })
+  name                         = "${replace(var.bucket_name, "-", "_")}_viewer_request"
+  runtime                      = "cloudfront-js-2.0"
+  comment                      = "Per-client Basic Auth gate + clean-URL rewrite for ${var.domain}"
+  publish                      = true
+  code                         = file("${path.module}/cloudfront-functions/viewer-request.js")
+  key_value_store_associations = [aws_cloudfront_key_value_store.b2b_clients.arn]
+}
+
+# ── S3 bucket for CloudFront standard access logs ───────────────────────────
+# Separate from the site bucket (aws_s3_bucket.site) -- logs are how Lucas
+# sees which client (via the ?_c= tracking param the function adds) opened
+# a deck and when. CloudFront's legacy log-delivery mechanism writes via ACL
+# grant to the AWS log-delivery canonical user, which needs ACLs enabled on
+# this bucket specifically (the public_access_block below keeps it otherwise
+# locked down -- this is a grant to an AWS service account, not the public).
+resource "aws_s3_bucket" "logs" {
+  bucket = "${var.bucket_name}-logs"
+
+  tags = {
+    Name        = "${var.bucket_name}-logs"
+    Description = "CloudFront standard access logs for ${var.domain}"
+    ManagedBy   = "terraform"
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "logs" {
+  bucket = aws_s3_bucket.logs.id
+  rule {
+    object_ownership = "ObjectWriter" # required for CloudFront's ACL-based log delivery
+  }
+}
+
+resource "aws_s3_bucket_acl" "logs" {
+  depends_on = [aws_s3_bucket_ownership_controls.logs]
+  bucket     = aws_s3_bucket.logs.id
+  acl        = "log-delivery-write"
+}
+
+resource "aws_s3_bucket_public_access_block" "logs" {
+  bucket = aws_s3_bucket.logs.id
+
+  block_public_acls       = false # the log-delivery-write ACL above needs this off
+  block_public_policy     = true
+  ignore_public_acls      = false
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "logs" {
+  bucket = aws_s3_bucket.logs.id
+
+  rule {
+    id     = "expire-old-logs"
+    status = "Enabled"
+
+    filter {}
+
+    expiration {
+      days = 90
+    }
+  }
 }
 
 # ── CloudFront distribution ──────────────────────────────────────────────────
@@ -216,6 +290,12 @@ resource "aws_cloudfront_distribution" "site" {
   http_version        = "http2and3"
 
   aliases = [var.domain]
+
+  logging_config {
+    bucket          = aws_s3_bucket.logs.bucket_domain_name
+    prefix          = "cloudfront/"
+    include_cookies = false
+  }
 
   origin {
     domain_name              = aws_s3_bucket.site.bucket_regional_domain_name
