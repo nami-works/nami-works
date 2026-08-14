@@ -8,7 +8,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return { apiKey: process.env.SHOPIFY_API_KEY ?? "" };
 }
 
-// No <s-app-nav> yet — the app is a single page for week 1 (Lista de hoje).
+// No <s-app-nav> yet — the app is a single page for week 1 (BeautyBack's Lista de hoje).
 // Add it back (Built-for-Shopify requires it once there's more than one
 // top-level page) when the credit-extension/bump surface ships as a real
 // fast-follow route.

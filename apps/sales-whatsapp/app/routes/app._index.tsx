@@ -183,7 +183,7 @@ export default function DailyWorklist() {
   const fetcher = useFetcher();
 
   return (
-    <s-page heading={`Lista de hoje — ${locationLabel}`}>
+    <s-page heading={`BeautyBack — ${locationLabel}`}>
       <s-section>
         <s-paragraph>Clientes com cashback próximo do vencimento, ordenados por valor do crédito</s-paragraph>
         {worklist.length === 0 ? (
