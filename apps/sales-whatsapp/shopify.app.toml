@@ -1,12 +1,8 @@
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration
 #
-# client_id: placeholder — real value only exists once this app is actually
-# created in the Partner Dashboard. Needs Partner-dashboard access this
-# session doesn't have (same gap the original 2026-08-07 architecture doc
-# flagged as the reason this is a Code build, not a Cowork one).
-client_id = "REPLACE_ME_ONCE_APP_IS_CREATED"
+client_id = "acaf38a95f367ffe27eddf9eb9fd89a0"
 name = "BeautyBack"
-application_url = "https://sales-whatsapp.gebeauty.com.br"
+application_url = "https://beautyback.gebeauty.com.br"
 embedded = true
 
 [access_scopes]
