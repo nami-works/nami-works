@@ -71,21 +71,37 @@ C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py remove "Ac
 C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py list
 ```
 
-**Who's viewing, and who specifically:** on a client's first successful
-login per deck root (`/comercial`, `/parceiros`), `viewer-request.js` serves
-a small self-contained "quem está acessando?" page instead of the deck --
-a free-text name field the VISITOR fills in themselves (Basic Auth is
-shared per company, not per person, so there's no other way to learn who
-specifically is looking). Submitting (or the "Pular"/skip link) redirects to
-the same URL with `?_co=<company>&_n=<name-or-empty>` appended. That's a
-real second browser request, so it lands in the CloudFront standard access
-logs (`terraform output access_logs_bucket`, `cloudfront/` prefix) with the
-company, name, a timestamp, and the visitor's IP — no extra infra
-(Lambda@Edge, a webhook) needed. An internal-only URI rewrite would NOT show
-up this way; the visible redirect is what makes it land in the
-viewer-facing log line. `access-notify.tf`'s Lambda reads that same log
-line to send Lucas an immediate email; `access-digest.tf`'s Lambda rolls up
-a whole day's worth into one morning summary.
+**One custom login screen, not the browser's native Basic Auth popup.**
+`viewer-request.js` never returns a 401 + `WWW-Authenticate` (that combo is
+exactly what triggers the browser's native prompt) -- instead, whenever
+credentials are missing or wrong, it serves its own small HTML page with
+three fields: username, password, and the visitor's name (free text, filled
+in by them -- Basic Auth is shared per company, not per person, so there's
+no other way to learn who specifically is looking). On submit, the page's
+JS navigates to `https://<user>:<pass>@b2b.gebeauty.com.br<path>?_n=<name>`.
+Embedding credentials in the URL's userinfo makes the *browser* attach a
+real `Authorization: Basic ...` header (and cache it for the origin
+afterward) -- so the wire protocol underneath is unchanged HTTP Basic Auth
+against the same KVS lookup, only the on-screen experience is a single
+unified form instead of the browser's own dialog. Wrong credentials re-show
+the same page with an inline error instead of the browser retrying its own
+prompt.
+
+Once authenticated, the function redirects to add `?_co=<company>` (and
+carries `_n` along) for the two deck roots (`/comercial`, `/parceiros` --
+NOT arbitrary paths like `/favicon.ico`, which browsers request
+automatically). That redirect is a REAL second browser request, so it lands
+in the CloudFront standard access logs (`terraform output
+access_logs_bucket`, `cloudfront/` prefix) with the company, name, a
+timestamp, and the visitor's IP — no extra infra (Lambda@Edge, a webhook)
+needed. An internal-only URI rewrite would NOT show up this way; the
+visible redirect is what makes it land in the viewer-facing log line.
+`access-notify.tf`'s Lambda reads that same log line to send Lucas an
+immediate email; `access-digest.tf`'s Lambda rolls up a whole day's worth
+into one morning summary. (A lighter "quem está acessando?" name-only page
+still exists as a fallback for the rare case a browser arrives already
+authenticated -- e.g. cached credentials from an earlier login -- but
+without `_n` on the URL.)
 
 ## What this module creates
 
