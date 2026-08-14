@@ -2,7 +2,11 @@
 #
 client_id = "acaf38a95f367ffe27eddf9eb9fd89a0"
 name = "BeautyBack"
-application_url = "https://apps.gebeauty.com.br"
+# apps.gebeauty.com.br is a shared, path-routed host for GE Beauty's
+# internal Shopify apps (Lucas, 2026-08-14) — this app owns /beautyback.
+# Requires BASE_PATH=/beautyback set at deploy/runtime (react-router.config.ts,
+# vite.config.ts, server.mjs all read it) so the built basename matches.
+application_url = "https://apps.gebeauty.com.br/beautyback"
 embedded = true
 
 [access_scopes]

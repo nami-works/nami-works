@@ -14,7 +14,14 @@ if (
 const host = new URL(process.env.SHOPIFY_APP_URL || "http://localhost").hostname;
 const allowedHosts = host === "localhost" ? [host] : [host, ".trycloudflare.com"];
 
+// BASE_PATH (2026-08-14): apps.gebeauty.com.br is a shared path-routed host
+// — this app lives at /beautyback. Same normalization as omnify-admin's
+// vite.config.ts (Vite's `base` needs leading+trailing slashes, "/" as-is).
+const rawBasePath = process.env.BASE_PATH || "/";
+const basePath = rawBasePath === "/" ? "/" : `/${rawBasePath.replace(/^\/+|\/+$/g, "")}/`;
+
 export default defineConfig({
+  base: basePath,
   server: {
     allowedHosts,
     cors: { preflightContinue: true },
