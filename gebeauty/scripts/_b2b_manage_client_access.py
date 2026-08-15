@@ -1,44 +1,37 @@
-"""Manage per-client Basic Auth credentials for b2b.gebeauty.com.br.
+"""Manage per-client magic-link access to b2b.gebeauty.com.br.
 
-Credentials live in a CloudFront KeyValueStore (gebeauty/b2b-site/infra/
-terraform/site.tf: aws_cloudfront_key_value_store.b2b_clients), read at the
-edge by the CloudFront Function (cloudfront-functions/viewer-request.js) --
-NOT in Terraform state. Add/remove/rotate a client here; no `terraform
-apply`, no function redeploy, no propagation wait. Changes are live within
-seconds.
+Each client gets a unique unguessable link (?k=<token>) instead of a
+username/password to type in -- a prior version used a custom login screen
+(username+password+name) that turned out to be broken in real browsers: it
+worked by having the page's JS navigate to https://user:pass@host/path, but
+modern Chromium silently refuses JS navigation to URLs with embedded
+credentials (confirmed by direct browser testing -- no request even fires).
+A plain query-string token has none of that baggage and needs no form at all.
 
-Each KVS entry: key = username (auto-derived from the company name, see
-slugify() -- e.g. "BIM Distribuidora" -> "bim-distribuidora", hyphenated so
-it stays readable), value = JSON {"password": "...", "company": "<as typed>"}.
+Tokens live in a CloudFront KeyValueStore (gebeauty/b2b-site/infra/terraform/
+site.tf: aws_cloudfront_key_value_store.b2b_clients), read at the edge by
+the CloudFront Function (cloudfront-functions/viewer-request.js) -- NOT in
+Terraform state. Add/remove/rotate a client here; no `terraform apply`, no
+function redeploy, no propagation wait. Changes are live within seconds.
 
-There's no `name` field here anymore -- the visitor's name is a free-text
-field they fill in themselves on first access (viewer-request.js serves a
-small "quem esta acessando?" page before the deck), not something set when
-the credential is created. See the access-notify/access-digest Lambdas for
-how that shows up in emails.
+Each KVS entry: key = token (random, opaque -- this IS the credential, so
+it must not be guessable), value = JSON {"company": "<as typed>"}.
+`company` is what shows up in the access-notify/access-digest emails via
+the ?_co= tracking redirect the CloudFront Function adds.
 
 Usage:
-  C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py add "<Company Name>" [--password PASS]
-  C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py remove <username-or-company>
+  C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py add "<Company Name>"
+  C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py remove "<Company Name>"   (or a token)
   C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py list
-
-If --password is omitted on `add`, a random password is generated and
-printed -- copy it immediately, it is not stored anywhere else.
 """
 import json
-import re
 import secrets
 import string
 import subprocess
 import sys
 
 KVS_NAME = "b2b_gebeauty_site_clients"
-
-
-def slugify(company: str) -> str:
-    """'BIM Distribuidora' -> 'bim-distribuidora' -- hyphen-joined words, not squashed together."""
-    words = re.findall(r"[a-z0-9]+", company.lower())
-    return "-".join(words)
+DOMAIN = "https://b2b.gebeauty.com.br"
 
 
 def run(*args):
@@ -67,57 +60,60 @@ def etag(arn):
     return run("describe-key-value-store", "--kvs-arn", arn)["ETag"]
 
 
-def gen_password(length=20):
+def gen_token(length=24):
     alphabet = string.ascii_letters + string.digits
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
+def all_entries(arn):
+    for item in run("list-keys", "--kvs-arn", arn).get("Items", []):
+        try:
+            company = json.loads(item["Value"]).get("company", "?")
+        except (KeyError, ValueError):
+            company = "?"
+        yield item["Key"], company
+
+
 def cmd_add(args):
     if len(args) < 1:
-        sys.exit('usage: add "<Company Name>" [--password PASS]')
+        sys.exit('usage: add "<Company Name>"')
     company = args[0]
-    username = slugify(company)
-    if not username:
-        sys.exit(f"'{company}' has no usable characters after slugifying -- pick a company name with letters/digits.")
-
-    password = None
-    if "--password" in args:
-        password = args[args.index("--password") + 1]
-    if not password:
-        password = gen_password()
+    token = gen_token()
 
     arn = kvs_arn()
-    value = json.dumps({"password": password, "company": company})
-    run("put-key", "--kvs-arn", arn, "--key", username, "--value", value, "--if-match", etag(arn))
+    value = json.dumps({"company": company})
+    run("put-key", "--kvs-arn", arn, "--key", token, "--value", value, "--if-match", etag(arn))
 
-    print(f"Added client '{company}' (username: {username})")
-    print("  URL:      https://b2b.gebeauty.com.br/comercial  (or /parceiros)")
-    print(f"  Username: {username}")
-    print(f"  Password: {password}")
-    print("Copy the password now -- it is not stored or shown anywhere else.")
+    print(f"Added client '{company}'")
+    print(f"  Comercial: {DOMAIN}/comercial?k={token}")
+    print(f"  Parceiros: {DOMAIN}/parceiros?k={token}")
+    print("Send one of these links -- no separate credential to communicate.")
 
 
 def cmd_remove(args):
     if len(args) < 1:
-        sys.exit("usage: remove <username-or-company>")
-    username = slugify(args[0])
+        sys.exit('usage: remove "<Company Name>"  (or the token)')
+    target = args[0]
     arn = kvs_arn()
-    run("delete-key", "--kvs-arn", arn, "--key", username, "--if-match", etag(arn))
-    print(f"Removed username '{username}'.")
+
+    token = target
+    for key, company in all_entries(arn):
+        if key == target or company == target:
+            token = key
+            break
+
+    run("delete-key", "--kvs-arn", arn, "--key", token, "--if-match", etag(arn))
+    print(f"Removed access for '{target}'.")
 
 
 def cmd_list(args):
     arn = kvs_arn()
-    keys = run("list-keys", "--kvs-arn", arn).get("Items", [])
-    if not keys:
+    entries = list(all_entries(arn))
+    if not entries:
         print("No clients configured yet.")
         return
-    for k in keys:
-        try:
-            company = json.loads(k["Value"]).get("company", "?")
-        except (KeyError, ValueError):
-            company = "?"
-        print(f"{k['Key']:24}  {company}")
+    for token, company in entries:
+        print(f"{company:30}  {DOMAIN}/comercial?k={token}")
 
 
 def main():
