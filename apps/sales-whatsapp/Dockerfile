@@ -33,6 +33,13 @@ RUN npm ci
 # explicitly; --no-save keeps the lockfile untouched.
 RUN npm install @rollup/rollup-linux-x64-musl --no-save
 
+# Custom generator output (@prisma/client-sales-whatsapp) must exist in
+# node_modules before the build step — db.server.ts imports it directly,
+# and Vite/Rollup's SSR build tries to statically resolve it, failing with
+# "Rollup failed to resolve import" if it isn't generated yet. Same fix
+# already applied in apps/connector/Dockerfile for its own custom output.
+RUN npm run prisma:generate -w @nami/sales-whatsapp
+
 # Shared TypeScript base config — this workspace's tsconfig.json extends
 # ../../tsconfig.base.json; Vite's TSConfck resolves it at build time.
 COPY tsconfig.base.json ./
