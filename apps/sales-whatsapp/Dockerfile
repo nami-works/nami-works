@@ -26,6 +26,13 @@ COPY prisma/sales-whatsapp ./prisma/sales-whatsapp
 
 RUN npm ci
 
+# Workaround for the well-known npm optional-dependency bug (npm/cli#4828):
+# a Windows-authored package-lock.json can omit the linux-musl Rollup native
+# binary that `npm ci` needs inside this Alpine image, failing the build
+# with "Cannot find module @rollup/rollup-linux-x64-musl". Install it
+# explicitly; --no-save keeps the lockfile untouched.
+RUN npm install @rollup/rollup-linux-x64-musl --no-save
+
 # Shared TypeScript base config — this workspace's tsconfig.json extends
 # ../../tsconfig.base.json; Vite's TSConfck resolves it at build time.
 COPY tsconfig.base.json ./
