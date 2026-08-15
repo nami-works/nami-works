@@ -18,7 +18,7 @@ registro.br**, which has no Terraform provider / API. That means:
   to that panel.
 
 Terraform still owns everything AWS-side (cert request, bucket, distribution,
-Basic Auth function). The DNS half is a manual two-step handoff.
+magic-link function). The DNS half is a manual two-step handoff.
 
 ## Two-step apply
 
@@ -47,61 +47,48 @@ terraform output site_cloudfront_domain_name
 Propagation on registro.br is usually quick; verify with
 `nslookup b2b.gebeauty.com.br` and a cache-busted browser hit.
 
-Then add at least one client credential (see below) before sharing a link —
-there's no default/shared password anymore.
+Then add at least one client (see below) before sharing a link — there's
+no default/shared access anymore.
 
 ## Per-client access
 
-Each client gets their own Basic Auth username/password instead of one
-shared credential. Credentials live in a CloudFront KeyValueStore
+Each client gets a unique magic link (`?k=<token>`) instead of a
+username/password to type in. Tokens live in a CloudFront KeyValueStore
 (`aws_cloudfront_key_value_store.b2b_clients`), **not Terraform state** —
 manage them with the script, which is live within seconds (no apply, no
 function redeploy):
 
 ```bash
-# Add a client -- username is auto-derived from the company name
-# (slugify: "BIM Distribuidora" -> "bim-distribuidora"). Omit --password
-# to auto-generate one.
+# Add a client -- prints the two links to send (one per deck)
 C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py add "Acme Distribuidora"
 
-# Remove a client (revokes just their access)
+# Remove a client (revokes just their access) -- by company name or token
 C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py remove "Acme Distribuidora"
 
-# List configured clients
+# List configured clients + their links
 C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py list
 ```
 
-**One custom login screen, not the browser's native Basic Auth popup.**
-`viewer-request.js` never returns a 401 + `WWW-Authenticate` (that combo is
-exactly what triggers the browser's native prompt) -- instead, whenever
-credentials are missing or wrong, it serves its own small HTML page with
-three fields: username, password, and the visitor's name (free text, filled
-in by them -- Basic Auth is shared per company, not per person, so there's
-no other way to learn who specifically is looking). On submit, the page's
-JS navigates to `https://<user>:<pass>@b2b.gebeauty.com.br<path>?_n=<name>`.
-Embedding credentials in the URL's userinfo makes the *browser* attach a
-real `Authorization: Basic ...` header (and cache it for the origin
-afterward) -- so the wire protocol underneath is unchanged HTTP Basic Auth
-against the same KVS lookup, only the on-screen experience is a single
-unified form instead of the browser's own dialog. Wrong credentials re-show
-the same page with an inline error instead of the browser retrying its own
-prompt.
+**Why a magic link and not a login screen.** An earlier version had a
+custom login page (username + password + visitor name) that navigated to
+`https://user:pass@host/path` on submit to make the browser attach a real
+`Authorization: Basic ...` header. That's broken in real browsers: modern
+Chromium silently refuses JS navigation to URLs with embedded credentials
+(confirmed by direct browser testing — the click did nothing, no request
+ever fired, no error). A plain `?k=` query-string token has none of that
+baggage and needs no form, no typing, no per-browser quirks — the token
+itself is the whole credential, unguessable and unique per client.
 
-Once authenticated, the function redirects to add `?_co=<company>` (and
-carries `_n` along) for the two deck roots (`/comercial`, `/parceiros` --
-NOT arbitrary paths like `/favicon.ico`, which browsers request
-automatically). That redirect is a REAL second browser request, so it lands
-in the CloudFront standard access logs (`terraform output
-access_logs_bucket`, `cloudfront/` prefix) with the company, name, a
-timestamp, and the visitor's IP — no extra infra (Lambda@Edge, a webhook)
-needed. An internal-only URI rewrite would NOT show up this way; the
-visible redirect is what makes it land in the viewer-facing log line.
-`access-notify.tf`'s Lambda reads that same log line to send Lucas an
-immediate email; `access-digest.tf`'s Lambda rolls up a whole day's worth
-into one morning summary. (A lighter "quem está acessando?" name-only page
-still exists as a fallback for the rare case a browser arrives already
-authenticated -- e.g. cached credentials from an earlier login -- but
-without `_n` on the URL.)
+Visiting a deck root (`/comercial`, `/parceiros`) with a valid `?k=` adds
+`&_co=<company>` on first hit (a REAL second browser request, so it lands
+in the CloudFront standard access logs — `terraform output
+access_logs_bucket`, `cloudfront/` prefix — with a timestamp and the
+visitor's IP; an internal-only URI rewrite would NOT show up this way).
+`access-notify.tf`'s Lambda reads that log line to email Lucas immediately;
+`access-digest.tf`'s Lambda rolls up a whole day's worth into one morning
+summary. An invalid or missing token gets a plain "link inválido ou
+expirado" page (403), not a login prompt of any kind — there's nothing to
+retry, just a fresh link to request.
 
 ## What this module creates
 
@@ -110,12 +97,12 @@ without `_n` on the URL.)
 - A second S3 bucket (90-day expiration) receiving CloudFront standard
   access logs.
 - ACM certificate for `b2b.gebeauty.com.br` (us-east-1, DNS-validated).
-- CloudFront KeyValueStore holding per-client Basic Auth credentials.
+- CloudFront KeyValueStore holding per-client magic-link tokens.
 - CloudFront distribution (OAC to the bucket, security headers policy incl.
   `X-Robots-Tag: noindex, nofollow`, `b2b.gebeauty.com.br` as the sole alias,
   PriceClass_100, default root `comercial/index.html`, standard logging on).
-- One CloudFront Function (viewer-request) doing per-client HTTP Basic Auth
-  (against the KeyValueStore), the tracking redirect, and clean-URL
+- One CloudFront Function (viewer-request) doing the per-client magic-link
+  gate (against the KeyValueStore), the tracking redirect, and clean-URL
   rewriting (`/comercial` -> `/comercial/index.html`, `/` -> redirect to
   `/comercial/`) — a cache behavior only accepts one function per event
   type, so all three jobs live in `cloudfront-functions/viewer-request.js`.

@@ -10,18 +10,18 @@
 #     ACM cert and stops short of creating any DNS record: the validation
 #     CNAME and the final alias CNAME both have to be pasted into the
 #     registro.br panel by hand. See the README for the exact two-step apply.
-#   - Access is gated by a CloudFront Function doing PER-CLIENT HTTP Basic
-#     Auth (these are unlisted sell-in decks, not secrets -- Basic Auth is
-#     enough friction, not a real authz boundary). Credentials live in a
-#     CloudFront KeyValueStore, not baked into the function -- add/remove/
-#     rotate a client via gebeauty/scripts/_b2b_manage_client_access.py, no
-#     `terraform apply` needed. On first successful auth per route, the
-#     function 302-redirects to the same URL + `?_c=<client>` so the hit
-#     lands in the standard access logs below with the client's name
-#     attached -- that's how Lucas sees who opened which deck, and when.
-#     Combined with the clean-URL rewrite in the same function, since a cache
-#     behavior only accepts one function per event type. See
-#     cloudfront-functions/viewer-request.js.
+#   - Access is gated by a CloudFront Function doing PER-CLIENT MAGIC LINKS
+#     (?k=<token>) instead of a login screen -- these are unlisted sell-in
+#     decks, not secrets, so an unguessable link is enough friction, not a
+#     real authz boundary. Tokens live in a CloudFront KeyValueStore, not
+#     baked into the function -- add/remove/rotate a client via
+#     gebeauty/scripts/_b2b_manage_client_access.py, no `terraform apply`
+#     needed. On first valid hit per route, the function 302-redirects to
+#     the same URL + `&_co=<company>` so the hit lands in the standard
+#     access logs below with the company attached -- that's how Lucas sees
+#     who opened which deck, and when. Combined with the clean-URL rewrite
+#     in the same function, since a cache behavior only accepts one function
+#     per event type. See cloudfront-functions/viewer-request.js.
 #
 # Architecture:
 #                    ┌────────────────────────────────────────┐
@@ -33,7 +33,7 @@
 #                │ aws_cloudfront_distribution.site     │
 #                │   alias: b2b.gebeauty.com.br         │
 #                │   cert: aws_acm_certificate.site     │
-#                │   Function: per-client Basic Auth    │
+#                │   Function: per-client magic link     │
 #                │     (reads aws_cloudfront_key_value_  │
 #                │      store.b2b_clients) + URL rewrite │
 #                │   OAC -> S3 (no public bucket)       │
@@ -213,14 +213,14 @@ resource "aws_cloudfront_response_headers_policy" "site" {
 # against the data-plane API is the right fit, not IaC.
 resource "aws_cloudfront_key_value_store" "b2b_clients" {
   name    = "${replace(var.bucket_name, "-", "_")}_clients"
-  comment = "Per-client Basic Auth credentials for ${var.domain}. Managed via _b2b_manage_client_access.py, not Terraform."
+  comment = "Per-client magic-link tokens for ${var.domain}. Managed via _b2b_manage_client_access.py, not Terraform."
 }
 
-# ── CloudFront Function: per-client Basic Auth gate + clean-URL rewrite ─────
+# ── CloudFront Function: per-client magic-link gate + clean-URL rewrite ─────
 resource "aws_cloudfront_function" "viewer_request" {
   name                         = "${replace(var.bucket_name, "-", "_")}_viewer_request"
   runtime                      = "cloudfront-js-2.0"
-  comment                      = "Per-client Basic Auth gate + clean-URL rewrite for ${var.domain}"
+  comment                      = "Per-client magic-link gate + clean-URL rewrite for ${var.domain}"
   publish                      = true
   code                         = file("${path.module}/cloudfront-functions/viewer-request.js")
   key_value_store_associations = [aws_cloudfront_key_value_store.b2b_clients.arn]
