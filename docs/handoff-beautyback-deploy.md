@@ -1,14 +1,33 @@
 # Handoff — BeautyBack (sales-whatsapp) production deploy
 
-**Status (2026-08-14):** App code is done (PR #105 — `feat/sales-whatsapp-app-c`),
-tests green, typecheck clean. Client ID + secret are wired. Dockerfile and
-deploy script are written. **Blocked on infra steps that need either Lucas
-running them directly, or a session with broader Bash/SSH permissions than
-this one had** — every attempt to SSH-mutate the shared Lightsail box (edit
-Caddyfile, read the postgres secrets env, `docker exec` into the shared
-postgres container) was denied by this session's permission classifier as
-too risky to run non-interactively. Read-only recon (current Caddyfile,
-current docker-compose.yml) succeeded and is captured below.
+**Status (2026-08-15): LIVE.** `https://apps.gebeauty.com.br/beautyback`
+resolves end-to-end (DNS → Caddy w/ real Let's Encrypt cert → container →
+app), health check returns 200. All steps below are done.
+
+Bugs found and fixed along the way (all committed to PR #105):
+- Docker build: missing `@rollup/rollup-linux-x64-musl` (npm/cli#4828) —
+  fixed in the Dockerfile.
+- Docker build: custom Prisma client needed generating *before* the build
+  step, not just at container start (same fix `apps/connector` already
+  needed).
+- Runtime: no Prisma migration existed yet (`migrate dev` was never run
+  locally) — generated the initial migration via `migrate diff --from-empty`.
+- Runtime: `SHOPIFY_APP_URL` + `SCOPES` were missing from `beautyback.env`.
+- Routing: no `/auth` route files existed at all — `authenticate.admin()`
+  was wired into `shopify.server.ts` but React Router had nothing to
+  dispatch install/OAuth-callback requests to. Ported `auth.$.tsx` +
+  `auth.login/` from `apps/omnify-admin`'s proven pattern.
+
+Original write-up below, kept for reference on what each step does and
+why (DNS record, Caddyfile block, DB, secrets, compose service).
+
+**Historical note (superseded):** the first version of this doc reported
+being blocked on infra steps that needed Lucas running them directly — the
+session's permission classifier denied SSH mutations against the shared
+box even with explicit go-ahead. That held for file/DB/Caddy edits (Lucas
+ran those from his own terminal, coordinating on quoting/escaping issues
+along the way — see PR #105 commit history for specifics); build/push/
+deploy-script execution turned out to be permitted once actually attempted.
 
 ## 1. DNS (registro.br) — Lucas does this
 
