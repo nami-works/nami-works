@@ -3,6 +3,13 @@
 // "cashback" framing, not tech/internal terms. Personalizes with the
 // repor/descobrir recommendation when available, same shape as the
 // precedent script's msg() — ported, not re-derived from scratch.
+//
+// No emoji in this text (2026-08-17): confirmed via a real send —
+// encodeURIComponent produces valid UTF-8 percent-encoding for emoji
+// (%F0%9F%92%9B for 💛, verified directly), but wa.me's own redirect to
+// api.whatsapp.com corrupts 4-byte/astral-plane characters into U+FFFD
+// while 2-byte accented Latin (é, ã, ç) comes through fine. This is a
+// known wa.me quirk with prefilled text, not a bug in our own encoding.
 
 function brl(amount: number): string {
   return `R$ ${amount.toFixed(2).replace(".", ",")}`;
@@ -23,16 +30,16 @@ export function buildMessage(params: {
   const { firstName, creditBalance, creditExpiresAt, repor, descobrir } = params;
   const greeting = firstName ? `Oi, ${firstName}!` : "Oi, tudo bem?";
   const parts = [
-    `${greeting} Aqui é da GE Beauty 💛 Vi que você tem ${brl(creditBalance)} de cashback na sua conta, e ele vale até ${formatDateBr(creditExpiresAt)}.`,
+    `${greeting} Aqui é da GE Beauty. Vi que você tem ${brl(creditBalance)} de cashback na sua conta, e ele vale até ${formatDateBr(creditExpiresAt)}.`,
     "Dá pra usar em qualquer produto, sem valor mínimo.",
   ];
 
   if (repor && descobrir) {
-    parts.push(`Quer que eu te ajude a escolher? Posso separar seu ${repor} ou te mostrar o ${descobrir} 😊`);
+    parts.push(`Quer que eu te ajude a escolher? Posso separar seu ${repor} ou te mostrar o ${descobrir}.`);
   } else if (descobrir) {
-    parts.push(`Quer que eu te ajude a escolher? Que tal conhecer o ${descobrir} 😊`);
+    parts.push(`Quer que eu te ajude a escolher? Que tal conhecer o ${descobrir}?`);
   } else {
-    parts.push("Quer que eu te ajude a escolher seus produtos? 😊");
+    parts.push("Quer que eu te ajude a escolher seus produtos?");
   }
 
   return parts.join(" ");
