@@ -13,6 +13,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Second generator, default output (no `output` override) — NOT used
+// directly by this app's own code (that's client.js above). Exists purely
+// because @shopify/shopify-app-session-storage-prisma's storeSession()
+// internally does `require('@prisma/client')` and checks
+// `error instanceof client.Prisma.PrismaClientKnownRequestError` for a
+// unique-constraint retry. In this Docker image nothing else ever runs
+// `prisma generate` for the default @prisma/client location, so that
+// package ships as an ungenerated stub whose `Prisma` namespace is missing
+// the error-class hierarchy entirely — `PrismaClientKnownRequestError` is
+// `undefined`, and the library's `instanceof` check throws "Right-hand
+// side of 'instanceof' is not an object" on every session write, 500ing
+// the whole app. Found via a real deploy (2026-08-17), not anticipated.
+// This second block just needs to exist so the default client's runtime
+// gets generated as a side effect of the one `prisma generate` call this
+// app already runs.
+generator defaultClientStub {
+  provider = "prisma-client-js"
+}
+
 // Standard shape expected by @shopify/shopify-app-session-storage-prisma —
 // same fields as every other app in this monorepo using that library.
 model Session {
