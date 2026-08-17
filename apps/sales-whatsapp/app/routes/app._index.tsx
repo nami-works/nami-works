@@ -21,9 +21,14 @@ const DAILY_CAPACITY = 40;
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session, admin } = await authenticate.admin(request);
 
-  let location;
+  let locations;
   try {
-    location = grantedLocationsForSession(session)[0]!; // v1: one location per rep, per the hardcoded grant table
+    // Most reps are granted exactly one location; a rep granted several
+    // (e.g. an owner/ops role needing cross-location oversight, added
+    // 2026-08-17) sees a single merged worklist across all of them rather
+    // than being stuck on just the first — each row still carries its own
+    // originating location for mark-contacted/skip.
+    locations = grantedLocationsForSession(session);
   } catch (err) {
     if (err instanceof UnauthorizedLocationError) {
       console.warn(`[worklist] loader UNAUTHORIZED shop=${session.shop} reason=no-location-grant`);
@@ -34,7 +39,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
     throw err;
   }
-  console.info(`[worklist] loader START shop=${session.shop} location=${location.key}`);
+  console.info(`[worklist] loader START shop=${session.shop} locations=${locations.map((l) => l.key).join(",")}`);
 
   const now = new Date();
 
@@ -57,18 +62,31 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .filter((c) => !openGids.has(c.id)) // already contacted, still in cooldown, or already converted
     .filter((c) => c.defaultAddress?.latitude != null && c.defaultAddress?.longitude != null);
 
-  // Progressive expansion (Lucas, 2026-08-12): starts at this location's own
-  // Entrega-local pool; widens to nearby cities, then the whole state, then
-  // nationwide, only as far as needed to get a non-empty pool for THIS
-  // request. Per-request, not per-day-across-all-reps — see the real
-  // future-refinement note in geo-eligibility.ts.
-  const { selected: candidates, band } = selectByProgressiveExpansion(geocoded, (c) =>
-    expansionBand(c.defaultAddress!.latitude!, c.defaultAddress!.longitude!, location),
-  );
-  console.info(`[worklist] geo expansion shop=${session.shop} location=${location.key} band=${band} candidates=${candidates.length}`);
+  // Progressive expansion (Lucas, 2026-08-12): starts at each granted
+  // location's own Entrega-local pool; widens to nearby cities, then the
+  // whole state, then nationwide, only as far as needed to get a non-empty
+  // pool for THIS request. Per-request, not per-day-across-all-reps — see
+  // the real future-refinement note in geo-eligibility.ts.
+  //
+  // Multi-location reps (2026-08-17): run expansion once per granted
+  // location against the SAME candidate pool, then merge — first match
+  // wins if a customer falls inside more than one location's expanded
+  // ring, tagged with that location for mark-contacted/skip.
+  const matchedLocationByGid = new Map<string, (typeof locations)[number]>();
+  for (const loc of locations) {
+    const { selected, band } = selectByProgressiveExpansion(geocoded, (c) =>
+      expansionBand(c.defaultAddress!.latitude!, c.defaultAddress!.longitude!, loc),
+    );
+    console.info(`[worklist] geo expansion shop=${session.shop} location=${loc.key} band=${band} candidates=${selected.length}`);
+    for (const c of selected) {
+      if (!matchedLocationByGid.has(c.id)) matchedLocationByGid.set(c.id, loc);
+    }
+  }
+  const candidates = geocoded.filter((c) => matchedLocationByGid.has(c.id));
 
   const rows = candidates
     .map((c) => {
+      const matchedLocation = matchedLocationByGid.get(c.id)!;
       const balance = c.storeCreditAccounts.edges.reduce((sum, e) => sum + Number(e.node.balance.amount), 0);
       // Real per-tranche expiry — identifies which credit transaction is the
       // just-bought arm one purely from its expiry interval (30/45/60 days),
@@ -98,6 +116,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
         phone: c.defaultPhoneNumber?.phoneNumber ?? null,
         repor,
         descobrir,
+        locationKey: matchedLocation.key,
+        locationLabel: matchedLocation.label,
       };
     })
     .filter((r) => r.creditBalance > 0)
@@ -130,8 +150,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     };
   });
 
-  console.info(`[worklist] loader OK shop=${session.shop} location=${location.key} rows=${worklist.length}`);
-  return { locationLabel: location.label, locationKey: location.key, worklist };
+  const headingLabel = locations.length === 1 ? locations[0]!.label : "Todas as localizações";
+  console.info(
+    `[worklist] loader OK shop=${session.shop} locations=${locations.map((l) => l.key).join(",")} rows=${worklist.length}`,
+  );
+  return { locationLabel: headingLabel, worklist };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -179,7 +202,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function DailyWorklist() {
-  const { locationLabel, locationKey, worklist } = useLoaderData<typeof loader>();
+  const { locationLabel, worklist } = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
 
   return (
@@ -203,7 +226,9 @@ export default function DailyWorklist() {
                   <s-table-cell>
                     {row.name}
                     <br />
-                    <s-text color="subdued">{row.city}</s-text>
+                    <s-text color="subdued">
+                      {row.city} · {row.locationLabel}
+                    </s-text>
                   </s-table-cell>
                   <s-table-cell>R$ {row.creditBalance.toFixed(2)}</s-table-cell>
                   <s-table-cell>{row.daysUntilExpiry} dias</s-table-cell>
@@ -218,7 +243,7 @@ export default function DailyWorklist() {
                         target="_blank"
                         onClick={() =>
                           fetcher.submit(
-                            { intent: "mark-contacted", customerGid: row.customerGid, locationKey },
+                            { intent: "mark-contacted", customerGid: row.customerGid, locationKey: row.locationKey },
                             { method: "post" },
                           )
                         }

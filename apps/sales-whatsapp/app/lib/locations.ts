@@ -63,6 +63,8 @@ export const REP_LOCATION_GRANTS: Record<string, LocationKey[]> = {
   "geb003@gebeauty.com.br": ["shops-jardins"],
   "geb004@gebeauty.com.br": ["riomar-recife"],
   "geb007@gebeauty.com.br": ["riosul"],
+  // Owner/ops oversight — all locations, merged into one worklist (2026-08-17).
+  "lucas@gebeauty.com.br": ["shopping-recife", "shops-jardins", "riomar-recife", "riosul"],
 };
 
 export function locationsForRep(email: string): Location[] {
