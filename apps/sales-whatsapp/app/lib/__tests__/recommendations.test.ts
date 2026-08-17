@@ -32,6 +32,12 @@ describe("recommendFor", () => {
     expect(rec.descobrir).toBe("leave-in pluma");
   });
 
+  it("notYetBought lists every REC_PREF entry not owned, not just the first", () => {
+    const rec = recommendFor([{ createdAt: "2026-08-01T10:00:00Z", lineItemTitles: ["Melon Mood Mist"] }]);
+    expect(rec.notYetBought).toEqual(["leave-in pluma", "booster antifrizz", "máscara condicionadora"]);
+    expect(rec.notYetBought[0]).toBe(rec.descobrir);
+  });
+
   it("returns nulls for a customer with no core-product order history", () => {
     const rec = recommendFor([]);
     expect(rec.repor).toBeNull();

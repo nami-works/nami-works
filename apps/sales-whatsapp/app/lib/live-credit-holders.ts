@@ -33,12 +33,16 @@ export type RawCustomer = {
   id: string;
   firstName: string | null;
   lastName: string | null;
+  numberOfOrders: string;
+  amountSpent: { amount: string } | null;
   defaultPhoneNumber: { phoneNumber: string } | null;
   defaultAddress: { latitude: number | null; longitude: number | null; city: string | null } | null;
   storeCreditAccounts: {
     edges: { node: { balance: { amount: string }; transactions: { edges: { node: RawCreditTransactionNode }[] } } }[];
   };
-  orders: { edges: { node: { createdAt: string; lineItems: { edges: { node: { title: string } }[] } } }[] };
+  orders: {
+    edges: { node: { createdAt: string; lineItems: { edges: { node: { title: string; quantity: number } }[] } } }[];
+  };
 };
 
 // Query validated against the real Admin API schema (2026-01) via
@@ -48,6 +52,10 @@ export type RawCustomer = {
 // read_store_credit_accounts + read_store_credit_account_transactions
 // scopes, not just read_customers/read_orders — declared in
 // shopify.app.toml.
+//
+// numberOfOrders/amountSpent + orders(first: 10)/lineItems(quantity) added
+// 2026-08-17 for the customer highlights modal — also re-validated (2026-04),
+// no new scopes required.
 const QUERY = `#graphql
   query LiveCreditHolders($cursor: String) {
     customers(first: 100, after: $cursor, query: "${ARM_TAG_QUERY}") {
@@ -55,6 +63,8 @@ const QUERY = `#graphql
       edges {
         node {
           id firstName lastName
+          numberOfOrders
+          amountSpent { amount }
           defaultPhoneNumber { phoneNumber }
           defaultAddress { latitude longitude city }
           storeCreditAccounts(first: 5) {
@@ -76,8 +86,8 @@ const QUERY = `#graphql
               }
             }
           }
-          orders(first: 6, sortKey: CREATED_AT, reverse: true) {
-            edges { node { createdAt lineItems(first: 15) { edges { node { title } } } } }
+          orders(first: 10, sortKey: CREATED_AT, reverse: true) {
+            edges { node { createdAt lineItems(first: 20) { edges { node { title quantity } } } } }
           }
         }
       }

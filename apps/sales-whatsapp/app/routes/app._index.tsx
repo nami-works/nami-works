@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { isRouteErrorResponse, useLoaderData, useFetcher, useRouteError } from "react-router";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { authenticate } from "../shopify.server.js";
@@ -8,9 +9,10 @@ import { expansionBand, selectByProgressiveExpansion } from "../lib/geo-eligibil
 import { openContactsLookbackCutoff, openCustomerGids } from "../lib/open-contacts.js";
 import { rankByExpiryAndValue, daysUntil, type Candidate } from "../lib/ranking.js";
 import { recommendFor } from "../lib/recommendations.js";
-import { buildMessage, buildWaMeLink } from "../lib/whatsapp-message.js";
+import { buildMessage, buildWaMeLink, formatDateBr } from "../lib/whatsapp-message.js";
 import { fetchLiveCreditHolders } from "../lib/live-credit-holders.js";
 import { resolveJustBoughtExpiry } from "../lib/credit-expiry.js";
+import { titleCase } from "../lib/title-case.js";
 
 // Daily capacity cap per location — reps can't work an unbounded list.
 // Not yet confirmed with Lucas as a specific number; 40 is a placeholder
@@ -106,10 +108,31 @@ export async function loader({ request }: LoaderFunctionArgs) {
         createdAt: e.node.createdAt,
         lineItemTitles: e.node.lineItems.edges.map((li) => li.node.title),
       }));
-      const { repor, descobrir } = recommendFor(orders);
+      const { repor, descobrir, lastOrderDate, notYetBought } = recommendFor(orders);
+
+      // Customer highlights (2026-08-17, for the rep-facing detail modal) —
+      // raw purchase history, not the canonical repor/descobrir categories,
+      // since a rep looking at a customer's card wants to see the actual
+      // products, not internal product-family names.
+      const productCounts = new Map<string, number>();
+      for (const e of c.orders.edges) {
+        for (const li of e.node.lineItems.edges) {
+          productCounts.set(li.node.title, (productCounts.get(li.node.title) ?? 0) + li.node.quantity);
+        }
+      }
+      const highlights = {
+        numberOfOrders: Number(c.numberOfOrders) || 0,
+        amountSpent: Number(c.amountSpent?.amount ?? 0),
+        lastOrderDate,
+        productsAlreadyBought: [...productCounts.entries()]
+          .map(([title, quantity]) => ({ title, quantity }))
+          .sort((a, b) => b.quantity - a.quantity),
+        notYetBought,
+      };
+
       return {
         customerGid: c.id,
-        name: [c.firstName, c.lastName].filter(Boolean).join(" ") || "(sem nome)",
+        name: titleCase([c.firstName, c.lastName].filter(Boolean).join(" ")) || "(sem nome)",
         city: c.defaultAddress?.city ?? "",
         creditBalance: balance,
         creditExpiresAt,
@@ -118,6 +141,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         descobrir,
         locationKey: matchedLocation.key,
         locationLabel: matchedLocation.label,
+        highlights,
       };
     })
     .filter((r) => r.creditBalance > 0)
@@ -125,7 +149,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // nothing to rank by — shouldn't happen given the tag-based candidate
     // search, but handled explicitly rather than assumed (see
     // credit-expiry.ts).
-    .filter((r): r is typeof r & { creditExpiresAt: string } => r.creditExpiresAt !== null);
+    .filter((r): r is typeof r & { creditExpiresAt: string } => r.creditExpiresAt !== null)
+    // Lucas, 2026-08-17: filter out customers with no phone by default —
+    // there's nothing a rep can do with a "sem telefone" row, it just eats
+    // a DAILY_CAPACITY slot another contactable customer could have used.
+    .filter((r) => r.phone !== null);
 
   const ranked = rankByExpiryAndValue(
     rows.map((r): Candidate => ({ customerGid: r.customerGid, creditBalance: r.creditBalance, creditExpiresAt: r.creditExpiresAt })),
@@ -150,11 +178,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     };
   });
 
-  const headingLabel = locations.length === 1 ? locations[0]!.label : "Todas as localizações";
   console.info(
     `[worklist] loader OK shop=${session.shop} locations=${locations.map((l) => l.key).join(",")} rows=${worklist.length}`,
   );
-  return { locationLabel: headingLabel, worklist };
+  return { worklist };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -202,11 +229,19 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function DailyWorklist() {
-  const { locationLabel, worklist } = useLoaderData<typeof loader>();
+  const { worklist } = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
+  const [highlightsGid, setHighlightsGid] = useState<string | null>(null);
+  const highlightsRow = worklist.find((w) => w.customerGid === highlightsGid) ?? null;
+
+  function openHighlights(gid: string) {
+    setHighlightsGid(gid);
+    const modal = document.getElementById("customer-highlights") as (HTMLElement & { showOverlay?: () => void }) | null;
+    modal?.showOverlay?.();
+  }
 
   return (
-    <s-page heading={`BeautyBack — ${locationLabel}`}>
+    <s-page heading="Beauty Back | Agenda de hoje">
       <s-section>
         <s-paragraph>Clientes com cashback próximo do vencimento, ordenados por valor do crédito</s-paragraph>
         {worklist.length === 0 ? (
@@ -224,7 +259,9 @@ export default function DailyWorklist() {
               {worklist.map((row) => (
                 <s-table-row key={row.customerGid}>
                   <s-table-cell>
-                    {row.name}
+                    <s-button variant="tertiary" onClick={() => openHighlights(row.customerGid)}>
+                      {row.name}
+                    </s-button>
                     <br />
                     <s-text color="subdued">
                       {row.city} · {row.locationLabel}
@@ -260,6 +297,47 @@ export default function DailyWorklist() {
           </s-table>
         )}
       </s-section>
+
+      <s-modal id="customer-highlights" heading={highlightsRow?.name ?? "Cliente"}>
+        {highlightsRow ? (
+          <>
+            <s-paragraph>
+              {highlightsRow.highlights.numberOfOrders}{" "}
+              {highlightsRow.highlights.numberOfOrders === 1 ? "pedido" : "pedidos"} · Total gasto: R${" "}
+              {highlightsRow.highlights.amountSpent.toFixed(2)}
+            </s-paragraph>
+            <s-paragraph>
+              Último pedido:{" "}
+              {highlightsRow.highlights.lastOrderDate
+                ? formatDateBr(highlightsRow.highlights.lastOrderDate)
+                : "sem pedidos recentes"}
+            </s-paragraph>
+            <s-heading>Produtos já comprados</s-heading>
+            {highlightsRow.highlights.productsAlreadyBought.length === 0 ? (
+              <s-paragraph>Nenhum produto encontrado no histórico recente.</s-paragraph>
+            ) : (
+              <s-unordered-list>
+                {highlightsRow.highlights.productsAlreadyBought.map((p) => (
+                  <s-list-item key={p.title}>
+                    {p.title}
+                    {p.quantity > 1 ? ` (x${p.quantity})` : ""}
+                  </s-list-item>
+                ))}
+              </s-unordered-list>
+            )}
+            <s-heading>Ainda não experimentou</s-heading>
+            {highlightsRow.highlights.notYetBought.length === 0 ? (
+              <s-paragraph>Já experimentou todos os produtos de descoberta.</s-paragraph>
+            ) : (
+              <s-unordered-list>
+                {highlightsRow.highlights.notYetBought.map((p) => (
+                  <s-list-item key={p}>{p}</s-list-item>
+                ))}
+              </s-unordered-list>
+            )}
+          </>
+        ) : null}
+      </s-modal>
     </s-page>
   );
 }

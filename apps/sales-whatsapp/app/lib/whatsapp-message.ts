@@ -15,7 +15,7 @@ function brl(amount: number): string {
   return `R$ ${amount.toFixed(2).replace(".", ",")}`;
 }
 
-function formatDateBr(isoDate: string): string {
+export function formatDateBr(isoDate: string): string {
   const d = new Date(isoDate);
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 }

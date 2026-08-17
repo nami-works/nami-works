@@ -57,7 +57,15 @@ export const REC_PREF = ["melon mood mist", "leave-in pluma", "booster antifrizz
 
 export type RecentOrder = { createdAt: string; lineItemTitles: string[] };
 
-export type Recommendation = { repor: string | null; descobrir: string | null; lastOrderDate: string | null };
+export type Recommendation = {
+  repor: string | null;
+  descobrir: string | null;
+  lastOrderDate: string | null;
+  // Every REC_PREF entry not yet owned (descobrir is just notYetBought[0]) —
+  // for the customer highlights modal, which shows the full discovery list
+  // rather than a single pick.
+  notYetBought: string[];
+};
 
 // Given a customer's recent orders (most-recent-first not required — this
 // sorts), returns "repor" and "descobrir". NOTE on repor (verbatim port of
@@ -90,6 +98,7 @@ export function recommendFor(orders: RecentOrder[]): Recommendation {
     }
   }
 
-  const descobrir = REC_PREF.find((p) => !owned.has(p)) ?? null;
-  return { repor, descobrir, lastOrderDate };
+  const notYetBought = REC_PREF.filter((p) => !owned.has(p));
+  const descobrir = notYetBought[0] ?? null;
+  return { repor, descobrir, lastOrderDate, notYetBought };
 }
