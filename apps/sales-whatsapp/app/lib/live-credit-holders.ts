@@ -84,12 +84,21 @@ export type RawCustomer = {
 // fulfillmentOrders and per-line-item originalUnitPriceSet/image added
 // 2026-08-18 for the richer modal (order history with delivery-method
 // badges, product prices/images) — see delivery-channel.ts and
-// discovery-products.ts for how these feed the loader. Not yet re-run
-// through validate_graphql_codeblocks (MCP was disconnected this session);
-// verify on first live smoke-test post-deploy.
+// discovery-products.ts for how these feed the loader.
+//
+// INCIDENT (2026-08-18, ~1h outage): these additions pushed
+// requestedQueryCost to 1244 at the previous customers(first: 100) page
+// size, over Shopify's 1000-point single-query cap — every loader request
+// threw GraphqlQueryError and the app showed its generic ErrorBoundary.
+// Verified live via curl against the real API (cost is a static
+// query-shape calculation, independent of which token/app queries it):
+// first:100 -> 1244, first:60-90 -> 1106, first:40-50 -> 968, first:25-30
+// -> 830. Dropped to 30 for real margin (17%), not just barely under.
+// Cost doesn't scale linearly with `first` — Shopify buckets it — so
+// don't assume a proportional adjustment is safe next time; re-measure.
 const QUERY = `#graphql
   query LiveCreditHolders($cursor: String) {
-    customers(first: 100, after: $cursor, query: "${ARM_TAG_QUERY}") {
+    customers(first: 30, after: $cursor, query: "${ARM_TAG_QUERY}") {
       pageInfo { hasNextPage endCursor }
       edges {
         node {
