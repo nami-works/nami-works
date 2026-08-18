@@ -1,15 +1,19 @@
 // Resolves the delivery-method badge shown per order in the customer
 // highlights modal (mockup: inputs/mockups/ge-sales-whatsapp-customer-highlights-v1.html).
 //
-// Primary signal is Shopify's own fulfillmentOrders[0].deliveryMethod.methodType
-// — the same field apps/omnify-admin already relies on for Local Delivery
-// and Retail Sales. It's unreliable for IGLU/Hexagon POS orders though: a
-// dedicated audit (gebeauty/scripts/_verify_hexagon_methodtype_48h.py) found
-// methodType can disagree with the order's actual intent for that
-// integration, and apps/omnify-admin/app/sales-goals/classification.ts
-// documents the same integration also misreporting physicalLocation. For
-// those orders, this falls back to the shipping_additional_delivery_method_type
-// custom attribute the Hexagon audit script cross-checks against.
+// INCIDENT (2026-08-18): the original design read
+// fulfillmentOrders[0].deliveryMethod.methodType (the field
+// apps/omnify-admin relies on for Local Delivery/Retail Sales) — but this
+// app's OAuth scopes don't include whatever fulfillmentOrders requires
+// ("Access denied for fulfillmentOrders field", live in production).
+// Adding that scope means an app-config change PLUS the shop re-consenting
+// to a new permission — not a same-day fix. So this derives the badge from
+// fields already covered by this app's existing scopes instead:
+// shippingLines (read_orders) and the IGLU/Hexagon custom attribute
+// (read_orders). Less precise than methodType — no direct
+// assignedLocation.location.name, so "instore"/"pickup" can't show the
+// specific store name — but it keeps the app up without a new scope grant.
+// Revisit if the fulfillmentOrders scope ever gets approved.
 
 export type ChannelType = "standard" | "local" | "pickup" | "instore" | "fallback";
 
@@ -31,12 +35,15 @@ export const CHANNEL_BADGE_TONE: Record<ChannelType, "info" | "success" | "cauti
   fallback: "neutral",
 };
 
-function fromMethodType(methodType: string | null): ChannelType | null {
-  if (methodType === "SHIPPING") return "standard";
-  if (methodType === "LOCAL") return "local";
-  if (methodType === "PICK_UP") return "pickup";
-  if (methodType === "RETAIL") return "instore";
-  return null;
+// Orders with no shipping line at all are the sold-in-person case — an
+// online order always carries a shippingLines entry (even a $0 free-
+// shipping one); a POS/in-store sale doesn't.
+function fromShippingLineTitle(title: string | null): ChannelType {
+  if (title === null) return "instore";
+  const t = title.toLowerCase();
+  if (t.startsWith("entrega local")) return "local";
+  if (t.includes("retirada") || t.includes("pickup") || t.includes("pick up") || t.includes("pick-up")) return "pickup";
+  return "standard";
 }
 
 function fromCustomAttribute(value: string | null): ChannelType | null {
@@ -59,16 +66,14 @@ function isIgluHexagonOrder(sourceName: string | null, appGid: string | null): b
 export type OrderForChannel = {
   sourceName: string | null;
   appGid: string | null;
-  methodType: string | null;
   customAttributes: { key: string; value: string }[];
   shippingLineTitle: string | null;
-  locationName: string | null;
 };
 
 export type ResolvedChannel = {
   type: ChannelType;
   label: string; // generic badge text, e.g. "Entrega local"
-  specific: string; // carrier/store name, e.g. "Lalamove", "Shops Jardins"
+  specific: string; // carrier/store name, e.g. "Lalamove", "Total Express MG"
 };
 
 export function resolveChannel(order: OrderForChannel): ResolvedChannel {
@@ -78,15 +83,15 @@ export function resolveChannel(order: OrderForChannel): ResolvedChannel {
     const attr = order.customAttributes.find((a) => a.key === "shipping_additional_delivery_method_type");
     type = fromCustomAttribute(attr?.value ?? null);
   }
-  type = type ?? fromMethodType(order.methodType) ?? "fallback";
+  type = type ?? fromShippingLineTitle(order.shippingLineTitle);
 
   const specific =
-    type === "instore" || type === "pickup"
-      ? order.locationName ?? "Loja"
-      : type === "local"
-        ? "Lalamove"
-        : type === "standard"
-          ? order.shippingLineTitle ?? "Transportadora"
+    type === "local"
+      ? "Lalamove"
+      : type === "standard" || type === "pickup"
+        ? order.shippingLineTitle ?? "Transportadora"
+        : type === "instore"
+          ? "Loja"
           : order.sourceName ?? "—";
 
   return { type, label: CHANNEL_LABELS[type], specific };

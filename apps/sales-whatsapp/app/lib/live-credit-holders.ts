@@ -43,14 +43,6 @@ export type RawOrder = {
   app: { id: string } | null;
   customAttributes: { key: string; value: string }[];
   shippingLines: { edges: { node: { title: string } }[] };
-  fulfillmentOrders: {
-    edges: {
-      node: {
-        deliveryMethod: { methodType: string | null } | null;
-        assignedLocation: { location: { name: string } | null } | null;
-      };
-    }[];
-  };
   lineItems: { edges: { node: RawOrderLineItem }[] };
 };
 
@@ -96,6 +88,13 @@ export type RawCustomer = {
 // -> 830. Dropped to 30 for real margin (17%), not just barely under.
 // Cost doesn't scale linearly with `first` — Shopify buckets it — so
 // don't assume a proportional adjustment is safe next time; re-measure.
+//
+// SECOND INCIDENT, same deploy: fulfillmentOrders (used for the
+// methodType-based channel badge) hit "Access denied for fulfillmentOrders
+// field" — this app's scopes don't cover it, and adding a scope needs an
+// app-config change plus the shop re-consenting, not a same-day fix.
+// Dropped the field; delivery-channel.ts now derives the badge from
+// shippingLines + the IGLU custom attribute instead (see its own comment).
 const QUERY = `#graphql
   query LiveCreditHolders($cursor: String) {
     customers(first: 30, after: $cursor, query: "${ARM_TAG_QUERY}") {
@@ -135,14 +134,6 @@ const QUERY = `#graphql
                 app { id }
                 customAttributes { key value }
                 shippingLines(first: 1) { edges { node { title } } }
-                fulfillmentOrders(first: 1) {
-                  edges {
-                    node {
-                      deliveryMethod { methodType }
-                      assignedLocation { location { name } }
-                    }
-                  }
-                }
                 lineItems(first: 20) {
                   edges {
                     node {

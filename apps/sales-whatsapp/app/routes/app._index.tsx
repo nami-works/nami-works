@@ -141,17 +141,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
       }
 
       // Order history (2026-08-18, for the modal's per-order channel
-      // badges) — see delivery-channel.ts for the methodType/IGLU handling.
+      // badges) — see delivery-channel.ts for the shippingLines/IGLU
+      // handling (fulfillmentOrders.deliveryMethod was dropped same-day,
+      // access-denied for this app's scopes).
       const orderHistory = c.orders.edges.map((e) => {
         const o = e.node;
-        const fo = o.fulfillmentOrders.edges[0]?.node;
         const channel = resolveChannel({
           sourceName: o.sourceName,
           appGid: o.app?.id ?? null,
-          methodType: fo?.deliveryMethod?.methodType ?? null,
           customAttributes: o.customAttributes,
           shippingLineTitle: o.shippingLines.edges[0]?.node.title ?? null,
-          locationName: fo?.assignedLocation?.location?.name ?? null,
         });
         return {
           date: o.createdAt,
