@@ -1,0 +1,55 @@
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration
+#
+client_id = "acaf38a95f367ffe27eddf9eb9fd89a0"
+name = "BeautyBack"
+# apps.gebeauty.com.br is a shared, path-routed host for GE Beauty's
+# internal Shopify apps (Lucas, 2026-08-14) — this app owns /beautyback.
+# Requires BASE_PATH=/beautyback set at deploy/runtime (react-router.config.ts,
+# vite.config.ts, server.mjs all read it) so the built basename matches.
+application_url = "https://apps.gebeauty.com.br/beautyback"
+embedded = true
+
+[access_scopes]
+# read-only for week 1 — this app never writes to Shopify directly. WhatsApp
+# send is client-side (wa.me), and store-credit mutations stay owned by
+# apps/connector. read_users (2026-08-12) resolves the real logged-in rep's
+# email from the session for per-location access control.
+# read_store_credit_accounts + read_store_credit_account_transactions
+# (2026-08-13) are new too — confirmed required by validate_graphql_codeblocks
+# against the real Admin API schema, needed to read each customer's real
+# credit expiry (app/lib/credit-expiry.ts) instead of a placeholder. All new
+# scopes flagged for Lucas's approval alongside the rest of this list.
+scopes = "read_customers,read_orders,read_users,read_store_credit_accounts,read_store_credit_account_transactions"
+
+[build]
+automatically_update_urls_on_dev = true
+
+[webhooks]
+api_version = "2026-01"
+
+  # Mandatory compliance topics — flagged as missing by the senior-eng
+  # review (2026-08-12); Shopify can gate app creation on these existing.
+  [[webhooks.subscriptions]]
+  compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
+  uri = "/webhooks/compliance"
+
+  # Converted flip — per the locked architecture (ge-sales-whatsapp-app.md,
+  # 2026-08-07): orders/create, not orders/paid, marks a contacted customer
+  # converted the instant they order.
+  [[webhooks.subscriptions]]
+  topics = [ "orders/create" ]
+  uri = "/webhooks/orders-create"
+
+  # Un-flip on cancel/refund — added 2026-08-12 per the senior-eng review's
+  # finding that the original design had no reversal path, the same bug
+  # class apps/connector already had to build refund-clawback.ts to fix once.
+  [[webhooks.subscriptions]]
+  topics = [ "orders/cancelled", "refunds/create" ]
+  uri = "/webhooks/orders-reversal"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app-uninstalled"
+
+[pos]
+embedded = false
