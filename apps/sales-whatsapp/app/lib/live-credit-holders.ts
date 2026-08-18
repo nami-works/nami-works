@@ -29,6 +29,31 @@ export type RawCreditTransactionNode = {
   remainingAmount?: { amount: string } | null;
 };
 
+export type RawOrderLineItem = {
+  title: string;
+  quantity: number;
+  originalUnitPriceSet: { presentmentMoney: { amount: string } } | null;
+  image: { url: string } | null;
+};
+
+export type RawOrder = {
+  createdAt: string;
+  totalPriceSet: { presentmentMoney: { amount: string } } | null;
+  sourceName: string | null;
+  app: { id: string } | null;
+  customAttributes: { key: string; value: string }[];
+  shippingLines: { edges: { node: { title: string } }[] };
+  fulfillmentOrders: {
+    edges: {
+      node: {
+        deliveryMethod: { methodType: string | null } | null;
+        assignedLocation: { location: { name: string } | null } | null;
+      };
+    }[];
+  };
+  lineItems: { edges: { node: RawOrderLineItem }[] };
+};
+
 export type RawCustomer = {
   id: string;
   firstName: string | null;
@@ -40,9 +65,7 @@ export type RawCustomer = {
   storeCreditAccounts: {
     edges: { node: { balance: { amount: string }; transactions: { edges: { node: RawCreditTransactionNode }[] } } }[];
   };
-  orders: {
-    edges: { node: { createdAt: string; lineItems: { edges: { node: { title: string; quantity: number } }[] } } }[];
-  };
+  orders: { edges: { node: RawOrder }[] };
 };
 
 // Query validated against the real Admin API schema (2026-01) via
@@ -56,6 +79,14 @@ export type RawCustomer = {
 // numberOfOrders/amountSpent + orders(first: 10)/lineItems(quantity) added
 // 2026-08-17 for the customer highlights modal — also re-validated (2026-04),
 // no new scopes required.
+//
+// Order-level totalPriceSet/sourceName/app/customAttributes/shippingLines/
+// fulfillmentOrders and per-line-item originalUnitPriceSet/image added
+// 2026-08-18 for the richer modal (order history with delivery-method
+// badges, product prices/images) — see delivery-channel.ts and
+// discovery-products.ts for how these feed the loader. Not yet re-run
+// through validate_graphql_codeblocks (MCP was disconnected this session);
+// verify on first live smoke-test post-deploy.
 const QUERY = `#graphql
   query LiveCreditHolders($cursor: String) {
     customers(first: 100, after: $cursor, query: "${ARM_TAG_QUERY}") {
@@ -87,7 +118,34 @@ const QUERY = `#graphql
             }
           }
           orders(first: 10, sortKey: CREATED_AT, reverse: true) {
-            edges { node { createdAt lineItems(first: 20) { edges { node { title quantity } } } } }
+            edges {
+              node {
+                createdAt
+                totalPriceSet { presentmentMoney { amount } }
+                sourceName
+                app { id }
+                customAttributes { key value }
+                shippingLines(first: 1) { edges { node { title } } }
+                fulfillmentOrders(first: 1) {
+                  edges {
+                    node {
+                      deliveryMethod { methodType }
+                      assignedLocation { location { name } }
+                    }
+                  }
+                }
+                lineItems(first: 20) {
+                  edges {
+                    node {
+                      title
+                      quantity
+                      originalUnitPriceSet { presentmentMoney { amount } }
+                      image { url }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }

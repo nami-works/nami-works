@@ -9,10 +9,12 @@ import { expansionBand, selectByProgressiveExpansion } from "../lib/geo-eligibil
 import { openContactsLookbackCutoff, openCustomerGids } from "../lib/open-contacts.js";
 import { rankByExpiryAndValue, daysUntil, type Candidate } from "../lib/ranking.js";
 import { recommendFor } from "../lib/recommendations.js";
-import { buildMessage, buildWaMeLink, formatDateBr } from "../lib/whatsapp-message.js";
+import { buildMessage, buildWaMeLink, formatDateBr, formatDateBrLong, brl } from "../lib/whatsapp-message.js";
 import { fetchLiveCreditHolders } from "../lib/live-credit-holders.js";
 import { resolveJustBoughtExpiry } from "../lib/credit-expiry.js";
 import { titleCase } from "../lib/title-case.js";
+import { resolveChannel, CHANNEL_BADGE_TONE } from "../lib/delivery-channel.js";
+import { fetchDiscoveryProductInfo } from "../lib/discovery-products.js";
 
 // Daily capacity cap per location — reps can't work an unbounded list.
 // Not yet confirmed with Lucas as a specific number; 40 is a placeholder
@@ -58,6 +60,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const openGids = openCustomerGids(openContacts, now);
 
   const rawCustomers = await fetchLiveCreditHolders(admin);
+  // One query for the whole loader run, not per customer — the discovery
+  // set (REC_PREF) is a fixed 4 products regardless of who's in today's list.
+  const discoveryProducts = await fetchDiscoveryProductInfo(admin);
 
   const geocoded = rawCustomers
     .filter((c) => !isHoldout(c.id)) // structurally absent — never reaches the rest of the pipeline
@@ -114,20 +119,65 @@ export async function loader({ request }: LoaderFunctionArgs) {
       // raw purchase history, not the canonical repor/descobrir categories,
       // since a rep looking at a customer's card wants to see the actual
       // products, not internal product-family names.
-      const productCounts = new Map<string, number>();
+      //
+      // Price/image per title come from the FIRST order they appear in —
+      // c.orders.edges is already newest-first (query sortKey CREATED_AT
+      // reverse: true), so that's the most recent price seen, not an
+      // average across however many times they've bought it.
+      const productCounts = new Map<string, { quantity: number; price: number; imageUrl: string | null }>();
       for (const e of c.orders.edges) {
         for (const li of e.node.lineItems.edges) {
-          productCounts.set(li.node.title, (productCounts.get(li.node.title) ?? 0) + li.node.quantity);
+          const existing = productCounts.get(li.node.title);
+          if (existing) {
+            existing.quantity += li.node.quantity;
+          } else {
+            productCounts.set(li.node.title, {
+              quantity: li.node.quantity,
+              price: Number(li.node.originalUnitPriceSet?.presentmentMoney.amount ?? 0),
+              imageUrl: li.node.image?.url ?? null,
+            });
+          }
         }
       }
+
+      // Order history (2026-08-18, for the modal's per-order channel
+      // badges) — see delivery-channel.ts for the methodType/IGLU handling.
+      const orderHistory = c.orders.edges.map((e) => {
+        const o = e.node;
+        const fo = o.fulfillmentOrders.edges[0]?.node;
+        const channel = resolveChannel({
+          sourceName: o.sourceName,
+          appGid: o.app?.id ?? null,
+          methodType: fo?.deliveryMethod?.methodType ?? null,
+          customAttributes: o.customAttributes,
+          shippingLineTitle: o.shippingLines.edges[0]?.node.title ?? null,
+          locationName: fo?.assignedLocation?.location?.name ?? null,
+        });
+        return {
+          date: o.createdAt,
+          total: Number(o.totalPriceSet?.presentmentMoney.amount ?? 0),
+          channelType: channel.type,
+          channelLabel: channel.label,
+          channelSpecific: channel.specific,
+        };
+      });
+
       const highlights = {
         numberOfOrders: Number(c.numberOfOrders) || 0,
         amountSpent: Number(c.amountSpent?.amount ?? 0),
         lastOrderDate,
+        orderHistory,
         productsAlreadyBought: [...productCounts.entries()]
-          .map(([title, quantity]) => ({ title, quantity }))
+          .map(([title, p]) => ({ title, ...p }))
           .sort((a, b) => b.quantity - a.quantity),
-        notYetBought,
+        notYetBought: notYetBought.map((canonicalName) => {
+          const info = discoveryProducts.get(canonicalName);
+          return {
+            name: info?.title ?? titleCase(canonicalName),
+            price: info?.price ?? null,
+            imageUrl: info?.imageUrl ?? null,
+          };
+        }),
       };
 
       return {
@@ -259,16 +309,18 @@ export default function DailyWorklist() {
               {worklist.map((row) => (
                 <s-table-row key={row.customerGid}>
                   <s-table-cell>
-                    <s-button variant="tertiary" onClick={() => openHighlights(row.customerGid)}>
-                      {row.name}
-                    </s-button>
+                    <s-link onClick={() => openHighlights(row.customerGid)}>{row.name}</s-link>
                     <br />
                     <s-text color="subdued">
                       {row.city} · {row.locationLabel}
                     </s-text>
                   </s-table-cell>
-                  <s-table-cell>R$ {row.creditBalance.toFixed(2)}</s-table-cell>
-                  <s-table-cell>{row.daysUntilExpiry} dias</s-table-cell>
+                  <s-table-cell>{brl(row.creditBalance)}</s-table-cell>
+                  <s-table-cell>
+                    {row.daysUntilExpiry} dias
+                    <br />
+                    <s-text color="subdued">{formatDateBrLong(row.creditExpiresAt)}</s-text>
+                  </s-table-cell>
                   <s-table-cell>
                     {row.repor ? <>Repor: {row.repor}</> : null}
                     {row.descobrir ? <>{row.repor ? <br /> : null}Descobrir: {row.descobrir}</> : null}
@@ -300,42 +352,91 @@ export default function DailyWorklist() {
 
       <s-modal id="customer-highlights" heading={highlightsRow?.name ?? "Cliente"}>
         {highlightsRow ? (
-          <>
-            <s-paragraph>
-              {highlightsRow.highlights.numberOfOrders}{" "}
-              {highlightsRow.highlights.numberOfOrders === 1 ? "pedido" : "pedidos"} · Total gasto: R${" "}
-              {highlightsRow.highlights.amountSpent.toFixed(2)}
-            </s-paragraph>
-            <s-paragraph>
-              Último pedido:{" "}
-              {highlightsRow.highlights.lastOrderDate
-                ? formatDateBr(highlightsRow.highlights.lastOrderDate)
-                : "sem pedidos recentes"}
-            </s-paragraph>
-            <s-heading>Produtos já comprados</s-heading>
-            {highlightsRow.highlights.productsAlreadyBought.length === 0 ? (
-              <s-paragraph>Nenhum produto encontrado no histórico recente.</s-paragraph>
-            ) : (
-              <s-unordered-list>
-                {highlightsRow.highlights.productsAlreadyBought.map((p) => (
-                  <s-list-item key={p.title}>
-                    {p.title}
-                    {p.quantity > 1 ? ` (x${p.quantity})` : ""}
-                  </s-list-item>
-                ))}
-              </s-unordered-list>
-            )}
-            <s-heading>Ainda não experimentou</s-heading>
-            {highlightsRow.highlights.notYetBought.length === 0 ? (
-              <s-paragraph>Já experimentou todos os produtos de descoberta.</s-paragraph>
-            ) : (
-              <s-unordered-list>
-                {highlightsRow.highlights.notYetBought.map((p) => (
-                  <s-list-item key={p}>{p}</s-list-item>
-                ))}
-              </s-unordered-list>
-            )}
-          </>
+          <s-stack direction="block" gap="large">
+            <s-stack direction="inline" gap="base">
+              <s-box padding="small" borderWidth="base" borderRadius="base" inlineSize="100%">
+                <s-stack direction="block" gap="small-100" alignItems="center">
+                  <s-heading>{highlightsRow.highlights.numberOfOrders}</s-heading>
+                  <s-text color="subdued">
+                    {highlightsRow.highlights.numberOfOrders === 1 ? "pedido" : "pedidos"}
+                  </s-text>
+                </s-stack>
+              </s-box>
+              <s-box padding="small" borderWidth="base" borderRadius="base" inlineSize="100%">
+                <s-stack direction="block" gap="small-100" alignItems="center">
+                  <s-heading>{brl(highlightsRow.highlights.amountSpent)}</s-heading>
+                  <s-text color="subdued">Total gasto</s-text>
+                </s-stack>
+              </s-box>
+              <s-box padding="small" borderWidth="base" borderRadius="base" inlineSize="100%">
+                <s-stack direction="block" gap="small-100" alignItems="center">
+                  <s-heading>
+                    {highlightsRow.highlights.lastOrderDate ? formatDateBr(highlightsRow.highlights.lastOrderDate) : "—"}
+                  </s-heading>
+                  <s-text color="subdued">Último pedido</s-text>
+                </s-stack>
+              </s-box>
+            </s-stack>
+
+            <s-stack direction="block" gap="small">
+              <s-heading>Pedidos</s-heading>
+              {highlightsRow.highlights.orderHistory.length === 0 ? (
+                <s-paragraph>Nenhum pedido no histórico recente.</s-paragraph>
+              ) : (
+                highlightsRow.highlights.orderHistory.map((o, i) => (
+                  <s-stack key={i} direction="inline" gap="small" alignItems="center" justifyContent="space-between">
+                    <s-text color="subdued">{formatDateBr(o.date)}</s-text>
+                    <s-text>{o.channelSpecific}</s-text>
+                    <s-badge tone={CHANNEL_BADGE_TONE[o.channelType]}>{o.channelLabel}</s-badge>
+                    <s-text type="strong">{brl(o.total)}</s-text>
+                  </s-stack>
+                ))
+              )}
+            </s-stack>
+
+            <s-stack direction="block" gap="small">
+              <s-heading>Produtos já comprados</s-heading>
+              {highlightsRow.highlights.productsAlreadyBought.length === 0 ? (
+                <s-paragraph>Nenhum produto encontrado no histórico recente.</s-paragraph>
+              ) : (
+                highlightsRow.highlights.productsAlreadyBought.map((p) => (
+                  <s-stack key={p.title} direction="inline" gap="small" alignItems="center" justifyContent="space-between">
+                    {p.imageUrl ? (
+                      <s-box inlineSize="40px" blockSize="40px" borderRadius="base" overflow="hidden">
+                        <s-image src={p.imageUrl} alt={p.title} inlineSize="fill" objectFit="cover" />
+                      </s-box>
+                    ) : null}
+                    <s-stack direction="block" gap="small-100">
+                      <s-text>{p.title}</s-text>
+                      <s-text color="subdued">{p.quantity > 1 ? `${p.quantity}x` : "1x"}</s-text>
+                    </s-stack>
+                    <s-text type="strong">{brl(p.price)}</s-text>
+                  </s-stack>
+                ))
+              )}
+            </s-stack>
+
+            <s-stack direction="block" gap="small">
+              <s-heading>
+                Ainda não experimentou <s-badge tone="info">sugestão</s-badge>
+              </s-heading>
+              {highlightsRow.highlights.notYetBought.length === 0 ? (
+                <s-paragraph>Já experimentou todos os produtos de descoberta.</s-paragraph>
+              ) : (
+                highlightsRow.highlights.notYetBought.map((p) => (
+                  <s-stack key={p.name} direction="inline" gap="small" alignItems="center" justifyContent="space-between">
+                    {p.imageUrl ? (
+                      <s-box inlineSize="40px" blockSize="40px" borderRadius="base" overflow="hidden">
+                        <s-image src={p.imageUrl} alt={p.name} inlineSize="fill" objectFit="cover" />
+                      </s-box>
+                    ) : null}
+                    <s-text>{p.name}</s-text>
+                    {p.price !== null ? <s-text type="strong">{brl(p.price)}</s-text> : null}
+                  </s-stack>
+                ))
+              )}
+            </s-stack>
+          </s-stack>
         ) : null}
       </s-modal>
     </s-page>

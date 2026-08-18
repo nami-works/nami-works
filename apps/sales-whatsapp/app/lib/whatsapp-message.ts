@@ -11,13 +11,21 @@
 // while 2-byte accented Latin (é, ã, ç) comes through fine. This is a
 // known wa.me quirk with prefilled text, not a bug in our own encoding.
 
-function brl(amount: number): string {
+export function brl(amount: number): string {
   return `R$ ${amount.toFixed(2).replace(".", ",")}`;
 }
 
 export function formatDateBr(isoDate: string): string {
   const d = new Date(isoDate);
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+}
+
+// Full month name, e.g. "08 de setembro" — for the worklist's "Vence em"
+// column, shown subdued under the days-left countdown (mockup:
+// ge-sales-whatsapp-customer-highlights-v1.html).
+export function formatDateBrLong(isoDate: string): string {
+  const d = new Date(isoDate);
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" });
 }
 
 export function buildMessage(params: {

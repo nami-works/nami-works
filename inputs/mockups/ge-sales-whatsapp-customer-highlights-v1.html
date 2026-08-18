@@ -1,0 +1,423 @@
+<title>Customer Highlights</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --surface: #ffffff;
+    --border: #e1e3e5;
+    --border-subtle: #f1f1f1;
+    --text: #303030;
+    --text-subdued: #6d7175;
+    --accent: #005bd3;
+    --accent-soft: #e8f1ff;
+    --shadow: rgba(0, 0, 0, 0.12);
+    --backdrop: rgba(0, 0, 0, 0.35);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1a1d1f;
+      --surface: #24272a;
+      --border: #3a3e42;
+      --border-subtle: #2e3134;
+      --text: #e8e9ea;
+      --text-subdued: #9aa0a6;
+      --accent: #5b9bf0;
+      --accent-soft: rgba(91, 155, 240, 0.16);
+      --shadow: rgba(0, 0, 0, 0.4);
+      --backdrop: rgba(0, 0, 0, 0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1a1d1f;
+    --surface: #24272a;
+    --border: #3a3e42;
+    --border-subtle: #2e3134;
+    --text: #e8e9ea;
+    --text-subdued: #9aa0a6;
+    --accent: #5b9bf0;
+    --accent-soft: rgba(91, 155, 240, 0.16);
+    --shadow: rgba(0, 0, 0, 0.4);
+    --backdrop: rgba(0, 0, 0, 0.55);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 20px 80px;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    text-wrap: balance;
+  }
+  .subtitle {
+    color: var(--text-subdued);
+    margin: 0 0 20px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 1px 2px var(--shadow);
+    overflow: hidden;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-subdued);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 10px 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  .customer-link {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+    font-weight: 500;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+  .customer-link:hover { text-decoration-color: var(--accent); }
+  .customer-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+  .city { color: var(--text-subdued); display: block; margin-top: 2px; font-size: 13px; }
+  .money { font-variant-numeric: tabular-nums; }
+  .expiry-date { color: var(--text-subdued); display: block; margin-top: 2px; font-size: 13px; }
+  .send-btn {
+    font: inherit;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  /* --- Modal --- */
+  .backdrop {
+    position: fixed; inset: 0;
+    background: var(--backdrop);
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 24px;
+    z-index: 10;
+  }
+  .backdrop.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 520px;
+    max-height: min(680px, 90vh);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 16px 48px var(--shadow);
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+  }
+  .modal-header h2 { margin: 0; font-size: 16px; font-weight: 600; }
+  .modal-close {
+    width: 28px; height: 28px;
+    display: grid; place-items: center;
+    border-radius: 6px;
+    border: none; background: none;
+    color: var(--text-subdued);
+    cursor: pointer;
+    font-size: 16px;
+  }
+  .modal-close:hover { background: var(--bg); }
+
+  .modal-body { overflow-y: auto; padding: 16px 20px 20px; }
+
+  .stat-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat {
+    background: var(--bg);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .stat-value { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stat-label { color: var(--text-subdued); font-size: 12px; margin-top: 2px; }
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-subdued);
+    margin: 20px 0 8px;
+  }
+  .section-label:first-of-type { margin-top: 0; }
+
+  .product-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .product-row:last-child { border-bottom: none; }
+  .thumb {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: grid; place-items: center;
+    color: #fff;
+  }
+  .thumb svg { width: 20px; height: 20px; }
+  .product-info { flex: 1; min-width: 0; }
+  .product-name { font-weight: 500; }
+  .product-meta { color: var(--text-subdued); font-size: 13px; margin-top: 1px; }
+  .product-price { font-variant-numeric: tabular-nums; font-weight: 500; white-space: nowrap; }
+
+  .order-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    font-size: 13px;
+  }
+  .order-row + .order-row { border-top: 1px solid var(--border-subtle); }
+  .order-date { color: var(--text-subdued); flex-shrink: 0; }
+  .order-channel {
+    flex: 1;
+    font-weight: 500;
+  }
+  .channel-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .channel-tag.standard { color: var(--accent); background: var(--accent-soft); }
+  .channel-tag.local { color: #0d6e4f; background: color-mix(in srgb, #0d6e4f 14%, transparent); }
+  .channel-tag.pickup { color: #6b4fa0; background: color-mix(in srgb, #6b4fa0 14%, transparent); }
+  .channel-tag.instore { color: #8a5a1f; background: color-mix(in srgb, #8a5a1f 14%, transparent); }
+  .channel-tag.fallback { color: var(--text-subdued); background: var(--border-subtle); }
+  .order-total { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .discover-row .thumb { background: var(--accent-soft); color: var(--accent); }
+  .discover-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .note {
+    margin-top: 24px;
+    font-size: 12px;
+    color: var(--text-subdued);
+  }
+</style>
+
+<div class="page">
+  <h1>Beauty Back — worklist link + modal</h1>
+  <p class="subtitle">Clique em um nome de cliente para abrir o modal (dados de exemplo).</p>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Crédito</th>
+          <th>Vence em</th>
+          <th>WhatsApp</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <button class="customer-link" onclick="openModal('carolina')">Carolina Russo</button>
+            <span class="city">São Paulo · Shops Jardins</span>
+          </td>
+          <td class="money">R$ 65,58</td>
+          <td>21 dias<span class="expiry-date">08 de setembro</span></td>
+          <td><button class="send-btn">Enviar</button></td>
+        </tr>
+        <tr>
+          <td>
+            <button class="customer-link" onclick="openModal('maria')">Maria Luisa Braga Pessanha</button>
+            <span class="city">Rio de Janeiro · RioSul</span>
+          </td>
+          <td class="money">R$ 68,40</td>
+          <td>23 dias<span class="expiry-date">10 de setembro</span></td>
+          <td><button class="send-btn">Enviar</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="note">Modal aberto automaticamente para conferência — clique em "Maria Luisa" para ver o segundo exemplo.</p>
+</div>
+
+<div class="backdrop open" id="backdrop">
+  <div class="modal" role="dialog" aria-label="Detalhes do cliente">
+    <div class="modal-header">
+      <h2 id="modal-name">Carolina Russo</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
+<script>
+  const ICONS = {
+    mist: '<svg viewBox="0 0 24 24" fill="none"><path d="M8 3h8v3l2 2v13H6V8l2-2V3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 3h6" stroke="currentColor" stroke-width="1.6"/></svg>',
+    mask: '<svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="7" ry="8" stroke="currentColor" stroke-width="1.6"/><path d="M9 8c0-1.5 1-3 3-3s3 1.5 3 3" stroke="currentColor" stroke-width="1.6"/></svg>',
+    bottle: '<svg viewBox="0 0 24 24" fill="none"><rect x="7" y="9" width="10" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M10 9V5a2 2 0 0 1 2-2 2 2 0 0 1 2 2v4" stroke="currentColor" stroke-width="1.6"/></svg>',
+    drop: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  };
+
+  const CUSTOMERS = {
+    carolina: {
+      name: "Carolina Russo",
+      orders: 2,
+      spent: "555,60",
+      lastOrder: "07/08",
+      orderHistory: [
+        { date: "07/08", channel: "Correios", type: "standard", total: "89,90" },
+        { date: "12/06", channel: "Shops Jardins", type: "instore", total: "465,70" },
+      ],
+      bought: [
+        { icon: "mask", color: "#c26a3f", name: "Máscara Condicionadora", meta: "1x · 07/08", price: "89,90" },
+        { icon: "mask", color: "#8f6ba8", name: "Máscara Mayday", meta: "1x · 12/06", price: "94,90" },
+        { icon: "mist", color: "#3f8f6e", name: "Rose Ritual | Body & Hair Mist", meta: "2x · 12/06", price: "69,90" },
+      ],
+      discover: [
+        { icon: "mist", name: "Melon Mood Mist", price: "69,90" },
+        { icon: "drop", name: "Leave-in Pluma", price: "74,90" },
+        { icon: "bottle", name: "Booster Antifrizz", price: "84,90" },
+      ],
+    },
+    maria: {
+      name: "Maria Luisa Braga Pessanha",
+      orders: 4,
+      spent: "812,30",
+      lastOrder: "22/07",
+      orderHistory: [
+        { date: "22/07", channel: "Lalamove", type: "local", total: "219,70" },
+        { date: "03/05", channel: "Goodwill", type: "instore", total: "159,80" },
+        { date: "14/03", channel: "Total Express", type: "standard", total: "199,90" },
+        { date: "02/02", channel: "Extrema", type: "pickup", total: "232,90" },
+      ],
+      bought: [
+        { icon: "bottle", color: "#c26a3f", name: "Shampoo Sem Sulfato", meta: "3x · 22/07", price: "59,90" },
+        { icon: "drop", color: "#3f6ea8", name: "Primer Cachos Definidos", meta: "1x · 22/07", price: "79,90" },
+        { icon: "mist", color: "#3f8f6e", name: "Melon Mood Mist", meta: "1x · 03/05", price: "69,90" },
+        { icon: "mask", color: "#8f6ba8", name: "Máscara Condicionadora", meta: "2x · 03/05", price: "89,90" },
+      ],
+      discover: [
+        { icon: "drop", name: "Leave-in Pluma", price: "74,90" },
+        { icon: "bottle", name: "Booster Antifrizz", price: "84,90" },
+      ],
+    },
+  };
+
+  function productRow(p, isDiscover) {
+    const bg = isDiscover ? "" : `style="background:${p.color}"`;
+    const cls = isDiscover ? "discover-row" : "";
+    return `
+      <div class="product-row ${cls}">
+        <div class="thumb" ${bg}>${ICONS[p.icon]}</div>
+        <div class="product-info">
+          <div class="product-name">${p.name}</div>
+          ${p.meta ? `<div class="product-meta">${p.meta}</div>` : ""}
+        </div>
+        <div class="product-price">R$ ${p.price}</div>
+      </div>`;
+  }
+
+  const CHANNEL_LABELS = {
+    standard: "Entrega padrão",
+    local: "Entrega local",
+    pickup: "Retirada em loja",
+    instore: "Em loja",
+    fallback: "Delivery",
+  };
+
+  function orderRow(o) {
+    const tagClass = o.type;
+    const tagLabel = CHANNEL_LABELS[o.type];
+    return `
+      <div class="order-row">
+        <span class="order-date">${o.date}</span>
+        <span class="order-channel">${o.channel}<span class="channel-tag ${tagClass}">${tagLabel}</span></span>
+        <span class="order-total money">R$ ${o.total}</span>
+      </div>`;
+  }
+
+  function openModal(key) {
+    const c = CUSTOMERS[key];
+    document.getElementById("modal-name").textContent = c.name;
+    document.getElementById("modal-body").innerHTML = `
+      <div class="stat-strip">
+        <div class="stat"><div class="stat-value">${c.orders}</div><div class="stat-label">Pedidos</div></div>
+        <div class="stat"><div class="stat-value">R$ ${c.spent}</div><div class="stat-label">Total gasto</div></div>
+        <div class="stat"><div class="stat-value">${c.lastOrder}</div><div class="stat-label">Último pedido</div></div>
+      </div>
+      <div class="section-label">Pedidos</div>
+      ${c.orderHistory.map(orderRow).join("")}
+      <div class="section-label">Produtos já comprados</div>
+      ${c.bought.map((p) => productRow(p, false)).join("")}
+      <div class="section-label">Ainda não experimentou <span class="discover-tag">sugestão</span></div>
+      ${c.discover.map((p) => productRow(p, true)).join("")}
+    `;
+    document.getElementById("backdrop").classList.add("open");
+  }
+  function closeModal() {
+    document.getElementById("backdrop").classList.remove("open");
+  }
+  document.getElementById("backdrop").addEventListener("click", (e) => {
+    if (e.target.id === "backdrop") closeModal();
+  });
+  openModal("carolina");
+</script>
