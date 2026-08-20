@@ -14,7 +14,6 @@ import { fetchLiveCreditHolders } from "../lib/live-credit-holders.js";
 import { resolveJustBoughtExpiry } from "../lib/credit-expiry.js";
 import { titleCase } from "../lib/title-case.js";
 import { resolveChannel, CHANNEL_BADGE_TONE } from "../lib/delivery-channel.js";
-import { fetchDiscoveryProductInfo } from "../lib/discovery-products.js";
 
 // Daily capacity cap per location — reps can't work an unbounded list.
 // Not yet confirmed with Lucas as a specific number; 40 is a placeholder
@@ -60,9 +59,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const openGids = openCustomerGids(openContacts, now);
 
   const rawCustomers = await fetchLiveCreditHolders(admin);
-  // One query for the whole loader run, not per customer — the discovery
-  // set (REC_PREF) is a fixed 4 products regardless of who's in today's list.
-  const discoveryProducts = await fetchDiscoveryProductInfo(admin);
 
   const geocoded = rawCustomers
     .filter((c) => !isHoldout(c.id)) // structurally absent — never reaches the rest of the pipeline
@@ -169,14 +165,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
         productsAlreadyBought: [...productCounts.entries()]
           .map(([title, p]) => ({ title, ...p }))
           .sort((a, b) => b.quantity - a.quantity),
-        notYetBought: notYetBought.map((canonicalName) => {
-          const info = discoveryProducts.get(canonicalName);
-          return {
-            name: info?.title ?? titleCase(canonicalName),
-            price: info?.price ?? null,
-            imageUrl: info?.imageUrl ?? null,
-          };
-        }),
+        // Price/imageUrl always null (2026-08-18 incident): a live
+        // products() lookup needs read_products, which this app doesn't
+        // have — same class of scope gap as fulfillmentOrders. Same
+        // same-day-fix constraint (new scope = app-config change + shop
+        // re-consent), so this section shows name-only for now.
+        notYetBought: notYetBought.map((canonicalName) => ({
+          name: titleCase(canonicalName),
+          price: null as number | null,
+          imageUrl: null as string | null,
+        })),
       };
 
       return {
