@@ -75,8 +75,8 @@ export type RawCustomer = {
 // Order-level totalPriceSet/sourceName/app/customAttributes/shippingLines/
 // fulfillmentOrders and per-line-item originalUnitPriceSet/image added
 // 2026-08-18 for the richer modal (order history with delivery-method
-// badges, product prices/images) — see delivery-channel.ts and
-// discovery-products.ts for how these feed the loader.
+// badges, product prices/images) — see delivery-channel.ts for how these
+// feed the loader.
 //
 // INCIDENT (2026-08-18, ~1h outage): these additions pushed
 // requestedQueryCost to 1244 at the previous customers(first: 100) page
@@ -95,6 +95,12 @@ export type RawCustomer = {
 // app-config change plus the shop re-consenting, not a same-day fix.
 // Dropped the field; delivery-channel.ts now derives the badge from
 // shippingLines + the IGLU custom attribute instead (see its own comment).
+//
+// THIRD INCIDENT, same deploy: the "Ainda não experimentou" discovery
+// products also had a live products() lookup (discovery-products.ts, now
+// deleted) for image/price — hit "Access denied for products field", same
+// missing-scope story (read_products isn't granted either). That section
+// shows name-only until read_products is approved and re-consented.
 const QUERY = `#graphql
   query LiveCreditHolders($cursor: String) {
     customers(first: 30, after: $cursor, query: "${ARM_TAG_QUERY}") {
