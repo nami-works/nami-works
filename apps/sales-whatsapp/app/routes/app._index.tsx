@@ -325,14 +325,21 @@ export default function DailyWorklist() {
                   <s-table-cell>
                     {row.waMeLink ? (
                       <s-button
-                        href={row.waMeLink}
-                        target="_blank"
-                        onClick={() =>
+                        onClick={() => {
+                          // Explicit window.open + fetcher.submit, not
+                          // href+target — combining a native anchor href
+                          // with an onClick on the same element was flashing
+                          // a bare "200" in the embedded iframe before
+                          // landing correctly (2026-08-20, Lucas). Doing
+                          // both actions in JS avoids relying on the
+                          // browser/App Bridge's own anchor-navigation
+                          // handling inside the iframe.
+                          window.open(row.waMeLink!, "_blank", "noopener,noreferrer");
                           fetcher.submit(
                             { intent: "mark-contacted", customerGid: row.customerGid, locationKey: row.locationKey },
                             { method: "post" },
-                          )
-                        }
+                          );
+                        }}
                       >
                         Enviar
                       </s-button>
@@ -350,8 +357,8 @@ export default function DailyWorklist() {
       <s-modal id="customer-highlights" heading={highlightsRow?.name ?? "Cliente"}>
         {highlightsRow ? (
           <s-stack direction="block" gap="large">
-            <s-stack direction="inline" gap="base">
-              <s-box padding="small" borderWidth="base" borderRadius="base" inlineSize="100%">
+            <s-grid gridTemplateColumns="1fr 1fr 1fr" gap="base">
+              <s-box padding="small" borderWidth="base" borderRadius="base">
                 <s-stack direction="block" gap="small-100" alignItems="center">
                   <s-heading>{highlightsRow.highlights.numberOfOrders}</s-heading>
                   <s-text color="subdued">
@@ -359,13 +366,13 @@ export default function DailyWorklist() {
                   </s-text>
                 </s-stack>
               </s-box>
-              <s-box padding="small" borderWidth="base" borderRadius="base" inlineSize="100%">
+              <s-box padding="small" borderWidth="base" borderRadius="base">
                 <s-stack direction="block" gap="small-100" alignItems="center">
                   <s-heading>{brl(highlightsRow.highlights.amountSpent)}</s-heading>
                   <s-text color="subdued">Total gasto</s-text>
                 </s-stack>
               </s-box>
-              <s-box padding="small" borderWidth="base" borderRadius="base" inlineSize="100%">
+              <s-box padding="small" borderWidth="base" borderRadius="base">
                 <s-stack direction="block" gap="small-100" alignItems="center">
                   <s-heading>
                     {highlightsRow.highlights.lastOrderDate ? formatDateBr(highlightsRow.highlights.lastOrderDate) : "—"}
@@ -373,7 +380,7 @@ export default function DailyWorklist() {
                   <s-text color="subdued">Último pedido</s-text>
                 </s-stack>
               </s-box>
-            </s-stack>
+            </s-grid>
 
             <s-stack direction="block" gap="small">
               <s-heading>Pedidos</s-heading>
