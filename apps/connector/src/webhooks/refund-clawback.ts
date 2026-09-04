@@ -55,8 +55,25 @@ export async function handleRefundsCreateWebhook(
   const issuance = await prisma.justBoughtCreditIssuance.findUnique({
     where: { tenantId_shopifyOrderId: { tenantId: ctx.tenantId, shopifyOrderId: orderGid } },
   });
-  if (!issuance || issuance.status !== "issued" || issuance.reversedAt) {
-    // Never issued for this order (below floor, or no webhook history), or
+  if (!issuance) return; // no webhook history for this order
+
+  // Refunded during the 72h hold (2026-09-01): no Shopify credit was ever
+  // granted, so there's nothing to debit — just cancel the pending row
+  // before the sweep gets to it. Conditional update, same idempotency
+  // shape as the "issued" clawback below.
+  if (issuance.status === "pending_hold") {
+    const { count } = await prisma.justBoughtCreditIssuance.updateMany({
+      where: { tenantId: ctx.tenantId, shopifyOrderId: orderGid, status: "pending_hold" },
+      data: { status: "cancelled_before_issuance" },
+    });
+    if (count > 0) {
+      ctx.log.info({ orderGid }, "refunds/create: cancelled pending hold before issuance");
+    }
+    return;
+  }
+
+  if (issuance.status !== "issued" || issuance.reversedAt) {
+    // Never issued for this order (below floor, cancelled hold), or
     // already clawed back by a prior delivery of this same refund event.
     return;
   }

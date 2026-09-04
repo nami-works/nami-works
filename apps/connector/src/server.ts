@@ -8,6 +8,7 @@ import { mountLocalDeliveryRoutes } from "./local-delivery/index.js";
 import { mountTenantRoute } from "./mcp/transport.js";
 import { mountOAuthRoutes } from "./oauth/index.js";
 import { mountWebhookRoutes } from "./webhooks/index.js";
+import { processPendingCreditIssuances } from "./webhooks/process-pending-credit.js";
 // Side-effect import: registers every tool in the catalog at boot.
 import "./tools/index.js";
 
@@ -44,3 +45,14 @@ try {
   app.log.error(err);
   process.exit(1);
 }
+
+// 72h credit-issuance hold sweep (Lucas, 2026-09-01) — see
+// webhooks/process-pending-credit.ts. No separate cron/worker process for
+// connector, so this single long-lived server polls its own DB on an
+// interval instead. 15 minutes is plenty granular against a 72h window.
+const PENDING_CREDIT_SWEEP_INTERVAL_MS = 15 * 60 * 1000;
+setInterval(() => {
+  processPendingCreditIssuances(app.log).catch((err) => {
+    app.log.error(err, "[nami-works] pending-credit sweep failed");
+  });
+}, PENDING_CREDIT_SWEEP_INTERVAL_MS);
