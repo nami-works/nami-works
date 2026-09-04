@@ -6,15 +6,23 @@ status: in-progress
 priority: normal
 created: 2026-08-10
 target: null
-current_phase: 6-live-in-production
-next_blocker: watch a real (non-test) order flow through the live webhook before
-  deciding on phase 7 cutover — the Cowork poller is currently PAUSED (not disabled).
-  Resuming it risks double-crediting if a real order lands before it's re-paused;
-  leaving it paused risks a gap if the live webhook has a problem the contained test
-  didn't surface. Lucas's call which way to lean while watching.
-next_owner: lucas (decide poller pause/resume while watching the first live order,
-  then close out phases 7-8)
-pr: https://github.com/nami-works/nami-works/pull/98
+current_phase: 6b-hold-deployed
+next_blocker: PR #125 (2026-09-04) changed the webhook's own shape — orders/paid no
+  longer issues credit immediately, it now writes a pending_hold row (holdUntil = +72h)
+  and a 15-min sweep (process-pending-credit.ts) does the actual issuance later. Also
+  added: orders within 100km of a physical store, or picked up/sold in-store, always
+  get the 60-day arm (armForcedReason column audits this vs. the random 3-arm draw).
+  Deployed + migration applied to prod same day, health check clean, but NOT YET
+  watched end-to-end for a real order (the ~76h wait to confirm hold->sweep->issued
+  actually fires wasn't automatable — cloud routines can't reach the box with the
+  local SSH key, and a local Windows Scheduled Task / manual check was Lucas's call to
+  make later, not scheduled). Once ~76h have passed since 2026-09-04 deploy, check:
+  any JustBoughtCreditIssuance rows stuck in pending_hold past their holdUntil (sweep
+  not running), and confirm at least one row transitioned to issued with a real
+  Shopify credit grant. THEN still need the original phase-7 question below.
+next_owner: lucas or next session (check the hold/sweep pipeline once ~76h have
+  passed since the 2026-09-04 deploy; also still decide poller pause/resume, phases 7-8)
+pr: https://github.com/nami-works/nami-works/pull/98 (original webhook), https://github.com/nami-works/nami-works/pull/125 (100km-radius arm override + 72h hold)
 stakeholders:
   - GE Beauty customers receiving real-time cashback credit
   - Lucas (owns the hosting decision + deploy)
@@ -122,6 +130,17 @@ Lucas reopens it.
       go-live, not a test, since it now fires on every future real order automatically):
       `webhookSubscriptionCreate` → `gid://shopify/WebhookSubscription/1963781816640`,
       topic `ORDERS_PAID`, callback `https://mcp.gebeauty.com.br/gebeauty/webhooks/shopify/orders-paid`.
+- [x] 6b. **72h issuance hold + 100km-radius arm override, deployed 2026-09-04**
+      (PR #125). orders/paid now only decides the arm + writes `pending_hold`
+      (`holdUntil` = now + 72h); `process-pending-credit.ts`'s 15-min sweep does the
+      actual `storeCreditAccountCredit` + tag mutations once the hold elapses. Orders
+      within 100km of a physical GE Beauty store, or with no shipping address at all
+      (POS in-store / pickup — confirmed live: those orders always report
+      `shippingAddress: null`, `shippingLines: []`), always force the 60-day arm
+      (`armForcedReason` audits this). Refund during the hold now cancels the pending
+      row directly (`cancelled_before_issuance`) instead of issue-then-clawback.
+      Migration applied to prod (2,261 existing rows backfilled), container healthy,
+      246 connector tests pass. **Not yet watched end-to-end** — see next_blocker.
 - [ ] 7. Cutover: **don't disable the Cowork scheduled task yet.** It's currently
       PAUSED (from the smoke test), not disabled — resume it or leave paused is an open
       call. Before permanently disabling per the original phase-7 intent, watch at least
@@ -149,8 +168,11 @@ Lucas reopens it.
 
 ## Done means
 
-- A real order paid on the live store triggers credit issuance within seconds, verified
-  end to end, with zero reliance on the Cowork app being open.
+- A real order paid on the live store triggers the webhook within seconds (recording
+  the arm decision + hold), with zero reliance on the Cowork app being open. Actual
+  credit issuance is now intentionally delayed 72h (PR #125, 2026-09-04) — "done" no
+  longer means instant, it means the hold->sweep->issued path is CONFIRMED to complete
+  on its own, unattended, for a real order (see next_blocker above).
 - A duplicate webhook delivery for the same order provably does NOT issue credit twice
   (test this deliberately — replay a webhook payload and confirm the unique constraint
   blocks it).
