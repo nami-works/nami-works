@@ -19,8 +19,14 @@ it must not be guessable), value = JSON {"company": "<as typed>"}.
 `company` is what shows up in the access-notify/access-digest emails via
 the ?_co= tracking redirect the CloudFront Function adds.
 
+A token added with `add-silent` instead stores {"silent": true} (no
+"company") -- viewer-request.js skips the tracking redirect entirely for
+it, so there's no _co in the query, no log line, no notify/digest email.
+For a link Lucas wants to hand out with zero traceability.
+
 Usage:
   C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py add "<Company Name>"
+  C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py add-silent
   C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py remove "<Company Name>"   (or a token)
   C:/Python314/python.exe gebeauty/scripts/_b2b_manage_client_access.py list
 """
@@ -68,10 +74,11 @@ def gen_token(length=24):
 def all_entries(arn):
     for item in run("list-keys", "--kvs-arn", arn).get("Items", []):
         try:
-            company = json.loads(item["Value"]).get("company", "?")
+            record = json.loads(item["Value"])
+            label = "(silent -- no tracking)" if record.get("silent") else record.get("company", "?")
         except (KeyError, ValueError):
-            company = "?"
-        yield item["Key"], company
+            label = "?"
+        yield item["Key"], label
 
 
 def cmd_add(args):
@@ -88,6 +95,17 @@ def cmd_add(args):
     print(f"  Comercial: {DOMAIN}/comercial?k={token}")
     print(f"  Parceiros: {DOMAIN}/parceiros?k={token}")
     print("Send one of these links -- no separate credential to communicate.")
+
+
+def cmd_add_silent(_args):
+    token = gen_token()
+    arn = kvs_arn()
+    value = json.dumps({"silent": True})
+    run("put-key", "--kvs-arn", arn, "--key", token, "--value", value, "--if-match", etag(arn))
+
+    print("Added a silent (untracked) link -- no company name, no _co, no notify/digest email.")
+    print(f"  Comercial: {DOMAIN}/comercial?k={token}")
+    print(f"  Parceiros: {DOMAIN}/parceiros?k={token}")
 
 
 def cmd_remove(args):
@@ -120,8 +138,8 @@ def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
     action, args = sys.argv[1], sys.argv[2:]
-    {"add": cmd_add, "remove": cmd_remove, "list": cmd_list}.get(
-        action, lambda _: sys.exit(f"unknown command '{action}' -- use add|remove|list")
+    {"add": cmd_add, "add-silent": cmd_add_silent, "remove": cmd_remove, "list": cmd_list}.get(
+        action, lambda _: sys.exit(f"unknown command '{action}' -- use add|add-silent|remove|list")
     )(args)
 
 

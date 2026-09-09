@@ -13,7 +13,11 @@ import cf from 'cloudfront';
 //   direct browser testing -- no request even fires, no error, nothing).
 //   A plain ?k=token query param has none of that baggage.
 // - _co=<company> tracking redirect for the two deck roots lands in the
-//   real CloudFront access logs (used by access-notify/-digest).
+//   real CloudFront access logs (used by access-notify/-digest). A token
+//   stored as {"silent": true} (no "company") skips this entirely -- no
+//   redirect, no _co in the query, no log line an email could be built
+//   from, no notify/digest email. For links Lucas wants to hand out with
+//   zero traceability.
 // - Clean-URL rewrite: "/comercial" -> "/comercial/index.html".
 var OG_HEAD =
   '<title>GE Beauty: no seu tempo do seu jeito | Catálogo B2B</title>' +
@@ -52,19 +56,19 @@ async function handler(event) {
     } catch (e) {
       return deniedPageResponse(); // unknown token, or a malformed KVS entry
     }
-    if (!record || !record.company) return deniedPageResponse();
-    var company = record.company;
+    if (!record || (!record.company && !record.silent)) return deniedPageResponse();
 
     // Tracking redirect, once per deck root per link click. Preserves the
     // token so a second visit with the same bookmarked/shared link re-tracks.
-    if (!qs._co) {
+    // Skipped entirely for a silent token -- no redirect, no _co, no trace.
+    if (record.company && !qs._co) {
       var base = uri.endsWith('/') ? uri : uri + '/';
       return {
         statusCode: 302,
         statusDescription: 'Found',
         headers: {
           location: {
-            value: base + '?k=' + encodeURIComponent(token) + '&_co=' + encodeURIComponent(company),
+            value: base + '?k=' + encodeURIComponent(token) + '&_co=' + encodeURIComponent(record.company),
           },
         },
       };
