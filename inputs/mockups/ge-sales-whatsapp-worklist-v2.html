@@ -1,0 +1,644 @@
+<title>Worklist Redesign</title>
+<style>
+  :root {
+    --bg: #f6f6f7;
+    --surface: #ffffff;
+    --border: #e1e3e5;
+    --border-subtle: #f1f1f1;
+    --text: #303030;
+    --text-subdued: #6d7175;
+    --accent: #005bd3;
+    --accent-soft: #e8f1ff;
+    --shadow: rgba(0, 0, 0, 0.12);
+    --backdrop: rgba(0, 0, 0, 0.35);
+    --critical: #b8350f;
+    --critical-soft: #fbeae4;
+    --warning: #946200;
+    --warning-soft: #fbf2df;
+    --success: #0d6e4f;
+    --success-soft: #e3f5ec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1a1d1f;
+      --surface: #24272a;
+      --border: #3a3e42;
+      --border-subtle: #2e3134;
+      --text: #e8e9ea;
+      --text-subdued: #9aa0a6;
+      --accent: #5b9bf0;
+      --accent-soft: rgba(91, 155, 240, 0.16);
+      --shadow: rgba(0, 0, 0, 0.4);
+      --backdrop: rgba(0, 0, 0, 0.55);
+      --critical: #ff9b73;
+      --critical-soft: rgba(255, 155, 115, 0.14);
+      --warning: #e0b03f;
+      --warning-soft: rgba(224, 176, 63, 0.14);
+      --success: #5fcf9f;
+      --success-soft: rgba(95, 207, 159, 0.14);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1a1d1f;
+    --surface: #24272a;
+    --border: #3a3e42;
+    --border-subtle: #2e3134;
+    --text: #e8e9ea;
+    --text-subdued: #9aa0a6;
+    --accent: #5b9bf0;
+    --accent-soft: rgba(91, 155, 240, 0.16);
+    --shadow: rgba(0, 0, 0, 0.4);
+    --backdrop: rgba(0, 0, 0, 0.55);
+    --critical: #ff9b73;
+    --critical-soft: rgba(255, 155, 115, 0.14);
+    --warning: #e0b03f;
+    --warning-soft: rgba(224, 176, 63, 0.14);
+    --success: #5fcf9f;
+    --success-soft: rgba(95, 207, 159, 0.14);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 28px 20px 80px;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    text-wrap: balance;
+  }
+  h2.section-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 32px 0 10px;
+  }
+  .subtitle {
+    color: var(--text-subdued);
+    margin: 0 0 20px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 1px 2px var(--shadow);
+    overflow: hidden;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-subdued);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 10px 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  .customer-link {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+    font-weight: 500;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+  .customer-link:hover { text-decoration-color: var(--accent); }
+  .customer-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+  .city { color: var(--text-subdued); display: block; margin-top: 2px; font-size: 13px; }
+  .money { font-variant-numeric: tabular-nums; }
+
+  /* Tier badge — row-level proxy for RFM frequency, per crm-director consult.
+     Placeholder thresholds (1 order = Nova, 2-3 = Recorrente, 4+ = Fiel);
+     real cutoffs pending growth-analyst's order-count distribution. */
+  .tier-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .tier-badge.nova { color: var(--accent); background: var(--accent-soft); }
+  .tier-badge.recorrente { color: var(--warning); background: var(--warning-soft); }
+  .tier-badge.fiel { color: var(--success); background: var(--success-soft); }
+
+  /* Urgency cell — credit value + days-left read as one signal instead of
+     two separate columns a rep has to mentally combine. */
+  .urgency-amount { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .urgency-days {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-left: 8px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  .urgency-days.critical { color: var(--critical); background: var(--critical-soft); }
+  .urgency-days.warning { color: var(--warning); background: var(--warning-soft); }
+  .urgency-days.neutral { color: var(--text-subdued); background: var(--border-subtle); }
+  .urgency-date { color: var(--text-subdued); display: block; margin-top: 2px; font-size: 13px; }
+
+  /* Contact-status column replaces the old row-level Enviar button —
+     send now only happens from inside the modal (Lucas, anti-blind-send). */
+  .contact-empty { color: var(--text-subdued); font-size: 13px; }
+  .contact-sent {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--success);
+    background: var(--success-soft);
+    border-radius: 4px;
+    padding: 3px 8px;
+  }
+
+  /* --- Modal --- */
+  .backdrop {
+    position: fixed; inset: 0;
+    background: var(--backdrop);
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 24px;
+    z-index: 10;
+  }
+  .backdrop.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 520px;
+    max-height: min(700px, 90vh);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 16px 48px var(--shadow);
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+  }
+  .modal-header-name { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .modal-header h2 { margin: 0; font-size: 16px; font-weight: 600; }
+  .modal-close {
+    width: 28px; height: 28px;
+    display: grid; place-items: center;
+    border-radius: 6px;
+    border: none; background: none;
+    color: var(--text-subdued);
+    cursor: pointer;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .modal-close:hover { background: var(--bg); }
+
+  .modal-body { overflow-y: auto; padding: 14px 20px; }
+  .modal-footer {
+    flex-shrink: 0;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  /* Denser 2-column stat strip (was 3 full boxes with a lot of padding) —
+     urgency (credit+days) already lives in the row, so the modal leads
+     with pedidos/gasto instead of repeating it. */
+  .stat-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .stat {
+    background: var(--bg);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .stat-value { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stat-label { color: var(--text-subdued); font-size: 11px; margin-top: 1px; }
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-subdued);
+    margin: 14px 0 6px;
+  }
+  .section-label:first-of-type { margin-top: 0; }
+
+  .product-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .product-row:last-child { border-bottom: none; }
+  .thumb {
+    width: 36px; height: 36px;
+    border-radius: 7px;
+    flex-shrink: 0;
+    display: grid; place-items: center;
+    color: #fff;
+  }
+  .thumb svg { width: 17px; height: 17px; }
+  .product-info { flex: 1; min-width: 0; }
+  .product-name { font-weight: 500; font-size: 13px; }
+  .product-meta { color: var(--text-subdued); font-size: 12px; margin-top: 1px; }
+  .product-price { font-variant-numeric: tabular-nums; font-weight: 500; white-space: nowrap; font-size: 13px; }
+
+  .order-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 13px;
+  }
+  .order-row + .order-row { border-top: 1px solid var(--border-subtle); }
+  .order-date { color: var(--text-subdued); flex-shrink: 0; }
+  .order-channel { flex: 1; font-weight: 500; }
+  .channel-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .channel-tag.standard { color: var(--accent); background: var(--accent-soft); }
+  .channel-tag.local { color: #0d6e4f; background: color-mix(in srgb, #0d6e4f 14%, transparent); }
+  .channel-tag.pickup { color: #6b4fa0; background: color-mix(in srgb, #6b4fa0 14%, transparent); }
+  .channel-tag.instore { color: #8a5a1f; background: color-mix(in srgb, #8a5a1f 14%, transparent); }
+  .channel-tag.fallback { color: var(--text-subdued); background: var(--border-subtle); }
+  .order-total { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .discover-row .thumb { background: var(--accent-soft); color: var(--accent); }
+  .discover-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  /* Send button now lives ONLY here — the row's old Enviar button is gone.
+     This is the anti-blind-send mechanism: the modal is the sole trigger,
+     so a rep cannot message a customer without at least opening this view. */
+  .send-btn {
+    width: 100%;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+  }
+  .send-btn:hover { background: color-mix(in srgb, var(--accent) 88%, black); }
+  .send-btn.sent {
+    background: var(--success-soft);
+    color: var(--success);
+    cursor: default;
+  }
+
+  .notes-panel, .states-panel {
+    margin-top: 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+  }
+  .notes-panel h2, .states-panel h2 { font-size: 14px; margin: 0 0 10px; }
+  .notes-panel ul { margin: 0; padding-left: 18px; }
+  .notes-panel li { margin-bottom: 6px; }
+  .states-panel table { font-size: 12.5px; }
+  .states-panel th, .states-panel td { padding: 6px 10px; border: 1px solid var(--border-subtle); text-align: left; }
+  .states-panel th { background: var(--bg); }
+</style>
+
+<div class="page">
+  <h1>Beauty Back — worklist v2 (info hierarchy + anti-blind-send)</h1>
+  <p class="subtitle">
+    Clique em um nome para abrir o modal. O botão "Enviar" existe apenas dentro do modal —
+    não há mais ação de envio na linha da tabela.
+  </p>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Urgência</th>
+          <th>Repor / Descobrir</th>
+          <th>Contato</th>
+        </tr>
+      </thead>
+      <tbody id="worklist-body"></tbody>
+    </table>
+  </div>
+
+  <h2 class="section-title">Notas de design</h2>
+  <div class="notes-panel">
+    <ul>
+      <li><strong>Tier badge (Nova/Recorrente/Fiel)</strong> — proxy de frequência computado a partir de <code>numberOfOrders</code> já disponível hoje (não é o rfm_group real da Shopify, que não está conectado neste app). Consultado com o crm-director: quantas vezes a cliente já comprou é o fato que mais muda o TOM da abordagem — cliente nova recebe boas-vindas, cliente fiel recebe reconhecimento. Limiares hoje: 1 pedido = Nova, 2-3 = Recorrente, 4+ = Fiel — placeholders, a confirmar com dados reais do growth-analyst.</li>
+      <li><strong>Coluna "Urgência" une crédito + dias restantes</strong> em um único sinal visual, com cor por faixa (crítico &lt;7 dias, atenção 7-15, neutro acima disso) — antes eram duas colunas que a vendedora precisava combinar mentalmente.</li>
+      <li><strong>Coluna WhatsApp removida da linha.</strong> Vira "Contato": vazio até o envio, badge "Enviado" depois. O botão Enviar real fica só dentro do modal — ver Estados abaixo.</li>
+      <li><strong>Modal mais denso:</strong> stat-strip 2 colunas (pedidos/gasto — a urgência já está na linha, não repete aqui), paddings menores, thumbs 36px (eram 44px).</li>
+      <li><strong>"Ainda não experimentou" sem imagem/preço</strong> continua assim nesta rodada — limitação de escopo (read_products) documentada em discovery-products.ts / delivery-channel.ts, não é uma escolha de design.</li>
+    </ul>
+  </div>
+
+  <h2 class="section-title">Estados (Fase 3.5)</h2>
+  <div class="states-panel">
+    <table>
+      <thead>
+        <tr><th>Estado</th><th>Linha: nome</th><th>Linha: Contato</th><th>Modal: botão Enviar</th><th>Modal: confirmação</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Não contatada, modal fechado</td><td>visível, clicável</td><td>vazio</td><td>n/a</td><td>n/a</td></tr>
+        <tr><td>Não contatada, modal aberto</td><td>visível</td><td>vazio</td><td>visível, habilitado</td><td>oculta</td></tr>
+        <tr><td>Envio em andamento (clique no Enviar)</td><td>visível</td><td>vazio</td><td>visível, desabilitado (breve)</td><td>oculta</td></tr>
+        <tr><td>Enviada nesta sessão, modal aberto</td><td>visível</td><td>badge "Enviado"</td><td>oculto</td><td>visível ("Mensagem enviada")</td></tr>
+        <tr><td>Enviada, modal reaberto depois</td><td>visível</td><td>badge "Enviado"</td><td>oculto</td><td>visível</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="section-title">Questões em aberto</h2>
+  <div class="notes-panel">
+    <ul>
+      <li>Limiares reais de Nova/Recorrente/Fiel — pendente distribuição real do growth-analyst (aprovado seguir com placeholder por ora).</li>
+      <li>Faixas de urgência (7 / 15 dias) são um chute razoável, não validadas com o time comercial — confirmar se batem com o ritmo real de venda.</li>
+      <li>Modal fecha sozinho após o envio, ou fica aberto até a vendedora fechar manualmente? Mockup atual: fica aberto, mostrando a confirmação — mais fácil de conferir o que foi dito, mas um clique a mais para voltar à lista.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="backdrop" id="backdrop">
+  <div class="modal" role="dialog" aria-label="Detalhes do cliente">
+    <div class="modal-header">
+      <div class="modal-header-name">
+        <h2 id="modal-name">Carolina Russo</h2>
+        <span class="tier-badge" id="modal-tier"></span>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <!-- filled by JS -->
+    </div>
+    <div class="modal-footer" id="modal-footer">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
+<script>
+  const ICONS = {
+    mist: '<svg viewBox="0 0 24 24" fill="none"><path d="M8 3h8v3l2 2v13H6V8l2-2V3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 3h6" stroke="currentColor" stroke-width="1.6"/></svg>',
+    mask: '<svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="7" ry="8" stroke="currentColor" stroke-width="1.6"/><path d="M9 8c0-1.5 1-3 3-3s3 1.5 3 3" stroke="currentColor" stroke-width="1.6"/></svg>',
+    bottle: '<svg viewBox="0 0 24 24" fill="none"><rect x="7" y="9" width="10" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M10 9V5a2 2 0 0 1 2-2 2 2 0 0 1 2 2v4" stroke="currentColor" stroke-width="1.6"/></svg>',
+    drop: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  };
+
+  const CHANNEL_LABELS = {
+    standard: "Entrega padrão",
+    local: "Entrega local",
+    pickup: "Retirada em loja",
+    instore: "Em loja",
+    fallback: "Delivery",
+  };
+
+  const CUSTOMERS = {
+    carolina: {
+      name: "Carolina Russo", city: "São Paulo · Shops Jardins",
+      orders: 2, spent: "555,60", lastOrder: "07/08",
+      credit: "65,58", days: 21, expiry: "08 de setembro",
+      repor: "máscara condicionadora", descobrir: "melon mood mist",
+      sent: false,
+      orderHistory: [
+        { date: "07/08", channel: "Correios", type: "standard", total: "89,90" },
+        { date: "12/06", channel: "Shops Jardins", type: "instore", total: "465,70" },
+      ],
+      bought: [
+        { icon: "mask", color: "#c26a3f", name: "Máscara Condicionadora", meta: "1x · 07/08", price: "89,90" },
+        { icon: "mask", color: "#8f6ba8", name: "Máscara Mayday", meta: "1x · 12/06", price: "94,90" },
+        { icon: "mist", color: "#3f8f6e", name: "Rose Ritual | Body & Hair Mist", meta: "2x · 12/06", price: "69,90" },
+      ],
+      discover: [
+        { icon: "mist", name: "Melon Mood Mist", price: "69,90" },
+        { icon: "drop", name: "Leave-in Pluma", price: "74,90" },
+        { icon: "bottle", name: "Booster Antifrizz", price: "84,90" },
+      ],
+    },
+    maria: {
+      name: "Maria Luisa Braga Pessanha", city: "Rio de Janeiro · RioSul",
+      orders: 4, spent: "812,30", lastOrder: "22/07",
+      credit: "68,40", days: 23, expiry: "10 de setembro",
+      repor: "shampoo sem sulfato", descobrir: "melon mood mist",
+      sent: false,
+      orderHistory: [
+        { date: "22/07", channel: "Lalamove", type: "local", total: "219,70" },
+        { date: "03/05", channel: "Goodwill", type: "instore", total: "159,80" },
+        { date: "14/03", channel: "Total Express", type: "standard", total: "199,90" },
+        { date: "02/02", channel: "Extrema", type: "pickup", total: "232,90" },
+      ],
+      bought: [
+        { icon: "bottle", color: "#c26a3f", name: "Shampoo Sem Sulfato", meta: "3x · 22/07", price: "59,90" },
+        { icon: "drop", color: "#3f6ea8", name: "Primer Cachos Definidos", meta: "1x · 22/07", price: "79,90" },
+        { icon: "mist", color: "#3f8f6e", name: "Melon Mood Mist", meta: "1x · 03/05", price: "69,90" },
+        { icon: "mask", color: "#8f6ba8", name: "Máscara Condicionadora", meta: "2x · 03/05", price: "89,90" },
+      ],
+      discover: [
+        { icon: "drop", name: "Leave-in Pluma", price: "74,90" },
+        { icon: "bottle", name: "Booster Antifrizz", price: "84,90" },
+      ],
+    },
+    fernanda: {
+      name: "Fernanda Lopes", city: "São Paulo · Shops Jardins",
+      orders: 1, spent: "94,90", lastOrder: "28/08",
+      credit: "23,72", days: 4, expiry: "05 de setembro",
+      repor: null, descobrir: "melon mood mist",
+      sent: true,
+      orderHistory: [
+        { date: "28/08", channel: "Correios", type: "standard", total: "94,90" },
+      ],
+      bought: [
+        { icon: "mask", color: "#c26a3f", name: "Máscara Mayday", meta: "1x · 28/08", price: "94,90" },
+      ],
+      discover: [
+        { icon: "mist", name: "Melon Mood Mist", price: "69,90" },
+        { icon: "drop", name: "Leave-in Pluma", price: "74,90" },
+        { icon: "bottle", name: "Booster Antifrizz", price: "84,90" },
+      ],
+    },
+    juliana: {
+      name: "Juliana Prado", city: "Belo Horizonte · Shopping Recife",
+      orders: 3, spent: "298,40", lastOrder: "15/08",
+      credit: "41,10", days: 10, expiry: "11 de setembro",
+      repor: "booster antifrizz", descobrir: "leave-in pluma",
+      sent: false,
+      orderHistory: [
+        { date: "15/08", channel: "Total Express", type: "standard", total: "108,50" },
+        { date: "20/06", channel: "Shopping Recife", type: "instore", total: "94,90" },
+        { date: "02/04", channel: "Correios", type: "standard", total: "95,00" },
+      ],
+      bought: [
+        { icon: "bottle", color: "#c26a3f", name: "Booster Antifrizz", meta: "1x · 15/08", price: "67,15" },
+        { icon: "mask", color: "#8f6ba8", name: "Máscara Condicionadora", meta: "1x · 20/06", price: "89,90" },
+      ],
+      discover: [
+        { icon: "drop", name: "Leave-in Pluma", price: "74,90" },
+        { icon: "mist", name: "Melon Mood Mist", price: "69,90" },
+      ],
+    },
+  };
+
+  function tierFor(orders) {
+    if (orders <= 1) return { label: "Nova", cls: "nova" };
+    if (orders <= 3) return { label: "Recorrente", cls: "recorrente" };
+    return { label: "Fiel", cls: "fiel" };
+  }
+  function urgencyFor(days) {
+    if (days <= 6) return "critical";
+    if (days <= 15) return "warning";
+    return "neutral";
+  }
+
+  function renderWorklist() {
+    const rows = Object.entries(CUSTOMERS).map(([key, c]) => {
+      const tier = tierFor(c.orders);
+      const u = urgencyFor(c.days);
+      const contact = c.sent
+        ? `<span class="contact-sent">✓ Enviado</span>`
+        : `<span class="contact-empty">—</span>`;
+      return `
+        <tr>
+          <td>
+            <button class="customer-link" onclick="openModal('${key}')">${c.name}</button>
+            <span class="tier-badge ${tier.cls}">${tier.label}</span>
+            <span class="city">${c.city}</span>
+          </td>
+          <td>
+            <span class="urgency-amount money">R$ ${c.credit}</span>
+            <span class="urgency-days ${u}">${c.days} dias</span>
+            <span class="urgency-date">${c.expiry}</span>
+          </td>
+          <td>
+            ${c.repor ? `Repor: ${c.repor}<br>` : ""}Descobrir: ${c.descobrir}
+          </td>
+          <td>${contact}</td>
+        </tr>`;
+    });
+    document.getElementById("worklist-body").innerHTML = rows.join("");
+  }
+
+  function productRow(p, isDiscover) {
+    const bg = isDiscover ? "" : `style="background:${p.color}"`;
+    const cls = isDiscover ? "discover-row" : "";
+    return `
+      <div class="product-row ${cls}">
+        <div class="thumb" ${bg}>${ICONS[p.icon]}</div>
+        <div class="product-info">
+          <div class="product-name">${p.name}</div>
+          ${p.meta ? `<div class="product-meta">${p.meta}</div>` : ""}
+        </div>
+        <div class="product-price">R$ ${p.price}</div>
+      </div>`;
+  }
+
+  function orderRow(o) {
+    return `
+      <div class="order-row">
+        <span class="order-date">${o.date}</span>
+        <span class="order-channel">${o.channel}<span class="channel-tag ${o.type}">${CHANNEL_LABELS[o.type]}</span></span>
+        <span class="order-total money">R$ ${o.total}</span>
+      </div>`;
+  }
+
+  function renderFooter(key) {
+    const c = CUSTOMERS[key];
+    const footer = document.getElementById("modal-footer");
+    if (c.sent) {
+      footer.innerHTML = `<button class="send-btn sent" disabled>✓ Mensagem enviada</button>`;
+    } else {
+      footer.innerHTML = `<button class="send-btn" onclick="sendMessage('${key}')">Enviar mensagem no WhatsApp</button>`;
+    }
+  }
+
+  function openModal(key) {
+    const c = CUSTOMERS[key];
+    const tier = tierFor(c.orders);
+    document.getElementById("modal-name").textContent = c.name;
+    const tierEl = document.getElementById("modal-tier");
+    tierEl.textContent = tier.label;
+    tierEl.className = `tier-badge ${tier.cls}`;
+    document.getElementById("modal-body").innerHTML = `
+      <div class="stat-strip">
+        <div class="stat"><div class="stat-value">${c.orders}</div><div class="stat-label">Pedidos</div></div>
+        <div class="stat"><div class="stat-value">R$ ${c.spent}</div><div class="stat-label">Total gasto</div></div>
+      </div>
+      <div class="section-label">Pedidos</div>
+      ${c.orderHistory.map(orderRow).join("")}
+      <div class="section-label">Produtos já comprados</div>
+      ${c.bought.map((p) => productRow(p, false)).join("")}
+      <div class="section-label">Ainda não experimentou <span class="discover-tag">sugestão</span></div>
+      ${c.discover.map((p) => productRow(p, true)).join("")}
+    `;
+    renderFooter(key);
+    document.getElementById("backdrop").classList.add("open");
+  }
+  function closeModal() {
+    document.getElementById("backdrop").classList.remove("open");
+  }
+  function sendMessage(key) {
+    CUSTOMERS[key].sent = true;
+    renderFooter(key);
+    renderWorklist();
+    // Real behavior: window.open(waMeLink) + fetcher.submit(mark-contacted) here.
+  }
+  document.getElementById("backdrop").addEventListener("click", (e) => {
+    if (e.target.id === "backdrop") closeModal();
+  });
+
+  renderWorklist();
+  openModal("carolina");
+</script>

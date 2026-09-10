@@ -6,22 +6,16 @@ status: in-progress
 priority: normal
 created: 2026-08-10
 target: null
-current_phase: 6b-hold-deployed
-next_blocker: PR #125 (2026-09-04) changed the webhook's own shape — orders/paid no
-  longer issues credit immediately, it now writes a pending_hold row (holdUntil = +72h)
-  and a 15-min sweep (process-pending-credit.ts) does the actual issuance later. Also
-  added: orders within 100km of a physical store, or picked up/sold in-store, always
-  get the 60-day arm (armForcedReason column audits this vs. the random 3-arm draw).
-  Deployed + migration applied to prod same day, health check clean, but NOT YET
-  watched end-to-end for a real order (the ~76h wait to confirm hold->sweep->issued
-  actually fires wasn't automatable — cloud routines can't reach the box with the
-  local SSH key, and a local Windows Scheduled Task / manual check was Lucas's call to
-  make later, not scheduled). Once ~76h have passed since 2026-09-04 deploy, check:
-  any JustBoughtCreditIssuance rows stuck in pending_hold past their holdUntil (sweep
-  not running), and confirm at least one row transitioned to issued with a real
-  Shopify credit grant. THEN still need the original phase-7 question below.
-next_owner: lucas or next session (check the hold/sweep pipeline once ~76h have
-  passed since the 2026-09-04 deploy; also still decide poller pause/resume, phases 7-8)
+current_phase: 6c-hold-verified
+next_blocker: hold->sweep->issued pipeline VERIFIED HEALTHY 2026-09-10 (checked at
+  session start of the store-credit-automation handoff): 389 real orders issued
+  cleanly since the 2026-09-04 deploy, 4 refunds-during-hold correctly cancelled
+  (cancelled_before_issuance, no debit needed since nothing was granted yet), 0 rows
+  stuck past their holdUntil, 0 "issuance failed" errors in 72h of logs. PR #125 is
+  fully proven in production. Only the original phase-7 question remains: decide
+  poller pause/resume (Cowork `issue-just-bought-credit` task, currently PAUSED) and
+  close phases 7-8.
+next_owner: lucas (decide poller pause/resume, then close phases 7-8)
 pr: https://github.com/nami-works/nami-works/pull/98 (original webhook), https://github.com/nami-works/nami-works/pull/125 (100km-radius arm override + 72h hold)
 stakeholders:
   - GE Beauty customers receiving real-time cashback credit

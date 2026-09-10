@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { isRouteErrorResponse, useLoaderData, useFetcher, useRouteError } from "react-router";
-import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
+import type { LoaderFunctionArgs, ActionFunctionArgs, ShouldRevalidateFunctionArgs } from "react-router";
 import { authenticate } from "../shopify.server.js";
 import prisma from "../db.server.js";
 import { grantedLocationsForSession, repEmailFromSession, UnauthorizedLocationError } from "../lib/auth.js";
@@ -14,6 +14,20 @@ import { fetchLiveCreditHolders } from "../lib/live-credit-holders.js";
 import { resolveJustBoughtExpiry } from "../lib/credit-expiry.js";
 import { titleCase } from "../lib/title-case.js";
 import { resolveChannel, CHANNEL_BADGE_TONE } from "../lib/delivery-channel.js";
+import { tierFor, urgencyFor, TIER_LABELS, type CustomerTier, type UrgencyBand } from "../lib/customer-tier.js";
+
+// Worklist v2 redesign (2026-09-01), per inputs/mockups/ge-sales-whatsapp-worklist-v2.html
+// (approved by Lucas) — s-badge's fixed tone set, reused for both signals.
+const TIER_BADGE_TONE: Record<CustomerTier, "info" | "warning" | "success"> = {
+  nova: "info",
+  recorrente: "warning",
+  fiel: "success",
+};
+const URGENCY_BADGE_TONE: Record<UrgencyBand, "critical" | "warning" | "neutral"> = {
+  critical: "critical",
+  warning: "warning",
+  neutral: "neutral",
+};
 
 // Daily capacity cap per location — reps can't work an unbounded list.
 // Not yet confirmed with Lucas as a specific number; 40 is a placeholder
@@ -275,11 +289,48 @@ export async function action({ request }: ActionFunctionArgs) {
   return { ok: false, error: "unknown intent" };
 }
 
+// PERF (2026-08-25): React Router revalidates every loader on the page
+// after any fetcher submission to this route by default — that meant
+// clicking "Enviar" re-ran the full ~15-30s live Shopify fetch just to
+// record one mark-contacted event. mark-contacted/skip don't need a fresh
+// worklist: the sent/skipped row is handled optimistically client-side
+// (see sentGids in the component below), and the real removal (via
+// openContactsLookbackCutoff filtering) naturally happens on the next
+// actual page load.
+export function shouldRevalidate({ formData, defaultShouldRevalidate }: ShouldRevalidateFunctionArgs) {
+  const intent = formData?.get("intent");
+  if (intent === "mark-contacted" || intent === "skip") return false;
+  return defaultShouldRevalidate;
+}
+
 export default function DailyWorklist() {
   const { worklist } = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
   const [highlightsGid, setHighlightsGid] = useState<string | null>(null);
   const highlightsRow = worklist.find((w) => w.customerGid === highlightsGid) ?? null;
+  // Optimistic mark-contacted state — since shouldRevalidate skips the
+  // loader re-fetch on send (see above), this is what actually updates
+  // the row's WhatsApp cell right away instead of waiting on a real reload.
+  const [sentGids, setSentGids] = useState<Set<string>>(new Set());
+
+  // The only place a WhatsApp send can be triggered from — moved out of the
+  // row and into the modal's primary action (Lucas, 2026-09-01): a rep can
+  // no longer message a customer without opening their history first.
+  function sendToCustomer(row: (typeof worklist)[number]) {
+    // Explicit window.open + fetcher.submit, not href+target — combining a
+    // native anchor href with an onClick on the same element was flashing a
+    // bare "200" in the embedded iframe before landing correctly
+    // (2026-08-20, Lucas). Doing both actions in JS avoids relying on the
+    // browser/App Bridge's own anchor-navigation handling inside the iframe.
+    window.open(row.waMeLink!, "_blank", "noopener,noreferrer");
+    fetcher.submit(
+      { intent: "mark-contacted", customerGid: row.customerGid, locationKey: row.locationKey },
+      { method: "post" },
+    );
+    // Optimistic — shouldRevalidate skips the reload this would otherwise
+    // trigger, see above.
+    setSentGids((prev) => new Set(prev).add(row.customerGid));
+  }
 
   function openHighlights(gid: string) {
     setHighlightsGid(gid);
@@ -297,58 +348,46 @@ export default function DailyWorklist() {
           <s-table>
             <s-table-header-row>
               <s-table-header>Cliente</s-table-header>
-              <s-table-header>Crédito</s-table-header>
-              <s-table-header>Vence em</s-table-header>
+              <s-table-header>Urgência</s-table-header>
               <s-table-header>Repor / Descobrir</s-table-header>
-              <s-table-header>WhatsApp</s-table-header>
+              <s-table-header>Contato</s-table-header>
             </s-table-header-row>
             <s-table-body>
-              {worklist.map((row) => (
-                <s-table-row key={row.customerGid}>
-                  <s-table-cell>
-                    <s-link onClick={() => openHighlights(row.customerGid)}>{row.name}</s-link>
-                    <br />
-                    <s-text color="subdued">
-                      {row.city} · {row.locationLabel}
-                    </s-text>
-                  </s-table-cell>
-                  <s-table-cell>{brl(row.creditBalance)}</s-table-cell>
-                  <s-table-cell>
-                    {row.daysUntilExpiry} dias
-                    <br />
-                    <s-text color="subdued">{formatDateBrLong(row.creditExpiresAt)}</s-text>
-                  </s-table-cell>
-                  <s-table-cell>
-                    {row.repor ? <>Repor: {row.repor}</> : null}
-                    {row.descobrir ? <>{row.repor ? <br /> : null}Descobrir: {row.descobrir}</> : null}
-                  </s-table-cell>
-                  <s-table-cell>
-                    {row.waMeLink ? (
-                      <s-button
-                        onClick={() => {
-                          // Explicit window.open + fetcher.submit, not
-                          // href+target — combining a native anchor href
-                          // with an onClick on the same element was flashing
-                          // a bare "200" in the embedded iframe before
-                          // landing correctly (2026-08-20, Lucas). Doing
-                          // both actions in JS avoids relying on the
-                          // browser/App Bridge's own anchor-navigation
-                          // handling inside the iframe.
-                          window.open(row.waMeLink!, "_blank", "noopener,noreferrer");
-                          fetcher.submit(
-                            { intent: "mark-contacted", customerGid: row.customerGid, locationKey: row.locationKey },
-                            { method: "post" },
-                          );
-                        }}
-                      >
-                        Enviar
-                      </s-button>
-                    ) : (
-                      <s-badge tone="neutral">sem telefone</s-badge>
-                    )}
-                  </s-table-cell>
-                </s-table-row>
-              ))}
+              {worklist.map((row) => {
+                const tier = tierFor(row.highlights.numberOfOrders);
+                const urgency = urgencyFor(row.daysUntilExpiry);
+                return (
+                  <s-table-row key={row.customerGid}>
+                    <s-table-cell>
+                      <s-link onClick={() => openHighlights(row.customerGid)}>{row.name}</s-link>
+                      <s-badge tone={TIER_BADGE_TONE[tier]}>{TIER_LABELS[tier]}</s-badge>
+                      <br />
+                      <s-text color="subdued">
+                        {row.city} · {row.locationLabel}
+                      </s-text>
+                    </s-table-cell>
+                    <s-table-cell>
+                      <s-text type="strong">{brl(row.creditBalance)}</s-text>{" "}
+                      <s-badge tone={URGENCY_BADGE_TONE[urgency]}>{row.daysUntilExpiry} dias</s-badge>
+                      <br />
+                      <s-text color="subdued">{formatDateBrLong(row.creditExpiresAt)}</s-text>
+                    </s-table-cell>
+                    <s-table-cell>
+                      {row.repor ? <>Repor: {row.repor}</> : null}
+                      {row.descobrir ? <>{row.repor ? <br /> : null}Descobrir: {row.descobrir}</> : null}
+                    </s-table-cell>
+                    <s-table-cell>
+                      {sentGids.has(row.customerGid) ? (
+                        <s-badge tone="success">Enviado</s-badge>
+                      ) : row.waMeLink ? (
+                        <s-text color="subdued">—</s-text>
+                      ) : (
+                        <s-badge tone="neutral">sem telefone</s-badge>
+                      )}
+                    </s-table-cell>
+                  </s-table-row>
+                );
+              })}
             </s-table-body>
           </s-table>
         )}
@@ -357,7 +396,10 @@ export default function DailyWorklist() {
       <s-modal id="customer-highlights" heading={highlightsRow?.name ?? "Cliente"}>
         {highlightsRow ? (
           <s-stack direction="block" gap="large">
-            <s-grid gridTemplateColumns="1fr 1fr 1fr" gap="base">
+            <s-badge tone={TIER_BADGE_TONE[tierFor(highlightsRow.highlights.numberOfOrders)]}>
+              {TIER_LABELS[tierFor(highlightsRow.highlights.numberOfOrders)]}
+            </s-badge>
+            <s-grid gridTemplateColumns="1fr 1fr" gap="base">
               <s-box padding="small" borderWidth="base" borderRadius="base">
                 <s-stack direction="block" gap="small-100" alignItems="center">
                   <s-heading>{highlightsRow.highlights.numberOfOrders}</s-heading>
@@ -370,14 +412,6 @@ export default function DailyWorklist() {
                 <s-stack direction="block" gap="small-100" alignItems="center">
                   <s-heading>{brl(highlightsRow.highlights.amountSpent)}</s-heading>
                   <s-text color="subdued">Total gasto</s-text>
-                </s-stack>
-              </s-box>
-              <s-box padding="small" borderWidth="base" borderRadius="base">
-                <s-stack direction="block" gap="small-100" alignItems="center">
-                  <s-heading>
-                    {highlightsRow.highlights.lastOrderDate ? formatDateBr(highlightsRow.highlights.lastOrderDate) : "—"}
-                  </s-heading>
-                  <s-text color="subdued">Último pedido</s-text>
                 </s-stack>
               </s-box>
             </s-grid>
@@ -441,6 +475,21 @@ export default function DailyWorklist() {
               )}
             </s-stack>
           </s-stack>
+        ) : null}
+        {highlightsRow ? (
+          sentGids.has(highlightsRow.customerGid) ? (
+            <s-button slot="primary-action" variant="primary" disabled>
+              ✓ Mensagem enviada
+            </s-button>
+          ) : highlightsRow.waMeLink ? (
+            <s-button slot="primary-action" variant="primary" onClick={() => sendToCustomer(highlightsRow)}>
+              Enviar mensagem no WhatsApp
+            </s-button>
+          ) : (
+            <s-button slot="primary-action" variant="primary" disabled>
+              Sem telefone cadastrado
+            </s-button>
+          )
         ) : null}
       </s-modal>
     </s-page>
