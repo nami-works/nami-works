@@ -1,17 +1,20 @@
 """Derive a NEUTRAL, share-safe product portfolio from the B2B sales deck.
 Strips the wholesale sales-pitch sections + neutralizes pitchy copy, so it can go
 to partner brands (that want to buy products or use them in campaigns/marketing).
-Source: inputs/mockups/gebeauty-b2b-portfolio-v3.html
+Source: inputs/mockups/gebeauty-b2b-portfolio-v6.html
 Output: inputs/mockups/gebeauty-portfolio-neutral-v1.html
 """
 import re
 from pathlib import Path
 
 MOCK = Path(__file__).resolve().parents[1].parent / "inputs" / "mockups"
-src = (MOCK / "gebeauty-b2b-portfolio-v3.html").read_text(encoding="utf-8")
+src = (MOCK / "gebeauty-b2b-portfolio-v6.html").read_text(encoding="utf-8")
 html = src
 
 # 1) remove the sales-pitch + placeholder sections (flat, non-nested)
+# "fundadora" reports MISS(0) as of v6 -- the section is commented out /
+# unbuilt pending Camila Coutinho's quote+portrait (see handoff §11), not an
+# error. Kept in the list so removal fires automatically once it's restored.
 REMOVE_IDS = ["diferencial", "marca", "fundadora", "mercado", "parceria", "contato"]
 for sid in REMOVE_IDS:
     new, n = re.subn(r'<section[^>]*id="' + sid + r'"[\s\S]*?</section>\s*', "", html)
@@ -24,29 +27,24 @@ print(f"remove footer: {'OK' if _nf == 1 else 'MISS(' + str(_nf) + ')'}")
 # 2) neutralize copy (old -> new). Report any miss.
 REPL = [
     (r'<title>[\s\S]*?</title>', '<title>GE Beauty · Portfólio de Produtos</title>'),
-    ('<h1 class="gbb-rv">Beleza capilar<br><span class="thin">que a sua cliente</span><br>já procura.</h1>', ''),
+    ('<h1 class="gbb-rv">Beleza<br><span class="thin">que a cliente</span><br>já procura.</h1>', ''),
     ('Apresentação de portfólio para parceiros de varejo. Cinco linhas, um cuidado completo, do dia a dia ao tratamento intensivo.',
      'Cinco linhas, um cuidado completo, do dia a dia ao tratamento intensivo. Conheça os produtos GE Beauty.'),
-    ('para ampliar a prateleira de maior recompra.', 'para o cabelo e o corpo.'),
-    ('<h2 class="gbb-rv">Adicione a GE Beauty ao seu portfólio de haircare premium.</h2>',
-     '<h2 class="gbb-rv">Fale com a GE Beauty.</h2>'),
-    ('Receba a tabela de atacado, condições comerciais e a proposta de sortimento ideal para o seu canal.',
-     'Para compras, campanhas ou parcerias de marketing, entre em contato com o nosso time.'),
-    ('>Solicitar acesso e condições<', '>Entrar em contato<'),
-    (' Condições de atacado sob proposta comercial.', ''),
-    ('PVS = preço sugerido de venda ao consumidor. Condições de atacado, sortimento e logística sob proposta comercial.',
-     'PVS = preço sugerido de venda ao consumidor.'),
+    # NOTE: v3-era CTA/#contato copy swaps ("para ampliar a prateleira...",
+    # "Adicione a GE Beauty...", "Solicitar acesso e condições", the PVS
+    # disclaimer) are gone as of v6 — that content lived entirely inside the
+    # #contato section, already deleted by the REMOVE_IDS pass above. No-op
+    # entries removed rather than left as permanent MISS noise.
     ('Bruma perfumada para cabelo e corpo. Fragrância que permanece e brilho sem peso. A categoria de maior apelo sensorial e recompra do portfólio.',
      'Bruma perfumada para cabelo e corpo. Fragrância que permanece e brilho sem peso.'),
     ('Os heróis da marca em formato de bolsa. Ideais para presentear, experimentar e girar no PDV com baixo investimento por unidade.',
      'Os heróis da marca em formato de bolsa. Ideais para presentear e experimentar.'),
     # partner version: move price off the card face, into the expandable detail
-    ('<div class="gbb-meta"><div class="gbb-pvs">${money(p.pvs)}</div><span class="gbb-more">',
-     '<div class="gbb-meta"><span class="gbb-more">'),
-    ('<div class="gbb-detail-in"><p>${p.note}</p>',
-     '<div class="gbb-detail-in"><div class="gbb-pvs det">${money(p.pvs)}</div><p>${p.note}</p>'),
-    ('.gbb-detail-in{padding:14px 17px 16px}',
-     '.gbb-detail-in{padding:14px 17px 16px}.gbb-pvs.det{text-align:left;margin:0 0 10px}'),
+    # v5+ moved from an inline expand-card to a quick-view modal (gmPvs already
+    # shows price on open) — so "move price off the card face" now means just
+    # dropping it from the card template; the modal keeps it, unchanged.
+    ('<div class="gbb-meta"><div class="gbb-pvs">${money(p.pvs)}</div><span class="gbb-more" aria-hidden="true">',
+     '<div class="gbb-meta"><span class="gbb-more" aria-hidden="true">'),
     # partner cover: no H1, portfolio image stretches full width below the text
     ('</style>',
      '#capa{display:block;min-height:auto;padding:88px 0 0}'

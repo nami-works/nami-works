@@ -116,6 +116,17 @@ nami/site/infra/terraform/terraform.tfstate.*.backup
 nami/site/infra/terraform/terraform.tfvars
 nami/site/infra/terraform/lambda/lead-intake.zip
 
+# Terraform — b2b.gebeauty.com.br site
+gebeauty/b2b-site/infra/terraform/.terraform/
+gebeauty/b2b-site/infra/terraform/*.tfplan
+gebeauty/b2b-site/infra/terraform/terraform.tfstate
+gebeauty/b2b-site/infra/terraform/terraform.tfstate.backup
+gebeauty/b2b-site/infra/terraform/terraform.tfstate.*.backup
+gebeauty/b2b-site/infra/terraform/terraform.tfvars
+gebeauty/b2b-site/infra/terraform/*.auto.tfvars
+gebeauty/b2b-site/infra/terraform/lambda/access-notify.zip
+gebeauty/b2b-site/infra/terraform/lambda/access-digest.zip
+
 # Large files (GitHub 100MB limit)
 apps/omnify-admin/public/screencast.mp4
 .knowledge/*.pdf

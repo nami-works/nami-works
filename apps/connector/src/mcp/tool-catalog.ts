@@ -128,6 +128,8 @@ export const TOOL_CATALOG: Record<string, ToolCatalogEntry> = {
   // --- loox (customer reviews / UGC → content) — gated under the brand system ---
   loox_list_reviews: { system: "brand", write: false },
 
+  shopify_write_page: { system: "brand", write: true },
+
   // --- affiliates ---
   affiliates_list_profiles: { system: "affiliates", write: false },
 };
