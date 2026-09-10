@@ -101,9 +101,18 @@ export type RawCustomer = {
 // deleted) for image/price — hit "Access denied for products field", same
 // missing-scope story (read_products isn't granted either). That section
 // shows name-only until read_products is approved and re-consented.
+//
+// PERF (2026-08-25): with fulfillmentOrders and products both gone, the
+// query is lighter than when the 30-page-size measurement was taken.
+// Re-measured live: first:70-90 -> 914 (safe), first:100 -> 1028 (over).
+// Bumped to 80 — same margin discipline as before (safe, not just-under),
+// but ~2.7x fewer paginated round trips than 30 for the same candidate
+// pool, which was the dominant cost in the "app takes forever to load"
+// complaint (worse than pre-incident, since 30 was picked purely to fix
+// the cost cap, not for throughput).
 const QUERY = `#graphql
   query LiveCreditHolders($cursor: String) {
-    customers(first: 30, after: $cursor, query: "${ARM_TAG_QUERY}") {
+    customers(first: 80, after: $cursor, query: "${ARM_TAG_QUERY}") {
       pageInfo { hasNextPage endCursor }
       edges {
         node {

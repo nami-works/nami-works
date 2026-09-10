@@ -353,8 +353,26 @@ model JustBoughtCreditIssuance {
   creditAmount   Float // 0 when status = skipped_floor
   armDays        Int // 30 | 45 | 60 — 3-arm expiry test
   armTag         String
-  status         String // issued | skipped_floor
-  issuedAt       DateTime          @default(now())
+  // Set when the 100km-physical-store / pickup-in-store override forced
+  // armDays to 60 (Lucas, 2026-09-01), naming which store/condition
+  // triggered it. Null means armDays came from the random 3-arm draw —
+  // the audit trail that lets the experiment's real analysis exclude
+  // forced rows instead of treating them as a random 60.
+  armForcedReason String?
+  // pending_hold | issued | skipped_floor | cancelled_before_issuance
+  status         String
+  // Row-creation time (= order-confirmed/orders-paid time). Always set.
+  createdAt      DateTime          @default(now())
+  // 72h hold (Lucas, 2026-09-01): credit isn't granted at order-confirmed
+  // time anymore — orders/paid sets this to createdAt + 72h and stops;
+  // processPendingCreditIssuances (src/webhooks/process-pending-credit.ts)
+  // polls for holdUntil <= now and actually issues then. Null for
+  // skipped_floor (nothing will ever be issued, no hold needed).
+  holdUntil      DateTime?
+  // Real issuance timestamp, set by the sweep — null until status becomes
+  // "issued". Was previously set at row-creation time, before the hold
+  // existed; the 72h delay is exactly why it had to become nullable.
+  issuedAt       DateTime?
   expiresAt      DateTime?
   // Set once by the refunds/create clawback handler when the underlying order
   // is refunded after credit was issued. Doubles as the idempotency guard for
@@ -366,6 +384,8 @@ model JustBoughtCreditIssuance {
 
   @@unique([tenantId, shopifyOrderId])
   @@index([tenantId, issuedAt])
+  // The sweep's own query shape: due pending-hold rows across all tenants.
+  @@index([status, holdUntil])
 }
 
 model LdSimPolylineCache {
