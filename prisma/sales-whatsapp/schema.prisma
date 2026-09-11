@@ -83,3 +83,34 @@ model WorklistContactEvent {
   @@index([shop, locationKey, contactedAt])
   @@index([shop, convertedOrderGid])
 }
+
+// Append-only ledger for the scheduled "credit expiring soon" WhatsApp push
+// (docs/handoff-beautyback-credit-automation.md §7). One row per
+// (customer, tranche) the push has ever attempted — the unique constraint
+// is the idempotency mechanism: insert-then-send, treat a constraint
+// violation as "already handled, no-op" (same pattern as connector's
+// JustBoughtCreditIssuance, per the handoff's §3 crash-safety rules).
+// Never rewritten in place except to flip status/sentAt/error once, on the
+// same row that was inserted before the send attempt — this is NOT a
+// periodically-rewritten state file.
+model ExpiringCreditPush {
+  id            String    @id @default(cuid())
+  shop          String
+  customerGid   String
+  // The tranche's own createdAt (its issuance moment) is a stable per-tranche
+  // key even though a customer can hold several tranches expiring the same
+  // day — expiresAt alone can collide across tranches, createdAt does not
+  // (two tranches issued in the same instant would be a genuine Shopify-side
+  // coincidence, not something this app can distinguish anyway).
+  trancheCreatedAt DateTime
+  expiresAt     DateTime
+  timingArm     String // "PAW" | "control"
+  pawSlot       String? // "HH:MM" BRT, set only when timingArm = "PAW"
+  status        String    @default("pending") // pending | sent | failed
+  sentAt        DateTime?
+  error         String?
+  createdAt     DateTime  @default(now())
+
+  @@unique([shop, customerGid, trancheCreatedAt])
+  @@index([shop, status, expiresAt])
+}

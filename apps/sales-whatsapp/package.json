@@ -8,13 +8,14 @@
     "schema": "../../prisma/sales-whatsapp/schema.prisma"
   },
   "scripts": {
-    "build": "react-router build",
+    "build": "react-router build && npm run build:worker",
+    "build:worker": "tsc -p tsconfig.worker.json",
     "dev": "shopify app dev",
     "start": "node server.mjs",
     "docker-start": "npm run setup && npm run start",
     "setup": "prisma generate && prisma migrate deploy",
     "test": "vitest run",
-    "typecheck": "react-router typegen && tsc --noEmit",
+    "typecheck": "react-router typegen && tsc --noEmit && tsc -p tsconfig.worker.json --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy"
