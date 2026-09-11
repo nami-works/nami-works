@@ -89,7 +89,14 @@ const QUERY = `#graphql
     }
   }`;
 
-const MAX_PAGES = 50; // 3,000 candidates — same bounded-pagination discipline as live-credit-holders.ts
+// Verified live (2026-09-11): the real candidate pool (every ctx tag minus
+// credit-reactivation) is 4,752 customers, needing ~80 pages at 60/page — the
+// original 50-page (3,000-candidate) cap was silently truncating the scan
+// and undercounting every day's cohort (a real day came back as 0 qualifying
+// customers when the true count was 2). Same lesson as live-credit-holders.ts's
+// own page-size incidents: pick a limit with real margin over the measured
+// pool, not one that's already at or under it.
+const MAX_PAGES = 300; // 18,000 candidates — ~3.8x today's measured pool
 
 export async function fetchExpiringCreditCandidates(admin: ShopifyAdminClient): Promise<RawCandidate[]> {
   const results: RawCandidate[] = [];
