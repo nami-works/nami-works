@@ -10,6 +10,8 @@ import express from "express";
 import compression from "compression";
 import morgan from "morgan";
 import { createRequestHandler } from "@react-router/express";
+import { PrismaClient } from "@prisma/client-sales-whatsapp";
+import { startExpiringCreditScheduler } from "./dist/worker/scheduler.js";
 
 const BUILD_PATH = path.resolve("./build/server/index.js");
 const PUBLIC_BUILD_DIR = path.resolve("./build/client");
@@ -44,3 +46,22 @@ app.use(morgan("tiny"));
 app.all("*", createRequestHandler({ build: await import(url.pathToFileURL(BUILD_PATH).href) }));
 
 app.listen(port, () => console.log(`sales-whatsapp listening on ${port} basePath=${BASE_PATH}`));
+
+// Scheduled "credit expiring soon" WhatsApp push (handoff §7) — same
+// single-process-polls-its-own-interval pattern as apps/connector's
+// pending-credit sweep, no separate worker process for this app either.
+// Requires SHOPIFY_SHOP_DOMAIN + ZOKO_API_KEY at runtime; skip (don't
+// crash the whole app) if either is unset, since not every environment
+// (e.g. a fresh dev install) has them configured yet.
+const SHOP = process.env.SHOPIFY_SHOP_DOMAIN;
+const ZOKO_API_KEY = process.env.ZOKO_API_KEY;
+if (SHOP && ZOKO_API_KEY) {
+  startExpiringCreditScheduler({
+    shop: SHOP,
+    zokoApiKey: ZOKO_API_KEY,
+    db: new PrismaClient(),
+    log: { info: (msg) => console.log(`[scheduler] ${msg}`), error: (err, msg) => console.error(`[scheduler] ${msg}`, err) },
+  });
+} else {
+  console.warn("[scheduler] SHOPIFY_SHOP_DOMAIN or ZOKO_API_KEY not set — expiring-credit push scheduler disabled");
+}
