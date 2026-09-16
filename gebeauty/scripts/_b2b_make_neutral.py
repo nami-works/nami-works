@@ -12,9 +12,9 @@ src = (MOCK / "gebeauty-b2b-portfolio-v6.html").read_text(encoding="utf-8")
 html = src
 
 # 1) remove the sales-pitch + placeholder sections (flat, non-nested)
-# "fundadora" reports MISS(0) as of v6 -- the section is commented out /
-# unbuilt pending Camila Coutinho's quote+portrait (see handoff §11), not an
-# error. Kept in the list so removal fires automatically once it's restored.
+# "fundadora" now exists (v7 catalog revamp added it with a placeholder
+# quote pending Camila Coutinho's actual text) and removes cleanly like
+# the rest of these sales/institutional sections.
 REMOVE_IDS = ["diferencial", "marca", "fundadora", "mercado", "parceria", "contato"]
 for sid in REMOVE_IDS:
     new, n = re.subn(r'<section[^>]*id="' + sid + r'"[\s\S]*?</section>\s*', "", html)
@@ -43,8 +43,10 @@ REPL = [
     # v5+ moved from an inline expand-card to a quick-view modal (gmPvs already
     # shows price on open) — so "move price off the card face" now means just
     # dropping it from the card template; the modal keeps it, unchanged.
-    ('<div class="gbb-meta"><div class="gbb-pvs">${money(p.pvs)}</div><span class="gbb-more" aria-hidden="true">',
-     '<div class="gbb-meta"><span class="gbb-more" aria-hidden="true">'),
+    # v7: .gbb-more became the real interactive control (tabindex/role/aria-label,
+    # no more aria-hidden) so only the button opens the quick-view, not the whole card.
+    ('<div class="gbb-meta"><div class="gbb-pvs">${money(p.pvs)}</div><span class="gbb-more" tabindex="0" role="button" aria-label="Ver detalhes de ${p.nm}">',
+     '<div class="gbb-meta"><span class="gbb-more" tabindex="0" role="button" aria-label="Ver detalhes de ${p.nm}">'),
     # partner cover: no H1, portfolio image stretches full width below the text
     ('</style>',
      '#capa{display:block;min-height:auto;padding:88px 0 0}'
