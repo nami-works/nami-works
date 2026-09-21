@@ -82,12 +82,18 @@ def main():
             f"sync {route}/",
         )
 
-    og_image = SITE / "og-image.jpg"
-    if og_image.exists():
+    # Public, unauthenticated root-level images (see viewer-request.js) --
+    # og-image.jpg plus any deck slide images (e.g. como-comecamos.jpg,
+    # clean-beauty.jpg, camila-coutinho.jpg) sitting alongside it. Looping
+    # over *.jpg here instead of hardcoding og-image.jpg alone so a new
+    # slide image added to SITE gets deployed automatically, not silently
+    # skipped (bit the catalog-revamp deploy: 3 new images were built and
+    # referenced by the decks but this only ever shipped og-image.jpg).
+    for img in sorted(SITE.glob("*.jpg")):
         run(
-            ["aws", "s3", "cp", str(og_image), f"s3://{bucket}/og-image.jpg",
+            ["aws", "s3", "cp", str(img), f"s3://{bucket}/{img.name}",
              "--content-type", "image/jpeg", "--cache-control", "max-age=86400"],
-            "sync og-image.jpg (public, unauthenticated -- see viewer-request.js)",
+            f"sync {img.name} (public, unauthenticated -- see viewer-request.js)",
         )
 
     run(
