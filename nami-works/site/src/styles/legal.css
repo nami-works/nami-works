@@ -1,0 +1,117 @@
+/* Shared layout for legal pages (privacidade, termos). Always light,
+   regardless of site theme; legal docs read better with stable contrast. */
+
+.legal {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 16px 56px;
+  display: grid;
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  /* Pin background AND text to light-mode values, independent of
+     data-theme: the parent <body> background follows the site theme
+     (dark in dark mode), and without an explicit background here these
+     fixed dark text colors would render on a near-black surface. */
+  background: #faf8f4;
+  --legal-text: #2f2f2f;
+  --legal-heading: #1f1f1f;
+  --legal-muted: #6b6b6b;
+  --legal-link: #1b4d2e;
+}
+
+.legal .title {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--legal-heading);
+}
+
+.legal .meta {
+  display: grid;
+  gap: 4px;
+}
+
+.legal .metaText {
+  margin: 0;
+  color: var(--legal-muted);
+  font-size: 14px;
+}
+
+.legal .draftNotice {
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid #e3c98a;
+  background: #fbf3df;
+  border-radius: 8px;
+  color: #6b5000;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.legal .intro {
+  margin: 0;
+  line-height: 1.7;
+  color: var(--legal-text);
+  font-size: 15px;
+}
+
+.legal section {
+  display: grid;
+  gap: 12px;
+}
+
+.legal h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--legal-heading);
+}
+
+.legal h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--legal-heading);
+}
+
+.legal p {
+  margin: 0;
+  line-height: 1.7;
+  color: var(--legal-text);
+  font-size: 15px;
+}
+
+.legal ul {
+  margin: 0;
+  padding-left: 24px;
+  display: grid;
+  gap: 6px;
+}
+
+.legal li {
+  color: var(--legal-text);
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+.legal a {
+  color: var(--legal-link);
+  text-decoration: underline;
+}
+
+.legal a:hover {
+  text-decoration: none;
+}
+
+@media (min-width: 769px) {
+  .legal {
+    padding: 48px 24px 72px;
+  }
+  .legal .title {
+    font-size: 32px;
+  }
+  .legal h2 {
+    font-size: 20px;
+  }
+}

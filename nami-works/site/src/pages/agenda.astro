@@ -1,0 +1,140 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/marketing.css";
+
+// Deliberately not linked from Nav.astro -- reachable only via the quiet
+// line at the bottom of each /noticias edition. This is an MVP test on that
+// specific audience, not a site-wide offer (per design-system-carrossel.md
+// §6, the news feed's own close still says "Diagnóstico ainda não é oferta
+// pública" -- this page doesn't touch that, it's a separate, lighter path).
+
+// TODO(lucas): replace with the real Cal.com event-type link once the
+// account exists and Google Calendar is connected (cal.com/<user>/<event>).
+const CAL_LINK = "nami/conversa";
+---
+
+<BaseLayout
+  title="Agenda | NAMI Works"
+  description="Uma conversa de 20 minutos sobre onde a IA ajudaria na sua operação. Sem proposta pronta, sem preço."
+>
+  <section class="section pageHero">
+    <div class="container narrow">
+      <p class="eyebrow">Agenda</p>
+      <h1 class="sectionTitle display display-1">
+        Se mexeu com o seu <span class="mk">trabalho</span>, dá pra conversar.
+      </h1>
+      <p class="lede">
+        Uma conversa de 20 minutos sobre onde a IA ajudaria na sua operação.
+        Sem proposta pronta, sem preço, sem compromisso.
+      </p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft">
+    <div class="container narrow">
+      <div id="agenda-widget" class="widgetShell">
+        <div id="cal-booking" class="calBooking"></div>
+      </div>
+
+      <div id="agenda-confirmado" class="declaracao" hidden>
+        <p class="display confirmadoTitle">Marcado.</p>
+        <p class="confirmadoBody">O convite já foi pro seu e-mail, com o link da chamada.</p>
+      </div>
+    </div>
+  </section>
+
+  <script is:inline define:vars={{ CAL_LINK }}>
+    (function (C, A, L) {
+      let p = function (a, ar) {
+        a.q.push(ar);
+      };
+      let d = C.document;
+      C.Cal =
+        C.Cal ||
+        function () {
+          let cal = C.Cal;
+          let ar = arguments;
+          if (!cal.loaded) {
+            cal.ns = {};
+            cal.q = cal.q || [];
+            d.head.appendChild(d.createElement("script")).src = A;
+            cal.loaded = true;
+          }
+          if (ar[0] === L) {
+            const api = function () {
+              p(api, arguments);
+            };
+            const namespace = ar[1];
+            api.q = api.q || [];
+            if (typeof namespace === "string") {
+              cal.ns[namespace] = cal.ns[namespace] || api;
+              p(cal.ns[namespace], ar);
+              p(cal, ["initNamespace", namespace]);
+            } else p(cal, ar);
+            return;
+          }
+          p(cal, ar);
+        };
+    })(window, "https://app.cal.com/embed/embed.js", "init");
+
+    Cal("init", { origin: "https://cal.com" });
+
+    Cal("inline", {
+      elementOrSelector: "#cal-booking",
+      calLink: CAL_LINK,
+      layout: "month_view",
+    });
+
+    // Confirmation state: swap the widget for the .declaracao block in
+    // place, per the agreed MVP flow -- no redirect, no separate page.
+    Cal("on", {
+      action: "bookingSuccessful",
+      callback: function () {
+        const widget = document.getElementById("agenda-widget");
+        const confirmado = document.getElementById("agenda-confirmado");
+        if (widget) widget.hidden = true;
+        if (confirmado) confirmado.hidden = false;
+      },
+    });
+  </script>
+</BaseLayout>
+
+<style>
+  .pageHero {
+    padding-top: 96px;
+  }
+
+  .container.narrow {
+    max-width: 640px;
+  }
+
+  .widgetShell {
+    border: 1px solid var(--site-border);
+    border-radius: 12px;
+    background: var(--site-surface);
+    min-height: 320px;
+    overflow: hidden;
+  }
+
+  .calBooking {
+    width: 100%;
+    min-height: 320px;
+  }
+
+  .confirmadoTitle {
+    font-size: 24px;
+    margin: 0 0 10px;
+  }
+
+  .confirmadoBody {
+    font-size: 14.5px;
+    opacity: 0.9;
+    margin: 0;
+  }
+
+  @media (min-width: 769px) {
+    .pageHero {
+      padding-top: 130px;
+    }
+  }
+</style>

@@ -1,0 +1,83 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Obrigado | NAMI Works"
+  description="Recebemos seu pedido de Diagnóstico. Vamos responder por e-mail para combinar os próximos passos."
+>
+  <div class="page">
+    <div class="content">
+      <p class="eyebrow">Diagnóstico</p>
+      <h1 class="title">Recebemos seu pedido.</h1>
+      <p class="subtitle">
+        Vamos analisar as informações que você enviou e responder por e-mail,
+        em alguns dias úteis, para combinar os próximos passos.
+      </p>
+      <a href="/" class="cta">&larr; Voltar para a NAMI Works</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px;
+  }
+
+  .content {
+    max-width: 480px;
+    text-align: center;
+  }
+
+  .eyebrow {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--site-text-secondary);
+    margin: 0 0 12px;
+  }
+
+  .title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--site-text);
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--site-text-secondary);
+    margin: 0 0 32px;
+  }
+
+  .cta {
+    display: inline-block;
+    color: var(--site-text);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--site-border);
+    padding-bottom: 4px;
+    transition: border-color 0.15s ease;
+  }
+
+  .cta:hover {
+    border-bottom-color: var(--site-text);
+  }
+
+  @media (min-width: 769px) {
+    .title {
+      font-size: 48px;
+    }
+    .subtitle {
+      font-size: 18px;
+    }
+  }
+</style>

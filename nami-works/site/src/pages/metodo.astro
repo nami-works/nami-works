@@ -1,0 +1,142 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/marketing.css";
+---
+
+<BaseLayout
+  title="Método | NAMI Works"
+  description="Como a NAMI Works mede margem de contribuição real, roda operações com agentes de IA e evita métricas de vaidade na medição de crescimento."
+>
+  <section class="section pageHero">
+    <div class="container">
+      <p class="eyebrow">Método</p>
+      <h1 class="sectionTitle display display-1">O que muda quando quem roda a operação é <span class="mk">um agente de IA supervisionado</span>.</h1>
+      <p class="lede">
+        Três princípios organizam o trabalho, e eles não são independentes.
+        Medição honesta é o que permite decidir com margem de contribuição
+        real, e é a operação agentic que faz essas decisões virarem ação todos
+        os dias, não uma vez por trimestre. Esses princípios guiam tanto a
+        Implementação de IA para gestão empresarial quanto a Operação de
+        e-commerce com IA: os exemplos abaixo usam o e-commerce porque é o
+        nosso caso concreto, mas a lógica vale para qualquer operação que
+        decida agir com dados, não com relatório trimestral.
+      </p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="margem">
+    <div class="container">
+      <p class="eyebrow">01 · Margem de contribuição real</p>
+      <h2 class="sectionTitle display display-3">Lucro por pedido, <span class="mk">não ROAS reportado pela plataforma</span>.</h2>
+      <p class="body">
+        A maioria dos painéis de mídia mostra retorno sobre o investimento em
+        anúncios calculado pela própria plataforma que vendeu o anúncio. Isso
+        cria um incentivo óbvio para inflar o número. Nós calculamos o
+        resultado de cada pedido descontando custo de produto, frete, taxa de
+        meio de pagamento, comissão de canal e o custo de aquisição real,
+        atribuído por pedido.
+      </p>
+      <p class="body">
+        O resultado é uma margem de contribuição verdadeira, por canal, por
+        campanha e por produto. É esse número, não o ROAS da plataforma, que
+        decide o que escalar, o que pausar e o que só faz sentido em volume
+        baixo.
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="agentic">
+    <div class="container">
+      <p class="eyebrow">02 · Operação agentic</p>
+      <h2 class="sectionTitle display display-3">Agentes de IA rodando o dia a dia, <span class="mk">com supervisão e histórico auditável</span>.</h2>
+      <p class="body">
+        Catálogo, medição de crescimento, CRM e conteúdo são operados por
+        agentes de IA construídos sobre o Claude Code, integrados diretamente
+        às plataformas de comércio, mídia e mensageria que a marca já usa. Cada
+        agente tem escopo definido e cada ação fica registrada: o que mudou,
+        quando e por quê.
+      </p>
+      <p class="body">
+        Isso não é automação de tarefa isolada. É uma operação inteira rodando
+        com disciplina de engenharia: revisão antes de qualquer mudança que
+        afete preço ou cliente final, e escalonamento para uma pessoa sempre
+        que a decisão envolve dinheiro, marca ou experiência do cliente.
+      </p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="medicao">
+    <div class="container">
+      <p class="eyebrow">03 · Medição honesta</p>
+      <h2 class="sectionTitle display display-3">CAC, payback e retenção calculados <span class="mk">a partir dos dados da própria operação</span>.</h2>
+      <p class="body">
+        Custo de aquisição, prazo de retorno e taxa de recompra são calculados
+        cruzando os dados de pedido, custo e mídia direto na fonte, sem
+        depender do que cada plataforma de anúncio afirma sobre o próprio
+        desempenho. Quando os números batem, ótimo. Quando não batem, é esse
+        descompasso que aparece primeiro, antes que vire um problema de caixa.
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="prova">
+    <div class="container">
+      <p class="eyebrow">Prova em produção</p>
+      <h2 class="sectionTitle display display-3">Uma marca real, <span class="mk">rodando assim, hoje</span>.</h2>
+      <p class="body">
+        Na nossa frente de Operação de e-commerce com IA, operamos, com esse
+        mesmo método, uma marca de e-commerce de 8 dígitos de faturamento. Por
+        acordo de confidencialidade, não identificamos a marca nem publicamos
+        números específicos dela. O que podemos descrever é o tipo de mudança
+        que esse método produziu:
+      </p>
+      <ul class="proofList">
+        <li>
+          Tempo de montagem de campanha caiu de dias para horas, porque briefing,
+          segmentação e criativo passaram a ser gerados e revisados pelo mesmo
+          fluxo de agentes.
+        </li>
+        <li>
+          A disciplina de medição passou a exigir margem de contribuição
+          positiva antes de qualquer decisão de escala, em vez de aprovar por
+          ROAS reportado.
+        </li>
+        <li>
+          Catálogo e CRM deixaram de depender de atualização manual recorrente:
+          o agente monitora e ajusta continuamente, com revisão humana nos
+          pontos que envolvem preço ou comunicação com cliente.
+        </li>
+      </ul>
+      <div class="ctaRow">
+        <a href="/diagnostico" class="ctaPrimary">Ver o Diagnóstico</a>
+        <a href="/sobre" class="ctaSecondary">Sobre a NAMI Works</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .pageHero {
+    padding-top: 96px;
+  }
+
+  .proofList {
+    max-width: 640px;
+    margin: 0 0 32px;
+    padding-left: 22px;
+    display: grid;
+    gap: 12px;
+  }
+
+  .proofList li {
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--site-text);
+  }
+
+  @media (min-width: 769px) {
+    .pageHero {
+      padding-top: 130px;
+    }
+  }
+</style>

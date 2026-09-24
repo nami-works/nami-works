@@ -1,0 +1,102 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/marketing.css";
+
+const scopeCards = [
+  {
+    title: "Gestão interna",
+    body: "Agentes de IA instalados nos processos do dia a dia: dados, decisões e rotinas que hoje dependem de planilha e memória de time, com regras da sua empresa.",
+  },
+  {
+    title: "Medição",
+    body: "Painel de resultado real por área ou canal, calculado a partir dos seus próprios dados, não do que cada sistema afirma sobre o próprio desempenho.",
+  },
+  {
+    title: "Integrações",
+    body: "As integrações que ligam os agentes às plataformas que você já usa, sejam elas de gestão interna ou de operação de e-commerce.",
+  },
+];
+---
+
+<BaseLayout
+  title="Implantação | NAMI Works"
+  description="A Implantação instala o console de operação Claude Code na estrutura da sua própria empresa, para gestão interna ou para operação de e-commerce."
+>
+  <section class="section pageHero">
+    <div class="container">
+      <p class="eyebrow">Implantação</p>
+      <h1 class="sectionTitle display display-1">O console de operação, <span class="mk">dentro da sua empresa</span>.</h1>
+      <p class="lede">
+        A Implantação instala, na estrutura da sua própria empresa, o mesmo
+        console de operação agentic (Claude Code e as integrações
+        necessárias) que a NAMI Works usa para rodar suas próprias operações.
+        Serve tanto para levar agentes de IA à gestão interna de qualquer
+        empresa quanto para rodar a operação completa de um e-commerce, que é
+        o nosso próprio caso hoje.
+      </p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="escopo">
+    <div class="container">
+      <p class="eyebrow">O que entra na Implantação</p>
+      <h2 class="sectionTitle display display-3">Três frentes, <span class="mk">integradas desde o início</span>.</h2>
+
+      <div class="cardGrid cols3">
+        {
+          scopeCards.map((card) => (
+            <div class="card">
+              <h3 class="cardTitle">{card.title}</h3>
+              <p class="cardBody">{card.body}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="calloutBox">
+        <p class="calloutLabel">Exemplo concreto</p>
+        <p>
+          Na Operação de e-commerce com IA, essas três frentes viram catálogo,
+          medição de crescimento e CRM: é assim que rodamos, hoje, a operação
+          de uma marca de e-commerce de 8 dígitos. Em gestão interna, as
+          mesmas frentes viram outros processos, definidos pelo Diagnóstico da
+          sua empresa.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="como">
+    <div class="container">
+      <p class="eyebrow">Como funciona</p>
+      <h2 class="sectionTitle display display-3">O escopo sai do Diagnóstico, <span class="mk">não de um pacote fechado</span>.</h2>
+      <p class="body">
+        A Implantação é dimensionada a partir do mapa de automação priorizado
+        que o Diagnóstico produz para a sua operação. Isso evita instalar
+        estrutura que a operação ainda não precisa, e garante que o que for
+        implantado primeiro seja o que tem maior impacto na margem.
+      </p>
+      <p class="body">
+        Não existe hoje um caminho de compra separado para a Implantação: o
+        ponto de entrada é o Diagnóstico. É a partir dele que definimos escopo,
+        prazo e orçamento fechado para a implantação.
+      </p>
+      <div class="ctaRow">
+        <a href="/diagnostico" class="ctaPrimary">Começar pelo Diagnóstico</a>
+        <a href="/operacao" class="ctaSecondary">Ver a Operação</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .pageHero {
+    padding-top: 96px;
+  }
+
+  @media (min-width: 769px) {
+    .pageHero {
+      padding-top: 130px;
+    }
+  }
+</style>

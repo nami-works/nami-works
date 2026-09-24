@@ -1,0 +1,271 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/marketing.css";
+import data from "../../data/noticias.json";
+import altText from "../../data/noticias-alt.json";
+
+export function getStaticPaths() {
+  return data.edicoes.map((edicao) => ({
+    params: { edicao: edicao.pasta },
+    props: { edicao },
+  }));
+}
+
+interface Credito {
+  fonte: string;
+  data: string;
+}
+
+interface Item {
+  n: number;
+  tipo: string;
+  rotulo: string | null;
+  rotulo_caixa?: string;
+  logo?: string | null;
+  ancora: string;
+  marcador?: string;
+  apoio?: string;
+  corpo?: string;
+  ressalva?: string;
+  credito?: Credito;
+  prancha: string;
+}
+
+interface Edicao {
+  id: string;
+  data: string;
+  pasta: string;
+  abertura: string;
+  fecho: string;
+  itens: Item[];
+}
+
+const { edicao } = Astro.props as { edicao: Edicao };
+
+function splitMarker(ancora: string, marcador?: string) {
+  if (!marcador) return { before: ancora, marcador: null, after: "" };
+  const i = ancora.indexOf(marcador);
+  if (i === -1) return { before: ancora, marcador: null, after: "" };
+  return {
+    before: ancora.slice(0, i),
+    marcador,
+    after: ancora.slice(i + marcador.length),
+  };
+}
+
+function formatarCredito(credito?: Credito) {
+  if (!credito) return null;
+  const data = new Date(`${credito.data}T00:00:00`).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  return `${credito.fonte} · ${data}`;
+}
+
+const altosDaEdicao = (altText as unknown as Record<string, Record<string, string>>)[edicao.pasta] ?? {};
+
+const dataFormatada = new Date(`${edicao.data}T00:00:00`).toLocaleDateString("pt-BR", {
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+});
+---
+
+<BaseLayout
+  title={`${edicao.id} · Notícias | NAMI Works`}
+  description={edicao.abertura}
+>
+  <section class="section pageHero">
+    <div class="container narrow">
+      <p class="eyebrow">Notícias · {dataFormatada}</p>
+      <h1 class="sectionTitle display display-1">{edicao.abertura}</h1>
+    </div>
+  </section>
+
+  <section class="section sectionSoft">
+    <div class="container narrow">
+      <div class="itens">
+        {
+          edicao.itens.map((item) => {
+            const { before, marcador, after } = splitMarker(item.ancora, item.marcador);
+            const isFecho = item.tipo === "fecho";
+            const isCapa = item.tipo === "capa";
+            const credito = formatarCredito(item.credito);
+            const alt = altosDaEdicao[String(item.n)] ?? "";
+
+            return (
+              <article class={`item ${isFecho ? "itemFecho declaracao" : ""}`}>
+                {item.rotulo && (
+                  <p class={`itemRotulo ${item.rotulo_caixa === "mista" ? "itemRotuloMista" : ""}`}>
+                    {item.rotulo}
+                  </p>
+                )}
+
+                <h2 class={`itemAncora display ${isCapa ? "display-1" : "display-2"}`}>
+                  {marcador ? (
+                    <>
+                      {before}
+                      <span class="mk">{marcador}</span>
+                      {after}
+                    </>
+                  ) : (
+                    item.ancora
+                  )}
+                </h2>
+
+                {item.apoio && <p class="itemApoio">{item.apoio}</p>}
+                {item.corpo && <p class="itemCorpo">{item.corpo}</p>}
+                {item.ressalva && <p class="itemRessalva">{item.ressalva}</p>}
+                {credito && <p class="itemCredito">{credito}</p>}
+
+                <img
+                  class="itemPlank"
+                  src={`/noticias/${edicao.pasta}/${item.prancha}`}
+                  alt={alt}
+                  width="1080"
+                  height="1350"
+                  loading="lazy"
+                />
+              </article>
+            );
+          })
+        }
+      </div>
+
+      <div class="noticiasFooter">
+        <div class="ctaRow">
+          <a href="/noticias" class="ctaSecondary">Ver todas as edições</a>
+        </div>
+        <p class="convitePara">
+          Toda semana tem mais. Se uma dessas mexeu com o seu trabalho, dá pra
+          <a href="/agenda">conversar</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .pageHero {
+    padding-top: 96px;
+  }
+
+  .container.narrow {
+    max-width: 640px;
+  }
+
+  .itens {
+    display: grid;
+    gap: 56px;
+    margin-bottom: 40px;
+  }
+
+  .item {
+    display: grid;
+    gap: 12px;
+  }
+
+  .itemFecho {
+    padding: 40px 32px;
+    border-radius: 12px;
+    gap: 8px;
+  }
+
+  .itemRotulo {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--site-accent);
+    margin: 0;
+  }
+
+  .itemRotuloMista {
+    text-transform: none;
+  }
+
+  .itemAncora {
+    margin: 0;
+  }
+
+  .itemApoio {
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--site-text);
+    margin: 0;
+  }
+
+  /* .declaracao (design/tokens.css) fixes background/text to literal
+     pinheiro/creme regardless of light/dark theme -- it's a brand statement
+     block, not a theme-relative surface. Inherit that creme text here rather
+     than pulling in --site-accent-text, which flips to a dark ink in dark
+     mode and would sit unreadable on the same pinheiro ground. */
+  .itemFecho .itemApoio {
+    opacity: 0.92;
+  }
+
+  .itemCorpo {
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--site-text-secondary);
+    margin: 0;
+  }
+
+  .itemFecho .itemCorpo {
+    opacity: 0.8;
+  }
+
+  .itemRessalva {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--site-text-secondary);
+    font-style: italic;
+    margin: 0;
+  }
+
+  .itemCredito {
+    font-size: 13px;
+    color: var(--site-text-secondary);
+    opacity: 0.75;
+    text-align: right;
+    margin: 4px 0 0;
+  }
+
+  .noticiasFooter {
+    padding-top: 12px;
+    border-top: 1px solid var(--site-border);
+  }
+
+  .convitePara {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--site-text);
+    max-width: 480px;
+    margin: 16px 0 0;
+  }
+
+  .convitePara a {
+    color: var(--site-accent);
+    font-weight: 600;
+  }
+
+  .itemPlank {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid var(--site-border);
+    margin-top: 8px;
+  }
+
+  .itemFecho .itemPlank {
+    border-color: transparent;
+  }
+
+  @media (min-width: 769px) {
+    .pageHero {
+      padding-top: 130px;
+    }
+  }
+</style>

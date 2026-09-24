@@ -1,0 +1,258 @@
+---
+import ThemeToggle from "./ThemeToggle.astro";
+
+const NAV_LINKS = [
+  { label: "Serviços", href: "/#onde-atuamos" },
+  { label: "Método", href: "/metodo" },
+  { label: "Diagnóstico", href: "/diagnostico" },
+  { label: "Implantação", href: "/implantacao" },
+  { label: "Operação", href: "/operacao" },
+  { label: "Notícias", href: "/noticias" },
+  { label: "Sobre", href: "/sobre" },
+];
+---
+
+<nav class="nav" id="site-nav">
+  <a href="/" class="navLogo" aria-label="nami.works">
+    <img
+      src="/brand/lockup-ink.png"
+      alt=""
+      class="navLockup navLockupLight"
+      height="28"
+    />
+    <img
+      src="/brand/lockup-cream.png"
+      alt=""
+      class="navLockup navLockupDark"
+      height="28"
+    />
+  </a>
+
+  <div class="navRight">
+    <ul class="navLinks">
+      {
+        NAV_LINKS.map((link) => (
+          <li>
+            <a href={link.href} class="navLink">
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <ThemeToggle />
+
+    <button class="hamburger" id="hamburger-open" aria-label="Abrir menu">
+      <svg
+        class="hamburgerIcon"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<div class="mobileOverlay" id="mobile-overlay">
+  <button class="mobileClose" id="hamburger-close" aria-label="Fechar menu">
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      aria-hidden="true"
+    >
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  </button>
+
+  {
+    NAV_LINKS.map((link) => (
+      <a href={link.href} class="mobileLink">
+        {link.label}
+      </a>
+    ))
+  }
+
+  <ThemeToggle />
+</div>
+
+<script>
+  const nav = document.getElementById("site-nav");
+  const overlay = document.getElementById("mobile-overlay");
+  const openBtn = document.getElementById("hamburger-open");
+  const closeBtn = document.getElementById("hamburger-close");
+
+  const onScroll = () => {
+    if (!nav) return;
+    nav.classList.toggle("navScrolled", window.scrollY > 10);
+  };
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  const openMenu = () => {
+    overlay?.classList.add("mobileOpen");
+    document.body.style.overflow = "hidden";
+  };
+  const closeMenu = () => {
+    overlay?.classList.remove("mobileOpen");
+    document.body.style.overflow = "";
+  };
+
+  openBtn?.addEventListener("click", openMenu);
+  closeBtn?.addEventListener("click", closeMenu);
+
+  // Close on link tap inside the overlay
+  overlay?.querySelectorAll("a").forEach((a) => {
+    a.addEventListener("click", closeMenu);
+  });
+</script>
+
+<style>
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 100;
+    transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+  }
+
+  .navScrolled {
+    background-color: var(--site-nav-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid var(--site-border);
+  }
+
+  .navLogo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  /* Primary lockup (glyph + nami.works), brand-spec.md §2 -- "site header"
+     row. Two pre-composed images (icon+wordmark baked in) swapped by theme,
+     same pattern as the old separate icon/text pair. */
+  .navLockup {
+    height: 28px;
+    width: auto;
+    max-width: none;
+  }
+
+  .navLockupDark {
+    display: none;
+  }
+
+  :global([data-theme="dark"]) .navLockupLight {
+    display: none;
+  }
+
+  :global([data-theme="dark"]) .navLockupDark {
+    display: block;
+  }
+
+  .navLinks {
+    display: none;
+    align-items: center;
+    gap: 28px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .navLink {
+    text-decoration: none;
+    color: var(--site-text-secondary);
+    font-family: var(--site-font);
+    font-size: 14px;
+    font-weight: 400;
+    transition: color 0.15s ease;
+  }
+
+  .navLink:hover {
+    color: var(--site-text);
+  }
+
+  .navRight {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .hamburger {
+    display: flex;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--site-text);
+  }
+
+  .mobileOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    background-color: var(--site-bg);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+  }
+
+  .mobileOverlay.mobileOpen {
+    display: flex;
+  }
+
+  .mobileLink {
+    text-decoration: none;
+    color: var(--site-text);
+    font-family: var(--site-font);
+    font-size: 22px;
+    font-weight: 500;
+  }
+
+  .mobileLink:hover {
+    color: var(--site-text-secondary);
+  }
+
+  .mobileClose {
+    position: absolute;
+    top: 18px;
+    right: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--site-text);
+    padding: 4px;
+  }
+
+  @media (min-width: 900px) {
+    .navLinks {
+      display: flex;
+    }
+    .hamburger {
+      display: none;
+    }
+  }
+</style>

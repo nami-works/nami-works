@@ -1,0 +1,612 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/marketing.css";
+
+const steps = [
+  {
+    number: "01",
+    title: "Você preenche o formulário",
+    body: "Nome, empresa, site (se houver) e um parágrafo livre sobre onde você acha que a operação está perdendo eficiência ou margem.",
+  },
+  {
+    number: "02",
+    title: "Analisamos sua operação",
+    body: "Olhamos processos de gestão, canais de venda (quando houver), estrutura de dados e o que você já tem hoje, sem precisar de acesso a sistemas internos para essa etapa.",
+  },
+  {
+    number: "03",
+    title: "Você recebe o relatório",
+    body: "Um documento escrito, em alguns dias úteis, com onde a operação está perdendo eficiência e um mapa priorizado do que automatizar primeiro.",
+  },
+];
+---
+
+<BaseLayout
+  title="Diagnóstico | NAMI Works"
+  description="O Diagnóstico da NAMI Works é um relatório escrito que mostra onde a operação está perdendo eficiência e o que automatizar primeiro, na gestão interna ou no e-commerce."
+>
+  <section class="section pageHero">
+    <div class="container">
+      <p class="eyebrow">Diagnóstico</p>
+      <h1 class="sectionTitle display display-1">Um relatório, <span class="mk">não uma reunião</span>.</h1>
+      <p class="lede">
+        O Diagnóstico é o ponto de entrada para trabalhar com a NAMI Works,
+        seja para implantar IA na gestão interna da sua empresa, seja para
+        rodar a operação de um e-commerce. Não é uma call de vendas: é um
+        relatório escrito que mostra onde a operação está perdendo eficiência
+        e o que faz sentido automatizar primeiro, com prioridade explícita.
+      </p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="o-que-voce-recebe">
+    <div class="container">
+      <p class="eyebrow">O que você recebe</p>
+      <h2 class="sectionTitle display display-3">Um mapa de onde a operação está <span class="mk">perdendo eficiência</span>.</h2>
+      <p class="body">
+        O relatório cobre onde a operação perde margem ou tempo hoje, seja em
+        processos de gestão interna (dados, decisões, planilha), seja em
+        e-commerce (mídia, catálogo, CRM), e traduz isso em um mapa de
+        automação priorizado: o que vale a pena resolver primeiro com agentes
+        de IA, o que pode esperar, e o que provavelmente não vale o esforço no
+        seu estágio atual.
+      </p>
+      <p class="body">
+        Não fazemos ligação para apresentar o relatório. Você recebe o
+        documento e decide o próximo passo no seu tempo.
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="como-funciona">
+    <div class="container">
+      <p class="eyebrow">Como funciona</p>
+      <h2 class="sectionTitle display display-3">Três passos, <span class="mk">sem call ao vivo</span>.</h2>
+
+      <div class="cardGrid cols3">
+        {
+          steps.map((step) => (
+            <div class="card">
+              <p class="cardNumber">{step.number}</p>
+              <h3 class="cardTitle">{step.title}</h3>
+              <p class="cardBody">{step.body}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="calloutBox">
+        <p class="calloutLabel">Sobre o valor</p>
+        <p>
+          O Diagnóstico tem orçamento fechado, definido depois do intake, com
+          base no tamanho e na complexidade da operação. Não publicamos um
+          valor fixo aqui porque o escopo varia caso a caso.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="formulario">
+    <div class="container narrow">
+      <p class="eyebrow">Pedir o Diagnóstico</p>
+      <h2 class="sectionTitle display display-3">Conte um pouco sobre a operação.</h2>
+      <p class="lede">
+        Preencha o formulário abaixo. Respondemos por e-mail para combinar os
+        próximos passos.
+      </p>
+
+      <!-- Self-hosted lead intake: a Lambda Function URL (nami/site/infra/terraform/lambda.tf)
+           emails the submission via SES and redirects to /obrigado itself -- no
+           third-party form service, no account to create.
+
+           Progressive enhancement: this is ONE plain <form> that already works
+           and submits with no JS (all fieldsets visible, one native submit
+           button). The inline <script> below only enhances it into steps
+           (hide all but current, progress bar, back/continue) -- if JS fails,
+           it's still a working long form. -->
+      <form
+        class="leadForm"
+        method="POST"
+        action="https://wt3ihd5kteuu3y6hed75xpsmqe0zhkai.lambda-url.us-east-1.on.aws/"
+      >
+        <div class="progressShell" hidden>
+          <p class="progressLabel">Passo 1 de 4</p>
+          <div class="progressTrack"><div class="progressFill"></div></div>
+        </div>
+
+        <fieldset class="step" data-step="1">
+          <legend class="stepLegend">Você e a empresa</legend>
+
+          <div class="field">
+            <label for="nome">Seu nome</label>
+            <input type="text" id="nome" name="nome" placeholder="Nome e sobrenome" required />
+          </div>
+
+          <div class="field">
+            <label for="empresa">Empresa</label>
+            <input type="text" id="empresa" name="empresa" placeholder="Nome da empresa" required />
+          </div>
+
+          <div class="field">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" placeholder="voce@empresa.com" required />
+          </div>
+
+          <div class="field">
+            <label for="site">Site ou loja <span class="optional">(opcional)</span></label>
+            <input type="url" id="site" name="site" placeholder="https://seusite.com.br" />
+          </div>
+
+          <div class="field">
+            <label for="whatsapp">WhatsApp <span class="optional">(opcional)</span></label>
+            <input type="tel" id="whatsapp" name="whatsapp" placeholder="(11) 90000-0000" />
+          </div>
+
+          <div class="field">
+            <label for="cargo">Seu papel na operação <span class="optional">(opcional)</span></label>
+            <input type="text" id="cargo" name="cargo" placeholder="Ex: dono, gerente, sócio, financeiro" />
+          </div>
+
+          <div class="navRow" hidden>
+            <button type="button" class="ctaSecondary btnBack" hidden>Voltar</button>
+            <button type="button" class="ctaPrimary btnNext">Continuar</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="step" data-step="2">
+          <legend class="stepLegend">O negócio</legend>
+
+          <div class="field">
+            <label for="oferta">O que você vende e para quem</label>
+            <textarea
+              id="oferta"
+              name="oferta"
+              rows="4"
+              placeholder="Ex: a gente vende suplementos por assinatura, direto para o consumidor, e um pouco para revenda"
+              required
+            ></textarea>
+          </div>
+
+          <div class="field">
+            <label id="modeloLabel">Como o negócio vende <span class="optional">(pode marcar mais de um)</span></label>
+            <div class="chips" role="group" aria-labelledby="modeloLabel">
+              <label class="chip"><input type="checkbox" name="modelo" value="e-commerce / loja online" /><span>Loja online</span></label>
+              <label class="chip"><input type="checkbox" name="modelo" value="venda no atacado / B2B" /><span>Atacado / B2B</span></label>
+              <label class="chip"><input type="checkbox" name="modelo" value="loja física / varejo" /><span>Loja física</span></label>
+              <label class="chip"><input type="checkbox" name="modelo" value="serviços" /><span>Serviços</span></label>
+              <label class="chip"><input type="checkbox" name="modelo" value="indústria / produção" /><span>Indústria</span></label>
+              <label class="chip"><input type="checkbox" name="modelo" value="marketplace" /><span>Marketplace</span></label>
+              <label class="chip"><input type="checkbox" name="modelo" value="assinatura / recorrência" /><span>Assinatura</span></label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label id="timeLabel">Tamanho do time</label>
+            <div class="chips" role="group" aria-labelledby="timeLabel">
+              <label class="chip"><input type="radio" name="time" value="só eu" required /><span>Só eu</span></label>
+              <label class="chip"><input type="radio" name="time" value="2 a 5 pessoas" required /><span>2 a 5 pessoas</span></label>
+              <label class="chip"><input type="radio" name="time" value="6 a 20 pessoas" required /><span>6 a 20 pessoas</span></label>
+              <label class="chip"><input type="radio" name="time" value="mais de 20 pessoas" required /><span>Mais de 20 pessoas</span></label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label id="faturamentoLabel">Faixa de faturamento por mês <span class="optional">(opcional, ajuda a calibrar o que faz sentido)</span></label>
+            <div class="chips" role="group" aria-labelledby="faturamentoLabel">
+              <label class="chip"><input type="radio" name="faturamento" value="até 50 mil" /><span>Até R$ 50 mil</span></label>
+              <label class="chip"><input type="radio" name="faturamento" value="50 a 200 mil" /><span>R$ 50 a 200 mil</span></label>
+              <label class="chip"><input type="radio" name="faturamento" value="200 mil a 1 milhão" /><span>R$ 200 mil a 1 mi</span></label>
+              <label class="chip"><input type="radio" name="faturamento" value="acima de 1 milhão" /><span>Acima de R$ 1 mi</span></label>
+              <label class="chip"><input type="radio" name="faturamento" value="prefiro não dizer" /><span>Prefiro não dizer</span></label>
+            </div>
+          </div>
+
+          <div class="navRow" hidden>
+            <button type="button" class="ctaSecondary btnBack">Voltar</button>
+            <button type="button" class="ctaPrimary btnNext">Continuar</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="step" data-step="3">
+          <legend class="stepLegend">As ferramentas</legend>
+          <p class="stepLede">
+            A gente coloca a IA para trabalhar dentro das ferramentas que você
+            já usa. Queremos saber quais são.
+          </p>
+
+          <div class="field">
+            <label id="gestaoLabel">Sistema que roda a empresa <span class="optional">(vendas, estoque, financeiro)</span></label>
+            <div class="chips" role="group" aria-labelledby="gestaoLabel">
+              <label class="chip"><input type="checkbox" name="gestao" value="omie" /><span>Omie</span></label>
+              <label class="chip"><input type="checkbox" name="gestao" value="bling" /><span>Bling</span></label>
+              <label class="chip"><input type="checkbox" name="gestao" value="tiny" /><span>Tiny</span></label>
+              <label class="chip"><input type="checkbox" name="gestao" value="totvs" /><span>Totvs</span></label>
+              <label class="chip"><input type="checkbox" name="gestao" value="conta azul" /><span>Conta Azul</span></label>
+              <label class="chip"><input type="checkbox" name="gestao" value="sap" /><span>SAP</span></label>
+              <label class="chip"><input type="checkbox" name="gestao" value="planilha / excel" /><span>Planilha / Excel</span></label>
+              <label class="chip"><input type="checkbox" name="gestao" value="outro sistema" /><span>Outro</span></label>
+              <label class="chip"><input type="checkbox" name="gestao" value="nenhum ainda" /><span>Nenhum ainda</span></label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label id="lojaLabel">Loja online <span class="optional">(se vende pela internet)</span></label>
+            <div class="chips" role="group" aria-labelledby="lojaLabel">
+              <label class="chip"><input type="radio" name="loja" value="shopify" /><span>Shopify</span></label>
+              <label class="chip"><input type="radio" name="loja" value="nuvemshop" /><span>Nuvemshop</span></label>
+              <label class="chip"><input type="radio" name="loja" value="vtex" /><span>VTEX</span></label>
+              <label class="chip"><input type="radio" name="loja" value="woocommerce" /><span>WooCommerce</span></label>
+              <label class="chip"><input type="radio" name="loja" value="outra plataforma" /><span>Outra</span></label>
+              <label class="chip"><input type="radio" name="loja" value="não vendo online" /><span>Não vendo online</span></label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label id="midiaLabel">Onde faz mídia / anúncios</label>
+            <div class="chips" role="group" aria-labelledby="midiaLabel">
+              <label class="chip"><input type="checkbox" name="midia" value="meta (instagram / facebook)" /><span>Meta (Instagram/Facebook)</span></label>
+              <label class="chip"><input type="checkbox" name="midia" value="google" /><span>Google</span></label>
+              <label class="chip"><input type="checkbox" name="midia" value="tiktok" /><span>TikTok</span></label>
+              <label class="chip"><input type="checkbox" name="midia" value="não faço mídia paga" /><span>Não faço mídia</span></label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label id="atendimentoLabel">Como fala com o cliente</label>
+            <div class="chips" role="group" aria-labelledby="atendimentoLabel">
+              <label class="chip"><input type="checkbox" name="atendimento" value="whatsapp" /><span>WhatsApp</span></label>
+              <label class="chip"><input type="checkbox" name="atendimento" value="e-mail" /><span>E-mail</span></label>
+              <label class="chip"><input type="checkbox" name="atendimento" value="instagram / direct" /><span>Instagram / Direct</span></label>
+              <label class="chip"><input type="checkbox" name="atendimento" value="crm" /><span>CRM</span></label>
+              <label class="chip"><input type="checkbox" name="atendimento" value="nenhum estruturado" /><span>Nada estruturado</span></label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label id="planilhaLabel">Quanto do negócio ainda roda em planilha e no controle de uma pessoa?</label>
+            <div class="chips" role="group" aria-labelledby="planilhaLabel">
+              <label class="chip"><input type="radio" name="planilha" value="quase tudo" required /><span>Quase tudo</span></label>
+              <label class="chip"><input type="radio" name="planilha" value="boa parte" required /><span>Boa parte</span></label>
+              <label class="chip"><input type="radio" name="planilha" value="pouca coisa" required /><span>Pouca coisa</span></label>
+            </div>
+          </div>
+
+          <div class="navRow" hidden>
+            <button type="button" class="ctaSecondary btnBack">Voltar</button>
+            <button type="button" class="ctaPrimary btnNext">Continuar</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="step" data-step="4">
+          <legend class="stepLegend">Onde dói e para onde você quer ir</legend>
+          <p class="stepLede">
+            Marque tudo que é repetitivo ou manual hoje, e conte onde você
+            quer chegar.
+          </p>
+
+          <div class="field">
+            <label id="doresLabel">As áreas que mais pesam</label>
+            <div class="chips" role="group" aria-labelledby="doresLabel">
+              <label class="chip"><input type="checkbox" name="dores" value="montar orçamento / proposta" /><span>Montar orçamento ou proposta</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="atualizar catálogo / preços" /><span>Atualizar catálogo e preços</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="responder cliente / atendimento" /><span>Responder cliente</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="medir resultado de mídia (cac, roas de verdade)" /><span>Saber se a mídia dá lucro</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="fechar o mês / financeiro / conciliação" /><span>Fechar o mês / financeiro</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="relatórios e planilhas manuais" /><span>Relatórios manuais</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="conteúdo e redes sociais" /><span>Conteúdo / social</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="controle de estoque" /><span>Controle de estoque</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="cadastro e organização de dados" /><span>Cadastrar / organizar dados</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="emitir nota / pedido" /><span>Emitir nota / pedido</span></label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="dor_principal">Se você pudesse resolver só uma agora, qual seria?</label>
+            <input type="text" id="dor_principal" name="dor_principal" placeholder="Escreva com suas palavras" required />
+          </div>
+
+          <div class="field">
+            <label for="objetivo">Se desse tudo certo nos próximos 90 dias, o que teria mudado na operação?</label>
+            <textarea
+              id="objetivo"
+              name="objetivo"
+              rows="4"
+              placeholder="Ex: parar de montar proposta na mão, saber toda semana qual anúncio dá lucro de verdade, fechar o mês sem virar a noite"
+              required
+            ></textarea>
+          </div>
+
+          <div class="field">
+            <label for="prazo">Tem um prazo, evento ou meta puxando isso? <span class="optional">(opcional)</span></label>
+            <input type="text" id="prazo" name="prazo" placeholder="Ex: Black Friday, dobrar o atacado, contratar menos" />
+          </div>
+
+          <div class="navRow" hidden>
+            <button type="button" class="ctaSecondary btnBack">Voltar</button>
+          </div>
+
+          <button type="submit" class="ctaPrimary submitBtn">Enviar</button>
+        </fieldset>
+      </form>
+    </div>
+  </section>
+
+  <script>
+    // Progressive enhancement only. Everything above already works with no
+    // JS: every fieldset renders, nav/progress elements stay `hidden`
+    // (their markup default), and the one native submit button at the end
+    // sends the whole thing as a plain POST. This script just layers
+    // step-by-step navigation on top when it runs.
+    (function () {
+      const form = document.querySelector<HTMLFormElement>(".leadForm");
+      if (!form) return;
+      form.classList.add("js");
+
+      const steps = Array.from(form.querySelectorAll<HTMLFieldSetElement>("fieldset.step"));
+      const progressShell = form.querySelector<HTMLElement>(".progressShell");
+      const progressFill = form.querySelector<HTMLElement>(".progressFill");
+      const progressLabel = form.querySelector<HTMLElement>(".progressLabel");
+
+      // "modelo" and "dores" are the only checkbox groups that must have at
+      // least one box checked (gestao/midia/atendimento stay optional).
+      // Checkboxes have no native "at least one checked in this group"
+      // validity, so toggle `required` on the whole group by hand: if none
+      // are checked, every box in the group is invalid, so
+      // checkValidity()/reportValidity() below catches it with the
+      // browser's own native tooltip. Once one is checked, the group is
+      // satisfied and `required` clears from all of them.
+      const REQUIRED_CHECKBOX_GROUPS = ["modelo", "dores"];
+
+      function syncCheckboxGroupsRequired(step: HTMLFieldSetElement) {
+        REQUIRED_CHECKBOX_GROUPS.forEach((name) => {
+          const boxes = Array.from(
+            step.querySelectorAll<HTMLInputElement>(`input[type="checkbox"][name="${name}"]`)
+          );
+          if (!boxes.length) return;
+          const anyChecked = boxes.some((b) => b.checked);
+          boxes.forEach((b) => {
+            b.required = !anyChecked;
+          });
+        });
+      }
+
+      steps.forEach((step) => {
+        syncCheckboxGroupsRequired(step);
+        step.addEventListener("change", (e) => {
+          if ((e.target as HTMLInputElement).type === "checkbox") {
+            syncCheckboxGroupsRequired(step);
+          }
+        });
+      });
+
+      function show(index: number) {
+        steps.forEach((step, i) => {
+          step.hidden = i !== index;
+          const nav = step.querySelector<HTMLElement>(".navRow");
+          if (nav) nav.hidden = false;
+          const back = step.querySelector<HTMLElement>(".btnBack");
+          if (back) back.hidden = i === 0;
+        });
+        if (progressShell) {
+          progressShell.hidden = false;
+          if (progressFill) progressFill.style.width = `${((index + 1) / steps.length) * 100}%`;
+          if (progressLabel) progressLabel.textContent = `Passo ${index + 1} de ${steps.length}`;
+        }
+      }
+
+      steps.forEach((step, i) => {
+        const nextBtn = step.querySelector<HTMLButtonElement>(".btnNext");
+        const backBtn = step.querySelector<HTMLButtonElement>(".btnBack");
+
+        nextBtn?.addEventListener("click", () => {
+          const controls = Array.from(
+            step.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+              "input, textarea, select"
+            )
+          );
+          const firstInvalid = controls.find((c) => !c.checkValidity());
+          if (firstInvalid) {
+            firstInvalid.reportValidity();
+            return;
+          }
+          show(i + 1);
+        });
+
+        backBtn?.addEventListener("click", () => show(i - 1));
+      });
+
+      show(0);
+    })();
+  </script>
+</BaseLayout>
+
+<style>
+  .pageHero {
+    padding-top: 96px;
+  }
+
+  .container.narrow {
+    max-width: 640px;
+  }
+
+  .leadForm {
+    display: grid;
+    gap: 8px;
+    margin-top: 32px;
+  }
+
+  /* fieldset.step / .navRow both set `display` below, which -- being a
+     class selector -- is MORE specific than the browser's own
+     `[hidden] { display: none }` rule (same specificity weight as a class,
+     but the class rule is ours, applied after the UA stylesheet). Without
+     these two overrides, toggling the `hidden` attribute via JS would do
+     nothing and every step would stay visibly laid out at once. */
+  fieldset.step[hidden],
+  .navRow[hidden],
+  .btnBack[hidden] {
+    display: none;
+  }
+
+  fieldset.step {
+    display: grid;
+    gap: 20px;
+    border: none;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+
+  .stepLegend {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--site-text);
+    letter-spacing: -0.01em;
+    padding: 0;
+    margin: 0;
+  }
+
+  .stepLede {
+    font-size: 14.5px;
+    color: var(--site-text-secondary);
+    margin: -12px 0 0;
+  }
+
+  .field {
+    display: grid;
+    gap: 8px;
+  }
+
+  .field label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--site-text);
+  }
+
+  .optional {
+    font-weight: 400;
+    color: var(--site-text-secondary);
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    font-family: var(--site-font);
+    font-size: 15px;
+    color: var(--site-text);
+    background: var(--site-bg);
+    border: 1px solid var(--site-border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    resize: vertical;
+  }
+
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 1px;
+  }
+
+  /* Chips (checkbox/radio groups). The input stays in the accessibility
+     tree and tab order (focusable, screen-reader announced) but is visually
+     hidden -- the label + span carry the chip look, :has(input:checked)
+     carries the selected state. No JS needed for the visuals. */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--site-border);
+    background: var(--site-bg);
+    color: var(--site-text);
+    border-radius: 999px;
+    padding: 9px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.14s ease, background 0.14s ease, color 0.14s ease;
+  }
+
+  .chip input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    opacity: 0;
+  }
+
+  .chip:hover {
+    border-color: var(--site-accent);
+  }
+
+  .chip:has(input:checked) {
+    background: var(--site-accent);
+    color: var(--site-accent-text);
+    border-color: var(--site-accent);
+  }
+
+  .chip:has(input:focus-visible) {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 2px;
+  }
+
+  /* Progress bar + nav row: hidden by default in markup (see HTML), the
+     enhancer script unhides them once it runs. No-JS visitors never see
+     these -- they get one long form ending in the submit button below. */
+  .progressShell {
+    margin: 0 0 8px;
+  }
+
+  .progressLabel {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--site-text-secondary);
+    margin: 0 0 8px;
+  }
+
+  .progressTrack {
+    height: 5px;
+    background: var(--site-surface);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progressFill {
+    height: 100%;
+    width: 25%;
+    background: var(--site-accent);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+
+  .navRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .navRow .btnBack {
+    background: none;
+    border: none;
+    padding: 4px 0;
+    cursor: pointer;
+  }
+
+  .submitBtn {
+    justify-self: start;
+  }
+
+  @media (min-width: 769px) {
+    .pageHero {
+      padding-top: 130px;
+    }
+  }
+</style>
