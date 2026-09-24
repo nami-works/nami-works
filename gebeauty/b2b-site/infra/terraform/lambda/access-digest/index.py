@@ -5,9 +5,10 @@ default 09:00 UTC / 06:00 BRT). Reads ALL of yesterday's CloudFront
 standard-access-log objects (S3 key names embed the date:
 `cloudfront/<distribution-id>.<YYYY-MM-DD-HH>.<random>.gz`), extracts every
 real deck view (same filter as access-notify's Lambda: cs-uri-stem is
-/comercial/ or /parceiros/, sc-status 200, and a `_co=` tracking param
-present), and sends one summary email listing every visit in chronological
-order.
+/comercial/ or /parceiros/, sc-status 200, a `_co=` tracking param
+present, and c-ip not in EXCLUDED_IPS -- Lucas's own QA/demo visits don't
+belong in a digest of client activity either), and sends one summary
+email listing every visit in chronological order.
 
 The log-parsing logic here is a near-duplicate of
 lambda/access-notify/index.py's -- kept as a second small file rather than
@@ -28,6 +29,7 @@ ses = boto3.client("sesv2")
 NOTIFY_EMAIL = os.environ["NOTIFY_EMAIL"]
 LOGS_BUCKET = os.environ["LOGS_BUCKET"]
 DECK_ROOTS = {"/comercial/", "/parceiros/"}
+EXCLUDED_IPS = {ip.strip() for ip in os.environ.get("EXCLUDED_IPS", "").split(",") if ip.strip()}
 
 
 def parse_log(body: bytes):
@@ -46,6 +48,8 @@ def parse_log(body: bytes):
         if row.get("cs-uri-stem") not in DECK_ROOTS:
             continue
         if row.get("sc-status") != "200":
+            continue
+        if row.get("c-ip") in EXCLUDED_IPS:
             continue
 
         raw_query = row.get("cs-uri-query", "-")

@@ -9,7 +9,9 @@ one of the two deck roots (/comercial, /parceiros) to
 status IS the "someone actually opened a deck" signal. Everything else
 (the 401 preflight before that redirect, a browser's automatic
 /favicon.ico request, a stale bookmarked tracking URL replayed after the
-credential was revoked) is noise and gets filtered out.
+credential was revoked) is noise and gets filtered out. Same for a hit
+from EXCLUDED_IPS (comma-separated env var) -- Lucas's own QA/demo visits
+shouldn't page him about his own access.
 
 NOTE on double-encoding: CloudFront standard logs URI-encode field values
 for the log format itself, INCLUDING query strings that were already
@@ -31,6 +33,7 @@ ses = boto3.client("sesv2")
 
 NOTIFY_EMAIL = os.environ["NOTIFY_EMAIL"]
 DECK_ROOTS = {"/comercial/", "/parceiros/"}
+EXCLUDED_IPS = {ip.strip() for ip in os.environ.get("EXCLUDED_IPS", "").split(",") if ip.strip()}
 
 
 def parse_log(body: bytes):
@@ -50,6 +53,8 @@ def parse_log(body: bytes):
         if row.get("cs-uri-stem") not in DECK_ROOTS:
             continue
         if row.get("sc-status") != "200":
+            continue
+        if row.get("c-ip") in EXCLUDED_IPS:
             continue
 
         raw_query = row.get("cs-uri-query", "-")

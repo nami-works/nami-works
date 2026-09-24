@@ -90,6 +90,12 @@ summary. An invalid or missing token gets a plain "link inválido ou
 expirado" page (403), not a login prompt of any kind — there's nothing to
 retry, just a fresh link to request.
 
+Both notification Lambdas skip any hit whose `c-ip` is in `var.excluded_ips`
+(default `[]`) -- so Lucas's own visits (QA, demos, screenshotting a deck
+for someone) don't page him or clutter the daily digest. No default is
+committed here since an IP is a personal identifier; pass it at apply time
+instead: `terraform apply -var 'excluded_ips=["203.0.113.7"]'`.
+
 ## What this module creates
 
 - S3 bucket (private, versioned, SSE-encrypted, 30-day noncurrent-version
