@@ -9,19 +9,22 @@ param(
 # ----------------------------------------------------------------------------
 # deploy-nami-site.ps1 -- deploy the public site at nami.works.
 #
-# Requires nami/site/infra/terraform to have been applied at least once (S3
-# bucket + CloudFront distribution + Route53 alias records). If -Bucket /
-# -DistributionId are not passed explicitly, this script resolves them from
-# that module's terraform outputs. Running this before the first `terraform
-# apply` will fail cleanly at the resolve step below with a clear message.
+# The app now lives at nami-works/site (renamed from nami/site; the old path
+# still holds infra/terraform, which was not moved and still carries the
+# live Terraform state for the already-applied S3 bucket + CloudFront
+# distribution + Route53 alias records -- see nami/site/infra/terraform).
+# If -Bucket / -DistributionId are not passed explicitly, this script
+# resolves them from that module's terraform outputs. Running this before
+# the first `terraform apply` will fail cleanly at the resolve step below
+# with a clear message.
 #
 # Distinct from deploy-omnify-site.ps1 (which ships cpg-labs.io): this one
-# targets nami/site, a separate static Astro app with no Docker, no ECS,
-# no task definition, and its own (separate) Terraform state.
+# targets nami-works/site, a separate static Astro app with no Docker, no
+# ECS, no task definition, and its own (separate) Terraform state.
 #
 # Pipeline:
-#   1. cd nami/site && npm run build   (Astro static output -> dist/)
-#   2. aws s3 sync nami/site/dist s3://...   (with --delete to prune)
+#   1. cd nami-works/site && npm run build   (Astro static output -> dist/)
+#   2. aws s3 sync nami-works/site/dist s3://...   (with --delete to prune)
 #   3. aws cloudfront create-invalidation /*      (force edge refresh)
 #
 # Usage:
@@ -47,12 +50,12 @@ function Resolve-RepoRoot {
 }
 
 $repoRoot     = Resolve-RepoRoot
-$appDir       = Join-Path $repoRoot "nami/site"
+$appDir       = Join-Path $repoRoot "nami-works/site"
 $distDir      = Join-Path $appDir "dist"
 $terraformDir = Join-Path $repoRoot "nami/site/infra/terraform"
 
 if (-not (Test-Path $appDir)) {
-  throw "nami/site not found at $appDir. Are you on the right branch?"
+  throw "nami-works/site not found at $appDir. Are you on the right branch?"
 }
 
 # --- 0. Resolve bucket / distribution ID from terraform outputs, if not passed --
@@ -109,7 +112,7 @@ if (-not $SkipBuild) {
 }
 
 if (-not (Test-Path $distDir)) {
-  throw "nami/site/dist not found after build at $distDir."
+  throw "nami-works/site/dist not found after build at $distDir."
 }
 
 $distFiles = Get-ChildItem -Path $distDir -Recurse -File
@@ -118,7 +121,7 @@ Write-Host "  Built $($distFiles.Count) files; total $totalMB MB."
 Write-Host ""
 
 # --- 2. Sync to S3 ------------------------------------------------------------
-Write-Host "[2/3] Syncing nami/site/dist -> s3://$Bucket/ ..."
+Write-Host "[2/3] Syncing nami-works/site/dist -> s3://$Bucket/ ..."
 $syncArgs = @(
   "s3", "sync",
   $distDir,
