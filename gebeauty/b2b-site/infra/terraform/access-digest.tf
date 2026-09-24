@@ -85,6 +85,7 @@ resource "aws_lambda_function" "access_digest" {
     variables = {
       NOTIFY_EMAIL = var.notify_email
       LOGS_BUCKET  = aws_s3_bucket.logs.id
+      EXCLUDED_IPS = join(",", var.excluded_ips)
     }
   }
 

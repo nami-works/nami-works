@@ -20,6 +20,12 @@ variable "notify_email" {
   default     = "lucas@gebeauty.com.br"
 }
 
+variable "excluded_ips" {
+  description = "Client IPs (c-ip) to treat as noise, not real deck views -- e.g. Lucas's own IP so his own QA/demo visits don't trigger a notification or show up in the daily digest. No default committed here on purpose (an IP is a personal identifier); pass at apply time, e.g. -var 'excluded_ips=[\"203.0.113.7\"]'."
+  type        = list(string)
+  default     = []
+}
+
 data "archive_file" "access_notify" {
   type        = "zip"
   source_file = "${path.module}/lambda/access-notify/index.py"
@@ -101,6 +107,7 @@ resource "aws_lambda_function" "access_notify" {
   environment {
     variables = {
       NOTIFY_EMAIL = var.notify_email
+      EXCLUDED_IPS = join(",", var.excluded_ips)
     }
   }
 
