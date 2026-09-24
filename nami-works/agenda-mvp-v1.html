@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<title>Mockup — /agenda MVP (news stand → booking)</title>
+<style>
+  :root {
+    --creme: #faf8f4;
+    --tinta: #1c1b19;
+    --pinheiro: #1b4d2e;
+    --verde-claro: #5fb87f;
+    --superficie: #f1ede4;
+    --borda: #ddd7c9;
+    --marcador: #e6e652;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #e8e6df;
+    font-family: -apple-system, "Geist", "Segoe UI", sans-serif;
+    color: var(--tinta);
+  }
+  .display {
+    font-family: "Young Serif", Georgia, "Times New Roman", serif;
+    font-feature-settings: "lnum" 1;
+    font-variant-numeric: lining-nums;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+  .mk { background: var(--marcador); color: var(--tinta); padding: 0.04em 0.18em; }
+
+  .mockup-frame {
+    max-width: 420px;
+    margin: 40px auto;
+    background: var(--creme);
+    border: 1px solid var(--borda);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  }
+  .mockup-label {
+    max-width: 420px;
+    margin: 40px auto -20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6b6860;
+  }
+  .frame-inner { padding: 28px 22px; }
+
+  .notes {
+    max-width: 860px;
+    margin: 32px auto;
+    background: #fff;
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    padding: 20px 26px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .notes h2 { font-size: 15px; margin: 0 0 10px; }
+  .notes code { background: var(--superficie); padding: 1px 5px; border-radius: 4px; }
+
+  table.states {
+    max-width: 1040px;
+    margin: 32px auto;
+    border-collapse: collapse;
+    background: #fff;
+    font-size: 13px;
+    width: calc(100% - 40px);
+  }
+  table.states th, table.states td {
+    border: 1px solid var(--borda);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  table.states th { background: var(--superficie); }
+
+  .divider { text-align: center; color: #999; font-size: 12px; margin: 60px 0 0; }
+
+  /* --- /noticias footer addition --- */
+  .noticias-footer {
+    padding-top: 12px;
+    border-top: 1px solid var(--borda);
+    margin-top: 8px;
+  }
+  .noticias-footer .ctaSecondary {
+    display: inline-block;
+    margin-bottom: 18px;
+    color: var(--tinta);
+    text-decoration: none;
+    border-bottom: 1px solid var(--borda);
+    padding-bottom: 3px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .noticias-footer .convitePara {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--tinta);
+    max-width: 480px;
+  }
+  .noticias-footer .convitePara a {
+    color: var(--pinheiro);
+    font-weight: 600;
+  }
+
+  /* --- /agenda page --- */
+  .agenda-hero { padding: 32px 0 8px; }
+  .agenda-eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: #6b6860; margin: 0 0 12px;
+  }
+  .agenda-h1 { font-size: 30px; margin: 0 0 12px; }
+  .agenda-lede { font-size: 15.5px; line-height: 1.6; color: #454340; max-width: 420px; margin: 0 0 24px; }
+
+  .widget-shell {
+    border: 1px solid var(--borda);
+    border-radius: 12px;
+    background: var(--superficie);
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .widget-skeleton {
+    width: 90%;
+    display: grid;
+    gap: 10px;
+  }
+  .skeleton-line {
+    height: 14px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #e5e1d5 25%, #efece2 37%, #e5e1d5 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.4s infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+  .widget-loaded {
+    width: 100%;
+    padding: 18px;
+  }
+  .slot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .slot {
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 13px;
+    background: #fff;
+  }
+  .slot.selected { background: var(--pinheiro); color: var(--creme); border-color: var(--pinheiro); }
+
+  .widget-empty {
+    text-align: center;
+    padding: 32px 20px;
+  }
+  .widget-empty p:first-child { font-weight: 600; margin: 0 0 6px; }
+  .widget-empty p { font-size: 14px; color: #6b6860; margin: 0; }
+  .whatsapp-fallback {
+    display: inline-block;
+    margin-top: 16px;
+    background: var(--pinheiro);
+    color: var(--creme);
+    padding: 10px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .declaracao {
+    background: var(--pinheiro);
+    color: var(--creme);
+    border-radius: 12px;
+    padding: 32px 24px;
+    text-align: center;
+  }
+  .declaracao .display { font-size: 24px; margin: 0 0 10px; }
+  .declaracao p { font-size: 14.5px; opacity: 0.9; margin: 0; }
+  .declaracao .verde { color: var(--verde-claro); }
+</style>
+</head>
+<body>
+
+  <div class="mockup-label">Section A — /noticias/[edicao].astro, new footer block</div>
+  <div class="mockup-frame">
+    <div class="frame-inner">
+      <div class="noticias-footer">
+        <a class="ctaSecondary">Ver todas as edições</a>
+        <p class="convitePara">
+          Toda semana tem mais. Se uma dessas <span class="mk">mexeu com o seu
+          trabalho</span>, dá pra <a href="#agenda-hero">conversar</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider">▾ /agenda — state 1: widget loading ▾</div>
+
+  <div class="mockup-frame" id="agenda-hero">
+    <div class="frame-inner">
+      <div class="agenda-hero">
+        <p class="agenda-eyebrow">Agenda</p>
+        <h1 class="display agenda-h1">Se mexeu com o seu <span class="mk">trabalho</span>,<br>dá pra conversar.</h1>
+        <p class="agenda-lede">
+          Uma conversa de 20 minutos sobre onde a IA ajudaria na sua operação.
+          Sem proposta pronta, sem preço, sem compromisso.
+        </p>
+      </div>
+      <div class="widget-shell">
+        <div class="widget-skeleton">
+          <div class="skeleton-line" style="width:60%"></div>
+          <div class="skeleton-line" style="width:90%"></div>
+          <div class="skeleton-line" style="width:75%"></div>
+          <div class="skeleton-line" style="width:40%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider">▾ state 2: widget loaded, slots available ▾</div>
+
+  <div class="mockup-frame">
+    <div class="frame-inner">
+      <div class="agenda-hero">
+        <p class="agenda-eyebrow">Agenda</p>
+        <h1 class="display agenda-h1">Se mexeu com o seu <span class="mk">trabalho</span>,<br>dá pra conversar.</h1>
+        <p class="agenda-lede">
+          Uma conversa de 20 minutos sobre onde a IA ajudaria na sua operação.
+          Sem proposta pronta, sem preço, sem compromisso.
+        </p>
+      </div>
+      <div class="widget-shell">
+        <div class="widget-loaded">
+          <p style="font-size:13px;font-weight:600;margin:0 0 4px;">Terça-feira, 1 de outubro</p>
+          <div class="slot-grid">
+            <div class="slot">09:00</div>
+            <div class="slot selected">10:30</div>
+            <div class="slot">14:00</div>
+            <div class="slot">15:30</div>
+            <div class="slot">16:00</div>
+            <div class="slot">17:00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider">▾ state 3: no slots available (edge case) ▾</div>
+
+  <div class="mockup-frame">
+    <div class="frame-inner">
+      <div class="agenda-hero">
+        <p class="agenda-eyebrow">Agenda</p>
+        <h1 class="display agenda-h1">Se mexeu com o seu <span class="mk">trabalho</span>,<br>dá pra conversar.</h1>
+      </div>
+      <div class="widget-shell">
+        <div class="widget-empty">
+          <p>Sem horário livre nos próximos dias.</p>
+          <p>Manda mensagem que a gente encaixa direto.</p>
+          <a class="whatsapp-fallback">Chamar no WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider">▾ state 4: booking confirmed ▾</div>
+
+  <div class="mockup-frame">
+    <div class="frame-inner">
+      <div class="declaracao">
+        <p class="display">Marcado. <span class="verde">Terça, 10:30.</span></p>
+        <p>O convite já foi pro seu e-mail, com o link da chamada.</p>
+      </div>
+    </div>
+  </div>
+
+  <table class="states">
+    <caption style="caption-side:top;text-align:left;font-size:14px;font-weight:700;margin-bottom:8px;padding:8px 0;">
+      State matrix — /agenda
+    </caption>
+    <tr>
+      <th>State</th>
+      <th>Headline + lede</th>
+      <th>Widget area</th>
+      <th>Fallback CTA</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td><b>1. Loading</b><br>page painted, Cal.com script not yet initialized</td>
+      <td>visible immediately (static HTML, not blocked by the widget)</td>
+      <td>skeleton shimmer, fixed min-height (prevents layout shift when the real widget mounts)</td>
+      <td>hidden</td>
+      <td>Headline/lede must never wait on the embed — it's the only thing guaranteed to render on slow 4G from an IG bio tap.</td>
+    </tr>
+    <tr>
+      <td><b>2. Loaded, slots available</b></td>
+      <td>visible, unchanged</td>
+      <td>Cal.com's own picker UI (embed controls this, not us)</td>
+      <td>hidden</td>
+      <td>We don't control this state's internals beyond the embed's own theme params (see open questions).</td>
+    </tr>
+    <tr>
+      <td><b>3. Loaded, no slots</b><br>(fully booked / Cal.com returns empty)</td>
+      <td>visible, unchanged</td>
+      <td><b>hidden</b> — not shown disabled/greyed, replaced entirely by the fallback message</td>
+      <td><b>visible</b> — WhatsApp link, single tap, no typing required</td>
+      <td>Per the hide-don't-disable rule: an empty calendar grid has nothing actionable in it. Showing it anyway (greyed) makes the user hunt for a way out. WhatsApp number needs to exist and be staffed — flagged below.</td>
+    </tr>
+    <tr>
+      <td><b>4. Booking confirmed</b></td>
+      <td>page is replaced by the confirmation block (or the widget area swaps in-place — open question)</td>
+      <td>replaced by <code>.declaracao</code> confirmation block</td>
+      <td>hidden</td>
+      <td>This is the one legitimate use of a pinheiro <code>.declaracao</code> block on this page — reserved for the single moment that deserves it, per the "max one per screen" rule.</td>
+    </tr>
+    <tr>
+      <td><b>Mobile (≤480px, primary)</b></td>
+      <td>single column, as drawn above</td>
+      <td>slot grid drops to 2 columns</td>
+      <td>full-width tap target, min 44px height</td>
+      <td>This is the primary viewport — traffic originates from an Instagram bio tap.</td>
+    </tr>
+    <tr>
+      <td><b>Desktop (≥768px, secondary)</b></td>
+      <td>same column, capped at ~560px, centered — do not stretch to full width</td>
+      <td>slot grid can go to 4-5 columns if Cal.com's own layout allows</td>
+      <td>same</td>
+      <td>Secondary check only. Do not design new behavior for desktop that mobile doesn't already have.</td>
+    </tr>
+  </table>
+
+  <div class="notes">
+    <h2>Notes vs. current state</h2>
+    <p>
+      <b>Section A</b> is one paragraph appended below the existing "Ver todas as
+      edições" link on <code>/noticias/[edicao].astro</code> — no layout change,
+      no new section, just one more block after <code>.ctaRow</code>. The marker
+      phrase ("mexeu com o seu trabalho") deliberately echoes the site's own
+      lexicon for what the news line already promises ("o que muda no seu
+      trabalho"), so the jump from reading an edition to this line reads as
+      continuation, not a new pitch.
+    </p>
+    <p>
+      <b>/agenda</b> reuses <code>BaseLayout.astro</code> + <code>marketing.css</code>
+      + the <code>.display</code>/<code>.mk</code> system exactly as shipped this
+      session on the rest of the site — no new visual language. The widget shell
+      has a fixed <code>min-height</code> across all four states specifically so
+      the page doesn't jump when Cal.com's script finishes loading (a real CLS
+      risk with third-party embeds — Core Web Vitals budget still applies even
+      with no ad spend behind this page).
+    </p>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,105 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/marketing.css";
+import data from "../../data/noticias.json";
+
+const edicoes = [...data.edicoes].sort((a, b) => (a.data < b.data ? 1 : -1));
+
+function formatarData(iso: string) {
+  return new Date(`${iso}T00:00:00`).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
+---
+
+<BaseLayout
+  title="Notícias | NAMI Works"
+  description="Notícias de IA traduzidas pro que muda na semana de quem toca um negócio."
+>
+  <section class="section pageHero">
+    <div class="container narrow">
+      <p class="eyebrow">Notícias</p>
+      <h1 class="sectionTitle display display-1">O que muda <span class="mk">na sua semana</span>.</h1>
+      <p class="lede">
+        Cada edição traduz o que uma notícia de IA muda pra quem toca um
+        negócio. Uma fixa por semana, mais uma avulsa quando o preço ou a
+        regra mudam de verdade.
+      </p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft">
+    <div class="container narrow">
+      <div class="edicaoList">
+        {
+          edicoes.map((edicao) => (
+            <a href={`/noticias/${edicao.pasta}`} class="edicaoCard">
+              <p class="edicaoDate">{formatarData(edicao.data)}</p>
+              <p class="edicaoAbertura">{edicao.abertura}</p>
+              <span class="cardLink">
+                Ver edição
+                <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M7 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .pageHero {
+    padding-top: 96px;
+  }
+
+  .container.narrow {
+    max-width: 720px;
+  }
+
+  .edicaoList {
+    display: grid;
+    gap: 20px;
+  }
+
+  .edicaoCard {
+    display: block;
+    text-decoration: none;
+    background: var(--site-bg);
+    border: 1px solid var(--site-border);
+    border-radius: 12px;
+    padding: 26px;
+    transition: border-color 0.15s ease;
+  }
+
+  .edicaoCard:hover {
+    border-color: var(--site-accent);
+  }
+
+  .edicaoDate {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--site-text-secondary);
+    margin: 0 0 10px;
+  }
+
+  .edicaoAbertura {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--site-text);
+    letter-spacing: -0.01em;
+    margin: 0 0 16px;
+  }
+
+  @media (min-width: 769px) {
+    .pageHero {
+      padding-top: 130px;
+    }
+  }
+</style>
