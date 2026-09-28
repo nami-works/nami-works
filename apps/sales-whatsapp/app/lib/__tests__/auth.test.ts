@@ -28,8 +28,15 @@ describe("grantedLocationsForSession", () => {
     expect(locations.map((l) => l.key)).toEqual(["riosul"]);
   });
 
-  it("throws UnauthorizedLocationError for an email with no grant", () => {
-    expect(() => grantedLocationsForSession(mockSession("not-a-rep@gebeauty.com.br"))).toThrow(
+  it("grants full access to a non-geb00 email, not just known reps", () => {
+    const locations = grantedLocationsForSession(mockSession("not-a-rep@gebeauty.com.br"));
+    expect(locations.map((l) => l.key).sort()).toEqual(
+      ["riomar-recife", "riosul", "shopping-recife", "shops-jardins"].sort(),
+    );
+  });
+
+  it("throws UnauthorizedLocationError for a geb00-pattern email with no specific grant", () => {
+    expect(() => grantedLocationsForSession(mockSession("geb009@gebeauty.com.br"))).toThrow(
       UnauthorizedLocationError,
     );
   });

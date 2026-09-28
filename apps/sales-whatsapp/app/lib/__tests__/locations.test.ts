@@ -12,14 +12,21 @@ describe("locationsForRep", () => {
     expect(locations.map((l) => l.key)).toEqual(["shopping-recife"]);
   });
 
-  it("returns all 4 locations for the owner/ops grant", () => {
+  it("returns all 4 locations for a non-geb00 email (owner/ops and everyone else)", () => {
     const locations = locationsForRep("lucas@gebeauty.com.br");
     expect(locations.map((l) => l.key).sort()).toEqual(
       ["riomar-recife", "riosul", "shopping-recife", "shops-jardins"].sort(),
     );
   });
 
-  it("returns an empty array for an unlisted email", () => {
-    expect(locationsForRep("nobody@gebeauty.com.br")).toEqual([]);
+  it("returns all 4 locations for any other unlisted, non-geb00 email", () => {
+    const locations = locationsForRep("nobody@gebeauty.com.br");
+    expect(locations.map((l) => l.key).sort()).toEqual(
+      ["riomar-recife", "riosul", "shopping-recife", "shops-jardins"].sort(),
+    );
+  });
+
+  it("returns an empty array for a geb00-pattern email with no specific grant", () => {
+    expect(locationsForRep("geb009@gebeauty.com.br")).toEqual([]);
   });
 });
