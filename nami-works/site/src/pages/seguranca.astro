@@ -1,0 +1,177 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/marketing.css";
+import { waLink } from "../data/site-config";
+
+const claims = [
+  {
+    titulo: "O dado continua seu",
+    corpo: "Tudo roda dentro das suas próprias contas: o seu sistema, a sua planilha, o seu WhatsApp. A gente não copia o seu dado pra fora pra treinar nada. Se o contrato acabar, o que é seu continua seu, do jeito que sempre foi.",
+  },
+  {
+    titulo: "LGPD, sem jargão",
+    corpo: "Só usamos o dado que a operação já usa hoje pra fazer o que já faz hoje, só que mais rápido. Dado de cliente não vira treinamento de modelo, não é vendido, não sai da sua conta pra terceiro sem você saber.",
+  },
+  {
+    titulo: "Quem vê o quê",
+    corpo: "O acesso é por processo, não geral. Um agente que mexe em estoque não enxerga financeiro, a não ser que você decida o contrário. Você define o escopo antes de qualquer coisa rodar.",
+  },
+];
+
+const nuncaFaz = [
+  "Manda dinheiro ou faz pagamento sozinha.",
+  "Apaga dado sem confirmação de uma pessoa.",
+  "Manda mensagem pro seu cliente sem você ter aprovado antes.",
+];
+
+const wa = waLink("Segurança e controle");
+---
+
+<BaseLayout
+  title="Segurança e controle | NAMI Works"
+  description="O dado continua seu, a IA propõe e uma pessoa aprova, toda ação fica registrada. O que a IA nunca faz sozinha."
+>
+  <section class="section pageHero">
+    <div class="container">
+      <p class="eyebrow">Segurança e controle</p>
+      <h1 class="sectionTitle display display-1">
+        A pergunta que você ainda não fez, <span class="mk">respondida antes</span>.
+      </h1>
+      <p class="lede">
+        "Pra onde vai o meu dado?" é a primeira dúvida de quem nunca conectou
+        IA num sistema de verdade. Aqui está a resposta completa, antes de
+        qualquer conversa de venda.
+      </p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="claims">
+    <div class="container">
+      <div class="claimsList">
+        {
+          claims.map((c) => (
+            <div class="claim">
+              <h2 class="claimTitulo display display-3">{c.titulo}</h2>
+              <p class="claimCorpo">{c.corpo}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section declaracao" id="propoe-aprova">
+    <div class="container">
+      <h2 class="sectionTitle display display-3 propoeTitle">A IA propõe. <span class="mk">Uma pessoa aprova.</span></h2>
+      <p class="propoeBody">
+        Qualquer ação que muda preço, mexe em dado de cliente ou afeta dinheiro
+        passa por aprovação humana antes de acontecer. A IA sugere o próximo
+        passo; quem decide continua sendo gente da sua empresa.
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="log">
+    <div class="container">
+      <p class="eyebrow">Toda ação, registrada</p>
+      <h2 class="sectionTitle display display-3">Nada acontece <span class="mk">fora do seu histórico</span>.</h2>
+      <p class="body">
+        Toda ação que um agente toma fica num registro que dá pra revisar
+        depois: o que mudou, quando e por quê. Não é caixa-preta: você enxerga
+        o que a IA fez, não só o resultado final.
+      </p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="nunca">
+    <div class="container">
+      <p class="eyebrow">O que a IA nunca faz sozinha</p>
+      <h2 class="sectionTitle display display-3">Três coisas que ficam <span class="mk">sempre com uma pessoa</span>.</h2>
+
+      <ul class="nuncaList">
+        {nuncaFaz.map((item) => <li class="nuncaItem">{item}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="comecar">
+    <div class="container">
+      <p class="eyebrow">Como começar</p>
+      <h2 class="sectionTitle display display-3">Agenda o <span class="mk">diagnóstico</span> pra ver isso na sua operação.</h2>
+      <div class="ctaRow">
+        <a href={wa} class="ctaPrimary" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+        <a href="/por-onde-comecar" class="ctaSecondary">Descobrir por onde começar</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .pageHero {
+    padding-top: 96px;
+  }
+
+  .claimsList {
+    display: grid;
+    gap: 32px;
+  }
+
+  .claimTitulo {
+    margin: 0 0 10px;
+  }
+
+  .claimCorpo {
+    font-size: 15.5px;
+    line-height: 1.65;
+    color: var(--site-text-secondary);
+    max-width: 620px;
+    margin: 0;
+  }
+
+  .propoeTitle {
+    margin: 0 0 16px;
+  }
+
+  .propoeBody {
+    font-size: 15.5px;
+    line-height: 1.6;
+    max-width: 560px;
+    margin: 0;
+    opacity: 0.9;
+  }
+
+  .nuncaList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+    max-width: 560px;
+  }
+
+  .nuncaItem {
+    font-size: 15.5px;
+    line-height: 1.5;
+    padding-left: 28px;
+    position: relative;
+  }
+
+  .nuncaItem::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 14px;
+    height: 2px;
+    background: var(--site-erro);
+  }
+
+  @media (min-width: 769px) {
+    .pageHero {
+      padding-top: 130px;
+    }
+    .claimsList {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

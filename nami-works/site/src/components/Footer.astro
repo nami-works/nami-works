@@ -1,18 +1,24 @@
+---
+import { LEGAL_NAME, CNPJ, CITY } from "../data/site-config";
+---
+
 <footer class="footer">
-  <div class="footerBrand">
+  <div class="footerTop">
     <span class="footerBrandText">NAMI Works</span>
+
+    <ul class="footerLinks">
+      <li><a href="/sobre" class="footerLink">Sobre</a></li>
+      <li><a href="/privacidade" class="footerLink">Privacidade</a></li>
+      <li><a href="/termos" class="footerLink">Termos</a></li>
+    </ul>
+
+    <div class="footerEmail">
+      <a href="mailto:contato@nami.works">contato@nami.works</a>
+    </div>
   </div>
 
-  <ul class="footerLinks">
-    <li><a href="/metodo" class="footerLink">Método</a></li>
-    <li><a href="/diagnostico" class="footerLink">Diagnóstico</a></li>
-    <li><a href="/contato" class="footerLink">Contato</a></li>
-    <li><a href="/privacidade" class="footerLink">Privacidade</a></li>
-    <li><a href="/termos" class="footerLink">Termos</a></li>
-  </ul>
-
-  <div class="footerEmail">
-    <a href="mailto:contato@nami.works">contato@nami.works</a>
+  <div class="footerTrust">
+    {LEGAL_NAME} · {CNPJ} · {CITY}
   </div>
 
   <div class="footerCopy">
@@ -23,21 +29,23 @@
 <style>
   .footer {
     border-top: 1px solid var(--site-border);
-    padding: 40px 24px;
+    padding: 40px 24px 84px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: 16px;
     background-color: var(--site-bg);
     color: var(--site-text-secondary);
     font-family: var(--site-font);
     font-size: 13px;
+    text-align: center;
   }
 
-  .footerBrand {
+  .footerTop {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    gap: 16px;
   }
 
   .footerBrandText {
@@ -61,12 +69,18 @@
     text-decoration: none;
     color: var(--site-text-secondary);
     font-size: 13px;
+    padding: 6px 2px;
     transition: color 0.15s ease;
   }
 
   .footerLink:hover,
   .footerEmail a:hover {
     color: var(--site-text);
+  }
+
+  .footerTrust {
+    font-size: 12px;
+    color: var(--site-text-secondary);
   }
 
   .footerCopy {
@@ -79,7 +93,21 @@
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
-      padding: 60px 48px;
+      padding: 60px 48px 60px;
+      text-align: left;
+    }
+    .footerTop {
+      flex-direction: row;
+      gap: 32px;
+    }
+  }
+
+  /* The sticky mobile WhatsApp bar (WhatsAppBar.astro, 52px) sits on top of
+     the footer at narrow widths -- the extra bottom padding above keeps the
+     copyright line from being covered by it. */
+  @media (min-width: 900px) {
+    .footer {
+      padding-bottom: 60px;
     }
   }
 </style>

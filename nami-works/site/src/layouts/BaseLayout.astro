@@ -3,6 +3,7 @@ import "../styles/global.css";
 
 import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
+import WhatsAppBar from "../components/WhatsAppBar.astro";
 
 interface Props {
   title: string;
@@ -67,9 +68,32 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://nami.works"
 
   <body>
     {!bareLayout && <Nav />}
-    <main style={!bareLayout ? "padding-top: 60px;" : ""}>
+    <main class="siteMain" style={!bareLayout ? "padding-top: 60px;" : ""}>
       <slot />
     </main>
     {!bareLayout && <Footer />}
+    {!bareLayout && <WhatsAppBar />}
   </body>
+
+  <style is:global>
+    /* Mobile sticky WhatsApp bar (52px) needs room below the content so it
+       never overlaps the last section -- desktop doesn't render the bar at
+       all (WhatsAppBar.astro), so no padding needed there. */
+    @media (max-width: 899px) {
+      .siteMain {
+        padding-bottom: 52px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
 </html>

@@ -1,31 +1,23 @@
 ---
 import ThemeToggle from "./ThemeToggle.astro";
+import { waLink } from "../data/site-config";
+import { pageLabelFromPath } from "../data/page-labels";
 
 const NAV_LINKS = [
-  { label: "Serviços", href: "/#onde-atuamos" },
-  { label: "Método", href: "/metodo" },
-  { label: "Diagnóstico", href: "/diagnostico" },
-  { label: "Implantação", href: "/implantacao" },
-  { label: "Operação", href: "/operacao" },
-  { label: "Notícias", href: "/noticias" },
-  { label: "Sobre", href: "/sobre" },
+  { label: "Como funciona", href: "/como-funciona" },
+  { label: "Segurança", href: "/seguranca" },
+  { label: "Para quem", href: "/para-quem" },
+  { label: "Preços", href: "/precos" },
+  { label: "Conteúdo", href: "/noticias" },
 ];
+
+const waHref = waLink(pageLabelFromPath(Astro.url.pathname));
 ---
 
 <nav class="nav" id="site-nav">
   <a href="/" class="navLogo" aria-label="nami.works">
-    <img
-      src="/brand/lockup-ink.png"
-      alt=""
-      class="navLockup navLockupLight"
-      height="28"
-    />
-    <img
-      src="/brand/lockup-cream.png"
-      alt=""
-      class="navLockup navLockupDark"
-      height="28"
-    />
+    <img src="/brand/lockup-ink.png" alt="" class="navLockup navLockupLight" height="28" />
+    <img src="/brand/lockup-cream.png" alt="" class="navLockup navLockupDark" height="28" />
   </a>
 
   <div class="navRight">
@@ -40,6 +32,8 @@ const NAV_LINKS = [
         ))
       }
     </ul>
+
+    <a href={waHref} class="navWhatsapp" target="_blank" rel="noopener">Chamar no WhatsApp</a>
 
     <ThemeToggle />
 
@@ -88,6 +82,8 @@ const NAV_LINKS = [
     ))
   }
 
+  <a href={waHref} class="mobileLink mobileWhatsapp" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+
   <ThemeToggle />
 </div>
 
@@ -116,7 +112,6 @@ const NAV_LINKS = [
   openBtn?.addEventListener("click", openMenu);
   closeBtn?.addEventListener("click", closeMenu);
 
-  // Close on link tap inside the overlay
   overlay?.querySelectorAll("a").forEach((a) => {
     a.addEventListener("click", closeMenu);
   });
@@ -174,7 +169,7 @@ const NAV_LINKS = [
   .navLinks {
     display: none;
     align-items: center;
-    gap: 28px;
+    gap: 26px;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -196,7 +191,22 @@ const NAV_LINKS = [
   .navRight {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 20px;
+  }
+
+  /* Desktop-only WhatsApp button -- on mobile the sticky WhatsAppBar owns
+     this job instead, so it's hidden here to avoid two competing CTAs. */
+  .navWhatsapp {
+    display: none;
+    align-items: center;
+    padding: 9px 16px;
+    background: var(--site-accent);
+    color: var(--site-accent-text);
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13.5px;
+    white-space: nowrap;
   }
 
   .hamburger {
@@ -236,6 +246,15 @@ const NAV_LINKS = [
     color: var(--site-text-secondary);
   }
 
+  .mobileWhatsapp {
+    padding: 14px 28px;
+    background: var(--site-accent);
+    color: var(--site-accent-text);
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 17px;
+  }
+
   .mobileClose {
     position: absolute;
     top: 18px;
@@ -250,6 +269,9 @@ const NAV_LINKS = [
   @media (min-width: 900px) {
     .navLinks {
       display: flex;
+    }
+    .navWhatsapp {
+      display: inline-flex;
     }
     .hamburger {
       display: none;

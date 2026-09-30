@@ -1,0 +1,41 @@
+---
+// Mobile sticky bottom bar, brief "Navigation and calls to action":
+// wa.me deep link pre-filled with a first message naming the page it came
+// from. Desktop keeps the WhatsApp button in Nav.astro instead -- this bar
+// is mobile-only (see media query below).
+import { waLink } from "../data/site-config";
+import { pageLabelFromPath } from "../data/page-labels";
+
+const label = pageLabelFromPath(Astro.url.pathname);
+---
+
+<a href={waLink(label)} class="waBar" target="_blank" rel="noopener">
+  Chamar no WhatsApp
+</a>
+
+<style>
+  .waBar {
+    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 90;
+    height: 52px;
+    align-items: center;
+    justify-content: center;
+    background: var(--site-accent);
+    color: var(--site-accent-text);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    /* iOS safe-area so the bar doesn't sit under the home indicator */
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  @media (max-width: 899px) {
+    .waBar {
+      display: flex;
+    }
+  }
+</style>

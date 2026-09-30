@@ -1,0 +1,274 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/marketing.css";
+import { waLink, DIAGNOSTIC_PRICE_LABEL } from "../data/site-config";
+
+const wa = waLink("Preços");
+---
+
+<BaseLayout
+  title="Preços | NAMI Works"
+  description="Diagnóstico com preço público, piloto e acompanhamento em faixas por escopo, e uma calculadora de quanto o trabalho repetitivo custa por mês."
+>
+  <section class="section pageHero">
+    <div class="container">
+      <p class="eyebrow">Preços</p>
+      <h1 class="sectionTitle display display-1">
+        O preço do primeiro passo, <span class="mk">sem letra miúda</span>.
+      </h1>
+      <p class="lede">
+        O diagnóstico tem valor público. Piloto e acompanhamento variam com o
+        escopo, dentro de uma faixa que você conhece antes de começar.
+      </p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="tabela">
+    <div class="container">
+      <div class="precosGrid">
+        <div class="precoCard">
+          <p class="precoLabel">Diagnóstico</p>
+          <p class="precoValor display display-2">{DIAGNOSTIC_PRICE_LABEL}</p>
+          <p class="precoDesc">Preço fechado, público, pago uma vez.</p>
+        </div>
+        <div class="precoCard">
+          <p class="precoLabel">Piloto</p>
+          <p class="precoValor display display-2">[faixa pendente]</p>
+          <p class="precoDesc">
+            30 dias, um processo. O valor final depende da complexidade do
+            sistema e de quantos dados precisam ser organizados antes.
+          </p>
+        </div>
+        <div class="precoCard">
+          <p class="precoLabel">Acompanhamento</p>
+          <p class="precoValor display display-2">[faixa pendente]</p>
+          <p class="precoDesc">
+            Mensal, contínuo. O valor final depende de quantos processos
+            estão em operação e da cadência de revisão combinada.
+          </p>
+        </div>
+      </div>
+      <p class="precoNota">
+        O que move o preço dentro da faixa: quantidade de processos, estado
+        dos dados hoje e quantos sistemas diferentes precisam se conectar.
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="calculadora">
+    <div class="container narrow">
+      <p class="eyebrow">Antes de decidir</p>
+      <h2 class="sectionTitle display display-3">Quanto custa <span class="mk">o trabalho repetitivo hoje</span>?</h2>
+      <p class="lede">
+        Preenchido com um exemplo. Troca pelos seus números.
+      </p>
+
+      <div class="calcCard">
+        <div class="calcField">
+          <label for="calc-horas">Horas por semana nessa tarefa</label>
+          <input type="number" id="calc-horas" min="0" step="0.5" value="10" inputmode="decimal" />
+        </div>
+        <div class="calcField">
+          <label for="calc-custo">Custo da hora dessa pessoa <span class="sub">(R$)</span></label>
+          <input type="number" id="calc-custo" min="0" step="5" value="40" inputmode="decimal" />
+        </div>
+
+        <div class="calcResult">
+          <p class="calcResultLabel">Estimativa por mês</p>
+          <p class="calcResultValor display display-2" id="calc-resultado">R$ 1.732</p>
+          <p class="calcArithmetic" id="calc-conta">10h/semana &times; 4,33 semanas &times; R$ 40/h</p>
+        </div>
+
+        <p class="calcDisclaimer">
+          Isso estima o tempo que a tarefa consome hoje, não promete um
+          resultado. O que a IA de fato recupera depende do processo e é
+          medido no piloto.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="comecar">
+    <div class="container">
+      <p class="eyebrow">Como começar</p>
+      <h2 class="sectionTitle display display-3">O primeiro passo é <span class="mk">sempre o diagnóstico</span>.</h2>
+      <div class="ctaRow">
+        <a href={wa} class="ctaPrimary" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+        <a href="/por-onde-comecar" class="ctaSecondary">Descobrir por onde começar</a>
+      </div>
+    </div>
+  </section>
+
+  <script is:inline>
+    (function () {
+      const horasEl = document.getElementById("calc-horas");
+      const custoEl = document.getElementById("calc-custo");
+      const resultadoEl = document.getElementById("calc-resultado");
+      const contaEl = document.getElementById("calc-conta");
+      if (!horasEl || !custoEl || !resultadoEl || !contaEl) return;
+
+      const SEMANAS_POR_MES = 4.33;
+
+      function fmtBRL(n) {
+        return n.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+          maximumFractionDigits: 0,
+        });
+      }
+
+      function recalc() {
+        const horas = Math.max(0, parseFloat(horasEl.value) || 0);
+        const custo = Math.max(0, parseFloat(custoEl.value) || 0);
+        const total = horas * SEMANAS_POR_MES * custo;
+        resultadoEl.textContent = fmtBRL(total);
+        const horasFmt = horas.toLocaleString("pt-BR");
+        const custoFmt = custo.toLocaleString("pt-BR");
+        contaEl.textContent = `${horasFmt}h/semana × 4,33 semanas × R$ ${custoFmt}/h`;
+      }
+
+      horasEl.addEventListener("input", recalc);
+      custoEl.addEventListener("input", recalc);
+      recalc();
+    })();
+  </script>
+</BaseLayout>
+
+<style>
+  .pageHero {
+    padding-top: 96px;
+  }
+
+  .container.narrow {
+    max-width: 640px;
+  }
+
+  .precosGrid {
+    display: grid;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .precoCard {
+    background: var(--site-bg);
+    border: 1px solid var(--site-border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .precoLabel {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--site-text-secondary);
+    margin: 0 0 8px;
+  }
+
+  .precoValor {
+    margin: 0 0 10px;
+    font-size: 26px;
+  }
+
+  .precoDesc {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--site-text-secondary);
+    margin: 0;
+  }
+
+  .precoNota {
+    font-size: 13.5px;
+    color: var(--site-text-secondary);
+    max-width: 640px;
+    margin: 0;
+  }
+
+  .calcCard {
+    background: var(--site-surface);
+    border: 1px solid var(--site-border);
+    border-radius: 14px;
+    padding: 28px;
+    margin-top: 24px;
+  }
+
+  .calcField {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .calcField label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--site-text);
+  }
+
+  .calcField .sub {
+    font-weight: 400;
+    color: var(--site-text-secondary);
+  }
+
+  .calcField input {
+    font-family: var(--site-font);
+    font-size: 16px;
+    color: var(--site-text);
+    background: var(--site-bg);
+    /* muted, not borda: this border carries UI meaning (an editable
+       control), not just a content divider -- borda/creme is 1.4:1 and
+       fails the 3:1 UI-boundary requirement (site-brief-260930.md,
+       accessibility table). */
+    border: 1px solid var(--site-text-secondary);
+    border-radius: 8px;
+    padding: 12px 14px;
+    width: 100%;
+  }
+
+  .calcField input:focus-visible {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 2px;
+  }
+
+  .calcResult {
+    border-top: 1px solid var(--site-border);
+    padding-top: 20px;
+    margin-top: 4px;
+  }
+
+  .calcResultLabel {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--site-text-secondary);
+    margin: 0 0 6px;
+  }
+
+  .calcResultValor {
+    margin: 0 0 6px;
+    color: var(--site-accent);
+  }
+
+  .calcArithmetic {
+    font-size: 13px;
+    color: var(--site-text-secondary);
+    font-family: var(--site-font-mono);
+    margin: 0;
+  }
+
+  .calcDisclaimer {
+    font-size: 13px;
+    color: var(--site-text-secondary);
+    margin: 18px 0 0;
+    line-height: 1.5;
+  }
+
+  @media (min-width: 769px) {
+    .pageHero {
+      padding-top: 130px;
+    }
+    .precosGrid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

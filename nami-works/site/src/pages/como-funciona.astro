@@ -1,0 +1,195 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/marketing.css";
+import { waLink } from "../data/site-config";
+
+const passos = [
+  {
+    n: "01",
+    nome: "Diagnóstico",
+    duracao: "alguns dias úteis",
+    desc: "A gente audita a operação e devolve um mapa de onde a IA agrega mais valor primeiro.",
+    entrega: "acesso de leitura aos sistemas que fizerem sentido, e uma conversa com quem conhece a operação.",
+  },
+  {
+    n: "02",
+    nome: "Piloto",
+    duracao: "30 dias",
+    desc: "Um processo só. Só um. É o primeiro passo pequeno, não o projeto inteiro de uma vez.",
+    entrega: "acesso ao sistema desse processo, um dono do processo disponível, uma hora por semana.",
+  },
+  {
+    n: "03",
+    nome: "Implantação",
+    duracao: "conforme o escopo",
+    desc: "O que funcionou no piloto passa pros outros processos da operação.",
+    entrega: "o mesmo acesso e acompanhamento do piloto, agora em mais de um processo.",
+  },
+  {
+    n: "04",
+    nome: "Acompanhamento",
+    duracao: "mensal, contínuo",
+    desc: "A gente continua junto: ajusta o agente, revisa o que mudou, resolve o que trava.",
+    entrega: "uma rotina curta de revisão por mês.",
+  },
+];
+
+const medidas = [
+  { m: "Horas economizadas", d: "quanto tempo o processo deixou de consumir por semana." },
+  { m: "Erros evitados", d: "quantos erros o processo cometia antes, e quantos depois." },
+  { m: "Tempo de resposta", d: "quanto tempo leva do pedido até a resposta, antes e depois." },
+];
+
+const wa = waLink("Como funciona");
+---
+
+<BaseLayout
+  title="Como funciona | NAMI Works"
+  description="Diagnóstico, piloto de 30 dias num processo só, implantação e acompanhamento mensal. O primeiro passo é pequeno e visível."
+>
+  <section class="section pageHero">
+    <div class="container">
+      <p class="eyebrow">Como funciona</p>
+      <h1 class="sectionTitle display display-1">
+        O primeiro passo é <span class="mk">pequeno, e você vê ele acontecer</span>.
+      </h1>
+      <p class="lede">
+        Quatro etapas. O piloto cobre um processo só, de propósito: é assim que
+        dá pra testar antes de comprometer a operação inteira.
+      </p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="passos">
+    <div class="container">
+      <div class="passosList">
+        {
+          passos.map((p) => (
+            <div class="passo">
+              <div class="passoHead">
+                <p class="cardNumber">{p.n}</p>
+                <h2 class="passoNome">{p.nome}</h2>
+                <span class="passoDuracao">{p.duracao}</span>
+              </div>
+              <p class="passoDesc">{p.desc}</p>
+              <p class="passoEntrega"><b>O que você entrega:</b> {p.entrega}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="medicao">
+    <div class="container">
+      <p class="eyebrow">O que se mede no fim do piloto</p>
+      <h2 class="sectionTitle display display-3">Três números, <span class="mk">não uma opinião</span>.</h2>
+
+      <div class="cardGrid cols3">
+        {
+          medidas.map((x) => (
+            <div class="card">
+              <h3 class="cardTitle">{x.m}</h3>
+              <p class="cardBody">{x.d}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="se-nao-der">
+    <div class="container">
+      <p class="eyebrow">Se o piloto não entregar</p>
+      <h2 class="sectionTitle display display-3">Isso <span class="mk">também está combinado antes</span>.</h2>
+      <p class="lede placeholderNote">
+        [o que acontece se o piloto não entregar o resultado combinado — reembolso,
+        extensão ou outro caminho — ainda está sendo definido. Fica combinado por
+        escrito antes do piloto começar.]
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="comecar">
+    <div class="container">
+      <p class="eyebrow">Como começar</p>
+      <h2 class="sectionTitle display display-3">O primeiro passo é <span class="mk">agendar o diagnóstico</span>.</h2>
+      <div class="ctaRow">
+        <a href={wa} class="ctaPrimary" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+        <a href="/por-onde-comecar" class="ctaSecondary">Descobrir por onde começar</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .pageHero {
+    padding-top: 96px;
+  }
+
+  .passosList {
+    display: grid;
+    gap: 28px;
+  }
+
+  .passo {
+    border-bottom: 1px solid var(--site-border);
+    padding-bottom: 28px;
+  }
+
+  .passo:last-child {
+    border-bottom: none;
+  }
+
+  .passoHead {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .passoNome {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .passoDuracao {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--site-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .passoDesc {
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--site-text);
+    margin: 0 0 8px;
+    max-width: 620px;
+  }
+
+  .passoEntrega {
+    font-size: 14px;
+    color: var(--site-text-secondary);
+    margin: 0;
+    max-width: 620px;
+  }
+
+  .placeholderNote {
+    max-width: 620px;
+    font-style: italic;
+  }
+
+  @media (min-width: 769px) {
+    .pageHero {
+      padding-top: 130px;
+    }
+    .cardGrid.cols3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

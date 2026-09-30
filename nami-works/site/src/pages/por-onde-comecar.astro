@@ -1,0 +1,671 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/marketing.css";
+
+// Adapted from diagnostico-artifact.html (site-brief-260930.md, page 7),
+// renamed: "diagnóstico" is reserved for the paid service, this is the free
+// self-assessment. Two things from the artifact don't survive on a real
+// static site and are dropped rather than faked:
+//  - The AI-adaptive follow-up questions and AI-written result both called
+//    `window.claude.complete()`, a Claude-artifact-only browser API that
+//    doesn't exist on a deployed page. The artifact already shipped a fully
+//    deterministic fallback path for exactly this case (`fallbackDiagnosis`)
+//    -- that's the only path used here, always.
+//  - "Puxar do site" (site scraping to prefill fields) needs a backend to
+//    fetch and parse another page; this site has none (site/CLAUDE.md wall
+//    rule). Dropped.
+// Also reordered per the brief's explicit spec: the result now renders
+// BEFORE any contact field (the artifact asked name/email first); contact
+// is the optional step after.
+---
+
+<BaseLayout
+  title="Por onde começar | NAMI Works"
+  description="Um autoavaliação de alguns minutos sobre como a IA já entra no seu negócio. No fim, uma leitura na hora, sem precisar deixar contato."
+>
+  <section class="section pageHero">
+    <div class="container narrow">
+      <p class="eyebrow">Por onde começar</p>
+      <h1 class="sectionTitle display display-1">
+        Alguns minutos, <span class="mk">uma leitura no fim</span>.
+      </h1>
+      <p class="lede">
+        Não é o diagnóstico completo, é o ponto de partida. Responde algumas
+        perguntas sobre como o negócio roda hoje e já sai com uma leitura,
+        sem precisar deixar contato antes.
+      </p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="quiz">
+    <div class="container narrow">
+      <form class="quizForm" method="POST" action="https://wt3ihd5kteuu3y6hed75xpsmqe0zhkai.lambda-url.us-east-1.on.aws/">
+        <div class="progressShell" hidden>
+          <p class="progressLabel">Pergunta 1 de 7</p>
+          <div class="progressTrack"><div class="progressFill"></div></div>
+        </div>
+
+        <fieldset class="step" data-step="1">
+          <legend class="stepLegend">O negócio</legend>
+          <div class="field">
+            <label for="oferta">O que a empresa faz, em uma frase?</label>
+            <textarea id="oferta" name="oferta" rows="3" placeholder="ex: a gente distribui peças pra oficinas da região" required></textarea>
+          </div>
+          <div class="navRow" hidden>
+            <button type="button" class="ctaSecondary btnBack" hidden>Voltar</button>
+            <button type="button" class="ctaPrimary btnNext">Continuar</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="step" data-step="2">
+          <legend class="stepLegend">O sistema de hoje</legend>
+          <div class="field">
+            <label id="gestaoLabel">Sistema que roda a empresa <span class="optional">(pode marcar mais de um)</span></label>
+            <div class="chips" role="group" aria-labelledby="gestaoLabel">
+              <label class="chip"><input type="checkbox" name="gestao" value="omie" /><span>Omie</span></label>
+              <label class="chip"><input type="checkbox" name="gestao" value="bling" /><span>Bling</span></label>
+              <label class="chip"><input type="checkbox" name="gestao" value="tiny" /><span>Tiny</span></label>
+              <label class="chip"><input type="checkbox" name="gestao" value="totvs" /><span>Totvs</span></label>
+              <label class="chip"><input type="checkbox" name="gestao" value="conta azul" /><span>Conta Azul</span></label>
+              <label class="chip"><input type="checkbox" name="gestao" value="planilha / excel" /><span>Planilha / Excel</span></label>
+              <label class="chip"><input type="checkbox" name="gestao" value="outro sistema" /><span>Outro</span></label>
+              <label class="chip"><input type="checkbox" name="gestao" value="nenhum ainda" /><span>Nenhum ainda</span></label>
+            </div>
+          </div>
+          <div class="navRow" hidden>
+            <button type="button" class="ctaSecondary btnBack">Voltar</button>
+            <button type="button" class="ctaPrimary btnNext">Continuar</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="step" data-step="3">
+          <legend class="stepLegend">Quanto ainda roda na mão</legend>
+          <div class="field">
+            <label id="planilhaLabel">Quanto do negócio ainda roda em planilha e no controle de uma pessoa?</label>
+            <div class="chips" role="group" aria-labelledby="planilhaLabel">
+              <label class="chip"><input type="radio" name="planilha" value="quase tudo" required /><span>Quase tudo</span></label>
+              <label class="chip"><input type="radio" name="planilha" value="boa parte" required /><span>Boa parte</span></label>
+              <label class="chip"><input type="radio" name="planilha" value="pouca coisa" required /><span>Pouca coisa</span></label>
+            </div>
+          </div>
+          <div class="navRow" hidden>
+            <button type="button" class="ctaSecondary btnBack">Voltar</button>
+            <button type="button" class="ctaPrimary btnNext">Continuar</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="step" data-step="4">
+          <legend class="stepLegend">Onde dói</legend>
+          <div class="field">
+            <label id="doresLabel">O que mais pesa hoje</label>
+            <div class="chips" role="group" aria-labelledby="doresLabel">
+              <label class="chip"><input type="checkbox" name="dores" value="montar orçamento / proposta" /><span>Montar orçamento ou proposta</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="atualizar catálogo / preços" /><span>Atualizar catálogo e preços</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="responder cliente / atendimento" /><span>Responder cliente</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="medir resultado de mídia (cac, roas de verdade)" /><span>Saber se a mídia dá lucro</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="fechar o mês / financeiro / conciliação" /><span>Fechar o mês / financeiro</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="relatórios e planilhas manuais" /><span>Relatórios manuais</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="conteúdo e redes sociais" /><span>Conteúdo / social</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="controle de estoque" /><span>Controle de estoque</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="cadastro e organização de dados" /><span>Cadastrar / organizar dados</span></label>
+              <label class="chip"><input type="checkbox" name="dores" value="emitir nota / pedido" /><span>Emitir nota / pedido</span></label>
+            </div>
+          </div>
+          <div class="navRow" hidden>
+            <button type="button" class="ctaSecondary btnBack">Voltar</button>
+            <button type="button" class="ctaPrimary btnNext">Continuar</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="step" data-step="5">
+          <legend class="stepLegend">Seu momento com IA</legend>
+          <div class="field">
+            <label id="usoLabel">O jeito mais comum de você usar IA hoje</label>
+            <div class="chips" role="group" aria-labelledby="usoLabel">
+              <label class="chip"><input type="radio" name="uso" value="chat" required /><span>Converso no chat</span></label>
+              <label class="chip"><input type="radio" name="uso" value="ferramentas" required /><span>Uso dentro de ferramentas prontas</span></label>
+              <label class="chip"><input type="radio" name="uso" value="sistemas" required /><span>Já conectei aos meus sistemas</span></label>
+              <label class="chip"><input type="radio" name="uso" value="nada" required /><span>Quase não uso ainda</span></label>
+            </div>
+          </div>
+          <div class="navRow" hidden>
+            <button type="button" class="ctaSecondary btnBack">Voltar</button>
+            <button type="button" class="ctaPrimary btnNext">Continuar</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="step" data-step="6">
+          <legend class="stepLegend">Quando a IA precisa mexer no sistema</legend>
+          <div class="field">
+            <label id="integraLabel">E quando precisa que a IA faça algo dentro dos seus sistemas?</label>
+            <div class="chips" role="group" aria-labelledby="integraLabel">
+              <label class="chip"><input type="radio" name="integra" value="copia e cola" required /><span>Faço a ponte na mão</span></label>
+              <label class="chip"><input type="radio" name="integra" value="tentei" required /><span>Já tentei conectar</span></label>
+              <label class="chip"><input type="radio" name="integra" value="roda" required /><span>Já roda conectado</span></label>
+              <label class="chip"><input type="radio" name="integra" value="nunca" required /><span>Nunca precisei</span></label>
+            </div>
+          </div>
+          <div class="navRow" hidden>
+            <button type="button" class="ctaSecondary btnBack">Voltar</button>
+            <button type="button" class="ctaPrimary btnNext">Continuar</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="step" data-step="7">
+          <legend class="stepLegend">Onde você quer chegar</legend>
+          <div class="field">
+            <label for="objetivo">Se desse tudo certo nos próximos 90 dias, o que teria mudado?</label>
+            <textarea id="objetivo" name="objetivo" rows="3" placeholder="ex: parar de montar proposta na mão, fechar o mês sem virar a noite" required></textarea>
+          </div>
+          <div class="navRow" hidden>
+            <button type="button" class="ctaSecondary btnBack">Voltar</button>
+            <button type="button" class="ctaPrimary btnNext" id="btnVerResultado">Ver minha leitura</button>
+          </div>
+        </fieldset>
+
+        <div class="resultado" id="resultado" hidden>
+          <p class="resultadoBadge">Leitura preliminar</p>
+          <h2 class="resultadoTitulo display display-2" id="resultadoTitulo">Aqui vai o que a gente enxerga.</h2>
+
+          <p class="sectionLabel">Seu momento com IA</p>
+          <p class="resultadoTexto" id="resultadoClasse"></p>
+
+          <p class="sectionLabel">A leitura</p>
+          <p class="resultadoTexto" id="resultadoResumo"></p>
+
+          <p class="sectionLabel">Onde a gente olharia primeiro</p>
+          <div id="resultadoLeaks"></div>
+
+          <div class="proximoPasso">
+            <p class="proximoPassoLabel">Primeiro passo</p>
+            <p>Pedir o diagnóstico completo: a gente aprofunda essas frentes e devolve um documento escrito, com o mapa priorizado e o que faz sentido no seu estágio.</p>
+          </div>
+
+          <p class="resultadoAviso">Essa leitura é preliminar e não depende de você deixar contato. Se quiser, o formulário abaixo carrega essas respostas pra gente já começar a conversa informada.</p>
+        </div>
+
+        <fieldset class="step contato" data-step="8" hidden>
+          <legend class="stepLegend">Levar isso adiante <span class="optional">(opcional)</span></legend>
+          <div class="field">
+            <label for="nome">Seu nome</label>
+            <input type="text" id="nome" name="nome" placeholder="Nome e sobrenome" required />
+          </div>
+          <div class="field">
+            <label for="empresa">Empresa</label>
+            <input type="text" id="empresa" name="empresa" placeholder="Nome da empresa" required />
+          </div>
+          <div class="field">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" placeholder="voce@empresa.com" required />
+          </div>
+          <div class="field">
+            <label for="whatsapp">WhatsApp <span class="optional">(opcional)</span></label>
+            <input type="tel" id="whatsapp" name="whatsapp" placeholder="(11) 90000-0000" />
+          </div>
+          <div class="navRow">
+            <button type="button" class="ctaSecondary btnBack">Voltar pra leitura</button>
+            <button type="submit" class="ctaPrimary">Enviar pra NAMI</button>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+  </section>
+
+  <script>
+    // Progressive enhancement only -- with no JS, every fieldset renders
+    // (including the hidden result/contact block staying hidden, which is
+    // an acceptable no-JS degradation: the visitor still fills one long
+    // form and submits it, same shape as the old diagnostico.astro). With
+    // JS, this adds stepping, a client-computed result, and the contact
+    // step after it.
+    (function () {
+      const form = document.querySelector<HTMLFormElement>(".quizForm");
+      if (!form) return;
+      form.classList.add("js");
+
+      const steps = Array.from(form.querySelectorAll<HTMLFieldSetElement>("fieldset.step"));
+      const resultado = form.querySelector<HTMLElement>("#resultado");
+      const progressShell = form.querySelector<HTMLElement>(".progressShell");
+      const progressFill = form.querySelector<HTMLElement>(".progressFill");
+      const progressLabel = form.querySelector<HTMLElement>(".progressLabel");
+      const QUESTION_STEPS = steps.filter((s) => !s.classList.contains("contato"));
+      const contatoStep = steps.find((s) => s.classList.contains("contato"))!;
+
+      const REQUIRED_CHECKBOX_GROUPS = ["dores"];
+      function syncCheckboxGroupsRequired(step: HTMLFieldSetElement) {
+        REQUIRED_CHECKBOX_GROUPS.forEach((name) => {
+          const boxes = Array.from(step.querySelectorAll<HTMLInputElement>(`input[type="checkbox"][name="${name}"]`));
+          if (!boxes.length) return;
+          const anyChecked = boxes.some((b) => b.checked);
+          boxes.forEach((b) => (b.required = !anyChecked));
+        });
+      }
+      steps.forEach((step) => {
+        syncCheckboxGroupsRequired(step);
+        step.addEventListener("change", (e) => {
+          if ((e.target as HTMLInputElement).type === "checkbox") syncCheckboxGroupsRequired(step);
+        });
+      });
+
+      function showQuestion(index: number) {
+        QUESTION_STEPS.forEach((step, i) => {
+          step.hidden = i !== index;
+          const nav = step.querySelector<HTMLElement>(".navRow");
+          if (nav) nav.hidden = false;
+          const back = step.querySelector<HTMLElement>(".btnBack");
+          if (back) back.hidden = i === 0;
+        });
+        resultado!.hidden = true;
+        contatoStep.hidden = true;
+        if (progressShell) {
+          progressShell.hidden = false;
+          progressFill!.style.width = `${((index + 1) / QUESTION_STEPS.length) * 100}%`;
+          progressLabel!.textContent = `Pergunta ${index + 1} de ${QUESTION_STEPS.length}`;
+        }
+      }
+
+      function showResultado() {
+        QUESTION_STEPS.forEach((step) => (step.hidden = true));
+        if (progressShell) progressShell.hidden = true;
+        computeResultado();
+        resultado!.hidden = false;
+        contatoStep.hidden = false;
+        resultado!.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      QUESTION_STEPS.forEach((step, i) => {
+        const nextBtn = step.querySelector<HTMLButtonElement>(".btnNext");
+        const backBtn = step.querySelector<HTMLButtonElement>(".btnBack");
+        nextBtn?.addEventListener("click", () => {
+          const controls = Array.from(
+            step.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input, textarea")
+          );
+          const firstInvalid = controls.find((c) => !c.checkValidity());
+          if (firstInvalid) {
+            firstInvalid.reportValidity();
+            return;
+          }
+          if (i === QUESTION_STEPS.length - 1) showResultado();
+          else showQuestion(i + 1);
+        });
+        backBtn?.addEventListener("click", () => showQuestion(i - 1));
+      });
+
+      contatoStep.querySelector<HTMLButtonElement>(".btnBack")?.addEventListener("click", () => {
+        resultado!.hidden = false;
+        contatoStep.hidden = true;
+        resultado!.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+
+      // ---- deterministic scoring (ported from diagnostico-artifact.html's
+      // fallbackDiagnosis/classifyMaturidade -- no AI, no network call) ----
+      const CLASSE_LABEL: Record<string, string> = {
+        chatters: "Você está no chat",
+        tweakers: "Você já é tweaker",
+        operadores: "Você já opera com IA",
+      };
+      const CLASSE_DESC: Record<string, string> = {
+        chatters:
+          "Hoje a IA ajuda a pensar e escrever, mas ainda por fora dos sistemas. O próximo salto é colocar ela pra trabalhar dentro das ferramentas que tocam o negócio.",
+        tweakers:
+          "Você já saiu do chat e usa IA dentro de ferramentas. O próximo salto é conectar ela aos seus próprios sistemas, com supervisão, pra operar de verdade.",
+        operadores:
+          "Você já colocou a IA pra mexer nos seus sistemas. O próximo salto é disciplina de operação: escopo, medição honesta e gente acompanhando cada mudança que afeta preço ou cliente.",
+      };
+      const LEAK_MAP: Record<string, { titulo: string; porque: string; oportunidade: string; impacto: string; esforco: string }> = {
+        "montar orçamento / proposta": { titulo: "Montagem de proposta e orçamento", porque: "cada proposta sai na mão, conferindo preço e desconto de cada cliente, e isso escala mal.", oportunidade: "a IA monta a proposta dentro do seu sistema, respeitando preço e limite de desconto, e uma pessoa aprova.", impacto: "alto", esforco: "médio" },
+        "atualizar catálogo / preços": { titulo: "Catálogo e preços", porque: "atualizar item a item consome tempo e gera inconsistência entre canais.", oportunidade: "a IA atualiza o catálogo seguindo o seu padrão, com revisão humana onde mexe em preço.", impacto: "alto", esforco: "médio" },
+        "responder cliente / atendimento": { titulo: "Atendimento ao cliente", porque: "responder tudo na mão trava o time e atrasa a resposta.", oportunidade: "a IA rascunha respostas no seu canal, com base nas suas regras, e uma pessoa revisa antes de enviar.", impacto: "médio", esforco: "baixo" },
+        "medir resultado de mídia (cac, roas de verdade)": { titulo: "Medição de mídia com margem real", porque: "decidir pelo número que a própria plataforma reporta esconde o que dá lucro de verdade.", oportunidade: "a gente calcula o resultado real por campanha, direto dos seus dados, pra decidir o que escalar.", impacto: "alto", esforco: "médio" },
+        "fechar o mês / financeiro / conciliação": { titulo: "Fechamento e conciliação", porque: "fechar o mês na mão é lento e sujeito a erro.", oportunidade: "a IA cruza pedido, taxa e recebimento e aponta o que não bate, com pessoa conferindo.", impacto: "médio", esforco: "médio" },
+        "relatórios e planilhas manuais": { titulo: "Relatórios manuais", porque: "montar planilha toda semana rouba tempo de decisão.", oportunidade: "a IA gera o relatório recorrente direto da fonte, sem copiar e colar.", impacto: "médio", esforco: "baixo" },
+        "conteúdo e redes sociais": { titulo: "Conteúdo e redes", porque: "produzir conteúdo consistente exige tempo que o time não tem.", oportunidade: "a IA rascunha conteúdo no seu tom, com aprovação humana antes de publicar.", impacto: "baixo", esforco: "baixo" },
+        "controle de estoque": { titulo: "Controle de estoque", porque: "estoque desencontrado gera ruptura ou capital parado.", oportunidade: "a IA acompanha o giro e sugere reposição, com alerta pra pessoa decidir.", impacto: "médio", esforco: "médio" },
+        "cadastro e organização de dados": { titulo: "Organização de dados", porque: "dado espalhado impede qualquer automação confiável.", oportunidade: "a gente organiza a base primeiro: é o alicerce pra IA operar com segurança.", impacto: "médio", esforco: "médio" },
+        "emitir nota / pedido": { titulo: "Emissão de nota e pedido", porque: "emitir na mão trava o fluxo e atrasa a entrega.", oportunidade: "a IA prepara nota e pedido dentro da sua política, com aprovação.", impacto: "médio", esforco: "médio" },
+      };
+      const IMPACT_ORDER: Record<string, number> = { alto: 0, "médio": 1, baixo: 2 };
+
+      function classify(uso: string, integra: string) {
+        let score = 0;
+        if (uso === "ferramentas") score = 1;
+        else if (uso === "sistemas") score = 2;
+        if (integra === "tentei") score = Math.max(score, 1);
+        else if (integra === "roda") score = 2;
+        return score >= 2 ? "operadores" : score === 1 ? "tweakers" : "chatters";
+      }
+
+      function humanList(arr: string[]) {
+        const a = arr.map((x) => x.replace(/\s*\(.*?\)/, ""));
+        if (!a.length) return "trabalho repetitivo";
+        if (a.length === 1) return a[0];
+        if (a.length === 2) return `${a[0]} e ${a[1]}`;
+        return `${a.slice(0, 2).join(", ")} e mais ${a.length - 2}`;
+      }
+
+      function computeResultado() {
+        const dores = Array.from(form!.querySelectorAll<HTMLInputElement>('input[name="dores"]:checked')).map((i) => i.value);
+        const planilha = form!.querySelector<HTMLInputElement>('input[name="planilha"]:checked')?.value ?? "";
+        const uso = form!.querySelector<HTMLInputElement>('input[name="uso"]:checked')?.value ?? "";
+        const integra = form!.querySelector<HTMLInputElement>('input[name="integra"]:checked')?.value ?? "";
+        const nome = (form!.querySelector<HTMLInputElement>("#nome")?.value || "").trim();
+
+        const classe = classify(uso, integra);
+        let leaks = dores.map((d) => LEAK_MAP[d]).filter(Boolean);
+        if (!leaks.length) {
+          leaks = [LEAK_MAP["relatórios e planilhas manuais"], LEAK_MAP["responder cliente / atendimento"], LEAK_MAP["medir resultado de mídia (cac, roas de verdade)"]];
+        }
+        leaks = leaks
+          .slice()
+          .sort((x, y) => (IMPACT_ORDER[x.impacto] - IMPACT_ORDER[y.impacto]) || (IMPACT_ORDER[x.esforco] - IMPACT_ORDER[y.esforco]))
+          .slice(0, 3);
+
+        const dependeMuito = planilha === "quase tudo" || planilha === "boa parte";
+        const resumo = `Pelo que você contou, a maior parte do aperto está em ${humanList(dores)}. ${
+          dependeMuito
+            ? "boa parte ainda roda em planilha e no controle de uma pessoa, então antes de automatizar vale arrumar a base pra IA operar com segurança."
+            : "a base parece razoavelmente organizada, o que ajuda a colocar a IA pra operar mais rápido."
+        } Nada disso precisa virar tudo de uma vez: dá pra começar pela frente de maior retorno.`;
+
+        const titulo = form!.querySelector("#resultadoTitulo")!;
+        titulo.textContent = nome ? `${nome.split(" ")[0]}, aqui vai o que a gente enxerga.` : "Aqui vai o que a gente enxerga.";
+
+        const classeEl = form!.querySelector("#resultadoClasse")!;
+        classeEl.innerHTML = `<b>${CLASSE_LABEL[classe]}.</b> ${CLASSE_DESC[classe]}`;
+
+        const resumoEl = form!.querySelector("#resultadoResumo")!;
+        resumoEl.textContent = resumo;
+
+        const leaksEl = form!.querySelector("#resultadoLeaks")!;
+        leaksEl.innerHTML = leaks
+          .map(
+            (l) => `
+          <div class="leak">
+            <div class="leakTop">
+              <p class="leakTitulo">${l.titulo}</p>
+              <span class="leakTag">impacto ${l.impacto} · esforço ${l.esforco}</span>
+            </div>
+            <p class="leakPorque">${l.porque}</p>
+            <p class="leakOportunidade"><b>O que dá pra fazer:</b> ${l.oportunidade}</p>
+          </div>`
+          )
+          .join("");
+      }
+
+      showQuestion(0);
+    })();
+  </script>
+</BaseLayout>
+
+<style>
+  .pageHero {
+    padding-top: 96px;
+  }
+
+  .container.narrow {
+    max-width: 640px;
+  }
+
+  .quizForm {
+    display: grid;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  fieldset.step[hidden],
+  .navRow[hidden],
+  .btnBack[hidden],
+  .resultado[hidden] {
+    display: none;
+  }
+
+  fieldset.step {
+    display: grid;
+    gap: 20px;
+    border: none;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+
+  .stepLegend {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--site-text);
+    letter-spacing: -0.01em;
+    padding: 0;
+    margin: 0;
+  }
+
+  .field {
+    display: grid;
+    gap: 8px;
+  }
+
+  .field label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--site-text);
+  }
+
+  .optional {
+    font-weight: 400;
+    color: var(--site-text-secondary);
+  }
+
+  .field input,
+  .field textarea {
+    font-family: var(--site-font);
+    font-size: 15px;
+    color: var(--site-text);
+    background: var(--site-bg);
+    /* muted, not borda: 3:1 UI-boundary requirement, site-brief-260930.md */
+    border: 1px solid var(--site-text-secondary);
+    border-radius: 8px;
+    padding: 11px 14px;
+    resize: vertical;
+  }
+
+  .field input:focus-visible,
+  .field textarea:focus-visible {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 1px;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--site-text-secondary);
+    background: var(--site-bg);
+    color: var(--site-text);
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+    min-height: 44px;
+    transition: border-color 0.14s ease, background 0.14s ease, color 0.14s ease;
+  }
+
+  .chip input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    opacity: 0;
+  }
+
+  .chip:hover {
+    border-color: var(--site-accent);
+  }
+
+  .chip:has(input:checked) {
+    background: var(--site-accent);
+    color: var(--site-accent-text);
+    border-color: var(--site-accent);
+  }
+
+  .chip:has(input:focus-visible) {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 2px;
+  }
+
+  .progressShell {
+    margin: 0 0 8px;
+  }
+
+  .progressLabel {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--site-text-secondary);
+    margin: 0 0 8px;
+  }
+
+  .progressTrack {
+    height: 5px;
+    background: var(--site-surface);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progressFill {
+    height: 100%;
+    width: 14%;
+    background: var(--site-accent);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+
+  .navRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .navRow .btnBack {
+    background: none;
+    border: none;
+    padding: 4px 0;
+    cursor: pointer;
+  }
+
+  .resultado {
+    display: grid;
+    gap: 6px;
+  }
+
+  .resultadoBadge {
+    display: inline-flex;
+    width: fit-content;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--site-accent);
+    background: var(--site-surface);
+    padding: 6px 12px;
+    border-radius: 999px;
+    margin: 0 0 8px;
+  }
+
+  .resultadoTitulo {
+    margin: 0 0 16px;
+  }
+
+  .sectionLabel {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--site-text-secondary);
+    margin: 18px 0 8px;
+  }
+
+  .resultadoTexto {
+    font-size: 15.5px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .leak {
+    border: 1px solid var(--site-border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+
+  .leakTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 0 0 6px;
+  }
+
+  .leakTitulo {
+    font-weight: 700;
+    font-size: 15px;
+    margin: 0;
+  }
+
+  .leakTag {
+    font-size: 11.5px;
+    color: var(--site-text-secondary);
+    white-space: nowrap;
+  }
+
+  .leakPorque {
+    font-size: 13.5px;
+    color: var(--site-text-secondary);
+    margin: 0 0 8px;
+  }
+
+  .leakOportunidade {
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .proximoPasso {
+    background: var(--site-surface);
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 12px;
+  }
+
+  .proximoPassoLabel {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--site-text-secondary);
+    margin: 0 0 6px;
+  }
+
+  .proximoPasso p:last-child {
+    margin: 0;
+    font-size: 14.5px;
+  }
+
+  .resultadoAviso {
+    font-size: 13px;
+    color: var(--site-text-secondary);
+    margin: 16px 0 0;
+  }
+
+  @media (min-width: 769px) {
+    .pageHero {
+      padding-top: 130px;
+    }
+  }
+</style>

@@ -1,0 +1,197 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/marketing.css";
+import { waLink } from "../data/site-config";
+
+const papeis = [
+  {
+    papel: "Dono",
+    fala: '"eu preciso saber que tá rodando certo, sem ficar em cima."',
+    faz: [
+      "Confere proposta, preço e margem antes de qualquer aprovação.",
+      "Junta os números da semana num resumo, sem alguém montar planilha.",
+      "Avisa quando algo sai do padrão, antes de virar problema.",
+    ],
+    naoToca: "Não decide sozinha o que muda de estratégia. Isso é sua.",
+  },
+  {
+    papel: "Financeiro",
+    fala: '"eu preciso fechar o mês sem virar a noite."',
+    faz: [
+      "Cruza pedido, taxa e recebimento pra apontar o que não bate.",
+      "Organiza nota e pedido dentro da sua política.",
+      "Monta o relatório recorrente direto da fonte, sem copiar e colar.",
+    ],
+    naoToca: "Não aprova pagamento sozinha. Isso passa por uma pessoa.",
+  },
+  {
+    papel: "Vendas",
+    fala: '"eu preciso responder rápido sem perder o padrão de desconto."',
+    faz: [
+      "Monta a proposta dentro da política de preço e desconto.",
+      "Confere se o que foi prometido bate com o que o sistema permite.",
+      "Lembra o cliente de um contato que ficou parado.",
+    ],
+    naoToca: "Não fecha negócio sozinha. A conversa final continua sua.",
+  },
+  {
+    papel: "Estoque e operação",
+    fala: '"eu preciso saber da ruptura antes do cliente."',
+    faz: [
+      "Acompanha giro e sugere reposição antes de faltar.",
+      "Aponta estoque negativo ou divergente entre canais.",
+      "Organiza cadastro e dado espalhado num padrão só.",
+    ],
+    naoToca: "Não decide sozinha quanto comprar. Isso é revisado por gente.",
+  },
+  {
+    papel: "Atendimento",
+    fala: '"eu preciso responder rápido sem perder o tom da empresa."',
+    faz: [
+      "Rascunha a resposta dentro do seu tom e das suas regras.",
+      "Junta o histórico do cliente antes de alguém responder.",
+      "Aponta o que está demorando demais na fila.",
+    ],
+    naoToca: "Não manda a resposta sozinha. Uma pessoa revisa antes de enviar.",
+  },
+];
+
+const wa = waLink("Para quem");
+---
+
+<BaseLayout
+  title="Para quem | NAMI Works"
+  description="Dono, financeiro, vendas, estoque e atendimento: o que a IA já assume em cada função, e o que continua sempre com uma pessoa."
+>
+  <section class="section pageHero">
+    <div class="container">
+      <p class="eyebrow">Para quem</p>
+      <h1 class="sectionTitle display display-1">
+        Encontra <span class="mk">a sua terça-feira</span> aqui embaixo.
+      </h1>
+      <p class="lede">
+        Cada função perde tempo num lugar diferente. Veja o que a IA já assume
+        hoje, função por função, e o que continua sempre com uma pessoa.
+      </p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="papeis">
+    <div class="container">
+      <div class="papeisList">
+        {
+          papeis.map((p) => (
+            <div class="papelCard">
+              <h2 class="papelNome display display-3">{p.papel}</h2>
+              <p class="papelFala">{p.fala}</p>
+              <ul class="papelFaz">
+                {p.faz.map((tarefa) => <li>{tarefa}</li>)}
+              </ul>
+              <p class="papelNaoToca">{p.naoToca}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="setores">
+    <div class="container">
+      <p class="eyebrow">Por setor</p>
+      <h2 class="sectionTitle display display-3">Páginas por setor <span class="mk">em construção</span>.</h2>
+      <p class="lede placeholderNote">
+        [distribuidoras, clínicas, pequenas fábricas e varejo físico vão ganhar
+        página própria assim que os primeiros setores forem definidos. Por
+        enquanto, chama no WhatsApp e conta o seu caso direto.]
+      </p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="comecar">
+    <div class="container">
+      <p class="eyebrow">Como começar</p>
+      <h2 class="sectionTitle display display-3">Achou a sua função? <span class="mk">Chama a gente</span>.</h2>
+      <div class="ctaRow">
+        <a href={wa} class="ctaPrimary" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+        <a href="/por-onde-comecar" class="ctaSecondary">Descobrir por onde começar</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .pageHero {
+    padding-top: 96px;
+  }
+
+  .papeisList {
+    display: grid;
+    gap: 32px;
+  }
+
+  .papelCard {
+    background: var(--site-bg);
+    border: 1px solid var(--site-border);
+    border-radius: 12px;
+    padding: 28px;
+  }
+
+  .papelNome {
+    margin: 0 0 8px;
+    font-size: 22px;
+  }
+
+  .papelFala {
+    font-size: 14.5px;
+    font-style: italic;
+    color: var(--site-text-secondary);
+    margin: 0 0 16px;
+  }
+
+  .papelFaz {
+    list-style: none;
+    margin: 0 0 16px;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+
+  .papelFaz li {
+    font-size: 15px;
+    line-height: 1.5;
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .papelFaz li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--site-accent);
+  }
+
+  .papelNaoToca {
+    font-size: 13.5px;
+    color: var(--site-text-secondary);
+    margin: 0;
+    padding-top: 14px;
+    border-top: 1px solid var(--site-border);
+  }
+
+  .placeholderNote {
+    font-style: italic;
+  }
+
+  @media (min-width: 769px) {
+    .pageHero {
+      padding-top: 130px;
+    }
+    .papeisList {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

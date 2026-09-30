@@ -1,0 +1,110 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/marketing.css";
+import { waLink } from "../../data/site-config";
+import { SETORES } from "../../data/setores";
+
+export function getStaticPaths() {
+  // Empty until sectors are chosen (see src/data/setores.ts) -- this
+  // generates zero pages for now, not a placeholder page at a fake slug.
+  return SETORES.map((s) => ({ params: { setor: s.slug }, props: { setor: s } }));
+}
+
+const { setor } = Astro.props as { setor: (typeof SETORES)[number] };
+const wa = waLink(`Setor: ${setor.nome}`);
+---
+
+<BaseLayout
+  title={`${setor.nome} | NAMI Works`}
+  description={`Como a IA ajuda operações de ${setor.nome.toLowerCase()}: as dores mais comuns, os sistemas de sempre, um exemplo real.`}
+>
+  <section class="section pageHero">
+    <div class="container">
+      <p class="eyebrow">Para {setor.nome.toLowerCase()}</p>
+      <h1 class="sectionTitle display display-1">
+        Já viu um negócio <span class="mk">parecido com o seu</span>?
+      </h1>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="dores">
+    <div class="container">
+      <p class="eyebrow">As dores mais comuns</p>
+      <h2 class="sectionTitle display display-3">Três coisas que <span class="mk">sempre aparecem</span>.</h2>
+      <ul class="doresList">
+        {setor.dores.map((d) => <li>{d}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="sistemas">
+    <div class="container">
+      <p class="eyebrow">Os sistemas que esse setor roda</p>
+      <h2 class="sectionTitle display display-3">A IA entra <span class="mk">dentro do que já existe</span>.</h2>
+      <p class="body">{setor.sistemas.join(", ")}.</p>
+    </div>
+  </section>
+
+  <section class="section sectionSoft calloutBox" id="exemplo">
+    <div class="container">
+      <p class="calloutLabel">Exemplo · dado inventado</p>
+      <p class="exemploTitulo">{setor.exemplo.titulo}</p>
+      <p>{setor.exemplo.corpo}</p>
+    </div>
+  </section>
+
+  <section class="section" id="comecar">
+    <div class="container">
+      <p class="eyebrow">Como começar</p>
+      <h2 class="sectionTitle display display-3">Agenda o <span class="mk">diagnóstico</span> pra ver isso na sua operação.</h2>
+      <div class="ctaRow">
+        <a href={wa} class="ctaPrimary" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+        <a href="/por-onde-comecar" class="ctaSecondary">Descobrir por onde começar</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .pageHero {
+    padding-top: 96px;
+  }
+
+  .doresList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+    max-width: 560px;
+  }
+
+  .doresList li {
+    font-size: 15.5px;
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .doresList li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--site-accent);
+  }
+
+  .exemploTitulo {
+    font-weight: 700;
+    font-size: 16px;
+    margin: 0 0 8px;
+  }
+
+  @media (min-width: 769px) {
+    .pageHero {
+      padding-top: 130px;
+    }
+  }
+</style>

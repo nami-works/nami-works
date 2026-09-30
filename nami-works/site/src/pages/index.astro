@@ -1,293 +1,272 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import "../styles/marketing.css";
-import noticias from "../data/noticias.json";
+import { waLink, DIAGNOSTIC_PRICE_LABEL } from "../data/site-config";
 
-// The "Implementamos e operamos..." value-prop hero is hidden for now, not
-// deleted -- flip this back to true to restore it. The home page currently
-// leads with the news edition instead (see newsHero below).
-const HERO_ENABLED = false;
-
-const edicoes = [...noticias.edicoes].sort((a, b) => (a.data < b.data ? 1 : -1));
-const ultimaEdicao = edicoes[0];
-const capa = ultimaEdicao.itens.find((item) => item.tipo === "capa");
-
-function splitMarker(ancora: string, marcador?: string) {
-  if (!marcador) return { before: ancora, marcador: null, after: "" };
-  const i = ancora.indexOf(marcador);
-  if (i === -1) return { before: ancora, marcador: null, after: "" };
-  return { before: ancora.slice(0, i), marcador, after: ancora.slice(i + marcador.length) };
-}
-
-const capaMarcado = capa ? splitMarker(capa.ancora, capa.marcador) : null;
-
-const processSteps = [
+const roleCards = [
   {
-    number: "01",
-    title: "Diagnóstico",
-    body: "Auditamos a operação e mapeamos onde a IA agrega valor. Sem calls: um relatório assíncrono, com preço fechado.",
-    href: "/diagnostico",
+    role: "Dono",
+    before: "Confere proposta, preço e estoque no fim do dia, sozinho.",
+    after: "A IA já confere tudo isso. Você só aprova o que muda preço ou cliente.",
   },
   {
-    number: "02",
-    title: "Implantação",
-    body: "Instalamos o console de operação (Claude Code e as integrações necessárias) na estrutura da sua própria empresa.",
-    href: "/implantacao",
+    role: "Financeiro",
+    before: "Fecha o mês cruzando planilha com sistema, à noite.",
+    after: "A IA cruza pedido, taxa e recebimento. Você confere o que não bate.",
   },
   {
-    number: "03",
-    title: "Operação",
-    body: "Depois de implantado, seguimos rodando com o seu time, de forma contínua.",
-    href: "/operacao",
+    role: "Vendas",
+    before: "Monta cada proposta na mão, olhando desconto por cliente.",
+    after: "A IA monta a proposta dentro da sua política. Você aprova.",
+  },
+  {
+    role: "Estoque e operação",
+    before: "Descobre a ruptura quando o cliente já reclamou.",
+    after: "A IA avisa antes, com o número certo pra repor.",
+  },
+  {
+    role: "Atendimento",
+    before: "Responde tudo na mão, e a fila cresce no fim do dia.",
+    after: "A IA rascunha a resposta. Você revisa antes de enviar.",
   },
 ];
 
-const serviceLines = [
-  {
-    tag: "A",
-    title: "Implementação de IA para gestão empresarial",
-    body: "Auditamos a operação de uma empresa, em qualquer setor, e implantamos Claude e agentes de IA na gestão interna: processos, dados e decisões do dia a dia que hoje dependem de planilha e memória de time.",
-    href: "/diagnostico",
-  },
-  {
-    tag: "B",
-    title: "Operação de e-commerce com IA",
-    body: "A nossa prova em produção: rodamos, na prática e hoje, a operação inteira de uma marca de e-commerce (catálogo, medição de crescimento e CRM) com esse mesmo método.",
-    href: "/metodo",
-  },
+const metodoSteps = [
+  { n: "01", nome: "Diagnóstico", desc: "A gente audita a operação e mostra por onde vale começar." },
+  { n: "02", nome: "Piloto", desc: "30 dias, um processo só. O primeiro passo pequeno." },
+  { n: "03", nome: "Implantação", desc: "O que funcionou no piloto passa pros outros processos." },
+  { n: "04", nome: "Acompanhamento", desc: "A gente continua junto, todo mês, ajustando o que precisar." },
 ];
+
+const seguranca = [
+  { titulo: "Os dados continuam seus", desc: "Nas suas próprias contas, sempre." },
+  { titulo: "Uma pessoa aprova", desc: "A IA propõe, alguém aprova antes de mudar algo de verdade." },
+  { titulo: "Tudo fica registrado", desc: "Toda ação da IA fica num histórico que dá pra revisar." },
+];
+
+const waHome = waLink("Início");
 ---
 
 <BaseLayout
-  title={`NAMI Works | ${capa?.ancora ?? "Implementamos e operamos sistemas de IA para empresas"}`}
-  description={ultimaEdicao.abertura}
+  title="NAMI Works | Conecte seu negócio à IA, com controle"
+  description="A NAMI Works conecta sua empresa à IA de forma nativa e segura: na planilha, no WhatsApp, no sistema que você já usa. Comece pelo diagnóstico."
 >
-  <section class="newsHero">
+  <section class="hero">
     <div class="container">
-      <p class="eyebrow">Notícias</p>
-      <h1 class="newsHeroTitle display display-1">
-        {capaMarcado?.marcador ? (
-          <>
-            {capaMarcado.before}
-            <span class="mk">{capaMarcado.marcador}</span>
-            {capaMarcado.after}
-          </>
-        ) : (
-          capa?.ancora
-        )}
+      <p class="eyebrow">NAMI Works</p>
+      <h1 class="heroTitle display display-1">
+        Sua empresa já roda na planilha, no WhatsApp, no e-mail. <span class="mk">A IA entra dentro disso</span>, não ao lado.
       </h1>
-      <p class="newsHeroLede">{ultimaEdicao.abertura}</p>
-
-      {capa && (
-        <img
-          class="newsHeroPlank"
-          src={`/noticias/${ultimaEdicao.pasta}/${capa.prancha}`}
-          alt=""
-          width="1080"
-          height="1350"
-          loading="eager"
-        />
-      )}
-
+      <p class="heroSub">
+        A gente conecta a IA aos sistemas que você já usa, com uma pessoa aprovando cada mudança que importa.
+      </p>
       <div class="ctaRow">
-        <a href={`/noticias/${ultimaEdicao.pasta}`} class="ctaPrimary">Ver edição completa</a>
-        <a href="/noticias" class="ctaSecondary">Todas as edições</a>
+        <a href={waHome} class="ctaPrimary" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+        <a href="/por-onde-comecar" class="ctaSecondary">Descobrir por onde começar</a>
       </div>
     </div>
   </section>
 
-  {HERO_ENABLED && (
-    <section class="hero">
-      <div class="container">
-        <p class="eyebrow">NAMI Works</p>
-        <h1 class="heroTitle display display-1">Implementamos e <span class="mk">operamos sistemas de IA</span> para empresas.</h1>
-        <p class="heroSub">Da auditoria à operação contínua, com agentes de IA supervisionados.</p>
-        <p class="heroLede">
-          Ajudamos empresas de qualquer setor a auditar a própria operação e a
-          instalar Claude e agentes de IA na gestão interna. E, na prática,
-          rodamos nós mesmos a operação inteira de uma marca de e-commerce de 8
-          dígitos com esse mesmo método, todos os dias. Não é uma demonstração:
-          é a nossa prova de que o método funciona.
-        </p>
-        <div class="ctaRow">
-          <a href="/diagnostico" class="ctaPrimary">Ver o Diagnóstico</a>
-          <a href="#como-trabalhamos" class="ctaSecondary">Como trabalhamos</a>
-        </div>
-      </div>
-    </section>
-  )}
-
-  <section class="section sectionSoft" id="como-trabalhamos">
+  <section class="section sectionSoft" id="para-voce">
     <div class="container">
-      <p class="eyebrow">Como trabalhamos</p>
-      <h2 class="sectionTitle display display-3">Um processo, <span class="mk">aplicado às duas frentes</span>.</h2>
-      <p class="lede">
-        O mesmo caminho de três etapas vale tanto para auditar a gestão
-        interna de uma empresa quanto para rodar a operação de um e-commerce.
-        O que muda é onde a IA age, não o processo pelo qual chegamos lá.
-      </p>
+      <p class="eyebrow">Um dia normal, diferente</p>
+      <h2 class="sectionTitle display display-3">Cada função <span class="mk">perde tempo em um lugar diferente</span>.</h2>
 
       <div class="cardGrid cols3">
         {
-          processSteps.map((step) => (
-            <a href={step.href} class="card offerCard">
-              <p class="cardNumber">{step.number}</p>
-              <h3 class="cardTitle">{step.title}</h3>
-              <p class="cardBody">{step.body}</p>
-              <span class="cardLink">
-                Saiba mais
-                <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                  <path d="M7 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </span>
-            </a>
+          roleCards.map((r) => (
+            <div class="card roleCard">
+              <p class="cardTitle">{r.role}</p>
+              <p class="roleBefore">{r.before}</p>
+              <p class="roleAfter">{r.after}</p>
+            </div>
           ))
         }
       </div>
+
+      <a href="/para-quem" class="ctaSecondary">Encontrar onde começar pela sua função</a>
     </div>
   </section>
 
-  <section class="section" id="onde-atuamos">
+  <section class="section" id="metodo">
     <div class="container">
-      <p class="eyebrow">Onde atuamos</p>
-      <h2 class="sectionTitle display display-3">Duas frentes, <span class="mk">o mesmo método</span>.</h2>
-      <p class="lede">
-        A Implementação de IA para gestão empresarial é a frente mais ampla:
-        se aplica a qualquer empresa disposta a rodar a própria operação com
-        agentes de IA. A Operação de e-commerce com IA é a nossa prova
-        concreta de que isso funciona, porque é assim que rodamos o nosso
-        próprio caso hoje.
-      </p>
+      <p class="eyebrow">Como funciona</p>
+      <h2 class="sectionTitle display display-3">Quatro passos, <span class="mk">o piloto é o primeiro e é pequeno</span>.</h2>
 
       <div class="cardGrid cols2">
         {
-          serviceLines.map((line) => (
-            <a href={line.href} class="card offerCard">
-              <p class="cardNumber">{line.tag}</p>
-              <h3 class="cardTitle">{line.title}</h3>
-              <p class="cardBody">{line.body}</p>
-              <span class="cardLink">
-                Saiba mais
-                <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                  <path d="M7 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </span>
-            </a>
+          metodoSteps.map((s) => (
+            <div class="card">
+              <p class="cardNumber">{s.n}</p>
+              <h3 class="cardTitle">{s.nome}</h3>
+              <p class="cardBody">{s.desc}</p>
+            </div>
           ))
         }
       </div>
 
-      <div class="calloutBox">
-        <p class="calloutLabel">Prova em produção</p>
-        <p>
-          A Operação de e-commerce com IA não é um estudo de caso hipotético:
-          é assim que rodamos, hoje, uma marca de e-commerce de 8 dígitos de
-          faturamento, com o mesmo método que aplicamos na Implementação de IA
-          para outras empresas.
-        </p>
-      </div>
-
-      <a href="/metodo" class="ctaSecondary">Entender o método</a>
+      <a href="/como-funciona" class="ctaSecondary">Ver como funciona em detalhe</a>
     </div>
   </section>
 
-  <section class="section sectionSoft" id="comecar">
+  <section class="section sectionSoft declaracao" id="seguranca">
+    <div class="container">
+      <p class="eyebrow segurancaEyebrow">Segurança e controle</p>
+      <h2 class="sectionTitle display display-3 segurancaTitle">Antes de perguntar, <span class="mk">a resposta</span>.</h2>
+
+      <div class="cardGrid cols3">
+        {
+          seguranca.map((s) => (
+            <a href="/seguranca" class="segurancaCard">
+              <p class="segurancaCardTitle">{s.titulo}</p>
+              <p class="segurancaCardDesc">{s.desc}</p>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="preco">
+    <div class="container">
+      <p class="eyebrow">Sobre o valor</p>
+      <h2 class="sectionTitle display display-3">O diagnóstico tem <span class="mk">preço público</span>.</h2>
+      <p class="lede">
+        {DIAGNOSTIC_PRICE_LABEL}. Piloto e acompanhamento variam com o escopo. Sem orçamento surpresa.
+      </p>
+      <a href="/precos" class="ctaSecondary">Ver os valores</a>
+    </div>
+  </section>
+
+  <section class="section sectionSoft" id="demo">
+    <div class="container">
+      <p class="eyebrow">Prova</p>
+      <h2 class="sectionTitle display display-3">Um agente fazendo <span class="mk">uma tarefa real</span>.</h2>
+      <div class="videoPlaceholder">
+        <p class="videoPlaceholderLabel">Demonstração &middot; dado inventado</p>
+        <p class="videoPlaceholderNote">Vídeo em produção.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="comecar">
     <div class="container">
       <p class="eyebrow">Como começar</p>
-      <h2 class="sectionTitle display display-3">O ponto de entrada é <span class="mk">sempre o Diagnóstico</span>.</h2>
+      <h2 class="sectionTitle display display-3">Duas portas, <span class="mk">nenhuma é um formulário longo</span>.</h2>
       <p class="lede">
-        Não existe um pacote sem o Diagnóstico: é ele que define, para
-        qualquer uma das duas frentes, o que faz sentido automatizar
-        primeiro na sua operação.
+        Chama no WhatsApp pra conversar direto, ou responde o autoavaliação de alguns minutos e já sai com uma leitura.
       </p>
       <div class="ctaRow">
-        <a href="/diagnostico" class="ctaPrimary">Ver o Diagnóstico</a>
+        <a href={waHome} class="ctaPrimary" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+        <a href="/por-onde-comecar" class="ctaSecondary">Descobrir por onde começar</a>
       </div>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  .newsHero {
-    padding: 96px 0 56px;
-  }
-
-  .newsHeroTitle {
-    color: var(--site-text);
-    margin: 0 0 16px;
-    max-width: 720px;
-  }
-
-  .newsHeroLede {
-    font-size: 16px;
-    line-height: 1.65;
-    color: var(--site-text-secondary);
-    max-width: 620px;
-    margin: 0 0 24px;
-  }
-
-  .newsHeroPlank {
-    width: 100%;
-    max-width: 420px;
-    aspect-ratio: 4 / 5;
-    object-fit: cover;
-    border-radius: 12px;
-    border: 1px solid var(--site-border);
-    margin: 0 0 28px;
-  }
-
   .hero {
-    padding: 96px 0 56px;
+    padding: 56px 0 40px;
   }
 
-  /* Type metrics come from .display / .display-1 (see global.css, from
-     design/tokens.css). This class only owns colour, margin and measure. */
   .heroTitle {
     color: var(--site-text);
-    margin: 0 0 10px;
-    max-width: 720px;
+    margin: 0 0 16px;
+    max-width: 760px;
   }
 
   .heroSub {
-    font-size: 20px;
-    font-weight: 500;
+    font-size: 17px;
+    line-height: 1.55;
     color: var(--site-text-secondary);
+    max-width: 560px;
     margin: 0 0 24px;
   }
 
-  .heroLede {
-    font-size: 16px;
-    line-height: 1.65;
+  .roleCard {
+    display: grid;
+    gap: 8px;
+  }
+
+  .roleBefore {
+    font-size: 14px;
     color: var(--site-text-secondary);
-    max-width: 620px;
-    margin: 0 0 32px;
+    margin: 0;
+    text-decoration: line-through;
+    text-decoration-color: var(--site-erro);
+    text-decoration-thickness: 1px;
   }
 
-  .offerCard {
-    text-decoration: none;
+  .roleAfter {
+    font-size: 14.5px;
+    color: var(--site-text);
+    margin: 0;
+    font-weight: 600;
+  }
+
+  /* The one legitimate pinheiro statement block on this page (canon's
+     emphasis-ladder rule, max one per screen). .declaracao itself is the
+     global fixed-pinheiro class from global.css (design/tokens.css) --
+     literal creme-on-pinheiro regardless of site theme, not redefined here.
+     Its own `.mk` override (yellow marker -> light-green word, no
+     background, on this ground) already applies via that global rule. */
+  .segurancaEyebrow {
+    opacity: 0.75;
+  }
+
+  .segurancaCard {
     display: block;
-    transition: border-color 0.15s ease;
+    text-decoration: none;
+    border: 1px solid rgba(250, 248, 244, 0.2);
+    border-radius: 12px;
+    padding: 22px;
+    color: inherit;
   }
 
-  .offerCard:hover {
-    border-color: var(--site-accent);
+  .segurancaCardTitle {
+    font-weight: 700;
+    font-size: 15.5px;
+    margin: 0 0 6px;
+  }
+
+  .segurancaCardDesc {
+    font-size: 13.5px;
+    opacity: 0.85;
+    margin: 0;
+  }
+
+  .videoPlaceholder {
+    border: 1px dashed var(--site-text-secondary);
+    border-radius: 12px;
+    padding: 48px 24px;
+    text-align: center;
+    max-width: 560px;
+  }
+
+  .videoPlaceholderLabel {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--site-text-secondary);
+    margin: 0 0 8px;
+  }
+
+  .videoPlaceholderNote {
+    font-size: 14px;
+    color: var(--site-text-secondary);
+    margin: 0;
   }
 
   @media (min-width: 769px) {
-    .newsHero {
-      padding: 140px 0 88px;
-    }
-    .newsHeroLede {
-      font-size: 18px;
-    }
     .hero {
-      padding: 140px 0 88px;
+      padding: 120px 0 64px;
     }
     .heroSub {
-      font-size: 24px;
+      font-size: 19px;
     }
-    .heroLede {
-      font-size: 18px;
+    .cardGrid.cols3 {
+      grid-template-columns: repeat(3, 1fr);
     }
     .cardGrid.cols2 {
       grid-template-columns: repeat(2, 1fr);
