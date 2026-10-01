@@ -1,296 +1,63 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import "../styles/marketing.css";
-import noticias from "../data/noticias.json";
 
-// The "Implementamos e operamos..." value-prop hero is hidden for now, not
-// deleted -- flip this back to true to restore it. The home page currently
-// leads with the news edition instead (see newsHero below).
-const HERO_ENABLED = false;
-
-const edicoes = [...noticias.edicoes].sort((a, b) => (a.data < b.data ? 1 : -1));
-const ultimaEdicao = edicoes[0];
-const capa = ultimaEdicao.itens.find((item) => item.tipo === "capa");
-
-function splitMarker(ancora: string, marcador?: string) {
-  if (!marcador) return { before: ancora, marcador: null, after: "" };
-  const i = ancora.indexOf(marcador);
-  if (i === -1) return { before: ancora, marcador: null, after: "" };
-  return { before: ancora.slice(0, i), marcador, after: ancora.slice(i + marcador.length) };
-}
-
-const capaMarcado = capa ? splitMarker(capa.ancora, capa.marcador) : null;
-
-const processSteps = [
-  {
-    number: "01",
-    title: "Diagnóstico",
-    body: "Auditamos a operação e mapeamos onde a IA agrega valor. Sem calls: um relatório assíncrono, com preço fechado.",
-    href: "/diagnostico",
-  },
-  {
-    number: "02",
-    title: "Implantação",
-    body: "Instalamos o console de operação (Claude Code e as integrações necessárias) na estrutura da sua própria empresa.",
-    href: "/implantacao",
-  },
-  {
-    number: "03",
-    title: "Operação",
-    body: "Depois de implantado, seguimos rodando com o seu time, de forma contínua.",
-    href: "/operacao",
-  },
-];
-
-const serviceLines = [
-  {
-    tag: "A",
-    title: "Implementação de IA para gestão empresarial",
-    body: "Auditamos a operação de uma empresa, em qualquer setor, e implantamos Claude e agentes de IA na gestão interna: processos, dados e decisões do dia a dia que hoje dependem de planilha e memória de time.",
-    href: "/diagnostico",
-  },
-  {
-    tag: "B",
-    title: "Operação de e-commerce com IA",
-    body: "A nossa prova em produção: rodamos, na prática e hoje, a operação inteira de uma marca de e-commerce (catálogo, medição de crescimento e CRM) com esse mesmo método.",
-    href: "/metodo",
-  },
-];
+// Matchmaking funnel (2026-09-30 pivot). Phase 1: hero only. Phase 2 adds
+// the quiz, which this button will start.
 ---
 
 <BaseLayout
-  title={`NAMI Works | ${capa?.ancora ?? "Implementamos e operamos sistemas de IA para empresas"}`}
-  description={ultimaEdicao.abertura}
+  title="nami.works | travou no seu negócio? tem gente que pode te ajudar"
+  description="tem horas que parece ser tanta coisa, e a gente nem sabe por onde começar. trocar com quem já viveu algo parecido pode ser o caminho."
 >
-  <section class="newsHero">
+  <section class="hero">
     <div class="container">
-      <p class="eyebrow">Notícias</p>
-      <h1 class="newsHeroTitle display display-1">
-        {capaMarcado?.marcador ? (
-          <>
-            {capaMarcado.before}
-            <span class="mk">{capaMarcado.marcador}</span>
-            {capaMarcado.after}
-          </>
-        ) : (
-          capa?.ancora
-        )}
-      </h1>
-      <p class="newsHeroLede">{ultimaEdicao.abertura}</p>
-
-      {capa && (
-        <img
-          class="newsHeroPlank"
-          src={`/noticias/${ultimaEdicao.pasta}/${capa.prancha}`}
-          alt=""
-          width="1080"
-          height="1350"
-          loading="eager"
-        />
-      )}
-
-      <div class="ctaRow">
-        <a href={`/noticias/${ultimaEdicao.pasta}`} class="ctaPrimary">Ver edição completa</a>
-        <a href="/noticias" class="ctaSecondary">Todas as edições</a>
-      </div>
-    </div>
-  </section>
-
-  {HERO_ENABLED && (
-    <section class="hero">
-      <div class="container">
-        <p class="eyebrow">NAMI Works</p>
-        <h1 class="heroTitle display display-1">Implementamos e <span class="mk">operamos sistemas de IA</span> para empresas.</h1>
-        <p class="heroSub">Da auditoria à operação contínua, com agentes de IA supervisionados.</p>
-        <p class="heroLede">
-          Ajudamos empresas de qualquer setor a auditar a própria operação e a
-          instalar Claude e agentes de IA na gestão interna. E, na prática,
-          rodamos nós mesmos a operação inteira de uma marca de e-commerce de 8
-          dígitos com esse mesmo método, todos os dias. Não é uma demonstração:
-          é a nossa prova de que o método funciona.
-        </p>
-        <div class="ctaRow">
-          <a href="/diagnostico" class="ctaPrimary">Ver o Diagnóstico</a>
-          <a href="#como-trabalhamos" class="ctaSecondary">Como trabalhamos</a>
-        </div>
-      </div>
-    </section>
-  )}
-
-  <section class="section sectionSoft" id="como-trabalhamos">
-    <div class="container">
-      <p class="eyebrow">Como trabalhamos</p>
-      <h2 class="sectionTitle display display-3">Um processo, <span class="mk">aplicado às duas frentes</span>.</h2>
-      <p class="lede">
-        O mesmo caminho de três etapas vale tanto para auditar a gestão
-        interna de uma empresa quanto para rodar a operação de um e-commerce.
-        O que muda é onde a IA age, não o processo pelo qual chegamos lá.
+      <h1 class="heroTitle display display-1">travou no seu negócio? tem gente que pode te ajudar!</h1>
+      <p class="heroLede">
+        tem horas que parece ser tanta coisa, e a gente nem sabe por onde começar.
       </p>
-
-      <div class="cardGrid cols3">
-        {
-          processSteps.map((step) => (
-            <a href={step.href} class="card offerCard">
-              <p class="cardNumber">{step.number}</p>
-              <h3 class="cardTitle">{step.title}</h3>
-              <p class="cardBody">{step.body}</p>
-              <span class="cardLink">
-                Saiba mais
-                <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                  <path d="M7 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </span>
-            </a>
-          ))
-        }
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="onde-atuamos">
-    <div class="container">
-      <p class="eyebrow">Onde atuamos</p>
-      <h2 class="sectionTitle display display-3">Duas frentes, <span class="mk">o mesmo método</span>.</h2>
-      <p class="lede">
-        A Implementação de IA para gestão empresarial é a frente mais ampla:
-        se aplica a qualquer empresa disposta a rodar a própria operação com
-        agentes de IA. A Operação de e-commerce com IA é a nossa prova
-        concreta de que isso funciona, porque é assim que rodamos o nosso
-        próprio caso hoje.
-      </p>
-
-      <div class="cardGrid cols2">
-        {
-          serviceLines.map((line) => (
-            <a href={line.href} class="card offerCard">
-              <p class="cardNumber">{line.tag}</p>
-              <h3 class="cardTitle">{line.title}</h3>
-              <p class="cardBody">{line.body}</p>
-              <span class="cardLink">
-                Saiba mais
-                <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                  <path d="M7 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </span>
-            </a>
-          ))
-        }
-      </div>
-
-      <div class="calloutBox">
-        <p class="calloutLabel">Prova em produção</p>
-        <p>
-          A Operação de e-commerce com IA não é um estudo de caso hipotético:
-          é assim que rodamos, hoje, uma marca de e-commerce de 8 dígitos de
-          faturamento, com o mesmo método que aplicamos na Implementação de IA
-          para outras empresas.
-        </p>
-      </div>
-
-      <a href="/metodo" class="ctaSecondary">Entender o método</a>
-    </div>
-  </section>
-
-  <section class="section sectionSoft" id="comecar">
-    <div class="container">
-      <p class="eyebrow">Como começar</p>
-      <h2 class="sectionTitle display display-3">O ponto de entrada é <span class="mk">sempre o Diagnóstico</span>.</h2>
-      <p class="lede">
-        Não existe um pacote sem o Diagnóstico: é ele que define, para
-        qualquer uma das duas frentes, o que faz sentido automatizar
-        primeiro na sua operação.
+      <p class="heroLede">
+        trocar com quem já viveu algo parecido pode ser o caminho.
       </p>
       <div class="ctaRow">
-        <a href="/diagnostico" class="ctaPrimary">Ver o Diagnóstico</a>
+        <button type="button" class="ctaPrimary" id="btnStart">entenda seu problema</button>
       </div>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  .newsHero {
-    padding: 96px 0 56px;
-  }
-
-  .newsHeroTitle {
-    color: var(--site-text);
-    margin: 0 0 16px;
-    max-width: 720px;
-  }
-
-  .newsHeroLede {
-    font-size: 16px;
-    line-height: 1.65;
-    color: var(--site-text-secondary);
-    max-width: 620px;
-    margin: 0 0 24px;
-  }
-
-  .newsHeroPlank {
-    width: 100%;
-    max-width: 420px;
-    aspect-ratio: 4 / 5;
-    object-fit: cover;
-    border-radius: 12px;
-    border: 1px solid var(--site-border);
-    margin: 0 0 28px;
-  }
-
   .hero {
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
     padding: 96px 0 56px;
   }
 
-  /* Type metrics come from .display / .display-1 (see global.css, from
-     design/tokens.css). This class only owns colour, margin and measure. */
   .heroTitle {
     color: var(--site-text);
-    margin: 0 0 10px;
-    max-width: 720px;
-  }
-
-  .heroSub {
-    font-size: 20px;
-    font-weight: 500;
-    color: var(--site-text-secondary);
-    margin: 0 0 24px;
+    margin: 0 0 20px;
+    max-width: 680px;
   }
 
   .heroLede {
-    font-size: 16px;
-    line-height: 1.65;
+    font-size: 17px;
+    line-height: 1.6;
     color: var(--site-text-secondary);
-    max-width: 620px;
-    margin: 0 0 32px;
+    max-width: 560px;
+    margin: 0 0 12px;
   }
 
-  .offerCard {
-    text-decoration: none;
-    display: block;
-    transition: border-color 0.15s ease;
-  }
-
-  .offerCard:hover {
-    border-color: var(--site-accent);
+  .heroLede:last-of-type {
+    margin-bottom: 28px;
   }
 
   @media (min-width: 769px) {
-    .newsHero {
-      padding: 140px 0 88px;
-    }
-    .newsHeroLede {
-      font-size: 18px;
-    }
     .hero {
       padding: 140px 0 88px;
     }
-    .heroSub {
-      font-size: 24px;
-    }
     .heroLede {
-      font-size: 18px;
-    }
-    .cardGrid.cols2 {
-      grid-template-columns: repeat(2, 1fr);
+      font-size: 19px;
     }
   }
 </style>

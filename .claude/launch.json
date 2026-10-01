@@ -19,6 +19,12 @@
       "runtimeExecutable": "cmd",
       "runtimeArgs": ["/c", "npm", "--prefix", "nami/site", "run", "dev"],
       "port": 4321
+    },
+    {
+      "name": "matchmaking Dev",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "npm", "--prefix", "nami-works/site", "run", "dev", "--", "--port", "4328"],
+      "port": 4328
     }
   ]
 }
