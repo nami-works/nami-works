@@ -1,14 +1,18 @@
 ---
+import { Image } from "astro:assets";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import "../../styles/marketing.css";
 import MatchmakingFunnel from "../../components/MatchmakingFunnel.astro";
 import { PERSONAS } from "../../data/personas.ts";
 
 // Instagram-driven persona landing pages (2026-10-01). Same funnel as the
-// generic home page -- only the above-fold hero differs, matched to a
-// specific pain so the ad/post hook and the landing headline say the same
-// thing. Q2 ("onde você sente que travou") is pre-answered from the
-// persona, so the quiz below starts one question shorter.
+// generic home page -- only the above-fold hero differs. Two hero styles:
+// a real poster-image hero (the actual IG post artwork, for maximum
+// ad-to-landing continuity) when persona.posterImage is set, otherwise a
+// hand-written text card. See src/data/personas.ts for which is which and
+// why. Q2 ("onde você sente que travou") is pre-answered from the persona
+// only when persona.dor is set -- the poster-image personas run the full
+// quiz, since an industry doesn't map to one single pain.
 
 export function getStaticPaths() {
   return PERSONAS.map((persona) => ({
@@ -24,28 +28,72 @@ const { persona } = Astro.props;
   title={`nami.works | ${persona.hook}`}
   description={persona.sub}
 >
-  <section class="feedHero">
-    <div class="feedCard">
-      <div class="feedPostHeader">
-        <img src="/brand/mark-goggles-ink.svg" alt="" class="feedAvatar" width="28" height="28" />
-        <span class="feedHandle">nami.works</span>
-      </div>
-      <h1 class="feedHook display display-1">{persona.hook}</h1>
-      <p class="feedSub">{persona.sub}</p>
-      <div class="ctaRow">
+  {persona.posterImage ? (
+    <section class="posterHero">
+      <Image
+        src={persona.posterImage}
+        alt={persona.hook}
+        widths={[480, 960]}
+        sizes="(min-width: 769px) 480px, 100vw"
+        loading="eager"
+        class="posterImg"
+      />
+      <div class="posterCtaWrap">
         <button type="button" class="ctaPrimary" id="btnStart">entenda seu problema</button>
       </div>
-    </div>
-  </section>
+    </section>
+  ) : (
+    <section class="feedHero">
+      <div class="feedCard">
+        <div class="feedPostHeader">
+          <img src="/brand/mark-goggles-ink.svg" alt="" class="feedAvatar" width="28" height="28" />
+          <span class="feedHandle">nami.works</span>
+        </div>
+        <h1 class="feedHook display display-1">{persona.hook}</h1>
+        <p class="feedSub">{persona.sub}</p>
+        <div class="ctaRow">
+          <button type="button" class="ctaPrimary" id="btnStart">entenda seu problema</button>
+        </div>
+      </div>
+    </section>
+  )}
 
   <MatchmakingFunnel prefilledDor={persona.dor} persona={persona.slug} />
 </BaseLayout>
 
 <style>
   /* BaseLayout's <main> already adds 68px padding-top for the fixed nav --
-     this only needs a little breathing room on top of that, not a second
-     hero-sized gap, so the card reads as "immediately there" like a post
-     does, not "scroll down to find it". */
+     both hero styles read as "immediately there", not "scroll to reveal". */
+  .posterHero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 0 32px;
+  }
+
+  .posterImg {
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    display: block;
+  }
+
+  .posterCtaWrap {
+    margin-top: 20px;
+    padding: 0 16px;
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .posterCtaWrap .ctaPrimary {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 24px;
+    font-size: 16px;
+  }
+
   .feedHero {
     min-height: calc(100dvh - 68px);
     display: flex;
@@ -107,6 +155,9 @@ const { persona } = Astro.props;
     }
     .feedHook {
       font-size: 38px;
+    }
+    .posterHero {
+      padding: 32px 0 40px;
     }
   }
 </style>
