@@ -1,0 +1,72 @@
+// nami.works matchmaking funnel -- separate logical DB from connector,
+// omnify, cash-funding and fulfillment. Cross-DB FK is impossible; never
+// reference tables in another schema's client. Same Lightsail Postgres
+// server as connector (approved 2026-10-01: new route inside the existing
+// connector Fastify app, not a standalone service), but its own database.
+
+generator client {
+  provider = "prisma-client-js"
+  // Custom output so this schema's client can coexist with the others --
+  // same trick used across the monorepo (see prisma/connector).
+  output   = "../../node_modules/@prisma/client-nami-matchmaking"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_NAMI_MATCHMAKING")
+}
+
+enum SubmissionStatus {
+  quiz_done
+  confirmed
+  waitlist
+  matched
+  accepted
+}
+
+// One row per visitor who reaches the end of the quiz -- stored whether
+// they confirm, join the waitlist, or leave (funnel-spec.md "Data and
+// integrations"). No professional roster exists yet (v1, 2026-10-01): every
+// row is a demand signal followed up manually, never an automated match.
+model MatchmakingSubmission {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Quiz answers (funnel-spec.md quiz, steps 1-4)
+  fase       String
+  dor        String
+  caminhos   Json // string[], in click order
+  seguimentos Json // Record<path, outcome>
+  valor      String
+
+  // Diagnostic (Phase 3): the card text actually shown, so it can be
+  // compared against the future AI-reasoned version later.
+  diagnosticoTexto String
+  inNetwork        Boolean
+
+  // Tiers (Phase 4) -- null until the visitor reaches/chooses one. Not
+  // applicable on the out-of-network / waitlist path.
+  tierRecomendado String?
+  tierEscolhido   String?
+
+  // Contact, collected on confirm or on the waitlist sign-up
+  nome     String?
+  telefone String?
+  email    String?
+
+  status SubmissionStatus @default(quiz_done)
+
+  // Instagram continuity (added 2026-10-01): which persona landing page and
+  // which campaign/content drove the visit, so demand can be attributed
+  // back to the specific IG post/ad that generated it.
+  persona     String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmContent  String?
+
+  @@index([status])
+  @@index([persona])
+  @@map("matchmaking_submissions")
+}

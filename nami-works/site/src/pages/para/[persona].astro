@@ -1,0 +1,112 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/marketing.css";
+import MatchmakingFunnel from "../../components/MatchmakingFunnel.astro";
+import { PERSONAS } from "../../data/personas.ts";
+
+// Instagram-driven persona landing pages (2026-10-01). Same funnel as the
+// generic home page -- only the above-fold hero differs, matched to a
+// specific pain so the ad/post hook and the landing headline say the same
+// thing. Q2 ("onde você sente que travou") is pre-answered from the
+// persona, so the quiz below starts one question shorter.
+
+export function getStaticPaths() {
+  return PERSONAS.map((persona) => ({
+    params: { persona: persona.slug },
+    props: { persona },
+  }));
+}
+
+const { persona } = Astro.props;
+---
+
+<BaseLayout
+  title={`nami.works | ${persona.hook}`}
+  description={persona.sub}
+>
+  <section class="feedHero">
+    <div class="feedCard">
+      <div class="feedPostHeader">
+        <img src="/brand/mark-goggles-ink.svg" alt="" class="feedAvatar" width="28" height="28" />
+        <span class="feedHandle">nami.works</span>
+      </div>
+      <h1 class="feedHook display display-1">{persona.hook}</h1>
+      <p class="feedSub">{persona.sub}</p>
+      <div class="ctaRow">
+        <button type="button" class="ctaPrimary" id="btnStart">entenda seu problema</button>
+      </div>
+    </div>
+  </section>
+
+  <MatchmakingFunnel prefilledDor={persona.dor} persona={persona.slug} />
+</BaseLayout>
+
+<style>
+  /* BaseLayout's <main> already adds 68px padding-top for the fixed nav --
+     this only needs a little breathing room on top of that, not a second
+     hero-sized gap, so the card reads as "immediately there" like a post
+     does, not "scroll down to find it". */
+  .feedHero {
+    min-height: calc(100dvh - 68px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px 16px 40px;
+  }
+
+  .feedCard {
+    width: 100%;
+    max-width: 420px;
+    background: var(--site-bg);
+    border: 1px solid var(--site-border);
+    border-radius: 20px;
+    padding: 28px 24px 32px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  }
+
+  .feedPostHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .feedAvatar {
+    border-radius: 999px;
+    background: var(--site-surface);
+    padding: 4px;
+  }
+
+  .feedHandle {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--site-text-secondary);
+  }
+
+  .feedHook {
+    color: var(--site-text);
+    margin: 0 0 16px;
+    font-size: 32px;
+    line-height: 1.15;
+  }
+
+  .feedSub {
+    font-size: 15.5px;
+    line-height: 1.55;
+    color: var(--site-text-secondary);
+    margin: 0 0 24px;
+  }
+
+  @media (min-width: 769px) {
+    .feedHero {
+      padding: 140px 16px 64px;
+    }
+    .feedCard {
+      max-width: 480px;
+      padding: 36px 32px 40px;
+    }
+    .feedHook {
+      font-size: 38px;
+    }
+  }
+</style>

@@ -1,0 +1,1128 @@
+---
+// Shared below-fold experience for the nami.works matchmaking funnel:
+// quiz -> diagnostic -> tiers -> confirmation. Used by the generic home
+// page and by every persona landing page (same mechanism, only the
+// above-fold hero differs -- see src/pages/para/[persona].astro).
+//
+// Copy verbatim from nami-works/matchmaking/funnel-spec.md. Stage lines
+// validated 2026-10-01 (4 independent review passes, see the matchmaking
+// initiative file).
+
+interface Props {
+  // Set by a persona landing page to skip asking "onde você sente que
+  // travou" -- the persona already answers it. Must be a key of PAIN_BLOCKS.
+  prefilledDor?: string;
+  // Recorded on the submission for attribution back to the landing page.
+  persona?: string;
+}
+
+const { prefilledDor, persona } = Astro.props;
+
+const fases = [
+  "ainda é uma ideia",
+  "começando (promissor, precisa de estrutura)",
+  "já roda, quero ganhar escala",
+  "crescendo, preciso me estruturar",
+];
+
+const dores = [
+  "vendas e clientes",
+  "dinheiro e finanças",
+  "equipe e contratação",
+  "produto ou ideia",
+  "marketing",
+  "crescer o negócio",
+  "não sei por onde começar",
+];
+
+const caminhos = [
+  "resolvi sozinho",
+  "perguntei pra uma IA",
+  "contratei agência ou freelancer",
+  "montei equipe interna",
+  "busquei parcerias estratégicas",
+  "contratei consultoria",
+  "conversei com outros empreendedores",
+  "ainda nada",
+];
+
+const resultadosCaminho = [
+  "não resolveu",
+  "resolveu em parte",
+  "funcionou, mas não sustentou",
+  "custou mais do que valia",
+];
+
+const valores = [
+  "clareza",
+  "validar uma decisão",
+  "um caminho prático",
+  "alguém que já fez",
+  "uma conexão (contato ou indicação)",
+  "um projeto de consultoria",
+  "um conselheiro contínuo",
+];
+
+const TIERS = [
+  { nome: "Colega", quem: "alguém que já viveu algo parecido", duracaoPreco: "45 min · R$200", leva: "bate-papo e troca de experiência" },
+  { nome: "Sênior", quem: "profissional com 10+ anos na área", duracaoPreco: "45 min · R$350", leva: "conversa com direção prática" },
+  { nome: "Expert", quem: "especialista de referência no seu tema", duracaoPreco: "45 min · R$500", leva: "conversa com plano de próximos passos" },
+];
+---
+
+<section class="section sectionSoft" id="quiz" hidden data-prefilled-dor={prefilledDor ?? ""} data-persona={persona ?? ""}>
+  <div class="container narrow">
+    <form class="quizForm" id="quizForm">
+      <div class="progressShell" hidden>
+        <p class="progressLabel">Pergunta 1</p>
+        <div class="progressTrack"><div class="progressFill"></div></div>
+      </div>
+
+      <fieldset class="step" data-step="fase">
+        <legend class="stepLegend">em que fase está o negócio?</legend>
+        <div class="chips" role="radiogroup" aria-label="em que fase está o negócio?">
+          {fases.map((f) => (
+            <label class="chip">
+              <input type="radio" name="fase" value={f} required />
+              <span>{f}</span>
+            </label>
+          ))}
+        </div>
+        <div class="navRow" hidden>
+          <button type="button" class="ctaSecondary btnBack" hidden>voltar</button>
+          <button type="button" class="ctaPrimary btnNext">continuar</button>
+        </div>
+      </fieldset>
+
+      <fieldset class="step" data-step="dor" hidden>
+        <legend class="stepLegend">onde você sente que travou?</legend>
+        <div class="chips" role="radiogroup" aria-label="onde você sente que travou?">
+          {dores.map((d) => (
+            <label class="chip">
+              <input type="radio" name="dor" value={d} required />
+              <span>{d}</span>
+            </label>
+          ))}
+        </div>
+        <div class="navRow" hidden>
+          <button type="button" class="ctaSecondary btnBack">voltar</button>
+          <button type="button" class="ctaPrimary btnNext">continuar</button>
+        </div>
+      </fieldset>
+
+      <fieldset class="step" data-step="caminhos" hidden>
+        <legend class="stepLegend">quais desses caminhos você já tentou? <span class="optional">(pode marcar vários)</span></legend>
+        <div class="chips" role="group" aria-label="quais desses caminhos você já tentou?" id="caminhosGroup">
+          {caminhos.map((c) => (
+            <label class="chip">
+              <input type="checkbox" name="caminhos" value={c} />
+              <span>{c}</span>
+            </label>
+          ))}
+        </div>
+        <div class="navRow" hidden>
+          <button type="button" class="ctaSecondary btnBack">voltar</button>
+          <button type="button" class="ctaPrimary btnNext">continuar</button>
+        </div>
+      </fieldset>
+
+      {[0, 1].map((slot) => (
+        <fieldset class="step followupStep" data-step={`seguimento${slot}`} data-slot={slot} hidden>
+          <legend class="stepLegend followupLegend">como foi com <span class="followupPath"></span>?</legend>
+          <div class="chips" role="radiogroup">
+            {resultadosCaminho.map((r) => (
+              <label class="chip">
+                <input type="radio" name={`seguimento${slot}`} value={r} />
+                <span>{r}</span>
+              </label>
+            ))}
+          </div>
+          <div class="navRow" hidden>
+            <button type="button" class="ctaSecondary btnBack">voltar</button>
+            <button type="button" class="ctaPrimary btnNext">continuar</button>
+          </div>
+        </fieldset>
+      ))}
+
+      <fieldset class="step" data-step="valor" hidden>
+        <legend class="stepLegend">o que tem mais valor pra você agora?</legend>
+        <div class="chips" role="radiogroup" aria-label="o que tem mais valor pra você agora?">
+          {valores.map((v) => (
+            <label class="chip">
+              <input type="radio" name="valor" value={v} required />
+              <span>{v}</span>
+            </label>
+          ))}
+        </div>
+        <div class="navRow" hidden>
+          <button type="button" class="ctaSecondary btnBack">voltar</button>
+          <button type="button" class="ctaPrimary btnNext" id="btnVerDiagnostico">ver meu diagnóstico</button>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+</section>
+
+<section class="section" id="diagnostico" hidden>
+  <div class="container narrow">
+    <div id="diagnosticoEmRede">
+      <p class="eyebrow">seu travamento</p>
+      <h2 class="sectionTitle display display-3" id="diagTitulo"></h2>
+
+      <p class="diagLabel">o que isso costuma significar</p>
+      <p class="diagTexto" id="diagSignificado"></p>
+
+      <p class="diagLabel">um primeiro passo pra hoje</p>
+      <p class="diagTexto" id="diagPasso"></p>
+
+      <p class="diagResto">
+        o resto a gente resolve conversando, e nosso algoritmo encontra a pessoa certa pra essa conversa.
+      </p>
+
+      <div class="ctaRow">
+        <button type="button" class="ctaPrimary" id="btnVerTiers">ver quem pode conversar comigo</button>
+      </div>
+    </div>
+
+    <div id="diagnosticoForaDeRede" hidden>
+      <h2 class="sectionTitle display display-3">vamos te conectar com um profissional em breve.</h2>
+      <p class="lede">
+        nosso algoritmo vai encontrar a pessoa certa pra esse tema e te chamar assim que ela chegar.
+      </p>
+      <div class="ctaRow">
+        <button type="button" class="ctaPrimary" id="btnMeAvise">me avise</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section sectionSoft" id="waitlist" hidden>
+  <div class="container narrow">
+    <form id="waitlistForm">
+      <p class="eyebrow">me avise</p>
+      <h2 class="sectionTitle display display-3">deixa seu e-mail <span class="mk">que a gente te chama</span>.</h2>
+      <div class="field">
+        <label for="waitlistEmail">e-mail</label>
+        <input type="email" id="waitlistEmail" name="email" required placeholder="voce@empresa.com" />
+      </div>
+      <div class="ctaRow">
+        <button type="submit" class="ctaPrimary">confirmar</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="section" id="tiers" hidden>
+  <div class="container">
+    <p class="eyebrow">como conversar</p>
+    <h2 class="sectionTitle display display-3">três jeitos de conversar, <span class="mk">a mesma troca de 45 minutos</span>.</h2>
+
+    <div class="tiersGrid" id="tiersGrid" role="radiogroup" aria-label="escolha um plano">
+      {TIERS.map((t) => (
+        <button type="button" class="tierCard" data-tier={t.nome}>
+          <span class="tierRecomendado" hidden>recomendado pra você</span>
+          <p class="tierNome">{t.nome}</p>
+          <p class="tierQuem">{t.quem}</p>
+          <p class="tierDuracaoPreco">{t.duracaoPreco}</p>
+          <p class="tierLeva">{t.leva}</p>
+        </button>
+      ))}
+    </div>
+
+    <p class="tierMencao" id="tierMencao" hidden></p>
+    <p class="tierAviso"><b>nada é cobrado agora.</b> você só paga depois de aceitar a conexão com o profissional.</p>
+
+    <div class="ctaRow">
+      <button type="button" class="ctaPrimary" id="btnVerConfirmacao" disabled>continuar</button>
+    </div>
+  </div>
+</section>
+
+<section class="section sectionSoft" id="confirmacao" hidden>
+  <div class="container narrow">
+    <form id="confirmacaoForm">
+      <p class="eyebrow">sua conversa</p>
+      <h2 class="sectionTitle display display-3" id="confirmacaoResumo"></h2>
+
+      <div class="field">
+        <label for="confNome">seu nome</label>
+        <input type="text" id="confNome" name="nome" required placeholder="nome e sobrenome" />
+      </div>
+      <div class="field">
+        <label for="confTelefone">telefone</label>
+        <input type="tel" id="confTelefone" name="telefone" required placeholder="(11) 90000-0000" />
+      </div>
+      <div class="field">
+        <label for="confEmail">e-mail</label>
+        <input type="email" id="confEmail" name="email" required placeholder="voce@empresa.com" />
+      </div>
+
+      <div class="ctaRow">
+        <button type="submit" class="ctaPrimary">confirmar minha conversa</button>
+      </div>
+      <p class="confirmacaoAviso">
+        você recebe um e-mail confirmando sua conversa. a gente te chama assim que encontrar a pessoa certa pra esse papo. nada é cobrado antes de você aceitar a conexão.
+      </p>
+    </form>
+  </div>
+</section>
+
+<section class="section" id="obrigado" hidden>
+  <div class="container narrow">
+    <p class="eyebrow">prontinho</p>
+    <h2 class="sectionTitle display display-3" id="obrigadoTitulo">recebemos.</h2>
+    <p class="lede" id="obrigadoTexto"></p>
+  </div>
+</section>
+
+<script>
+  type Answers = {
+    fase: string | null;
+    dor: string | null;
+    caminhos: string[]; // in click order
+    seguimentos: Record<string, string>; // path -> outcome
+    valor: string | null;
+  };
+
+  // Namespaced per persona (falls back to "generic" on the main page) --
+  // sessionStorage is shared across the whole origin, so without this a
+  // visitor who starts the quiz on one persona page and later opens a
+  // different one would silently resume a different pain's answers.
+  let STORAGE_KEY = "nami-quiz-state-v1:generic";
+
+  function emptyAnswers(): Answers {
+    return { fase: null, dor: null, caminhos: [], seguimentos: {}, valor: null };
+  }
+
+  function loadAnswers(): Answers {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (!raw) return emptyAnswers();
+      const parsed = JSON.parse(raw);
+      return { ...emptyAnswers(), ...parsed };
+    } catch {
+      return emptyAnswers();
+    }
+  }
+
+  function saveAnswers(a: Answers) {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(a));
+    } catch {
+      /* private mode / storage disabled, no-op */
+    }
+  }
+
+  // ---- Diagnostic engine (Phase 3): deterministic v1, swappable later ----
+  const PAIN_BLOCKS: Record<string, { significado: string; primeiroPasso: string; inNetwork: boolean }> = {
+    "vendas e clientes": {
+      significado: "o produto existe, mas o cliente não chega ou não fecha. quase sempre falta clareza sobre quem compra e por quê.",
+      primeiroPasso: "liste seus 3 últimos clientes e escreva por que cada um comprou.",
+      inNetwork: true,
+    },
+    "dinheiro e finanças": {
+      significado: "o caixa aperta e fica difícil decidir. muitas vezes o problema é não enxergar pra onde o dinheiro vai.",
+      primeiroPasso: "anote todas as entradas e saídas dos últimos 30 dias numa planilha simples.",
+      inNetwork: true,
+    },
+    "equipe e contratação": {
+      significado: "contratar, delegar ou liderar virou gargalo. o negócio depende demais de você.",
+      primeiroPasso: "escreva as 5 tarefas que só você faz e escolha uma pra passar adiante.",
+      inNetwork: true,
+    },
+    "produto ou ideia": {
+      significado: "você tem a ideia, mas não sabe se é isso que o mercado quer.",
+      primeiroPasso: "converse com 3 possíveis clientes essa semana, antes de investir mais.",
+      inNetwork: true,
+    },
+    marketing: {
+      significado: "você aparece, mas não vê resultado. normalmente falta foco em um canal e uma mensagem.",
+      primeiroPasso: "escolha um único canal e uma mensagem pra testar por 2 semanas.",
+      inNetwork: true,
+    },
+    "não sei por onde começar": {
+      significado: "frentes demais abertas paralisam. o primeiro ganho é escolher uma.",
+      primeiroPasso: "escreva tudo que está pendente e marque a única coisa que destravaria o resto.",
+      inNetwork: true,
+    },
+    // No pain block exists for this one yet (known spec gap) -- routed to
+    // the out-of-network path instead of guessed copy.
+    "crescer o negócio": { significado: "", primeiroPasso: "", inNetwork: false },
+  };
+
+  // Validated 2026-10-01 -- see the matchmaking initiative file for the
+  // 4-reviewer pass that picked these over the alternatives.
+  const STAGE_LINES: Record<string, string> = {
+    "ainda é uma ideia": "nessa fase, validar vale mais que construir.",
+    "começando (promissor, precisa de estrutura)": "ser promissor não substitui processo por trás.",
+    "já roda, quero ganhar escala": "pra crescer, o que funciona hoje precisa rodar sem você em cima o tempo todo.",
+    "crescendo, preciso me estruturar": "nessa fase, o que trava é o resto da empresa não acompanhar o ritmo do negócio.",
+  };
+
+  type Diagnostico =
+    | { inNetwork: true; significado: string; primeiroPasso: string }
+    | { inNetwork: false };
+
+  function computeDiagnostico(dor: string, fase: string): Diagnostico {
+    const pain = PAIN_BLOCKS[dor];
+    if (!pain || !pain.inNetwork) return { inNetwork: false };
+    const stageLine = STAGE_LINES[fase] ?? "";
+    return {
+      inNetwork: true,
+      significado: `${pain.significado} ${stageLine}`.trim(),
+      primeiroPasso: pain.primeiroPasso,
+    };
+  }
+
+  // ---- Tier recommendation (Phase 4) ----
+  // Pro/Básico (old names in the spec's signal table) map to Expert/Colega
+  // (current card names) -- resolved 2026-10-01, see the initiative file.
+  function recommendTiers(answers: Answers): string[] {
+    const matches: string[] = [];
+    if (answers.valor === "alguém que já fez" || answers.caminhos.includes("contratei consultoria")) {
+      matches.push("Expert");
+    }
+    if (answers.valor === "um caminho prático" || answers.valor === "validar uma decisão") {
+      matches.push("Sênior");
+    }
+    if (
+      answers.valor === "clareza" ||
+      answers.caminhos.length === 0 ||
+      answers.caminhos.includes("ainda nada")
+    ) {
+      matches.push("Colega");
+    }
+    return matches.length ? matches : ["Colega"];
+  }
+
+  // ---- UTM / persona continuity (Instagram traffic, 2026-10-01) ----
+  function readUtmContext(form: HTMLElement) {
+    const params = new URLSearchParams(location.search);
+    return {
+      persona: form.dataset.persona || undefined,
+      utmSource: params.get("utm_source") || undefined,
+      utmMedium: params.get("utm_medium") || undefined,
+      utmCampaign: params.get("utm_campaign") || undefined,
+      utmContent: params.get("utm_content") || undefined,
+    };
+  }
+
+  const API_BASE = import.meta.env.PUBLIC_MATCHMAKING_API_BASE as string;
+
+  async function createSubmission(body: Record<string, unknown>): Promise<string | null> {
+    try {
+      const res = await fetch(`${API_BASE}/nami-matchmaking/submissions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.id ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function patchSubmission(id: string, body: Record<string, unknown>): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE}/nami-matchmaking/submissions/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  (function () {
+    const quizSectionMaybe = document.getElementById("quiz");
+    const btnStart = document.getElementById("btnStart");
+    const formMaybe = document.getElementById("quizForm") as HTMLFormElement | null;
+    if (!quizSectionMaybe || !btnStart || !formMaybe) return;
+    // Rebind as non-null: TS narrowing from the guard above doesn't carry
+    // into the nested functions below that close over these.
+    const quizSection = quizSectionMaybe;
+    const form = formMaybe;
+
+    const prefilledDor = quizSection.dataset.prefilledDor || null;
+    const utmContext = readUtmContext(quizSection);
+    STORAGE_KEY = `nami-quiz-state-v1:${quizSection.dataset.persona || "generic"}`;
+
+    const answers = loadAnswers();
+    if (prefilledDor) answers.dor = prefilledDor;
+
+    const stepFase = form.querySelector<HTMLFieldSetElement>('[data-step="fase"]')!;
+    const stepDor = form.querySelector<HTMLFieldSetElement>('[data-step="dor"]')!;
+    const stepCaminhos = form.querySelector<HTMLFieldSetElement>('[data-step="caminhos"]')!;
+    const stepSeguimento0 = form.querySelector<HTMLFieldSetElement>('[data-step="seguimento0"]')!;
+    const stepSeguimento1 = form.querySelector<HTMLFieldSetElement>('[data-step="seguimento1"]')!;
+    const stepValor = form.querySelector<HTMLFieldSetElement>('[data-step="valor"]')!;
+    const progressShell = form.querySelector<HTMLElement>(".progressShell")!;
+    const progressFill = form.querySelector<HTMLElement>(".progressFill")!;
+    const progressLabel = form.querySelector<HTMLElement>(".progressLabel")!;
+
+    const FOLLOWUP_STEPS = [stepSeguimento0, stepSeguimento1];
+
+    // "ainda nada" is mutually exclusive with every other path: ticking it
+    // clears the rest (and vice versa), since "I tried nothing" contradicts
+    // "I tried X".
+    const caminhosBoxes = Array.from(
+      stepCaminhos.querySelectorAll<HTMLInputElement>('input[name="caminhos"]')
+    );
+    const NADA_VALUE = "ainda nada";
+
+    // Tracks the actual order paths were ticked in (not DOM order), seeded
+    // from any restored answers so a refresh keeps the original order.
+    let caminhosClickOrder: string[] = [...answers.caminhos];
+
+    caminhosBoxes.forEach((box) => {
+      box.addEventListener("change", () => {
+        if (box.value === NADA_VALUE && box.checked) {
+          caminhosBoxes.forEach((b) => {
+            if (b !== box) b.checked = false;
+          });
+          caminhosClickOrder = [NADA_VALUE];
+          return;
+        }
+        if (box.checked) {
+          const nada = caminhosBoxes.find((b) => b.value === NADA_VALUE);
+          if (nada) nada.checked = false;
+          caminhosClickOrder = caminhosClickOrder.filter((v) => v !== NADA_VALUE);
+          if (!caminhosClickOrder.includes(box.value)) caminhosClickOrder.push(box.value);
+        } else {
+          caminhosClickOrder = caminhosClickOrder.filter((v) => v !== box.value);
+        }
+      });
+    });
+
+    function tickedCaminhos(): string[] {
+      const checkedNow = new Set(caminhosBoxes.filter((b) => b.checked).map((b) => b.value));
+      return caminhosClickOrder.filter((v) => checkedNow.has(v));
+    }
+
+    function pathsNeedingFollowup(): string[] {
+      const ticked = tickedCaminhos();
+      if (ticked.length === 0 || ticked.includes(NADA_VALUE)) return [];
+      return ticked.slice(0, 2);
+    }
+
+    // Build the active step order fresh each time -- the follow-up count
+    // depends on how many paths are ticked, which can change on back-nav.
+    // When a persona page prefilled "dor", that step is skipped entirely.
+    function buildOrder(): HTMLFieldSetElement[] {
+      const order = prefilledDor ? [stepFase, stepCaminhos] : [stepFase, stepDor, stepCaminhos];
+      const paths = pathsNeedingFollowup();
+      paths.forEach((path, i) => {
+        const step = FOLLOWUP_STEPS[i];
+        step.dataset.path = path;
+        const label = step.querySelector<HTMLElement>(".followupPath")!;
+        label.textContent = path;
+        order.push(step);
+      });
+      order.push(stepValor);
+      return order;
+    }
+
+    const ALL_STEPS = [stepFase, stepDor, stepCaminhos, stepSeguimento0, stepSeguimento1, stepValor];
+
+    let order = buildOrder();
+    let currentIndex = 0;
+
+    function syncCaminhosRequired() {
+      const anyChecked = caminhosBoxes.some((b) => b.checked);
+      caminhosBoxes.forEach((b) => (b.required = !anyChecked));
+    }
+    syncCaminhosRequired();
+    caminhosBoxes.forEach((b) => b.addEventListener("change", syncCaminhosRequired));
+
+    function showStep(index: number) {
+      order.forEach((step, i) => {
+        step.hidden = i !== index;
+        const nav = step.querySelector<HTMLElement>(".navRow");
+        if (nav) nav.hidden = false;
+        const back = step.querySelector<HTMLElement>(".btnBack");
+        if (back) back.hidden = index === 0;
+      });
+      progressShell.hidden = false;
+      progressFill.style.width = `${((index + 1) / order.length) * 100}%`;
+      progressLabel.textContent = `Pergunta ${index + 1} de ${order.length}`;
+      order[index].scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function stepIsValid(step: HTMLFieldSetElement): boolean {
+      const controls = Array.from(step.querySelectorAll<HTMLInputElement>("input"));
+      const firstInvalid = controls.find((c) => !c.checkValidity());
+      if (firstInvalid) {
+        firstInvalid.reportValidity();
+        return false;
+      }
+      return true;
+    }
+
+    // Reads every field currently in the DOM into `answers` and persists it.
+    // Called on every form change (not just on "continuar") so a stray
+    // refresh never loses a selection the visitor already made.
+    function syncAllAnswersFromDom() {
+      answers.fase = (form.querySelector('input[name="fase"]:checked') as HTMLInputElement | null)?.value ?? null;
+      if (!prefilledDor) {
+        answers.dor = (form.querySelector('input[name="dor"]:checked') as HTMLInputElement | null)?.value ?? null;
+      }
+      answers.caminhos = tickedCaminhos();
+      // Dropped paths lose their stale follow-up answer.
+      Object.keys(answers.seguimentos).forEach((p) => {
+        if (!answers.caminhos.includes(p)) delete answers.seguimentos[p];
+      });
+      FOLLOWUP_STEPS.forEach((step) => {
+        const path = step.dataset.path;
+        const val = (step.querySelector('input:checked') as HTMLInputElement | null)?.value;
+        if (path && val) answers.seguimentos[path] = val;
+      });
+      answers.valor = (form.querySelector('input[name="valor"]:checked') as HTMLInputElement | null)?.value ?? null;
+      saveAnswers(answers);
+    }
+
+    let submissionId: string | null = null;
+
+    async function finishQuiz() {
+      syncAllAnswersFromDom();
+      if (!answers.fase || !answers.dor || !answers.valor) return;
+
+      const diagnostico = computeDiagnostico(answers.dor, answers.fase);
+      const diagnosticoTexto = diagnostico.inNetwork
+        ? `${diagnostico.significado} ${diagnostico.primeiroPasso}`
+        : "fora de rede";
+
+      submissionId = await createSubmission({
+        fase: answers.fase,
+        dor: answers.dor,
+        caminhos: answers.caminhos,
+        seguimentos: answers.seguimentos,
+        valor: answers.valor,
+        diagnosticoTexto,
+        inNetwork: diagnostico.inNetwork,
+        ...utmContext,
+      });
+
+      quizSection!.hidden = true;
+      renderDiagnostico(diagnostico, answers.dor);
+    }
+
+    ALL_STEPS.forEach((step) => {
+      const nextBtn = step.querySelector<HTMLButtonElement>(".btnNext");
+      const backBtn = step.querySelector<HTMLButtonElement>(".btnBack");
+      nextBtn?.addEventListener("click", () => {
+        if (!stepIsValid(step)) return;
+        syncAllAnswersFromDom();
+        if (step === stepCaminhos) {
+          // Rebuild order now that the follow-up count is known.
+          order = buildOrder();
+          currentIndex = order.indexOf(stepCaminhos) + 1;
+        } else {
+          currentIndex = Math.min(currentIndex + 1, order.length - 1);
+        }
+        if (step === stepValor) {
+          finishQuiz();
+          return;
+        }
+        showStep(currentIndex);
+      });
+      backBtn?.addEventListener("click", () => {
+        currentIndex = Math.max(currentIndex - 1, 0);
+        order = buildOrder();
+        showStep(currentIndex);
+      });
+    });
+
+    // Persist on every change, not just on "continuar" -- a selection
+    // should survive a refresh even before the visitor advances.
+    form.addEventListener("change", () => syncAllAnswersFromDom());
+
+    btnStart?.addEventListener("click", () => {
+      quizSection.hidden = false;
+      order = buildOrder();
+      currentIndex = 0;
+      showStep(0);
+    });
+
+    // Restore from sessionStorage so a refresh mid-quiz doesn't lose
+    // answers: re-check the matching inputs, then resume at the first
+    // step that isn't answered yet.
+    function restoreFromAnswers() {
+      const hasAnyProgress =
+        answers.fase || (!prefilledDor && answers.dor) || answers.caminhos.length || answers.valor;
+      if (!hasAnyProgress) return;
+
+      if (answers.fase) {
+        const r = form.querySelector(`input[name="fase"][value="${CSS.escape(answers.fase)}"]`) as HTMLInputElement | null;
+        if (r) r.checked = true;
+      }
+      if (!prefilledDor && answers.dor) {
+        const r = form.querySelector(`input[name="dor"][value="${CSS.escape(answers.dor)}"]`) as HTMLInputElement | null;
+        if (r) r.checked = true;
+      }
+      caminhosBoxes.forEach((b) => {
+        b.checked = answers.caminhos.includes(b.value);
+      });
+      syncCaminhosRequired();
+
+      order = buildOrder();
+      order.forEach((step) => {
+        if (step === stepSeguimento0 || step === stepSeguimento1) {
+          const path = step.dataset.path;
+          const saved = path ? answers.seguimentos[path] : undefined;
+          if (saved) {
+            const r = step.querySelector(`input[value="${CSS.escape(saved)}"]`) as HTMLInputElement | null;
+            if (r) r.checked = true;
+          }
+        }
+      });
+      if (answers.valor) {
+        const r = form.querySelector(`input[name="valor"][value="${CSS.escape(answers.valor)}"]`) as HTMLInputElement | null;
+        if (r) r.checked = true;
+      }
+
+      // Resume at the first step in the (now rebuilt) order that has no
+      // saved answer yet.
+      const firstIncomplete = order.findIndex((step) => {
+        if (step === stepFase) return !answers.fase;
+        if (step === stepDor) return !answers.dor;
+        if (step === stepCaminhos) return !answers.caminhos.length;
+        if (step === stepSeguimento0 || step === stepSeguimento1) {
+          const path = step.dataset.path;
+          return path ? !answers.seguimentos[path] : true;
+        }
+        if (step === stepValor) return !answers.valor;
+        return false;
+      });
+
+      quizSection.hidden = false;
+      currentIndex = firstIncomplete === -1 ? order.length - 1 : firstIncomplete;
+      showStep(currentIndex);
+    }
+
+    restoreFromAnswers();
+
+    // ---- Diagnostic, tiers, confirmation (Phase 3-5) ----
+    const diagnosticoSection = document.getElementById("diagnostico")!;
+    const diagEmRede = document.getElementById("diagnosticoEmRede")!;
+    const diagForaDeRede = document.getElementById("diagnosticoForaDeRede")!;
+    const diagTitulo = document.getElementById("diagTitulo")!;
+    const diagSignificado = document.getElementById("diagSignificado")!;
+    const diagPasso = document.getElementById("diagPasso")!;
+    const tiersSection = document.getElementById("tiers")!;
+    const waitlistSection = document.getElementById("waitlist")!;
+    const confirmacaoSection = document.getElementById("confirmacao")!;
+    const obrigadoSection = document.getElementById("obrigado")!;
+
+    function renderDiagnostico(diag: Diagnostico, dor: string) {
+      diagnosticoSection.hidden = false;
+      if (diag.inNetwork) {
+        diagEmRede.hidden = false;
+        diagForaDeRede.hidden = true;
+        diagTitulo.textContent = `seu travamento: ${dor}`;
+        diagSignificado.textContent = diag.significado;
+        diagPasso.textContent = diag.primeiroPasso;
+      } else {
+        diagEmRede.hidden = true;
+        diagForaDeRede.hidden = false;
+      }
+      diagnosticoSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    document.getElementById("btnVerTiers")?.addEventListener("click", () => {
+      diagnosticoSection.hidden = true;
+      renderTiers();
+      tiersSection.hidden = false;
+      tiersSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    document.getElementById("btnMeAvise")?.addEventListener("click", () => {
+      diagnosticoSection.hidden = true;
+      waitlistSection.hidden = false;
+      waitlistSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    // ---- Tiers ----
+    let tierEscolhido: string | null = null;
+    let tierRecomendado: string | null = null;
+
+    function renderTiers() {
+      const recomendados = recommendTiers(answers);
+      tierRecomendado = recomendados[0] ?? null;
+      const mencao = recomendados[1];
+
+      const cards = Array.from(tiersSection.querySelectorAll<HTMLButtonElement>(".tierCard"));
+      cards.forEach((card) => {
+        const isRecomendado = card.dataset.tier === tierRecomendado;
+        const tag = card.querySelector<HTMLElement>(".tierRecomendado")!;
+        tag.hidden = !isRecomendado;
+        card.classList.toggle("tierCardRecomendado", isRecomendado);
+      });
+
+      const mencaoEl = document.getElementById("tierMencao")!;
+      if (mencao) {
+        mencaoEl.hidden = false;
+        mencaoEl.textContent = `${mencao} também pode fazer sentido pra você.`;
+      } else {
+        mencaoEl.hidden = true;
+      }
+    }
+
+    tiersSection.querySelectorAll<HTMLButtonElement>(".tierCard").forEach((card) => {
+      card.addEventListener("click", () => {
+        tierEscolhido = card.dataset.tier ?? null;
+        tiersSection.querySelectorAll<HTMLButtonElement>(".tierCard").forEach((c) => {
+          c.classList.toggle("tierCardSelecionado", c === card);
+        });
+        const btn = document.getElementById("btnVerConfirmacao") as HTMLButtonElement | null;
+        if (btn) btn.disabled = false;
+      });
+    });
+
+    document.getElementById("btnVerConfirmacao")?.addEventListener("click", () => {
+      if (!tierEscolhido) return;
+      tiersSection.hidden = true;
+      const resumo = document.getElementById("confirmacaoResumo")!;
+      resumo.textContent = `${answers.dor} · ${answers.fase} · plano ${tierEscolhido}`;
+      confirmacaoSection.hidden = false;
+      confirmacaoSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    // ---- Confirmation (tier path) ----
+    document.getElementById("confirmacaoForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!submissionId) return;
+      const form = e.target as HTMLFormElement;
+      const nome = (form.querySelector("#confNome") as HTMLInputElement).value;
+      const telefone = (form.querySelector("#confTelefone") as HTMLInputElement).value;
+      const email = (form.querySelector("#confEmail") as HTMLInputElement).value;
+
+      await patchSubmission(submissionId, {
+        status: "confirmed",
+        tierRecomendado,
+        tierEscolhido,
+        nome,
+        telefone,
+        email,
+      });
+
+      confirmacaoSection.hidden = true;
+      document.getElementById("obrigadoTexto")!.textContent =
+        "a gente te chama assim que encontrar a pessoa certa pra essa conversa. nada é cobrado antes de você aceitar a conexão.";
+      obrigadoSection.hidden = false;
+      obrigadoSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      try {
+        sessionStorage.removeItem(STORAGE_KEY);
+      } catch {
+        /* no-op */
+      }
+    });
+
+    // ---- Waitlist (out-of-network path) ----
+    document.getElementById("waitlistForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!submissionId) return;
+      const form = e.target as HTMLFormElement;
+      const email = (form.querySelector("#waitlistEmail") as HTMLInputElement).value;
+
+      await patchSubmission(submissionId, { status: "waitlist", email });
+
+      waitlistSection.hidden = true;
+      document.getElementById("obrigadoTexto")!.textContent =
+        "esse tema ainda não tem ninguém no nosso time pra conversar, mas guardamos seu contato. a gente te chama assim que encontrar a pessoa certa.";
+      obrigadoSection.hidden = false;
+      obrigadoSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      try {
+        sessionStorage.removeItem(STORAGE_KEY);
+      } catch {
+        /* no-op */
+      }
+    });
+  })();
+</script>
+
+<style>
+  .container.narrow {
+    max-width: 640px;
+  }
+
+  .quizForm {
+    display: grid;
+    gap: 8px;
+  }
+
+  fieldset.step[hidden],
+  .navRow[hidden],
+  .btnBack[hidden] {
+    display: none;
+  }
+
+  fieldset.step {
+    display: grid;
+    gap: 20px;
+    border: none;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    scroll-margin-top: 88px;
+  }
+
+  .stepLegend {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--site-text);
+    letter-spacing: -0.01em;
+    padding: 0;
+    margin: 0;
+  }
+
+  .optional {
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--site-text-secondary);
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--site-text-secondary);
+    background: var(--site-bg);
+    color: var(--site-text);
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+    min-height: 44px;
+    transition: border-color 0.14s ease, background 0.14s ease, color 0.14s ease;
+  }
+
+  .chip input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    opacity: 0;
+  }
+
+  .chip:hover {
+    border-color: var(--site-accent);
+  }
+
+  .chip:has(input:checked) {
+    background: var(--site-accent);
+    color: var(--site-accent-text);
+    border-color: var(--site-accent);
+  }
+
+  .chip:has(input:focus-visible) {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 2px;
+  }
+
+  .progressShell {
+    margin: 0 0 8px;
+  }
+
+  .progressLabel {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--site-text-secondary);
+    margin: 0 0 8px;
+  }
+
+  .progressTrack {
+    height: 5px;
+    background: var(--site-surface);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progressFill {
+    height: 100%;
+    width: 0%;
+    background: var(--site-accent);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+
+  .navRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .navRow .btnBack {
+    background: none;
+    border: none;
+    padding: 4px 0;
+    cursor: pointer;
+    color: var(--site-text-secondary);
+  }
+
+  .followupLegend .followupPath {
+    color: var(--site-accent);
+  }
+
+  .diagLabel {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--site-text-secondary);
+    margin: 20px 0 8px;
+  }
+
+  .diagTexto {
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--site-text);
+    margin: 0;
+  }
+
+  .diagResto {
+    font-size: 14px;
+    color: var(--site-text-secondary);
+    margin: 24px 0 0;
+    line-height: 1.5;
+  }
+
+  .field {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .field label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--site-text);
+  }
+
+  .field input {
+    font-family: var(--site-font);
+    font-size: 16px;
+    color: var(--site-text);
+    background: var(--site-bg);
+    border: 1px solid var(--site-text-secondary);
+    border-radius: 8px;
+    padding: 12px 14px;
+    width: 100%;
+  }
+
+  .field input:focus-visible {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 2px;
+  }
+
+  .tiersGrid {
+    display: grid;
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .tierCard {
+    display: grid;
+    gap: 6px;
+    text-align: left;
+    background: var(--site-bg);
+    border: 2px solid var(--site-border);
+    border-radius: 12px;
+    padding: 24px;
+    cursor: pointer;
+    font-family: var(--site-font);
+    transition: border-color 0.15s ease;
+  }
+
+  .tierCard:hover {
+    border-color: var(--site-accent);
+  }
+
+  .tierCardSelecionado {
+    border-color: var(--site-accent);
+    border-width: 2px;
+  }
+
+  .tierRecomendado[hidden] {
+    display: none;
+  }
+
+  .tierRecomendado {
+    display: inline-flex;
+    width: fit-content;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--site-accent);
+    background: var(--site-surface);
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 4px;
+  }
+
+  .tierNome {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--site-text);
+    margin: 0;
+  }
+
+  .tierQuem {
+    font-size: 13.5px;
+    color: var(--site-text-secondary);
+    margin: 0;
+  }
+
+  .tierDuracaoPreco {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--site-accent);
+    margin: 4px 0 0;
+  }
+
+  .tierLeva {
+    font-size: 13.5px;
+    color: var(--site-text-secondary);
+    margin: 0;
+  }
+
+  .tierMencao {
+    font-size: 13.5px;
+    color: var(--site-text-secondary);
+    font-style: italic;
+    margin: 0 0 16px;
+  }
+
+  .tierAviso {
+    font-size: 14px;
+    color: var(--site-text);
+    margin: 0 0 20px;
+  }
+
+  .confirmacaoAviso {
+    font-size: 13px;
+    color: var(--site-text-secondary);
+    margin: 16px 0 0;
+    line-height: 1.5;
+  }
+
+  @media (min-width: 769px) {
+    .tiersGrid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>
