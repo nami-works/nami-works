@@ -43,9 +43,12 @@ bootstrapped from (phases below mirror it).
 - [x] **Phase 1** — setup: hero rebuilt on `index.astro` with the spec's
       verbatim copy, verified mobile + desktop in the preview
       (`matchmaking Dev`, port 4328, launch.json).
-- [ ] **Phase 2** — quiz: 4 steps (Q1/Q2/Q4 single-select, Q3 multi-select
+- [x] **Phase 2** — quiz: 4 steps (Q1/Q2/Q4 single-select, Q3 multi-select
       with up to 2 dynamically-generated follow-up screens), state object
-      persisted to `sessionStorage` so it survives a refresh.
+      persisted to `sessionStorage` on every change (survives a refresh
+      even mid-step, before advancing). Also rebuilt `Nav.astro` for the
+      no-menu header (bigger lockup, taller bar). Verified end-to-end:
+      full run-through, click-order-aware follow-ups, back-nav, mobile.
 - [ ] **Phase 3** — diagnostic: pure `computeDiagnostic(answers)` function,
       "crescer o negócio" (the one pain with no block) routed through the
       out-of-network/waitlist path. Blocked on: stage-line copy pass (2 of
