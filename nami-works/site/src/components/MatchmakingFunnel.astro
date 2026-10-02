@@ -20,29 +20,28 @@ const { prefilledDor, persona } = Astro.props;
 
 const fases = [
   "ainda é uma ideia",
-  "começando (promissor, precisa de estrutura)",
-  "já roda, quero ganhar escala",
-  "crescendo, preciso me estruturar",
+  "começo promissor",
+  "já roda, quero escalar",
+  "crescendo, pede estrutura",
 ];
 
 const dores = [
-  "vendas e clientes",
-  "dinheiro e finanças",
-  "equipe e contratação",
-  "produto ou ideia",
-  "marketing",
-  "crescer o negócio",
+  "mercado e clientes",
+  "vendas e marketing",
+  "caixa e finanças",
+  "contratações e equipe",
+  "produto",
+  "escalar o negócio",
   "não sei por onde começar",
 ];
 
 const caminhos = [
-  "perguntei pra uma IA",
-  "contratei agência ou freelancer",
-  "montei equipe interna",
-  "busquei parceiros",
-  "contratei consultoria",
+  "implementar com IA",
+  "agência ou freelancer",
+  "equipe interna",
+  "parceiros",
+  "consultoria",
   "conversei com outros empreendedores",
-  "ainda não tentei",
 ];
 
 const resultadosCaminho = [
@@ -55,10 +54,10 @@ const resultadosCaminho = [
 const valores = [
   "validar decisão",
   "caminho prático",
-  "alguém que já fez",
-  "conexão (contato ou indicação)",
+  "ouvir de quem já viveu",
+  "conexão para trocas",
   "projeto de consultoria",
-  "conselho/acompanhamento",
+  "conselho e acompanhamento",
 ];
 
 const VALOR_OUTRA = "outra";
@@ -111,8 +110,8 @@ const TIERS = [
       </fieldset>
 
       <fieldset class="step" data-step="caminhos" hidden>
-        <legend class="stepLegend">quais desses caminhos você já tentou? <span class="optional">(pode marcar vários)</span></legend>
-        <div class="chips" role="group" aria-label="quais desses caminhos você já tentou?" id="caminhosGroup">
+        <legend class="stepLegend">já tentou algum destes caminhos? <span class="optional">(pode marcar vários)</span></legend>
+        <div class="chips" role="group" aria-label="já tentou algum destes caminhos?" id="caminhosGroup">
           {caminhos.map((c) => (
             <label class="chip">
               <input type="checkbox" name="caminhos" value={c} />
@@ -122,6 +121,7 @@ const TIERS = [
         </div>
         <div class="navRow" hidden>
           <button type="button" class="ctaSecondary btnBack">voltar</button>
+          <button type="button" class="ctaSecondary btnSkip">ainda não tentei</button>
           <button type="button" class="ctaPrimary btnNext">continuar</button>
         </div>
       </fieldset>
@@ -145,8 +145,8 @@ const TIERS = [
       ))}
 
       <fieldset class="step" data-step="valor" hidden>
-        <legend class="stepLegend">o que tem mais valor pra você agora?</legend>
-        <div class="chips" role="radiogroup" aria-label="o que tem mais valor pra você agora?">
+        <legend class="stepLegend">o que ajudaria mais agora?</legend>
+        <div class="chips" role="radiogroup" aria-label="o que ajudaria mais agora?">
           {valores.map((v) => (
             <label class="chip">
               <input type="radio" name="valor" value={v} required />
@@ -174,18 +174,17 @@ const TIERS = [
 <section class="section" id="diagnostico" hidden>
   <div class="container narrow">
     <div id="diagnosticoEmRede">
-      <p class="eyebrow">seu travamento</p>
+      <p class="eyebrow">sua principal trava</p>
       <h2 class="sectionTitle display display-3" id="diagTitulo"></h2>
 
       <p class="diagLabel">o que isso costuma significar</p>
       <p class="diagTexto" id="diagSignificado"></p>
 
-      <p class="diagLabel">um primeiro passo pra hoje</p>
-      <p class="diagTexto" id="diagPasso"></p>
-
-      <p class="diagResto">
-        o resto a gente resolve conversando, e nosso algoritmo encontra a pessoa certa pra essa conversa.
-      </p>
+      <p class="diagLabel">o que dá pra fazer hoje</p>
+      <ol class="diagPassos">
+        <li class="diagTexto" id="diagPasso"></li>
+        <li class="diagTexto">conversar com alguém que pode ajudar</li>
+      </ol>
 
       <div class="ctaRow">
         <button type="button" class="ctaPrimary" id="btnVerTiers">ver quem pode conversar comigo</button>
@@ -302,7 +301,7 @@ const TIERS = [
   // sessionStorage is shared across the whole origin, so without this a
   // visitor who starts the quiz on one persona page and later opens a
   // different one would silently resume a different pain's answers.
-  let STORAGE_KEY = "nami-quiz-state-v1:generic";
+  let STORAGE_KEY = "nami-quiz-state-v2:generic";
 
   function emptyAnswers(): Answers {
     return { fase: null, dor: null, caminhos: [], seguimentos: {}, valor: null };
@@ -329,27 +328,27 @@ const TIERS = [
 
   // ---- Diagnostic engine (Phase 3): deterministic v1, swappable later ----
   const PAIN_BLOCKS: Record<string, { significado: string; primeiroPasso: string; inNetwork: boolean }> = {
-    "vendas e clientes": {
+    "mercado e clientes": {
       significado: "o produto existe, mas o cliente não chega ou não fecha. quase sempre falta clareza sobre quem compra e por quê.",
       primeiroPasso: "liste seus 3 últimos clientes e escreva por que cada um comprou.",
       inNetwork: true,
     },
-    "dinheiro e finanças": {
+    "caixa e finanças": {
       significado: "o caixa aperta e fica difícil decidir. muitas vezes o problema é não enxergar pra onde o dinheiro vai.",
       primeiroPasso: "anote todas as entradas e saídas dos últimos 30 dias numa planilha simples.",
       inNetwork: true,
     },
-    "equipe e contratação": {
+    "contratações e equipe": {
       significado: "contratar, delegar ou liderar virou gargalo. o negócio depende demais de você.",
       primeiroPasso: "escreva as 5 tarefas que só você faz e escolha uma pra passar adiante.",
       inNetwork: true,
     },
-    "produto ou ideia": {
+    produto: {
       significado: "você tem a ideia, mas não sabe se é isso que o mercado quer.",
       primeiroPasso: "converse com 3 possíveis clientes essa semana, antes de investir mais.",
       inNetwork: true,
     },
-    marketing: {
+    "vendas e marketing": {
       significado: "você aparece, mas não vê resultado. normalmente falta foco em um canal e uma mensagem.",
       primeiroPasso: "escolha um único canal e uma mensagem pra testar por 2 semanas.",
       inNetwork: true,
@@ -361,16 +360,16 @@ const TIERS = [
     },
     // No pain block exists for this one yet (known spec gap) -- routed to
     // the out-of-network path instead of guessed copy.
-    "crescer o negócio": { significado: "", primeiroPasso: "", inNetwork: false },
+    "escalar o negócio": { significado: "", primeiroPasso: "", inNetwork: false },
   };
 
   // Validated 2026-10-01 -- see the matchmaking initiative file for the
   // 4-reviewer pass that picked these over the alternatives.
   const STAGE_LINES: Record<string, string> = {
     "ainda é uma ideia": "nessa fase, validar vale mais que construir.",
-    "começando (promissor, precisa de estrutura)": "ser promissor não substitui processo por trás.",
-    "já roda, quero ganhar escala": "pra crescer, o que funciona hoje precisa rodar sem você em cima o tempo todo.",
-    "crescendo, preciso me estruturar": "nessa fase, o que trava é o resto da empresa não acompanhar o ritmo do negócio.",
+    "começo promissor": "ser promissor não substitui processo por trás.",
+    "já roda, quero escalar": "pra crescer, o que funciona hoje precisa rodar sem você em cima o tempo todo.",
+    "crescendo, pede estrutura": "nessa fase, o que trava é o resto da empresa não acompanhar o ritmo do negócio.",
   };
 
   type Diagnostico =
@@ -393,16 +392,13 @@ const TIERS = [
   // (current card names) -- resolved 2026-10-01, see the initiative file.
   function recommendTiers(answers: Answers): string[] {
     const matches: string[] = [];
-    if (answers.valor === "alguém que já fez" || answers.caminhos.includes("contratei consultoria")) {
+    if (answers.valor === "ouvir de quem já viveu" || answers.caminhos.includes("consultoria")) {
       matches.push("Expert");
     }
     if (answers.valor === "caminho prático" || answers.valor === "validar decisão") {
       matches.push("Sênior");
     }
-    if (
-      answers.caminhos.length === 0 ||
-      answers.caminhos.includes("ainda não tentei")
-    ) {
+    if (answers.caminhos.length === 0) {
       matches.push("Colega");
     }
     return matches.length ? matches : ["Colega"];
@@ -468,7 +464,7 @@ const TIERS = [
 
     const prefilledDor = quizSection.dataset.prefilledDor || null;
     const utmContext = readUtmContext(quizSection);
-    STORAGE_KEY = `nami-quiz-state-v1:${quizSection.dataset.persona || "generic"}`;
+    STORAGE_KEY = `nami-quiz-state-v2:${quizSection.dataset.persona || "generic"}`;
 
     const answers = loadAnswers();
     if (prefilledDor) answers.dor = prefilledDor;
@@ -485,13 +481,11 @@ const TIERS = [
 
     const FOLLOWUP_STEPS = [stepSeguimento0, stepSeguimento1];
 
-    // "ainda nada" is mutually exclusive with every other path: ticking it
-    // clears the rest (and vice versa), since "I tried nothing" contradicts
-    // "I tried X".
+    // "I tried nothing" is not an option here: the secondary "ainda não
+    // tentei" button clears every tick and moves on (see below).
     const caminhosBoxes = Array.from(
       stepCaminhos.querySelectorAll<HTMLInputElement>('input[name="caminhos"]')
     );
-    const NADA_VALUE = "ainda não tentei";
 
     // Tracks the actual order paths were ticked in (not DOM order), seeded
     // from any restored answers so a refresh keeps the original order.
@@ -499,17 +493,7 @@ const TIERS = [
 
     caminhosBoxes.forEach((box) => {
       box.addEventListener("change", () => {
-        if (box.value === NADA_VALUE && box.checked) {
-          caminhosBoxes.forEach((b) => {
-            if (b !== box) b.checked = false;
-          });
-          caminhosClickOrder = [NADA_VALUE];
-          return;
-        }
         if (box.checked) {
-          const nada = caminhosBoxes.find((b) => b.value === NADA_VALUE);
-          if (nada) nada.checked = false;
-          caminhosClickOrder = caminhosClickOrder.filter((v) => v !== NADA_VALUE);
           if (!caminhosClickOrder.includes(box.value)) caminhosClickOrder.push(box.value);
         } else {
           caminhosClickOrder = caminhosClickOrder.filter((v) => v !== box.value);
@@ -524,7 +508,6 @@ const TIERS = [
 
     function pathsNeedingFollowup(): string[] {
       const ticked = tickedCaminhos();
-      if (ticked.length === 0 || ticked.includes(NADA_VALUE)) return [];
       return ticked.slice(0, 2);
     }
 
@@ -699,6 +682,17 @@ const TIERS = [
       });
     });
 
+    // "ainda não tentei": no paths ticked, so no follow-up questions.
+    stepCaminhos.querySelector<HTMLButtonElement>(".btnSkip")?.addEventListener("click", () => {
+      caminhosBoxes.forEach((b) => (b.checked = false));
+      caminhosClickOrder = [];
+      syncCaminhosRequired();
+      syncAllAnswersFromDom();
+      order = buildOrder();
+      currentIndex = order.indexOf(stepCaminhos) + 1;
+      showStep(currentIndex);
+    });
+
     // Persist on every change, not just on "continuar" -- a selection
     // should survive a refresh even before the visitor advances.
     form.addEventListener("change", () => {
@@ -801,7 +795,7 @@ const TIERS = [
       if (diag.inNetwork) {
         diagEmRede.hidden = false;
         diagForaDeRede.hidden = true;
-        diagTitulo.textContent = `seu travamento: ${dor}`;
+        diagTitulo.textContent = dor;
         diagSignificado.textContent = diag.significado;
         diagPasso.textContent = diag.primeiroPasso;
       } else {
@@ -977,7 +971,7 @@ const TIERS = [
     font-weight: 700;
     color: var(--site-text);
     letter-spacing: -0.01em;
-    padding: 0;
+    padding: 0 0 12px;
     margin: 0;
   }
 
@@ -1070,7 +1064,8 @@ const TIERS = [
     gap: 12px;
   }
 
-  .navRow .btnBack {
+  .navRow .btnBack,
+  .navRow .btnSkip {
     background: none;
     border: none;
     padding: 4px 0;
@@ -1080,6 +1075,16 @@ const TIERS = [
 
   .navRow .btnNext {
     margin-left: auto;
+  }
+
+  /* Sits directly left of "continuar": takes over the auto margin so the
+     pair stays on the right edge while "voltar" stays on the left. */
+  .navRow .btnSkip {
+    margin-left: auto;
+  }
+
+  .navRow .btnSkip + .btnNext {
+    margin-left: 0;
   }
 
   .followupLegend .followupPath {
@@ -1102,11 +1107,22 @@ const TIERS = [
     margin: 0;
   }
 
-  .diagResto {
-    font-size: 14px;
-    color: var(--site-text-secondary);
-    margin: 24px 0 0;
-    line-height: 1.5;
+  .diagPassos {
+    margin: 0 0 28px;
+    padding-left: 22px;
+  }
+
+  .diagPassos li {
+    padding-left: 4px;
+  }
+
+  .diagPassos li + li {
+    margin-top: 8px;
+  }
+
+  .diagPassos li::marker {
+    font-weight: 700;
+    color: var(--site-accent);
   }
 
   .field {
