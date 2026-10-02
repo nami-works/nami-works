@@ -134,16 +134,20 @@ finalize 409, unknown id 404, CORS allows only https://nami.works. The test
 row was deleted. The second public-invoke permission was added by hand with
 the AWS CLI (see matchmaking.tf).
 
+LIVE on nami.works since 2026-10-02 (site deployed from this branch; live
+bundle calls the new Lambda, `/agenda` and `/sobre` now 404). A real
+submission through the live site landed in DynamoDB with persona + UTM and
+the test row was deleted.
+
 Still open:
-1. **SES is in sandbox** (`ProductionAccessEnabled=false`, 200/day): the
-   alert to lucas@nami.works works, but the confirmation email to a real
-   visitor is rejected (logged, submission still stored). The confirmation
-   screen promises that email, so request SES production access before
-   launch, or soften the copy / follow up by hand meanwhile.
-2. `scripts/deploy-nami-site.ps1` (bakes `matchmaking_api_url` into the
-   build; refuses to build without it) -- not run yet.
-3. One real end-to-end test on nami.works after the deploy.
-4. Merge nami-works/nami-works#139.
+1. **SES production access requested 2026-10-02, status PENDING.** Until it
+   is granted (`aws sesv2 get-account` -> ProductionAccessEnabled), the
+   alert to lucas@nami.works works but confirmation emails to real visitors
+   are rejected (logged; the submission is still stored), while the
+   confirmation screen promises that email.
+2. **Merge nami-works/nami-works#139.** The live site was deployed from the
+   branch; main still has the old site, so redeploying from main before the
+   merge would revert the funnel.
 
 Known follow-ups, not launch-blocking: progression state (screen +
 submission id) isn't persisted across a refresh after the diagnostic; the
