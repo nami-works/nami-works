@@ -337,16 +337,46 @@ const TIERS = [
     "mercado e clientes": {
       significado: "o produto existe, mas o cliente não chega ou não fecha. quase sempre falta clareza sobre quem compra e por quê.",
       primeiroPasso: "liste seus 3 últimos clientes e escreva o que convenceu cada um a comprar. a partir daí, busque clientes parecidos, e apresente o produto pelo valor gerado para quem já comprou.",
+      passoPorFase: {
+        "ainda é uma ideia":
+          "defina quem é o seu primeiro cliente: descreva uma pessoa real que tem esse problema, onde ela está e como você chegaria até ela. depois converse com 5 pessoas parecidas com ela.",
+        "começo promissor":
+          "liste seus 3 últimos clientes e escreva o que convenceu cada um a comprar. a partir daí, busque clientes parecidos, e apresente o produto pelo valor gerado para quem já comprou.",
+        "já roda, quero escalar":
+          "separe seus clientes entre quem compra mais vezes e quem compra mais caro. descreva o que eles têm em comum e procure mais gente assim, nos mesmos lugares onde você achou os primeiros.",
+        "crescendo, pede estrutura":
+          "registre o caminho que o cliente faz até comprar (de onde vem, quem atende, o que decide) e escolha o ponto onde mais gente desiste. coloque uma pessoa responsável por melhorar esse ponto.",
+      },
       inNetwork: true,
     },
     "caixa e finanças": {
       significado: "o caixa aperta e fica difícil decidir. muitas vezes o problema é não enxergar pra onde o dinheiro vai.",
       primeiroPasso: "compile todas as entradas e saídas dos últimos 30 dias numa planilha simples. depois disso, entenda quais são os gastos mais altos, e onde dá pra ajustar.",
+      passoPorFase: {
+        "ainda é uma ideia":
+          "some o que você precisa gastar até o primeiro cliente pagante e por quantos meses o seu dinheiro cobre isso. separe desde já o gasto do negócio do gasto pessoal.",
+        "começo promissor":
+          "compile todas as entradas e saídas dos últimos 30 dias numa planilha simples. depois disso, entenda quais são os gastos mais altos, e onde dá pra ajustar.",
+        "já roda, quero escalar":
+          "calcule quanto sobra em cada venda depois dos custos diretos. antes de investir em crescer, confirme que cada venda a mais deixa dinheiro no caixa, e projete as próximas 12 semanas de entradas e saídas.",
+        "crescendo, pede estrutura":
+          "monte o fluxo de caixa dos próximos 3 meses e defina quem atualiza toda semana. separe uma reserva para os meses mais fracos e combine com o time quais gastos precisam de aprovação.",
+      },
       inNetwork: true,
     },
     "priorização e execução": {
       significado: "tem muita coisa pra fazer e pouca saindo do papel. sem uma ordem clara, tudo parece urgente e nada avança.",
       primeiroPasso: "tire da frente tudo o que levar menos de 2 minutos (2x ao dia). do que sobrar, liste o que está em andamento, escolha as 3 que mais movem o negócio para priorizar. repita o processo.",
+      passoPorFase: {
+        "ainda é uma ideia":
+          "escolha uma única coisa que prova se a ideia funciona e faça só ela nas próximas 2 semanas. o que não ajudar nisso espera.",
+        "começo promissor":
+          "tire da frente tudo o que levar menos de 2 minutos (2x ao dia). do que sobrar, liste o que está em andamento, escolha as 3 que mais movem o negócio para priorizar. repita o processo.",
+        "já roda, quero escalar":
+          "escolha 3 metas para o mês e separe uma hora por semana para checar se o que você está fazendo move alguma delas. o que não move, delegue ou pare.",
+        "crescendo, pede estrutura":
+          "peça para cada pessoa do time listar suas 3 prioridades da semana e compare com as suas. onde não bater, alinhe. faça isso toda segunda, em 15 minutos.",
+      },
       inNetwork: true,
     },
     "time e gestão": {
@@ -367,11 +397,31 @@ const TIERS = [
     produto: {
       significado: "você tem a ideia, mas não sabe se é isso que o mercado quer.",
       primeiroPasso: "antes de investir mais tempo ou dinheiro: converse com 3 clientes satisfeitos, e outros 3 possíveis clientes. entenda as dores deles, como você já gera valor e como pode agregar mais.",
+      passoPorFase: {
+        "ainda é uma ideia":
+          "antes de construir: converse com 5 possíveis clientes sobre o problema, sem apresentar a solução. veja se eles já tentaram resolver, quanto isso custa pra eles e se pagariam por algo melhor.",
+        "começo promissor":
+          "antes de investir mais tempo ou dinheiro: converse com 3 clientes satisfeitos, e outros 3 possíveis clientes. entenda as dores deles, como você já gera valor e como pode agregar mais.",
+        "já roda, quero escalar":
+          "pergunte aos clientes que mais compram o que eles fariam se o produto deixasse de existir e o que ainda falta. use as respostas para decidir o que melhorar antes de vender para mais gente.",
+        "crescendo, pede estrutura":
+          "levante os pedidos e reclamações mais repetidos dos últimos 3 meses e escolha um para resolver primeiro. defina quem cuida da evolução do produto e como o time traz o que ouve dos clientes.",
+      },
       inNetwork: true,
     },
     "vendas e marketing": {
       significado: "você aparece, mas não vê resultado. normalmente falta foco em um canal e uma mensagem.",
       primeiroPasso: "escolha um único canal e uma mensagem pra testar por 2 semanas.",
+      passoPorFase: {
+        "ainda é uma ideia":
+          "antes de gastar com divulgação, escreva em uma frase quem você ajuda e qual problema resolve. mostre pra 5 pessoas desse perfil e veja se entendem sem precisar de explicação.",
+        "começo promissor":
+          "escolha um único canal e uma mensagem pra testar por 2 semanas.",
+        "já roda, quero escalar":
+          "olhe de qual canal vêm os clientes que mais compram e coloque mais energia nele. teste uma mensagem nova por vez, por 2 semanas, comparando com a atual.",
+        "crescendo, pede estrutura":
+          "defina uma meta de vendas por canal e quem responde por cada um. toda semana, olhe os mesmos números (contatos, propostas, vendas) para decidir onde ajustar.",
+      },
       inNetwork: true,
     },
     "não sei por onde começar": {
