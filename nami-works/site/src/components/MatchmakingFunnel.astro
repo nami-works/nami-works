@@ -39,26 +39,43 @@ const dores = [
 const caminhos = [
   "implementar com IA",
   "agência ou freelancer",
-  "equipe interna",
-  "parceiros",
+  "contratar equipe",
+  "fornecedor/parceiro",
   "consultoria",
-  "conversei com outros empreendedores",
 ];
 
 const resultadosCaminho = [
   "não resolveu",
   "resolveu em parte",
-  "funcionou, mas não sustentou",
+  "funcionou, mas não se sustentou",
+];
+
+// Asked once per tried path, right after its outcome question: whether the
+// time and money put into that path felt worth it (it used to be one of the
+// per-path outcomes).
+const retornos = [
+  "valeu o investimento",
+  "valeu em parte",
   "custou mais do que valia",
 ];
 
+// Talking to peers is free and happens independently of the paths above, so
+// it is its own question rather than one more path.
+const paresOpcoes = [
+  "sim, e ajudou",
+  "sim, e ajudou em parte",
+  "sim, mas não ajudou",
+  "ainda não",
+];
+
+// Each maps to a tier: caminho prático -> Expert, aprender com quem já viveu
+// -> Colega (peer), apoio e acompanhamento -> Sênior (advisor).
 const valores = [
-  "validar decisão",
-  "caminho prático",
-  "ouvir de quem já viveu",
+  "traçar um caminho prático",
+  "aprender com quem já viveu",
   "conexão para trocas",
   "projeto de consultoria",
-  "conselho e acompanhamento",
+  "apoio e acompanhamento",
 ];
 
 const VALOR_OUTRA = "outra";
@@ -95,11 +112,11 @@ const TIERS = [
       </fieldset>
 
       <fieldset class="step" data-step="dor" hidden>
-        <legend class="stepLegend">onde você sente que travou?</legend>
-        <div class="chips" role="radiogroup" aria-label="onde você sente que travou?">
+        <legend class="stepLegend">onde você sente que travou? <span class="optional">(escolha até duas)</span></legend>
+        <div class="chips" role="group" aria-label="onde você sente que travou?" id="doresGroup">
           {dores.map((d) => (
             <label class="chip" data-fase-only={d === "não sei por onde começar" ? "ainda é uma ideia" : undefined}>
-              <input type="radio" name="dor" value={d} required />
+              <input type="checkbox" name="dor" value={d} />
               <span>{d}</span>
             </label>
           ))}
@@ -129,11 +146,11 @@ const TIERS = [
 
       {[0, 1].map((slot) => (
         <fieldset class="step followupStep" data-step={`seguimento${slot}`} data-slot={slot} hidden>
-          <legend class="stepLegend followupLegend">como foi com <span class="followupPath"></span>?</legend>
+          <legend class="stepLegend followupLegend">como foi <span class="followupPath"></span>?</legend>
           <div class="chips" role="radiogroup">
             {resultadosCaminho.map((r) => (
               <label class="chip">
-                <input type="radio" name={`seguimento${slot}`} value={r} />
+                <input type="radio" name={`seguimento${slot}`} value={r} required />
                 <span>{r}</span>
               </label>
             ))}
@@ -144,6 +161,40 @@ const TIERS = [
           </div>
         </fieldset>
       ))}
+
+      {[0, 1].map((slot) => (
+        <fieldset class="step retornoStep" data-step={`retorno${slot}`} data-slot={slot} hidden>
+          <legend class="stepLegend">pensando no que você investiu nesse caminho (tempo e dinheiro), valeu a pena?</legend>
+          <div class="chips" role="radiogroup" aria-label="pensando no que você investiu nesse caminho (tempo e dinheiro), valeu a pena?">
+            {retornos.map((r) => (
+              <label class="chip">
+                <input type="radio" name={`retorno${slot}`} value={r} required />
+                <span>{r}</span>
+              </label>
+            ))}
+          </div>
+          <div class="navRow" hidden>
+            <button type="button" class="ctaSecondary btnBack">voltar</button>
+            <button type="button" class="ctaPrimary btnNext">continuar</button>
+          </div>
+        </fieldset>
+      ))}
+
+      <fieldset class="step" data-step="pares" hidden>
+        <legend class="stepLegend">já conversou com outros empreendedores sobre isso?</legend>
+        <div class="chips" role="radiogroup" aria-label="já conversou com outros empreendedores sobre isso?">
+          {paresOpcoes.map((r) => (
+            <label class="chip">
+              <input type="radio" name="pares" value={r} required />
+              <span>{r}</span>
+            </label>
+          ))}
+        </div>
+        <div class="navRow" hidden>
+          <button type="button" class="ctaSecondary btnBack">voltar</button>
+          <button type="button" class="ctaPrimary btnNext">continuar</button>
+        </div>
+      </fieldset>
 
       <fieldset class="step" data-step="valor" hidden>
         <legend class="stepLegend">o que ajudaria mais agora?</legend>
@@ -177,6 +228,7 @@ const TIERS = [
     <div id="diagnosticoEmRede">
       <p class="eyebrow">sua principal trava</p>
       <h2 class="sectionTitle display display-3" id="diagTitulo"></h2>
+      <p class="diagSecundaria" id="diagSecundaria" hidden></p>
 
       <p class="diagLabel">o que isso costuma significar</p>
       <p class="diagTexto" id="diagSignificado"></p>
@@ -229,6 +281,8 @@ const TIERS = [
   <div class="container">
     <p class="eyebrow">como conversar</p>
     <h2 class="sectionTitle display display-3">três jeitos de conversar, <span class="mk">a mesma troca de 45 minutos</span>.</h2>
+
+    <p class="tierMotivo" id="tierMotivo" hidden></p>
 
     <div class="tiersGrid" id="tiersGrid" role="radiogroup" aria-label="escolha um plano">
       {TIERS.map((t) => (
@@ -311,9 +365,11 @@ const TIERS = [
 <script>
   type Answers = {
     fase: string | null;
-    dor: string | null;
+    dores: string[]; // in click order, at most 2; the first is the main one
     caminhos: string[]; // in click order
     seguimentos: Record<string, string>; // path -> outcome
+    retornos: Record<string, string>; // path -> whether the time and money spent felt worth it
+    pares: string | null; // outcome of talking to other entrepreneurs
     valor: string | null;
   };
 
@@ -321,10 +377,10 @@ const TIERS = [
   // sessionStorage is shared across the whole origin, so without this a
   // visitor who starts the quiz on one persona page and later opens a
   // different one would silently resume a different pain's answers.
-  let STORAGE_KEY = "nami-quiz-state-v2:generic";
+  let STORAGE_KEY = "nami-quiz-state-v3:generic";
 
   function emptyAnswers(): Answers {
-    return { fase: null, dor: null, caminhos: [], seguimentos: {}, valor: null };
+    return { fase: null, dores: [], caminhos: [], seguimentos: {}, retornos: {}, pares: null, valor: null };
   }
 
   function loadAnswers(): Answers {
@@ -492,15 +548,31 @@ const TIERS = [
   // ---- Tier recommendation (Phase 4) ----
   // Pro/Básico (old names in the spec's signal table) map to Expert/Colega
   // (current card names) -- resolved 2026-10-01, see the initiative file.
+  //
+  // How talking to other entrepreneurs went (answers.pares) steers this too:
+  // Colega is the same format (a peer conversation), so
+  //  - it did not help      -> never recommend Colega; lean to a professional;
+  //  - it helped            -> Colega is the natural step up (someone who
+  //                            solved exactly this), framed in renderTiers;
+  //  - it helped in part    -> lean to Sênior to cover what was missing;
+  //  - not tried yet        -> Colega is a natural first conversation.
   function recommendTiers(answers: Answers): string[] {
     const matches: string[] = [];
-    if (answers.valor === "ouvir de quem já viveu" || answers.caminhos.includes("consultoria")) {
+    const naoAjudou = answers.pares === "sim, mas não ajudou";
+    const parcial = answers.pares === "sim, e ajudou em parte";
+    const ajudou = answers.pares === "sim, e ajudou";
+    const aindaNao = answers.pares === "ainda não";
+
+    if (answers.valor === "traçar um caminho prático" || answers.caminhos.includes("consultoria")) {
       matches.push("Expert");
     }
-    if (answers.valor === "caminho prático" || answers.valor === "validar decisão") {
+    if (answers.valor === "apoio e acompanhamento" || parcial || naoAjudou) {
       matches.push("Sênior");
     }
-    if (answers.caminhos.length === 0) {
+    if (
+      !naoAjudou &&
+      (answers.valor === "aprender com quem já viveu" || answers.caminhos.length === 0 || ajudou || aindaNao)
+    ) {
       matches.push("Colega");
     }
     return matches.length ? matches : ["Colega"];
@@ -566,22 +638,35 @@ const TIERS = [
 
     const prefilledDor = quizSection.dataset.prefilledDor || null;
     const utmContext = readUtmContext(quizSection);
-    STORAGE_KEY = `nami-quiz-state-v2:${quizSection.dataset.persona || "generic"}`;
+    STORAGE_KEY = `nami-quiz-state-v3:${quizSection.dataset.persona || "generic"}`;
 
     const answers = loadAnswers();
-    if (prefilledDor) answers.dor = prefilledDor;
+    if (prefilledDor) answers.dores = [prefilledDor];
 
     const stepFase = form.querySelector<HTMLFieldSetElement>('[data-step="fase"]')!;
     const stepDor = form.querySelector<HTMLFieldSetElement>('[data-step="dor"]')!;
     const stepCaminhos = form.querySelector<HTMLFieldSetElement>('[data-step="caminhos"]')!;
     const stepSeguimento0 = form.querySelector<HTMLFieldSetElement>('[data-step="seguimento0"]')!;
     const stepSeguimento1 = form.querySelector<HTMLFieldSetElement>('[data-step="seguimento1"]')!;
+    const stepRetorno0 = form.querySelector<HTMLFieldSetElement>('[data-step="retorno0"]')!;
+    const stepRetorno1 = form.querySelector<HTMLFieldSetElement>('[data-step="retorno1"]')!;
+    const stepPares = form.querySelector<HTMLFieldSetElement>('[data-step="pares"]')!;
     const stepValor = form.querySelector<HTMLFieldSetElement>('[data-step="valor"]')!;
     const progressShell = form.querySelector<HTMLElement>(".progressShell")!;
     const progressFill = form.querySelector<HTMLElement>(".progressFill")!;
     const progressLabel = form.querySelector<HTMLElement>(".progressLabel")!;
 
     const FOLLOWUP_STEPS = [stepSeguimento0, stepSeguimento1];
+    const RETORNO_STEPS = [stepRetorno0, stepRetorno1];
+
+    // Follow-up question wording, so each reads naturally for its path.
+    const FOLLOWUP_PHRASE: Record<string, string> = {
+      "implementar com IA": "ao implementar IA",
+      "agência ou freelancer": "com a agência ou freelancer",
+      "contratar equipe": "ao contratar equipe",
+      "fornecedor/parceiro": "com o fornecedor/parceiro",
+      consultoria: "com a consultoria",
+    };
 
     // "I tried nothing" is not an option here: the secondary "ainda não
     // tentei" button clears every tick and moves on (see below).
@@ -613,6 +698,20 @@ const TIERS = [
       return ticked.slice(0, 2);
     }
 
+    // A follow-up slot is reused for whichever path currently sits in it. When
+    // the path changes, drop the previous path's selection and preload the one
+    // saved for the new path, so an answer is never attributed to another path.
+    function bindSlot(step: HTMLFieldSetElement, path: string, saved: Record<string, string>) {
+      if (step.dataset.path === path) return;
+      step.dataset.path = path;
+      step.querySelectorAll<HTMLInputElement>("input").forEach((i) => (i.checked = false));
+      const value = saved[path];
+      if (value) {
+        const r = step.querySelector<HTMLInputElement>(`input[value="${CSS.escape(value)}"]`);
+        if (r) r.checked = true;
+      }
+    }
+
     // Build the active step order fresh each time -- the follow-up count
     // depends on how many paths are ticked, which can change on back-nav.
     // When a persona page prefilled "dor", that step is skipped entirely.
@@ -620,17 +719,28 @@ const TIERS = [
       const order = prefilledDor ? [stepFase, stepCaminhos] : [stepFase, stepDor, stepCaminhos];
       const paths = pathsNeedingFollowup();
       paths.forEach((path, i) => {
-        const step = FOLLOWUP_STEPS[i];
-        step.dataset.path = path;
-        const label = step.querySelector<HTMLElement>(".followupPath")!;
-        label.textContent = path;
-        order.push(step);
+        const outcome = FOLLOWUP_STEPS[i];
+        const retorno = RETORNO_STEPS[i];
+        bindSlot(outcome, path, answers.seguimentos);
+        bindSlot(retorno, path, answers.retornos);
+        outcome.querySelector<HTMLElement>(".followupPath")!.textContent = FOLLOWUP_PHRASE[path] ?? `com ${path}`;
+        order.push(outcome, retorno);
       });
-      order.push(stepValor);
+      order.push(stepPares, stepValor);
       return order;
     }
 
-    const ALL_STEPS = [stepFase, stepDor, stepCaminhos, stepSeguimento0, stepSeguimento1, stepValor];
+    const ALL_STEPS = [
+      stepFase,
+      stepDor,
+      stepCaminhos,
+      stepSeguimento0,
+      stepRetorno0,
+      stepSeguimento1,
+      stepRetorno1,
+      stepPares,
+      stepValor,
+    ];
 
     let order = buildOrder();
     let currentIndex = 0;
@@ -642,20 +752,53 @@ const TIERS = [
     syncCaminhosRequired();
     caminhosBoxes.forEach((b) => b.addEventListener("change", syncCaminhosRequired));
 
-    // "não sei por onde começar" only makes sense pre-launch -- once the
-    // business is running, the visitor already knows where it hurts. Hide
-    // it (and clear a now-invalid selection) for every fase but the first.
-    const dorRadios = Array.from(stepDor.querySelectorAll<HTMLInputElement>('input[name="dor"]'));
+    // Pains: up to two, in click order (the first is the main one).
+    // "não sei por onde começar" combines with another pain like any other
+    // option, but it only makes sense pre-launch -- once the business runs
+    // the visitor already knows where it hurts -- so it is hidden for every
+    // fase but the first.
+    const dorBoxes = Array.from(stepDor.querySelectorAll<HTMLInputElement>('input[name="dor"]'));
+    let dorClickOrder: string[] = [...answers.dores];
+
+    function tickedDores(): string[] {
+      const checkedNow = new Set(dorBoxes.filter((b) => b.checked).map((b) => b.value));
+      return dorClickOrder.filter((v) => checkedNow.has(v));
+    }
+
+    // Required until one is ticked; once two are ticked the rest lock.
+    function syncDorState() {
+      const n = tickedDores().length;
+      dorBoxes.forEach((b) => {
+        b.required = n === 0;
+        b.disabled = n >= 2 && !b.checked;
+      });
+    }
+
+    dorBoxes.forEach((box) => {
+      box.addEventListener("change", () => {
+        if (box.checked) {
+          if (!dorClickOrder.includes(box.value)) dorClickOrder.push(box.value);
+        } else {
+          dorClickOrder = dorClickOrder.filter((v) => v !== box.value);
+        }
+        syncDorState();
+      });
+    });
+
     function syncDorOptionsForFase() {
       const fase = (form.querySelector('input[name="fase"]:checked') as HTMLInputElement | null)?.value ?? null;
-      dorRadios.forEach((input) => {
+      dorBoxes.forEach((input) => {
         const label = input.closest("label") as HTMLLabelElement | null;
         const faseOnly = label?.dataset.faseOnly;
         if (!label || !faseOnly) return;
         const allowed = fase === faseOnly;
         label.hidden = !allowed;
-        if (!allowed && input.checked) input.checked = false;
+        if (!allowed && input.checked) {
+          input.checked = false;
+          dorClickOrder = dorClickOrder.filter((v) => v !== input.value);
+        }
       });
+      syncDorState();
     }
     syncDorOptionsForFase();
 
@@ -702,9 +845,7 @@ const TIERS = [
     // refresh never loses a selection the visitor already made.
     function syncAllAnswersFromDom() {
       answers.fase = (form.querySelector('input[name="fase"]:checked') as HTMLInputElement | null)?.value ?? null;
-      if (!prefilledDor) {
-        answers.dor = (form.querySelector('input[name="dor"]:checked') as HTMLInputElement | null)?.value ?? null;
-      }
+      if (!prefilledDor) answers.dores = tickedDores();
       answers.caminhos = tickedCaminhos();
       // Dropped paths lose their stale follow-up answer.
       Object.keys(answers.seguimentos).forEach((p) => {
@@ -713,8 +854,17 @@ const TIERS = [
       FOLLOWUP_STEPS.forEach((step) => {
         const path = step.dataset.path;
         const val = (step.querySelector('input:checked') as HTMLInputElement | null)?.value;
-        if (path && val) answers.seguimentos[path] = val;
+        if (path && val && answers.caminhos.includes(path)) answers.seguimentos[path] = val;
       });
+      Object.keys(answers.retornos).forEach((p) => {
+        if (!answers.caminhos.includes(p)) delete answers.retornos[p];
+      });
+      RETORNO_STEPS.forEach((step) => {
+        const path = step.dataset.path;
+        const val = (step.querySelector('input:checked') as HTMLInputElement | null)?.value;
+        if (path && val && answers.caminhos.includes(path)) answers.retornos[path] = val;
+      });
+      answers.pares = (form.querySelector('input[name="pares"]:checked') as HTMLInputElement | null)?.value ?? null;
       const valorChecked = (form.querySelector('input[name="valor"]:checked') as HTMLInputElement | null)?.value ?? null;
       answers.valor = valorChecked === "outra" ? valorOutroInput.value.trim() || null : valorChecked;
       saveAnswers(answers);
@@ -741,10 +891,11 @@ const TIERS = [
     async function finishQuiz() {
       if (finishing) return;
       syncAllAnswersFromDom();
-      if (!answers.fase || !answers.dor || !answers.valor) return;
+      if (!answers.fase || !answers.dores.length || !answers.valor) return;
       finishing = true;
 
-      const diagnostico = computeDiagnostico(answers.dor, answers.fase);
+      const [dorPrincipal, dorSecundaria] = answers.dores;
+      const diagnostico = computeDiagnostico(dorPrincipal, answers.fase);
       lastDiagnostico = diagnostico;
       const diagnosticoTexto = diagnostico.inNetwork
         ? `${diagnostico.significado} ${diagnostico.primeiroPasso}`
@@ -752,9 +903,17 @@ const TIERS = [
 
       createPayload = {
         fase: answers.fase,
-        dor: answers.dor,
+        dor: answers.dores.join(" + "),
         caminhos: answers.caminhos,
-        seguimentos: answers.seguimentos,
+        // Peer talks and the investment verdict ride in the same map as the
+        // per-path outcomes (the backend stores any short key/value pairs).
+        seguimentos: {
+          ...answers.seguimentos,
+          ...(answers.pares ? { "conversei com outros empreendedores": answers.pares } : {}),
+          ...Object.fromEntries(
+            Object.entries(answers.retornos).map(([path, v]) => [`retorno do investimento: ${path}`, v]),
+          ),
+        },
         valor: answers.valor,
         diagnosticoTexto,
         inNetwork: diagnostico.inNetwork,
@@ -763,7 +922,7 @@ const TIERS = [
       submissionId = await createSubmission(createPayload);
 
       quizSection!.hidden = true;
-      renderDiagnostico(diagnostico, answers.dor);
+      renderDiagnostico(diagnostico, dorPrincipal, dorSecundaria);
     }
 
     ALL_STEPS.forEach((step) => {
@@ -823,16 +982,18 @@ const TIERS = [
     // step that isn't answered yet.
     function restoreFromAnswers() {
       const hasAnyProgress =
-        answers.fase || (!prefilledDor && answers.dor) || answers.caminhos.length || answers.valor;
+        answers.fase || (!prefilledDor && answers.dores.length) || answers.caminhos.length || answers.valor;
       if (!hasAnyProgress) return;
 
       if (answers.fase) {
         const r = form.querySelector(`input[name="fase"][value="${CSS.escape(answers.fase)}"]`) as HTMLInputElement | null;
         if (r) r.checked = true;
       }
-      if (!prefilledDor && answers.dor) {
-        const r = form.querySelector(`input[name="dor"][value="${CSS.escape(answers.dor)}"]`) as HTMLInputElement | null;
-        if (r) r.checked = true;
+      if (!prefilledDor) {
+        answers.dores.forEach((d) => {
+          const r = form.querySelector(`input[name="dor"][value="${CSS.escape(d)}"]`) as HTMLInputElement | null;
+          if (r) r.checked = true;
+        });
       }
       syncDorOptionsForFase();
       caminhosBoxes.forEach((b) => {
@@ -841,16 +1002,11 @@ const TIERS = [
       syncCaminhosRequired();
 
       order = buildOrder();
-      order.forEach((step) => {
-        if (step === stepSeguimento0 || step === stepSeguimento1) {
-          const path = step.dataset.path;
-          const saved = path ? answers.seguimentos[path] : undefined;
-          if (saved) {
-            const r = step.querySelector(`input[value="${CSS.escape(saved)}"]`) as HTMLInputElement | null;
-            if (r) r.checked = true;
-          }
-        }
-      });
+      // (follow-up and investment slots are preloaded by buildOrder above)
+      if (answers.pares) {
+        const r = form.querySelector(`input[name="pares"][value="${CSS.escape(answers.pares)}"]`) as HTMLInputElement | null;
+        if (r) r.checked = true;
+      }
       if (answers.valor) {
         const r = form.querySelector(`input[name="valor"][value="${CSS.escape(answers.valor)}"]`) as HTMLInputElement | null;
         if (r) {
@@ -871,12 +1027,17 @@ const TIERS = [
       // saved answer yet.
       const firstIncomplete = order.findIndex((step) => {
         if (step === stepFase) return !answers.fase;
-        if (step === stepDor) return !answers.dor;
+        if (step === stepDor) return !answers.dores.length;
         if (step === stepCaminhos) return !answers.caminhos.length;
         if (step === stepSeguimento0 || step === stepSeguimento1) {
           const path = step.dataset.path;
           return path ? !answers.seguimentos[path] : true;
         }
+        if (step === stepRetorno0 || step === stepRetorno1) {
+          const path = step.dataset.path;
+          return path ? !answers.retornos[path] : true;
+        }
+        if (step === stepPares) return !answers.pares;
         if (step === stepValor) return !answers.valor;
         return false;
       });
@@ -895,17 +1056,20 @@ const TIERS = [
     const diagTitulo = document.getElementById("diagTitulo")!;
     const diagSignificado = document.getElementById("diagSignificado")!;
     const diagPasso = document.getElementById("diagPasso")!;
+    const diagSecundaria = document.getElementById("diagSecundaria")!;
     const tiersSection = document.getElementById("tiers")!;
     const waitlistSection = document.getElementById("waitlist")!;
     const confirmacaoSection = document.getElementById("confirmacao")!;
     const obrigadoSection = document.getElementById("obrigado")!;
 
-    function renderDiagnostico(diag: Diagnostico, dor: string) {
+    function renderDiagnostico(diag: Diagnostico, dor: string, dorSecundaria?: string) {
       diagnosticoSection.hidden = false;
       if (diag.inNetwork) {
         diagEmRede.hidden = false;
         diagForaDeRede.hidden = true;
         diagTitulo.textContent = dor;
+        diagSecundaria.hidden = !dorSecundaria;
+        diagSecundaria.textContent = dorSecundaria ? `você também marcou: ${dorSecundaria}.` : "";
         diagSignificado.textContent = diag.significado;
         diagPasso.textContent = diag.primeiroPasso;
       } else {
@@ -926,7 +1090,14 @@ const TIERS = [
     }
 
     function promptContext(): string {
-      return `contexto do meu negócio: fase: ${answers.fase}; maior trava: ${answers.dor}; já tentei: ${triedSummary()}; o que mais ajudaria agora: ${answers.valor}.`;
+      const pains =
+        answers.dores.length > 1 ? `${answers.dores[0]} (principal) e ${answers.dores[1]}` : answers.dores[0];
+      const retornos = Object.entries(answers.retornos);
+      const investido = retornos.length
+        ? `; sobre o que investi (tempo e dinheiro) em cada caminho: ${retornos.map(([p, v]) => `${p}: ${v}`).join("; ")}`
+        : "";
+      const pares = answers.pares ? `; conversas com outros empreendedores: ${answers.pares}` : "";
+      return `contexto do meu negócio: fase: ${answers.fase}; maior trava: ${pains}; já tentei: ${triedSummary()}${investido}${pares}; o que mais ajudaria agora: ${answers.valor}.`;
     }
 
     function buildCaixaPrompt(): string {
@@ -968,7 +1139,7 @@ const TIERS = [
     }
 
     function showAiPrompt() {
-      const isCaixa = answers.dor === "caixa e finanças";
+      const isCaixa = answers.dores[0] === "caixa e finanças";
       const textarea = document.getElementById("aiPromptText") as HTMLTextAreaElement;
       textarea.value = isCaixa ? buildCaixaPrompt() : buildGenericPrompt();
 
@@ -1044,6 +1215,22 @@ const TIERS = [
         card.classList.toggle("tierCardRecomendado", isRecomendado);
       });
 
+      // Why this tier, when how the peer conversations went is the reason.
+      const motivoEl = document.getElementById("tierMotivo")!;
+      let motivo = "";
+      if (tierRecomendado === "Colega" && answers.pares === "sim, e ajudou") {
+        motivo =
+          "você já viu como conversar com outros empreendedores ajuda. o próximo passo é falar com alguém que já resolveu exatamente o que trava o seu negócio.";
+      } else if (tierRecomendado !== "Colega" && answers.pares === "sim, mas não ajudou") {
+        motivo =
+          "conversas informais nem sempre bastam. aqui, a conversa é com um profissional com experiência no seu tema, e sai com direção prática.";
+      } else if (tierRecomendado === "Sênior" && answers.pares === "sim, e ajudou em parte") {
+        motivo =
+          "se as conversas com outros empreendedores ajudaram em parte, um profissional pode cobrir o que ficou faltando.";
+      }
+      motivoEl.hidden = !motivo;
+      motivoEl.textContent = motivo;
+
       const mencaoEl = document.getElementById("tierMencao")!;
       if (mencao) {
         mencaoEl.hidden = false;
@@ -1068,7 +1255,7 @@ const TIERS = [
       if (!tierEscolhido) return;
       tiersSection.hidden = true;
       const resumo = document.getElementById("confirmacaoResumo")!;
-      resumo.textContent = `${answers.dor} · ${answers.fase} · plano ${tierEscolhido}`;
+      resumo.textContent = `${answers.dores.join(" + ")} · ${answers.fase} · plano ${tierEscolhido}`;
       confirmacaoSection.hidden = false;
       confirmacaoSection.scrollIntoView({ behavior: "smooth", block: "start" });
     });
@@ -1215,6 +1402,18 @@ const TIERS = [
 
   .chip[hidden] {
     display: none;
+  }
+
+  /* The pain question allows two picks; once two are ticked the rest lock. */
+  .chip:has(input:disabled) {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .diagSecundaria {
+    margin: -6px 0 18px;
+    font-size: 14.5px;
+    color: var(--site-text-secondary);
   }
 
   .chip input {
@@ -1514,6 +1713,14 @@ const TIERS = [
     font-size: 13.5px;
     color: var(--site-text-secondary);
     margin: 0;
+  }
+
+  .tierMotivo {
+    max-width: 640px;
+    margin: 0 0 20px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--site-text-secondary);
   }
 
   .tierMencao {

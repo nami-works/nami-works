@@ -202,6 +202,42 @@ re-saved after unticking its path.
   content (steps, plans, prompts) as data with stable ids so a future NAMI
   Works MCP can serve it; the visitor-carried summary is the interim memory.
 
+## Quiz restructure: two pains, split paths (2026-10-02, `feat/quiz-pains-and-paths`, not yet merged)
+
+- **Pains (Q2):** up to two ("escolha até duas"), tracked in click order; the
+  first is the main one. It drives the diagnostic and the caixa-specific AI
+  prompt; the second shows as "você também marcou: X" and goes into the
+  prompt and the lead. "não sei por onde começar" (only for "ainda é uma
+  ideia") combines with another pain like any other option. Stored in the existing `dor` field joined as "A + B" (no backend change).
+- **Paths (Q3):** implementar com IA / agência ou freelancer / contratar
+  equipe / fornecedor/parceiro / consultoria. Follow-ups read per path ("como
+  foi ao implementar IA", "com a agência ou freelancer", "ao contratar
+  equipe", "com o fornecedor/parceiro", "com a consultoria"); outcomes are now
+  não resolveu / resolveu em parte / funcionou, mas não se sustentou.
+- **New "retorno" question, one per tried path**, right after that path's
+  outcome question: "pensando no que você investiu nesse caminho (tempo e
+  dinheiro), valeu a pena?" (valeu o investimento / valeu em parte / custou
+  mais do que valia). It replaces "custou mais do que valia" as a per-path
+  outcome.
+- **New "pares" question** (always): "já conversou com outros empreendedores
+  sobre isso?" (sim, e ajudou / ... em parte / sim, mas não ajudou / ainda
+  não). It happens independently of the paths, so it is asked on its own,
+  after the paid paths and before "o que ajudaria mais agora".
+- Both new answers are stored in the existing `seguimentos` map (keys
+  "retorno do investimento: <path>" and "conversei com outros empreendedores") and
+  are included in the AI prompt context.
+- **Peer answer steers the tier:** "sim, mas não ajudou" never recommends
+  Colega (same format as what failed) and leans to Sênior; "sim, e ajudou"
+  recommends Colega as the step up ("alguém que já resolveu exatamente o que
+  trava o seu negócio"); "ajudou em parte" leans to Sênior; "ainda não" adds
+  Colega as a natural first conversation. A one-line reason shows above the
+  tier cards in the first three cases (copy drafted, pending Lucas's edit).
+- **Q4 / tiers:** "validar decisão" removed; "traçar um caminho prático" ->
+  Expert, "aprender com quem já viveu" -> Colega (peer), "apoio e
+  acompanhamento" -> Sênior (advisor). Having tried "consultoria" still adds
+  Expert; no paths tried still adds Colega.
+- sessionStorage key bumped to `nami-quiz-state-v3` (answer shape changed).
+
 ## Open, non-blocking for v1
 
 Professional revenue share per tier, where/how to recruit professionals,
