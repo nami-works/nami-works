@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>nami.works — wireframe: hero + bridge + quiz</title>
+<style>
+  :root {
+    --bg: #faf8f4;
+    --surface: #f0ece2;
+    --text: #1b2a1f;
+    --text-secondary: #6b6860;
+    --border: #ddd6c7;
+    --accent: #1b4d2e;
+    --accent-text: #faf8f4;
+    --mk: #e9e45a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #e8e4d8;
+    font-family: -apple-system, "Segoe UI", sans-serif;
+    color: var(--text);
+    padding: 32px 16px 80px;
+  }
+  .notes {
+    max-width: 920px;
+    margin: 0 auto 40px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+  .notes h1 { font-size: 20px; margin: 0 0 4px; }
+  .notes .sub { color: var(--text-secondary); margin: 0 0 18px; font-size: 13.5px; }
+  .notes h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; margin: 20px 0 6px; color: var(--accent); }
+  .notes ul { margin: 4px 0; padding-left: 20px; }
+  .notes .tag { display: inline-block; background: var(--mk); color: #1b2a1f; font-weight: 700; font-size: 11px; padding: 2px 8px; border-radius: 999px; margin-right: 6px; }
+  .columns {
+    max-width: 920px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+  @media (max-width: 860px) {
+    .columns { grid-template-columns: 1fr; }
+  }
+  .colLabel {
+    text-align: center;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .colLabel .rec { background: var(--accent); color: var(--accent-text); padding: 2px 10px; border-radius: 999px; margin-left: 8px; text-transform: none; letter-spacing: 0; }
+  .phone {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  }
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; border-bottom: 1px solid transparent;
+  }
+  .nav .logo { font-weight: 700; font-size: 15px; }
+  .nav .dot { width: 18px; height: 18px; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 6px; background: #1b2a1f1a; }
+  .heroImgWrap { padding: 0; }
+  .heroImgWrap img { width: 100%; display: block; }
+  .ctaWrap { padding: 16px 16px 4px; }
+  .ctaBtn {
+    display: block; width: 100%; text-align: center;
+    background: var(--accent); color: var(--accent-text);
+    font-weight: 700; font-size: 15px; padding: 14px; border-radius: 8px;
+    border: none;
+  }
+  .bridge {
+    margin: 14px 16px 0;
+    padding: 12px 14px;
+    background: var(--surface);
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+  .bridge b { color: var(--text); }
+  .section {
+    padding: 22px 18px;
+  }
+  .section.soft { background: var(--surface); }
+  .eyebrow {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--text-secondary); margin: 0 0 8px;
+  }
+  .sectionTitle {
+    font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 10px; letter-spacing: -.01em;
+  }
+  .sectionTitle .mk { background: var(--mk); padding: 0 3px; }
+  .lede { font-size: 13.5px; line-height: 1.55; color: var(--text-secondary); margin: 0; }
+  .howSteps { display: grid; gap: 10px; margin-top: 14px; }
+  .howStep { display: flex; gap: 10px; align-items: flex-start; }
+  .howStep .n { font-weight: 700; color: var(--accent); font-size: 13px; width: 20px; flex: none; }
+  .howStep .t { font-size: 13px; line-height: 1.5; }
+  .howStep .t b { display: block; font-size: 13.5px; margin-bottom: 1px; }
+  .progress { height: 4px; background: var(--border); border-radius: 999px; margin: 14px 18px 0; overflow: hidden; }
+  .progress i { display: block; width: 25%; height: 100%; background: var(--accent); }
+  .quizIntro { padding: 14px 18px 0; font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-secondary); }
+  .quizReassure { padding: 2px 18px 0; font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  .q { padding: 10px 18px 20px; }
+  .q h3 { font-size: 16px; margin: 10px 0 12px; }
+  .chip { display: inline-block; border: 1px solid var(--text-secondary); border-radius: 999px; padding: 9px 14px; font-size: 12.5px; margin: 0 6px 8px 0; }
+  .chip.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  .footerStub { padding: 18px; text-align: center; font-size: 11.5px; color: var(--text-secondary); border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<div class="notes">
+  <h1>Wireframe — hero + trust-bridge + quiz</h1>
+  <p class="sub">Built with /design:user-research, /growth-hacker (lp-audit lens), /design:ux-copy, /design:design-critique. Nothing existing is removed — the quiz, diagnostic, tiers, and confirmation flow are untouched below the fold on both options.</p>
+
+  <h2>Research finding</h2>
+  <p>Cold IG traffic has just seen their exact pain named in an ad (high recognition) but has never heard of nami.works (zero trust) and there's no real social proof yet to lean on. The gap isn't "do they believe the pain is real" (the poster/text hero already nails that) — it's "what happens if I answer these questions, and what does it cost me." That's a <b>mechanism + commitment</b> gap, not an emotional one.</p>
+
+  <h2>Critique finding that changed the plan</h2>
+  <p>My first draft put a full text section (headline + body) between hero and quiz, always visible. The critique pass flagged two problems: (1) it duplicates work the hero already does (re-validating the pain is redundant right after a poster that already shows someone exactly like you, mid-crisis), and (2) a static section adds scroll friction for someone who's ready to click immediately. <b>Fix:</b> move the reassurance to the moment it's actually needed — right as the quiz reveals, not before. One line, not a section.</p>
+
+  <h2>Two options to choose between</h2>
+  <ul>
+    <li><span class="tag">A · recommended</span> Minimal — a one-line reassurance caption appears above "Pergunta 1 de 4" only once the visitor has already clicked the CTA. Hero stays exactly as clean as it is today. Lowest friction, closest to current build.</li>
+    <li><span class="tag">B · fuller</span> Adds a compact "como funciona" 3-step mini-section (visible on page load, below the hero) before the quiz, closer to what a traditional landing page has. More "substantive," costs more scroll/attention from cold traffic before the quiz.</li>
+  </ul>
+
+  <h2>Open question for you</h2>
+  <p>Which direction — A, B, or a hybrid (B's content but collapsed/accordion so it doesn't block the quiz)? Also: Option B's "como funciona" text below is placeholder-quality, not final copy — flag if you want the direction before I polish it.</p>
+</div>
+
+<div class="columns">
+  <div>
+    <div class="colLabel">Option A <span class="rec">recomendado</span></div>
+    <div class="phone">
+      <div class="nav"><span><span class="dot"></span><b>nami.works</b></span><span>🌙</span></div>
+      <div class="heroImgWrap"><img src="../src/assets/personas/distribuidora.jpg" alt="poster"></div>
+      <div class="ctaWrap"><button class="ctaBtn">entenda seu problema</button></div>
+
+      <!-- Quiz reveal state (what appears after the click) -->
+      <div class="progress"><i></i></div>
+      <div class="quizIntro">Pergunta 1 de 4</div>
+      <div class="quizReassure">leva poucos minutos e a leitura já sai grátis, na hora. nada é cobrado antes de você decidir conversar com alguém.</div>
+      <div class="q">
+        <h3>em que fase está o negócio?</h3>
+        <span class="chip">ainda é uma ideia</span>
+        <span class="chip active">começando</span>
+        <span class="chip">já roda, quero escala</span>
+        <span class="chip">crescendo</span>
+      </div>
+      <div class="footerStub">↓ diagnóstico · tiers · confirmação seguem iguais ao que já existe ↓</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="colLabel">Option B <span style="background:var(--surface);color:var(--text-secondary);padding:2px 10px;border-radius:999px;margin-left:8px;">fuller</span></div>
+    <div class="phone">
+      <div class="nav"><span><span class="dot"></span><b>nami.works</b></span><span>🌙</span></div>
+      <div class="heroImgWrap"><img src="../src/assets/personas/distribuidora.jpg" alt="poster"></div>
+      <div class="ctaWrap"><button class="ctaBtn">entenda seu problema</button></div>
+
+      <!-- New static section, always visible -->
+      <div class="section soft">
+        <p class="eyebrow">como funciona</p>
+        <h2 class="sectionTitle">três passos, <span class="mk">sem cartão até o terceiro</span>.</h2>
+        <div class="howSteps">
+          <div class="howStep"><span class="n">01</span><span class="t"><b>responde</b>4 perguntas rápidas sobre o seu negócio.</span></div>
+          <div class="howStep"><span class="n">02</span><span class="t"><b>recebe</b>uma leitura grátis, na hora, sobre onde você travou.</span></div>
+          <div class="howStep"><span class="n">03</span><span class="t"><b>escolhe</b>se quer conversar com alguém — só paga se aceitar.</span></div>
+        </div>
+      </div>
+
+      <div class="progress" style="margin-top:0;"><i></i></div>
+      <div class="quizIntro">Pergunta 1 de 4</div>
+      <div class="q">
+        <h3>em que fase está o negócio?</h3>
+        <span class="chip">ainda é uma ideia</span>
+        <span class="chip active">começando</span>
+        <span class="chip">já roda, quero escala</span>
+        <span class="chip">crescendo</span>
+      </div>
+      <div class="footerStub">↓ diagnóstico · tiers · confirmação seguem iguais ao que já existe ↓</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

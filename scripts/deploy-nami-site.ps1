@@ -2,6 +2,7 @@ param(
   [string]$Region        = "us-east-1",
   [string]$Bucket        = "",
   [string]$DistributionId = "",
+  [string]$MatchmakingApiBase = "",
   [switch]$SkipBuild,
   [switch]$DryRun
 )
@@ -32,6 +33,7 @@ param(
 #   ./scripts/deploy-nami-site.ps1 -SkipBuild            # if you already ran npm run build
 #   ./scripts/deploy-nami-site.ps1 -DryRun               # show what would change without uploading
 #   ./scripts/deploy-nami-site.ps1 -Bucket b -DistributionId E123  # override terraform lookup
+#   ./scripts/deploy-nami-site.ps1 -MatchmakingApiBase https://xxxx.lambda-url.us-east-1.on.aws  # override API URL
 #
 # ASCII-only on purpose: PowerShell 5.1 reads .ps1 files as Windows-1252 by
 # default. Unicode characters (em-dashes, box-drawing) without a UTF-8 BOM
@@ -91,6 +93,30 @@ Write-Host "Distribution ID: $(if ($DistributionId) { $DistributionId } else { '
 Write-Host "Region:          $Region"
 Write-Host "DryRun:          $DryRun"
 Write-Host ""
+
+# --- 0b. Matchmaking API URL (baked into the static build) --------------------
+# The funnel's fetch() calls go to the matchmaking Lambda Function URL. Astro
+# inlines PUBLIC_* vars at build time, so a build without it would ship a site
+# whose submissions all fail. Refuse to build rather than ship that.
+if (-not $SkipBuild) {
+  if (-not $MatchmakingApiBase) {
+    if (Test-Path $terraformDir) {
+      Push-Location $terraformDir
+      try {
+        $apiOut = terraform output -raw matchmaking_api_url 2>$null
+        if ($LASTEXITCODE -eq 0 -and $apiOut) { $MatchmakingApiBase = $apiOut.Trim() }
+      } finally {
+        Pop-Location
+      }
+    }
+  }
+  if (-not $MatchmakingApiBase) {
+    throw "Could not resolve the matchmaking API URL (terraform output matchmaking_api_url). Apply nami/site/infra/terraform first, or pass -MatchmakingApiBase explicitly."
+  }
+  $env:PUBLIC_MATCHMAKING_API_BASE = $MatchmakingApiBase.TrimEnd('/')
+  Write-Host "Matchmaking API: $env:PUBLIC_MATCHMAKING_API_BASE"
+  Write-Host ""
+}
 
 # --- 1. Build (unless -SkipBuild) ---------------------------------------------
 if (-not $SkipBuild) {

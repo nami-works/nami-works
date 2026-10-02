@@ -18,6 +18,16 @@ output "route53_zone_id" {
   description = "The existing nami.works hosted zone this module wrote alias records into."
 }
 
+output "matchmaking_api_url" {
+  value       = aws_lambda_function_url.matchmaking_api.function_url
+  description = "Public endpoint for the matchmaking funnel. scripts/deploy-nami-site.ps1 bakes it into the build as PUBLIC_MATCHMAKING_API_BASE."
+}
+
+output "matchmaking_table_name" {
+  value       = aws_dynamodb_table.matchmaking.name
+  description = "DynamoDB table holding every matchmaking submission (one item per visitor who finished the quiz)."
+}
+
 output "lead_intake_function_url" {
   value       = aws_lambda_function_url.lead_intake.function_url
   description = "Public endpoint for the Diagnostico lead-capture form's action attribute."
