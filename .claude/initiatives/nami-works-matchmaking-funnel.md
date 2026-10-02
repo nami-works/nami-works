@@ -139,12 +139,13 @@ bundle calls the new Lambda, `/agenda` and `/sobre` now 404). A real
 submission through the live site landed in DynamoDB with persona + UTM and
 the test row was deleted.
 
-Still open:
-1. **SES production access requested 2026-10-02, status PENDING.** Until it
-   is granted (`aws sesv2 get-account` -> ProductionAccessEnabled), the
-   alert to lucas@nami.works works but confirmation emails to real visitors
-   are rejected (logged; the submission is still stored), while the
-   confirmation screen promises that email.
+Still open: nothing blocking. SES production access was GRANTED (checked
+2026-10-02), so confirmation e-mails now reach real visitors; a live
+end-to-end submission produced no Lambda errors. Two `quiz_done` rows from
+14:48 UTC with the old option labels (created 1.4s apart, a double-click on
+the previous live version) were left in the table; the double-click is fixed
+(`finishing` guard in `finishQuiz`).
+
 (PR #139 merged 2026-10-02, squash a71706c.)
 
 Known follow-ups, not launch-blocking: progression state (screen +
