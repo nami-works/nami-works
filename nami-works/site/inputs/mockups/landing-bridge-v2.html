@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>nami.works — wireframe v2: hero + brand-promise bridge + quiz</title>
+<style>
+  :root {
+    --bg: #faf8f4;
+    --surface: #f0ece2;
+    --text: #1b2a1f;
+    --text-secondary: #6b6860;
+    --border: #ddd6c7;
+    --accent: #1b4d2e;
+    --accent-text: #faf8f4;
+    --mk: #e9e45a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #e8e4d8;
+    font-family: -apple-system, "Segoe UI", sans-serif;
+    color: var(--text);
+    padding: 32px 16px 80px;
+  }
+  .notes {
+    max-width: 960px;
+    margin: 0 auto 40px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+  .notes h1 { font-size: 20px; margin: 0 0 4px; }
+  .notes .sub { color: var(--text-secondary); margin: 0 0 18px; font-size: 13.5px; }
+  .notes h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; margin: 20px 0 6px; color: var(--accent); }
+  .notes ul { margin: 4px 0; padding-left: 20px; }
+  .notes .tag { display: inline-block; background: var(--mk); color: #1b2a1f; font-weight: 700; font-size: 11px; padding: 2px 8px; border-radius: 999px; margin-right: 6px; }
+  .notes blockquote {
+    margin: 10px 0; padding: 10px 14px; background: var(--surface); border-left: 3px solid var(--accent);
+    border-radius: 4px; font-size: 13.5px; font-style: italic;
+  }
+  .columns {
+    max-width: 960px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+  @media (max-width: 900px) {
+    .columns { grid-template-columns: 1fr; }
+  }
+  .colLabel {
+    text-align: center;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .phone {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  }
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; border-bottom: 1px solid transparent;
+  }
+  .nav .logo { font-weight: 700; font-size: 15px; }
+  .nav .dot { width: 18px; height: 18px; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 6px; background: #1b2a1f1a; }
+
+  /* poster hero */
+  .heroImgWrap { padding: 0; }
+  .heroImgWrap img { width: 100%; display: block; }
+  .posterCtaWrap { padding: 16px 16px 4px; }
+
+  /* text-card hero */
+  .feedHero { padding: 16px 16px 4px; }
+  .feedCard {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px 20px 24px;
+  }
+  .feedPostHeader { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .feedAvatar { width: 24px; height: 24px; border-radius: 999px; background: var(--surface); }
+  .feedHandle { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+  .feedHook { font-size: 26px; line-height: 1.15; margin: 0 0 12px; font-weight: 700; letter-spacing: -0.01em; }
+  .feedSub { font-size: 14px; line-height: 1.5; color: var(--text-secondary); margin: 0 0 18px; }
+
+  .ctaBtn {
+    display: block; width: 100%; text-align: center;
+    background: var(--accent); color: var(--accent-text);
+    font-weight: 700; font-size: 15px; padding: 14px; border-radius: 8px;
+    border: none;
+  }
+
+  /* NEW: brand-promise bridge section */
+  .bridgeSection {
+    margin: 22px 16px 0;
+    padding: 20px 18px 22px;
+    background: var(--surface);
+    border-radius: 14px;
+  }
+  .bridgeSection .eyebrow {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--text-secondary); margin: 0 0 8px;
+  }
+  .bridgeHeadline {
+    font-size: 19px; font-weight: 700; line-height: 1.25; margin: 0 0 10px; letter-spacing: -.01em;
+  }
+  .bridgeBody p { font-size: 13.5px; line-height: 1.55; color: var(--text-secondary); margin: 0 0 8px; }
+  .bridgeBody p:last-child { margin-bottom: 0; }
+  .bridgeBody b { color: var(--text); font-weight: 600; }
+
+  .progress { height: 4px; background: var(--border); border-radius: 999px; margin: 22px 18px 0; overflow: hidden; }
+  .progress i { display: block; width: 25%; height: 100%; background: var(--accent); }
+  .quizIntro { padding: 14px 18px 0; font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-secondary); }
+  .q { padding: 10px 18px 20px; }
+  .q h3 { font-size: 16px; margin: 10px 0 12px; }
+  .chip { display: inline-block; border: 1px solid var(--text-secondary); border-radius: 999px; padding: 9px 14px; font-size: 12.5px; margin: 0 6px 8px 0; }
+  .chip.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  .footerStub { padding: 18px; text-align: center; font-size: 11.5px; color: var(--text-secondary); border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<div class="notes">
+  <h1>Wireframe v2 — hero + brand-promise bridge + quiz</h1>
+  <p class="sub">Revision of landing-bridge-v1.html. Built with /design:user-research, /growth-hacker (lp-audit lens), /design:ux-copy, /design:design-critique. Still nothing existing is removed — both hero styles, quiz, diagnostic, tiers, and confirmation stay exactly as they are. The only change is ONE new static section, using Lucas's own copy verbatim instead of the 3 drafted variants from v1.</p>
+
+  <h2>The copy, and what it's doing</h2>
+  <blockquote>travou no seu negócio? tem gente que pode te ajudar!<br>tem horas que parece ser tanta coisa, e a gente nem sabe por onde começar.<br><br>trocar com quem já viveu algo parecido pode ser o caminho.</blockquote>
+  <p>This is the <b>original generic-homepage hero copy</b> (no persona, index.astro). Read through the 4 lenses, it does exactly the job the v1 "bridge" section was trying to invent from scratch — it just does it better, because it's real, Lucas-approved copy, not a drafted placeholder:</p>
+  <ul>
+    <li><b>User-research:</b> a visitor who clicked a persona-specific IG ad has pain-recognition (the hero already gave that) but zero brand context -- they don't know what nami.works IS. This headline is the one place on a persona page that actually <i>names the whole promise</i> ("tem gente que pode te ajudar") and normalizes the overwhelm ("a gente nem sabe por onde começar") before previewing the mechanism ("trocar com quem já viveu algo parecido").</li>
+    <li><b>Growth-hacker:</b> message match stays intact because this section does NOT compete with the persona hero's specific hook -- it sits structurally where the "mechanism + trust" gap lives, right before the quiz. Still one CTA only: moved per Lucas's note so "entenda seu problema" fires right after the bridge copy, not before it -- poster/text card first (recognition), then the bridge (trust + mechanism), then the one CTA, then the quiz. The text-card hero's own CTA was removed from inside the card to avoid a duplicate button.</li>
+    <li><b>UX-copy:</b> already passes every voice constraint used elsewhere on the site -- present tense, no tool-as-subject, zero em dash, "a gente" register. No rewording needed.</li>
+    <li><b>Design-critique:</b> three sentences with its own headline is more substantive than a one-line caption -- this reads as a real static section (always visible), not a reveal-after-click micro-copy. That matches the richer/fuller direction (closer to the old AI-consulting homepage's structural density) over the more minimal Option A from v1.</li>
+  </ul>
+
+  <h2>Placement decision</h2>
+  <p>Same section, <b>same copy verbatim, on every persona page</b> (poster-hero AND text-card-hero), plus the generic homepage keeps it as its hero (no duplication there since it already IS the hero). Sits directly under the persona hero, visually distinct (soft background card) so it doesn't read as a continuation of the persona-specific hook -- it's the bridge from "this is my specific pain" to "here's who's talking to me and why." Flow, per Lucas: <b>persona hero → bridge copy → CTA → quiz</b> -- the button fires once the visitor has both recognized their pain AND heard the promise, not before.</p>
+
+  <h2>Open question for you</h2>
+  <p>Headline size: I scaled it down from the generic-homepage's big display headline (32-38px) to a secondary scale (19px) here, so the persona hero still wins the eye first (per growth-hacker's above-the-fold hierarchy -- the persona-specific hook is the message-match anchor, this is the second beat). Flag if you want it to read bigger/bolder instead.</p>
+</div>
+
+<div class="columns">
+  <div>
+    <div class="colLabel">Poster-hero persona (distribuidora)</div>
+    <div class="phone">
+      <div class="nav"><span><span class="dot"></span><b>nami.works</b></span><span>🌙</span></div>
+      <div class="heroImgWrap"><img src="../src/assets/personas/distribuidora.jpg" alt="poster"></div>
+
+      <div class="bridgeSection">
+        <p class="eyebrow">nami.works</p>
+        <h2 class="bridgeHeadline">travou no seu negócio? <span style="background:var(--mk);padding:0 3px;">tem gente que pode te ajudar!</span></h2>
+        <div class="bridgeBody">
+          <p>tem horas que parece ser tanta coisa, e a gente nem sabe por onde começar.</p>
+          <p><b>trocar com quem já viveu algo parecido</b> pode ser o caminho.</p>
+        </div>
+      </div>
+      <div class="posterCtaWrap"><button class="ctaBtn">entenda seu problema</button></div>
+
+      <div class="progress"><i></i></div>
+      <div class="quizIntro">Pergunta 1 de 4</div>
+      <div class="q">
+        <h3>em que fase está o negócio?</h3>
+        <span class="chip">ainda é uma ideia</span>
+        <span class="chip active">começando</span>
+        <span class="chip">já roda, quero escala</span>
+        <span class="chip">crescendo</span>
+      </div>
+      <div class="footerStub">↓ diagnóstico · tiers · confirmação seguem iguais ao que já existe ↓</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="colLabel">Text-card-hero persona (vendas e clientes)</div>
+    <div class="phone">
+      <div class="nav"><span><span class="dot"></span><b>nami.works</b></span><span>🌙</span></div>
+
+      <div class="feedHero">
+        <div class="feedCard">
+          <div class="feedPostHeader">
+            <span class="feedAvatar"></span>
+            <span class="feedHandle">nami.works</span>
+          </div>
+          <h1 class="feedHook">o produto existe. o cliente não fecha. por quê?</h1>
+          <p class="feedSub">quase sempre falta clareza sobre quem compra e por quê. tem gente que já resolveu isso.</p>
+        </div>
+      </div>
+
+      <div class="bridgeSection">
+        <p class="eyebrow">nami.works</p>
+        <h2 class="bridgeHeadline">travou no seu negócio? <span style="background:var(--mk);padding:0 3px;">tem gente que pode te ajudar!</span></h2>
+        <div class="bridgeBody">
+          <p>tem horas que parece ser tanta coisa, e a gente nem sabe por onde começar.</p>
+          <p><b>trocar com quem já viveu algo parecido</b> pode ser o caminho.</p>
+        </div>
+      </div>
+      <div class="posterCtaWrap"><button class="ctaBtn">entenda seu problema</button></div>
+
+      <div class="progress"><i></i></div>
+      <div class="quizIntro">Pergunta 1 de 4</div>
+      <div class="q">
+        <h3>em que fase está o negócio?</h3>
+        <span class="chip">ainda é uma ideia</span>
+        <span class="chip active">começando</span>
+        <span class="chip">já roda, quero escala</span>
+        <span class="chip">crescendo</span>
+      </div>
+      <div class="footerStub">↓ diagnóstico · tiers · confirmação seguem iguais ao que já existe ↓</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

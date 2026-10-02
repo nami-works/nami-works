@@ -36,14 +36,13 @@ const dores = [
 ];
 
 const caminhos = [
-  "resolvi sozinho",
   "perguntei pra uma IA",
   "contratei agência ou freelancer",
   "montei equipe interna",
-  "busquei parcerias estratégicas",
+  "busquei parceiros",
   "contratei consultoria",
   "conversei com outros empreendedores",
-  "ainda nada",
+  "ainda não tentei",
 ];
 
 const resultadosCaminho = [
@@ -54,14 +53,15 @@ const resultadosCaminho = [
 ];
 
 const valores = [
-  "clareza",
-  "validar uma decisão",
-  "um caminho prático",
+  "validar decisão",
+  "caminho prático",
   "alguém que já fez",
-  "uma conexão (contato ou indicação)",
-  "um projeto de consultoria",
-  "um conselheiro contínuo",
+  "conexão (contato ou indicação)",
+  "projeto de consultoria",
+  "conselho/acompanhamento",
 ];
+
+const VALOR_OUTRA = "outra";
 
 const TIERS = [
   { nome: "Colega", quem: "alguém que já viveu algo parecido", duracaoPreco: "45 min · R$200", leva: "bate-papo e troca de experiência" },
@@ -98,7 +98,7 @@ const TIERS = [
         <legend class="stepLegend">onde você sente que travou?</legend>
         <div class="chips" role="radiogroup" aria-label="onde você sente que travou?">
           {dores.map((d) => (
-            <label class="chip">
+            <label class="chip" data-fase-only={d === "não sei por onde começar" ? "ainda é uma ideia" : undefined}>
               <input type="radio" name="dor" value={d} required />
               <span>{d}</span>
             </label>
@@ -153,10 +153,18 @@ const TIERS = [
               <span>{v}</span>
             </label>
           ))}
+          <label class="chip">
+            <input type="radio" name="valor" value={VALOR_OUTRA} required />
+            <span>outra coisa...</span>
+          </label>
+        </div>
+        <div class="field valorOutroField" hidden>
+          <label for="valorOutro">qual?</label>
+          <input type="text" id="valorOutro" name="valorOutro" placeholder="me conta rapidinho" />
         </div>
         <div class="navRow" hidden>
           <button type="button" class="ctaSecondary btnBack">voltar</button>
-          <button type="button" class="ctaPrimary btnNext" id="btnVerDiagnostico">ver meu diagnóstico</button>
+          <button type="button" class="ctaPrimary btnNext" id="btnVerDiagnostico">concluir</button>
         </div>
       </fieldset>
     </form>
@@ -386,13 +394,12 @@ const TIERS = [
     if (answers.valor === "alguém que já fez" || answers.caminhos.includes("contratei consultoria")) {
       matches.push("Expert");
     }
-    if (answers.valor === "um caminho prático" || answers.valor === "validar uma decisão") {
+    if (answers.valor === "caminho prático" || answers.valor === "validar decisão") {
       matches.push("Sênior");
     }
     if (
-      answers.valor === "clareza" ||
       answers.caminhos.length === 0 ||
-      answers.caminhos.includes("ainda nada")
+      answers.caminhos.includes("ainda não tentei")
     ) {
       matches.push("Colega");
     }
@@ -476,7 +483,7 @@ const TIERS = [
     const caminhosBoxes = Array.from(
       stepCaminhos.querySelectorAll<HTMLInputElement>('input[name="caminhos"]')
     );
-    const NADA_VALUE = "ainda nada";
+    const NADA_VALUE = "ainda não tentei";
 
     // Tracks the actual order paths were ticked in (not DOM order), seeded
     // from any restored answers so a refresh keeps the original order.
@@ -542,6 +549,37 @@ const TIERS = [
     syncCaminhosRequired();
     caminhosBoxes.forEach((b) => b.addEventListener("change", syncCaminhosRequired));
 
+    // "não sei por onde começar" only makes sense pre-launch -- once the
+    // business is running, the visitor already knows where it hurts. Hide
+    // it (and clear a now-invalid selection) for every fase but the first.
+    const dorRadios = Array.from(stepDor.querySelectorAll<HTMLInputElement>('input[name="dor"]'));
+    function syncDorOptionsForFase() {
+      const fase = (form.querySelector('input[name="fase"]:checked') as HTMLInputElement | null)?.value ?? null;
+      dorRadios.forEach((input) => {
+        const label = input.closest("label") as HTMLLabelElement | null;
+        const faseOnly = label?.dataset.faseOnly;
+        if (!label || !faseOnly) return;
+        const allowed = fase === faseOnly;
+        label.hidden = !allowed;
+        if (!allowed && input.checked) input.checked = false;
+      });
+    }
+    syncDorOptionsForFase();
+
+    // "outra coisa..." is typeable -- its real answer is the free-text
+    // value, not the literal radio value, and the field only matters
+    // (visible + required) while that radio is the one checked.
+    const valorOutroField = stepValor.querySelector<HTMLElement>(".valorOutroField")!;
+    const valorOutroInput = stepValor.querySelector<HTMLInputElement>('input[name="valorOutro"]')!;
+    function syncValorOutro() {
+      const checked = (form.querySelector('input[name="valor"]:checked') as HTMLInputElement | null)?.value ?? null;
+      const show = checked === "outra";
+      valorOutroField.hidden = !show;
+      valorOutroInput.required = show;
+      if (!show) valorOutroInput.value = "";
+    }
+    syncValorOutro();
+
     function showStep(index: number) {
       order.forEach((step, i) => {
         step.hidden = i !== index;
@@ -584,7 +622,8 @@ const TIERS = [
         const val = (step.querySelector('input:checked') as HTMLInputElement | null)?.value;
         if (path && val) answers.seguimentos[path] = val;
       });
-      answers.valor = (form.querySelector('input[name="valor"]:checked') as HTMLInputElement | null)?.value ?? null;
+      const valorChecked = (form.querySelector('input[name="valor"]:checked') as HTMLInputElement | null)?.value ?? null;
+      answers.valor = valorChecked === "outra" ? valorOutroInput.value.trim() || null : valorChecked;
       saveAnswers(answers);
     }
 
@@ -642,7 +681,11 @@ const TIERS = [
 
     // Persist on every change, not just on "continuar" -- a selection
     // should survive a refresh even before the visitor advances.
-    form.addEventListener("change", () => syncAllAnswersFromDom());
+    form.addEventListener("change", () => {
+      syncDorOptionsForFase();
+      syncValorOutro();
+      syncAllAnswersFromDom();
+    });
 
     btnStart?.addEventListener("click", () => {
       quizSection.hidden = false;
@@ -667,6 +710,7 @@ const TIERS = [
         const r = form.querySelector(`input[name="dor"][value="${CSS.escape(answers.dor)}"]`) as HTMLInputElement | null;
         if (r) r.checked = true;
       }
+      syncDorOptionsForFase();
       caminhosBoxes.forEach((b) => {
         b.checked = answers.caminhos.includes(b.value);
       });
@@ -685,8 +729,19 @@ const TIERS = [
       });
       if (answers.valor) {
         const r = form.querySelector(`input[name="valor"][value="${CSS.escape(answers.valor)}"]`) as HTMLInputElement | null;
-        if (r) r.checked = true;
+        if (r) {
+          r.checked = true;
+        } else {
+          // Saved value doesn't match any fixed option -- it's a restored
+          // "outra coisa..." free-text answer.
+          const outra = form.querySelector('input[name="valor"][value="outra"]') as HTMLInputElement | null;
+          if (outra) {
+            outra.checked = true;
+            valorOutroInput.value = answers.valor;
+          }
+        }
       }
+      syncValorOutro();
 
       // Resume at the first step in the (now rebuilt) order that has no
       // saved answer yet.
@@ -911,6 +966,10 @@ const TIERS = [
     transition: border-color 0.14s ease, background 0.14s ease, color 0.14s ease;
   }
 
+  .chip[hidden] {
+    display: none;
+  }
+
   .chip input {
     position: absolute;
     width: 1px;
@@ -965,7 +1024,6 @@ const TIERS = [
 
   .navRow {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     gap: 12px;
   }
@@ -976,6 +1034,10 @@ const TIERS = [
     padding: 4px 0;
     cursor: pointer;
     color: var(--site-text-secondary);
+  }
+
+  .navRow .btnNext {
+    margin-left: auto;
   }
 
   .followupLegend .followupPath {
@@ -1009,6 +1071,10 @@ const TIERS = [
     display: grid;
     gap: 8px;
     margin-bottom: 16px;
+  }
+
+  .field[hidden] {
+    display: none;
   }
 
   .field label {

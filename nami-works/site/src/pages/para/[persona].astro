@@ -38,9 +38,6 @@ const { persona } = Astro.props;
         loading="eager"
         class="posterImg"
       />
-      <div class="posterCtaWrap">
-        <button type="button" class="ctaPrimary" id="btnStart">entenda seu problema</button>
-      </div>
     </section>
   ) : (
     <section class="feedHero">
@@ -51,12 +48,28 @@ const { persona } = Astro.props;
         </div>
         <h1 class="feedHook display display-1">{persona.hook}</h1>
         <p class="feedSub">{persona.sub}</p>
-        <div class="ctaRow">
-          <button type="button" class="ctaPrimary" id="btnStart">entenda seu problema</button>
-        </div>
       </div>
     </section>
   )}
+
+  {/* Brand-promise bridge, same copy on every persona page (2026-10-01).
+     Closes the trust gap between "an ad just named my exact pain" and
+     "I'll answer 4 questions" -- the CTA fires here, after the promise,
+     not right under the hero. See inputs/mockups/landing-bridge-v2.html. */}
+  <section class="section sectionSoft bridge">
+    <div class="container">
+      <p class="eyebrow">nami.works</p>
+      <h2 class="sectionTitle display display-3">
+        travou no seu negócio? <span class="mk">a gente te conecta com quem pode ajudar!</span>
+      </h2>
+      <p class="lede">tem horas que é tanta coisa, e a gente nem sabe por onde começar.</p>
+      <p class="lede">dividir as dúvidas com quem pode ajudar muitas vezes é o melhor caminho.</p>
+      <p class="lede">nos conte um pouco mais, e vamos te conectar.</p>
+      <div class="ctaRow">
+        <button type="button" class="ctaPrimary" id="btnStart">explique seu problema</button>
+      </div>
+    </div>
+  </section>
 
   <MatchmakingFunnel prefilledDor={persona.dor} persona={persona.slug} />
 </BaseLayout>
@@ -76,22 +89,6 @@ const { persona } = Astro.props;
     max-width: 480px;
     height: auto;
     display: block;
-  }
-
-  .posterCtaWrap {
-    margin-top: 20px;
-    padding: 0 16px;
-    width: 100%;
-    max-width: 420px;
-    display: flex;
-    justify-content: center;
-  }
-
-  .posterCtaWrap .ctaPrimary {
-    width: 100%;
-    justify-content: center;
-    padding: 14px 24px;
-    font-size: 16px;
   }
 
   .feedHero {
