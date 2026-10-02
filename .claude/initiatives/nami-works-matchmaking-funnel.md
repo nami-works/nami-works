@@ -214,17 +214,24 @@ re-saved after unticking its path.
   foi ao implementar IA", "com a agência ou freelancer", "ao contratar
   equipe", "com o fornecedor/parceiro", "com a consultoria"); outcomes are now
   não resolveu / resolveu em parte / funcionou, mas não se sustentou.
-- **New "retorno" question** (only if a path was tried): "pensando no que você
-  investiu nesses caminhos, valeu a pena?" (valeu o investimento / valeu em
-  parte / custou mais do que valia / não investi dinheiro). It replaces
-  "custou mais do que valia" as a per-path outcome.
+- **New "retorno" question, one per tried path**, right after that path's
+  outcome question: "pensando no que você investiu nesse caminho (tempo e
+  dinheiro), valeu a pena?" (valeu o investimento / valeu em parte / custou
+  mais do que valia). It replaces "custou mais do que valia" as a per-path
+  outcome.
 - **New "pares" question** (always): "já conversou com outros empreendedores
   sobre isso?" (sim, e ajudou / ... em parte / sim, mas não ajudou / ainda
   não). It happens independently of the paths, so it is asked on its own,
   after the paid paths and before "o que ajudaria mais agora".
 - Both new answers are stored in the existing `seguimentos` map (keys
-  "retorno do investimento" and "conversei com outros empreendedores") and
+  "retorno do investimento: <path>" and "conversei com outros empreendedores") and
   are included in the AI prompt context.
+- **Peer answer steers the tier:** "sim, mas não ajudou" never recommends
+  Colega (same format as what failed) and leans to Sênior; "sim, e ajudou"
+  recommends Colega as the step up ("alguém que já resolveu exatamente o que
+  trava o seu negócio"); "ajudou em parte" leans to Sênior; "ainda não" adds
+  Colega as a natural first conversation. A one-line reason shows above the
+  tier cards in the first three cases (copy drafted, pending Lucas's edit).
 - **Q4 / tiers:** "validar decisão" removed; "traçar um caminho prático" ->
   Expert, "aprender com quem já viveu" -> Colega (peer), "apoio e
   acompanhamento" -> Sênior (advisor). Having tried "consultoria" still adds
