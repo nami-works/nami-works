@@ -328,7 +328,12 @@ const TIERS = [
   }
 
   // ---- Diagnostic engine (Phase 3): deterministic v1, swappable later ----
-  const PAIN_BLOCKS: Record<string, { significado: string; primeiroPasso: string; inNetwork: boolean }> = {
+  // passoPorFase (optional) overrides primeiroPasso for a given fase; the
+  // plain primeiroPasso is the fallback when a stage has no specific step.
+  const PAIN_BLOCKS: Record<
+    string,
+    { significado: string; primeiroPasso: string; passoPorFase?: Record<string, string>; inNetwork: boolean }
+  > = {
     "mercado e clientes": {
       significado: "o produto existe, mas o cliente não chega ou não fecha. quase sempre falta clareza sobre quem compra e por quê.",
       primeiroPasso: "liste seus 3 últimos clientes e escreva o que convenceu cada um a comprar. a partir daí, busque clientes parecidos, e apresente o produto pelo valor gerado para quem já comprou.",
@@ -341,17 +346,27 @@ const TIERS = [
     },
     "priorização e execução": {
       significado: "tem muita coisa pra fazer e pouca saindo do papel. sem uma ordem clara, tudo parece urgente e nada avança.",
-      primeiroPasso: "liste tudo que está em andamento, escolha as 3 que mais movem o negócio e pause o resto por 2 semanas.",
+      primeiroPasso: "tire da frente tudo o que levar menos de 2 minutos (2x ao dia). do que sobrar, liste o que está em andamento, escolha as 3 que mais movem o negócio para priorizar. repita o processo.",
       inNetwork: true,
     },
     "time e gestão": {
       significado: "contratar, delegar ou liderar virou gargalo. o negócio depende demais de você.",
-      primeiroPasso: "escreva as 5 tarefas que só você faz e escolha uma pra passar adiante.",
+      primeiroPasso: "escreva as 5 tarefas que só você faz e escolha uma pra passar adiante, com o resultado esperado por escrito.",
+      passoPorFase: {
+        "ainda é uma ideia":
+          "se você vai ter sócio, combine antes quem decide quando houver empate (evite dividir 50/50). mantenha o time pequeno até alguém pagar pelo que você oferece.",
+        "começo promissor":
+          "tudo o que você faz mais de uma vez, escreva o passo a passo. depois escolha a tarefa que menos precisa de você e passe adiante, com o resultado esperado por escrito.",
+        "já roda, quero escalar":
+          "escreva as 5 tarefas que só você faz e escolha uma pra passar adiante, com o resultado esperado por escrito. antes de contratar, converse com pessoas que já trabalharam com quem você quer trazer.",
+        "crescendo, pede estrutura":
+          "defina 3 metas claras para o trimestre e quem responde por cada uma. combine com o time o que cada pessoa decide sozinha e o que ainda passa por você.",
+      },
       inNetwork: true,
     },
     produto: {
       significado: "você tem a ideia, mas não sabe se é isso que o mercado quer.",
-      primeiroPasso: "converse com 3 possíveis clientes essa semana, antes de investir mais.",
+      primeiroPasso: "antes de investir mais tempo ou dinheiro: converse com 3 clientes satisfeitos, e outros 3 possíveis clientes. entenda as dores deles, como você já gera valor e como pode agregar mais.",
       inNetwork: true,
     },
     "vendas e marketing": {
@@ -361,12 +376,24 @@ const TIERS = [
     },
     "não sei por onde começar": {
       significado: "frentes demais abertas paralisam. o primeiro ganho é escolher uma.",
-      primeiroPasso: "escreva tudo que está pendente e marque a única coisa que destravaria o resto.",
+      primeiroPasso: "imagine seu negócio dando certo daqui a 3 anos: o que ele faz, pra quem, e o que te faz querer acordar pra isso. depois veja em qual dessas frentes existe um mercado grande, e comece por ela.",
       inNetwork: true,
     },
-    // No pain block exists for this one yet (known spec gap) -- routed to
-    // the out-of-network path instead of guessed copy.
-    "escalar o negócio": { significado: "", primeiroPasso: "", inNetwork: false },
+    "escalar o negócio": {
+      significado: "o negócio funciona e você quer crescer, mas crescer rápido demais costuma quebrar o que funciona hoje. o ganho está em saber o que repetir, onde e em que ritmo.",
+      primeiroPasso: "escolha uma região ou um tipo de cliente e repita a venda ali até os números ficarem estáveis, antes de ampliar.",
+      passoPorFase: {
+        "ainda é uma ideia":
+          "antes de pensar em escala, rode um teste pequeno: venda pra poucas pessoas de uma mesma região e acompanhe 2 ou 3 números simples (quantos compram, quantos voltam, quanto sobra).",
+        "começo promissor":
+          "escolha uma região ou um tipo de cliente e repita a venda ali até os números ficarem estáveis. só depois de repetir com previsibilidade vale ampliar.",
+        "já roda, quero escalar":
+          "descubra quais clientes compram com mais frequência e concentre o esforço onde eles estão. cresça uma região de cada vez, ganhando ritmo em cada uma antes de abrir a próxima.",
+        "crescendo, pede estrutura":
+          "o que trouxe você até aqui não escala sozinho. liste as decisões que ainda passam por você e escolha quais outras pessoas devem passar a tomar, pro crescimento não depender da sua agenda.",
+      },
+      inNetwork: true,
+    },
   };
 
   // Validated 2026-10-01 -- see the matchmaking initiative file for the
@@ -389,7 +416,7 @@ const TIERS = [
     return {
       inNetwork: true,
       significado: `${pain.significado} ${stageLine}`.trim(),
-      primeiroPasso: pain.primeiroPasso,
+      primeiroPasso: pain.passoPorFase?.[fase] ?? pain.primeiroPasso,
     };
   }
 
