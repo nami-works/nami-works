@@ -51,7 +51,7 @@ export const PAIN_PERSONAS: Persona[] = [
   },
   {
     slug: "equipe-e-contratacao",
-    dor: "contratações e equipe",
+    dor: "time e gestão",
     hook: "o negócio depende demais de você?",
     sub: "contratar, delegar ou liderar virou gargalo. tem gente que já resolveu isso.",
   },
