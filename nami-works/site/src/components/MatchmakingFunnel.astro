@@ -714,9 +714,15 @@ const TIERS = [
       return submissionId !== null;
     }
 
+    // The create call takes a moment, during which "concluir" is still
+    // clickable; without this a double-click files two submissions.
+    let finishing = false;
+
     async function finishQuiz() {
+      if (finishing) return;
       syncAllAnswersFromDom();
       if (!answers.fase || !answers.dor || !answers.valor) return;
+      finishing = true;
 
       const diagnostico = computeDiagnostico(answers.dor, answers.fase);
       const diagnosticoTexto = diagnostico.inNetwork
