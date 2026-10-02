@@ -207,8 +207,8 @@ re-saved after unticking its path.
 - **Pains (Q2):** up to two ("escolha até duas"), tracked in click order; the
   first is the main one. It drives the diagnostic and the caixa-specific AI
   prompt; the second shows as "você também marcou: X" and goes into the
-  prompt and the lead. "não sei por onde começar" is exclusive with the rest.
-  Stored in the existing `dor` field joined as "A + B" (no backend change).
+  prompt and the lead. "não sei por onde começar" (only for "ainda é uma
+  ideia") combines with another pain like any other option. Stored in the existing `dor` field joined as "A + B" (no backend change).
 - **Paths (Q3):** implementar com IA / agência ou freelancer / contratar
   equipe / fornecedor/parceiro / consultoria. Follow-ups read per path ("como
   foi ao implementar IA", "com a agência ou freelancer", "ao contratar

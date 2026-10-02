@@ -718,10 +718,10 @@ const TIERS = [
     caminhosBoxes.forEach((b) => b.addEventListener("change", syncCaminhosRequired));
 
     // Pains: up to two, in click order (the first is the main one).
-    // "não sei por onde começar" is exclusive with the rest, and it only makes
-    // sense pre-launch -- once the business runs the visitor already knows
-    // where it hurts -- so it is hidden for every fase but the first.
-    const NAO_SEI = "não sei por onde começar";
+    // "não sei por onde começar" combines with another pain like any other
+    // option, but it only makes sense pre-launch -- once the business runs
+    // the visitor already knows where it hurts -- so it is hidden for every
+    // fase but the first.
     const dorBoxes = Array.from(stepDor.querySelectorAll<HTMLInputElement>('input[name="dor"]'));
     let dorClickOrder: string[] = [...answers.dores];
 
@@ -742,17 +742,7 @@ const TIERS = [
     dorBoxes.forEach((box) => {
       box.addEventListener("change", () => {
         if (box.checked) {
-          if (box.value === NAO_SEI) {
-            dorBoxes.forEach((b) => {
-              if (b !== box) b.checked = false;
-            });
-            dorClickOrder = [NAO_SEI];
-          } else {
-            const naoSei = dorBoxes.find((b) => b.value === NAO_SEI);
-            if (naoSei) naoSei.checked = false;
-            dorClickOrder = dorClickOrder.filter((v) => v !== NAO_SEI);
-            if (!dorClickOrder.includes(box.value)) dorClickOrder.push(box.value);
-          }
+          if (!dorClickOrder.includes(box.value)) dorClickOrder.push(box.value);
         } else {
           dorClickOrder = dorClickOrder.filter((v) => v !== box.value);
         }
