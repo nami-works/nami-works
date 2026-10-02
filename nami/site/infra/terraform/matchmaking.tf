@@ -131,3 +131,21 @@ resource "aws_lambda_function_url" "matchmaking_api" {
     max_age       = 86400
   }
 }
+
+# A Function URL with authorization NONE is only reachable once the function's
+# resource policy allows the public to invoke it. AWS now requires TWO
+# statements for new URLs; without them every real request returns 403 even
+# though the CORS preflight works:
+#   1. lambda:InvokeFunctionUrl  -- managed below.
+#   2. lambda:InvokeFunction conditioned on lambda:InvokedViaFunctionUrl --
+#      NOT managed here: provider hashicorp/aws 5.x has no
+#      `invoked_via_function_url` argument. It was added once, by hand:
+#        aws lambda add-permission --function-name nami-works-site-matchmaking-api #          --statement-id FunctionURLAllowInvokeAction --action lambda:InvokeFunction #          --principal "*" --invoked-via-function-url
+#      Re-run that if the function is ever recreated.
+resource "aws_lambda_permission" "matchmaking_api_url" {
+  statement_id           = "FunctionURLAllowPublicAccess"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_name          = aws_lambda_function.matchmaking_api.function_name
+  principal              = "*"
+  function_url_auth_type = "NONE"
+}

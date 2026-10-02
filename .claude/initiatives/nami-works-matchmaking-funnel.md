@@ -123,20 +123,26 @@ funnel-spec.md}`. PR: nami-works/nami-works#139 (open, not yet merged).
 - [x] Swapping the diagnostic for an AI-backed one needs no UI change --
       `computeDiagnostico(dor, fase)` is the entire integration surface.
 
-## Next blocker: production cutover (needs Lucas, touches shared infra)
+## Next blocker: go-live (needs Lucas)
 
-Built, committed, pushed. What's left is the go-live:
+Done 2026-10-02: `terraform apply` (targeted, 6 resources; lead_intake left
+alone) -- DynamoDB `nami-works-site-matchmaking`, Lambda
+`nami-works-site-matchmaking-api`, Function URL
+`https://qfxw2l4wokb2qzfb4pfv4funde0ikmqb.lambda-url.us-east-1.on.aws/`.
+Live smoke test passed on real DynamoDB: create 201, finalize 200, second
+finalize 409, unknown id 404, CORS allows only https://nami.works. The test
+row was deleted. The second public-invoke permission was added by hand with
+the AWS CLI (see matchmaking.tf).
 
-1. `terraform apply` in `nami/site/infra/terraform` (reviewed plan: 6 to
-   add -- DynamoDB table, Lambda, Function URL, role, role policy, log
-   group). The same plan shows one in-place update to the retired
-   `lead_intake` Lambda (hash-only, from CRLF line endings in the Windows
-   checkout) -- harmless, or exclude it with `-target`.
-2. `scripts/deploy-nami-site.ps1` (reads `matchmaking_api_url` from
-   terraform and bakes it in as `PUBLIC_MATCHMAKING_API_BASE`; refuses to
-   build without it).
-3. One real end-to-end submission on nami.works: row in DynamoDB, visitor
-   email, lead alert to lucas@nami.works.
+Still open:
+1. **SES is in sandbox** (`ProductionAccessEnabled=false`, 200/day): the
+   alert to lucas@nami.works works, but the confirmation email to a real
+   visitor is rejected (logged, submission still stored). The confirmation
+   screen promises that email, so request SES production access before
+   launch, or soften the copy / follow up by hand meanwhile.
+2. `scripts/deploy-nami-site.ps1` (bakes `matchmaking_api_url` into the
+   build; refuses to build without it) -- not run yet.
+3. One real end-to-end test on nami.works after the deploy.
 4. Merge nami-works/nami-works#139.
 
 Known follow-ups, not launch-blocking: progression state (screen +
