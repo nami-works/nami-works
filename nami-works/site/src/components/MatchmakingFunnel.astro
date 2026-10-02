@@ -20,29 +20,29 @@ const { prefilledDor, persona } = Astro.props;
 
 const fases = [
   "ainda é uma ideia",
-  "começando (promissor, precisa de estrutura)",
-  "já roda, quero ganhar escala",
-  "crescendo, preciso me estruturar",
+  "começo promissor",
+  "já roda, quero escalar",
+  "crescendo, pede estrutura",
 ];
 
 const dores = [
-  "vendas e clientes",
-  "dinheiro e finanças",
-  "equipe e contratação",
-  "produto ou ideia",
-  "marketing",
-  "crescer o negócio",
+  "mercado e clientes",
+  "vendas e marketing",
+  "caixa e finanças",
+  "priorização e execução",
+  "time e gestão",
+  "produto",
+  "escalar o negócio",
   "não sei por onde começar",
 ];
 
 const caminhos = [
-  "perguntei pra uma IA",
-  "contratei agência ou freelancer",
-  "montei equipe interna",
-  "busquei parceiros",
-  "contratei consultoria",
+  "implementar com IA",
+  "agência ou freelancer",
+  "equipe interna",
+  "parceiros",
+  "consultoria",
   "conversei com outros empreendedores",
-  "ainda não tentei",
 ];
 
 const resultadosCaminho = [
@@ -55,10 +55,10 @@ const resultadosCaminho = [
 const valores = [
   "validar decisão",
   "caminho prático",
-  "alguém que já fez",
-  "conexão (contato ou indicação)",
+  "ouvir de quem já viveu",
+  "conexão para trocas",
   "projeto de consultoria",
-  "conselho/acompanhamento",
+  "conselho e acompanhamento",
 ];
 
 const VALOR_OUTRA = "outra";
@@ -111,8 +111,8 @@ const TIERS = [
       </fieldset>
 
       <fieldset class="step" data-step="caminhos" hidden>
-        <legend class="stepLegend">quais desses caminhos você já tentou? <span class="optional">(pode marcar vários)</span></legend>
-        <div class="chips" role="group" aria-label="quais desses caminhos você já tentou?" id="caminhosGroup">
+        <legend class="stepLegend">já tentou algum destes caminhos? <span class="optional">(pode marcar vários)</span></legend>
+        <div class="chips" role="group" aria-label="já tentou algum destes caminhos?" id="caminhosGroup">
           {caminhos.map((c) => (
             <label class="chip">
               <input type="checkbox" name="caminhos" value={c} />
@@ -122,6 +122,7 @@ const TIERS = [
         </div>
         <div class="navRow" hidden>
           <button type="button" class="ctaSecondary btnBack">voltar</button>
+          <button type="button" class="ctaSecondary btnSkip">ainda não tentei</button>
           <button type="button" class="ctaPrimary btnNext">continuar</button>
         </div>
       </fieldset>
@@ -145,8 +146,8 @@ const TIERS = [
       ))}
 
       <fieldset class="step" data-step="valor" hidden>
-        <legend class="stepLegend">o que tem mais valor pra você agora?</legend>
-        <div class="chips" role="radiogroup" aria-label="o que tem mais valor pra você agora?">
+        <legend class="stepLegend">o que ajudaria mais agora?</legend>
+        <div class="chips" role="radiogroup" aria-label="o que ajudaria mais agora?">
           {valores.map((v) => (
             <label class="chip">
               <input type="radio" name="valor" value={v} required />
@@ -174,18 +175,17 @@ const TIERS = [
 <section class="section" id="diagnostico" hidden>
   <div class="container narrow">
     <div id="diagnosticoEmRede">
-      <p class="eyebrow">seu travamento</p>
+      <p class="eyebrow">sua principal trava</p>
       <h2 class="sectionTitle display display-3" id="diagTitulo"></h2>
 
       <p class="diagLabel">o que isso costuma significar</p>
       <p class="diagTexto" id="diagSignificado"></p>
 
-      <p class="diagLabel">um primeiro passo pra hoje</p>
-      <p class="diagTexto" id="diagPasso"></p>
-
-      <p class="diagResto">
-        o resto a gente resolve conversando, e nosso algoritmo encontra a pessoa certa pra essa conversa.
-      </p>
+      <p class="diagLabel">o que dá pra fazer hoje</p>
+      <ol class="diagPassos">
+        <li class="diagTexto" id="diagPasso"></li>
+        <li class="diagTexto">conversar com alguém que pode ajudar</li>
+      </ol>
 
       <div class="ctaRow">
         <button type="button" class="ctaPrimary" id="btnVerTiers">ver quem pode conversar comigo</button>
@@ -302,7 +302,7 @@ const TIERS = [
   // sessionStorage is shared across the whole origin, so without this a
   // visitor who starts the quiz on one persona page and later opens a
   // different one would silently resume a different pain's answers.
-  let STORAGE_KEY = "nami-quiz-state-v1:generic";
+  let STORAGE_KEY = "nami-quiz-state-v2:generic";
 
   function emptyAnswers(): Answers {
     return { fase: null, dor: null, caminhos: [], seguimentos: {}, valor: null };
@@ -328,49 +328,131 @@ const TIERS = [
   }
 
   // ---- Diagnostic engine (Phase 3): deterministic v1, swappable later ----
-  const PAIN_BLOCKS: Record<string, { significado: string; primeiroPasso: string; inNetwork: boolean }> = {
-    "vendas e clientes": {
+  // passoPorFase (optional) overrides primeiroPasso for a given fase; the
+  // plain primeiroPasso is the fallback when a stage has no specific step.
+  const PAIN_BLOCKS: Record<
+    string,
+    { significado: string; primeiroPasso: string; passoPorFase?: Record<string, string>; inNetwork: boolean }
+  > = {
+    "mercado e clientes": {
       significado: "o produto existe, mas o cliente não chega ou não fecha. quase sempre falta clareza sobre quem compra e por quê.",
-      primeiroPasso: "liste seus 3 últimos clientes e escreva por que cada um comprou.",
+      primeiroPasso: "liste seus 3 últimos clientes e o que fez cada um comprar de você. depois, busque perfis parecidos e ajuste o discurso de acordo com o valor que você já gerou a quem comprou.",
+      passoPorFase: {
+        "ainda é uma ideia":
+          "defina quem é o seu primeiro cliente: descreva uma pessoa real que tem esse problema, onde ela está e como você chegaria até ela. depois converse com 5 pessoas com esse perfil.",
+        "começo promissor":
+          "liste seus 3 últimos clientes e o que fez cada um comprar de você. depois, busque perfis parecidos e ajuste o discurso de acordo com o valor que você já gerou a quem comprou.",
+        "já roda, quero escalar":
+          "separe seus clientes entre quem compra mais vezes e quem compra mais caro. descreva o que eles têm em comum e procure mais perfis como esses, nos mesmos lugares onde encontrou os primeiros.",
+        "crescendo, pede estrutura":
+          "registre o caminho que o cliente percorre até comprar (de onde vem, quem atende, o que decide) e identifique o ponto em que mais pessoas desistem. defina um responsável por melhorar esse ponto.",
+      },
       inNetwork: true,
     },
-    "dinheiro e finanças": {
+    "caixa e finanças": {
       significado: "o caixa aperta e fica difícil decidir. muitas vezes o problema é não enxergar pra onde o dinheiro vai.",
-      primeiroPasso: "anote todas as entradas e saídas dos últimos 30 dias numa planilha simples.",
+      primeiroPasso: "registre todas as entradas e saídas dos últimos 30 dias numa planilha simples. identifique os 3 maiores gastos e avalie onde é possível reduzir ou renegociar.",
+      passoPorFase: {
+        "ainda é uma ideia":
+          "some o que você precisa gastar até o primeiro cliente pagante e por quantos meses o seu dinheiro cobre isso. separe desde já o gasto do negócio do gasto pessoal.",
+        "começo promissor":
+          "registre todas as entradas e saídas dos últimos 30 dias numa planilha simples. identifique os 3 maiores gastos e avalie onde é possível reduzir ou renegociar.",
+        "já roda, quero escalar":
+          "calcule quanto sobra em cada venda depois de descontar o custo do que você entrega. antes de investir para crescer, confirme que cada venda a mais deixa dinheiro no caixa e projete as próximas 12 semanas de entradas e saídas.",
+        "crescendo, pede estrutura":
+          "projete o que você espera receber e pagar nos próximos 3 meses e defina quem atualiza toda semana. mantenha uma reserva para os meses mais fracos e estabeleça quais gastos precisam de aprovação.",
+      },
       inNetwork: true,
     },
-    "equipe e contratação": {
+    "priorização e execução": {
+      significado: "tem muita coisa pra fazer e pouca saindo do papel. sem uma ordem clara, tudo parece urgente e nada avança.",
+      primeiroPasso: "duas vezes ao dia, resolva de uma vez tudo o que leva menos de 2 minutos. do que sobrar, liste o que está em andamento e escolha as 3 que mais movem o negócio. comece por elas e repita o processo toda semana.",
+      passoPorFase: {
+        "ainda é uma ideia":
+          "escolha uma única coisa que prova se a ideia funciona e dedique as próximas 2 semanas só a ela. o que não contribuir para isso fica para depois.",
+        "começo promissor":
+          "duas vezes ao dia, resolva de uma vez tudo o que leva menos de 2 minutos. do que sobrar, liste o que está em andamento e escolha as 3 que mais movem o negócio. comece por elas e repita o processo toda semana.",
+        "já roda, quero escalar":
+          "escolha 3 metas para o mês e reserve uma hora por semana para verificar se o que você está fazendo contribui para alguma delas. o que não contribui, delegue ou interrompa.",
+        "crescendo, pede estrutura":
+          "toda segunda, faça um alinhamento de 15 minutos: cada pessoa lista 3 prioridades para a semana e vocês alinham os detalhes.",
+      },
+      inNetwork: true,
+    },
+    "time e gestão": {
       significado: "contratar, delegar ou liderar virou gargalo. o negócio depende demais de você.",
-      primeiroPasso: "escreva as 5 tarefas que só você faz e escolha uma pra passar adiante.",
+      primeiroPasso: "escreva as 5 tarefas que só você faz e escolha uma pra passar adiante, com o resultado esperado por escrito.",
+      passoPorFase: {
+        "ainda é uma ideia":
+          "execute cada tarefa antes de delegar: para treinar alguém, você precisa saber fazer. mantenha o time pequeno até alguém pagar bem pelo que você oferece.",
+        "começo promissor":
+          "delegue o que não for estratégico, para liberar tempo para pensar: escreva o passo a passo, depois passe adiante, alinhando com clareza o resultado esperado.",
+        "já roda, quero escalar":
+          "identifique as áreas em que outra pessoa pode render mais do que você e traga essa pessoa para o time. antes de contratar, converse mais de uma vez e peça referências a quem já trabalhou com ela.",
+        "crescendo, pede estrutura":
+          "defina 3 metas claras para o trimestre e quem responde por cada uma. combine o que cada pessoa decide sozinha e o que ainda passa por você.",
+      },
       inNetwork: true,
     },
-    "produto ou ideia": {
+    produto: {
       significado: "você tem a ideia, mas não sabe se é isso que o mercado quer.",
-      primeiroPasso: "converse com 3 possíveis clientes essa semana, antes de investir mais.",
+      primeiroPasso: "antes de investir mais tempo ou dinheiro, converse com 3 clientes satisfeitos e 3 possíveis clientes. entenda o que mais pesa no dia a dia deles, por que compram de você (ou comprariam) e o que ajudaria mais.",
+      passoPorFase: {
+        "ainda é uma ideia":
+          "antes de construir, converse com 5 possíveis clientes sobre o problema, sem apresentar a solução. descubra se já tentaram resolver, quanto isso custa para eles e se pagariam por algo melhor.",
+        "começo promissor":
+          "antes de investir mais tempo ou dinheiro, converse com 3 clientes satisfeitos e 3 possíveis clientes. entenda o que mais pesa no dia a dia deles, por que compram de você (ou comprariam) e o que ajudaria mais.",
+        "já roda, quero escalar":
+          "pergunte aos clientes que mais compram o que eles fariam se o produto deixasse de existir e o que ainda falta. use as respostas para decidir o que melhorar antes de vender para mais gente.",
+        "crescendo, pede estrutura":
+          "levante os pedidos e reclamações mais repetidos dos últimos 3 meses e escolha um para resolver primeiro. defina quem cuida da evolução do produto e como o time traz o que ouve dos clientes.",
+      },
       inNetwork: true,
     },
-    marketing: {
+    "vendas e marketing": {
       significado: "você aparece, mas não vê resultado. normalmente falta foco em um canal e uma mensagem.",
-      primeiroPasso: "escolha um único canal e uma mensagem pra testar por 2 semanas.",
+      primeiroPasso: "escolha um único canal de divulgação (Instagram, WhatsApp, indicação) e uma mensagem para testar por 2 semanas. registre quantas pessoas viram, quantas responderam e quantas compraram. depois decida: manter, ajustar ou trocar.",
+      passoPorFase: {
+        "ainda é uma ideia":
+          "antes de gastar com divulgação, escreva em uma frase quem você ajuda e qual problema resolve. mostre a 5 pessoas desse perfil e verifique se entendem sem precisar de explicação.",
+        "começo promissor":
+          "escolha um único canal de divulgação (Instagram, WhatsApp, indicação) e uma mensagem para testar por 2 semanas. registre quantas pessoas viram, quantas responderam e quantas compraram. depois decida: manter, ajustar ou trocar.",
+        "já roda, quero escalar":
+          "identifique de qual canal vêm os clientes que mais compram e concentre mais esforço nele. teste uma mensagem nova por vez, por 2 semanas, e compare com a atual.",
+        "crescendo, pede estrutura":
+          "defina uma meta de vendas por canal e quem responde por cada um. toda semana, acompanhe os mesmos números (contatos, propostas, vendas) para decidir onde ajustar.",
+      },
       inNetwork: true,
     },
     "não sei por onde começar": {
       significado: "frentes demais abertas paralisam. o primeiro ganho é escolher uma.",
-      primeiroPasso: "escreva tudo que está pendente e marque a única coisa que destravaria o resto.",
+      primeiroPasso: "imagine seu negócio dando certo daqui a 3 anos: o que ele faz e para quem. depois avalie o que isso tem a ver com o que te move e onde há muitas pessoas com esse problema. comece por aí.",
       inNetwork: true,
     },
-    // No pain block exists for this one yet (known spec gap) -- routed to
-    // the out-of-network path instead of guessed copy.
-    "crescer o negócio": { significado: "", primeiroPasso: "", inNetwork: false },
+    "escalar o negócio": {
+      significado: "o negócio funciona e você quer crescer, mas crescer rápido demais costuma quebrar o que funciona hoje. o ganho está em saber o que repetir, onde e em que ritmo.",
+      primeiroPasso: "escolha uma região ou um tipo de cliente e repita a venda ali até os números ficarem estáveis, antes de ampliar.",
+      passoPorFase: {
+        "ainda é uma ideia":
+          "antes de pensar em escala, faça um teste pequeno: venda para poucas pessoas da mesma região e acompanhe 3 números: quantos compram, quantos voltam e quanto sobra no final.",
+        "começo promissor":
+          "escolha uma região ou um tipo de cliente e repita a venda ali até os números ficarem estáveis. só depois de repetir com previsibilidade vale ampliar.",
+        "já roda, quero escalar":
+          "descubra quais clientes compram com mais frequência e concentre o esforço onde eles estão. cresça uma região de cada vez, ganhando ritmo em cada uma antes de abrir a próxima.",
+        "crescendo, pede estrutura":
+          "o que trouxe você até aqui não escala sozinho. liste as decisões que hoje dependem só de você e escolha 2 para transferir a outra pessoa, para que o crescimento deixe de depender da sua agenda.",
+      },
+      inNetwork: true,
+    },
   };
 
   // Validated 2026-10-01 -- see the matchmaking initiative file for the
   // 4-reviewer pass that picked these over the alternatives.
   const STAGE_LINES: Record<string, string> = {
     "ainda é uma ideia": "nessa fase, validar vale mais que construir.",
-    "começando (promissor, precisa de estrutura)": "ser promissor não substitui processo por trás.",
-    "já roda, quero ganhar escala": "pra crescer, o que funciona hoje precisa rodar sem você em cima o tempo todo.",
-    "crescendo, preciso me estruturar": "nessa fase, o que trava é o resto da empresa não acompanhar o ritmo do negócio.",
+    "começo promissor": "ser promissor não substitui processo por trás.",
+    "já roda, quero escalar": "pra crescer, o que funciona hoje precisa rodar sem você em cima o tempo todo.",
+    "crescendo, pede estrutura": "nessa fase, o que trava é o resto da empresa não acompanhar o ritmo do negócio.",
   };
 
   type Diagnostico =
@@ -384,7 +466,7 @@ const TIERS = [
     return {
       inNetwork: true,
       significado: `${pain.significado} ${stageLine}`.trim(),
-      primeiroPasso: pain.primeiroPasso,
+      primeiroPasso: pain.passoPorFase?.[fase] ?? pain.primeiroPasso,
     };
   }
 
@@ -393,16 +475,13 @@ const TIERS = [
   // (current card names) -- resolved 2026-10-01, see the initiative file.
   function recommendTiers(answers: Answers): string[] {
     const matches: string[] = [];
-    if (answers.valor === "alguém que já fez" || answers.caminhos.includes("contratei consultoria")) {
+    if (answers.valor === "ouvir de quem já viveu" || answers.caminhos.includes("consultoria")) {
       matches.push("Expert");
     }
     if (answers.valor === "caminho prático" || answers.valor === "validar decisão") {
       matches.push("Sênior");
     }
-    if (
-      answers.caminhos.length === 0 ||
-      answers.caminhos.includes("ainda não tentei")
-    ) {
+    if (answers.caminhos.length === 0) {
       matches.push("Colega");
     }
     return matches.length ? matches : ["Colega"];
@@ -468,7 +547,7 @@ const TIERS = [
 
     const prefilledDor = quizSection.dataset.prefilledDor || null;
     const utmContext = readUtmContext(quizSection);
-    STORAGE_KEY = `nami-quiz-state-v1:${quizSection.dataset.persona || "generic"}`;
+    STORAGE_KEY = `nami-quiz-state-v2:${quizSection.dataset.persona || "generic"}`;
 
     const answers = loadAnswers();
     if (prefilledDor) answers.dor = prefilledDor;
@@ -485,13 +564,11 @@ const TIERS = [
 
     const FOLLOWUP_STEPS = [stepSeguimento0, stepSeguimento1];
 
-    // "ainda nada" is mutually exclusive with every other path: ticking it
-    // clears the rest (and vice versa), since "I tried nothing" contradicts
-    // "I tried X".
+    // "I tried nothing" is not an option here: the secondary "ainda não
+    // tentei" button clears every tick and moves on (see below).
     const caminhosBoxes = Array.from(
       stepCaminhos.querySelectorAll<HTMLInputElement>('input[name="caminhos"]')
     );
-    const NADA_VALUE = "ainda não tentei";
 
     // Tracks the actual order paths were ticked in (not DOM order), seeded
     // from any restored answers so a refresh keeps the original order.
@@ -499,17 +576,7 @@ const TIERS = [
 
     caminhosBoxes.forEach((box) => {
       box.addEventListener("change", () => {
-        if (box.value === NADA_VALUE && box.checked) {
-          caminhosBoxes.forEach((b) => {
-            if (b !== box) b.checked = false;
-          });
-          caminhosClickOrder = [NADA_VALUE];
-          return;
-        }
         if (box.checked) {
-          const nada = caminhosBoxes.find((b) => b.value === NADA_VALUE);
-          if (nada) nada.checked = false;
-          caminhosClickOrder = caminhosClickOrder.filter((v) => v !== NADA_VALUE);
           if (!caminhosClickOrder.includes(box.value)) caminhosClickOrder.push(box.value);
         } else {
           caminhosClickOrder = caminhosClickOrder.filter((v) => v !== box.value);
@@ -524,7 +591,6 @@ const TIERS = [
 
     function pathsNeedingFollowup(): string[] {
       const ticked = tickedCaminhos();
-      if (ticked.length === 0 || ticked.includes(NADA_VALUE)) return [];
       return ticked.slice(0, 2);
     }
 
@@ -699,6 +765,17 @@ const TIERS = [
       });
     });
 
+    // "ainda não tentei": no paths ticked, so no follow-up questions.
+    stepCaminhos.querySelector<HTMLButtonElement>(".btnSkip")?.addEventListener("click", () => {
+      caminhosBoxes.forEach((b) => (b.checked = false));
+      caminhosClickOrder = [];
+      syncCaminhosRequired();
+      syncAllAnswersFromDom();
+      order = buildOrder();
+      currentIndex = order.indexOf(stepCaminhos) + 1;
+      showStep(currentIndex);
+    });
+
     // Persist on every change, not just on "continuar" -- a selection
     // should survive a refresh even before the visitor advances.
     form.addEventListener("change", () => {
@@ -801,7 +878,7 @@ const TIERS = [
       if (diag.inNetwork) {
         diagEmRede.hidden = false;
         diagForaDeRede.hidden = true;
-        diagTitulo.textContent = `seu travamento: ${dor}`;
+        diagTitulo.textContent = dor;
         diagSignificado.textContent = diag.significado;
         diagPasso.textContent = diag.primeiroPasso;
       } else {
@@ -977,7 +1054,7 @@ const TIERS = [
     font-weight: 700;
     color: var(--site-text);
     letter-spacing: -0.01em;
-    padding: 0;
+    padding: 0 0 12px;
     margin: 0;
   }
 
@@ -1070,7 +1147,8 @@ const TIERS = [
     gap: 12px;
   }
 
-  .navRow .btnBack {
+  .navRow .btnBack,
+  .navRow .btnSkip {
     background: none;
     border: none;
     padding: 4px 0;
@@ -1080,6 +1158,16 @@ const TIERS = [
 
   .navRow .btnNext {
     margin-left: auto;
+  }
+
+  /* Sits directly left of "continuar": takes over the auto margin so the
+     pair stays on the right edge while "voltar" stays on the left. */
+  .navRow .btnSkip {
+    margin-left: auto;
+  }
+
+  .navRow .btnSkip + .btnNext {
+    margin-left: 0;
   }
 
   .followupLegend .followupPath {
@@ -1102,11 +1190,22 @@ const TIERS = [
     margin: 0;
   }
 
-  .diagResto {
-    font-size: 14px;
-    color: var(--site-text-secondary);
-    margin: 24px 0 0;
-    line-height: 1.5;
+  .diagPassos {
+    margin: 0 0 28px;
+    padding-left: 22px;
+  }
+
+  .diagPassos li {
+    padding-left: 4px;
+  }
+
+  .diagPassos li + li {
+    margin-top: 8px;
+  }
+
+  .diagPassos li::marker {
+    font-weight: 700;
+    color: var(--site-accent);
   }
 
   .field {

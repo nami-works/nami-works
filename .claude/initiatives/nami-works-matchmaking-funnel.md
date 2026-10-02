@@ -145,14 +145,34 @@ Still open:
    alert to lucas@nami.works works but confirmation emails to real visitors
    are rejected (logged; the submission is still stored), while the
    confirmation screen promises that email.
-2. **Merge nami-works/nami-works#139.** The live site was deployed from the
-   branch; main still has the old site, so redeploying from main before the
-   merge would revert the funnel.
+(PR #139 merged 2026-10-02, squash a71706c.)
 
 Known follow-ups, not launch-blocking: progression state (screen +
 submission id) isn't persisted across a refresh after the diagnostic; the
 follow-up radios aren't `required`; a stale follow-up answer can be
 re-saved after unticking its path.
+
+## Quiz + diagnostic copy pass (2026-10-02, `feat/quiz-copy-pass`)
+
+- Quiz: fase = ainda é uma ideia / começo promissor / já roda, quero escalar
+  / crescendo, pede estrutura. Pains (Q2), in order: mercado e clientes,
+  vendas e marketing, caixa e finanças, priorização e execução, time e
+  gestão, produto, escalar o negócio, plus "não sei por onde começar" (only
+  for "ainda é uma ideia"). Q3 "já tentou algum destes caminhos?" has no
+  "ainda não tentei" option: a link-style button beside "continuar" clears
+  the ticks and skips the follow-ups. Q4 "o que ajudaria mais agora?" plus
+  free-text "outra coisa...".
+- Diagnostic: eyebrow "sua principal trava", headline = the pain, "o que dá
+  pra fazer hoje" = a step per fase (`passoPorFase` in `PAIN_BLOCKS`) plus a
+  fixed second step "conversar com alguém que pode ajudar". Every pain is now
+  in-network, so the out-of-network/waitlist screen is unreachable (code kept
+  as part of the swappable engine).
+- Register agreed with Lucas: professional but plain, no slang. Steps for
+  time e gestão and escalar o negócio draw on The Great CEO Within, Ramping
+  Your Brand and Blitzscaling (principles paraphrased, nothing quoted).
+- Persona pages: `/para/equipe-e-contratacao` prefills "time e gestão". There
+  are no landing pages yet for "priorização e execução" or "escalar o
+  negócio". sessionStorage key is now `nami-quiz-state-v2`.
 
 ## Open, non-blocking for v1
 

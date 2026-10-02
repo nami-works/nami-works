@@ -39,31 +39,31 @@ function poster(slug: string): ImageMetadata {
 export const PAIN_PERSONAS: Persona[] = [
   {
     slug: "vendas-e-clientes",
-    dor: "vendas e clientes",
+    dor: "mercado e clientes",
     hook: "o produto existe. o cliente não fecha. por quê?",
     sub: "quase sempre falta clareza sobre quem compra e por quê. tem gente que já resolveu isso.",
   },
   {
     slug: "dinheiro-e-financas",
-    dor: "dinheiro e finanças",
+    dor: "caixa e finanças",
     hook: "o caixa aperta e você não sabe pra onde o dinheiro foi?",
     sub: "decidir sem enxergar o fluxo é terreno movediço. tem gente que já resolveu isso.",
   },
   {
     slug: "equipe-e-contratacao",
-    dor: "equipe e contratação",
+    dor: "time e gestão",
     hook: "o negócio depende demais de você?",
     sub: "contratar, delegar ou liderar virou gargalo. tem gente que já resolveu isso.",
   },
   {
     slug: "produto-ou-ideia",
-    dor: "produto ou ideia",
+    dor: "produto",
     hook: "você tem a ideia. não sabe se é isso que o mercado quer?",
     sub: "validar antes de investir mais pesa menos do que parece. tem gente que já resolveu isso.",
   },
   {
     slug: "marketing",
-    dor: "marketing",
+    dor: "vendas e marketing",
     hook: "você aparece. não vê resultado?",
     sub: "normalmente falta foco em um canal e uma mensagem. tem gente que já resolveu isso.",
   },
