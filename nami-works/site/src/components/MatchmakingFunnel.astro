@@ -217,6 +217,7 @@ const TIERS = [
         <label for="waitlistTelefone">telefone</label>
         <input type="tel" id="waitlistTelefone" name="telefone" required placeholder="(11) 90000-0000" />
       </div>
+      <p class="formError" id="waitlistError" role="alert" hidden></p>
       <div class="ctaRow">
         <button type="submit" class="ctaPrimary">confirmar</button>
       </div>
@@ -269,6 +270,7 @@ const TIERS = [
         <input type="email" id="confEmail" name="email" required placeholder="voce@empresa.com" />
       </div>
 
+      <p class="formError" id="confirmacaoError" role="alert" hidden></p>
       <div class="ctaRow">
         <button type="submit" class="ctaPrimary">confirmar minha conversa</button>
       </div>
@@ -418,11 +420,15 @@ const TIERS = [
     };
   }
 
-  const API_BASE = import.meta.env.PUBLIC_MATCHMAKING_API_BASE as string;
+  // Baked in at build time by scripts/deploy-nami-site.ps1 (the Lambda
+  // Function URL from terraform output matchmaking_api_url).
+  const API_BASE = ((import.meta.env.PUBLIC_MATCHMAKING_API_BASE as string | undefined) ?? "").replace(/\/+$/, "");
+
+  const SUBMIT_ERROR = "não conseguimos enviar agora. confere sua conexão e tenta de novo.";
 
   async function createSubmission(body: Record<string, unknown>): Promise<string | null> {
     try {
-      const res = await fetch(`${API_BASE}/nami-matchmaking/submissions`, {
+      const res = await fetch(`${API_BASE}/submissions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -435,14 +441,16 @@ const TIERS = [
     }
   }
 
+  // 409 = this submission was already finalized (e.g. a double-click or a
+  // retry after a response was lost) -- the lead is stored, so it counts.
   async function patchSubmission(id: string, body: Record<string, unknown>): Promise<boolean> {
     try {
-      const res = await fetch(`${API_BASE}/nami-matchmaking/submissions/${id}`, {
+      const res = await fetch(`${API_BASE}/submissions/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      return res.ok;
+      return res.ok || res.status === 409;
     } catch {
       return false;
     }
@@ -628,6 +636,17 @@ const TIERS = [
     }
 
     let submissionId: string | null = null;
+    let createPayload: Record<string, unknown> | null = null;
+
+    // The create call can fail at the end of the quiz (offline, cold start).
+    // Keep the payload so the confirm/waitlist step can retry it instead of
+    // silently dropping the lead.
+    async function ensureSubmission(): Promise<boolean> {
+      if (submissionId) return true;
+      if (!createPayload) return false;
+      submissionId = await createSubmission(createPayload);
+      return submissionId !== null;
+    }
 
     async function finishQuiz() {
       syncAllAnswersFromDom();
@@ -638,7 +657,7 @@ const TIERS = [
         ? `${diagnostico.significado} ${diagnostico.primeiroPasso}`
         : "fora de rede";
 
-      submissionId = await createSubmission({
+      createPayload = {
         fase: answers.fase,
         dor: answers.dor,
         caminhos: answers.caminhos,
@@ -647,7 +666,8 @@ const TIERS = [
         diagnosticoTexto,
         inNetwork: diagnostico.inNetwork,
         ...utmContext,
-      });
+      };
+      submissionId = await createSubmission(createPayload);
 
       quizSection!.hidden = true;
       renderDiagnostico(diagnostico, answers.dor);
@@ -853,20 +873,31 @@ const TIERS = [
     // ---- Confirmation (tier path) ----
     document.getElementById("confirmacaoForm")?.addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (!submissionId) return;
       const form = e.target as HTMLFormElement;
       const nome = (form.querySelector("#confNome") as HTMLInputElement).value;
       const telefone = (form.querySelector("#confTelefone") as HTMLInputElement).value;
       const email = (form.querySelector("#confEmail") as HTMLInputElement).value;
+      const errorEl = document.getElementById("confirmacaoError")!;
+      const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
 
-      await patchSubmission(submissionId, {
-        status: "confirmed",
-        tierRecomendado,
-        tierEscolhido,
-        nome,
-        telefone,
-        email,
-      });
+      errorEl.hidden = true;
+      submitBtn.disabled = true;
+      const ok =
+        (await ensureSubmission()) &&
+        (await patchSubmission(submissionId!, {
+          status: "confirmed",
+          tierRecomendado,
+          tierEscolhido,
+          nome,
+          telefone,
+          email,
+        }));
+      if (!ok) {
+        errorEl.textContent = SUBMIT_ERROR;
+        errorEl.hidden = false;
+        submitBtn.disabled = false;
+        return;
+      }
 
       confirmacaoSection.hidden = true;
       document.getElementById("obrigadoTexto")!.textContent =
@@ -883,12 +914,23 @@ const TIERS = [
     // ---- Waitlist (out-of-network path) ----
     document.getElementById("waitlistForm")?.addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (!submissionId) return;
       const form = e.target as HTMLFormElement;
       const email = (form.querySelector("#waitlistEmail") as HTMLInputElement).value;
       const telefone = (form.querySelector("#waitlistTelefone") as HTMLInputElement).value;
+      const errorEl = document.getElementById("waitlistError")!;
+      const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
 
-      await patchSubmission(submissionId, { status: "waitlist", email, telefone });
+      errorEl.hidden = true;
+      submitBtn.disabled = true;
+      const ok =
+        (await ensureSubmission()) &&
+        (await patchSubmission(submissionId!, { status: "waitlist", email, telefone }));
+      if (!ok) {
+        errorEl.textContent = SUBMIT_ERROR;
+        errorEl.hidden = false;
+        submitBtn.disabled = false;
+        return;
+      }
 
       waitlistSection.hidden = true;
       document.getElementById("obrigadoTexto")!.textContent =
@@ -1075,6 +1117,16 @@ const TIERS = [
 
   .field[hidden] {
     display: none;
+  }
+
+  /* --site-erro is reserved for strike-throughs per the design tokens, so a
+     failed submit reads as plain emphasised text. */
+  .formError {
+    font-size: 14.5px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--site-text);
+    margin: 0 0 16px;
   }
 
   .field label {

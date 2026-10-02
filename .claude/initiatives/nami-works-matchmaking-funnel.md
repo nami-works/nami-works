@@ -2,7 +2,7 @@
 slug: nami-works-matchmaking-funnel
 status: in-progress
 owner: lucas
-updated: 2026-10-01
+updated: 2026-10-02
 ---
 
 # NAMI Works: matchmaking funnel
@@ -25,21 +25,29 @@ funnel-spec.md}`. PR: nami-works/nami-works#139 (open, not yet merged).
   phase, behind the swappable `computeDiagnostico(dor, fase)` interface.
 - The whole site is the funnel + `/privacidade` + `/termos` + 5 Instagram
   persona landing pages. No `/sobre`, no AI-consulting product pages (all
-  removed, redirects added for externally-linkable old paths).
+  removed; no redirects -- there was no traffic to preserve).
 - No professional roster exists or is being built for v1. Every confirmed
   submission is a demand signal Lucas follows up with manually.
-- Storage: `nami-matchmaking` Prisma schema (separate logical DB, same
-  Lightsail Postgres box as connector), new CORS-scoped route pair inside
-  `apps/connector`.
-- Hero CTA copy: "entenda seu problema". Stage lines: validated 2026-10-01
-  via 4 parallel review passes (see below).
+- Storage (re-decided 2026-10-02): an **isolated** stack in
+  `nami/site/infra/terraform/matchmaking.tf` -- one DynamoDB table
+  (`nami-works-site-matchmaking`, on-demand, PITR, prevent_destroy) + one
+  Lambda behind a public Function URL (CORS enforced at the URL) + SES. It
+  first shipped as Prisma + Fastify routes inside `apps/connector`; that was
+  dropped because connector is GE Beauty's live MCP gateway
+  (`mcp.gebeauty.com.br`) and an eager Prisma client with a missing env var
+  would crash the whole gateway. Nothing in `apps/connector` touches
+  nami.works now.
+- Hero CTA copy: "explique seu problema" (was "entenda seu problema").
+  Trust-bridge section between hero and quiz on every persona page
+  (wireframe: `nami-works/site/inputs/mockups/landing-bridge-v2.html`).
+  Stage lines: validated 2026-10-01 via 4 parallel review passes.
 
 ## Phases -- all built and dev-verified; production cutover still open
 
 - [x] **Phase 0** — repo housekeeping: closed PR #138, cut worktree
       `C:\claude-wt-matchmaking` / branch `feat/nami-matchmaking-funnel`,
       removed `agenda/contato/diagnostico/implantacao/metodo/operacao/
-      obrigado/noticias/sobre`, added redirects, trimmed `Nav.astro`/
+      obrigado/noticias/sobre`, trimmed `Nav.astro`/
       `Footer.astro` for the no-menu layout.
 - [x] **Phase 1** — hero rebuilt on `index.astro`, verified mobile + desktop.
 - [x] **Phase 2** — quiz: 4 steps, up to 2 dynamically-generated follow-up
@@ -65,14 +73,16 @@ funnel-spec.md}`. PR: nami-works/nami-works#139 (open, not yet merged).
       (email+phone, per the acceptance criteria) for the out-of-network
       path. Confirmation/waitlist copy reframed since no real roster exists
       yet -- never claims a match already happened.
-- [x] **Phase 5** — capture + email: `nami-matchmaking` Prisma schema +
-      migration, new CORS-scoped connector routes (POST on reaching the
-      diagnostic -- captures drop-off as real data; PATCH on confirm/
-      waitlist), SES confirmation email (best-effort, never blocks the
-      stored submission on a failed send). **Verified end to end against a
-      local Postgres + local connector instance**: both paths, correct
-      status transitions, correct data on every field including UTM/
-      persona attribution.
+- [x] **Phase 5** — capture + email: Lambda `matchmaking-api` (POST
+      `/submissions` on reaching the diagnostic -- captures drop-off as real
+      data; one-shot PATCH `/submissions/{id}` on confirm/waitlist), SES
+      confirmation to the visitor + a lead alert to Lucas (best-effort,
+      never fails the request). Frontend retries a failed create at confirm
+      time and shows an error instead of a fake "obrigado" when the submit
+      fails. Rewritten 2026-10-02 after dropping the connector-hosted
+      version; the earlier end-to-end verification was against that
+      version, so the Lambda path is verified by local handler tests only
+      until deployed.
 - [x] **Phase 6** — QA: full acceptance checklist run (see below). Mobile
       verified via screenshots at every major step.
 - [x] **Instagram continuity (added 2026-10-01, not in the original plan)**
@@ -106,36 +116,33 @@ funnel-spec.md}`. PR: nami-works/nami-works#139 (open, not yet merged).
       anywhere in the DOM.
 - [x] A confirmed request and a waitlist sign-up both land in storage with
       the full answers -- verified via direct DB queries both ways.
-- [ ] **The confirmation e-mail arrives** -- email-sending code is written
-      and wired (best-effort, non-blocking), but real delivery is
-      UNVERIFIED: this sandbox has no AWS credentials to actually hit SES.
-      Needs a real end-to-end send check once deployed.
+- [ ] **The confirmation e-mail arrives** -- code is written and wired
+      (best-effort, non-blocking), but real SES delivery and the DynamoDB
+      write are UNVERIFIED until the Lambda is deployed. Needs a real
+      end-to-end submission after `terraform apply`.
 - [x] Swapping the diagnostic for an AI-backed one needs no UI change --
       `computeDiagnostico(dor, fase)` is the entire integration surface.
 
 ## Next blocker: production cutover (needs Lucas, touches shared infra)
 
-Everything above is built, committed, pushed, and dev-verified. What's left
-is the actual go-live, which this session does not have credentials/
-authorization to do unattended (production deploy + IAM changes):
+Built, committed, pushed. What's left is the go-live:
 
-1. Provision the `nami_matchmaking` database on the real Lightsail Postgres
-   and run `prisma migrate deploy --schema=prisma/nami-matchmaking/schema.prisma`
-   against it (`DATABASE_URL_NAMI_MATCHMAKING` set on the box).
-2. Confirm connector's production AWS credentials include `ses:SendEmail`
-   for the nami.works SES identity -- unverified from here. The existing
-   lead-intake Lambda has this scope; connector's own runtime identity may
-   not.
-3. Redeploy `apps/connector` with this branch's code once merged.
-4. Set `PUBLIC_MATCHMAKING_API_BASE` to the real production connector URL
-   (currently `https://mcp.gebeauty.com.br` is the only known public
-   hostname for connector -- flagging that this means a GE-Beauty-branded
-   domain will carry nami.works form traffic in the background; invisible
-   to end users since it's a fetch() call, never shown in the address bar,
-   but worth a dedicated subdomain later if that bothers Lucas) before
-   building the site for production.
-5. Redeploy the static site (S3 + CloudFront, existing Terraform).
-6. Merge nami-works/nami-works#139.
+1. `terraform apply` in `nami/site/infra/terraform` (reviewed plan: 6 to
+   add -- DynamoDB table, Lambda, Function URL, role, role policy, log
+   group). The same plan shows one in-place update to the retired
+   `lead_intake` Lambda (hash-only, from CRLF line endings in the Windows
+   checkout) -- harmless, or exclude it with `-target`.
+2. `scripts/deploy-nami-site.ps1` (reads `matchmaking_api_url` from
+   terraform and bakes it in as `PUBLIC_MATCHMAKING_API_BASE`; refuses to
+   build without it).
+3. One real end-to-end submission on nami.works: row in DynamoDB, visitor
+   email, lead alert to lucas@nami.works.
+4. Merge nami-works/nami-works#139.
+
+Known follow-ups, not launch-blocking: progression state (screen +
+submission id) isn't persisted across a refresh after the diagnostic; the
+follow-up radios aren't `required`; a stale follow-up answer can be
+re-saved after unticking its path.
 
 ## Open, non-blocking for v1
 

@@ -5,7 +5,6 @@ import Fastify, { type FastifyBaseLogger } from "fastify";
 import { mountIconRoutes } from "./lib/icon-routes.js";
 import { rootLogger } from "./lib/logger.js";
 import { mountLocalDeliveryRoutes } from "./local-delivery/index.js";
-import { mountMatchmakingRoutes } from "./matchmaking/index.js";
 import { mountTenantRoute } from "./mcp/transport.js";
 import { mountOAuthRoutes } from "./oauth/index.js";
 import { mountWebhookRoutes } from "./webhooks/index.js";
@@ -27,7 +26,6 @@ await app.register(sensible);
 await mountOAuthRoutes(app);
 mountIconRoutes(app);
 await mountWebhookRoutes(app);
-await mountMatchmakingRoutes(app);
 
 app.get("/health", async () => ({ ok: true }));
 

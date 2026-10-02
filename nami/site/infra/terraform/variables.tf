@@ -27,3 +27,15 @@ variable "lead_to_address" {
   type        = string
   default     = "lucas@nami.works"
 }
+
+variable "matchmaking_from_address" {
+  description = "From header for matchmaking-funnel emails to visitors. Any address on the verified nami.works domain identity works."
+  type        = string
+  default     = "nami.works <contato@nami.works>"
+}
+
+variable "matchmaking_allowed_origins" {
+  description = "Browser origins allowed to call the matchmaking API (CORS, enforced at the Lambda Function URL)."
+  type        = list(string)
+  default     = ["https://nami.works"]
+}
