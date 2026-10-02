@@ -289,6 +289,25 @@ const TIERS = [
   </div>
 </section>
 
+<section class="section sectionSoft" id="aiPrompt" hidden>
+  <div class="container narrow">
+    <p class="eyebrow">enquanto isso</p>
+    <h2 class="sectionTitle display display-3">organize seus próximos passos <span class="mk">com a sua IA</span>.</h2>
+    <p class="lede">copie o texto abaixo e cole no ChatGPT, no Claude ou na IA que você já usa. ele já vem com as suas respostas.</p>
+    <label class="aiPromptLabel" for="aiPromptText">texto para a sua IA</label>
+    <textarea id="aiPromptText" class="aiPromptText" readonly rows="9"></textarea>
+    <div class="ctaRow aiPromptActions">
+      <button type="button" class="ctaPrimary" id="btnCopiarPrompt">copiar texto</button>
+      <span class="aiPromptCopied" id="aiPromptCopied" role="status"></span>
+    </div>
+    <details class="aiPromptHelp">
+      <summary>como usar</summary>
+      <ol id="aiPromptSteps"></ol>
+    </details>
+    <p class="aiPromptNote" id="aiPromptNote"></p>
+  </div>
+</section>
+
 <script>
   type Answers = {
     fase: string | null;
@@ -703,6 +722,7 @@ const TIERS = [
 
     let submissionId: string | null = null;
     let createPayload: Record<string, unknown> | null = null;
+    let lastDiagnostico: Diagnostico | null = null;
 
     // The create call can fail at the end of the quiz (offline, cold start).
     // Keep the payload so the confirm/waitlist step can retry it instead of
@@ -725,6 +745,7 @@ const TIERS = [
       finishing = true;
 
       const diagnostico = computeDiagnostico(answers.dor, answers.fase);
+      lastDiagnostico = diagnostico;
       const diagnosticoTexto = diagnostico.inNetwork
         ? `${diagnostico.significado} ${diagnostico.primeiroPasso}`
         : "fora de rede";
@@ -894,6 +915,105 @@ const TIERS = [
       diagnosticoSection.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
+    // ---- "organize com a sua IA": a prompt the visitor takes to their own AI ----
+    // Minimal on purpose: only what a generic AI would not know (the visitor's
+    // context and our point of view); the AI handles the rest on its own.
+    function triedSummary(): string {
+      if (!answers.caminhos.length) return "nada até agora";
+      return answers.caminhos
+        .map((c) => (answers.seguimentos[c] ? `${c} (${answers.seguimentos[c]})` : c))
+        .join("; ");
+    }
+
+    function promptContext(): string {
+      return `contexto do meu negócio: fase: ${answers.fase}; maior trava: ${answers.dor}; já tentei: ${triedSummary()}; o que mais ajudaria agora: ${answers.valor}.`;
+    }
+
+    function buildCaixaPrompt(): string {
+      return [
+        `${promptContext()} vou anexar (ou colar) os extratos e anotações dos últimos 30 dias.`,
+        "",
+        "comece com uma frase sobre como está o caixa. depois, em até uma página:",
+        "1. para onde o dinheiro foi: as 5 maiores categorias de saída, com o percentual sobre as saídas do negócio (a retirada do dono, os gastos pessoais pagos pelo negócio e as transferências entre contas minhas ficam de fora e aparecem à parte).",
+        "2. os 3 gastos que eu revisaria primeiro, cada um com a ação concreta e o ajuste possível em reais por mês (se não houver base, dê uma faixa e diga que é estimativa).",
+        "3. o resultado do mês antes e depois da retirada do dono, e quantos dias de caixa eu tenho: caixa livre (saldo + dinheiro em mãos − faturas e boletos a vencer) dividido pela saída média diária do negócio (sem a retirada do dono), calculada pelos dias que os extratos realmente cobrem, sem contar vendas futuras.",
+        "4. uma ação para esta semana e um número para acompanhar toda segunda-feira.",
+        "5. o que você assumiu ou não conseguiu confirmar.",
+        "",
+        "se faltar algo que mude a resposta, entregue o que der com suposições declaradas e faça até 3 perguntas curtas ao final do item 5.",
+        "",
+        'depois disso, termine com um "resumo para guardar", em texto simples e sem tabelas, com estas linhas: data de hoje, resultado do mês, caixa livre, dias de caixa e ação desta semana. no mês que vem vou voltar com este resumo e novos extratos para comparar.',
+        "",
+        "não sugira cortar um gasto que gera venda sem avaliar o retorno. não repita CPF, CNPJ nem números de conta.",
+      ].join("\n");
+    }
+
+    function buildGenericPrompt(): string {
+      const d = lastDiagnostico && lastDiagnostico.inNetwork ? lastDiagnostico : null;
+      return [
+        `${promptContext()}${d ? ` leitura inicial da nami.works: ${d.significado} primeiro passo sugerido: ${d.primeiroPasso}` : ""}`,
+        "",
+        "me ajude a organizar os próximos passos. comece com uma frase sobre onde estou. depois, em até uma página:",
+        "1. as 3 prioridades dos próximos 14 dias, cada uma com a ação concreta, o prazo e como saber se funcionou.",
+        "2. o que eu não devo fazer agora.",
+        "3. uma ação para esta semana e um número para acompanhar toda segunda-feira.",
+        "4. o que você assumiu ou não conseguiu confirmar.",
+        "",
+        "se faltar algo que mude a resposta, entregue o que der com suposições declaradas e faça até 3 perguntas curtas ao final do item 4.",
+        "",
+        'depois disso, termine com um "resumo para guardar", em texto simples e sem tabelas, com estas linhas: data de hoje, prioridades e ação desta semana. no mês que vem vou voltar com este resumo para comparar.',
+        "",
+        "não peça nem repita documentos pessoais.",
+      ].join("\n");
+    }
+
+    function showAiPrompt() {
+      const isCaixa = answers.dor === "caixa e finanças";
+      const textarea = document.getElementById("aiPromptText") as HTMLTextAreaElement;
+      textarea.value = isCaixa ? buildCaixaPrompt() : buildGenericPrompt();
+
+      const steps = [
+        "copie o texto e cole numa conversa nova na sua IA.",
+        ...(isCaixa
+          ? ["anexe os extratos dos últimos 30 dias na mesma conversa, ou cole o texto deles logo abaixo do prompt."]
+          : []),
+        'guarde o "resumo para guardar" que vem no fim da resposta (nas suas notas, por exemplo). no mês que vem, cole ele de volta na conversa para comparar.',
+      ];
+      const list = document.getElementById("aiPromptSteps")!;
+      list.replaceChildren(
+        ...steps.map((s) => {
+          const li = document.createElement("li");
+          li.textContent = s;
+          return li;
+        }),
+      );
+
+      document.getElementById("aiPromptNote")!.textContent = isCaixa
+        ? "os arquivos vão só para a sua IA, nunca para a nami.works. antes de enviar, apague CPF, CNPJ e números de conta. a IA pode errar a leitura de valores: confira os totais antes de decidir."
+        : "não inclua dados pessoais ou de clientes na conversa. confira o que a IA sugerir antes de decidir.";
+
+      document.getElementById("aiPromptCopied")!.textContent = "";
+      document.getElementById("aiPrompt")!.hidden = false;
+    }
+
+    document.getElementById("btnCopiarPrompt")?.addEventListener("click", async () => {
+      const textarea = document.getElementById("aiPromptText") as HTMLTextAreaElement;
+      const flag = document.getElementById("aiPromptCopied")!;
+      let ok = false;
+      try {
+        await navigator.clipboard.writeText(textarea.value);
+        ok = true;
+      } catch {
+        textarea.select();
+        try {
+          ok = document.execCommand("copy");
+        } catch {
+          /* no-op */
+        }
+      }
+      flag.textContent = ok ? "copiado" : "não deu para copiar: selecione o texto e copie manualmente";
+    });
+
     document.getElementById("btnVerTiers")?.addEventListener("click", () => {
       diagnosticoSection.hidden = true;
       renderTiers();
@@ -986,6 +1106,7 @@ const TIERS = [
       document.getElementById("obrigadoTexto")!.textContent =
         "a gente te chama assim que encontrar a pessoa certa pra essa conversa. nada é cobrado antes de você aceitar a conexão.";
       obrigadoSection.hidden = false;
+      showAiPrompt();
       obrigadoSection.scrollIntoView({ behavior: "smooth", block: "start" });
       try {
         sessionStorage.removeItem(STORAGE_KEY);
@@ -1019,6 +1140,7 @@ const TIERS = [
       document.getElementById("obrigadoTexto")!.textContent =
         "esse tema ainda não tem ninguém no nosso time pra conversar, mas guardamos seu contato. a gente te chama assim que encontrar a pessoa certa.";
       obrigadoSection.hidden = false;
+      showAiPrompt();
       obrigadoSection.scrollIntoView({ behavior: "smooth", block: "start" });
       try {
         sessionStorage.removeItem(STORAGE_KEY);
@@ -1226,6 +1348,72 @@ const TIERS = [
 
   /* --site-erro is reserved for strike-throughs per the design tokens, so a
      failed submit reads as plain emphasised text. */
+  .aiPromptLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .aiPromptText {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: var(--site-font-mono);
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--site-text);
+    background: var(--site-bg);
+    border: 1px solid var(--site-text-secondary);
+    border-radius: 8px;
+    padding: 14px;
+    resize: vertical;
+    margin: 4px 0 16px;
+  }
+
+  .aiPromptActions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .aiPromptCopied {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--site-accent);
+  }
+
+  .aiPromptHelp {
+    margin-top: 20px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--site-text);
+  }
+
+  .aiPromptHelp summary {
+    cursor: pointer;
+    color: var(--site-text-secondary);
+    font-weight: 600;
+  }
+
+  .aiPromptHelp ol {
+    margin: 10px 0 0;
+    padding-left: 22px;
+  }
+
+  .aiPromptHelp li + li {
+    margin-top: 6px;
+  }
+
+  .aiPromptNote {
+    margin: 16px 0 0;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--site-text-secondary);
+  }
+
   .formError {
     font-size: 14.5px;
     font-weight: 600;

@@ -175,6 +175,33 @@ re-saved after unticking its path.
   are no landing pages yet for "priorização e execução" or "escalar o
   negócio". sessionStorage key is now `nami-quiz-state-v2`.
 
+## Thank-you page: "organize com a sua IA" (2026-10-02, `feat/thank-you-ai-prompt`)
+
+- A new section after the confirmation screen gives the visitor a prompt to
+  take to their own AI (ChatGPT, Claude, etc.), built in the browser from
+  their answers: fase, pain, paths tried with outcomes, what would help most
+  and, for non-caixa pains, the diagnostic reading + today's step. Nothing is
+  sent to nami.works; the prompt is not stored.
+- **caixa e finanças** has a specific prompt (v3.3): the visitor attaches or
+  pastes ~30 days of statements and gets a one-page read (where the money
+  went, 3 spends to review, result before/after the owner's withdrawal, days
+  of cash, one action for the week, one number for Mondays, assumptions).
+  Every other pain gets a generic prompt: 3 priorities for 14 days, what not
+  to do now, an action for the week, assumptions.
+- Both end with a plain-text "resumo para guardar". The visitor carries it
+  to the next month and pastes it back, so continuity needs no storage here.
+- Approach agreed with Lucas: a minimal prompt that only carries what a
+  generic AI would not already do (the visitor's context, our point of view,
+  one specific actionable output). Validated by independent dry runs against
+  an invented messy statement (numbers reconciled; a sparse input now gets a
+  complete answer with declared assumptions plus up to 3 questions instead of
+  a refusal to answer).
+- Not built yet, by decision: the lead-first "receber meu plano" step, the
+  downloadable planilha / 14-day plan documents, per-pain specific prompts
+  beyond caixa e finanças, and the MCP. Design direction for the MCP: keep the
+  content (steps, plans, prompts) as data with stable ids so a future NAMI
+  Works MCP can serve it; the visitor-carried summary is the interim memory.
+
 ## Open, non-blocking for v1
 
 Professional revenue share per tier, where/how to recruit professionals,
