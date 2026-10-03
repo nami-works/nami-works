@@ -1,8 +1,12 @@
 // Matchmaking-funnel API for nami.works (2026-10-02).
 //
-//   POST  /submissions        quiz finished -> stores a row, returns { id }
-//   PATCH /submissions/{id}   contact info + final status (confirmed|waitlist),
-//                             one-shot: a second PATCH on the same id is 409
+//   POST  /submissions        quiz finished -> stores a row (quiz_done), returns { id }
+//   PATCH /submissions/{id}   moves the row forward, one step per call:
+//                               lead       quiz_done -> lead       e-mail (+ optional WhatsApp);
+//                                                                  mails the visitor their plan
+//                               confirmed  lead|quiz_done -> confirmed   asked for a conversation
+//                               waitlist   quiz_done -> waitlist   out-of-network topic
+//                             a PATCH that does not fit the row's current status is 409
 //
 // CORS is handled by the Lambda Function URL itself (see matchmaking.tf), not
 // here. AWS SDK v3 ships inside the Node 20 Lambda runtime, so this is one
@@ -25,6 +29,11 @@ const TO_ADDRESS = process.env.TO_ADDRESS;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_BODY_CHARS = 20000;
+
+// Text the visitor's browser sends ends up in e-mails from our domain, so it
+// must never carry links.
+const LINK_RE = /https?:\/\/|www\./i;
+const PROMPT_PREFIX = "contexto do meu negócio:";
 
 // ---- helpers --------------------------------------------------------------
 
@@ -64,6 +73,11 @@ function optStr(obj, key, max) {
   return v.trim();
 }
 
+function noLinks(value, key) {
+  if (value !== undefined && LINK_RE.test(value)) throw new ValidationError(`${key} must not contain links`);
+  return value;
+}
+
 const S = (value) => ({ S: value });
 
 // ---- request parsing ------------------------------------------------------
@@ -85,10 +99,10 @@ function parseJsonBody(event) {
 }
 
 function validateCreate(body) {
-  const fase = reqStr(body, "fase", 100);
-  const dor = reqStr(body, "dor", 100);
+  const fase = noLinks(reqStr(body, "fase", 100), "fase");
+  const dor = noLinks(reqStr(body, "dor", 100), "dor");
   const valor = reqStr(body, "valor", 300);
-  const diagnosticoTexto = reqStr(body, "diagnosticoTexto", 2000);
+  const diagnosticoTexto = noLinks(reqStr(body, "diagnosticoTexto", 2000), "diagnosticoTexto");
 
   if (typeof body.inNetwork !== "boolean") throw new ValidationError("inNetwork must be a boolean");
 
@@ -128,13 +142,28 @@ function validateCreate(body) {
   };
 }
 
+const STATUSES = new Set(["lead", "confirmed", "waitlist"]);
+
+// The statuses a row may be in for each move. Anything else is 409.
+const ALLOWED_FROM = {
+  lead: ["quiz_done"],
+  waitlist: ["quiz_done"],
+  confirmed: ["quiz_done", "lead"],
+};
+
 function validateUpdate(body) {
   const status = body.status;
-  if (status !== "confirmed" && status !== "waitlist") {
-    throw new ValidationError("status must be confirmed or waitlist");
+  if (!STATUSES.has(status)) throw new ValidationError("status must be lead, confirmed or waitlist");
+
+  // A confirmation after the lead step reuses the e-mail already on the row.
+  const email = status === "confirmed" ? optStr(body, "email", 254) : reqStr(body, "email", 254);
+  if (email !== undefined && !EMAIL_RE.test(email)) throw new ValidationError("email is not valid");
+
+  let promptIA = status === "lead" ? optStr(body, "promptIA", 8000) : undefined;
+  if (promptIA !== undefined) {
+    if (!promptIA.startsWith(PROMPT_PREFIX)) throw new ValidationError("promptIA has an unexpected format");
+    promptIA = noLinks(promptIA, "promptIA");
   }
-  const email = reqStr(body, "email", 254);
-  if (!EMAIL_RE.test(email)) throw new ValidationError("email is not valid");
 
   return {
     status,
@@ -143,6 +172,7 @@ function validateUpdate(body) {
     telefone: optStr(body, "telefone", 50),
     tierRecomendado: optStr(body, "tierRecomendado", 50),
     tierEscolhido: optStr(body, "tierEscolhido", 50),
+    promptIA,
   };
 }
 
@@ -181,17 +211,30 @@ async function createSubmission(event) {
   return json(201, { id });
 }
 
-async function finalizeSubmission(event, id) {
+async function updateSubmission(event, id) {
   const data = validateUpdate(parseJsonBody(event));
   const now = new Date().toISOString();
 
-  const sets = { status: S(data.status), email: S(data.email), updatedAt: S(now), finalizedAt: S(now) };
+  const sets = { status: S(data.status), updatedAt: S(now) };
+  if (data.email !== undefined) sets.email = S(data.email);
+  // leadAt marks the first contact; finalizedAt marks the end of the funnel.
+  sets[data.status === "lead" ? "leadAt" : "finalizedAt"] = S(now);
   for (const key of ["nome", "telefone", "tierRecomendado", "tierEscolhido"]) {
     if (data[key] !== undefined) sets[key] = S(data[key]);
   }
 
-  const names = { "#id": "id", "#fin": "finalizedAt" };
+  const names = { "#id": "id", "#status": "status" };
   const values = {};
+  const from = ALLOWED_FROM[data.status];
+  from.forEach((s, i) => {
+    values[`:from${i}`] = S(s);
+  });
+  let condition = `attribute_exists(#id) AND (${from.map((_, i) => `#status = :from${i}`).join(" OR ")})`;
+  if (data.status === "confirmed" && data.email === undefined) {
+    names["#email"] = "email";
+    condition += " AND attribute_exists(#email)";
+  }
+
   const assignments = Object.entries(sets).map(([key, value], i) => {
     names[`#k${i}`] = key;
     values[`:v${i}`] = value;
@@ -205,7 +248,7 @@ async function finalizeSubmission(event, id) {
         TableName: TABLE_NAME,
         Key: { id: S(id) },
         UpdateExpression: `SET ${assignments.join(", ")}`,
-        ConditionExpression: "attribute_exists(#id) AND attribute_not_exists(#fin)",
+        ConditionExpression: condition,
         ExpressionAttributeNames: names,
         ExpressionAttributeValues: values,
         ReturnValues: "ALL_NEW",
@@ -215,9 +258,13 @@ async function finalizeSubmission(event, id) {
     updated = result.Attributes;
   } catch (err) {
     if (err?.name === "ConditionalCheckFailedException") {
-      // Item present in the failure payload -> it exists and was already
-      // finalized; absent -> no such submission.
-      return err.Item ? json(409, { error: "already submitted" }) : json(404, { error: "submission not found" });
+      // Item present in the failure payload -> it exists but is not in a
+      // status this move can start from; absent -> no such submission.
+      if (!err.Item) return json(404, { error: "submission not found" });
+      if (data.status === "confirmed" && data.email === undefined && err.Item.status?.S === "quiz_done") {
+        return json(400, { error: "email is required" });
+      }
+      return json(409, { error: "already submitted" });
     }
     throw err;
   }
@@ -225,12 +272,8 @@ async function finalizeSubmission(event, id) {
   // The row is durably stored at this point. Lambda freezes once the handler
   // returns, so emails must go out before returning -- but a failed send
   // never fails the request.
-  const dor = updated?.dor?.S ?? "";
-  const fase = updated?.fase?.S ?? "";
-  const tier = updated?.tierEscolhido?.S ?? updated?.tierRecomendado?.S ?? "";
-
   await Promise.allSettled([
-    sendVisitorEmail(data, { dor, fase, tier }),
+    data.status === "lead" ? sendPlanEmail(updated, data.promptIA) : sendVisitorEmail(updated),
     sendLeadAlert(id, updated),
   ]);
 
@@ -257,18 +300,55 @@ async function send({ to, subject, body, replyTo }) {
   }
 }
 
+// The plan the visitor asked for on the lead step: their reading and today's
+// steps (stored from the quiz) plus the ready-to-paste text for their own AI.
+async function sendPlanEmail(row, promptIA) {
+  const v = (key) => row[key]?.S ?? "";
+  const principal = v("dor").split(" + ")[0];
+  const lines = [
+    "olá,",
+    "",
+    "aqui está o plano que você pediu. ele reúne as suas respostas e o que você pode fazer hoje.",
+    "",
+    `sua principal trava: ${oneLine(principal)}`,
+    `fase do negócio: ${oneLine(v("fase"))}`,
+    "",
+    v("diagnosticoTexto"),
+  ];
+  if (promptIA) {
+    lines.push(
+      "",
+      "texto para a sua IA (copie e cole no ChatGPT, no Claude ou na IA que você já usa):",
+      "",
+      promptIA,
+    );
+  }
+  lines.push(
+    "",
+    "quer conversar com alguém? volte a https://nami.works e escolha a conversa, ou responda este e-mail. nada é cobrado antes de você aceitar a conexão.",
+    "",
+    "você recebeu este e-mail porque pediu o seu plano em nami.works.",
+  );
+  await send({
+    to: row.email.S,
+    subject: `seu plano da nami.works: ${principal}`,
+    body: lines.join("\n"),
+  });
+}
+
 // No professional roster exists yet (v1), so these never claim a match
 // already happened -- they confirm the request landed and keep the "nada e
 // cobrado agora" promise.
-async function sendVisitorEmail(data, { dor, fase, tier }) {
-  if (data.status === "confirmed") {
+async function sendVisitorEmail(row) {
+  const v = (key) => row[key]?.S ?? "";
+  if (v("status") === "confirmed") {
     await send({
-      to: data.email,
-      subject: "sua conversa com a nami.works está confirmada",
+      to: row.email.S,
+      subject: "recebemos o seu pedido de conversa na nami.works",
       body: [
-        `sua conversa: ${oneLine(dor)} · ${oneLine(fase)} · plano ${oneLine(tier)}`,
+        `registramos o pedido de uma conversa ${oneLine(v("tierEscolhido") || v("tierRecomendado"))}, de 45 minutos, sobre ${oneLine(v("dor").split(" + ")[0])} (${oneLine(v("fase"))}).`,
         "",
-        "a gente já está procurando a pessoa certa pra essa conversa e te chama assim que encontrar.",
+        "a gente entra em contato por e-mail ou WhatsApp assim que encontrar a pessoa certa.",
         "",
         "nada é cobrado antes de você aceitar a conexão.",
       ].join("\n"),
@@ -276,19 +356,19 @@ async function sendVisitorEmail(data, { dor, fase, tier }) {
     return;
   }
   await send({
-    to: data.email,
-    subject: "recebemos seu contato — nami.works",
+    to: row.email.S,
+    subject: "recebemos o seu contato na nami.works",
     body: [
-      `recebemos seu contato sobre: ${oneLine(dor)}`,
+      `recebemos o seu contato sobre: ${oneLine(v("dor"))}`,
       "",
-      "esse tema ainda não tem ninguém no nosso time pra conversar, mas guardamos seu contato.",
-      "assim que a gente encontrar a pessoa certa, te chama.",
+      "esse tema ainda não tem ninguém no nosso time para conversar, mas guardamos o seu contato.",
+      "assim que a gente encontrar a pessoa certa, entramos em contato.",
     ].join("\n"),
   });
 }
 
-// Every confirmed/waitlist row is a demand signal Lucas follows up by hand
-// (no roster yet), so each one is also mailed to him.
+// Every lead/confirmed/waitlist step is a demand signal Lucas follows up by
+// hand (no roster yet), so each one is also mailed to him.
 async function sendLeadAlert(id, row) {
   if (!TO_ADDRESS || !row) return;
   const v = (key) => row[key]?.S ?? "(não informado)";
@@ -306,7 +386,7 @@ async function sendLeadAlert(id, row) {
       "== CONTATO ==",
       `Nome: ${v("nome")}`,
       `E-mail: ${v("email")}`,
-      `Telefone: ${v("telefone")}`,
+      `Telefone/WhatsApp: ${v("telefone")}`,
       "",
       "== QUIZ ==",
       `Fase: ${v("fase")}`,
@@ -349,7 +429,7 @@ export const handler = async (event) => {
     const match = path.match(/^\/submissions\/([^/]+)$/);
     if (method === "PATCH" && match) {
       if (!UUID_RE.test(match[1])) return json(404, { error: "submission not found" });
-      return await finalizeSubmission(event, match[1].toLowerCase());
+      return await updateSubmission(event, match[1].toLowerCase());
     }
 
     return json(404, { error: "not found" });

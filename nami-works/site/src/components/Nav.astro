@@ -1,5 +1,4 @@
 ---
-import ThemeToggle from "./ThemeToggle.astro";
 
 // Single-page matchmaking funnel (2026-09-30 pivot): "one screen, one
 // promise, one button" -- no nav links, since there is nowhere else to go.
@@ -7,21 +6,11 @@ import ThemeToggle from "./ThemeToggle.astro";
 
 <nav class="nav" id="site-nav">
   <a href="/" class="navLogo" aria-label="nami.works">
-    <img
-      src="/brand/lockup-ink.png"
-      alt=""
-      class="navLockup navLockupLight"
-      height="28"
-    />
-    <img
-      src="/brand/lockup-cream.png"
-      alt=""
-      class="navLockup navLockupDark"
-      height="28"
-    />
+    <picture>
+      <source srcset="/brand/lockup-cream.png" media="(prefers-color-scheme: dark)" />
+      <img src="/brand/lockup-ink.png" alt="" class="navLockup" height="28" />
+    </picture>
   </a>
-
-  <ThemeToggle />
 </nav>
 
 <script>
@@ -64,7 +53,8 @@ import ThemeToggle from "./ThemeToggle.astro";
   }
 
   /* Primary lockup (glyph + nami.works), brand-spec.md §2 -- "site header"
-     row. Two pre-composed images (icon+wordmark baked in) swapped by theme.
+     row. Two pre-composed images (icon+wordmark baked in), picked by the
+     visitor's system colour scheme.
      Sized up slightly from the old multi-link nav (30px vs 28px): alone in
      an otherwise-empty bar, the mark is the only thing establishing trust,
      so it carries a touch more presence. */
@@ -74,15 +64,4 @@ import ThemeToggle from "./ThemeToggle.astro";
     max-width: none;
   }
 
-  .navLockupDark {
-    display: none;
-  }
-
-  :global([data-theme="dark"]) .navLockupLight {
-    display: none;
-  }
-
-  :global([data-theme="dark"]) .navLockupDark {
-    display: block;
-  }
 </style>

@@ -1,6 +1,7 @@
 ---
 // Shared below-fold experience for the nami.works matchmaking funnel:
-// quiz -> diagnostic -> tiers -> confirmation. Used by the generic home
+// quiz -> diagnostic -> lead (e-mail) -> thank-you with the AI prompt and the
+// offer of a conversation. Used by the generic home
 // page and by every persona landing page (same mechanism, only the
 // above-fold hero differs -- see src/pages/para/[persona].astro).
 //
@@ -81,7 +82,7 @@ const valores = [
 const VALOR_OUTRA = "outra";
 
 const TIERS = [
-  { nome: "Colega", quem: "alguém que já viveu algo parecido", duracaoPreco: "45 min · R$200", leva: "bate-papo e troca de experiência" },
+  { nome: "Colega", quem: "alguém que já viveu algo parecido", duracaoPreco: "45 min · R$200", leva: "conversa e troca de experiência" },
   { nome: "Sênior", quem: "profissional com 10+ anos na área", duracaoPreco: "45 min · R$350", leva: "conversa com direção prática" },
   { nome: "Expert", quem: "especialista de referência no seu tema", duracaoPreco: "45 min · R$500", leva: "conversa com plano de próximos passos" },
 ];
@@ -237,17 +238,18 @@ const TIERS = [
       <ol class="diagPassos" id="diagPassos"></ol>
 
       <div class="ctaRow">
-        <button type="button" class="ctaPrimary" id="btnVerTiers">ver quem pode conversar comigo</button>
+        <button type="button" class="ctaPrimary" id="btnReceberPlano">receber meu plano</button>
       </div>
+      <p class="diagSub">gratuito, sem cartão. nada é cobrado.</p>
     </div>
 
     <div id="diagnosticoForaDeRede" hidden>
       <h2 class="sectionTitle display display-3">vamos te conectar com um profissional em breve.</h2>
       <p class="lede">
-        nosso algoritmo vai encontrar a pessoa certa pra esse tema e te chamar assim que ela chegar.
+        estamos buscando a pessoa certa para esse tema e avisamos assim que ela estiver disponível.
       </p>
       <div class="ctaRow">
-        <button type="button" class="ctaPrimary" id="btnMeAvise">me avise</button>
+        <button type="button" class="ctaPrimary" id="btnMeAvise">quero ser avisado</button>
       </div>
     </div>
   </div>
@@ -256,8 +258,8 @@ const TIERS = [
 <section class="section sectionSoft" id="waitlist" hidden>
   <div class="container narrow">
     <form id="waitlistForm">
-      <p class="eyebrow">me avise</p>
-      <h2 class="sectionTitle display display-3">deixa seu contato <span class="mk">que a gente te chama</span>.</h2>
+      <p class="eyebrow">aviso</p>
+      <h2 class="sectionTitle display display-3">deixe seu contato <span class="mk">e a gente avisa</span>.</h2>
       <div class="field">
         <label for="waitlistEmail">e-mail</label>
         <input type="email" id="waitlistEmail" name="email" required placeholder="voce@empresa.com" />
@@ -274,59 +276,39 @@ const TIERS = [
   </div>
 </section>
 
-<section class="section" id="tiers" hidden>
-  <div class="container">
-    <p class="eyebrow">como conversar</p>
-    <h2 class="sectionTitle display display-3">três jeitos de conversar, <span class="mk">a mesma troca de 45 minutos</span>.</h2>
-
-    <p class="tierMotivo" id="tierMotivo" hidden></p>
-
-    <div class="tiersGrid" id="tiersGrid" role="radiogroup" aria-label="escolha um plano">
-      {TIERS.map((t) => (
-        <button type="button" class="tierCard" data-tier={t.nome}>
-          <span class="tierRecomendado" hidden>recomendado pra você</span>
-          <p class="tierNome">{t.nome}</p>
-          <p class="tierQuem">{t.quem}</p>
-          <p class="tierDuracaoPreco">{t.duracaoPreco}</p>
-          <p class="tierLeva">{t.leva}</p>
-        </button>
-      ))}
-    </div>
-
-    <p class="tierMencao" id="tierMencao" hidden></p>
-    <p class="tierAviso"><b>nada é cobrado agora.</b> você só paga depois de aceitar a conexão com o profissional.</p>
-
-    <div class="ctaRow">
-      <button type="button" class="ctaPrimary" id="btnVerConfirmacao" disabled>continuar</button>
-    </div>
-  </div>
-</section>
-
-<section class="section sectionSoft" id="confirmacao" hidden>
+<section class="section sectionSoft" id="plano" hidden>
   <div class="container narrow">
-    <form id="confirmacaoForm">
-      <p class="eyebrow">sua conversa</p>
-      <h2 class="sectionTitle display display-3" id="confirmacaoResumo"></h2>
+    <form id="planoForm">
+      <p class="eyebrow">seu plano</p>
+      <h2 class="sectionTitle display display-3">receba o seu plano <span class="mk">por e-mail</span>.</h2>
+      <p class="lede">
+        a gente guarda as suas respostas e envia a leitura da sua trava, os passos para hoje e um texto pronto para a sua IA.
+      </p>
+
+      <div class="planoCard">
+        <p class="planoCardTitulo">o que vem no seu plano</p>
+        <ul class="planoLista">
+          <li>a leitura da sua trava e os passos para hoje</li>
+          <li>um texto para colar na sua IA, já com as suas respostas</li>
+        </ul>
+      </div>
 
       <div class="field">
-        <label for="confNome">seu nome</label>
-        <input type="text" id="confNome" name="nome" required placeholder="nome e sobrenome" />
+        <label for="planoEmail">e-mail</label>
+        <input type="email" id="planoEmail" name="email" required placeholder="voce@empresa.com" autocomplete="email" />
       </div>
       <div class="field">
-        <label for="confTelefone">telefone</label>
-        <input type="tel" id="confTelefone" name="telefone" required placeholder="(11) 90000-0000" />
-      </div>
-      <div class="field">
-        <label for="confEmail">e-mail</label>
-        <input type="email" id="confEmail" name="email" required placeholder="voce@empresa.com" />
+        <label for="planoWhatsapp">whatsapp (opcional)</label>
+        <input type="tel" id="planoWhatsapp" name="telefone" placeholder="(11) 90000-0000" autocomplete="tel" />
+        <span class="fieldHint">se preferir receber também por lá</span>
       </div>
 
-      <p class="formError" id="confirmacaoError" role="alert" hidden></p>
+      <p class="formError" id="planoError" role="alert" hidden></p>
       <div class="ctaRow">
-        <button type="submit" class="ctaPrimary">confirmar minha conversa</button>
+        <button type="submit" class="ctaPrimary">receber meu plano</button>
       </div>
       <p class="confirmacaoAviso">
-        você recebe um e-mail confirmando sua conversa. a gente te chama assim que encontrar a pessoa certa pra esse papo. nada é cobrado antes de você aceitar a conexão.
+        sem cartão e sem compromisso. você só paga se decidir conversar com alguém, e só depois de aceitar a conexão. usamos o seu contato apenas para isso.
       </p>
     </form>
   </div>
@@ -334,8 +316,8 @@ const TIERS = [
 
 <section class="section" id="obrigado" hidden>
   <div class="container narrow">
-    <p class="eyebrow">prontinho</p>
-    <h2 class="sectionTitle display display-3" id="obrigadoTitulo">recebemos.</h2>
+    <p class="eyebrow" id="obrigadoEyebrow">plano enviado</p>
+    <h2 class="sectionTitle display display-3" id="obrigadoTitulo">seu plano está a caminho.</h2>
     <p class="lede" id="obrigadoTexto"></p>
   </div>
 </section>
@@ -348,14 +330,51 @@ const TIERS = [
     <label class="aiPromptLabel" for="aiPromptText">texto para a sua IA</label>
     <textarea id="aiPromptText" class="aiPromptText" readonly rows="9"></textarea>
     <div class="ctaRow aiPromptActions">
-      <button type="button" class="ctaPrimary" id="btnCopiarPrompt">copiar texto</button>
       <span class="aiPromptCopied" id="aiPromptCopied" role="status"></span>
+      <button type="button" class="ctaPrimary" id="btnCopiarPrompt">copiar texto</button>
     </div>
     <details class="aiPromptHelp">
       <summary>como usar</summary>
       <ol id="aiPromptSteps"></ol>
     </details>
     <p class="aiPromptNote" id="aiPromptNote"></p>
+  </div>
+</section>
+
+<section class="section" id="conversa" hidden>
+  <div class="container narrow">
+    <div id="conversaConvite">
+      <p class="eyebrow">quer conversar com alguém?</p>
+      <h2 class="sectionTitle display display-3">uma conversa de 45 minutos <span class="mk">com quem já passou por isso</span>.</h2>
+      <p class="lede" id="conversaMotivo"></p>
+
+      <div class="tiersGrid" id="tierRecomendadoSlot" role="radiogroup" aria-label="escolha uma conversa"></div>
+      {TIERS.map((t) => (
+        <button type="button" class="tierCard" data-tier={t.nome} data-preco={t.duracaoPreco.split(" · ")[1]} hidden>
+          <span class="tierRecomendado" hidden>recomendado para você</span>
+          <p class="tierNome">{t.nome}</p>
+          <p class="tierQuem">{t.quem}</p>
+          <p class="tierDuracaoPreco">{t.duracaoPreco}</p>
+          <p class="tierLeva">{t.leva}</p>
+        </button>
+      ))}
+      <details class="tierOutras">
+        <summary id="tierOutrasResumo">ver outras opções</summary>
+        <div class="tiersGrid" id="tierOutrasLista"></div>
+      </details>
+
+      <p class="tierAviso"><b>nada é cobrado agora.</b> você só paga depois de aceitar a conexão com o profissional.</p>
+      <p class="formError" id="conversaError" role="alert" hidden></p>
+      <div class="ctaRow">
+        <button type="button" class="ctaPrimary" id="btnPedirConversa">pedir esta conversa</button>
+      </div>
+    </div>
+
+    <div id="conversaPedida" hidden>
+      <p class="eyebrow">conversa solicitada</p>
+      <h2 class="sectionTitle display display-3">recebemos o seu pedido.</h2>
+      <p class="lede" id="conversaPedidaTexto"></p>
+    </div>
   </div>
 </section>
 
@@ -580,6 +599,20 @@ const TIERS = [
 
   // The same steps as one line of text, numbered when there is more than one
   // (for the lead record and the AI prompt).
+  // Always the last step on the diagnostic, whatever the pain and fase.
+  const PASSO_FIXO = "converse com alguém que pode ajudar";
+
+  // The diagnostic as stored on the submission and mailed in the plan: the
+  // reading, then the steps (plus the fixed last one) as a numbered list.
+  function diagnosticoEmTexto(d: { significado: string; passos: string[] }): string {
+    return [
+      d.significado,
+      "",
+      "o que você pode fazer hoje:",
+      ...[...d.passos, PASSO_FIXO].map((s, i) => `${i + 1}. ${s}`),
+    ].join("\n");
+  }
+
   function passosEmTexto(passos: string[]): string {
     return passos.length > 1 ? passos.map((s, i) => `${i + 1}) ${s}`).join(" ") : (passos[0] ?? "");
   }
@@ -936,9 +969,7 @@ const TIERS = [
       const [dorPrincipal, dorSecundaria] = answers.dores;
       const diagnostico = computeDiagnostico(dorPrincipal, answers.fase);
       lastDiagnostico = diagnostico;
-      const diagnosticoTexto = diagnostico.inNetwork
-        ? `${diagnostico.significado} ${passosEmTexto(diagnostico.passos)}`
-        : "fora de rede";
+      const diagnosticoTexto = diagnostico.inNetwork ? diagnosticoEmTexto(diagnostico) : "fora de rede";
 
       createPayload = {
         fase: answers.fase,
@@ -1095,12 +1126,11 @@ const TIERS = [
     const diagTitulo = document.getElementById("diagTitulo")!;
     const diagSignificado = document.getElementById("diagSignificado")!;
     const diagPassos = document.getElementById("diagPassos")!;
-    const PASSO_FIXO = "converse com alguém que pode ajudar";
     const diagSecundaria = document.getElementById("diagSecundaria")!;
-    const tiersSection = document.getElementById("tiers")!;
+    const planoSection = document.getElementById("plano")!;
     const waitlistSection = document.getElementById("waitlist")!;
-    const confirmacaoSection = document.getElementById("confirmacao")!;
     const obrigadoSection = document.getElementById("obrigado")!;
+    const conversaSection = document.getElementById("conversa")!;
 
     function renderDiagnostico(diag: Diagnostico, dor: string, dorSecundaria?: string) {
       diagnosticoSection.hidden = false;
@@ -1185,10 +1215,14 @@ const TIERS = [
       ].join("\n");
     }
 
+    function currentPromptText(): string {
+      return answers.dores[0] === "caixa e finanças" ? buildCaixaPrompt() : buildGenericPrompt();
+    }
+
     function showAiPrompt() {
       const isCaixa = answers.dores[0] === "caixa e finanças";
       const textarea = document.getElementById("aiPromptText") as HTMLTextAreaElement;
-      textarea.value = isCaixa ? buildCaixaPrompt() : buildGenericPrompt();
+      textarea.value = currentPromptText();
 
       const steps = [
         "copie o texto e cole numa conversa nova na sua IA.",
@@ -1232,11 +1266,29 @@ const TIERS = [
       flag.textContent = ok ? "copiado" : "não deu para copiar: selecione o texto e copie manualmente";
     });
 
-    document.getElementById("btnVerTiers")?.addEventListener("click", () => {
+    // The thank-you page: heading + the AI prompt. Reached from the lead step
+    // (plan sent) and from the out-of-network waitlist.
+    function showObrigado(eyebrow: string, titulo: string, texto: string) {
+      document.getElementById("obrigadoEyebrow")!.textContent = eyebrow;
+      document.getElementById("obrigadoTitulo")!.textContent = titulo;
+      document.getElementById("obrigadoTexto")!.textContent = texto;
+      obrigadoSection.hidden = false;
+      showAiPrompt();
+    }
+
+    function clearSavedAnswers() {
+      try {
+        sessionStorage.removeItem(STORAGE_KEY);
+      } catch {
+        /* no-op */
+      }
+    }
+
+    // ---- Lead step: "receber meu plano" (e-mail required, WhatsApp optional) ----
+    document.getElementById("btnReceberPlano")?.addEventListener("click", () => {
       diagnosticoSection.hidden = true;
-      renderTiers();
-      tiersSection.hidden = false;
-      tiersSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      planoSection.hidden = false;
+      planoSection.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
     document.getElementById("btnMeAvise")?.addEventListener("click", () => {
@@ -1245,89 +1297,26 @@ const TIERS = [
       waitlistSection.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
-    // ---- Tiers ----
-    let tierEscolhido: string | null = null;
-    let tierRecomendado: string | null = null;
-
-    function renderTiers() {
-      const recomendados = recommendTiers(answers);
-      tierRecomendado = recomendados[0] ?? null;
-      const mencao = recomendados[1];
-
-      const cards = Array.from(tiersSection.querySelectorAll<HTMLButtonElement>(".tierCard"));
-      cards.forEach((card) => {
-        const isRecomendado = card.dataset.tier === tierRecomendado;
-        const tag = card.querySelector<HTMLElement>(".tierRecomendado")!;
-        tag.hidden = !isRecomendado;
-        card.classList.toggle("tierCardRecomendado", isRecomendado);
-      });
-
-      // Why this tier, when how the peer conversations went is the reason.
-      const motivoEl = document.getElementById("tierMotivo")!;
-      let motivo = "";
-      if (tierRecomendado === "Colega" && answers.pares === "sim, e ajudou") {
-        motivo =
-          "você já viu como conversar com outros empreendedores ajuda. o próximo passo é falar com alguém que já resolveu exatamente o que trava o seu negócio.";
-      } else if (tierRecomendado !== "Colega" && answers.pares === "sim, mas não ajudou") {
-        motivo =
-          "conversas informais nem sempre bastam. aqui, a conversa é com um profissional com experiência no seu tema, e sai com direção prática.";
-      } else if (tierRecomendado === "Sênior" && answers.pares === "sim, e ajudou em parte") {
-        motivo =
-          "se as conversas com outros empreendedores ajudaram em parte, um profissional pode cobrir o que ficou faltando.";
-      }
-      motivoEl.hidden = !motivo;
-      motivoEl.textContent = motivo;
-
-      const mencaoEl = document.getElementById("tierMencao")!;
-      if (mencao) {
-        mencaoEl.hidden = false;
-        mencaoEl.textContent = `${mencao} também pode fazer sentido pra você.`;
-      } else {
-        mencaoEl.hidden = true;
-      }
-    }
-
-    tiersSection.querySelectorAll<HTMLButtonElement>(".tierCard").forEach((card) => {
-      card.addEventListener("click", () => {
-        tierEscolhido = card.dataset.tier ?? null;
-        tiersSection.querySelectorAll<HTMLButtonElement>(".tierCard").forEach((c) => {
-          c.classList.toggle("tierCardSelecionado", c === card);
-        });
-        const btn = document.getElementById("btnVerConfirmacao") as HTMLButtonElement | null;
-        if (btn) btn.disabled = false;
-      });
-    });
-
-    document.getElementById("btnVerConfirmacao")?.addEventListener("click", () => {
-      if (!tierEscolhido) return;
-      tiersSection.hidden = true;
-      const resumo = document.getElementById("confirmacaoResumo")!;
-      resumo.textContent = `${answers.dores.join(" + ")} · ${answers.fase} · plano ${tierEscolhido}`;
-      confirmacaoSection.hidden = false;
-      confirmacaoSection.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-
-    // ---- Confirmation (tier path) ----
-    document.getElementById("confirmacaoForm")?.addEventListener("submit", async (e) => {
+    document.getElementById("planoForm")?.addEventListener("submit", async (e) => {
       e.preventDefault();
       const form = e.target as HTMLFormElement;
-      const nome = (form.querySelector("#confNome") as HTMLInputElement).value;
-      const telefone = (form.querySelector("#confTelefone") as HTMLInputElement).value;
-      const email = (form.querySelector("#confEmail") as HTMLInputElement).value;
-      const errorEl = document.getElementById("confirmacaoError")!;
+      const email = (form.querySelector("#planoEmail") as HTMLInputElement).value.trim();
+      const telefone = (form.querySelector("#planoWhatsapp") as HTMLInputElement).value.trim();
+      const errorEl = document.getElementById("planoError")!;
       const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
 
       errorEl.hidden = true;
       submitBtn.disabled = true;
+      // The plan e-mail carries the same prompt shown on the thank-you page.
+      // Links are masked: the API refuses them in anything it mails out.
+      const promptIA = currentPromptText().replace(/https?:\/\/\S+|www\.\S+/gi, "[link]");
       const ok =
         (await ensureSubmission()) &&
         (await patchSubmission(submissionId!, {
-          status: "confirmed",
-          tierRecomendado,
-          tierEscolhido,
-          nome,
-          telefone,
+          status: "lead",
           email,
+          ...(telefone ? { telefone } : {}),
+          promptIA,
         }));
       if (!ok) {
         errorEl.textContent = SUBMIT_ERROR;
@@ -1336,17 +1325,91 @@ const TIERS = [
         return;
       }
 
-      confirmacaoSection.hidden = true;
-      document.getElementById("obrigadoTexto")!.textContent =
-        "a gente te chama assim que encontrar a pessoa certa pra essa conversa. nada é cobrado antes de você aceitar a conexão.";
-      obrigadoSection.hidden = false;
-      showAiPrompt();
+      planoSection.hidden = true;
+      showObrigado(
+        "plano enviado",
+        "seu plano está a caminho.",
+        `enviamos para ${email}. se não chegar em alguns minutos, verifique a caixa de spam.`,
+      );
+      showConversa();
       obrigadoSection.scrollIntoView({ behavior: "smooth", block: "start" });
-      try {
-        sessionStorage.removeItem(STORAGE_KEY);
-      } catch {
-        /* no-op */
+      clearSavedAnswers();
+    });
+
+    // ---- Offer of a conversation (thank-you page) ----
+    // The recommended tier is shown and preselected; the other two sit
+    // behind "ver outras opções". One tap sends the request: the contact is
+    // already on the submission from the lead step.
+    let tierEscolhido: string | null = null;
+    let tierRecomendado: string | null = null;
+
+    function showConversa() {
+      const recomendados = recommendTiers(answers);
+      tierRecomendado = recomendados[0] ?? "Colega";
+      tierEscolhido = tierRecomendado;
+
+      const slot = document.getElementById("tierRecomendadoSlot")!;
+      const outras = document.getElementById("tierOutrasLista")!;
+      const cards = Array.from(conversaSection.querySelectorAll<HTMLButtonElement>(".tierCard"));
+      cards.forEach((card) => {
+        const isRecomendado = card.dataset.tier === tierRecomendado;
+        card.hidden = false;
+        card.querySelector<HTMLElement>(".tierRecomendado")!.hidden = !isRecomendado;
+        card.classList.toggle("tierCardSelecionado", isRecomendado);
+        (isRecomendado ? slot : outras).appendChild(card);
+      });
+      document.getElementById("tierOutrasResumo")!.textContent = `ver outras opções (${cards
+        .filter((c) => c.dataset.tier !== tierRecomendado)
+        .map((c) => `${c.dataset.tier} ${c.dataset.preco}`)
+        .join(", ")})`;
+
+      // Why this tier, when how the peer conversations went is the reason.
+      let motivo = "pelo que você respondeu, esta é a conversa que mais faz sentido agora.";
+      if (tierRecomendado === "Colega" && answers.pares === "sim, e ajudou") {
+        motivo =
+          "você já viu que conversar com outros empreendedores ajuda. o próximo passo é falar com alguém que já resolveu o que trava o seu negócio.";
+      } else if (tierRecomendado !== "Colega" && answers.pares === "sim, mas não ajudou") {
+        motivo =
+          "conversas informais nem sempre bastam. aqui, a conversa é com um profissional com experiência no seu tema, e sai com direção prática.";
+      } else if (tierRecomendado === "Sênior" && answers.pares === "sim, e ajudou em parte") {
+        motivo =
+          "como as conversas com outros empreendedores ajudaram em parte, um profissional pode cobrir o que ficou faltando.";
       }
+      document.getElementById("conversaMotivo")!.textContent = motivo;
+      conversaSection.hidden = false;
+    }
+
+    conversaSection.querySelectorAll<HTMLButtonElement>(".tierCard").forEach((card) => {
+      card.addEventListener("click", () => {
+        tierEscolhido = card.dataset.tier ?? null;
+        conversaSection.querySelectorAll<HTMLButtonElement>(".tierCard").forEach((c) => {
+          c.classList.toggle("tierCardSelecionado", c === card);
+        });
+      });
+    });
+
+    document.getElementById("btnPedirConversa")?.addEventListener("click", async () => {
+      if (!tierEscolhido) return;
+      const btn = document.getElementById("btnPedirConversa") as HTMLButtonElement;
+      const errorEl = document.getElementById("conversaError")!;
+      errorEl.hidden = true;
+      btn.disabled = true;
+      const ok =
+        (await ensureSubmission()) &&
+        (await patchSubmission(submissionId!, { status: "confirmed", tierRecomendado, tierEscolhido }));
+      if (!ok) {
+        errorEl.textContent = SUBMIT_ERROR;
+        errorEl.hidden = false;
+        btn.disabled = false;
+        return;
+      }
+
+      document.getElementById("conversaConvite")!.hidden = true;
+      document.getElementById("conversaPedidaTexto")!.textContent =
+        `registramos o pedido de uma conversa ${tierEscolhido}, de 45 minutos, sobre ${answers.dores[0]}. a gente entra em contato por e-mail ou WhatsApp assim que encontrar a pessoa certa. nada é cobrado antes de você aceitar a conexão.`;
+      const pedida = document.getElementById("conversaPedida")!;
+      pedida.hidden = false;
+      pedida.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
     // ---- Waitlist (out-of-network path) ----
@@ -1371,16 +1434,13 @@ const TIERS = [
       }
 
       waitlistSection.hidden = true;
-      document.getElementById("obrigadoTexto")!.textContent =
-        "esse tema ainda não tem ninguém no nosso time pra conversar, mas guardamos seu contato. a gente te chama assim que encontrar a pessoa certa.";
-      obrigadoSection.hidden = false;
-      showAiPrompt();
+      showObrigado(
+        "pedido recebido",
+        "recebemos o seu pedido.",
+        "esse tema ainda não tem ninguém no nosso time para conversar, mas guardamos o seu contato. a gente entra em contato assim que encontrar a pessoa certa.",
+      );
       obrigadoSection.scrollIntoView({ behavior: "smooth", block: "start" });
-      try {
-        sessionStorage.removeItem(STORAGE_KEY);
-      } catch {
-        /* no-op */
-      }
+      clearSavedAnswers();
     });
   })();
 </script>
@@ -1622,6 +1682,7 @@ const TIERS = [
   .aiPromptActions {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 14px;
   }
 
@@ -1762,19 +1823,66 @@ const TIERS = [
     margin: 0;
   }
 
-  .tierMotivo {
-    max-width: 640px;
+  .tierOutras {
     margin: 0 0 20px;
-    font-size: 16px;
-    line-height: 1.6;
+    font-size: 15px;
+  }
+
+  .tierOutras summary {
+    cursor: pointer;
+    color: var(--site-text-secondary);
+    font-weight: 600;
+    padding: 4px 0;
+  }
+
+  .tierCard[hidden] {
+    display: none;
+  }
+
+  .diagSub {
+    margin: 12px 0 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--site-text-secondary);
+    text-align: right;
+  }
+
+  .planoCard {
+    background: var(--site-bg);
+    border: 1px solid var(--site-border);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 0 0 24px;
+  }
+
+  .planoCardTitulo {
+    margin: 0 0 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--site-text-secondary);
   }
 
-  .tierMencao {
-    font-size: 13.5px;
+  .planoLista {
+    margin: 0;
+    padding-left: 22px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--site-text);
+  }
+
+  .planoLista li::marker {
+    color: var(--site-accent);
+  }
+
+  .planoLista li + li {
+    margin-top: 6px;
+  }
+
+  .fieldHint {
+    font-size: 13px;
     color: var(--site-text-secondary);
-    font-style: italic;
-    margin: 0 0 16px;
   }
 
   .tierAviso {

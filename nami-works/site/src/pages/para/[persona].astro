@@ -43,7 +43,10 @@ const { persona } = Astro.props;
     <section class="feedHero">
       <div class="feedCard">
         <div class="feedPostHeader">
-          <img src="/brand/mark-goggles-ink.svg" alt="" class="feedAvatar" width="28" height="28" />
+          <picture>
+            <source srcset="/brand/mark-goggles-cream.svg" media="(prefers-color-scheme: dark)" />
+            <img src="/brand/mark-goggles-ink.svg" alt="" class="feedAvatar" width="28" height="28" />
+          </picture>
           <span class="feedHandle">nami.works</span>
         </div>
         <h1 class="feedHook display display-1">{persona.hook}</h1>

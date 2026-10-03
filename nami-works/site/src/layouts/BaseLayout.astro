@@ -31,8 +31,13 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://nami.works"
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="icon" href="/brand/mark-goggles-ink.svg" type="image/svg+xml" />
-    <link rel="icon" href="/brand/favicon-32.png" sizes="32x32" type="image/png" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#faf8f4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#161512" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/brand/mark-goggles-ink.svg" type="image/svg+xml" media="(prefers-color-scheme: light)" />
+    <link rel="icon" href="/brand/mark-goggles-cream.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/brand/favicon-32.png" sizes="32x32" type="image/png" media="(prefers-color-scheme: light)" />
+    <link rel="icon" href="/brand/favicon-cream-32.png" sizes="32x32" type="image/png" media="(prefers-color-scheme: dark)" />
     <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png" />
     <link rel="canonical" href={canonical.toString()} />
 
@@ -45,24 +50,6 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://nami.works"
     <meta property="og:image" content="https://nami.works/brand/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-
-    <script is:inline>
-      // Apply theme before paint to avoid flash. Reads stored preference,
-      // otherwise honors prefers-color-scheme on first visit.
-      (function () {
-        try {
-          var t = localStorage.getItem("theme");
-          if (!t) {
-            t = window.matchMedia("(prefers-color-scheme: dark)").matches
-              ? "dark"
-              : "light";
-          }
-          document.documentElement.setAttribute("data-theme", t);
-        } catch (_) {
-          document.documentElement.setAttribute("data-theme", "light");
-        }
-      })();
-    </script>
   </head>
 
   <body>
