@@ -55,19 +55,29 @@ export const LOCATIONS: Record<LocationKey, Location> = {
 // lands, it replaces this constant/check, not the rest of the app.
 export const ENTREGA_LOCAL_RADIUS_KM = 20;
 
-// Hardcoded rep → location grants for v1. Each email sees only its granted
-// location(s) — resolved from the real Shopify staff user via the App
-// Bridge session token, not a self-selected tab. See auth.ts.
+// Hardcoded rep → single-location grants (2026-09-28, Lucas): only the
+// geb00* retail-rep accounts are scoped down to their own store — everyone
+// else who can open a Shopify app at all (owner/ops, other staff) sees
+// every location merged into one worklist by default. Each geb00* email
+// sees only its granted location — resolved from the real Shopify staff
+// user via the App Bridge session token, not a self-selected tab. See
+// auth.ts.
+const GEB_REP_EMAIL = /^geb00.*@gebeauty\.com\.br$/;
+
 export const REP_LOCATION_GRANTS: Record<string, LocationKey[]> = {
   "geb002@gebeauty.com.br": ["shopping-recife"],
   "geb003@gebeauty.com.br": ["shops-jardins"],
   "geb004@gebeauty.com.br": ["riomar-recife"],
   "geb007@gebeauty.com.br": ["riosul"],
-  // Owner/ops oversight — all locations, merged into one worklist (2026-08-17).
-  "lucas@gebeauty.com.br": ["shopping-recife", "shops-jardins", "riomar-recife", "riosul"],
 };
 
+const ALL_LOCATIONS = Object.values(LOCATIONS);
+
 export function locationsForRep(email: string): Location[] {
-  const keys = REP_LOCATION_GRANTS[email.toLowerCase()] ?? [];
+  const normalized = email.toLowerCase();
+  if (!GEB_REP_EMAIL.test(normalized)) {
+    return ALL_LOCATIONS;
+  }
+  const keys = REP_LOCATION_GRANTS[normalized] ?? [];
   return keys.map((k) => LOCATIONS[k]);
 }
