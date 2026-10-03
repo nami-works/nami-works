@@ -14,9 +14,10 @@
   src: url("/fonts/geist-variable.woff2") format("woff2");
 }
 
-:root,
-[data-theme="light"] {
-  color-scheme: light;
+/* The palette follows the visitor's system setting (prefers-color-scheme);
+   there is no manual switch. Light is the default. */
+:root {
+  color-scheme: light dark;
   --site-bg: #faf8f4;
   --site-surface: #f1ede4;
   --site-text: #1c1b19;
@@ -30,16 +31,17 @@
   --site-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-[data-theme="dark"] {
-  color-scheme: dark;
-  --site-bg: #161512;
-  --site-surface: #1f1e1a;
-  --site-text: #f1efe8;
-  --site-text-secondary: #a6a299;
-  --site-border: #33322c;
-  --site-nav-bg: rgba(22, 21, 18, 0.86);
-  --site-accent: #5fb87f;
-  --site-accent-text: #0d1310;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --site-bg: #161512;
+    --site-surface: #1f1e1a;
+    --site-text: #f1efe8;
+    --site-text-secondary: #a6a299;
+    --site-border: #33322c;
+    --site-nav-bg: rgba(22, 21, 18, 0.86);
+    --site-accent: #5fb87f;
+    --site-accent-text: #0d1310;
+  }
 }
 
 html,
@@ -103,9 +105,11 @@ img {
 
 /* In dark mode the marker stays a background for dark text: do not invert.
    tinta/marcador is 16.2:1 in light; keep the tinta-on-yellow pair in both themes. */
-[data-theme="dark"] {
-  --site-marcador: #e6e652;
-  --site-erro: #d9564b;  /* erro/creme is 5.20:1 in light; lifted here to hold AA on dark */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --site-marcador: #e6e652;
+    --site-erro: #d9564b;  /* erro/creme is 5.20:1 in light; lifted here to hold AA on dark */
+  }
 }
 
 /* ---------- 2. Display ---------- */

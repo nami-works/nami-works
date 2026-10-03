@@ -199,8 +199,7 @@ re-saved after unticking its path.
   an invented messy statement (numbers reconciled; a sparse input now gets a
   complete answer with declared assumptions plus up to 3 questions instead of
   a refusal to answer).
-- Not built yet, by decision: the lead-first "receber meu plano" step, the
-  downloadable planilha / 14-day plan documents, per-pain specific prompts
+- Not built yet, by decision: the downloadable planilha / 14-day plan documents, per-pain specific prompts
   beyond caixa e finanças, and the MCP. Design direction for the MCP: keep the
   content (steps, plans, prompts) as data with stable ids so a future NAMI
   Works MCP can serve it; the visitor-carried summary is the interim memory.
@@ -240,6 +239,36 @@ re-saved after unticking its path.
   acompanhamento" -> Sênior (advisor). Having tried "consultoria" still adds
   Expert; no paths tried still adds Colega.
 - sessionStorage key bumped to `nami-quiz-state-v3` (answer shape changed).
+
+## Lead-first step + system colour scheme (2026-10-03, `feat/nami-works-lead-first`)
+
+Designed in the flow canvas first (rows 3 and 4, mobile 390), then coded.
+
+- **Flow:** quiz -> diagnostic -> "receber meu plano" (e-mail required,
+  WhatsApp optional, no prices) -> thank-you (plan sent, the AI prompt, then
+  the offer of a conversation) -> one tap on "pedir esta conversa".
+  The tiers screen and the name/phone/e-mail confirmation form are gone.
+  The recommended tier is shown preselected, the other two sit behind "ver
+  outras opções". The visitor's name is no longer asked anywhere.
+- **API (`matchmaking-api`):** a submission now moves `quiz_done` -> `lead` ->
+  `confirmed` (or `quiz_done` -> `waitlist`). A PATCH that does not fit the
+  current status is 409. `confirmed` still accepts a row in `quiz_done` with
+  an e-mail in the body, so pages cached before the deploy keep working. The
+  lead step mails the visitor their plan (reading, numbered steps, the AI
+  prompt) and mails Lucas an alert; the confirmed step mails both again.
+  Anything the browser sends that ends up in an e-mail (fase, dor,
+  diagnosticoTexto, promptIA) is refused if it contains a link, and promptIA
+  must start with "contexto do meu negócio:". Needs `terraform apply` in
+  `nami/site/infra/terraform` to ship the Lambda change.
+- **Stored differently:** `diagnosticoTexto` is now the reading plus the
+  numbered steps (multi-line); `leadAt` is set on the lead step, `finalizedAt`
+  only on confirmed/waitlist; WhatsApp is stored in `telefone`.
+- **Colour scheme:** the dark/light toggle is removed. Tokens switch on
+  `prefers-color-scheme`; the nav lockup, favicon, persona avatar and the legal
+  pages follow the same setting. Every `.ctaRow` button is right-aligned.
+- **Copy:** post-quiz copy revised to the pre-quiz register (professional,
+  close, no slang); "o que dá pra fazer hoje" is now "o que você pode fazer
+  hoje".
 
 ## Open, non-blocking for v1
 

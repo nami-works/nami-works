@@ -1,5 +1,5 @@
-/* Shared layout for legal pages (privacidade, termos). Always light,
-   regardless of site theme; legal docs read better with stable contrast. */
+/* Shared layout for legal pages (privacidade, termos). Colours come from the
+   site tokens, so they follow the visitor's system colour scheme. */
 
 .legal {
   max-width: 720px;
@@ -9,15 +9,11 @@
   gap: 20px;
   width: 100%;
   box-sizing: border-box;
-  /* Pin background AND text to light-mode values, independent of
-     data-theme: the parent <body> background follows the site theme
-     (dark in dark mode), and without an explicit background here these
-     fixed dark text colors would render on a near-black surface. */
-  background: #faf8f4;
-  --legal-text: #2f2f2f;
-  --legal-heading: #1f1f1f;
-  --legal-muted: #6b6b6b;
-  --legal-link: #1b4d2e;
+  background: var(--site-bg);
+  --legal-text: var(--site-text);
+  --legal-heading: var(--site-text);
+  --legal-muted: var(--site-text-secondary);
+  --legal-link: var(--site-accent);
 }
 
 .legal .title {
@@ -47,6 +43,14 @@
   color: #6b5000;
   font-size: 14px;
   line-height: 1.6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .legal .draftNotice {
+    border-color: #6b5a2a;
+    background: #2a2414;
+    color: #e3c98a;
+  }
 }
 
 .legal .intro {
