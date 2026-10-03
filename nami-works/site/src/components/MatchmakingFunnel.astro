@@ -234,10 +234,7 @@ const TIERS = [
       <p class="diagTexto" id="diagSignificado"></p>
 
       <p class="diagLabel">o que dá pra fazer hoje</p>
-      <ol class="diagPassos">
-        <li class="diagTexto" id="diagPasso"></li>
-        <li class="diagTexto">conversar com alguém que pode ajudar</li>
-      </ol>
+      <ol class="diagPassos" id="diagPassos"></ol>
 
       <div class="ctaRow">
         <button type="button" class="ctaPrimary" id="btnVerTiers">ver quem pode conversar comigo</button>
@@ -403,120 +400,156 @@ const TIERS = [
   }
 
   // ---- Diagnostic engine (Phase 3): deterministic v1, swappable later ----
-  // passoPorFase (optional) overrides primeiroPasso for a given fase; the
-  // plain primeiroPasso is the fallback when a stage has no specific step.
+  // Recommendations are lists of separate steps, printed as one numbered list
+  // (followed by the fixed "converse com alguém" step). passoPorFase gives the
+  // steps for each fase; a pain with no stage-specific steps uses passos.
   const PAIN_BLOCKS: Record<
     string,
-    { significado: string; primeiroPasso: string; passoPorFase?: Record<string, string>; inNetwork: boolean }
+    { significado: string; passos?: string[]; passoPorFase?: Record<string, string[]>; inNetwork: boolean }
   > = {
     "mercado e clientes": {
       significado: "o produto existe, mas o cliente não chega ou não fecha. quase sempre falta clareza sobre quem compra e por quê.",
-      primeiroPasso: "liste seus 3 últimos clientes e o que fez cada um comprar de você. depois, busque perfis parecidos e ajuste o discurso de acordo com o valor que você já gerou a quem comprou.",
       passoPorFase: {
-        "ainda é uma ideia":
-          "defina quem é o seu primeiro cliente: descreva uma pessoa real que tem esse problema, onde ela está e como você chegaria até ela. depois converse com 5 pessoas com esse perfil.",
-        "começo promissor":
-          "liste seus 3 últimos clientes e o que fez cada um comprar de você. depois, busque perfis parecidos e ajuste o discurso de acordo com o valor que você já gerou a quem comprou.",
-        "já roda, quero escalar":
-          "separe seus clientes entre quem compra mais vezes e quem compra mais caro. descreva o que eles têm em comum e procure mais perfis como esses, nos mesmos lugares onde encontrou os primeiros.",
-        "crescendo, pede estrutura":
-          "registre o caminho que o cliente percorre até comprar (de onde vem, quem atende, o que decide) e identifique o ponto em que mais pessoas desistem. defina um responsável por melhorar esse ponto.",
+        "ainda é uma ideia": [
+          "defina quem é o seu primeiro cliente: descreva uma pessoa real que tem esse problema, onde ela está e como você chegaria até ela.",
+          "converse com 5 pessoas com esse perfil.",
+        ],
+        "começo promissor": [
+          "liste seus 3 últimos clientes e o que fez cada um comprar de você.",
+          "busque perfis parecidos e ajuste o discurso de acordo com o valor que você já gerou a quem comprou.",
+        ],
+        "já roda, quero escalar": [
+          "separe seus clientes entre quem compra mais vezes e quem compra mais caro, e descreva o que eles têm em comum.",
+          "procure mais perfis como esses, nos mesmos lugares onde encontrou os primeiros.",
+        ],
+        "crescendo, pede estrutura": [
+          "registre o caminho que o cliente percorre até comprar (de onde vem, quem atende, o que decide) e identifique o ponto em que mais pessoas desistem.",
+          "defina um responsável por melhorar esse ponto.",
+        ],
       },
       inNetwork: true,
     },
     "caixa e finanças": {
       significado: "o caixa aperta e fica difícil decidir. muitas vezes o problema é não enxergar pra onde o dinheiro vai.",
-      primeiroPasso: "registre todas as entradas e saídas dos últimos 30 dias numa planilha simples. identifique os 3 maiores gastos e avalie onde é possível reduzir ou renegociar.",
       passoPorFase: {
-        "ainda é uma ideia":
-          "some o que você precisa gastar até o primeiro cliente pagante e por quantos meses o seu dinheiro cobre isso. separe desde já o gasto do negócio do gasto pessoal.",
-        "começo promissor":
-          "registre todas as entradas e saídas dos últimos 30 dias numa planilha simples. identifique os 3 maiores gastos e avalie onde é possível reduzir ou renegociar.",
-        "já roda, quero escalar":
-          "calcule quanto sobra em cada venda depois de descontar o custo do que você entrega. antes de investir para crescer, confirme que cada venda a mais deixa dinheiro no caixa e projete as próximas 12 semanas de entradas e saídas.",
-        "crescendo, pede estrutura":
-          "projete o que você espera receber e pagar nos próximos 3 meses e defina quem atualiza toda semana. mantenha uma reserva para os meses mais fracos e estabeleça quais gastos precisam de aprovação.",
+        "ainda é uma ideia": ["calcule o potencial de receita de cada venda, e quanto ela vai custar. deve sobrar o suficiente para suportar uma estrutura à medida que você cresce o negócio."],
+        "começo promissor": [
+          "calcule quanto cada venda deixa de margem depois dos custos. deve ser o suficiente para suportar o crescimento.",
+          "registre todas as entradas e saídas dos últimos 30 dias numa planilha simples; identifique os 3 maiores gastos e avalie onde é possível reduzir ou renegociar.",
+        ],
+        "já roda, quero escalar": [
+          "calcule quanto sobra em cada venda depois de descontar o custo do que você entrega, e confirme que cada venda a mais deixa dinheiro no caixa antes de investir para crescer.",
+          "projete as próximas 12 semanas de entradas e saídas.",
+        ],
+        "crescendo, pede estrutura": [
+          "projete o que você espera receber e pagar nos próximos 3 meses e defina quem atualiza toda semana.",
+          "mantenha uma reserva para os meses mais fracos e estabeleça quais gastos precisam de ajuste ou aprovação.",
+        ],
       },
       inNetwork: true,
     },
     "priorização e execução": {
       significado: "tem muita coisa pra fazer e pouca saindo do papel. sem uma ordem clara, tudo parece urgente e nada avança.",
-      primeiroPasso: "duas vezes ao dia, resolva de uma vez tudo o que leva menos de 2 minutos. do que sobrar, liste o que está em andamento e escolha as 3 que mais movem o negócio. comece por elas e repita o processo toda semana.",
       passoPorFase: {
-        "ainda é uma ideia":
-          "escolha uma única coisa que prova se a ideia funciona e dedique as próximas 2 semanas só a ela. o que não contribuir para isso fica para depois.",
-        "começo promissor":
-          "duas vezes ao dia, resolva de uma vez tudo o que leva menos de 2 minutos. do que sobrar, liste o que está em andamento e escolha as 3 que mais movem o negócio. comece por elas e repita o processo toda semana.",
-        "já roda, quero escalar":
-          "escolha 3 metas para o mês e reserve uma hora por semana para verificar se o que você está fazendo contribui para alguma delas. o que não contribui, delegue ou interrompa.",
-        "crescendo, pede estrutura":
-          "toda segunda, faça um alinhamento de 15 minutos: cada pessoa lista 3 prioridades para a semana e vocês alinham os detalhes.",
+        "ainda é uma ideia": ["escolha uma única coisa que prova se a ideia funciona e dedique as próximas 2 semanas só a ela. o que não contribuir para isso fica para depois."],
+        "começo promissor": [
+          "duas vezes ao dia, resolva de uma vez tudo o que leva menos de 2 minutos.",
+          "do que sobrar, liste o que está em andamento e escolha as 3 que mais movem o negócio. comece por elas e repita o processo toda semana.",
+        ],
+        "já roda, quero escalar": [
+          "escolha 3 metas para o mês.",
+          "reserve uma hora por semana para verificar se o que você está fazendo contribui para alguma delas. o que não contribui, delegue ou interrompa.",
+        ],
+        "crescendo, pede estrutura": ["toda segunda, faça um alinhamento de 15 minutos: cada pessoa lista 3 prioridades para a semana e vocês alinham os detalhes."],
       },
       inNetwork: true,
     },
     "time e gestão": {
       significado: "contratar, delegar ou liderar virou gargalo. o negócio depende demais de você.",
-      primeiroPasso: "escreva as 5 tarefas que só você faz e escolha uma pra passar adiante, com o resultado esperado por escrito.",
       passoPorFase: {
-        "ainda é uma ideia":
-          "execute cada tarefa antes de delegar: para treinar alguém, você precisa saber fazer. mantenha o time pequeno até alguém pagar bem pelo que você oferece.",
-        "começo promissor":
-          "delegue o que não for estratégico, para liberar tempo para pensar: escreva o passo a passo, depois passe adiante, alinhando com clareza o resultado esperado.",
-        "já roda, quero escalar":
-          "identifique as áreas em que outra pessoa pode render mais do que você e traga essa pessoa para o time. antes de contratar, converse mais de uma vez e peça referências a quem já trabalhou com ela.",
-        "crescendo, pede estrutura":
-          "defina 3 metas claras para o trimestre e quem responde por cada uma. combine o que cada pessoa decide sozinha e o que ainda passa por você.",
+        "ainda é uma ideia": [
+          "execute cada tarefa antes de delegar: para treinar alguém, você precisa saber fazer.",
+          "mantenha o time pequeno até alguém pagar bem pelo que você oferece.",
+        ],
+        "começo promissor": [
+          "delegue o que não for estratégico, para liberar tempo para pensar: escreva o passo a passo.",
+          "passe adiante, alinhando com clareza o resultado esperado.",
+        ],
+        "já roda, quero escalar": [
+          "identifique as áreas em que outra pessoa pode render mais do que você e traga essa pessoa para o time.",
+          "antes de contratar, converse mais de uma vez e peça referências a quem já trabalhou com ela.",
+        ],
+        "crescendo, pede estrutura": [
+          "defina 3 metas claras para o trimestre e quem responde por cada uma.",
+          "combine o que cada pessoa decide sozinha e o que ainda passa por você.",
+        ],
       },
       inNetwork: true,
     },
     produto: {
       significado: "você tem a ideia, mas não sabe se é isso que o mercado quer.",
-      primeiroPasso: "antes de investir mais tempo ou dinheiro, converse com 3 clientes satisfeitos e 3 possíveis clientes. entenda o que mais pesa no dia a dia deles, por que compram de você (ou comprariam) e o que ajudaria mais.",
       passoPorFase: {
-        "ainda é uma ideia":
-          "antes de construir, converse com 5 possíveis clientes sobre o problema, sem apresentar a solução. descubra se já tentaram resolver, quanto isso custa para eles e se pagariam por algo melhor.",
-        "começo promissor":
-          "antes de investir mais tempo ou dinheiro, converse com 3 clientes satisfeitos e 3 possíveis clientes. entenda o que mais pesa no dia a dia deles, por que compram de você (ou comprariam) e o que ajudaria mais.",
-        "já roda, quero escalar":
-          "pergunte aos clientes que mais compram o que eles fariam se o produto deixasse de existir e o que ainda falta. use as respostas para decidir o que melhorar antes de vender para mais gente.",
-        "crescendo, pede estrutura":
-          "levante os pedidos e reclamações mais repetidos dos últimos 3 meses e escolha um para resolver primeiro. defina quem cuida da evolução do produto e como o time traz o que ouve dos clientes.",
+        "ainda é uma ideia": ["antes de construir, converse com 5 possíveis clientes sobre o problema, sem apresentar a solução. descubra se já tentaram resolver, quanto isso custa para eles e se pagariam por algo melhor."],
+        "começo promissor": ["antes de investir mais tempo ou dinheiro, converse com 3 clientes satisfeitos e 3 possíveis clientes. entenda o que mais pesa no dia a dia deles, por que compram de você (ou comprariam) e o que ajudaria mais."],
+        "já roda, quero escalar": [
+          "pergunte aos clientes que mais compram o que eles fariam se o produto deixasse de existir e o que ainda falta.",
+          "use as respostas para decidir o que melhorar antes de vender para mais gente.",
+        ],
+        "crescendo, pede estrutura": [
+          "levante os pedidos e reclamações mais repetidos dos últimos 3 meses e escolha um para resolver primeiro.",
+          "defina quem cuida da evolução do produto e como o time traz o que ouve dos clientes.",
+        ],
       },
       inNetwork: true,
     },
     "vendas e marketing": {
       significado: "você aparece, mas não vê resultado. normalmente falta foco em um canal e uma mensagem.",
-      primeiroPasso: "escolha um único canal de divulgação (Instagram, WhatsApp, indicação) e uma mensagem para testar por 2 semanas. registre quantas pessoas viram, quantas responderam e quantas compraram. depois decida: manter, ajustar ou trocar.",
       passoPorFase: {
-        "ainda é uma ideia":
-          "antes de gastar com divulgação, escreva em uma frase quem você ajuda e qual problema resolve. mostre a 5 pessoas desse perfil e verifique se entendem sem precisar de explicação.",
-        "começo promissor":
-          "escolha um único canal de divulgação (Instagram, WhatsApp, indicação) e uma mensagem para testar por 2 semanas. registre quantas pessoas viram, quantas responderam e quantas compraram. depois decida: manter, ajustar ou trocar.",
-        "já roda, quero escalar":
-          "identifique de qual canal vêm os clientes que mais compram e concentre mais esforço nele. teste uma mensagem nova por vez, por 2 semanas, e compare com a atual.",
-        "crescendo, pede estrutura":
-          "defina uma meta de vendas por canal e quem responde por cada um. toda semana, acompanhe os mesmos números (contatos, propostas, vendas) para decidir onde ajustar.",
+        "ainda é uma ideia": [
+          "antes de gastar com divulgação, escreva em uma frase quem você ajuda e qual problema resolve.",
+          "mostre a 5 pessoas que têm esse problema, e verifique se entendem sem precisar de explicação.",
+        ],
+        "começo promissor": [
+          "escolha um único canal de divulgação (Instagram, WhatsApp, indicação) e uma mensagem para testar por 2 semanas.",
+          "registre quantas pessoas viram, quantas responderam e quantas compraram.",
+          "decida: manter, ajustar ou trocar.",
+        ],
+        "já roda, quero escalar": [
+          "identifique de qual canal vêm os clientes que mais compram e concentre mais esforço nele.",
+          "teste uma mensagem nova por vez, por 2 semanas, e compare com a atual.",
+        ],
+        "crescendo, pede estrutura": [
+          "defina uma meta de vendas por canal e quem responde por cada um.",
+          "toda semana, acompanhe os mesmos números (contatos, propostas, vendas) para decidir onde ajustar.",
+        ],
+      },
+      inNetwork: true,
+    },
+    "escalar o negócio": {
+      significado: "o negócio funciona e você quer crescer, mas crescer rápido demais costuma quebrar o que funciona hoje. o ganho está em saber o que repetir, onde e em que ritmo.",
+      passoPorFase: {
+        "ainda é uma ideia": [
+          "antes de pensar em escala, faça um teste pequeno: venda para poucas pessoas da mesma região.",
+          "acompanhe 3 números: quantos compram, quantos voltam e quanto sobra no final.",
+        ],
+        "começo promissor": ["escolha uma região ou um tipo de cliente e repita a venda ali até os números ficarem estáveis. só depois de repetir com previsibilidade vale ampliar."],
+        "já roda, quero escalar": [
+          "descubra quais clientes compram com mais frequência e concentre o esforço onde eles estão.",
+          "cresça uma região de cada vez, ganhando ritmo em cada uma antes de abrir a próxima.",
+        ],
+        "crescendo, pede estrutura": [
+          "o que trouxe você até aqui não escala sozinho. liste as decisões que hoje dependem só de você.",
+          "escolha 2 para transferir a outra pessoa, para que o crescimento deixe de depender da sua agenda.",
+        ],
       },
       inNetwork: true,
     },
     "não sei por onde começar": {
       significado: "frentes demais abertas paralisam. o primeiro ganho é escolher uma.",
-      primeiroPasso: "imagine seu negócio dando certo daqui a 3 anos: o que ele faz e para quem. depois avalie o que isso tem a ver com o que te move e onde há muitas pessoas com esse problema. comece por aí.",
-      inNetwork: true,
-    },
-    "escalar o negócio": {
-      significado: "o negócio funciona e você quer crescer, mas crescer rápido demais costuma quebrar o que funciona hoje. o ganho está em saber o que repetir, onde e em que ritmo.",
-      primeiroPasso: "escolha uma região ou um tipo de cliente e repita a venda ali até os números ficarem estáveis, antes de ampliar.",
-      passoPorFase: {
-        "ainda é uma ideia":
-          "antes de pensar em escala, faça um teste pequeno: venda para poucas pessoas da mesma região e acompanhe 3 números: quantos compram, quantos voltam e quanto sobra no final.",
-        "começo promissor":
-          "escolha uma região ou um tipo de cliente e repita a venda ali até os números ficarem estáveis. só depois de repetir com previsibilidade vale ampliar.",
-        "já roda, quero escalar":
-          "descubra quais clientes compram com mais frequência e concentre o esforço onde eles estão. cresça uma região de cada vez, ganhando ritmo em cada uma antes de abrir a próxima.",
-        "crescendo, pede estrutura":
-          "o que trouxe você até aqui não escala sozinho. liste as decisões que hoje dependem só de você e escolha 2 para transferir a outra pessoa, para que o crescimento deixe de depender da sua agenda.",
-      },
+      passos: [
+        "imagine seu negócio dando certo daqui a 3 anos: o que ele faz e para quem.",
+        "avalie o que isso tem a ver com o que te move e onde há muitas pessoas com esse problema. comece por aí.",
+      ],
       inNetwork: true,
     },
   };
@@ -531,7 +564,7 @@ const TIERS = [
   };
 
   type Diagnostico =
-    | { inNetwork: true; significado: string; primeiroPasso: string }
+    | { inNetwork: true; significado: string; passos: string[] }
     | { inNetwork: false };
 
   function computeDiagnostico(dor: string, fase: string): Diagnostico {
@@ -541,8 +574,14 @@ const TIERS = [
     return {
       inNetwork: true,
       significado: `${pain.significado} ${stageLine}`.trim(),
-      primeiroPasso: pain.passoPorFase?.[fase] ?? pain.primeiroPasso,
+      passos: pain.passoPorFase?.[fase] ?? pain.passos ?? [],
     };
+  }
+
+  // The same steps as one line of text, numbered when there is more than one
+  // (for the lead record and the AI prompt).
+  function passosEmTexto(passos: string[]): string {
+    return passos.length > 1 ? passos.map((s, i) => `${i + 1}) ${s}`).join(" ") : (passos[0] ?? "");
   }
 
   // ---- Tier recommendation (Phase 4) ----
@@ -898,7 +937,7 @@ const TIERS = [
       const diagnostico = computeDiagnostico(dorPrincipal, answers.fase);
       lastDiagnostico = diagnostico;
       const diagnosticoTexto = diagnostico.inNetwork
-        ? `${diagnostico.significado} ${diagnostico.primeiroPasso}`
+        ? `${diagnostico.significado} ${passosEmTexto(diagnostico.passos)}`
         : "fora de rede";
 
       createPayload = {
@@ -1055,7 +1094,8 @@ const TIERS = [
     const diagForaDeRede = document.getElementById("diagnosticoForaDeRede")!;
     const diagTitulo = document.getElementById("diagTitulo")!;
     const diagSignificado = document.getElementById("diagSignificado")!;
-    const diagPasso = document.getElementById("diagPasso")!;
+    const diagPassos = document.getElementById("diagPassos")!;
+    const PASSO_FIXO = "converse com alguém que pode ajudar";
     const diagSecundaria = document.getElementById("diagSecundaria")!;
     const tiersSection = document.getElementById("tiers")!;
     const waitlistSection = document.getElementById("waitlist")!;
@@ -1071,7 +1111,14 @@ const TIERS = [
         diagSecundaria.hidden = !dorSecundaria;
         diagSecundaria.textContent = dorSecundaria ? `você também marcou: ${dorSecundaria}.` : "";
         diagSignificado.textContent = diag.significado;
-        diagPasso.textContent = diag.primeiroPasso;
+        diagPassos.replaceChildren(
+          ...[...diag.passos, PASSO_FIXO].map((texto) => {
+            const li = document.createElement("li");
+            li.className = "diagTexto";
+            li.textContent = texto;
+            return li;
+          }),
+        );
       } else {
         diagEmRede.hidden = true;
         diagForaDeRede.hidden = false;
@@ -1122,7 +1169,7 @@ const TIERS = [
     function buildGenericPrompt(): string {
       const d = lastDiagnostico && lastDiagnostico.inNetwork ? lastDiagnostico : null;
       return [
-        `${promptContext()}${d ? ` leitura inicial da nami.works: ${d.significado} primeiro passo sugerido: ${d.primeiroPasso}` : ""}`,
+        `${promptContext()}${d ? ` leitura inicial da nami.works: ${d.significado} ${d.passos.length > 1 ? "passos sugeridos" : "primeiro passo sugerido"}: ${passosEmTexto(d.passos)}` : ""}`,
         "",
         "me ajude a organizar os próximos passos. comece com uma frase sobre onde estou. depois, em até uma página:",
         "1. as 3 prioridades dos próximos 14 dias, cada uma com a ação concreta, o prazo e como saber se funcionou.",

@@ -164,8 +164,11 @@ re-saved after unticking its path.
   the ticks and skips the follow-ups. Q4 "o que ajudaria mais agora?" plus
   free-text "outra coisa...".
 - Diagnostic: eyebrow "sua principal trava", headline = the pain, "o que dá
-  pra fazer hoje" = a step per fase (`passoPorFase` in `PAIN_BLOCKS`) plus a
-  fixed second step "conversar com alguém que pode ajudar". Every pain is now
+  pra fazer hoje" = the steps for that fase (`passoPorFase` in `PAIN_BLOCKS`,
+  a list per fase: 23 of the 29 combinations have 2-3 separate steps, printed
+  as one numbered list) plus a fixed last step "converse com alguém que pode
+  ajudar". Lucas edited D05, D09, D10 and D12 in the flow canvas; that copy is
+  what ships. Every pain is now
   in-network, so the out-of-network/waitlist screen is unreachable (code kept
   as part of the swappable engine).
 - Register agreed with Lucas: professional but plain, no slang. Steps for
